@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,10 @@ namespace KitchenDesigner.Core.UI
         private InputField _name, _w, _h, _d, _gapL, _gapR, _gapT, _gapB, _x, _y, _z, _rx, _ry, _rz;
         private Toggle _lockToggle;
         private GameObject _gapRow;
+        private readonly List<(RectTransform rt, float baseY)> _postGapElements = new();
+        private RectTransform _panelRt;
+        private float _panelBaseH;
+        private const float GAP_ROW_H = 72f;
 
         private void Awake()
         {
@@ -27,6 +32,7 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorTopRight(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(-10, -60);
             _root = panel.gameObject;
+            _panelRt = panel.rectTransform;
 
             const float rowStartY = 220f;
             const float rowStep = 31f;
@@ -44,12 +50,21 @@ namespace KitchenDesigner.Core.UI
             // ── Зазоры (только для фасадов) ──
             _gapRow = CreateGapSection(panel.transform, ref y);
 
-            _x = Row(panel.transform, "X, м", ref y, rowStep);
-            _y = Row(panel.transform, "Y, м", ref y, rowStep);
-            _z = Row(panel.transform, "Z, м", ref y, rowStep);
-            _rx = Row(panel.transform, "Поворот X°", ref y, rowStep);
-            _ry = Row(panel.transform, "Поворот Y°", ref y, rowStep);
-            _rz = Row(panel.transform, "Поворот Z°", ref y, rowStep);
+            _postGapElements.Clear();
+            System.Action<InputField> track = f =>
+            {
+                if (f != null)
+                {
+                    var rt = f.GetComponent<RectTransform>();
+                    _postGapElements.Add((rt, rt.anchoredPosition.y));
+                }
+            };
+            _x = Row(panel.transform, "X, м", ref y, rowStep); track(_x);
+            _y = Row(panel.transform, "Y, м", ref y, rowStep); track(_y);
+            _z = Row(panel.transform, "Z, м", ref y, rowStep); track(_z);
+            _rx = Row(panel.transform, "Поворот X°", ref y, rowStep); track(_rx);
+            _ry = Row(panel.transform, "Поворот Y°", ref y, rowStep); track(_ry);
+            _rz = Row(panel.transform, "Поворот Z°", ref y, rowStep); track(_rz);
 
             foreach (var f in new[] { _w, _h, _d }) f.contentType = InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _gapL, _gapR, _gapT, _gapB }) f.contentType = InputField.ContentType.IntegerNumber;
@@ -60,24 +75,33 @@ namespace KitchenDesigner.Core.UI
             float rotLabelY = y - rotLabelGap;
             float rotBtnY = rotLabelY - labelH - rotBtnGap;
             float actionY = rotBtnY - btnH - actionGap;
-            UIFactory.CreateLabel("CtxRotLbl", panel.transform, "Повернуть на 90°:", 15,
+            var rotLbl = UIFactory.CreateLabel("CtxRotLbl", panel.transform, "Повернуть на 90°:", 15,
                 new Vector2(0, rotLabelY), new Vector2(260, labelH), TextAnchor.MiddleCenter);
-            UIFactory.CreateButton("CtxRotX", panel.transform, "X 90°",
+            _postGapElements.Add((rotLbl.rectTransform, rotLbl.rectTransform.anchoredPosition.y));
+            var rotX = UIFactory.CreateButton("CtxRotX", panel.transform, "X 90°",
                 new Vector2(-90, rotBtnY), new Vector2(86, btnH), () => RotateAxis(Vector3.right));
-            UIFactory.CreateButton("CtxRotY", panel.transform, "Y 90°",
+            _postGapElements.Add((rotX.GetComponent<RectTransform>(), rotBtnY));
+            var rotY = UIFactory.CreateButton("CtxRotY", panel.transform, "Y 90°",
                 new Vector2(0, rotBtnY), new Vector2(86, btnH), () => RotateAxis(Vector3.up));
-            UIFactory.CreateButton("CtxRotZ", panel.transform, "Z 90°",
+            _postGapElements.Add((rotY.GetComponent<RectTransform>(), rotBtnY));
+            var rotZ = UIFactory.CreateButton("CtxRotZ", panel.transform, "Z 90°",
                 new Vector2(90, rotBtnY), new Vector2(86, btnH), () => RotateAxis(Vector3.forward));
+            _postGapElements.Add((rotZ.GetComponent<RectTransform>(), rotBtnY));
 
-            UIFactory.CreateButton("CtxApply", panel.transform, "Применить",
+            var apply = UIFactory.CreateButton("CtxApply", panel.transform, "Применить",
                 new Vector2(-65, actionY), new Vector2(120, 32), Apply);
-            UIFactory.CreateButton("CtxDup", panel.transform, "Дублировать",
+            _postGapElements.Add((apply.GetComponent<RectTransform>(), actionY));
+            var dup = UIFactory.CreateButton("CtxDup", panel.transform, "Дублировать",
                 new Vector2(65, actionY), new Vector2(120, 32), Duplicate);
-            UIFactory.CreateButton("CtxDel", panel.transform, "Удалить",
+            _postGapElements.Add((dup.GetComponent<RectTransform>(), actionY));
+            var del = UIFactory.CreateButton("CtxDel", panel.transform, "Удалить",
                 new Vector2(0, actionY - 36), new Vector2(248, 32), Delete);
+            _postGapElements.Add((del.GetComponent<RectTransform>(), actionY - 36));
 
             _lockToggle = UIFactory.CreateToggle("CtxLock", panel.transform, "Запретить перемещение", false,
                 new Vector2(0, actionY - 74), new Vector2(248, 26), v => { if (_target != null) _target.Movable = !v; });
+            var lockRt = _lockToggle.GetComponent<RectTransform>();
+            _postGapElements.Add((lockRt, actionY - 74));
 
             _titleLabel = UIFactory.CreateLabel("CtxTitle", panel.transform, "Доска", 20,
                 new Vector2(0, rowStartY + 35), new Vector2(260, 28), TextAnchor.MiddleCenter);
@@ -91,7 +115,8 @@ namespace KitchenDesigner.Core.UI
             float topContent = (rowStartY + 35) + 14f;
             float bottomContent = (actionY - 74) - 13f;
             float halfHeight = Mathf.Max(topContent, -bottomContent);
-            panel.rectTransform.sizeDelta = new Vector2(280, halfHeight * 2f + 40f);
+            _panelBaseH = halfHeight * 2f + 40f;
+            panel.rectTransform.sizeDelta = new Vector2(280, _panelBaseH);
 
             _root.SetActive(false);
 
@@ -118,7 +143,6 @@ namespace KitchenDesigner.Core.UI
         {
             var root = new GameObject("_GapSection");
             var rt = root.AddComponent<RectTransform>();
-            UIFactory.AnchorTopLeft(rt);
             rt.SetParent(parent, false);
             rt.anchoredPosition = new Vector2(0, y);
             rt.sizeDelta = new Vector2(260, 100);
@@ -126,22 +150,22 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateLabel("CtxGapHdr", root.transform, "Отступы, мм:", 14,
                 new Vector2(-72, 0), new Vector2(130, 20), TextAnchor.MiddleLeft);
 
-            _gapL = MakeGapField(root.transform, "Слева", -72, -26);
-            _gapR = MakeGapField(root.transform, "Справа", 20, -26);
-            _gapT = MakeGapField(root.transform, "Сверху", -72, -52);
-            _gapB = MakeGapField(root.transform, "Снизу", 20, -52);
+            _gapL = MakeGapField(root.transform, "Слева", -72, -26, -26);
+            _gapR = MakeGapField(root.transform, "Справа", 20, 68, -26);
+            _gapT = MakeGapField(root.transform, "Сверху", -72, -26, -52);
+            _gapB = MakeGapField(root.transform, "Снизу", 20, 68, -52);
 
-            y -= 72f;
+            y -= GAP_ROW_H;
             root.SetActive(false);
             return root;
         }
 
-        private static InputField MakeGapField(Transform parent, string label, float labelX, float fieldX)
+        private static InputField MakeGapField(Transform parent, string label, float labelX, float fieldX, float y)
         {
             UIFactory.CreateLabel("Gap_" + label, parent, label, 13,
-                new Vector2(labelX, 0), new Vector2(55, 20), TextAnchor.MiddleLeft);
+                new Vector2(labelX, y), new Vector2(55, 20), TextAnchor.MiddleLeft);
             return UIFactory.CreateInputField("F_gap_" + label, parent, "2",
-                new Vector2(fieldX, 0), new Vector2(48, 22));
+                new Vector2(fieldX, y), new Vector2(48, 22));
         }
 
         private InputField Row(Transform parent, string label, ref float y, float step)
@@ -205,6 +229,16 @@ namespace KitchenDesigner.Core.UI
                     _gapB.text = facade.GapBottom.ToString();
                 }
             }
+
+            float shift = facade != null ? 0f : GAP_ROW_H;
+            foreach (var entry in _postGapElements)
+            {
+                if (entry.rt != null)
+                    entry.rt.anchoredPosition = new Vector2(
+                        entry.rt.anchoredPosition.x, entry.baseY + shift);
+            }
+            if (_panelRt != null)
+                _panelRt.sizeDelta = new Vector2(_panelRt.sizeDelta.x, _panelBaseH - shift);
 
             RefreshTransformFields();
 
