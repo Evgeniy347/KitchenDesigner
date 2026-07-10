@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -9,8 +10,10 @@ namespace KitchenDesigner.Core
         private KitchenElement _target;
         private Vector3 _offset;
         private Vector3 _startPosition;
-        private Vector3 _dragPlanePoint;
         private bool _wasMoved;
+        private SnapVisualizer _snapVisualizer;
+        private SnapResult _previewSnap;
+        private bool _wasSnapPreviewed;
 
         private void Start()
         {
@@ -24,81 +27,132 @@ namespace KitchenDesigner.Core
             {
                 Debug.LogError("[Mover] No SelectionManager found on same GameObject");
             }
+
+            var go = new GameObject("SnapVisualizer");
+            go.transform.SetParent(transform);
+            _snapVisualizer = go.AddComponent<SnapVisualizer>();
+            Debug.Log("[Mover] SnapVisualizer created");
         }
 
         private void OnSelectionChanged(KitchenElement element)
         {
             if (IsDragging) return;
             _target = element;
-            Debug.Log("[Mover] OnSelectionChanged: target=" + (element != null ? element.name : "null"));
-
             if (element != null && Input.GetMouseButton(0))
-            {
-                Debug.Log("[Mover] Mouse already held, trying immediate drag start");
                 TryStartDrag();
-            }
         }
 
         private bool TryStartDrag()
         {
-            if (_target == null)
-            {
-                Debug.Log("[Mover] TryStartDrag: target is null, abort");
-                return false;
-            }
+            if (_target == null) return false;
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            Debug.Log("[Mover] TryStartDrag: ray=" + ray.origin + " dir=" + ray.direction);
-
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                Debug.Log("[Mover] TryStartDrag: hit " + hit.collider.gameObject.name + " at " + hit.point);
                 var element = hit.collider.GetComponentInParent<KitchenElement>();
                 if (element == _target)
                 {
                     IsDragging = true;
                     _startPosition = _target.transform.position;
                     _wasMoved = false;
+                    _wasSnapPreviewed = false;
 
                     Plane dragPlane = new Plane(Vector3.up, _startPosition);
                     if (dragPlane.Raycast(ray, out float enter))
                     {
-                        _dragPlanePoint = ray.GetPoint(enter);
-                        _offset = _startPosition - _dragPlanePoint;
-                        Debug.Log("[Mover] Drag START: startPos=" + _startPosition + " offset=" + _offset + " dragPlanePoint=" + _dragPlanePoint);
+                        _offset = _startPosition - ray.GetPoint(enter);
+                        Debug.Log("[Mover] Drag START at " + _startPosition + " offset=" + _offset);
                     }
                     else
                     {
-                        Debug.Log("[Mover] Drag plane raycast failed, using fallback");
-                        _dragPlanePoint = _startPosition;
                         _offset = Vector3.zero;
+                        Debug.Log("[Mover] Drag START fallback at " + _startPosition);
                     }
                     return true;
                 }
-                else
+            }
+            return false;
+        }
+
+        private void PreviewSnap(Vector3 position)
+        {
+            var allElements = FindObjectsByType<KitchenElement>();
+            var others = new List<KitchenElement>(allElements);
+            _previewSnap = SnapSystem.TrySnap(_target, others, position);
+
+            if (_previewSnap.snapped)
+            {
+                if (!_wasSnapPreviewed)
                 {
-                    Debug.Log("[Mover] TryStartDrag: hit element != target (" + (element != null ? element.name : "null") + " vs " + (_target != null ? _target.name : "null") + ")");
+                    Debug.Log("[Snap] PREVIEW to " + _previewSnap.targetName + " gap=" +
+                        Vector3.Distance(position, _previewSnap.position).ToString("F3") + "m");
+                    _wasSnapPreviewed = true;
                 }
+                _snapVisualizer.ShowSnap(_previewSnap.snapPoint, _previewSnap.targetPoint);
             }
             else
             {
-                Debug.Log("[Mover] TryStartDrag: raycast missed");
+                if (_wasSnapPreviewed)
+                {
+                    Debug.Log("[Snap] PREVIEW lost");
+                    _wasSnapPreviewed = false;
+                }
+                _snapVisualizer.Hide();
             }
-            return false;
+        }
+
+        private void ApplySnapOnDrop()
+        {
+            Vector3 currentPos = _target.transform.position;
+            var allElements = FindObjectsByType<KitchenElement>();
+            var others = new List<KitchenElement>(allElements);
+            var result = SnapSystem.TrySnap(_target, others, currentPos);
+
+            if (result.snapped)
+            {
+                Debug.Log("[Snap] ATTACH to " + result.targetName + " at " + result.position);
+                _target.transform.position = result.position;
+            }
         }
 
         private void Update()
         {
             if (_target == null)
             {
-                if (Input.GetMouseButtonDown(0)) Debug.Log("[Mover] No target, ignoring LMB");
+                if (Input.GetMouseButtonDown(0))
+                    Debug.Log("[Mover] LMB: no target");
                 return;
             }
 
             if (Input.GetMouseButtonDown(0) && !IsDragging)
             {
-                Debug.Log("[Mover] LMB down with target " + _target.name + " at " + _target.transform.position);
+                Debug.Log("[Mover] LMB on " + _target.name + " at " + _target.transform.position);
                 TryStartDrag();
+            }
+
+            if (Input.GetKeyDown(KeyCode.D) && !IsDragging && _target != null)
+            {
+                if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                {
+                    var dup = ElementFactory.Duplicate(_target);
+                    if (dup != null)
+                    {
+                        var newElement = dup.GetComponent<KitchenElement>();
+                        if (newElement != null && SelectionManager.Instance != null)
+                            SelectionManager.Instance.Select(newElement);
+                        Debug.Log("[Mover] Ctrl+D duplicate " + _target.name + " -> " + dup.name);
+                    }
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape) && IsDragging)
+            {
+                Debug.Log("[Mover] ESC cancel drag");
+                _target.transform.position = _startPosition;
+                IsDragging = false;
+                _wasMoved = false;
+                _snapVisualizer.Hide();
+                _wasSnapPreviewed = false;
             }
 
             if (IsDragging && Input.GetMouseButton(0))
@@ -106,18 +160,19 @@ namespace KitchenDesigner.Core
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
+                Vector3 newPos = _target.transform.position;
+                bool positionComputed = false;
+
                 if (shiftHeld)
                 {
                     Plane verticalPlane = new Plane(Vector3.right, _startPosition);
                     if (verticalPlane.Raycast(ray, out float enter))
                     {
                         Vector3 point = ray.GetPoint(enter) + _offset;
-                        Vector3 newPos = new Vector3(_target.transform.position.x, point.y, _target.transform.position.z);
-                        float newY = newPos.y;
-                        newPos.y = GridManager.SnapToGrid(newPos).y;
-                        _target.transform.position = newPos;
-                        _wasMoved = true;
-                        Debug.Log("[Mover] Drag Y: rawY=" + newY + " snappedY=" + newPos.y + " pos=" + _target.transform.position);
+                        Vector3 tempPos = new Vector3(_target.transform.position.x, point.y, _target.transform.position.z);
+                        tempPos.y = GridManager.SnapToGrid(tempPos).y;
+                        newPos = tempPos;
+                        positionComputed = true;
                     }
                 }
                 else
@@ -127,38 +182,34 @@ namespace KitchenDesigner.Core
                     {
                         Vector3 point = ray.GetPoint(enter) + _offset;
                         point.y = _startPosition.y;
-                        Vector3 snapped = GridManager.SnapToGrid(point);
-                        _target.transform.position = snapped;
-                        _wasMoved = true;
-                        Debug.Log("[Mover] Drag XZ: raw=" + point + " snapped=" + snapped + " pos=" + _target.transform.position);
-                    }
-                    else
-                    {
-                        Debug.Log("[Mover] Drag XZ: plane raycast failed");
+                        newPos = GridManager.SnapToGrid(point);
+                        positionComputed = true;
                     }
                 }
-            }
 
-            if (Input.GetKeyDown(KeyCode.Escape) && IsDragging)
-            {
-                Debug.Log("[Mover] ESCAPE: restoring position from " + _target.transform.position + " to " + _startPosition);
-                _target.transform.position = _startPosition;
-                IsDragging = false;
-                _wasMoved = false;
+                if (positionComputed)
+                {
+                    _wasMoved = true;
+                    _target.transform.position = newPos;
+                    PreviewSnap(newPos);
+                }
             }
 
             if (IsDragging && Input.GetMouseButtonUp(0))
             {
-                if (!_wasMoved)
+                if (_wasMoved)
                 {
-                    Debug.Log("[Mover] Drop: was not moved, restoring to start");
-                    _target.transform.position = _startPosition;
+                    ApplySnapOnDrop();
+                    Debug.Log("[Mover] Drop at " + _target.transform.position);
                 }
                 else
                 {
-                    Debug.Log("[Mover] Drop: finalized at " + _target.transform.position);
+                    _target.transform.position = _startPosition;
+                    Debug.Log("[Mover] Drop: no move, restored to " + _startPosition);
                 }
                 IsDragging = false;
+                _snapVisualizer.Hide();
+                _wasSnapPreviewed = false;
             }
         }
     }
