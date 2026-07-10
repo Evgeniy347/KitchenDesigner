@@ -8,7 +8,6 @@ namespace KitchenDesigner.Core
     /// заподлицо. Чистая функция — покрывается юнит-тестами.</summary>
     public static class ResizeSnap
     {
-        private const float OverlapMin = 0.3f;
         // Инклюзивный порог: снэп срабатывает и ровно на границе (как в SnapSystem).
         private const float ThresholdEpsilon = 1e-5f;
 
@@ -40,8 +39,11 @@ namespace KitchenDesigner.Core
                     float d = Vector3.Dot(g.center - faceCenter, normal); // вдоль нормали до плоскости g
                     if (Mathf.Abs(d) > threshold + ThresholdEpsilon) continue;
 
+                    // Достаточно любого положительного перекрытия в плоскости: при
+                    // ресайзе грань часто стыкуется с соседом в углу (буква «Г»),
+                    // где перекрытие частичное — жёсткий порог его бы отбросил.
                     Rect oRect = RectFor(g.center, uAxis, vAxis, g.rightAxis, g.upAxis, g.size.x, g.size.y);
-                    if (!Overlap(mRect, oRect, out float ratio) || ratio < OverlapMin) continue;
+                    if (!Overlap(mRect, oRect)) continue;
 
                     if (Mathf.Abs(d) < bestAbs)
                     {
@@ -68,17 +70,13 @@ namespace KitchenDesigner.Core
             return new Rect(cu - halfU, cv - halfV, halfU * 2f, halfV * 2f);
         }
 
-        private static bool Overlap(Rect a, Rect b, out float ratio)
+        private static bool Overlap(Rect a, Rect b)
         {
             float left = Mathf.Max(a.xMin, b.xMin);
             float right = Mathf.Min(a.xMax, b.xMax);
             float bottom = Mathf.Max(a.yMin, b.yMin);
             float top = Mathf.Min(a.yMax, b.yMax);
-            if (left >= right || bottom >= top) { ratio = 0f; return false; }
-            float inter = (right - left) * (top - bottom);
-            float minArea = Mathf.Min(a.width * a.height, b.width * b.height);
-            ratio = minArea > 0 ? inter / minArea : 0f;
-            return true;
+            return left < right && bottom < top; // строго положительная площадь
         }
     }
 }
