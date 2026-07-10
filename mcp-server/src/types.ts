@@ -98,6 +98,11 @@ export interface CreateElementParams {
   is_assembled?: boolean;
   is_radial_shelf?: boolean;
   is_floor?: boolean;
+  is_drawer?: boolean;
+  drawer_type?: string;
+  drawer_length?: number;
+  drawer_color?: string;
+  drawer_internal_width?: number;
   fill?: string;
   gapLeft?: number;
   gapRight?: number;
@@ -119,6 +124,22 @@ export interface LockElementParams {
 export interface FacadeModeParams {
   name: string;
   mode: string;
+}
+
+export interface SetDrawerPropertiesParams {
+  name: string;
+  drawer_type?: string;
+  drawer_length?: number;
+  drawer_color?: string;
+  internal_width?: number;
+  is_double?: boolean;
+  is_upper?: boolean;
+  paired_drawer_name?: string;
+  attached_facade_name?: string;
+}
+
+export interface NamedElementParams {
+  name: string;
 }
 
 /* ── Advanced: raw objects ─────────────────────────────────────────────── */
@@ -289,6 +310,8 @@ export interface ParamMap {
   readonly convert_element: ConvertElementParams;
   readonly set_element_lock: LockElementParams;
   readonly set_facade_mode: FacadeModeParams;
+  readonly set_drawer_properties: SetDrawerPropertiesParams;
+  readonly cycle_drawer_animation: NamedElementParams;
 
   readonly module_info: ModuleParams;
   readonly dissolve_module: ModuleParams;

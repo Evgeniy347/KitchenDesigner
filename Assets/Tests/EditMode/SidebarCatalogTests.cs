@@ -5,14 +5,15 @@ using KitchenDesigner.Core.UI;
 public class SidebarCatalogTests
 {
     [Test]
-    public void Build_HasBoardFacadeAndRoom()
+    public void Build_HasBoardFacadeDrawerAndRoom()
     {
         var groups = SidebarCatalog.Build();
 
-        Assert.AreEqual(3, groups.Count);
+        Assert.AreEqual(4, groups.Count);
         Assert.AreEqual("детали", groups[0].title);
         Assert.AreEqual("Фасады", groups[1].title);
-        Assert.AreEqual("Помещение", groups[2].title);
+        Assert.AreEqual("Ящики GTV", groups[2].title);
+        Assert.AreEqual("Помещение", groups[3].title);
     }
 
     [Test]
@@ -36,7 +37,6 @@ public class SidebarCatalogTests
     {
         var groups = SidebarCatalog.Build();
 
-        // 2 обычных фасада + 2 сборных.
         Assert.AreEqual(4, groups[1].items.Count);
         foreach (var it in groups[1].items)
         {
@@ -47,10 +47,22 @@ public class SidebarCatalogTests
     }
 
     [Test]
+    public void DrawerGroup_HasOneDefaultItem()
+    {
+        var groups = SidebarCatalog.Build();
+        Assert.AreEqual(1, groups[2].items.Count);
+        var it = groups[2].items[0];
+        Assert.IsTrue(it.isDrawer);
+        Assert.AreEqual("A", it.drawerType);
+        Assert.AreEqual(350, it.drawerLength);
+    }
+
+    [Test]
     public void Room_ContainsKorob_600Cube()
     {
         var groups = SidebarCatalog.Build();
-        var korob = groups[2].items[0];
+        var room = groups[3];
+        var korob = room.items[0];
 
         Assert.AreEqual("Короб", korob.name);
         Assert.AreEqual(new Vector3Int(600, 600, 600), korob.dims);
@@ -61,9 +73,19 @@ public class SidebarCatalogTests
     public void Room_ContainsWall_MarkedAsWall()
     {
         var groups = SidebarCatalog.Build();
-        var wall = groups[2].items.Find(it => it.name == "Стена");
+        var room = groups[3];
+        var wall = room.items.Find(it => it.name == "Стена");
 
         Assert.IsTrue(wall.isWall, "элемент «Стена» помечен как стена");
         Assert.AreEqual(new Vector3Int(2000, 2500, 100), wall.dims);
+    }
+
+    [Test]
+    public void Build_Room_ContainsRoomSettings()
+    {
+        var groups = SidebarCatalog.Build();
+        var room = groups[3];
+        var settings = room.items.Find(it => it.name == "Размеры помещения");
+        Assert.IsNotNull(settings);
     }
 }

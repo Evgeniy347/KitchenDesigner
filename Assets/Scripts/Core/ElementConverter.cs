@@ -5,13 +5,18 @@ namespace KitchenDesigner.Core
 {
     public static class ElementConverter
     {
-        public enum TargetType { Part, Facade, AssembledFacade, RadialShelf }
+        public enum TargetType { Part, Facade, AssembledFacade, RadialShelf, Drawer }
 
         public static KitchenElement Convert(KitchenElement source, TargetType targetType)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             var currentType = GetElementType(source);
             if (currentType == targetType) return source;
+
+            // Ящик GTV — самостоятельный тип со собственной геометрией/состоянием: он не
+            // участвует в конвертации ни в одну сторону (план §10.1). Выпадающий список типа
+            // в контекстном меню отражает «Ящик GTV» как индикатор, но конвертация — no-op.
+            if (currentType == TargetType.Drawer || targetType == TargetType.Drawer) return source;
 
             var go = source.gameObject;
 
@@ -119,6 +124,7 @@ namespace KitchenDesigner.Core
         {
             if (element is AssembledFacadeElement) return TargetType.AssembledFacade;
             if (element is RadialShelfElement) return TargetType.RadialShelf;
+            if (element is DrawerElement) return TargetType.Drawer;
             if (element is FacadeElement) return TargetType.Facade;
             return TargetType.Part;
         }

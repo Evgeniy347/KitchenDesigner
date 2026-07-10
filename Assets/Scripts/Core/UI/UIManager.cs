@@ -244,6 +244,25 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
+        public void SpawnDrawer(string drawerType, int length, string colorName, int width, string name)
+        {
+            var type = drawerType switch { "B" => DrawerType.B, "C" => DrawerType.C, "D" => DrawerType.D, _ => DrawerType.A };
+            var color = colorName.ToLowerInvariant() switch { "white" => DrawerColor.White, "black" => DrawerColor.Black, _ => DrawerColor.Anthracite };
+            Vector3 pos = GroundPointInFrontOfCamera();
+            pos.y = DrawerConstants.GetTypeHeight(type) * 0.5f * AppConstants.MM_TO_UNITS;
+            pos = GridManager.SnapToGrid(pos);
+
+            // Имя уникально: пара и фасад ящика ищутся по имени.
+            var go = ElementFactory.CreateDrawer(type, length, color, width, DrawerLinks.UniqueName(name), pos);
+            var element = go.GetComponent<KitchenElement>();
+            if (element != null)
+            {
+                CommandStack.Execute(new CreateCommand(go));
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.Select(element);
+            }
+        }
+
         private Vector3 GroundPointInFrontOfCamera()
         {
             var cam = Camera.main;

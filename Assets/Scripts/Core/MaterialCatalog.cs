@@ -53,6 +53,9 @@ namespace KitchenDesigner.Core
             new MaterialDef("oak",     "Дуб сонома",  "ЛДСП", new Color(0.78f, 0.66f, 0.45f), "Textures/oak",     800),
             new MaterialDef("wenge",   "Венге",       "ЛДСП", new Color(0.28f, 0.20f, 0.16f), "Textures/wenge",   800),
             new MaterialDef("concrete","Бетон",       "ЛДСП", new Color(0.62f, 0.62f, 0.60f), "Textures/concrete",1200),
+            new MaterialDef("gtv_anthracite", "Антрацит (GTV)", "Металл", new Color(0.25f, 0.25f, 0.27f), metallic: 0.4f, smoothness: 0.3f),
+            new MaterialDef("gtv_white",      "Белый (GTV)",    "Металл", new Color(0.92f, 0.92f, 0.90f), metallic: 0.3f, smoothness: 0.3f),
+            new MaterialDef("gtv_black",      "Чёрный (GTV)",   "Металл", new Color(0.10f, 0.10f, 0.11f), metallic: 0.3f, smoothness: 0.3f),
         };
 
         // Динамические декоры, подгруженные из внешней папки в рантайме

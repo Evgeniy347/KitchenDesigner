@@ -153,7 +153,9 @@ namespace KitchenDesigner.Core.UI
                 UIManager.Instance.OpenFloorSettings();
                 return;
             }
-            if (item.isAssembled)
+            if (item.isDrawer)
+                UIManager.Instance.SpawnDrawer(item.drawerType, item.drawerLength, item.drawerColor, item.drawerWidth, item.name);
+            else if (item.isAssembled)
                 UIManager.Instance.SpawnAssembledFacade(item.dims, item.name);
             else if (item.isFacade)
                 UIManager.Instance.SpawnFacade(item.dims, item.name, item.gapLeft, item.gapRight, item.gapTop, item.gapBottom);

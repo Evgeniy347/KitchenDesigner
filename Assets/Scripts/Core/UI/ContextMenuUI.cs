@@ -24,6 +24,11 @@ namespace KitchenDesigner.Core.UI
         private Dropdown _fillDropdown; // центр сборного фасада (Глухой/Витрина/Стекло)
         private Dropdown _materialDropdown; // выбор текстуры/декора (детали и фасады)
         private Dropdown _typeDropdown; // конвертация: деталь ⇄ фасад ⇄ сборный фасад
+        private Dropdown _drawerTypeDropdown, _drawerLengthDropdown, _drawerColorDropdown;
+        private Toggle _drawerDoubleToggle, _drawerUpperToggle;
+        private InputField _drawerWidth;
+        private Text _drawerAnimLabel;
+        private Dropdown _drawerFacadeDropdown; // прикреплённый фасад (выбор существующего)
 
         // ── Подсветка изменённых полей ──────────────────────────────────
         private readonly Dictionary<InputField, string> _cleanValues = new();
@@ -41,6 +46,7 @@ namespace KitchenDesigner.Core.UI
             public float height;          // высота полосы
             public float gapAfter;        // отступ под полосой
             public bool facadeOnly;       // показывать только для фасадов (секция зазоров)
+            public bool drawerOnly;       // показывать только для ящиков
             public bool assembledOnly;    // показывать только для сборного фасада
             public bool radialOnly;       // показывать только для радиусной полки
             public GameObject toggleGO;   // объект, который включать/выключать по режиму
@@ -83,7 +89,7 @@ namespace KitchenDesigner.Core.UI
             AddRow(TitleH, TitleGap, _titleLabel.rectTransform);
 
             // Тип детали: конвертация между Part / Facade / AssembledFacade / RadialShelf.
-            var typeOptions = new List<string> { "Деталь", "Фасад", "Сборный фасад", "Радиусная полка" };
+            var typeOptions = new List<string> { "Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV" };
             _typeDropdown = UIFactory.CreateDropdown("CtxType", panel.transform, typeOptions,
                 new Vector2(0, 0), new Vector2(248, 28), OnTypeSelected);
             AddRow(28f, RowGap, _typeDropdown.GetComponent<RectTransform>());
@@ -118,6 +124,60 @@ namespace KitchenDesigner.Core.UI
             _fillDropdown = UIFactory.CreateDropdown("CtxFill", panel.transform, fillOptions,
                 new Vector2(0, 0), new Vector2(248, 28), OnFillSelected);
             AddAssembledRow(28f, ActionGap, _fillDropdown.GetComponent<RectTransform>());
+
+            // Ящик GTV: тип, длина, цвет, ширина, двойной ящик, анимация.
+            var drawerTypeNames = new List<string> { "A (86 мм)", "B (120 мм)", "C (168 мм)", "D (200 мм)" };
+            _drawerTypeDropdown = UIFactory.CreateDropdown("CtxDrawerType", panel.transform, drawerTypeNames,
+                new Vector2(0, 0), new Vector2(248, 28), OnDrawerTypeChanged);
+            AddDrawerRow(28f, ActionGap, _drawerTypeDropdown.GetComponent<RectTransform>());
+
+            var drawerLenNames = new List<string>();
+            foreach (var l in DrawerConstants.ValidLengths) drawerLenNames.Add($"L={l} мм");
+            _drawerLengthDropdown = UIFactory.CreateDropdown("CtxDrawerLen", panel.transform, drawerLenNames,
+                new Vector2(0, 0), new Vector2(248, 28), OnDrawerLengthChanged);
+            AddDrawerRow(28f, ActionGap, _drawerLengthDropdown.GetComponent<RectTransform>());
+
+            var drawerColorNames = new List<string> { "Антрацит", "Белый", "Чёрный" };
+            _drawerColorDropdown = UIFactory.CreateDropdown("CtxDrawerColor", panel.transform, drawerColorNames,
+                new Vector2(0, 0), new Vector2(248, 28), OnDrawerColorChanged);
+            AddDrawerRow(28f, ActionGap, _drawerColorDropdown.GetComponent<RectTransform>());
+
+            _drawerWidth = Row(panel.transform, "Ширина короба, мм");
+            AddDrawerRow(RowH, RowGap, _drawerWidth.GetComponent<RectTransform>());
+
+            _drawerDoubleToggle = UIFactory.CreateToggle("CtxDrawerDouble", panel.transform, "Двойной ящик", false,
+                new Vector2(0, 0), new Vector2(248, 28), v => { if (_target is DrawerElement d) d.IsDouble = v; });
+            AddDrawerRow(28f, ActionGap, _drawerDoubleToggle.GetComponent<RectTransform>());
+
+            _drawerUpperToggle = UIFactory.CreateToggle("CtxDrawerUpper", panel.transform, "Верхний ящик", false,
+                new Vector2(0, 0), new Vector2(248, 28), v => { if (_target is DrawerElement d) d.IsUpperDrawer = v; });
+            AddDrawerRow(28f, ActionGap, _drawerUpperToggle.GetComponent<RectTransform>());
+
+            var drawerPairBtn = UIFactory.CreateButton("CtxDrawerPair", panel.transform, "Создать парный ящик",
+                new Vector2(0, 0), new Vector2(248, BtnH), CreatePairedDrawer);
+            AddDrawerRow(BtnH, ActionGap, drawerPairBtn.GetComponent<RectTransform>());
+
+            var drawerAnimBtn = UIFactory.CreateButton("CtxDrawerAnim", panel.transform, "Открыть",
+                new Vector2(0, 0), new Vector2(248, BtnH), CycleDrawerAnimation);
+            _drawerAnimLabel = drawerAnimBtn.GetComponentInChildren<Text>();
+            AddDrawerRow(BtnH, ActionGap, drawerAnimBtn.GetComponent<RectTransform>());
+
+            // Фасад ящика: выпадающий список существующих фасадов + кнопки создать/настроить.
+            var drawerFacadeLbl = UIFactory.CreateLabel("CtxDrawerFacadeLbl", panel.transform, "Фасад ящика:", 15,
+                Vector2.zero, new Vector2(260, RotLblH), TextAnchor.MiddleCenter);
+            AddDrawerRow(RotLblH, RotLblGap, drawerFacadeLbl.rectTransform);
+
+            _drawerFacadeDropdown = UIFactory.CreateDropdown("CtxDrawerFacade", panel.transform,
+                new List<string> { "(нет фасада)" },
+                new Vector2(0, 0), new Vector2(248, 28), OnDrawerFacadeSelected);
+            AddDrawerRow(28f, ActionGap, _drawerFacadeDropdown.GetComponent<RectTransform>());
+
+            var drawerCreateFacadeBtn = UIFactory.CreateButton("CtxDrawerCreateFacade", panel.transform, "Создать фасад",
+                new Vector2(-65, 0), new Vector2(120, BtnH), CreateFacadeForDrawer);
+            var drawerCfgFacadeBtn = UIFactory.CreateButton("CtxDrawerCfgFacade", panel.transform, "Настроить фасад",
+                new Vector2(65, 0), new Vector2(120, BtnH), ConfigureAttachedFacade);
+            AddDrawerRow(BtnH, ActionGap, drawerCreateFacadeBtn.GetComponent<RectTransform>(),
+                drawerCfgFacadeBtn.GetComponent<RectTransform>());
 
             // Текстура/декор (детали И фасады) — всегда видимая строка.
             var matLbl = UIFactory.CreateLabel("CtxMatLbl", panel.transform, "Текстура:", 15,
@@ -194,7 +254,7 @@ namespace KitchenDesigner.Core.UI
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
             closeBtn.transform.SetAsLastSibling();
 
-            Layout(isFacade: false, isAssembled: false, isRadial: false); // стартовая раскладка (как обычная деталь)
+            Layout(isFacade: false, isAssembled: false, isRadial: false, isDrawer: false); // стартовая раскладка (как обычная деталь)
             _root.SetActive(false);
 
             if (SelectionManager.Instance != null)
@@ -333,6 +393,13 @@ namespace KitchenDesigner.Core.UI
             _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, assembledOnly = true });
         }
 
+        private void AddDrawerRow(float height, float gapAfter, params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, drawerOnly = true });
+        }
+
         // Якорим к верхней кромке панели, pivot тоже сверху — тогда
         // anchoredPosition.y = отступ верхней кромки элемента от верха панели
         // (со знаком минус). Это домовая конвенция панелей проекта.
@@ -343,7 +410,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Раскладка сверху вниз ───────────────────────────────────────
 
-        private void Layout(bool isFacade, bool isAssembled, bool isRadial)
+        private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer)
         {
             float cursor = TopPad;
             float contentBottom = TopPad;
@@ -351,13 +418,12 @@ namespace KitchenDesigner.Core.UI
             {
                 bool visible = (!row.facadeOnly || isFacade)
                     && (!row.assembledOnly || isAssembled)
-                    && (!row.radialOnly || isRadial);
+                    && (!row.radialOnly || isRadial)
+                    && (!row.drawerOnly || isDrawer);
 
-                // Скрытие фасад-строк в режиме «деталь»: через контейнер (toggleGO)
-                // либо, если контейнера нет, включая/выключая сами элементы строки.
                 if (row.toggleGO != null)
                     row.toggleGO.SetActive(visible);
-                else if (row.facadeOnly || row.assembledOnly || row.radialOnly)
+                else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly)
                     foreach (var rt in row.rects)
                         if (rt != null) rt.gameObject.SetActive(visible);
 
@@ -389,7 +455,7 @@ namespace KitchenDesigner.Core.UI
 
         private bool IsAnyFieldFocused()
         {
-            foreach (var f in new[] { _name, _w, _h, _d, _radius, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z, _rx, _ry, _rz })
+            foreach (var f in new[] { _name, _w, _h, _d, _radius, _drawerWidth, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z, _rx, _ry, _rz })
                 if (f != null && f.isFocused) return true;
             return false;
         }
@@ -452,8 +518,9 @@ namespace KitchenDesigner.Core.UI
 
             bool isFacade = element is FacadeElement;
             bool isRadial = element is RadialShelfElement;
+            bool isDrawer = element is DrawerElement;
             if (_titleLabel != null)
-                _titleLabel.text = isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь");
+                _titleLabel.text = isDrawer ? "Ящик GTV" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
 
             if (_typeDropdown != null)
             {
@@ -484,6 +551,26 @@ namespace KitchenDesigner.Core.UI
             if (assembled != null && _fillDropdown != null)
                 _fillDropdown.SetValueWithoutNotify(FillToIndex(assembled.Fill));
 
+            var drawer = element as DrawerElement;
+            if (drawer != null)
+            {
+                if (_drawerTypeDropdown != null)
+                    _drawerTypeDropdown.SetValueWithoutNotify((int)drawer.Type);
+                if (_drawerLengthDropdown != null)
+                    _drawerLengthDropdown.SetValueWithoutNotify(System.Array.IndexOf(DrawerConstants.ValidLengths, drawer.NominalLength));
+                if (_drawerColorDropdown != null)
+                    _drawerColorDropdown.SetValueWithoutNotify((int)drawer.Color);
+                if (_drawerWidth != null)
+                    _drawerWidth.text = drawer.InternalWidth.ToString();
+                if (_drawerDoubleToggle != null)
+                    _drawerDoubleToggle.SetIsOnWithoutNotify(drawer.IsDouble);
+                if (_drawerUpperToggle != null)
+                    _drawerUpperToggle.SetIsOnWithoutNotify(drawer.IsUpperDrawer);
+                UpdateDrawerAnimButton(drawer);
+                RebuildDrawerFacadeOptions();
+                SetDrawerFacadeValue(drawer.AttachedFacadeName);
+            }
+
             if (_materialDropdown != null)
             {
                 // Пересобираем список каждый раз — так подгруженные в рантайме
@@ -495,7 +582,7 @@ namespace KitchenDesigner.Core.UI
 
             // Пересчитываем раскладку под режим: секция зазоров показывается
             // только для фасадов, радиус — только для радиусной полки, панель сама подгоняется по высоте.
-            Layout(isFacade, assembled != null, isRadial);
+            Layout(isFacade, assembled != null, isRadial, isDrawer);
 
             RefreshTransformFields();
             _transparentToggle.SetIsOnWithoutNotify(element.Transparent);
@@ -518,17 +605,25 @@ namespace KitchenDesigner.Core.UI
             if (_target == null) return;
             // Правки размеров/позиции применяем к закрытой (логической) позе.
             if (_target is FacadeElement fac) { fac.ForceClose(); UpdateDoorButton(fac); }
+            if (_target is DrawerElement dr) { dr.ForceClose(); UpdateDrawerAnimButton(dr); }
 
             var oldDims = _target.DimensionsMM;
             var oldPos = _target.transform.position;
             var oldRot = _target.transform.rotation;
 
-            _target.PartName = string.IsNullOrWhiteSpace(_name.text) ? "Board" : _name.text;
+            // Через DrawerLinks: переименование обновляет обратные ссылки
+            // (PairedDrawerName пары, AttachedFacadeName ящиков с этим фасадом).
+            DrawerLinks.Rename(_target, string.IsNullOrWhiteSpace(_name.text) ? "Board" : _name.text);
 
             var radial = _target as RadialShelfElement;
+            var drawer = _target as DrawerElement;
             if (radial != null)
             {
                 radial.Radius = ParseInt(_radius.text, radial.Radius);
+            }
+            else if (drawer != null)
+            {
+                if (_drawerWidth != null) drawer.InternalWidth = ParseInt(_drawerWidth.text, drawer.InternalWidth);
             }
             else
             {
@@ -695,6 +790,137 @@ namespace KitchenDesigner.Core.UI
             RefreshHighlights();
         }
 
+        private void OnDrawerTypeChanged(int index)
+        {
+            if (_target is DrawerElement d && index >= 0 && index <= 3)
+                d.Type = (DrawerType)index;
+        }
+
+        private void OnDrawerLengthChanged(int index)
+        {
+            if (_target is DrawerElement d && index >= 0 && index < DrawerConstants.ValidLengths.Length)
+                d.NominalLength = DrawerConstants.ValidLengths[index];
+        }
+
+        private void OnDrawerColorChanged(int index)
+        {
+            if (_target is DrawerElement d && index >= 0 && index <= 2)
+                d.Color = (DrawerColor)index;
+        }
+
+        private void CycleDrawerAnimation()
+        {
+            if (_target is DrawerElement d)
+            {
+                if (d.IsDouble) d.CycleDoubleState();
+                else d.ToggleOpen();
+                UpdateDrawerAnimButton(d);
+            }
+        }
+
+        // Второй короб того же типа вплотную сверху/снизу, связи в обе стороны
+        // (DrawerLinks.CreatePair). Повторное нажатие при живой паре — no-op.
+        private void CreatePairedDrawer()
+        {
+            if (!(_target is DrawerElement d)) return;
+            var pair = DrawerLinks.CreatePair(d);
+            if (pair == null) return;
+            CommandStack.Execute(new CreateCommand(pair.gameObject));
+            RefreshHighlights();
+            Open(d); // обновить тумблеры «двойной/верхний» и подпись кнопки анимации
+        }
+
+        private void UpdateDrawerAnimButton(DrawerElement d)
+        {
+            if (_drawerAnimLabel == null || d == null) return;
+            if (d.IsDouble)
+                _drawerAnimLabel.text = DrawerConstants.GetCycleButtonLabel(d.DoubleState);
+            else
+                _drawerAnimLabel.text = d.IsOpen ? "Закрыть ящик" : "Открыть ящик";
+        }
+
+        // ── Фасад ящика ───────────────────────────────────────────────
+        // Фасад — отдельный элемент: его можно выбрать из существующих, создать
+        // (фронт ящика, линейное открывание) или перейти к его настройке.
+
+        private void RebuildDrawerFacadeOptions()
+        {
+            if (_drawerFacadeDropdown == null) return;
+            var opts = new List<Dropdown.OptionData> { new Dropdown.OptionData("(нет фасада)") };
+            foreach (var el in PartRegistry.GetAll())
+                if (el is FacadeElement fe && !string.IsNullOrEmpty(fe.PartName))
+                    opts.Add(new Dropdown.OptionData(fe.PartName));
+            _drawerFacadeDropdown.options = opts;
+        }
+
+        private int DrawerFacadeIndex(string name)
+        {
+            if (string.IsNullOrEmpty(name) || _drawerFacadeDropdown == null) return 0;
+            var opts = _drawerFacadeDropdown.options;
+            for (int i = 1; i < opts.Count; i++)
+                if (opts[i].text == name) return i;
+            return 0;
+        }
+
+        private void SetDrawerFacadeValue(string name)
+        {
+            if (_drawerFacadeDropdown == null) return;
+            _drawerFacadeDropdown.SetValueWithoutNotify(DrawerFacadeIndex(name));
+            _drawerFacadeDropdown.RefreshShownValue();
+        }
+
+        private void OnDrawerFacadeSelected(int index)
+        {
+            if (!(_target is DrawerElement d)) return;
+            if (index <= 0 || _drawerFacadeDropdown == null) { d.AttachedFacadeName = ""; return; }
+            d.AttachedFacadeName = _drawerFacadeDropdown.options[index].text;
+        }
+
+        // Размер/позиция фасада = фронт ящика (+Z), линейное открывание (как у ящика).
+        private void CreateFacadeForDrawer()
+        {
+            if (!(_target is DrawerElement d)) return;
+            int width = d.InternalWidth;
+            int height = DrawerConstants.GetTypeHeight(d.Type);
+            const int thickness = 18;
+            const int gapMm = 2;
+            const int sideGap = 2;
+
+            var closedPos = d.ClosedPosition;
+            var rot = d.ClosedRotation;
+            float drawerHalfDepth = d.NominalLength * 0.5f * AppConstants.MM_TO_UNITS;
+            float facadeHalfDepth = thickness * 0.5f * AppConstants.MM_TO_UNITS;
+            float gap = gapMm * AppConstants.MM_TO_UNITS;
+            Vector3 front = rot * Vector3.forward;
+            Vector3 pos = closedPos + front * (drawerHalfDepth + facadeHalfDepth + gap);
+            pos = GridManager.SnapToGrid(pos);
+
+            var dims = new Vector3Int(width, height, thickness);
+            // Имя уникально: привязка идёт по имени, дубликат сломал бы поиск.
+            var facadeName = DrawerLinks.UniqueName(
+                !string.IsNullOrEmpty(d.PartName) ? d.PartName + "_Фасад" : "Фасад ящика");
+            var go = ElementFactory.CreateFacade(dims, facadeName, pos, sideGap, sideGap, sideGap, sideGap);
+            if (go == null) return;
+            var fe = go.GetComponent<FacadeElement>();
+            if (fe != null) fe.Mode = DoorMode.DrawerOut;
+
+            CommandStack.Execute(new CreateCommand(go));
+            d.AttachedFacadeName = facadeName;
+            RebuildDrawerFacadeOptions();
+            SetDrawerFacadeValue(facadeName);
+            RefreshHighlights();
+
+            // Переключаем меню на свежесозданный фасад — юзер сразу настраивает зазоры/материал.
+            if (fe != null) Open(fe);
+        }
+
+        private void ConfigureAttachedFacade()
+        {
+            if (!(_target is DrawerElement d) || string.IsNullOrEmpty(d.AttachedFacadeName)) return;
+            foreach (var el in PartRegistry.GetAll())
+                if (el is FacadeElement fe && fe.PartName == d.AttachedFacadeName) { Open(fe); return; }
+        }
+
         private void UpdateDoorButton(FacadeElement facade)
         {
             if (_doorButtonLabel != null)
@@ -803,6 +1029,8 @@ namespace KitchenDesigner.Core.UI
             TrackField(_gapRight, facade != null ? facade.GapRight.ToString() : "0");
             TrackField(_gapTop, facade != null ? facade.GapTop.ToString() : "0");
             TrackField(_gapBottom, facade != null ? facade.GapBottom.ToString() : "0");
+            var drawerEl2 = _target as DrawerElement;
+            TrackField(_drawerWidth, drawerEl2 != null ? drawerEl2.InternalWidth.ToString() : "400");
             var pos = _target.transform.position;
             TrackField(_x, pos.x.ToString("F3"));
             TrackField(_y, pos.y.ToString("F3"));

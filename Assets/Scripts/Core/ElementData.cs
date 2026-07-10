@@ -26,6 +26,16 @@ namespace KitchenDesigner.Core
         public int assembledFill = 0;
         public int grooveCount = AppConstants.ASSEMBLED_DEFAULT_GROOVES;
         public int radius = 300;
+        public bool isDrawer = false;
+        public int drawerType = 0;
+        public int drawerNominalLength = 350;
+        public int drawerColor = 0;
+        public int drawerInternalWidth = 400;
+        public bool drawerIsDouble = false;
+        public bool drawerIsUpper = false;
+        public string drawerPairedName = "";
+        public string drawerAttachedFacadeName = "";
+        public int doubleDrawerState = 0;
 
         public ElementData() { }
 
@@ -35,6 +45,7 @@ namespace KitchenDesigner.Core
             var dims = element.DimensionsMM;
             d.dimensionsMM = new[] { dims.x, dims.y, dims.z };
 
+            var drawer = element as DrawerElement;
             var wall = element.GetComponent<Wall>();
             var facade = element as FacadeElement;
             var radialShelf = element as RadialShelfElement;
@@ -46,10 +57,11 @@ namespace KitchenDesigner.Core
             //    после загрузки она отводится ещё раз и «уезжает».
             var p = wall != null ? wall.FullPosition
                   : facade != null ? facade.ClosedPosition
+                  : drawer != null ? drawer.ClosedPosition
                   : element.transform.position;
             d.position = new[] { p.x, p.y, p.z };
 
-            var r = facade != null ? facade.ClosedRotation : element.transform.rotation;
+            var r = facade != null ? facade.ClosedRotation : drawer != null ? drawer.ClosedRotation : element.transform.rotation;
             d.rotation = new[] { r.x, r.y, r.z, r.w };
 
             d.movable = element.Movable;
@@ -94,6 +106,24 @@ namespace KitchenDesigner.Core
                 d.assembledFill = 0;
                 d.grooveCount = 0;
             }
+
+            if (drawer != null)
+            {
+                d.isDrawer = true;
+                d.drawerType = (int)drawer.Type;
+                d.drawerNominalLength = drawer.NominalLength;
+                d.drawerColor = (int)drawer.Color;
+                d.drawerInternalWidth = drawer.InternalWidth;
+                d.drawerIsDouble = drawer.IsDouble;
+                d.drawerIsUpper = drawer.IsUpperDrawer;
+                d.drawerPairedName = drawer.PairedDrawerName ?? "";
+                d.drawerAttachedFacadeName = drawer.AttachedFacadeName ?? "";
+                d.doubleDrawerState = (int)drawer.DoubleState;
+                // Одиночный ящик хранит открытость в doorOpen (как фасад);
+                // у двойного состояние целиком описывает doubleDrawerState.
+                d.doorOpen = drawer.IsOpen;
+            }
+
             d.groupId = element.GroupId;
             d.materialId = element.MaterialId;
             d.transparent = element.Transparent;

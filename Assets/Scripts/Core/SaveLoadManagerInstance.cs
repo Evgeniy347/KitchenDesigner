@@ -173,17 +173,20 @@ namespace KitchenDesigner.Core
             foreach (var ed in data.elements)
             {
                 if (ed == null) { resolved.Add(null); continue; }
-                var go = ed.isWall
-                    ? ElementFactory.Instance.CreateWall(ed.Dimensions, ed.name, ed.Position)
-                    : ed.isRadialShelf
-                        ? ElementFactory.Instance.CreateRadialShelf(ed.radius, ed.Dimensions.y, ed.name, ed.Position)
-                        : ed.assembled
-                            ? ElementFactory.Instance.CreateAssembledFacade(ed.Dimensions, ed.name,
-                                ed.Position, (AssembledFill)ed.assembledFill)
-                            : ed.isFacade
-                                ? ElementFactory.Instance.CreateFacade(ed.Dimensions, ed.name, ed.Position,
-                                    ed.gapLeft, ed.gapRight, ed.gapTop, ed.gapBottom)
-                                : ElementFactory.Instance.CreatePart(ed.Dimensions, ed.name, ed.Position);
+                var go = ed.isDrawer
+                    ? ElementFactory.Instance.CreateDrawer((DrawerType)ed.drawerType, ed.drawerNominalLength,
+                        (DrawerColor)ed.drawerColor, ed.drawerInternalWidth, ed.name, ed.Position)
+                    : ed.isWall
+                        ? ElementFactory.Instance.CreateWall(ed.Dimensions, ed.name, ed.Position)
+                        : ed.isRadialShelf
+                            ? ElementFactory.Instance.CreateRadialShelf(ed.radius, ed.Dimensions.y, ed.name, ed.Position)
+                            : ed.assembled
+                                ? ElementFactory.Instance.CreateAssembledFacade(ed.Dimensions, ed.name,
+                                    ed.Position, (AssembledFill)ed.assembledFill)
+                                : ed.isFacade
+                                    ? ElementFactory.Instance.CreateFacade(ed.Dimensions, ed.name, ed.Position,
+                                        ed.gapLeft, ed.gapRight, ed.gapTop, ed.gapBottom)
+                                    : ElementFactory.Instance.CreatePart(ed.Dimensions, ed.name, ed.Position);
                 go.transform.rotation = ed.Rotation;
                 var el = go.GetComponent<KitchenElement>();
                 if (el != null)
@@ -201,6 +204,18 @@ namespace KitchenDesigner.Core
                         facade.Mode = (DoorMode)ed.doorMode;
                         if (ed.doorOpen)
                             facade.SetOpen(true);
+                    }
+
+                    if (ed.isDrawer && el is DrawerElement drawerEl)
+                    {
+                        drawerEl.IsDouble = ed.drawerIsDouble;
+                        drawerEl.IsUpperDrawer = ed.drawerIsUpper;
+                        drawerEl.PairedDrawerName = ed.drawerPairedName;
+                        drawerEl.AttachedFacadeName = ed.drawerAttachedFacadeName;
+                        drawerEl.DoubleState = (DoubleDrawerState)ed.doubleDrawerState;
+                        // Одиночный ящик открыт по doorOpen (DoubleState его не описывает).
+                        if (ed.doorOpen && !drawerEl.IsOpen)
+                            drawerEl.SetOpen(true);
                     }
                 }
                 created.Add(go);

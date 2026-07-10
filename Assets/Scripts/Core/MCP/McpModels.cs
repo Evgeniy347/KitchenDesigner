@@ -147,6 +147,11 @@ namespace KitchenDesigner.Core.MCP
         public bool is_facade;
         public bool is_assembled;   // сборный (рамочный) фасад
         public bool is_radial_shelf; // радиусная (угловая) полка
+        public bool is_drawer;       // выдвижной ящик GTV
+        public string drawer_type;   // "A" | "B" | "C" | "D"
+        public int drawer_length = 350;  // 250-600
+        public string drawer_color;  // "Anthracite" | "White" | "Black"
+        public int drawer_internal_width = 400;
         public string fill;         // сборный: blind | glass | open (по умолчанию blind)
         public int gapLeft = 2;
         public int gapRight = 2;
@@ -276,6 +281,7 @@ namespace KitchenDesigner.Core.MCP
         public bool faceInward; // true, если фасад развёрнут лицом внутрь модуля
         public List<FaceObstructionInfo> faceObstructions; // детали вплотную перед лицевой гранью
         public List<OpeningViolationInfo> openingViolations; // детали, пересекающие траекторию открывания
+        public DrawerInfo drawer; // свойства ящика, только для DrawerElement
     }
 
     [Serializable]
@@ -444,5 +450,34 @@ namespace KitchenDesigner.Core.MCP
         public List<string> overlapsWith;
         public List<AxisGapInfo> faceGaps;
         public bool wouldHaveViolations;
+    }
+
+    [Serializable]
+    public class DrawerInfo
+    {
+        public string drawerType;
+        public int drawerLength;
+        public string drawerColor;
+        public int internalWidth;
+        public bool isDouble;
+        public bool isUpper;
+        public string pairedDrawerName;
+        public string attachedFacadeName;
+        public string doubleState;
+        public bool isOpen;
+    }
+
+    [Serializable]
+    public class ParamsSetDrawerProperties
+    {
+        public string name;
+        public string drawer_type;
+        public int? drawer_length;
+        public string drawer_color;
+        public int? internal_width;
+        public bool? is_double;
+        public bool? is_upper;
+        public string paired_drawer_name;
+        public string attached_facade_name;
     }
 }

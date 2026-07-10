@@ -42,6 +42,24 @@ namespace KitchenDesigner.Core
                     if (a == null || b == null) continue;
                     if (SnapSystem.ElementsIntersect(a, b))
                     {
+                        bool aDrawer = a is DrawerElement;
+                        bool bDrawer = b is DrawerElement;
+
+                        if (aDrawer && bDrawer)
+                        {
+                            // Парная двойная ящика намеренно делят пространство.
+                            var da = (DrawerElement)a; var db = (DrawerElement)b;
+                            if (!string.IsNullOrEmpty(da.PairedDrawerName) && da.PairedDrawerName == db.PartName) continue;
+                            if (!string.IsNullOrEmpty(db.PairedDrawerName) && db.PairedDrawerName == da.PartName) continue;
+                        }
+                        else if (aDrawer != bDrawer)
+                        {
+                            // Ящик живёт ВНУТРИ корпуса — пересечение с панелями своего же
+                            // модуля (GroupId) штатно (дно/задняя стенка/боковины). Не нарушение.
+                            // Два разных ящика в одном модуле сюда не попадают (см. ветку выше).
+                            if (a.GroupId != 0 && a.GroupId == b.GroupId) continue;
+                        }
+
                         // Пересечение объёмов физически недопустимо: две детали не могут
                         // занимать одно место. Помечаем обе как нарушение (даже если по
                         // связности они валидны) — это и есть «красный» при перетаскивании.
@@ -207,6 +225,8 @@ namespace KitchenDesigner.Core
                 // FacadeElement с gapMM > 0 плавает в проёме с зазором —
                 // он не касается соседей face-to-face, это штатное поведение.
                 if (e is FacadeElement fe && fe.GapMM > 0) continue;
+                // DrawerElements are internal cabinet components, not structural anchors.
+                if (e is DrawerElement) continue;
                 if (!visited.Contains(e) || !hasContact.Contains(e))
                     result.violations.Add(e);
             }
