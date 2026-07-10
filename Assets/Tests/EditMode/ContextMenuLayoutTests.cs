@@ -114,8 +114,8 @@ public class ContextMenuLayoutTests
         Assert.GreaterOrEqual(gapSectionBottom, xTop,
             "gap section bottom must be above the first position row");
 
-        foreach (var childName in new[] { "Gap_Ширина X, мм", "F_gap_Ширина X, мм",
-                                          "Gap_Высота Y, мм", "F_gap_Высота Y, мм" })
+        foreach (var childName in new[] { "Gap_Ширина X, мм", "F_gapLeft", "F_gapRight",
+                                          "Gap_Высота Y, мм", "F_gapTop", "F_gapBottom" })
         {
             var child = gapSection.Find(childName);
             Assert.NotNull(child, $"missing {childName}");
@@ -210,8 +210,8 @@ public class ContextMenuLayoutTests
         // Дети с верхним pivot, заякорены к верху секции: верх = anchoredPosition.y
         // (0 — верхняя кромка секции), низ = верх − высота, дно секции = −sectionH.
         float sectionH = gapRt.sizeDelta.y;
-        foreach (var childName in new[] { "CtxGapHdr", "Gap_Ширина X, мм", "F_gap_Ширина X, мм",
-                                          "Gap_Высота Y, мм", "F_gap_Высота Y, мм" })
+        foreach (var childName in new[] { "CtxGapHdr", "Gap_Ширина X, мм", "F_gapLeft", "F_gapRight",
+                                          "Gap_Высота Y, мм", "F_gapTop", "F_gapBottom" })
         {
             var child = gapSection.Find(childName).GetComponent<RectTransform>();
             float top = child.anchoredPosition.y;
