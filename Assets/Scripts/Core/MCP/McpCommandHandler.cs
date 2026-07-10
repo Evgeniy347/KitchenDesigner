@@ -289,10 +289,23 @@ namespace KitchenDesigner.Core.MCP
         /// чтобы через MCP была видна конфигурация сцены.</summary>
         private static ElementInfo BuildElementInfo(KitchenElement el)
         {
+            return BuildElementInfo(el, null);
+        }
+
+        private static ElementInfo BuildElementInfo(KitchenElement el, List<KitchenElement> allElements)
+        {
             var t = el.transform;
             var group = GroupManager.GroupOf(el);
             var wall = el.GetComponent<Wall>();
             Vector3 pos = wall != null ? wall.FullPosition : t.position;
+
+            bool hasViolations = false;
+            if (allElements != null && allElements.Count > 0)
+            {
+                var vr = ConstraintValidator.Validate(allElements);
+                hasViolations = vr.violations.Contains(el);
+            }
+
             return new ElementInfo
             {
                 name = el.BoardName, type = el.GetType().Name,
@@ -301,7 +314,8 @@ namespace KitchenDesigner.Core.MCP
                 rotX = t.eulerAngles.x, rotY = t.eulerAngles.y, rotZ = t.eulerAngles.z,
                 active = el.gameObject.activeInHierarchy,
                 moduleId = group != null ? group.id : 0,
-                moduleName = group != null ? group.name : null
+                moduleName = group != null ? group.name : null,
+                hasViolations = hasViolations
             };
         }
 
@@ -312,7 +326,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var el in elements)
             {
                 if (el == null) continue;
-                list.Add(BuildElementInfo(el));
+                list.Add(BuildElementInfo(el, elements));
             }
             return McpResponse.Result(req.id, list);
         }
@@ -324,7 +338,7 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            return McpResponse.Result(req.id, BuildElementInfo(element));
+            return McpResponse.Result(req.id, BuildElementInfo(element, BoardRegistry.GetAll()));
         }
 
         // ── Модули (именованные группы досок) ───────────────────────────
@@ -345,6 +359,11 @@ namespace KitchenDesigner.Core.MCP
 
         private static ModuleInfo BuildModuleInfo(LinkGroup g)
         {
+            return BuildModuleInfo(g, null);
+        }
+
+        private static ModuleInfo BuildModuleInfo(LinkGroup g, List<KitchenElement> allElements)
+        {
             var members = GroupManager.MembersOf(g);
             var info = new ModuleInfo
             {
@@ -360,7 +379,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var el in members)
             {
                 if (el == null) continue;
-                info.elements.Add(BuildElementInfo(el));
+                info.elements.Add(BuildElementInfo(el, allElements));
                 foreach (var v in el.GetVertices())
                 {
                     min = Vector3.Min(min, v);
@@ -380,9 +399,10 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetModules(McpRequest req)
         {
+            var allElements = BoardRegistry.GetAll();
             var list = new List<ModuleInfo>();
             foreach (var g in GroupManager.AllGroups())
-                list.Add(BuildModuleInfo(g));
+                list.Add(BuildModuleInfo(g, allElements));
             return McpResponse.Result(req.id, list);
         }
 
@@ -393,7 +413,7 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "module (id или имя) required");
             var g = FindModule(p.module);
             if (g == null) return McpResponse.Error(req.id, -1, $"Module not found: {p.module}");
-            return McpResponse.Result(req.id, BuildModuleInfo(g));
+            return McpResponse.Result(req.id, BuildModuleInfo(g, BoardRegistry.GetAll()));
         }
 
         private McpResponse HandleCreateModule(McpRequest req)
@@ -418,7 +438,7 @@ namespace KitchenDesigner.Core.MCP
             if (!string.IsNullOrEmpty(p.name)) g.name = p.name;
 
             Debug.Log($"[MCP] Module '{g.name}' (id {g.id}) created from {resolved.Count} elements");
-            return McpResponse.Result(req.id, BuildModuleInfo(g));
+            return McpResponse.Result(req.id, BuildModuleInfo(g, BoardRegistry.GetAll()));
         }
 
         private McpResponse HandleDissolveModule(McpRequest req)
@@ -444,7 +464,7 @@ namespace KitchenDesigner.Core.MCP
             if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
 
             el.GroupId = g.id;
-            return McpResponse.Result(req.id, BuildModuleInfo(g));
+            return McpResponse.Result(req.id, BuildModuleInfo(g, BoardRegistry.GetAll()));
         }
 
         private McpResponse HandleRemoveFromModule(McpRequest req)
@@ -460,7 +480,7 @@ namespace KitchenDesigner.Core.MCP
             var g = GroupManager.GroupOf(el);
             el.GroupId = 0;
             return McpResponse.Result(req.id, g != null
-                ? (object)BuildModuleInfo(g)
+                ? (object)BuildModuleInfo(g, BoardRegistry.GetAll())
                 : new { ok = true });
         }
 
@@ -497,7 +517,9 @@ namespace KitchenDesigner.Core.MCP
             var after = new Vector3(p.x, p.y, p.z);
             CommandStack.Execute(new MoveCommand(element, before, after, rotBefore, element.transform.rotation));
             Debug.Log($"[MCP] Moved {element.BoardName} to ({p.x}, {p.y}, {p.z})");
-            return McpResponse.Result(req.id, new { ok = true, element = p.name, position = new { p.x, p.y, p.z } });
+            var all = BoardRegistry.GetAll();
+            var vr = all != null ? ConstraintValidator.Validate(all) : null;
+            return McpResponse.Result(req.id, new { ok = true, element = p.name, position = new { p.x, p.y, p.z }, hasViolations = vr != null && vr.violations.Contains(element) });
         }
 
         private McpResponse HandleResizeElement(McpRequest req)
@@ -523,7 +545,9 @@ namespace KitchenDesigner.Core.MCP
             CommandStack.Execute(new ResizeCommand(element, dimsBefore, dimsAfter,
                 posBefore, posBefore, rotBefore, rotBefore));
             Debug.Log($"[MCP] Resized {element.BoardName} to ({w}, {h}, {d})mm");
-            return McpResponse.Result(req.id, new { ok = true, element = p.name, dimensions = new { width = w, height = h, depth = d } });
+            var all = BoardRegistry.GetAll();
+            var vr = all != null ? ConstraintValidator.Validate(all) : null;
+            return McpResponse.Result(req.id, new { ok = true, element = p.name, dimensions = new { width = w, height = h, depth = d }, hasViolations = vr != null && vr.violations.Contains(element) });
         }
 
         private McpResponse HandleRotateElement(McpRequest req)
@@ -539,7 +563,9 @@ namespace KitchenDesigner.Core.MCP
             var rotAfter = Quaternion.Euler(p.x, p.y, p.z);
             CommandStack.Execute(new MoveCommand(element, before, before, rotBefore, rotAfter));
             Debug.Log($"[MCP] Rotated {element.BoardName} to ({p.x}, {p.y}, {p.z})");
-            return McpResponse.Result(req.id, new { ok = true, element = p.name, rotation = new { p.x, p.y, p.z } });
+            var all = BoardRegistry.GetAll();
+            var vr = all != null ? ConstraintValidator.Validate(all) : null;
+            return McpResponse.Result(req.id, new { ok = true, element = p.name, rotation = new { p.x, p.y, p.z }, hasViolations = vr != null && vr.violations.Contains(element) });
         }
 
         private McpResponse HandleCreateElement(McpRequest req)
@@ -570,6 +596,7 @@ namespace KitchenDesigner.Core.MCP
             var element = go.AddComponent<KitchenElement>();
             element.BoardName = elementName;
             element.DimensionsMM = dims;
+            MaterialManager.ApplyById(element, MaterialCatalog.DefaultId);
 
             if (p.is_wall)
                 go.AddComponent<Wall>();
@@ -577,7 +604,9 @@ namespace KitchenDesigner.Core.MCP
             go.transform.position = pos;
             CommandStack.Execute(new CreateCommand(go));
             Debug.Log($"[MCP] Created {go.name} at ({p.x}, {p.y}, {p.z})");
-            return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, path = GetGameObjectPath(go), posX = pos.x, posY = pos.y, posZ = pos.z });
+            var allElements = BoardRegistry.GetAll();
+            var vr = allElements != null ? ConstraintValidator.Validate(allElements) : null;
+            return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, path = GetGameObjectPath(go), posX = pos.x, posY = pos.y, posZ = pos.z, hasViolations = vr != null && vr.violations.Contains(element) });
         }
 
         private McpResponse HandleDeleteElement(McpRequest req)
@@ -768,11 +797,14 @@ namespace KitchenDesigner.Core.MCP
             var el = plate.Element;
             var dims = el.DimensionsMM;
             var pos = el.transform.position;
+            var all = BoardRegistry.GetAll();
+            var vr = all != null ? ConstraintValidator.Validate(all) : null;
             return McpResponse.Result(req.id, new
             {
                 name = el.BoardName,
                 dimX = dims.x, dimY = dims.y, dimZ = dims.z,
-                posX = pos.x, posY = pos.y, posZ = pos.z
+                posX = pos.x, posY = pos.y, posZ = pos.z,
+                hasViolations = vr != null && vr.violations.Contains(el)
             });
         }
 

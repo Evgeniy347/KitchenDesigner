@@ -186,6 +186,7 @@ namespace KitchenDesigner.Core.MCP
         public bool active;
         public int moduleId;      // 0 — не в модуле
         public string moduleName; // null — не в модуле
+        public bool hasViolations; // true — элемент нарушает ограничения (пересечение/нет связи)
     }
 
     /// <summary>Конфигурация модуля: имя, состав, габариты. Через MCP видно,

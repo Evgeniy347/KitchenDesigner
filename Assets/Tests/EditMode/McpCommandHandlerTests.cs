@@ -201,4 +201,118 @@ public class McpCommandHandlerTests
         var result = ConstraintValidator.Validate(new List<KitchenElement> { wall });
         Assert.IsFalse(result.violations.Exists(e => e.GetComponent<Wall>() != null));
     }
+
+    private static T GetProp<T>(object obj, string name)
+    {
+        var p = obj.GetType().GetProperty(name);
+        Assert.NotNull(p, $"Property '{name}' not found on {obj.GetType()}");
+        return (T)p.GetValue(obj, null);
+    }
+
+    // ── hasViolations ────────────────────────────────────────────────────
+
+    /// <summary>Создаёт стену (якорь графа связности).</summary>
+    private KitchenElement MakeWall(string name, Vector3Int dims, Vector3 pos)
+    {
+        var el = MakeElement(name, dims, pos);
+        el.gameObject.AddComponent<Wall>();
+        return el;
+    }
+
+    [Test]
+    public void CreateElement_Wall_Response_HasNoViolations()
+    {
+        // Стена — якорь, всегда без нарушений.
+        MakeWall("Existing", new Vector3Int(2000, 2500, 100), Vector3.zero);
+        var resp = _handler.Handle(MakeReq("create_element",
+            @"{""template_name"":""Wall2"",""width"":2000,""height"":2500,""depth"":100,""x"":2.2,""y"":1.25,""z"":0,""is_wall"":true}"));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.IsFalse(GetProp<bool>(resp.data, "hasViolations"));
+    }
+
+    [Test]
+    public void CreateElement_Response_HasViolations_WhenOverlapping()
+    {
+        MakeElement("Existing", new Vector3Int(1000, 1000, 1000), Vector3.zero);
+        var resp = _handler.Handle(MakeReq("create_element",
+            @"{""template_name"":""Overlap"",""width"":600,""height"":400,""depth"":18,""x"":0,""y"":0,""z"":0}"));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.IsTrue(GetProp<bool>(resp.data, "hasViolations"));
+    }
+
+    [Test]
+    public void CreateElement_Wall_Response_NoViolations_WhenOverlappingWithAnotherWall()
+    {
+        // Две стены могут пересекаться — они якоря, валидатор их не проверяет.
+        MakeWall("W1", new Vector3Int(2000, 2500, 100), Vector3.zero);
+        var resp = _handler.Handle(MakeReq("create_element",
+            @"{""template_name"":""W2"",""width"":2000,""height"":2500,""depth"":100,""x"":0,""y"":1.25,""z"":0,""is_wall"":true}"));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.IsFalse(GetProp<bool>(resp.data, "hasViolations"));
+    }
+
+    [Test]
+    public void GetElementInfo_Response_HasViolations_WhenOverlapping()
+    {
+        MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
+        MakeElement("B", new Vector3Int(1000, 1000, 1000), Vector3.zero);
+        var resp = _handler.Handle(MakeReq("get_element_info", @"{""name"":""A""}"));
+
+        Assert.AreEqual("result", resp.type);
+        var info = (ElementInfo)resp.data;
+        Assert.IsTrue(info.hasViolations, "A overlaps with B → violation");
+    }
+
+    [Test]
+    public void GetElementInfo_Wall_Response_HasNoViolations()
+    {
+        MakeWall("W", new Vector3Int(2000, 2500, 100), Vector3.zero);
+        var resp = _handler.Handle(MakeReq("get_element_info", @"{""name"":""W""}"));
+
+        Assert.AreEqual("result", resp.type);
+        var info = (ElementInfo)resp.data;
+        Assert.IsFalse(info.hasViolations, "Стена — якорь → нет нарушений");
+    }
+
+    [Test]
+    public void GetAllElements_Response_ContainsHasViolations()
+    {
+        MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
+        MakeElement("B", new Vector3Int(1000, 1000, 1000), Vector3.zero);
+
+        var resp = _handler.Handle(MakeReq("get_all_elements", "{}"));
+
+        Assert.AreEqual("result", resp.type);
+        var list = (List<ElementInfo>)resp.data;
+        Assert.AreEqual(2, list.Count);
+        foreach (var info in list)
+            Assert.IsTrue(info.hasViolations, $"{info.name} overlaps → violation");
+    }
+
+    [Test]
+    public void MoveElement_Response_HasViolations_WhenOverlapping()
+    {
+        MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
+        var resp = _handler.Handle(MakeReq("move_element",
+            @"{""name"":""A"",""x"":1.8,""y"":0,""z"":0}"));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.IsTrue(GetProp<bool>(resp.data, "hasViolations"));
+    }
+
+    [Test]
+    public void ResizeElement_Response_HasViolations_WhenOverlapping()
+    {
+        MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(0.45f, 0f, 0f));
+        var resp = _handler.Handle(MakeReq("resize_element",
+            @"{""name"":""A"",""width"":1000,""height"":400,""depth"":18}"));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.IsTrue(GetProp<bool>(resp.data, "hasViolations"));
+    }
 }
