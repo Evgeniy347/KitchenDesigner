@@ -415,9 +415,9 @@ server.registerTool("simulate_move",
   { title: "Simulate move (dry-run)", description: "DRY-RUN of a move: does NOT move anything. Returns simulatedAABB, overlapsWith and wouldHaveViolations. Call BEFORE move_element. x/y/z in METERS. Each axis is OPTIONAL — omit an axis to keep the board's current value on it (a missing axis is NOT treated as 0).", annotations: READ,
     inputSchema: {
       name: z.string().min(1, "Required").describe("Exact board name."),
-      x: z.number().finite().min(0, "Must be >= 0").optional().describe("Target X in METERS. Omit to keep current X."),
-      y: z.number().finite().min(0, "Must be >= 0").optional().describe("Target Y in METERS. Omit to keep current Y."),
-      z: z.number().finite().min(0, "Must be >= 0").optional().describe("Target Z in METERS. Omit to keep current Z."),
+      x: z.number().finite().optional().describe("Target X in METERS. Omit to keep current X."),
+      y: z.number().finite().optional().describe("Target Y in METERS. Omit to keep current Y."),
+      z: z.number().finite().optional().describe("Target Z in METERS. Omit to keep current Z."),
     } },
   async (a) => safe("simulate_move", a));
 
@@ -435,27 +435,29 @@ server.registerTool("snap_diagnose",
   { title: "Diagnose snapping", description: "Explain why a board does or does not snap to neighbours from its current (or a test) position: best face pair, gap vs threshold, overlap. x/y/z in METERS (optional, default = current position).", annotations: READ,
     inputSchema: {
       name: z.string().min(1, "Required").describe("Exact board name."),
-      x: z.number().finite().min(0, "Must be >= 0").optional().describe("Test X in METERS (default: current)."),
-      y: z.number().finite().min(0, "Must be >= 0").optional().describe("Test Y in METERS (default: current)."),
-      z: z.number().finite().min(0, "Must be >= 0").optional().describe("Test Z in METERS (default: current)."),
+      x: z.number().finite().optional().describe("Test X in METERS (default: current)."),
+      y: z.number().finite().optional().describe("Test Y in METERS (default: current)."),
+      z: z.number().finite().optional().describe("Test Z in METERS (default: current)."),
     } },
   async (a) => safe("snap_diagnose", a));
 
 // ── Edit elements ────────────────────────────────────────────────────────────
 
 server.registerTool("create_element",
-  { title: "Create element", description: "Create a new board (default), or a wall / facade / floor. x/y/z in METERS; width/height/depth in MILLIMETERS (defaults 800x400x18). Set is_wall/is_facade/is_floor for other kinds. Prefer this over raw Unity object creation.", annotations: WRITE,
+  { title: "Create element", description: "Create a new board (default), or a wall / facade / assembled facade / floor. x/y/z in METERS; width/height/depth in MILLIMETERS (defaults 800x400x18, assembled default 450x700x18). Set is_wall/is_facade/is_assembled/is_floor for other kinds. Prefer this over raw Unity object creation.", annotations: WRITE,
     inputSchema: {
       name: z.string().min(1, "Required").describe("Name for the new element (becomes its board name)."),
-      x: z.number().finite().min(0, "Must be >= 0").default(0).describe("Position X in METERS."),
-      y: z.number().finite().min(0, "Must be >= 0").default(0).describe("Position Y in METERS."),
-      z: z.number().finite().min(0, "Must be >= 0").default(0).describe("Position Z in METERS."),
+      x: z.number().finite().default(0).describe("Position X in METERS."),
+      y: z.number().finite().default(0).describe("Position Y in METERS."),
+      z: z.number().finite().default(0).describe("Position Z in METERS."),
       width: z.number().int().positive("Must be positive").optional().describe("Size along X in MM (default 800)."),
       height: z.number().int().positive("Must be positive").optional().describe("Size along Y in MM (default 400)."),
       depth: z.number().int().positive("Must be positive").optional().describe("Thickness along Z in MM (default 18)."),
       is_wall: z.boolean().optional().describe("Create as a WALL (structural anchor). Default false."),
       is_facade: z.boolean().optional().describe("Create as a FACADE (door/front with gaps). Default false."),
+      is_assembled: z.boolean().optional().describe("Create as an ASSEMBLED (framed) facade — real frame geometry. Default false. Pair with fill."),
       is_floor: z.boolean().optional().describe("Create the FLOOR plate. Ignores size/position. Default false."),
+      fill: z.enum(["blind", "glass", "open"]).optional().describe("Assembled facade only: center fill — blind (panel), glass (vitrine with glass), open (empty vitrine). Default blind."),
       gap_left: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: left gap in MM (default 2)."),
       gap_right: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: right gap in MM (default 2)."),
       gap_top: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: top gap in MM (default 2)."),
@@ -468,7 +470,9 @@ server.registerTool("create_element",
     if (a.depth !== undefined) params.depth = a.depth;
     if (a.is_wall !== undefined) params.is_wall = a.is_wall;
     if (a.is_facade !== undefined) params.is_facade = a.is_facade;
+    if (a.is_assembled !== undefined) params.is_assembled = a.is_assembled;
     if (a.is_floor !== undefined) params.is_floor = a.is_floor;
+    if (a.fill !== undefined) params.fill = a.fill;
     if (a.gap_left !== undefined) params.gapLeft = a.gap_left;
     if (a.gap_right !== undefined) params.gapRight = a.gap_right;
     if (a.gap_top !== undefined) params.gapTop = a.gap_top;
@@ -476,13 +480,22 @@ server.registerTool("create_element",
     return safe("create_element", params);
   });
 
+server.registerTool("convert_element",
+  { title: "Convert element type", description: "Change the TYPE of an existing element in place — board(part) <-> facade <-> assembled facade — keeping its name, size, position and material. Use this to turn a regular facade into an assembled (framed) one, or vice versa. NOT undoable.", annotations: WRITE,
+    inputSchema: {
+      name: z.string().min(1, "Required").describe("Exact element name to convert."),
+      target: z.enum(["part", "facade", "assembled_facade"]).describe("Target type: part (plain board), facade (door/front), assembled_facade (framed facade)."),
+      fill: z.enum(["blind", "glass", "open"]).optional().describe("When target=assembled_facade: center fill — blind (panel), glass, open (empty). Default keeps/blind."),
+    } },
+  async (a) => safe("convert_element", a));
+
 server.registerTool("move_element",
   { title: "Move element", description: "Move a board to an absolute position. Undoable, validated, snaps to neighbours. x/y/z in METERS. Each axis is OPTIONAL — omit an axis to keep the board's current value on it (a missing axis is NOT treated as 0), so you can move on one axis only. Fails if the element is locked. Run simulate_move first.", annotations: WRITE,
     inputSchema: {
       name: z.string().min(1, "Required").describe("Exact board name."),
-      x: z.number().finite().min(0, "Must be >= 0").optional().describe("Target X in METERS. Omit to keep current X."),
-      y: z.number().finite().min(0, "Must be >= 0").optional().describe("Target Y in METERS. Omit to keep current Y."),
-      z: z.number().finite().min(0, "Must be >= 0").optional().describe("Target Z in METERS. Omit to keep current Z."),
+      x: z.number().finite().optional().describe("Target X in METERS. Omit to keep current X."),
+      y: z.number().finite().optional().describe("Target Y in METERS. Omit to keep current Y."),
+      z: z.number().finite().optional().describe("Target Z in METERS. Omit to keep current Z."),
     } },
   async (a) => safe("move_element", a));
 
@@ -683,7 +696,7 @@ server.registerTool("delete_object",
 
 server.registerTool("set_position",
   { title: "Set position (advanced)", description: "ADVANCED. Set a raw GameObject world position in METERS, with NO undo/validation/snap. x/y/z are OPTIONAL — omit an axis to keep its current value. For boards prefer move_element.", annotations: WRITE,
-    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().finite().min(0, "Must be >= 0").optional().describe("X in METERS. Omit to keep current."), y: z.number().finite().min(0, "Must be >= 0").optional().describe("Y in METERS. Omit to keep current."), z: z.number().finite().min(0, "Must be >= 0").optional().describe("Z in METERS. Omit to keep current.") } },
+    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().finite().optional().describe("X in METERS. Omit to keep current."), y: z.number().finite().optional().describe("Y in METERS. Omit to keep current."), z: z.number().finite().optional().describe("Z in METERS. Omit to keep current.") } },
   async (a) => safe("set_position", a));
 
 server.registerTool("set_rotation",

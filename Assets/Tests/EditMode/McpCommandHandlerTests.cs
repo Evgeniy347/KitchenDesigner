@@ -697,60 +697,6 @@ public class McpCommandHandlerTests
         return null;
     }
 
-    // ── Wire compat: поле "parameters" (PowerShell-мост) ────────────────
-    // Мост tools/unity-bridge.ps1 шлёт параметры под ключом "parameters",
-    // иногда СТРОКОЙ с JSON. Обработчики читают req.Params — проверяем, что
-    // оба варианта нормализуются в Params (иначе — "name required").
-
-    [Test]
-    public void McpRequest_AcceptsParametersField_AsObject()
-    {
-        var json = @"{""id"":""r1"",""method"":""get_element_info"",""parameters"":{""name"":""Board1""}}";
-        var req = Newtonsoft.Json.JsonConvert.DeserializeObject<McpRequest>(json);
-
-        Assert.IsNotNull(req.Params, "parameters-объект должен попасть в Params");
-        Assert.AreEqual("Board1", req.Params.Value<string>("name"));
-    }
-
-    [Test]
-    public void McpRequest_AcceptsParametersField_AsJsonString()
-    {
-        // Именно этот случай ломал snap_diagnose/get_element_gaps через PS-мост.
-        var json = @"{""id"":""r1"",""method"":""snap_diagnose"",""parameters"":""{\""name\"":\""Board1\""}""}";
-        var req = Newtonsoft.Json.JsonConvert.DeserializeObject<McpRequest>(json);
-
-        Assert.IsNotNull(req.Params, "parameters-строка с JSON должна распарситься в Params");
-        Assert.AreEqual("Board1", req.Params.Value<string>("name"));
-    }
-
-    [Test]
-    public void McpRequest_ParamsTakesPriorityOverParameters()
-    {
-        var json = @"{""id"":""r1"",""method"":""m"",""params"":{""name"":""fromParams""},""parameters"":{""name"":""fromParameters""}}";
-        var req = Newtonsoft.Json.JsonConvert.DeserializeObject<McpRequest>(json);
-
-        Assert.AreEqual("fromParams", req.Params.Value<string>("name"),
-            "'params' приоритетнее 'parameters'");
-    }
-
-    [Test]
-    public void SnapDiagnose_ViaParametersString_DoesNotErrorNameRequired()
-    {
-        var go = new GameObject("Board");
-        var e = go.AddComponent<KitchenElement>();
-        e.PartName = "Board";
-        e.DimensionsMM = new Vector3Int(800, 400, 18);
-        go.AddComponent<Wall>();
-        PartRegistry.Register(e);
-        _spawned.Add(go);
-
-        var json = @"{""id"":""r1"",""method"":""snap_diagnose"",""parameters"":""{\""name\"":\""Board\""}""}";
-        var req = Newtonsoft.Json.JsonConvert.DeserializeObject<McpRequest>(json);
-        var resp = _handler.Handle(req);
-
-        Assert.AreEqual("result", resp.type, "PS-мост (parameters строкой) больше не должен ловить 'name required'");
-    }
-
     // ── Nullable-координаты: омитить ось = оставить текущее (не 0) ───────
 
     [Test]
@@ -811,6 +757,68 @@ public class McpCommandHandlerTests
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual(45f, el.transform.eulerAngles.y, 0.01f, "Y-угол должен сохраниться");
+    }
+
+    // ── Конвертация типа + создание сборного фасада ─────────────────────
+
+    [Test]
+    public void ConvertElement_PartToAssembledFacade_ChangesTypeKeepsName()
+    {
+        var el = MakeElement("F1", new Vector3Int(600, 716, 18), new Vector3(1f, 0.5f, 2f));
+
+        var resp = _handler.Handle(MakeReq("convert_element",
+            new { name = "F1", target = "assembled_facade", fill = "glass" }));
+
+        Assert.AreEqual("result", resp.type);
+        // Компонент сменился на том же GameObject, имя/размер сохранены.
+        var go = _spawned.Find(g => g != null && g.name == "F1");
+        Assert.IsNotNull(go);
+        var asm = go.GetComponent<AssembledFacadeElement>();
+        Assert.IsNotNull(asm, "элемент должен стать сборным фасадом");
+        Assert.AreEqual("F1", asm.PartName);
+        Assert.AreEqual(AssembledFill.Glass, asm.Fill, "fill=glass должен примениться");
+    }
+
+    [Test]
+    public void ConvertElement_UnknownTarget_ReturnsError()
+    {
+        MakeElement("F1", new Vector3Int(600, 716, 18), Vector3.zero);
+        var resp = _handler.Handle(MakeReq("convert_element", new { name = "F1", target = "banana" }));
+        Assert.AreEqual("error", resp.type);
+    }
+
+    [Test]
+    public void ConvertElement_NotFound_ReturnsError()
+    {
+        var resp = _handler.Handle(MakeReq("convert_element", new { name = "Nope", target = "facade" }));
+        Assert.AreEqual("error", resp.type);
+    }
+
+    [Test]
+    public void ConvertElement_Locked_ReturnsError()
+    {
+        var el = MakeElement("F1", new Vector3Int(600, 716, 18), Vector3.zero);
+        el.Movable = false;
+        var resp = _handler.Handle(MakeReq("convert_element", new { name = "F1", target = "assembled_facade" }));
+        Assert.AreEqual("error", resp.type);
+    }
+
+    [Test]
+    public void CreateElement_Assembled_CreatesAssembledFacade_WithFill()
+    {
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "Asm1", x = 1f, y = 0.5f, z = 2f,
+            width = 450, height = 700, depth = 18, is_assembled = true, fill = "open"
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        var el = FindBoard("Asm1");
+        Assert.IsNotNull(el);
+        var asm = el as AssembledFacadeElement;
+        Assert.IsNotNull(asm, "is_assembled=true должен создать AssembledFacadeElement");
+        Assert.AreEqual(AssembledFill.Open, asm.Fill);
+        Assert.AreEqual(new Vector3Int(450, 700, 18), asm.DimensionsMM);
     }
 
     // ── Материалы / текстуры ────────────────────────────────────────────

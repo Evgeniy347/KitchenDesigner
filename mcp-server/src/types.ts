@@ -42,9 +42,9 @@ export interface SnapDiagnoseParams {
 
 export interface SimulateMoveParams {
   name: string;
-  x: number;
-  y: number;
-  z: number;
+  x?: number;
+  y?: number;
+  z?: number;
 }
 
 export interface SimulateResizeParams {
@@ -58,9 +58,9 @@ export interface SimulateResizeParams {
 
 export interface MoveElementParams {
   name: string;
-  x: number;
-  y: number;
-  z: number;
+  x?: number;
+  y?: number;
+  z?: number;
 }
 
 export interface RotateElementParams {
@@ -94,11 +94,19 @@ export interface CreateElementParams {
   depth?: number;
   is_wall?: boolean;
   is_facade?: boolean;
+  is_assembled?: boolean;
   is_floor?: boolean;
+  fill?: string;
   gapLeft?: number;
   gapRight?: number;
   gapTop?: number;
   gapBottom?: number;
+}
+
+export interface ConvertElementParams {
+  name: string;
+  target: string;
+  fill?: string;
 }
 
 export interface LockElementParams {
@@ -120,9 +128,9 @@ export interface SetActiveParams {
 
 export interface SetTransformParams {
   object_path: string;
-  x: number;
-  y: number;
-  z: number;
+  x?: number;
+  y?: number;
+  z?: number;
 }
 
 export interface MenuItemParams {
@@ -197,6 +205,7 @@ export interface ParamMap {
   readonly resize_floor: ResizeFloorParams;
   readonly rotate_element: RotateElementParams;
   readonly create_element: CreateElementParams;
+  readonly convert_element: ConvertElementParams;
   readonly set_element_lock: LockElementParams;
   readonly set_facade_mode: FacadeModeParams;
 

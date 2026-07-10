@@ -24,8 +24,12 @@ try {
     $client.EndConnect($connect)
     $stream = $client.GetStream()
 
-    $req = @{ id = [guid]::NewGuid().ToString(); method = $Method; parameters = $Params } |
-        ConvertTo-Json -Compress
+    # Единый формат провода: параметры уходят объектом под ключом "params"
+    # (McpRequest.Params). $Params приходит строкой JSON — разбираем в объект.
+    $paramsObj = if ([string]::IsNullOrWhiteSpace($Params)) { @{} }
+                 else { $Params | ConvertFrom-Json }
+    $req = @{ id = [guid]::NewGuid().ToString(); method = $Method; params = $paramsObj } |
+        ConvertTo-Json -Compress -Depth 10
     $data = [Text.Encoding]::UTF8.GetBytes($req + "`n")
     $stream.Write($data, 0, $data.Length)
     $stream.Flush()

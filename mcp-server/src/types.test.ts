@@ -64,9 +64,18 @@ type _Empty16 = IsEmpty<"exit_play_mode">;
 
 // ── Validate required fields — correct shape and types ──────────────────
 
-// Move/MoveSimulate require name + x/y/z (numbers)
+// Move supports optional x/y/z (omit axis = keep current)
 const _move: MoveElementParams = { name: "Board1", x: 1.5, y: 0, z: 0 };
+const _moveSingleAxis: MoveElementParams = { name: "Board1", x: 1.5 };
+const _moveNameOnly: MoveElementParams = { name: "Board1" };
+
+// Move accepts negative position values (Z < 0 is valid)
+const _moveNegative: MoveElementParams = { name: "Board1", x: 0, y: 0, z: -3.62 };
+
+// SimulateMove supports optional x/y/z (omit axis = use current)
 const _simMove: SimulateMoveParams = { name: "Board1", x: 1.5, y: 0, z: 0 };
+const _simMoveNameOnly: SimulateMoveParams = { name: "Board1" };
+const _simMoveNegative: SimulateMoveParams = { name: "Board1", x: 0, y: 0, z: -3.62 };
 
 // Resize requires name + width/height/depth (positive ints)
 const _resize: ResizeElementParams = { name: "Board1", width: 600, height: 400, depth: 18 };
@@ -76,6 +85,11 @@ const _simResize: SimulateResizeParams = { name: "Board1", width: 600, height: 4
 const _create: CreateElementParams = {
   template_name: "Board1", name: "Board1", x: 0, y: 0, z: 0,
   width: 800, is_wall: true,
+};
+// Create with negatives (Z < 0 should be allowed)
+const _createNegative: CreateElementParams = {
+  template_name: "Board1", name: "Board1", x: 0, y: 0, z: -3.62,
+  width: 600, height: 720, depth: 18,
 };
 // Create with gaps
 const _createGap: CreateElementParams = {
@@ -101,6 +115,8 @@ const _modOnly: ModuleParams = { module: "М1" };
 const _objPath: ObjectPathParams = { object_path: "Parent/Child" };
 const _setActive: SetActiveParams = { object_path: "Board1", active: true };
 const _setTransform: SetTransformParams = { object_path: "Board1", x: 0, y: 1, z: 2 };
+const _setTransformNegative: SetTransformParams = { object_path: "Board1", x: -2, y: 0, z: -3.5 };
+const _setTransformNameOnly: SetTransformParams = { object_path: "Board1" };
 
 // Settings
 const _setSetting: SetSettingParams = { name: "snap_enabled", value: true };
@@ -115,9 +131,10 @@ const _find: FindObjectsParams = { name_filter: "Board" };
 const _export: ExportCsvParams = { path: "/tmp/spec.csv" };
 const _menu: MenuItemParams = { menu_path: "Edit/Undo" };
 
-// Snap diagnose (optional x/y/z)
+// Snap diagnose (optional x/y/z, negative values OK)
 const _snapDiag: SnapDiagnoseParams = { name: "Board1" };
 const _snapDiagFull: SnapDiagnoseParams = { name: "Board1", x: 1, y: 2, z: 3 };
+const _snapDiagNegative: SnapDiagnoseParams = { name: "Board1", z: -3.62 };
 
 // Modules
 const _createMod: CreateModuleParams = { name: "М1", members: ["A", "B"] };
