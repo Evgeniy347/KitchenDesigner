@@ -28,9 +28,14 @@ namespace KitchenDesigner.Core
         private bool _rmbMoved;
         private const float RmbDragPixels = 6f;
 
+        private Camera _cachedCamera;
+        private GameObject _floor;
+
         private void Awake()
         {
             Instance = this;
+            _cachedCamera = Camera.main;
+            _floor = GameObject.FindWithTag("Floor");
         }
 
         private void Start()
@@ -144,19 +149,16 @@ namespace KitchenDesigner.Core
             UpdateFloorVisibility();
         }
 
-        private void UpdateFloorVisibility()
+        internal void UpdateFloorVisibility()
         {
-            var cam = Camera.main;
-            if (cam == null) return;
+            if (_cachedCamera == null) return;
+            if (_floor == null) return;
 
-            var floor = GameObject.FindWithTag("Floor");
-            if (floor == null) return;
-
-            var renderer = floor.GetComponent<MeshRenderer>();
+            var renderer = _floor.GetComponent<MeshRenderer>();
             if (renderer == null) return;
 
-            float floorTopY = floor.transform.position.y + floor.transform.localScale.y * 0.5f;
-            renderer.enabled = cam.transform.position.y > floorTopY;
+            float floorTopY = _floor.transform.position.y + _floor.transform.localScale.y * 0.5f;
+            renderer.enabled = _cachedCamera.transform.position.y > floorTopY;
         }
 
         private void HandleWASD()
@@ -208,11 +210,10 @@ namespace KitchenDesigner.Core
             return es.IsPointerOverGameObject() || es.IsPointerOverGameObject(0);
         }
 
-        private static bool PointerHitsBoard()
+        private bool PointerHitsBoard()
         {
-            var cam = Camera.main;
-            if (cam == null) return false;
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (_cachedCamera == null) return false;
+            Ray ray = _cachedCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
                 return hit.collider.GetComponentInParent<KitchenElement>() != null;
             return false;
@@ -220,11 +221,10 @@ namespace KitchenDesigner.Core
 
         // ПКМ-клик по объекту (не пол): обычный одиночный объект → окно его настроек;
         // связанная группа или мультивыделение → меню группы (связать / настройки группы).
-        private static void HandleRmbClick()
+        private void HandleRmbClick()
         {
-            var cam = Camera.main;
-            if (cam == null) return;
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (_cachedCamera == null) return;
+            Ray ray = _cachedCamera.ScreenPointToRay(Input.mousePosition);
             if (!Physics.Raycast(ray, out RaycastHit hit)) return;
             var e = hit.collider.GetComponentInParent<KitchenElement>();
             if (e == null || e.GetComponent<BasePlate>() != null) return;
@@ -256,15 +256,14 @@ namespace KitchenDesigner.Core
             _target = point;
         }
 
-        private void UpdateCameraPosition()
+        internal void UpdateCameraPosition()
         {
             Quaternion rotation = Quaternion.Euler(_angleX, _angleY, 0);
             Vector3 offset = rotation * (Vector3.back * _distance);
-            Camera cam = Camera.main;
-            if (cam != null)
+            if (_cachedCamera != null)
             {
-                cam.transform.position = _target + offset;
-                cam.transform.LookAt(_target);
+                _cachedCamera.transform.position = _target + offset;
+                _cachedCamera.transform.LookAt(_target);
             }
         }
     }

@@ -131,8 +131,8 @@ function ensureConnected(): Promise<void> {
 
 function sendRequest(method: string, params: Record<string, unknown>): Promise<unknown> {
   const id = `req-${++requestId}`;
-  // Unity's McpRequest expects `parameters` as a JSON STRING (not an object).
-  const wire = JSON.stringify({ id, method, parameters: JSON.stringify(params) }) + "\n";
+  // Send params as a direct JSON object (no double-serialization).
+  const wire = JSON.stringify({ id, method, params }) + "\n";
   return new Promise((resolve, reject) => {
     const sock = unitySocket;
     if (!sock) { reject(new ConnError("Not connected to Unity")); return; }

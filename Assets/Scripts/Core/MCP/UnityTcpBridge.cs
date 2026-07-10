@@ -154,11 +154,6 @@ namespace KitchenDesigner.Core.MCP
                 return;
             }
 
-            // Нормализация параметров: принимаем и `parameters` (JSON-строка),
-            // и `params` (объект). Пусто → "{}", чтобы хендлеры не падали на null.
-            if (string.IsNullOrEmpty(request.parameters))
-                request.parameters = request.paramsObject?.ToString() ?? "{}";
-
             var capturedRequest = request;
             var capturedClient = client;
             _mainThreadActions.Enqueue(() =>

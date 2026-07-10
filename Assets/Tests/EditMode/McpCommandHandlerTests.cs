@@ -27,9 +27,15 @@ public class McpCommandHandlerTests
         BoardRegistry.Clear();
     }
 
-    private McpRequest MakeReq(string method, string paramsRaw)
+    private McpRequest MakeReq(string method, object data)
     {
-        return new McpRequest { id = "test", method = method, parameters = paramsRaw };
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+        return new McpRequest
+        {
+            id = "test",
+            method = method,
+            Params = Newtonsoft.Json.Linq.JObject.Parse(json)
+        };
     }
 
     private KitchenElement MakeElement(string name, Vector3Int dims, Vector3 pos)
@@ -47,8 +53,10 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_UsesTemplateName_WhenNameNotGiven()
     {
-        var resp = _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""TestBoard"",""width"":600,""height"":400,""depth"":18,""x"":0,""y"":0,""z"":0}"));
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "TestBoard", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f
+        }));
 
         Assert.AreEqual("result", resp.type);
         var el = BoardRegistry.GetAll().Find(e => e.BoardName == "TestBoard");
@@ -59,8 +67,10 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_UsesName_WhenProvided()
     {
-        var resp = _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""tmpl"",""name"":""CustomName"",""width"":600,""height"":400,""depth"":18,""x"":0,""y"":0,""z"":0}"));
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "tmpl", name = "CustomName", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f
+        }));
 
         Assert.AreEqual("result", resp.type);
         var el = BoardRegistry.GetAll().Find(e => e.BoardName == "CustomName");
@@ -71,8 +81,10 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_AddsWall_WhenIsWallTrue()
     {
-        var resp = _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""WallBoard"",""width"":2000,""height"":2500,""depth"":100,""x"":0,""y"":1.25,""z"":0,""is_wall"":true}"));
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "WallBoard", width = 2000, height = 2500, depth = 100, x = 0f, y = 1.25f, z = 0f, is_wall = true
+        }));
 
         Assert.AreEqual("result", resp.type);
         var el = BoardRegistry.GetAll().Find(e => e.BoardName == "WallBoard");
@@ -83,8 +95,10 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_DoesNotAddWall_WhenIsWallFalse()
     {
-        var resp = _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""RegularBoard"",""width"":800,""height"":400,""depth"":18,""x"":0,""y"":0,""z"":0,""is_wall"":false}"));
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "RegularBoard", width = 800, height = 400, depth = 18, x = 0f, y = 0f, z = 0f, is_wall = false
+        }));
 
         Assert.AreEqual("result", resp.type);
         var el = BoardRegistry.GetAll().Find(e => e.BoardName == "RegularBoard");
@@ -95,8 +109,10 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_DefaultsIsWallFalse_WhenOmitted()
     {
-        var resp = _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""DefaultBoard"",""width"":800,""height"":400,""depth"":18,""x"":0,""y"":0,""z"":0}"));
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "DefaultBoard", width = 800, height = 400, depth = 18, x = 0f, y = 0f, z = 0f
+        }));
 
         Assert.AreEqual("result", resp.type);
         var el = BoardRegistry.GetAll().Find(e => e.BoardName == "DefaultBoard");
@@ -108,8 +124,10 @@ public class McpCommandHandlerTests
     public void ResizeElement_UsesWidthHeightDepth()
     {
         var el = MakeElement("TestBoard", new Vector3Int(800, 400, 18), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("resize_element",
-            @"{""name"":""TestBoard"",""width"":1200,""height"":600,""depth"":36}"));
+        var resp = _handler.Handle(MakeReq("resize_element", new
+        {
+            name = "TestBoard", width = 1200, height = 600, depth = 36
+        }));
 
         if (resp.type == "error")
             Assert.Fail("ResizeElement failed: data=" + (resp.data != null ? resp.data.GetType() + ": " + resp.data.ToString() : "null"));
@@ -123,8 +141,10 @@ public class McpCommandHandlerTests
     {
         var el = MakeElement("TestBoard", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("resize_element",
-            @"{""name"":""TestBoard"",""dimX"":3170,""dimY"":2500,""dimZ"":7240}"));
+        var resp = _handler.Handle(MakeReq("resize_element", new
+        {
+            name = "TestBoard", dimX = 3170, dimY = 2500, dimZ = 7240
+        }));
 
         if (resp.type == "error")
             Assert.Fail("ResizeElement failed: data=" + (resp.data != null ? resp.data.GetType() + ": " + resp.data.ToString() : "null"));
@@ -138,8 +158,10 @@ public class McpCommandHandlerTests
     {
         var el = MakeElement("TestBoard", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("resize_element",
-            @"{""name"":""TestBoard"",""width"":100,""height"":200,""depth"":300,""dimX"":9999,""dimY"":9999,""dimZ"":9999}"));
+        var resp = _handler.Handle(MakeReq("resize_element", new
+        {
+            name = "TestBoard", width = 100, height = 200, depth = 300, dimX = 9999, dimY = 9999, dimZ = 9999
+        }));
 
         if (resp.type == "error")
             Assert.Fail("ResizeElement failed: data=" + (resp.data != null ? resp.data.GetType() + ": " + resp.data.ToString() : "null"));
@@ -154,8 +176,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("TestBoard", new Vector3Int(800, 400, 18), Vector3.zero);
         Assert.IsNull(el.GetComponent<Wall>());
 
-        var resp = _handler.Handle(MakeReq("add_wall_component",
-            @"{""name"":""TestBoard""}"));
+        var resp = _handler.Handle(MakeReq("add_wall_component", new { name = "TestBoard" }));
 
         if (resp.type == "error")
             Assert.Fail("AddWallComponent failed: data=" + (resp.data != null ? resp.data.GetType() + ": " + resp.data.ToString() : "null"));
@@ -170,8 +191,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("TestBoard", new Vector3Int(800, 400, 18), Vector3.zero);
         el.gameObject.AddComponent<Wall>();
 
-        var resp = _handler.Handle(MakeReq("add_wall_component",
-            @"{""name"":""TestBoard""}"));
+        var resp = _handler.Handle(MakeReq("add_wall_component", new { name = "TestBoard" }));
 
         if (resp.type == "error")
             Assert.Fail("AddWallComponent failed: data=" + (resp.data != null ? resp.data.GetType() + ": " + resp.data.ToString() : "null"));
@@ -183,8 +203,7 @@ public class McpCommandHandlerTests
     [Test]
     public void AddWallComponent_Errors_WhenElementNotFound()
     {
-        var resp = _handler.Handle(MakeReq("add_wall_component",
-            @"{""name"":""NonExistent""}"));
+        var resp = _handler.Handle(MakeReq("add_wall_component", new { name = "NonExistent" }));
 
         Assert.AreEqual("error", resp.type);
     }
@@ -192,8 +211,10 @@ public class McpCommandHandlerTests
     [Test]
     public void WallElement_CreatedViaMCP_IsAnchor_NotViolation()
     {
-        _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""TestWall"",""width"":2000,""height"":2500,""depth"":100,""x"":0,""y"":1.25,""z"":0,""is_wall"":true}"));
+        _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "TestWall", width = 2000, height = 2500, depth = 100, x = 0f, y = 1.25f, z = 0f, is_wall = true
+        }));
 
         var wall = BoardRegistry.GetAll().Find(e => e.BoardName == "TestWall");
         Assert.NotNull(wall);
@@ -209,9 +230,6 @@ public class McpCommandHandlerTests
         return (T)p.GetValue(obj, null);
     }
 
-    // ── hasViolations ────────────────────────────────────────────────────
-
-    /// <summary>Создаёт стену (якорь графа связности).</summary>
     private KitchenElement MakeWall(string name, Vector3Int dims, Vector3 pos)
     {
         var el = MakeElement(name, dims, pos);
@@ -222,10 +240,11 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_Wall_Response_HasNoViolations()
     {
-        // Стена — якорь, всегда без нарушений.
         MakeWall("Existing", new Vector3Int(2000, 2500, 100), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""Wall2"",""width"":2000,""height"":2500,""depth"":100,""x"":2.2,""y"":1.25,""z"":0,""is_wall"":true}"));
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "Wall2", width = 2000, height = 2500, depth = 100, x = 2.2f, y = 1.25f, z = 0f, is_wall = true
+        }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsFalse(GetProp<bool>(resp.data, "hasViolations"));
@@ -235,8 +254,10 @@ public class McpCommandHandlerTests
     public void CreateElement_Response_HasViolations_WhenOverlapping()
     {
         MakeElement("Existing", new Vector3Int(1000, 1000, 1000), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""Overlap"",""width"":600,""height"":400,""depth"":18,""x"":0,""y"":0,""z"":0}"));
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "Overlap", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f
+        }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(GetProp<bool>(resp.data, "hasViolations"));
@@ -245,10 +266,11 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_Wall_Response_NoViolations_WhenOverlappingWithAnotherWall()
     {
-        // Две стены могут пересекаться — они якоря, валидатор их не проверяет.
         MakeWall("W1", new Vector3Int(2000, 2500, 100), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""W2"",""width"":2000,""height"":2500,""depth"":100,""x"":0,""y"":1.25,""z"":0,""is_wall"":true}"));
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "W2", width = 2000, height = 2500, depth = 100, x = 0f, y = 1.25f, z = 0f, is_wall = true
+        }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsFalse(GetProp<bool>(resp.data, "hasViolations"));
@@ -259,7 +281,7 @@ public class McpCommandHandlerTests
     {
         MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
         MakeElement("B", new Vector3Int(1000, 1000, 1000), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("get_element_info", @"{""name"":""A""}"));
+        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "A" }));
 
         Assert.AreEqual("result", resp.type);
         var info = (ElementInfo)resp.data;
@@ -270,7 +292,7 @@ public class McpCommandHandlerTests
     public void GetElementInfo_Wall_Response_HasNoViolations()
     {
         MakeWall("W", new Vector3Int(2000, 2500, 100), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("get_element_info", @"{""name"":""W""}"));
+        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "W" }));
 
         Assert.AreEqual("result", resp.type);
         var info = (ElementInfo)resp.data;
@@ -283,7 +305,7 @@ public class McpCommandHandlerTests
         MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
         MakeElement("B", new Vector3Int(1000, 1000, 1000), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("get_all_elements", "{}"));
+        var resp = _handler.Handle(MakeReq("get_all_elements", new { }));
 
         Assert.AreEqual("result", resp.type);
         var list = (List<ElementInfo>)resp.data;
@@ -297,8 +319,7 @@ public class McpCommandHandlerTests
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
-        var resp = _handler.Handle(MakeReq("move_element",
-            @"{""name"":""A"",""x"":1.8,""y"":0,""z"":0}"));
+        var resp = _handler.Handle(MakeReq("move_element", new { name = "A", x = 1.8f, y = 0f, z = 0f }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(GetProp<bool>(resp.data, "hasViolations"));
@@ -309,8 +330,7 @@ public class McpCommandHandlerTests
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(0.45f, 0f, 0f));
-        var resp = _handler.Handle(MakeReq("resize_element",
-            @"{""name"":""A"",""width"":1000,""height"":400,""depth"":18}"));
+        var resp = _handler.Handle(MakeReq("resize_element", new { name = "A", width = 1000, height = 400, depth = 18 }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(GetProp<bool>(resp.data, "hasViolations"));
@@ -322,7 +342,7 @@ public class McpCommandHandlerTests
         MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
         MakeElement("B", new Vector3Int(1000, 1000, 1000), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("get_violations", "{}"));
+        var resp = _handler.Handle(MakeReq("get_violations", new { }));
 
         Assert.AreEqual("result", resp.type);
         var count = GetProp<int>(resp.data, "count");
@@ -338,7 +358,7 @@ public class McpCommandHandlerTests
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(0.5f, 0f, 0f));
 
-        var resp = _handler.Handle(MakeReq("get_violations", "{}"));
+        var resp = _handler.Handle(MakeReq("get_violations", new { }));
 
         Assert.AreEqual("result", resp.type);
         var count = GetProp<int>(resp.data, "count");
@@ -348,8 +368,12 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateFacade_ReturnsOk()
     {
-        var resp = _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""TestFacade"",""name"":""F1"",""x"":0,""y"":0,""z"":0,""width"":400,""height"":300,""depth"":18,""is_facade"":true,""gapLeft"":1,""gapRight"":2,""gapTop"":3,""gapBottom"":4}"));
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "TestFacade", name = "F1", x = 0f, y = 0f, z = 0f,
+            width = 400, height = 300, depth = 18, is_facade = true,
+            gapLeft = 1, gapRight = 2, gapTop = 3, gapBottom = 4
+        }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(GetProp<bool>(resp.data, "is_facade"));
@@ -367,8 +391,11 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateFacade_DefaultGap_IsTwoOnAllSides()
     {
-        var resp = _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""Facade2"",""name"":""F2"",""x"":0,""y"":0,""z"":0,""width"":400,""height"":300,""depth"":18,""is_facade"":true}"));
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "Facade2", name = "F2", x = 0f, y = 0f, z = 0f,
+            width = 400, height = 300, depth = 18, is_facade = true
+        }));
 
         Assert.AreEqual("result", resp.type);
         var el = FindBoard("F2");
@@ -379,16 +406,13 @@ public class McpCommandHandlerTests
         Assert.AreEqual(2, facade.GapBottom);
     }
 
-    // ── set_element_lock ──────────────────────────────────────────────
-
     [Test]
     public void SetElementLock_LocksElement()
     {
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         Assert.IsTrue(el.Movable);
 
-        var resp = _handler.Handle(MakeReq("set_element_lock",
-            @"{""name"":""Board"",""locked"":true}"));
+        var resp = _handler.Handle(MakeReq("set_element_lock", new { name = "Board", locked = true }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsFalse(el.Movable);
@@ -400,8 +424,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        var resp = _handler.Handle(MakeReq("set_element_lock",
-            @"{""name"":""Board"",""locked"":false}"));
+        var resp = _handler.Handle(MakeReq("set_element_lock", new { name = "Board", locked = false }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(el.Movable);
@@ -410,19 +433,16 @@ public class McpCommandHandlerTests
     [Test]
     public void SetElementLock_Errors_WhenNameMissing()
     {
-        var resp = _handler.Handle(MakeReq("set_element_lock", @"{}"));
+        var resp = _handler.Handle(MakeReq("set_element_lock", new { }));
         Assert.AreEqual("error", resp.type);
     }
 
     [Test]
     public void SetElementLock_Errors_WhenElementNotFound()
     {
-        var resp = _handler.Handle(MakeReq("set_element_lock",
-            @"{""name"":""NonExistent"",""locked"":true}"));
+        var resp = _handler.Handle(MakeReq("set_element_lock", new { name = "NonExistent", locked = true }));
         Assert.AreEqual("error", resp.type);
     }
-
-    // ── Lock guard on mutations ───────────────────────────────────────
 
     [Test]
     public void MoveElement_Errors_WhenLocked()
@@ -430,8 +450,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        var resp = _handler.Handle(MakeReq("move_element",
-            @"{""name"":""Board"",""x"":1,""y"":0,""z"":0}"));
+        var resp = _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
 
         Assert.AreEqual("error", resp.type);
         Assert.AreEqual(Vector3.zero, el.transform.position);
@@ -443,8 +462,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        var resp = _handler.Handle(MakeReq("resize_element",
-            @"{""name"":""Board"",""width"":1200,""height"":600,""depth"":36}"));
+        var resp = _handler.Handle(MakeReq("resize_element", new { name = "Board", width = 1200, height = 600, depth = 36 }));
 
         Assert.AreEqual("error", resp.type);
         Assert.AreEqual(new Vector3Int(800, 400, 18), el.DimensionsMM);
@@ -456,8 +474,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        var resp = _handler.Handle(MakeReq("rotate_element",
-            @"{""name"":""Board"",""x"":0,""y"":90,""z"":0}"));
+        var resp = _handler.Handle(MakeReq("rotate_element", new { name = "Board", x = 0f, y = 90f, z = 0f }));
 
         Assert.AreEqual("error", resp.type);
         Assert.AreEqual(Quaternion.identity, el.transform.rotation);
@@ -469,8 +486,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        var resp = _handler.Handle(MakeReq("delete_element",
-            @"{""name"":""Board""}"));
+        var resp = _handler.Handle(MakeReq("delete_element", new { name = "Board" }));
 
         Assert.AreEqual("error", resp.type);
         Assert.IsNotNull(FindBoard("Board"), "Element should not be deleted");
@@ -482,17 +498,134 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        // unlock
-        var unlockResp = _handler.Handle(MakeReq("set_element_lock",
-            @"{""name"":""Board"",""locked"":false}"));
+        var unlockResp = _handler.Handle(MakeReq("set_element_lock", new { name = "Board", locked = false }));
         Assert.AreEqual("result", unlockResp.type);
         Assert.IsTrue(el.Movable);
 
-        // now move succeeds
-        var moveResp = _handler.Handle(MakeReq("move_element",
-            @"{""name"":""Board"",""x"":1,""y"":0,""z"":0}"));
+        var moveResp = _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
         Assert.AreEqual("result", moveResp.type);
         Assert.AreEqual(new Vector3(1, 0, 0), el.transform.position);
+    }
+
+    // ── Params object format tests ──────────────────────────────────────
+
+    [Test]
+    public void ParamsObject_CreateElement_WorksIdenticalToStringFormat()
+    {
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "ObjBoard", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        var el = BoardRegistry.GetAll().Find(e => e.BoardName == "ObjBoard");
+        Assert.NotNull(el);
+        Assert.AreEqual(new Vector3Int(600, 400, 18), el.DimensionsMM);
+    }
+
+    [Test]
+    public void ParamsObject_MoveElement_WorksIdenticalToStringFormat()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        var resp = _handler.Handle(MakeReq("move_element", new { name = "Board", x = 2.5f, y = 1.0f, z = 0.5f }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(new Vector3(2.5f, 1f, 0.5f), el.transform.position);
+    }
+
+    [Test]
+    public void ParamsObject_ResizeElement_PrefersWidthOverDimX()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        var resp = _handler.Handle(MakeReq("resize_element", new
+        {
+            name = "Board", width = 500, height = 600, depth = 36,
+            dimX = 9999, dimY = 9999, dimZ = 9999
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(new Vector3Int(500, 600, 36), el.DimensionsMM);
+    }
+
+    [Test]
+    public void ParamsObject_Serialization_DoesNotEscape()
+    {
+        var data = new { name = "TestBoard", x = 1.5, y = 0f, z = 0f };
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(
+            new { id = "test", method = "move_element", Params = data });
+
+        var parsed = Newtonsoft.Json.Linq.JObject.Parse(json);
+        var p = parsed["Params"];
+        Assert.IsNotNull(p);
+        Assert.AreEqual(Newtonsoft.Json.Linq.JTokenType.Object, p.Type,
+            "Params должен быть JSON-объектом, не строкой");
+        Assert.AreEqual("TestBoard", p["name"].Value<string>());
+        Assert.AreEqual(1.5, p["x"].Value<double>(), 0.001);
+    }
+
+    [Test]
+    public void McpRequest_DeserializesParamsAsObject_NotString()
+    {
+        var json = @"{""id"":""req-1"",""method"":""move_element"",""params"":{""name"":""Board1"",""x"":1.5,""y"":0,""z"":0}}";
+        var req = Newtonsoft.Json.JsonConvert.DeserializeObject<McpRequest>(json);
+
+        Assert.AreEqual("req-1", req.id);
+        Assert.AreEqual("move_element", req.method);
+        Assert.IsNotNull(req.Params, "Params должен быть десериализован из JSON-объекта");
+        Assert.AreEqual("Board1", req.Params["name"].Value<string>());
+    }
+
+    [Test]
+    public void ParamsObject_SimulateMove_ReturnsSimulateResult()
+    {
+        MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        var resp = _handler.Handle(MakeReq("simulate_move", new { name = "Board", x = 2f, y = 0f, z = 0f }));
+
+        Assert.AreEqual("result", resp.type);
+        var sim = resp.data as SimulateResult;
+        Assert.IsNotNull(sim, "simulate_move должен вернуть SimulateResult");
+        Assert.AreEqual("Board", sim.name);
+        Assert.IsFalse(sim.wouldHaveViolations,
+            "Перемещение в пустое место не должно создавать нарушений");
+    }
+
+    [Test]
+    public void ParamsObject_GetElementInfo_ReturnsElementInfo()
+    {
+        MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "Board" }));
+
+        Assert.AreEqual("result", resp.type);
+        var info = resp.data as ElementInfo;
+        Assert.IsNotNull(info);
+        Assert.AreEqual("Board", info.name);
+        Assert.AreEqual(800, info.dimX);
+    }
+
+    [Test]
+    public void ParamsObject_EmptyObject_ReturnsError()
+    {
+        var resp = _handler.Handle(MakeReq("move_element", new { }));
+
+        Assert.AreEqual("error", resp.type);
+    }
+
+    [Test]
+    public void ParamsObject_WithNull_DefaultsToEmpty()
+    {
+        var req = new McpRequest
+        {
+            id = "test",
+            method = "get_all_elements",
+            Params = null
+        };
+
+        var resp = _handler.Handle(req);
+        Assert.AreEqual("result", resp.type);
     }
 
     private static KitchenElement FindBoard(string name)

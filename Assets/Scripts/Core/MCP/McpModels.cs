@@ -8,12 +8,13 @@ namespace KitchenDesigner.Core.MCP
     {
         public string id;
         public string method;
-        public string parameters; // raw JSON string
 
-        // Альтернативная форма: клиент прислал параметры объектом `params`
-        // (а не строкой `parameters`). Нормализуется в ProcessLine.
+        /// <summary>
+        /// Параметры как прямой JSON-объект.
+        /// Клиент присылает {id, method, params: {name: "...", x: 1.5, ...}}
+        /// </summary>
         [Newtonsoft.Json.JsonProperty("params")]
-        public Newtonsoft.Json.Linq.JObject paramsObject;
+        public Newtonsoft.Json.Linq.JObject Params { get; set; }
     }
 
     [Serializable]

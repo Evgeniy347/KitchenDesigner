@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using Newtonsoft.Json;
 using Object = UnityEngine.Object;
 
 #if UNITY_EDITOR
@@ -144,7 +143,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleFindObjects(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsFindObjects>(req.parameters);
+            var p = req.Params?.ToObject<ParamsFindObjects>();
             if (p == null || string.IsNullOrEmpty(p.name_filter))
                 return McpResponse.Error(req.id, -32602, "name_filter required");
 
@@ -162,7 +161,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetObjectInfo(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            var p = req.Params?.ToObject<ParamsWithName>();
             if (p == null || (string.IsNullOrEmpty(p.name) && string.IsNullOrEmpty(p.object_path)))
                 return McpResponse.Error(req.id, -32602, "name or object_path required");
 
@@ -190,7 +189,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetActive(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsSetActive>(req.parameters);
+            var p = req.Params?.ToObject<ParamsSetActive>();
             if (p == null || string.IsNullOrEmpty(p.object_path))
                 return McpResponse.Error(req.id, -32602, "object_path required");
             var go = FindGameObject(p.object_path);
@@ -201,7 +200,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleDeleteObject(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            var p = req.Params?.ToObject<ParamsWithName>();
             var path = p?.object_path ?? p?.name;
             if (string.IsNullOrEmpty(path))
                 return McpResponse.Error(req.id, -32602, "name or object_path required");
@@ -213,7 +212,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetPosition(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsSetTransform>(req.parameters);
+            var p = req.Params?.ToObject<ParamsSetTransform>();
             if (p == null || string.IsNullOrEmpty(p.object_path))
                 return McpResponse.Error(req.id, -32602, "object_path required");
             var go = FindGameObject(p.object_path);
@@ -224,7 +223,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetRotation(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsSetTransform>(req.parameters);
+            var p = req.Params?.ToObject<ParamsSetTransform>();
             if (p == null || string.IsNullOrEmpty(p.object_path))
                 return McpResponse.Error(req.id, -32602, "object_path required");
             var go = FindGameObject(p.object_path);
@@ -235,7 +234,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetScale(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsSetTransform>(req.parameters);
+            var p = req.Params?.ToObject<ParamsSetTransform>();
             if (p == null || string.IsNullOrEmpty(p.object_path))
                 return McpResponse.Error(req.id, -32602, "object_path required");
             var go = FindGameObject(p.object_path);
@@ -298,7 +297,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetElementInfo(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            var p = req.Params?.ToObject<ParamsWithName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -373,7 +372,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleModuleInfo(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsModule>(req.parameters);
+            var p = req.Params?.ToObject<ParamsModule>();
             if (p == null || string.IsNullOrEmpty(p.module))
                 return McpResponse.Error(req.id, -32602, "module (id или имя) required");
             var g = FindModule(p.module);
@@ -383,7 +382,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleCreateModule(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsCreateModule>(req.parameters);
+            var p = req.Params?.ToObject<ParamsCreateModule>();
             if (p == null || p.members == null || p.members.Length < 2)
                 return McpResponse.Error(req.id, -32602, "members: минимум 2 имени деталей");
 
@@ -408,7 +407,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleDissolveModule(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsModule>(req.parameters);
+            var p = req.Params?.ToObject<ParamsModule>();
             if (p == null || string.IsNullOrEmpty(p.module))
                 return McpResponse.Error(req.id, -32602, "module required");
             var g = FindModule(p.module);
@@ -420,7 +419,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleAddToModule(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsModuleElement>(req.parameters);
+            var p = req.Params?.ToObject<ParamsModuleElement>();
             if (p == null || string.IsNullOrEmpty(p.module) || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "module и name required");
             var g = FindModule(p.module);
@@ -434,7 +433,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleRemoveFromModule(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            var p = req.Params?.ToObject<ParamsWithName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var el = FindElementByName(p.name);
@@ -451,7 +450,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleEnterModuleEdit(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsModule>(req.parameters);
+            var p = req.Params?.ToObject<ParamsModule>();
             if (p == null || string.IsNullOrEmpty(p.module))
                 return McpResponse.Error(req.id, -32602, "module required");
             var g = FindModule(p.module);
@@ -471,7 +470,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleMoveElement(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsMoveElement>(req.parameters);
+            var p = req.Params?.ToObject<ParamsMoveElement>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -496,7 +495,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleResizeElement(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsResizeElement>(req.parameters);
+            var p = req.Params?.ToObject<ParamsResizeElement>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -531,7 +530,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleRotateElement(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsRotateElement>(req.parameters);
+            var p = req.Params?.ToObject<ParamsRotateElement>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -549,7 +548,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleCreateElement(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsCreateElement>(req.parameters);
+            var p = req.Params?.ToObject<ParamsCreateElement>();
             if (p == null || string.IsNullOrEmpty(p.template_name))
                 return McpResponse.Error(req.id, -32602, "template_name required");
 
@@ -604,7 +603,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleDeleteElement(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            var p = req.Params?.ToObject<ParamsWithName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -653,7 +652,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleExportCsv(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsExportCsv>(req.parameters);
+            var p = req.Params?.ToObject<ParamsExportCsv>();
             if (p == null || string.IsNullOrEmpty(p.path))
                 return McpResponse.Error(req.id, -32602, "path required");
             var spec = SpecificationManager.Build(BoardRegistry.GetAll());
@@ -663,7 +662,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSelectElement(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            var p = req.Params?.ToObject<ParamsWithName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -689,7 +688,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleConsoleLogs(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsLogCount>(req.parameters);
+            var p = req.Params?.ToObject<ParamsLogCount>();
             int count = (p != null && p.count > 0) ? Mathf.Min(p.count, 200) : 50;
             var entries = ConsoleLogCapture.GetRecent(count);
             return McpResponse.Result(req.id, entries);
@@ -714,7 +713,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetSetting(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsSetSetting>(req.parameters);
+            var p = req.Params?.ToObject<ParamsSetSetting>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name and value required");
 
@@ -738,7 +737,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetSnapVerbose(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsSetEnabled>(req.parameters);
+            var p = req.Params?.ToObject<ParamsSetEnabled>();
             if (p == null) return McpResponse.Error(req.id, -32602, "enabled required");
             SnapSystem.VerboseLog = p.enabled;
             Debug.Log($"[MCP] Snap verbose log: {p.enabled}");
@@ -749,7 +748,7 @@ namespace KitchenDesigner.Core.MCP
         /// заданной позиции — по каждому соседу лучшая пара граней и причина.</summary>
         private McpResponse HandleSnapDiagnose(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsSnapDiagnose>(req.parameters);
+            var p = req.Params?.ToObject<ParamsSnapDiagnose>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -820,7 +819,7 @@ namespace KitchenDesigner.Core.MCP
             if (plate == null || plate.Element == null)
                 return McpResponse.Error(req.id, -1, "Floor not found");
 
-            var p = JsonConvert.DeserializeObject<ParamsResizeElement>(req.parameters);
+            var p = req.Params?.ToObject<ParamsResizeElement>();
             if (p == null)
                 return McpResponse.Error(req.id, -32602, "invalid parameters");
 
@@ -852,7 +851,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleAddWallComponent(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            var p = req.Params?.ToObject<ParamsWithName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -868,7 +867,7 @@ namespace KitchenDesigner.Core.MCP
         private McpResponse HandleExecuteMenuItem(McpRequest req)
         {
 #if UNITY_EDITOR
-            var p = JsonConvert.DeserializeObject<ParamsMenuPath>(req.parameters);
+            var p = req.Params?.ToObject<ParamsMenuPath>();
             if (p == null || string.IsNullOrEmpty(p.menu_path))
                 return McpResponse.Error(req.id, -32602, "menu_path required");
             var result = EditorApplication.ExecuteMenuItem(p.menu_path);
@@ -901,7 +900,7 @@ namespace KitchenDesigner.Core.MCP
         // ── get_element_debug ───────────────────────────────────────────
         private McpResponse HandleGetElementDebug(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            var p = req.Params?.ToObject<ParamsWithName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var el = FindElementByName(p.name);
@@ -939,7 +938,7 @@ namespace KitchenDesigner.Core.MCP
         // ── get_element_gaps ─────────────────────────────────────────────
         private McpResponse HandleGetElementGaps(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            var p = req.Params?.ToObject<ParamsWithName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var el = FindElementByName(p.name);
@@ -958,7 +957,7 @@ namespace KitchenDesigner.Core.MCP
         /// </summary>
         private McpResponse HandleSimulateMove(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsSimulateMove>(req.parameters);
+            var p = req.Params?.ToObject<ParamsSimulateMove>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var el = FindElementByName(p.name);
@@ -977,7 +976,7 @@ namespace KitchenDesigner.Core.MCP
         /// </summary>
         private McpResponse HandleSimulateResize(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsSimulateResize>(req.parameters);
+            var p = req.Params?.ToObject<ParamsSimulateResize>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var el = FindElementByName(p.name);
@@ -1208,7 +1207,7 @@ namespace KitchenDesigner.Core.MCP
         // ── set_element_lock ────────────────────────────────────────────
         private McpResponse HandleSetElementLock(McpRequest req)
         {
-            var p = JsonConvert.DeserializeObject<ParamsElementLock>(req.parameters);
+            var p = req.Params?.ToObject<ParamsElementLock>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var el = FindElementByName(p.name);
