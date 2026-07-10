@@ -270,6 +270,30 @@ namespace KitchenDesigner.Core.MCP
         public int effectiveDimX, effectiveDimY, effectiveDimZ;
         public List<AxisGapInfo> faceGaps; // зазоры/пересечения с ближайшим соседом по каждой оси (всегда 3 оси)
         public int radius; // только для RadialShelfElement, иначе 0
+
+        // ── Фасадная валидация (только для FacadeElement / AssembledFacadeElement) ──
+        public float faceNormalX, faceNormalY, faceNormalZ; // мировая нормаль лицевой грани
+        public bool faceInward; // true, если фасад развёрнут лицом внутрь модуля
+        public List<FaceObstructionInfo> faceObstructions; // детали вплотную перед лицевой гранью
+        public List<OpeningViolationInfo> openingViolations; // детали, пересекающие траекторию открывания
+    }
+
+    [Serializable]
+    public class FaceObstructionInfo
+    {
+        public string neighbor;
+        public float distanceFromFaceMm;
+        public float overlapWidthMm;
+        public float overlapHeightMm;
+    }
+
+    [Serializable]
+    public class OpeningViolationInfo
+    {
+        public string neighbor;
+        public string openingMode;
+        public float collisionAtProgress; // 0..1, где 1 = полностью открыто
+        public float collisionOverlapMm;
     }
 
     /// <summary>Конфигурация модуля: имя, состав, габариты. Через MCP видно,

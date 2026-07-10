@@ -162,6 +162,85 @@ export interface SnapVerboseParams {
   enabled: boolean;
 }
 
+/* ── Common response shapes ────────────────────────────────────────────── */
+
+export interface Vector3Json {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface FaceObstruction {
+  neighbor: string;
+  distanceFromFaceMm: number;
+  overlapWidthMm: number;
+  overlapHeightMm: number;
+}
+
+export interface OpeningViolation {
+  neighbor: string;
+  openingMode: string;
+  collisionAtProgress: number;
+  collisionOverlapMm: number;
+}
+
+export interface ElementInfo {
+  name: string;
+  type: string;
+  dimX: number;
+  dimY: number;
+  dimZ: number;
+  posX: number;
+  posY: number;
+  posZ: number;
+  rotX: number;
+  rotY: number;
+  rotZ: number;
+  active: boolean;
+  moduleId: number;
+  moduleName?: string | null;
+  materialId?: string | null;
+  hasViolations: boolean;
+  aabbMinX: number;
+  aabbMinY: number;
+  aabbMinZ: number;
+  aabbMaxX: number;
+  aabbMaxY: number;
+  aabbMaxZ: number;
+  effectiveDimX: number;
+  effectiveDimY: number;
+  effectiveDimZ: number;
+  faceGaps?: AxisGapInfo[] | null;
+  radius?: number;
+  faceNormal?: Vector3Json | null;
+  faceInward?: boolean;
+  faceObstructions?: FaceObstruction[] | null;
+  openingViolations?: OpeningViolation[] | null;
+}
+
+export interface AxisGapInfo {
+  axis: string;
+  neighbor?: string | null;
+  gapMM: number;
+  isOverlap: boolean;
+}
+
+export interface ViolationEntry {
+  name: string;
+  type: string;
+  overlapsWith: Array<{
+    neighbor: string;
+    overlapXmm: number;
+    overlapYmm: number;
+    overlapZmm: number;
+  }>;
+  disconnected: boolean;
+  faceNormal?: Vector3Json | null;
+  faceInward?: boolean;
+  faceObstructions?: FaceObstruction[] | null;
+  openingViolations?: OpeningViolation[] | null;
+}
+
 /* ── Map method name to its params type ────────────────────────────────── */
 
 export interface ParamMap {

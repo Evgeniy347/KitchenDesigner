@@ -273,10 +273,10 @@ namespace KitchenDesigner.Core.MCP
         /// чтобы через MCP была видна конфигурация сцены.</summary>
         private static ElementInfo BuildElementInfo(KitchenElement el)
         {
-            return BuildElementInfo(el, null);
+            return BuildElementInfo(el, null, false);
         }
 
-        private static ElementInfo BuildElementInfo(KitchenElement el, List<KitchenElement> allElements)
+        private static ElementInfo BuildElementInfo(KitchenElement el, List<KitchenElement> allElements, bool includeFacadeValidation = false)
         {
             var t = el.transform;
             var group = GroupManager.GroupOf(el);
@@ -294,6 +294,9 @@ namespace KitchenDesigner.Core.MCP
             var effDim = GetEffectiveDimMM(el);
             var gaps = allElements != null ? ComputeAxisGaps(el, allElements) : null;
             var radial = el as RadialShelfElement;
+            FacadeValidationData? facadeValidation = includeFacadeValidation && el is FacadeElement fe && allElements != null
+                ? ComputeFacadeValidation(fe, allElements)
+                : (FacadeValidationData?)null;
 
             return new ElementInfo
             {
@@ -310,8 +313,77 @@ namespace KitchenDesigner.Core.MCP
                 aabbMaxX = aabb.maxX, aabbMaxY = aabb.maxY, aabbMaxZ = aabb.maxZ,
                 effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z,
                 faceGaps = gaps,
-                radius = radial != null ? radial.Radius : 0
+                radius = radial != null ? radial.Radius : 0,
+                faceNormalX = facadeValidation?.normal.x ?? 0f,
+                faceNormalY = facadeValidation?.normal.y ?? 0f,
+                faceNormalZ = facadeValidation?.normal.z ?? 0f,
+                faceInward = facadeValidation?.faceInward ?? false,
+                faceObstructions = facadeValidation?.obstructions,
+                openingViolations = facadeValidation?.openingViolations
             };
+        }
+
+        private readonly struct FacadeValidationData
+        {
+            public readonly Vector3 normal;
+            public readonly bool faceInward;
+            public readonly List<FaceObstructionInfo> obstructions;
+            public readonly List<OpeningViolationInfo> openingViolations;
+
+            public FacadeValidationData(Vector3 normal, bool faceInward,
+                List<FaceObstructionInfo> obstructions,
+                List<OpeningViolationInfo> openingViolations)
+            {
+                this.normal = normal;
+                this.faceInward = faceInward;
+                this.obstructions = obstructions;
+                this.openingViolations = openingViolations;
+            }
+        }
+
+        private static FacadeValidationData ComputeFacadeValidation(FacadeElement facade, List<KitchenElement> allElements)
+        {
+            var normal = FacadeValidator.GetFaceNormal(facade);
+            bool faceInward = FacadeValidator.IsFacingInward(facade);
+
+            var rawObstructions = FacadeValidator.FindFaceObstructions(facade, allElements);
+            var obstructions = new List<FaceObstructionInfo>(rawObstructions.Count);
+            foreach (var o in rawObstructions)
+            {
+                obstructions.Add(new FaceObstructionInfo
+                {
+                    neighbor = o.neighbor,
+                    distanceFromFaceMm = o.distanceFromFaceMm,
+                    overlapWidthMm = o.overlapWidthMm,
+                    overlapHeightMm = o.overlapHeightMm
+                });
+            }
+
+            var rawOpening = FacadeValidator.FindOpeningViolations(facade, allElements);
+            var opening = new List<OpeningViolationInfo>(rawOpening.Count);
+            foreach (var v in rawOpening)
+            {
+                opening.Add(new OpeningViolationInfo
+                {
+                    neighbor = v.neighbor,
+                    openingMode = v.openingMode,
+                    collisionAtProgress = v.collisionAtProgress,
+                    collisionOverlapMm = v.collisionOverlapMm
+                });
+            }
+
+            return new FacadeValidationData(normal, faceInward, obstructions, opening);
+        }
+
+        private static (object faceNormal, bool faceInward, object faceObstructions, object openingViolations)
+            BuildFacadeResponseFields(KitchenElement element)
+        {
+            if (!(element is FacadeElement facade))
+                return (null, false, null, null);
+
+            var data = ComputeFacadeValidation(facade, PartRegistry.GetAll());
+            var normal = new { x = data.normal.x, y = data.normal.y, z = data.normal.z };
+            return (normal, data.faceInward, data.obstructions, data.openingViolations);
         }
 
         private McpResponse HandleGetAllElements(McpRequest req)
@@ -321,7 +393,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var el in elements)
             {
                 if (el == null) continue;
-                list.Add(BuildElementInfo(el, elements));
+                list.Add(BuildElementInfo(el, elements, false));
             }
 
             var etag = ComputeEtag(list);
@@ -358,7 +430,7 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            return McpResponse.Result(req.id, BuildElementInfo(element, PartRegistry.GetAll()));
+            return McpResponse.Result(req.id, BuildElementInfo(element, PartRegistry.GetAll(), true));
         }
 
         // ── Модули (именованные группы деталей) ───────────────────────────
@@ -541,12 +613,17 @@ namespace KitchenDesigner.Core.MCP
             RefreshElementHighlights();
             Debug.Log($"[MCP] Moved {element.PartName} to ({after.x}, {after.y}, {after.z})");
             var (hasViol, aabb, gaps) = DescribeAfterMutation(element);
+            var (faceNormal, faceInward, faceObstructions, openingViolations) = BuildFacadeResponseFields(element);
             return McpResponse.Result(req.id, new {
                 ok = true, element = p.name,
                 position = new { x = after.x, y = after.y, z = after.z },
                 hasViolations = hasViol,
                 aabb = aabb,
-                faceGaps = gaps
+                faceGaps = gaps,
+                faceNormal = faceNormal,
+                faceInward = faceInward,
+                faceObstructions = faceObstructions,
+                openingViolations = openingViolations
             });
         }
 
@@ -598,7 +675,16 @@ namespace KitchenDesigner.Core.MCP
             CommandStack.Execute(new MoveCommand(element, before, before, rotBefore, rotAfter));
             RefreshElementHighlights();
             Debug.Log($"[MCP] Rotated {element.PartName} to ({euler.x}, {euler.y}, {euler.z})");
-            return McpResponse.Result(req.id, new { ok = true, element = p.name, rotation = new { x = euler.x, y = euler.y, z = euler.z }, hasViolations = HasViolations(element) });
+            var (faceNormalR, faceInwardR, faceObstructionsR, openingViolationsR) = BuildFacadeResponseFields(element);
+            return McpResponse.Result(req.id, new {
+                ok = true, element = p.name,
+                rotation = new { x = euler.x, y = euler.y, z = euler.z },
+                hasViolations = HasViolations(element),
+                faceNormal = faceNormalR,
+                faceInward = faceInwardR,
+                faceObstructions = faceObstructionsR,
+                openingViolations = openingViolationsR
+            });
         }
 
         private McpResponse HandleCreateElement(McpRequest req)
@@ -693,7 +779,16 @@ namespace KitchenDesigner.Core.MCP
             CommandStack.Execute(new CreateCommand(go));
             RefreshElementHighlights();
             Debug.Log($"[MCP] Created {go.name} at ({p.x}, {p.y}, {p.z})");
-            return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, is_facade = p.is_facade, path = GetGameObjectPath(go), posX = pos.x, posY = pos.y, posZ = pos.z, hasViolations = HasViolations(element) });
+            var (faceNormalC, faceInwardC, faceObstructionsC, openingViolationsC) = BuildFacadeResponseFields(element);
+            return McpResponse.Result(req.id, new {
+                ok = true, name = go.name, is_wall = p.is_wall, is_facade = p.is_facade,
+                path = GetGameObjectPath(go), posX = pos.x, posY = pos.y, posZ = pos.z,
+                hasViolations = HasViolations(element),
+                faceNormal = faceNormalC,
+                faceInward = faceInwardC,
+                faceObstructions = faceObstructionsC,
+                openingViolations = openingViolationsC
+            });
         }
 
         /// <summary>Строка → тип заполнения сборного фасада. По умолчанию Blind.</summary>
@@ -937,18 +1032,70 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Result(req.id, new { violations = new string[0], count = 0 });
 
             var result = ConstraintValidator.Validate(all);
+            var facadeIssues = ComputeFacadeViolations(all);
+
             var list = new List<object>();
+            var seen = new HashSet<KitchenElement>();
+
             foreach (var el in result.violations)
             {
+                seen.Add(el);
                 var overlaps = ComputeViolationOverlaps(el, all);
+                var facadeFields = BuildFacadeViolationFields(el, all);
                 list.Add(new {
                     name = el.PartName,
                     type = el.GetType().Name,
                     overlapsWith = overlaps,
-                    disconnected = overlaps.Count == 0
+                    disconnected = overlaps.Count == 0,
+                    facadeFields.faceNormal,
+                    facadeFields.faceInward,
+                    facadeFields.faceObstructions,
+                    facadeFields.openingViolations
                 });
             }
+
+            foreach (var kvp in facadeIssues)
+            {
+                var el = kvp.Key;
+                if (seen.Contains(el)) continue;
+                seen.Add(el);
+                list.Add(new {
+                    name = el.PartName,
+                    type = el.GetType().Name,
+                    overlapsWith = new List<object>(),
+                    disconnected = false,
+                    kvp.Value.faceNormal,
+                    kvp.Value.faceInward,
+                    kvp.Value.faceObstructions,
+                    kvp.Value.openingViolations
+                });
+            }
+
             return McpResponse.Result(req.id, new { violations = list, count = list.Count });
+        }
+
+        private static Dictionary<KitchenElement, (object faceNormal, bool faceInward, object faceObstructions, object openingViolations)>
+            ComputeFacadeViolations(List<KitchenElement> all)
+        {
+            var result = new Dictionary<KitchenElement, (object, bool, object, object)>();
+            foreach (var el in all)
+            {
+                if (!(el is FacadeElement facade)) continue;
+                var fields = BuildFacadeResponseFields(facade);
+                bool hasIssue = fields.faceInward ||
+                    (fields.faceObstructions != null && ((List<FaceObstructionInfo>)fields.faceObstructions).Count > 0) ||
+                    (fields.openingViolations != null && ((List<OpeningViolationInfo>)fields.openingViolations).Count > 0);
+                if (hasIssue)
+                    result[el] = fields;
+            }
+            return result;
+        }
+
+        private static (object faceNormal, bool faceInward, object faceObstructions, object openingViolations)
+            BuildFacadeViolationFields(KitchenElement el, List<KitchenElement> all)
+        {
+            if (!(el is FacadeElement facade)) return (null, false, null, null);
+            return BuildFacadeResponseFields(facade);
         }
 
         private static List<object> ComputeViolationOverlaps(KitchenElement el, List<KitchenElement> all)
@@ -1446,7 +1593,15 @@ namespace KitchenDesigner.Core.MCP
             }
 
             Debug.Log($"[MCP] Facade '{p.name}' mode set to {p.mode}");
-            return McpResponse.Result(req.id, new { ok = true, name = p.name, mode = p.mode });
+            var data = ComputeFacadeValidation(facade, PartRegistry.GetAll());
+            var normal = new { x = data.normal.x, y = data.normal.y, z = data.normal.z };
+            return McpResponse.Result(req.id, new {
+                ok = true, name = p.name, mode = p.mode,
+                faceNormal = normal,
+                faceInward = data.faceInward,
+                faceObstructions = data.obstructions,
+                openingViolations = data.openingViolations
+            });
         }
 
         // ── Материалы / текстуры ────────────────────────────────────────
