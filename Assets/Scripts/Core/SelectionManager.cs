@@ -32,6 +32,10 @@ namespace KitchenDesigner.Core
             if (ElementMover.IsDragging)
                 return;
 
+            // Клик по ручке ресайза не должен менять/снимать выделение.
+            if (ResizeHandleManager.IsResizing || ResizeHandleManager.PointerOverHandle())
+                return;
+
             if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
                 return;
 

@@ -65,7 +65,7 @@ namespace KitchenDesigner.Core
                 _isOrbiting = false;
             }
 
-            if (mmbDown || (lmbDown && !overUI && !PointerHitsBoard()))
+            if (mmbDown || (lmbDown && !overUI && !PointerHitsBoard() && !ResizeHandleManager.PointerOverHandle()))
             {
                 _isPanning = true;
                 _lastMouse = Input.mousePosition;

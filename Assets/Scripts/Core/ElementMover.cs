@@ -238,6 +238,9 @@ namespace KitchenDesigner.Core
 
         private void HandleDragInput()
         {
+            // Идёт ресайз ручкой — перемещение объекта не запускаем.
+            if (ResizeHandleManager.IsResizing) return;
+
             if (Input.GetKeyDown(KeyCode.Escape) && IsDragging)
             {
                 CancelDrag();
