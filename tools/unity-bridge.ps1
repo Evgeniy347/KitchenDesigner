@@ -35,7 +35,15 @@ try {
     $buffer = New-Object byte[] 65536
     $response = ""
     while ($response -notmatch "`n") {
-        $read = $stream.Read($buffer, 0, $buffer.Length)
+        try {
+            $read = $stream.Read($buffer, 0, $buffer.Length)
+        }
+        catch {
+            Write-Error ("Нет ответа за $($TimeoutMs)мс. Частая причина: окно приложения " +
+                "БЕЗ ФОКУСА — старые сборки замирают в фоне (runInBackground=0). " +
+                "Кликни по окну KitchenDesigner и повтори команду, либо пересобери проект.")
+            exit 2
+        }
         if ($read -le 0) { break }
         $response += [Text.Encoding]::UTF8.GetString($buffer, 0, $read)
     }

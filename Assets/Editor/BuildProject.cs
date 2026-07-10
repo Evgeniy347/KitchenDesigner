@@ -55,7 +55,9 @@ public static class BuildProject
         PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
         PlayerSettings.defaultScreenWidth = 1280;
         PlayerSettings.defaultScreenHeight = 720;
-        Debug.Log("[BuildProject] Window: resizable, windowed 1280x720");
+        // Не замирать без фокуса: иначе стоят автосейв-таймер и TCP-мост отладки.
+        PlayerSettings.runInBackground = true;
+        Debug.Log("[BuildProject] Window: resizable, windowed 1280x720, runInBackground");
     }
 
     private static void EnsureURPAssigned()
