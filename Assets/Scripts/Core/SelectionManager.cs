@@ -221,7 +221,7 @@ namespace KitchenDesigner.Core
                     _savedMaterials[element] = new SavedMaterial
                     {
                         material = renderer.material,
-                        color = renderer.material.color
+                        color = renderer.material.GetColor("_BaseColor")
                     };
                 }
 
@@ -229,10 +229,16 @@ namespace KitchenDesigner.Core
                 mat.EnableKeyword("_EMISSION");
                 float intensity = isMulti ? 0.3f : 0.5f;
                 mat.SetColor("_EmissionColor", new Color(0.8f, 0.7f, 0.1f) * intensity);
-                float alpha = renderer.material.color.a;
-                mat.color = isMulti
+                float alpha = renderer.material.GetColor("_BaseColor").a;
+                if (alpha < 0.99f)
+                {
+                    mat.SetFloat("_Surface", 1);
+                    mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                    mat.renderQueue = 3000;
+                }
+                mat.SetColor("_BaseColor", isMulti
                     ? new Color(1f, 0.97f, 0.7f, alpha)
-                    : new Color(1f, 0.95f, 0.6f, alpha);
+                    : new Color(1f, 0.95f, 0.6f, alpha));
                 renderer.material = mat;
             }
         }

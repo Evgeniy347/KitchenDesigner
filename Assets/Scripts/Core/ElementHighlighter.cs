@@ -40,32 +40,34 @@ namespace KitchenDesigner.Core
             _validMaterial = new Material(shader);
             _validMaterial.EnableKeyword("_EMISSION");
             _validMaterial.SetColor("_EmissionColor", new Color(0f, 1f, 0f) * 0.4f);
-            _validMaterial.color = new Color(0.85f, 1f, 0.85f);
+            _validMaterial.SetColor("_BaseColor", new Color(0.85f, 1f, 0.85f, 1f));
 
             _invalidMaterial = new Material(shader);
             _invalidMaterial.EnableKeyword("_EMISSION");
             _invalidMaterial.SetColor("_EmissionColor", new Color(1f, 0f, 0f) * 0.4f);
-            _invalidMaterial.color = new Color(1f, 0.8f, 0.8f);
+            _invalidMaterial.SetColor("_BaseColor", new Color(1f, 0.8f, 0.8f, 1f));
 
             // Затемнение элементов вне редактируемого модуля.
             _dimmedMaterial = new Material(shader);
-            _dimmedMaterial.color = new Color(0.35f, 0.35f, 0.38f);
+            _dimmedMaterial.SetColor("_BaseColor", new Color(0.35f, 0.35f, 0.38f, 1f));
 
-            _validTransparentMaterial = MakeTransparentCopy(_validMaterial);
-            _invalidTransparentMaterial = MakeTransparentCopy(_invalidMaterial);
+            _validTransparentMaterial = new Material(shader);
+            _validTransparentMaterial.SetFloat("_Surface", 1);
+            _validTransparentMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            _validTransparentMaterial.renderQueue = 3000;
+            _validTransparentMaterial.EnableKeyword("_EMISSION");
+            _validTransparentMaterial.SetColor("_EmissionColor", new Color(0f, 1f, 0f) * 0.4f);
+            _validTransparentMaterial.SetColor("_BaseColor", new Color(0.85f, 1f, 0.85f, 0.2f));
+
+            _invalidTransparentMaterial = new Material(shader);
+            _invalidTransparentMaterial.SetFloat("_Surface", 1);
+            _invalidTransparentMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            _invalidTransparentMaterial.renderQueue = 3000;
+            _invalidTransparentMaterial.EnableKeyword("_EMISSION");
+            _invalidTransparentMaterial.SetColor("_EmissionColor", new Color(1f, 0f, 0f) * 0.4f);
+            _invalidTransparentMaterial.SetColor("_BaseColor", new Color(1f, 0.8f, 0.8f, 0.2f));
 
             _materialsInitialized = true;
-        }
-
-        private static Material MakeTransparentCopy(Material source)
-        {
-            var mat = new Material(source);
-            mat.SetFloat("_Surface", 1);
-            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            mat.renderQueue = 3000;
-            var c = mat.color;
-            mat.color = new Color(c.r, c.g, c.b, 0.2f);
-            return mat;
         }
 
         public void RefreshHighlights()
