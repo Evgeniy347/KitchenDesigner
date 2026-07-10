@@ -46,6 +46,9 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<WallManager>() == null)
                 gameObject.AddComponent<WallManager>();
 
+            if (FindAnyObjectByType<ResizeHandleManager>() == null)
+                gameObject.AddComponent<ResizeHandleManager>();
+
             if (FindAnyObjectByType<UI.ConsoleOverlay>() == null)
                 gameObject.AddComponent<UI.ConsoleOverlay>();
 
