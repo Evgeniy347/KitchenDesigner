@@ -9,19 +9,26 @@ namespace KitchenDesigner.Core
         public int faceIndex;
     }
 
-    /// <summary>Показывает 6 стрелок по центрам граней выделенного объекта. Тянем
-    /// стрелку → соответствующая грань вытягивается (меняется размер по этой оси),
-    /// противоположная грань стоит на месте. Для движущейся грани работает прилипание
-    /// к встречным граням других объектов (ResizeSnap).</summary>
+    /// <summary>Два режима ручек на гранях выделенного объекта:
+    /// Resize — тянем грань, меняется размер (наконечник-кубик);
+    /// Move — двигаем объект вдоль одной оси (наконечник-стрелка/конус).
+    /// В обоих режимах для грани/объекта работает прилипание к другим объектам.</summary>
     public class ResizeHandleManager : MonoBehaviour
     {
+        public enum HandleMode { Resize, Move }
+
         public static ResizeHandleManager Instance { get; private set; }
+
+        /// <summary>Текущий режим ручек (переключается кнопкой в тулбаре).</summary>
+        public static HandleMode Mode { get; private set; } = HandleMode.Resize;
+        public static void ToggleMode() =>
+            Mode = Mode == HandleMode.Resize ? HandleMode.Move : HandleMode.Resize;
 
         /// <summary>Идёт перетаскивание ручки (другие системы не должны реагировать).</summary>
         public static bool IsResizing { get; private set; }
 
         private static KitchenElement _resizingElement;
-        /// <summary>Этот элемент сейчас ресайзят? (WallManager не опускает такую стену).</summary>
+        /// <summary>Этот элемент сейчас ресайзят/двигают ручкой? (WallManager не опускает его).</summary>
         public static bool IsResizingElement(KitchenElement e) =>
             IsResizing && e != null && e == _resizingElement;
 
@@ -36,7 +43,7 @@ namespace KitchenDesigner.Core
         private readonly List<ResizeHandle> _handles = new List<ResizeHandle>();
         private readonly Material[] _axisMats = new Material[3];
 
-        // Состояние активного ресайза.
+        // Состояние активного перетаскивания.
         private int _faceIndex, _axisIndex;
         private Vector3 _normal, _faceCenter0, _uAxis, _vAxis, _centerStart;
         private Vector2 _faceSize;
@@ -44,6 +51,8 @@ namespace KitchenDesigner.Core
         private Vector3Int _dimsBefore;
         private Vector3 _posBefore;
         private Quaternion _rotBefore;
+        private HandleMode _dragMode;   // режим, в котором начали тянуть
+        private HandleMode _builtMode;  // режим, в котором собраны текущие ручки
 
         private void Awake() => Instance = this;
 
@@ -94,8 +103,10 @@ namespace KitchenDesigner.Core
 
             // Ручки доступны только для подвижного объекта: запрет перемещения
             // запрещает и ресайз. Переключается на лету (чекбокс в свойствах).
+            // Смена режима (Resize/Move) пересобирает ручки с другим наконечником.
             bool show = _target.Movable;
-            if (show && _handles.Count == 0) BuildHandles();
+            bool needRebuild = show && (_handles.Count == 0 || _builtMode != Mode) && !IsResizing;
+            if (needRebuild) { ClearHandles(); BuildHandles(); }
             else if (!show && _handles.Count > 0) { IsResizing = false; ClearHandles(); }
 
             if (_handles.Count > 0 && !IsResizing) PositionHandles();
@@ -109,8 +120,12 @@ namespace KitchenDesigner.Core
 
             if (IsResizing)
             {
-                if (Input.GetMouseButton(0)) UpdateResize();
-                if (Input.GetMouseButtonUp(0)) FinishResize();
+                if (Input.GetMouseButton(0))
+                {
+                    if (_dragMode == HandleMode.Resize) UpdateResize();
+                    else UpdateMove();
+                }
+                if (Input.GetMouseButtonUp(0)) FinishDrag();
                 return;
             }
 
@@ -118,7 +133,7 @@ namespace KitchenDesigner.Core
             if (AltHeld || PointerOverUI()) return;
 
             if (RaycastHandle(out var handle))
-                BeginResize(handle.faceIndex);
+                BeginDrag(handle.faceIndex);
         }
 
         private static bool AltHeld => Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
@@ -148,9 +163,9 @@ namespace KitchenDesigner.Core
             return handle != null;
         }
 
-        private void BeginResize(int faceIndex)
+        private void BeginDrag(int faceIndex)
         {
-            if (!_target.Movable) return; // запрет перемещения запрещает и ресайз
+            if (!_target.Movable) return; // запрет перемещения запрещает и ресайз/move
             var faces = _target.GetFaces();
             if (faceIndex < 0 || faceIndex >= faces.Length) return;
             var f = faces[faceIndex];
@@ -174,6 +189,7 @@ namespace KitchenDesigner.Core
             _sParam0 = ClosestParamOnNormal();
 
             _resizingElement = _target;
+            _dragMode = Mode;
             IsResizing = true;
         }
 
@@ -198,17 +214,45 @@ namespace KitchenDesigner.Core
             if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
         }
 
-        private void FinishResize()
+        // Перемещение объекта вдоль одной оси (нормали грани) с прилипанием.
+        private void UpdateMove()
+        {
+            float sNow = ClosestParamOnNormal();
+            if (float.IsNaN(sNow)) return;
+
+            Vector3 newPos = _centerStart + _normal * (sNow - _sParam0);
+
+            var settings = KitchenSettings.Instance;
+            if (settings != null && settings.SnapEnabled)
+            {
+                var snap = SnapSystem.TrySnap(_target, BoardRegistry.GetAll(), newPos);
+                if (snap.snapped) // берём только составляющую снэпа вдоль оси
+                    newPos = _centerStart + _normal * Vector3.Dot(snap.position - _centerStart, _normal);
+            }
+
+            _target.transform.position = newPos;
+            PositionHandles();
+            if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
+        }
+
+        private void FinishDrag()
         {
             IsResizing = false;
             _resizingElement = null;
 
             var afterDims = _target.DimensionsMM;
             var afterPos = _target.transform.position;
-            if (afterDims != _dimsBefore || afterPos != _posBefore)
+
+            if (_dragMode == HandleMode.Resize)
             {
-                CommandStack.Execute(new ResizeCommand(_target,
-                    _dimsBefore, afterDims, _posBefore, afterPos, _rotBefore, _rotBefore));
+                if (afterDims != _dimsBefore || afterPos != _posBefore)
+                    CommandStack.Execute(new ResizeCommand(_target,
+                        _dimsBefore, afterDims, _posBefore, afterPos, _rotBefore, _rotBefore));
+            }
+            else if (afterPos != _posBefore)
+            {
+                CommandStack.Execute(new MoveCommand(_target,
+                    _posBefore, afterPos, _rotBefore, _rotBefore));
             }
             PositionHandles();
         }
@@ -234,6 +278,7 @@ namespace KitchenDesigner.Core
 
         private void BuildHandles()
         {
+            _builtMode = Mode;
             var faces = _target.GetFaces();
             for (int i = 0; i < faces.Length; i++)
             {
@@ -245,13 +290,13 @@ namespace KitchenDesigner.Core
                 col.center = new Vector3(0, 0, Gap + (ShaftLen + TipLen) * 0.5f);
                 col.size = new Vector3(TipSize * 1.6f, TipSize * 1.6f, ShaftLen + TipLen + 0.04f);
 
-                var mat = _axisMats[i / 2];
-                BuildArrowVisual(go.transform, mat);
+                BuildArrowVisual(go.transform, _axisMats[i / 2]);
                 _handles.Add(marker);
             }
             PositionHandles();
         }
 
+        // Resize-режим: наконечник-кубик; Move-режим: наконечник-конус (стрелка).
         private void BuildArrowVisual(Transform parent, Material mat)
         {
             // Стержень (Cylinder высотой 2 по Y → ориентируем по +Z).
@@ -263,13 +308,52 @@ namespace KitchenDesigner.Core
             shaft.transform.localScale = new Vector3(ShaftRad * 2f, ShaftLen * 0.5f, ShaftRad * 2f);
             shaft.GetComponent<MeshRenderer>().sharedMaterial = mat;
 
-            // Наконечник (Cube).
-            var tip = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            StripCollider(tip);
-            tip.transform.SetParent(parent, false);
+            GameObject tip;
+            if (Mode == HandleMode.Move)
+            {
+                // Конус-стрелка (локальный +Z = направление оси).
+                tip = new GameObject("Tip");
+                tip.AddComponent<MeshFilter>().sharedMesh = ConeMesh();
+                tip.AddComponent<MeshRenderer>().sharedMaterial = mat;
+                tip.transform.SetParent(parent, false);
+                tip.transform.localScale = new Vector3(TipSize * 1.4f, TipSize * 1.4f, TipLen * 1.3f);
+            }
+            else
+            {
+                tip = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                StripCollider(tip);
+                tip.transform.SetParent(parent, false);
+                tip.transform.localScale = new Vector3(TipSize, TipSize, TipLen);
+                tip.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            }
             tip.transform.localPosition = new Vector3(0, 0, Gap + ShaftLen + TipLen * 0.5f);
-            tip.transform.localScale = new Vector3(TipSize, TipSize, TipLen);
-            tip.GetComponent<MeshRenderer>().sharedMaterial = mat;
+        }
+
+        // Конус единичного масштаба вдоль +Z: основание (r=0.5) при z=-0.5, вершина при z=+0.5.
+        private static Mesh _coneMesh;
+        private static Mesh ConeMesh()
+        {
+            if (_coneMesh != null) return _coneMesh;
+            const int seg = 16;
+            var verts = new List<Vector3> { new Vector3(0, 0, 0.5f), new Vector3(0, 0, -0.5f) };
+            int apex = 0, baseC = 1, ring = verts.Count;
+            for (int i = 0; i < seg; i++)
+            {
+                float a = (float)i / seg * Mathf.PI * 2f;
+                verts.Add(new Vector3(Mathf.Cos(a) * 0.5f, Mathf.Sin(a) * 0.5f, -0.5f));
+            }
+            var tris = new List<int>();
+            for (int i = 0; i < seg; i++)
+            {
+                int cur = ring + i, next = ring + (i + 1) % seg;
+                tris.Add(apex); tris.Add(next); tris.Add(cur);   // боковая грань
+                tris.Add(baseC); tris.Add(cur); tris.Add(next);  // основание
+            }
+            _coneMesh = new Mesh();
+            _coneMesh.SetVertices(verts);
+            _coneMesh.SetTriangles(tris, 0);
+            _coneMesh.RecalculateNormals();
+            return _coneMesh;
         }
 
         private static void StripCollider(GameObject go)
@@ -309,6 +393,7 @@ namespace KitchenDesigner.Core
             m.SetColor("_EmissionColor", c * 0.6f);
             m.SetFloat("_Metallic", 0f);
             m.SetFloat("_Smoothness", 0.2f);
+            m.SetFloat("_Cull", 0f); // двусторонний — конус виден независимо от winding
             return m;
         }
     }

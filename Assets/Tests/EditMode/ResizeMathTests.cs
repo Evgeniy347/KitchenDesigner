@@ -105,6 +105,16 @@ public class ResizeMathTests
     }
 
     [Test]
+    public void ToggleMode_FlipsResizeAndMove()
+    {
+        var start = ResizeHandleManager.Mode;
+        ResizeHandleManager.ToggleMode();
+        Assert.AreNotEqual(start, ResizeHandleManager.Mode);
+        ResizeHandleManager.ToggleMode();
+        Assert.AreEqual(start, ResizeHandleManager.Mode); // вернулись в исходный режим
+    }
+
+    [Test]
     public void Resize_WallBottom_BeyondThreshold_NoSnap()
     {
         var floor = Make(new Vector3(0, -0.009f, 0), new Vector3Int(3000, 18, 3000), basePlate: true);
