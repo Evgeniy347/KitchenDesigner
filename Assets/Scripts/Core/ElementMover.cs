@@ -7,6 +7,10 @@ namespace KitchenDesigner.Core
     {
         public static bool IsDragging { get; private set; }
 
+        // Объекты, перемещаемые прямо сейчас (для WallManager: двигаемую стену не опускаем).
+        private static readonly HashSet<KitchenElement> _movingSet = new HashSet<KitchenElement>();
+        public static bool IsMoving(KitchenElement e) => e != null && _movingSet.Contains(e);
+
         private KitchenElement _target;
         private Vector3 _offset;
         private Vector3 _startPosition;
@@ -146,6 +150,9 @@ namespace KitchenDesigner.Core
                 _moveSet.Add(_target);
                 _moveStart.Add(_startPosition);
             }
+
+            _movingSet.Clear();
+            foreach (var e in _moveSet) _movingSet.Add(e);
         }
 
         /// <summary>Сдвигает все элементы набора на delta от их стартовых позиций.</summary>
@@ -270,6 +277,7 @@ namespace KitchenDesigner.Core
             IsDragging = false;
             _wasMoved = false;
             _pressed = false;
+            _movingSet.Clear();
             RefreshHighlights();
         }
 
@@ -385,6 +393,7 @@ namespace KitchenDesigner.Core
             RestoreDragMaterial();
             IsDragging = false;
             _wasShift = false;
+            _movingSet.Clear();
             RefreshHighlights();
         }
 
