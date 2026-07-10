@@ -15,12 +15,27 @@ namespace KitchenDesigner.Core
 
     public static class SnapSystem
     {
+        // Гистерезис снэпа: порог входа (притяжение) и выхода (отлипание, +30%).
+        // Предотвращает «дрожание» доски на границе порога.
+        private static KitchenElement _lastHoverTarget;
+        private static bool _isSnapped;
+        private const float HysteresisFactor = 1.3f;
+
         public static SnapResult TrySnap(KitchenElement moved, List<KitchenElement> others, Vector3 testPosition)
         {
             if (!KitchenSettings.Instance.SnapEnabled)
+            {
+                _isSnapped = false;
+                _lastHoverTarget = null;
+                return default;
+            }
+
+            if (!moved.gameObject.activeInHierarchy)
                 return default;
 
             float threshold = KitchenSettings.Instance.SnapThreshold * AppConstants.MM_TO_UNITS;
+            float enterThreshold = threshold;
+            float exitThreshold = threshold * HysteresisFactor;
             Vector3 prevPos = moved.transform.position;
             moved.transform.position = testPosition;
             KitchenElement.Face[] movedFaces = moved.GetFaces();
@@ -32,6 +47,7 @@ namespace KitchenDesigner.Core
             foreach (var other in others)
             {
                 if (other == moved || other == null) continue;
+                if (!other.gameObject.activeInHierarchy) continue;
                 if (ElementsIntersect(moved, other)) continue;
 
                 KitchenElement.Face[] otherFaces = other.GetFaces();
@@ -48,7 +64,8 @@ namespace KitchenDesigner.Core
 
                         Vector3 offset = of.center - mf.center;
                         float planeDist = Mathf.Abs(Vector3.Dot(offset, mf.normal));
-                        if (planeDist > threshold) continue;
+                        float activeThreshold = (_isSnapped && _lastHoverTarget == other) ? exitThreshold : enterThreshold;
+                        if (planeDist > activeThreshold) continue;
 
                         if (!FacesOverlap(mf, of, out float overlapRatio))
                             continue;
@@ -92,6 +109,18 @@ namespace KitchenDesigner.Core
             }
 
             moved.transform.position = prevPos;
+
+            if (best.snapped)
+            {
+                _lastHoverTarget = others.Find(o => o.BoardName == best.targetName);
+                _isSnapped = true;
+            }
+            else
+            {
+                _isSnapped = false;
+                _lastHoverTarget = null;
+            }
+
             if (VerboseLog && bestLog != null) Debug.Log(bestLog);
             return best;
         }

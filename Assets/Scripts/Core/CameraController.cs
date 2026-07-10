@@ -12,6 +12,9 @@ namespace KitchenDesigner.Core
         [SerializeField] private float _panSpeed = 0.02f;
 
         private Vector3 _target = Vector3.zero;
+        private Vector3 _actualTarget;
+        private Vector3 _focusVelocity;
+        private float _focusSmoothTime = 0.3f;
         private float _angleX = 30f;
         private float _angleY = 0f;
         private Vector3 _lastMouse;
@@ -21,6 +24,7 @@ namespace KitchenDesigner.Core
         private void Start()
         {
             Debug.Log("[Camera] Start: distance=" + _distance + " angleX=" + _angleX + " angleY=" + _angleY);
+            _actualTarget = _target;
             UpdateCameraPosition();
         }
 
@@ -90,8 +94,9 @@ namespace KitchenDesigner.Core
 
         private static bool PointerOverUI()
         {
-            return UnityEngine.EventSystems.EventSystem.current != null &&
-                   UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+            var es = UnityEngine.EventSystems.EventSystem.current;
+            if (es == null) return false;
+            return es.IsPointerOverGameObject() || es.IsPointerOverGameObject(0);
         }
 
         private static bool PointerHitsBoard()
@@ -114,8 +119,8 @@ namespace KitchenDesigner.Core
         {
             if (SelectionManager.Instance != null && SelectionManager.Instance.Selected != null)
             {
-                _target = SelectionManager.Instance.Selected.transform.position;
-                Debug.Log("[Camera] Focus on selected at " + _target);
+                _actualTarget = SelectionManager.Instance.Selected.transform.position;
+                Debug.Log("[Camera] Focus on selected at " + _actualTarget);
             }
             else
             {
@@ -125,11 +130,13 @@ namespace KitchenDesigner.Core
 
         public void FocusOn(Vector3 point)
         {
-            _target = point;
+            _actualTarget = point;
         }
 
         private void UpdateCameraPosition()
         {
+            _target = Vector3.SmoothDamp(_target, _actualTarget, ref _focusVelocity, _focusSmoothTime);
+
             Quaternion rotation = Quaternion.Euler(_angleX, _angleY, 0);
             Vector3 offset = rotation * (Vector3.back * _distance);
             Camera cam = Camera.main;

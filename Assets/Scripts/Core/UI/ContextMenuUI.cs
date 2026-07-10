@@ -62,7 +62,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (Input.GetMouseButtonDown(1) && !ElementMover.IsDragging)
             {
-                if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                if (EventSystem.current != null && IsPointerOverGameObject())
                     return;
 
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -125,24 +125,42 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target == null) return;
 
+            var oldDims = _target.DimensionsMM;
+            var oldPos = _target.transform.position;
+            var oldRot = _target.transform.rotation;
+
             _target.BoardName = string.IsNullOrWhiteSpace(_name.text) ? "Board" : _name.text;
 
             _target.DimensionsMM = new Vector3Int(
-                ParseInt(_w.text, _target.DimensionsMM.x),
-                ParseInt(_h.text, _target.DimensionsMM.y),
-                ParseInt(_d.text, _target.DimensionsMM.z));
+                ParseInt(_w.text, oldDims.x),
+                ParseInt(_h.text, oldDims.y),
+                ParseInt(_d.text, oldDims.z));
 
-            var pos = _target.transform.position;
             _target.transform.position = new Vector3(
-                ParseFloat(_x.text, pos.x),
-                ParseFloat(_y.text, pos.y),
-                ParseFloat(_z.text, pos.z));
+                ParseFloat(_x.text, oldPos.x),
+                ParseFloat(_y.text, oldPos.y),
+                ParseFloat(_z.text, oldPos.z));
 
-            var e = _target.transform.eulerAngles;
+            var euler = oldRot.eulerAngles;
             _target.transform.rotation = Quaternion.Euler(
-                ParseFloat(_rx.text, e.x),
-                ParseFloat(_ry.text, e.y),
-                ParseFloat(_rz.text, e.z));
+                ParseFloat(_rx.text, euler.x),
+                ParseFloat(_ry.text, euler.y),
+                ParseFloat(_rz.text, euler.z));
+
+            if (KitchenSettings.Instance.BlockOnViolation && WouldCauseViolation())
+            {
+                _target.DimensionsMM = oldDims;
+                _target.transform.position = oldPos;
+                _target.transform.rotation = oldRot;
+                Debug.Log("[ContextMenu] Apply blocked — would cause violation");
+            }
+            else
+            {
+                CommandStack.Execute(new ResizeCommand(_target,
+                    oldDims, _target.DimensionsMM,
+                    oldPos, _target.transform.position,
+                    oldRot, _target.transform.rotation));
+            }
 
             _w.text = _target.DimensionsMM.x.ToString();
             _h.text = _target.DimensionsMM.y.ToString();
@@ -151,10 +169,21 @@ namespace KitchenDesigner.Core.UI
             RefreshHighlights();
         }
 
+        private bool WouldCauseViolation()
+        {
+            var list = BoardRegistry.GetAll();
+            var result = ConstraintValidator.Validate(list);
+            return result.violations.Contains(_target);
+        }
+
         private void Rotate90()
         {
             if (_target == null) return;
+            var oldRot = _target.transform.rotation;
             _target.RotateAroundAxis(Vector3.up, 90f);
+            CommandStack.Execute(new MoveCommand(_target,
+                _target.transform.position, _target.transform.position,
+                oldRot, _target.transform.rotation));
             RefreshHighlights();
         }
 
@@ -163,7 +192,11 @@ namespace KitchenDesigner.Core.UI
             if (_target == null) return;
             var dup = ElementFactory.Duplicate(_target);
             var element = dup != null ? dup.GetComponent<KitchenElement>() : null;
-            if (element != null) Open(element);
+            if (element != null)
+            {
+                CommandStack.Execute(new CreateCommand(dup));
+                Open(element);
+            }
             RefreshHighlights();
         }
 
@@ -174,7 +207,7 @@ namespace KitchenDesigner.Core.UI
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.Deselect();
             Close();
-            Destroy(go);
+            CommandStack.Execute(new DeleteCommand(go));
             RefreshHighlights();
         }
 
@@ -189,5 +222,12 @@ namespace KitchenDesigner.Core.UI
 
         private static float ParseFloat(string s, float fallback) =>
             float.TryParse(s, out float v) ? v : fallback;
+
+        private static bool IsPointerOverGameObject()
+        {
+            var es = EventSystem.current;
+            if (es == null) return false;
+            return es.IsPointerOverGameObject() || es.IsPointerOverGameObject(0);
+        }
     }
 }

@@ -146,7 +146,7 @@ namespace KitchenDesigner.Core
                 using (var fs = new FileStream(zipPath, FileMode.Create))
                 using (var zip = new ZipArchive(fs, ZipArchiveMode.Create))
                 {
-                    var entry = zip.CreateEntry($"{baseName}_{stamp}.json", CompressionLevel.Optimal);
+                    var entry = zip.CreateEntry($"{baseName}_{stamp}.json", System.IO.Compression.CompressionLevel.Optimal);
                     using (var es = entry.Open())
                     using (var src = File.OpenRead(path))
                         src.CopyTo(es);
@@ -167,12 +167,22 @@ namespace KitchenDesigner.Core
             if (!IsVersionCompatible(data))
                 Debug.LogWarning($"[SaveLoad] Version mismatch: file={data.version}, app={AppConstants.SAVE_FORMAT_VERSION}");
 
-            ClearBoards(FindAllElements());
+            ClearBoardsImmediate(FindAllElements());
             RestoreScene(data);
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
             return true;
+        }
+
+        private static void ClearBoardsImmediate(IEnumerable<KitchenElement> elements)
+        {
+            foreach (var e in elements)
+            {
+                if (e == null) continue;
+                if (e.GetComponent<BasePlate>() != null) continue;
+                UnityEngine.Object.DestroyImmediate(e.gameObject);
+            }
         }
 
         public static string[] GetSaveFiles()
@@ -187,15 +197,15 @@ namespace KitchenDesigner.Core
 
         private static IEnumerable<KitchenElement> FindAllElements()
         {
-            return Object.FindObjectsByType<KitchenElement>();
+            return BoardRegistry.GetAll();
         }
 
         private static void DestroyElement(GameObject go)
         {
             if (Application.isPlaying)
-                Object.Destroy(go);
+                UnityEngine.Object.Destroy(go);
             else
-                Object.DestroyImmediate(go);
+                UnityEngine.Object.DestroyImmediate(go);
         }
     }
 }

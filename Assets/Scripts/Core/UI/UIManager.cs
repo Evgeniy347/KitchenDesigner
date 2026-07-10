@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -37,6 +38,9 @@ namespace KitchenDesigner.Core.UI
 
             _contextMenu = gameObject.AddComponent<ContextMenuUI>();
             _contextMenu.Build(_canvas.transform);
+
+            var toast = gameObject.AddComponent<ToastNotification>();
+            toast.Build(_canvas.transform);
         }
 
         private void BuildToolbar()
@@ -64,6 +68,18 @@ namespace KitchenDesigner.Core.UI
             AddBarButton(bar.transform, "Settings", "Настройки", ref x, y, h, 130, ToggleSettings);
             AddBarButton(bar.transform, "Save", "Сохранить", ref x, y, h, 130, QuickSave);
             AddBarButton(bar.transform, "Load", "Загрузить", ref x, y, h, 130, QuickLoad);
+
+            x += 20;
+            var alignBtn = UIFactory.CreateButton("Align", bar.transform, "Выравн.",
+                new Vector2(x, y), new Vector2(80, h), ShowAlignMenu);
+            UIFactory.AnchorTopLeft(alignBtn.GetComponent<RectTransform>());
+            alignBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
+            x += 86;
+            var distBtn = UIFactory.CreateButton("Distribute", bar.transform, "Распред.",
+                new Vector2(x, y), new Vector2(80, h), DistributeX);
+            UIFactory.AnchorTopLeft(distBtn.GetComponent<RectTransform>());
+            distBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
+            x += 86;
         }
 
         private void AddBarButton(Transform parent, string name, string label, ref float x, float y, float h, float w, System.Action onClick)
@@ -88,8 +104,12 @@ namespace KitchenDesigner.Core.UI
 
             var go = ElementFactory.CreateBoard(dims, $"Board {dims.x}x{dims.y}x{dims.z}", pos);
             var element = go.GetComponent<KitchenElement>();
-            if (element != null && SelectionManager.Instance != null)
-                SelectionManager.Instance.Select(element);
+            if (element != null)
+            {
+                CommandStack.Execute(new CreateCommand(go));
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.Select(element);
+            }
         }
 
         private Vector3 GroundPointInFrontOfCamera()
@@ -128,6 +148,34 @@ namespace KitchenDesigner.Core.UI
         {
             if (SaveLoadManager.LoadProject(QuickSaveName))
                 Debug.Log("[UI] Loaded: " + QuickSaveName);
+        }
+
+        private void ShowAlignMenu()
+        {
+            var sel = SelectionManager.Instance;
+            if (sel == null || sel.SelectedElements.Count < 2)
+            {
+                Debug.Log("[UI] Align: select at least 2 boards");
+                return;
+            }
+
+            var list = new List<KitchenElement>(sel.SelectedElements);
+            AlignDistributeTool.Align(list, Axis.X, AlignmentMode.Min);
+            AlignDistributeTool.RefreshHighlights();
+        }
+
+        private void DistributeX()
+        {
+            var sel = SelectionManager.Instance;
+            if (sel == null || sel.SelectedElements.Count < 3)
+            {
+                Debug.Log("[UI] Distribute: select at least 3 boards");
+                return;
+            }
+
+            var list = new List<KitchenElement>(sel.SelectedElements);
+            AlignDistributeTool.Distribute(list, Axis.X);
+            AlignDistributeTool.RefreshHighlights();
         }
     }
 }

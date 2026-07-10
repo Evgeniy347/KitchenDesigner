@@ -44,8 +44,7 @@ namespace KitchenDesigner.Core
         {
             if (!_materialsInitialized) return;
 
-            var all = FindObjectsByType<KitchenElement>();
-            var list = new List<KitchenElement>(all);
+            var list = BoardRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
 
             foreach (var element in list)
@@ -63,8 +62,7 @@ namespace KitchenDesigner.Core
         {
             if (element == null || !_materialsInitialized) return;
 
-            var all = FindObjectsByType<KitchenElement>();
-            var list = new List<KitchenElement>(all);
+            var list = BoardRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
 
             bool isValid = !result.violations.Contains(element);
