@@ -34,6 +34,25 @@ namespace KitchenDesigner.Core
 
         public void RestoreFull() => SetLowered(false, 0f);
 
+        /// <summary>Опущена ли стена сейчас (режим обзора).</summary>
+        public bool IsLowered => _lowered;
+
+        /// <summary>Высота стены в юнитах при полной высоте (без учёта опускания).</summary>
+        public float FullScaleY => _lowered ? _fullScaleY : transform.localScale.y;
+
+        /// <summary>Позиция центра при полной высоте. Пока стена опущена, её
+        /// transform смещён вниз — для сохранения нужна именно полная позиция,
+        /// иначе после загрузки стена «утонет» (станет ниже).</summary>
+        public Vector3 FullPosition
+        {
+            get
+            {
+                var p = transform.position;
+                if (_lowered) p.y = _fullPosY;
+                return p;
+            }
+        }
+
         private void ApplyLowered(float loweredHeightUnits)
         {
             float baseY = _fullPosY - _fullScaleY * 0.5f; // низ стены остаётся на месте

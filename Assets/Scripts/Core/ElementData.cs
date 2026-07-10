@@ -21,14 +21,17 @@ namespace KitchenDesigner.Core
             var dims = element.DimensionsMM;
             d.dimensionsMM = new[] { dims.x, dims.y, dims.z };
 
-            var p = element.transform.position;
+            // Полускрытая (опущенная) стена временно смещена вниз — в сохранение
+            // пишем её ПОЛНУЮ позицию, иначе после загрузки она «утонет» (станет ниже).
+            var wall = element.GetComponent<Wall>();
+            var p = wall != null ? wall.FullPosition : element.transform.position;
             d.position = new[] { p.x, p.y, p.z };
 
             var r = element.transform.rotation;
             d.rotation = new[] { r.x, r.y, r.z, r.w };
 
             d.movable = element.Movable;
-            d.isWall = element.GetComponent<Wall>() != null;
+            d.isWall = wall != null;
             d.groupId = element.GroupId;
             return d;
         }
