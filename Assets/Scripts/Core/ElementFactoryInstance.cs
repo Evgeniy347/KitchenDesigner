@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
     public class ElementFactoryInstance : IElementFactory
     {
         private Material _defaultMaterial;
-        private readonly ObjectPool<GameObject> _boardPool;
+        private readonly ObjectPool<GameObject> _partPool;
         private readonly ObjectPool<GameObject> _facadePool;
 
         private Material DefaultMaterial
@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core
 
         public ElementFactoryInstance()
         {
-            _boardPool = new ObjectPool<GameObject>(
+            _partPool = new ObjectPool<GameObject>(
                 createFunc: () =>
                 {
                     var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -101,26 +101,26 @@ namespace KitchenDesigner.Core
         {
             var el = go.GetComponent<KitchenElement>();
             if (el == null) return;
-            el.BoardName = "(pooled)";
+            el.PartName = "(pooled)";
             el.DimensionsMM = new Vector3Int(800, 400, 18);
             el.Movable = true;
             el.GroupId = 0;
-            BoardRegistry.Unregister(el);
+            PartRegistry.Unregister(el);
         }
 
-        public GameObject CreateBoard(Vector3Int dimensionsMM, string name, Vector3 position)
+        public GameObject CreatePart(Vector3Int dimensionsMM, string name, Vector3 position)
         {
-            var go = _boardPool.Get();
+            var go = _partPool.Get();
             go.name = string.IsNullOrEmpty(name) ? "Board" : name;
             go.transform.position = position;
 
             var element = go.GetComponent<KitchenElement>();
-            element.BoardName = go.name;
+            element.PartName = go.name;
             element.DimensionsMM = dimensionsMM;
             element.Movable = true;
 
             go.SetActive(true);
-            BoardRegistry.Register(element);
+            PartRegistry.Register(element);
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
@@ -135,7 +135,7 @@ namespace KitchenDesigner.Core
 
             var dims = AppConstants.PRESET_DIMENSIONS_MM[presetIndex];
             var name = $"Board {dims.x}x{dims.y}x{dims.z}";
-            return CreateBoard(dims, name, position);
+            return CreatePart(dims, name, position);
         }
 
         public GameObject Duplicate(KitchenElement source)
@@ -147,7 +147,7 @@ namespace KitchenDesigner.Core
 
             if (source is AssembledFacadeElement assembled)
             {
-                var go = CreateAssembledFacade(dims, source.BoardName + " (copy)", offset, assembled.Fill);
+                var go = CreateAssembledFacade(dims, source.PartName + " (copy)", offset, assembled.Fill);
                 go.transform.rotation = source.transform.rotation;
                 var copy = go.GetComponent<AssembledFacadeElement>();
                 if (copy != null) { copy.Mode = assembled.Mode; copy.GrooveCount = assembled.GrooveCount; }
@@ -158,7 +158,7 @@ namespace KitchenDesigner.Core
             var facade = source as FacadeElement;
             if (facade != null)
             {
-                var go = CreateFacade(dims, source.BoardName + " (copy)", offset,
+                var go = CreateFacade(dims, source.PartName + " (copy)", offset,
                     facade.GapLeft, facade.GapRight, facade.GapTop, facade.GapBottom);
                 go.transform.rotation = source.transform.rotation;
                 var copyFacade = go.GetComponent<FacadeElement>();
@@ -167,7 +167,7 @@ namespace KitchenDesigner.Core
                 return go;
             }
 
-            var go2 = CreateBoard(dims, source.BoardName + " (copy)", offset);
+            var go2 = CreatePart(dims, source.PartName + " (copy)", offset);
             go2.transform.rotation = source.transform.rotation;
 
             if (source.GetComponent<Wall>() != null)
@@ -178,7 +178,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateWall(Vector3Int dimensionsMM, string name, Vector3 position)
         {
-            var go = CreateBoard(dimensionsMM, name, position);
+            var go = CreatePart(dimensionsMM, name, position);
             go.AddComponent<Wall>();
             return go;
         }
@@ -191,7 +191,7 @@ namespace KitchenDesigner.Core
             go.transform.position = position;
 
             var facade = go.GetComponent<FacadeElement>();
-            facade.BoardName = go.name;
+            facade.PartName = go.name;
             facade.DimensionsMM = dimensionsMM;
             facade.GapLeft = gapLeft;
             facade.GapRight = gapRight;
@@ -199,7 +199,7 @@ namespace KitchenDesigner.Core
             facade.GapBottom = gapBottom;
 
             go.SetActive(true);
-            BoardRegistry.Register(facade);
+            PartRegistry.Register(facade);
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
@@ -211,7 +211,7 @@ namespace KitchenDesigner.Core
             AssembledFill fill = AssembledFill.Blind)
         {
             // Сборный фасад НЕ пулим: процедурный меш + дочерние объекты не переживают
-            // сброс пула. Создаём свежий GameObject по образцу пула досок.
+            // сброс пула. Создаём свежий GameObject по образцу пула деталей.
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = string.IsNullOrEmpty(name) ? "Сборный фасад" : name;
             go.tag = "KitchenElement";
@@ -222,22 +222,22 @@ namespace KitchenDesigner.Core
             rb.useGravity = false;
 
             var facade = go.AddComponent<AssembledFacadeElement>();
-            facade.BoardName = go.name;
+            facade.PartName = go.name;
             facade.DimensionsMM = dimensionsMM; // ApplyDimensions → RebuildMesh
             facade.Fill = fill;
             MaterialManager.ApplyById(facade, facade.MaterialId); // декор в сабмеш 0
 
-            BoardRegistry.Register(facade);
+            PartRegistry.Register(facade);
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
 
             return go;
         }
 
-        public void DestroyBoard(GameObject go)
+        public void DestroyPart(GameObject go)
         {
             if (go == null) return;
-            _boardPool.Release(go);
+            _partPool.Release(go);
         }
 
         public void DestroyFacade(GameObject go)
@@ -252,18 +252,18 @@ namespace KitchenDesigner.Core
             // Сборный фасад не из пула — уничтожаем напрямую.
             if (go.GetComponent<AssembledFacadeElement>() != null)
             {
-                BoardRegistry.Unregister(go.GetComponent<KitchenElement>());
+                PartRegistry.Unregister(go.GetComponent<KitchenElement>());
                 Object.Destroy(go);
             }
             else if (go.GetComponent<FacadeElement>() != null)
                 _facadePool.Release(go);
             else
-                _boardPool.Release(go);
+                _partPool.Release(go);
         }
 
         public void ClearPools()
         {
-            _boardPool.Clear();
+            _partPool.Clear();
             _facadePool.Clear();
         }
     }

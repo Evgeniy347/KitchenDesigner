@@ -10,7 +10,7 @@ public class FacadeElementTests
     [SetUp]
     public void Setup()
     {
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
     }
 
     [TearDown]
@@ -19,9 +19,9 @@ public class FacadeElementTests
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
-        foreach (var el in BoardRegistry.GetAll())
+        foreach (var el in PartRegistry.GetAll())
             if (el != null) Object.DestroyImmediate(el.gameObject);
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
     }
 
     private FacadeElement MakeFacade(string name, Vector3Int dims, Vector3 pos,
@@ -31,13 +31,13 @@ public class FacadeElementTests
         go.name = name;
         go.transform.position = pos;
         var f = go.AddComponent<FacadeElement>();
-        f.BoardName = name;
+        f.PartName = name;
         f.DimensionsMM = dims;
         f.GapLeft = gapL;
         f.GapRight = gapR;
         f.GapTop = gapT;
         f.GapBottom = gapB;
-        BoardRegistry.Register(f);
+        PartRegistry.Register(f);
         _spawned.Add(go);
         return f;
     }
@@ -48,9 +48,9 @@ public class FacadeElementTests
         go.name = name;
         go.transform.position = pos;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = dims;
-        BoardRegistry.Register(e);
+        PartRegistry.Register(e);
         _spawned.Add(go);
         return e;
     }
@@ -145,7 +145,7 @@ public class FacadeElementTests
         var a = MakeFacade("A", new Vector3Int(400, 300, 18), Vector3.zero, 2, 2, 2, 2);
         MakeFacade("B", new Vector3Int(400, 300, 18), new Vector3(0.003f, 0f, 0f), 2, 2, 2, 2);
 
-        var all = BoardRegistry.GetAll();
+        var all = PartRegistry.GetAll();
         var vr = ConstraintValidator.Validate(all);
         Assert.IsTrue(vr.violations.Contains(a), "Effective bounds overlap → violation");
     }
@@ -156,7 +156,7 @@ public class FacadeElementTests
         var a = MakeFacade("A", new Vector3Int(400, 300, 18), Vector3.zero, 0, 0, 0, 0);
         MakeFacade("B", new Vector3Int(400, 300, 18), new Vector3(0.4f, 0f, 0f), 0, 0, 0, 0);
 
-        var all = BoardRegistry.GetAll();
+        var all = PartRegistry.GetAll();
         var vr = ConstraintValidator.Validate(all);
         Assert.IsFalse(vr.violations.Contains(a));
     }
@@ -170,7 +170,7 @@ public class FacadeElementTests
 
         var facade = go.GetComponent<FacadeElement>();
         Assert.IsNotNull(facade);
-        Assert.AreEqual("TestFacade", facade.BoardName);
+        Assert.AreEqual("TestFacade", facade.PartName);
         Assert.AreEqual(1, facade.GapLeft);
         Assert.AreEqual(2, facade.GapRight);
         Assert.AreEqual(3, facade.GapTop);

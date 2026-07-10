@@ -47,7 +47,7 @@ public class SnapEdgeCaseTests : SnapTestBase
         var a = MakeStd("A", Vector3.zero);
         var b = MakeStd("B", Vector3.zero);
         AssertSnappedAt(b, a, new Vector3(1.2f, 0f, 0f), new Vector3(0.80f, 0f, 0f),
-            "при большом пороге далёкая доска притягивается");
+            "при большом пороге далёкая деталь притягивается");
     }
 
     // ===== Пороги расстояния (порог 50 мм) =====
@@ -130,10 +130,10 @@ public class SnapEdgeCaseTests : SnapTestBase
     {
         var a = MakeStd("A", Vector3.zero);
         var b = MakeStd("B", Vector3.zero);
-        // Доски смещены по X на 200 мм, но грани ±Z в зазоре 18 мм —
-        // снэп разведёт доски по Z встык.
+        // детали смещены по X на 200 мм, но грани ±Z в зазоре 18 мм —
+        // снэп разведёт детали по Z встык.
         var r = Snap(b, a, new Vector3(0.2f, 0f, 0f));
-        Assert.IsTrue(r.snapped, "снэп разведёт пересекающиеся доски");
+        Assert.IsTrue(r.snapped, "снэп разведёт пересекающиеся детали");
         Assert.AreEqual(0.2f, r.position.x, Tol, "X не изменился");
         Assert.AreEqual(-0.018f, r.position.z, Tol, "Z — встык по Z-граням");
     }
@@ -144,7 +144,7 @@ public class SnapEdgeCaseTests : SnapTestBase
         var a = MakeStd("A", Vector3.zero);
         var b = MakeStd("B", new Vector3(0.8f, 0f, 0f)); // ровно встык
         Assert.IsFalse(SnapSystem.ElementsIntersect(a, b),
-            "идеально прилегающие гранью доски не считаются пересекающимися");
+            "идеально прилегающие гранью детали не считаются пересекающимися");
     }
 
     [Test]
@@ -197,7 +197,7 @@ public class SnapEdgeCaseTests : SnapTestBase
         var a = MakeStd("A", Vector3.zero);
         var b = MakeStd("B", Vector3.zero);
         b.gameObject.SetActive(false);
-        AssertNotSnapped(b, a, new Vector3(0.83f, 0f, 0f), "отключённая доска не снэпается");
+        AssertNotSnapped(b, a, new Vector3(0.83f, 0f, 0f), "отключённая деталь не снэпается");
     }
 
     // ===== Перпендикулярные узкие грани (баг: 400×400 не липла к 1200×600) =====
@@ -205,7 +205,7 @@ public class SnapEdgeCaseTests : SnapTestBase
     [Test]
     public void Overlap_PerpendicularEdgeFaces_Snaps()
     {
-        // Доска 1200×600 повёрнута на (90,270,0); доска 400×400 без поворота.
+        // деталь 1200×600 повёрнута на (90,270,0); деталь 400×400 без поворота.
         // Узкие грани (18 мм) пересекаются под прямым углом: площадь перекрытия
         // 18×18 = 324 мм², что составляет 4.5% от min(7200, 21600) = 7200 мм² —
         // ниже порога 30% по площади, но 100% от меньшей полуоси каждой грани.

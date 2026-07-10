@@ -48,7 +48,7 @@ public class BoxWireframeTests
     [Test]
     public void WorldCorners_ScaledAndTranslated_MapsBox()
     {
-        // Доска 600×360×18 мм, смещённая и повёрнутая на 90° по Y.
+        // деталь 600×360×18 мм, смещённая и повёрнутая на 90° по Y.
         var pos = new Vector3(1f, 0.5f, -2f);
         var rot = Quaternion.Euler(0f, 90f, 0f);
         var scale = new Vector3(0.6f, 0.36f, 0.018f);

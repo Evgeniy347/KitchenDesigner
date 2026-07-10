@@ -47,7 +47,7 @@ namespace KitchenDesigner.Core
 
             var mesh = AssembledFacadeMesh.Build(DimensionsMM, _fill, _grooveCount,
                 AppConstants.ASSEMBLED_FRAME_MM);
-            if (_ownedMesh != null) Destroy(_ownedMesh);
+            if (_ownedMesh != null) DestroyImmediate(_ownedMesh);
             _ownedMesh = mesh;
             _filter.sharedMesh = mesh;
 
@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "__Glass";
             var col = go.GetComponent<Collider>();
-            if (col != null) Destroy(col); // не перехватывать клики
+            if (col != null) DestroyImmediate(col); // не перехватывать клики
             var mr = go.GetComponent<MeshRenderer>();
             mr.sharedMaterial = GlassMaterial();
             mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -90,6 +90,20 @@ namespace KitchenDesigner.Core
             _glassInsert.SetParent(transform, false);
             _glassInsert.localPosition = Vector3.zero;
             _glassInsert.localRotation = Quaternion.identity;
+        }
+
+        private void OnDestroy()
+        {
+            if (_ownedMesh != null)
+            {
+                DestroyImmediate(_ownedMesh);
+                _ownedMesh = null;
+            }
+            if (_glassInsert != null)
+            {
+                DestroyImmediate(_glassInsert.gameObject);
+                _glassInsert = null;
+            }
         }
 
         // ── Спецификация: раскладка на детали ──────────────────────────

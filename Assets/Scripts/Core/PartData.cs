@@ -3,9 +3,9 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     [System.Serializable]
-    public class BoardData
+    public class PartData
     {
-        [SerializeField] private string _boardName = "Board";
+        [SerializeField] private string _partName = "Board";
         [SerializeField] private Vector3Int _dimensionsMM = new Vector3Int(800, 400, 18);
         [SerializeField] private bool _movable = true;
         [SerializeField] private int _groupId = 0;
@@ -16,10 +16,10 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _gapBottom;
         [SerializeField] private bool _transparent;
 
-        public string BoardName
+        public string PartName
         {
-            get => _boardName;
-            set => _boardName = value ?? "Board";
+            get => _partName;
+            set => _partName = value ?? "Board";
         }
 
         public Vector3Int DimensionsMM
@@ -88,7 +88,7 @@ namespace KitchenDesigner.Core
 
         public override string ToString()
         {
-            return $"{_boardName} ({_dimensionsMM.x}x{_dimensionsMM.y}x{_dimensionsMM.z}мм)";
+            return $"{_partName} ({_dimensionsMM.x}x{_dimensionsMM.y}x{_dimensionsMM.z}мм)";
         }
     }
 }

@@ -17,9 +17,9 @@ public class SaveLoadManagerFileTests
         var go = new GameObject(name);
         go.transform.position = pos;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = dims;
-        BoardRegistry.Register(e);
+        PartRegistry.Register(e);
         _spawned.Add(go);
         return e;
     }
@@ -35,12 +35,12 @@ public class SaveLoadManagerFileTests
         foreach (var go in _spawned)
         {
             if (go == null) continue;
-            BoardRegistry.Unregister(go.GetComponent<KitchenElement>());
+            PartRegistry.Unregister(go.GetComponent<KitchenElement>());
             Object.DestroyImmediate(go);
         }
         _spawned.Clear();
 
-        // Доски, созданные RestoreScene/LoadProject.
+        // детали, созданные RestoreScene/LoadProject.
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null) Object.DestroyImmediate(e.gameObject);
 
@@ -70,7 +70,7 @@ public class SaveLoadManagerFileTests
         foreach (var go in _spawned)
         {
             if (go == null) continue;
-            BoardRegistry.Unregister(go.GetComponent<KitchenElement>());
+            PartRegistry.Unregister(go.GetComponent<KitchenElement>());
             Object.DestroyImmediate(go);
         }
         _spawned.Clear();
@@ -78,7 +78,7 @@ public class SaveLoadManagerFileTests
         Assert.IsTrue(SaveLoadManager.LoadProject(ProjName));
         var restored = Object.FindObjectsByType<KitchenElement>();
         Assert.AreEqual(1, restored.Length);
-        Assert.AreEqual("Board", restored[0].BoardName);
+        Assert.AreEqual("Board", restored[0].PartName);
     }
 
     [Test]
@@ -120,7 +120,7 @@ public class SaveLoadManagerFileTests
         foreach (var go in _spawned)
         {
             if (go == null) continue;
-            BoardRegistry.Unregister(go.GetComponent<KitchenElement>());
+            PartRegistry.Unregister(go.GetComponent<KitchenElement>());
             Object.DestroyImmediate(go);
         }
         _spawned.Clear();
@@ -135,9 +135,9 @@ public class SaveLoadManagerFileTests
     [Test]
     public void CaptureCurrentJson_ReflectsScene()
     {
-        Make("UniqueBoardName", new Vector3Int(800, 400, 18), Vector3.zero);
+        Make("UniquePartName", new Vector3Int(800, 400, 18), Vector3.zero);
         var json = SaveLoadManager.CaptureCurrentJson();
-        Assert.IsTrue(json.Contains("UniqueBoardName"));
+        Assert.IsTrue(json.Contains("UniquePartName"));
     }
 
     [Test]
@@ -151,7 +151,7 @@ public class SaveLoadManagerFileTests
         SaveLoadManager.ClearBoards(list);
 
         Assert.IsTrue(plate != null && plate.gameObject != null && plate.gameObject.activeSelf);
-        Assert.IsTrue(board == null || board.Equals(null), "доска удалена");
+        Assert.IsTrue(board == null || board.Equals(null), "деталь удалена");
     }
 
     [Test]

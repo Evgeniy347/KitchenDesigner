@@ -80,7 +80,7 @@ public class IntegrationPlayModeTests
         UIManager.Instance.SpawnPreset(0);
         yield return null;
 
-        Assert.AreEqual(before + 1, BoardCount(), "должна добавиться одна доска");
+        Assert.AreEqual(before + 1, BoardCount(), "должна добавиться одна деталь");
 
         KitchenElement spawned = null;
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
@@ -104,9 +104,9 @@ public class IntegrationPlayModeTests
         Assert.IsTrue(SaveLoadManager.SaveProject(name));
 
         Assert.IsTrue(SaveLoadManager.LoadProject(name));
-        yield return null; // дождаться Destroy старых досок
+        yield return null; // дождаться Destroy старых деталей
 
-        Assert.AreEqual(3, BoardCount(), "после загрузки должно быть 3 доски");
+        Assert.AreEqual(3, BoardCount(), "после загрузки должно быть 3 детали");
 
         File.Delete(SaveLoadManager.PathForName(name));
     }

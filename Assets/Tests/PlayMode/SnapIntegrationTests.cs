@@ -36,9 +36,9 @@ public class SnapIntegrationTests
         yield return null;
     }
 
-    private static KitchenElement CreateBoard(Vector3Int dims, Vector3 pos)
+    private static KitchenElement CreatePart(Vector3Int dims, Vector3 pos)
     {
-        var go = ElementFactory.CreateBoard(dims, "TestBoard", pos);
+        var go = ElementFactory.CreatePart(dims, "TestBoard", pos);
         return go.GetComponent<KitchenElement>();
     }
 
@@ -57,19 +57,19 @@ public class SnapIntegrationTests
         var floor = Object.FindAnyObjectByType<BasePlate>();
         Assert.IsNotNull(floor);
 
-        var a = CreateBoard(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
+        var a = CreatePart(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
         yield return null;
 
         // Симулируем близкую позицию — снэп должен сработать
         var others = new List<KitchenElement> { floor.GetComponent<KitchenElement>() };
         var snap = SnapSystem.TrySnap(a, others, new Vector3(0f, 0.22f, 0.015f));
-        Assert.IsTrue(snap.snapped, "доска рядом с полом должна прилипнуть во время драга");
+        Assert.IsTrue(snap.snapped, "деталь рядом с полом должна прилипнуть во время драга");
     }
 
     [UnityTest]
     public IEnumerator DragBoard_ThenRelease_StaysSnapped()
     {
-        var a = CreateBoard(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
+        var a = CreatePart(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
         var floor = Object.FindAnyObjectByType<BasePlate>();
         yield return null;
 
@@ -87,7 +87,7 @@ public class SnapIntegrationTests
     [UnityTest]
     public IEnumerator DragBoard_EscapePressed_ReturnsToStart()
     {
-        var a = CreateBoard(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
+        var a = CreatePart(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
         Vector3 start = a.transform.position;
         yield return null;
 
@@ -101,23 +101,23 @@ public class SnapIntegrationTests
     [UnityTest]
     public IEnumerator DragBoard_IntersectingOther_RedTint()
     {
-        var a = CreateBoard(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
-        var b = CreateBoard(new Vector3Int(800, 400, 18), new Vector3(0.4f, 0.2f, 0f));
+        var a = CreatePart(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
+        var b = CreatePart(new Vector3Int(800, 400, 18), new Vector3(0.4f, 0.2f, 0f));
         yield return null;
 
         bool intersect = SnapSystem.ElementsIntersect(a, b);
-        Assert.IsTrue(intersect, "доски перекрываются");
+        Assert.IsTrue(intersect, "детали перекрываются");
     }
 
     [UnityTest]
     public IEnumerator DragBoard_NoIntersection_GreenTint()
     {
-        var a = CreateBoard(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
-        var b = CreateBoard(new Vector3Int(800, 400, 18), new Vector3(1.0f, 0.2f, 0f));
+        var a = CreatePart(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
+        var b = CreatePart(new Vector3Int(800, 400, 18), new Vector3(1.0f, 0.2f, 0f));
         yield return null;
 
         bool intersect = SnapSystem.ElementsIntersect(a, b);
-        Assert.IsFalse(intersect, "доски не перекрываются");
+        Assert.IsFalse(intersect, "детали не перекрываются");
     }
 
     [UnityTest]
@@ -125,10 +125,10 @@ public class SnapIntegrationTests
     {
         KitchenSettings.Instance.BlockOnViolation = true;
 
-        var a = CreateBoard(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
+        var a = CreatePart(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
         yield return null;
 
-        // Перемещаем доску в воздух — должно быть нарушение
+        // Перемещаем деталь в воздух — должно быть нарушение
         Vector3 prev = a.transform.position;
         a.transform.position = new Vector3(0f, 2.0f, 0f);
 
@@ -136,7 +136,7 @@ public class SnapIntegrationTests
         list.Add(Object.FindAnyObjectByType<BasePlate>().GetComponent<KitchenElement>());
         var result = ConstraintValidator.Validate(list);
 
-        Assert.IsTrue(result.violations.Contains(a), "доска в воздухе — нарушение");
+        Assert.IsTrue(result.violations.Contains(a), "деталь в воздухе — нарушение");
         a.transform.position = prev;
     }
 
@@ -146,7 +146,7 @@ public class SnapIntegrationTests
         KitchenSettings.Instance.GridStep = 16;
         KitchenSettings.Instance.GridEnabled = true;
 
-        var a = CreateBoard(new Vector3Int(800, 400, 18), Vector3.zero);
+        var a = CreatePart(new Vector3Int(800, 400, 18), Vector3.zero);
         yield return null;
 
         Vector3 unsnapped = new Vector3(0.123f, 0f, 0.456f);
@@ -158,13 +158,13 @@ public class SnapIntegrationTests
     [UnityTest]
     public IEnumerator RotateBoard_ThenSnap_CorrectAxes()
     {
-        // Поворот на 90° вокруг Y разворачивает большие грани доски A к ±X
+        // Поворот на 90° вокруг Y разворачивает большие грани детали A к ±X
         // (толщина 18 мм теперь вдоль X → грань на x≈0.009).
-        var a = CreateBoard(new Vector3Int(800, 400, 18), Vector3.zero);
+        var a = CreatePart(new Vector3Int(800, 400, 18), Vector3.zero);
         a.RotateAroundAxis(Vector3.up, 90f);
         yield return null;
 
-        var b = CreateBoard(new Vector3Int(400, 400, 18), new Vector3(0.4f, 0f, 0f));
+        var b = CreatePart(new Vector3Int(400, 400, 18), new Vector3(0.4f, 0f, 0f));
         var others = new List<KitchenElement> { a };
         var snap = SnapSystem.TrySnap(b, others, new Vector3(0.22f, 0f, 0f));
 

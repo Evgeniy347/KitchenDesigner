@@ -26,7 +26,7 @@ public class GameContextTests
     {
         GameContext.InitializeWithDefaults();
         Assert.IsNotNull(GameContext.Services);
-        Assert.IsNotNull(GameContext.Services.BoardRegistry);
+        Assert.IsNotNull(GameContext.Services.PartRegistry);
         Assert.IsNotNull(GameContext.Services.CommandStack);
         Assert.IsNotNull(GameContext.Services.ElementFactory);
         Assert.IsNotNull(GameContext.Services.SaveLoadManager);
@@ -36,7 +36,7 @@ public class GameContextTests
     public void InitializeWithDefaults_ServicesAreCorrectTypes()
     {
         GameContext.InitializeWithDefaults();
-        Assert.IsInstanceOf<BoardRegistryInstance>(GameContext.Services.BoardRegistry);
+        Assert.IsInstanceOf<PartRegistryInstance>(GameContext.Services.PartRegistry);
         Assert.IsInstanceOf<CommandStackInstance>(GameContext.Services.CommandStack);
         Assert.IsInstanceOf<ElementFactoryInstance>(GameContext.Services.ElementFactory);
         Assert.IsInstanceOf<SaveLoadManagerInstance>(GameContext.Services.SaveLoadManager);
@@ -45,7 +45,7 @@ public class GameContextTests
     [Test]
     public void CustomServices_AreUsed()
     {
-        var boardReg = new BoardRegistryInstance();
+        var boardReg = new PartRegistryInstance();
         var cmdStack = new CommandStackInstance();
         var factory = new ElementFactoryInstance();
         var saveLoad = new SaveLoadManagerInstance();
@@ -53,7 +53,7 @@ public class GameContextTests
         var services = new GameServices(boardReg, cmdStack, factory, saveLoad);
         GameContext.Initialize(services);
 
-        Assert.AreSame(boardReg, GameContext.Services.BoardRegistry);
+        Assert.AreSame(boardReg, GameContext.Services.PartRegistry);
         Assert.AreSame(cmdStack, GameContext.Services.CommandStack);
         Assert.AreSame(factory, GameContext.Services.ElementFactory);
         Assert.AreSame(saveLoad, GameContext.Services.SaveLoadManager);
@@ -63,11 +63,11 @@ public class GameContextTests
     public void StaticFacades_UseContextServices_WhenInitialized()
     {
         GameContext.InitializeWithDefaults();
-        var boardReg = (BoardRegistryInstance)GameContext.Services.BoardRegistry;
+        var boardReg = (PartRegistryInstance)GameContext.Services.PartRegistry;
         var cmdStack = (CommandStackInstance)GameContext.Services.CommandStack;
 
         Assert.IsFalse(CommandStack.CanUndo);
-        Assert.AreEqual(0, BoardRegistry.GetAll().Count);
+        Assert.AreEqual(0, PartRegistry.GetAll().Count);
     }
 
     [Test]
@@ -92,15 +92,15 @@ public class GameContextTests
     }
 
     [Test]
-    public void BoardRegistry_StaticFacade_UsesContextWhenAvailable()
+    public void PartRegistry_StaticFacade_UsesContextWhenAvailable()
     {
         GameContext.InitializeWithDefaults();
-        var instance = (BoardRegistryInstance)GameContext.Services.BoardRegistry;
+        var instance = (PartRegistryInstance)GameContext.Services.PartRegistry;
 
         Assert.AreEqual(0, instance.GetAll().Count);
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
 
-        Assert.AreEqual(0, BoardRegistry.GetAll().Count);
+        Assert.AreEqual(0, PartRegistry.GetAll().Count);
         Assert.IsFalse(CommandStack.CanUndo);
     }
 }

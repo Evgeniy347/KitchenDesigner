@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core
 {
-    public class BoardRegistryInstance : IBoardRegistry
+    public class PartRegistryInstance : IPartRegistry
     {
         private readonly List<KitchenElement> _all = new List<KitchenElement>();
 

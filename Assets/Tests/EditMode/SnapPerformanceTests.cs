@@ -39,13 +39,13 @@ public class SnapPerformanceTests
         var go = new GameObject(name);
         go.transform.position = pos;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = dims;
         _spawned.Add(go);
         return e;
     }
 
-    private List<KitchenElement> CreateBoards(int count)
+    private List<KitchenElement> CreateParts(int count)
     {
         var list = new List<KitchenElement>();
         for (int i = 0; i < count; i++)
@@ -60,7 +60,7 @@ public class SnapPerformanceTests
     [Test]
     public void Snap_50Boards_Under16ms()
     {
-        var boards = CreateBoards(50);
+        var boards = CreateParts(50);
         var sw = new Stopwatch();
         sw.Start();
 
@@ -75,7 +75,7 @@ public class SnapPerformanceTests
     [Test]
     public void Snap_100Boards_Under32ms()
     {
-        var boards = CreateBoards(100);
+        var boards = CreateParts(100);
         var sw = new Stopwatch();
         sw.Start();
 
@@ -90,7 +90,7 @@ public class SnapPerformanceTests
     [Test]
     public void Snap_200Boards_Under64ms()
     {
-        var boards = CreateBoards(200);
+        var boards = CreateParts(200);
         var sw = new Stopwatch();
         sw.Start();
 
@@ -105,7 +105,7 @@ public class SnapPerformanceTests
     [Test]
     public void Validate_50Boards_Under32ms()
     {
-        var boards = CreateBoards(50);
+        var boards = CreateParts(50);
         var sw = new Stopwatch();
         sw.Start();
 
@@ -120,7 +120,7 @@ public class SnapPerformanceTests
     [Test]
     public void Validate_100Boards_Under64ms()
     {
-        var boards = CreateBoards(100);
+        var boards = CreateParts(100);
         var sw = new Stopwatch();
         sw.Start();
 

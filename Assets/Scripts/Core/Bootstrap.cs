@@ -10,6 +10,9 @@ namespace KitchenDesigner.Core
             GameContext.InitializeWithDefaults();
             if (KitchenSettings.Instance != null)
                 KitchenSettings.Instance.Load();
+            // Внешние текстуры грузим ДО загрузки сцены (Start → LoadLastSession),
+            // иначе сохранённые materialId не найдут свой декор в каталоге.
+            ExternalTextureCatalog.LoadAll();
             DisplaySettings.ApplyWindowMode();
         }
 

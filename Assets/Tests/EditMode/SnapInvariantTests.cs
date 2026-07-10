@@ -50,7 +50,7 @@ public class SnapInvariantTests : SnapTestBase
         for (int i = 0; i < 100; i++)
             Snap(b, a, RandPos(rng, 1.0f));
 
-        Assert.AreEqual(before, b.transform.rotation, "снэп не должен менять поворот доски");
+        Assert.AreEqual(before, b.transform.rotation, "снэп не должен менять поворот детали");
     }
 
     [Test]

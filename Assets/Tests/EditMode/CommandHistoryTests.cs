@@ -14,9 +14,9 @@ public class CommandHistoryTests
         var go = new GameObject(name);
         go.transform.position = pos;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = dims;
-        BoardRegistry.Register(e);
+        PartRegistry.Register(e);
         _spawned.Add(go);
         return e;
     }
@@ -31,7 +31,7 @@ public class CommandHistoryTests
         foreach (var go in _spawned)
         {
             if (go == null) continue;
-            BoardRegistry.Unregister(go.GetComponent<KitchenElement>());
+            PartRegistry.Unregister(go.GetComponent<KitchenElement>());
             Object.DestroyImmediate(go);
         }
         _spawned.Clear();
@@ -100,7 +100,7 @@ public class CommandHistoryTests
         Assert.IsTrue(json.Contains("undoHistory"), "история попала в JSON");
 
         // Имитация перезапуска: убрать сцену и историю.
-        BoardRegistry.Unregister(e);
+        PartRegistry.Unregister(e);
         Object.DestroyImmediate(e.gameObject);
         _spawned.Clear();
         CommandStack.Clear();
@@ -138,7 +138,7 @@ public class CommandHistoryTests
 
         var json = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(new[] { e }));
 
-        BoardRegistry.Unregister(e);
+        PartRegistry.Unregister(e);
         Object.DestroyImmediate(e.gameObject);
         _spawned.Clear();
         CommandStack.Clear();
@@ -166,7 +166,7 @@ public class CommandHistoryTests
         Assert.IsTrue(CommandStack.CanUndo);
 
         var data = new ProjectData(new[] { ElementData.FromElement(e) }); // без undoHistory
-        BoardRegistry.Unregister(e);
+        PartRegistry.Unregister(e);
         Object.DestroyImmediate(e.gameObject);
         _spawned.Clear();
 

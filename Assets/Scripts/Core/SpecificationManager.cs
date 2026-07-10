@@ -12,13 +12,13 @@ namespace KitchenDesigner.Core
         IEnumerable<AssembledFacadeMesh.Part> GetSpecParts();
     }
 
-    /// <summary>Строка спецификации: группа одинаковых досок.</summary>
+    /// <summary>Строка спецификации: группа одинаковых деталей.</summary>
     public struct SpecLine
     {
         public string name;
         public Vector3Int dimensionsMM;
         public int count;
-        public float areaPerBoardM2;   // площадь поверхности одной доски, м²
+        public float areaPerBoardM2;   // площадь поверхности одной детали, м²
         public float totalAreaM2;      // count * areaPerBoardM2
         public string material;        // декор материала (для заказа раскроя)
     }
@@ -79,7 +79,7 @@ namespace KitchenDesigner.Core
     public static class SpecificationManager
     {
         /// <summary>
-        /// Площадь поверхности доски (все 6 граней), м².
+        /// Площадь поверхности детали (все 6 граней), м².
         /// 2*(Ш*В + Ш*Г + В*Г), размеры из мм в метры.
         /// </summary>
         public static float SurfaceAreaM2(Vector3Int dimsMM)
@@ -90,7 +90,7 @@ namespace KitchenDesigner.Core
             return 2f * (w * h + w * d + h * d);
         }
 
-        /// <summary>Группирует доски по (размер, название). BasePlate исключается.</summary>
+        /// <summary>Группирует детали по (размер, название). BasePlate исключается.</summary>
         public static SpecResult Build(IEnumerable<KitchenElement> elements)
         {
             var order = new List<string>();
@@ -106,12 +106,12 @@ namespace KitchenDesigner.Core
                 {
                     string decor = MaterialCatalog.Get(e.MaterialId).displayName;
                     foreach (var part in composite.GetSpecParts())
-                        Accumulate(groups, order, $"{e.BoardName}·{part.suffix}",
+                        Accumulate(groups, order, $"{e.PartName}·{part.suffix}",
                             part.dimsMM, part.materialKind ?? decor);
                     continue;
                 }
 
-                Accumulate(groups, order, e.BoardName, e.DimensionsMM,
+                Accumulate(groups, order, e.PartName, e.DimensionsMM,
                     MaterialCatalog.Get(e.MaterialId).displayName);
             }
 

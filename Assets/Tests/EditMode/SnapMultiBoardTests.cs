@@ -4,15 +4,15 @@ using UnityEngine;
 using KitchenDesigner.Core;
 
 /// <summary>
-/// Сценарии прилипания ТРЁХ и более досок: цепочки, стопки, стены на полу,
-/// выбор ближайшей цели, конфликты. Каждая доска ставится через реальный снэп,
+/// Сценарии прилипания ТРЁХ и более деталей: цепочки, стопки, стены на полу,
+/// выбор ближайшей цели, конфликты. Каждая деталь ставится через реальный снэп,
 /// затем проверяется итоговая связная конструкция.
 /// </summary>
 public class SnapMultiBoardTests : SnapTestBase
 {
     private void Place(KitchenElement e, SnapResult r)
     {
-        Assert.IsTrue(r.snapped, "доска должна была прилипнуть");
+        Assert.IsTrue(r.snapped, "деталь должна была прилипнуть");
         e.transform.position = r.position;
     }
 
@@ -72,7 +72,7 @@ public class SnapMultiBoardTests : SnapTestBase
         var a = Make("A", new Vector3Int(600, 400, 18), new Vector3(0f, 0.209f, 0f));
         var b = Make("B", new Vector3Int(600, 400, 18), new Vector3(0f, 0.609f, 0f));
         var val = ConstraintValidator.Validate(new List<KitchenElement> { floor, a, b });
-        Assert.IsTrue(val.isValid, "пол + 2 доски стопкой — валидно");
+        Assert.IsTrue(val.isValid, "пол + 2 детали стопкой — валидно");
     }
 
     // ===== Две стены на полу (каждая прилипает к полу) =====
@@ -99,7 +99,7 @@ public class SnapMultiBoardTests : SnapTestBase
     [Test]
     public void TShape_VerticalOnHorizontal_FlushContact()
     {
-        // Горизонтальная доска лежит плашмя (поворот по X), сверху встаёт вертикальная.
+        // Горизонтальная деталь лежит плашмя (поворот по X), сверху встаёт вертикальная.
         var horiz = Make("H", new Vector3Int(800, 400, 18), Vector3.zero,
             Quaternion.AngleAxis(90f, Vector3.right)); // 18 мм толщина по Y, верх на y=0.009
         // верхняя грань горизонтали на y = 0.009; вертикаль 400 высотой встаёт сверху.

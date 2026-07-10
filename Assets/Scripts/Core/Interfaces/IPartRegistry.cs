@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core
 {
-    public interface IBoardRegistry
+    public interface IPartRegistry
     {
         IReadOnlyList<KitchenElement> All { get; }
         void Register(KitchenElement element);

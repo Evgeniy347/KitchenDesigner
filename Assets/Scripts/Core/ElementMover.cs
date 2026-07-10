@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core
         private float _vOffset;
         private AxisLock _axisLock = AxisLock.None;
 
-        // ЛКМ нажата на доске, но ещё не решено клик это или drag.
+        // ЛКМ нажата на детали, но ещё не решено клик это или drag.
         private bool _pressed;
         private Vector2 _pressMouse;
         // Пока курсор не сместится дальше этого порога (в пикселях) — это клик
@@ -86,7 +86,7 @@ namespace KitchenDesigner.Core
             UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
 
-        // ЛКМ нажата: если попали по доске — запоминаем «нажатие» (кандидат на клик
+        // ЛКМ нажата: если попали по детали — запоминаем «нажатие» (кандидат на клик
         // или drag). Сам drag и тонировка НЕ включаются, пока курсор не сдвинется.
         private void TryBeginPress()
         {
@@ -364,7 +364,7 @@ namespace KitchenDesigner.Core
             if (_axisLock == AxisLock.X) { newPos.z = _startPosition.z; newPos.y = _startPosition.y; }
             else if (_axisLock == AxisLock.Z) { newPos.x = _startPosition.x; newPos.y = _startPosition.y; }
 
-            var others = BoardRegistry.GetAll();
+            var others = PartRegistry.GetAll();
             if (_moveSet.Count > 1) others.RemoveAll(e => _moveSet.Contains(e));
             var snap = SnapSystem.TrySnap(_target, others, newPos);
             _target.transform.position = snap.snapped ? snap.position : newPos;
@@ -373,7 +373,7 @@ namespace KitchenDesigner.Core
             if (_moveSet.Count > 1)
                 ApplyDelta(_moveSet, _moveStart, _target.transform.position - _startPosition);
 
-            // Ghost-preview: полупрозрачная доска в позиции снэпа.
+            // Ghost-preview: полупрозрачная деталь в позиции снэпа.
             if (snap.snapped && snap.position != _target.transform.position)
             {
                 _showGhost = true;
@@ -417,13 +417,13 @@ namespace KitchenDesigner.Core
             RefreshHighlights();
         }
 
-        // Проверяет, есть ли нарушения среди перемещаемой доски и её соседей
+        // Проверяет, есть ли нарушения среди перемещаемой детали и её соседей
         // (в радиусе snapThreshold * 2). Это предотвращает ситуацию, когда
-        // движение доски B разрывает связь доски A с полом — и это остаётся
+        // движение детали B разрывает связь детали A с полом — и это остаётся
         // незамеченным. При этом чужая ошибка вдали не блокирует перемещение.
         private bool MovedCausesViolation()
         {
-            var list = BoardRegistry.GetAll();
+            var list = PartRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
             if (!result.isValid)
             {
@@ -441,7 +441,7 @@ namespace KitchenDesigner.Core
         // Как MovedCausesViolation, но для всего перемещаемого набора.
         private bool MoveSetCausesViolation()
         {
-            var list = BoardRegistry.GetAll();
+            var list = PartRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
             if (result.isValid) return false;
 
@@ -495,7 +495,7 @@ namespace KitchenDesigner.Core
         {
             if (_dragTintMaterial == null || _target == null) return;
 
-            // Красный = доска нарушает правила (пересекается с другой или повисла в
+            // Красный = деталь нарушает правила (пересекается с другой или повисла в
             // воздухе) и при включённой блокировке не встанет, а откатится на старт.
             // Зелёный = размещение допустимо. Так цвет совпадает с реальным исходом.
             _dragTintMaterial.color = MoveSetCausesViolation()

@@ -2,21 +2,21 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core
 {
-    public static class BoardRegistry
+    public static class PartRegistry
     {
-        internal static IBoardRegistry Instance
+        internal static IPartRegistry Instance
         {
             get
             {
                 if (GameContext.Services != null)
-                    return GameContext.Services.BoardRegistry;
+                    return GameContext.Services.PartRegistry;
                 if (_fallback == null)
-                    _fallback = new BoardRegistryInstance();
+                    _fallback = new PartRegistryInstance();
                 return _fallback;
             }
             set => _fallback = value;
         }
-        private static IBoardRegistry _fallback;
+        private static IPartRegistry _fallback;
 
         public static IReadOnlyList<KitchenElement> All => Instance.All;
 

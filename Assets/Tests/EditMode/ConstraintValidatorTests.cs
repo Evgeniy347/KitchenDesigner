@@ -10,7 +10,7 @@ public class ConstraintValidatorTests
         var go = new GameObject(name);
         go.transform.position = position;
         var element = go.AddComponent<KitchenElement>();
-        element.BoardName = name;
+        element.PartName = name;
         element.DimensionsMM = dims;
         return element;
     }
@@ -47,7 +47,7 @@ public class ConstraintValidatorTests
     [Test]
     public void Validate_BoardOnFloor_IsValid()
     {
-        // Пол: верхняя грань на y=0. Доска 400мм высотой стоит на полу → центр y=0.2.
+        // Пол: верхняя грань на y=0. деталь 400мм высотой стоит на полу → центр y=0.2.
         var floor = CreateElement("Floor", new Vector3Int(3000, 18, 3000), new Vector3(0, -0.009f, 0));
         var board = CreateElement("Board", new Vector3Int(800, 400, 18), new Vector3(0, 0.2f, 0));
 
@@ -101,7 +101,7 @@ public class ConstraintValidatorTests
     [Test]
     public void Validate_TwoIsolatedGroups_Violation()
     {
-        // Якорь связности — BasePlate. Две пары досок висят в воздухе, не касаясь пола:
+        // Якорь связности — BasePlate. Две пары деталей висят в воздухе, не касаясь пола:
         // каждая пара связна внутри себя, но изолирована от плиты → 2 группы, 4 нарушения.
         var plate = CreateElement("BasePlate", new Vector3Int(3000, 18, 3000), new Vector3(0, -0.009f, 0));
         plate.gameObject.AddComponent<BasePlate>();
@@ -128,7 +128,7 @@ public class ConstraintValidatorTests
     public void Validate_PartialOverlapBelow50Percent_NotFaceToFace()
     {
         // B лежит на A, но грани перекрываются лишь на 25% → контакт есть, но не
-        // face-to-face, поэтому связности нет и обе доски — нарушения.
+        // face-to-face, поэтому связности нет и обе детали — нарушения.
         var a = CreateElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
         var b = CreateElement("B", new Vector3Int(800, 400, 18), new Vector3(0.6f, 0.4f, 0));
 
@@ -146,7 +146,7 @@ public class ConstraintValidatorTests
     [Test]
     public void Validate_IntersectingBoards_NoContact()
     {
-        // Пересекающиеся доски не образуют контакта (пара пропускается).
+        // Пересекающиеся детали не образуют контакта (пара пропускается).
         var a = CreateElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
         var b = CreateElement("B", new Vector3Int(800, 400, 18), new Vector3(0.1f, 0, 0));
 

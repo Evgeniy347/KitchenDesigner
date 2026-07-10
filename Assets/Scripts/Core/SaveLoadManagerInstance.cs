@@ -181,7 +181,7 @@ namespace KitchenDesigner.Core
                         : ed.isFacade
                             ? ElementFactory.Instance.CreateFacade(ed.Dimensions, ed.name, ed.Position,
                                 ed.gapLeft, ed.gapRight, ed.gapTop, ed.gapBottom)
-                            : ElementFactory.Instance.CreateBoard(ed.Dimensions, ed.name, ed.Position);
+                            : ElementFactory.Instance.CreatePart(ed.Dimensions, ed.name, ed.Position);
                 go.transform.rotation = ed.Rotation;
                 var el = go.GetComponent<KitchenElement>();
                 if (el != null)
@@ -360,7 +360,7 @@ namespace KitchenDesigner.Core
 
         private IEnumerable<KitchenElement> FindAllElements()
         {
-            return BoardRegistry.Instance.GetAll();
+            return PartRegistry.Instance.GetAll();
         }
 
         private static void DestroyElement(GameObject go)

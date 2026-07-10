@@ -74,7 +74,7 @@ namespace KitchenDesigner.Core.UI
                 items.Add(new Item($"{s.x}×{s.y}×16", new Vector3Int(s.x, s.y, 16)));
                 items.Add(new Item($"{s.x}×{s.y}×18", new Vector3Int(s.x, s.y, 18)));
             }
-            return new Group { title = "Доски", shortLabel = "Д", items = items };
+            return new Group { title = "детали", shortLabel = "Д", items = items };
         }
 
         private static Group FacadeGroup()

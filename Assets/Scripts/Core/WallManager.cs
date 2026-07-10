@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core
             Vector3 sceneCenter = Vector3.zero; // центр пола
             float loweredUnits = LoweredHeightMM * AppConstants.MM_TO_UNITS;
 
-            foreach (var e in BoardRegistry.GetAll())
+            foreach (var e in PartRegistry.GetAll())
             {
                 if (e == null) continue;
                 var wall = e.GetComponent<Wall>();

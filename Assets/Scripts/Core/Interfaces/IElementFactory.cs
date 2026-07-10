@@ -4,7 +4,7 @@ namespace KitchenDesigner.Core
 {
     public interface IElementFactory
     {
-        GameObject CreateBoard(Vector3Int dimensionsMM, string name, Vector3 position);
+        GameObject CreatePart(Vector3Int dimensionsMM, string name, Vector3 position);
         GameObject CreatePreset(int presetIndex, Vector3 position);
         GameObject CreateWall(Vector3Int dimensionsMM, string name, Vector3 position);
         GameObject CreateFacade(Vector3Int dimensionsMM, string name, Vector3 position,
@@ -12,7 +12,7 @@ namespace KitchenDesigner.Core
         GameObject CreateAssembledFacade(Vector3Int dimensionsMM, string name, Vector3 position,
             AssembledFill fill = AssembledFill.Blind);
         GameObject Duplicate(KitchenElement source);
-        void DestroyBoard(GameObject go);
+        void DestroyPart(GameObject go);
         void DestroyFacade(GameObject go);
         void DestroyElement(GameObject go);
         void ClearPools();

@@ -21,9 +21,9 @@ public class AutoSaveQuitTests
         var go = new GameObject(name);
         go.transform.position = pos;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = dims;
-        BoardRegistry.Register(e);
+        PartRegistry.Register(e);
         _spawned.Add(go);
         return e;
     }
@@ -54,7 +54,7 @@ public class AutoSaveQuitTests
         foreach (var go in _spawned)
         {
             if (go == null) continue;
-            BoardRegistry.Unregister(go.GetComponent<KitchenElement>());
+            PartRegistry.Unregister(go.GetComponent<KitchenElement>());
             Object.DestroyImmediate(go);
         }
         _spawned.Clear();
@@ -111,17 +111,17 @@ public class AutoSaveQuitTests
     {
         KitchenSettings.Instance.AutoSave = true;
 
-        // «Открыли» файл с доской в позиции A.
+        // «Открыли» файл с деталью в позиции A.
         var board = Make("RoundTrip", new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
         Assert.IsTrue(SaveLoadManager.SaveToPath(_openFilePath));
         Assert.AreEqual(_openFilePath, SaveLoadManager.LastPath);
 
-        // Подвинули доску в позицию B и «закрыли» программу.
+        // Подвинули деталь в позицию B и «закрыли» программу.
         board.transform.position = new Vector3(1.5f, 0.2f, 0f);
         Assert.IsTrue(AutoSaveManager.SaveOnQuit());
 
         // Имитация перезапуска: чистим сцену и грузим тот же файл (как делает старт).
-        BoardRegistry.Unregister(board);
+        PartRegistry.Unregister(board);
         Object.DestroyImmediate(board.gameObject);
         _spawned.Clear();
 

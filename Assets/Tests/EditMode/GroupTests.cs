@@ -8,15 +8,15 @@ public class GroupTests
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     // В EditMode Awake у AddComponent не вызывается, поэтому регистрируем элемент
-    // в BoardRegistry вручную — в рантайме это делает KitchenElement.Awake.
+    // в PartRegistry вручную — в рантайме это делает KitchenElement.Awake.
     private KitchenElement Make(string name, Vector3 pos)
     {
         var go = new GameObject(name);
         go.transform.position = pos;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = new Vector3Int(800, 400, 18);
-        BoardRegistry.Register(e);
+        PartRegistry.Register(e);
         _spawned.Add(go);
         return e;
     }
@@ -28,7 +28,7 @@ public class GroupTests
         foreach (var go in _spawned)
         {
             if (go == null) continue;
-            BoardRegistry.Unregister(go.GetComponent<KitchenElement>());
+            PartRegistry.Unregister(go.GetComponent<KitchenElement>());
             Object.DestroyImmediate(go);
         }
         _spawned.Clear();
@@ -118,7 +118,7 @@ public class GroupTests
         GroupManager.SetMovable(g, false);
         int originalId = g.id;
 
-        var json = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(BoardRegistry.GetAll()));
+        var json = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(PartRegistry.GetAll()));
 
         // Чистим сцену и реестр групп — как при загрузке проекта.
         GroupManager.Clear();
@@ -128,7 +128,7 @@ public class GroupTests
         var restored = SaveLoadManager.RestoreScene(SaveLoadManager.Deserialize(json));
         _spawned.AddRange(restored);
         // Регистрируем восстановленные элементы (в рантайме это делает Awake).
-        foreach (var go in restored) BoardRegistry.Register(go.GetComponent<KitchenElement>());
+        foreach (var go in restored) PartRegistry.Register(go.GetComponent<KitchenElement>());
 
         var ra = restored[0].GetComponent<KitchenElement>();
         var rg = GroupManager.GroupOf(ra);

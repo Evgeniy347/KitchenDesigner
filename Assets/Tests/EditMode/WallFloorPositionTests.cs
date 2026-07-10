@@ -12,7 +12,7 @@ public class WallFloorPositionTests
         var go = new GameObject(name);
         go.transform.position = pos;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = dims;
         go.AddComponent<Wall>();
         _spawned.Add(go);

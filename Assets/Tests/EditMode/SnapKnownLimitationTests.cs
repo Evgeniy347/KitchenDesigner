@@ -12,7 +12,7 @@ using KitchenDesigner.Core;
 public class SnapKnownLimitationTests : SnapTestBase
 {
     // Произвольный поворот (45°/30°) делает грани непараллельными (|dot|<0.999) —
-    // снэп их не находит. Доска подносится СБОКУ, где параллельны только
+    // снэп их не находит. деталь подносится СБОКУ, где параллельны только
     // повёрнутые грани (грани ±Y слишком далеко по нормали).
 
     [Test]
@@ -35,16 +35,16 @@ public class SnapKnownLimitationTests : SnapTestBase
     [Test]
     public void BothRotatedSame45_FacesParallel_Snaps()
     {
-        // Контраст: если ОБЕ доски повёрнуты одинаково, их грани снова параллельны
+        // Контраст: если ОБЕ детали повёрнуты одинаково, их грани снова параллельны
         // друг другу — снэп работает. Показывает, что ограничение именно в
         // относительной непараллельности, а не в повороте как таковом.
         var rot = Quaternion.AngleAxis(45f, Vector3.up);
         var a = MakeStd("A", Vector3.zero, rot);
         var b = MakeStd("B", Vector3.zero, rot);
-        // встык вдоль локальной ширины доски, повёрнутой на 45°
+        // встык вдоль локальной ширины детали, повёрнутой на 45°
         Vector3 dir = rot * Vector3.right;
         var r = Snap(b, a, dir * 0.83f);
-        Assert.IsTrue(r.snapped, "одинаково повёрнутые доски имеют параллельные грани");
+        Assert.IsTrue(r.snapped, "одинаково повёрнутые детали имеют параллельные грани");
     }
 
     [Test]

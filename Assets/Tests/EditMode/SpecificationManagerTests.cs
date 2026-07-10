@@ -9,7 +9,7 @@ public class SpecificationManagerTests
     {
         var go = new GameObject(name);
         var element = go.AddComponent<KitchenElement>();
-        element.BoardName = name;
+        element.PartName = name;
         element.DimensionsMM = dims;
         return element;
     }

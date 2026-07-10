@@ -215,7 +215,7 @@ namespace KitchenDesigner.Core
             float threshold = settings != null ? settings.SnapThreshold * AppConstants.MM_TO_UNITS : 0f;
 
             ResizeMath.Compute(_dimsBefore, _axisIndex, _normal, _faceCenter0, _uAxis, _vAxis, _faceSize,
-                _centerStart, _sizeStartUnits, rawDelta, BoardRegistry.GetAll(), _target,
+                _centerStart, _sizeStartUnits, rawDelta, PartRegistry.GetAll(), _target,
                 snapEnabled, threshold, out Vector3Int newDims, out Vector3 newCenter, out _);
 
             _target.DimensionsMM = newDims;
@@ -236,7 +236,7 @@ namespace KitchenDesigner.Core
             var settings = KitchenSettings.Instance;
             if (settings != null && settings.SnapEnabled)
             {
-                var snap = SnapSystem.TrySnap(_target, BoardRegistry.GetAll(), newPos);
+                var snap = SnapSystem.TrySnap(_target, PartRegistry.GetAll(), newPos);
                 if (snap.snapped) // берём только составляющую снэпа вдоль оси
                     newPos = _centerStart + _normal * Vector3.Dot(snap.position - _centerStart, _normal);
             }

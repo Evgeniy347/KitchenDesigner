@@ -75,7 +75,7 @@ namespace KitchenDesigner.Core
         public KitchenElement current;
     }
 
-    public struct BoardRemovedEvent
+    public struct PartRemovedEvent
     {
         public KitchenElement element;
     }

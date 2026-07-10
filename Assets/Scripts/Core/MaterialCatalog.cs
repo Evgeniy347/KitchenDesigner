@@ -13,10 +13,15 @@ namespace KitchenDesigner.Core
         public string displayName;
         public string kind;            // ЛДСП / МДФ / Массив / Стекло / Металл
         public string baseMapResource; // путь под Resources/ (без расширения), напр. "Textures/oak"
+        public Texture2D texture;      // уже загруженная текстура (из внешней папки); приоритетнее baseMapResource
         public Color baseColor = Color.gray;
-        public int tileSizeMM = 800;   // физ. размер картинки декора, мм
+        public int tileSizeMM = 800;   // физ. ШИРИНА картинки декора, мм
+        public int tileHeightMM = 0;   // физ. ВЫСОТА картинки, мм (0 → квадрат = tileSizeMM)
         public float metallic = 0f;
         public float smoothness = 0.2f;
+
+        /// <summary>Физическая высота плитки декора (мм). 0 в поле → квадрат (= ширине).</summary>
+        public int TileHeightMM => tileHeightMM > 0 ? tileHeightMM : tileSizeMM;
 
         public MaterialDef(string id, string displayName, string kind, Color color,
             string baseMapResource = null, int tileSizeMM = 800,
@@ -40,7 +45,8 @@ namespace KitchenDesigner.Core
     {
         public const string DefaultId = "default";
 
-        private static readonly List<MaterialDef> _all = new List<MaterialDef>
+        // Встроенные (код-определённые) декоры — всегда есть, работают в тестах.
+        private static readonly List<MaterialDef> _builtin = new List<MaterialDef>
         {
             new MaterialDef(DefaultId, "Серый",       "ЛДСП", new Color(0.80f, 0.80f, 0.80f)),
             new MaterialDef("white",   "Белый",       "ЛДСП", new Color(0.95f, 0.95f, 0.95f)),
@@ -49,16 +55,51 @@ namespace KitchenDesigner.Core
             new MaterialDef("concrete","Бетон",       "ЛДСП", new Color(0.62f, 0.62f, 0.60f), "Textures/concrete",1200),
         };
 
-        public static IReadOnlyList<MaterialDef> All => _all;
+        // Динамические декоры, подгруженные из внешней папки в рантайме
+        // (ExternalTextureCatalog). Пересобираются при каждом reload.
+        private static readonly List<MaterialDef> _dynamic = new List<MaterialDef>();
 
-        public static MaterialDef Default => _all[0];
+        // Кэш объединённого списка (встроенные + динамические); сбрасывается на null
+        // при изменении _dynamic и лениво пересобирается.
+        private static List<MaterialDef> _combined;
+
+        private static List<MaterialDef> Combined()
+        {
+            if (_combined == null)
+            {
+                _combined = new List<MaterialDef>(_builtin);
+                _combined.AddRange(_dynamic);
+            }
+            return _combined;
+        }
+
+        public static IReadOnlyList<MaterialDef> All => Combined();
+
+        public static MaterialDef Default => _builtin[0];
+
+        /// <summary>Зарегистрировать/заменить динамический декор (по id). Замена по id
+        /// делает повторный reload идемпотентным.</summary>
+        public static void RegisterDynamic(MaterialDef def)
+        {
+            if (def == null || string.IsNullOrEmpty(def.id)) return;
+            _dynamic.RemoveAll(d => d.id == def.id);
+            _dynamic.Add(def);
+            _combined = null;
+        }
+
+        /// <summary>Убрать все динамические декоры (перед пере-сканированием папки).</summary>
+        public static void ClearDynamic()
+        {
+            _dynamic.Clear();
+            _combined = null;
+        }
 
         /// <summary>Декор по id. Неизвестный/пустой id → дефолтный (надёжно к
         /// повреждённым сейвам).</summary>
         public static MaterialDef Get(string id)
         {
             if (!string.IsNullOrEmpty(id))
-                foreach (var d in _all)
+                foreach (var d in Combined())
                     if (d.id == id) return d;
             return Default;
         }

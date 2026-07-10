@@ -21,9 +21,9 @@ public class CommandStackTests
         var go = new GameObject(name);
         go.transform.position = pos;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = new Vector3Int(800, 400, 18);
-        BoardRegistry.Register(e);
+        PartRegistry.Register(e);
         _spawned.Add(go);
         return e;
     }
@@ -43,7 +43,7 @@ public class CommandStackTests
         foreach (var go in _spawned)
         {
             if (go == null) continue;
-            BoardRegistry.Unregister(go.GetComponent<KitchenElement>());
+            PartRegistry.Unregister(go.GetComponent<KitchenElement>());
             Object.DestroyImmediate(go);
         }
         _spawned.Clear();
@@ -139,10 +139,10 @@ public class CommandStackTests
         var cmd = new CreateCommand(e.gameObject);
         cmd.Execute();
         Assert.IsTrue(e.gameObject.activeSelf);
-        Assert.IsTrue(BoardRegistry.GetAll().Contains(e));
+        Assert.IsTrue(PartRegistry.GetAll().Contains(e));
         cmd.Undo();
         Assert.IsFalse(e.gameObject.activeSelf);
-        Assert.IsFalse(BoardRegistry.GetAll().Contains(e));
+        Assert.IsFalse(PartRegistry.GetAll().Contains(e));
     }
 
     [Test]
@@ -152,10 +152,10 @@ public class CommandStackTests
         var cmd = new DeleteCommand(e.gameObject);
         cmd.Execute();
         Assert.IsFalse(e.gameObject.activeSelf);
-        Assert.IsFalse(BoardRegistry.GetAll().Contains(e));
+        Assert.IsFalse(PartRegistry.GetAll().Contains(e));
         cmd.Undo();
         Assert.IsTrue(e.gameObject.activeSelf);
-        Assert.IsTrue(BoardRegistry.GetAll().Contains(e));
+        Assert.IsTrue(PartRegistry.GetAll().Contains(e));
     }
 
     [Test]

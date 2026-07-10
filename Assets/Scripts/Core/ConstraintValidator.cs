@@ -16,7 +16,7 @@ namespace KitchenDesigner.Core
         private const float ContactDistMM = 0.5f;
         private const float FaceToFaceOverlap = 0.5f;
 
-        // Якорь графа связности — пол или стена (к ним заземляются доски).
+        // Якорь графа связности — пол или стена (к ним заземляются детали).
         private static bool IsAnchor(KitchenElement e) =>
             e != null && (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null);
 
@@ -42,7 +42,7 @@ namespace KitchenDesigner.Core
                     if (a == null || b == null) continue;
                     if (SnapSystem.ElementsIntersect(a, b))
                     {
-                        // Пересечение объёмов физически недопустимо: две доски не могут
+                        // Пересечение объёмов физически недопустимо: две детали не могут
                         // занимать одно место. Помечаем обе как нарушение (даже если по
                         // связности они валидны) — это и есть «красный» при перетаскивании.
                         overlapping.Add(a);
@@ -56,8 +56,8 @@ namespace KitchenDesigner.Core
 
             CheckConnectivity(all, result);
 
-            // Пересекающиеся доски добавляем к нарушениям поверх проверки связности
-            // (BasePlate исключаем — он якорь, его «пересечения» с досками — это контакт).
+            // Пересекающиеся детали добавляем к нарушениям поверх проверки связности
+            // (BasePlate исключаем — он якорь, его «пересечения» с деталями — это контакт).
             foreach (var e in overlapping)
             {
                 if (e == null || IsAnchor(e)) continue;
