@@ -20,6 +20,23 @@ namespace KitchenDesigner.Core
             StartCoroutine(AutoSaveLoop());
         }
 
+        /// <summary>При закрытии программы, если включено автосохранение —
+        /// гарантированно пишем текущую сцену в файл (корутина могла не успеть).</summary>
+        private void OnApplicationQuit()
+        {
+            SaveOnQuit();
+        }
+
+        /// <summary>Сохранить проект автосохранения при выходе, если включена
+        /// настройка AutoSave. Возвращает true, если файл записан. Чистый метод —
+        /// тестируется без жизненного цикла MonoBehaviour.</summary>
+        public static bool SaveOnQuit()
+        {
+            var settings = KitchenSettings.Instance;
+            if (settings == null || !settings.AutoSave) return false;
+            return SaveLoadManager.SaveProject(AutoSaveName, backup: false);
+        }
+
         private IEnumerator AutoSaveLoop()
         {
             while (true)
