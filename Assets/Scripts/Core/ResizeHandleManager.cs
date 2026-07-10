@@ -166,6 +166,11 @@ namespace KitchenDesigner.Core
         private void BeginDrag(int faceIndex)
         {
             if (!_target.Movable) return; // запрет перемещения запрещает и ресайз/move
+
+            // Полускрытую стену сперва на полную высоту, ЗАТЕМ берём геометрию грани —
+            // иначе стартовые размер/центр берутся в опущенном состоянии и объект «прыгает».
+            _target.GetComponent<Wall>()?.RestoreFull();
+
             var faces = _target.GetFaces();
             if (faceIndex < 0 || faceIndex >= faces.Length) return;
             var f = faces[faceIndex];

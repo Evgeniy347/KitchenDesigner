@@ -128,11 +128,26 @@ namespace KitchenDesigner.Core
             IsDragging = true;
             _wasMoved = true;
             BuildMoveSet();
+            // Стартовая точка и offset пересчитываются на ПОЛНОЙ геометрии (BuildMoveSet
+            // мог вернуть опущенную стену на полную высоту → позиция изменилась).
+            _startPosition = _target.transform.position;
+            RecomputeOffset();
             SaveDragMaterial(); // зелёная/красная тонировка появляется только здесь
         }
 
+        private void RecomputeOffset()
+        {
+            if (Camera.main == null) return;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Plane dragPlane = new Plane(Vector3.up, _startPosition);
+            _offset = dragPlane.Raycast(ray, out float enter)
+                ? _startPosition - ray.GetPoint(enter)
+                : Vector3.zero;
+        }
+
         // Если схвачен элемент мультивыделения — двигаем всю выборку (подвижные),
-        // иначе только схваченный объект.
+        // иначе только схваченный объект. Полускрытые стены возвращаются на полную
+        // высоту (GrabStart) ДО взятия стартовых позиций — иначе объект «прыгает».
         private void BuildMoveSet()
         {
             _moveSet.Clear();
@@ -143,16 +158,26 @@ namespace KitchenDesigner.Core
             if (group)
             {
                 foreach (var e in sel.SelectedElements)
-                    if (e != null && e.Movable) { _moveSet.Add(e); _moveStart.Add(e.transform.position); }
+                    if (e != null && e.Movable) _moveSet.Add(e);
             }
             if (_moveSet.Count == 0)
-            {
                 _moveSet.Add(_target);
-                _moveStart.Add(_startPosition);
-            }
+
+            foreach (var e in _moveSet) _moveStart.Add(GrabStart(e));
 
             _movingSet.Clear();
             foreach (var e in _moveSet) _movingSet.Add(e);
+        }
+
+        /// <summary>Стартовая точка перемещения при захвате. Полускрытую (опущенную)
+        /// стену сначала возвращаем на полную высоту, ИНАЧЕ старт берётся в опущенном
+        /// состоянии, стена тут же восстанавливается (WallManager) и «прыгает».</summary>
+        public static Vector3 GrabStart(KitchenElement e)
+        {
+            if (e == null) return Vector3.zero;
+            var wall = e.GetComponent<Wall>();
+            if (wall != null) wall.RestoreFull();
+            return e.transform.position;
         }
 
         /// <summary>Сдвигает все элементы набора на delta от их стартовых позиций.</summary>
