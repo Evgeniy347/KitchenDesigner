@@ -14,12 +14,59 @@ namespace KitchenDesigner.Core.MCP
 {
     public class McpCommandHandler
     {
+        private static readonly Dictionary<string, string> _methods = new Dictionary<string, string>
+        {
+            ["ping"] = "Проверка соединения",
+            ["get_status"] = "Статус сцены (имя, число объектов, платформа)",
+            ["get_scene_hierarchy"] = "Иерархия корневых объектов сцены",
+            ["find_objects"] = "Поиск объектов по имени (name_filter)",
+            ["get_object_info"] = "Информация о GameObject (позиция, компоненты, дети)",
+            ["set_object_active"] = "Включить/выключить GameObject",
+            ["delete_object"] = "Удалить GameObject (без undo)",
+            ["set_position"] = "Установить позицию GameObject",
+            ["set_rotation"] = "Установить поворот GameObject",
+            ["set_scale"] = "Установить масштаб GameObject",
+            ["get_all_elements"] = "Список всех KitchenElement (доски, пол, стены)",
+            ["get_element_info"] = "Информация о KitchenElement по имени",
+            ["create_element"] = "Создать доску/стену/пол. Параметры: template_name, x, y, z, width, height, depth, is_wall, is_floor",
+            ["delete_element"] = "Удалить KitchenElement (с undo)",
+            ["move_element"] = "Переместить KitchenElement (name, x, y, z)",
+            ["resize_element"] = "Изменить размер KitchenElement (name, width, height, depth)",
+            ["rotate_element"] = "Повернуть KitchenElement (name, x, y, z)",
+            ["undo"] = "Отменить последнее действие",
+            ["redo"] = "Повторить отменённое действие",
+            ["get_specification"] = "Спецификация всех досок (размеры, количество, площадь)",
+            ["export_specification_csv"] = "Экспорт спецификации в CSV (path)",
+            ["select_element"] = "Выделить KitchenElement (name)",
+            ["get_undo_stack_info"] = "Информация о стеке undo/redo",
+            ["get_console_logs"] = "Последние логи Unity (count)",
+            ["get_settings"] = "Текущие настройки проекта",
+            ["set_snap_verbose"] = "Включить/выключить подробный лог снэпа",
+            ["snap_diagnose"] = "Диагностика прилипания доски к соседям",
+            ["get_modules"] = "Список всех модулей (групп)",
+            ["module_info"] = "Информация о модуле (module — id или имя)",
+            ["create_module"] = "Создать модуль из списка досок (members, name)",
+            ["dissolve_module"] = "Расформировать модуль (module)",
+            ["add_to_module"] = "Добавить доску в модуль (module, name)",
+            ["remove_from_module"] = "Удалить доску из модуля (name)",
+            ["enter_module_edit"] = "Войти в режим редактирования модуля (module)",
+            ["exit_module_edit"] = "Выйти из режима редактирования модуля",
+            ["take_screenshot"] = "Сделать скриншот (возвращает путь к файлу)",
+            ["get_floor_info"] = "Размеры и позиция пола (BasePlate)",
+            ["resize_floor"] = "Изменить размер пола (width, height, depth)",
+            ["add_wall_component"] = "Добавить Wall компонент к существующему элементу (name)",
+            ["execute_menu_item"] = "Выполнить пункт меню Editor (menu_path)",
+            ["enter_play_mode"] = "Войти в Play Mode",
+            ["exit_play_mode"] = "Выйти из Play Mode",
+        };
+
         public McpResponse Handle(McpRequest request)
         {
             try
             {
                 switch (request.method)
                 {
+                    case "get_methods": return HandleGetMethods(request);
                     case "ping": return HandlePing(request);
                     case "get_status": return HandleGetStatus(request);
                     case "get_scene_hierarchy": return HandleGetSceneHierarchy(request);
@@ -71,6 +118,14 @@ namespace KitchenDesigner.Core.MCP
                 Debug.LogError($"[MCP] Error handling '{request.method}': {ex.Message}\n{ex.StackTrace}");
                 return McpResponse.Error(request.id, -1, $"Internal error: {ex.Message}");
             }
+        }
+
+        private McpResponse HandleGetMethods(McpRequest req)
+        {
+            var list = new List<object>();
+            foreach (var kv in _methods)
+                list.Add(new { method = kv.Key, description = kv.Value });
+            return McpResponse.Result(req.id, list);
         }
 
         private McpResponse HandlePing(McpRequest req)
