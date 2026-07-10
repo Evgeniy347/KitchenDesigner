@@ -237,17 +237,13 @@ namespace KitchenDesigner.Core.UI
         {
             if (ToastNotification.Instance != null)
                 ToastNotification.Instance.Show(msg);
-            Debug.Log("[UI] " + msg);
         }
 
         private void ShowAlignMenu()
         {
             var sel = SelectionManager.Instance;
             if (sel == null || sel.SelectedElements.Count < 2)
-            {
-                Debug.Log("[UI] Align: select at least 2 boards");
                 return;
-            }
 
             var list = new List<KitchenElement>(sel.SelectedElements);
             AlignDistributeTool.Align(list, Axis.X, AlignmentMode.Min);
@@ -258,10 +254,7 @@ namespace KitchenDesigner.Core.UI
         {
             var sel = SelectionManager.Instance;
             if (sel == null || sel.SelectedElements.Count < 3)
-            {
-                Debug.Log("[UI] Distribute: select at least 3 boards");
                 return;
-            }
 
             var list = new List<KitchenElement>(sel.SelectedElements);
             AlignDistributeTool.Distribute(list, Axis.X);
