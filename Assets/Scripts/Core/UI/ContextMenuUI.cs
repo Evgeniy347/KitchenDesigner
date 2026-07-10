@@ -35,42 +35,51 @@ namespace KitchenDesigner.Core.UI
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-124, -257);
             closeBtn.transform.SetAsLastSibling();
 
-            float y = 220f;
-            const float step = 31f;
-            _name = Row(panel.transform, "Название", ref y, step);
-            _w = Row(panel.transform, "Ширина, мм", ref y, step);
-            _h = Row(panel.transform, "Высота, мм", ref y, step);
-            _d = Row(panel.transform, "Глубина, мм", ref y, step);
-            _x = Row(panel.transform, "X, м", ref y, step);
-            _y = Row(panel.transform, "Y, м", ref y, step);
-            _z = Row(panel.transform, "Z, м", ref y, step);
-            _rx = Row(panel.transform, "Поворот X°", ref y, step);
-            _ry = Row(panel.transform, "Поворот Y°", ref y, step);
-            _rz = Row(panel.transform, "Поворот Z°", ref y, step);
+            const float rowStartY = 220f;
+            const float rowStep = 31f;
+            const float rotLabelGap = 23f; // отступ от последнего ряда до подписи поворотов
+            const float rotBtnGap = 4f;    // отступ от подписи до кнопок поворотов
+            const float actionGap = 8f;    // отступ от кнопок поворотов до кнопок действий
+            const float btnH = 28f;        // высота кнопки поворота
+            const float labelH = 22f;      // высота подписи
+            float y = rowStartY;
+            _name = Row(panel.transform, "Название", ref y, rowStep);
+            _w = Row(panel.transform, "Ширина, мм", ref y, rowStep);
+            _h = Row(panel.transform, "Высота, мм", ref y, rowStep);
+            _d = Row(panel.transform, "Глубина, мм", ref y, rowStep);
+            _x = Row(panel.transform, "X, м", ref y, rowStep);
+            _y = Row(panel.transform, "Y, м", ref y, rowStep);
+            _z = Row(panel.transform, "Z, м", ref y, rowStep);
+            _rx = Row(panel.transform, "Поворот X°", ref y, rowStep);
+            _ry = Row(panel.transform, "Поворот Y°", ref y, rowStep);
+            _rz = Row(panel.transform, "Поворот Z°", ref y, rowStep);
 
             foreach (var f in new[] { _w, _h, _d }) f.contentType = InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f.contentType = InputField.ContentType.DecimalNumber;
 
             // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
             // ставить доски вертикально (поворот по X/Z), а не только крутить по Y.
+            float rotLabelY = y - rotLabelGap;
+            float rotBtnY = rotLabelY - labelH - rotBtnGap;
+            float actionY = rotBtnY - btnH - actionGap;
             UIFactory.CreateLabel("CtxRotLbl", panel.transform, "Повернуть на 90°:", 15,
-                new Vector2(0, -82), new Vector2(260, 22), TextAnchor.MiddleCenter);
+                new Vector2(0, rotLabelY), new Vector2(260, labelH), TextAnchor.MiddleCenter);
             UIFactory.CreateButton("CtxRotX", panel.transform, "X 90°",
-                new Vector2(-90, -108), new Vector2(86, 28), () => RotateAxis(Vector3.right));
+                new Vector2(-90, rotBtnY), new Vector2(86, btnH), () => RotateAxis(Vector3.right));
             UIFactory.CreateButton("CtxRotY", panel.transform, "Y 90°",
-                new Vector2(0, -108), new Vector2(86, 28), () => RotateAxis(Vector3.up));
+                new Vector2(0, rotBtnY), new Vector2(86, btnH), () => RotateAxis(Vector3.up));
             UIFactory.CreateButton("CtxRotZ", panel.transform, "Z 90°",
-                new Vector2(90, -108), new Vector2(86, 28), () => RotateAxis(Vector3.forward));
+                new Vector2(90, rotBtnY), new Vector2(86, btnH), () => RotateAxis(Vector3.forward));
 
             UIFactory.CreateButton("CtxApply", panel.transform, "Применить",
-                new Vector2(-65, -144), new Vector2(120, 32), Apply);
+                new Vector2(-65, actionY), new Vector2(120, 32), Apply);
             UIFactory.CreateButton("CtxDup", panel.transform, "Дублировать",
-                new Vector2(65, -144), new Vector2(120, 32), Duplicate);
+                new Vector2(65, actionY), new Vector2(120, 32), Duplicate);
             UIFactory.CreateButton("CtxDel", panel.transform, "Удалить",
-                new Vector2(0, -180), new Vector2(248, 32), Delete);
+                new Vector2(0, actionY - 36), new Vector2(248, 32), Delete);
 
             _lockToggle = UIFactory.CreateToggle("CtxLock", panel.transform, "Запретить перемещение", false,
-                new Vector2(0, -218), new Vector2(248, 26), v => { if (_target != null) _target.Movable = !v; });
+                new Vector2(0, actionY - 74), new Vector2(248, 26), v => { if (_target != null) _target.Movable = !v; });
 
             _root.SetActive(false);
 
