@@ -115,7 +115,7 @@ namespace KitchenDesigner.Core
             return new Rect(center.x - halfU, center.y - halfV, halfU * 2, halfV * 2);
         }
 
-        private static bool ElementsIntersect(KitchenElement a, KitchenElement b)
+        public static bool ElementsIntersect(KitchenElement a, KitchenElement b)
         {
             Vector3[] va = a.GetVertices();
             Vector3[] vb = b.GetVertices();
