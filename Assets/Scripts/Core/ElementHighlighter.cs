@@ -21,7 +21,7 @@ namespace KitchenDesigner.Core
 
         private void Start()
         {
-            CreateMaterials();
+            InitMaterials();
             RefreshHighlights();
             // Вход/выход из режима редактирования модуля меняет затемнение сцены.
             ModuleEditMode.Changed += RefreshHighlights;
@@ -32,7 +32,7 @@ namespace KitchenDesigner.Core
             ModuleEditMode.Changed -= RefreshHighlights;
         }
 
-        private void CreateMaterials()
+        public void CreateMaterials()
         {
             var shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) return;
