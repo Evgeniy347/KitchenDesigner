@@ -144,7 +144,9 @@ namespace KitchenDesigner.Core
             foreach (var ed in data.elements)
             {
                 if (ed == null) continue;
-                var go = ElementFactory.CreateBoard(ed.Dimensions, ed.name, ed.Position);
+                var go = ed.isWall
+                    ? ElementFactory.CreateWall(ed.Dimensions, ed.name, ed.Position)
+                    : ElementFactory.CreateBoard(ed.Dimensions, ed.name, ed.Position);
                 go.transform.rotation = ed.Rotation;
                 var el = go.GetComponent<KitchenElement>();
                 if (el != null) el.Movable = ed.movable;

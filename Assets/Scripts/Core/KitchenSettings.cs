@@ -26,6 +26,8 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _spatialGrid = false;
         [SerializeField] private bool _windowedMode = true;
         [SerializeField] private bool _edgeOutline = false;
+        [SerializeField] private bool _wallsEnabled = true;
+        [SerializeField] private bool _lowerNearWalls = false;
 
         public int GridStep
         {
@@ -87,6 +89,18 @@ namespace KitchenDesigner.Core
             set => _edgeOutline = value;
         }
 
+        public bool WallsEnabled
+        {
+            get => _wallsEnabled;
+            set => _wallsEnabled = value;
+        }
+
+        public bool LowerNearWalls
+        {
+            get => _lowerNearWalls;
+            set => _lowerNearWalls = value;
+        }
+
         public void Save()
         {
             var data = new SettingsData
@@ -100,7 +114,9 @@ namespace KitchenDesigner.Core
                 autoSaveInterval = _autoSaveInterval,
                 spatialGrid = _spatialGrid,
                 windowedMode = _windowedMode,
-                edgeOutline = _edgeOutline
+                edgeOutline = _edgeOutline,
+                wallsHidden = !_wallsEnabled,
+                lowerNearWalls = _lowerNearWalls
             };
             var json = JsonUtility.ToJson(data);
             PlayerPrefs.SetString("KitchenSettings", json);
@@ -124,6 +140,8 @@ namespace KitchenDesigner.Core
             _spatialGrid = data.spatialGrid;
             _windowedMode = data.windowedMode;
             _edgeOutline = data.edgeOutline;
+            _wallsEnabled = !data.wallsHidden;
+            _lowerNearWalls = data.lowerNearWalls;
         }
 
         [System.Serializable]
@@ -139,6 +157,8 @@ namespace KitchenDesigner.Core
             public bool spatialGrid;
             public bool windowedMode;
             public bool edgeOutline;
+            public bool wallsHidden;   // инверсия: старые сейвы (false) → стены включены
+            public bool lowerNearWalls;
         }
     }
 }

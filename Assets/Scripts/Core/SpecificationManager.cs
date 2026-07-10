@@ -89,7 +89,7 @@ namespace KitchenDesigner.Core
             foreach (var e in elements)
             {
                 if (e == null) continue;
-                if (e.GetComponent<BasePlate>() != null) continue;
+                if (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null) continue;
 
                 var dims = e.DimensionsMM;
                 string key = $"{e.BoardName}|{dims.x}x{dims.y}x{dims.z}";

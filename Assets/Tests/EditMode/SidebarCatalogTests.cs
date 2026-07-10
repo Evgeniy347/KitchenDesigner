@@ -36,5 +36,16 @@ public class SidebarCatalogTests
 
         Assert.AreEqual("Короб", korob.name);
         Assert.AreEqual(new Vector3Int(600, 600, 600), korob.dims);
+        Assert.IsFalse(korob.isWall);
+    }
+
+    [Test]
+    public void Room_ContainsWall_MarkedAsWall()
+    {
+        var groups = SidebarCatalog.Build();
+        var wall = groups[2].items.Find(it => it.name == "Стена");
+
+        Assert.IsTrue(wall.isWall, "элемент «Стена» помечен как стена");
+        Assert.AreEqual(new Vector3Int(2000, 2500, 100), wall.dims);
     }
 }

@@ -85,6 +85,27 @@ public class KitchenSettingsTests
     }
 
     [Test]
+    public void WallSettings_SaveAndLoad()
+    {
+        var gs = KitchenSettings.Instance;
+        bool prevWalls = gs.WallsEnabled;
+        bool prevLower = gs.LowerNearWalls;
+
+        gs.WallsEnabled = false;
+        gs.LowerNearWalls = true;
+        gs.Save();
+        gs.WallsEnabled = true;
+        gs.LowerNearWalls = false;
+        gs.Load();
+        Assert.IsFalse(gs.WallsEnabled);
+        Assert.IsTrue(gs.LowerNearWalls);
+
+        gs.WallsEnabled = prevWalls;
+        gs.LowerNearWalls = prevLower;
+        gs.Save();
+    }
+
+    [Test]
     public void BasePlate_CreatesWithCorrectSize()
     {
         var plate = BasePlate.Create();

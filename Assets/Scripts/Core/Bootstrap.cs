@@ -43,6 +43,9 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<EdgeOutlineRenderer>() == null)
                 gameObject.AddComponent<EdgeOutlineRenderer>();
 
+            if (FindAnyObjectByType<WallManager>() == null)
+                gameObject.AddComponent<WallManager>();
+
             if (FindAnyObjectByType<UI.ConsoleOverlay>() == null)
                 gameObject.AddComponent<UI.ConsoleOverlay>();
 

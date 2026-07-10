@@ -76,5 +76,14 @@ namespace KitchenDesigner.Core
             go.transform.rotation = source.transform.rotation;
             return go;
         }
+
+        /// <summary>Стена: та же геометрия, что у доски, плюс маркер Wall
+        /// (структурный якорь, исключён из спецификации/подсветки).</summary>
+        public static GameObject CreateWall(Vector3Int dimensionsMM, string name, Vector3 position)
+        {
+            var go = CreateBoard(dimensionsMM, name, position);
+            go.AddComponent<Wall>();
+            return go;
+        }
     }
 }

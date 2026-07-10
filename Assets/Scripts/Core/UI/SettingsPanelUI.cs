@@ -10,7 +10,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("SettingsPanel", canvas, Vector2.zero, new Vector2(420, 540));
+            var panel = UIFactory.CreatePanel("SettingsPanel", canvas, Vector2.zero, new Vector2(420, 640));
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
@@ -76,8 +76,14 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateToggle("TglEdgeOutline", panel.transform, "Контур (чёрные рёбра)", s.EdgeOutline,
                 new Vector2(0, -176), new Vector2(360, 30), v => { s.EdgeOutline = v; s.Save(); });
 
+            UIFactory.CreateToggle("TglWalls", panel.transform, "Стены", s.WallsEnabled,
+                new Vector2(0, -216), new Vector2(360, 30), v => { s.WallsEnabled = v; s.Save(); });
+
+            UIFactory.CreateToggle("TglLowerWalls", panel.transform, "Опускать ближние стены", s.LowerNearWalls,
+                new Vector2(0, -256), new Vector2(360, 30), v => { s.LowerNearWalls = v; s.Save(); });
+
             UIFactory.CreateButton("SetClose", panel.transform, "Закрыть",
-                new Vector2(0, -220), new Vector2(160, 40), () => SetVisible(false));
+                new Vector2(0, -300), new Vector2(160, 40), () => SetVisible(false));
 
             _root.SetActive(false);
         }

@@ -11,7 +11,11 @@ namespace KitchenDesigner.Core.UI
         {
             public string name;
             public Vector3Int dims;
-            public Item(string name, Vector3Int dims) { this.name = name; this.dims = dims; }
+            public bool isWall;
+            public Item(string name, Vector3Int dims, bool isWall = false)
+            {
+                this.name = name; this.dims = dims; this.isWall = isWall;
+            }
         }
 
         public struct Group
@@ -44,6 +48,7 @@ namespace KitchenDesigner.Core.UI
                     items = new List<Item>
                     {
                         new Item("Короб", new Vector3Int(600, 600, 600)),
+                        new Item("Стена", new Vector3Int(2000, 2500, 100), true),
                     }
                 },
             };
