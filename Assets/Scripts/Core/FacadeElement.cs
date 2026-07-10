@@ -68,6 +68,15 @@ namespace KitchenDesigner.Core
         public float DoorProgress => _t;
         public bool IsDoorClosed => !_open && _t <= 0f;
 
+        /// <summary>Логическая ЗАКРЫТАЯ поза — ИСТОЧНИК ИСТИНЫ для сохранения.
+        /// Открытая/анимируемая поза вычисляется из неё каждый кадр, поэтому в
+        /// проект нужно писать именно её, а не текущий (смещённый) трансформ —
+        /// иначе после перезагрузки дверца «уезжает». Когда дверца полностью
+        /// закрыта, трансформ и есть закрытая поза (её база ещё могла не
+        /// захватиться до первого Update — берём трансформ напрямую).</summary>
+        public Vector3 ClosedPosition => IsDoorClosed ? transform.position : _closedPos;
+        public Quaternion ClosedRotation => IsDoorClosed ? transform.rotation : _closedRot;
+
         public void ToggleDoor() => SetOpen(!_open);
 
         public void SetOpen(bool open)

@@ -318,4 +318,28 @@ public class FacadeDoorAnimationTests
         f.ToggleDoor();
         Assert.IsFalse(f.IsOpen);
     }
+
+    // Регрессия: сохранение ОТКРЫТОЙ дверцы должно писать ЗАКРЫТУЮ позу.
+    // Иначе после перезагрузки дверца отводится от петли повторно и «уезжает».
+    [Test]
+    public void Save_OpenDoor_PersistsClosedPose_NotShiftedTransform()
+    {
+        var f = MakeFacade();
+        var closedPos = f.transform.position;
+        var closedRot = f.transform.rotation;
+
+        f.SetOpen(true);
+        f.StepDoor(1f); // довели анимацию до конца — трансформ отведён от петли
+        Assert.Greater(Vector3.Distance(closedPos, f.transform.position), 1e-3f,
+            "предусловие: открытая дверца смещена");
+
+        var data = ElementData.FromElement(f);
+
+        Assert.Less(Vector3.Distance(closedPos, data.Position), 1e-4f,
+            "в сохранение попала закрытая позиция, а не смещённая");
+        Assert.Less(Quaternion.Angle(closedRot, data.Rotation), 1e-2f,
+            "в сохранение попал закрытый поворот");
+        Assert.IsTrue(data.doorOpen, "флаг открытости сохранён");
+        Assert.AreEqual((int)f.Mode, data.doorMode, "режим двери сохранён");
+    }
 }
