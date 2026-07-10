@@ -116,9 +116,19 @@ namespace KitchenDesigner.Core
                 return false;
             }
 
-            overlapArea = (interRight - interLeft) * (interTop - interBottom);
-            float minArea = Mathf.Min(aRect.width * aRect.height, bRect.width * bRect.height);
-            overlapRatio = minArea > 0 ? overlapArea / minArea : 0;
+            float overlapU = interRight - interLeft;
+            float overlapV = interTop - interBottom;
+            overlapArea = overlapU * overlapV;
+
+            // Полуосевое перекрытие (произведение отношений по каждой оси):
+            // корректно обрабатывает перпендикулярные узкие грани (18×400 и 18×1200),
+            // где отношение площадей (18×18 / min(7200, 21600) = 4.5%) слишком строго,
+            // но по каждой оси перекрытие составляет 100% от меньшего размера грани.
+            float ratioU = Mathf.Min(aRect.width, bRect.width) > 0
+                ? overlapU / Mathf.Min(aRect.width, bRect.width) : 0;
+            float ratioV = Mathf.Min(aRect.height, bRect.height) > 0
+                ? overlapV / Mathf.Min(aRect.height, bRect.height) : 0;
+            overlapRatio = ratioU * ratioV;
             return true;
         }
 

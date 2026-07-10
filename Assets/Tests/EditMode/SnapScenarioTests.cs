@@ -214,7 +214,12 @@ public class SnapScenarioTests : SnapTestBase
     {
         var a = MakeStd("A", Vector3.zero);
         var b = MakeStd("B", Vector3.zero);
-        AssertNotSnapped(b, a, new Vector3(0.1f, 0f, 0f), "глубокое перекрытие");
+        // Доски смещены по X на 100 мм, но грани ±Z в зазоре 18 мм —
+        // снэп разведёт доски по Z встык.
+        var r = Snap(b, a, new Vector3(0.1f, 0f, 0f));
+        Assert.IsTrue(r.snapped, "снэп разведёт пересекающиеся доски");
+        Assert.AreEqual(0.1f, r.position.x, Tol, "X не изменился");
+        Assert.AreEqual(-0.018f, r.position.z, Tol, "Z — встык по Z-граням");
     }
 
     [Test]

@@ -126,11 +126,16 @@ public class SnapEdgeCaseTests : SnapTestBase
     // ===== Геометрические аномалии =====
 
     [Test]
-    public void Intersecting_NoSnap()
+    public void Intersecting_ThroughBody_NoSnap()
     {
         var a = MakeStd("A", Vector3.zero);
         var b = MakeStd("B", Vector3.zero);
-        AssertNotSnapped(b, a, new Vector3(0.2f, 0f, 0f), "глубокое пересечение");
+        // Доски смещены по X на 200 мм, но грани ±Z в зазоре 18 мм —
+        // снэп разведёт доски по Z встык.
+        var r = Snap(b, a, new Vector3(0.2f, 0f, 0f));
+        Assert.IsTrue(r.snapped, "снэп разведёт пересекающиеся доски");
+        Assert.AreEqual(0.2f, r.position.x, Tol, "X не изменился");
+        Assert.AreEqual(-0.018f, r.position.z, Tol, "Z — встык по Z-граням");
     }
 
     [Test]
@@ -193,5 +198,24 @@ public class SnapEdgeCaseTests : SnapTestBase
         var b = MakeStd("B", Vector3.zero);
         b.gameObject.SetActive(false);
         AssertNotSnapped(b, a, new Vector3(0.83f, 0f, 0f), "отключённая доска не снэпается");
+    }
+
+    // ===== Перпендикулярные узкие грани (баг: 400×400 не липла к 1200×600) =====
+
+    [Test]
+    public void Overlap_PerpendicularEdgeFaces_Snaps()
+    {
+        // Доска 1200×600 повёрнута на (90,270,0); доска 400×400 без поворота.
+        // Узкие грани (18 мм) пересекаются под прямым углом: площадь перекрытия
+        // 18×18 = 324 мм², что составляет 4.5% от min(7200, 21600) = 7200 мм² —
+        // ниже порога 30% по площади, но 100% от меньшей полуоси каждой грани.
+        var big = Make("big", new Vector3Int(1200, 600, 18), new Vector3(-0.5592f, 0.3f, -0.948f),
+            Quaternion.Euler(90f, 270f, 0f));
+        var small = Make("small", new Vector3Int(400, 400, 18), Vector3.zero);
+
+        // Ожидаемое прилипание: центр small по X = -0.0592 (заподлицо с гранью big),
+        // Y = 0.30 (центровка кромок), Z = -0.824 (без сдвига — вне порога по Z).
+        AssertFlushContact(small, big, new Vector3(-0.060f, 0.2985f, -0.824f),
+            "перпендикулярные кромки 18×400 и 18×1200 — прилипание");
     }
 }

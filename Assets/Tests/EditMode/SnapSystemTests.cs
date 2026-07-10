@@ -68,14 +68,18 @@ public class SnapSystemTests
     }
 
     [Test]
-    public void TrySnap_IntersectingElements_NotSnapped()
+    public void TrySnap_IntersectingElements_SnapsApart()
     {
         _elementA.transform.position = Vector3.zero;
         _elementB.transform.position = Vector3.zero;
 
         var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA }, _elementB.transform.position);
 
-        Assert.IsFalse(result.snapped, "Should NOT snap when elements intersect");
+        // Полностью совпадающие доски: грани ±Z в зазоре 18 мм → снэп разведёт по Z.
+        Assert.IsTrue(result.snapped, "снэп разведёт пересекающиеся доски по Z");
+        Assert.AreEqual(0f, result.position.x, 0.001f);
+        Assert.AreEqual(0f, result.position.y, 0.001f);
+        Assert.AreEqual(-0.018f, result.position.z, 0.001f, "Z — встык");
     }
 
     [Test]
