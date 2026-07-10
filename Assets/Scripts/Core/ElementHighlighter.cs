@@ -74,8 +74,7 @@ namespace KitchenDesigner.Core
             var renderer = element.GetComponent<MeshRenderer>();
             if (renderer == null) return;
 
-            bool isBasePlate = element.GetComponent<BasePlate>() != null;
-            if (isBasePlate) return;
+            if (element.GetComponent<BasePlate>() != null || element.GetComponent<Wall>() != null) return;
 
             renderer.material = isValid ? _validMaterial : _invalidMaterial;
         }

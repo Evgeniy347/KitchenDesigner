@@ -10,6 +10,7 @@ namespace KitchenDesigner.Core
         public float[] position = new float[3];
         public float[] rotation = new float[4];
         public bool movable = true;
+        public bool isWall = false;
 
         public ElementData() { }
 
@@ -26,6 +27,7 @@ namespace KitchenDesigner.Core
             d.rotation = new[] { r.x, r.y, r.z, r.w };
 
             d.movable = element.Movable;
+            d.isWall = element.GetComponent<Wall>() != null;
             return d;
         }
 

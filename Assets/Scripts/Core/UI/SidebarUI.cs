@@ -147,7 +147,10 @@ namespace KitchenDesigner.Core.UI
 
         private void Spawn(SidebarCatalog.Item item)
         {
-            if (UIManager.Instance != null)
+            if (UIManager.Instance == null) return;
+            if (item.isWall)
+                UIManager.Instance.SpawnWall(item.dims, item.name);
+            else
                 UIManager.Instance.SpawnBoard(item.dims, item.name);
         }
 

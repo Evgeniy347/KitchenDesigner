@@ -16,6 +16,10 @@ namespace KitchenDesigner.Core
         private const float ContactDistMM = 0.5f;
         private const float FaceToFaceOverlap = 0.5f;
 
+        // Якорь графа связности — пол или стена (к ним заземляются доски).
+        private static bool IsAnchor(KitchenElement e) =>
+            e != null && (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null);
+
         public static ValidationResult Validate(List<KitchenElement> all)
         {
             var result = new ValidationResult();
@@ -56,7 +60,7 @@ namespace KitchenDesigner.Core
             // (BasePlate исключаем — он якорь, его «пересечения» с досками — это контакт).
             foreach (var e in overlapping)
             {
-                if (e == null || e.GetComponent<BasePlate>() != null) continue;
+                if (e == null || IsAnchor(e)) continue;
                 if (!result.violations.Contains(e))
                     result.violations.Add(e);
             }
@@ -150,35 +154,28 @@ namespace KitchenDesigner.Core
                 adjacency[contact.elementB].Add(contact.elementA);
             }
 
-            KitchenElement start = null;
-            foreach (var e in all)
-            {
-                if (e.GetComponent<BasePlate>() != null)
-                {
-                    start = e;
-                    break;
-                }
-            }
-
-            if (start == null)
-            {
-                foreach (var e in all)
-                {
-                    if (hasContact.Contains(e))
-                    {
-                        start = e;
-                        break;
-                    }
-                }
-            }
-
-            if (start == null)
-                start = all[0];
-
             var visited = new HashSet<KitchenElement>();
             var queue = new Queue<KitchenElement>();
-            queue.Enqueue(start);
-            visited.Add(start);
+
+            // Якоря (пол и стены) — корни BFS: всё пристыкованное к ним заземлено.
+            foreach (var e in all)
+            {
+                if (IsAnchor(e))
+                {
+                    visited.Add(e);
+                    queue.Enqueue(e);
+                }
+            }
+
+            if (queue.Count == 0)
+            {
+                KitchenElement start = null;
+                foreach (var e in all)
+                    if (hasContact.Contains(e)) { start = e; break; }
+                if (start == null) start = all[0];
+                visited.Add(start);
+                queue.Enqueue(start);
+            }
 
             while (queue.Count > 0)
             {
@@ -196,8 +193,7 @@ namespace KitchenDesigner.Core
 
             foreach (var e in all)
             {
-                bool isBasePlate = e.GetComponent<BasePlate>() != null;
-                if (isBasePlate) continue;
+                if (IsAnchor(e)) continue;
                 if (!visited.Contains(e) || !hasContact.Contains(e))
                     result.violations.Add(e);
             }
