@@ -4,6 +4,8 @@ namespace KitchenDesigner.Core
 {
     public class CameraController : MonoBehaviour
     {
+        public static CameraController Instance { get; private set; }
+
         [SerializeField] private float _distance = 5f;
         [SerializeField] private float _minDistance = 0.5f;
         [SerializeField] private float _maxDistance = 20f;
@@ -24,8 +26,31 @@ namespace KitchenDesigner.Core
         private bool _rmbMoved;
         private const float RmbDragPixels = 6f;
 
+        private void Awake()
+        {
+            Instance = this;
+        }
+
         private void Start()
         {
+            UpdateCameraPosition();
+        }
+
+        /// <summary>Текущее состояние камеры (для сохранения в проект).</summary>
+        public CameraState GetState() => new CameraState
+        {
+            valid = true,
+            targetX = _target.x, targetY = _target.y, targetZ = _target.z,
+            angleX = _angleX, angleY = _angleY, distance = _distance
+        };
+
+        /// <summary>Восстановить состояние камеры из проекта.</summary>
+        public void SetState(CameraState s)
+        {
+            _target = new Vector3(s.targetX, s.targetY, s.targetZ);
+            _angleX = s.angleX;
+            _angleY = s.angleY;
+            _distance = Mathf.Clamp(s.distance, _minDistance, _maxDistance);
             UpdateCameraPosition();
         }
 
@@ -126,7 +151,8 @@ namespace KitchenDesigner.Core
             return false;
         }
 
-        // ПКМ-клик по объекту (не пол) → меню группы (связать / настройки группы).
+        // ПКМ-клик по объекту (не пол): обычный одиночный объект → окно его настроек;
+        // связанная группа или мультивыделение → меню группы (связать / настройки группы).
         private static void HandleRmbClick()
         {
             var cam = Camera.main;
@@ -135,8 +161,15 @@ namespace KitchenDesigner.Core
             if (!Physics.Raycast(ray, out RaycastHit hit)) return;
             var e = hit.collider.GetComponentInParent<KitchenElement>();
             if (e == null || e.GetComponent<BasePlate>() != null) return;
-            if (UI.UIManager.Instance != null)
+            if (UI.UIManager.Instance == null) return;
+
+            var sel = SelectionManager.Instance;
+            bool grouped = GroupManager.GroupOf(e) != null;
+            bool multi = sel != null && sel.SelectedElements.Count >= 2 && sel.IsSelected(e);
+            if (grouped || multi)
                 UI.UIManager.Instance.OpenGroupMenu(e);
+            else
+                UI.UIManager.Instance.OpenContextMenu(e);
         }
 
         private void SetView(float angleX, float angleY)
