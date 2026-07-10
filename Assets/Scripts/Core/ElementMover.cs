@@ -160,6 +160,8 @@ namespace KitchenDesigner.Core
                 _wasMoved = false;
                 _snapVisualizer.Hide();
                 _wasSnapPreviewed = false;
+                if (ElementHighlighter.Instance != null)
+                    ElementHighlighter.Instance.RefreshHighlights();
             }
 
             if (IsDragging && Input.GetMouseButton(0))
@@ -210,6 +212,26 @@ namespace KitchenDesigner.Core
                 if (_wasMoved)
                 {
                     ApplySnapOnDrop();
+
+                    if (KitchenSettings.Instance.BlockOnViolation)
+                    {
+                        var all = FindObjectsByType<KitchenElement>();
+                        var list = new List<KitchenElement>(all);
+                        var valResult = ConstraintValidator.Validate(list);
+                        if (!valResult.isValid)
+                        {
+                            Debug.Log("[Mover] BLOCKED: position causes violation, restoring");
+                            _target.transform.position = _startPosition;
+                            if (ElementHighlighter.Instance != null)
+                                ElementHighlighter.Instance.RefreshHighlights();
+                            RestoreDragMaterial();
+                            IsDragging = false;
+                            _snapVisualizer.Hide();
+                            _wasSnapPreviewed = false;
+                            return;
+                        }
+                    }
+
                     Debug.Log("[Mover] Drop at " + _target.transform.position);
                 }
                 else
@@ -221,6 +243,8 @@ namespace KitchenDesigner.Core
                 IsDragging = false;
                 _snapVisualizer.Hide();
                 _wasSnapPreviewed = false;
+                if (ElementHighlighter.Instance != null)
+                    ElementHighlighter.Instance.RefreshHighlights();
             }
         }
 

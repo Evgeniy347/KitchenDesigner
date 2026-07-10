@@ -121,6 +121,9 @@ namespace KitchenDesigner.Core
             {
                 Debug.Log("[Selection] No renderer or original material to restore");
             }
+
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.ApplyForElement(_selected);
         }
     }
 }
