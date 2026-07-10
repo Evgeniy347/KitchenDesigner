@@ -22,6 +22,12 @@ public class IntegrationPlayModeTests
         _camera.transform.position = new Vector3(0f, 3f, -5f);
         _camera.transform.LookAt(Vector3.zero);
 
+        // Изоляция от автозагрузки (Bootstrap грузит последнюю сессию): чистим
+        // источники последнего сохранения, чтобы стартовать с пустой сценой.
+        SaveLoadManager.LastPath = "";
+        var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
+        if (File.Exists(autoPath)) File.Delete(autoPath);
+
         _bootstrap = new GameObject("Bootstrap");
         _bootstrap.AddComponent<Bootstrap>();
 
