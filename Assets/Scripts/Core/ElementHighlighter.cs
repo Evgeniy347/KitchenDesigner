@@ -9,6 +9,8 @@ namespace KitchenDesigner.Core
 
         private Material _validMaterial;
         private Material _invalidMaterial;
+        private Material _validTransparentMaterial;
+        private Material _invalidTransparentMaterial;
         private Material _dimmedMaterial;
         private bool _materialsInitialized;
 
@@ -49,7 +51,21 @@ namespace KitchenDesigner.Core
             _dimmedMaterial = new Material(shader);
             _dimmedMaterial.color = new Color(0.35f, 0.35f, 0.38f);
 
+            _validTransparentMaterial = MakeTransparentCopy(_validMaterial);
+            _invalidTransparentMaterial = MakeTransparentCopy(_invalidMaterial);
+
             _materialsInitialized = true;
+        }
+
+        private static Material MakeTransparentCopy(Material source)
+        {
+            var mat = new Material(source);
+            mat.SetFloat("_Surface", 1);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+            var c = mat.color;
+            mat.color = new Color(c.r, c.g, c.b, 0.35f);
+            return mat;
         }
 
         public void RefreshHighlights()
@@ -96,7 +112,9 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            renderer.material = isValid ? _validMaterial : _invalidMaterial;
+            renderer.material = element.Transparent
+                ? (isValid ? _validTransparentMaterial : _invalidTransparentMaterial)
+                : (isValid ? _validMaterial : _invalidMaterial);
         }
     }
 }

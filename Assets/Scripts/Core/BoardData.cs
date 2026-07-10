@@ -14,6 +14,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _gapRight;
         [SerializeField] private int _gapTop;
         [SerializeField] private int _gapBottom;
+        [SerializeField] private bool _transparent;
 
         public string BoardName
         {
@@ -67,6 +68,12 @@ namespace KitchenDesigner.Core
         {
             get => _gapBottom;
             set => _gapBottom = Mathf.Max(0, value);
+        }
+
+        public bool Transparent
+        {
+            get => _transparent;
+            set => _transparent = value;
         }
 
         public int GapMM => _gapLeft + _gapRight + _gapTop + _gapBottom;
