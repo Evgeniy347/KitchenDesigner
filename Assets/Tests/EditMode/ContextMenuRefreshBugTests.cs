@@ -140,15 +140,19 @@ public class ContextMenuRefreshBugTests
         _ctx.Open(facade);
 
         facade.GapLeft = 10;
-        facade.GapRight = 10;
-        facade.GapTop = 5;
-        facade.GapBottom = 5;
+        facade.GapRight = 20;
+        facade.GapTop = 30;
+        facade.GapBottom = 40;
         CallRefreshTransformFields();
 
-        Assert.AreEqual("20", FieldText("_gapW"),
-            $"BUG: gapW stays '{FieldText("_gapW")}' instead of '20' (10+10)");
-        Assert.AreEqual("10", FieldText("_gapH"),
-            $"BUG: gapH stays '{FieldText("_gapH")}' instead of '10' (5+5)");
+        Assert.AreEqual("10", FieldText("_gapLeft"),
+            $"BUG: gapLeft stays '{FieldText("_gapLeft")}' instead of '10'");
+        Assert.AreEqual("20", FieldText("_gapRight"),
+            $"BUG: gapRight stays '{FieldText("_gapRight")}' instead of '20'");
+        Assert.AreEqual("30", FieldText("_gapTop"),
+            $"BUG: gapTop stays '{FieldText("_gapTop")}' instead of '30'");
+        Assert.AreEqual("40", FieldText("_gapBottom"),
+            $"BUG: gapBottom stays '{FieldText("_gapBottom")}' instead of '40'");
     }
 
     // ── helpers ─────────────────────────────────────────────────────────

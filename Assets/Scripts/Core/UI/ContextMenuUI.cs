@@ -13,7 +13,9 @@ namespace KitchenDesigner.Core.UI
         private KitchenElement _target;
         private Text _titleLabel;
 
-        private InputField _name, _w, _h, _d, _radius, _gapW, _gapH, _x, _y, _z, _rx, _ry, _rz;
+        private InputField _name, _w, _h, _d, _radius,
+            _gapLeft, _gapRight, _gapTop, _gapBottom,
+            _x, _y, _z, _rx, _ry, _rz;
         private Toggle _lockToggle;
         private Toggle _transparentToggle;
         private RectTransform _panelRt;
@@ -137,7 +139,7 @@ namespace KitchenDesigner.Core.UI
             _rz = Row(panel.transform, "Поворот Z°");
 
             foreach (var f in new[] { _w, _h, _d, _radius }) f.contentType = InputField.ContentType.IntegerNumber;
-            foreach (var f in new[] { _gapW, _gapH }) f.contentType = InputField.ContentType.IntegerNumber;
+            foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f.contentType = InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f.contentType = InputField.ContentType.DecimalNumber;
 
             // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
@@ -246,33 +248,41 @@ namespace KitchenDesigner.Core.UI
             const float fieldH = 22f;
             const float pad = 2f;
             const float innerGap = 4f;
+            const float smallFieldW = 45f;
+            const float fieldGap = 4f;
+            const float gapFieldX = FieldX - 27f;
 
-            // Содержимое раскладывается сверху вниз (та же конвенция, что и панель):
-            // курсор = расстояние от верха секции до верхней кромки строки. Высота
-            // секции берётся из курсора, поэтому строки гарантированно помещаются.
             float top = pad;
             AddTopAnchoredChild(UIFactory.CreateLabel("CtxGapHdr", root.transform, "Зазоры:", 14,
                 new Vector2(LabelX, -top), new Vector2(130, headerH), TextAnchor.MiddleLeft).rectTransform);
             top += headerH + innerGap;
-            _gapW = GapField(root.transform, "Ширина X, мм", -top);
+
+            // Ширина X, мм — левый и правый зазор
+            AddTopAnchoredChild(UIFactory.CreateLabel("Gap_Ширина X, мм", root.transform, "Ширина X, мм", 13,
+                new Vector2(LabelX, -top), new Vector2(130, 20), TextAnchor.MiddleLeft).rectTransform);
+            _gapLeft = UIFactory.CreateInputField("F_gapLeft", root.transform, "0",
+                new Vector2(gapFieldX, -top), new Vector2(smallFieldW, 22));
+            AddTopAnchoredChild(_gapLeft.GetComponent<RectTransform>());
+            _gapRight = UIFactory.CreateInputField("F_gapRight", root.transform, "0",
+                new Vector2(gapFieldX + smallFieldW + fieldGap, -top), new Vector2(smallFieldW, 22));
+            AddTopAnchoredChild(_gapRight.GetComponent<RectTransform>());
             top += fieldH + innerGap;
-            _gapH = GapField(root.transform, "Высота Y, мм", -top);
+
+            // Высота Y, мм — верхний и нижний зазор
+            AddTopAnchoredChild(UIFactory.CreateLabel("Gap_Высота Y, мм", root.transform, "Высота Y, мм", 13,
+                new Vector2(LabelX, -top), new Vector2(130, 20), TextAnchor.MiddleLeft).rectTransform);
+            _gapTop = UIFactory.CreateInputField("F_gapTop", root.transform, "0",
+                new Vector2(gapFieldX, -top), new Vector2(smallFieldW, 22));
+            AddTopAnchoredChild(_gapTop.GetComponent<RectTransform>());
+            _gapBottom = UIFactory.CreateInputField("F_gapBottom", root.transform, "0",
+                new Vector2(gapFieldX + smallFieldW + fieldGap, -top), new Vector2(smallFieldW, 22));
+            AddTopAnchoredChild(_gapBottom.GetComponent<RectTransform>());
             top += fieldH + pad;
 
             sectionH = top;
             rt.sizeDelta = new Vector2(260, sectionH);
             root.SetActive(false);
             return root;
-        }
-
-        private static InputField GapField(Transform parent, string label, float y)
-        {
-            AddTopAnchoredChild(UIFactory.CreateLabel("Gap_" + label, parent, label, 13,
-                new Vector2(LabelX, y), new Vector2(130, 20), TextAnchor.MiddleLeft).rectTransform);
-            var field = UIFactory.CreateInputField("F_gap_" + label, parent, "0",
-                new Vector2(FieldX, y), new Vector2(100, 22));
-            AddTopAnchoredChild(field.GetComponent<RectTransform>());
-            return field;
         }
 
         private static void AddTopAnchoredChild(RectTransform rt) => AnchorTop(rt);
@@ -379,7 +389,7 @@ namespace KitchenDesigner.Core.UI
 
         private bool IsAnyFieldFocused()
         {
-            foreach (var f in new[] { _name, _w, _h, _d, _radius, _gapW, _gapH, _x, _y, _z, _rx, _ry, _rz })
+            foreach (var f in new[] { _name, _w, _h, _d, _radius, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z, _rx, _ry, _rz })
                 if (f != null && f.isFocused) return true;
             return false;
         }
@@ -417,8 +427,10 @@ namespace KitchenDesigner.Core.UI
             var facade = _target as FacadeElement;
             if (facade != null)
             {
-                MaybeRefresh(_gapW, (facade.GapLeft + facade.GapRight).ToString());
-                MaybeRefresh(_gapH, (facade.GapTop + facade.GapBottom).ToString());
+                MaybeRefresh(_gapLeft, facade.GapLeft.ToString());
+                MaybeRefresh(_gapRight, facade.GapRight.ToString());
+                MaybeRefresh(_gapTop, facade.GapTop.ToString());
+                MaybeRefresh(_gapBottom, facade.GapBottom.ToString());
             }
         }
 
@@ -460,8 +472,10 @@ namespace KitchenDesigner.Core.UI
             var facade = element as FacadeElement;
             if (facade != null)
             {
-                _gapW.text = (facade.GapLeft + facade.GapRight).ToString();
-                _gapH.text = (facade.GapTop + facade.GapBottom).ToString();
+                _gapLeft.text = facade.GapLeft.ToString();
+                _gapRight.text = facade.GapRight.ToString();
+                _gapTop.text = facade.GapTop.ToString();
+                _gapBottom.text = facade.GapBottom.ToString();
             }
             UpdateDoorButton(facade);
             UpdateModeDropdown(facade);
@@ -527,12 +541,10 @@ namespace KitchenDesigner.Core.UI
             var facade = _target as FacadeElement;
             if (facade != null)
             {
-                var totalX = ParseInt(_gapW.text, facade.GapLeft + facade.GapRight);
-                var totalY = ParseInt(_gapH.text, facade.GapTop + facade.GapBottom);
-                facade.GapLeft = totalX / 2;
-                facade.GapRight = totalX - facade.GapLeft;
-                facade.GapTop = totalY / 2;
-                facade.GapBottom = totalY - facade.GapTop;
+                facade.GapLeft = ParseInt(_gapLeft.text, facade.GapLeft);
+                facade.GapRight = ParseInt(_gapRight.text, facade.GapRight);
+                facade.GapTop = ParseInt(_gapTop.text, facade.GapTop);
+                facade.GapBottom = ParseInt(_gapBottom.text, facade.GapBottom);
             }
 
             _target.transform.position = new Vector3(
@@ -569,8 +581,10 @@ namespace KitchenDesigner.Core.UI
 
             if (facade != null)
             {
-                _gapW.text = (facade.GapLeft + facade.GapRight).ToString();
-                _gapH.text = (facade.GapTop + facade.GapBottom).ToString();
+                _gapLeft.text = facade.GapLeft.ToString();
+                _gapRight.text = facade.GapRight.ToString();
+                _gapTop.text = facade.GapTop.ToString();
+                _gapBottom.text = facade.GapBottom.ToString();
             }
 
             RefreshHighlights();
@@ -785,8 +799,10 @@ namespace KitchenDesigner.Core.UI
             var radial = _target as RadialShelfElement;
             TrackField(_radius, radial != null ? radial.Radius.ToString() : "300");
             var facade = _target as FacadeElement;
-            TrackField(_gapW, facade != null ? (facade.GapLeft + facade.GapRight).ToString() : "0");
-            TrackField(_gapH, facade != null ? (facade.GapTop + facade.GapBottom).ToString() : "0");
+            TrackField(_gapLeft, facade != null ? facade.GapLeft.ToString() : "0");
+            TrackField(_gapRight, facade != null ? facade.GapRight.ToString() : "0");
+            TrackField(_gapTop, facade != null ? facade.GapTop.ToString() : "0");
+            TrackField(_gapBottom, facade != null ? facade.GapBottom.ToString() : "0");
             var pos = _target.transform.position;
             TrackField(_x, pos.x.ToString("F3"));
             TrackField(_y, pos.y.ToString("F3"));
