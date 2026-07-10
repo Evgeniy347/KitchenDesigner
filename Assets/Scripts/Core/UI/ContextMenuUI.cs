@@ -26,22 +26,13 @@ namespace KitchenDesigner.Core.UI
             panel.rectTransform.anchoredPosition = new Vector2(-10, -60);
             _root = panel.gameObject;
 
-            UIFactory.CreateLabel("CtxTitle", panel.transform, "Доска", 20,
-                new Vector2(0, 255), new Vector2(260, 28), TextAnchor.MiddleCenter);
-
-            var closeBtn = UIFactory.CreateButton("CtxClose", panel.transform, "✕",
-                new Vector2(124, 257), new Vector2(24, 24), Close);
-            UIFactory.AnchorTopRight(closeBtn.GetComponent<RectTransform>());
-            closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-124, -257);
-            closeBtn.transform.SetAsLastSibling();
-
             const float rowStartY = 220f;
             const float rowStep = 31f;
-            const float rotLabelGap = 23f; // отступ от последнего ряда до подписи поворотов
-            const float rotBtnGap = 4f;    // отступ от подписи до кнопок поворотов
-            const float actionGap = 8f;    // отступ от кнопок поворотов до кнопок действий
-            const float btnH = 28f;        // высота кнопки поворота
-            const float labelH = 22f;      // высота подписи
+            const float rotLabelGap = 23f;
+            const float rotBtnGap = 4f;
+            const float actionGap = 8f;
+            const float btnH = 28f;
+            const float labelH = 22f;
             float y = rowStartY;
             _name = Row(panel.transform, "Название", ref y, rowStep);
             _w = Row(panel.transform, "Ширина, мм", ref y, rowStep);
@@ -80,6 +71,20 @@ namespace KitchenDesigner.Core.UI
 
             _lockToggle = UIFactory.CreateToggle("CtxLock", panel.transform, "Запретить перемещение", false,
                 new Vector2(0, actionY - 74), new Vector2(248, 26), v => { if (_target != null) _target.Movable = !v; });
+
+            UIFactory.CreateLabel("CtxTitle", panel.transform, "Доска", 20,
+                new Vector2(0, rowStartY + 35), new Vector2(260, 28), TextAnchor.MiddleCenter);
+
+            var closeBtn = UIFactory.CreateButton("CtxClose", panel.transform, "✕",
+                Vector2.zero, new Vector2(24, 24), Close);
+            UIFactory.AnchorTopRight(closeBtn.GetComponent<RectTransform>());
+            closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
+            closeBtn.transform.SetAsLastSibling();
+
+            float topContent = (rowStartY + 35) + 14f;
+            float bottomContent = (actionY - 74) - 13f;
+            float halfHeight = Mathf.Max(topContent, -bottomContent);
+            panel.rectTransform.sizeDelta = new Vector2(280, halfHeight * 2f + 40f);
 
             _root.SetActive(false);
 

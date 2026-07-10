@@ -24,18 +24,9 @@ namespace KitchenDesigner.Core.UI
             panel.rectTransform.anchoredPosition = new Vector2(-10, -350);
             _root = panel.gameObject;
 
-            UIFactory.CreateLabel("FlrTitle", panel.transform, "Размеры помещения", 20,
-                new Vector2(0, 108), new Vector2(260, 28), TextAnchor.MiddleCenter);
-
-            var closeBtn = UIFactory.CreateButton("FlrClose", panel.transform, "✕",
-                new Vector2(124, 110), new Vector2(24, 24), Close);
-            UIFactory.AnchorTopRight(closeBtn.GetComponent<RectTransform>());
-            closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-124, -110);
-            closeBtn.transform.SetAsLastSibling();
-
             const float rowStartY = 76f;
             const float rowStep = 31f;
-            const float buttonGap = 18f; // отступ между последним рядом и кнопкой
+            const float buttonGap = 18f;
             float y = rowStartY;
             _w = Row(panel.transform, "Ширина, мм", ref y, rowStep);
             _h = Row(panel.transform, "Высота, мм", ref y, rowStep);
@@ -49,6 +40,20 @@ namespace KitchenDesigner.Core.UI
 
             UIFactory.CreateButton("FlrApply", panel.transform, "Применить",
                 new Vector2(0, y - buttonGap), new Vector2(248, 32), Apply);
+
+            UIFactory.CreateLabel("FlrTitle", panel.transform, "Размеры помещения", 20,
+                new Vector2(0, rowStartY + 32), new Vector2(260, 28), TextAnchor.MiddleCenter);
+
+            var closeBtn = UIFactory.CreateButton("FlrClose", panel.transform, "✕",
+                Vector2.zero, new Vector2(24, 24), Close);
+            UIFactory.AnchorTopRight(closeBtn.GetComponent<RectTransform>());
+            closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
+            closeBtn.transform.SetAsLastSibling();
+
+            float contentTop = (rowStartY + 32) + 14f;
+            float contentBottom = (y - buttonGap) - 16f;
+            float halfHeight = Mathf.Max(contentTop, -contentBottom);
+            panel.rectTransform.sizeDelta = new Vector2(280, halfHeight * 2f + 40f);
 
             _root.SetActive(false);
         }
