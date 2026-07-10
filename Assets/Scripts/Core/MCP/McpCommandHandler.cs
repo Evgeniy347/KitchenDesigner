@@ -78,6 +78,7 @@ namespace KitchenDesigner.Core.MCP
                     case "simulate_move": return HandleSimulateMove(request);
                     case "simulate_resize": return HandleSimulateResize(request);
                     case "set_element_lock": return HandleSetElementLock(request);
+                    case "set_facade_mode": return HandleSetFacadeMode(request);
                     default:
                         return McpResponse.Error(request.id, -32601, $"Unknown method: {request.method}");
                 }
@@ -1242,6 +1243,48 @@ namespace KitchenDesigner.Core.MCP
             el.Movable = !p.locked;
             Debug.Log($"[MCP] Element '{p.name}' lock set to {p.locked} (Movable={!p.locked})");
             return McpResponse.Result(req.id, new { ok = true, name = p.name, locked = p.locked });
+        }
+
+        private McpResponse HandleSetFacadeMode(McpRequest req)
+        {
+            var p = req.Params?.ToObject<ParamsSetFacadeMode>();
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            if (string.IsNullOrEmpty(p.mode))
+                return McpResponse.Error(req.id, -32602, "mode required");
+
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            var facade = el as FacadeElement;
+            if (facade == null) return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a facade");
+
+            switch (p.mode.ToLowerInvariant())
+            {
+                case "front_left":     facade.Mode = DoorMode.HingeFrontLeft; break;
+                case "front_right":    facade.Mode = DoorMode.HingeFrontRight; break;
+                case "front_top":      facade.Mode = DoorMode.HingeFrontTop; break;
+                case "front_bottom":   facade.Mode = DoorMode.HingeFrontBottom; break;
+                case "back_left":      facade.Mode = DoorMode.HingeBackLeft; break;
+                case "back_right":     facade.Mode = DoorMode.HingeBackRight; break;
+                case "back_top":       facade.Mode = DoorMode.HingeBackTop; break;
+                case "back_bottom":    facade.Mode = DoorMode.HingeBackBottom; break;
+                case "edge_top_left":  facade.Mode = DoorMode.HingeEdgeTopLeft; break;
+                case "edge_top_right": facade.Mode = DoorMode.HingeEdgeTopRight; break;
+                case "edge_bottom_left":  facade.Mode = DoorMode.HingeEdgeBottomLeft; break;
+                case "edge_bottom_right": facade.Mode = DoorMode.HingeEdgeBottomRight; break;
+                case "drawer_out":     facade.Mode = DoorMode.DrawerOut; break;
+                case "drawer_in":      facade.Mode = DoorMode.DrawerIn; break;
+                case "drawer_right":   facade.Mode = DoorMode.DrawerRight; break;
+                case "drawer_left":    facade.Mode = DoorMode.DrawerLeft; break;
+                case "drawer_up":      facade.Mode = DoorMode.DrawerUp; break;
+                case "drawer_down":    facade.Mode = DoorMode.DrawerDown; break;
+                default:
+                    return McpResponse.Error(req.id, -32602, $"Unknown mode: '{p.mode}'. Valid: front_left, front_right, front_top, front_bottom, back_left, back_right, back_top, back_bottom, edge_top_left, edge_top_right, edge_bottom_left, edge_bottom_right, drawer_out, drawer_in, drawer_right, drawer_left, drawer_up, drawer_down");
+            }
+
+            Debug.Log($"[MCP] Facade '{p.name}' mode set to {p.mode}");
+            return McpResponse.Result(req.id, new { ok = true, name = p.name, mode = p.mode });
         }
 
         private static GameObject FindGameObject(string path)

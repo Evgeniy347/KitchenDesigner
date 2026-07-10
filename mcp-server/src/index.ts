@@ -522,6 +522,21 @@ server.registerTool("set_element_lock",
     } },
   async (a) => safe("set_element_lock", a));
 
+const FACADE_MODES = [
+  "front_left", "front_right", "front_top", "front_bottom",
+  "back_left", "back_right", "back_top", "back_bottom",
+  "edge_top_left", "edge_top_right", "edge_bottom_left", "edge_bottom_right",
+  "drawer_out", "drawer_in", "drawer_right", "drawer_left", "drawer_up", "drawer_down",
+] as const;
+
+server.registerTool("set_facade_mode",
+  { title: "Facade open mode", description: "Change how a facade element opens: hinge (door swinging around one edge) or drawer (sliding along a face). 18 modes. Fails if the element is not a facade.", annotations: WRITE,
+    inputSchema: {
+      name: z.string().min(1, "Required").describe("Exact facade element name."),
+      mode: z.enum(FACADE_MODES).describe("Opening mode:\n  front_* — hinged on front face edge\n  back_* — hinged on back face edge\n  edge_* — hinged on thickness edge\n  drawer_* — sliding along axis"),
+    } },
+  async (a) => safe("set_facade_mode", a));
+
 server.registerTool("add_wall_component",
   { title: "Make element a wall", description: "Turn an existing board into a wall (structural anchor). No-op if it is already a wall.", annotations: WRITE,
     inputSchema: { name: z.string().min(1, "Required").describe("Exact board name.") } },
