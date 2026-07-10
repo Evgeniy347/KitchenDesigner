@@ -185,6 +185,7 @@ namespace KitchenDesigner.Core
                 {
                     el.Movable = ed.movable;
                     el.GroupId = ed.groupId;
+                    el.Transparent = ed.transparent;
                     MaterialManager.ApplyById(el, ed.materialId);
                 }
                 created.Add(go);

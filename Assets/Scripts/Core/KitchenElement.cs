@@ -44,6 +44,12 @@ namespace KitchenDesigner.Core
             set => _data.MaterialId = value;
         }
 
+        public bool Transparent
+        {
+            get => _data.Transparent;
+            set => _data.Transparent = value;
+        }
+
         public struct Face
         {
             public Vector3 center;

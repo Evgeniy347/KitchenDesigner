@@ -15,6 +15,7 @@ namespace KitchenDesigner.Core.UI
 
         private InputField _name, _w, _h, _d, _gapW, _gapH, _x, _y, _z, _rx, _ry, _rz;
         private Toggle _lockToggle;
+        private Toggle _transparentToggle;
         private RectTransform _panelRt;
         private Text _doorButtonLabel;  // подпись кнопки «Открыть»/«Закрыть»
         private Dropdown _modeDropdown; // выпадающий список режима открывания
@@ -134,6 +135,16 @@ namespace KitchenDesigner.Core.UI
             var del = UIFactory.CreateButton("CtxDel", panel.transform, "Удалить",
                 new Vector2(0, 0), new Vector2(248, 32), Delete);
             AddRow(32f, ActionGap, del.GetComponent<RectTransform>());
+
+            _transparentToggle = UIFactory.CreateToggle("CtxTransparent", panel.transform, "Прозрачный", false,
+                new Vector2(0, 0), new Vector2(248, 26), v =>
+                {
+                    if (_target == null) return;
+                    _target.Transparent = v;
+                    if (ElementHighlighter.Instance != null)
+                        ElementHighlighter.Instance.ApplyForElement(_target);
+                });
+            AddRow(26f, 7f, _transparentToggle.GetComponent<RectTransform>());
 
             _lockToggle = UIFactory.CreateToggle("CtxLock", panel.transform, "Запретить перемещение", false,
                 new Vector2(0, 0), new Vector2(248, 26), v => { if (_target != null) _target.Movable = !v; });
@@ -353,6 +364,7 @@ namespace KitchenDesigner.Core.UI
             Layout(isFacade);
 
             RefreshTransformFields();
+            _transparentToggle.SetIsOnWithoutNotify(element.Transparent);
             _lockToggle.SetIsOnWithoutNotify(!element.Movable);
 
             _root.SetActive(true);

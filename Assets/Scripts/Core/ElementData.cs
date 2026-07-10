@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core
         public int gapBottom = 2;
         public int groupId = 0;
         public string materialId = MaterialCatalog.DefaultId;
+        public bool transparent = false;
 
         public ElementData() { }
 
@@ -49,6 +50,7 @@ namespace KitchenDesigner.Core
             }
             d.groupId = element.GroupId;
             d.materialId = element.MaterialId;
+            d.transparent = element.Transparent;
             return d;
         }
 
