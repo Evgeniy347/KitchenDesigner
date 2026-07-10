@@ -40,8 +40,8 @@ namespace KitchenDesigner.Core
                 if (SaveLoadManager.SaveProject(AutoSaveName, backup: false))
                 {
                     _lastSavedJson = current;
-                    if (UI.ToastNotification.Instance != null)
-                        UI.ToastNotification.Instance.Show("Auto-saved", 1.5f);
+                    if (UI.AutoSaveIndicator.Instance != null)
+                        UI.AutoSaveIndicator.Instance.NotifySaved();
                 }
             }
         }
