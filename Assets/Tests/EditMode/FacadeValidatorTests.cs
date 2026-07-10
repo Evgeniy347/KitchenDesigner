@@ -55,22 +55,22 @@ public class FacadeValidatorTests
     private List<KitchenElement> All() => PartRegistry.GetAll();
 
     [Test]
-    public void GetFaceNormal_DefaultRotation_PointsToNegativeZ()
+    public void GetFaceNormal_DefaultRotation_PointsToPositiveZ()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         var normal = FacadeValidator.GetFaceNormal(f);
         Assert.AreEqual(0f, normal.x, 1e-5f);
         Assert.AreEqual(0f, normal.y, 1e-5f);
-        Assert.AreEqual(-1f, normal.z, 1e-5f);
+        Assert.AreEqual(1f, normal.z, 1e-5f);
     }
 
     [Test]
-    public void GetFaceNormal_Rotated90Y_PointsToNegativeX()
+    public void GetFaceNormal_Rotated90Y_PointsToPositiveX()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         f.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
         var normal = FacadeValidator.GetFaceNormal(f);
-        Assert.AreEqual(-1f, normal.x, 1e-5f);
+        Assert.AreEqual(1f, normal.x, 1e-5f);
         Assert.AreEqual(0f, normal.y, 1e-5f);
         Assert.AreEqual(0f, normal.z, 1e-5f);
     }
@@ -86,7 +86,10 @@ public class FacadeValidatorTests
     public void IsFacingInward_FaceOutward_ReturnsFalse()
     {
         var box = MakeElement("Box", new Vector3Int(600, 400, 500), Vector3.zero);
+        // Фасад стоит спереди (z = -0.3), повёрнут на 180° — лицевая грань (+Z локально)
+        // смотрит в -Z, то есть наружу от короба.
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, -0.3f));
+        f.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
         GroupManager.Link(new List<KitchenElement> { box, f });
         Assert.IsFalse(FacadeValidator.IsFacingInward(f));
     }
@@ -95,10 +98,9 @@ public class FacadeValidatorTests
     public void IsFacingInward_FaceInward_ReturnsTrue()
     {
         var box = MakeElement("Box", new Vector3Int(600, 400, 500), Vector3.zero);
-        // Фасад стоит спереди (z = -0.3) и развёрнут на 180° — его лицевая грань
-        // (локально -Z) смотрит в +Z, то есть внутрь короба.
+        // Фасад стоит спереди (z = -0.3) с identity-rotation — лицевая грань (+Z локально)
+        // смотрит в +Z, то есть внутрь короба.
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, -0.3f));
-        f.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
         GroupManager.Link(new List<KitchenElement> { box, f });
         Assert.IsTrue(FacadeValidator.IsFacingInward(f));
     }
@@ -116,8 +118,8 @@ public class FacadeValidatorTests
     public void FindFaceObstructions_ElementDirectlyInFront_Detected()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
-        // 20 мм впереди по нормали -Z
-        var obstacle = MakeElement("Obstacle", new Vector3Int(200, 200, 18), new Vector3(0f, 0f, -0.038f));
+        // 20 мм впереди по нормали +Z.
+        var obstacle = MakeElement("Obstacle", new Vector3Int(200, 200, 18), new Vector3(0f, 0f, 0.038f));
         var obs = FacadeValidator.FindFaceObstructions(f, All());
         Assert.AreEqual(1, obs.Count);
         Assert.AreEqual("Obstacle", obs[0].neighbor);
@@ -139,9 +141,9 @@ public class FacadeValidatorTests
     {
         var f = MakeFacade("F", new Vector3Int(400, 700, 18), new Vector3(0f, 0.35f, 0f));
         f.Mode = DoorMode.HingeFrontLeft;
-        // Дверь с левой петлёй распахивается влево-наружу (центр уходит в -X, -Z).
+        // Дверь с левой петлёй распахивается влево-наружу (центр уходит в -X, +Z).
         // Ставим большое препятствие в зоне качания.
-        var obstacle = MakeElement("Obstacle", new Vector3Int(400, 700, 18), new Vector3(-0.25f, 0.35f, -0.15f));
+        var obstacle = MakeElement("Obstacle", new Vector3Int(400, 700, 18), new Vector3(-0.25f, 0.35f, 0.15f));
         var viol = FacadeValidator.FindOpeningViolations(f, All());
         Assert.AreEqual(1, viol.Count);
         Assert.AreEqual("Obstacle", viol[0].neighbor);
@@ -154,8 +156,8 @@ public class FacadeValidatorTests
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         f.Mode = DoorMode.DrawerOut;
-        // Препятствие прямо перед ящиком на пути выдвижения.
-        var obstacle = MakeElement("Obstacle", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, -0.3f));
+        // Препятствие прямо перед ящиком на пути выдвижения (+Z).
+        var obstacle = MakeElement("Obstacle", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, 0.3f));
         var viol = FacadeValidator.FindOpeningViolations(f, All());
         Assert.AreEqual(1, viol.Count);
         Assert.AreEqual("Obstacle", viol[0].neighbor);

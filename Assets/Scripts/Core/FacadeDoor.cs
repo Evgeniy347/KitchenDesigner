@@ -53,7 +53,7 @@ namespace KitchenDesigner.Core
         // (передние — к −Z, задние — к +Z). Порядок строго совпадает с DoorMode.
         private static readonly Variant[] V =
         {
-            // Передняя грань (z=−hz).
+            // Передняя грань (z=−hz). Распахиваются наружу — к +Z.
             new Variant(false, new Vector3(-1f, 0f, -1f),  Y, "◄", "Дверь: слева"),
             new Variant(false, new Vector3( 1f, 0f, -1f), -Y, "►", "Дверь: справа"),
             new Variant(false, new Vector3( 0f, 1f, -1f),  X, "▲", "Дверь: сверху"),
@@ -68,13 +68,13 @@ namespace KitchenDesigner.Core
             new Variant(false, new Vector3( 1f, 1f,  0f),  Z, "◥", "Угол: верх-право"),
             new Variant(false, new Vector3(-1f,-1f,  0f),  Z, "◣", "Угол: низ-лево"),
             new Variant(false, new Vector3( 1f,-1f,  0f),  Z, "◢", "Угол: низ-право"),
-            // Ящик — сдвиг по нормали грани.
-            new Variant(true, Vector3.zero, -Z, "⊙", "Ящик: вперёд"),
-            new Variant(true, Vector3.zero,  Z, "⊗", "Ящик: назад"),
-            new Variant(true, Vector3.zero,  X, "→", "Ящик: вправо"),
-            new Variant(true, Vector3.zero, -X, "←", "Ящик: влево"),
-            new Variant(true, Vector3.zero,  Y, "↑", "Ящик: вверх"),
-            new Variant(true, Vector3.zero, -Y, "↓", "Ящик: вниз"),
+            // Ящик — сдвиг по нормали грани. "Вперёд" = наружу = +Z.
+            new Variant(true, Vector3.zero,  Z, "⊙", "Ящик: вперёд"),
+            new Variant(true, Vector3.zero, -Z, "⊗", "Ящик: назад"),
+            new Variant(true, Vector3.zero, -X, "→", "Ящик: вправо"),
+            new Variant(true, Vector3.zero,  X, "←", "Ящик: влево"),
+            new Variant(true, Vector3.zero, -Y, "↑", "Ящик: вверх"),
+            new Variant(true, Vector3.zero,  Y, "↓", "Ящик: вниз"),
         };
 
         /// <summary>Число режимов (12 рёбер + 6 ящиков = 18).</summary>
@@ -118,7 +118,8 @@ namespace KitchenDesigner.Core
             }
 
             var pivotLocal = Vector3.Scale(v.pivotSigns, halfExtents);
-            float angle = MaxAngleDeg * e; // +90° вокруг знаковой оси ребра
+            // −90° вокруг знаковой оси ребра — двери распахиваются наружу (+Z для передней грани).
+            float angle = -MaxAngleDeg * e;
             var pivotWorld = closedPos + closedRot * pivotLocal;
             var axisWorld = closedRot * v.dir;
             var delta = Quaternion.AngleAxis(angle, axisWorld);

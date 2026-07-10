@@ -77,7 +77,7 @@ public class FacadeMcpTests
         var json = JObject.FromObject(resp.data);
         Assert.AreEqual(0f, json["faceNormalX"].Value<float>(), 1e-5f);
         Assert.AreEqual(0f, json["faceNormalY"].Value<float>(), 1e-5f);
-        Assert.AreEqual(-1f, json["faceNormalZ"].Value<float>(), 1e-5f);
+        Assert.AreEqual(1f, json["faceNormalZ"].Value<float>(), 1e-5f);
         Assert.IsFalse(json["faceInward"].Value<bool>());
         Assert.IsEmpty(json["faceObstructions"]);
         Assert.IsEmpty(json["openingViolations"]);
@@ -87,7 +87,7 @@ public class FacadeMcpTests
     public void GetElementInfo_FacadeWithObstruction_ReturnsFaceObstruction()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
-        MakeElement("Obstacle", new Vector3Int(200, 200, 18), new Vector3(0f, 0f, -0.038f));
+        MakeElement("Obstacle", new Vector3Int(200, 200, 18), new Vector3(0f, 0f, 0.038f));
 
         var resp = _handler.Handle(MakeReq("get_element_info", new { name = "F" }));
         var json = JObject.FromObject(resp.data);
@@ -100,8 +100,8 @@ public class FacadeMcpTests
     public void GetViolations_InwardFacade_ReturnsViolation()
     {
         var box = MakeElement("Box", new Vector3Int(600, 400, 500), Vector3.zero);
+        // identity rotation: лицевая грань (+Z локально) смотрит внутрь короба.
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, -0.3f));
-        f.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
         GroupManager.Link(new List<KitchenElement> { box, f });
 
         var resp = _handler.Handle(MakeReq("get_violations", new { }));
@@ -144,7 +144,7 @@ public class FacadeMcpTests
 
         var json = JObject.FromObject(resp.data);
         Assert.IsNotNull(json["faceNormal"]);
-        Assert.AreEqual(-1f, json["faceNormal"]["x"].Value<float>(), 1e-3f);
+        Assert.AreEqual(1f, json["faceNormal"]["x"].Value<float>(), 1e-3f);
         Assert.IsNotNull(json["faceObstructions"]);
         Assert.IsNotNull(json["openingViolations"]);
     }
@@ -153,7 +153,7 @@ public class FacadeMcpTests
     public void SetFacadeMode_ReturnsOpeningViolations()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
-        MakeElement("Obstacle", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, -0.3f));
+        MakeElement("Obstacle", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, 0.3f));
 
         var resp = _handler.Handle(MakeReq("set_facade_mode", new { name = "F", mode = "drawer_out" }));
         var json = JObject.FromObject(resp.data);

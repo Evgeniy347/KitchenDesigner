@@ -139,16 +139,16 @@ public class FacadeDoorTests
     }
 
     [Test]
-    public void Pose_FrontEdges_OpenOutward_CenterMovesTowardMinusZ()
+    public void Pose_FrontEdges_OpenOutward_CenterMovesTowardPlusZ()
     {
-        // 4 передних ребра распахиваются наружу: центр фасада уезжает к −Z
+        // 4 передних ребра распахиваются наружу: центр фасада уезжает к +Z
         // (при 90° нормаль ложится в плоскость, поэтому проверяем именно центр).
         var cr = Quaternion.identity;
         foreach (var m in new[] { DoorMode.HingeFrontLeft, DoorMode.HingeFrontRight,
                                   DoorMode.HingeFrontTop, DoorMode.HingeFrontBottom })
         {
             FacadeDoor.Pose(Vector3.zero, cr, Half, m, 1f, out var pos, out _);
-            Assert.Less(pos.z, -0.05f, $"{m}: центр не ушёл наружу (к −Z)");
+            Assert.Greater(pos.z, 0.05f, $"{m}: центр не ушёл наружу (к +Z)");
         }
     }
 
@@ -162,17 +162,17 @@ public class FacadeDoorTests
         FacadeDoor.Pose(cp, cr, Half, DoorMode.DrawerOut, 1f, out var pos, out var rot);
 
         Assert.Less(Quaternion.Angle(cr, rot), 1e-3f, "ящик не поворачивается");
-        var expected = cp + cr * (Vector3.back * FacadeDoor.DrawerSlideMeters); // −Z локально
+        var expected = cp + cr * (Vector3.forward * FacadeDoor.DrawerSlideMeters); // +Z локально = наружу
         Assert.Less(Vector3.Distance(pos, expected), 1e-4f);
     }
 
     [Test]
-    public void Pose_DrawerRight_SlidesAlongPlusX()
+    public void Pose_DrawerRight_SlidesAlongMinusX()
     {
         var cp = Vector3.zero;
         var cr = Quaternion.identity;
         FacadeDoor.Pose(cp, cr, Half, DoorMode.DrawerRight, 1f, out var pos, out _);
-        var expected = Vector3.right * FacadeDoor.DrawerSlideMeters;
+        var expected = Vector3.left * FacadeDoor.DrawerSlideMeters;
         Assert.Less(Vector3.Distance(pos, expected), 1e-4f);
     }
 
@@ -284,7 +284,7 @@ public class FacadeDoorAnimationTests
         f.StepDoor(1f);
 
         Assert.Less(Quaternion.Angle(closedRot, f.transform.rotation), 1e-2f, "ящик не поворачивается");
-        var expected = closedPos + closedRot * (Vector3.back * FacadeDoor.DrawerSlideMeters);
+        var expected = closedPos + closedRot * (Vector3.forward * FacadeDoor.DrawerSlideMeters);
         Assert.Less(Vector3.Distance(expected, f.transform.position), 1e-3f, "ящик выдвинулся вперёд");
 
         f.SetOpen(false);
