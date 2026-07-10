@@ -103,8 +103,9 @@ namespace KitchenDesigner.Core
         {
             if (_root == null) Build();
             var mat = selected ? SelectedMaterial() : BlackMaterial();
-            foreach (var e in _edges)
-                if (e != null) e.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            if (mat != null)
+                foreach (var e in _edges)
+                    if (e != null) e.GetComponent<MeshRenderer>().sharedMaterial = mat;
             _root.gameObject.SetActive(true);
             _visible = true;
             UpdateEdges();
@@ -152,8 +153,13 @@ namespace KitchenDesigner.Core
 
         private static Material MakeUnlit(Color color)
         {
+            // ВАЖНО: URP/Unlit вырезается из сборки, если им не пользуется ни один
+            // материал (Shader.Find → null в билде → краш). Падаем на гарантированно
+            // включённый URP/Lit (его используют все доски), затем на любой доступный.
             var shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null) shader = Shader.Find("Unlit/Color");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) shader = Shader.Find("Sprites/Default");
+            if (shader == null) return null; // никогда не роняем игру
             var m = new Material(shader);
             m.SetColor("_BaseColor", color);
             m.color = color;
