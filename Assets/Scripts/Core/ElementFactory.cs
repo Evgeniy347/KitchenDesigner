@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace KitchenDesigner.Core
 {
@@ -22,33 +23,99 @@ namespace KitchenDesigner.Core
             }
         }
 
-        public static GameObject CreateBoard(Vector3Int dimensionsMM, string name, Vector3 position)
-        {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = string.IsNullOrEmpty(name) ? "Board" : name;
-
-            var element = go.AddComponent<KitchenElement>();
-            element.BoardName = go.name;
-            element.DimensionsMM = dimensionsMM;
-
-            go.transform.position = position;
-
-            var mat = DefaultMaterial;
-            if (mat != null)
+        private static readonly ObjectPool<GameObject> _boardPool = new ObjectPool<GameObject>(
+            createFunc: () =>
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.AddComponent<KitchenElement>();
+                var rb = go.AddComponent<Rigidbody>();
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                go.tag = "KitchenElement";
+                go.SetActive(false);
+                return go;
+            },
+            actionOnGet: (go) =>
             {
                 var renderer = go.GetComponent<MeshRenderer>();
-                renderer.sharedMaterial = mat;
-            }
+                if (renderer != null) renderer.sharedMaterial = DefaultMaterial;
+                var collider = go.GetComponent<BoxCollider>();
+                if (collider != null) collider.enabled = true;
+            },
+            actionOnRelease: (go) =>
+            {
+                go.SetActive(false);
+                go.name = "(pooled)";
+                RemoveCustomComponents(go);
+                ResetComponent(go);
+            },
+            actionOnDestroy: (go) => Object.DestroyImmediate(go),
+            defaultCapacity: 20,
+            maxSize: 100
+        );
 
-            var collider = go.GetComponent<BoxCollider>();
-            if (collider != null)
-                collider.enabled = true;
+        private static readonly ObjectPool<GameObject> _facadePool = new ObjectPool<GameObject>(
+            createFunc: () =>
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.AddComponent<FacadeElement>();
+                var rb = go.AddComponent<Rigidbody>();
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                go.tag = "KitchenElement";
+                go.SetActive(false);
+                return go;
+            },
+            actionOnGet: (go) =>
+            {
+                var renderer = go.GetComponent<MeshRenderer>();
+                if (renderer != null) renderer.sharedMaterial = DefaultMaterial;
+                var collider = go.GetComponent<BoxCollider>();
+                if (collider != null) collider.enabled = true;
+            },
+            actionOnRelease: (go) =>
+            {
+                go.SetActive(false);
+                go.name = "(pooled)";
+                RemoveCustomComponents(go);
+                ResetComponent(go);
+            },
+            actionOnDestroy: (go) => Object.DestroyImmediate(go),
+            defaultCapacity: 10,
+            maxSize: 50
+        );
 
-            var rigidbody = go.AddComponent<Rigidbody>();
-            rigidbody.isKinematic = true;
-            rigidbody.useGravity = false;
+        /// <summary>Удалить компоненты, добавленные поверх базовой сборки.</summary>
+        private static void RemoveCustomComponents(GameObject go)
+        {
+            var wall = go.GetComponent<Wall>();
+            if (wall != null) Object.DestroyImmediate(wall);
+        }
 
-            go.tag = "KitchenElement";
+        /// <summary>Сбросить KitchenElement/FacadeElement в начальное состояние.</summary>
+        private static void ResetComponent(GameObject go)
+        {
+            var el = go.GetComponent<KitchenElement>();
+            if (el == null) return;
+            el.BoardName = "(pooled)";
+            el.DimensionsMM = new Vector3Int(800, 400, 18);
+            el.Movable = true;
+            el.GroupId = 0;
+            BoardRegistry.Unregister(el);
+        }
+
+        public static GameObject CreateBoard(Vector3Int dimensionsMM, string name, Vector3 position)
+        {
+            var go = _boardPool.Get();
+            go.name = string.IsNullOrEmpty(name) ? "Board" : name;
+            go.transform.position = position;
+
+            var element = go.GetComponent<KitchenElement>();
+            element.BoardName = go.name;
+            element.DimensionsMM = dimensionsMM;
+            element.Movable = true;
+
+            go.SetActive(true);
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
@@ -91,8 +158,6 @@ namespace KitchenDesigner.Core
             return go2;
         }
 
-        /// <summary>Стена: та же геометрия, что у доски, плюс маркер Wall
-        /// (структурный якорь, исключён из спецификации/подсветки).</summary>
         public static GameObject CreateWall(Vector3Int dimensionsMM, string name, Vector3 position)
         {
             var go = CreateBoard(dimensionsMM, name, position);
@@ -103,10 +168,11 @@ namespace KitchenDesigner.Core
         public static GameObject CreateFacade(Vector3Int dimensionsMM, string name, Vector3 position,
             int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            var go = _facadePool.Get();
             go.name = string.IsNullOrEmpty(name) ? "Facade" : name;
+            go.transform.position = position;
 
-            var facade = go.AddComponent<FacadeElement>();
+            var facade = go.GetComponent<FacadeElement>();
             facade.BoardName = go.name;
             facade.DimensionsMM = dimensionsMM;
             facade.GapLeft = gapLeft;
@@ -114,29 +180,43 @@ namespace KitchenDesigner.Core
             facade.GapTop = gapTop;
             facade.GapBottom = gapBottom;
 
-            go.transform.position = position;
-
-            var mat = DefaultMaterial;
-            if (mat != null)
-            {
-                var renderer = go.GetComponent<MeshRenderer>();
-                renderer.sharedMaterial = mat;
-            }
-
-            var collider = go.GetComponent<BoxCollider>();
-            if (collider != null)
-                collider.enabled = true;
-
-            var rigidbody = go.AddComponent<Rigidbody>();
-            rigidbody.isKinematic = true;
-            rigidbody.useGravity = false;
-
-            go.tag = "KitchenElement";
+            go.SetActive(true);
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
 
             return go;
+        }
+
+        /// <summary>Вернуть доску в пул. Используй вместо Object.Destroy[Immediate].</summary>
+        public static void DestroyBoard(GameObject go)
+        {
+            if (go == null) return;
+            _boardPool.Release(go);
+        }
+
+        /// <summary>Вернуть фасад в пул. Используй вместо Object.Destroy[Immediate].</summary>
+        public static void DestroyFacade(GameObject go)
+        {
+            if (go == null) return;
+            _facadePool.Release(go);
+        }
+
+        /// <summary>Вернуть любой элемент в пул (автоопределение board/facade).</summary>
+        public static void DestroyElement(GameObject go)
+        {
+            if (go == null) return;
+            if (go.GetComponent<FacadeElement>() != null)
+                _facadePool.Release(go);
+            else
+                _boardPool.Release(go);
+        }
+
+        /// <summary>Очистить все пулы (вызывать при смене сцены).</summary>
+        public static void ClearPools()
+        {
+            _boardPool.Clear();
+            _facadePool.Clear();
         }
     }
 }
