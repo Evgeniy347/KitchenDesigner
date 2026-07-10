@@ -13,6 +13,7 @@ namespace KitchenDesigner.Core.UI
 
         private InputField _w, _h, _d, _x, _y, _z;
         private readonly Dictionary<InputField, string> _cleanValues = new();
+        private int _applyFrame = -1;
 
         private void Awake()
         {
@@ -110,22 +111,11 @@ namespace KitchenDesigner.Core.UI
 
             if (_root != null && _root.activeSelf && _floorElement != null)
             {
-                if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
-                    && IsAnyFieldFocused())
-                    Apply();
-
                 var pos = _floorElement.transform.position;
                 if (!_x.isFocused) _x.SetTextWithoutNotify(pos.x.ToString("F3"));
                 if (!_y.isFocused) _y.SetTextWithoutNotify(pos.y.ToString("F3"));
                 if (!_z.isFocused) _z.SetTextWithoutNotify(pos.z.ToString("F3"));
             }
-        }
-
-        private bool IsAnyFieldFocused()
-        {
-            foreach (var f in new[] { _w, _h, _d, _x, _y, _z })
-                if (f != null && f.isFocused) return true;
-            return false;
         }
 
         private void Apply()
@@ -176,6 +166,15 @@ namespace KitchenDesigner.Core.UI
             _cleanValues[field] = cleanValue;
             field.onValueChanged.RemoveAllListeners();
             field.onValueChanged.AddListener(_ => UpdateFieldHighlight(field));
+            field.onEndEdit.RemoveAllListeners();
+            field.onEndEdit.AddListener(_ => ApplyFromField());
+        }
+
+        private void ApplyFromField()
+        {
+            if (Time.frameCount == _applyFrame) return;
+            _applyFrame = Time.frameCount;
+            Apply();
         }
 
         private void UpdateFieldHighlight(InputField field)
