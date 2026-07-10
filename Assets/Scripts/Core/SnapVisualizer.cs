@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -5,6 +6,7 @@ namespace KitchenDesigner.Core
     public class SnapVisualizer : MonoBehaviour
     {
         private LineRenderer _line;
+        private Coroutine _flashRoutine;
 
         private void Awake()
         {
@@ -28,15 +30,30 @@ namespace KitchenDesigner.Core
 
         public void ShowSnap(Vector3 from, Vector3 to)
         {
+            if (_flashRoutine != null)
+                StopCoroutine(_flashRoutine);
+            _flashRoutine = StartCoroutine(FlashGreen(from, to));
+        }
+
+        private IEnumerator FlashGreen(Vector3 from, Vector3 to)
+        {
             _line.enabled = true;
             _line.startColor = Color.green;
             _line.endColor = Color.green;
             _line.SetPosition(0, from);
             _line.SetPosition(1, to);
+
+            yield return new WaitForSeconds(0.5f);
+
+            _line.enabled = false;
+            _flashRoutine = null;
         }
 
         public void Hide()
         {
+            if (_flashRoutine != null)
+                return;
+
             _line.enabled = false;
         }
     }

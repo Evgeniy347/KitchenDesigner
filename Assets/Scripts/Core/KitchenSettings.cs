@@ -16,7 +16,7 @@ namespace KitchenDesigner.Core
             }
         }
 
-        [SerializeField] private int _gridStep = 16;
+        [SerializeField] private int _gridStep = 1;
         [SerializeField] private bool _gridEnabled = true;
         [SerializeField] private bool _snapEnabled = true;
         [SerializeField] private float _snapThreshold = 50f;
