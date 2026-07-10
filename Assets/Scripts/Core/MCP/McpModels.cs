@@ -92,6 +92,13 @@ namespace KitchenDesigner.Core.MCP
     }
 
     [Serializable]
+    public class ParamsElementLock
+    {
+        public string name;
+        public bool locked; // true → Movable=false, false → Movable=true
+    }
+
+    [Serializable]
     public class ParamsCreateElement
     {
         public string template_name;

@@ -64,6 +64,7 @@ namespace KitchenDesigner.Core.MCP
             ["get_element_gaps"] = "Зазоры/перекрытия к соседям по каждой оси",
             ["simulate_move"] = "Симуляция перемещения: AABB, пересечения, зазоры без выполнения",
             ["simulate_resize"] = "Симуляция изменения размера: AABB, пересечения, зазоры без выполнения",
+            ["set_element_lock"] = "Установить/снять блокировку элемента (locked=true — Movable=false, locked=false — Movable=true; требует явного разрешения пользователя)",
         };
 
         /// <summary>
@@ -130,6 +131,7 @@ namespace KitchenDesigner.Core.MCP
                     case "get_element_gaps": return HandleGetElementGaps(request);
                     case "simulate_move": return HandleSimulateMove(request);
                     case "simulate_resize": return HandleSimulateResize(request);
+                    case "set_element_lock": return HandleSetElementLock(request);
                     default:
                         return McpResponse.Error(request.id, -32601, $"Unknown method: {request.method}");
                 }
@@ -536,6 +538,8 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            if (!element.Movable) return McpResponse.Error(req.id, -1,
+                $"Элемент '{p.name}' заблокирован. Снимите блокировку через set_element_lock (locked:false) — это требует явного разрешения пользователя.");
 
             var before = element.transform.position;
             var rotBefore = element.transform.rotation;
@@ -562,6 +566,8 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            if (!element.Movable) return McpResponse.Error(req.id, -1,
+                $"Элемент '{p.name}' заблокирован. Снимите блокировку через set_element_lock (locked:false) — это требует явного разрешения пользователя.");
 
             int w = p.width > 0 ? p.width : p.dimX;
             int h = p.height > 0 ? p.height : p.dimY;
@@ -598,6 +604,8 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            if (!element.Movable) return McpResponse.Error(req.id, -1,
+                $"Элемент '{p.name}' заблокирован. Снимите блокировку через set_element_lock (locked:false) — это требует явного разрешения пользователя.");
 
             var before = element.transform.position;
             var rotBefore = element.transform.rotation;
@@ -673,6 +681,8 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            if (!element.Movable) return McpResponse.Error(req.id, -1,
+                $"Элемент '{p.name}' заблокирован. Снимите блокировку через set_element_lock (locked:false) — это требует явного разрешения пользователя.");
             CommandStack.Execute(new DeleteCommand(element.gameObject));
             Debug.Log($"[MCP] Deleted {p.name}");
             return McpResponse.Result(req.id, new { ok = true, name = p.name });
@@ -1237,6 +1247,20 @@ namespace KitchenDesigner.Core.MCP
                 element.transform.position = oldPos;
                 element.transform.rotation = oldRot;
             }
+        }
+
+        // ── set_element_lock ────────────────────────────────────────────
+        private McpResponse HandleSetElementLock(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsElementLock>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            el.Movable = !p.locked;
+            Debug.Log($"[MCP] Element '{p.name}' lock set to {p.locked} (Movable={!p.locked})");
+            return McpResponse.Result(req.id, new { ok = true, name = p.name, locked = p.locked });
         }
 
         private static GameObject FindGameObject(string path)
