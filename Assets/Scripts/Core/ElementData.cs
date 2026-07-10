@@ -19,6 +19,8 @@ namespace KitchenDesigner.Core
         public int groupId = 0;
         public string materialId = MaterialCatalog.DefaultId;
         public bool transparent = false;
+        public int doorMode = 0;
+        public bool doorOpen = false;
 
         public ElementData() { }
 
@@ -47,6 +49,8 @@ namespace KitchenDesigner.Core
                 d.gapRight = facade.GapRight;
                 d.gapTop = facade.GapTop;
                 d.gapBottom = facade.GapBottom;
+                d.doorMode = (int)facade.Mode;
+                d.doorOpen = facade.IsOpen;
             }
             d.groupId = element.GroupId;
             d.materialId = element.MaterialId;

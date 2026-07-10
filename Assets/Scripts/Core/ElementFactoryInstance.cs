@@ -151,6 +151,9 @@ namespace KitchenDesigner.Core
                 var go = CreateFacade(dims, source.BoardName + " (copy)", offset,
                     facade.GapLeft, facade.GapRight, facade.GapTop, facade.GapBottom);
                 go.transform.rotation = source.transform.rotation;
+                var copyFacade = go.GetComponent<FacadeElement>();
+                if (copyFacade != null)
+                    copyFacade.Mode = facade.Mode;
                 return go;
             }
 
