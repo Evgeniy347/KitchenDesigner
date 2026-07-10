@@ -24,6 +24,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { connect } from "net";
+import type { CreateElementParams } from "./types.js";
 
 const UNITY_HOST = process.env.UNITY_MCP_HOST || "127.0.0.1";
 const UNITY_PORT = parseInt(process.env.UNITY_MCP_PORT || "9337", 10);
@@ -129,7 +130,7 @@ function ensureConnected(): Promise<void> {
   return connecting;
 }
 
-function sendRequest(method: string, params: Record<string, unknown>): Promise<unknown> {
+function sendRequest<T>(method: string, params: T): Promise<unknown> {
   const id = `req-${++requestId}`;
   // Send params as a direct JSON object (no double-serialization).
   const wire = JSON.stringify({ id, method, params }) + "\n";
@@ -157,7 +158,7 @@ function sendRequest(method: string, params: Record<string, unknown>): Promise<u
 }
 
 /** Call a Unity method. Read-only calls auto-retry once after a transient drop. */
-async function callUnity(method: string, params: Record<string, unknown> = {}): Promise<unknown> {
+async function callUnity<T>(method: string, params: T = {} as T): Promise<unknown> {
   await ensureConnected();
   try {
     return await sendRequest(method, params);
@@ -182,7 +183,7 @@ function errorResult(message: string) {
 }
 
 /** Run a Unity call and turn any failure (domain OR connection) into a clear MCP error. */
-async function safe(method: string, params: Record<string, unknown> = {}) {
+async function safe<T>(method: string, params: T = {} as T) {
   try {
     return textResult(await callUnity(method, params));
   } catch (e) {
@@ -385,7 +386,7 @@ server.registerTool("create_element",
       gap_bottom: z.number().int().optional().describe("Facade only: bottom gap in MM (default 2)."),
     } },
   async (a) => {
-    const params: Record<string, unknown> = { template_name: a.name, name: a.name, x: a.x, y: a.y, z: a.z };
+    const params: CreateElementParams = { template_name: a.name, name: a.name, x: a.x, y: a.y, z: a.z };
     if (a.width !== undefined) params.width = a.width;
     if (a.height !== undefined) params.height = a.height;
     if (a.depth !== undefined) params.depth = a.depth;
@@ -492,7 +493,7 @@ server.registerTool("create_module",
       name: z.string().describe("Module name, e.g. 'Тумба с ящиками'."),
       members: z.array(z.string()).min(2).describe("Board names (at least 2)."),
     } },
-  async (a) => safe("create_module", a as Record<string, unknown>));
+  async (a) => safe("create_module", a));
 
 server.registerTool("dissolve_module",
   { title: "Dissolve module", description: "Ungroup a module. The boards stay in the scene.", annotations: DESTRUCTIVE,
