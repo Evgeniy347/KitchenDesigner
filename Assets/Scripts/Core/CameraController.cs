@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private float _orbitSpeed = 2f;
         [SerializeField] private float _panSpeed = 0.02f;
         [SerializeField] private float _moveSpeed = 3f;
-        [SerializeField] private float _keyboardOrbitSpeed = 90f;
+        [SerializeField] private float _keyboardOrbitSpeed = 45f;
 
         private Vector3 _target = Vector3.zero;
         private float _angleX = 30f;
@@ -134,19 +134,22 @@ namespace KitchenDesigner.Core
                 _distance = Mathf.Clamp(_distance, _minDistance, _maxDistance);
             }
 
-            if (Input.GetKeyDown(KeyCode.Alpha1)) SetView(0, 0);
-            else if (Input.GetKeyDown(KeyCode.Alpha2)) SetView(0, 90);
-            else if (Input.GetKeyDown(KeyCode.Alpha3)) SetView(90, 0);
+            if (!IsTypingInInputField())
+            {
+                if (Input.GetKeyDown(KeyCode.Alpha1)) SetView(0, 0);
+                else if (Input.GetKeyDown(KeyCode.Alpha2)) SetView(0, 90);
+                else if (Input.GetKeyDown(KeyCode.Alpha3)) SetView(90, 0);
 
-            if (Input.GetKeyDown(KeyCode.F))
-                FocusOnSelection();
+                if (Input.GetKeyDown(KeyCode.F))
+                    FocusOnSelection();
 
-            if (Input.GetKeyDown(KeyCode.F1) && UI.UIManager.Instance != null)
-                UI.UIManager.Instance.ToggleHelp();
+                if (Input.GetKeyDown(KeyCode.F1) && UI.UIManager.Instance != null)
+                    UI.UIManager.Instance.ToggleHelp();
 
-            HandleWASD();
-            HandleArrowOrbit();
-            HandlePlusMinusZoom();
+                HandleWASD();
+                HandleArrowOrbit();
+                HandlePlusMinusZoom();
+            }
 
             UpdateCameraPosition();
             UpdateFloorVisibility();
@@ -172,28 +175,48 @@ namespace KitchenDesigner.Core
         private void HandleWASD()
         {
             float dt = Time.deltaTime;
+            Vector2 input = new Vector2(
+                (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f),
+                (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f));
+            ApplyWASDMovement(input, dt);
+        }
+
+        /// <summary>
+        /// Применяет WASD-движение камеры. input.x: +1=D, -1=A; input.y: +1=W, -1=S.
+        /// Вынесено в публичный метод для покрытия юнит-тестами.
+        /// </summary>
+        public void ApplyWASDMovement(Vector2 input, float dt)
+        {
             if (dt < 1e-6f) return;
-            float speed = _moveSpeed * _distance * 0.5f * dt;
+            float speed = _moveSpeed * _distance * 0.25f * dt;
 
             Vector3 fwd = Quaternion.Euler(0, _angleY, 0) * Vector3.forward;
             Vector3 right = Quaternion.Euler(0, _angleY, 0) * Vector3.right;
 
-            if (Input.GetKey(KeyCode.W)) _target += fwd * speed;
-            if (Input.GetKey(KeyCode.S)) _target -= fwd * speed;
-            if (Input.GetKey(KeyCode.A)) _target -= right * speed;
-            if (Input.GetKey(KeyCode.D)) _target += right * speed;
+            _target += fwd * (input.y * speed);
+            _target += right * (input.x * speed);
         }
 
         private void HandleArrowOrbit()
         {
             float dt = Time.deltaTime;
+            Vector2 input = new Vector2(
+                (Input.GetKey(KeyCode.RightArrow) ? 1f : 0f) - (Input.GetKey(KeyCode.LeftArrow) ? 1f : 0f),
+                (Input.GetKey(KeyCode.UpArrow) ? 1f : 0f) - (Input.GetKey(KeyCode.DownArrow) ? 1f : 0f));
+            ApplyArrowOrbit(input, dt);
+        }
+
+        /// <summary>
+        /// Применяет орбиту клавишами-стрелками. input.x: +1=вправо, -1=влево;
+        /// input.y: +1=вверх, -1=вниз.
+        /// </summary>
+        public void ApplyArrowOrbit(Vector2 input, float dt)
+        {
             if (dt < 1e-6f) return;
             float speed = _keyboardOrbitSpeed * dt;
 
-            if (Input.GetKey(KeyCode.LeftArrow)) _angleY -= speed;
-            if (Input.GetKey(KeyCode.RightArrow)) _angleY += speed;
-            if (Input.GetKey(KeyCode.UpArrow)) _angleX += speed;
-            if (Input.GetKey(KeyCode.DownArrow)) _angleX -= speed;
+            _angleY += input.x * speed;
+            _angleX += input.y * speed;
             _angleX = Mathf.Clamp(_angleX, -89f, 89f);
         }
 
@@ -204,11 +227,37 @@ namespace KitchenDesigner.Core
                 delta = -1f;
             else if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
                 delta = 1f;
-            if (Mathf.Abs(delta) > 0.01f)
-            {
-                _distance += delta * _zoomSpeed * _distance * 0.2f;
-                _distance = Mathf.Clamp(_distance, _minDistance, _maxDistance);
-            }
+            ApplyZoomDelta(delta);
+        }
+
+        /// <summary>
+        /// Применяет один шаг зума клавишами +/-. delta: +1 = приблизить (-), -1 = отдалить (+).
+        /// </summary>
+        public void ApplyZoomDelta(float delta)
+        {
+            if (Mathf.Abs(delta) < 0.01f) return;
+            _distance += delta * _zoomSpeed * _distance * 0.1f;
+            _distance = Mathf.Clamp(_distance, _minDistance, _maxDistance);
+        }
+
+        /// <summary>
+        /// Возвращает true, если фокус сейчас в любом InputField (набор текста).
+        /// В этом случае горячие клавиши камеры (WASD, стрелки, +/-, F и т.д.) не должны срабатывать.
+        /// </summary>
+        public static bool IsTypingInInputField()
+        {
+            var es = UnityEngine.EventSystems.EventSystem.current;
+            if (es == null) return false;
+            return IsInputField(es.currentSelectedGameObject);
+        }
+
+        /// <summary>
+        /// Проверяет, является ли выбранный объект InputField. Публично для тестирования.
+        /// </summary>
+        public static bool IsInputField(GameObject selected)
+        {
+            if (selected == null) return false;
+            return selected.GetComponent<UnityEngine.UI.InputField>() != null;
         }
 
         private static bool PointerOverUI()

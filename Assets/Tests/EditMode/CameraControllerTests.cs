@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.UI;
 using KitchenDesigner.Core;
 
 public class CameraControllerTests
@@ -136,5 +137,113 @@ public class CameraControllerTests
         _cameraGo = null;
 
         _controller.UpdateCameraPosition();
+    }
+
+    // ── Скорость клавиатурного управления ─────────────────────────────
+
+    [Test]
+    public void ApplyWASDMovement_MovesAtQuarterMultiplier()
+    {
+        _controller.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 2f
+        });
+
+        float dt = 1f;
+        _controller.ApplyWASDMovement(Vector2.up, dt); // W
+
+        var target = GetTarget();
+        float expectedZ = 3f * 2f * 0.25f * dt; // _moveSpeed * _distance * 0.25f * dt
+        Assert.AreEqual(expectedZ, target.z, 1e-4f, "WASD speed multiplier should be 0.25 (half of previous 0.5)");
+        Assert.AreEqual(0f, target.x, 1e-4f);
+    }
+
+    [Test]
+    public void ApplyArrowOrbit_RotatesAtHalvedSpeed()
+    {
+        _controller.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        float dt = 1f;
+        _controller.ApplyArrowOrbit(Vector2.right, dt); // Right arrow
+
+        var state = _controller.GetState();
+        Assert.AreEqual(45f * dt, state.angleY, 1e-4f,
+            "keyboard orbit speed should be 45 deg/s (half of previous 90)");
+    }
+
+    [Test]
+    public void ApplyZoomDelta_ZoomsAtHalvedSpeed()
+    {
+        _controller.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller.ApplyZoomDelta(1f); // Minus key (zoom in)
+
+        var state = _controller.GetState();
+        float expectedDistance = 5f + 1f * 1f * 5f * 0.1f; // new multiplier 0.1 (half of previous 0.2)
+        Assert.AreEqual(expectedDistance, state.distance, 1e-4f,
+            "plus/minus zoom multiplier should be 0.1 (half of previous 0.2)");
+    }
+
+    [Test]
+    public void IsInputField_ReturnsTrue_ForSelectedInputField()
+    {
+        var inputGo = new GameObject("InputField");
+        inputGo.AddComponent<InputField>();
+
+        Assert.IsTrue(CameraController.IsInputField(inputGo),
+            "selected GameObject with InputField should be detected as typing");
+
+        Object.DestroyImmediate(inputGo);
+    }
+
+    [Test]
+    public void IsInputField_ReturnsFalse_ForNonInputFieldOrNull()
+    {
+        var plainGo = new GameObject("Plain");
+        Assert.IsFalse(CameraController.IsInputField(plainGo),
+            "GameObject without InputField should not report typing");
+        Assert.IsFalse(CameraController.IsInputField(null),
+            "null selected object should not report typing");
+        Object.DestroyImmediate(plainGo);
+    }
+
+    [Test]
+    public void IsTypingInInputField_ReturnsFalse_WhenNoEventSystem()
+    {
+        Assert.IsFalse(CameraController.IsTypingInInputField(), "no EventSystem should not report typing");
+    }
+
+    [Test]
+    public void ApplyWASDMovement_DoesNothing_WhenInputIsZero()
+    {
+        _controller.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 1f, targetY = 2f, targetZ = 3f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller.ApplyWASDMovement(Vector2.zero, 1f);
+
+        var target = GetTarget();
+        Assert.AreEqual(new Vector3(1f, 2f, 3f), target);
+    }
+
+    private Vector3 GetTarget()
+    {
+        var state = _controller.GetState();
+        return new Vector3(state.targetX, state.targetY, state.targetZ);
     }
 }
