@@ -27,6 +27,9 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<InputCapture>() == null)
                 gameObject.AddComponent<InputCapture>();
 
+            if (FindAnyObjectByType<ElementHighlighter>() == null)
+                gameObject.AddComponent<ElementHighlighter>();
+
             Debug.Log("[Bootstrap] Kitchen Designer initialized");
         }
     }

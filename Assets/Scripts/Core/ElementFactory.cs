@@ -50,6 +50,9 @@ namespace KitchenDesigner.Core
 
             go.tag = "KitchenElement";
 
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+
             return go;
         }
 
