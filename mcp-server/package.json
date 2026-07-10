@@ -5,6 +5,8 @@
   "description": "MCP server bridge to Unity Kitchen Designer",
   "type": "module",
   "scripts": {
+    "check": "node scripts/check-parity.mjs",
+    "prebuild": "node scripts/check-parity.mjs",
     "build": "tsc",
     "start": "node dist/index.js"
   },
