@@ -149,6 +149,7 @@ namespace KitchenDesigner.Core
         private void HandleArrowKeys()
         {
             if (_target == null || IsDragging) return;
+            if (!_target.Movable) return;
 
             var s = KitchenSettings.Instance;
             float stepMM = (s != null && s.GridEnabled) ? s.GridStep : 1f;
@@ -199,7 +200,10 @@ namespace KitchenDesigner.Core
             if (_pressed && Input.GetMouseButton(0))
             {
                 if (!IsDragging && PressMovedEnough())
-                    BeginDrag();
+                {
+                    if (_target != null && _target.Movable) BeginDrag();
+                    else _pressed = false; // перемещение запрещено — не двигаем
+                }
                 if (IsDragging)
                     UpdateDrag();
             }

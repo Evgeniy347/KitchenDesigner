@@ -146,6 +146,8 @@ namespace KitchenDesigner.Core
                 if (ed == null) continue;
                 var go = ElementFactory.CreateBoard(ed.Dimensions, ed.name, ed.Position);
                 go.transform.rotation = ed.Rotation;
+                var el = go.GetComponent<KitchenElement>();
+                if (el != null) el.Movable = ed.movable;
                 created.Add(go);
             }
             return created;

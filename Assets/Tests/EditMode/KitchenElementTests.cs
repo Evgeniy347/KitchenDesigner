@@ -98,6 +98,16 @@ public class KitchenElementTests
     }
 
     [Test]
+    public void Movable_DefaultsTrue_AndIsSettable()
+    {
+        var e = CreateElement(new Vector3Int(800, 400, 18), Vector3.zero);
+        Assert.IsTrue(e.Movable, "по умолчанию объект подвижен");
+        e.Movable = false;
+        Assert.IsFalse(e.Movable);
+        Object.DestroyImmediate(e.gameObject);
+    }
+
+    [Test]
     public void Rotate_ComposesWithExistingRotation()
     {
         var e = CreateElement(new Vector3Int(800, 400, 18), Vector3.zero);

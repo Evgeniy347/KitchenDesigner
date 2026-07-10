@@ -9,6 +9,7 @@ namespace KitchenDesigner.Core
         public int[] dimensionsMM = new int[3];
         public float[] position = new float[3];
         public float[] rotation = new float[4];
+        public bool movable = true;
 
         public ElementData() { }
 
@@ -23,6 +24,8 @@ namespace KitchenDesigner.Core
 
             var r = element.transform.rotation;
             d.rotation = new[] { r.x, r.y, r.z, r.w };
+
+            d.movable = element.Movable;
             return d;
         }
 
