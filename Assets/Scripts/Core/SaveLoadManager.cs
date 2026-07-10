@@ -115,6 +115,9 @@ namespace KitchenDesigner.Core
             foreach (var g in GroupManager.AllGroups())
                 groups.Add(new GroupData { id = g.id, name = g.name, movable = g.movable });
             data.groups = groups.ToArray();
+
+            if (CameraController.Instance != null)
+                data.camera = CameraController.Instance.GetState();
             return data;
         }
 
@@ -163,6 +166,9 @@ namespace KitchenDesigner.Core
                 if (el != null) { el.Movable = ed.movable; el.GroupId = ed.groupId; }
                 created.Add(go);
             }
+
+            if (data.camera.valid && CameraController.Instance != null)
+                CameraController.Instance.SetState(data.camera);
             return created;
         }
 
