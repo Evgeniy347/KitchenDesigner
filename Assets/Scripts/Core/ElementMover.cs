@@ -276,6 +276,7 @@ namespace KitchenDesigner.Core
         private void OpenContextMenuForTarget()
         {
             if (_target == null) return;
+            if (GroupManager.GroupOf(_target) != null) return; // у связанной группы своё меню (ПКМ)
             if (UI.UIManager.Instance != null)
                 UI.UIManager.Instance.OpenContextMenu(_target);
         }

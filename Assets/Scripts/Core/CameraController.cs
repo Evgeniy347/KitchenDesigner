@@ -18,6 +18,12 @@ namespace KitchenDesigner.Core
         private bool _isOrbiting;
         private bool _isPanning;
 
+        // ПКМ: клик (меню группы) vs перетаскивание (орбита) — различаем по сдвигу.
+        private bool _rmbPressed;
+        private Vector2 _rmbDownPos;
+        private bool _rmbMoved;
+        private const float RmbDragPixels = 6f;
+
         private void Start()
         {
             UpdateCameraPosition();
@@ -30,13 +36,33 @@ namespace KitchenDesigner.Core
             bool overUI = PointerOverUI();
             bool lmbDown = Input.GetMouseButtonDown(0);
             bool rmbDown = Input.GetMouseButtonDown(1);
+            bool rmbUp = Input.GetMouseButtonUp(1);
             bool mmbDown = Input.GetMouseButtonDown(2);
             float scroll = Input.GetAxis("Mouse ScrollWheel");
 
+            // ПКМ-нажатие — пока не решено: клик (меню) или перетаскивание (орбита).
             if (rmbDown && !overUI)
             {
+                _rmbPressed = true;
+                _rmbMoved = false;
+                _rmbDownPos = Input.mousePosition;
+                _lastMouse = Input.mousePosition;
+            }
+            // Курсор сдвинулся — это орбита, а не клик.
+            if (_rmbPressed && !_rmbMoved && Input.GetMouseButton(1) &&
+                ((Vector2)Input.mousePosition - _rmbDownPos).magnitude > RmbDragPixels)
+            {
+                _rmbMoved = true;
                 _isOrbiting = true;
                 _lastMouse = Input.mousePosition;
+            }
+            // ПКМ отпущена без сдвига — открыть меню группы по объекту.
+            if (rmbUp)
+            {
+                if (_rmbPressed && !_rmbMoved)
+                    HandleRmbClick();
+                _rmbPressed = false;
+                _isOrbiting = false;
             }
 
             if (mmbDown || (lmbDown && !overUI && !PointerHitsBoard()))
@@ -98,6 +124,19 @@ namespace KitchenDesigner.Core
             if (Physics.Raycast(ray, out RaycastHit hit))
                 return hit.collider.GetComponentInParent<KitchenElement>() != null;
             return false;
+        }
+
+        // ПКМ-клик по объекту (не пол) → меню группы (связать / настройки группы).
+        private static void HandleRmbClick()
+        {
+            var cam = Camera.main;
+            if (cam == null) return;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (!Physics.Raycast(ray, out RaycastHit hit)) return;
+            var e = hit.collider.GetComponentInParent<KitchenElement>();
+            if (e == null || e.GetComponent<BasePlate>() != null) return;
+            if (UI.UIManager.Instance != null)
+                UI.UIManager.Instance.OpenGroupMenu(e);
         }
 
         private void SetView(float angleX, float angleY)

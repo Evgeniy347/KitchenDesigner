@@ -11,6 +11,7 @@ namespace KitchenDesigner.Core
         public float[] rotation = new float[4];
         public bool movable = true;
         public bool isWall = false;
+        public int groupId = 0;
 
         public ElementData() { }
 
@@ -28,6 +29,7 @@ namespace KitchenDesigner.Core
 
             d.movable = element.Movable;
             d.isWall = element.GetComponent<Wall>() != null;
+            d.groupId = element.GroupId;
             return d;
         }
 
