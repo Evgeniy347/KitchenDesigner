@@ -103,11 +103,13 @@ namespace KitchenDesigner.Core
         public static ProjectData CaptureScene(IEnumerable<KitchenElement> elements)
         {
             var items = new List<ElementData>();
+            var ordered = new List<KitchenElement>(); // параллельно items — для индексов истории
             foreach (var e in elements)
             {
                 if (e == null) continue;
                 if (e.GetComponent<BasePlate>() != null) continue;
                 items.Add(ElementData.FromElement(e));
+                ordered.Add(e);
             }
 
             var data = new ProjectData(items);
@@ -118,6 +120,15 @@ namespace KitchenDesigner.Core
 
             if (CameraController.Instance != null)
                 data.camera = CameraController.Instance.GetState();
+
+            // История undo/redo: объекты сериализуются по индексу в elements.
+            var indexOf = new Dictionary<KitchenElement, int>();
+            for (int i = 0; i < ordered.Count; i++) indexOf[ordered[i]] = i;
+            int IndexOf(KitchenElement el) =>
+                el != null && indexOf.TryGetValue(el, out var i) ? i : -1;
+            data.undoHistory = CommandStack.ExportUndo(IndexOf).ToArray();
+            data.redoHistory = CommandStack.ExportRedo(IndexOf).ToArray();
+
             return data;
         }
 
@@ -155,9 +166,11 @@ namespace KitchenDesigner.Core
                 foreach (var gd in data.groups)
                     if (gd != null) GroupManager.Register(gd.id, gd.name, gd.movable);
 
+            // resolved параллелен data.elements (по индексам истории).
+            var resolved = new List<KitchenElement>();
             foreach (var ed in data.elements)
             {
-                if (ed == null) continue;
+                if (ed == null) { resolved.Add(null); continue; }
                 var go = ed.isWall
                     ? ElementFactory.CreateWall(ed.Dimensions, ed.name, ed.Position)
                     : ElementFactory.CreateBoard(ed.Dimensions, ed.name, ed.Position);
@@ -165,10 +178,15 @@ namespace KitchenDesigner.Core
                 var el = go.GetComponent<KitchenElement>();
                 if (el != null) { el.Movable = ed.movable; el.GroupId = ed.groupId; }
                 created.Add(go);
+                resolved.Add(el);
             }
 
             if (data.camera.valid && CameraController.Instance != null)
                 CameraController.Instance.SetState(data.camera);
+
+            // История undo/redo: восстанавливаем команды по индексам объектов.
+            CommandStack.Import(data.undoHistory, data.redoHistory,
+                i => (i >= 0 && i < resolved.Count) ? resolved[i] : null);
             return created;
         }
 

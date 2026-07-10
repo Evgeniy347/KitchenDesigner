@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,6 +19,8 @@ namespace KitchenDesigner.Core
 
         public static bool CanUndo => _undoStack.Count > 0;
         public static bool CanRedo => _redoStack.Count > 0;
+        public static int UndoCount => _undoStack.Count;
+        public static int RedoCount => _redoStack.Count;
 
         public static void Execute(IUndoCommand command)
         {
@@ -58,9 +61,51 @@ namespace KitchenDesigner.Core
         {
             return _undoStack.Count > 0 ? _undoStack[_undoStack.Count - 1].Description : "";
         }
+
+        // --- Сохранение/восстановление истории (для записи в проект) ---
+
+        /// <summary>Сериализуемые записи стека отмены (снизу вверх). Команды, не
+        /// поддерживающие сериализацию (создание/удаление), пропускаются.</summary>
+        public static List<CommandRecord> ExportUndo(Func<KitchenElement, int> indexOf) =>
+            Export(_undoStack, indexOf);
+
+        public static List<CommandRecord> ExportRedo(Func<KitchenElement, int> indexOf) =>
+            Export(_redoStack, indexOf);
+
+        private static List<CommandRecord> Export(List<IUndoCommand> stack, Func<KitchenElement, int> indexOf)
+        {
+            var list = new List<CommandRecord>();
+            foreach (var c in stack)
+            {
+                var rec = (c as ISerializableCommand)?.ToRecord(indexOf);
+                if (rec != null) list.Add(rec);
+            }
+            return list;
+        }
+
+        /// <summary>Заменить историю восстановленной из сохранения. Команды НЕ
+        /// выполняются повторно — сцена уже загружена в актуальном состоянии.</summary>
+        public static void Import(IEnumerable<CommandRecord> undo, IEnumerable<CommandRecord> redo,
+            Func<int, KitchenElement> resolve)
+        {
+            _undoStack.Clear();
+            _redoStack.Clear();
+            if (undo != null)
+                foreach (var r in undo)
+                {
+                    var c = CommandSerialization.FromRecord(r, resolve);
+                    if (c != null) _undoStack.Add(c);
+                }
+            if (redo != null)
+                foreach (var r in redo)
+                {
+                    var c = CommandSerialization.FromRecord(r, resolve);
+                    if (c != null) _redoStack.Add(c);
+                }
+        }
     }
 
-    public class MoveCommand : IUndoCommand
+    public class MoveCommand : IUndoCommand, ISerializableCommand
     {
         private KitchenElement _element;
         private Vector3 _before;
@@ -69,6 +114,22 @@ namespace KitchenDesigner.Core
         private Quaternion _rotAfter;
 
         public string Description => $"Move {_element?.BoardName}";
+
+        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
+        {
+            int idx = _element != null ? indexOf(_element) : -1;
+            if (idx < 0) return null;
+            return new CommandRecord
+            {
+                type = "move",
+                description = Description,
+                elementIndex = idx,
+                posBefore = CommandRecord.V3(_before),
+                posAfter = CommandRecord.V3(_after),
+                rotBefore = CommandRecord.V4(_rotBefore),
+                rotAfter = CommandRecord.V4(_rotAfter)
+            };
+        }
 
         public MoveCommand(KitchenElement element, Vector3 before, Vector3 after,
             Quaternion rotBefore, Quaternion rotAfter)
@@ -160,7 +221,7 @@ namespace KitchenDesigner.Core
         }
     }
 
-    public class ResizeCommand : IUndoCommand
+    public class ResizeCommand : IUndoCommand, ISerializableCommand
     {
         private KitchenElement _element;
         private Vector3Int _dimsBefore;
@@ -171,6 +232,24 @@ namespace KitchenDesigner.Core
         private Quaternion _rotAfter;
 
         public string Description => $"Resize {_element?.BoardName}";
+
+        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
+        {
+            int idx = _element != null ? indexOf(_element) : -1;
+            if (idx < 0) return null;
+            return new CommandRecord
+            {
+                type = "resize",
+                description = Description,
+                elementIndex = idx,
+                dimsBefore = CommandRecord.VI(_dimsBefore),
+                dimsAfter = CommandRecord.VI(_dimsAfter),
+                posBefore = CommandRecord.V3(_posBefore),
+                posAfter = CommandRecord.V3(_posAfter),
+                rotBefore = CommandRecord.V4(_rotBefore),
+                rotAfter = CommandRecord.V4(_rotAfter)
+            };
+        }
 
         public ResizeCommand(KitchenElement element,
             Vector3Int dimsBefore, Vector3Int dimsAfter,
@@ -204,7 +283,7 @@ namespace KitchenDesigner.Core
     }
 
     /// <summary>Несколько команд как одна операция отмены (например, перемещение группы).</summary>
-    public class CompositeCommand : IUndoCommand
+    public class CompositeCommand : IUndoCommand, ISerializableCommand
     {
         private readonly List<IUndoCommand> _commands;
         public string Description { get; }
@@ -213,6 +292,23 @@ namespace KitchenDesigner.Core
         {
             Description = description;
             _commands = commands;
+        }
+
+        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
+        {
+            var kids = new List<CommandRecord>();
+            foreach (var c in _commands)
+            {
+                var rec = (c as ISerializableCommand)?.ToRecord(indexOf);
+                if (rec != null) kids.Add(rec);
+            }
+            if (kids.Count == 0) return null; // нечего сохранять (только create/delete)
+            return new CommandRecord
+            {
+                type = "composite",
+                description = Description,
+                children = kids.ToArray()
+            };
         }
 
         public void Execute()
