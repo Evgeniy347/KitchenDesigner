@@ -13,13 +13,13 @@ namespace KitchenDesigner.Core.UI
         private KitchenElement _target;
         private Text _titleLabel;
 
-        private InputField _name, _w, _h, _d, _gapL, _gapR, _gapT, _gapB, _x, _y, _z, _rx, _ry, _rz;
+        private InputField _name, _w, _h, _d, _gapW, _gapH, _x, _y, _z, _rx, _ry, _rz;
         private Toggle _lockToggle;
         private GameObject _gapRow;
         private readonly List<(RectTransform rt, float baseY)> _postGapElements = new();
         private RectTransform _panelRt;
         private float _panelBaseH;
-        private const float GAP_ROW_H = 72f;
+        private const float GAP_ROW_H = 62f;
 
         private void Awake()
         {
@@ -67,7 +67,7 @@ namespace KitchenDesigner.Core.UI
             _rz = Row(panel.transform, "Поворот Z°", ref y, rowStep); track(_rz);
 
             foreach (var f in new[] { _w, _h, _d }) f.contentType = InputField.ContentType.IntegerNumber;
-            foreach (var f in new[] { _gapL, _gapR, _gapT, _gapB }) f.contentType = InputField.ContentType.IntegerNumber;
+            foreach (var f in new[] { _gapW, _gapH }) f.contentType = InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f.contentType = InputField.ContentType.DecimalNumber;
 
             // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
@@ -104,7 +104,11 @@ namespace KitchenDesigner.Core.UI
             _postGapElements.Add((lockRt, actionY - 74));
 
             _titleLabel = UIFactory.CreateLabel("CtxTitle", panel.transform, "Доска", 20,
-                new Vector2(0, rowStartY + 35), new Vector2(260, 28), TextAnchor.MiddleCenter);
+                Vector2.zero, new Vector2(260, 28), TextAnchor.MiddleCenter);
+            _titleLabel.rectTransform.anchorMin = new Vector2(0, 1);
+            _titleLabel.rectTransform.anchorMax = new Vector2(1, 1);
+            _titleLabel.rectTransform.pivot = new Vector2(0.5f, 1f);
+            _titleLabel.rectTransform.anchoredPosition = Vector2.zero;
 
             var closeBtn = UIFactory.CreateButton("CtxClose", panel.transform, "✕",
                 Vector2.zero, new Vector2(24, 24), Close);
@@ -145,27 +149,25 @@ namespace KitchenDesigner.Core.UI
             var rt = root.AddComponent<RectTransform>();
             rt.SetParent(parent, false);
             rt.anchoredPosition = new Vector2(0, y);
-            rt.sizeDelta = new Vector2(260, 100);
+            rt.sizeDelta = new Vector2(260, 64);
 
-            UIFactory.CreateLabel("CtxGapHdr", root.transform, "Отступы, мм:", 14,
+            UIFactory.CreateLabel("CtxGapHdr", root.transform, "Зазоры:", 14,
                 new Vector2(-72, 0), new Vector2(130, 20), TextAnchor.MiddleLeft);
 
-            _gapL = MakeGapField(root.transform, "Слева", -72, -26, -26);
-            _gapR = MakeGapField(root.transform, "Справа", 20, 68, -26);
-            _gapT = MakeGapField(root.transform, "Сверху", -72, -26, -52);
-            _gapB = MakeGapField(root.transform, "Снизу", 20, 68, -52);
+            _gapW = GapField(root.transform, "Ширина X, мм", -72, 82, -26);
+            _gapH = GapField(root.transform, "Высота Y, мм", -72, 82, -52);
 
             y -= GAP_ROW_H;
             root.SetActive(false);
             return root;
         }
 
-        private static InputField MakeGapField(Transform parent, string label, float labelX, float fieldX, float y)
+        private static InputField GapField(Transform parent, string label, float labelX, float fieldX, float y)
         {
             UIFactory.CreateLabel("Gap_" + label, parent, label, 13,
-                new Vector2(labelX, y), new Vector2(55, 20), TextAnchor.MiddleLeft);
-            return UIFactory.CreateInputField("F_gap_" + label, parent, "2",
-                new Vector2(fieldX, y), new Vector2(48, 22));
+                new Vector2(labelX, y), new Vector2(130, 20), TextAnchor.MiddleLeft);
+            return UIFactory.CreateInputField("F_gap_" + label, parent, "0",
+                new Vector2(fieldX, y), new Vector2(100, 22));
         }
 
         private InputField Row(Transform parent, string label, ref float y, float step)
@@ -223,10 +225,8 @@ namespace KitchenDesigner.Core.UI
                 _gapRow.SetActive(facade != null);
                 if (facade != null)
                 {
-                    _gapL.text = facade.GapLeft.ToString();
-                    _gapR.text = facade.GapRight.ToString();
-                    _gapT.text = facade.GapTop.ToString();
-                    _gapB.text = facade.GapBottom.ToString();
+                    _gapW.text = (facade.GapLeft + facade.GapRight).ToString();
+                    _gapH.text = (facade.GapTop + facade.GapBottom).ToString();
                 }
             }
 
@@ -271,10 +271,12 @@ namespace KitchenDesigner.Core.UI
             var facade = _target as FacadeElement;
             if (facade != null)
             {
-                facade.GapLeft = ParseInt(_gapL.text, facade.GapLeft);
-                facade.GapRight = ParseInt(_gapR.text, facade.GapRight);
-                facade.GapTop = ParseInt(_gapT.text, facade.GapTop);
-                facade.GapBottom = ParseInt(_gapB.text, facade.GapBottom);
+                var totalX = ParseInt(_gapW.text, facade.GapLeft + facade.GapRight);
+                var totalY = ParseInt(_gapH.text, facade.GapTop + facade.GapBottom);
+                facade.GapLeft = totalX / 2;
+                facade.GapRight = totalX - facade.GapLeft;
+                facade.GapTop = totalY / 2;
+                facade.GapBottom = totalY - facade.GapTop;
             }
 
             _target.transform.position = new Vector3(
@@ -308,10 +310,8 @@ namespace KitchenDesigner.Core.UI
 
             if (facade != null)
             {
-                _gapL.text = facade.GapLeft.ToString();
-                _gapR.text = facade.GapRight.ToString();
-                _gapT.text = facade.GapTop.ToString();
-                _gapB.text = facade.GapBottom.ToString();
+                _gapW.text = (facade.GapLeft + facade.GapRight).ToString();
+                _gapH.text = (facade.GapTop + facade.GapBottom).ToString();
             }
 
             RefreshHighlights();
