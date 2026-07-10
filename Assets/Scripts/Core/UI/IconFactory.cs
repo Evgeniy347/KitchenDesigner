@@ -14,12 +14,14 @@ namespace KitchenDesigner.Core.UI
         private static readonly Color Accent = new Color(0.45f, 0.85f, 0.5f, 1f);
         private static readonly Color Clear = new Color(0, 0, 0, 0);
 
-        private static Sprite _gear, _floppy, _floppyPlus, _folder;
+        private static Sprite _gear, _floppy, _floppyPlus, _folder, _undo, _redo;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
         public static Sprite FloppyPlus => _floppyPlus ??= BuildFloppy(true);
         public static Sprite Folder => _folder ??= BuildFolder();
+        public static Sprite Undo => _undo ??= BuildArrow(false);
+        public static Sprite Redo => _redo ??= BuildArrow(true);
 
         // --- Иконки ---
 
@@ -66,7 +68,39 @@ namespace KitchenDesigner.Core.UI
             return Finish(px);
         }
 
+        // Круговая стрелка: дуга-«радуга» сверху и наконечник, свисающий с одного
+        // конца. Слева (redo=false) — отмена, справа (redo=true) — повтор.
+        private static Sprite BuildArrow(bool redo)
+        {
+            var px = NewCanvas();
+            Arc(px, 32, 28, 15, 10f, 170f, 3, Ink);
+            ArrowDown(px, redo ? 47 : 17, 32, 11, Ink);
+            return Finish(px);
+        }
+
         // --- Примитивы рисования ---
+
+        private static void Arc(Color32[] px, int cx, int cy, int r, float fromDeg, float toDeg, int thick, Color col)
+        {
+            for (float a = fromDeg; a <= toDeg; a += 1.2f)
+            {
+                float rad = a * Mathf.Deg2Rad;
+                int x = cx + Mathf.RoundToInt(Mathf.Cos(rad) * r);
+                int y = cy + Mathf.RoundToInt(Mathf.Sin(rad) * r);
+                Disc(px, x, y, thick, col);
+            }
+        }
+
+        // Треугольный наконечник, указывающий вниз: основание у baseY, вершина ниже на h.
+        private static void ArrowDown(Color32[] px, int tx, int baseY, int h, Color col)
+        {
+            for (int i = 0; i <= h; i++)
+            {
+                int yy = baseY - i;
+                int half = Mathf.RoundToInt((h - i) * 0.55f);
+                Rect(px, tx - half, yy, tx + half + 1, yy + 1, col);
+            }
+        }
 
         private static Color32[] NewCanvas()
         {

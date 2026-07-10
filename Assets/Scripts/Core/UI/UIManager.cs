@@ -16,6 +16,8 @@ namespace KitchenDesigner.Core.UI
         private SpecificationPanelUI _specPanel;
         private SettingsPanelUI _settingsPanel;
         private ContextMenuUI _contextMenu;
+        private Button _undoButton;
+        private Button _redoButton;
 
         public Canvas Canvas => _canvas;
         public const string QuickSaveName = "quicksave";
@@ -71,6 +73,10 @@ namespace KitchenDesigner.Core.UI
             AddIconButton(bar.transform, "SaveAs", IconFactory.FloppyPlus, ref x, y, h, SaveAs);
             AddIconButton(bar.transform, "Load", IconFactory.Folder, ref x, y, h, LoadDialog);
 
+            x += 12;
+            _undoButton = AddIconButton(bar.transform, "Undo", IconFactory.Undo, ref x, y, h, DoUndo);
+            _redoButton = AddIconButton(bar.transform, "Redo", IconFactory.Redo, ref x, y, h, DoRedo);
+
             x += 20;
             var alignBtn = UIFactory.CreateButton("Align", bar.transform, "Выравн.",
                 new Vector2(x, y), new Vector2(80, h), ShowAlignMenu);
@@ -92,12 +98,45 @@ namespace KitchenDesigner.Core.UI
             x += w + 6;
         }
 
-        private void AddIconButton(Transform parent, string name, Sprite icon, ref float x, float y, float h, System.Action onClick)
+        private Button AddIconButton(Transform parent, string name, Sprite icon, ref float x, float y, float h, System.Action onClick)
         {
             var btn = UIFactory.CreateIconButton(name, parent, icon, new Vector2(x, y), new Vector2(h, h), onClick);
             UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
             btn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
             x += h + 6;
+            return btn;
+        }
+
+        // Кнопки отмены/повтора активны только когда есть что отменять/повторять.
+        private void Update()
+        {
+            if (_undoButton != null) _undoButton.interactable = CommandStack.CanUndo;
+            if (_redoButton != null) _redoButton.interactable = CommandStack.CanRedo;
+        }
+
+        private void DoUndo()
+        {
+            if (!CommandStack.CanUndo) return;
+            CommandStack.Undo();
+            AfterUndoRedo();
+        }
+
+        private void DoRedo()
+        {
+            if (!CommandStack.CanRedo) return;
+            CommandStack.Redo();
+            AfterUndoRedo();
+        }
+
+        // После отмены/повтора доска могла стать неактивной (отмена создания) —
+        // снимаем с неё выделение и пересчитываем подсветку валидности.
+        private static void AfterUndoRedo()
+        {
+            var sel = SelectionManager.Instance;
+            if (sel != null && sel.Selected != null && !sel.Selected.gameObject.activeInHierarchy)
+                sel.Deselect();
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
         }
 
         public void SpawnPreset(int index)

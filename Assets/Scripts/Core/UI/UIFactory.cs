@@ -196,7 +196,12 @@ namespace KitchenDesigner.Core.UI
             toggle.graphic = check;
             toggle.targetGraphic = box;
 
-            CreateLabel(name + "_Label", rect, label, 16, new Vector2(20, 0), size, TextAnchor.MiddleLeft);
+            // Текст начинается правее бокса с галочкой (его правый край ≈ -size.x/2+25),
+            // с отступом ~11px — иначе «X» и подпись слипаются. Ширину области урезаем
+            // на этот отступ, чтобы метка не вылезала за правый край тоггла.
+            const float textInset = 36f;
+            CreateLabel(name + "_Label", rect, label, 16,
+                new Vector2(textInset * 0.5f, 0), new Vector2(size.x - textInset, size.y), TextAnchor.MiddleLeft);
 
             toggle.isOn = value;
             if (onChanged != null)

@@ -16,7 +16,7 @@ MonoBehaviour:
   _gridEnabled: 1
   _snapEnabled: 1
   _snapThreshold: 50
-  _blockOnViolation: 0
+  _blockOnViolation: 1
   _autoSave: 0
   _autoSaveInterval: 60
   _spatialGrid: 0

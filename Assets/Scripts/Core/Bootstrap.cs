@@ -46,6 +46,11 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<UndoHandler>() == null)
                 gameObject.AddComponent<UndoHandler>();
 
+            if (FindAnyObjectByType<MCP.UnityTcpBridge>() == null)
+                gameObject.AddComponent<MCP.UnityTcpBridge>();
+
+            MCP.ConsoleLogCapture.Initialize();
+
             Debug.Log("[Bootstrap] Kitchen Designer initialized");
         }
     }
