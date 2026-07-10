@@ -15,6 +15,9 @@ namespace KitchenDesigner.Core
         private SnapResult _previewSnap;
         private bool _wasSnapPreviewed;
 
+        private Material _dragOriginalMaterial;
+        private Material _dragTintMaterial;
+
         private void Start()
         {
             var sel = GetComponent<SelectionManager>();
@@ -56,6 +59,7 @@ namespace KitchenDesigner.Core
                     _startPosition = _target.transform.position;
                     _wasMoved = false;
                     _wasSnapPreviewed = false;
+                    SaveDragMaterial();
 
                     Plane dragPlane = new Plane(Vector3.up, _startPosition);
                     if (dragPlane.Raycast(ray, out float enter))
@@ -149,6 +153,7 @@ namespace KitchenDesigner.Core
             {
                 Debug.Log("[Mover] ESC cancel drag");
                 _target.transform.position = _startPosition;
+                RestoreDragMaterial();
                 IsDragging = false;
                 _wasMoved = false;
                 _snapVisualizer.Hide();
@@ -192,6 +197,7 @@ namespace KitchenDesigner.Core
                     _wasMoved = true;
                     _target.transform.position = newPos;
                     PreviewSnap(newPos);
+                    UpdateDragTint();
                 }
             }
 
@@ -207,10 +213,60 @@ namespace KitchenDesigner.Core
                     _target.transform.position = _startPosition;
                     Debug.Log("[Mover] Drop: no move, restored to " + _startPosition);
                 }
+                RestoreDragMaterial();
                 IsDragging = false;
                 _snapVisualizer.Hide();
                 _wasSnapPreviewed = false;
             }
+        }
+
+        private void SaveDragMaterial()
+        {
+            var renderer = _target.GetComponent<MeshRenderer>();
+            if (renderer == null) return;
+
+            _dragOriginalMaterial = renderer.material;
+            _dragTintMaterial = new Material(_dragOriginalMaterial);
+            _dragTintMaterial.SetFloat("_Surface", 1);
+            _dragTintMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            _dragTintMaterial.renderQueue = 3000;
+            _dragTintMaterial.color = new Color(0f, 1f, 0f, 0.3f);
+            renderer.material = _dragTintMaterial;
+        }
+
+        private void UpdateDragTint()
+        {
+            if (_dragTintMaterial == null || _target == null) return;
+
+            var allElements = FindObjectsByType<KitchenElement>();
+            bool overlaps = false;
+            foreach (var other in allElements)
+            {
+                if (other == _target || other == null) continue;
+                if (SnapSystem.ElementsIntersect(_target, other))
+                {
+                    overlaps = true;
+                    break;
+                }
+            }
+
+            _dragTintMaterial.color = overlaps
+                ? new Color(1f, 0f, 0f, 0.3f)
+                : new Color(0f, 1f, 0f, 0.3f);
+        }
+
+        private void RestoreDragMaterial()
+        {
+            var renderer = _target != null ? _target.GetComponent<MeshRenderer>() : null;
+            if (renderer != null && _dragOriginalMaterial != null)
+                renderer.material = _dragOriginalMaterial;
+
+            if (_dragTintMaterial != null)
+            {
+                Destroy(_dragTintMaterial);
+                _dragTintMaterial = null;
+            }
+            _dragOriginalMaterial = null;
         }
     }
 }
