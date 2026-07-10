@@ -21,3 +21,6 @@ MonoBehaviour:
   _autoSaveInterval: 60
   _spatialGrid: 0
   _windowedMode: 1
+  _edgeOutline: 0
+  _wallsEnabled: 1
+  _lowerNearWalls: 0
