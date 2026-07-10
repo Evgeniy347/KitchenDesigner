@@ -26,6 +26,20 @@ import { z } from "zod";
 import { connect } from "net";
 import type { CreateElementParams } from "./types.js";
 
+// ── Wire protocol types ─────────────────────────────────────────────────────
+
+interface ResponseMessage {
+  id: string;
+  type: "result" | "error" | "not_modified";
+  data?: unknown;
+  etag?: string;
+}
+
+interface CacheEntry {
+  data: unknown;
+  etag: string;
+}
+
 const UNITY_HOST = process.env.UNITY_MCP_HOST || "127.0.0.1";
 const UNITY_PORT = parseInt(process.env.UNITY_MCP_PORT || "9337", 10);
 const CALL_TIMEOUT_MS = 30000;
@@ -39,7 +53,8 @@ class ConnError extends Error {}
 let unitySocket: ReturnType<typeof connect> | null = null;
 let connecting: Promise<void> | null = null;
 let requestId = 0;
-const pending = new Map<string, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
+const pending = new Map<string, { resolve: (v: ResponseMessage) => void; reject: (e: Error) => void }>();
+const mcpCache = new Map<string, CacheEntry>();
 let responseBuffer = "";
 
 /** Read-only methods: safe to auto-retry once after a transient disconnect. */
@@ -91,15 +106,16 @@ function connectToUnity(): Promise<void> {
         responseBuffer = responseBuffer.slice(nl + 1);
         if (!line) continue;
         try {
-          const msg = JSON.parse(line);
+          const msg = JSON.parse(line) as ResponseMessage;
           const p = pending.get(msg.id);
           if (!p) continue;
           pending.delete(msg.id);
           if (msg.type === "error") {
-            const m = msg.data && (msg.data.message ?? msg.data.Message);
+            const d = msg.data as Record<string, unknown> | undefined;
+            const m = typeof d?.message === "string" ? d.message : typeof d?.Message === "string" ? d.Message : null;
             p.reject(new Error(m || "Unity returned an error"));
           } else {
-            p.resolve(msg.data);
+            p.resolve(msg);
           }
         } catch (e) {
           console.error("[unity-mcp] Parse error:", (e as Error).message);
@@ -130,10 +146,11 @@ function ensureConnected(): Promise<void> {
   return connecting;
 }
 
-function sendRequest<T>(method: string, params: T): Promise<unknown> {
+function sendRequest<T>(method: string, params: T, headers?: Record<string, string>): Promise<ResponseMessage> {
   const id = `req-${++requestId}`;
-  // Send params as a direct JSON object (no double-serialization).
-  const wire = JSON.stringify({ id, method, params }) + "\n";
+  const body: Record<string, unknown> = { id, method, params };
+  if (headers) body.headers = headers;
+  const wire = JSON.stringify(body) + "\n";
   return new Promise((resolve, reject) => {
     const sock = unitySocket;
     if (!sock) { reject(new ConnError("Not connected to Unity")); return; }
@@ -157,16 +174,45 @@ function sendRequest<T>(method: string, params: T): Promise<unknown> {
   });
 }
 
-/** Call a Unity method. Read-only calls auto-retry once after a transient drop. */
-async function callUnity<T>(method: string, params: T = {} as T): Promise<unknown> {
+/** Call a Unity method with cache-aware ETag support. */
+async function callCached<T>(method: string, params: T = {} as T): Promise<unknown> {
+  const cached = mcpCache.get(method);
+  const headers = cached ? { "If-None-Match": cached.etag } : undefined;
   await ensureConnected();
   try {
-    return await sendRequest(method, params);
+    const msg = await sendRequest(method, params, headers);
+    if (msg.type === "not_modified" && cached) {
+      return cached.data;
+    }
+    if (msg.etag) {
+      mcpCache.set(method, { data: msg.data, etag: msg.etag });
+    }
+    return msg.data;
   } catch (e) {
     if (e instanceof ConnError && READ_ONLY.has(method)) {
       if (unitySocket) { try { unitySocket.destroy(); } catch { /* ignore */ } unitySocket = null; }
       await ensureConnected();
-      return await sendRequest(method, params);
+      const msg = await sendRequest(method, params, headers);
+      if (msg.type === "not_modified" && cached) return cached.data;
+      if (msg.etag) mcpCache.set(method, { data: msg.data, etag: msg.etag });
+      return msg.data;
+    }
+    throw e;
+  }
+}
+
+/** Call a Unity method. Read-only calls auto-retry once after a transient drop. */
+async function callUnity<T>(method: string, params: T = {} as T): Promise<unknown> {
+  await ensureConnected();
+  try {
+    const msg = await sendRequest(method, params);
+    return msg.data;
+  } catch (e) {
+    if (e instanceof ConnError && READ_ONLY.has(method)) {
+      if (unitySocket) { try { unitySocket.destroy(); } catch { /* ignore */ } unitySocket = null; }
+      await ensureConnected();
+      const msg = await sendRequest(method, params);
+      return msg.data;
     }
     throw e;
   }
@@ -186,6 +232,15 @@ function errorResult(message: string) {
 async function safe<T>(method: string, params: T = {} as T) {
   try {
     return textResult(await callUnity(method, params));
+  } catch (e) {
+    return errorResult((e as Error).message);
+  }
+}
+
+/** Like safe() but with response caching via ETag. For read-only methods returning large data. */
+async function safeCached<T>(method: string, params: T = {} as T) {
+  try {
+    return textResult(await callCached(method, params));
   } catch (e) {
     return errorResult((e as Error).message);
   }
@@ -300,7 +355,7 @@ server.registerTool("get_status",
 
 server.registerTool("get_all_elements",
   { title: "List elements", description: "List ALL boards/walls/floor with name, size (mm), position (m), rotation, AABB and hasViolations. Call this FIRST before editing.", annotations: READ },
-  async () => safe("get_all_elements"));
+  async () => safeCached("get_all_elements"));
 
 server.registerTool("get_element_info",
   { title: "Element info", description: "Full info for one element by name: size (mm), position (m), rotation, module, hasViolations, AABB.", annotations: READ,

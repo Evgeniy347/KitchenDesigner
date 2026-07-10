@@ -15,20 +15,32 @@ namespace KitchenDesigner.Core.MCP
         /// </summary>
         [Newtonsoft.Json.JsonProperty("params")]
         public Newtonsoft.Json.Linq.JObject Params { get; set; }
+
+        /// <summary>Опциональные HTTP-подобные заголовки (If-None-Match и т.д.).</summary>
+        [Newtonsoft.Json.JsonProperty("headers")]
+        public Dictionary<string, string> Headers { get; set; }
     }
 
     [Serializable]
     public class McpResponse
     {
         public string id;
-        public string type; // "result" or "error"
+        public string type; // "result" | "error" | "not_modified"
         public object data;
+
+        /// <summary>ETag для кэширования (только для get_all_elements).</summary>
+        [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string etag;
 
         public static McpResponse Result(string id, object data) =>
             new McpResponse { id = id, type = "result", data = data };
 
         public static McpResponse Error(string id, int code, string message) =>
             new McpResponse { id = id, type = "error", data = new { code, message } };
+
+        /// <summary>Данные не изменились — используй кэш.</summary>
+        public static McpResponse NotModified(string id, string etag) =>
+            new McpResponse { id = id, type = "not_modified", etag = etag };
     }
 
     // ── Parameter types per method ─────────────────────────────────────

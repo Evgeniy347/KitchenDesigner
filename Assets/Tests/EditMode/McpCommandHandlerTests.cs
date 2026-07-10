@@ -628,6 +628,60 @@ public class McpCommandHandlerTests
         Assert.AreEqual("result", resp.type);
     }
 
+    [Test]
+    public void GetElements_ReturnsEtag()
+    {
+        MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        var resp = _handler.Handle(MakeReq("get_all_elements", new { }));
+        Assert.AreEqual("result", resp.type);
+        Assert.IsNotEmpty(resp.etag, "etag should be present");
+    }
+
+    [Test]
+    public void GetElements_NotModified_WhenEtagMatches()
+    {
+        MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        var first = _handler.Handle(MakeReq("get_all_elements", new { }));
+        Assert.AreEqual("result", first.type);
+        var etag = first.etag;
+
+        // Повторный запрос без изменений — должен вернуть not_modified
+        var req = MakeReq("get_all_elements", new { });
+        req.Headers = new Dictionary<string, string> { { "If-None-Match", etag } };
+        var second = _handler.Handle(req);
+        Assert.AreEqual("not_modified", second.type);
+        Assert.AreEqual(etag, second.etag);
+    }
+
+    [Test]
+    public void GetElements_NotModified_WithoutHeaders_ReturnsResult()
+    {
+        MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        var first = _handler.Handle(MakeReq("get_all_elements", new { }));
+        // Второй запрос без заголовка If-None-Match — обычный result
+        var second = _handler.Handle(MakeReq("get_all_elements", new { }));
+        Assert.AreEqual("result", second.type);
+        Assert.AreEqual(first.etag, second.etag);
+    }
+
+    [Test]
+    public void GetElements_ReturnsNewResult_AfterElementChange()
+    {
+        MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        var first = _handler.Handle(MakeReq("get_all_elements", new { }));
+        var etag = first.etag;
+
+        // Добавляем новый элемент
+        MakeElement("B", new Vector3Int(600, 500, 18), Vector3.zero);
+
+        // Запрос со старым etag — должен вернуть новый result
+        var req = MakeReq("get_all_elements", new { });
+        req.Headers = new Dictionary<string, string> { { "If-None-Match", etag } };
+        var second = _handler.Handle(req);
+        Assert.AreEqual("result", second.type);
+        Assert.AreNotEqual(etag, second.etag, "etag changed after adding element");
+    }
+
     private static KitchenElement FindBoard(string name)
     {
         foreach (var el in BoardRegistry.GetAll())
