@@ -33,20 +33,22 @@ namespace KitchenDesigner.Core.UI
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-124, -110);
             closeBtn.transform.SetAsLastSibling();
 
-            float y = 76f;
-            const float step = 31f;
-            _w = Row(panel.transform, "Ширина, мм", ref y, step);
-            _h = Row(panel.transform, "Высота, мм", ref y, step);
-            _d = Row(panel.transform, "Глубина, мм", ref y, step);
-            _x = Row(panel.transform, "X, м", ref y, step);
-            _y = Row(panel.transform, "Y, м", ref y, step);
-            _z = Row(panel.transform, "Z, м", ref y, step);
+            const float rowStartY = 76f;
+            const float rowStep = 31f;
+            const float buttonGap = 18f; // отступ между последним рядом и кнопкой
+            float y = rowStartY;
+            _w = Row(panel.transform, "Ширина, мм", ref y, rowStep);
+            _h = Row(panel.transform, "Высота, мм", ref y, rowStep);
+            _d = Row(panel.transform, "Глубина, мм", ref y, rowStep);
+            _x = Row(panel.transform, "X, м", ref y, rowStep);
+            _y = Row(panel.transform, "Y, м", ref y, rowStep);
+            _z = Row(panel.transform, "Z, м", ref y, rowStep);
 
             foreach (var f in new[] { _w, _h, _d }) f.contentType = InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _x, _y, _z }) f.contentType = InputField.ContentType.DecimalNumber;
 
             UIFactory.CreateButton("FlrApply", panel.transform, "Применить",
-                new Vector2(0, -98), new Vector2(248, 32), Apply);
+                new Vector2(0, y - buttonGap), new Vector2(248, 32), Apply);
 
             _root.SetActive(false);
         }
