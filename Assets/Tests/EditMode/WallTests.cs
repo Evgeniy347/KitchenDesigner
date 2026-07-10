@@ -75,6 +75,45 @@ public class WallTests
         Assert.AreEqual(0f, baseY, 0.001f, "низ стены остаётся на полу");
     }
 
+    // Баг: стена, сохранённая в полускрытом (опущенном) состоянии, после открытия
+    // становилась ниже — снимок брал опущенную позицию/высоту transform. Снимок
+    // должен фиксировать ПОЛНУЮ геометрию стены.
+    [Test]
+    public void LoweredWall_CapturedAtFullHeight()
+    {
+        var e = Make("Стена", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0), true);
+        var wall = e.GetComponent<Wall>();
+        wall.SetLowered(true, 0.1f); // опущена: центр уехал вниз до y≈0.05
+        Assert.AreEqual(0.05f, e.transform.position.y, 0.001f, "стена опущена");
+
+        var data = ElementData.FromElement(e);
+
+        Assert.AreEqual(2500, data.Dimensions.y, "размеры пишутся полные");
+        Assert.AreEqual(1.25f, data.Position.y, 0.001f, "позиция пишется в полной высоте, а не опущенной");
+    }
+
+    // Полный круг: сохранить опущенную стену, загрузить — высота и положение должны
+    // совпасть с исходными (стена не «тонет»).
+    [Test]
+    public void LoweredWall_SaveAndRestore_KeepsFullGeometry()
+    {
+        var e = Make("Стена", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0), true);
+        e.GetComponent<Wall>().SetLowered(true, 0.1f);
+
+        var json = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(new[] { e }));
+        var data = SaveLoadManager.Deserialize(json);
+        var created = SaveLoadManager.RestoreScene(data);
+        foreach (var go in created) _spawned.Add(go);
+
+        Assert.AreEqual(1, created.Count);
+        var restored = created[0].GetComponent<KitchenElement>();
+        Assert.AreEqual(2500, restored.DimensionsMM.y, "высота восстановлена полностью");
+        Assert.AreEqual(2.5f, restored.transform.localScale.y, 0.001f);
+        Assert.AreEqual(1.25f, restored.transform.position.y, 0.001f, "центр стены на исходной высоте");
+        float baseY = restored.transform.position.y - restored.transform.localScale.y * 0.5f;
+        Assert.AreEqual(0f, baseY, 0.001f, "низ стены на полу");
+    }
+
     [Test]
     public void SetLowered_ReducesHeight_KeepsBaseOnFloor()
     {
