@@ -5,6 +5,13 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
+    /// <summary>Элемент, который в спецификации раскладывается на несколько деталей
+    /// (напр. сборный фасад → стойки/перекладины/вставка), а не одной строкой.</summary>
+    public interface ISpecificationParts
+    {
+        IEnumerable<AssembledFacadeMesh.Part> GetSpecParts();
+    }
+
     /// <summary>Строка спецификации: группа одинаковых досок.</summary>
     public struct SpecLine
     {
@@ -94,26 +101,18 @@ namespace KitchenDesigner.Core
                 if (e == null) continue;
                 if (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null) continue;
 
-                var dims = e.DimensionsMM;
-                string materialId = e.MaterialId;
-                string key = $"{e.BoardName}|{dims.x}x{dims.y}x{dims.z}|{materialId}";
-
-                if (!groups.TryGetValue(key, out var line))
+                // Сборный фасад и т.п. — раскладываем на детали (стойки/перекладины/вставка).
+                if (e is ISpecificationParts composite)
                 {
-                    line = new SpecLine
-                    {
-                        name = e.BoardName,
-                        dimensionsMM = dims,
-                        count = 0,
-                        areaPerBoardM2 = SurfaceAreaM2(dims),
-                        material = MaterialCatalog.Get(materialId).displayName
-                    };
-                    order.Add(key);
+                    string decor = MaterialCatalog.Get(e.MaterialId).displayName;
+                    foreach (var part in composite.GetSpecParts())
+                        Accumulate(groups, order, $"{e.BoardName}·{part.suffix}",
+                            part.dimsMM, part.materialKind ?? decor);
+                    continue;
                 }
 
-                line.count++;
-                line.totalAreaM2 = line.count * line.areaPerBoardM2;
-                groups[key] = line;
+                Accumulate(groups, order, e.BoardName, e.DimensionsMM,
+                    MaterialCatalog.Get(e.MaterialId).displayName);
             }
 
             var result = new SpecResult { lines = new List<SpecLine>() };
@@ -125,6 +124,28 @@ namespace KitchenDesigner.Core
                 result.totalAreaM2 += line.totalAreaM2;
             }
             return result;
+        }
+
+        /// <summary>Добавить одну деталь в группировку по (название, размер, материал).</summary>
+        private static void Accumulate(Dictionary<string, SpecLine> groups, List<string> order,
+            string name, Vector3Int dims, string material)
+        {
+            string key = $"{name}|{dims.x}x{dims.y}x{dims.z}|{material}";
+            if (!groups.TryGetValue(key, out var line))
+            {
+                line = new SpecLine
+                {
+                    name = name,
+                    dimensionsMM = dims,
+                    count = 0,
+                    areaPerBoardM2 = SurfaceAreaM2(dims),
+                    material = material
+                };
+                order.Add(key);
+            }
+            line.count++;
+            line.totalAreaM2 = line.count * line.areaPerBoardM2;
+            groups[key] = line;
         }
     }
 }

@@ -21,6 +21,9 @@ namespace KitchenDesigner.Core
         public bool transparent = false;
         public int doorMode = 0;
         public bool doorOpen = false;
+        public bool assembled = false;
+        public int assembledFill = 0;
+        public int grooveCount = AppConstants.ASSEMBLED_DEFAULT_GROOVES;
 
         public ElementData() { }
 
@@ -57,6 +60,12 @@ namespace KitchenDesigner.Core
                 d.gapBottom = facade.GapBottom;
                 d.doorMode = (int)facade.Mode;
                 d.doorOpen = facade.IsOpen;
+                if (facade is AssembledFacadeElement assembled)
+                {
+                    d.assembled = true;
+                    d.assembledFill = (int)assembled.Fill;
+                    d.grooveCount = assembled.GrooveCount;
+                }
             }
             d.groupId = element.GroupId;
             d.materialId = element.MaterialId;
