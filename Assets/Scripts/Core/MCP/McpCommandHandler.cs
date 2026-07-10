@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -292,7 +293,29 @@ namespace KitchenDesigner.Core.MCP
                 if (el == null) continue;
                 list.Add(BuildElementInfo(el, elements));
             }
-            return McpResponse.Result(req.id, list);
+
+            var etag = ComputeEtag(list);
+
+            // Если клиент прислал If-None-Match и ETag совпадает — данные не изменились
+            if (req.Headers != null
+                && req.Headers.TryGetValue("If-None-Match", out var clientEtag)
+                && clientEtag == etag)
+            {
+                return McpResponse.NotModified(req.id, etag);
+            }
+
+            var result = McpResponse.Result(req.id, list);
+            result.etag = etag;
+            return result;
+        }
+
+        /// <summary>SHA256 хеш от JSON-представления списка для ETag.</summary>
+        private static string ComputeEtag(List<ElementInfo> list)
+        {
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(list);
+            var bytes = Encoding.UTF8.GetBytes(json);
+            var hash = SHA256.HashData(bytes);
+            return Convert.ToHexString(hash).ToLowerInvariant();
         }
 
         private McpResponse HandleGetElementInfo(McpRequest req)
