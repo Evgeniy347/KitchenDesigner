@@ -20,6 +20,11 @@ namespace KitchenDesigner.Core
         /// <summary>Идёт перетаскивание ручки (другие системы не должны реагировать).</summary>
         public static bool IsResizing { get; private set; }
 
+        private static KitchenElement _resizingElement;
+        /// <summary>Этот элемент сейчас ресайзят? (WallManager не опускает такую стену).</summary>
+        public static bool IsResizingElement(KitchenElement e) =>
+            IsResizing && e != null && e == _resizingElement;
+
         // Геометрия стрелки (в локальных координатах ручки, локальный +Z = нормаль грани).
         private const float Gap = 0.02f;
         private const float ShaftLen = 0.10f;
@@ -75,7 +80,6 @@ namespace KitchenDesigner.Core
             if (_target == element) return;
             ClearHandles();
             _target = element;
-            if (_target != null) BuildHandles();
         }
 
         private void LateUpdate()
@@ -87,7 +91,14 @@ namespace KitchenDesigner.Core
                 return;
             }
             if (!_target.gameObject.activeInHierarchy) { SetTarget(null); return; }
-            if (!IsResizing) PositionHandles();
+
+            // Ручки доступны только для подвижного объекта: запрет перемещения
+            // запрещает и ресайз. Переключается на лету (чекбокс в свойствах).
+            bool show = _target.Movable;
+            if (show && _handles.Count == 0) BuildHandles();
+            else if (!show && _handles.Count > 0) { IsResizing = false; ClearHandles(); }
+
+            if (_handles.Count > 0 && !IsResizing) PositionHandles();
         }
 
         // --- Ввод ---
@@ -139,6 +150,7 @@ namespace KitchenDesigner.Core
 
         private void BeginResize(int faceIndex)
         {
+            if (!_target.Movable) return; // запрет перемещения запрещает и ресайз
             var faces = _target.GetFaces();
             if (faceIndex < 0 || faceIndex >= faces.Length) return;
             var f = faces[faceIndex];
@@ -161,6 +173,7 @@ namespace KitchenDesigner.Core
             _rotBefore = _target.transform.rotation;
             _sParam0 = ClosestParamOnNormal();
 
+            _resizingElement = _target;
             IsResizing = true;
         }
 
@@ -170,28 +183,16 @@ namespace KitchenDesigner.Core
             if (float.IsNaN(sNow)) return;
 
             float rawDelta = sNow - _sParam0;
-            Vector3 candidate = _faceCenter0 + _normal * rawDelta;
-
-            float finalDelta = rawDelta;
             var settings = KitchenSettings.Instance;
-            if (settings != null && settings.SnapEnabled)
-            {
-                float threshold = settings.SnapThreshold * AppConstants.MM_TO_UNITS;
-                if (ResizeSnap.SnapDelta(candidate, _normal, _uAxis, _vAxis, _faceSize,
-                        BoardRegistry.GetAll(), _target, threshold, out float gap))
-                    finalDelta = rawDelta + gap;
-            }
+            bool snapEnabled = settings != null && settings.SnapEnabled;
+            float threshold = settings != null ? settings.SnapThreshold * AppConstants.MM_TO_UNITS : 0f;
 
-            float newSizeUnits = _sizeStartUnits + finalDelta;
-            int newDimMM = Mathf.Max(1, Mathf.RoundToInt(newSizeUnits / AppConstants.MM_TO_UNITS));
+            ResizeMath.Compute(_dimsBefore, _axisIndex, _normal, _faceCenter0, _uAxis, _vAxis, _faceSize,
+                _centerStart, _sizeStartUnits, rawDelta, BoardRegistry.GetAll(), _target,
+                snapEnabled, threshold, out Vector3Int newDims, out Vector3 newCenter, out _);
 
-            // Реальная (округлённая до мм) дельта — чтобы центр и размер не разъезжались.
-            float actualDelta = newDimMM * AppConstants.MM_TO_UNITS - _sizeStartUnits;
-
-            var nd = _dimsBefore;
-            if (_axisIndex == 0) nd.x = newDimMM; else if (_axisIndex == 1) nd.y = newDimMM; else nd.z = newDimMM;
-            _target.DimensionsMM = nd;
-            _target.transform.position = _centerStart + _normal * (actualDelta * 0.5f);
+            _target.DimensionsMM = newDims;
+            _target.transform.position = newCenter;
 
             PositionHandles();
             if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
@@ -200,6 +201,7 @@ namespace KitchenDesigner.Core
         private void FinishResize()
         {
             IsResizing = false;
+            _resizingElement = null;
 
             var afterDims = _target.DimensionsMM;
             var afterPos = _target.transform.position;

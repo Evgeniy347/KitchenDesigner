@@ -1,0 +1,51 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace KitchenDesigner.Core
+{
+    /// <summary>Чистая математика вытягивания грани: по стартовой геометрии грани и
+    /// сырой дельте (вдоль нормали) считает новые размеры (мм) и центр объекта, с
+    /// учётом прилипания к встречным граням (ResizeSnap). Покрывается юнит-тестами,
+    /// чтобы связка «прилипание + растягивание» проверялась без сцены.</summary>
+    public static class ResizeMath
+    {
+        public static void Compute(
+            Vector3Int dimsBefore, int axisIndex,
+            Vector3 normal, Vector3 faceCenter0, Vector3 uAxis, Vector3 vAxis, Vector2 faceSize,
+            Vector3 centerStart, float sizeStartUnits,
+            float rawDelta, IList<KitchenElement> others, KitchenElement self,
+            bool snapEnabled, float threshold,
+            out Vector3Int newDims, out Vector3 newCenter, out bool snapped)
+        {
+            snapped = false;
+            float finalDelta = rawDelta;
+
+            if (snapEnabled)
+            {
+                // Кандидат — положение грани после сырого вытягивания (в плоскости не
+                // двигается, только вдоль нормали).
+                Vector3 candidate = faceCenter0 + normal * rawDelta;
+                if (ResizeSnap.SnapDelta(candidate, normal, uAxis, vAxis, faceSize,
+                        others, self, threshold, out float gap))
+                {
+                    finalDelta = rawDelta + gap;
+                    snapped = true;
+                }
+            }
+
+            float newSizeUnits = sizeStartUnits + finalDelta;
+            int newDimMM = Mathf.Max(1, Mathf.RoundToInt(newSizeUnits / AppConstants.MM_TO_UNITS));
+
+            // Реальная (округлённая до мм) дельта — чтобы размер и центр не разъезжались.
+            float actualDelta = newDimMM * AppConstants.MM_TO_UNITS - sizeStartUnits;
+
+            newDims = dimsBefore;
+            if (axisIndex == 0) newDims.x = newDimMM;
+            else if (axisIndex == 1) newDims.y = newDimMM;
+            else newDims.z = newDimMM;
+
+            // Противоположная грань стоит на месте → центр смещается на половину дельты.
+            newCenter = centerStart + normal * (actualDelta * 0.5f);
+        }
+    }
+}

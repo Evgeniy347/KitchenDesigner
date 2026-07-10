@@ -31,8 +31,9 @@ namespace KitchenDesigner.Core
                 var renderer = e.GetComponent<MeshRenderer>();
                 if (renderer != null) renderer.enabled = show;
 
-                // Стену, которую сейчас перетаскивают, держим на полной высоте.
-                if (!show || ElementMover.IsMoving(e))
+                // Стену, которую сейчас перетаскивают или ресайзят, держим на полной
+                // высоте (иначе изменение геометрии ломает drag/прилипание к полу).
+                if (!show || ElementMover.IsMoving(e) || ResizeHandleManager.IsResizingElement(e))
                 {
                     wall.RestoreFull();
                     continue;
