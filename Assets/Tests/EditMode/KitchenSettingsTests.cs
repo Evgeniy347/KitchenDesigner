@@ -69,6 +69,22 @@ public class KitchenSettingsTests
     }
 
     [Test]
+    public void EdgeOutline_SavesAndLoads()
+    {
+        var gs = KitchenSettings.Instance;
+        bool prev = gs.EdgeOutline;
+
+        gs.EdgeOutline = true;
+        gs.Save();
+        gs.EdgeOutline = false;
+        gs.Load();
+        Assert.IsTrue(gs.EdgeOutline);
+
+        gs.EdgeOutline = prev;
+        gs.Save();
+    }
+
+    [Test]
     public void BasePlate_CreatesWithCorrectSize()
     {
         var plate = BasePlate.Create();

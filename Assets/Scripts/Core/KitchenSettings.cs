@@ -25,6 +25,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _autoSaveInterval = 60;
         [SerializeField] private bool _spatialGrid = false;
         [SerializeField] private bool _windowedMode = true;
+        [SerializeField] private bool _edgeOutline = false;
 
         public int GridStep
         {
@@ -80,6 +81,12 @@ namespace KitchenDesigner.Core
             set => _windowedMode = value;
         }
 
+        public bool EdgeOutline
+        {
+            get => _edgeOutline;
+            set => _edgeOutline = value;
+        }
+
         public void Save()
         {
             var data = new SettingsData
@@ -92,7 +99,8 @@ namespace KitchenDesigner.Core
                 autoSave = _autoSave,
                 autoSaveInterval = _autoSaveInterval,
                 spatialGrid = _spatialGrid,
-                windowedMode = _windowedMode
+                windowedMode = _windowedMode,
+                edgeOutline = _edgeOutline
             };
             var json = JsonUtility.ToJson(data);
             PlayerPrefs.SetString("KitchenSettings", json);
@@ -115,6 +123,7 @@ namespace KitchenDesigner.Core
             _autoSaveInterval = Mathf.Max(10, data.autoSaveInterval);
             _spatialGrid = data.spatialGrid;
             _windowedMode = data.windowedMode;
+            _edgeOutline = data.edgeOutline;
         }
 
         [System.Serializable]
@@ -129,6 +138,7 @@ namespace KitchenDesigner.Core
             public int autoSaveInterval;
             public bool spatialGrid;
             public bool windowedMode;
+            public bool edgeOutline;
         }
     }
 }
