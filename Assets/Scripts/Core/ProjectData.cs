@@ -10,6 +10,11 @@ namespace KitchenDesigner.Core
         public GroupData[] groups = new GroupData[0];
         public CameraState camera = new CameraState();
 
+        // История отмены/повтора. elementIndex в записях ссылается на позицию в
+        // массиве elements. Старые сейвы без истории → пустые массивы.
+        public CommandRecord[] undoHistory = new CommandRecord[0];
+        public CommandRecord[] redoHistory = new CommandRecord[0];
+
         public ProjectData() { }
 
         public ProjectData(IEnumerable<ElementData> items)
