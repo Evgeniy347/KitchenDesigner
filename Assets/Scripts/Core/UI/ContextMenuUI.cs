@@ -21,12 +21,11 @@ namespace KitchenDesigner.Core.UI
         private float _panelBaseH;
         private float _gapSectionH;
         private const float RowStep = 31f;
+        private const float GapRowStep = 26f;
         private const float LabelX = -72f;
         private const float FieldX = 82f;
         private const float LabelH = 24f;
         private const float FieldH = 24f;
-        private const float TitleH = 28f;
-        private const float TitleToFirstRowPad = 12f;
 
         private void Awake()
         {
@@ -41,7 +40,7 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             _panelRt = panel.rectTransform;
 
-            const float rowStartY = TitleH + TitleToFirstRowPad;
+            const float rowStartY = 220f;
             const float rotLabelGap = 23f;
             const float rotBtnGap = 4f;
             const float actionGap = 8f;
@@ -157,7 +156,6 @@ namespace KitchenDesigner.Core.UI
             rt.anchoredPosition = new Vector2(0, y);
 
             const float headerH = 20f;
-            const float labelH = 20f;
             const float fieldH = 22f;
 
             float localY = 0;
@@ -165,15 +163,15 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateLabel("CtxGapHdr", root.transform, "Зазоры:", 14,
                 new Vector2(LabelX, localY), new Vector2(130, headerH), TextAnchor.MiddleLeft);
 
-            localY -= RowStep;
+            localY -= GapRowStep;
             _gapW = GapField(root.transform, "Ширина X, мм", LabelX, FieldX, localY);
 
-            localY -= RowStep;
+            localY -= GapRowStep;
             _gapH = GapField(root.transform, "Высота Y, мм", LabelX, FieldX, localY);
 
             float topExtent = headerH / 2f;
             float bottomExtent = -localY + fieldH / 2f;
-            float sectionH = topExtent + bottomExtent + 6f;
+            float sectionH = topExtent + bottomExtent + 4f;
             rt.sizeDelta = new Vector2(260, sectionH);
 
             y -= sectionH;
