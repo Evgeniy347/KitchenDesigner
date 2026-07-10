@@ -78,6 +78,16 @@ public class FieldHighlightTests
         Object.DestroyImmediate(go);
     }
 
+    // ── isFocused diagnostics ───────────────────────────────────────────
+
+    [Test]
+    public void InputField_IsFocused_IsFalse_InEditModeByDefault()
+    {
+        var field = UIFactory.CreateInputField("Test", _root.transform, "42", Vector2.zero, new Vector2(100, 28));
+        Assert.IsFalse(field.isFocused,
+            "isFocused should be false when no EventSystem selection is active");
+    }
+
     // ── InputField basics ───────────────────────────────────────────────
 
     [Test]
