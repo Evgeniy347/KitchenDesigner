@@ -128,7 +128,7 @@ namespace KitchenDesigner.Core
                 _lastMouse = Input.mousePosition;
             }
 
-            if (Mathf.Abs(scroll) > 0.01f)
+            if (Mathf.Abs(scroll) > 0.01f && !overUI)
             {
                 _distance -= scroll * _zoomSpeed;
                 _distance = Mathf.Clamp(_distance, _minDistance, _maxDistance);
