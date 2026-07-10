@@ -77,6 +77,9 @@ namespace KitchenDesigner.Core.MCP
         public int width;
         public int height;
         public int depth;
+        public int dimX;
+        public int dimY;
+        public int dimZ;
     }
 
     [Serializable]
@@ -92,12 +95,14 @@ namespace KitchenDesigner.Core.MCP
     public class ParamsCreateElement
     {
         public string template_name;
+        public string name;
         public float x;
         public float y;
         public float z;
         public int width;
         public int height;
         public int depth;
+        public bool is_wall;
     }
 
     [Serializable]
@@ -134,6 +139,26 @@ namespace KitchenDesigner.Core.MCP
         public float? z;
     }
 
+    [Serializable]
+    public class ParamsCreateModule
+    {
+        public string name;      // имя модуля («Тумба с ящиками»)
+        public string[] members; // имена деталей (BoardName)
+    }
+
+    [Serializable]
+    public class ParamsModule
+    {
+        public string module; // id (числом) или имя модуля
+    }
+
+    [Serializable]
+    public class ParamsModuleElement
+    {
+        public string module;
+        public string name; // имя детали
+    }
+
     // ── Return types ──────────────────────────────────────────────────
 
     [Serializable]
@@ -151,6 +176,23 @@ namespace KitchenDesigner.Core.MCP
         public float rotY;
         public float rotZ;
         public bool active;
+        public int moduleId;      // 0 — не в модуле
+        public string moduleName; // null — не в модуле
+    }
+
+    /// <summary>Конфигурация модуля: имя, состав, габариты. Через MCP видно,
+    /// что «модуль X состоит из…».</summary>
+    [Serializable]
+    public class ModuleInfo
+    {
+        public int id;
+        public string name;
+        public bool movable;
+        public bool editing;         // модуль сейчас в режиме редактирования
+        public int elementCount;
+        public float[] boundsCenter; // центр AABB, юниты (метры)
+        public int[] boundsSizeMM;   // габариты AABB, мм
+        public List<ElementInfo> elements;
     }
 
     [Serializable]

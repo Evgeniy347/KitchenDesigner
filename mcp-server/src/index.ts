@@ -163,6 +163,36 @@ server.tool("snap_diagnose", "Explain why a board does or does not snap: per-nei
   z: z.number().optional().describe("Test position Z (default: current)")
 }, async (args) => safe("snap_diagnose", args));
 
+// ── Модули (именованные группы досок) ────────────────────────────────────────
+server.tool("get_modules", "List all modules with composition (elements, bounds)", async () => safe("get_modules"));
+
+server.tool("module_info", "Full module configuration: name, elements, bounds", {
+  module: z.string().describe("Module id (number) or name")
+}, async (args) => safe("module_info", args));
+
+server.tool("create_module", "Group boards into a named module", {
+  name: z.string().describe("Module name, e.g. 'Тумба с ящиками'"),
+  members: z.array(z.string()).min(2).describe("Board names (at least 2)")
+}, async (args) => safe("create_module", args as Record<string, unknown>));
+
+server.tool("dissolve_module", "Ungroup a module (elements stay in scene)", {
+  module: z.string()
+}, async (args) => safe("dissolve_module", args));
+
+server.tool("add_to_module", "Add a board to an existing module", {
+  module: z.string(), name: z.string()
+}, async (args) => safe("add_to_module", args));
+
+server.tool("remove_from_module", "Remove a board from its module", {
+  name: z.string()
+}, async (args) => safe("remove_from_module", args));
+
+server.tool("enter_module_edit", "Enter module edit mode: module parts editable, rest of scene locked/dimmed", {
+  module: z.string()
+}, async (args) => safe("enter_module_edit", args));
+
+server.tool("exit_module_edit", "Exit module edit mode", async () => safe("exit_module_edit"));
+
 server.tool("execute_menu_item", "Execute Unity Editor menu command", {
   menu_path: z.string().describe("e.g. 'Edit/Undo'")
 }, async (args) => safe("execute_menu_item", args));

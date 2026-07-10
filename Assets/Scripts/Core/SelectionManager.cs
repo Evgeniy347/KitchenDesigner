@@ -32,6 +32,14 @@ namespace KitchenDesigner.Core
             if (ElementMover.IsDragging)
                 return;
 
+            // Esc в режиме редактирования модуля — выход из режима.
+            if (ModuleEditMode.IsActive && Input.GetKeyDown(KeyCode.Escape))
+            {
+                ModuleEditMode.Exit();
+                DeselectAll();
+                return;
+            }
+
             // Клик по ручке ресайза не должен менять/снимать выделение.
             if (ResizeHandleManager.IsResizing || ResizeHandleManager.PointerOverHandle())
                 return;
@@ -55,14 +63,36 @@ namespace KitchenDesigner.Core
                     {
                         bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
                         var group = GroupManager.GroupOf(element);
+
+                        // Режим редактирования модуля: детали активного модуля
+                        // выделяются ПОШТУЧНО, всё вне модуля заблокировано.
+                        if (ModuleEditMode.IsActive)
+                        {
+                            if (!ModuleEditMode.IsEditable(element)) return;
+                            if (ctrl) ToggleInSelection(element);
+                            else Select(element);
+                            return;
+                        }
+
                         if (ctrl)
                             ToggleInSelection(element);
                         else if (group != null)
-                            SelectOnly(GroupManager.MembersOf(group)); // связанная группа выделяется целиком
+                        {
+                            // Двойной клик по модулю — вход в режим редактирования.
+                            if (IsDoubleClickOnGroup(group))
+                            {
+                                ModuleEditMode.Enter(group);
+                                Select(element);
+                            }
+                            else
+                                SelectOnly(GroupManager.MembersOf(group)); // группа целиком
+                        }
                         else if (_selectedElements.Count > 1 && _selectedElements.Contains(element))
                             _selected = element; // часть мультивыделения — сохраняем для группового drag
                         else
                             Select(element);
+
+                        RememberClick(group);
                         return;
                     }
                 }
@@ -70,6 +100,24 @@ namespace KitchenDesigner.Core
                 if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
                     DeselectAll();
             }
+        }
+
+        // --- Двойной клик по группе (вход в режим редактирования модуля) ---
+
+        private const float DoubleClickSeconds = 0.35f;
+        private float _lastClickTime = -10f;
+        private int _lastClickGroupId;
+
+        private bool IsDoubleClickOnGroup(LinkGroup group)
+        {
+            return group != null && group.id == _lastClickGroupId &&
+                   Time.unscaledTime - _lastClickTime <= DoubleClickSeconds;
+        }
+
+        private void RememberClick(LinkGroup group)
+        {
+            _lastClickTime = Time.unscaledTime;
+            _lastClickGroupId = group != null ? group.id : 0;
         }
 
         public void Select(KitchenElement element)

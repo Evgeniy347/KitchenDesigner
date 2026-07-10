@@ -22,7 +22,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("GroupMenu", canvas, Vector2.zero, new Vector2(280, 200));
+            var panel = UIFactory.CreatePanel("GroupMenu", canvas, Vector2.zero, new Vector2(280, 240));
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(0, 40);
             _root = panel.gameObject;
@@ -43,8 +43,10 @@ namespace KitchenDesigner.Core.UI
             _nameField.onEndEdit.AddListener(t => { if (_group != null) _group.name = t; });
             _lockMove = UIFactory.CreateToggle("GmLockMove", _groupRoot.transform, "Запретить перемещение", false,
                 new Vector2(0, -4), new Vector2(248, 26), v => { if (_group != null) GroupManager.SetMovable(_group, !v); });
+            UIFactory.CreateButton("GmEdit", _groupRoot.transform, "Редактировать модуль",
+                new Vector2(0, -42), new Vector2(200, 36), DoEditModule);
             UIFactory.CreateButton("GmUnlink", _groupRoot.transform, "Разорвать связь",
-                new Vector2(0, -46), new Vector2(200, 36), DoUnlink);
+                new Vector2(0, -82), new Vector2(200, 36), DoUnlink);
 
             _root.SetActive(false);
 
@@ -57,7 +59,7 @@ namespace KitchenDesigner.Core.UI
             var rt = UIFactory.CreateRect("Root", parent);
             UIFactory.AnchorCenter(rt);
             rt.anchoredPosition = Vector2.zero;
-            rt.sizeDelta = new Vector2(280, 200);
+            rt.sizeDelta = new Vector2(280, 240);
             return rt.gameObject;
         }
 
@@ -106,6 +108,18 @@ namespace KitchenDesigner.Core.UI
         {
             GroupManager.Unlink(_group);
             Close();
+        }
+
+        // Вход в режим редактирования модуля: детали редактируются поштучно,
+        // остальная сцена блокируется (ModuleEditMode).
+        private void DoEditModule()
+        {
+            if (_group == null) return;
+            var g = _group;
+            Close();
+            ModuleEditMode.Enter(g);
+            if (SelectionManager.Instance != null)
+                SelectionManager.Instance.DeselectAll();
         }
 
         private void Update()

@@ -76,16 +76,17 @@ public class SnapExistingContactTests : SnapTestBase
     {
         // Вдали от центра/кромок пола, чтобы контакт с полом был чистым
         // «нулевым» кандидатом (без притяжения к кромке/центру пола).
+        // Верх пола на y=0.009 → доска «стоит» при центре y=0.209.
         MakeFloor();
-        var a = MakeStd("A", new Vector3(0.5f, 0.2f, 0.3f));
-        var b = MakeStd("B", new Vector3(0.5f, 0.2f, 0.34f)); // зазор граней 22мм
+        var a = MakeStd("A", new Vector3(0.5f, 0.209f, 0.3f));
+        var b = MakeStd("B", new Vector3(0.5f, 0.209f, 0.34f)); // зазор граней 22мм
 
         var r = SnapSystem.TrySnap(b, Others(), b.transform.position);
 
         Assert.IsTrue(r.snapped, "контакт с полом не должен маскировать соседа");
         Assert.AreEqual("A", r.targetName);
         Assert.AreEqual(0.318f, r.position.z, Tol, "заподлицо с гранью A (0.309+0.009)");
-        Assert.AreEqual(0.2f, r.position.y, Tol, "по Y не сдвинулась — контакт с полом цел");
+        Assert.AreEqual(0.209f, r.position.y, Tol, "по Y не сдвинулась — контакт с полом цел");
     }
 
     [Test]
@@ -93,7 +94,7 @@ public class SnapExistingContactTests : SnapTestBase
     {
         // Идемпотентность: единственный контакт (пол) подтверждается на месте.
         MakeFloor();
-        var a = MakeStd("A", new Vector3(0.5f, 0.2f, 0.3f));
+        var a = MakeStd("A", new Vector3(0.5f, 0.209f, 0.3f));
 
         var r = SnapSystem.TrySnap(a, Others(), a.transform.position);
 
@@ -110,14 +111,14 @@ public class SnapExistingContactTests : SnapTestBase
         // потребовало бы оторвать доску от пола (сдвиг вдоль нормали пола) —
         // такой снэп отвергается, доска остаётся на месте.
         MakeFloor();
-        var a = MakeStd("A", new Vector3(0.5f, 0.2f, 0.5f)); // верх на y=0.4
+        var a = MakeStd("A", new Vector3(0.5f, 0.209f, 0.5f)); // на полу, верх на y=0.409
         Make("Shelf", new Vector3Int(800, 18, 400),
-            new Vector3(0.5f, 0.439f, 0.5f)); // низ на y=0.43, зазор 30мм
+            new Vector3(0.5f, 0.448f, 0.5f)); // низ на y=0.439, зазор 30мм
 
         var r = SnapSystem.TrySnap(a, Others(), a.transform.position);
 
         Assert.IsTrue(r.snapped, "контакт с полом подтверждён");
-        Assert.AreEqual(0.2f, r.position.y, Tol, "доска НЕ оторвалась от пола ради полки");
+        Assert.AreEqual(0.209f, r.position.y, Tol, "доска НЕ оторвалась от пола ради полки");
     }
 
     [Test]
