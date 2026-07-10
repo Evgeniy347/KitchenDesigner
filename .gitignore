@@ -104,3 +104,4 @@ mcp-server/node_modules/
 # AI Agent Instructions
 # ===========================
 /AGENTS.md
+/todo*.md

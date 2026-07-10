@@ -11,14 +11,20 @@ namespace KitchenDesigner.Core
     {
         private const float LoweredHeightMM = 100f;
 
-        private void LateUpdate()
+        private Camera _cachedCamera;
+
+        private void Awake()
+        {
+            _cachedCamera = Camera.main;
+        }
+
+        internal void LateUpdate()
         {
             var s = KitchenSettings.Instance;
             bool show = s == null || s.WallsEnabled;
             bool lowerMode = s != null && s.LowerNearWalls;
 
-            var cam = Camera.main;
-            Vector3 camF = cam != null ? cam.transform.forward : Vector3.forward;
+            Vector3 camF = _cachedCamera != null ? _cachedCamera.transform.forward : Vector3.forward;
             Vector3 sceneCenter = Vector3.zero; // центр пола
             float loweredUnits = LoweredHeightMM * AppConstants.MM_TO_UNITS;
 
