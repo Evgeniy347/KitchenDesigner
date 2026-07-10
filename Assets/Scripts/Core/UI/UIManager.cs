@@ -19,6 +19,7 @@ namespace KitchenDesigner.Core.UI
         private GroupMenuUI _groupMenu;
         private Button _undoButton;
         private Button _redoButton;
+        private Text _modeButtonLabel;
 
         public Canvas Canvas => _canvas;
         public const string QuickSaveName = "quicksave";
@@ -87,6 +88,25 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorTopLeft(distBtn.GetComponent<RectTransform>());
             distBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
             x += 86;
+
+            // Переключатель режима ручек на гранях: растяжение ↔ перемещение по оси.
+            var modeBtn = UIFactory.CreateButton("HandleMode", bar.transform, ModeLabel(),
+                new Vector2(x, y), new Vector2(150, h), ToggleHandleMode);
+            UIFactory.AnchorTopLeft(modeBtn.GetComponent<RectTransform>());
+            modeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
+            _modeButtonLabel = modeBtn.GetComponentInChildren<Text>();
+            x += 156;
+        }
+
+        private static string ModeLabel() =>
+            ResizeHandleManager.Mode == ResizeHandleManager.HandleMode.Resize
+                ? "Режим: растяжение"
+                : "Режим: перемещение";
+
+        private void ToggleHandleMode()
+        {
+            ResizeHandleManager.ToggleMode();
+            if (_modeButtonLabel != null) _modeButtonLabel.text = ModeLabel();
         }
 
         private void AddBarButton(Transform parent, string name, string label, ref float x, float y, float h, float w, System.Action onClick)
