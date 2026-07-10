@@ -85,6 +85,9 @@ namespace KitchenDesigner.Core
             BoardRegistry.Unregister(this);
         }
 
+        /// <summary>Масштаб для расчёта граней и вершин (с учётом зазоров для фасадов).</summary>
+        protected virtual Vector3 EffectiveScale => transform.localScale;
+
         public void ApplyDimensions()
         {
             transform.localScale = new Vector3(
@@ -96,7 +99,7 @@ namespace KitchenDesigner.Core
 
         public Vector3[] GetVertices()
         {
-            var size = transform.localScale;
+            var size = EffectiveScale;
             var half = size * 0.5f;
             var pos = transform.position;
             var rot = transform.rotation;
@@ -121,7 +124,7 @@ namespace KitchenDesigner.Core
 
         public Face[] GetFaces()
         {
-            var size = transform.localScale;
+            var size = EffectiveScale;
             var half = size * 0.5f;
             var pos = transform.position;
             var rot = transform.rotation;

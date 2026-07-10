@@ -12,9 +12,12 @@ namespace KitchenDesigner.Core.UI
             public string name;
             public Vector3Int dims;
             public bool isWall;
-            public Item(string name, Vector3Int dims, bool isWall = false)
+            public bool isFacade;
+            public int gapMM;
+            public Item(string name, Vector3Int dims, bool isWall = false, bool isFacade = false, int gapMM = 2)
             {
                 this.name = name; this.dims = dims; this.isWall = isWall;
+                this.isFacade = isFacade; this.gapMM = gapMM;
             }
         }
 
@@ -39,8 +42,8 @@ namespace KitchenDesigner.Core.UI
         {
             return new List<Group>
             {
-                ThicknessGroup("16 мм", "16", 16),
-                ThicknessGroup("18 мм", "18", 18),
+                BoardGroup(),
+                FacadeGroup(),
                 new Group
                 {
                     title = "Помещение",
@@ -55,12 +58,29 @@ namespace KitchenDesigner.Core.UI
             };
         }
 
-        private static Group ThicknessGroup(string title, string shortLabel, int thickness)
+        private static Group BoardGroup()
         {
             var items = new List<Item>();
             foreach (var s in BoardSizes)
-                items.Add(new Item($"{s.x}×{s.y}", new Vector3Int(s.x, s.y, thickness)));
-            return new Group { title = title, shortLabel = shortLabel, items = items };
+            {
+                items.Add(new Item($"{s.x}×{s.y}×16", new Vector3Int(s.x, s.y, 16)));
+                items.Add(new Item($"{s.x}×{s.y}×18", new Vector3Int(s.x, s.y, 18)));
+            }
+            return new Group { title = "Доски", shortLabel = "Д", items = items };
+        }
+
+        private static Group FacadeGroup()
+        {
+            return new Group
+            {
+                title = "Фасады",
+                shortLabel = "Ф",
+                items = new List<Item>
+                {
+                    new Item("Фасад 800×400×18", new Vector3Int(800, 400, 18), false, true, 2),
+                    new Item("Фасад 600×400×18", new Vector3Int(600, 400, 18), false, true, 2),
+                }
+            };
         }
     }
 }

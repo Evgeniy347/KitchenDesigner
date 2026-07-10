@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core.MCP
             ["set_scale"] = "Установить масштаб GameObject",
             ["get_all_elements"] = "Список всех KitchenElement (доски, пол, стены)",
             ["get_element_info"] = "Информация о KitchenElement по имени",
-            ["create_element"] = "Создать доску/стену/пол. Параметры: template_name, x, y, z, width, height, depth, is_wall, is_floor",
+            ["create_element"] = "Создать доску/стену/пол/фасад. Параметры: template_name, x, y, z, width, height, depth, is_wall, is_floor, is_facade, gapMM",
             ["delete_element"] = "Удалить KitchenElement (с undo)",
             ["move_element"] = "Переместить KitchenElement (name, x, y, z)",
             ["resize_element"] = "Изменить размер KitchenElement (name, width, height, depth)",
@@ -52,6 +52,7 @@ namespace KitchenDesigner.Core.MCP
             ["enter_module_edit"] = "Войти в режим редактирования модуля (module)",
             ["exit_module_edit"] = "Выйти из режима редактирования модуля",
             ["take_screenshot"] = "Сделать скриншот (возвращает путь к файлу)",
+            ["get_violations"] = "Список всех элементов с нарушениями (пересечения / нет связности)",
             ["get_floor_info"] = "Размеры и позиция пола (BasePlate)",
             ["resize_floor"] = "Изменить размер пола (width, height, depth)",
             ["add_wall_component"] = "Добавить Wall компонент к существующему элементу (name)",
@@ -105,6 +106,7 @@ namespace KitchenDesigner.Core.MCP
                     case "exit_module_edit": return HandleExitModuleEdit(request);
                     case "take_screenshot": return HandleTakeScreenshot(request);
                     case "get_floor_info": return HandleGetFloorInfo(request);
+                    case "get_violations": return HandleGetViolations(request);
                     case "resize_floor": return HandleResizeFloor(request);
                     case "add_wall_component": return HandleAddWallComponent(request);
                     case "set_setting": return HandleSetSetting(request);
@@ -593,10 +595,23 @@ namespace KitchenDesigner.Core.MCP
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = elementName;
-            var element = go.AddComponent<KitchenElement>();
-            element.BoardName = elementName;
-            element.DimensionsMM = dims;
-            MaterialManager.ApplyById(element, MaterialCatalog.DefaultId);
+            KitchenElement element;
+
+            if (p.is_facade)
+            {
+                var facade = go.AddComponent<FacadeElement>();
+                facade.BoardName = elementName;
+                facade.DimensionsMM = dims;
+                facade.GapMM = p.gapMM;
+                element = facade;
+            }
+            else
+            {
+                element = go.AddComponent<KitchenElement>();
+                element.BoardName = elementName;
+                element.DimensionsMM = dims;
+                MaterialManager.ApplyById(element, MaterialCatalog.DefaultId);
+            }
 
             if (p.is_wall)
                 go.AddComponent<Wall>();
@@ -606,7 +621,7 @@ namespace KitchenDesigner.Core.MCP
             Debug.Log($"[MCP] Created {go.name} at ({p.x}, {p.y}, {p.z})");
             var allElements = BoardRegistry.GetAll();
             var vr = allElements != null ? ConstraintValidator.Validate(allElements) : null;
-            return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, path = GetGameObjectPath(go), posX = pos.x, posY = pos.y, posZ = pos.z, hasViolations = vr != null && vr.violations.Contains(element) });
+            return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, is_facade = p.is_facade, path = GetGameObjectPath(go), posX = pos.x, posY = pos.y, posZ = pos.z, hasViolations = vr != null && vr.violations.Contains(element) });
         }
 
         private McpResponse HandleDeleteElement(McpRequest req)
@@ -779,6 +794,19 @@ namespace KitchenDesigner.Core.MCP
             System.IO.File.WriteAllBytes(path, bytes);
             Object.Destroy(tex);
             return McpResponse.Result(req.id, new { ok = true, path });
+        }
+
+        private McpResponse HandleGetViolations(McpRequest req)
+        {
+            var all = BoardRegistry.GetAll();
+            if (all == null || all.Count == 0)
+                return McpResponse.Result(req.id, new { violations = new string[0], count = 0 });
+
+            var result = ConstraintValidator.Validate(all);
+            var list = new List<object>();
+            foreach (var el in result.violations)
+                list.Add(new { name = el.BoardName, type = el.GetType().Name });
+            return McpResponse.Result(req.id, new { violations = list, count = list.Count });
         }
 
         private static BasePlate FindFloor()
