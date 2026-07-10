@@ -4,13 +4,13 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     /// <summary>
-    /// Автосохранение в проект "autosave" каждые 2 секунды, только если сцена
-    /// изменилась с прошлого автосохранения (сравнение сериализованного состояния).
+    /// Автосохранение в проект "autosave" с интервалом из настроек
+    /// (`KitchenSettings.AutoSaveInterval`, сек), только если сцена изменилась с
+    /// прошлого автосохранения (сравнение сериализованного состояния).
     /// </summary>
     public class AutoSaveManager : MonoBehaviour
     {
         public const string AutoSaveName = "autosave";
-        private const float Interval = 2f;
 
         private string _lastSavedJson;
 
@@ -22,12 +22,15 @@ namespace KitchenDesigner.Core
 
         private IEnumerator AutoSaveLoop()
         {
-            var wait = new WaitForSeconds(Interval);
             while (true)
             {
-                yield return wait;
-
+                // Интервал перечитывается каждую итерацию — изменения настройки
+                // применяются на лету.
                 var settings = KitchenSettings.Instance;
+                float interval = settings != null ? Mathf.Max(1f, settings.AutoSaveInterval) : 60f;
+                yield return new WaitForSeconds(interval);
+
+                settings = KitchenSettings.Instance;
                 if (settings == null || !settings.AutoSave) continue;
 
                 string current = SaveLoadManager.CaptureCurrentJson();

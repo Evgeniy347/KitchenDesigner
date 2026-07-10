@@ -12,21 +12,10 @@ namespace KitchenDesigner.Core
             Bounds bounds = GetBounds(elements);
 
             float targetPos;
-            Vector3 axisVec;
-
-            switch (axis)
-            {
-                case Axis.X: axisVec = Vector3.right; break;
-                case Axis.Y: axisVec = Vector3.up; break;
-                default: axisVec = Vector3.forward; break;
-            }
-
             switch (mode)
             {
                 case AlignmentMode.Min:
-                    targetPos = bounds.min.x * Vector3.right.x + bounds.min.y * Vector3.right.y + bounds.min.z * Vector3.right.z;
-                    if (axis == Axis.Y) targetPos = bounds.min.y;
-                    else if (axis == Axis.Z) targetPos = bounds.min.z;
+                    targetPos = axis == Axis.X ? bounds.min.x : (axis == Axis.Y ? bounds.min.y : bounds.min.z);
                     break;
                 case AlignmentMode.Max:
                     targetPos = axis == Axis.X ? bounds.max.x : (axis == Axis.Y ? bounds.max.y : bounds.max.z);

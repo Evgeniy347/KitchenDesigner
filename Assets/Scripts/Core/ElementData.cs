@@ -26,13 +26,21 @@ namespace KitchenDesigner.Core
             return d;
         }
 
+        // Геттеры устойчивы к повреждённому/неполному JSON (не кидают исключение,
+        // а возвращают безопасные значения по умолчанию).
         public Vector3Int Dimensions =>
-            new Vector3Int(dimensionsMM[0], dimensionsMM[1], dimensionsMM[2]);
+            dimensionsMM != null && dimensionsMM.Length >= 3
+                ? new Vector3Int(dimensionsMM[0], dimensionsMM[1], dimensionsMM[2])
+                : new Vector3Int(1, 1, 1);
 
         public Vector3 Position =>
-            new Vector3(position[0], position[1], position[2]);
+            position != null && position.Length >= 3
+                ? new Vector3(position[0], position[1], position[2])
+                : Vector3.zero;
 
         public Quaternion Rotation =>
-            new Quaternion(rotation[0], rotation[1], rotation[2], rotation[3]);
+            rotation != null && rotation.Length >= 4
+                ? new Quaternion(rotation[0], rotation[1], rotation[2], rotation[3])
+                : Quaternion.identity;
     }
 }

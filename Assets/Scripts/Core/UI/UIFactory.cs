@@ -133,6 +133,33 @@ namespace KitchenDesigner.Core.UI
             return button;
         }
 
+        /// <summary>Кнопка с иконкой-спрайтом по центру вместо текста.</summary>
+        public static Button CreateIconButton(string name, Transform parent, Sprite icon, Vector2 anchoredPos, Vector2 size, System.Action onClick)
+        {
+            var rect = CreateRect(name, parent);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = anchoredPos;
+
+            var bg = rect.gameObject.AddComponent<Image>();
+            bg.color = ButtonColor;
+
+            var button = rect.gameObject.AddComponent<Button>();
+            if (onClick != null)
+                button.onClick.AddListener(() => onClick());
+
+            var iconRect = CreateRect(name + "_Icon", rect);
+            iconRect.anchorMin = iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            float s = Mathf.Min(size.x, size.y) - 12f;
+            iconRect.sizeDelta = new Vector2(s, s);
+            iconRect.anchoredPosition = Vector2.zero;
+
+            var img = iconRect.gameObject.AddComponent<Image>();
+            img.sprite = icon;
+            img.preserveAspect = true;
+
+            return button;
+        }
+
         public static InputField CreateInputField(string name, Transform parent, string initial, Vector2 anchoredPos, Vector2 size)
         {
             var rect = CreateRect(name, parent);

@@ -54,17 +54,27 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateToggle("TglBlock", panel.transform, "Блокировать ошибки", s.BlockOnViolation,
                 new Vector2(0, 22), new Vector2(360, 30), v => { s.BlockOnViolation = v; s.Save(); });
 
-            UIFactory.CreateToggle("TglAutoSave", panel.transform, "Автосохранение (2с, при изменениях)", s.AutoSave,
+            UIFactory.CreateToggle("TglAutoSave", panel.transform, "Автосохранение (при изменениях)", s.AutoSave,
                 new Vector2(0, -18), new Vector2(360, 30), v => { s.AutoSave = v; s.Save(); });
 
+            UIFactory.CreateLabel("LblAutoInt", panel.transform, "Интервал автосейва, с", 16,
+                new Vector2(-110, -56), new Vector2(200, 28));
+            var autoIntField = UIFactory.CreateInputField("AutoIntField", panel.transform, s.AutoSaveInterval.ToString(),
+                new Vector2(140, -56), new Vector2(100, 28));
+            autoIntField.contentType = InputField.ContentType.IntegerNumber;
+            autoIntField.onEndEdit.AddListener(t =>
+            {
+                if (int.TryParse(t, out int v)) { s.AutoSaveInterval = v; autoIntField.text = s.AutoSaveInterval.ToString(); s.Save(); }
+            });
+
             UIFactory.CreateToggle("TglSpatialGrid", panel.transform, "Пространственная сетка", s.SpatialGrid,
-                new Vector2(0, -58), new Vector2(360, 30), v => { s.SpatialGrid = v; s.Save(); });
+                new Vector2(0, -96), new Vector2(360, 30), v => { s.SpatialGrid = v; s.Save(); });
 
             UIFactory.CreateToggle("TglWindowed", panel.transform, "Оконный режим", s.WindowedMode,
-                new Vector2(0, -98), new Vector2(360, 30), v => { s.WindowedMode = v; s.Save(); DisplaySettings.ApplyWindowMode(); });
+                new Vector2(0, -136), new Vector2(360, 30), v => { s.WindowedMode = v; s.Save(); DisplaySettings.ApplyWindowMode(); });
 
             UIFactory.CreateButton("SetClose", panel.transform, "Закрыть",
-                new Vector2(0, -210), new Vector2(160, 40), () => SetVisible(false));
+                new Vector2(0, -220), new Vector2(160, 40), () => SetVisible(false));
 
             _root.SetActive(false);
         }

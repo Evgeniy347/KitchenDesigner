@@ -1,16 +1,22 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Контекстное меню по ПКМ на доске: размеры, позиция, поворот, действия.</summary>
+    /// <summary>Контекстное меню по клику ЛКМ на доске: размеры, позиция, поворот, действия.</summary>
     public class ContextMenuUI : MonoBehaviour
     {
+        public static ContextMenuUI Instance { get; private set; }
+
         private GameObject _root;
         private KitchenElement _target;
 
         private InputField _name, _w, _h, _d, _x, _y, _z, _rx, _ry, _rz;
+
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         public void Build(Transform canvas)
         {
@@ -38,16 +44,43 @@ namespace KitchenDesigner.Core.UI
             foreach (var f in new[] { _w, _h, _d }) f.contentType = InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f.contentType = InputField.ContentType.DecimalNumber;
 
+            // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
+            // ставить доски вертикально (поворот по X/Z), а не только крутить по Y.
+            UIFactory.CreateLabel("CtxRotLbl", panel.transform, "Повернуть на 90°:", 15,
+                new Vector2(0, -82), new Vector2(260, 22), TextAnchor.MiddleCenter);
+            UIFactory.CreateButton("CtxRotX", panel.transform, "X 90°",
+                new Vector2(-90, -108), new Vector2(86, 28), () => RotateAxis(Vector3.right));
+            UIFactory.CreateButton("CtxRotY", panel.transform, "Y 90°",
+                new Vector2(0, -108), new Vector2(86, 28), () => RotateAxis(Vector3.up));
+            UIFactory.CreateButton("CtxRotZ", panel.transform, "Z 90°",
+                new Vector2(90, -108), new Vector2(86, 28), () => RotateAxis(Vector3.forward));
+
             UIFactory.CreateButton("CtxApply", panel.transform, "Применить",
-                new Vector2(-65, -150), new Vector2(120, 32), Apply);
-            UIFactory.CreateButton("CtxRotate", panel.transform, "Повернуть 90°",
-                new Vector2(65, -150), new Vector2(120, 32), Rotate90);
+                new Vector2(-65, -144), new Vector2(120, 32), Apply);
             UIFactory.CreateButton("CtxDup", panel.transform, "Дублировать",
-                new Vector2(-65, -186), new Vector2(120, 32), Duplicate);
+                new Vector2(65, -144), new Vector2(120, 32), Duplicate);
             UIFactory.CreateButton("CtxDel", panel.transform, "Удалить",
-                new Vector2(65, -186), new Vector2(120, 32), Delete);
+                new Vector2(0, -180), new Vector2(248, 32), Delete);
 
             _root.SetActive(false);
+
+            if (SelectionManager.Instance != null)
+                SelectionManager.Instance.OnSelectionChanged += OnSelectionChanged;
+        }
+
+        private void OnDestroy()
+        {
+            if (SelectionManager.Instance != null)
+                SelectionManager.Instance.OnSelectionChanged -= OnSelectionChanged;
+        }
+
+        // Меню закрывается, когда выделение ушло с его доски (клик в пустоту,
+        // выбор другой доски, удаление).
+        private void OnSelectionChanged(KitchenElement element)
+        {
+            if (_root == null || !_root.activeSelf) return;
+            if (element == null || element != _target)
+                Close();
         }
 
         private InputField Row(Transform parent, string label, ref float y, float step)
@@ -60,24 +93,8 @@ namespace KitchenDesigner.Core.UI
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(1) && !ElementMover.IsDragging)
-            {
-                if (EventSystem.current != null && IsPointerOverGameObject())
-                    return;
-
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out RaycastHit hit))
-                {
-                    var element = hit.collider.GetComponentInParent<KitchenElement>();
-                    if (element != null && element.GetComponent<BasePlate>() == null)
-                    {
-                        Open(element);
-                        return;
-                    }
-                }
-                Close();
-            }
-
+            // Меню открывается из ElementMover по клику ЛКМ (без перетаскивания).
+            // ПКМ теперь вращает камеру.
             if (Input.GetKeyDown(KeyCode.Escape) && _root != null && _root.activeSelf)
                 Close();
 
@@ -99,8 +116,9 @@ namespace KitchenDesigner.Core.UI
             if (!_rz.isFocused) _rz.SetTextWithoutNotify(e.z.ToString("F1"));
         }
 
-        private void Open(KitchenElement element)
+        public void Open(KitchenElement element)
         {
+            if (element == null) return;
             _target = element;
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.Select(element);
@@ -115,7 +133,7 @@ namespace KitchenDesigner.Core.UI
             _root.SetActive(true);
         }
 
-        private void Close()
+        public void Close()
         {
             _target = null;
             if (_root != null) _root.SetActive(false);
@@ -176,14 +194,15 @@ namespace KitchenDesigner.Core.UI
             return result.violations.Contains(_target);
         }
 
-        private void Rotate90()
+        private void RotateAxis(Vector3 axis)
         {
             if (_target == null) return;
             var oldRot = _target.transform.rotation;
-            _target.RotateAroundAxis(Vector3.up, 90f);
+            _target.RotateAroundAxis(axis, 90f);
             CommandStack.Execute(new MoveCommand(_target,
                 _target.transform.position, _target.transform.position,
                 oldRot, _target.transform.rotation));
+            RefreshTransformFields();
             RefreshHighlights();
         }
 
@@ -222,12 +241,5 @@ namespace KitchenDesigner.Core.UI
 
         private static float ParseFloat(string s, float fallback) =>
             float.TryParse(s, out float v) ? v : fallback;
-
-        private static bool IsPointerOverGameObject()
-        {
-            var es = EventSystem.current;
-            if (es == null) return false;
-            return es.IsPointerOverGameObject() || es.IsPointerOverGameObject(0);
-        }
     }
 }

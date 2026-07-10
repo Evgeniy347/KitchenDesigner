@@ -47,7 +47,8 @@ namespace KitchenDesigner.Core
                 if (Physics.Raycast(ray, out RaycastHit hit))
                 {
                     var element = hit.collider.GetComponentInParent<KitchenElement>();
-                    if (element != null)
+                    // Пол (BasePlate) не выделяется — клик по нему снимает выделение.
+                    if (element != null && element.GetComponent<BasePlate>() == null)
                     {
                         bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
                         if (ctrl)
