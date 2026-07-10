@@ -14,6 +14,11 @@ namespace KitchenDesigner.Core.UI
             public bool isWall;
             public bool isFacade;
             public bool isAssembled; // сборный (рамочный) фасад
+            public bool isDrawer;
+            public string drawerType;  // "A"/"B"/"C"/"D"
+            public int drawerLength;
+            public string drawerColor;
+            public int drawerWidth;
             public int gapLeft;
             public int gapRight;
             public int gapTop;
@@ -26,6 +31,8 @@ namespace KitchenDesigner.Core.UI
                 this.isFacade = isFacade; this.isAssembled = isAssembled;
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
+                isDrawer = false; drawerType = "A"; drawerLength = 350;
+                drawerColor = "Anthracite"; drawerWidth = 400;
             }
         }
 
@@ -52,6 +59,7 @@ namespace KitchenDesigner.Core.UI
             {
                 BoardGroup(),
                 FacadeGroup(),
+                DrawerGroup(),
                 new Group
                 {
                     title = "Помещение",
@@ -93,6 +101,24 @@ namespace KitchenDesigner.Core.UI
                         0, 0, 0, 0, isAssembled: true),
                 }
             };
+        }
+
+        private static Group DrawerGroup()
+        {
+            var item = DrawerItem("Ящик GTV", "A", 350);
+            return new Group { title = "Ящики GTV", shortLabel = "Я", items = new List<Item> { item } };
+        }
+
+        private static Item DrawerItem(string name, string drawerType, int length)
+        {
+            int height = drawerType switch { "A" => 86, "B" => 120, "C" => 168, _ => 200 };
+            var item = new Item(name, new Vector3Int(400, height, length));
+            item.isDrawer = true;
+            item.drawerType = drawerType;
+            item.drawerLength = length;
+            item.drawerColor = "Anthracite";
+            item.drawerWidth = 400;
+            return item;
         }
     }
 }

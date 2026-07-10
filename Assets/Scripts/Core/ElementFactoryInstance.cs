@@ -176,6 +176,21 @@ namespace KitchenDesigner.Core
             var dims = source.DimensionsMM;
             var offset = source.transform.position + new Vector3(0.1f, 0, 0);
 
+            if (source is DrawerElement srcDrawer)
+            {
+                var go = CreateDrawer(srcDrawer.Type, srcDrawer.NominalLength, srcDrawer.Color, srcDrawer.InternalWidth, source.PartName + " (copy)", offset);
+                go.transform.rotation = source.transform.rotation;
+                var copy = go.GetComponent<DrawerElement>();
+                if (copy != null)
+                {
+                    copy.IsDouble = srcDrawer.IsDouble;
+                    copy.IsUpperDrawer = srcDrawer.IsUpperDrawer;
+                    // Связи по именам НЕ копируем: копия «украла» бы пару/фасад
+                    // оригинала (цикл копии двигал бы чужой парный ящик).
+                }
+                return go;
+            }
+
             if (source is AssembledFacadeElement assembled)
             {
                 var go = CreateAssembledFacade(dims, source.PartName + " (copy)", offset, assembled.Fill);
@@ -273,6 +288,33 @@ namespace KitchenDesigner.Core
             return go;
         }
 
+        public GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = string.IsNullOrEmpty(name) ? "Ящик GTV" : name;
+            go.tag = "KitchenElement";
+            go.transform.position = position;
+
+            var rb = go.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+
+            var drawer = go.AddComponent<DrawerElement>();
+            drawer.PartName = go.name;
+            drawer.Type = type;
+            drawer.NominalLength = nominalLength;
+            drawer.InternalWidth = internalWidth;
+            drawer.Color = color;
+
+            MaterialManager.ApplyById(drawer, DrawerConstants.GetColorMaterialId(color));
+            PartRegistry.Register(drawer);
+
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+
+            return go;
+        }
+
         public void DestroyPart(GameObject go)
         {
             if (go == null) return;
@@ -288,8 +330,10 @@ namespace KitchenDesigner.Core
         public void DestroyElement(GameObject go)
         {
             if (go == null) return;
-            // Сборный фасад и радиусная полка не из пула — уничтожаем напрямую.
-            if (go.GetComponent<AssembledFacadeElement>() != null || go.GetComponent<RadialShelfElement>() != null)
+            // Сборный фасад, радиусная полка и ящик GTV не из пула — уничтожаем напрямую.
+            if (go.GetComponent<AssembledFacadeElement>() != null
+                || go.GetComponent<RadialShelfElement>() != null
+                || go.GetComponent<DrawerElement>() != null)
             {
                 PartRegistry.Unregister(go.GetComponent<KitchenElement>());
                 if (Application.isPlaying)

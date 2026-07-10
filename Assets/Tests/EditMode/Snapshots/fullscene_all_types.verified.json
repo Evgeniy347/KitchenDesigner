@@ -35,7 +35,17 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "Facade_A",
@@ -71,7 +81,17 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "Assembled_A",
@@ -107,7 +127,17 @@
             "assembled": true,
             "assembledFill": 1,
             "grooveCount": 2,
-            "radius": 0
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "Radial_A",
@@ -143,7 +173,17 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 350
+            "radius": 350,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "Wall_A",
@@ -179,7 +219,17 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         }
     ],
     "groups": [],
@@ -228,7 +278,17 @@
         "assembled": false,
         "assembledFill": 0,
         "grooveCount": 1,
-        "radius": 300
+        "radius": 300,
+        "isDrawer": false,
+        "drawerType": 0,
+        "drawerNominalLength": 350,
+        "drawerColor": 0,
+        "drawerInternalWidth": 400,
+        "drawerIsDouble": false,
+        "drawerIsUpper": false,
+        "drawerPairedName": "",
+        "drawerAttachedFacadeName": "",
+        "doubleDrawerState": 0
     },
     "undoHistory": [],
     "redoHistory": []

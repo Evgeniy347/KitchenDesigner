@@ -12,6 +12,7 @@ namespace KitchenDesigner.Core
         GameObject CreateAssembledFacade(Vector3Int dimensionsMM, string name, Vector3 position,
             AssembledFill fill = AssembledFill.Blind);
         GameObject CreateRadialShelf(int radiusMM, int thicknessMM, string name, Vector3 position);
+        GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position);
         GameObject Duplicate(KitchenElement source);
         void DestroyPart(GameObject go);
         void DestroyFacade(GameObject go);

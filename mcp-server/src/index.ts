@@ -336,6 +336,15 @@ CREATE
   create_element {name, x, y, z, is_wall: true}                -> a wall (anchor)
   create_element {name, x, y, z, is_facade: true, gap_left: 2} -> a facade with gaps
   create_element {name, is_floor: true}                        -> the floor plate (ignores size/pos)
+  create_element {name, x, y, z, is_drawer: true, drawer_type: "B", drawer_length: 450}
+                                                               -> a GTV drawer (sliding box)
+
+DRAWERS (GTV)
+  A drawer's size comes from its parameters, NOT resize_element:
+  set_drawer_properties {name, drawer_type, drawer_length, internal_width, ...}
+  cycle_drawer_animation {name}  -> open/close (single) or cycle states (double)
+  Attach a facade front with set_drawer_properties {name, attached_facade_name} —
+  it then slides together with the drawer.
 
 VIOLATIONS
   A "violation" = an element that overlaps another OR is not connected to the
@@ -351,7 +360,7 @@ TOOL GROUPS
           get_element_gaps, get_element_debug, get_floor_info, get_settings, get_modules,
           list_materials
   Edit:   create_element, move_element, resize_element, rotate_element, delete_element,
-          set_material, reload_textures
+          set_material, reload_textures, set_drawer_properties, cycle_drawer_animation
   Check:  simulate_move, simulate_resize, snap_diagnose
   Undo:   undo, redo, get_undo_stack_info
   Groups: create_module, dissolve_module, add_to_module, remove_from_module,
@@ -459,6 +468,11 @@ server.registerTool("create_element",
       is_assembled: z.boolean().optional().describe("Create as an ASSEMBLED (framed) facade — real frame geometry. Default false. Pair with fill."),
       is_radial_shelf: z.boolean().optional().describe("Create as a RADIAL (corner) shelf. Default false. Pair with radius."),
       is_floor: z.boolean().optional().describe("Create the FLOOR plate. Ignores size/position. Default false."),
+      is_drawer: z.boolean().optional().describe("Create as a GTV DRAWER (sliding box inside a cabinet). Default false. Pair with drawer_type/drawer_length/drawer_color/drawer_internal_width; width/height/depth are ignored."),
+      drawer_type: z.enum(["A", "B", "C", "D"]).optional().describe("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Default A."),
+      drawer_length: z.number().int().optional().describe("Drawer only: nominal slide length in MM, one of 250/300/350/400/450/500/550/600. Default 350."),
+      drawer_color: z.enum(["anthracite", "white", "black"]).optional().describe("Drawer only: GTV color. Default anthracite."),
+      drawer_internal_width: z.number().int().positive("Must be positive").optional().describe("Drawer only: internal box width in MM (default 400, min 100)."),
       fill: z.enum(["blind", "glass", "open"]).optional().describe("Assembled facade only: center fill — blind (panel), glass (vitrine with glass), open (empty vitrine). Default blind."),
       gap_left: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: left gap in MM (default 2)."),
       gap_right: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: right gap in MM (default 2)."),
@@ -476,6 +490,11 @@ server.registerTool("create_element",
     if (a.is_assembled !== undefined) params.is_assembled = a.is_assembled;
     if (a.is_radial_shelf !== undefined) params.is_radial_shelf = a.is_radial_shelf;
     if (a.is_floor !== undefined) params.is_floor = a.is_floor;
+    if (a.is_drawer !== undefined) params.is_drawer = a.is_drawer;
+    if (a.drawer_type !== undefined) params.drawer_type = a.drawer_type;
+    if (a.drawer_length !== undefined) params.drawer_length = a.drawer_length;
+    if (a.drawer_color !== undefined) params.drawer_color = a.drawer_color;
+    if (a.drawer_internal_width !== undefined) params.drawer_internal_width = a.drawer_internal_width;
     if (a.fill !== undefined) params.fill = a.fill;
     if (a.gap_left !== undefined) params.gapLeft = a.gap_left;
     if (a.gap_right !== undefined) params.gapRight = a.gap_right;
@@ -555,6 +574,26 @@ server.registerTool("set_facade_mode",
       mode: z.enum(FACADE_MODES).describe("Opening mode:\n  front_* — hinged on front face edge\n  back_* — hinged on back face edge\n  edge_* — hinged on thickness edge\n  drawer_* — sliding along axis"),
     } },
   async (a) => safe("set_facade_mode", a));
+
+server.registerTool("set_drawer_properties",
+  { title: "Set drawer properties", description: "Change a GTV drawer's parameters: type (A/B/C/D side height), nominal length, color, internal width, double-drawer pairing and attached facade. Every field is optional — omit to keep current. Fails if the element is not a drawer. Use this instead of resize_element for drawers.", annotations: WRITE,
+    inputSchema: {
+      name: z.string().min(1, "Required").describe("Exact drawer element name."),
+      drawer_type: z.enum(["A", "B", "C", "D"]).optional().describe("Side height type: A=86, B=120, C=168, D=200 mm."),
+      drawer_length: z.number().int().optional().describe("Nominal slide length in MM, one of 250/300/350/400/450/500/550/600. Invalid values are ignored."),
+      drawer_color: z.enum(["anthracite", "white", "black"]).optional().describe("GTV color."),
+      internal_width: z.number().int().positive("Must be positive").optional().describe("Internal box width in MM (min 100)."),
+      is_double: z.boolean().optional().describe("Mark as part of a DOUBLE drawer (two stacked boxes)."),
+      is_upper: z.boolean().optional().describe("Double drawer only: this box is the UPPER one."),
+      paired_drawer_name: z.string().optional().describe("Double drawer only: exact name of the paired drawer element (link both ways for sync)."),
+      attached_facade_name: z.string().optional().describe("Exact name of the facade element acting as this drawer's front — it opens/closes together with the drawer. Empty string detaches."),
+    } },
+  async (a) => safe("set_drawer_properties", a));
+
+server.registerTool("cycle_drawer_animation",
+  { title: "Open / close drawer", description: "Animate a GTV drawer: a single drawer toggles open/closed; a double drawer cycles Closed -> BothOpen -> LowerOnly -> Closed (its paired drawer and attached facades move in sync). Returns isOpen and doubleState.", annotations: WRITE,
+    inputSchema: { name: z.string().min(1, "Required").describe("Exact drawer element name.") } },
+  async (a) => safe("cycle_drawer_animation", a));
 
 server.registerTool("list_materials",
   { title: "List materials / textures", description: "List the available material decors / textures (id, display name, kind, whether it has a texture, and its physical tile size in MM). Use before set_material to pick a valid id.", annotations: READ },

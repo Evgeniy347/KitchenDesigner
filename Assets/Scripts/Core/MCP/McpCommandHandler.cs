@@ -80,6 +80,8 @@ namespace KitchenDesigner.Core.MCP
                     case "simulate_resize": return HandleSimulateResize(request);
                     case "set_element_lock": return HandleSetElementLock(request);
                     case "set_facade_mode": return HandleSetFacadeMode(request);
+                    case "set_drawer_properties": return HandleSetDrawerProperties(request);
+                    case "cycle_drawer_animation": return HandleCycleDrawerAnimation(request);
                     case "set_material": return HandleSetMaterial(request);
                     case "list_materials": return HandleListMaterials(request);
                     case "reload_textures": return HandleReloadTextures(request);
@@ -294,6 +296,7 @@ namespace KitchenDesigner.Core.MCP
             var effDim = GetEffectiveDimMM(el);
             var gaps = allElements != null ? ComputeAxisGaps(el, allElements) : null;
             var radial = el as RadialShelfElement;
+            var drawer = el as DrawerElement;
             FacadeValidationData? facadeValidation = includeFacadeValidation && el is FacadeElement fe && allElements != null
                 ? ComputeFacadeValidation(fe, allElements)
                 : (FacadeValidationData?)null;
@@ -319,7 +322,20 @@ namespace KitchenDesigner.Core.MCP
                 faceNormalZ = facadeValidation?.normal.z ?? 0f,
                 faceInward = facadeValidation?.faceInward ?? false,
                 faceObstructions = facadeValidation?.obstructions,
-                openingViolations = facadeValidation?.openingViolations
+                openingViolations = facadeValidation?.openingViolations,
+                drawer = drawer != null ? new DrawerInfo
+                {
+                    drawerType = drawer.Type.ToString(),
+                    drawerLength = drawer.NominalLength,
+                    drawerColor = drawer.Color.ToString(),
+                    internalWidth = drawer.InternalWidth,
+                    isDouble = drawer.IsDouble,
+                    isUpper = drawer.IsUpperDrawer,
+                    pairedDrawerName = drawer.PairedDrawerName,
+                    attachedFacadeName = drawer.AttachedFacadeName,
+                    doubleState = drawer.DoubleState.ToString(),
+                    isOpen = drawer.IsOpen
+                } : null
             };
         }
 
@@ -637,6 +653,12 @@ namespace KitchenDesigner.Core.MCP
             var lockErr = RequireMovable(element, p.name, req.id);
             if (lockErr != null) return lockErr;
 
+            // Размеры ящика — производные от его параметров (тип/длина/ширина);
+            // прямой resize молча откатился бы в ApplyDimensions.
+            if (element is DrawerElement)
+                return McpResponse.Error(req.id, -1,
+                    $"'{p.name}' is a GTV drawer: use set_drawer_properties (drawer_type/drawer_length/internal_width) instead of resize_element");
+
             var dimsBefore = element.DimensionsMM;
             var dimsAfter = ResolveDims(p.width, p.height, p.depth, p.dimX, p.dimY, p.dimZ, dimsBefore);
             int w = dimsAfter.x, h = dimsAfter.y, d = dimsAfter.z;
@@ -742,6 +764,25 @@ namespace KitchenDesigner.Core.MCP
                     hasViolations = HasViolations(elR) });
             }
 
+            if (p.is_drawer)
+            {
+                var drawerType = ParseDrawerType(p.drawer_type);
+                var drawerColor = ParseDrawerColor(p.drawer_color);
+                int length = p.drawer_length > 0 ? p.drawer_length : 350;
+                int intWidth = p.drawer_internal_width > 0 ? p.drawer_internal_width : 400;
+                var posD = new Vector3(p.x, p.y, p.z);
+                var goD = ElementFactory.CreateDrawer(drawerType, length, drawerColor, intWidth, elementName, posD);
+                CommandStack.Execute(new CreateCommand(goD));
+                RefreshElementHighlights();
+                var elD = goD.GetComponent<KitchenElement>();
+                Debug.Log($"[MCP] Created drawer '{elementName}' type={drawerType} length={length} color={drawerColor}");
+                return McpResponse.Result(req.id, new {
+                    ok = true, name = goD.name, is_drawer = true,
+                    drawer_type = p.drawer_type, drawer_length = length, drawer_color = drawerColor.ToString(),
+                    path = GetGameObjectPath(goD), posX = posD.x, posY = posD.y, posZ = posD.z,
+                    hasViolations = HasViolations(elD) });
+            }
+
             var pos = new Vector3(p.x, p.y, p.z);
             var dims = new Vector3Int(
                 p.width > 0 ? p.width : 800,
@@ -800,6 +841,29 @@ namespace KitchenDesigner.Core.MCP
                 case "glass": case "стекло": return AssembledFill.Glass;
                 case "open": case "empty": case "витрина": return AssembledFill.Open;
                 default: return AssembledFill.Blind; // blind / панель / глухой
+            }
+        }
+
+        /// <summary>Строка → DrawerType. По умолчанию A.</summary>
+        private static DrawerType ParseDrawerType(string s)
+        {
+            switch ((s ?? "").Trim().ToUpperInvariant())
+            {
+                case "B": return DrawerType.B;
+                case "C": return DrawerType.C;
+                case "D": return DrawerType.D;
+                default: return DrawerType.A;
+            }
+        }
+
+        /// <summary>Строка → DrawerColor. По умолчанию Anthracite.</summary>
+        private static DrawerColor ParseDrawerColor(string s)
+        {
+            switch ((s ?? "").Trim().ToLowerInvariant())
+            {
+                case "white": case "белый": return DrawerColor.White;
+                case "black": case "чёрный": case "черный": return DrawerColor.Black;
+                default: return DrawerColor.Anthracite;
             }
         }
 
@@ -1033,6 +1097,7 @@ namespace KitchenDesigner.Core.MCP
 
             var result = ConstraintValidator.Validate(all);
             var facadeIssues = ComputeFacadeViolations(all);
+            var drawerIssues = ComputeDrawerViolations(all);
 
             var list = new List<object>();
             var seen = new HashSet<KitchenElement>();
@@ -1071,6 +1136,24 @@ namespace KitchenDesigner.Core.MCP
                 });
             }
 
+            foreach (var kvp in drawerIssues)
+            {
+                var el = kvp.Key;
+                if (seen.Contains(el)) continue;
+                seen.Add(el);
+                list.Add(new {
+                    name = el.PartName,
+                    type = el.GetType().Name,
+                    overlapsWith = new List<object>(),
+                    disconnected = false,
+                    faceNormal = (object)null,
+                    faceInward = false,
+                    faceObstructions = (object)null,
+                    openingViolations = (object)null,
+                    drawerValidationErrors = kvp.Value
+                });
+            }
+
             return McpResponse.Result(req.id, new { violations = list, count = list.Count });
         }
 
@@ -1087,6 +1170,20 @@ namespace KitchenDesigner.Core.MCP
                     (fields.openingViolations != null && ((List<OpeningViolationInfo>)fields.openingViolations).Count > 0);
                 if (hasIssue)
                     result[el] = fields;
+            }
+            return result;
+        }
+
+        private static Dictionary<KitchenElement, List<string>>
+            ComputeDrawerViolations(List<KitchenElement> all)
+        {
+            var result = new Dictionary<KitchenElement, List<string>>();
+            foreach (var el in all)
+            {
+                if (!(el is DrawerElement drawer)) continue;
+                var validation = DrawerValidator.ValidateAll(drawer, all);
+                if (!validation.IsValid)
+                    result[el] = validation.Errors;
             }
             return result;
         }
@@ -1602,6 +1699,73 @@ namespace KitchenDesigner.Core.MCP
                 faceObstructions = data.obstructions,
                 openingViolations = data.openingViolations
             });
+        }
+
+        // ── Drawer operations ─────────────────────────────────────────────
+
+        private McpResponse HandleSetDrawerProperties(McpRequest req)
+        {
+            var p = req.Params?.ToObject<ParamsSetDrawerProperties>();
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            var drawer = el as DrawerElement;
+            if (drawer == null) return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a drawer");
+
+            if (!string.IsNullOrEmpty(p.drawer_type))
+                drawer.Type = ParseDrawerType(p.drawer_type);
+            if (p.drawer_length.HasValue)
+                drawer.NominalLength = p.drawer_length.Value;
+            if (!string.IsNullOrEmpty(p.drawer_color))
+                drawer.Color = ParseDrawerColor(p.drawer_color);
+            if (p.internal_width.HasValue)
+                drawer.InternalWidth = p.internal_width.Value;
+            if (p.is_double.HasValue)
+                drawer.IsDouble = p.is_double.Value;
+            if (p.is_upper.HasValue)
+                drawer.IsUpperDrawer = p.is_upper.Value;
+            if (p.paired_drawer_name != null)
+            {
+                // Пустая строка отвязывает; непустая обязана указывать на живой ящик.
+                if (p.paired_drawer_name != "" && !(FindElementByName(p.paired_drawer_name) is DrawerElement))
+                    return McpResponse.Error(req.id, -1, $"Paired drawer not found: {p.paired_drawer_name}");
+                drawer.PairedDrawerName = p.paired_drawer_name;
+            }
+            if (p.attached_facade_name != null)
+            {
+                if (p.attached_facade_name != "" && !(FindElementByName(p.attached_facade_name) is FacadeElement))
+                    return McpResponse.Error(req.id, -1, $"Facade not found: {p.attached_facade_name}");
+                drawer.AttachedFacadeName = p.attached_facade_name;
+            }
+
+            Debug.Log($"[MCP] Drawer '{p.name}' properties updated");
+            return McpResponse.Result(req.id, BuildElementInfo(drawer, PartRegistry.GetAll(), false));
+        }
+
+        private McpResponse HandleCycleDrawerAnimation(McpRequest req)
+        {
+            var p = req.Params?.ToObject<ParamsWithName>();
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            var drawer = el as DrawerElement;
+            if (drawer == null) return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a drawer");
+
+            // Одиночный ящик — обычный toggle; трёхфазный цикл имеет смысл
+            // только для двойного (Closed → BothOpen → LowerOnly → Closed).
+            if (drawer.IsDouble)
+                drawer.CycleDoubleState();
+            else
+                drawer.ToggleOpen();
+            Debug.Log($"[MCP] Drawer '{p.name}' cycled: isOpen={drawer.IsOpen} doubleState={drawer.DoubleState}");
+            return McpResponse.Result(req.id, new { ok = true, name = p.name, isDouble = drawer.IsDouble,
+                isOpen = drawer.IsOpen, doubleState = drawer.DoubleState.ToString() });
         }
 
         // ── Материалы / текстуры ────────────────────────────────────────
