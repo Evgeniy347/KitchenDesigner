@@ -153,7 +153,9 @@ namespace KitchenDesigner.Core.UI
                 UIManager.Instance.OpenFloorSettings();
                 return;
             }
-            if (item.isWall)
+            if (item.isFacade)
+                UIManager.Instance.SpawnFacade(item.dims, item.name, item.gapMM);
+            else if (item.isWall)
                 UIManager.Instance.SpawnWall(item.dims, item.name);
             else
                 UIManager.Instance.SpawnBoard(item.dims, item.name);

@@ -315,4 +315,68 @@ public class McpCommandHandlerTests
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(GetProp<bool>(resp.data, "hasViolations"));
     }
+
+    [Test]
+    public void GetViolations_ReturnsOverlappingElements()
+    {
+        MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
+        MakeElement("B", new Vector3Int(1000, 1000, 1000), Vector3.zero);
+
+        var resp = _handler.Handle(MakeReq("get_violations", "{}"));
+
+        Assert.AreEqual("result", resp.type);
+        var count = GetProp<int>(resp.data, "count");
+        Assert.AreEqual(2, count);
+        var violations = GetProp<object>(resp.data, "violations") as System.Collections.IList;
+        Assert.IsNotNull(violations);
+        Assert.AreEqual(2, violations.Count);
+    }
+
+    [Test]
+    public void GetViolations_ReturnsEmpty_WhenNoOverlaps()
+    {
+        MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(1f, 0f, 0f));
+
+        var resp = _handler.Handle(MakeReq("get_violations", "{}"));
+
+        Assert.AreEqual("result", resp.type);
+        var count = GetProp<int>(resp.data, "count");
+        Assert.AreEqual(0, count);
+    }
+
+    [Test]
+    public void CreateFacade_ReturnsOk()
+    {
+        var resp = _handler.Handle(MakeReq("create_element",
+            @"{""template_name"":""TestFacade"",""name"":""F1"",""x"":0,""y"":0,""z"":0,""width"":400,""height"":300,""depth"":18,""is_facade"":true,""gapMM"":3}"));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.IsTrue(GetProp<bool>(resp.data, "is_facade"));
+        var el = FindBoard("F1");
+        Assert.IsNotNull(el);
+        var facade = el.GetComponent<FacadeElement>();
+        Assert.IsNotNull(facade);
+        Assert.AreEqual(3, facade.GapMM);
+        Assert.AreEqual(new Vector3Int(400, 300, 18), facade.DimensionsMM);
+    }
+
+    [Test]
+    public void CreateFacade_DefaultGap_IsTwoMM()
+    {
+        var resp = _handler.Handle(MakeReq("create_element",
+            @"{""template_name"":""Facade2"",""name"":""F2"",""x"":0,""y"":0,""z"":0,""width"":400,""height"":300,""depth"":18,""is_facade"":true}"));
+
+        Assert.AreEqual("result", resp.type);
+        var el = FindBoard("F2");
+        var facade = el.GetComponent<FacadeElement>();
+        Assert.AreEqual(2, facade.GapMM);
+    }
+
+    private static KitchenElement FindBoard(string name)
+    {
+        foreach (var el in BoardRegistry.GetAll())
+            if (el.BoardName == name) return el;
+        return null;
+    }
 }

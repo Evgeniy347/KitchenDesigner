@@ -10,6 +10,7 @@ namespace KitchenDesigner.Core.UI
 
         private GameObject _root;
         private KitchenElement _target;
+        private Text _titleLabel;
 
         private InputField _name, _w, _h, _d, _x, _y, _z, _rx, _ry, _rz;
         private Toggle _lockToggle;
@@ -72,7 +73,7 @@ namespace KitchenDesigner.Core.UI
             _lockToggle = UIFactory.CreateToggle("CtxLock", panel.transform, "Запретить перемещение", false,
                 new Vector2(0, actionY - 74), new Vector2(248, 26), v => { if (_target != null) _target.Movable = !v; });
 
-            UIFactory.CreateLabel("CtxTitle", panel.transform, "Доска", 20,
+            _titleLabel = UIFactory.CreateLabel("CtxTitle", panel.transform, "Доска", 20,
                 new Vector2(0, rowStartY + 35), new Vector2(260, 28), TextAnchor.MiddleCenter);
 
             var closeBtn = UIFactory.CreateButton("CtxClose", panel.transform, "✕",
@@ -146,6 +147,9 @@ namespace KitchenDesigner.Core.UI
             _target = element;
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.Select(element);
+
+            if (_titleLabel != null)
+                _titleLabel.text = element is FacadeElement ? "Фасад" : "Доска";
 
             var dims = element.DimensionsMM;
             _name.text = element.BoardName;

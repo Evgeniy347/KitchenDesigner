@@ -72,9 +72,22 @@ namespace KitchenDesigner.Core
 
             var dims = source.DimensionsMM;
             var offset = source.transform.position + new Vector3(0.1f, 0, 0);
-            var go = CreateBoard(dims, source.BoardName + " (copy)", offset);
-            go.transform.rotation = source.transform.rotation;
-            return go;
+
+            var facade = source as FacadeElement;
+            if (facade != null)
+            {
+                var go = CreateFacade(dims, source.BoardName + " (copy)", offset, facade.GapMM);
+                go.transform.rotation = source.transform.rotation;
+                return go;
+            }
+
+            var go2 = CreateBoard(dims, source.BoardName + " (copy)", offset);
+            go2.transform.rotation = source.transform.rotation;
+
+            if (source.GetComponent<Wall>() != null)
+                go2.AddComponent<Wall>();
+
+            return go2;
         }
 
         /// <summary>Стена: та же геометрия, что у доски, плюс маркер Wall
@@ -83,6 +96,41 @@ namespace KitchenDesigner.Core
         {
             var go = CreateBoard(dimensionsMM, name, position);
             go.AddComponent<Wall>();
+            return go;
+        }
+
+        public static GameObject CreateFacade(Vector3Int dimensionsMM, string name, Vector3 position, int gapMM = 2)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = string.IsNullOrEmpty(name) ? "Facade" : name;
+
+            var facade = go.AddComponent<FacadeElement>();
+            facade.BoardName = go.name;
+            facade.DimensionsMM = dimensionsMM;
+            facade.GapMM = gapMM;
+
+            go.transform.position = position;
+
+            var mat = DefaultMaterial;
+            if (mat != null)
+            {
+                var renderer = go.GetComponent<MeshRenderer>();
+                renderer.material = mat;
+            }
+
+            var collider = go.GetComponent<BoxCollider>();
+            if (collider != null)
+                collider.enabled = true;
+
+            var rigidbody = go.AddComponent<Rigidbody>();
+            rigidbody.isKinematic = true;
+            rigidbody.useGravity = false;
+
+            go.tag = "KitchenElement";
+
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+
             return go;
         }
     }

@@ -11,6 +11,8 @@ namespace KitchenDesigner.Core
         public float[] rotation = new float[4];
         public bool movable = true;
         public bool isWall = false;
+        public bool isFacade = false;
+        public int gapMM = 2;
         public int groupId = 0;
         public string materialId = MaterialCatalog.DefaultId;
 
@@ -33,6 +35,9 @@ namespace KitchenDesigner.Core
 
             d.movable = element.Movable;
             d.isWall = wall != null;
+            var facade = element as FacadeElement;
+            d.isFacade = facade != null;
+            d.gapMM = facade != null ? facade.GapMM : 2;
             d.groupId = element.GroupId;
             d.materialId = element.MaterialId;
             return d;
