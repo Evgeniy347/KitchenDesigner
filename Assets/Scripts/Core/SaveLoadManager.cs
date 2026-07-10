@@ -83,6 +83,20 @@ namespace KitchenDesigner.Core
             return true;
         }
 
+        /// <summary>Загрузка последней сессии при старте приложения: последний
+        /// выбранный пользователем файл (если существует), иначе проект
+        /// автосохранения. Возвращает true, если что-то загружено.</summary>
+        public static bool LoadLastSession()
+        {
+            if (HasLastPath && File.Exists(LastPath))
+                return LoadFromPath(LastPath);
+
+            if (File.Exists(PathForName(AutoSaveManager.AutoSaveName)))
+                return LoadProject(AutoSaveManager.AutoSaveName);
+
+            return false;
+        }
+
         // --- Чистая логика (тестируемая без файлов) ---
 
         /// <summary>Снимок сцены в ProjectData. BasePlate исключается (это пол, не доска).</summary>

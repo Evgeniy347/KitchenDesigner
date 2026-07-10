@@ -127,4 +127,30 @@ public class SaveLoadManagerTests
         data.version = AppConstants.SAVE_FORMAT_VERSION + 99;
         Assert.IsFalse(SaveLoadManager.IsVersionCompatible(data));
     }
+
+    [Test]
+    public void LoadLastSession_RestoresBoards_FromLastPath()
+    {
+        CreateElement("Saved", new Vector3Int(800, 400, 18), new Vector3(0.5f, 0.2f, 0.3f));
+        var data = SaveLoadManager.CaptureScene(_spawned.ConvertAll(g => g.GetComponent<KitchenElement>()));
+        var path = Path.Combine(Application.temporaryCachePath, "sl_lastsession.json");
+        Assert.IsTrue(SaveLoadManager.SaveToFile(path, data));
+
+        // Имитируем новый запуск приложения: чистим сцену, задаём последний путь.
+        foreach (var go in _spawned)
+            if (go != null) Object.DestroyImmediate(go);
+        _spawned.Clear();
+        string prevLast = SaveLoadManager.LastPath;
+        SaveLoadManager.LastPath = path;
+
+        bool loaded = SaveLoadManager.LoadLastSession();
+
+        Assert.IsTrue(loaded);
+        var restored = Object.FindObjectsByType<KitchenElement>();
+        Assert.AreEqual(1, restored.Length);
+        Assert.AreEqual("Saved", restored[0].BoardName);
+
+        SaveLoadManager.LastPath = prevLast;
+        File.Delete(path);
+    }
 }
