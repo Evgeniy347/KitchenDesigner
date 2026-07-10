@@ -153,6 +153,27 @@ namespace KitchenDesigner.Core.MCP
     }
 
     [Serializable]
+    public class ParamsSimulateMove
+    {
+        public string name;
+        public float x;
+        public float y;
+        public float z;
+    }
+
+    [Serializable]
+    public class ParamsSimulateResize
+    {
+        public string name;
+        public int width;
+        public int height;
+        public int depth;
+        public int dimX;
+        public int dimY;
+        public int dimZ;
+    }
+
+    [Serializable]
     public class ParamsCreateModule
     {
         public string name;      // имя модуля («Тумба с ящиками»)
@@ -192,6 +213,9 @@ namespace KitchenDesigner.Core.MCP
         public int moduleId;      // 0 — не в модуле
         public string moduleName; // null — не в модуле
         public bool hasViolations; // true — элемент нарушает ограничения (пересечение/нет связи)
+        public float aabbMinX, aabbMinY, aabbMinZ;
+        public float aabbMaxX, aabbMaxY, aabbMaxZ;
+        public int effectiveDimX, effectiveDimY, effectiveDimZ;
     }
 
     /// <summary>Конфигурация модуля: имя, состав, габариты. Через MCP видно,
@@ -280,5 +304,67 @@ namespace KitchenDesigner.Core.MCP
         public int objectCount;
         public bool isPlaying;
         public string platform;
+    }
+
+    // ── Новые типы для пространственной информации ─────────────────────
+
+    [Serializable]
+    public class AabbInfo
+    {
+        public float minX, minY, minZ;
+        public float maxX, maxY, maxZ;
+    }
+
+    [Serializable]
+    public class FaceInfo
+    {
+        public float centerX, centerY, centerZ;
+        public float normalX, normalY, normalZ;
+        public float sizeX, sizeY;
+    }
+
+    [Serializable]
+    public class VertexInfo
+    {
+        public float x, y, z;
+    }
+
+    [Serializable]
+    public class ElementDebugInfo
+    {
+        public string name;
+        public string type;
+        public AabbInfo aabb;
+        public FaceInfo[] faces;
+        public VertexInfo[] vertices;
+        public int dimX, dimY, dimZ;
+        public int effectiveDimX, effectiveDimY, effectiveDimZ;
+    }
+
+    [Serializable]
+    public class AxisGapInfo
+    {
+        public string axis;
+        public string neighbor;
+        public float gapMM;
+        public bool isOverlap;
+    }
+
+    [Serializable]
+    public class ElementGapsResult
+    {
+        public string name;
+        public List<AxisGapInfo> gaps;
+    }
+
+    [Serializable]
+    public class SimulateResult
+    {
+        public string name;
+        public AabbInfo currentAABB;
+        public AabbInfo simulatedAABB;
+        public List<string> overlapsWith;
+        public List<AxisGapInfo> faceGaps;
+        public bool wouldHaveViolations;
     }
 }

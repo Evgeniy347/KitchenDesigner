@@ -204,6 +204,9 @@ namespace KitchenDesigner.Core
             foreach (var e in all)
             {
                 if (IsAnchor(e)) continue;
+                // FacadeElement с gapMM > 0 плавает в проёме с зазором —
+                // он не касается соседей face-to-face, это штатное поведение.
+                if (e is FacadeElement fe && fe.GapMM > 0) continue;
                 if (!visited.Contains(e) || !hasContact.Contains(e))
                     result.violations.Add(e);
             }
