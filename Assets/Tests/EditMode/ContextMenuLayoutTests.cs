@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
@@ -237,5 +238,82 @@ public class ContextMenuLayoutTests
 
         Assert.GreaterOrEqual(gap, 0f, "title must not overlap the first row");
         Assert.LessOrEqual(gap, 20f, "gap between title and first row must be small");
+    }
+
+    // ── Открывание дверцы (только фасад) ─────────────────────────────
+
+    [Test]
+    public void Facade_HasDoorButton_WithOpenLabel()
+    {
+        var facade = MakeFacade("F1");
+        _menu.Open(facade);
+        var panel = _canvas.transform.Find("ContextMenu");
+
+        var door = panel.Find("CtxDoor");
+        Assert.NotNull(door, "у фасада должна быть кнопка открытия");
+        Assert.IsTrue(door.gameObject.activeSelf, "кнопка активна для фасада");
+        Assert.AreEqual("Открыть", door.GetComponentInChildren<Text>(true).text);
+    }
+
+    [Test]
+    public void Facade_HasFourHingeButtons()
+    {
+        var facade = MakeFacade("F1");
+        _menu.Open(facade);
+        var panel = _canvas.transform.Find("ContextMenu");
+
+        foreach (var name in new[] { "CtxHingeL", "CtxHingeR", "CtxHingeU", "CtxHingeD" })
+        {
+            var b = panel.Find(name);
+            Assert.NotNull(b, $"нет кнопки петли {name}");
+            Assert.IsTrue(b.gameObject.activeSelf, $"{name} активна для фасада");
+        }
+    }
+
+    [Test]
+    public void Board_DoorControls_Hidden()
+    {
+        var board = MakeBoard("B1");
+        _menu.Open(board);
+        var panel = _canvas.transform.Find("ContextMenu");
+
+        foreach (var name in new[] { "CtxDoor", "CtxHingeL", "CtxHingeR", "CtxHingeU", "CtxHingeD" })
+        {
+            var t = panel.Find(name);
+            Assert.NotNull(t, $"{name} существует");
+            Assert.IsFalse(t.gameObject.activeSelf, $"{name} должна быть скрыта для доски");
+        }
+    }
+
+    [Test]
+    public void DoorButton_Click_TogglesFacadeAndLabel()
+    {
+        var facade = MakeFacade("F1");
+        _menu.Open(facade);
+        var panel = _canvas.transform.Find("ContextMenu");
+        var door = panel.Find("CtxDoor");
+        var label = door.GetComponentInChildren<Text>(true);
+
+        Assert.IsFalse(facade.IsOpen);
+        door.GetComponent<Button>().onClick.Invoke();
+        Assert.IsTrue(facade.IsOpen, "клик открывает дверцу");
+        Assert.AreEqual("Закрыть", label.text);
+
+        door.GetComponent<Button>().onClick.Invoke();
+        Assert.IsFalse(facade.IsOpen, "повторный клик закрывает");
+        Assert.AreEqual("Открыть", label.text);
+    }
+
+    [Test]
+    public void HingeButton_Click_SetsHingeEdge()
+    {
+        var facade = MakeFacade("F1");
+        _menu.Open(facade);
+        var panel = _canvas.transform.Find("ContextMenu");
+
+        panel.Find("CtxHingeU").GetComponent<Button>().onClick.Invoke();
+        Assert.AreEqual(HingeEdge.Top, facade.Hinge);
+        panel.Find("CtxHingeD").GetComponent<Button>().onClick.Invoke();
+        Assert.AreEqual(HingeEdge.Bottom, facade.Hinge);
     }
 }
