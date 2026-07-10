@@ -14,6 +14,8 @@ public class SnapIntegrationTests
     [UnitySetUp]
     public IEnumerator SetUp()
     {
+        PlayModeTestConfig.ConfigureForTests();
+
         _camera = new GameObject("MainCamera");
         _camera.tag = "MainCamera";
         _camera.AddComponent<Camera>();

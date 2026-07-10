@@ -13,7 +13,9 @@ namespace KitchenDesigner.Core.MCP
 {
     public class UnityTcpBridge : MonoBehaviour
     {
-        [SerializeField] private int _port = 9337;
+        public const int DefaultPort = 9337;
+
+        [SerializeField] private int _port = DefaultPort;
         [SerializeField] private bool _autoStart = true;
 
         private TcpListener _listener;
@@ -24,13 +26,47 @@ namespace KitchenDesigner.Core.MCP
         private readonly object _clientsLock = new object();
         private McpCommandHandler _handler;
 
+        /// <summary>
+        /// Static override used by tests to force a non-default port.
+        /// Takes precedence over environment variables and command-line args.
+        /// </summary>
+        public static int? TestPort { get; set; }
+
         public int Port => _port;
         public bool IsRunning => _running;
+
+        /// <summary>
+        /// Resolves the effective MCP port from (highest to lowest priority):
+        /// <see cref="TestPort"/>, UNITY_MCP_PORT environment variable,
+        /// -mcpPort command-line argument, or <paramref name="fallbackPort"/>.
+        /// </summary>
+        public static int ResolvePort(int fallbackPort = DefaultPort)
+        {
+            if (TestPort.HasValue)
+                return TestPort.Value;
+
+            var env = System.Environment.GetEnvironmentVariable("UNITY_MCP_PORT");
+            if (!string.IsNullOrWhiteSpace(env) && int.TryParse(env, out var envPort) && envPort > 0)
+                return envPort;
+
+            var args = System.Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                if (args[i].Equals("-mcpPort", StringComparison.OrdinalIgnoreCase) &&
+                    int.TryParse(args[i + 1], out var argPort) && argPort > 0)
+                {
+                    return argPort;
+                }
+            }
+
+            return fallbackPort;
+        }
 
         private void Awake()
         {
             DontDestroyOnLoad(gameObject);
             _handler = new McpCommandHandler();
+            _port = ResolvePort(_port);
         }
 
         private void Start()

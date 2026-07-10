@@ -16,6 +16,8 @@ public class IntegrationPlayModeTests
     [UnitySetUp]
     public IEnumerator SetUp()
     {
+        PlayModeTestConfig.ConfigureForTests();
+
         _camera = new GameObject("Main Camera");
         _camera.tag = "MainCamera";
         _camera.AddComponent<Camera>();
