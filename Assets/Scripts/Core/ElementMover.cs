@@ -59,7 +59,6 @@ namespace KitchenDesigner.Core
                     _startPosition = _target.transform.position;
                     _wasMoved = false;
                     _wasSnapPreviewed = false;
-                    SaveDragMaterial();
 
                     Plane dragPlane = new Plane(Vector3.up, _startPosition);
                     if (dragPlane.Raycast(ray, out float enter))
@@ -92,7 +91,8 @@ namespace KitchenDesigner.Core
                         Vector3.Distance(position, _previewSnap.position).ToString("F3") + "m");
                     _wasSnapPreviewed = true;
                 }
-                _snapVisualizer.ShowSnap(_previewSnap.snapPoint, _previewSnap.targetPoint);
+                if (_previewSnap.targetName != "BasePlate")
+                    _snapVisualizer.ShowProximity(_previewSnap.snapPoint, _previewSnap.targetPoint);
             }
             else
             {
@@ -116,6 +116,8 @@ namespace KitchenDesigner.Core
             {
                 Debug.Log("[Snap] ATTACH to " + result.targetName + " at " + result.position);
                 _target.transform.position = result.position;
+                if (result.targetName != "BasePlate")
+                    _snapVisualizer.ShowSnap(result.snapPoint, result.targetPoint);
             }
         }
 
@@ -194,6 +196,8 @@ namespace KitchenDesigner.Core
 
                 if (positionComputed)
                 {
+                    if (_dragTintMaterial == null)
+                        SaveDragMaterial();
                     _wasMoved = true;
                     _target.transform.position = newPos;
                     PreviewSnap(newPos);

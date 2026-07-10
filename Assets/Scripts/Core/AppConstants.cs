@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
     public static class AppConstants
     {
         public const int SAVE_FORMAT_VERSION = 1;
-        public const int DEFAULT_GRID_STEP = 16;
+        public const int DEFAULT_GRID_STEP = 1;
         public const float SNAP_THRESHOLD = 50f;
         public const int BOARD_THICKNESS_DEFAULT = 18;
         public const int BASE_PLATE_SIZE = 3000;

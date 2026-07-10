@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08581a245f91a7742ae20e14ac1e1476, type: 3}
   m_Name: KitchenSettings
   m_EditorClassIdentifier: KitchenDesigner.Runtime::KitchenDesigner.Core.KitchenSettings
-  _gridStep: 16
+  _gridStep: 1
   _gridEnabled: 1
   _snapEnabled: 1
   _snapThreshold: 50
