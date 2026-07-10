@@ -29,14 +29,17 @@ namespace KitchenDesigner.Core
             _applying = true;
             try
             {
-                // Радиусная полка всегда квадратна в плане: x = z = radius.
                 var dims = DimensionsMM;
                 int r = Mathf.Max(1, Mathf.Max(dims.x, dims.z));
                 _radius = r;
                 if (dims.x != r || dims.z != r)
                     DimensionsMM = new Vector3Int(r, dims.y, r);
 
-                base.ApplyDimensions();
+                // Меш строится в единичном размере — масштабирование через localScale.
+                transform.localScale = new Vector3(
+                    r * AppConstants.MM_TO_UNITS,
+                    dims.y * AppConstants.MM_TO_UNITS,
+                    r * AppConstants.MM_TO_UNITS);
                 RebuildMesh();
             }
             finally
