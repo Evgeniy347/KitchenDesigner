@@ -25,6 +25,8 @@ namespace KitchenDesigner.Core.UI
         private const float FieldX = 82f;
         private const float LabelH = 24f;
         private const float FieldH = 24f;
+        private const float TitleH = 28f;
+        private const float TitleToFirstRowPad = 12f;
 
         private void Awake()
         {
@@ -39,7 +41,7 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             _panelRt = panel.rectTransform;
 
-            const float rowStartY = 220f;
+            const float rowStartY = TitleH + TitleToFirstRowPad;
             const float rotLabelGap = 23f;
             const float rotBtnGap = 4f;
             const float actionGap = 8f;
