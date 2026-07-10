@@ -256,17 +256,18 @@ public class ContextMenuLayoutTests
     }
 
     [Test]
-    public void Facade_HasModeButton_WithSingleCharLabel()
+    public void Facade_HasModeDropdown_With18Options()
     {
         var facade = MakeFacade("F1");
         _menu.Open(facade);
         var panel = _canvas.transform.Find("ContextMenu");
 
         var mode = panel.Find("CtxMode");
-        Assert.NotNull(mode, "у фасада должна быть кнопка-переключатель режима");
-        Assert.IsTrue(mode.gameObject.activeSelf, "кнопка режима активна для фасада");
-        Assert.AreEqual(1, mode.GetComponentInChildren<Text>(true).text.Length,
-            "подпись переключателя — один символ");
+        Assert.NotNull(mode, "у фасада должен быть список режимов");
+        Assert.IsTrue(mode.gameObject.activeSelf, "список активен для фасада");
+        var dd = mode.GetComponent<Dropdown>();
+        Assert.NotNull(dd, "CtxMode — это Dropdown");
+        Assert.AreEqual(18, dd.options.Count, "18 режимов (12 рёбер + 6 ящиков)");
     }
 
     [Test]
@@ -304,22 +305,17 @@ public class ContextMenuLayoutTests
     }
 
     [Test]
-    public void ModeButton_Click_CyclesModeAndSymbol()
+    public void ModeDropdown_Select_SetsFacadeMode()
     {
         var facade = MakeFacade("F1");
         _menu.Open(facade);
         var panel = _canvas.transform.Find("ContextMenu");
-        var mode = panel.Find("CtxMode");
-        var label = mode.GetComponentInChildren<Text>(true);
-        var button = mode.GetComponent<Button>();
+        var dd = panel.Find("CtxMode").GetComponent<Dropdown>();
 
         Assert.AreEqual(DoorMode.HingeFrontLeft, facade.Mode);
-        button.onClick.Invoke();
-        Assert.AreEqual(DoorMode.HingeFrontRight, facade.Mode, "клик переключает режим");
-        Assert.AreEqual(FacadeDoor.Symbol(DoorMode.HingeFrontRight), label.text, "символ обновляется");
-
-        // Полный цикл (12 рёбер + 6 ящиков = 18) возвращает к началу.
-        for (int i = 0; i < FacadeDoor.Count - 1; i++) button.onClick.Invoke();
-        Assert.AreEqual(DoorMode.HingeFrontLeft, facade.Mode);
+        dd.value = (int)DoorMode.DrawerOut;
+        Assert.AreEqual(DoorMode.DrawerOut, facade.Mode, "выбор в списке ставит режим фасада");
+        dd.value = (int)DoorMode.HingeBackTop;
+        Assert.AreEqual(DoorMode.HingeBackTop, facade.Mode);
     }
 }

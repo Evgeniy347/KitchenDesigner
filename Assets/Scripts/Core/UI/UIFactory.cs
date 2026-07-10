@@ -213,5 +213,107 @@ namespace KitchenDesigner.Core.UI
                 toggle.onValueChanged.AddListener(v => onChanged(v));
             return toggle;
         }
+
+        /// <summary>Выпадающий список (legacy uGUI Dropdown), собранный из кода —
+        /// с прокручиваемым шаблоном списка. Возвращает Dropdown; текущий индекс —
+        /// через .value / SetValueWithoutNotify.</summary>
+        public static Dropdown CreateDropdown(string name, Transform parent,
+            System.Collections.Generic.List<string> options,
+            Vector2 anchoredPos, Vector2 size, System.Action<int> onChanged)
+        {
+            var rect = CreateRect(name, parent);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = anchoredPos;
+
+            var bg = rect.gameObject.AddComponent<Image>();
+            bg.color = ButtonColor;
+
+            var dropdown = rect.gameObject.AddComponent<Dropdown>();
+
+            // Подпись текущего выбора + стрелка.
+            var caption = CreateLabel(name + "_Label", rect, "", 15, Vector2.zero, size, TextAnchor.MiddleLeft);
+            var capRt = caption.rectTransform;
+            capRt.anchorMin = Vector2.zero; capRt.anchorMax = Vector2.one;
+            capRt.offsetMin = new Vector2(8, 2); capRt.offsetMax = new Vector2(-18, -2);
+
+            var arrow = CreateLabel(name + "_Arrow", rect, "▾", 14, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
+            var arRt = arrow.rectTransform;
+            arRt.anchorMin = arRt.anchorMax = arRt.pivot = new Vector2(1, 0.5f);
+            arRt.sizeDelta = new Vector2(16, 16); arRt.anchoredPosition = new Vector2(-4, 0);
+
+            // Шаблон списка (выключен, пока список закрыт) со скроллом.
+            var template = CreateRect(name + "_Template", rect);
+            template.anchorMin = new Vector2(0, 0);
+            template.anchorMax = new Vector2(1, 0);
+            template.pivot = new Vector2(0.5f, 1f);
+            template.anchoredPosition = new Vector2(0, 2);
+            template.sizeDelta = new Vector2(0, 170);
+            var templateImg = template.gameObject.AddComponent<Image>();
+            templateImg.color = PanelColor;
+            var scroll = template.gameObject.AddComponent<ScrollRect>();
+
+            var viewport = CreateRect("Viewport", template);
+            viewport.anchorMin = Vector2.zero; viewport.anchorMax = Vector2.one;
+            viewport.pivot = new Vector2(0, 1); viewport.sizeDelta = Vector2.zero;
+            var viewportImg = viewport.gameObject.AddComponent<Image>();
+            viewportImg.color = new Color(0, 0, 0, 0.01f);
+            var mask = viewport.gameObject.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+
+            var content = CreateRect("Content", viewport);
+            content.anchorMin = new Vector2(0, 1); content.anchorMax = new Vector2(1, 1);
+            content.pivot = new Vector2(0.5f, 1f); content.sizeDelta = new Vector2(0, 26);
+
+            var item = CreateRect("Item", content);
+            item.anchorMin = new Vector2(0, 0.5f); item.anchorMax = new Vector2(1, 0.5f);
+            item.pivot = new Vector2(0.5f, 0.5f); item.sizeDelta = new Vector2(0, 24);
+            var itemToggle = item.gameObject.AddComponent<Toggle>();
+
+            var itemBg = CreateRect("Item Background", item);
+            itemBg.anchorMin = Vector2.zero; itemBg.anchorMax = Vector2.one; itemBg.sizeDelta = Vector2.zero;
+            var itemBgImg = itemBg.gameObject.AddComponent<Image>();
+            itemBgImg.color = ButtonColor;
+
+            var itemCheck = CreateRect("Item Checkmark", item);
+            itemCheck.anchorMin = itemCheck.anchorMax = itemCheck.pivot = new Vector2(0, 0.5f);
+            itemCheck.sizeDelta = new Vector2(14, 14); itemCheck.anchoredPosition = new Vector2(12, 0);
+            var itemCheckImg = itemCheck.gameObject.AddComponent<Image>();
+            itemCheckImg.color = new Color(0.4f, 0.7f, 1f, 1f);
+
+            var itemLabel = CreateLabel("Item Label", item, "Option", 14, Vector2.zero, Vector2.zero, TextAnchor.MiddleLeft);
+            var ilRt = itemLabel.rectTransform;
+            ilRt.anchorMin = Vector2.zero; ilRt.anchorMax = Vector2.one;
+            ilRt.offsetMin = new Vector2(26, 1); ilRt.offsetMax = new Vector2(-8, -1);
+
+            itemToggle.targetGraphic = itemBgImg;
+            itemToggle.graphic = itemCheckImg;
+            itemToggle.isOn = true;
+
+            scroll.content = content;
+            scroll.viewport = viewport;
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 20f;
+
+            dropdown.template = template;
+            dropdown.captionText = caption;
+            dropdown.itemText = itemLabel;
+            dropdown.targetGraphic = bg;
+
+            dropdown.options.Clear();
+            if (options != null)
+                foreach (var o in options)
+                    dropdown.options.Add(new Dropdown.OptionData(o));
+
+            template.gameObject.SetActive(false);
+            dropdown.value = 0;
+            dropdown.RefreshShownValue();
+
+            if (onChanged != null)
+                dropdown.onValueChanged.AddListener(v => onChanged(v));
+
+            return dropdown;
+        }
     }
 }
