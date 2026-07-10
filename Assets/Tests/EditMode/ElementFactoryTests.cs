@@ -84,4 +84,35 @@ public class ElementFactoryTests
         Object.DestroyImmediate(original);
         Object.DestroyImmediate(copy);
     }
+
+    [Test]
+    public void Boards_ShareMaterialInstance_ForBatching()
+    {
+        var go1 = ElementFactory.CreateBoard(new Vector3Int(800, 400, 18), "A", Vector3.zero);
+        var go2 = ElementFactory.CreateBoard(new Vector3Int(600, 300, 18), "B", Vector3.zero);
+
+        var mat1 = go1.GetComponent<MeshRenderer>().sharedMaterial;
+        var mat2 = go2.GetComponent<MeshRenderer>().sharedMaterial;
+
+        // Оба используют один инстанс материала — Static/Dynamic Batching работает
+        Assert.AreSame(mat1, mat2, "Boards must share material for batching");
+
+        Object.DestroyImmediate(go1);
+        Object.DestroyImmediate(go2);
+    }
+
+    [Test]
+    public void BoardAndFacade_ShareMaterialInstance()
+    {
+        var board = ElementFactory.CreateBoard(new Vector3Int(800, 400, 18), "Board", Vector3.zero);
+        var facade = ElementFactory.CreateFacade(new Vector3Int(600, 716, 18), "Facade", Vector3.zero);
+
+        var boardMat = board.GetComponent<MeshRenderer>().sharedMaterial;
+        var facadeMat = facade.GetComponent<MeshRenderer>().sharedMaterial;
+
+        Assert.AreSame(boardMat, facadeMat, "Board and Facade must share material");
+
+        Object.DestroyImmediate(board);
+        Object.DestroyImmediate(facade);
+    }
 }
