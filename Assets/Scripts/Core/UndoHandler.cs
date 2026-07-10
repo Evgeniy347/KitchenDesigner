@@ -17,7 +17,6 @@ namespace KitchenDesigner.Core
                     {
                         CommandStack.Redo();
                         Refresh();
-                        Debug.Log("[Undo] Redo");
                     }
                 }
                 else
@@ -26,7 +25,6 @@ namespace KitchenDesigner.Core
                     {
                         CommandStack.Undo();
                         Refresh();
-                        Debug.Log("[Undo] Undo");
                     }
                 }
             }
@@ -37,7 +35,6 @@ namespace KitchenDesigner.Core
                 {
                     CommandStack.Redo();
                     Refresh();
-                    Debug.Log("[Undo] Redo");
                 }
             }
         }

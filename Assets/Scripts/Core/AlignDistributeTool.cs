@@ -94,17 +94,6 @@ namespace KitchenDesigner.Core
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
         }
-
-        public static void HighlightSelected()
-        {
-            var sel = SelectionManager.Instance;
-            if (sel == null) return;
-            foreach (var e in sel.SelectedElements)
-            {
-                if (e != null)
-                    Debug.Log("[Align] Selection: " + e.Describe());
-            }
-        }
     }
 
     public enum Axis { X, Y, Z }

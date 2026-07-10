@@ -1,5 +1,4 @@
 <p align="center">
-  <img src="https://i.postimg.cc/5NXzYL2m/opencode-game-logo.png" width="200" alt="OpenCode Game Studios">
   <h1 align="center">Kitchen Designer</h1>
   <p align="center">
     3D-конструктор мебельных щитов<br>
@@ -9,8 +8,6 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
-  <a href=".opencode/agents"><img src="https://img.shields.io/badge/agents-38-blueviolet" alt="38 Agents"></a>
-  <a href=".opencode/skills"><img src="https://img.shields.io/badge/skills-37-green" alt="37 Skills"></a>
 </p>
 
 ---
@@ -52,22 +49,6 @@
 | Render Pipeline | URP 17.4.0 |
 | Язык | C# |
 | Тесты | Unity Test Framework (NUnit) |
-
-## Агенты
-
-Проект использует 38 специализированных Opencode-агентов:
-
-**Директоры**: `creative-director`, `technical-director`, `producer`
-
-**Unity-специалисты**: `unity-specialist`, `unity-ui-specialist`, `unity-shader-specialist`
-
-**Программисты**: `gameplay-programmer`, `lead-programmer`, `ui-programmer`, `tools-programmer`
-
-**Дизайнеры**: `game-designer`, `systems-designer`, `ux-designer`, `level-designer`
-
-**QA**: `qa-lead`, `qa-tester`
-
-Полный список: `.opencode/agents/`
 
 ---
 

@@ -170,7 +170,6 @@ namespace KitchenDesigner.Core.UI
                 _target.DimensionsMM = oldDims;
                 _target.transform.position = oldPos;
                 _target.transform.rotation = oldRot;
-                Debug.Log("[ContextMenu] Apply blocked — would cause violation");
             }
             else
             {

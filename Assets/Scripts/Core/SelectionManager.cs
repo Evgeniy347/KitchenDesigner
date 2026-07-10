@@ -25,7 +25,6 @@ namespace KitchenDesigner.Core
         private void Awake()
         {
             Instance = this;
-            Debug.Log("[Selection] Awake: Instance set");
         }
 
         private void Update()
@@ -67,11 +66,8 @@ namespace KitchenDesigner.Core
         public void Select(KitchenElement element)
         {
             if (_selected == element)
-            {
-                Debug.Log("[Selection] Already selected, skip");
                 return;
-            }
-            Debug.Log("[Selection] Selected " + element.Describe());
+
             DeselectAll();
 
             _selected = element;

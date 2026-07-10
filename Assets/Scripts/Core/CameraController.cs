@@ -20,7 +20,6 @@ namespace KitchenDesigner.Core
 
         private void Start()
         {
-            Debug.Log("[Camera] Start: distance=" + _distance + " angleX=" + _angleX + " angleY=" + _angleY);
             UpdateCameraPosition();
         }
 
@@ -72,18 +71,14 @@ namespace KitchenDesigner.Core
             {
                 _distance -= scroll * _zoomSpeed;
                 _distance = Mathf.Clamp(_distance, _minDistance, _maxDistance);
-                Debug.Log("[Camera] Zoom dist=" + _distance);
             }
 
-            if (Input.GetKeyDown(KeyCode.Alpha1)) { Debug.Log("[Camera] View=Front"); SetView(0, 0); }
-            else if (Input.GetKeyDown(KeyCode.Alpha2)) { Debug.Log("[Camera] View=Right"); SetView(0, 90); }
-            else if (Input.GetKeyDown(KeyCode.Alpha3)) { Debug.Log("[Camera] View=Top"); SetView(90, 0); }
+            if (Input.GetKeyDown(KeyCode.Alpha1)) SetView(0, 0);
+            else if (Input.GetKeyDown(KeyCode.Alpha2)) SetView(0, 90);
+            else if (Input.GetKeyDown(KeyCode.Alpha3)) SetView(90, 0);
 
             if (Input.GetKeyDown(KeyCode.F))
-            {
-                Debug.Log("[Camera] F pressed");
                 FocusOnSelection();
-            }
 
             UpdateCameraPosition();
         }
@@ -114,14 +109,7 @@ namespace KitchenDesigner.Core
         private void FocusOnSelection()
         {
             if (SelectionManager.Instance != null && SelectionManager.Instance.Selected != null)
-            {
                 _target = SelectionManager.Instance.Selected.transform.position;
-                Debug.Log("[Camera] Focus on selected at " + _target);
-            }
-            else
-            {
-                Debug.Log("[Camera] Focus: nothing selected, keeping target " + _target);
-            }
         }
 
         public void FocusOn(Vector3 point)
