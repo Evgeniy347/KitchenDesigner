@@ -161,7 +161,12 @@ namespace KitchenDesigner.Core
             if (renderer == null) return;
 
             float floorTopY = _floor.transform.position.y + _floor.transform.localScale.y * 0.5f;
-            renderer.enabled = _cachedCamera.transform.position.y > floorTopY;
+            bool above = _cachedCamera.transform.position.y > floorTopY;
+            renderer.enabled = above;
+
+            var collider = _floor.GetComponent<Collider>();
+            if (collider != null)
+                collider.enabled = above;
         }
 
         private void HandleWASD()
