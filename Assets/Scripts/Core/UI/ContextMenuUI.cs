@@ -19,7 +19,12 @@ namespace KitchenDesigner.Core.UI
         private readonly List<(RectTransform rt, float baseY)> _postGapElements = new();
         private RectTransform _panelRt;
         private float _panelBaseH;
-        private const float GAP_ROW_H = 62f;
+        private float _gapSectionH;
+        private const float RowStep = 31f;
+        private const float LabelX = -72f;
+        private const float FieldX = 82f;
+        private const float LabelH = 24f;
+        private const float FieldH = 24f;
 
         private void Awake()
         {
@@ -35,17 +40,16 @@ namespace KitchenDesigner.Core.UI
             _panelRt = panel.rectTransform;
 
             const float rowStartY = 220f;
-            const float rowStep = 31f;
             const float rotLabelGap = 23f;
             const float rotBtnGap = 4f;
             const float actionGap = 8f;
             const float btnH = 28f;
             const float labelH = 22f;
             float y = rowStartY;
-            _name = Row(panel.transform, "Название", ref y, rowStep);
-            _w = Row(panel.transform, "Ширина, мм", ref y, rowStep);
-            _h = Row(panel.transform, "Высота, мм", ref y, rowStep);
-            _d = Row(panel.transform, "Глубина, мм", ref y, rowStep);
+            _name = Row(panel.transform, "Название", ref y, RowStep);
+            _w = Row(panel.transform, "Ширина, мм", ref y, RowStep);
+            _h = Row(panel.transform, "Высота, мм", ref y, RowStep);
+            _d = Row(panel.transform, "Глубина, мм", ref y, RowStep);
 
             // ── Зазоры (только для фасадов) ──
             _gapRow = CreateGapSection(panel.transform, ref y);
@@ -59,12 +63,12 @@ namespace KitchenDesigner.Core.UI
                     _postGapElements.Add((rt, rt.anchoredPosition.y));
                 }
             };
-            _x = Row(panel.transform, "X, м", ref y, rowStep); track(_x);
-            _y = Row(panel.transform, "Y, м", ref y, rowStep); track(_y);
-            _z = Row(panel.transform, "Z, м", ref y, rowStep); track(_z);
-            _rx = Row(panel.transform, "Поворот X°", ref y, rowStep); track(_rx);
-            _ry = Row(panel.transform, "Поворот Y°", ref y, rowStep); track(_ry);
-            _rz = Row(panel.transform, "Поворот Z°", ref y, rowStep); track(_rz);
+            _x = Row(panel.transform, "X, м", ref y, RowStep); track(_x);
+            _y = Row(panel.transform, "Y, м", ref y, RowStep); track(_y);
+            _z = Row(panel.transform, "Z, м", ref y, RowStep); track(_z);
+            _rx = Row(panel.transform, "Поворот X°", ref y, RowStep); track(_rx);
+            _ry = Row(panel.transform, "Поворот Y°", ref y, RowStep); track(_ry);
+            _rz = Row(panel.transform, "Поворот Z°", ref y, RowStep); track(_rz);
 
             foreach (var f in new[] { _w, _h, _d }) f.contentType = InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _gapW, _gapH }) f.contentType = InputField.ContentType.IntegerNumber;
@@ -149,15 +153,29 @@ namespace KitchenDesigner.Core.UI
             var rt = root.AddComponent<RectTransform>();
             rt.SetParent(parent, false);
             rt.anchoredPosition = new Vector2(0, y);
-            rt.sizeDelta = new Vector2(260, 64);
+
+            const float headerH = 20f;
+            const float labelH = 20f;
+            const float fieldH = 22f;
+
+            float localY = 0;
 
             UIFactory.CreateLabel("CtxGapHdr", root.transform, "Зазоры:", 14,
-                new Vector2(-72, 0), new Vector2(130, 20), TextAnchor.MiddleLeft);
+                new Vector2(LabelX, localY), new Vector2(130, headerH), TextAnchor.MiddleLeft);
 
-            _gapW = GapField(root.transform, "Ширина X, мм", -72, 82, -26);
-            _gapH = GapField(root.transform, "Высота Y, мм", -72, 82, -52);
+            localY -= RowStep;
+            _gapW = GapField(root.transform, "Ширина X, мм", LabelX, FieldX, localY);
 
-            y -= GAP_ROW_H;
+            localY -= RowStep;
+            _gapH = GapField(root.transform, "Высота Y, мм", LabelX, FieldX, localY);
+
+            float topExtent = headerH / 2f;
+            float bottomExtent = -localY + fieldH / 2f;
+            float sectionH = topExtent + bottomExtent + 6f;
+            rt.sizeDelta = new Vector2(260, sectionH);
+
+            y -= sectionH;
+            _gapSectionH = sectionH;
             root.SetActive(false);
             return root;
         }
@@ -172,8 +190,8 @@ namespace KitchenDesigner.Core.UI
 
         private InputField Row(Transform parent, string label, ref float y, float step)
         {
-            UIFactory.CreateLabel("L_" + label, parent, label, 15, new Vector2(-72, y), new Vector2(130, 24));
-            var field = UIFactory.CreateInputField("F_" + label, parent, "", new Vector2(82, y), new Vector2(100, 24));
+            UIFactory.CreateLabel("L_" + label, parent, label, 15, new Vector2(LabelX, y), new Vector2(130, LabelH));
+            var field = UIFactory.CreateInputField("F_" + label, parent, "", new Vector2(FieldX, y), new Vector2(100, FieldH));
             y -= step;
             return field;
         }
@@ -230,7 +248,7 @@ namespace KitchenDesigner.Core.UI
                 }
             }
 
-            float shift = facade != null ? 0f : GAP_ROW_H;
+            float shift = facade != null ? 0f : _gapSectionH;
             foreach (var entry in _postGapElements)
             {
                 if (entry.rt != null)
