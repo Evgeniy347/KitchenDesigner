@@ -40,6 +40,9 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<SpatialGridRenderer>() == null)
                 gameObject.AddComponent<SpatialGridRenderer>();
 
+            if (FindAnyObjectByType<EdgeOutlineRenderer>() == null)
+                gameObject.AddComponent<EdgeOutlineRenderer>();
+
             if (FindAnyObjectByType<UI.ConsoleOverlay>() == null)
                 gameObject.AddComponent<UI.ConsoleOverlay>();
 

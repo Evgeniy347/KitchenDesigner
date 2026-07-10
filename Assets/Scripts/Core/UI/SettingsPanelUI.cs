@@ -73,6 +73,9 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateToggle("TglWindowed", panel.transform, "Оконный режим", s.WindowedMode,
                 new Vector2(0, -136), new Vector2(360, 30), v => { s.WindowedMode = v; s.Save(); DisplaySettings.ApplyWindowMode(); });
 
+            UIFactory.CreateToggle("TglEdgeOutline", panel.transform, "Контур (чёрные рёбра)", s.EdgeOutline,
+                new Vector2(0, -176), new Vector2(360, 30), v => { s.EdgeOutline = v; s.Save(); });
+
             UIFactory.CreateButton("SetClose", panel.transform, "Закрыть",
                 new Vector2(0, -220), new Vector2(160, 40), () => SetVisible(false));
 
