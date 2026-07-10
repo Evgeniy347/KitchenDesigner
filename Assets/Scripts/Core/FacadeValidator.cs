@@ -32,13 +32,13 @@ namespace KitchenDesigner.Core
 
         /// <summary>
         /// Мировая нормаль лицевой грани фасада. Локально лицевая сторона фасада
-        /// всегда смотрит в -Z (см. FacadeDoor), поэтому мировая нормаль =
-        /// rotation * -forward.
+        /// смотрит в +Z (Unity-конвенция forward), поэтому мировая нормаль =
+        /// rotation * forward.
         /// </summary>
         public static Vector3 GetFaceNormal(FacadeElement facade)
         {
             if (facade == null) return Vector3.zero;
-            return facade.transform.rotation * -Vector3.forward;
+            return facade.transform.rotation * Vector3.forward;
         }
 
         /// <summary>
@@ -197,8 +197,8 @@ namespace KitchenDesigner.Core
         private static FrontFace GetFrontFace(FacadeElement facade)
         {
             var t = facade.transform;
-            // Лицевая грань фасада — локально -Z (индекс 5 в KitchenElement.GetFaces).
-            var face = facade.GetFaces()[5];
+            // Лицевая грань фасада — локально +Z (индекс 4 в KitchenElement.GetFaces).
+            var face = facade.GetFaces()[4];
             return new FrontFace
             {
                 center = face.center,
