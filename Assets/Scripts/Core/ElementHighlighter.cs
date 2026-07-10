@@ -55,17 +55,13 @@ namespace KitchenDesigner.Core
             _validTransparentMaterial.SetFloat("_Surface", 1);
             _validTransparentMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             _validTransparentMaterial.renderQueue = 3000;
-            _validTransparentMaterial.EnableKeyword("_EMISSION");
-            _validTransparentMaterial.SetColor("_EmissionColor", new Color(0f, 1f, 0f) * 0.4f);
-            _validTransparentMaterial.SetColor("_BaseColor", new Color(0.85f, 1f, 0.85f, 0.2f));
+            _validTransparentMaterial.SetColor("_BaseColor", new Color(0f, 0f, 0f, 0f));
 
             _invalidTransparentMaterial = new Material(shader);
             _invalidTransparentMaterial.SetFloat("_Surface", 1);
             _invalidTransparentMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             _invalidTransparentMaterial.renderQueue = 3000;
-            _invalidTransparentMaterial.EnableKeyword("_EMISSION");
-            _invalidTransparentMaterial.SetColor("_EmissionColor", new Color(1f, 0f, 0f) * 0.4f);
-            _invalidTransparentMaterial.SetColor("_BaseColor", new Color(1f, 0.8f, 0.8f, 0.2f));
+            _invalidTransparentMaterial.SetColor("_BaseColor", new Color(0f, 0f, 0f, 0f));
 
             _materialsInitialized = true;
         }
