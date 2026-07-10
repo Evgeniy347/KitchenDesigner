@@ -28,36 +28,66 @@ import type {
   AddToModuleParams,
   ParamMap,
   ParamsOf,
-  UnityMethod,
 } from "./types.js";
 
-// ── Validate that every method name maps correctly ───────────────────────
+// ── Validate that every method name maps to the correct interface ──────
 
 type _CheckGetElementInfo = ParamsOf<"get_element_info"> extends NameParams ? true : never;
 type _CheckMoveElement = ParamsOf<"move_element"> extends MoveElementParams ? true : never;
 type _CheckCreateModule = ParamsOf<"create_module"> extends CreateModuleParams ? true : never;
 type _CheckPing = ParamsOf<"ping"> extends Record<string, never> ? true : never;
+type _CheckResize = ParamsOf<"resize_element"> extends ResizeElementParams ? true : never;
+type _CheckFloor = ParamsOf<"resize_floor"> extends ResizeFloorParams ? true : never;
+type _CheckRotate = ParamsOf<"rotate_element"> extends RotateElementParams ? true : never;
+type _CheckLock = ParamsOf<"set_element_lock"> extends LockElementParams ? true : never;
+type _CheckSnapDiag = ParamsOf<"snap_diagnose"> extends SnapDiagnoseParams ? true : never;
+type _CheckAddMod = ParamsOf<"add_to_module"> extends AddToModuleParams ? true : never;
 
-// ── Validate required fields ─────────────────────────────────────────────
+// ── Validate all no-param methods map to Record<string, never> ─────────
+type IsEmpty<M extends keyof ParamMap> = ParamMap[M] extends Record<string, never> ? true : never;
+type _Empty1 = IsEmpty<"ping">;
+type _Empty2 = IsEmpty<"get_status">;
+type _Empty3 = IsEmpty<"get_scene_hierarchy">;
+type _Empty4 = IsEmpty<"get_all_elements">;
+type _Empty5 = IsEmpty<"get_specification">;
+type _Empty6 = IsEmpty<"get_violations">;
+type _Empty7 = IsEmpty<"get_floor_info">;
+type _Empty8 = IsEmpty<"get_settings">;
+type _Empty9 = IsEmpty<"get_undo_stack_info">;
+type _Empty10 = IsEmpty<"get_modules">;
+type _Empty11 = IsEmpty<"undo">;
+type _Empty12 = IsEmpty<"redo">;
+type _Empty13 = IsEmpty<"exit_module_edit">;
+type _Empty14 = IsEmpty<"take_screenshot">;
+type _Empty15 = IsEmpty<"enter_play_mode">;
+type _Empty16 = IsEmpty<"exit_play_mode">;
 
-// Move/MoveSimulate require name + x/y/z
+// ── Validate required fields — correct shape and types ──────────────────
+
+// Move/MoveSimulate require name + x/y/z (numbers)
 const _move: MoveElementParams = { name: "Board1", x: 1.5, y: 0, z: 0 };
 const _simMove: SimulateMoveParams = { name: "Board1", x: 1.5, y: 0, z: 0 };
 
-// Resize requires name + width/height/depth (int)
+// Resize requires name + width/height/depth (positive ints)
 const _resize: ResizeElementParams = { name: "Board1", width: 600, height: 400, depth: 18 };
 const _simResize: SimulateResizeParams = { name: "Board1", width: 600, height: 400, depth: 18 };
 
-// Create has required + optional fields
+// Create has required template_name/name/x/y/z + optional sizes/booleans
 const _create: CreateElementParams = {
   template_name: "Board1", name: "Board1", x: 0, y: 0, z: 0,
   width: 800, is_wall: true,
 };
+// Create with gaps
+const _createGap: CreateElementParams = {
+  template_name: "F1", name: "F1", x: 0, y: 0, z: 0,
+  width: 600, height: 716, depth: 18,
+  gapLeft: 2, gapRight: 2, gapTop: 2, gapBottom: 2, is_facade: true,
+};
 
-// Rotate
+// Rotate: Euler angles in degrees
 const _rotate: RotateElementParams = { name: "Board1", x: 0, y: 90, z: 0 };
 
-// Floor resize (no name)
+// Floor resize (no name field)
 const _resizeFloor: ResizeFloorParams = { width: 3000, height: 2000, depth: 100 };
 
 // Lock
@@ -67,7 +97,7 @@ const _lock: LockElementParams = { name: "Board1", locked: true };
 const _nameOnly: NameParams = { name: "Board1" };
 const _modOnly: ModuleParams = { module: "М1" };
 
-// Object path
+// Object path operations
 const _objPath: ObjectPathParams = { object_path: "Parent/Child" };
 const _setActive: SetActiveParams = { object_path: "Board1", active: true };
 const _setTransform: SetTransformParams = { object_path: "Board1", x: 0, y: 1, z: 2 };
@@ -76,7 +106,7 @@ const _setTransform: SetTransformParams = { object_path: "Board1", x: 0, y: 1, z
 const _setSetting: SetSettingParams = { name: "snap_enabled", value: true };
 const _snapVerbose: SnapVerboseParams = { enabled: true };
 
-// Console logs
+// Console logs (optional count)
 const _consoleLogs: ConsoleLogsParams = {};
 const _consoleLogsWithCount: ConsoleLogsParams = { count: 50 };
 
@@ -92,15 +122,3 @@ const _snapDiagFull: SnapDiagnoseParams = { name: "Board1", x: 1, y: 2, z: 3 };
 // Modules
 const _createMod: CreateModuleParams = { name: "М1", members: ["A", "B"] };
 const _addToMod: AddToModuleParams = { module: "М1", name: "A" };
-
-// ── Validate no-param methods ────────────────────────────────────────────
-
-const _empty: Record<string, never> = {};
-const _noParams1: ParamsOf<"ping"> = _empty;
-const _noParams2: ParamsOf<"get_status"> = _empty;
-const _noParams3: ParamsOf<"undo"> = _empty;
-const _noParams4: ParamsOf<"redo"> = _empty;
-const _noParams5: ParamsOf<"get_all_elements"> = _empty;
-const _noParams6: ParamsOf<"take_screenshot"> = _empty;
-const _noParams7: ParamsOf<"enter_play_mode"> = _empty;
-const _noParams8: ParamsOf<"exit_play_mode"> = _empty;

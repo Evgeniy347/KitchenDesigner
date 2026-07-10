@@ -304,7 +304,7 @@ server.registerTool("get_all_elements",
 
 server.registerTool("get_element_info",
   { title: "Element info", description: "Full info for one element by name: size (mm), position (m), rotation, module, hasViolations, AABB.", annotations: READ,
-    inputSchema: { name: z.string().describe("Exact board name (from get_all_elements).") } },
+    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name (from get_all_elements).") } },
   async (a) => safe("get_element_info", a));
 
 server.registerTool("get_specification",
@@ -317,12 +317,12 @@ server.registerTool("get_violations",
 
 server.registerTool("get_element_gaps",
   { title: "Element gaps", description: "Gap or overlap (in mm) to the nearest neighbour on each axis X/Y/Z. Negative gapMM = overlap.", annotations: READ,
-    inputSchema: { name: z.string().describe("Exact board name.") } },
+    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name.") } },
   async (a) => safe("get_element_gaps", a));
 
 server.registerTool("get_element_debug",
   { title: "Element geometry", description: "Detailed geometry of one element: AABB, face centers/normals, vertices, dims and effective dims (mm). For precise placement checks.", annotations: READ,
-    inputSchema: { name: z.string().describe("Exact board name.") } },
+    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name.") } },
   async (a) => safe("get_element_debug", a));
 
 server.registerTool("get_floor_info",
@@ -338,30 +338,30 @@ server.registerTool("get_settings",
 server.registerTool("simulate_move",
   { title: "Simulate move (dry-run)", description: "DRY-RUN of a move: does NOT move anything. Returns simulatedAABB, overlapsWith and wouldHaveViolations. Call BEFORE move_element. x/y/z in METERS.", annotations: READ,
     inputSchema: {
-      name: z.string().describe("Exact board name."),
-      x: z.number().describe("Target X in METERS."),
-      y: z.number().describe("Target Y in METERS."),
-      z: z.number().describe("Target Z in METERS."),
+      name: z.string().min(1, "Required").describe("Exact board name."),
+      x: z.number().finite().min(0, "Must be >= 0").describe("Target X in METERS."),
+      y: z.number().finite().min(0, "Must be >= 0").describe("Target Y in METERS."),
+      z: z.number().finite().min(0, "Must be >= 0").describe("Target Z in METERS."),
     } },
   async (a) => safe("simulate_move", a));
 
 server.registerTool("simulate_resize",
   { title: "Simulate resize (dry-run)", description: "DRY-RUN of a resize: does NOT change size. Returns simulatedAABB, overlapsWith and wouldHaveViolations. Call BEFORE resize_element. width/height/depth in MILLIMETERS.", annotations: READ,
     inputSchema: {
-      name: z.string().describe("Exact board name."),
-      width: z.number().int().describe("Target width (X) in MM."),
-      height: z.number().int().describe("Target height (Y) in MM."),
-      depth: z.number().int().describe("Target depth/thickness (Z) in MM."),
+      name: z.string().min(1, "Required").describe("Exact board name."),
+      width: z.number().int().positive("Must be positive").describe("Target width (X) in MM."),
+      height: z.number().int().positive("Must be positive").describe("Target height (Y) in MM."),
+      depth: z.number().int().positive("Must be positive").describe("Target depth/thickness (Z) in MM."),
     } },
   async (a) => safe("simulate_resize", a));
 
 server.registerTool("snap_diagnose",
   { title: "Diagnose snapping", description: "Explain why a board does or does not snap to neighbours from its current (or a test) position: best face pair, gap vs threshold, overlap. x/y/z in METERS (optional, default = current position).", annotations: READ,
     inputSchema: {
-      name: z.string().describe("Exact board name."),
-      x: z.number().optional().describe("Test X in METERS (default: current)."),
-      y: z.number().optional().describe("Test Y in METERS (default: current)."),
-      z: z.number().optional().describe("Test Z in METERS (default: current)."),
+      name: z.string().min(1, "Required").describe("Exact board name."),
+      x: z.number().finite().min(0, "Must be >= 0").optional().describe("Test X in METERS (default: current)."),
+      y: z.number().finite().min(0, "Must be >= 0").optional().describe("Test Y in METERS (default: current)."),
+      z: z.number().finite().min(0, "Must be >= 0").optional().describe("Test Z in METERS (default: current)."),
     } },
   async (a) => safe("snap_diagnose", a));
 
@@ -370,20 +370,20 @@ server.registerTool("snap_diagnose",
 server.registerTool("create_element",
   { title: "Create element", description: "Create a new board (default), or a wall / facade / floor. x/y/z in METERS; width/height/depth in MILLIMETERS (defaults 800x400x18). Set is_wall/is_facade/is_floor for other kinds. Prefer this over raw Unity object creation.", annotations: WRITE,
     inputSchema: {
-      name: z.string().describe("Name for the new element (becomes its board name)."),
-      x: z.number().default(0).describe("Position X in METERS."),
-      y: z.number().default(0).describe("Position Y in METERS."),
-      z: z.number().default(0).describe("Position Z in METERS."),
-      width: z.number().int().optional().describe("Size along X in MM (default 800)."),
-      height: z.number().int().optional().describe("Size along Y in MM (default 400)."),
-      depth: z.number().int().optional().describe("Thickness along Z in MM (default 18)."),
+      name: z.string().min(1, "Required").describe("Name for the new element (becomes its board name)."),
+      x: z.number().finite().min(0, "Must be >= 0").default(0).describe("Position X in METERS."),
+      y: z.number().finite().min(0, "Must be >= 0").default(0).describe("Position Y in METERS."),
+      z: z.number().finite().min(0, "Must be >= 0").default(0).describe("Position Z in METERS."),
+      width: z.number().int().positive("Must be positive").optional().describe("Size along X in MM (default 800)."),
+      height: z.number().int().positive("Must be positive").optional().describe("Size along Y in MM (default 400)."),
+      depth: z.number().int().positive("Must be positive").optional().describe("Thickness along Z in MM (default 18)."),
       is_wall: z.boolean().optional().describe("Create as a WALL (structural anchor). Default false."),
       is_facade: z.boolean().optional().describe("Create as a FACADE (door/front with gaps). Default false."),
       is_floor: z.boolean().optional().describe("Create the FLOOR plate. Ignores size/position. Default false."),
-      gap_left: z.number().int().optional().describe("Facade only: left gap in MM (default 2)."),
-      gap_right: z.number().int().optional().describe("Facade only: right gap in MM (default 2)."),
-      gap_top: z.number().int().optional().describe("Facade only: top gap in MM (default 2)."),
-      gap_bottom: z.number().int().optional().describe("Facade only: bottom gap in MM (default 2)."),
+      gap_left: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: left gap in MM (default 2)."),
+      gap_right: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: right gap in MM (default 2)."),
+      gap_top: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: top gap in MM (default 2)."),
+      gap_bottom: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: bottom gap in MM (default 2)."),
     } },
   async (a) => {
     const params: CreateElementParams = { template_name: a.name, name: a.name, x: a.x, y: a.y, z: a.z };
@@ -403,62 +403,62 @@ server.registerTool("create_element",
 server.registerTool("move_element",
   { title: "Move element", description: "Move a board to an absolute position. Undoable, validated, snaps to neighbours. x/y/z in METERS. Fails if the element is locked. Run simulate_move first.", annotations: WRITE,
     inputSchema: {
-      name: z.string().describe("Exact board name."),
-      x: z.number().describe("Target X in METERS."),
-      y: z.number().describe("Target Y in METERS."),
-      z: z.number().describe("Target Z in METERS."),
+      name: z.string().min(1, "Required").describe("Exact board name."),
+      x: z.number().finite().min(0, "Must be >= 0").describe("Target X in METERS."),
+      y: z.number().finite().min(0, "Must be >= 0").describe("Target Y in METERS."),
+      z: z.number().finite().min(0, "Must be >= 0").describe("Target Z in METERS."),
     } },
   async (a) => safe("move_element", a));
 
 server.registerTool("resize_element",
   { title: "Resize element", description: "Set a board's size in MILLIMETERS. Undoable and validated. depth is the thickness (Z). Fails if locked. Run simulate_resize first.", annotations: WRITE,
     inputSchema: {
-      name: z.string().describe("Exact board name."),
-      width: z.number().int().describe("New width (X) in MM."),
-      height: z.number().int().describe("New height (Y) in MM."),
-      depth: z.number().int().describe("New depth/thickness (Z) in MM."),
+      name: z.string().min(1, "Required").describe("Exact board name."),
+      width: z.number().int().positive("Must be positive").describe("New width (X) in MM."),
+      height: z.number().int().positive("Must be positive").describe("New height (Y) in MM."),
+      depth: z.number().int().positive("Must be positive").describe("New depth/thickness (Z) in MM."),
     } },
   async (a) => safe("resize_element", a));
 
 server.registerTool("rotate_element",
   { title: "Rotate element", description: "Set a board's rotation as Euler angles in DEGREES. Undoable. Common: rotate (0,90,0) to swap width and thickness. Fails if locked.", annotations: WRITE,
     inputSchema: {
-      name: z.string().describe("Exact board name."),
-      x: z.number().describe("Rotation around X in DEGREES."),
-      y: z.number().describe("Rotation around Y in DEGREES."),
-      z: z.number().describe("Rotation around Z in DEGREES."),
+      name: z.string().min(1, "Required").describe("Exact board name."),
+      x: z.number().finite("Must be finite").describe("Rotation around X in DEGREES."),
+      y: z.number().finite("Must be finite").describe("Rotation around Y in DEGREES."),
+      z: z.number().finite("Must be finite").describe("Rotation around Z in DEGREES."),
     } },
   async (a) => safe("rotate_element", a));
 
 server.registerTool("delete_element",
   { title: "Delete element", description: "Delete a board. Undoable with undo. Fails if the element is locked.", annotations: DESTRUCTIVE,
-    inputSchema: { name: z.string().describe("Exact board name.") } },
+    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name.") } },
   async (a) => safe("delete_element", a));
 
 server.registerTool("select_element",
   { title: "Select element", description: "Select and highlight a board in the app (visual only, no geometry change).", annotations: WRITE,
-    inputSchema: { name: z.string().describe("Exact board name.") } },
+    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name.") } },
   async (a) => safe("select_element", a));
 
 server.registerTool("set_element_lock",
   { title: "Lock / unlock element", description: "Lock or unlock a board. Locked boards cannot be moved/resized/deleted. Set locked:false ONLY with the user's explicit permission.", annotations: WRITE,
     inputSchema: {
-      name: z.string().describe("Exact board name."),
+      name: z.string().min(1, "Required").describe("Exact board name."),
       locked: z.boolean().describe("true = lock (protect), false = unlock (allow editing)."),
     } },
   async (a) => safe("set_element_lock", a));
 
 server.registerTool("add_wall_component",
   { title: "Make element a wall", description: "Turn an existing board into a wall (structural anchor). No-op if it is already a wall.", annotations: WRITE,
-    inputSchema: { name: z.string().describe("Exact board name.") } },
+    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name.") } },
   async (a) => safe("add_wall_component", a));
 
 server.registerTool("resize_floor",
   { title: "Resize floor", description: "Set the floor plate size in MILLIMETERS. Undoable.", annotations: WRITE,
     inputSchema: {
-      width: z.number().int().describe("Floor width (X) in MM."),
-      height: z.number().int().describe("Floor length (Y) in MM."),
-      depth: z.number().int().describe("Floor thickness (Z) in MM."),
+      width: z.number().int().positive("Must be positive").describe("Floor width (X) in MM."),
+      height: z.number().int().positive("Must be positive").describe("Floor length (Y) in MM."),
+      depth: z.number().int().positive("Must be positive").describe("Floor thickness (Z) in MM."),
     } },
   async (a) => safe("resize_floor", a));
 
@@ -484,35 +484,35 @@ server.registerTool("get_modules",
 
 server.registerTool("module_info",
   { title: "Module info", description: "Full configuration of one module: members, bounds, edit state.", annotations: READ,
-    inputSchema: { module: z.string().describe("Module id (number) or name.") } },
+    inputSchema: { module: z.string().min(1, "Required").describe("Module id (number) or name.") } },
   async (a) => safe("module_info", a));
 
 server.registerTool("create_module",
   { title: "Create module", description: "Group two or more boards into a named module (they then move together).", annotations: WRITE,
     inputSchema: {
-      name: z.string().describe("Module name, e.g. 'Тумба с ящиками'."),
-      members: z.array(z.string()).min(2).describe("Board names (at least 2)."),
+      name: z.string().min(1, "Required").describe("Module name, e.g. 'Тумба с ящиками'."),
+      members: z.array(z.string().min(1, "Required")).min(2).describe("Board names (at least 2)."),
     } },
   async (a) => safe("create_module", a));
 
 server.registerTool("dissolve_module",
   { title: "Dissolve module", description: "Ungroup a module. The boards stay in the scene.", annotations: DESTRUCTIVE,
-    inputSchema: { module: z.string().describe("Module id or name.") } },
+    inputSchema: { module: z.string().min(1, "Required").describe("Module id or name.") } },
   async (a) => safe("dissolve_module", a));
 
 server.registerTool("add_to_module",
   { title: "Add to module", description: "Add one board to an existing module.", annotations: WRITE,
-    inputSchema: { module: z.string().describe("Module id or name."), name: z.string().describe("Board name to add.") } },
+    inputSchema: { module: z.string().min(1, "Required").describe("Module id or name."), name: z.string().min(1, "Required").describe("Board name to add.") } },
   async (a) => safe("add_to_module", a));
 
 server.registerTool("remove_from_module",
   { title: "Remove from module", description: "Remove one board from its module.", annotations: WRITE,
-    inputSchema: { name: z.string().describe("Board name to remove.") } },
+    inputSchema: { name: z.string().min(1, "Required").describe("Board name to remove.") } },
   async (a) => safe("remove_from_module", a));
 
 server.registerTool("enter_module_edit",
   { title: "Enter module edit", description: "Enter module edit mode: only that module's boards are editable, the rest of the scene is locked/dimmed.", annotations: WRITE,
-    inputSchema: { module: z.string().describe("Module id or name.") } },
+    inputSchema: { module: z.string().min(1, "Required").describe("Module id or name.") } },
   async (a) => safe("enter_module_edit", a));
 
 server.registerTool("exit_module_edit",
@@ -536,12 +536,12 @@ server.registerTool("set_snap_verbose",
 
 server.registerTool("get_console_logs",
   { title: "Console logs", description: "Recent Unity console log entries (for debugging).", annotations: READ,
-    inputSchema: { count: z.number().int().optional().describe("How many entries (max 200, default 50).") } },
+    inputSchema: { count: z.number().int().min(1, "Must be >= 1").max(200, "Max 200").optional().describe("How many entries (max 200, default 50).") } },
   async (a) => safe("get_console_logs", a));
 
 server.registerTool("export_specification_csv",
   { title: "Export CSV", description: "Export the specification (cut list) to a CSV file on disk.", annotations: WRITE,
-    inputSchema: { path: z.string().describe("Full file path to write the CSV to.") } },
+    inputSchema: { path: z.string().min(1, "Required").describe("Full file path to write the CSV to.") } },
   async (a) => safe("export_specification_csv", a));
 
 server.registerTool("take_screenshot",
@@ -552,12 +552,12 @@ server.registerTool("take_screenshot",
 
 server.registerTool("find_objects",
   { title: "Find objects (advanced)", description: "ADVANCED. Find GameObjects by partial name. For kitchen boards prefer get_all_elements.", annotations: READ,
-    inputSchema: { name_filter: z.string().describe("Full or partial object name.") } },
+    inputSchema: { name_filter: z.string().min(1, "Required").describe("Full or partial object name.") } },
   async (a) => safe("find_objects", a));
 
 server.registerTool("get_object_info",
   { title: "Object info (advanced)", description: "ADVANCED. Raw GameObject info (transform, components, children). For boards prefer get_element_info.", annotations: READ,
-    inputSchema: { object_path: z.string().describe("Object name or hierarchy path (Parent/Child).") } },
+    inputSchema: { object_path: z.string().min(1, "Required").describe("Object name or hierarchy path (Parent/Child).") } },
   async (a) => safe("get_object_info", a));
 
 server.registerTool("get_scene_hierarchy",
@@ -566,32 +566,32 @@ server.registerTool("get_scene_hierarchy",
 
 server.registerTool("set_object_active",
   { title: "Show/hide object (advanced)", description: "ADVANCED. Enable or disable a raw GameObject.", annotations: WRITE,
-    inputSchema: { object_path: z.string().describe("Object name or path."), active: z.boolean() } },
+    inputSchema: { object_path: z.string().min(1, "Required").describe("Object name or path."), active: z.boolean() } },
   async (a) => safe("set_object_active", a));
 
 server.registerTool("delete_object",
   { title: "Delete object (advanced)", description: "ADVANCED. Destroy a raw GameObject with NO undo. For boards prefer delete_element (undoable).", annotations: DESTRUCTIVE,
-    inputSchema: { object_path: z.string().describe("Object name or path.") } },
+    inputSchema: { object_path: z.string().min(1, "Required").describe("Object name or path.") } },
   async (a) => safe("delete_object", a));
 
 server.registerTool("set_position",
   { title: "Set position (advanced)", description: "ADVANCED. Set a raw GameObject world position in METERS, with NO undo/validation/snap. For boards prefer move_element.", annotations: WRITE,
-    inputSchema: { object_path: z.string(), x: z.number().describe("X in METERS."), y: z.number().describe("Y in METERS."), z: z.number().describe("Z in METERS.") } },
+    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().finite().min(0, "Must be >= 0").describe("X in METERS."), y: z.number().finite().min(0, "Must be >= 0").describe("Y in METERS."), z: z.number().finite().min(0, "Must be >= 0").describe("Z in METERS.") } },
   async (a) => safe("set_position", a));
 
 server.registerTool("set_rotation",
   { title: "Set rotation (advanced)", description: "ADVANCED. Set a raw GameObject rotation (Euler DEGREES), no undo. For boards prefer rotate_element.", annotations: WRITE,
-    inputSchema: { object_path: z.string(), x: z.number().describe("X in DEGREES."), y: z.number().describe("Y in DEGREES."), z: z.number().describe("Z in DEGREES.") } },
+    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().finite("Must be finite").describe("X in DEGREES."), y: z.number().finite("Must be finite").describe("Y in DEGREES."), z: z.number().finite("Must be finite").describe("Z in DEGREES.") } },
   async (a) => safe("set_rotation", a));
 
 server.registerTool("set_scale",
   { title: "Set scale (advanced)", description: "ADVANCED and RISKY. Sets raw Transform scale — this does NOT change a board's mm size and can distort meshes. To change a board size use resize_element instead.", annotations: WRITE,
-    inputSchema: { object_path: z.string(), x: z.number(), y: z.number(), z: z.number() } },
+    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().positive("Must be positive"), y: z.number().positive("Must be positive"), z: z.number().positive("Must be positive") } },
   async (a) => safe("set_scale", a));
 
 server.registerTool("execute_menu_item",
   { title: "Run editor menu (advanced)", description: "ADVANCED (Editor only). Execute a Unity Editor menu command by path, e.g. 'Edit/Undo'.", annotations: { readOnlyHint: false, openWorldHint: true },
-    inputSchema: { menu_path: z.string().describe("Menu path, e.g. 'Edit/Undo'.") } },
+    inputSchema: { menu_path: z.string().min(1, "Required").describe("Menu path, e.g. 'Edit/Undo'.") } },
   async (a) => safe("execute_menu_item", a));
 
 server.registerTool("enter_play_mode",
