@@ -10,6 +10,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private Vector3Int _dimensionsMM = new Vector3Int(800, 400, 18);
         [SerializeField] private bool _movable = true;
         [SerializeField] private int _groupId = 0;
+        [SerializeField] private string _materialId = MaterialCatalog.DefaultId;
 
         public string BoardName
         {
@@ -45,6 +46,14 @@ namespace KitchenDesigner.Core
         {
             get => _groupId;
             set => _groupId = value;
+        }
+
+        /// <summary>Id декора материала (см. MaterialCatalog). Применяется через
+        /// MaterialManager.Apply; сохраняется в проект.</summary>
+        public string MaterialId
+        {
+            get => string.IsNullOrEmpty(_materialId) ? MaterialCatalog.DefaultId : _materialId;
+            set => _materialId = string.IsNullOrEmpty(value) ? MaterialCatalog.DefaultId : value;
         }
 
         public struct Face

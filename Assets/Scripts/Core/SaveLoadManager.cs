@@ -176,7 +176,12 @@ namespace KitchenDesigner.Core
                     : ElementFactory.CreateBoard(ed.Dimensions, ed.name, ed.Position);
                 go.transform.rotation = ed.Rotation;
                 var el = go.GetComponent<KitchenElement>();
-                if (el != null) { el.Movable = ed.movable; el.GroupId = ed.groupId; }
+                if (el != null)
+                {
+                    el.Movable = ed.movable;
+                    el.GroupId = ed.groupId;
+                    MaterialManager.ApplyById(el, ed.materialId); // декор + «вырез» под размер
+                }
                 created.Add(go);
                 resolved.Add(el);
             }
