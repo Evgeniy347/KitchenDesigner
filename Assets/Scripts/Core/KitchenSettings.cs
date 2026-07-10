@@ -23,6 +23,8 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _blockOnViolation = false;
         [SerializeField] private bool _autoSave = false;
         [SerializeField] private int _autoSaveInterval = 60;
+        [SerializeField] private bool _spatialGrid = false;
+        [SerializeField] private bool _windowedMode = true;
 
         public int GridStep
         {
@@ -66,6 +68,18 @@ namespace KitchenDesigner.Core
             set => _autoSaveInterval = Mathf.Max(10, value);
         }
 
+        public bool SpatialGrid
+        {
+            get => _spatialGrid;
+            set => _spatialGrid = value;
+        }
+
+        public bool WindowedMode
+        {
+            get => _windowedMode;
+            set => _windowedMode = value;
+        }
+
         public void Save()
         {
             var data = new SettingsData
@@ -76,7 +90,9 @@ namespace KitchenDesigner.Core
                 snapThreshold = _snapThreshold,
                 blockOnViolation = _blockOnViolation,
                 autoSave = _autoSave,
-                autoSaveInterval = _autoSaveInterval
+                autoSaveInterval = _autoSaveInterval,
+                spatialGrid = _spatialGrid,
+                windowedMode = _windowedMode
             };
             var json = JsonUtility.ToJson(data);
             PlayerPrefs.SetString("KitchenSettings", json);
@@ -97,6 +113,8 @@ namespace KitchenDesigner.Core
             _blockOnViolation = data.blockOnViolation;
             _autoSave = data.autoSave;
             _autoSaveInterval = Mathf.Max(10, data.autoSaveInterval);
+            _spatialGrid = data.spatialGrid;
+            _windowedMode = data.windowedMode;
         }
 
         [System.Serializable]
@@ -109,6 +127,8 @@ namespace KitchenDesigner.Core
             public bool blockOnViolation;
             public bool autoSave;
             public int autoSaveInterval;
+            public bool spatialGrid;
+            public bool windowedMode;
         }
     }
 }

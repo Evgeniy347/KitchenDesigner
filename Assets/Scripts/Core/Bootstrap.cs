@@ -8,6 +8,7 @@ namespace KitchenDesigner.Core
         {
             if (KitchenSettings.Instance != null)
                 KitchenSettings.Instance.Load();
+            DisplaySettings.ApplyWindowMode();
         }
 
         private void Start()
@@ -35,6 +36,12 @@ namespace KitchenDesigner.Core
 
             if (FindAnyObjectByType<AutoSaveManager>() == null)
                 gameObject.AddComponent<AutoSaveManager>();
+
+            if (FindAnyObjectByType<SpatialGridRenderer>() == null)
+                gameObject.AddComponent<SpatialGridRenderer>();
+
+            if (FindAnyObjectByType<UI.ConsoleOverlay>() == null)
+                gameObject.AddComponent<UI.ConsoleOverlay>();
 
             Debug.Log("[Bootstrap] Kitchen Designer initialized");
         }
