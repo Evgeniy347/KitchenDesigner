@@ -106,6 +106,54 @@ public class KitchenSettingsTests
     }
 
     [Test]
+    public void SpatialGridAndWindowedMode_SaveAndLoad()
+    {
+        var gs = KitchenSettings.Instance;
+        bool prevGrid = gs.SpatialGrid;
+        bool prevWindow = gs.WindowedMode;
+
+        gs.SpatialGrid = true;
+        gs.WindowedMode = false;
+        gs.Save();
+        gs.SpatialGrid = false;
+        gs.WindowedMode = true;
+        gs.Load();
+        Assert.IsTrue(gs.SpatialGrid);
+        Assert.IsFalse(gs.WindowedMode);
+
+        gs.SpatialGrid = prevGrid;
+        gs.WindowedMode = prevWindow;
+        gs.Save();
+    }
+
+    [Test]
+    public void AutoSaveInterval_ClampsToMinimum10()
+    {
+        var gs = KitchenSettings.Instance;
+        int prev = gs.AutoSaveInterval;
+        gs.AutoSaveInterval = 3;
+        Assert.AreEqual(10, gs.AutoSaveInterval);
+        gs.AutoSaveInterval = prev;
+    }
+
+    [Test]
+    public void Load_WithoutSavedKey_DoesNotThrow_KeepsValues()
+    {
+        var gs = KitchenSettings.Instance;
+        int prevStep = gs.GridStep;
+        bool hadKey = PlayerPrefs.HasKey("KitchenSettings");
+        string saved = hadKey ? PlayerPrefs.GetString("KitchenSettings") : null;
+
+        PlayerPrefs.DeleteKey("KitchenSettings");
+        gs.GridStep = 24;
+        Assert.DoesNotThrow(() => gs.Load());
+        Assert.AreEqual(24, gs.GridStep, "без ключа Load не меняет значения");
+
+        gs.GridStep = prevStep;
+        if (hadKey) { PlayerPrefs.SetString("KitchenSettings", saved); PlayerPrefs.Save(); }
+    }
+
+    [Test]
     public void BasePlate_CreatesWithCorrectSize()
     {
         var plate = BasePlate.Create();

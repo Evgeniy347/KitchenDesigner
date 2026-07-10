@@ -53,8 +53,14 @@ crashlytics-build.properties
 # ===========================
 TestResults.xml
 TestResult.xml
+TestResults_*.xml
 *.VisualState.xml
 nunit-*.xml
+
+# ===========================
+# Code Coverage
+# ===========================
+/CoverageResults/
 
 # ===========================
 # Logs
