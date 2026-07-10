@@ -266,6 +266,7 @@ namespace KitchenDesigner.Core.MCP
         public float aabbMinX, aabbMinY, aabbMinZ;
         public float aabbMaxX, aabbMaxY, aabbMaxZ;
         public int effectiveDimX, effectiveDimY, effectiveDimZ;
+        public List<AxisGapInfo> faceGaps; // зазоры/пересечения с ближайшим соседом по каждой оси (всегда 3 оси)
     }
 
     /// <summary>Конфигурация модуля: имя, состав, габариты. Через MCP видно,

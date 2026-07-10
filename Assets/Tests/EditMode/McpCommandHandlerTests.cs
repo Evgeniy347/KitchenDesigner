@@ -354,6 +354,28 @@ public class McpCommandHandlerTests
     }
 
     [Test]
+    public void GetViolations_ReturnsOverlapDetails()
+    {
+        MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
+        MakeElement("B", new Vector3Int(1000, 1000, 1000), new Vector3(0f, 0f, 0f));
+
+        var resp = _handler.Handle(MakeReq("get_violations", new { }));
+        var violations = GetProp<object>(resp.data, "violations") as System.Collections.IList;
+
+        var vA = violations[0];
+        Assert.AreEqual("A", GetProp<string>(vA, "name"));
+        Assert.IsFalse(GetProp<bool>(vA, "disconnected"));
+        var overlapsA = GetProp<object>(vA, "overlapsWith") as System.Collections.IList;
+        Assert.IsNotNull(overlapsA);
+        Assert.AreEqual(1, overlapsA.Count);
+        var overlap = overlapsA[0];
+        Assert.AreEqual("B", GetProp<string>(overlap, "neighbor"));
+        Assert.Greater(GetProp<float>(overlap, "overlapXmm"), 990);
+        Assert.Greater(GetProp<float>(overlap, "overlapYmm"), 990);
+        Assert.Greater(GetProp<float>(overlap, "overlapZmm"), 990);
+    }
+
+    [Test]
     public void GetViolations_ReturnsEmpty_WhenNoOverlaps()
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);

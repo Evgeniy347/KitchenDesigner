@@ -292,6 +292,7 @@ namespace KitchenDesigner.Core.MCP
 
             var aabb = ComputeAABB(el.GetVertices());
             var effDim = GetEffectiveDimMM(el);
+            var gaps = allElements != null ? ComputeAxisGaps(el, allElements) : null;
 
             return new ElementInfo
             {
@@ -306,7 +307,8 @@ namespace KitchenDesigner.Core.MCP
                 hasViolations = hasViolations,
                 aabbMinX = aabb.minX, aabbMinY = aabb.minY, aabbMinZ = aabb.minZ,
                 aabbMaxX = aabb.maxX, aabbMaxY = aabb.maxY, aabbMaxZ = aabb.maxZ,
-                effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z
+                effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z,
+                faceGaps = gaps
             };
         }
 
@@ -917,8 +919,41 @@ namespace KitchenDesigner.Core.MCP
             var result = ConstraintValidator.Validate(all);
             var list = new List<object>();
             foreach (var el in result.violations)
-                list.Add(new { name = el.PartName, type = el.GetType().Name });
+            {
+                var overlaps = ComputeViolationOverlaps(el, all);
+                list.Add(new {
+                    name = el.PartName,
+                    type = el.GetType().Name,
+                    overlapsWith = overlaps,
+                    disconnected = overlaps.Count == 0
+                });
+            }
             return McpResponse.Result(req.id, new { violations = list, count = list.Count });
+        }
+
+        private static List<object> ComputeViolationOverlaps(KitchenElement el, List<KitchenElement> all)
+        {
+            var elAabb = ComputeAABB(el.GetVertices());
+            var results = new List<object>();
+            foreach (var other in all)
+            {
+                if (other == el || other == null) continue;
+                var otherAabb = ComputeAABB(other.GetVertices());
+                if (!AABBsOverlap(elAabb, otherAabb)) continue;
+
+                float overlapX = Mathf.Min(elAabb.maxX, otherAabb.maxX) - Mathf.Max(elAabb.minX, otherAabb.minX);
+                float overlapY = Mathf.Min(elAabb.maxY, otherAabb.maxY) - Mathf.Max(elAabb.minY, otherAabb.minY);
+                float overlapZ = Mathf.Min(elAabb.maxZ, otherAabb.maxZ) - Mathf.Max(elAabb.minZ, otherAabb.minZ);
+                float toMm = 1f / AppConstants.MM_TO_UNITS;
+
+                results.Add(new {
+                    neighbor = other.PartName,
+                    overlapXmm = Mathf.Round(overlapX * toMm * 10f) / 10f,
+                    overlapYmm = Mathf.Round(overlapY * toMm * 10f) / 10f,
+                    overlapZmm = Mathf.Round(overlapZ * toMm * 10f) / 10f
+                });
+            }
+            return results;
         }
 
         private static BasePlate FindFloor()
