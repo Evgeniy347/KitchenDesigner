@@ -11,6 +11,13 @@ namespace KitchenDesigner.Core
         public const int BASE_PLATE_SIZE = 3000;
         public const float MM_TO_UNITS = 0.001f;
 
+        // Сборный (рамочный) фасад, см. каталог Союз-Фасад стр. 43.
+        public const int ASSEMBLED_FRAME_MM = 100;        // ширина рамки A
+        public const int ASSEMBLED_GLASS_DEDUCT_MM = 180; // вычет под вкладное стекло (L-180, H-180)
+        public const int ASSEMBLED_GLASS_THICKNESS_MM = 4;
+        public const int ASSEMBLED_DEFAULT_GROOVES = 1;   // >0 = рисовать выемки (2 сверху, 2 снизу)
+        public const int ASSEMBLED_GROOVE_MM = 5;         // выемка на перекладине: 5×5 мм
+
         public static readonly Vector3Int[] PRESET_DIMENSIONS_MM = new Vector3Int[]
         {
             new Vector3Int(800, 400, 18),
