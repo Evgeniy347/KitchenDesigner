@@ -1,0 +1,88 @@
+# ===========================
+# OS Files
+# ===========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Thumbs.db:encryptable
+Desktop.ini
+$RECYCLE.BIN/
+ehthumbs.db
+ehthumbs_vista.db
+
+# ===========================
+# IDE / Editor
+# ===========================
+.vs/*
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.csproj
+*.sln
+*.unityproj
+*.opendb
+*.VC.db
+*.VC.VC.opendb
+
+# ===========================
+# Unity Generated
+# ===========================
+/Library/
+/Temp/
+/Logs/
+/Build/
+/Builds/
+/UserSettings/
+/sysinfo.txt
+*.stackdump
+
+# ===========================
+# Unity Cache & Packages
+# ===========================
+/Assets/AssetStore-5.x/
+crashlytics-build.properties
+
+# ===========================
+# Test Results
+# ===========================
+TestResults.xml
+TestResult.xml
+*.VisualState.xml
+nunit-*.xml
+
+# ===========================
+# Logs
+# ===========================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===========================
+# Build Outputs
+# ===========================
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# ===========================
+# Python / Virtualenv
+# ===========================
+.env
+.venv
+__pycache__/
+*.pyc
+
+# ===========================
+# Node / Opencode
+# ===========================
+.opencode/node_modules/
+node_modules/
+/.vs/
