@@ -9,6 +9,8 @@ namespace KitchenDesigner.Core
         GameObject CreateWall(Vector3Int dimensionsMM, string name, Vector3 position);
         GameObject CreateFacade(Vector3Int dimensionsMM, string name, Vector3 position,
             int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2);
+        GameObject CreateAssembledFacade(Vector3Int dimensionsMM, string name, Vector3 position,
+            AssembledFill fill = AssembledFill.Blind);
         GameObject Duplicate(KitchenElement source);
         void DestroyBoard(GameObject go);
         void DestroyFacade(GameObject go);
