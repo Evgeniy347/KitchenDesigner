@@ -131,6 +131,13 @@ namespace KitchenDesigner.Core.MCP
     }
 
     [Serializable]
+    public class ParamsSetSetting
+    {
+        public string name;
+        public bool value;
+    }
+
+    [Serializable]
     public class ParamsSnapDiagnose
     {
         public string name;
