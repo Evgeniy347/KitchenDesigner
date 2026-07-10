@@ -509,6 +509,7 @@ namespace KitchenDesigner.Core.MCP
             var rotBefore = element.transform.rotation;
             var after = new Vector3(p.x, p.y, p.z);
             CommandStack.Execute(new MoveCommand(element, before, after, rotBefore, element.transform.rotation));
+            RefreshElementHighlights();
             Debug.Log($"[MCP] Moved {element.BoardName} to ({p.x}, {p.y}, {p.z})");
             var (hasViol, aabb, gaps) = DescribeAfterMutation(element);
             return McpResponse.Result(req.id, new {
@@ -544,6 +545,7 @@ namespace KitchenDesigner.Core.MCP
 
             CommandStack.Execute(new ResizeCommand(element, dimsBefore, dimsAfter,
                 posBefore, posBefore, rotBefore, rotBefore));
+            RefreshElementHighlights();
             Debug.Log($"[MCP] Resized {element.BoardName} to ({w}, {h}, {d})mm");
             var (hasViol, aabb, gaps) = DescribeAfterMutation(element);
             return McpResponse.Result(req.id, new {
@@ -569,6 +571,7 @@ namespace KitchenDesigner.Core.MCP
             var rotBefore = element.transform.rotation;
             var rotAfter = Quaternion.Euler(p.x, p.y, p.z);
             CommandStack.Execute(new MoveCommand(element, before, before, rotBefore, rotAfter));
+            RefreshElementHighlights();
             Debug.Log($"[MCP] Rotated {element.BoardName} to ({p.x}, {p.y}, {p.z})");
             return McpResponse.Result(req.id, new { ok = true, element = p.name, rotation = new { p.x, p.y, p.z }, hasViolations = HasViolations(element) });
         }
@@ -586,6 +589,7 @@ namespace KitchenDesigner.Core.MCP
                 var plate = BasePlate.Create();
                 plate.Element.BoardName = elementName;
                 CommandStack.Execute(new CreateCommand(plate.gameObject));
+                RefreshElementHighlights();
                 Debug.Log($"[MCP] Created floor '{elementName}'");
                 return McpResponse.Result(req.id, new { ok = true, name = plate.name, is_floor = true, path = GetGameObjectPath(plate.gameObject) });
             }
@@ -624,6 +628,7 @@ namespace KitchenDesigner.Core.MCP
 
             go.transform.position = pos;
             CommandStack.Execute(new CreateCommand(go));
+            RefreshElementHighlights();
             Debug.Log($"[MCP] Created {go.name} at ({p.x}, {p.y}, {p.z})");
             return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, is_facade = p.is_facade, path = GetGameObjectPath(go), posX = pos.x, posY = pos.y, posZ = pos.z, hasViolations = HasViolations(element) });
         }
@@ -638,6 +643,7 @@ namespace KitchenDesigner.Core.MCP
             var lockErr = RequireMovable(element, p.name, req.id);
             if (lockErr != null) return lockErr;
             CommandStack.Execute(new DeleteCommand(element.gameObject));
+            RefreshElementHighlights();
             Debug.Log($"[MCP] Deleted {p.name}");
             return McpResponse.Result(req.id, new { ok = true, name = p.name });
         }
@@ -648,6 +654,7 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Result(req.id, new { ok = false, reason = "Nothing to undo" });
             var desc = CommandStack.PeekUndoDescription();
             CommandStack.Undo();
+            RefreshElementHighlights();
             Debug.Log($"[MCP] Undo: {desc}");
             return McpResponse.Result(req.id, new { ok = true, action = "undo", description = desc });
         }
@@ -657,6 +664,7 @@ namespace KitchenDesigner.Core.MCP
             if (!CommandStack.CanRedo)
                 return McpResponse.Result(req.id, new { ok = false, reason = "Nothing to redo" });
             CommandStack.Redo();
+            RefreshElementHighlights();
             Debug.Log($"[MCP] Redo");
             return McpResponse.Result(req.id, new { ok = true, action = "redo" });
         }
@@ -867,6 +875,7 @@ namespace KitchenDesigner.Core.MCP
                 dimsBefore, dimsAfter,
                 posBefore, posBefore,
                 rotBefore, rotBefore));
+            RefreshElementHighlights();
 
             Debug.Log($"[MCP] Resized floor to ({w}, {h}, {d})mm");
             return McpResponse.Result(req.id, new
@@ -1031,6 +1040,14 @@ namespace KitchenDesigner.Core.MCP
             if (element.Movable) return null;
             return McpResponse.Error(reqId, -1,
                 $"Элемент '{name}' заблокирован. Снимите блокировку через set_element_lock (locked:false) — это требует явного разрешения пользователя.");
+        }
+
+        /// <summary>Обновить подсветку (зелёная/красная) после мутации. Все пути мутации
+        /// (MCP, UI, drag, undo/redo) должны вызывать это, иначе визуал устаревает.</summary>
+        private static void RefreshElementHighlights()
+        {
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
         }
 
         /// <summary>Есть ли у элемента нарушения (пересечение / нет связности) в текущей сцене.</summary>
