@@ -24,6 +24,7 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color PanelColor = new Color(0.12f, 0.12f, 0.14f, 0.92f);
         public static readonly Color ButtonColor = new Color(0.22f, 0.24f, 0.30f, 1f);
         public static readonly Color FieldColor = new Color(0.08f, 0.08f, 0.10f, 1f);
+        public static readonly Color HighlightColor = new Color(1f, 0.84f, 0.0f, 1f);
         public static readonly Color TextColor = new Color(0.92f, 0.92f, 0.92f, 1f);
 
         public static void AnchorTopLeft(RectTransform rt)
@@ -186,6 +187,15 @@ namespace KitchenDesigner.Core.UI
             input.textComponent = text;
             input.text = initial;
             return input;
+        }
+
+        /// <summary>Подсветить/снять подсветку изменённого поля (жёлтая рамка).</summary>
+        public static void SetHighlight(InputField field, bool highlight)
+        {
+            if (field == null) return;
+            var img = field.GetComponent<Image>();
+            if (img != null)
+                img.color = highlight ? HighlightColor : FieldColor;
         }
 
         public static Toggle CreateToggle(string name, Transform parent, string label, bool value, Vector2 anchoredPos, Vector2 size, System.Action<bool> onChanged)
