@@ -46,6 +46,9 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<UndoHandler>() == null)
                 gameObject.AddComponent<UndoHandler>();
 
+            // Подгружаем последнее сохранение при старте (последний файл или автосейв).
+            SaveLoadManager.LoadLastSession();
+
             if (FindAnyObjectByType<MCP.UnityTcpBridge>() == null)
                 gameObject.AddComponent<MCP.UnityTcpBridge>();
 
