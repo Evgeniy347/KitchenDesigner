@@ -133,6 +133,9 @@ namespace KitchenDesigner.Core
             if (Input.GetKeyDown(KeyCode.F))
                 FocusOnSelection();
 
+            if (Input.GetKeyDown(KeyCode.F1) && UI.UIManager.Instance != null)
+                UI.UIManager.Instance.ToggleHelp();
+
             HandleWASD();
             HandleArrowOrbit();
             HandlePlusMinusZoom();
