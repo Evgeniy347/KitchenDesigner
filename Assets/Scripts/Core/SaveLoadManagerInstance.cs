@@ -187,6 +187,13 @@ namespace KitchenDesigner.Core
                     el.GroupId = ed.groupId;
                     el.Transparent = ed.transparent;
                     MaterialManager.ApplyById(el, ed.materialId);
+
+                    if (ed.isFacade && el is FacadeElement facade)
+                    {
+                        facade.Mode = (DoorMode)ed.doorMode;
+                        if (ed.doorOpen)
+                            facade.SetOpen(true);
+                    }
                 }
                 created.Add(go);
                 resolved.Add(el);
