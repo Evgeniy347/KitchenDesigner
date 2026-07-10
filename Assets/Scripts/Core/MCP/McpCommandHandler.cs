@@ -14,59 +14,6 @@ namespace KitchenDesigner.Core.MCP
 {
     public class McpCommandHandler
     {
-        private static readonly Dictionary<string, string> _methods = new Dictionary<string, string>
-        {
-            ["ping"] = "Проверка соединения",
-            ["get_status"] = "Статус сцены (имя, число объектов, платформа)",
-            ["get_scene_hierarchy"] = "Иерархия корневых объектов сцены",
-            ["find_objects"] = "Поиск объектов по имени (name_filter)",
-            ["get_object_info"] = "Информация о GameObject (позиция, компоненты, дети)",
-            ["set_object_active"] = "Включить/выключить GameObject",
-            ["delete_object"] = "Удалить GameObject (без undo)",
-            ["set_position"] = "Установить позицию GameObject",
-            ["set_rotation"] = "Установить поворот GameObject",
-            ["set_scale"] = "Установить масштаб GameObject",
-            ["get_all_elements"] = "Список всех KitchenElement (доски, пол, стены)",
-            ["get_element_info"] = "Информация о KitchenElement по имени",
-            ["create_element"] = "Создать доску/стену/пол/фасад. Параметры: template_name, x, y, z, width, height, depth, is_wall, is_floor, is_facade, gapLeft, gapRight, gapTop, gapBottom",
-            ["delete_element"] = "Удалить KitchenElement (с undo)",
-            ["move_element"] = "Переместить KitchenElement (name, x, y, z)",
-            ["resize_element"] = "Изменить размер KitchenElement (name, width, height, depth)",
-            ["rotate_element"] = "Повернуть KitchenElement (name, x, y, z)",
-            ["undo"] = "Отменить последнее действие",
-            ["redo"] = "Повторить отменённое действие",
-            ["get_specification"] = "Спецификация всех досок (размеры, количество, площадь)",
-            ["export_specification_csv"] = "Экспорт спецификации в CSV (path)",
-            ["select_element"] = "Выделить KitchenElement (name)",
-            ["get_undo_stack_info"] = "Информация о стеке undo/redo",
-            ["get_console_logs"] = "Последние логи Unity (count)",
-            ["get_settings"] = "Текущие настройки проекта",
-            ["set_snap_verbose"] = "Включить/выключить подробный лог снэпа",
-            ["snap_diagnose"] = "Диагностика прилипания доски к соседям",
-            ["get_modules"] = "Список всех модулей (групп)",
-            ["module_info"] = "Информация о модуле (module — id или имя)",
-            ["create_module"] = "Создать модуль из списка досок (members, name)",
-            ["dissolve_module"] = "Расформировать модуль (module)",
-            ["add_to_module"] = "Добавить доску в модуль (module, name)",
-            ["remove_from_module"] = "Удалить доску из модуля (name)",
-            ["enter_module_edit"] = "Войти в режим редактирования модуля (module)",
-            ["exit_module_edit"] = "Выйти из режима редактирования модуля",
-            ["take_screenshot"] = "Сделать скриншот (возвращает путь к файлу)",
-            ["get_violations"] = "Список всех элементов с нарушениями (пересечения / нет связности)",
-            ["get_floor_info"] = "Размеры и позиция пола (BasePlate)",
-            ["resize_floor"] = "Изменить размер пола (width, height, depth)",
-            ["add_wall_component"] = "Добавить Wall компонент к существующему элементу (name)",
-            ["set_setting"] = "Изменить настройку (name, value). name: lower_near_walls | snap_enabled | grid_enabled | walls_enabled",
-            ["execute_menu_item"] = "Выполнить пункт меню Editor (menu_path)",
-            ["enter_play_mode"] = "Войти в Play Mode",
-            ["exit_play_mode"] = "Выйти из Play Mode",
-            ["get_element_debug"] = "Полная геометрия элемента (грани, вершины, AABB)",
-            ["get_element_gaps"] = "Зазоры/перекрытия к соседям по каждой оси",
-            ["simulate_move"] = "Симуляция перемещения: AABB, пересечения, зазоры без выполнения",
-            ["simulate_resize"] = "Симуляция изменения размера: AABB, пересечения, зазоры без выполнения",
-            ["set_element_lock"] = "Установить/снять блокировку элемента (locked=true — Movable=false, locked=false — Movable=true; требует явного разрешения пользователя)",
-        };
-
         /// <summary>
         /// Диспетчер MCP-команд. Каждый метод обрабатывается в отдельном handler'е.
         ///
@@ -82,7 +29,6 @@ namespace KitchenDesigner.Core.MCP
             {
                 switch (request.method)
                 {
-                    case "get_methods": return HandleGetMethods(request);
                     case "ping": return HandlePing(request);
                     case "get_status": return HandleGetStatus(request);
                     case "get_scene_hierarchy": return HandleGetSceneHierarchy(request);
@@ -141,14 +87,6 @@ namespace KitchenDesigner.Core.MCP
                 Debug.LogError($"[MCP] Error handling '{request.method}': {ex.Message}\n{ex.StackTrace}");
                 return McpResponse.Error(request.id, -1, $"Internal error: {ex.Message}");
             }
-        }
-
-        private McpResponse HandleGetMethods(McpRequest req)
-        {
-            var list = new List<object>();
-            foreach (var kv in _methods)
-                list.Add(new { method = kv.Key, description = kv.Value });
-            return McpResponse.Result(req.id, list);
         }
 
         private McpResponse HandlePing(McpRequest req)
@@ -538,22 +476,19 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            if (!element.Movable) return McpResponse.Error(req.id, -1,
-                $"Элемент '{p.name}' заблокирован. Снимите блокировку через set_element_lock (locked:false) — это требует явного разрешения пользователя.");
+            var lockErr = RequireMovable(element, p.name, req.id);
+            if (lockErr != null) return lockErr;
 
             var before = element.transform.position;
             var rotBefore = element.transform.rotation;
             var after = new Vector3(p.x, p.y, p.z);
             CommandStack.Execute(new MoveCommand(element, before, after, rotBefore, element.transform.rotation));
             Debug.Log($"[MCP] Moved {element.BoardName} to ({p.x}, {p.y}, {p.z})");
-            var all = BoardRegistry.GetAll();
-            var vr = all != null ? ConstraintValidator.Validate(all) : null;
-            var aabb = ComputeAABB(element.GetVertices());
-            var gaps = all != null ? ComputeAxisGaps(element, all) : null;
+            var (hasViol, aabb, gaps) = DescribeAfterMutation(element);
             return McpResponse.Result(req.id, new {
                 ok = true, element = p.name,
                 position = new { p.x, p.y, p.z },
-                hasViolations = vr != null && vr.violations.Contains(element),
+                hasViolations = hasViol,
                 aabb = aabb,
                 faceGaps = gaps
             });
@@ -566,8 +501,8 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            if (!element.Movable) return McpResponse.Error(req.id, -1,
-                $"Элемент '{p.name}' заблокирован. Снимите блокировку через set_element_lock (locked:false) — это требует явного разрешения пользователя.");
+            var lockErr = RequireMovable(element, p.name, req.id);
+            if (lockErr != null) return lockErr;
 
             int w = p.width > 0 ? p.width : p.dimX;
             int h = p.height > 0 ? p.height : p.dimY;
@@ -584,14 +519,11 @@ namespace KitchenDesigner.Core.MCP
             CommandStack.Execute(new ResizeCommand(element, dimsBefore, dimsAfter,
                 posBefore, posBefore, rotBefore, rotBefore));
             Debug.Log($"[MCP] Resized {element.BoardName} to ({w}, {h}, {d})mm");
-            var all = BoardRegistry.GetAll();
-            var vr = all != null ? ConstraintValidator.Validate(all) : null;
-            var aabb = ComputeAABB(element.GetVertices());
-            var gaps = all != null ? ComputeAxisGaps(element, all) : null;
+            var (hasViol, aabb, gaps) = DescribeAfterMutation(element);
             return McpResponse.Result(req.id, new {
                 ok = true, element = p.name,
                 dimensions = new { width = w, height = h, depth = d },
-                hasViolations = vr != null && vr.violations.Contains(element),
+                hasViolations = hasViol,
                 aabb = aabb,
                 faceGaps = gaps
             });
@@ -604,17 +536,15 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            if (!element.Movable) return McpResponse.Error(req.id, -1,
-                $"Элемент '{p.name}' заблокирован. Снимите блокировку через set_element_lock (locked:false) — это требует явного разрешения пользователя.");
+            var lockErr = RequireMovable(element, p.name, req.id);
+            if (lockErr != null) return lockErr;
 
             var before = element.transform.position;
             var rotBefore = element.transform.rotation;
             var rotAfter = Quaternion.Euler(p.x, p.y, p.z);
             CommandStack.Execute(new MoveCommand(element, before, before, rotBefore, rotAfter));
             Debug.Log($"[MCP] Rotated {element.BoardName} to ({p.x}, {p.y}, {p.z})");
-            var all = BoardRegistry.GetAll();
-            var vr = all != null ? ConstraintValidator.Validate(all) : null;
-            return McpResponse.Result(req.id, new { ok = true, element = p.name, rotation = new { p.x, p.y, p.z }, hasViolations = vr != null && vr.violations.Contains(element) });
+            return McpResponse.Result(req.id, new { ok = true, element = p.name, rotation = new { p.x, p.y, p.z }, hasViolations = HasViolations(element) });
         }
 
         private McpResponse HandleCreateElement(McpRequest req)
@@ -669,9 +599,7 @@ namespace KitchenDesigner.Core.MCP
             go.transform.position = pos;
             CommandStack.Execute(new CreateCommand(go));
             Debug.Log($"[MCP] Created {go.name} at ({p.x}, {p.y}, {p.z})");
-            var allElements = BoardRegistry.GetAll();
-            var vr = allElements != null ? ConstraintValidator.Validate(allElements) : null;
-            return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, is_facade = p.is_facade, path = GetGameObjectPath(go), posX = pos.x, posY = pos.y, posZ = pos.z, hasViolations = vr != null && vr.violations.Contains(element) });
+            return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, is_facade = p.is_facade, path = GetGameObjectPath(go), posX = pos.x, posY = pos.y, posZ = pos.z, hasViolations = HasViolations(element) });
         }
 
         private McpResponse HandleDeleteElement(McpRequest req)
@@ -681,8 +609,8 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            if (!element.Movable) return McpResponse.Error(req.id, -1,
-                $"Элемент '{p.name}' заблокирован. Снимите блокировку через set_element_lock (locked:false) — это требует явного разрешения пользователя.");
+            var lockErr = RequireMovable(element, p.name, req.id);
+            if (lockErr != null) return lockErr;
             CommandStack.Execute(new DeleteCommand(element.gameObject));
             Debug.Log($"[MCP] Deleted {p.name}");
             return McpResponse.Result(req.id, new { ok = true, name = p.name });
@@ -877,14 +805,12 @@ namespace KitchenDesigner.Core.MCP
             var el = plate.Element;
             var dims = el.DimensionsMM;
             var pos = el.transform.position;
-            var all = BoardRegistry.GetAll();
-            var vr = all != null ? ConstraintValidator.Validate(all) : null;
             return McpResponse.Result(req.id, new
             {
                 name = el.BoardName,
                 dimX = dims.x, dimY = dims.y, dimZ = dims.z,
                 posX = pos.x, posY = pos.y, posZ = pos.z,
-                hasViolations = vr != null && vr.violations.Contains(el)
+                hasViolations = HasViolations(el)
             });
         }
 
@@ -1070,6 +996,36 @@ namespace KitchenDesigner.Core.MCP
         }
 
         // ── Helpers ──────────────────────────────────────────────────────
+
+        /// <summary>Единая проверка блокировки для мутирующих команд: null — можно
+        /// менять; иначе готовый Error с единым текстом (один источник сообщения для
+        /// модели во всех move/resize/rotate/delete).</summary>
+        private static McpResponse RequireMovable(KitchenElement element, string name, string reqId)
+        {
+            if (element.Movable) return null;
+            return McpResponse.Error(reqId, -1,
+                $"Элемент '{name}' заблокирован. Снимите блокировку через set_element_lock (locked:false) — это требует явного разрешения пользователя.");
+        }
+
+        /// <summary>Есть ли у элемента нарушения (пересечение / нет связности) в текущей сцене.</summary>
+        private static bool HasViolations(KitchenElement element)
+        {
+            var all = BoardRegistry.GetAll();
+            if (all == null || all.Count == 0) return false;
+            var vr = ConstraintValidator.Validate(all);
+            return vr != null && vr.violations.Contains(element);
+        }
+
+        /// <summary>Состояние элемента после мутации: нарушения + AABB + зазоры к соседям.
+        /// Единый источник формы ответа для move_element / resize_element.</summary>
+        private static (bool hasViolations, AabbInfo aabb, List<AxisGapInfo> gaps) DescribeAfterMutation(KitchenElement element)
+        {
+            var all = BoardRegistry.GetAll();
+            var vr = all != null ? ConstraintValidator.Validate(all) : null;
+            var aabb = ComputeAABB(element.GetVertices());
+            var gaps = all != null ? ComputeAxisGaps(element, all) : null;
+            return (vr != null && vr.violations.Contains(element), aabb, gaps);
+        }
 
         private static AabbInfo ComputeAABB(Vector3[] vertices)
         {

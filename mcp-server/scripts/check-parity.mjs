@@ -15,8 +15,8 @@ const CS = resolve(here, "..", "..", "Assets", "Scripts", "Core", "MCP", "McpCom
 const TS = resolve(here, "..", "src", "index.ts");
 
 // Intentional, documented exceptions:
-const CS_ONLY = new Set(["get_methods"]); // meta/debug method, deliberately not exposed to the model
-const TS_ONLY = new Set(["guide"]);       // static cheat-sheet tool, no Unity method behind it
+const CS_ONLY = new Set([]);        // C# switch cases deliberately not exposed to the model (none currently)
+const TS_ONLY = new Set(["guide"]); // static cheat-sheet tool, no Unity method behind it
 
 function readOrDie(path, label) {
   try { return readFileSync(path, "utf8"); }
