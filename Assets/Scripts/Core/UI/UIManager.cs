@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core.UI
         private ContextMenuUI _contextMenu;
         private FloorSettingsUI _floorSettings;
         private GroupMenuUI _groupMenu;
+        private HelpUI _help;
         private Button _undoButton;
         private Button _redoButton;
         private Text _modeButtonLabel;
@@ -61,6 +62,9 @@ namespace KitchenDesigner.Core.UI
 
             var moduleBanner = gameObject.AddComponent<ModuleEditBannerUI>();
             moduleBanner.Build(_canvas.transform);
+
+            _help = gameObject.AddComponent<HelpUI>();
+            _help.Build(_canvas.transform);
         }
 
         private void BuildToolbar()
@@ -319,6 +323,11 @@ namespace KitchenDesigner.Core.UI
             var list = new List<KitchenElement>(sel.SelectedElements);
             AlignDistributeTool.Distribute(list, Axis.X);
             AlignDistributeTool.RefreshHighlights();
+        }
+
+        public void ToggleHelp()
+        {
+            if (_help != null) _help.Toggle();
         }
     }
 }
