@@ -58,11 +58,13 @@ public class SnapDiagnoseTests : SnapTestBase
 
         var d = Diagnose(b, a, b.transform.position);
 
-        Assert.IsFalse(d.wouldSnap, "пересекающиеся доски снэп пропускает");
+        // Хотя AABB пересекаются, gap = 23 мм < порога 50 мм, поэтому
+        // снэп сработает и разведёт доски заподлицо.
+        Assert.IsTrue(d.wouldSnap, "снэп разведёт пересекающиеся доски");
         var n = d.neighbors[0];
-        Assert.IsTrue(n.intersects);
-        Assert.IsFalse(n.wouldSnap);
-        StringAssert.Contains("пересека", n.verdict);
+        Assert.IsTrue(n.intersects, "AABB действительно пересекаются");
+        Assert.IsTrue(n.wouldSnap, "face-pair разведёт доски");
+        StringAssert.Contains("снэп сработает", n.verdict);
     }
 
     [Test]

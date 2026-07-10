@@ -87,7 +87,10 @@ namespace KitchenDesigner.Core
             {
                 if (other == moved || other == null) continue;
                 if (!other.gameObject.activeInHierarchy) continue;
-                if (ElementsIntersect(moved, other)) continue;
+                // AABB-пересечение НЕ отсеиваем: для повёрнутых досок AABB может
+                // быть избыточно большим и ложно блокировать снэп перпендикулярных
+                // кромок. Face-pair loop ниже сам отфильтрует глубокие пересечения
+                // по planeDist > maxDist.
 
                 KitchenElement.Face[] otherFaces = other.GetFaces();
 
@@ -259,12 +262,12 @@ namespace KitchenDesigner.Core
                     }
                 }
 
-                n.wouldSnap = !n.intersects && n.hasFacingFaces && n.withinThreshold && n.overlapEnough;
+                n.wouldSnap = n.hasFacingFaces && n.withinThreshold && n.overlapEnough;
                 n.verdict =
-                    n.intersects ? "доски пересекаются (AABB) — снэп такую пару пропускает; вытащите доску из перекрытия"
-                    : !n.hasFacingFaces ? $"нет встречных параллельных граней (лучший dot={n.bestDot:F3}) — доска повёрнута?"
+                    !n.hasFacingFaces ? $"нет встречных параллельных граней (лучший dot={n.bestDot:F3}) — доска повёрнута?"
                     : !n.withinThreshold ? $"зазор {n.gapMM:F1} мм больше порога {report.thresholdMM:F0} мм"
                     : !n.overlapEnough ? $"перекрытие граней {n.overlapRatio:P0} меньше минимума 30%"
+                    : n.intersects ? "AABB пересекаются из-за поворота, но снэп сработает (разведёт доски заподлицо)"
                     : "OK — прилипнет";
 
                 report.neighbors.Add(n);
@@ -335,9 +338,20 @@ namespace KitchenDesigner.Core
                 return false;
             }
 
-            float overlapArea = (interRight - interLeft) * (interTop - interBottom);
-            float minArea = Mathf.Min(aRect.width * aRect.height, bRect.width * bRect.height);
-            overlapRatio = minArea > 0 ? overlapArea / minArea : 0;
+            float overlapU = interRight - interLeft;
+            float overlapV = interTop - interBottom;
+
+            // Перекрытие по каждой оси относительно меньшего размера грани по этой оси.
+            // В отличие от отношения площадей, произведение полуосевых отношений
+            // корректно обрабатывает перпендикулярные узкие грани (18×400 и 18×1200):
+            // площадь перекрытия 18×18 = 4.5% площади min-грани (7200), но по каждой
+            // оси перекрытие составляет 100% от меньшего размера (18), и произведение
+            // даёт 1.0 — снэп срабатывает.
+            float ratioU = Mathf.Min(aRect.width, bRect.width) > 0
+                ? overlapU / Mathf.Min(aRect.width, bRect.width) : 0;
+            float ratioV = Mathf.Min(aRect.height, bRect.height) > 0
+                ? overlapV / Mathf.Min(aRect.height, bRect.height) : 0;
+            overlapRatio = ratioU * ratioV;
             return true;
         }
 
