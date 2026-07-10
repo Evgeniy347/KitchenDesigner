@@ -386,19 +386,49 @@ namespace KitchenDesigner.Core.UI
 
         private void RefreshTransformFields()
         {
-            // Пока дверца открыта/анимируется, трансформ показывает «открытую» позу —
-            // не перетираем поля ею, оставляем закрытые (логические) значения.
             if (_target is FacadeElement f && !f.IsDoorClosed) return;
 
             var pos = _target.transform.position;
-            if (!_x.isFocused) _x.SetTextWithoutNotify(pos.x.ToString("F3"));
-            if (!_y.isFocused) _y.SetTextWithoutNotify(pos.y.ToString("F3"));
-            if (!_z.isFocused) _z.SetTextWithoutNotify(pos.z.ToString("F3"));
+            MaybeRefresh(_x, pos.x.ToString("F3"));
+            MaybeRefresh(_y, pos.y.ToString("F3"));
+            MaybeRefresh(_z, pos.z.ToString("F3"));
 
-            var e = _target.transform.eulerAngles;
-            if (!_rx.isFocused) _rx.SetTextWithoutNotify(e.x.ToString("F1"));
-            if (!_ry.isFocused) _ry.SetTextWithoutNotify(e.y.ToString("F1"));
-            if (!_rz.isFocused) _rz.SetTextWithoutNotify(e.z.ToString("F1"));
+            var eu = _target.transform.eulerAngles;
+            MaybeRefresh(_rx, eu.x.ToString("F1"));
+            MaybeRefresh(_ry, eu.y.ToString("F1"));
+            MaybeRefresh(_rz, eu.z.ToString("F1"));
+
+            // Размеры, имя, радиус, зазоры — тоже обновляем в реальном времени
+            var dims = _target.DimensionsMM;
+            var radial = _target as RadialShelfElement;
+            if (radial != null)
+            {
+                MaybeRefresh(_radius, radial.Radius.ToString());
+            }
+            else
+            {
+                MaybeRefresh(_w, dims.x.ToString());
+                MaybeRefresh(_h, dims.y.ToString());
+                MaybeRefresh(_d, dims.z.ToString());
+            }
+
+            MaybeRefresh(_name, _target.PartName);
+
+            var facade = _target as FacadeElement;
+            if (facade != null)
+            {
+                MaybeRefresh(_gapW, (facade.GapLeft + facade.GapRight).ToString());
+                MaybeRefresh(_gapH, (facade.GapTop + facade.GapBottom).ToString());
+            }
+        }
+
+        /// <summary>Обновить поле, если оно не в фокусе (юзер не редактирует).
+        /// Также синхронизирует _cleanValues, чтобы подсветка не сбивалась.</summary>
+        private void MaybeRefresh(InputField field, string newValue)
+        {
+            if (field == null || field.isFocused) return;
+            field.SetTextWithoutNotify(newValue);
+            _cleanValues[field] = newValue;
         }
 
         public void Open(KitchenElement element)
