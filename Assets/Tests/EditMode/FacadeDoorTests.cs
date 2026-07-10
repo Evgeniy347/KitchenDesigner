@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
-// Чистая математика открывания дверцы (без Unity-состояния).
+// Чистая математика открывания фасада (без Unity-состояния).
 public class FacadeDoorTests
 {
     // 600×700×18 мм → половины в юнитах (метрах).
@@ -26,7 +26,6 @@ public class FacadeDoorTests
     [Test]
     public void Ease_SlowStart_And_SlowEnd()
     {
-        // ease-in-out: у краёв медленнее линейного, в середине — быстрее.
         Assert.Less(FacadeDoor.Ease(0.25f), 0.25f, "медленный старт");
         Assert.Greater(FacadeDoor.Ease(0.75f), 0.75f, "медленное торможение");
     }
@@ -50,13 +49,37 @@ public class FacadeDoorTests
         Assert.AreEqual(1f, FacadeDoor.Ease(5f), 1e-5f);
     }
 
-    // ── Поза ─────────────────────────────────────────────────────────
+    // ── Переключатель режима ─────────────────────────────────────────
+    [Test]
+    public void Next_Cycles_ThroughAllFive()
+    {
+        Assert.AreEqual(DoorMode.Right, FacadeDoor.Next(DoorMode.Left));
+        Assert.AreEqual(DoorMode.Top, FacadeDoor.Next(DoorMode.Right));
+        Assert.AreEqual(DoorMode.Bottom, FacadeDoor.Next(DoorMode.Top));
+        Assert.AreEqual(DoorMode.Drawer, FacadeDoor.Next(DoorMode.Bottom));
+        Assert.AreEqual(DoorMode.Left, FacadeDoor.Next(DoorMode.Drawer), "после ящика — снова слева");
+    }
+
+    [Test]
+    public void Symbol_IsSingleChar_AndDistinct()
+    {
+        var modes = new[] { DoorMode.Left, DoorMode.Right, DoorMode.Top, DoorMode.Bottom, DoorMode.Drawer };
+        var seen = new HashSet<string>();
+        foreach (var m in modes)
+        {
+            var s = FacadeDoor.Symbol(m);
+            Assert.AreEqual(1, s.Length, $"символ режима {m} должен быть одним знаком");
+            Assert.IsTrue(seen.Add(s), $"символ режима {m} должен быть уникальным");
+        }
+    }
+
+    // ── Поза: рёбра ──────────────────────────────────────────────────
     [Test]
     public void Pose_Closed_EqualsClosedTransform()
     {
         var cp = new Vector3(1f, 0.5f, -2f);
         var cr = Quaternion.Euler(0f, 30f, 0f);
-        FacadeDoor.Pose(cp, cr, Half, HingeEdge.Left, 0f, out var pos, out var rot);
+        FacadeDoor.Pose(cp, cr, Half, DoorMode.Left, 0f, out var pos, out var rot);
         Assert.Less(Vector3.Distance(pos, cp), 1e-4f);
         Assert.Less(Quaternion.Angle(rot, cr), 1e-3f);
     }
@@ -65,38 +88,68 @@ public class FacadeDoorTests
     public void Pose_FullyOpen_Rotates90()
     {
         var cr = Quaternion.identity;
-        FacadeDoor.Pose(Vector3.zero, cr, Half, HingeEdge.Left, 1f, out _, out var rot);
+        FacadeDoor.Pose(Vector3.zero, cr, Half, DoorMode.Left, 1f, out _, out var rot);
         Assert.AreEqual(90f, Quaternion.Angle(cr, rot), 0.5f);
     }
 
-    [TestCase(HingeEdge.Left)]
-    [TestCase(HingeEdge.Right)]
-    [TestCase(HingeEdge.Top)]
-    [TestCase(HingeEdge.Bottom)]
-    public void Pose_HingeEdge_StaysFixed(HingeEdge edge)
+    [TestCase(DoorMode.Left)]
+    [TestCase(DoorMode.Right)]
+    [TestCase(DoorMode.Top)]
+    [TestCase(DoorMode.Bottom)]
+    public void Pose_HingeEdge_StaysFixed(DoorMode mode)
     {
         var cp = new Vector3(0.5f, 1f, 0.25f);
         var cr = Quaternion.Euler(0f, 90f, 0f);
 
-        FacadeDoor.Hinge(edge, Half, out var pivotLocal, out _, out _);
+        Assert.IsTrue(FacadeDoor.Hinge(mode, Half, out var pivotLocal, out _, out _));
         var pivotClosed = cp + cr * pivotLocal;
 
-        FacadeDoor.Pose(cp, cr, Half, edge, 1f, out var pos, out var rot);
+        FacadeDoor.Pose(cp, cr, Half, mode, 1f, out var pos, out var rot);
         var pivotOpen = pos + rot * pivotLocal;
 
         Assert.Less(Vector3.Distance(pivotClosed, pivotOpen), 1e-4f,
             "ребро-петля не должно смещаться при открытии");
     }
 
-    [TestCase(HingeEdge.Left)]
-    [TestCase(HingeEdge.Right)]
-    [TestCase(HingeEdge.Top)]
-    [TestCase(HingeEdge.Bottom)]
-    public void Pose_Progress_TiltsOutOfPlane(HingeEdge edge)
+    [TestCase(DoorMode.Left)]
+    [TestCase(DoorMode.Right)]
+    [TestCase(DoorMode.Top)]
+    [TestCase(DoorMode.Bottom)]
+    public void Pose_Edge_TiltsOutOfPlane(DoorMode mode)
     {
         var cr = Quaternion.identity;
-        FacadeDoor.Pose(Vector3.zero, cr, Half, edge, 1f, out _, out var rot);
+        FacadeDoor.Pose(Vector3.zero, cr, Half, mode, 1f, out _, out var rot);
         Assert.Greater(Quaternion.Angle(cr, rot), 1f, "открытая дверца выходит из плоскости");
+    }
+
+    // ── Поза: ящик ───────────────────────────────────────────────────
+    [Test]
+    public void Pose_Drawer_SlidesForward_NoRotation()
+    {
+        var cp = new Vector3(1f, 0.5f, -2f);
+        var cr = Quaternion.Euler(0f, 90f, 0f);
+
+        FacadeDoor.Pose(cp, cr, Half, DoorMode.Drawer, 1f, out var pos, out var rot);
+
+        Assert.Less(Quaternion.Angle(cr, rot), 1e-3f, "ящик не поворачивается");
+        var expected = cp + cr * (Vector3.back * FacadeDoor.DrawerSlideMeters);
+        Assert.Less(Vector3.Distance(pos, expected), 1e-4f, "ящик выдвигается вперёд по нормали");
+    }
+
+    [Test]
+    public void Pose_Drawer_Closed_EqualsClosed()
+    {
+        var cp = new Vector3(1f, 0.5f, -2f);
+        var cr = Quaternion.Euler(0f, 90f, 0f);
+        FacadeDoor.Pose(cp, cr, Half, DoorMode.Drawer, 0f, out var pos, out var rot);
+        Assert.Less(Vector3.Distance(pos, cp), 1e-4f);
+        Assert.Less(Quaternion.Angle(rot, cr), 1e-3f);
+    }
+
+    [Test]
+    public void Hinge_ReturnsFalse_ForDrawer()
+    {
+        Assert.IsFalse(FacadeDoor.Hinge(DoorMode.Drawer, Half, out _, out _, out _));
     }
 }
 
@@ -135,6 +188,24 @@ public class FacadeDoorAnimationTests
     }
 
     [Test]
+    public void Mode_Default_IsLeft()
+    {
+        var f = MakeFacade();
+        Assert.AreEqual(DoorMode.Left, f.Mode);
+    }
+
+    [Test]
+    public void CycleMode_Advances_AndWraps()
+    {
+        var f = MakeFacade();
+        f.CycleMode(); Assert.AreEqual(DoorMode.Right, f.Mode);
+        f.CycleMode(); Assert.AreEqual(DoorMode.Top, f.Mode);
+        f.CycleMode(); Assert.AreEqual(DoorMode.Bottom, f.Mode);
+        f.CycleMode(); Assert.AreEqual(DoorMode.Drawer, f.Mode);
+        f.CycleMode(); Assert.AreEqual(DoorMode.Left, f.Mode, "цикл возвращается к началу");
+    }
+
+    [Test]
     public void Open_Animates_ToFullyOpen()
     {
         var f = MakeFacade();
@@ -143,11 +214,11 @@ public class FacadeDoorAnimationTests
         f.SetOpen(true);
         Assert.IsTrue(f.IsOpen);
 
-        f.StepDoor(0.1f); // маленький шаг — где-то посередине
+        f.StepDoor(0.1f);
         Assert.Greater(f.DoorProgress, 0f);
         Assert.Less(f.DoorProgress, 1f);
 
-        f.StepDoor(1f);   // добить до конца (MoveTowards зажимает)
+        f.StepDoor(1f);
         Assert.AreEqual(1f, f.DoorProgress, 1e-4f);
         Assert.AreEqual(90f, Quaternion.Angle(closedRot, f.transform.rotation), 0.5f);
     }
@@ -168,6 +239,26 @@ public class FacadeDoorAnimationTests
         Assert.Less(Vector3.Distance(closedPos, f.transform.position), 1e-3f);
         Assert.Less(Quaternion.Angle(closedRot, f.transform.rotation), 1e-2f);
         Assert.IsTrue(f.IsDoorClosed);
+    }
+
+    [Test]
+    public void Drawer_SlidesForward_ThenReturns()
+    {
+        var f = MakeFacade();
+        var closedPos = f.transform.position;
+        var closedRot = f.transform.rotation;
+        f.Mode = DoorMode.Drawer;
+
+        f.SetOpen(true);
+        f.StepDoor(1f);
+
+        Assert.Less(Quaternion.Angle(closedRot, f.transform.rotation), 1e-2f, "ящик не поворачивается");
+        var expected = closedPos + closedRot * (Vector3.back * FacadeDoor.DrawerSlideMeters);
+        Assert.Less(Vector3.Distance(expected, f.transform.position), 1e-3f, "ящик выдвинулся вперёд");
+
+        f.SetOpen(false);
+        f.StepDoor(1f);
+        Assert.Less(Vector3.Distance(closedPos, f.transform.position), 1e-3f, "ящик задвинулся обратно");
     }
 
     [Test]
@@ -195,12 +286,5 @@ public class FacadeDoorAnimationTests
         Assert.IsTrue(f.IsOpen);
         f.ToggleDoor();
         Assert.IsFalse(f.IsOpen);
-    }
-
-    [Test]
-    public void Hinge_Default_IsLeft()
-    {
-        var f = MakeFacade();
-        Assert.AreEqual(HingeEdge.Left, f.Hinge);
     }
 }

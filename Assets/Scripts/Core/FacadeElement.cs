@@ -47,18 +47,22 @@ namespace KitchenDesigner.Core
         // вычисляются из ЗАКРЫТОЙ позы каждый кадр — без накопления ошибки.
         private const float OpenSeconds = 0.4f;
 
-        [SerializeField] private HingeEdge _hinge = HingeEdge.Left;
+        [SerializeField] private DoorMode _mode = DoorMode.Left;
         private bool _open;                              // целевое состояние
         private float _t;                                // прогресс 0..1 (линейный по времени)
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
 
-        /// <summary>Ребро-петля. Смена на лету перерисовывает открытую дверцу.</summary>
-        public HingeEdge Hinge
+        /// <summary>Режим открывания (4 ребра или ящик). Смена на лету
+        /// перерисовывает уже открытый фасад.</summary>
+        public DoorMode Mode
         {
-            get => _hinge;
-            set { _hinge = value; if (_t > 0f) ApplyDoor(); }
+            get => _mode;
+            set { _mode = value; if (_t > 0f) ApplyDoor(); }
         }
+
+        /// <summary>Переключить режим по кругу (для кнопки-переключателя).</summary>
+        public void CycleMode() => Mode = FacadeDoor.Next(_mode);
 
         public bool IsOpen => _open;
         public float DoorProgress => _t;
@@ -109,7 +113,7 @@ namespace KitchenDesigner.Core
         private void ApplyDoor()
         {
             var half = transform.localScale * 0.5f;
-            FacadeDoor.Pose(_closedPos, _closedRot, half, _hinge, _t, out var pos, out var rot);
+            FacadeDoor.Pose(_closedPos, _closedRot, half, _mode, _t, out var pos, out var rot);
             transform.SetPositionAndRotation(pos, rot);
         }
     }

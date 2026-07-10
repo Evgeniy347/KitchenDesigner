@@ -17,6 +17,7 @@ namespace KitchenDesigner.Core.UI
         private Toggle _lockToggle;
         private RectTransform _panelRt;
         private Text _doorButtonLabel; // подпись кнопки «Открыть»/«Закрыть»
+        private Text _modeButtonLabel; // символ кнопки-переключателя режима
 
         // ── Раскладка ──────────────────────────────────────────────────
         // Меню собирается один раз (Build), а позиции пересчитываются в Layout
@@ -79,23 +80,18 @@ namespace KitchenDesigner.Core.UI
             var gapSection = CreateGapSection(panel.transform, out float gapSectionH);
             AddFacadeRow(gapSection, gapSection.GetComponent<RectTransform>(), gapSectionH, RowGap);
 
-            // Открывание дверцы (только фасад): выбор ребра-петли + кнопка Открыть/Закрыть.
-            var hingeL = UIFactory.CreateButton("CtxHingeL", panel.transform, "◄",
-                new Vector2(-93, 0), new Vector2(56, BtnH), () => SetHinge(HingeEdge.Left));
-            var hingeR = UIFactory.CreateButton("CtxHingeR", panel.transform, "►",
-                new Vector2(-31, 0), new Vector2(56, BtnH), () => SetHinge(HingeEdge.Right));
-            var hingeU = UIFactory.CreateButton("CtxHingeU", panel.transform, "▲",
-                new Vector2(31, 0), new Vector2(56, BtnH), () => SetHinge(HingeEdge.Top));
-            var hingeD = UIFactory.CreateButton("CtxHingeD", panel.transform, "▼",
-                new Vector2(93, 0), new Vector2(56, BtnH), () => SetHinge(HingeEdge.Bottom));
-            AddFacadeRow(BtnH, RowGap,
-                hingeL.GetComponent<RectTransform>(), hingeR.GetComponent<RectTransform>(),
-                hingeU.GetComponent<RectTransform>(), hingeD.GetComponent<RectTransform>());
+            // Открывание фасада (только фасад): переключатель режима (один символ,
+            // 4 ребра + ящик) и кнопка Открыть/Закрыть — в одном ряду.
+            var modeButton = UIFactory.CreateButton("CtxMode", panel.transform, FacadeDoor.Symbol(DoorMode.Left),
+                new Vector2(-100, 0), new Vector2(48, BtnH), CycleDoorMode);
+            _modeButtonLabel = modeButton.GetComponentInChildren<Text>();
 
             var doorButton = UIFactory.CreateButton("CtxDoor", panel.transform, "Открыть",
-                new Vector2(0, 0), new Vector2(248, BtnH), ToggleDoor);
+                new Vector2(27, 0), new Vector2(190, BtnH), ToggleDoor);
             _doorButtonLabel = doorButton.GetComponentInChildren<Text>();
-            AddFacadeRow(BtnH, ActionGap, doorButton.GetComponent<RectTransform>());
+
+            AddFacadeRow(BtnH, ActionGap,
+                modeButton.GetComponent<RectTransform>(), doorButton.GetComponent<RectTransform>());
 
             // Позиция и поворот.
             _x = Row(panel.transform, "X, м");
@@ -349,6 +345,7 @@ namespace KitchenDesigner.Core.UI
                 _gapH.text = (facade.GapTop + facade.GapBottom).ToString();
             }
             UpdateDoorButton(facade);
+            UpdateModeButton(facade);
 
             // Пересчитываем раскладку под режим: секция зазоров показывается
             // только для фасадов, панель сама подгоняется по высоте.
@@ -462,16 +459,25 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        private void SetHinge(HingeEdge edge)
+        private void CycleDoorMode()
         {
             if (_target is FacadeElement f)
-                f.Hinge = edge;
+            {
+                f.CycleMode();
+                UpdateModeButton(f);
+            }
         }
 
         private void UpdateDoorButton(FacadeElement facade)
         {
             if (_doorButtonLabel != null)
                 _doorButtonLabel.text = (facade != null && facade.IsOpen) ? "Закрыть" : "Открыть";
+        }
+
+        private void UpdateModeButton(FacadeElement facade)
+        {
+            if (_modeButtonLabel != null)
+                _modeButtonLabel.text = FacadeDoor.Symbol(facade != null ? facade.Mode : DoorMode.Left);
         }
 
         private void Duplicate()
