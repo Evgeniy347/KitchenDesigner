@@ -50,8 +50,11 @@ namespace KitchenDesigner.Core
                     if (element != null && element.GetComponent<BasePlate>() == null)
                     {
                         bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+                        var group = GroupManager.GroupOf(element);
                         if (ctrl)
                             ToggleInSelection(element);
+                        else if (group != null)
+                            SelectOnly(GroupManager.MembersOf(group)); // связанная группа выделяется целиком
                         else if (_selectedElements.Count > 1 && _selectedElements.Contains(element))
                             _selected = element; // часть мультивыделения — сохраняем для группового drag
                         else
@@ -98,6 +101,15 @@ namespace KitchenDesigner.Core
             }
 
             OnSelectionChanged?.Invoke(_selected);
+        }
+
+        /// <summary>Выделить ровно указанный набор элементов (связанная группа).</summary>
+        public void SelectOnly(IList<KitchenElement> elements)
+        {
+            DeselectAll();
+            if (elements == null) return;
+            foreach (var e in elements)
+                if (e != null) AddToSelection(e);
         }
 
         public void AddToSelection(KitchenElement element)

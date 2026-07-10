@@ -9,6 +9,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private string _boardName = "Board";
         [SerializeField] private Vector3Int _dimensionsMM = new Vector3Int(800, 400, 18);
         [SerializeField] private bool _movable = true;
+        [SerializeField] private int _groupId = 0;
 
         public string BoardName
         {
@@ -37,6 +38,13 @@ namespace KitchenDesigner.Core
         {
             get => _movable;
             set => _movable = value;
+        }
+
+        /// <summary>Id группы связывания (0 — не связан). См. GroupManager.</summary>
+        public int GroupId
+        {
+            get => _groupId;
+            set => _groupId = value;
         }
 
         public struct Face

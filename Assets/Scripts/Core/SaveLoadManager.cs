@@ -109,7 +109,13 @@ namespace KitchenDesigner.Core
                 if (e.GetComponent<BasePlate>() != null) continue;
                 items.Add(ElementData.FromElement(e));
             }
-            return new ProjectData(items);
+
+            var data = new ProjectData(items);
+            var groups = new List<GroupData>();
+            foreach (var g in GroupManager.AllGroups())
+                groups.Add(new GroupData { id = g.id, name = g.name, movable = g.movable });
+            data.groups = groups.ToArray();
+            return data;
         }
 
         public static string Serialize(ProjectData data) => JsonUtility.ToJson(data, true);
@@ -141,6 +147,11 @@ namespace KitchenDesigner.Core
             var created = new List<GameObject>();
             if (data == null || data.elements == null) return created;
 
+            GroupManager.Clear();
+            if (data.groups != null)
+                foreach (var gd in data.groups)
+                    if (gd != null) GroupManager.Register(gd.id, gd.name, gd.movable);
+
             foreach (var ed in data.elements)
             {
                 if (ed == null) continue;
@@ -149,7 +160,7 @@ namespace KitchenDesigner.Core
                     : ElementFactory.CreateBoard(ed.Dimensions, ed.name, ed.Position);
                 go.transform.rotation = ed.Rotation;
                 var el = go.GetComponent<KitchenElement>();
-                if (el != null) el.Movable = ed.movable;
+                if (el != null) { el.Movable = ed.movable; el.GroupId = ed.groupId; }
                 created.Add(go);
             }
             return created;
