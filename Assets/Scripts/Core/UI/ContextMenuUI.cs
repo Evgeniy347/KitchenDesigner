@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core.UI
         private KitchenElement _target;
         private Text _titleLabel;
 
-        private InputField _name, _w, _h, _d, _gapW, _gapH, _x, _y, _z, _rx, _ry, _rz;
+        private InputField _name, _w, _h, _d, _radius, _gapW, _gapH, _x, _y, _z, _rx, _ry, _rz;
         private Toggle _lockToggle;
         private Toggle _transparentToggle;
         private RectTransform _panelRt;
@@ -36,6 +36,7 @@ namespace KitchenDesigner.Core.UI
             public float gapAfter;        // отступ под полосой
             public bool facadeOnly;       // показывать только для фасадов (секция зазоров)
             public bool assembledOnly;    // показывать только для сборного фасада
+            public bool radialOnly;       // показывать только для радиусной полки
             public GameObject toggleGO;   // объект, который включать/выключать по режиму
         }
         private readonly List<LayoutRow> _layout = new();
@@ -75,8 +76,8 @@ namespace KitchenDesigner.Core.UI
                 Vector2.zero, new Vector2(260, TitleH), TextAnchor.MiddleCenter);
             AddRow(TitleH, TitleGap, _titleLabel.rectTransform);
 
-            // Тип детали: конвертация между Part / Facade / AssembledFacade.
-            var typeOptions = new List<string> { "Деталь", "Фасад", "Сборный фасад" };
+            // Тип детали: конвертация между Part / Facade / AssembledFacade / RadialShelf.
+            var typeOptions = new List<string> { "Деталь", "Фасад", "Сборный фасад", "Радиусная полка" };
             _typeDropdown = UIFactory.CreateDropdown("CtxType", panel.transform, typeOptions,
                 new Vector2(0, 0), new Vector2(248, 28), OnTypeSelected);
             AddRow(28f, RowGap, _typeDropdown.GetComponent<RectTransform>());
@@ -86,6 +87,7 @@ namespace KitchenDesigner.Core.UI
             _w = Row(panel.transform, "Ширина, мм");
             _h = Row(panel.transform, "Высота, мм");
             _d = Row(panel.transform, "Глубина, мм");
+            _radius = RadialRow(panel.transform, "Радиус, мм");
 
             // Зазоры (только для фасадов) — блок скрывается в режиме «деталь».
             var gapSection = CreateGapSection(panel.transform, out float gapSectionH);
@@ -130,7 +132,7 @@ namespace KitchenDesigner.Core.UI
             _ry = Row(panel.transform, "Поворот Y°");
             _rz = Row(panel.transform, "Поворот Z°");
 
-            foreach (var f in new[] { _w, _h, _d }) f.contentType = InputField.ContentType.IntegerNumber;
+            foreach (var f in new[] { _w, _h, _d, _radius }) f.contentType = InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _gapW, _gapH }) f.contentType = InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f.contentType = InputField.ContentType.DecimalNumber;
 
@@ -186,7 +188,7 @@ namespace KitchenDesigner.Core.UI
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
             closeBtn.transform.SetAsLastSibling();
 
-            Layout(isFacade: false, isAssembled: false); // стартовая раскладка (как обычная деталь)
+            Layout(isFacade: false, isAssembled: false, isRadial: false); // стартовая раскладка (как обычная деталь)
             _root.SetActive(false);
 
             if (SelectionManager.Instance != null)
@@ -217,6 +219,16 @@ namespace KitchenDesigner.Core.UI
             var field = UIFactory.CreateInputField("F_" + label, parent, "",
                 new Vector2(FieldX, 0), new Vector2(100, FieldH));
             AddRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
+            return field;
+        }
+
+        private InputField RadialRow(Transform parent, string label)
+        {
+            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
+                new Vector2(LabelX, 0), new Vector2(130, LabelH));
+            var field = UIFactory.CreateInputField("F_" + label, parent, "",
+                new Vector2(FieldX, 0), new Vector2(100, FieldH));
+            AddRadialRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
 
@@ -270,6 +282,13 @@ namespace KitchenDesigner.Core.UI
             _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter });
         }
 
+        private void AddRadialRow(float height, float gapAfter, params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, radialOnly = true });
+        }
+
         private void AddFacadeRow(GameObject toggleGO, RectTransform rt, float height, float gapAfter)
         {
             AnchorTop(rt);
@@ -310,13 +329,15 @@ namespace KitchenDesigner.Core.UI
 
         // ── Раскладка сверху вниз ───────────────────────────────────────
 
-        private void Layout(bool isFacade, bool isAssembled)
+        private void Layout(bool isFacade, bool isAssembled, bool isRadial)
         {
             float cursor = TopPad;
             float contentBottom = TopPad;
             foreach (var row in _layout)
             {
-                bool visible = (!row.facadeOnly || isFacade) && (!row.assembledOnly || isAssembled);
+                bool visible = (!row.facadeOnly || isFacade)
+                    && (!row.assembledOnly || isAssembled)
+                    && (!row.radialOnly || isRadial);
 
                 // Скрытие фасад-строк в режиме «деталь»: через контейнер (toggleGO)
                 // либо, если контейнера нет, включая/выключая сами элементы строки.
@@ -378,8 +399,9 @@ namespace KitchenDesigner.Core.UI
                 SelectionManager.Instance.Select(element);
 
             bool isFacade = element is FacadeElement;
+            bool isRadial = element is RadialShelfElement;
             if (_titleLabel != null)
-                _titleLabel.text = isFacade ? "Фасад" : "деталь";
+                _titleLabel.text = isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь");
 
             if (_typeDropdown != null)
             {
@@ -392,6 +414,8 @@ namespace KitchenDesigner.Core.UI
             _w.text = dims.x.ToString();
             _h.text = dims.y.ToString();
             _d.text = dims.z.ToString();
+            var radial = element as RadialShelfElement;
+            _radius.text = radial != null ? radial.Radius.ToString() : "300";
 
             var facade = element as FacadeElement;
             if (facade != null)
@@ -416,8 +440,8 @@ namespace KitchenDesigner.Core.UI
             }
 
             // Пересчитываем раскладку под режим: секция зазоров показывается
-            // только для фасадов, панель сама подгоняется по высоте.
-            Layout(isFacade, assembled != null);
+            // только для фасадов, радиус — только для радиусной полки, панель сама подгоняется по высоте.
+            Layout(isFacade, assembled != null, isRadial);
 
             RefreshTransformFields();
             _transparentToggle.SetIsOnWithoutNotify(element.Transparent);
@@ -444,10 +468,18 @@ namespace KitchenDesigner.Core.UI
 
             _target.PartName = string.IsNullOrWhiteSpace(_name.text) ? "Board" : _name.text;
 
-            _target.DimensionsMM = new Vector3Int(
-                ParseInt(_w.text, oldDims.x),
-                ParseInt(_h.text, oldDims.y),
-                ParseInt(_d.text, oldDims.z));
+            var radial = _target as RadialShelfElement;
+            if (radial != null)
+            {
+                radial.Radius = ParseInt(_radius.text, radial.Radius);
+            }
+            else
+            {
+                _target.DimensionsMM = new Vector3Int(
+                    ParseInt(_w.text, oldDims.x),
+                    ParseInt(_h.text, oldDims.y),
+                    ParseInt(_d.text, oldDims.z));
+            }
 
             var facade = _target as FacadeElement;
             if (facade != null)
@@ -485,9 +517,12 @@ namespace KitchenDesigner.Core.UI
                     oldRot, _target.transform.rotation));
             }
 
-            _w.text = _target.DimensionsMM.x.ToString();
-            _h.text = _target.DimensionsMM.y.ToString();
-            _d.text = _target.DimensionsMM.z.ToString();
+            var newDims = _target.DimensionsMM;
+            _w.text = newDims.x.ToString();
+            _h.text = newDims.y.ToString();
+            _d.text = newDims.z.ToString();
+            if (radial != null)
+                _radius.text = radial.Radius.ToString();
 
             if (facade != null)
             {

@@ -103,6 +103,38 @@ public class ElementFactoryTests
     }
 
     [Test]
+    public void CreateRadialShelf_CreatesMeshAndCollider()
+    {
+        var go = ElementFactory.CreateRadialShelf(400, 18, "Radial", Vector3.zero);
+        var shelf = go.GetComponent<RadialShelfElement>();
+
+        Assert.IsNotNull(shelf);
+        Assert.AreEqual(400, shelf.Radius);
+        Assert.AreEqual(new Vector3Int(400, 18, 400), shelf.DimensionsMM);
+        Assert.IsNotNull(go.GetComponent<MeshFilter>());
+        Assert.IsNotNull(go.GetComponent<MeshCollider>());
+
+        ElementFactory.DestroyElement(go);
+    }
+
+    [Test]
+    public void Duplicate_RadialShelf_KeepsRadius()
+    {
+        var original = ElementFactory.CreateRadialShelf(500, 25, "RadialOriginal", Vector3.zero);
+        var shelf = original.GetComponent<RadialShelfElement>();
+
+        var copy = ElementFactory.Duplicate(shelf);
+        var copyShelf = copy.GetComponent<RadialShelfElement>();
+
+        Assert.IsNotNull(copyShelf);
+        Assert.AreEqual(500, copyShelf.Radius);
+        Assert.AreEqual(new Vector3Int(500, 25, 500), copyShelf.DimensionsMM);
+
+        ElementFactory.DestroyElement(original);
+        ElementFactory.DestroyElement(copy);
+    }
+
+    [Test]
     public void Boards_ShareMaterialInstance_ForBatching()
     {
         var go1 = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "A", Vector3.zero);

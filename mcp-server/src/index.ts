@@ -453,9 +453,11 @@ server.registerTool("create_element",
       width: z.number().int().positive("Must be positive").optional().describe("Size along X in MM (default 800)."),
       height: z.number().int().positive("Must be positive").optional().describe("Size along Y in MM (default 400)."),
       depth: z.number().int().positive("Must be positive").optional().describe("Thickness along Z in MM (default 18)."),
+      radius: z.number().int().min(1, "Must be >= 1").optional().describe("Radial shelf only: outer radius in MM (default 300)."),
       is_wall: z.boolean().optional().describe("Create as a WALL (structural anchor). Default false."),
       is_facade: z.boolean().optional().describe("Create as a FACADE (door/front with gaps). Default false."),
       is_assembled: z.boolean().optional().describe("Create as an ASSEMBLED (framed) facade — real frame geometry. Default false. Pair with fill."),
+      is_radial_shelf: z.boolean().optional().describe("Create as a RADIAL (corner) shelf. Default false. Pair with radius."),
       is_floor: z.boolean().optional().describe("Create the FLOOR plate. Ignores size/position. Default false."),
       fill: z.enum(["blind", "glass", "open"]).optional().describe("Assembled facade only: center fill — blind (panel), glass (vitrine with glass), open (empty vitrine). Default blind."),
       gap_left: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: left gap in MM (default 2)."),
@@ -468,9 +470,11 @@ server.registerTool("create_element",
     if (a.width !== undefined) params.width = a.width;
     if (a.height !== undefined) params.height = a.height;
     if (a.depth !== undefined) params.depth = a.depth;
+    if (a.radius !== undefined) params.radius = a.radius;
     if (a.is_wall !== undefined) params.is_wall = a.is_wall;
     if (a.is_facade !== undefined) params.is_facade = a.is_facade;
     if (a.is_assembled !== undefined) params.is_assembled = a.is_assembled;
+    if (a.is_radial_shelf !== undefined) params.is_radial_shelf = a.is_radial_shelf;
     if (a.is_floor !== undefined) params.is_floor = a.is_floor;
     if (a.fill !== undefined) params.fill = a.fill;
     if (a.gap_left !== undefined) params.gapLeft = a.gap_left;
@@ -484,7 +488,7 @@ server.registerTool("convert_element",
   { title: "Convert element type", description: "Change the TYPE of an existing element in place — board(part) <-> facade <-> assembled facade — keeping its name, size, position and material. Use this to turn a regular facade into an assembled (framed) one, or vice versa. NOT undoable.", annotations: WRITE,
     inputSchema: {
       name: z.string().min(1, "Required").describe("Exact element name to convert."),
-      target: z.enum(["part", "facade", "assembled_facade"]).describe("Target type: part (plain board), facade (door/front), assembled_facade (framed facade)."),
+      target: z.enum(["part", "facade", "assembled_facade", "radial_shelf"]).describe("Target type: part (plain board), facade (door/front), assembled_facade (framed facade), radial_shelf (corner shelf)."),
       fill: z.enum(["blind", "glass", "open"]).optional().describe("When target=assembled_facade: center fill — blind (panel), glass, open (empty). Default keeps/blind."),
     } },
   async (a) => safe("convert_element", a));

@@ -98,6 +98,12 @@ const _createGap: CreateElementParams = {
   gapLeft: 2, gapRight: 2, gapTop: 2, gapBottom: 2, is_facade: true,
 };
 
+// Create radial shelf
+const _createRadial: CreateElementParams = {
+  template_name: "RS1", name: "RS1", x: 0, y: 0, z: 0,
+  is_radial_shelf: true, radius: 450, depth: 18,
+};
+
 // Rotate: Euler angles in degrees
 const _rotate: RotateElementParams = { name: "Board1", x: 0, y: 90, z: 0 };
 

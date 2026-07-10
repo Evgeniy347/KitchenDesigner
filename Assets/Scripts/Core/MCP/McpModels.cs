@@ -141,10 +141,12 @@ namespace KitchenDesigner.Core.MCP
         public int width;
         public int height;
         public int depth;
+        public int radius = 300;
         public bool is_wall;
         public bool is_floor;
         public bool is_facade;
         public bool is_assembled;   // сборный (рамочный) фасад
+        public bool is_radial_shelf; // радиусная (угловая) полка
         public string fill;         // сборный: blind | glass | open (по умолчанию blind)
         public int gapLeft = 2;
         public int gapRight = 2;
@@ -267,6 +269,7 @@ namespace KitchenDesigner.Core.MCP
         public float aabbMaxX, aabbMaxY, aabbMaxZ;
         public int effectiveDimX, effectiveDimY, effectiveDimZ;
         public List<AxisGapInfo> faceGaps; // зазоры/пересечения с ближайшим соседом по каждой оси (всегда 3 оси)
+        public int radius; // только для RadialShelfElement, иначе 0
     }
 
     /// <summary>Конфигурация модуля: имя, состав, габариты. Через MCP видно,
