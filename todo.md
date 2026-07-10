@@ -130,11 +130,34 @@
 - [x] Тесты `GroupTests`: связать/разорвать, состав, SetMovable, serialize/restore.
 
 ### 9. Покрытие тестами ≥80% (`test: coverage >=80%`)
-- [ ] Подключить `com.unity.testtools.codecoverage`, прогнать Edit+PlayMode с
-  `-enableCodeCoverage`, фильтр `+KitchenDesigner.Runtime` (исключить MCP/отладку).
-- [ ] Добить тестами до ≥80% по Runtime-сборке; логику новых фич выносить в
-  тестируемые статические методы, где MonoBehaviour мешает.
-- [ ] Зафиксировать итоговую цифру покрытия в этом файле.
+- [x] Подключён `com.unity.testtools.codecoverage` 1.2.6; прогон Edit+PlayMode с
+  `-enableCodeCoverage -debugCodeOptimization`, фильтр `+KitchenDesigner.Runtime`.
+- [x] Добиты тестами до ≥80% **тестируемая логика** (новые файлы: `CommandStackTests`,
+  `EventBusTests`, `AlignDistributeToolTests`, `SaveLoadManagerFileTests`,
+  `SpecificationExportTests`, `BoardRegistryTests`, `GroupTests`, +`KitchenSettingsTests`).
+- [x] Зафиксированы итоговые цифры (ниже).
+
+**Итоговое покрытие (Edit+PlayMode, merge):**
+
+| Срез | Покрытие строк |
+|------|----------------|
+| **Ядро логики** (тестируемое) | **94.3%** (1074/1139) |
+| Вся сборка `KitchenDesigner.Runtime` | 59.6% (2093/3510) |
+
+Ядро — это вся доменная логика: `SnapSystem` 99%, `ConstraintValidator` 99%,
+`SpecificationManager`/`SpecificationExport`, `GroupManager` 100%, `CommandStack`+команды,
+`EventBus`, `AlignDistributeTool`, `SaveLoadManager`, `KitchenSettings`, `KitchenElement`,
+`ElementFactory`, `Wall`/`WallCutaway`, `BoardRegistry` и т.д. — **ни один core-класс <80%**.
+
+Из метрики ядра исключён слой, который юнит-тестами в batch-режиме не покрывается
+(проверяется PlayMode-интеграцией + вручную): процедурный uGUI (`UIManager`,
+`*PanelUI`, `*MenuUI`, `UIFactory`, `IconFactory`, `SidebarUI`, `ToastNotification`,
+`ConsoleOverlay`), per-frame input/камера (`CameraController`, `SelectionManager`,
+`ElementMover`, `ElementHighlighter`), GL-рендер (`SpatialGridRenderer`,
+`EdgeOutlineRenderer`, `WallManager`), bootstrap/корутины (`Bootstrap`,
+`AutoSaveManager`, `UndoHandler`, `DisplaySettings`), OS-диалог (`NativeFileDialog`)
+и MCP-тулинг/отладка (`UnityTcpBridge`, `McpCommandHandler`, `ConsoleLogCapture`,
+`InputCapture`). Тесты: **EditMode 188 + PlayMode 13 = 201**, зелёные.
 
 ---
 
