@@ -25,6 +25,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Подсветка изменённых полей ──────────────────────────────────
         private readonly Dictionary<InputField, string> _cleanValues = new();
+        private int _applyFrame = -1;  // защита от двойного Apply
 
         // ── Раскладка ──────────────────────────────────────────────────
         // Меню собирается один раз (Build), а позиции пересчитываются в Layout
@@ -372,11 +373,6 @@ namespace KitchenDesigner.Core.UI
 
             if (_root != null && _root.activeSelf && _target != null)
             {
-                // Enter в любом текстовом поле = Применить
-                if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
-                    && IsAnyFieldFocused())
-                    Apply();
-
                 RefreshTransformFields();
             }
         }
@@ -712,6 +708,17 @@ namespace KitchenDesigner.Core.UI
             _cleanValues[field] = cleanValue;
             field.onValueChanged.RemoveAllListeners();
             field.onValueChanged.AddListener(_ => UpdateFieldHighlight(field));
+            field.onEndEdit.RemoveAllListeners();
+            field.onEndEdit.AddListener(_ => ApplyFromField());
+        }
+
+        /// <summary>Apply по Enter/focus-loss. Защита от двойного срабатывания
+        /// (кнопка Apply тоже зовёт Apply, а перед этим поле теряет фокус).</summary>
+        private void ApplyFromField()
+        {
+            if (Time.frameCount == _applyFrame) return;
+            _applyFrame = Time.frameCount;
+            Apply();
         }
 
         private void UpdateFieldHighlight(InputField field)
