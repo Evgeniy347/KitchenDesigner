@@ -52,6 +52,8 @@ namespace KitchenDesigner.Core
                         bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
                         if (ctrl)
                             ToggleInSelection(element);
+                        else if (_selectedElements.Count > 1 && _selectedElements.Contains(element))
+                            _selected = element; // часть мультивыделения — сохраняем для группового drag
                         else
                             Select(element);
                         return;

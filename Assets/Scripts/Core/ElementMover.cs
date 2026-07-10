@@ -35,6 +35,10 @@ namespace KitchenDesigner.Core
         private Quaternion _ghostRotation;
         private bool _showGhost;
 
+        // Набор объектов, перемещаемых вместе (мультивыделение): элементы + старты.
+        private readonly List<KitchenElement> _moveSet = new List<KitchenElement>();
+        private readonly List<Vector3> _moveStart = new List<Vector3>();
+
         private void Start()
         {
             var sel = GetComponent<SelectionManager>();
@@ -119,7 +123,46 @@ namespace KitchenDesigner.Core
             if (_target == null) return;
             IsDragging = true;
             _wasMoved = true;
+            BuildMoveSet();
             SaveDragMaterial(); // зелёная/красная тонировка появляется только здесь
+        }
+
+        // Если схвачен элемент мультивыделения — двигаем всю выборку (подвижные),
+        // иначе только схваченный объект.
+        private void BuildMoveSet()
+        {
+            _moveSet.Clear();
+            _moveStart.Clear();
+
+            var sel = SelectionManager.Instance;
+            bool group = sel != null && sel.IsSelected(_target) && sel.SelectedElements.Count > 1;
+            if (group)
+            {
+                foreach (var e in sel.SelectedElements)
+                    if (e != null && e.Movable) { _moveSet.Add(e); _moveStart.Add(e.transform.position); }
+            }
+            if (_moveSet.Count == 0)
+            {
+                _moveSet.Add(_target);
+                _moveStart.Add(_startPosition);
+            }
+        }
+
+        /// <summary>Сдвигает все элементы набора на delta от их стартовых позиций.</summary>
+        public static void ApplyDelta(IList<KitchenElement> members, IList<Vector3> starts, Vector3 delta)
+        {
+            for (int i = 0; i < members.Count; i++)
+                if (members[i] != null) members[i].transform.position = starts[i] + delta;
+        }
+
+        private void RevertMoveSet()
+        {
+            if (_moveSet.Count == 0)
+            {
+                if (_target != null) _target.transform.position = _startPosition;
+                return;
+            }
+            ApplyDelta(_moveSet, _moveStart, Vector3.zero);
         }
 
         private void Update()
@@ -222,7 +265,7 @@ namespace KitchenDesigner.Core
         {
             _showGhost = false;
             _axisLock = AxisLock.None;
-            if (_target != null) _target.transform.position = _startPosition;
+            RevertMoveSet();
             RestoreDragMaterial();
             IsDragging = false;
             _wasMoved = false;
@@ -293,8 +336,13 @@ namespace KitchenDesigner.Core
             else if (_axisLock == AxisLock.Z) { newPos.x = _startPosition.x; newPos.y = _startPosition.y; }
 
             var others = BoardRegistry.GetAll();
+            if (_moveSet.Count > 1) others.RemoveAll(e => _moveSet.Contains(e));
             var snap = SnapSystem.TrySnap(_target, others, newPos);
             _target.transform.position = snap.snapped ? snap.position : newPos;
+
+            // Групповое перемещение: остальные следуют за схваченным на ту же дельту.
+            if (_moveSet.Count > 1)
+                ApplyDelta(_moveSet, _moveStart, _target.transform.position - _startPosition);
 
             // Ghost-preview: полупрозрачная доска в позиции снэпа.
             if (snap.snapped && snap.position != _target.transform.position)
@@ -322,19 +370,14 @@ namespace KitchenDesigner.Core
 
             if (_wasMoved)
             {
-                if (KitchenSettings.Instance.BlockOnViolation && MovedCausesViolation())
-                {
-                    _target.transform.position = _startPosition;
-                }
+                if (KitchenSettings.Instance.BlockOnViolation && MoveSetCausesViolation())
+                    RevertMoveSet();
                 else
-                {
-                    CommandStack.Execute(new MoveCommand(_target, _startPosition,
-                        _target.transform.position, _startRotation, _target.transform.rotation));
-                }
+                    CommandStack.Execute(BuildMoveCommand());
             }
             else
             {
-                _target.transform.position = _startPosition;
+                RevertMoveSet();
             }
 
             _axisLock = AxisLock.None;
@@ -365,6 +408,39 @@ namespace KitchenDesigner.Core
             return false;
         }
 
+        // Как MovedCausesViolation, но для всего перемещаемого набора.
+        private bool MoveSetCausesViolation()
+        {
+            var list = BoardRegistry.GetAll();
+            var result = ConstraintValidator.Validate(list);
+            if (result.isValid) return false;
+
+            float radius = KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;
+            foreach (var v in result.violations)
+            {
+                foreach (var m in _moveSet)
+                {
+                    if (v == m) return true;
+                    if (m != null && Vector3.Distance(v.transform.position, m.transform.position) <= radius)
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        private IUndoCommand BuildMoveCommand()
+        {
+            var cmds = new List<IUndoCommand>();
+            for (int i = 0; i < _moveSet.Count; i++)
+            {
+                var m = _moveSet[i];
+                if (m == null) continue;
+                var rotBefore = m == _target ? _startRotation : m.transform.rotation;
+                cmds.Add(new MoveCommand(m, _moveStart[i], m.transform.position, rotBefore, m.transform.rotation));
+            }
+            return cmds.Count == 1 ? cmds[0] : new CompositeCommand("Move group", cmds);
+        }
+
         private static void RefreshHighlights()
         {
             if (ElementHighlighter.Instance != null)
@@ -392,7 +468,7 @@ namespace KitchenDesigner.Core
             // Красный = доска нарушает правила (пересекается с другой или повисла в
             // воздухе) и при включённой блокировке не встанет, а откатится на старт.
             // Зелёный = размещение допустимо. Так цвет совпадает с реальным исходом.
-            _dragTintMaterial.color = MovedCausesViolation()
+            _dragTintMaterial.color = MoveSetCausesViolation()
                 ? new Color(1f, 0f, 0f, 0.3f)
                 : new Color(0f, 1f, 0f, 0.3f);
         }

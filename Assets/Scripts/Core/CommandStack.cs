@@ -202,4 +202,27 @@ namespace KitchenDesigner.Core
             _element.transform.rotation = _rotBefore;
         }
     }
+
+    /// <summary>Несколько команд как одна операция отмены (например, перемещение группы).</summary>
+    public class CompositeCommand : IUndoCommand
+    {
+        private readonly List<IUndoCommand> _commands;
+        public string Description { get; }
+
+        public CompositeCommand(string description, List<IUndoCommand> commands)
+        {
+            Description = description;
+            _commands = commands;
+        }
+
+        public void Execute()
+        {
+            for (int i = 0; i < _commands.Count; i++) _commands[i].Execute();
+        }
+
+        public void Undo()
+        {
+            for (int i = _commands.Count - 1; i >= 0; i--) _commands[i].Undo();
+        }
+    }
 }
