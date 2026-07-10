@@ -37,7 +37,7 @@ namespace KitchenDesigner.Core
             if (mat != null)
             {
                 var renderer = go.GetComponent<MeshRenderer>();
-                renderer.material = mat;
+                renderer.sharedMaterial = mat;
             }
 
             var collider = go.GetComponent<BoxCollider>();
@@ -120,7 +120,7 @@ namespace KitchenDesigner.Core
             if (mat != null)
             {
                 var renderer = go.GetComponent<MeshRenderer>();
-                renderer.material = mat;
+                renderer.sharedMaterial = mat;
             }
 
             var collider = go.GetComponent<BoxCollider>();
