@@ -1,0 +1,14 @@
+﻿{
+    "gridStep": 32,
+    "gridEnabled": false,
+    "snapEnabled": false,
+    "snapThreshold": 80.0,
+    "blockOnViolation": false,
+    "autoSave": true,
+    "autoSaveInterval": 120,
+    "spatialGrid": true,
+    "windowedMode": false,
+    "edgeOutline": true,
+    "wallsHidden": true,
+    "lowerNearWalls": true
+}

@@ -1,0 +1,91 @@
+﻿{
+    "version": 1,
+    "elements": [
+        {
+            "name": "CustomBoard",
+            "dimensionsMM": [
+                600,
+                600,
+                18
+            ],
+            "position": [
+                1.5,
+                2.5,
+                -3.0
+            ],
+            "rotation": [
+                0.0,
+                0.3826834559440613,
+                0.0,
+                0.9238795042037964
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "oak",
+            "transparent": true,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        }
+    ],
+    "groups": [],
+    "camera": {
+        "valid": false,
+        "targetX": 0.0,
+        "targetY": 0.0,
+        "targetZ": 0.0,
+        "angleX": 0.0,
+        "angleY": 0.0,
+        "distance": 0.0
+    },
+    "handleMode": "Resize",
+    "basePlateValid": false,
+    "basePlate": {
+        "name": "",
+        "dimensionsMM": [
+            0,
+            0,
+            0
+        ],
+        "position": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "rotation": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "movable": true,
+        "isWall": false,
+        "isFacade": false,
+        "isRadialShelf": false,
+        "gapLeft": 2,
+        "gapRight": 2,
+        "gapTop": 2,
+        "gapBottom": 2,
+        "groupId": 0,
+        "materialId": "default",
+        "transparent": false,
+        "doorMode": 0,
+        "doorOpen": false,
+        "assembled": false,
+        "assembledFill": 0,
+        "grooveCount": 1,
+        "radius": 300
+    },
+    "undoHistory": [],
+    "redoHistory": []
+}

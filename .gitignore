@@ -58,6 +58,11 @@ TestResults_*.xml
 nunit-*.xml
 
 # ===========================
+# Snapshots (verified committed, candidate — temp)
+# ===========================
+**/Snapshots/*.candidate.json
+
+# ===========================
 # Code Coverage
 # ===========================
 /CoverageResults/

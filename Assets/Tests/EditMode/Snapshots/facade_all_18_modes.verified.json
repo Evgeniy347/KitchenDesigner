@@ -1,0 +1,703 @@
+﻿{
+    "version": 1,
+    "elements": [
+        {
+            "name": "Mode_0",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_1",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                0.10000000149011612,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 1,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_2",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                0.20000000298023225,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 2,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_3",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                0.30000001192092898,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 3,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_4",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                0.4000000059604645,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 4,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_5",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                0.5,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 5,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_6",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                0.6000000238418579,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 6,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_7",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                0.699999988079071,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 7,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_8",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                0.800000011920929,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 8,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_9",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                0.9000000357627869,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 9,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_10",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 10,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_11",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                1.100000023841858,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 11,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_12",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                1.2000000476837159,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 12,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_13",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                1.3000000715255738,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 13,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_14",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                1.399999976158142,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 14,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_15",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                1.5,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 15,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_16",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                1.600000023841858,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 16,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Mode_17",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                1.7000000476837159,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 17,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        }
+    ],
+    "groups": [],
+    "camera": {
+        "valid": false,
+        "targetX": 0.0,
+        "targetY": 0.0,
+        "targetZ": 0.0,
+        "angleX": 0.0,
+        "angleY": 0.0,
+        "distance": 0.0
+    },
+    "handleMode": "Resize",
+    "basePlateValid": false,
+    "basePlate": {
+        "name": "",
+        "dimensionsMM": [
+            0,
+            0,
+            0
+        ],
+        "position": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "rotation": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "movable": true,
+        "isWall": false,
+        "isFacade": false,
+        "isRadialShelf": false,
+        "gapLeft": 2,
+        "gapRight": 2,
+        "gapTop": 2,
+        "gapBottom": 2,
+        "groupId": 0,
+        "materialId": "default",
+        "transparent": false,
+        "doorMode": 0,
+        "doorOpen": false,
+        "assembled": false,
+        "assembledFill": 0,
+        "grooveCount": 1,
+        "radius": 300
+    },
+    "undoHistory": [],
+    "redoHistory": []
+}

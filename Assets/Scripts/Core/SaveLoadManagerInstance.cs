@@ -242,6 +242,9 @@ namespace KitchenDesigner.Core
             element.DimensionsMM = data.Dimensions;
             element.transform.position = data.Position;
             element.transform.rotation = data.Rotation;
+            element.Movable = data.movable;
+            element.Transparent = data.transparent;
+            MaterialManager.ApplyById(element, data.materialId);
         }
 
         public bool SaveToFile(string path, ProjectData data)
