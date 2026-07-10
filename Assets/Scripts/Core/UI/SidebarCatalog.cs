@@ -49,6 +49,7 @@ namespace KitchenDesigner.Core.UI
                     {
                         new Item("Короб", new Vector3Int(600, 600, 600)),
                         new Item("Стена", new Vector3Int(2000, 2500, 100), true),
+                        new Item("Размеры помещения", Vector3Int.zero),
                     }
                 },
             };
