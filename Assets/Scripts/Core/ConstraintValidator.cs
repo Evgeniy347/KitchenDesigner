@@ -27,6 +27,7 @@ namespace KitchenDesigner.Core
             }
 
             float contactDist = ContactDistMM * AppConstants.MM_TO_UNITS;
+            var overlapping = new HashSet<KitchenElement>();
 
             for (int i = 0; i < all.Count; i++)
             {
@@ -35,13 +36,32 @@ namespace KitchenDesigner.Core
                     var a = all[i];
                     var b = all[j];
                     if (a == null || b == null) continue;
-                    if (SnapSystem.ElementsIntersect(a, b)) continue;
+                    if (SnapSystem.ElementsIntersect(a, b))
+                    {
+                        // Пересечение объёмов физически недопустимо: две доски не могут
+                        // занимать одно место. Помечаем обе как нарушение (даже если по
+                        // связности они валидны) — это и есть «красный» при перетаскивании.
+                        overlapping.Add(a);
+                        overlapping.Add(b);
+                        continue;
+                    }
 
                     CheckPair(a, b, contactDist, result);
                 }
             }
 
             CheckConnectivity(all, result);
+
+            // Пересекающиеся доски добавляем к нарушениям поверх проверки связности
+            // (BasePlate исключаем — он якорь, его «пересечения» с досками — это контакт).
+            foreach (var e in overlapping)
+            {
+                if (e == null || e.GetComponent<BasePlate>() != null) continue;
+                if (!result.violations.Contains(e))
+                    result.violations.Add(e);
+            }
+            result.isValid = result.violations.Count == 0;
+
             return result;
         }
 

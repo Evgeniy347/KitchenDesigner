@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _gridEnabled = true;
         [SerializeField] private bool _snapEnabled = true;
         [SerializeField] private float _snapThreshold = 50f;
-        [SerializeField] private bool _blockOnViolation = false;
+        [SerializeField] private bool _blockOnViolation = true;
         [SerializeField] private bool _autoSave = false;
         [SerializeField] private int _autoSaveInterval = 60;
         [SerializeField] private bool _spatialGrid = false;

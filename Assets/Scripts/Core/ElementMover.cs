@@ -388,14 +388,10 @@ namespace KitchenDesigner.Core
         {
             if (_dragTintMaterial == null || _target == null) return;
 
-            bool overlaps = false;
-            foreach (var other in BoardRegistry.GetAll())
-            {
-                if (other == _target || other == null) continue;
-                if (SnapSystem.ElementsIntersect(_target, other)) { overlaps = true; break; }
-            }
-
-            _dragTintMaterial.color = overlaps
+            // Красный = доска нарушает правила (пересекается с другой или повисла в
+            // воздухе) и при включённой блокировке не встанет, а откатится на старт.
+            // Зелёный = размещение допустимо. Так цвет совпадает с реальным исходом.
+            _dragTintMaterial.color = MovedCausesViolation()
                 ? new Color(1f, 0f, 0f, 0.3f)
                 : new Color(0f, 1f, 0f, 0.3f);
         }
