@@ -50,6 +50,13 @@ namespace KitchenDesigner.Core
         // порога, несмотря на ошибку округления float при вычислении зазора.
         private const float ThresholdEpsilon = 1e-5f;
 
+        // «Нулевое» смещение (0.1 мм): кандидат, чей сдвиг меньше, — это уже
+        // существующий контакт (доска и так заподлицо), а не новое прилипание.
+        // Такой кандидат не должен побеждать содержательные снэпы — иначе доска,
+        // скользящая по грани соседа (или стоящая на полу), никогда не прилипнет
+        // к стене: подтверждение текущего контакта (сдвиг 0) всегда «ближе».
+        private const float ZeroShiftEpsilon = 1e-4f;
+
         // Прилипание — чистая детерминированная функция от (moved, others, testPos).
         // Без скрытого статического состояния: одинаковый вход → одинаковый выход,
         // что критично для предсказуемости в рантайме и для повторяемости тестов.
@@ -65,9 +72,16 @@ namespace KitchenDesigner.Core
             moved.transform.position = testPosition;
             KitchenElement.Face[] movedFaces = moved.GetFaces();
 
-            SnapResult best = default;
-            float bestDist = float.MaxValue;
-            string bestLog = null;
+            // Кандидаты делятся на два сорта:
+            //  - «нулевые» (сдвиг ≈ 0) — доска УЖЕ заподлицо с этой гранью; это
+            //    подтверждение текущего контакта, а не новое прилипание;
+            //  - содержательные — реальное притяжение к новой грани.
+            // Содержательный снэп предпочтительнее нулевого, но не должен рвать
+            // существующие контакты: его сдвиг обязан быть ⊥ нормалям нулевых пар.
+            SnapResult bestZero = default;
+            string bestZeroLog = null;
+            var zeroNormals = new List<Vector3>();
+            var candidates = new List<(float dist, SnapResult result, string log)>();
 
             foreach (var other in others)
             {
@@ -115,22 +129,29 @@ namespace KitchenDesigner.Core
                         Vector3 snapPos = testPosition + planeShift * mf.normal + du * u + dv * v;
 
                         float dist = Vector3.Distance(snapPos, testPosition);
-                        if (dist < bestDist)
+                        var result = new SnapResult
                         {
-                            bestDist = dist;
-                            best = new SnapResult
-                            {
-                                snapped = true,
-                                position = snapPos,
-                                targetName = other.BoardName,
-                                faceIndex = j,
-                                snapPoint = mf.center,
-                                targetPoint = of.center
-                            };
-                            if (VerboseLog)
-                                bestLog = $"[Snap] {moved.Describe()} → {other.Describe()} | грань m{i}/o{j} " +
-                                          $"зазор={planeDist * 1000f:F2}мм перекр={overlapRatio:P0} " +
-                                          $"оси[u:{labelU} v:{labelV}] → поз {snapPos.x:F3},{snapPos.y:F3},{snapPos.z:F3}";
+                            snapped = true,
+                            position = snapPos,
+                            targetName = other.BoardName,
+                            faceIndex = j,
+                            snapPoint = mf.center,
+                            targetPoint = of.center
+                        };
+                        string log = VerboseLog
+                            ? $"[Snap] {moved.Describe()} → {other.Describe()} | грань m{i}/o{j} " +
+                              $"зазор={planeDist * 1000f:F2}мм перекр={overlapRatio:P0} " +
+                              $"оси[u:{labelU} v:{labelV}] → поз {snapPos.x:F3},{snapPos.y:F3},{snapPos.z:F3}"
+                            : null;
+
+                        if (dist <= ZeroShiftEpsilon)
+                        {
+                            zeroNormals.Add(mf.normal);
+                            if (!bestZero.snapped) { bestZero = result; bestZeroLog = log; }
+                        }
+                        else
+                        {
+                            candidates.Add((dist, result, log));
                         }
                     }
                 }
@@ -138,8 +159,27 @@ namespace KitchenDesigner.Core
 
             moved.transform.position = prevPos;
 
-            if (VerboseLog && bestLog != null) Debug.Log(bestLog);
-            return best;
+            // Лучший содержательный кандидат, не отрывающий доску от существующих
+            // контактов (сдвиг перпендикулярен их нормалям).
+            candidates.Sort((a, b) => a.dist.CompareTo(b.dist));
+            foreach (var c in candidates)
+            {
+                Vector3 shift = c.result.position - testPosition;
+                bool breaksContact = false;
+                foreach (var n in zeroNormals)
+                {
+                    if (Mathf.Abs(Vector3.Dot(shift, n)) > ZeroShiftEpsilon) { breaksContact = true; break; }
+                }
+                if (breaksContact) continue;
+
+                if (VerboseLog && c.log != null) Debug.Log(c.log);
+                return c.result;
+            }
+
+            // Содержательных нет (или все рвут контакты) — подтверждаем текущий
+            // контакт (прежнее поведение: снэп «на месте»).
+            if (VerboseLog && bestZeroLog != null) Debug.Log(bestZeroLog);
+            return bestZero;
         }
 
         /// <summary>Логировать выбор снэпа (для отладки прилипания). По умолчанию выкл.</summary>
