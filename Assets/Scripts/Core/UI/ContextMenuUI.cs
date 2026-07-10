@@ -19,6 +19,7 @@ namespace KitchenDesigner.Core.UI
         private RectTransform _panelRt;
         private Text _doorButtonLabel;  // подпись кнопки «Открыть»/«Закрыть»
         private Dropdown _modeDropdown; // выпадающий список режима открывания
+        private Dropdown _fillDropdown; // центр сборного фасада (Глухой/Витрина/Стекло)
 
         // ── Раскладка ──────────────────────────────────────────────────
         // Меню собирается один раз (Build), а позиции пересчитываются в Layout
@@ -32,6 +33,7 @@ namespace KitchenDesigner.Core.UI
             public float height;          // высота полосы
             public float gapAfter;        // отступ под полосой
             public bool facadeOnly;       // показывать только для фасадов (секция зазоров)
+            public bool assembledOnly;    // показывать только для сборного фасада
             public GameObject toggleGO;   // объект, который включать/выключать по режиму
         }
         private readonly List<LayoutRow> _layout = new();
@@ -94,6 +96,12 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, 0), new Vector2(248, BtnH), ToggleDoor);
             _doorButtonLabel = doorButton.GetComponentInChildren<Text>();
             AddFacadeRow(BtnH, ActionGap, doorButton.GetComponent<RectTransform>());
+
+            // Центр сборного фасада (только для сборного): Глухой / Витрина / Стекло.
+            var fillOptions = new List<string> { "Глухой (панель)", "Витрина (пусто)", "Стекло" };
+            _fillDropdown = UIFactory.CreateDropdown("CtxFill", panel.transform, fillOptions,
+                new Vector2(0, 0), new Vector2(248, 28), OnFillSelected);
+            AddAssembledRow(28f, ActionGap, _fillDropdown.GetComponent<RectTransform>());
 
             // Позиция и поворот.
             _x = Row(panel.transform, "X, м");
@@ -159,7 +167,7 @@ namespace KitchenDesigner.Core.UI
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
             closeBtn.transform.SetAsLastSibling();
 
-            Layout(isFacade: false); // стартовая раскладка (как обычная доска)
+            Layout(isFacade: false, isAssembled: false); // стартовая раскладка (как обычная доска)
             _root.SetActive(false);
 
             if (SelectionManager.Instance != null)
@@ -265,6 +273,14 @@ namespace KitchenDesigner.Core.UI
             _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, facadeOnly = true });
         }
 
+        // Строка только для сборного фасада (выпадающий список центра).
+        private void AddAssembledRow(float height, float gapAfter, params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, assembledOnly = true });
+        }
+
         // Якорим к верхней кромке панели, pivot тоже сверху — тогда
         // anchoredPosition.y = отступ верхней кромки элемента от верха панели
         // (со знаком минус). Это домовая конвенция панелей проекта.
@@ -275,19 +291,19 @@ namespace KitchenDesigner.Core.UI
 
         // ── Раскладка сверху вниз ───────────────────────────────────────
 
-        private void Layout(bool isFacade)
+        private void Layout(bool isFacade, bool isAssembled)
         {
             float cursor = TopPad;
             float contentBottom = TopPad;
             foreach (var row in _layout)
             {
-                bool visible = !row.facadeOnly || isFacade;
+                bool visible = (!row.facadeOnly || isFacade) && (!row.assembledOnly || isAssembled);
 
                 // Скрытие фасад-строк в режиме «Доска»: через контейнер (toggleGO)
                 // либо, если контейнера нет, включая/выключая сами элементы строки.
                 if (row.toggleGO != null)
                     row.toggleGO.SetActive(visible);
-                else if (row.facadeOnly)
+                else if (row.facadeOnly || row.assembledOnly)
                     foreach (var rt in row.rects)
                         if (rt != null) rt.gameObject.SetActive(visible);
 
@@ -361,9 +377,13 @@ namespace KitchenDesigner.Core.UI
             UpdateDoorButton(facade);
             UpdateModeDropdown(facade);
 
+            var assembled = element as AssembledFacadeElement;
+            if (assembled != null && _fillDropdown != null)
+                _fillDropdown.SetValueWithoutNotify(FillToIndex(assembled.Fill));
+
             // Пересчитываем раскладку под режим: секция зазоров показывается
             // только для фасадов, панель сама подгоняется по высоте.
-            Layout(isFacade);
+            Layout(isFacade, assembled != null);
 
             RefreshTransformFields();
             _transparentToggle.SetIsOnWithoutNotify(element.Transparent);
@@ -478,6 +498,27 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target is FacadeElement f)
                 f.Mode = (DoorMode)index;
+        }
+
+        // Порядок пунктов списка центра: 0=Глухой, 1=Витрина(пусто), 2=Стекло.
+        private static readonly AssembledFill[] FillOrder =
+            { AssembledFill.Blind, AssembledFill.Open, AssembledFill.Glass };
+
+        private static int FillToIndex(AssembledFill fill)
+        {
+            for (int i = 0; i < FillOrder.Length; i++)
+                if (FillOrder[i] == fill) return i;
+            return 0;
+        }
+
+        private void OnFillSelected(int index)
+        {
+            if (_target is AssembledFacadeElement a && index >= 0 && index < FillOrder.Length)
+            {
+                a.Fill = FillOrder[index];
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.RefreshHighlight(a);
+            }
         }
 
         private void UpdateDoorButton(FacadeElement facade)

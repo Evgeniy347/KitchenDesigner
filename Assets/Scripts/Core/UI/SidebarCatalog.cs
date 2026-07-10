@@ -13,15 +13,17 @@ namespace KitchenDesigner.Core.UI
             public Vector3Int dims;
             public bool isWall;
             public bool isFacade;
+            public bool isAssembled; // сборный (рамочный) фасад
             public int gapLeft;
             public int gapRight;
             public int gapTop;
             public int gapBottom;
             public Item(string name, Vector3Int dims, bool isWall = false, bool isFacade = false,
-                int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2)
+                int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2,
+                bool isAssembled = false)
             {
                 this.name = name; this.dims = dims; this.isWall = isWall;
-                this.isFacade = isFacade;
+                this.isFacade = isFacade; this.isAssembled = isAssembled;
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
             }
@@ -85,6 +87,10 @@ namespace KitchenDesigner.Core.UI
                 {
                     new Item("Фасад 800×400×18", new Vector3Int(800, 400, 18), false, true, 2, 2, 2, 2),
                     new Item("Фасад 600×400×18", new Vector3Int(600, 400, 18), false, true, 2, 2, 2, 2),
+                    new Item("Сборный 450×700×18", new Vector3Int(450, 700, 18), false, true,
+                        0, 0, 0, 0, isAssembled: true),
+                    new Item("Сборный 600×716×18", new Vector3Int(600, 716, 18), false, true,
+                        0, 0, 0, 0, isAssembled: true),
                 }
             };
         }

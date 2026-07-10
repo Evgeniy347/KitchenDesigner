@@ -32,13 +32,18 @@ public class SidebarCatalogTests
     }
 
     [Test]
-    public void FacadeGroup_HasTwoItems_Thickness18()
+    public void FacadeGroup_HasPlainAndAssembled_Thickness18()
     {
         var groups = SidebarCatalog.Build();
 
-        Assert.AreEqual(2, groups[1].items.Count);
+        // 2 обычных фасада + 2 сборных.
+        Assert.AreEqual(4, groups[1].items.Count);
         foreach (var it in groups[1].items)
+        {
+            Assert.IsTrue(it.isFacade, "элемент группы «Фасады» помечен как фасад");
             Assert.AreEqual(18, it.dims.z, "толщина фасада 18 мм");
+        }
+        Assert.AreEqual(2, groups[1].items.FindAll(it => it.isAssembled).Count, "2 сборных фасада");
     }
 
     [Test]
