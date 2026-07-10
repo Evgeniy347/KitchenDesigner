@@ -16,6 +16,7 @@ namespace KitchenDesigner.Core.UI
         private SpecificationPanelUI _specPanel;
         private SettingsPanelUI _settingsPanel;
         private ContextMenuUI _contextMenu;
+        private FloorSettingsUI _floorSettings;
         private GroupMenuUI _groupMenu;
         private Button _undoButton;
         private Button _redoButton;
@@ -42,6 +43,9 @@ namespace KitchenDesigner.Core.UI
 
             _contextMenu = gameObject.AddComponent<ContextMenuUI>();
             _contextMenu.Build(_canvas.transform);
+
+            _floorSettings = gameObject.AddComponent<FloorSettingsUI>();
+            _floorSettings.Build(_canvas.transform);
 
             var sidebar = gameObject.AddComponent<SidebarUI>();
             sidebar.Build(_canvas.transform);
@@ -219,6 +223,14 @@ namespace KitchenDesigner.Core.UI
         {
             if (_contextMenu != null)
                 _contextMenu.Open(element);
+        }
+
+        public void OpenFloorSettings()
+        {
+            _specPanel.SetVisible(false);
+            _settingsPanel.SetVisible(false);
+            if (_contextMenu != null) _contextMenu.Close();
+            if (_floorSettings != null) _floorSettings.Open();
         }
 
         /// <summary>Открыть меню группы (вызывается из CameraController по ПКМ-клику).</summary>

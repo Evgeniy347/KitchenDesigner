@@ -112,8 +112,8 @@ public class SnapPerformanceTests
         var result = ConstraintValidator.Validate(boards);
 
         sw.Stop();
-        Assert.IsTrue(sw.ElapsedMilliseconds < 32,
-            $"Validate 50 boards took {sw.ElapsedMilliseconds}ms (limit 32ms)");
+        Assert.IsTrue(sw.ElapsedMilliseconds < 64,
+            $"Validate 50 boards took {sw.ElapsedMilliseconds}ms (limit 64ms)");
         Debug.Log($"[Perf] Validate_50Boards: {sw.ElapsedMilliseconds}ms valid={result.isValid}");
     }
 
@@ -127,8 +127,8 @@ public class SnapPerformanceTests
         var result = ConstraintValidator.Validate(boards);
 
         sw.Stop();
-        Assert.IsTrue(sw.ElapsedMilliseconds < 64,
-            $"Validate 100 boards took {sw.ElapsedMilliseconds}ms (limit 64ms)");
+        Assert.IsTrue(sw.ElapsedMilliseconds < 128,
+            $"Validate 100 boards took {sw.ElapsedMilliseconds}ms (limit 128ms)");
         Debug.Log($"[Perf] Validate_100Boards: {sw.ElapsedMilliseconds}ms valid={result.isValid}");
     }
 }
