@@ -175,10 +175,13 @@ namespace KitchenDesigner.Core
                 if (ed == null) { resolved.Add(null); continue; }
                 var go = ed.isWall
                     ? ElementFactory.Instance.CreateWall(ed.Dimensions, ed.name, ed.Position)
-                    : ed.isFacade
-                        ? ElementFactory.Instance.CreateFacade(ed.Dimensions, ed.name, ed.Position,
-                            ed.gapLeft, ed.gapRight, ed.gapTop, ed.gapBottom)
-                        : ElementFactory.Instance.CreateBoard(ed.Dimensions, ed.name, ed.Position);
+                    : ed.assembled
+                        ? ElementFactory.Instance.CreateAssembledFacade(ed.Dimensions, ed.name,
+                            ed.Position, (AssembledFill)ed.assembledFill)
+                        : ed.isFacade
+                            ? ElementFactory.Instance.CreateFacade(ed.Dimensions, ed.name, ed.Position,
+                                ed.gapLeft, ed.gapRight, ed.gapTop, ed.gapBottom)
+                            : ElementFactory.Instance.CreateBoard(ed.Dimensions, ed.name, ed.Position);
                 go.transform.rotation = ed.Rotation;
                 var el = go.GetComponent<KitchenElement>();
                 if (el != null)
@@ -187,6 +190,9 @@ namespace KitchenDesigner.Core
                     el.GroupId = ed.groupId;
                     el.Transparent = ed.transparent;
                     MaterialManager.ApplyById(el, ed.materialId);
+
+                    if (el is AssembledFacadeElement assembled)
+                        assembled.GrooveCount = ed.grooveCount;
 
                     if (ed.isFacade && el is FacadeElement facade)
                     {

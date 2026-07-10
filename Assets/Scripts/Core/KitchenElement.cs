@@ -81,7 +81,7 @@ namespace KitchenDesigner.Core
 
         protected virtual Vector3 EffectiveScale => transform.localScale;
 
-        public void ApplyDimensions()
+        public virtual void ApplyDimensions()
         {
             transform.localScale = new Vector3(
                 _data.DimensionsMM.x * AppConstants.MM_TO_UNITS,
