@@ -29,6 +29,12 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateLabel("CtxTitle", panel.transform, "Доска", 20,
                 new Vector2(0, 255), new Vector2(260, 28), TextAnchor.MiddleCenter);
 
+            var closeBtn = UIFactory.CreateButton("CtxClose", panel.transform, "✕",
+                new Vector2(124, 257), new Vector2(24, 24), Close);
+            UIFactory.AnchorTopRight(closeBtn.GetComponent<RectTransform>());
+            closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-124, -257);
+            closeBtn.transform.SetAsLastSibling();
+
             float y = 220f;
             const float step = 31f;
             _name = Row(panel.transform, "Название", ref y, step);

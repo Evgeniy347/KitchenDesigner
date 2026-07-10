@@ -27,6 +27,12 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateLabel("FlrTitle", panel.transform, "Размеры помещения", 20,
                 new Vector2(0, 108), new Vector2(260, 28), TextAnchor.MiddleCenter);
 
+            var closeBtn = UIFactory.CreateButton("FlrClose", panel.transform, "✕",
+                new Vector2(124, 110), new Vector2(24, 24), Close);
+            UIFactory.AnchorTopRight(closeBtn.GetComponent<RectTransform>());
+            closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-124, -110);
+            closeBtn.transform.SetAsLastSibling();
+
             float y = 76f;
             const float step = 31f;
             _w = Row(panel.transform, "Ширина, мм", ref y, step);
