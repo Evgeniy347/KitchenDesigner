@@ -12,7 +12,11 @@ namespace KitchenDesigner.Core
     /// <summary>Два режима ручек на гранях выделенного объекта:
     /// Resize — тянем грань, меняется размер (наконечник-кубик);
     /// Move — двигаем объект вдоль одной оси (наконечник-стрелка/конус).
-    /// В обоих режимах для грани/объекта работает прилипание к другим объектам.</summary>
+    /// В обоих режимах для грани/объекта работает прилипание к другим объектам.
+    /// DefaultExecutionOrder=100 — ввод обрабатываем ПОСЛЕ SelectionManager/ElementMover,
+    /// иначе из-за недетерминированного порядка клик по новому объекту иногда попадал
+    /// в ещё не убранную ручку прежнего выделения и срабатывал ресайз вместо move.</summary>
+    [DefaultExecutionOrder(100)]
     public class ResizeHandleManager : MonoBehaviour
     {
         public enum HandleMode { Resize, Move }
@@ -291,9 +295,12 @@ namespace KitchenDesigner.Core
                 var marker = go.AddComponent<ResizeHandle>();
                 marker.faceIndex = i;
 
+                // Грабельная только выступающая часть стрелки (наконечник), а не зона
+                // у самой грани — иначе клик по телу объекта (особенно по центру грани,
+                // обращённой к камере) случайно цеплял ручку и растягивал вместо move.
                 var col = go.AddComponent<BoxCollider>();
-                col.center = new Vector3(0, 0, Gap + (ShaftLen + TipLen) * 0.5f);
-                col.size = new Vector3(TipSize * 1.6f, TipSize * 1.6f, ShaftLen + TipLen + 0.04f);
+                col.center = new Vector3(0, 0, Gap + ShaftLen + TipLen * 0.5f);
+                col.size = new Vector3(TipSize * 1.7f, TipSize * 1.7f, TipLen + 0.04f);
 
                 BuildArrowVisual(go.transform, _axisMats[i / 2]);
                 _handles.Add(marker);
