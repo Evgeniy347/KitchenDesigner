@@ -695,4 +695,165 @@ public class McpCommandHandlerTests
             if (el.BoardName == name) return el;
         return null;
     }
+
+    // ── Highlight refresh after mutation ────────────────────────────────
+
+    private ElementHighlighter SetupHighlighter()
+    {
+        var go = new GameObject("ElementHighlighter");
+        var hl = go.AddComponent<ElementHighlighter>();
+        _spawned.Add(go);
+        // Start() doesn't run in edit mode tests — init materials manually.
+        hl.InitMaterials();
+        return hl;
+    }
+
+    private KitchenElement MakeRenderedElement(string name, Vector3Int dims, Vector3 pos)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = name;
+        go.transform.position = pos;
+        var e = go.AddComponent<KitchenElement>();
+        e.BoardName = name;
+        e.DimensionsMM = dims;
+        BoardRegistry.Register(e);
+        _spawned.Add(go);
+        return e;
+    }
+
+    [Test]
+    public void MoveElement_RefreshesHighlights_AfterMutation()
+    {
+        SetupHighlighter();
+        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        var originalMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+
+        var resp = _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(new Vector3(1, 0, 0), el.transform.position);
+        Assert.AreNotEqual(originalMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+    }
+
+    [Test]
+    public void ResizeElement_RefreshesHighlights_AfterMutation()
+    {
+        SetupHighlighter();
+        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        var originalMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+
+        var resp = _handler.Handle(MakeReq("resize_element", new { name = "Board", width = 1200, height = 600, depth = 36 }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(new Vector3Int(1200, 600, 36), el.DimensionsMM);
+        Assert.AreNotEqual(originalMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+    }
+
+    [Test]
+    public void RotateElement_RefreshesHighlights_AfterMutation()
+    {
+        SetupHighlighter();
+        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        var originalMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+
+        var resp = _handler.Handle(MakeReq("rotate_element", new { name = "Board", x = 0f, y = 90f, z = 0f }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreNotEqual(originalMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+    }
+
+    [Test]
+    public void CreateElement_RefreshesHighlights_AfterMutation()
+    {
+        SetupHighlighter();
+        MakeRenderedElement("Existing", new Vector3Int(500, 400, 18), Vector3.zero);
+        var existingMat = FindBoard("Existing").GetComponent<MeshRenderer>().sharedMaterial;
+
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "NewBoard", width = 600, height = 400, depth = 18, x = 2f, y = 0f, z = 0f
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreNotEqual(existingMat, FindBoard("Existing").GetComponent<MeshRenderer>().sharedMaterial);
+    }
+
+    [Test]
+    public void DeleteElement_RefreshesHighlights_AfterMutation()
+    {
+        SetupHighlighter();
+        var el1 = MakeRenderedElement("Keep", new Vector3Int(500, 400, 18), Vector3.zero);
+        MakeRenderedElement("Remove", new Vector3Int(500, 400, 18), new Vector3(1f, 0f, 0f));
+        var originalMat = el1.GetComponent<MeshRenderer>().sharedMaterial;
+
+        var resp = _handler.Handle(MakeReq("delete_element", new { name = "Remove" }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.IsNull(FindBoard("Remove"));
+        Assert.AreNotEqual(originalMat, FindBoard("Keep").GetComponent<MeshRenderer>().sharedMaterial);
+    }
+
+    [Test]
+    public void Undo_RefreshesHighlights_AfterMutation()
+    {
+        SetupHighlighter();
+        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
+        var afterMoveMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+
+        var resp = _handler.Handle(MakeReq("undo", new { }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(Vector3.zero, el.transform.position);
+        Assert.AreNotEqual(afterMoveMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+    }
+
+    [Test]
+    public void Redo_RefreshesHighlights_AfterMutation()
+    {
+        SetupHighlighter();
+        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
+        _handler.Handle(MakeReq("undo", new { }));
+        var afterUndoMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+
+        var resp = _handler.Handle(MakeReq("redo", new { }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(new Vector3(1, 0, 0), el.transform.position);
+        Assert.AreNotEqual(afterUndoMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+    }
+
+    [Test]
+    public void ResizeFloor_RefreshesHighlights_AfterMutation()
+    {
+        SetupHighlighter();
+        // Floor uses BasePlate which is excluded from highlighting, but we
+        // verify the code path doesn't crash and returns success.
+        var plate = BasePlate.Create();
+        plate.Element.BoardName = "Floor";
+        BoardRegistry.Register(plate.Element);
+        _spawned.Add(plate.gameObject);
+        var originalMat = plate.GetComponent<MeshRenderer>().sharedMaterial;
+
+        var resp = _handler.Handle(MakeReq("resize_floor", new { width = 4000, height = 1, depth = 3000 }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(new Vector3Int(4000, 1, 3000), plate.Element.DimensionsMM);
+        // BasePlate is excluded, so material stays the same:
+        Assert.AreEqual(originalMat, plate.GetComponent<MeshRenderer>().sharedMaterial);
+    }
+
+    [Test]
+    public void NonMutatingCommand_DoesNotCallRefreshHighlights()
+    {
+        SetupHighlighter();
+        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        var originalMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+
+        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "Board" }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(originalMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+    }
 }
