@@ -105,23 +105,42 @@ function connectToUnity(): Promise<void> {
         const line = responseBuffer.slice(0, nl).trim();
         responseBuffer = responseBuffer.slice(nl + 1);
         if (!line) continue;
-        try {
-          const msg = JSON.parse(line) as ResponseMessage;
-          const p = pending.get(msg.id);
-          if (!p) continue;
-          pending.delete(msg.id);
-          if (msg.type === "error") {
-            const d = msg.data as Record<string, unknown> | undefined;
-            const m = typeof d?.message === "string" ? d.message : typeof d?.Message === "string" ? d.Message : null;
-            p.reject(new Error(m || "Unity returned an error"));
-          } else {
-            p.resolve(msg);
-          }
-        } catch (e) {
-          console.error("[unity-mcp] Parse error:", (e as Error).message);
-        }
+        // Defer JSON parsing to keep the event loop responsive
+        setImmediate(() => processLine(line));
       }
     });
+
+    /** Parse one JSON line and resolve/reject the matching pending request. */
+    function processLine(line: string) {
+      let id: string | null = null;
+      try {
+        // Extract id from raw line BEFORE parse, so a parse error still rejects
+        const idMatch = line.match(/"id"\s*:\s*"([^"]+)"/);
+        if (idMatch) id = idMatch[1];
+
+        const msg = JSON.parse(line) as ResponseMessage;
+        const p = pending.get(msg.id);
+        if (!p) return;
+        pending.delete(msg.id);
+        if (msg.type === "error") {
+          const d = msg.data as Record<string, unknown> | undefined;
+          const m = typeof d?.message === "string" ? d.message : typeof d?.Message === "string" ? d.Message : null;
+          p.reject(new Error(m || "Unity returned an error"));
+        } else {
+          p.resolve(msg);
+        }
+      } catch (e) {
+        console.error("[unity-mcp] Parse error:", (e as Error).message);
+        // Reject the pending promise so it doesn't hang for CALL_TIMEOUT_MS
+        if (id) {
+          const p = pending.get(id);
+          if (p) {
+            pending.delete(id);
+            p.reject(new Error(`Parse error: ${(e as Error).message}`));
+          }
+        }
+      }
+    }
 
     sock.on("error", (err: NodeJS.ErrnoException) => {
       if (unitySocket === sock) unitySocket = null;
