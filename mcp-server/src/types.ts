@@ -106,6 +106,11 @@ export interface LockElementParams {
   locked: boolean;
 }
 
+export interface FacadeModeParams {
+  name: string;
+  mode: string;
+}
+
 /* ── Advanced: raw objects ─────────────────────────────────────────────── */
 
 export interface SetActiveParams {
@@ -193,6 +198,7 @@ export interface ParamMap {
   readonly rotate_element: RotateElementParams;
   readonly create_element: CreateElementParams;
   readonly set_element_lock: LockElementParams;
+  readonly set_facade_mode: FacadeModeParams;
 
   readonly module_info: ModuleParams;
   readonly dissolve_module: ModuleParams;

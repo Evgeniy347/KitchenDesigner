@@ -112,6 +112,13 @@ namespace KitchenDesigner.Core.MCP
     }
 
     [Serializable]
+    public class ParamsSetFacadeMode
+    {
+        public string name;
+        public string mode;
+    }
+
+    [Serializable]
     public class ParamsCreateElement
     {
         public string template_name;
