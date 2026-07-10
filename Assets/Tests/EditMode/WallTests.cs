@@ -50,6 +50,31 @@ public class WallTests
             "стена — структурный якорь, а не нарушение");
     }
 
+    // Баг: при захвате полускрытой (опущенной) стены база перемещения бралась в
+    // опущенном состоянии (position.y смещён вниз), затем стена возвращалась на
+    // полную высоту — и объект «прыгал» в неожиданное место. При захвате стену
+    // надо сперва вернуть на полную высоту, ЗАТЕМ брать стартовую точку.
+    [Test]
+    public void LoweredWall_Grab_RestoresFull_AndMovesFromFullBase()
+    {
+        var e = Make("Стена", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0), true);
+        var wall = e.GetComponent<Wall>();
+        wall.SetLowered(true, 0.1f); // полускрытая: центр опущен до y≈0.05
+        Assert.AreEqual(0.05f, e.transform.position.y, 0.001f, "стена опущена");
+
+        // Захват: должна вернуться на полную высоту, старт — полный центр (а не опущенный).
+        Vector3 start = ElementMover.GrabStart(e);
+        Assert.AreEqual(2.5f, e.transform.localScale.y, 0.001f, "стена снова полностью видна");
+        Assert.AreEqual(1.25f, start.y, 0.001f, "база — полный центр");
+
+        // Горизонтальное перемещение: низ стены остаётся на полу, она не улетает по Y.
+        ElementMover.ApplyDelta(new List<KitchenElement> { e }, new List<Vector3> { start }, new Vector3(1, 0, 0));
+        Assert.AreEqual(1f, e.transform.position.x, 0.001f);
+        Assert.AreEqual(1.25f, e.transform.position.y, 0.001f);
+        float baseY = e.transform.position.y - e.transform.localScale.y * 0.5f;
+        Assert.AreEqual(0f, baseY, 0.001f, "низ стены остаётся на полу");
+    }
+
     [Test]
     public void SetLowered_ReducesHeight_KeepsBaseOnFloor()
     {
