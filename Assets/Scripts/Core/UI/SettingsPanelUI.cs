@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,6 +8,7 @@ namespace KitchenDesigner.Core.UI
     public class SettingsPanelUI : MonoBehaviour
     {
         private GameObject _root;
+        private readonly Dictionary<InputField, string> _cleanValues = new();
 
         public void Build(Transform canvas)
         {
@@ -33,9 +35,11 @@ namespace KitchenDesigner.Core.UI
             var stepField = UIFactory.CreateInputField("StepField", panel.transform, s.GridStep.ToString(),
                 new Vector2(120, 148), new Vector2(120, 28));
             stepField.contentType = InputField.ContentType.IntegerNumber;
+            TrackField(stepField, s.GridStep.ToString());
             stepField.onEndEdit.AddListener(t =>
             {
                 if (int.TryParse(t, out int v)) { s.GridStep = v; stepField.text = s.GridStep.ToString(); s.Save(); }
+                UpdateFieldHighlight(stepField);
             });
 
             UIFactory.CreateToggle("TglSnap", panel.transform, "Снэппинг", s.SnapEnabled,
@@ -46,9 +50,11 @@ namespace KitchenDesigner.Core.UI
             var thrField = UIFactory.CreateInputField("ThrField", panel.transform, s.SnapThreshold.ToString("F0"),
                 new Vector2(120, 64), new Vector2(120, 28));
             thrField.contentType = InputField.ContentType.DecimalNumber;
+            TrackField(thrField, s.SnapThreshold.ToString("F0"));
             thrField.onEndEdit.AddListener(t =>
             {
                 if (float.TryParse(t, out float v)) { s.SnapThreshold = v; thrField.text = s.SnapThreshold.ToString("F0"); s.Save(); }
+                UpdateFieldHighlight(thrField);
             });
 
             UIFactory.CreateToggle("TglBlock", panel.transform, "Блокировать ошибки", s.BlockOnViolation,
@@ -62,9 +68,11 @@ namespace KitchenDesigner.Core.UI
             var autoIntField = UIFactory.CreateInputField("AutoIntField", panel.transform, s.AutoSaveInterval.ToString(),
                 new Vector2(140, -56), new Vector2(100, 28));
             autoIntField.contentType = InputField.ContentType.IntegerNumber;
+            TrackField(autoIntField, s.AutoSaveInterval.ToString());
             autoIntField.onEndEdit.AddListener(t =>
             {
                 if (int.TryParse(t, out int v)) { s.AutoSaveInterval = v; autoIntField.text = s.AutoSaveInterval.ToString(); s.Save(); }
+                UpdateFieldHighlight(autoIntField);
             });
 
             UIFactory.CreateToggle("TglSpatialGrid", panel.transform, "Пространственная сетка", s.SpatialGrid,
@@ -93,6 +101,22 @@ namespace KitchenDesigner.Core.UI
         public void SetVisible(bool visible)
         {
             if (_root != null) _root.SetActive(visible);
+        }
+
+        // ── Подсветка изменённых полей ──────────────────────────────────
+
+        private void TrackField(InputField field, string cleanValue)
+        {
+            if (field == null) return;
+            _cleanValues[field] = cleanValue;
+            field.onValueChanged.AddListener(_ => UpdateFieldHighlight(field));
+        }
+
+        private void UpdateFieldHighlight(InputField field)
+        {
+            if (field == null) return;
+            var clean = _cleanValues.TryGetValue(field, out var v) ? v : field.text;
+            UIFactory.SetHighlight(field, field.text != clean);
         }
     }
 }

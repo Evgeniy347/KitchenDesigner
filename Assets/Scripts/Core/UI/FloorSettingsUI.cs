@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +12,7 @@ namespace KitchenDesigner.Core.UI
         private KitchenElement _floorElement;
 
         private InputField _w, _h, _d, _x, _y, _z;
+        private readonly Dictionary<InputField, string> _cleanValues = new();
 
         private void Awake()
         {
@@ -89,6 +91,9 @@ namespace KitchenDesigner.Core.UI
             _y.SetTextWithoutNotify(pos.y.ToString("F3"));
             _z.SetTextWithoutNotify(pos.z.ToString("F3"));
 
+            ClearAllHighlights();
+            TrackAllFields();
+
             _root.SetActive(true);
         }
 
@@ -105,11 +110,22 @@ namespace KitchenDesigner.Core.UI
 
             if (_root != null && _root.activeSelf && _floorElement != null)
             {
+                if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+                    && IsAnyFieldFocused())
+                    Apply();
+
                 var pos = _floorElement.transform.position;
                 if (!_x.isFocused) _x.SetTextWithoutNotify(pos.x.ToString("F3"));
                 if (!_y.isFocused) _y.SetTextWithoutNotify(pos.y.ToString("F3"));
                 if (!_z.isFocused) _z.SetTextWithoutNotify(pos.z.ToString("F3"));
             }
+        }
+
+        private bool IsAnyFieldFocused()
+        {
+            foreach (var f in new[] { _w, _h, _d, _x, _y, _z })
+                if (f != null && f.isFocused) return true;
+            return false;
         }
 
         private void Apply()
@@ -141,6 +157,9 @@ namespace KitchenDesigner.Core.UI
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
+
+            ClearAllHighlights();
+            TrackAllFields();
         }
 
         private static int ParseInt(string s, int fallback) =>
@@ -148,5 +167,45 @@ namespace KitchenDesigner.Core.UI
 
         private static float ParseFloat(string s, float fallback) =>
             float.TryParse(s, out float v) ? v : fallback;
+
+        // ── Подсветка изменённых полей ──────────────────────────────────
+
+        private void TrackField(InputField field, string cleanValue)
+        {
+            if (field == null) return;
+            _cleanValues[field] = cleanValue;
+            field.onValueChanged.RemoveAllListeners();
+            field.onValueChanged.AddListener(_ => UpdateFieldHighlight(field));
+        }
+
+        private void UpdateFieldHighlight(InputField field)
+        {
+            if (field == null) return;
+            var clean = _cleanValues.TryGetValue(field, out var v) ? v : field.text;
+            UIFactory.SetHighlight(field, field.text != clean);
+        }
+
+        private void ClearAllHighlights()
+        {
+            foreach (var kv in _cleanValues)
+            {
+                UIFactory.SetHighlight(kv.Key, false);
+                kv.Key.onValueChanged.RemoveAllListeners();
+            }
+            _cleanValues.Clear();
+        }
+
+        private void TrackAllFields()
+        {
+            if (_floorElement == null) return;
+            var dims = _floorElement.DimensionsMM;
+            TrackField(_w, dims.x.ToString());
+            TrackField(_h, dims.y.ToString());
+            TrackField(_d, dims.z.ToString());
+            var pos = _floorElement.transform.position;
+            TrackField(_x, pos.x.ToString("F3"));
+            TrackField(_y, pos.y.ToString("F3"));
+            TrackField(_z, pos.z.ToString("F3"));
+        }
     }
 }

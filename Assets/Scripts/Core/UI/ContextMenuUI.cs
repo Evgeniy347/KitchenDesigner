@@ -23,6 +23,9 @@ namespace KitchenDesigner.Core.UI
         private Dropdown _materialDropdown; // выбор текстуры/декора (детали и фасады)
         private Dropdown _typeDropdown; // конвертация: деталь ⇄ фасад ⇄ сборный фасад
 
+        // ── Подсветка изменённых полей ──────────────────────────────────
+        private readonly Dictionary<InputField, string> _cleanValues = new();
+
         // ── Раскладка ──────────────────────────────────────────────────
         // Меню собирается один раз (Build), а позиции пересчитываются в Layout
         // сверху вниз. Каждый видимый блок — одна строка в _layout. Всё якорится
@@ -364,14 +367,25 @@ namespace KitchenDesigner.Core.UI
 
         private void Update()
         {
-            // Меню открывается из ElementMover по клику ЛКМ (без перетаскивания).
-            // ПКМ теперь вращает камеру.
             if (Input.GetKeyDown(KeyCode.Escape) && _root != null && _root.activeSelf)
                 Close();
 
-            // Живое обновление полей позиции/поворота (например, при перетаскивании).
             if (_root != null && _root.activeSelf && _target != null)
+            {
+                // Enter в любом текстовом поле = Применить
+                if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+                    && IsAnyFieldFocused())
+                    Apply();
+
                 RefreshTransformFields();
+            }
+        }
+
+        private bool IsAnyFieldFocused()
+        {
+            foreach (var f in new[] { _name, _w, _h, _d, _radius, _gapW, _gapH, _x, _y, _z, _rx, _ry, _rz })
+                if (f != null && f.isFocused) return true;
+            return false;
         }
 
         private void RefreshTransformFields()
@@ -446,6 +460,9 @@ namespace KitchenDesigner.Core.UI
             RefreshTransformFields();
             _transparentToggle.SetIsOnWithoutNotify(element.Transparent);
             _lockToggle.SetIsOnWithoutNotify(!element.Movable);
+
+            ClearAllHighlights();
+            TrackAllFields();
 
             _root.SetActive(true);
         }
@@ -531,6 +548,9 @@ namespace KitchenDesigner.Core.UI
             }
 
             RefreshHighlights();
+
+            ClearAllHighlights();
+            TrackAllFields();
         }
 
         private bool WouldCauseViolation()
@@ -683,5 +703,61 @@ namespace KitchenDesigner.Core.UI
 
         private static float ParseFloat(string s, float fallback) =>
             float.TryParse(s, out float v) ? v : fallback;
+
+        // ── Подсветка изменённых полей ──────────────────────────────────
+
+        private void TrackField(InputField field, string cleanValue)
+        {
+            if (field == null) return;
+            _cleanValues[field] = cleanValue;
+            field.onValueChanged.RemoveAllListeners();
+            field.onValueChanged.AddListener(_ => UpdateFieldHighlight(field));
+        }
+
+        private void UpdateFieldHighlight(InputField field)
+        {
+            if (field == null) return;
+            var clean = _cleanValues.TryGetValue(field, out var v) ? v : field.text;
+            UIFactory.SetHighlight(field, field.text != clean);
+        }
+
+        private void UpdateAllHighlights()
+        {
+            foreach (var kv in _cleanValues)
+                UpdateFieldHighlight(kv.Key);
+        }
+
+        private void ClearAllHighlights()
+        {
+            foreach (var kv in _cleanValues)
+            {
+                UIFactory.SetHighlight(kv.Key, false);
+                kv.Key.onValueChanged.RemoveAllListeners();
+            }
+            _cleanValues.Clear();
+        }
+
+        private void TrackAllFields()
+        {
+            if (_target == null) return;
+            TrackField(_name, _target.PartName);
+            var dims = _target.DimensionsMM;
+            TrackField(_w, dims.x.ToString());
+            TrackField(_h, dims.y.ToString());
+            TrackField(_d, dims.z.ToString());
+            var radial = _target as RadialShelfElement;
+            TrackField(_radius, radial != null ? radial.Radius.ToString() : "300");
+            var facade = _target as FacadeElement;
+            TrackField(_gapW, facade != null ? (facade.GapLeft + facade.GapRight).ToString() : "0");
+            TrackField(_gapH, facade != null ? (facade.GapTop + facade.GapBottom).ToString() : "0");
+            var pos = _target.transform.position;
+            TrackField(_x, pos.x.ToString("F3"));
+            TrackField(_y, pos.y.ToString("F3"));
+            TrackField(_z, pos.z.ToString("F3"));
+            var e = _target.transform.eulerAngles;
+            TrackField(_rx, e.x.ToString("F1"));
+            TrackField(_ry, e.y.ToString("F1"));
+            TrackField(_rz, e.z.ToString("F1"));
+        }
     }
 }
