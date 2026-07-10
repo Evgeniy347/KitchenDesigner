@@ -26,29 +26,28 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
-            bool alt = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
-            // Орбита: Alt+ЛКМ (ПКМ свободна под контекстное меню). Pan: Alt+СКМ или СКМ.
-            bool orbitDown = alt && Input.GetMouseButtonDown(0);
-            bool orbitHeld = alt && Input.GetMouseButton(0);
+            // Орбита: ПКМ по пустому месту (по доске ПКМ = контекстное меню).
+            // Pan: ЛКМ по пустому месту или СКМ. ЛКМ по доске = перемещение доски.
+            bool overUI = PointerOverUI();
+            bool lmbDown = Input.GetMouseButtonDown(0);
+            bool rmbDown = Input.GetMouseButtonDown(1);
             bool mmbDown = Input.GetMouseButtonDown(2);
-            bool mmbUp = Input.GetMouseButtonUp(2);
             float scroll = Input.GetAxis("Mouse ScrollWheel");
 
-            if (orbitDown)
+            if (rmbDown && !overUI && !PointerHitsBoard())
             {
                 _isOrbiting = true;
                 _lastMouse = Input.mousePosition;
-                Debug.Log("[Camera] Orbit START");
             }
-            if (mmbDown)
+
+            if (mmbDown || (lmbDown && !overUI && !PointerHitsBoard()))
             {
                 _isPanning = true;
                 _lastMouse = Input.mousePosition;
-                Debug.Log("[Camera] Pan START");
             }
 
-            if ((!orbitHeld || Input.GetMouseButtonUp(0)) && _isOrbiting) { Debug.Log("[Camera] Orbit STOP"); _isOrbiting = false; }
-            if (mmbUp && _isPanning) { Debug.Log("[Camera] Pan STOP"); _isPanning = false; }
+            if (_isOrbiting && !Input.GetMouseButton(1)) _isOrbiting = false;
+            if (_isPanning && !Input.GetMouseButton(0) && !Input.GetMouseButton(2)) _isPanning = false;
 
             if (_isOrbiting)
             {
@@ -87,6 +86,22 @@ namespace KitchenDesigner.Core
             }
 
             UpdateCameraPosition();
+        }
+
+        private static bool PointerOverUI()
+        {
+            return UnityEngine.EventSystems.EventSystem.current != null &&
+                   UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+        }
+
+        private static bool PointerHitsBoard()
+        {
+            var cam = Camera.main;
+            if (cam == null) return false;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+                return hit.collider.GetComponentInParent<KitchenElement>() != null;
+            return false;
         }
 
         private void SetView(float angleX, float angleY)

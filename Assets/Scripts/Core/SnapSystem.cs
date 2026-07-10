@@ -24,10 +24,10 @@ namespace KitchenDesigner.Core
             Vector3 prevPos = moved.transform.position;
             moved.transform.position = testPosition;
             KitchenElement.Face[] movedFaces = moved.GetFaces();
-            moved.transform.position = prevPos;
 
             SnapResult best = default;
             float bestDist = float.MaxValue;
+            string bestLog = null;
 
             foreach (var other in others)
             {
@@ -43,15 +43,30 @@ namespace KitchenDesigner.Core
                         float dot = Vector3.Dot(movedFaces[i].normal, otherFaces[j].normal);
                         if (Mathf.Abs(dot) < 0.999f) continue;
 
-                        Vector3 offset = otherFaces[j].center - movedFaces[i].center;
-                        float planeDist = Mathf.Abs(Vector3.Dot(offset, movedFaces[i].normal));
+                        var mf = movedFaces[i];
+                        var of = otherFaces[j];
+
+                        Vector3 offset = of.center - mf.center;
+                        float planeDist = Mathf.Abs(Vector3.Dot(offset, mf.normal));
                         if (planeDist > threshold) continue;
 
-                        if (!FacesOverlap(movedFaces[i], otherFaces[j], out float overlapRatio))
+                        if (!FacesOverlap(mf, of, out float overlapRatio))
                             continue;
                         if (overlapRatio < 0.3f) continue;
 
-                        Vector3 snapPos = testPosition + offset;
+                        // Сдвиг вдоль нормали: плоскости становятся заподлицо.
+                        float planeShift = Vector3.Dot(offset, mf.normal);
+
+                        // Сдвиг в плоскости грани: выравнивание по ближайшей кромке/центру
+                        // (а не принудительно по центру — иначе мелкая доска центрируется).
+                        Vector3 u = mf.rightAxis;
+                        Vector3 v = mf.upAxis;
+                        Rect mRect = GetFaceRect(mf, u, v);
+                        Rect oRect = GetFaceRect(of, u, v);
+                        float du = BestEdgeDelta(mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax, threshold, out string labelU);
+                        float dv = BestEdgeDelta(mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax, threshold, out string labelV);
+
+                        Vector3 snapPos = testPosition + planeShift * mf.normal + du * u + dv * v;
                         snapPos = GridManager.SnapToGrid(snapPos);
 
                         float dist = Vector3.Distance(snapPos, testPosition);
@@ -64,14 +79,56 @@ namespace KitchenDesigner.Core
                                 position = snapPos,
                                 targetName = other.BoardName,
                                 faceIndex = j,
-                                snapPoint = movedFaces[i].center,
-                                targetPoint = otherFaces[j].center
+                                snapPoint = mf.center,
+                                targetPoint = of.center
                             };
+                            if (VerboseLog)
+                                bestLog = $"[Snap] {moved.Describe()} → {other.Describe()} | грань m{i}/o{j} " +
+                                          $"зазор={planeDist * 1000f:F2}мм перекр={overlapRatio:P0} " +
+                                          $"оси[u:{labelU} v:{labelV}] → поз {snapPos.x:F3},{snapPos.y:F3},{snapPos.z:F3}";
                         }
                     }
                 }
             }
 
+            moved.transform.position = prevPos;
+            if (VerboseLog && bestLog != null) Debug.Log(bestLog);
+            return best;
+        }
+
+        /// <summary>Логировать выбор снэпа (для отладки прилипания).</summary>
+        public static bool VerboseLog = true;
+
+        /// <summary>
+        /// Лучшее выравнивание интервала [aMin,aMax] к [bMin,bMax] вдоль оси:
+        /// кандидаты — совпадение минимумов, максимумов, центров. Возвращает
+        /// наименьший по модулю сдвиг в пределах порога, иначе 0 (ось не снэпится).
+        /// </summary>
+        private static float BestEdgeDelta(float aMin, float aMax, float bMin, float bMax, float threshold, out string label)
+        {
+            float aCenter = (aMin + aMax) * 0.5f;
+            float bCenter = (bMin + bMax) * 0.5f;
+
+            var candidates = new (float d, string name)[]
+            {
+                (bMin - aMin, "кромка-"),
+                (bMax - aMax, "кромка+"),
+                (bCenter - aCenter, "центр"),
+            };
+
+            float best = 0f;
+            float bestAbs = float.MaxValue;
+            label = "своб";
+            foreach (var c in candidates)
+            {
+                float abs = Mathf.Abs(c.d);
+                if (abs <= threshold && abs < bestAbs)
+                {
+                    bestAbs = abs;
+                    best = c.d;
+                    label = c.name;
+                }
+            }
             return best;
         }
 

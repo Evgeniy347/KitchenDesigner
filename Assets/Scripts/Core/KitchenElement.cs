@@ -156,6 +156,14 @@ namespace KitchenDesigner.Core
             DimensionsMM = new Vector3Int(w, h, d);
         }
 
+        /// <summary>Короткое описание для логов: имя, размеры (мм), позиция.</summary>
+        public string Describe()
+        {
+            var p = transform.position;
+            return $"{_boardName} ({_dimensionsMM.x}x{_dimensionsMM.y}x{_dimensionsMM.z}мм @ " +
+                   $"{p.x:F3},{p.y:F3},{p.z:F3})";
+        }
+
         /// <summary>Поворот вокруг собственного центра (позиция не меняется).</summary>
         public void Rotate(Quaternion rotation)
         {

@@ -90,6 +90,43 @@ public class SnapSystemTests
         Assert.IsFalse(result.snapped, "Should NOT snap when snap is disabled");
     }
 
+    [Test]
+    public void TrySnap_SmallBoardNearEdge_AlignsEdgesNotCenter()
+    {
+        // Большая доска A (800 шир) в плоскости XY, тонкая по Z. Маленькая B (400 шир)
+        // подносится к передней грани A около ЛЕВОГО края → должны совпасть левые кромки,
+        // а НЕ центры (это и была жалоба на «прилипание по середине»).
+        var a = CreateElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = CreateElement("B", new Vector3Int(400, 400, 18), Vector3.zero);
+
+        var result = SnapSystem.TrySnap(b, new List<KitchenElement> { a },
+            new Vector3(-0.18f, 0f, 0.02f));
+
+        Assert.IsTrue(result.snapped);
+        Assert.AreEqual(-0.20f, result.position.x, 0.001f, "левые кромки должны совпасть");
+        Assert.AreEqual(0.018f, result.position.z, 0.001f, "плоскости заподлицо");
+
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
+    }
+
+    [Test]
+    public void TrySnap_SmallBoardNearCenter_AlignsCenters()
+    {
+        var a = CreateElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = CreateElement("B", new Vector3Int(400, 400, 18), Vector3.zero);
+
+        var result = SnapSystem.TrySnap(b, new List<KitchenElement> { a },
+            new Vector3(0.0f, 0f, 0.02f));
+
+        Assert.IsTrue(result.snapped);
+        Assert.AreEqual(0.0f, result.position.x, 0.001f, "у центра — центры совпадают");
+        Assert.AreEqual(0.018f, result.position.z, 0.001f);
+
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
+    }
+
     private static KitchenElement CreateElement(string name, Vector3Int dims, Vector3 position)
     {
         var go = new GameObject(name);

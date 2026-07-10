@@ -4,6 +4,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
@@ -102,6 +103,25 @@ public class IntegrationPlayModeTests
         Assert.AreEqual(3, BoardCount(), "после загрузки должно быть 3 доски");
 
         File.Delete(SaveLoadManager.PathForName(name));
+    }
+
+    [UnityTest]
+    public IEnumerator SaveButton_Click_CreatesFile()
+    {
+        Button saveBtn = null;
+        foreach (var b in Object.FindObjectsByType<Button>())
+            if (b.name == "Save") saveBtn = b;
+
+        Assert.IsNotNull(saveBtn, "кнопка «Сохранить» должна существовать в тулбаре");
+
+        var path = SaveLoadManager.PathForName(UIManager.QuickSaveName);
+        if (File.Exists(path)) File.Delete(path);
+
+        saveBtn.onClick.Invoke();
+        yield return null;
+
+        Assert.IsTrue(File.Exists(path), "клик по «Сохранить» должен создать файл проекта");
+        File.Delete(path);
     }
 
     [UnityTest]

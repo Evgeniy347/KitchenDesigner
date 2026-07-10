@@ -69,7 +69,7 @@ namespace KitchenDesigner.Core
                 Debug.Log("[Selection] Already selected, skip");
                 return;
             }
-            Debug.Log("[Selection] Select: " + element.name + " BoardName=" + element.BoardName);
+            Debug.Log("[Selection] Выбрана " + element.Describe());
             Deselect();
 
             _selected = element;

@@ -10,13 +10,13 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("SettingsPanel", canvas, Vector2.zero, new Vector2(420, 360));
+            var panel = UIFactory.CreatePanel("SettingsPanel", canvas, Vector2.zero, new Vector2(420, 540));
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
 
             UIFactory.CreateLabel("SetTitle", panel.transform, "Настройки", 24,
-                new Vector2(0, 150), new Vector2(400, 36), TextAnchor.MiddleCenter);
+                new Vector2(0, 240), new Vector2(400, 36), TextAnchor.MiddleCenter);
 
             var s = KitchenSettings.Instance;
             if (s == null)
@@ -26,12 +26,12 @@ namespace KitchenDesigner.Core.UI
             }
 
             UIFactory.CreateToggle("TglGrid", panel.transform, "Сетка", s.GridEnabled,
-                new Vector2(0, 100), new Vector2(360, 30), v => { s.GridEnabled = v; s.Save(); });
+                new Vector2(0, 190), new Vector2(360, 30), v => { s.GridEnabled = v; s.Save(); });
 
             UIFactory.CreateLabel("LblStep", panel.transform, "Шаг сетки, мм", 16,
-                new Vector2(-110, 55), new Vector2(180, 28));
+                new Vector2(-110, 148), new Vector2(180, 28));
             var stepField = UIFactory.CreateInputField("StepField", panel.transform, s.GridStep.ToString(),
-                new Vector2(120, 55), new Vector2(120, 28));
+                new Vector2(120, 148), new Vector2(120, 28));
             stepField.contentType = InputField.ContentType.IntegerNumber;
             stepField.onEndEdit.AddListener(t =>
             {
@@ -39,12 +39,12 @@ namespace KitchenDesigner.Core.UI
             });
 
             UIFactory.CreateToggle("TglSnap", panel.transform, "Снэппинг", s.SnapEnabled,
-                new Vector2(0, 15), new Vector2(360, 30), v => { s.SnapEnabled = v; s.Save(); });
+                new Vector2(0, 106), new Vector2(360, 30), v => { s.SnapEnabled = v; s.Save(); });
 
             UIFactory.CreateLabel("LblThr", panel.transform, "Порог снэпа, мм", 16,
-                new Vector2(-110, -30), new Vector2(180, 28));
+                new Vector2(-110, 64), new Vector2(180, 28));
             var thrField = UIFactory.CreateInputField("ThrField", panel.transform, s.SnapThreshold.ToString("F0"),
-                new Vector2(120, -30), new Vector2(120, 28));
+                new Vector2(120, 64), new Vector2(120, 28));
             thrField.contentType = InputField.ContentType.DecimalNumber;
             thrField.onEndEdit.AddListener(t =>
             {
@@ -52,10 +52,19 @@ namespace KitchenDesigner.Core.UI
             });
 
             UIFactory.CreateToggle("TglBlock", panel.transform, "Блокировать ошибки", s.BlockOnViolation,
-                new Vector2(0, -75), new Vector2(360, 30), v => { s.BlockOnViolation = v; s.Save(); });
+                new Vector2(0, 22), new Vector2(360, 30), v => { s.BlockOnViolation = v; s.Save(); });
+
+            UIFactory.CreateToggle("TglAutoSave", panel.transform, "Автосохранение (2с, при изменениях)", s.AutoSave,
+                new Vector2(0, -18), new Vector2(360, 30), v => { s.AutoSave = v; s.Save(); });
+
+            UIFactory.CreateToggle("TglSpatialGrid", panel.transform, "Пространственная сетка", s.SpatialGrid,
+                new Vector2(0, -58), new Vector2(360, 30), v => { s.SpatialGrid = v; s.Save(); });
+
+            UIFactory.CreateToggle("TglWindowed", panel.transform, "Оконный режим", s.WindowedMode,
+                new Vector2(0, -98), new Vector2(360, 30), v => { s.WindowedMode = v; s.Save(); DisplaySettings.ApplyWindowMode(); });
 
             UIFactory.CreateButton("SetClose", panel.transform, "Закрыть",
-                new Vector2(0, -150), new Vector2(160, 40), () => SetVisible(false));
+                new Vector2(0, -210), new Vector2(160, 40), () => SetVisible(false));
 
             _root.SetActive(false);
         }

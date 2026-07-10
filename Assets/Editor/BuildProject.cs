@@ -12,6 +12,7 @@ public static class BuildProject
     {
         EnsureShadersIncluded();
         EnsureURPAssigned();
+        EnsureWindowSettings();
 
         var scenes = new[] { "Assets/Scenes/TestScene.unity" };
         var location = "Build/KitchenDesigner.exe";
@@ -45,6 +46,16 @@ public static class BuildProject
             }
             EditorApplication.Exit(1);
         }
+    }
+
+    private static void EnsureWindowSettings()
+    {
+        // Полноценное окно Windows: с рамкой и растягиваемое.
+        PlayerSettings.resizableWindow = true;
+        PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
+        PlayerSettings.defaultScreenWidth = 1280;
+        PlayerSettings.defaultScreenHeight = 720;
+        Debug.Log("[BuildProject] Window: resizable, windowed 1280x720");
     }
 
     private static void EnsureURPAssigned()

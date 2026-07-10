@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -109,10 +111,52 @@ namespace KitchenDesigner.Core
         public static string PathForName(string name) =>
             Path.Combine(SavesDirectory, name + ".json");
 
-        public static bool SaveProject(string name)
+        public static bool SaveProject(string name, bool backup = true)
         {
             var data = CaptureScene(FindAllElements());
-            return SaveToFile(PathForName(name), data);
+            string path = PathForName(name);
+
+            if (backup && File.Exists(path))
+                BackupExisting(path);
+
+            return SaveToFile(path, data);
+        }
+
+        /// <summary>JSON текущей сцены — для проверки «есть ли изменения» (автосохранение).</summary>
+        public static string CaptureCurrentJson()
+        {
+            return Serialize(CaptureScene(FindAllElements()));
+        }
+
+        /// <summary>
+        /// Существующий файл архивируется в zip (имя записи с датой), затем
+        /// перезаписывается новым сохранением. Компрессия — Optimal.
+        /// </summary>
+        private static void BackupExisting(string path)
+        {
+            try
+            {
+                string dir = Path.Combine(SavesDirectory, "backups");
+                Directory.CreateDirectory(dir);
+
+                string baseName = Path.GetFileNameWithoutExtension(path);
+                string stamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                string zipPath = Path.Combine(dir, $"{baseName}_{stamp}.zip");
+
+                using (var fs = new FileStream(zipPath, FileMode.Create))
+                using (var zip = new ZipArchive(fs, ZipArchiveMode.Create))
+                {
+                    var entry = zip.CreateEntry($"{baseName}_{stamp}.json", CompressionLevel.Optimal);
+                    using (var es = entry.Open())
+                    using (var src = File.OpenRead(path))
+                        src.CopyTo(es);
+                }
+                Debug.Log($"[SaveLoad] Старый файл заархивирован: {zipPath}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SaveLoad] Backup failed: {ex.Message}");
+            }
         }
 
         public static bool LoadProject(string name)
