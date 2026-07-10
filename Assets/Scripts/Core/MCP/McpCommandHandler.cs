@@ -60,8 +60,21 @@ namespace KitchenDesigner.Core.MCP
             ["execute_menu_item"] = "Выполнить пункт меню Editor (menu_path)",
             ["enter_play_mode"] = "Войти в Play Mode",
             ["exit_play_mode"] = "Выйти из Play Mode",
+            ["get_element_debug"] = "Полная геометрия элемента (грани, вершины, AABB)",
+            ["get_element_gaps"] = "Зазоры/перекрытия к соседям по каждой оси",
+            ["simulate_move"] = "Симуляция перемещения: AABB, пересечения, зазоры без выполнения",
+            ["simulate_resize"] = "Симуляция изменения размера: AABB, пересечения, зазоры без выполнения",
         };
 
+        /// <summary>
+        /// Диспетчер MCP-команд. Каждый метод обрабатывается в отдельном handler'е.
+        ///
+        /// Протокольные соглашения:
+        /// - get_all_elements — единственный источник истины (snapshot) перед изменениями.
+        /// - simulate_move / simulate_resize — dry-run; проверяй wouldHaveViolations до apply.
+        /// - После каждой мутации вызывай get_violations для проверки регрессий.
+        /// - dimZ всегда толщина доски (Board convention в AGENTS.md).
+        /// </summary>
         public McpResponse Handle(McpRequest request)
         {
             try
@@ -113,6 +126,10 @@ namespace KitchenDesigner.Core.MCP
                     case "execute_menu_item": return HandleExecuteMenuItem(request);
                     case "enter_play_mode": return HandleEnterPlayMode(request);
                     case "exit_play_mode": return HandleExitPlayMode(request);
+                    case "get_element_debug": return HandleGetElementDebug(request);
+                    case "get_element_gaps": return HandleGetElementGaps(request);
+                    case "simulate_move": return HandleSimulateMove(request);
+                    case "simulate_resize": return HandleSimulateResize(request);
                     default:
                         return McpResponse.Error(request.id, -32601, $"Unknown method: {request.method}");
                 }
@@ -308,6 +325,9 @@ namespace KitchenDesigner.Core.MCP
                 hasViolations = vr.violations.Contains(el);
             }
 
+            var aabb = ComputeAABB(el.GetVertices());
+            var effDim = GetEffectiveDimMM(el);
+
             return new ElementInfo
             {
                 name = el.BoardName, type = el.GetType().Name,
@@ -317,7 +337,10 @@ namespace KitchenDesigner.Core.MCP
                 active = el.gameObject.activeInHierarchy,
                 moduleId = group != null ? group.id : 0,
                 moduleName = group != null ? group.name : null,
-                hasViolations = hasViolations
+                hasViolations = hasViolations,
+                aabbMinX = aabb.minX, aabbMinY = aabb.minY, aabbMinZ = aabb.minZ,
+                aabbMaxX = aabb.maxX, aabbMaxY = aabb.maxY, aabbMaxZ = aabb.maxZ,
+                effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z
             };
         }
 
@@ -521,7 +544,15 @@ namespace KitchenDesigner.Core.MCP
             Debug.Log($"[MCP] Moved {element.BoardName} to ({p.x}, {p.y}, {p.z})");
             var all = BoardRegistry.GetAll();
             var vr = all != null ? ConstraintValidator.Validate(all) : null;
-            return McpResponse.Result(req.id, new { ok = true, element = p.name, position = new { p.x, p.y, p.z }, hasViolations = vr != null && vr.violations.Contains(element) });
+            var aabb = ComputeAABB(element.GetVertices());
+            var gaps = all != null ? ComputeAxisGaps(element, all) : null;
+            return McpResponse.Result(req.id, new {
+                ok = true, element = p.name,
+                position = new { p.x, p.y, p.z },
+                hasViolations = vr != null && vr.violations.Contains(element),
+                aabb = aabb,
+                faceGaps = gaps
+            });
         }
 
         private McpResponse HandleResizeElement(McpRequest req)
@@ -549,7 +580,15 @@ namespace KitchenDesigner.Core.MCP
             Debug.Log($"[MCP] Resized {element.BoardName} to ({w}, {h}, {d})mm");
             var all = BoardRegistry.GetAll();
             var vr = all != null ? ConstraintValidator.Validate(all) : null;
-            return McpResponse.Result(req.id, new { ok = true, element = p.name, dimensions = new { width = w, height = h, depth = d }, hasViolations = vr != null && vr.violations.Contains(element) });
+            var aabb = ComputeAABB(element.GetVertices());
+            var gaps = all != null ? ComputeAxisGaps(element, all) : null;
+            return McpResponse.Result(req.id, new {
+                ok = true, element = p.name,
+                dimensions = new { width = w, height = h, depth = d },
+                hasViolations = vr != null && vr.violations.Contains(element),
+                aabb = aabb,
+                faceGaps = gaps
+            });
         }
 
         private McpResponse HandleRotateElement(McpRequest req)
@@ -921,6 +960,283 @@ namespace KitchenDesigner.Core.MCP
 #else
             return McpResponse.Error(req.id, -1, "Not available in standalone build");
 #endif
+        }
+
+        // ── get_element_debug ───────────────────────────────────────────
+        private McpResponse HandleGetElementDebug(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            var verts = el.GetVertices();
+            var aabb = ComputeAABB(verts);
+
+            var srcFaces = el.GetFaces();
+            var faces = new FaceInfo[srcFaces.Length];
+            for (int i = 0; i < srcFaces.Length; i++)
+            {
+                faces[i] = new FaceInfo
+                {
+                    centerX = srcFaces[i].center.x, centerY = srcFaces[i].center.y, centerZ = srcFaces[i].center.z,
+                    normalX = srcFaces[i].normal.x, normalY = srcFaces[i].normal.y, normalZ = srcFaces[i].normal.z,
+                    sizeX = srcFaces[i].size.x, sizeY = srcFaces[i].size.y
+                };
+            }
+
+            var vertices = new VertexInfo[verts.Length];
+            for (int i = 0; i < verts.Length; i++)
+                vertices[i] = new VertexInfo { x = verts[i].x, y = verts[i].y, z = verts[i].z };
+
+            var effDim = GetEffectiveDimMM(el);
+            return McpResponse.Result(req.id, new ElementDebugInfo
+            {
+                name = el.BoardName, type = el.GetType().Name,
+                aabb = aabb, faces = faces, vertices = vertices,
+                dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
+                effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z
+            });
+        }
+
+        // ── get_element_gaps ─────────────────────────────────────────────
+        private McpResponse HandleGetElementGaps(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            var all = BoardRegistry.GetAll();
+            var gaps = all != null ? ComputeAxisGaps(el, all) : new List<AxisGapInfo>();
+            return McpResponse.Result(req.id, new ElementGapsResult { name = el.BoardName, gaps = gaps });
+        }
+
+        // ── simulate_move ───────────────────────────────────────────────
+        /// <summary>
+        /// Dry-run move: не меняет позицию, возвращает simulatedAABB,
+        /// overlapsWith, faceGaps и wouldHaveViolations.
+        /// Вызывай ПЕРЕД move_element для проверки.
+        /// </summary>
+        private McpResponse HandleSimulateMove(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsSimulateMove>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            var all = BoardRegistry.GetAll();
+            var result = SimulateMoveAt(el, new Vector3(p.x, p.y, p.z), all);
+            return McpResponse.Result(req.id, result);
+        }
+
+        // ── simulate_resize ──────────────────────────────────────────────
+        /// <summary>
+        /// Dry-run resize: не меняет размеры, возвращает simulatedAABB,
+        /// overlapsWith, faceGaps и wouldHaveViolations.
+        /// Вызывай ПЕРЕД resize_element для проверки.
+        /// </summary>
+        private McpResponse HandleSimulateResize(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsSimulateResize>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            int w = p.width > 0 ? p.width : p.dimX;
+            int h = p.height > 0 ? p.height : p.dimY;
+            int d = p.depth > 0 ? p.depth : p.dimZ;
+            w = Mathf.Max(1, w);
+            h = Mathf.Max(1, h);
+            d = Mathf.Max(1, d);
+
+            var all = BoardRegistry.GetAll();
+            var result = SimulateResizeTo(el, new Vector3Int(w, h, d), all);
+            return McpResponse.Result(req.id, result);
+        }
+
+        // ── Helpers ──────────────────────────────────────────────────────
+
+        private static AabbInfo ComputeAABB(Vector3[] vertices)
+        {
+            float minX = float.MaxValue, minY = float.MaxValue, minZ = float.MaxValue;
+            float maxX = float.MinValue, maxY = float.MinValue, maxZ = float.MinValue;
+            foreach (var v in vertices)
+            {
+                if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x;
+                if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
+                if (v.z < minZ) minZ = v.z; if (v.z > maxZ) maxZ = v.z;
+            }
+            return new AabbInfo { minX = minX, minY = minY, minZ = minZ, maxX = maxX, maxY = maxY, maxZ = maxZ };
+        }
+
+        private static bool AABBsOverlap(AabbInfo a, AabbInfo b)
+        {
+            return a.minX < b.maxX && a.maxX > b.minX &&
+                   a.minY < b.maxY && a.maxY > b.minY &&
+                   a.minZ < b.maxZ && a.maxZ > b.minZ;
+        }
+
+        private static Vector3Int GetEffectiveDimMM(KitchenElement el)
+        {
+            var facade = el as FacadeElement;
+            if (facade != null)
+            {
+                return new Vector3Int(
+                    el.DimensionsMM.x + facade.GapLeft + facade.GapRight,
+                    el.DimensionsMM.y + facade.GapTop + facade.GapBottom,
+                    el.DimensionsMM.z);
+            }
+            return el.DimensionsMM;
+        }
+
+        private static List<AxisGapInfo> ComputeAxisGaps(KitchenElement element, List<KitchenElement> allElements)
+        {
+            var elAabb = ComputeAABB(element.GetVertices());
+            var gaps = new List<AxisGapInfo>();
+            string[] axisNames = { "x", "y", "z" };
+            float[] aMin = { elAabb.minX, elAabb.minY, elAabb.minZ };
+            float[] aMax = { elAabb.maxX, elAabb.maxY, elAabb.maxZ };
+
+            for (int axis = 0; axis < 3; axis++)
+            {
+                float bestGapUnits = float.MaxValue;
+                string bestNeighbor = null;
+                float am = aMin[axis], ax = aMax[axis];
+
+                foreach (var other in allElements)
+                {
+                    if (other == element || other == null) continue;
+                    var oAabb = ComputeAABB(other.GetVertices());
+                    float bMin = 0, bMax = 0;
+                    if (axis == 0) { bMin = oAabb.minX; bMax = oAabb.maxX; }
+                    else if (axis == 1) { bMin = oAabb.minY; bMax = oAabb.maxY; }
+                    else { bMin = oAabb.minZ; bMax = oAabb.maxZ; }
+
+                    float gap;
+                    if (ax <= bMin) gap = bMin - ax;
+                    else if (bMax <= am) gap = am - bMax;
+                    else gap = -(Mathf.Min(ax, bMax) - Mathf.Max(am, bMin));
+
+                    if (Mathf.Abs(gap) < Mathf.Abs(bestGapUnits))
+                    {
+                        bestGapUnits = gap;
+                        bestNeighbor = other.BoardName;
+                    }
+                }
+
+                float gapMM = bestGapUnits == float.MaxValue ? 0f : bestGapUnits / AppConstants.MM_TO_UNITS;
+                gaps.Add(new AxisGapInfo
+                {
+                    axis = axisNames[axis],
+                    neighbor = bestNeighbor ?? "",
+                    gapMM = gapMM,
+                    isOverlap = gapMM < 0
+                });
+            }
+            return gaps;
+        }
+
+        private static SimulateResult SimulateMoveAt(KitchenElement element, Vector3 testPos, List<KitchenElement> allElements)
+        {
+            var oldPos = element.transform.position;
+            var oldRot = element.transform.rotation;
+            var currentAabb = ComputeAABB(element.GetVertices());
+
+            try
+            {
+                element.transform.position = testPos;
+                var simAabb = ComputeAABB(element.GetVertices());
+
+                var overlaps = new List<string>();
+                if (allElements != null)
+                {
+                    foreach (var other in allElements)
+                    {
+                        if (other == element || other == null) continue;
+                        if (AABBsOverlap(simAabb, ComputeAABB(other.GetVertices())))
+                            overlaps.Add(other.BoardName);
+                    }
+                }
+
+                var gaps = allElements != null ? ComputeAxisGaps(element, allElements) : new List<AxisGapInfo>();
+
+                bool wouldViolate = false;
+                if (allElements != null && allElements.Count > 0)
+                {
+                    var vr = ConstraintValidator.Validate(allElements);
+                    wouldViolate = vr != null && vr.violations.Contains(element);
+                }
+
+                return new SimulateResult
+                {
+                    name = element.BoardName,
+                    currentAABB = currentAabb,
+                    simulatedAABB = simAabb,
+                    overlapsWith = overlaps,
+                    faceGaps = gaps,
+                    wouldHaveViolations = wouldViolate
+                };
+            }
+            finally
+            {
+                element.transform.position = oldPos;
+                element.transform.rotation = oldRot;
+            }
+        }
+
+        private static SimulateResult SimulateResizeTo(KitchenElement element, Vector3Int testDims, List<KitchenElement> allElements)
+        {
+            var oldDims = element.DimensionsMM;
+            var oldPos = element.transform.position;
+            var oldRot = element.transform.rotation;
+            var currentAabb = ComputeAABB(element.GetVertices());
+
+            try
+            {
+                element.DimensionsMM = testDims;
+                var simAabb = ComputeAABB(element.GetVertices());
+
+                var overlaps = new List<string>();
+                if (allElements != null)
+                {
+                    foreach (var other in allElements)
+                    {
+                        if (other == element || other == null) continue;
+                        if (AABBsOverlap(simAabb, ComputeAABB(other.GetVertices())))
+                            overlaps.Add(other.BoardName);
+                    }
+                }
+
+                var gaps = allElements != null ? ComputeAxisGaps(element, allElements) : new List<AxisGapInfo>();
+
+                bool wouldViolate = false;
+                if (allElements != null && allElements.Count > 0)
+                {
+                    var vr = ConstraintValidator.Validate(allElements);
+                    wouldViolate = vr != null && vr.violations.Contains(element);
+                }
+
+                return new SimulateResult
+                {
+                    name = element.BoardName,
+                    currentAABB = currentAabb,
+                    simulatedAABB = simAabb,
+                    overlapsWith = overlaps,
+                    faceGaps = gaps,
+                    wouldHaveViolations = wouldViolate
+                };
+            }
+            finally
+            {
+                element.DimensionsMM = oldDims;
+                element.transform.position = oldPos;
+                element.transform.rotation = oldRot;
+            }
         }
 
         private static GameObject FindGameObject(string path)

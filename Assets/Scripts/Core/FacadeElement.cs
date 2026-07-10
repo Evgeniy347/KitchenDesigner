@@ -33,6 +33,8 @@ namespace KitchenDesigner.Core
             set { _gapBottom = Mathf.Max(0, value); ApplyDimensions(); }
         }
 
+        public int GapMM => _gapLeft + _gapRight + _gapTop + _gapBottom;
+
         protected override Vector3 EffectiveScale
         {
             get
