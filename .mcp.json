@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "unity-kitchen": {
+      "command": "node",
+      "args": ["mcp-server/dist/index.js"],
+      "env": {
+        "UNITY_MCP_PORT": "9337"
+      }
+    }
+  }
+}
