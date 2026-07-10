@@ -141,6 +141,22 @@ namespace KitchenDesigner.Core
             HandlePlusMinusZoom();
 
             UpdateCameraPosition();
+            UpdateFloorVisibility();
+        }
+
+        private void UpdateFloorVisibility()
+        {
+            var cam = Camera.main;
+            if (cam == null) return;
+
+            var floor = GameObject.FindWithTag("Floor");
+            if (floor == null) return;
+
+            var renderer = floor.GetComponent<MeshRenderer>();
+            if (renderer == null) return;
+
+            float floorTopY = floor.transform.position.y + floor.transform.localScale.y * 0.5f;
+            renderer.enabled = cam.transform.position.y > floorTopY;
         }
 
         private void HandleWASD()
