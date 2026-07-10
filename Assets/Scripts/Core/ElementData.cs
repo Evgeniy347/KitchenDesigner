@@ -12,6 +12,7 @@ namespace KitchenDesigner.Core
         public bool movable = true;
         public bool isWall = false;
         public int groupId = 0;
+        public string materialId = MaterialCatalog.DefaultId;
 
         public ElementData() { }
 
@@ -33,6 +34,7 @@ namespace KitchenDesigner.Core
             d.movable = element.Movable;
             d.isWall = wall != null;
             d.groupId = element.GroupId;
+            d.materialId = element.MaterialId;
             return d;
         }
 
