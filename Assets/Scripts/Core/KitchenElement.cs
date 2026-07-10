@@ -6,54 +6,42 @@ namespace KitchenDesigner.Core
     [SelectionBase]
     public class KitchenElement : MonoBehaviour
     {
-        [SerializeField] private string _boardName = "Board";
-        [SerializeField] private Vector3Int _dimensionsMM = new Vector3Int(800, 400, 18);
-        [SerializeField] private bool _movable = true;
-        [SerializeField] private int _groupId = 0;
-        [SerializeField] private string _materialId = MaterialCatalog.DefaultId;
+        [SerializeField] private BoardData _data = new BoardData();
+
+        public BoardData Data => _data;
 
         public string BoardName
         {
-            get => _boardName;
-            set => _boardName = value;
+            get => _data.BoardName;
+            set => _data.BoardName = value;
         }
 
         public Vector3Int DimensionsMM
         {
-            get => _dimensionsMM;
+            get => _data.DimensionsMM;
             set
             {
-                var clamped = new Vector3Int(
-                    Mathf.Max(1, value.x),
-                    Mathf.Max(1, value.y),
-                    Mathf.Max(1, value.z)
-                );
-                _dimensionsMM = clamped;
+                _data.DimensionsMM = value;
                 ApplyDimensions();
             }
         }
 
-        /// <summary>Можно ли перемещать объект (ЛКМ-drag и стрелки). Управляется
-        /// чекбоксом «Запретить перемещение» в свойствах объекта.</summary>
         public bool Movable
         {
-            get => _movable;
-            set => _movable = value;
+            get => _data.Movable;
+            set => _data.Movable = value;
         }
 
-        /// <summary>Id группы связывания (0 — не связан). См. GroupManager.</summary>
         public int GroupId
         {
-            get => _groupId;
-            set => _groupId = value;
+            get => _data.GroupId;
+            set => _data.GroupId = value;
         }
 
-        /// <summary>Id декора материала (см. MaterialCatalog). Применяется через
-        /// MaterialManager.Apply; сохраняется в проект.</summary>
         public string MaterialId
         {
-            get => string.IsNullOrEmpty(_materialId) ? MaterialCatalog.DefaultId : _materialId;
-            set => _materialId = string.IsNullOrEmpty(value) ? MaterialCatalog.DefaultId : value;
+            get => _data.MaterialId;
+            set => _data.MaterialId = value;
         }
 
         public struct Face
@@ -85,15 +73,14 @@ namespace KitchenDesigner.Core
             BoardRegistry.Unregister(this);
         }
 
-        /// <summary>Масштаб для расчёта граней и вершин (с учётом зазоров для фасадов).</summary>
         protected virtual Vector3 EffectiveScale => transform.localScale;
 
         public void ApplyDimensions()
         {
             transform.localScale = new Vector3(
-                _dimensionsMM.x * AppConstants.MM_TO_UNITS,
-                _dimensionsMM.y * AppConstants.MM_TO_UNITS,
-                _dimensionsMM.z * AppConstants.MM_TO_UNITS
+                _data.DimensionsMM.x * AppConstants.MM_TO_UNITS,
+                _data.DimensionsMM.y * AppConstants.MM_TO_UNITS,
+                _data.DimensionsMM.z * AppConstants.MM_TO_UNITS
             );
         }
 
@@ -138,9 +125,9 @@ namespace KitchenDesigner.Core
 
             var faceDims = new Vector2[]
             {
-                new Vector2(size.y, size.z), // right/left (X faces)
-                new Vector2(size.x, size.z), // top/bottom (Y faces)
-                new Vector2(size.x, size.y), // front/back (Z faces)
+                new Vector2(size.y, size.z),
+                new Vector2(size.x, size.z),
+                new Vector2(size.x, size.y),
             };
 
             var offsets = new Vector3[]
@@ -191,21 +178,18 @@ namespace KitchenDesigner.Core
             DimensionsMM = new Vector3Int(w, h, d);
         }
 
-        /// <summary>Короткое описание для логов: имя, размеры (мм), позиция.</summary>
         public string Describe()
         {
             var p = transform.position;
-            return $"{_boardName} ({_dimensionsMM.x}x{_dimensionsMM.y}x{_dimensionsMM.z}мм @ " +
+            return $"{_data.BoardName} ({_data.DimensionsMM.x}x{_data.DimensionsMM.y}x{_data.DimensionsMM.z}мм @ " +
                    $"{p.x:F3},{p.y:F3},{p.z:F3})";
         }
 
-        /// <summary>Поворот вокруг собственного центра (позиция не меняется).</summary>
         public void Rotate(Quaternion rotation)
         {
             transform.rotation = rotation * transform.rotation;
         }
 
-        /// <summary>Повернуть на angle градусов вокруг оси (в мировых координатах).</summary>
         public void RotateAroundAxis(Vector3 axis, float angle)
         {
             Rotate(Quaternion.AngleAxis(angle, axis));

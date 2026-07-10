@@ -314,8 +314,11 @@ namespace KitchenDesigner.Core.MCP
         {
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(list);
             var bytes = Encoding.UTF8.GetBytes(json);
-            var hash = SHA256.HashData(bytes);
-            return Convert.ToHexString(hash).ToLowerInvariant();
+            using (var sha = SHA256.Create())
+            {
+                var hash = sha.ComputeHash(bytes);
+                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            }
         }
 
         private McpResponse HandleGetElementInfo(McpRequest req)

@@ -1,0 +1,203 @@
+using NUnit.Framework;
+using UnityEngine;
+using KitchenDesigner.Core;
+
+public class BoardDataTests
+{
+    [Test]
+    public void Constructor_Defaults_AreSane()
+    {
+        var data = new BoardData();
+        Assert.AreEqual("Board", data.BoardName);
+        Assert.AreEqual(new Vector3Int(800, 400, 18), data.DimensionsMM);
+        Assert.IsTrue(data.Movable);
+        Assert.AreEqual(0, data.GroupId);
+        Assert.AreEqual(MaterialCatalog.DefaultId, data.MaterialId);
+        Assert.AreEqual(0, data.GapLeft);
+        Assert.AreEqual(0, data.GapRight);
+        Assert.AreEqual(0, data.GapTop);
+        Assert.AreEqual(0, data.GapBottom);
+        Assert.AreEqual(0, data.GapMM);
+    }
+
+    [Test]
+    public void ClampDimensions_ZeroOrNegative_ClampsToMinimum()
+    {
+        Assert.AreEqual(new Vector3Int(1, 1, 1), BoardData.ClampDimensions(new Vector3Int(0, -5, 0)));
+        Assert.AreEqual(new Vector3Int(1, 1, 1), BoardData.ClampDimensions(new Vector3Int(0, 0, 0)));
+    }
+
+    [Test]
+    public void ClampDimensions_PositiveValues_Unchanged()
+    {
+        Assert.AreEqual(new Vector3Int(800, 400, 18), BoardData.ClampDimensions(new Vector3Int(800, 400, 18)));
+        Assert.AreEqual(new Vector3Int(1, 2, 3), BoardData.ClampDimensions(new Vector3Int(1, 2, 3)));
+    }
+
+    [Test]
+    public void DimensionsMM_Setter_ClampsAndStores()
+    {
+        var data = new BoardData();
+        data.DimensionsMM = new Vector3Int(0, -1, 0);
+        Assert.AreEqual(new Vector3Int(1, 1, 1), data.DimensionsMM);
+    }
+
+    [Test]
+    public void MaterialId_EmptyOrNull_ReturnsDefault()
+    {
+        var data = new BoardData();
+        data.MaterialId = null;
+        Assert.AreEqual(MaterialCatalog.DefaultId, data.MaterialId);
+        data.MaterialId = "";
+        Assert.AreEqual(MaterialCatalog.DefaultId, data.MaterialId);
+    }
+
+    [Test]
+    public void MaterialId_CustomValue_Stored()
+    {
+        var data = new BoardData();
+        data.MaterialId = "oak";
+        Assert.AreEqual("oak", data.MaterialId);
+    }
+
+    [Test]
+    public void BoardName_Null_Defaults()
+    {
+        var data = new BoardData();
+        data.BoardName = null;
+        Assert.AreEqual("Board", data.BoardName);
+    }
+
+    [Test]
+    public void Movable_Setter_Updates()
+    {
+        var data = new BoardData();
+        data.Movable = false;
+        Assert.IsFalse(data.Movable);
+        data.Movable = true;
+        Assert.IsTrue(data.Movable);
+    }
+
+    [Test]
+    public void GroupId_Setter_Updates()
+    {
+        var data = new BoardData();
+        data.GroupId = 42;
+        Assert.AreEqual(42, data.GroupId);
+    }
+
+    [Test]
+    public void GapProperties_Default_Zero()
+    {
+        var data = new BoardData();
+        Assert.AreEqual(0, data.GapLeft);
+        Assert.AreEqual(0, data.GapRight);
+        Assert.AreEqual(0, data.GapTop);
+        Assert.AreEqual(0, data.GapBottom);
+    }
+
+    [Test]
+    public void GapProperties_ClampToNonNegative()
+    {
+        var data = new BoardData();
+        data.GapLeft = -5;
+        Assert.AreEqual(0, data.GapLeft);
+        data.GapRight = -1;
+        Assert.AreEqual(0, data.GapRight);
+        data.GapTop = -100;
+        Assert.AreEqual(0, data.GapTop);
+        data.GapBottom = -3;
+        Assert.AreEqual(0, data.GapBottom);
+    }
+
+    [Test]
+    public void GapMM_SumOfAllGaps()
+    {
+        var data = new BoardData();
+        data.GapLeft = 2;
+        data.GapRight = 3;
+        data.GapTop = 4;
+        data.GapBottom = 5;
+        Assert.AreEqual(14, data.GapMM);
+    }
+
+    [Test]
+    public void IsFacade_True_WhenGapsExist()
+    {
+        var data = new BoardData();
+        Assert.IsFalse(data.IsFacade);
+        data.GapLeft = 2;
+        Assert.IsTrue(data.IsFacade);
+    }
+
+    [Test]
+    public void ToString_IncludesNameAndDimensions()
+    {
+        var data = new BoardData();
+        data.BoardName = "TestBoard";
+        data.DimensionsMM = new Vector3Int(600, 400, 18);
+        var str = data.ToString();
+        Assert.That(str, Does.Contain("TestBoard"));
+        Assert.That(str, Does.Contain("600"));
+        Assert.That(str, Does.Contain("400"));
+        Assert.That(str, Does.Contain("18"));
+    }
+
+    [Test]
+    public void KitchenElement_ExposesSameData()
+    {
+        var go = new GameObject("Test");
+        var element = go.AddComponent<KitchenElement>();
+        element.BoardName = "Custom";
+        element.DimensionsMM = new Vector3Int(600, 720, 18);
+        element.Movable = false;
+        element.GroupId = 5;
+        element.MaterialId = "cherry";
+
+        var data = element.Data;
+        Assert.AreEqual("Custom", data.BoardName);
+        Assert.AreEqual(new Vector3Int(600, 720, 18), data.DimensionsMM);
+        Assert.IsFalse(data.Movable);
+        Assert.AreEqual(5, data.GroupId);
+        Assert.AreEqual("cherry", data.MaterialId);
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void KitchenElement_DelegatesPropertiesToData()
+    {
+        var go = new GameObject("Test");
+        var element = go.AddComponent<KitchenElement>();
+        element.Data.BoardName = "ViaData";
+        element.Data.DimensionsMM = new Vector3Int(400, 300, 16);
+        element.Data.Movable = false;
+        element.Data.GroupId = 99;
+
+        Assert.AreEqual("ViaData", element.BoardName);
+        Assert.AreEqual(new Vector3Int(400, 300, 16), element.DimensionsMM);
+        Assert.IsFalse(element.Movable);
+        Assert.AreEqual(99, element.GroupId);
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void FacadeElement_UsesBoardDataGaps()
+    {
+        var go = new GameObject("Facade");
+        var facade = go.AddComponent<FacadeElement>();
+        facade.Data.GapLeft = 3;
+        facade.Data.GapRight = 4;
+        facade.Data.GapTop = 5;
+        facade.Data.GapBottom = 6;
+
+        Assert.AreEqual(3, facade.GapLeft);
+        Assert.AreEqual(4, facade.GapRight);
+        Assert.AreEqual(5, facade.GapTop);
+        Assert.AreEqual(6, facade.GapBottom);
+        Assert.AreEqual(18, facade.GapMM);
+
+        Object.DestroyImmediate(go);
+    }
+}

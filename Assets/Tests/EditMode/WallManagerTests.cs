@@ -14,6 +14,7 @@ public class WallManagerTests
     {
         var go = new GameObject(name);
         go.transform.position = pos;
+        go.AddComponent<MeshRenderer>();
         var e = go.AddComponent<KitchenElement>();
         e.BoardName = name;
         e.DimensionsMM = dims;

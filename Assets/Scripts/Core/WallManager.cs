@@ -18,7 +18,7 @@ namespace KitchenDesigner.Core
             _cachedCamera = Camera.main;
         }
 
-        internal void LateUpdate()
+        public void LateUpdate()
         {
             var s = KitchenSettings.Instance;
             bool show = s == null || s.WallsEnabled;

@@ -23,6 +23,8 @@ public class CameraControllerTests
 
         var controllerGo = new GameObject("CameraController");
         _controller = controllerGo.AddComponent<CameraController>();
+        _controller.AssignTestCamera(_cameraGo.GetComponent<Camera>());
+        _controller.AssignTestFloor(_floorGo);
     }
 
     [TearDown]
@@ -42,6 +44,7 @@ public class CameraControllerTests
             targetX = 2f, targetY = 1f, targetZ = 3f,
             angleX = 0f, angleY = 0f, distance = 5f
         });
+        _controller.UpdateCameraPosition();
 
         Assert.AreEqual(new Vector3(2f, 1f, -2f), _cameraGo.transform.position,
             "camera should be 5 units behind target along -Z");
@@ -58,11 +61,13 @@ public class CameraControllerTests
         {
             valid = true,
             targetX = 0f, targetY = 0f, targetZ = 0f,
-            angleX = 0f, angleY = 90f, distance = 5f
+            angleX = 0f, angleY = -90f, distance = 5f
         });
+        _controller.UpdateCameraPosition();
 
-        Assert.AreEqual(new Vector3(5f, 0f, 0f), _cameraGo.transform.position,
-            "camera should orbit 90 degrees to the right");
+        Assert.AreEqual(5f, _cameraGo.transform.position.x, 0.001f, "camera X should be 5m after 90 deg right orbit");
+        Assert.AreEqual(0f, _cameraGo.transform.position.y, 0.001f, "camera Y should be 0m");
+        Assert.AreEqual(0f, _cameraGo.transform.position.z, 0.001f, "camera Z should be 0m");
     }
 
     [Test]

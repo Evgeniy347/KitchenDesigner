@@ -1,33 +1,31 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
     public static class BoardRegistry
     {
-        private static readonly List<KitchenElement> _all = new List<KitchenElement>();
-
-        public static IReadOnlyList<KitchenElement> All => _all;
-
-        public static void Register(KitchenElement element)
+        internal static IBoardRegistry Instance
         {
-            if (element != null && !_all.Contains(element))
-                _all.Add(element);
+            get
+            {
+                if (GameContext.Services != null)
+                    return GameContext.Services.BoardRegistry;
+                if (_fallback == null)
+                    _fallback = new BoardRegistryInstance();
+                return _fallback;
+            }
+            set => _fallback = value;
         }
+        private static IBoardRegistry _fallback;
 
-        public static void Unregister(KitchenElement element)
-        {
-            _all.Remove(element);
-        }
+        public static IReadOnlyList<KitchenElement> All => Instance.All;
 
-        public static List<KitchenElement> GetAll()
-        {
-            return new List<KitchenElement>(_all);
-        }
+        public static void Register(KitchenElement element) => Instance.Register(element);
 
-        public static void Clear()
-        {
-            _all.Clear();
-        }
+        public static void Unregister(KitchenElement element) => Instance.Unregister(element);
+
+        public static List<KitchenElement> GetAll() => Instance.GetAll();
+
+        public static void Clear() => Instance.Clear();
     }
 }
