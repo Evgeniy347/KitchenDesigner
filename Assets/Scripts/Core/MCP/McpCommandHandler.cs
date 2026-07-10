@@ -56,6 +56,8 @@ namespace KitchenDesigner.Core.MCP
                     case "enter_module_edit": return HandleEnterModuleEdit(request);
                     case "exit_module_edit": return HandleExitModuleEdit(request);
                     case "take_screenshot": return HandleTakeScreenshot(request);
+                    case "get_floor_info": return HandleGetFloorInfo(request);
+                    case "resize_floor": return HandleResizeFloor(request);
                     case "add_wall_component": return HandleAddWallComponent(request);
                     case "execute_menu_item": return HandleExecuteMenuItem(request);
                     case "enter_play_mode": return HandleEnterPlayMode(request);
@@ -489,6 +491,15 @@ namespace KitchenDesigner.Core.MCP
 
             string elementName = string.IsNullOrEmpty(p.name) ? p.template_name : p.name;
 
+            if (p.is_floor)
+            {
+                var plate = BasePlate.Create();
+                plate.Element.BoardName = elementName;
+                CommandStack.Execute(new CreateCommand(plate.gameObject));
+                Debug.Log($"[MCP] Created floor '{elementName}'");
+                return McpResponse.Result(req.id, new { ok = true, name = plate.name, is_floor = true, path = GetGameObjectPath(plate.gameObject) });
+            }
+
             var pos = new Vector3(p.x, p.y, p.z);
             var dims = new Vector3Int(
                 p.width > 0 ? p.width : 800,
@@ -656,6 +667,66 @@ namespace KitchenDesigner.Core.MCP
             System.IO.File.WriteAllBytes(path, bytes);
             Object.Destroy(tex);
             return McpResponse.Result(req.id, new { ok = true, path });
+        }
+
+        private static BasePlate FindFloor()
+        {
+            var go = GameObject.FindWithTag("Floor");
+            if (go == null) return null;
+            return go.GetComponent<BasePlate>();
+        }
+
+        private McpResponse HandleGetFloorInfo(McpRequest req)
+        {
+            var plate = FindFloor();
+            if (plate == null || plate.Element == null)
+                return McpResponse.Error(req.id, -1, "Floor not found");
+
+            var el = plate.Element;
+            var dims = el.DimensionsMM;
+            var pos = el.transform.position;
+            return McpResponse.Result(req.id, new
+            {
+                name = el.BoardName,
+                dimX = dims.x, dimY = dims.y, dimZ = dims.z,
+                posX = pos.x, posY = pos.y, posZ = pos.z
+            });
+        }
+
+        private McpResponse HandleResizeFloor(McpRequest req)
+        {
+            var plate = FindFloor();
+            if (plate == null || plate.Element == null)
+                return McpResponse.Error(req.id, -1, "Floor not found");
+
+            var p = JsonConvert.DeserializeObject<ParamsResizeElement>(req.parameters);
+            if (p == null)
+                return McpResponse.Error(req.id, -32602, "invalid parameters");
+
+            var el = plate.Element;
+            var dimsBefore = el.DimensionsMM;
+            var posBefore = el.transform.position;
+            var rotBefore = el.transform.rotation;
+
+            int w = p.width > 0 ? p.width : p.dimX;
+            int h = p.height > 0 ? p.height : p.dimY;
+            int d = p.depth > 0 ? p.depth : p.dimZ;
+            w = Mathf.Max(1, w);
+            h = Mathf.Max(1, h);
+            d = Mathf.Max(1, d);
+            var dimsAfter = new Vector3Int(w, h, d);
+
+            CommandStack.Execute(new ResizeCommand(el,
+                dimsBefore, dimsAfter,
+                posBefore, posBefore,
+                rotBefore, rotBefore));
+
+            Debug.Log($"[MCP] Resized floor to ({w}, {h}, {d})mm");
+            return McpResponse.Result(req.id, new
+            {
+                ok = true,
+                dimX = w, dimY = h, dimZ = d
+            });
         }
 
         private McpResponse HandleAddWallComponent(McpRequest req)

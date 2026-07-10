@@ -103,6 +103,7 @@ namespace KitchenDesigner.Core.MCP
         public int height;
         public int depth;
         public bool is_wall;
+        public bool is_floor;
     }
 
     [Serializable]
