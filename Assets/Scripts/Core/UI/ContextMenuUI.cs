@@ -16,6 +16,7 @@ namespace KitchenDesigner.Core.UI
         private InputField _name, _w, _h, _d, _gapW, _gapH, _x, _y, _z, _rx, _ry, _rz;
         private Toggle _lockToggle;
         private RectTransform _panelRt;
+        private Text _doorButtonLabel; // подпись кнопки «Открыть»/«Закрыть»
 
         // ── Раскладка ──────────────────────────────────────────────────
         // Меню собирается один раз (Build), а позиции пересчитываются в Layout
@@ -77,6 +78,24 @@ namespace KitchenDesigner.Core.UI
             // Зазоры (только для фасадов) — блок скрывается в режиме «Доска».
             var gapSection = CreateGapSection(panel.transform, out float gapSectionH);
             AddFacadeRow(gapSection, gapSection.GetComponent<RectTransform>(), gapSectionH, RowGap);
+
+            // Открывание дверцы (только фасад): выбор ребра-петли + кнопка Открыть/Закрыть.
+            var hingeL = UIFactory.CreateButton("CtxHingeL", panel.transform, "◄",
+                new Vector2(-93, 0), new Vector2(56, BtnH), () => SetHinge(HingeEdge.Left));
+            var hingeR = UIFactory.CreateButton("CtxHingeR", panel.transform, "►",
+                new Vector2(-31, 0), new Vector2(56, BtnH), () => SetHinge(HingeEdge.Right));
+            var hingeU = UIFactory.CreateButton("CtxHingeU", panel.transform, "▲",
+                new Vector2(31, 0), new Vector2(56, BtnH), () => SetHinge(HingeEdge.Top));
+            var hingeD = UIFactory.CreateButton("CtxHingeD", panel.transform, "▼",
+                new Vector2(93, 0), new Vector2(56, BtnH), () => SetHinge(HingeEdge.Bottom));
+            AddFacadeRow(BtnH, RowGap,
+                hingeL.GetComponent<RectTransform>(), hingeR.GetComponent<RectTransform>(),
+                hingeU.GetComponent<RectTransform>(), hingeD.GetComponent<RectTransform>());
+
+            var doorButton = UIFactory.CreateButton("CtxDoor", panel.transform, "Открыть",
+                new Vector2(0, 0), new Vector2(248, BtnH), ToggleDoor);
+            _doorButtonLabel = doorButton.GetComponentInChildren<Text>();
+            AddFacadeRow(BtnH, ActionGap, doorButton.GetComponent<RectTransform>());
 
             // Позиция и поворот.
             _x = Row(panel.transform, "X, м");
@@ -227,6 +246,15 @@ namespace KitchenDesigner.Core.UI
             });
         }
 
+        // Фасад-строка без контейнера: сами rect'ы включаются/выключаются по режиму
+        // (для строки выбора ребра-петли и кнопки «Открыть/Закрыть»).
+        private void AddFacadeRow(float height, float gapAfter, params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, facadeOnly = true });
+        }
+
         // Якорим к верхней кромке панели, pivot тоже сверху — тогда
         // anchoredPosition.y = отступ верхней кромки элемента от верха панели
         // (со знаком минус). Это домовая конвенция панелей проекта.
@@ -243,12 +271,17 @@ namespace KitchenDesigner.Core.UI
             float contentBottom = TopPad;
             foreach (var row in _layout)
             {
-                if (row.facadeOnly && !isFacade)
-                {
-                    if (row.toggleGO != null) row.toggleGO.SetActive(false);
-                    continue;
-                }
-                if (row.toggleGO != null) row.toggleGO.SetActive(true);
+                bool visible = !row.facadeOnly || isFacade;
+
+                // Скрытие фасад-строк в режиме «Доска»: через контейнер (toggleGO)
+                // либо, если контейнера нет, включая/выключая сами элементы строки.
+                if (row.toggleGO != null)
+                    row.toggleGO.SetActive(visible);
+                else if (row.facadeOnly)
+                    foreach (var rt in row.rects)
+                        if (rt != null) rt.gameObject.SetActive(visible);
+
+                if (!visible) continue;
 
                 float topY = -cursor; // pivot сверху → это и есть верхняя кромка
                 foreach (var rt in row.rects)
@@ -277,6 +310,10 @@ namespace KitchenDesigner.Core.UI
 
         private void RefreshTransformFields()
         {
+            // Пока дверца открыта/анимируется, трансформ показывает «открытую» позу —
+            // не перетираем поля ею, оставляем закрытые (логические) значения.
+            if (_target is FacadeElement f && !f.IsDoorClosed) return;
+
             var pos = _target.transform.position;
             if (!_x.isFocused) _x.SetTextWithoutNotify(pos.x.ToString("F3"));
             if (!_y.isFocused) _y.SetTextWithoutNotify(pos.y.ToString("F3"));
@@ -311,6 +348,7 @@ namespace KitchenDesigner.Core.UI
                 _gapW.text = (facade.GapLeft + facade.GapRight).ToString();
                 _gapH.text = (facade.GapTop + facade.GapBottom).ToString();
             }
+            UpdateDoorButton(facade);
 
             // Пересчитываем раскладку под режим: секция зазоров показывается
             // только для фасадов, панель сама подгоняется по высоте.
@@ -331,6 +369,8 @@ namespace KitchenDesigner.Core.UI
         private void Apply()
         {
             if (_target == null) return;
+            // Правки размеров/позиции применяем к закрытой (логической) позе.
+            if (_target is FacadeElement fac) { fac.ForceClose(); UpdateDoorButton(fac); }
 
             var oldDims = _target.DimensionsMM;
             var oldPos = _target.transform.position;
@@ -409,6 +449,29 @@ namespace KitchenDesigner.Core.UI
                 oldRot, _target.transform.rotation));
             RefreshTransformFields();
             RefreshHighlights();
+        }
+
+        // ── Открывание дверцы (только фасад) ───────────────────────────
+
+        private void ToggleDoor()
+        {
+            if (_target is FacadeElement f)
+            {
+                f.ToggleDoor();
+                UpdateDoorButton(f);
+            }
+        }
+
+        private void SetHinge(HingeEdge edge)
+        {
+            if (_target is FacadeElement f)
+                f.Hinge = edge;
+        }
+
+        private void UpdateDoorButton(FacadeElement facade)
+        {
+            if (_doorButtonLabel != null)
+                _doorButtonLabel.text = (facade != null && facade.IsOpen) ? "Закрыть" : "Открыть";
         }
 
         private void Duplicate()
