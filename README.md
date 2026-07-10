@@ -66,46 +66,12 @@ Kitchen Designer доступен по **MCP (Model Context Protocol)** — ИИ
 # Нажать Play
 ```
 
-### Сборка проекта
-
-Сборка исполняемого файла происходит через Unity в командной строке. Убедитесь, что Unity Editor 6000.4.3f1 установлен в `C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Unity.exe` (или отредактируйте путь в `build.cmd`).
-
-```cmd
-# Полная сборка с тестами (EditMode + PlayMode):
-build.cmd -Clean -RunTests -RunPlayMode
-
-# Только сборка:
-build.cmd -BuildOnly
-```
-
-Сборка создаёт `Build/KitchenDesigner.exe`. Встроенный скрипт `Assets/Editor/BuildProject.cs` автоматически настраивает URP, шейдеры и окно (1280×720, с рамкой, с runInBackground).
-
-### Тестирование
-
-```cmd
-# EditMode тесты:
-build.cmd -RunTests
-
-# PlayMode тесты:
-build.cmd -RunPlayMode
-```
-
-Результаты сохраняются в `TestResults.xml`.
-
-### Очистка
-
-```cmd
-clean.cmd
-```
-
-Удаляет `Library/`, `Temp/`, `Logs/`, `Build/`, `.vs/`, `UserSettings/` и временные файлы.
-
 ### Скрипты
 
 | Скрипт | Назначение |
 |--------|-----------|
-| `clean.cmd` | Очистка проекта от временных файлов |
-| `build.cmd` | Сборка .exe + прогон тестов |
+| `build.cmd` | Сборка .exe. Флаги: `-Clean -RunTests -RunPlayMode -BuildOnly` |
+| `clean.cmd` | Очистка проекта от временных файлов (Library, Temp, Logs, Build, .vs, UserSettings) |
 
 ### Стек
 
@@ -168,46 +134,12 @@ To connect an agent, simply ask it to read the [`readme-mcp.md`](readme-mcp.md) 
 # Hit Play
 ```
 
-### Building
-
-The executable is built via Unity on the command line. Make sure Unity Editor 6000.4.3f1 is installed at `C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Unity.exe` (or edit the path in `build.cmd`).
-
-```cmd
-# Full build with tests (EditMode + PlayMode):
-build.cmd -Clean -RunTests -RunPlayMode
-
-# Build only:
-build.cmd -BuildOnly
-```
-
-Output goes to `Build/KitchenDesigner.exe`. The built-in script `Assets/Editor/BuildProject.cs` automatically configures URP, shaders, and window settings (1280×720, resizable, runInBackground).
-
-### Testing
-
-```cmd
-# EditMode tests:
-build.cmd -RunTests
-
-# PlayMode tests:
-build.cmd -RunPlayMode
-```
-
-Results are saved to `TestResults.xml`.
-
-### Clean
-
-```cmd
-clean.cmd
-```
-
-Removes `Library/`, `Temp/`, `Logs/`, `Build/`, `.vs/`, `UserSettings/` and temporary files.
-
 ### Scripts
 
 | Script | Purpose |
 |--------|---------|
-| `clean.cmd` | Clean project temporary files |
-| `build.cmd` | Build .exe + run tests |
+| `build.cmd` | Build .exe. Flags: `-Clean -RunTests -RunPlayMode -BuildOnly` |
+| `clean.cmd` | Clean temporary files (Library, Temp, Logs, Build, .vs, UserSettings) |
 
 ### Stack
 
