@@ -158,14 +158,18 @@ public class SnapIntegrationTests
     [UnityTest]
     public IEnumerator RotateBoard_ThenSnap_CorrectAxes()
     {
+        // Поворот на 90° вокруг Y разворачивает большие грани доски A к ±X
+        // (толщина 18 мм теперь вдоль X → грань на x≈0.009).
         var a = CreateBoard(new Vector3Int(800, 400, 18), Vector3.zero);
         a.RotateAroundAxis(Vector3.up, 90f);
         yield return null;
 
-        var b = CreateBoard(new Vector3Int(400, 400, 18), new Vector3(0.5f, 0f, 0f));
+        var b = CreateBoard(new Vector3Int(400, 400, 18), new Vector3(0.4f, 0f, 0f));
         var others = new List<KitchenElement> { a };
-        var snap = SnapSystem.TrySnap(b, others, new Vector3(0.43f, 0f, 0.02f));
+        var snap = SnapSystem.TrySnap(b, others, new Vector3(0.22f, 0f, 0f));
 
         Assert.IsTrue(snap.snapped, "после поворота 90° снэп должен работать");
+        Assert.AreEqual(0.209f, snap.position.x, 0.001f,
+            "B встаёт вплотную к большой грани повёрнутой A");
     }
 }

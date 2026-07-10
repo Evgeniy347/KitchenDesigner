@@ -34,7 +34,9 @@ namespace KitchenDesigner.Core
                     $"{line.dimensionsMM.z};{line.count};{line.areaPerBoardM2:F4};{line.totalAreaM2:F4}");
             }
             sb.AppendLine();
-            sb.AppendLine($"Total;;;{result.totalCount};;{result.totalAreaM2:F4}");
+            // 7 колонок: Name;Width;Height;Depth;Count;AreaPerBoard;TotalArea —
+            // итог: count в колонку Count (5-я), площадь в TotalArea (7-я).
+            sb.AppendLine($"Total;;;;{result.totalCount};;{result.totalAreaM2:F4}");
             return sb.ToString();
         }
 

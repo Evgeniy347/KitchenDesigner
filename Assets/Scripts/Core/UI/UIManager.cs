@@ -65,9 +65,11 @@ namespace KitchenDesigner.Core.UI
 
             x += 12;
             AddBarButton(bar.transform, "Spec", "Спецификация", ref x, y, h, 150, ToggleSpecification);
-            AddBarButton(bar.transform, "Settings", "Настройки", ref x, y, h, 130, ToggleSettings);
-            AddBarButton(bar.transform, "Save", "Сохранить", ref x, y, h, 130, QuickSave);
-            AddBarButton(bar.transform, "Load", "Загрузить", ref x, y, h, 130, QuickLoad);
+            // Понятные значки вместо текста.
+            AddIconButton(bar.transform, "Settings", IconFactory.Gear, ref x, y, h, ToggleSettings);
+            AddIconButton(bar.transform, "Save", IconFactory.Floppy, ref x, y, h, SaveCurrent);
+            AddIconButton(bar.transform, "SaveAs", IconFactory.FloppyPlus, ref x, y, h, SaveAs);
+            AddIconButton(bar.transform, "Load", IconFactory.Folder, ref x, y, h, LoadDialog);
 
             x += 20;
             var alignBtn = UIFactory.CreateButton("Align", bar.transform, "Выравн.",
@@ -88,6 +90,14 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
             btn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
             x += w + 6;
+        }
+
+        private void AddIconButton(Transform parent, string name, Sprite icon, ref float x, float y, float h, System.Action onClick)
+        {
+            var btn = UIFactory.CreateIconButton(name, parent, icon, new Vector2(x, y), new Vector2(h, h), onClick);
+            UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
+            btn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
+            x += h + 6;
         }
 
         public void SpawnPreset(int index)
@@ -124,6 +134,13 @@ namespace KitchenDesigner.Core.UI
             return cam.transform.position + cam.transform.forward * 2f;
         }
 
+        /// <summary>Открыть контекстное меню доски (вызывается из ElementMover по клику ЛКМ).</summary>
+        public void OpenContextMenu(KitchenElement element)
+        {
+            if (_contextMenu != null)
+                _contextMenu.Open(element);
+        }
+
         public void ToggleSpecification()
         {
             if (_specPanel == null) return;
@@ -138,16 +155,50 @@ namespace KitchenDesigner.Core.UI
             _settingsPanel.Toggle();
         }
 
-        public void QuickSave()
+        /// <summary>«Сохранить»: пишет в последний выбранный файл. Если файла ещё
+        /// нет — быстрое сохранение в quicksave.json (без диалога).</summary>
+        public void SaveCurrent()
         {
-            if (SaveLoadManager.SaveProject(QuickSaveName))
-                Debug.Log("[UI] Saved: " + SaveLoadManager.PathForName(QuickSaveName));
+            if (SaveLoadManager.HasLastPath)
+            {
+                if (SaveLoadManager.SaveToLastPath())
+                    Toast("Сохранено: " + System.IO.Path.GetFileName(SaveLoadManager.LastPath));
+            }
+            else if (SaveLoadManager.SaveProject(QuickSaveName))
+            {
+                SaveLoadManager.LastPath = SaveLoadManager.PathForName(QuickSaveName);
+                Toast("Сохранено: " + QuickSaveName);
+            }
         }
 
-        public void QuickLoad()
+        /// <summary>«Сохранить как»: системный диалог, путь запоминается.</summary>
+        public void SaveAs()
         {
-            if (SaveLoadManager.LoadProject(QuickSaveName))
-                Debug.Log("[UI] Loaded: " + QuickSaveName);
+            string suggested = SaveLoadManager.HasLastPath
+                ? System.IO.Path.GetFileName(SaveLoadManager.LastPath)
+                : "kitchen.json";
+            string path = NativeFileDialog.SaveDialog("Сохранить проект кухни",
+                suggested, SaveLoadManager.LastDirectory);
+            if (string.IsNullOrEmpty(path)) return; // отмена
+            if (SaveLoadManager.SaveToPath(path))
+                Toast("Сохранено: " + System.IO.Path.GetFileName(path));
+        }
+
+        /// <summary>«Загрузить»: системный диалог выбора файла, путь запоминается.</summary>
+        public void LoadDialog()
+        {
+            string path = NativeFileDialog.OpenDialog("Открыть проект кухни",
+                SaveLoadManager.LastDirectory);
+            if (string.IsNullOrEmpty(path)) return; // отмена
+            if (SaveLoadManager.LoadFromPath(path))
+                Toast("Загружено: " + System.IO.Path.GetFileName(path));
+        }
+
+        private static void Toast(string msg)
+        {
+            if (ToastNotification.Instance != null)
+                ToastNotification.Instance.Show(msg);
+            Debug.Log("[UI] " + msg);
         }
 
         private void ShowAlignMenu()

@@ -114,6 +114,8 @@ public class IntegrationPlayModeTests
 
         Assert.IsNotNull(saveBtn, "кнопка «Сохранить» должна существовать в тулбаре");
 
+        // Без выбранного файла «Сохранить» делает быстрый quicksave (без диалога).
+        SaveLoadManager.LastPath = "";
         var path = SaveLoadManager.PathForName(UIManager.QuickSaveName);
         if (File.Exists(path)) File.Delete(path);
 

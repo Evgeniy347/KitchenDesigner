@@ -15,27 +15,21 @@ namespace KitchenDesigner.Core
 
     public static class SnapSystem
     {
-        // Гистерезис снэпа: порог входа (притяжение) и выхода (отлипание, +30%).
-        // Предотвращает «дрожание» доски на границе порога.
-        private static KitchenElement _lastHoverTarget;
-        private static bool _isSnapped;
-        private const float HysteresisFactor = 1.3f;
+        // Допуск к порогу (0.01 мм): прилипание срабатывает и ровно на границе
+        // порога, несмотря на ошибку округления float при вычислении зазора.
+        private const float ThresholdEpsilon = 1e-5f;
 
+        // Прилипание — чистая детерминированная функция от (moved, others, testPos).
+        // Без скрытого статического состояния: одинаковый вход → одинаковый выход,
+        // что критично для предсказуемости в рантайме и для повторяемости тестов.
         public static SnapResult TrySnap(KitchenElement moved, List<KitchenElement> others, Vector3 testPosition)
         {
-            if (!KitchenSettings.Instance.SnapEnabled)
-            {
-                _isSnapped = false;
-                _lastHoverTarget = null;
-                return default;
-            }
-
-            if (!moved.gameObject.activeInHierarchy)
-                return default;
+            if (moved == null || others == null) return default;
+            if (!KitchenSettings.Instance.SnapEnabled) return default;
+            if (!moved.gameObject.activeInHierarchy) return default;
 
             float threshold = KitchenSettings.Instance.SnapThreshold * AppConstants.MM_TO_UNITS;
-            float enterThreshold = threshold;
-            float exitThreshold = threshold * HysteresisFactor;
+            float maxDist = threshold + ThresholdEpsilon;
             Vector3 prevPos = moved.transform.position;
             moved.transform.position = testPosition;
             KitchenElement.Face[] movedFaces = moved.GetFaces();
@@ -56,16 +50,18 @@ namespace KitchenDesigner.Core
                 {
                     for (int j = 0; j < 6; j++)
                     {
+                        // Контакт возможен только между гранями, смотрящими навстречу
+                        // друг другу (нормали противоположны, dot≈-1). Со-направленные
+                        // грани (dot≈+1) не образуют стык — иначе доска липла бы «не с той стороны».
                         float dot = Vector3.Dot(movedFaces[i].normal, otherFaces[j].normal);
-                        if (Mathf.Abs(dot) < 0.999f) continue;
+                        if (dot > -0.999f) continue;
 
                         var mf = movedFaces[i];
                         var of = otherFaces[j];
 
                         Vector3 offset = of.center - mf.center;
                         float planeDist = Mathf.Abs(Vector3.Dot(offset, mf.normal));
-                        float activeThreshold = (_isSnapped && _lastHoverTarget == other) ? exitThreshold : enterThreshold;
-                        if (planeDist > activeThreshold) continue;
+                        if (planeDist > maxDist) continue;
 
                         if (!FacesOverlap(mf, of, out float overlapRatio))
                             continue;
@@ -80,11 +76,12 @@ namespace KitchenDesigner.Core
                         Vector3 v = mf.upAxis;
                         Rect mRect = GetFaceRect(mf, u, v);
                         Rect oRect = GetFaceRect(of, u, v);
-                        float du = BestEdgeDelta(mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax, threshold, out string labelU);
-                        float dv = BestEdgeDelta(mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax, threshold, out string labelV);
+                        float du = BestEdgeDelta(mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax, maxDist, out string labelU);
+                        float dv = BestEdgeDelta(mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax, maxDist, out string labelV);
 
+                        // Точное выравнивание заподлицо. Сетку НЕ применяем: при крупном
+                        // шаге она сдвинула бы доску с плоскости контакта и разорвала стык.
                         Vector3 snapPos = testPosition + planeShift * mf.normal + du * u + dv * v;
-                        snapPos = GridManager.SnapToGrid(snapPos);
 
                         float dist = Vector3.Distance(snapPos, testPosition);
                         if (dist < bestDist)
@@ -110,23 +107,12 @@ namespace KitchenDesigner.Core
 
             moved.transform.position = prevPos;
 
-            if (best.snapped)
-            {
-                _lastHoverTarget = others.Find(o => o.BoardName == best.targetName);
-                _isSnapped = true;
-            }
-            else
-            {
-                _isSnapped = false;
-                _lastHoverTarget = null;
-            }
-
             if (VerboseLog && bestLog != null) Debug.Log(bestLog);
             return best;
         }
 
-        /// <summary>Логировать выбор снэпа (для отладки прилипания).</summary>
-        public static bool VerboseLog = true;
+        /// <summary>Логировать выбор снэпа (для отладки прилипания). По умолчанию выкл.</summary>
+        public static bool VerboseLog = false;
 
         /// <summary>
         /// Лучшее выравнивание интервала [aMin,aMax] к [bMin,bMax] вдоль оси:

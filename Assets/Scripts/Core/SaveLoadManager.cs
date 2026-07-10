@@ -15,6 +15,78 @@ namespace KitchenDesigner.Core
         public static string SavesDirectory =>
             Path.Combine(Application.persistentDataPath, "saves");
 
+        // --- Последний выбранный пользователем файл (запоминается между сессиями) ---
+
+        private const string LastPathKey = "KitchenLastSavePath";
+
+        /// <summary>Полный путь к последнему сохранённому/загруженному файлу.</summary>
+        public static string LastPath
+        {
+            get => PlayerPrefs.GetString(LastPathKey, "");
+            set
+            {
+                PlayerPrefs.SetString(LastPathKey, value ?? "");
+                PlayerPrefs.Save();
+            }
+        }
+
+        public static bool HasLastPath => !string.IsNullOrEmpty(LastPath);
+
+        /// <summary>Каталог последнего файла — для стартовой папки диалога.</summary>
+        public static string LastDirectory
+        {
+            get
+            {
+                var p = LastPath;
+                if (!string.IsNullOrEmpty(p))
+                {
+                    var dir = Path.GetDirectoryName(p);
+                    if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir)) return dir;
+                }
+                if (!Directory.Exists(SavesDirectory)) Directory.CreateDirectory(SavesDirectory);
+                return SavesDirectory;
+            }
+        }
+
+        /// <summary>Сохранить текущую сцену в произвольный файл и запомнить путь.</summary>
+        public static bool SaveToPath(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+            var data = CaptureScene(FindAllElements());
+            bool ok = SaveToFile(path, data);
+            if (ok)
+            {
+                LastPath = path;
+                Debug.Log("[SaveLoad] Сохранено: " + path);
+            }
+            return ok;
+        }
+
+        /// <summary>Записать в последний выбранный файл. false, если файл ещё не выбран.</summary>
+        public static bool SaveToLastPath()
+        {
+            return HasLastPath && SaveToPath(LastPath);
+        }
+
+        /// <summary>Загрузить сцену из произвольного файла и запомнить путь.</summary>
+        public static bool LoadFromPath(string path)
+        {
+            var data = LoadFromFile(path);
+            if (data == null) return false;
+
+            if (!IsVersionCompatible(data))
+                Debug.LogWarning($"[SaveLoad] Version mismatch: file={data.version}, app={AppConstants.SAVE_FORMAT_VERSION}");
+
+            ClearBoardsImmediate(FindAllElements());
+            RestoreScene(data);
+            LastPath = path;
+
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+            Debug.Log("[SaveLoad] Загружено: " + path);
+            return true;
+        }
+
         // --- Чистая логика (тестируемая без файлов) ---
 
         /// <summary>Снимок сцены в ProjectData. BasePlate исключается (это пол, не доска).</summary>

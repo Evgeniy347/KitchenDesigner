@@ -65,6 +65,31 @@ public class SpecificationManagerTests
     }
 
     [Test]
+    public void ToCsv_TotalRow_CountAndAreaInCorrectColumns()
+    {
+        var a = CreateElement("Board", new Vector3Int(800, 400, 18));
+        var b = CreateElement("Board", new Vector3Int(800, 400, 18));
+        var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
+
+        string csv = SpecificationExport.ToCsv(result);
+        var rows = csv.Replace("\r\n", "\n").Trim().Split('\n');
+        var header = rows[0].Split(';');
+        var total = rows[rows.Length - 1].Split(';');
+
+        Assert.AreEqual(header.Length, total.Length,
+            "в итоговой строке столько же колонок, сколько в шапке");
+
+        int countCol = System.Array.IndexOf(header, "Count");
+        int areaCol = System.Array.IndexOf(header, "TotalArea_m2");
+        Assert.AreEqual("2", total[countCol], "кол-во должно стоять в колонке Count");
+        Assert.IsTrue(float.TryParse(total[areaCol], out float area), "площадь — число");
+        Assert.AreEqual(0.6832f * 2f, area, 0.001f, "площадь в колонке TotalArea_m2");
+
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
+    }
+
+    [Test]
     public void Build_ExcludesBasePlate()
     {
         var plate = CreateElement("BasePlate", new Vector3Int(3000, 18, 3000));

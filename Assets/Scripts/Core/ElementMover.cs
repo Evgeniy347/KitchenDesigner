@@ -16,6 +16,14 @@ namespace KitchenDesigner.Core
         private float _vOffset;
         private AxisLock _axisLock = AxisLock.None;
 
+        // ЛКМ нажата на доске, но ещё не решено клик это или drag.
+        private bool _pressed;
+        private Vector2 _pressMouse;
+        // Пока курсор не сместится дальше этого порога (в пикселях) — это клик
+        // (откроется контекстное меню), а не перетаскивание. Только после порога
+        // включается drag с зелёной/красной тонировкой.
+        private const float DragStartPixels = 6f;
+
         private enum AxisLock { None, X, Z }
 
         private Material _dragOriginalMaterial;
@@ -61,8 +69,6 @@ namespace KitchenDesigner.Core
         {
             if (IsDragging) return;
             _target = element;
-            if (element != null && Input.GetMouseButton(0))
-                TryStartDrag();
         }
 
         private bool AltHeld => Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
@@ -72,32 +78,49 @@ namespace KitchenDesigner.Core
             UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
 
-        private bool TryStartDrag()
+        // ЛКМ нажата: если попали по доске — запоминаем «нажатие» (кандидат на клик
+        // или drag). Сам drag и тонировка НЕ включаются, пока курсор не сдвинется.
+        private void TryBeginPress()
         {
-            if (_target == null) return false;
-            if (AltHeld || PointerOverUI) return false; // Alt+ЛКМ — орбита; клик по UI — не drag
+            _pressed = false;
+            if (AltHeld || PointerOverUI) return; // Alt+ЛКМ — орбита; клик по UI — не drag
+            if (Camera.main == null) return;
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
-            {
-                var element = hit.collider.GetComponentInParent<KitchenElement>();
-                if (element == _target)
-                {
-                    IsDragging = true;
-                    Debug.Log("[Mover] Начато перемещение: " + _target.Describe());
-                    _startPosition = _target.transform.position;
-                    _startRotation = _target.transform.rotation;
-                    _wasMoved = false;
-                    _wasShift = false;
+            if (!Physics.Raycast(ray, out RaycastHit hit)) return;
 
-                    Plane dragPlane = new Plane(Vector3.up, _startPosition);
-                    _offset = dragPlane.Raycast(ray, out float enter)
-                        ? _startPosition - ray.GetPoint(enter)
-                        : Vector3.zero;
-                    return true;
-                }
-            }
-            return false;
+            var element = hit.collider.GetComponentInParent<KitchenElement>();
+            if (element == null) return;
+            if (element.GetComponent<BasePlate>() != null) return; // пол не таскаем
+
+            _target = element;
+            _pressed = true;
+            _pressMouse = Input.mousePosition;
+            _startPosition = element.transform.position;
+            _startRotation = element.transform.rotation;
+            _wasMoved = false;
+            _wasShift = false;
+
+            Plane dragPlane = new Plane(Vector3.up, _startPosition);
+            _offset = dragPlane.Raycast(ray, out float enter)
+                ? _startPosition - ray.GetPoint(enter)
+                : Vector3.zero;
+        }
+
+        private bool PressMovedEnough()
+        {
+            Vector2 now = Input.mousePosition;
+            return (now - _pressMouse).magnitude > DragStartPixels;
+        }
+
+        // Курсор сдвинулся достаточно — это перетаскивание, а не клик.
+        private void BeginDrag()
+        {
+            if (_target == null) return;
+            IsDragging = true;
+            _wasMoved = true;
+            Debug.Log("[Mover] Начато перемещение: " + _target.Describe());
+            SaveDragMaterial(); // зелёная/красная тонировка появляется только здесь
         }
 
         private void Update()
@@ -167,26 +190,48 @@ namespace KitchenDesigner.Core
         {
             if (Input.GetKeyDown(KeyCode.Escape) && IsDragging)
             {
+                CancelDrag();
+                return;
+            }
+
+            if (Input.GetMouseButtonDown(0))
+                TryBeginPress();
+
+            if (_pressed && Input.GetMouseButton(0))
+            {
+                if (!IsDragging && PressMovedEnough())
+                    BeginDrag();
+                if (IsDragging)
+                    UpdateDrag();
+            }
+
+            if (Input.GetMouseButtonUp(0))
+            {
+                if (IsDragging)
+                    FinishDrag();
+                else if (_pressed)
+                    OpenContextMenuForTarget(); // клик без перетаскивания → меню настроек
+                _pressed = false;
+            }
+        }
+
+        private void CancelDrag()
+        {
             _showGhost = false;
             _axisLock = AxisLock.None;
-            _target.transform.position = _startPosition;
+            if (_target != null) _target.transform.position = _startPosition;
             RestoreDragMaterial();
             IsDragging = false;
             _wasMoved = false;
+            _pressed = false;
             RefreshHighlights();
-            return;
-            }
+        }
 
+        private void OpenContextMenuForTarget()
+        {
             if (_target == null) return;
-
-            if (Input.GetMouseButtonDown(0) && !IsDragging)
-                TryStartDrag();
-
-            if (IsDragging && Input.GetMouseButton(0))
-                UpdateDrag();
-
-            if (IsDragging && Input.GetMouseButtonUp(0))
-                FinishDrag();
+            if (UI.UIManager.Instance != null)
+                UI.UIManager.Instance.OpenContextMenu(_target);
         }
 
         private void UpdateDrag()
@@ -237,8 +282,7 @@ namespace KitchenDesigner.Core
 
             if (!computed) return;
 
-            if (_dragTintMaterial == null) SaveDragMaterial();
-            _wasMoved = true;
+            if (_dragTintMaterial == null) SaveDragMaterial(); // на случай, если drag начат не из BeginDrag
 
             if (Input.GetKeyDown(KeyCode.X)) _axisLock = _axisLock == AxisLock.X ? AxisLock.None : AxisLock.X;
             if (Input.GetKeyDown(KeyCode.Z)) _axisLock = _axisLock == AxisLock.Z ? AxisLock.None : AxisLock.Z;
