@@ -41,6 +41,11 @@ namespace KitchenDesigner.Core.UI
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
         }
 
+        public static void AnchorBottomLeft(RectTransform rt)
+        {
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0, 0);
+        }
+
         public static void StretchTopBar(RectTransform rt, float height)
         {
             rt.anchorMin = new Vector2(0, 1);

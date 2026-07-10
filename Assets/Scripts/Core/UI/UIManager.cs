@@ -50,6 +50,9 @@ namespace KitchenDesigner.Core.UI
 
             var toast = gameObject.AddComponent<ToastNotification>();
             toast.Build(_canvas.transform);
+
+            var autoSaveIndicator = gameObject.AddComponent<AutoSaveIndicator>();
+            autoSaveIndicator.Build(_canvas.transform);
         }
 
         private void BuildToolbar()
