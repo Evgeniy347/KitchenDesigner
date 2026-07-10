@@ -143,6 +143,8 @@ namespace KitchenDesigner.Core.UI
                     _target.Transparent = v;
                     if (ElementHighlighter.Instance != null)
                         ElementHighlighter.Instance.ApplyForElement(_target);
+                    if (SelectionManager.Instance != null)
+                        SelectionManager.Instance.RefreshHighlight(_target);
                 });
             AddRow(26f, 7f, _transparentToggle.GetComponent<RectTransform>());
 

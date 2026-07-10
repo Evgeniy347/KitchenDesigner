@@ -229,9 +229,19 @@ namespace KitchenDesigner.Core
                 mat.EnableKeyword("_EMISSION");
                 float intensity = isMulti ? 0.3f : 0.5f;
                 mat.SetColor("_EmissionColor", new Color(0.8f, 0.7f, 0.1f) * intensity);
-                mat.color = isMulti ? new Color(1f, 0.97f, 0.7f) : new Color(1f, 0.95f, 0.6f);
+                float alpha = renderer.material.color.a;
+                mat.color = isMulti
+                    ? new Color(1f, 0.97f, 0.7f, alpha)
+                    : new Color(1f, 0.95f, 0.6f, alpha);
                 renderer.material = mat;
             }
+        }
+
+        public void RefreshHighlight(KitchenElement element)
+        {
+            if (element == null || !_selectedElements.Contains(element)) return;
+            _savedMaterials.Remove(element);
+            HighlightSelected(element, _selectedElements.Count > 1);
         }
 
         private void RestoreMaterial(KitchenElement element)

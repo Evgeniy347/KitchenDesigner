@@ -64,7 +64,7 @@ namespace KitchenDesigner.Core
             mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             mat.renderQueue = 3000;
             var c = mat.color;
-            mat.color = new Color(c.r, c.g, c.b, 0.35f);
+            mat.color = new Color(c.r, c.g, c.b, 0.2f);
             return mat;
         }
 
