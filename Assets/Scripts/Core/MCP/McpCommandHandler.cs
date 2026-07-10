@@ -45,6 +45,7 @@ namespace KitchenDesigner.Core.MCP
                     case "resize_element": return HandleResizeElement(request);
                     case "rotate_element": return HandleRotateElement(request);
                     case "create_element": return HandleCreateElement(request);
+                    case "convert_element": return HandleConvertElement(request);
                     case "delete_element": return HandleDeleteElement(request);
                     case "undo": return HandleUndo(request);
                     case "redo": return HandleRedo(request);
@@ -614,6 +615,27 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Result(req.id, new { ok = true, name = plate.name, is_floor = true, path = GetGameObjectPath(plate.gameObject) });
             }
 
+            if (p.is_assembled)
+            {
+                // Сборный (рамочный) фасад строится процедурно через фабрику
+                // (тот же путь, что save/load и сайдбар), а не из примитива-куба.
+                var dimsA = new Vector3Int(
+                    p.width > 0 ? p.width : 450,
+                    p.height > 0 ? p.height : 700,
+                    p.depth > 0 ? p.depth : 18);
+                var posA = new Vector3(p.x, p.y, p.z);
+                var fillA = ParseFill(p.fill);
+                var goA = ElementFactory.CreateAssembledFacade(dimsA, elementName, posA, fillA);
+                CommandStack.Execute(new CreateCommand(goA));
+                RefreshElementHighlights();
+                var elA = goA.GetComponent<KitchenElement>();
+                Debug.Log($"[MCP] Created assembled facade '{elementName}' fill={fillA}");
+                return McpResponse.Result(req.id, new {
+                    ok = true, name = goA.name, is_assembled = true, fill = fillA.ToString(),
+                    path = GetGameObjectPath(goA), posX = posA.x, posY = posA.y, posZ = posA.z,
+                    hasViolations = HasViolations(elA) });
+            }
+
             var pos = new Vector3(p.x, p.y, p.z);
             var dims = new Vector3Int(
                 p.width > 0 ? p.width : 800,
@@ -652,6 +674,61 @@ namespace KitchenDesigner.Core.MCP
             RefreshElementHighlights();
             Debug.Log($"[MCP] Created {go.name} at ({p.x}, {p.y}, {p.z})");
             return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, is_facade = p.is_facade, path = GetGameObjectPath(go), posX = pos.x, posY = pos.y, posZ = pos.z, hasViolations = HasViolations(element) });
+        }
+
+        /// <summary>Строка → тип заполнения сборного фасада. По умолчанию Blind.</summary>
+        private static AssembledFill ParseFill(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return AssembledFill.Blind;
+            switch (s.Trim().ToLowerInvariant())
+            {
+                case "glass": case "стекло": return AssembledFill.Glass;
+                case "open": case "empty": case "витрина": return AssembledFill.Open;
+                default: return AssembledFill.Blind; // blind / панель / глухой
+            }
+        }
+
+        /// <summary>Строка → целевой тип для конвертации элемента.</summary>
+        private static bool TryParseTarget(string s, out ElementConverter.TargetType target)
+        {
+            switch ((s ?? "").Trim().ToLowerInvariant())
+            {
+                case "part": case "board": case "деталь":
+                    target = ElementConverter.TargetType.Part; return true;
+                case "facade": case "door": case "фасад": case "дверца":
+                    target = ElementConverter.TargetType.Facade; return true;
+                case "assembled_facade": case "assembled": case "assembledfacade": case "сборный":
+                    target = ElementConverter.TargetType.AssembledFacade; return true;
+                default:
+                    target = ElementConverter.TargetType.Part; return false;
+            }
+        }
+
+        /// <summary>Сменить ТИП существующего элемента: деталь ↔ фасад ↔ сборный
+        /// фасад, сохранив имя/размеры/позицию/материал (см. <see cref="ElementConverter"/>).
+        /// Для target=assembled_facade опциональный fill (blind|glass|open).</summary>
+        private McpResponse HandleConvertElement(McpRequest req)
+        {
+            var p = req.Params?.ToObject<ParamsConvertElement>();
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            if (!TryParseTarget(p.target, out var target))
+                return McpResponse.Error(req.id, -32602,
+                    $"Unknown target '{p.target}'. Valid: part | facade | assembled_facade");
+
+            var element = FindElementByName(p.name);
+            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            var lockErr = RequireMovable(element, p.name, req.id);
+            if (lockErr != null) return lockErr;
+
+            var converted = ElementConverter.Convert(element, target);
+            if (converted is AssembledFacadeElement assembled && !string.IsNullOrEmpty(p.fill))
+                assembled.Fill = ParseFill(p.fill);
+            RefreshElementHighlights();
+            Debug.Log($"[MCP] Converted '{p.name}' → {target}");
+            return McpResponse.Result(req.id, new {
+                ok = true, name = converted.PartName, type = converted.GetType().Name,
+                target = target.ToString(), hasViolations = HasViolations(converted) });
         }
 
         private McpResponse HandleDeleteElement(McpRequest req)

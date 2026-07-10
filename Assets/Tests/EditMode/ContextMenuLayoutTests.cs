@@ -230,11 +230,12 @@ public class ContextMenuLayoutTests
         var panel = _canvas.transform.Find("ContextMenu");
 
         var title = panel.Find("CtxTitle").GetComponent<RectTransform>();
-        var nameLbl = panel.Find("L_Название").GetComponent<RectTransform>();
+        // Первая строка под заголовком — выпадающий список типа детали (CtxType).
+        var firstRow = panel.Find("CtxType").GetComponent<RectTransform>();
 
         float titleBottom = title.anchoredPosition.y - title.sizeDelta.y;
-        float nameTop = nameLbl.anchoredPosition.y;
-        float gap = titleBottom - nameTop;
+        float firstTop = firstRow.anchoredPosition.y;
+        float gap = titleBottom - firstTop;
 
         Assert.GreaterOrEqual(gap, 0f, "title must not overlap the first row");
         Assert.LessOrEqual(gap, 20f, "gap between title and first row must be small");

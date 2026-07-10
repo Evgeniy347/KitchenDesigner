@@ -11,35 +11,12 @@ namespace KitchenDesigner.Core.MCP
         public string method;
 
         /// <summary>
-        /// Параметры как прямой JSON-объект.
-        /// Основной клиент (MCP-сервер на TS) присылает {id, method, params: {name: "...", x: 1.5, ...}}
+        /// Параметры команды как JSON-объект. Единый формат провода: все клиенты
+        /// (MCP-сервер на TS и PowerShell-мост tools/unity-bridge.ps1) шлют
+        /// {id, method, params: {name: "...", x: 1.5, ...}} — объектом, не строкой.
         /// </summary>
         [Newtonsoft.Json.JsonProperty("params")]
         public JObject Params { get; set; }
-
-        /// <summary>
-        /// Совместимость с альтернативными клиентами (напр. PowerShell-мост
-        /// <c>tools/unity-bridge.ps1</c>), которые шлют поле <c>parameters</c> —
-        /// иногда ОБЪЕКТОМ, иногда СТРОКОЙ с JSON внутри. Принимаем оба варианта и
-        /// нормализуем в <see cref="Params"/>, чтобы обработчикам был один вход.
-        /// </summary>
-        [Newtonsoft.Json.JsonProperty("parameters")]
-        private JToken ParametersCompat
-        {
-            set
-            {
-                if (value == null || Params != null) return; // "params" приоритетнее
-                if (value.Type == JTokenType.Object)
-                {
-                    Params = (JObject)value;
-                }
-                else if (value.Type == JTokenType.String)
-                {
-                    var s = value.ToString().Trim();
-                    if (s.StartsWith("{")) Params = JObject.Parse(s);
-                }
-            }
-        }
 
         /// <summary>Опциональные HTTP-подобные заголовки (If-None-Match и т.д.).</summary>
         [Newtonsoft.Json.JsonProperty("headers")]
@@ -167,10 +144,20 @@ namespace KitchenDesigner.Core.MCP
         public bool is_wall;
         public bool is_floor;
         public bool is_facade;
+        public bool is_assembled;   // сборный (рамочный) фасад
+        public string fill;         // сборный: blind | glass | open (по умолчанию blind)
         public int gapLeft = 2;
         public int gapRight = 2;
         public int gapTop = 2;
         public int gapBottom = 2;
+    }
+
+    [Serializable]
+    public class ParamsConvertElement
+    {
+        public string name;
+        public string target; // part | facade | assembled_facade
+        public string fill;   // для assembled_facade: blind | glass | open (опц.)
     }
 
     [Serializable]
