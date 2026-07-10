@@ -31,6 +31,9 @@ namespace KitchenDesigner.Core
         private Camera _cachedCamera;
         private GameObject _floor;
 
+        public void AssignTestCamera(Camera camera) => _cachedCamera = camera;
+        public void AssignTestFloor(GameObject floor) => _floor = floor;
+
         private void Awake()
         {
             Instance = this;
@@ -149,7 +152,7 @@ namespace KitchenDesigner.Core
             UpdateFloorVisibility();
         }
 
-        internal void UpdateFloorVisibility()
+        public void UpdateFloorVisibility()
         {
             if (_cachedCamera == null) return;
             if (_floor == null) return;
@@ -256,7 +259,7 @@ namespace KitchenDesigner.Core
             _target = point;
         }
 
-        internal void UpdateCameraPosition()
+        public void UpdateCameraPosition()
         {
             Quaternion rotation = Quaternion.Euler(_angleX, _angleY, 0);
             Vector3 offset = rotation * (Vector3.back * _distance);

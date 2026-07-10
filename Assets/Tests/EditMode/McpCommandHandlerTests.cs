@@ -561,8 +561,8 @@ public class McpCommandHandlerTests
         Assert.IsNotNull(p);
         Assert.AreEqual(Newtonsoft.Json.Linq.JTokenType.Object, p.Type,
             "Params должен быть JSON-объектом, не строкой");
-        Assert.AreEqual("TestBoard", p["name"].Value<string>());
-        Assert.AreEqual(1.5, p["x"].Value<double>(), 0.001);
+        Assert.AreEqual("TestBoard", p.Value<string>("name"));
+        Assert.AreEqual(1.5, p.Value<double>("x"), 0.001);
     }
 
     [Test]
@@ -574,13 +574,20 @@ public class McpCommandHandlerTests
         Assert.AreEqual("req-1", req.id);
         Assert.AreEqual("move_element", req.method);
         Assert.IsNotNull(req.Params, "Params должен быть десериализован из JSON-объекта");
-        Assert.AreEqual("Board1", req.Params["name"].Value<string>());
+        Assert.AreEqual("Board1", req.Params.Value<string>("name"));
     }
 
     [Test]
     public void ParamsObject_SimulateMove_ReturnsSimulateResult()
     {
-        MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        var go = new GameObject("Board");
+        go.transform.position = Vector3.zero;
+        var e = go.AddComponent<KitchenElement>();
+        e.BoardName = "Board";
+        e.DimensionsMM = new Vector3Int(800, 400, 18);
+        go.AddComponent<Wall>();
+        BoardRegistry.Register(e);
+        _spawned.Add(go);
 
         var resp = _handler.Handle(MakeReq("simulate_move", new { name = "Board", x = 2f, y = 0f, z = 0f }));
 

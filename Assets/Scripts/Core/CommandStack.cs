@@ -13,96 +13,40 @@ namespace KitchenDesigner.Core
 
     public static class CommandStack
     {
-        private static readonly List<IUndoCommand> _undoStack = new List<IUndoCommand>();
-        private static readonly List<IUndoCommand> _redoStack = new List<IUndoCommand>();
-        private const int MaxUndo = 20;
-
-        public static bool CanUndo => _undoStack.Count > 0;
-        public static bool CanRedo => _redoStack.Count > 0;
-        public static int UndoCount => _undoStack.Count;
-        public static int RedoCount => _redoStack.Count;
-
-        public static void Execute(IUndoCommand command)
+        internal static ICommandStack Instance
         {
-            command.Execute();
-            _undoStack.Add(command);
-            if (_undoStack.Count > MaxUndo)
-                _undoStack.RemoveAt(0);
-            _redoStack.Clear();
+            get
+            {
+                if (GameContext.Services != null)
+                    return GameContext.Services.CommandStack;
+                if (_fallback == null)
+                    _fallback = new CommandStackInstance();
+                return _fallback;
+            }
+            set => _fallback = value;
         }
+        private static ICommandStack _fallback;
 
-        public static void Undo()
-        {
-            if (_undoStack.Count == 0) return;
-            int idx = _undoStack.Count - 1;
-            var cmd = _undoStack[idx];
-            _undoStack.RemoveAt(idx);
-            cmd.Undo();
-            _redoStack.Add(cmd);
-        }
+        public static bool CanUndo => Instance.CanUndo;
+        public static bool CanRedo => Instance.CanRedo;
+        public static int UndoCount => Instance.UndoCount;
+        public static int RedoCount => Instance.RedoCount;
 
-        public static void Redo()
-        {
-            if (_redoStack.Count == 0) return;
-            int idx = _redoStack.Count - 1;
-            var cmd = _redoStack[idx];
-            _redoStack.RemoveAt(idx);
-            cmd.Execute();
-            _undoStack.Add(cmd);
-        }
+        public static void Execute(IUndoCommand command) => Instance.Execute(command);
+        public static void Undo() => Instance.Undo();
+        public static void Redo() => Instance.Redo();
+        public static void Clear() => Instance.Clear();
+        public static string PeekUndoDescription() => Instance.PeekUndoDescription();
 
-        public static void Clear()
-        {
-            _undoStack.Clear();
-            _redoStack.Clear();
-        }
-
-        public static string PeekUndoDescription()
-        {
-            return _undoStack.Count > 0 ? _undoStack[_undoStack.Count - 1].Description : "";
-        }
-
-        // --- Сохранение/восстановление истории (для записи в проект) ---
-
-        /// <summary>Сериализуемые записи стека отмены (снизу вверх). Команды, не
-        /// поддерживающие сериализацию (создание/удаление), пропускаются.</summary>
         public static List<CommandRecord> ExportUndo(Func<KitchenElement, int> indexOf) =>
-            Export(_undoStack, indexOf);
+            Instance.ExportUndo(indexOf);
 
         public static List<CommandRecord> ExportRedo(Func<KitchenElement, int> indexOf) =>
-            Export(_redoStack, indexOf);
+            Instance.ExportRedo(indexOf);
 
-        private static List<CommandRecord> Export(List<IUndoCommand> stack, Func<KitchenElement, int> indexOf)
-        {
-            var list = new List<CommandRecord>();
-            foreach (var c in stack)
-            {
-                var rec = (c as ISerializableCommand)?.ToRecord(indexOf);
-                if (rec != null) list.Add(rec);
-            }
-            return list;
-        }
-
-        /// <summary>Заменить историю восстановленной из сохранения. Команды НЕ
-        /// выполняются повторно — сцена уже загружена в актуальном состоянии.</summary>
         public static void Import(IEnumerable<CommandRecord> undo, IEnumerable<CommandRecord> redo,
-            Func<int, KitchenElement> resolve)
-        {
-            _undoStack.Clear();
-            _redoStack.Clear();
-            if (undo != null)
-                foreach (var r in undo)
-                {
-                    var c = CommandSerialization.FromRecord(r, resolve);
-                    if (c != null) _undoStack.Add(c);
-                }
-            if (redo != null)
-                foreach (var r in redo)
-                {
-                    var c = CommandSerialization.FromRecord(r, resolve);
-                    if (c != null) _redoStack.Add(c);
-                }
-        }
+            Func<int, KitchenElement> resolve) =>
+            Instance.Import(undo, redo, resolve);
     }
 
     public class MoveCommand : IUndoCommand, ISerializableCommand
@@ -282,7 +226,6 @@ namespace KitchenDesigner.Core
         }
     }
 
-    /// <summary>Несколько команд как одна операция отмены (например, перемещение группы).</summary>
     public class CompositeCommand : IUndoCommand, ISerializableCommand
     {
         private readonly List<IUndoCommand> _commands;
@@ -302,7 +245,7 @@ namespace KitchenDesigner.Core
                 var rec = (c as ISerializableCommand)?.ToRecord(indexOf);
                 if (rec != null) kids.Add(rec);
             }
-            if (kids.Count == 0) return null; // нечего сохранять (только create/delete)
+            if (kids.Count == 0) return null;
             return new CommandRecord
             {
                 type = "composite",
