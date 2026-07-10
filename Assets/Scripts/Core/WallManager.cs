@@ -4,8 +4,9 @@ namespace KitchenDesigner.Core
 {
     /// <summary>Управляет стенами: показ/скрытие (настройка WallsEnabled) и опускание
     /// ближних стён до 100 мм в режиме обзора (LowerNearWalls, логика The Sims).
-    /// Во время перетаскивания стены поднимаются на полную высоту, чтобы
-    /// опущенная геометрия не ломала валидацию связности.</summary>
+    /// Опускание сохраняется и во время перетаскивания объектов (чтобы стены не
+    /// «выскакивали» при движении), кроме самой перемещаемой стены — её не опускаем,
+    /// иначе опускание дралось бы с drag за позицию по Y.</summary>
     public class WallManager : MonoBehaviour
     {
         private const float LoweredHeightMM = 100f;
@@ -14,7 +15,7 @@ namespace KitchenDesigner.Core
         {
             var s = KitchenSettings.Instance;
             bool show = s == null || s.WallsEnabled;
-            bool lowerMode = s != null && s.LowerNearWalls && !ElementMover.IsDragging;
+            bool lowerMode = s != null && s.LowerNearWalls;
 
             var cam = Camera.main;
             Vector3 camF = cam != null ? cam.transform.forward : Vector3.forward;
@@ -30,7 +31,8 @@ namespace KitchenDesigner.Core
                 var renderer = e.GetComponent<MeshRenderer>();
                 if (renderer != null) renderer.enabled = show;
 
-                if (!show)
+                // Стену, которую сейчас перетаскивают, держим на полной высоте.
+                if (!show || ElementMover.IsMoving(e))
                 {
                     wall.RestoreFull();
                     continue;
