@@ -256,18 +256,17 @@ public class ContextMenuLayoutTests
     }
 
     [Test]
-    public void Facade_HasFourHingeButtons()
+    public void Facade_HasModeButton_WithSingleCharLabel()
     {
         var facade = MakeFacade("F1");
         _menu.Open(facade);
         var panel = _canvas.transform.Find("ContextMenu");
 
-        foreach (var name in new[] { "CtxHingeL", "CtxHingeR", "CtxHingeU", "CtxHingeD" })
-        {
-            var b = panel.Find(name);
-            Assert.NotNull(b, $"нет кнопки петли {name}");
-            Assert.IsTrue(b.gameObject.activeSelf, $"{name} активна для фасада");
-        }
+        var mode = panel.Find("CtxMode");
+        Assert.NotNull(mode, "у фасада должна быть кнопка-переключатель режима");
+        Assert.IsTrue(mode.gameObject.activeSelf, "кнопка режима активна для фасада");
+        Assert.AreEqual(1, mode.GetComponentInChildren<Text>(true).text.Length,
+            "подпись переключателя — один символ");
     }
 
     [Test]
@@ -277,7 +276,7 @@ public class ContextMenuLayoutTests
         _menu.Open(board);
         var panel = _canvas.transform.Find("ContextMenu");
 
-        foreach (var name in new[] { "CtxDoor", "CtxHingeL", "CtxHingeR", "CtxHingeU", "CtxHingeD" })
+        foreach (var name in new[] { "CtxDoor", "CtxMode" })
         {
             var t = panel.Find(name);
             Assert.NotNull(t, $"{name} существует");
@@ -305,15 +304,22 @@ public class ContextMenuLayoutTests
     }
 
     [Test]
-    public void HingeButton_Click_SetsHingeEdge()
+    public void ModeButton_Click_CyclesModeAndSymbol()
     {
         var facade = MakeFacade("F1");
         _menu.Open(facade);
         var panel = _canvas.transform.Find("ContextMenu");
+        var mode = panel.Find("CtxMode");
+        var label = mode.GetComponentInChildren<Text>(true);
+        var button = mode.GetComponent<Button>();
 
-        panel.Find("CtxHingeU").GetComponent<Button>().onClick.Invoke();
-        Assert.AreEqual(HingeEdge.Top, facade.Hinge);
-        panel.Find("CtxHingeD").GetComponent<Button>().onClick.Invoke();
-        Assert.AreEqual(HingeEdge.Bottom, facade.Hinge);
+        Assert.AreEqual(DoorMode.Left, facade.Mode);
+        button.onClick.Invoke();
+        Assert.AreEqual(DoorMode.Right, facade.Mode, "клик переключает режим");
+        Assert.AreEqual(FacadeDoor.Symbol(DoorMode.Right), label.text, "символ обновляется");
+
+        // Полный цикл возвращает к началу (4 ребра + ящик = 5).
+        for (int i = 0; i < 4; i++) button.onClick.Invoke();
+        Assert.AreEqual(DoorMode.Left, facade.Mode);
     }
 }
