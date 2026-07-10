@@ -336,7 +336,7 @@ public class McpCommandHandlerTests
     public void GetViolations_ReturnsEmpty_WhenNoOverlaps()
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(1f, 0f, 0f));
+        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(0.5f, 0f, 0f));
 
         var resp = _handler.Handle(MakeReq("get_violations", "{}"));
 
@@ -349,7 +349,7 @@ public class McpCommandHandlerTests
     public void CreateFacade_ReturnsOk()
     {
         var resp = _handler.Handle(MakeReq("create_element",
-            @"{""template_name"":""TestFacade"",""name"":""F1"",""x"":0,""y"":0,""z"":0,""width"":400,""height"":300,""depth"":18,""is_facade"":true,""gapMM"":3}"));
+            @"{""template_name"":""TestFacade"",""name"":""F1"",""x"":0,""y"":0,""z"":0,""width"":400,""height"":300,""depth"":18,""is_facade"":true,""gapLeft"":1,""gapRight"":2,""gapTop"":3,""gapBottom"":4}"));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(GetProp<bool>(resp.data, "is_facade"));
@@ -357,12 +357,15 @@ public class McpCommandHandlerTests
         Assert.IsNotNull(el);
         var facade = el.GetComponent<FacadeElement>();
         Assert.IsNotNull(facade);
-        Assert.AreEqual(3, facade.GapMM);
+        Assert.AreEqual(1, facade.GapLeft);
+        Assert.AreEqual(2, facade.GapRight);
+        Assert.AreEqual(3, facade.GapTop);
+        Assert.AreEqual(4, facade.GapBottom);
         Assert.AreEqual(new Vector3Int(400, 300, 18), facade.DimensionsMM);
     }
 
     [Test]
-    public void CreateFacade_DefaultGap_IsTwoMM()
+    public void CreateFacade_DefaultGap_IsTwoOnAllSides()
     {
         var resp = _handler.Handle(MakeReq("create_element",
             @"{""template_name"":""Facade2"",""name"":""F2"",""x"":0,""y"":0,""z"":0,""width"":400,""height"":300,""depth"":18,""is_facade"":true}"));
@@ -370,7 +373,10 @@ public class McpCommandHandlerTests
         Assert.AreEqual("result", resp.type);
         var el = FindBoard("F2");
         var facade = el.GetComponent<FacadeElement>();
-        Assert.AreEqual(2, facade.GapMM);
+        Assert.AreEqual(2, facade.GapLeft);
+        Assert.AreEqual(2, facade.GapRight);
+        Assert.AreEqual(2, facade.GapTop);
+        Assert.AreEqual(2, facade.GapBottom);
     }
 
     private static KitchenElement FindBoard(string name)

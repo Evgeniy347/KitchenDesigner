@@ -154,7 +154,7 @@ namespace KitchenDesigner.Core.UI
                 return;
             }
             if (item.isFacade)
-                UIManager.Instance.SpawnFacade(item.dims, item.name, item.gapMM);
+                UIManager.Instance.SpawnFacade(item.dims, item.name, item.gapLeft, item.gapRight, item.gapTop, item.gapBottom);
             else if (item.isWall)
                 UIManager.Instance.SpawnWall(item.dims, item.name);
             else

@@ -5,27 +5,40 @@ using KitchenDesigner.Core.UI;
 public class SidebarCatalogTests
 {
     [Test]
-    public void Build_HasTwoThicknessGroups_AndRoom()
+    public void Build_HasBoardFacadeAndRoom()
     {
         var groups = SidebarCatalog.Build();
 
         Assert.AreEqual(3, groups.Count);
-        Assert.AreEqual("16 мм", groups[0].title);
-        Assert.AreEqual("18 мм", groups[1].title);
+        Assert.AreEqual("Доски", groups[0].title);
+        Assert.AreEqual("Фасады", groups[1].title);
         Assert.AreEqual("Помещение", groups[2].title);
     }
 
     [Test]
-    public void ThicknessGroups_HaveFiveSizes_WithCorrectThickness()
+    public void BoardGroup_HasTenItems_FiveEachThickness()
     {
         var groups = SidebarCatalog.Build();
 
-        Assert.AreEqual(5, groups[0].items.Count);
-        Assert.AreEqual(5, groups[1].items.Count);
+        Assert.AreEqual(10, groups[0].items.Count);
+        int count16 = 0, count18 = 0;
         foreach (var it in groups[0].items)
-            Assert.AreEqual(16, it.dims.z, "группа «16 мм» — толщина 16");
+        {
+            if (it.dims.z == 16) count16++;
+            if (it.dims.z == 18) count18++;
+        }
+        Assert.AreEqual(5, count16, "5 досок толщиной 16 мм");
+        Assert.AreEqual(5, count18, "5 досок толщиной 18 мм");
+    }
+
+    [Test]
+    public void FacadeGroup_HasTwoItems_Thickness18()
+    {
+        var groups = SidebarCatalog.Build();
+
+        Assert.AreEqual(2, groups[1].items.Count);
         foreach (var it in groups[1].items)
-            Assert.AreEqual(18, it.dims.z, "группа «18 мм» — толщина 18");
+            Assert.AreEqual(18, it.dims.z, "толщина фасада 18 мм");
     }
 
     [Test]

@@ -207,4 +207,44 @@ public class SaveLoadManagerTests
         SaveLoadManager.LastPath = prevLast;
         File.Delete(path);
     }
+
+    [Test]
+    public void Facade_SaveAndRestore_PreservesComponentAndGaps()
+    {
+        var go = ElementFactory.CreateFacade(
+            new Vector3Int(600, 400, 18), "MyFacade", Vector3.zero, 3, 5, 7, 9);
+        _spawned.Add(go);
+        var facade = go.GetComponent<FacadeElement>();
+        BoardRegistry.Register(facade);
+
+        var data = SaveLoadManager.CaptureScene(
+            new List<KitchenElement> { facade });
+
+        Assert.IsTrue(data.elements[0].isFacade);
+        Assert.AreEqual(3, data.elements[0].gapLeft);
+        Assert.AreEqual(5, data.elements[0].gapRight);
+        Assert.AreEqual(7, data.elements[0].gapTop);
+        Assert.AreEqual(9, data.elements[0].gapBottom);
+
+        foreach (var sp in _spawned)
+            if (sp != null) Object.DestroyImmediate(sp);
+        _spawned.Clear();
+        foreach (var e in Object.FindObjectsByType<KitchenElement>())
+            if (e != null) Object.DestroyImmediate(e.gameObject);
+        BoardRegistry.Clear();
+
+        var restoredData = SaveLoadManager.Deserialize(
+            SaveLoadManager.Serialize(data));
+        var created = SaveLoadManager.RestoreScene(restoredData);
+
+        Assert.AreEqual(1, created.Count);
+        var restoredFacade = created[0].GetComponent<FacadeElement>();
+        Assert.IsNotNull(restoredFacade, "Restored element should be FacadeElement");
+        Assert.AreEqual("MyFacade", restoredFacade.BoardName);
+        Assert.AreEqual(3, restoredFacade.GapLeft);
+        Assert.AreEqual(5, restoredFacade.GapRight);
+        Assert.AreEqual(7, restoredFacade.GapTop);
+        Assert.AreEqual(9, restoredFacade.GapBottom);
+        Assert.AreEqual(new Vector3Int(600, 400, 18), restoredFacade.DimensionsMM);
+    }
 }

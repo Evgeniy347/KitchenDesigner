@@ -105,7 +105,10 @@ namespace KitchenDesigner.Core.MCP
         public bool is_wall;
         public bool is_floor;
         public bool is_facade;
-        public int gapMM = 2;
+        public int gapLeft = 2;
+        public int gapRight = 2;
+        public int gapTop = 2;
+        public int gapBottom = 2;
     }
 
     [Serializable]
