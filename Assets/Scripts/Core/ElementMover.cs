@@ -119,7 +119,6 @@ namespace KitchenDesigner.Core
             if (_target == null) return;
             IsDragging = true;
             _wasMoved = true;
-            Debug.Log("[Mover] Начато перемещение: " + _target.Describe());
             SaveDragMaterial(); // зелёная/красная тонировка появляется только здесь
         }
 
@@ -321,14 +320,12 @@ namespace KitchenDesigner.Core
             {
                 if (KitchenSettings.Instance.BlockOnViolation && MovedCausesViolation())
                 {
-                    Debug.Log("[Mover] Blocked (violation): " + _target.Describe() + " → revert");
                     _target.transform.position = _startPosition;
                 }
                 else
                 {
                     CommandStack.Execute(new MoveCommand(_target, _startPosition,
                         _target.transform.position, _startRotation, _target.transform.rotation));
-                    Debug.Log("[Mover] Placed: " + _target.Describe());
                 }
             }
             else

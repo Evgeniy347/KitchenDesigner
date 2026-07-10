@@ -70,7 +70,6 @@ namespace KitchenDesigner.Core.UI
                 $"KitchenSpec_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
             if (SpecificationExport.SaveToFile(result, path))
             {
-                Debug.Log($"[Spec] CSV exported: {path}");
                 if (ToastNotification.Instance != null)
                     ToastNotification.Instance.Show("CSV saved to Desktop", 2f);
             }

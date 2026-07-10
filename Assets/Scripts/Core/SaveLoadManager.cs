@@ -55,10 +55,7 @@ namespace KitchenDesigner.Core
             var data = CaptureScene(FindAllElements());
             bool ok = SaveToFile(path, data);
             if (ok)
-            {
                 LastPath = path;
-                Debug.Log("[SaveLoad] Сохранено: " + path);
-            }
             return ok;
         }
 
@@ -83,7 +80,6 @@ namespace KitchenDesigner.Core
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
-            Debug.Log("[SaveLoad] Загружено: " + path);
             return true;
         }
 
@@ -223,7 +219,6 @@ namespace KitchenDesigner.Core
                     using (var src = File.OpenRead(path))
                         src.CopyTo(es);
                 }
-                Debug.Log($"[SaveLoad] Старый файл заархивирован: {zipPath}");
             }
             catch (Exception ex)
             {

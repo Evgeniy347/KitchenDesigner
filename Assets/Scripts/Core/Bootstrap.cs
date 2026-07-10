@@ -50,8 +50,6 @@ namespace KitchenDesigner.Core
                 gameObject.AddComponent<MCP.UnityTcpBridge>();
 
             MCP.ConsoleLogCapture.Initialize();
-
-            Debug.Log("[Bootstrap] Kitchen Designer initialized");
         }
     }
 }
