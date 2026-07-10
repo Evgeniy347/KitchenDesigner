@@ -51,6 +51,12 @@ namespace KitchenDesigner.Core
         private void Awake()
         {
             ApplyDimensions();
+            BoardRegistry.Register(this);
+        }
+
+        private void OnDestroy()
+        {
+            BoardRegistry.Unregister(this);
         }
 
         public void ApplyDimensions()

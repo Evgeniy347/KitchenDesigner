@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -18,6 +20,48 @@ namespace KitchenDesigner.Core
         public List<SpecLine> lines;
         public int totalCount;
         public float totalAreaM2;
+    }
+
+    public static class SpecificationExport
+    {
+        public static string ToCsv(SpecResult result)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("Name;Width_mm;Height_mm;Depth_mm;Count;AreaPerBoard_m2;TotalArea_m2");
+            foreach (var line in result.lines)
+            {
+                sb.AppendLine($"{EscapeCsv(line.name)};{line.dimensionsMM.x};{line.dimensionsMM.y};" +
+                    $"{line.dimensionsMM.z};{line.count};{line.areaPerBoardM2:F4};{line.totalAreaM2:F4}");
+            }
+            sb.AppendLine();
+            sb.AppendLine($"Total;;;{result.totalCount};;{result.totalAreaM2:F4}");
+            return sb.ToString();
+        }
+
+        public static bool SaveToFile(SpecResult result, string path)
+        {
+            try
+            {
+                var dir = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+                File.WriteAllText(path, ToCsv(result), Encoding.UTF8);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[SpecExport] Failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        private static string EscapeCsv(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return "";
+            if (s.Contains(";") || s.Contains("\"") || s.Contains("\n"))
+                return "\"" + s.Replace("\"", "\"\"") + "\"";
+            return s;
+        }
     }
 
     public static class SpecificationManager

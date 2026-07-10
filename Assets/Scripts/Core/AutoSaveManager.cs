@@ -37,7 +37,9 @@ namespace KitchenDesigner.Core
                 if (SaveLoadManager.SaveProject(AutoSaveName, backup: false))
                 {
                     _lastSavedJson = current;
-                    Debug.Log("[AutoSave] 💾 сохранены изменения");
+                    Debug.Log("[AutoSave] Auto-saved changes");
+                    if (UI.ToastNotification.Instance != null)
+                        UI.ToastNotification.Instance.Show("Auto-saved", 1.5f);
                 }
             }
         }

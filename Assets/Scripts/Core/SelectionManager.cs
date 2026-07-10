@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -7,11 +8,19 @@ namespace KitchenDesigner.Core
         public static SelectionManager Instance { get; private set; }
 
         private KitchenElement _selected;
-        private Material _originalMaterial;
-        private Color _originalColor;
+        private readonly List<KitchenElement> _selectedElements = new List<KitchenElement>();
+        private readonly Dictionary<KitchenElement, SavedMaterial> _savedMaterials
+            = new Dictionary<KitchenElement, SavedMaterial>();
 
         public KitchenElement Selected => _selected;
+        public IReadOnlyList<KitchenElement> SelectedElements => _selectedElements;
         public event System.Action<KitchenElement> OnSelectionChanged;
+
+        private struct SavedMaterial
+        {
+            public Material material;
+            public Color color;
+        }
 
         private void Awake()
         {
@@ -24,41 +33,33 @@ namespace KitchenDesigner.Core
             if (ElementMover.IsDragging)
                 return;
 
-            // Alt+ЛКМ — орбита камеры, не выбор.
             if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
                 return;
 
-            // Клик по UI не должен снимать/менять выбор.
             if (UnityEngine.EventSystems.EventSystem.current != null &&
                 UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 return;
 
             if (Input.GetMouseButtonDown(0))
             {
-                Debug.Log("[Selection] LMB Down at screen=" + Input.mousePosition);
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                Debug.Log("[Selection] Ray origin=" + ray.origin + " dir=" + ray.direction);
 
                 if (Physics.Raycast(ray, out RaycastHit hit))
                 {
-                    Debug.Log("[Selection] Raycast hit: " + hit.collider.gameObject.name + " tag=" + hit.collider.tag + " point=" + hit.point);
                     var element = hit.collider.GetComponentInParent<KitchenElement>();
                     if (element != null)
                     {
-                        Debug.Log("[Selection] Found KitchenElement: " + element.name + " BoardName=" + element.BoardName);
-                        Select(element);
+                        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+                        if (ctrl)
+                            ToggleInSelection(element);
+                        else
+                            Select(element);
                         return;
                     }
-                    else
-                    {
-                        Debug.Log("[Selection] Hit object has no KitchenElement component");
-                    }
                 }
-                else
-                {
-                    Debug.Log("[Selection] Raycast missed everything");
-                }
-                Deselect();
+
+                if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
+                    DeselectAll();
             }
         }
 
@@ -69,67 +70,118 @@ namespace KitchenDesigner.Core
                 Debug.Log("[Selection] Already selected, skip");
                 return;
             }
-            Debug.Log("[Selection] Выбрана " + element.Describe());
-            Deselect();
+            Debug.Log("[Selection] Selected " + element.Describe());
+            DeselectAll();
 
             _selected = element;
-            HighlightSelected();
+            _selectedElements.Add(element);
+            HighlightSelected(element, true);
             OnSelectionChanged?.Invoke(_selected);
         }
 
-        public void Deselect()
+        public void ToggleInSelection(KitchenElement element)
         {
-            if (_selected != null)
+            if (_selectedElements.Contains(element))
             {
-                Debug.Log("[Selection] Deselect: " + _selected.name);
-                UnhighlightSelected();
+                _selectedElements.Remove(element);
+                RestoreMaterial(element);
+
+                if (_selected == element)
+                {
+                    _selected = _selectedElements.Count > 0 ? _selectedElements[_selectedElements.Count - 1] : null;
+                }
             }
             else
             {
-                Debug.Log("[Selection] Deselect: nothing selected");
+                _selectedElements.Add(element);
+                HighlightSelected(element, true);
+                _selected = element;
             }
 
+            OnSelectionChanged?.Invoke(_selected);
+        }
+
+        public void AddToSelection(KitchenElement element)
+        {
+            if (_selectedElements.Contains(element)) return;
+
+            if (_selectedElements.Count == 0)
+                _selected = element;
+
+            _selectedElements.Add(element);
+            HighlightSelected(element, true);
+            OnSelectionChanged?.Invoke(_selected);
+        }
+
+        public void DeselectAll()
+        {
+            foreach (var e in _selectedElements)
+            {
+                if (e != null)
+                    RestoreMaterial(e);
+            }
+
+            _selectedElements.Clear();
             _selected = null;
             OnSelectionChanged?.Invoke(null);
         }
 
-        private void HighlightSelected()
+        public void Deselect()
         {
-            Debug.Log("[Selection] HighlightSelected");
-            var renderer = _selected.GetComponent<MeshRenderer>();
+            if (_selected == null) return;
+            if (_selectedElements.Count <= 1)
+            {
+                DeselectAll();
+                return;
+            }
+
+            RestoreMaterial(_selected);
+            _selectedElements.Remove(_selected);
+            _selected = _selectedElements.Count > 0
+                ? _selectedElements[_selectedElements.Count - 1]
+                : null;
+            OnSelectionChanged?.Invoke(_selected);
+        }
+
+        public bool IsSelected(KitchenElement element)
+        {
+            return _selectedElements.Contains(element);
+        }
+
+        private void HighlightSelected(KitchenElement element, bool isMulti)
+        {
+            var renderer = element.GetComponent<MeshRenderer>();
             if (renderer != null && renderer.material != null)
             {
-                _originalMaterial = renderer.material;
-                _originalColor = _originalMaterial.color;
-                var mat = new Material(_originalMaterial);
+                if (!_savedMaterials.ContainsKey(element))
+                {
+                    _savedMaterials[element] = new SavedMaterial
+                    {
+                        material = renderer.material,
+                        color = renderer.material.color
+                    };
+                }
+
+                var mat = new Material(renderer.material);
                 mat.EnableKeyword("_EMISSION");
-                mat.SetColor("_EmissionColor", new Color(0.8f, 0.7f, 0.1f) * 0.5f);
-                mat.color = new Color(1f, 0.95f, 0.6f);
+                float intensity = isMulti ? 0.3f : 0.5f;
+                mat.SetColor("_EmissionColor", new Color(0.8f, 0.7f, 0.1f) * intensity);
+                mat.color = isMulti ? new Color(1f, 0.97f, 0.7f) : new Color(1f, 0.95f, 0.6f);
                 renderer.material = mat;
-                Debug.Log("[Selection] Material swapped to yellow emission");
-            }
-            else
-            {
-                Debug.Log("[Selection] No MeshRenderer found on " + _selected.name);
             }
         }
 
-        private void UnhighlightSelected()
+        private void RestoreMaterial(KitchenElement element)
         {
-            Debug.Log("[Selection] UnhighlightSelected");
-            var renderer = _selected.GetComponent<MeshRenderer>();
-            if (renderer != null && _originalMaterial != null)
+            var renderer = element.GetComponent<MeshRenderer>();
+            if (renderer != null && _savedMaterials.TryGetValue(element, out var saved))
             {
-                renderer.material = _originalMaterial;
-                Debug.Log("[Selection] Material restored");
+                renderer.material = saved.material;
             }
-            else
-            {
-                Debug.Log("[Selection] No renderer or original material to restore");
-            }
+            _savedMaterials.Remove(element);
 
             if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.ApplyForElement(_selected);
+                ElementHighlighter.Instance.ApplyForElement(element);
         }
     }
 }

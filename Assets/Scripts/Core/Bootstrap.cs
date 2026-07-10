@@ -43,6 +43,9 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<UI.ConsoleOverlay>() == null)
                 gameObject.AddComponent<UI.ConsoleOverlay>();
 
+            if (FindAnyObjectByType<UndoHandler>() == null)
+                gameObject.AddComponent<UndoHandler>();
+
             Debug.Log("[Bootstrap] Kitchen Designer initialized");
         }
     }

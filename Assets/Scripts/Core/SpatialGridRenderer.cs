@@ -14,13 +14,11 @@ namespace KitchenDesigner.Core
 
         private void Awake()
         {
-            var shader = Shader.Find("Hidden/Internal-Colored");
+            var shader = Shader.Find("Hidden/GridLine");
+            if (shader == null)
+                shader = Resources.Load<Shader>("Shaders/GridLine");
             if (shader == null) return;
             _lineMaterial = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
-            _lineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            _lineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            _lineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-            _lineMaterial.SetInt("_ZWrite", 0);
         }
 
         private void OnRenderObject()

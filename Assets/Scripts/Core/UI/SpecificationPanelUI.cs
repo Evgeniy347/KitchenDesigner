@@ -23,6 +23,8 @@ namespace KitchenDesigner.Core.UI
             _content = UIFactory.CreateLabel("SpecContent", panel.transform, "", 18,
                 new Vector2(0, -10), new Vector2(540, 540), TextAnchor.UpperLeft);
 
+            UIFactory.CreateButton("SpecExport", panel.transform, "Экспорт CSV",
+                new Vector2(-140, -300), new Vector2(130, 40), ExportCsv);
             UIFactory.CreateButton("SpecClose", panel.transform, "Закрыть",
                 new Vector2(0, -300), new Vector2(160, 40), () => SetVisible(false));
 
@@ -40,8 +42,7 @@ namespace KitchenDesigner.Core.UI
 
         private void Refresh()
         {
-            var all = FindObjectsByType<KitchenElement>();
-            var result = SpecificationManager.Build(all);
+            var result = SpecificationManager.Build(BoardRegistry.All);
 
             var sb = new StringBuilder();
             sb.AppendLine("№   Название              Ш×В×Г (мм)        Кол-во   S, м²");
@@ -60,5 +61,23 @@ namespace KitchenDesigner.Core.UI
 
         private static string Trim(string s, int max) =>
             string.IsNullOrEmpty(s) ? "" : (s.Length <= max ? s : s.Substring(0, max - 1) + "…");
+
+        private void ExportCsv()
+        {
+            var result = SpecificationManager.Build(BoardRegistry.All);
+            string path = System.IO.Path.Combine(
+                System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop),
+                $"KitchenSpec_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            if (SpecificationExport.SaveToFile(result, path))
+            {
+                Debug.Log($"[Spec] CSV exported: {path}");
+                if (ToastNotification.Instance != null)
+                    ToastNotification.Instance.Show("CSV saved to Desktop", 2f);
+            }
+            else
+            {
+                Debug.LogError("[Spec] CSV export failed");
+            }
+        }
     }
 }

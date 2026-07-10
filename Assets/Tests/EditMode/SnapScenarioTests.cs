@@ -215,4 +215,265 @@ public class SnapScenarioTests
         var r = Snap(b, a, new Vector3(0.1f, 0f, 0f)); // глубоко перекрываются
         Assert.IsFalse(r.snapped);
     }
+
+    // ====== Две доски — кромки (поименовано по todo) ======
+
+    [Test]
+    public void TwoBoards_EdgeToEdge_AlignsMinEdges()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero);
+        var r = Snap(b, a, new Vector3(-0.78f, 0f, 0.02f));
+        Assert.IsTrue(r.snapped);
+        Assert.AreEqual(-0.80f, r.position.x, 0.001f, "левые кромки совпадают");
+    }
+
+    [Test]
+    public void TwoBoards_CenterToCenter_AlignsCenters()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero);
+        var r = Snap(b, a, new Vector3(0.01f, 0f, 0.02f));
+        Assert.IsTrue(r.snapped);
+        Assert.AreEqual(0f, r.position.x, 0.001f, "центры совпадают");
+    }
+
+    [Test]
+    public void TwoBoards_MaxEdgeToMaxEdge()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero);
+        var r = Snap(b, a, new Vector3(0.78f, 0f, 0.02f));
+        Assert.IsTrue(r.snapped);
+        Assert.AreEqual(0.80f, r.position.x, 0.001f, "правые кромки совпадают");
+    }
+
+    [Test]
+    public void TwoBoards_SmallBoardNearBigBoard_AlignsNearestEdge()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(400, 400, 18), Vector3.zero);
+        var r = Snap(b, a, new Vector3(-0.18f, 0f, 0.02f));
+        Assert.IsTrue(r.snapped);
+        Assert.AreEqual(-0.20f, r.position.x, 0.001f, "мелкая доска липнет кромкой к большой");
+    }
+
+    [Test]
+    public void TwoBoards_FaceToFace_Flush()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero);
+        AssertSnappedFlush(b, a, new Vector3(0f, 0f, 0.02f));
+    }
+
+    [Test]
+    public void TwoBoards_Rotated90_EdgeToEdge()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero,
+            Quaternion.AngleAxis(90f, Vector3.up));
+        AssertSnappedFlush(b, a, new Vector3(0.43f, 0f, 0f));
+    }
+
+    [Test]
+    public void TwoBoards_Rotated45_EdgeToEdge()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero,
+            Quaternion.AngleAxis(45f, Vector3.up));
+        var r = Snap(b, a, new Vector3(0.82f, 0f, 0.02f));
+        Assert.IsTrue(r.snapped, "повёрнутая на 45° доска должна прилипать");
+    }
+
+    [Test]
+    public void TwoBoards_PartialOverlapBelow30Percent_NotSnapped()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero);
+        // Сдвиг по Z так, чтобы грань A (0.8x0.4) и грань B перекрывались < 30%
+        // Минимальное перекрытие 30% = 0.3 * 0.32м² = 0.096м².
+        // Смещаем B по Y на 0.25м: перекрытие = 0.8 * (0.4 - 0.25*2) = 0.8 * -0.1 = нет перекрытия.
+        var r = Snap(b, a, new Vector3(0f, 0.35f, 0.02f));
+        Assert.IsFalse(r.snapped, "перекрытие <30% — не должно снэпаться");
+    }
+
+    [Test]
+    public void TwoBoards_ExactlyAtThreshold_Snapped()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero);
+        // Зазор ровно 50мм = 0.05м между гранями
+        var r = Snap(b, a, new Vector3(0.85f, 0f, 0f));
+        Assert.IsTrue(r.snapped, "ровно на пороге 50мм — должно прилипнуть");
+        Assert.AreEqual(0.80f, r.position.x, 0.001f);
+    }
+
+    [Test]
+    public void TwoBoards_JustOverThreshold_NotSnapped()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero);
+        // Зазор 51мм = 0.051м > порога 50мм
+        var r = Snap(b, a, new Vector3(0.851f, 0f, 0f));
+        Assert.IsFalse(r.snapped, "51мм > 50мм — не должно прилипать");
+    }
+
+    // ====== Три доски ======
+
+    [Test]
+    public void ThreeBoards_ChainABC_AllSnapped()
+    {
+        var a = Make("A", new Vector3Int(600, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(600, 400, 18), new Vector3(0.6f, 0f, 0f));
+        var c = Make("C", new Vector3Int(600, 400, 18), new Vector3(1.2f, 0f, 0f));
+
+        var r = SnapSystem.TrySnap(c, new List<KitchenElement> { a, b },
+            new Vector3(1.22f, 0f, 0f));
+        Assert.IsTrue(r.snapped, "C должна прилипнуть к B");
+        Assert.AreEqual("B", r.targetName);
+        c.transform.position = r.position;
+
+        r = SnapSystem.TrySnap(b, new List<KitchenElement> { a, c },
+            new Vector3(0.62f, 0f, 0f));
+        Assert.IsTrue(r.snapped, "B должна прилипнуть к A");
+    }
+
+    [Test]
+    public void ThreeBoards_TShape_VerticalOnHorizontal()
+    {
+        var floor = Make("Floor", new Vector3Int(3000, 18, 3000), Vector3.zero);
+        var horiz = Make("H", new Vector3Int(800, 400, 18), Vector3.zero);
+        AssertSnappedFlush(horiz, floor, new Vector3(0f, 0.25f, 0f));
+
+        var vert = Make("V", new Vector3Int(400, 800, 18), Vector3.zero,
+            Quaternion.AngleAxis(90f, Vector3.right));
+        // Вертикальная доска встаёт на горизонтальную
+        AssertSnappedFlush(vert, horiz, new Vector3(0f, 0.42f, 0f));
+    }
+
+    [Test]
+    public void ThreeBoards_LShape_CornerAlignment()
+    {
+        var floor = Make("Floor", new Vector3Int(3000, 18, 3000), Vector3.zero);
+        var a = Make("A", new Vector3Int(600, 400, 18), Vector3.zero);
+        AssertSnappedFlush(a, floor, new Vector3(0f, 0.25f, 0f));
+
+        var b = Make("B", new Vector3Int(600, 400, 18), Vector3.zero);
+        // B прилипает к A сбоку, образуя угол
+        AssertSnappedFlush(b, a, new Vector3(0.62f, 0f, 0.3f));
+    }
+
+    [Test]
+    public void ThreeBoards_UShape_ThreeWalls()
+    {
+        var floor = Make("Floor", new Vector3Int(3000, 18, 3000), Vector3.zero);
+        var left = Make("Left", new Vector3Int(400, 400, 18), Vector3.zero);
+        AssertSnappedFlush(left, floor, new Vector3(-0.3f, 0.25f, 0f));
+
+        var right = Make("Right", new Vector3Int(400, 400, 18), Vector3.zero);
+        AssertSnappedFlush(right, floor, new Vector3(0.3f, 0.25f, 0f));
+
+        var back = Make("Back", new Vector3Int(800, 400, 18), Vector3.zero);
+        // Задняя стенка прилипает к обеим боковым
+        var r = SnapSystem.TrySnap(back, new List<KitchenElement> { left, right, floor },
+            new Vector3(0f, 0.25f, -0.3f));
+        Assert.IsTrue(r.snapped, "задняя стенка должна прилипнуть");
+        AssertSnappedFlush(back, floor, new Vector3(0f, 0.25f, -0.3f));
+    }
+
+    [Test]
+    public void ThreeBoards_StackOnFloor()
+    {
+        var floor = Make("Floor", new Vector3Int(3000, 18, 3000), Vector3.zero);
+        var a = Make("A", new Vector3Int(600, 400, 18), Vector3.zero);
+        AssertSnappedFlush(a, floor, new Vector3(0f, 0.25f, 0f));
+
+        var b = Make("B", new Vector3Int(600, 400, 18), Vector3.zero);
+        AssertSnappedFlush(b, a, new Vector3(0f, 0.65f, 0f));
+
+        var c = Make("C", new Vector3Int(600, 400, 18), Vector3.zero);
+        AssertSnappedFlush(c, b, new Vector3(0f, 1.05f, 0f));
+    }
+
+    [Test]
+    public void ThreeBoards_ConflictingSnaps_ChoosesNearest()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), new Vector3(0.8f, 0f, 0f));
+        var c = Make("C", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        var r = SnapSystem.TrySnap(c, new List<KitchenElement> { a, b },
+            new Vector3(1.62f, 0f, 0f));
+        Assert.IsTrue(r.snapped);
+        Assert.AreEqual("B", r.targetName, "должна выбрать B — C ближе к B, чем к A");
+    }
+
+    [Test]
+    public void ThreeBoards_MixedRotations()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(400, 400, 18), Vector3.zero,
+            Quaternion.AngleAxis(90f, Vector3.up));
+        AssertSnappedFlush(b, a, new Vector3(0.43f, 0f, 0f));
+
+        var c = Make("C", new Vector3Int(400, 400, 18), Vector3.zero,
+            Quaternion.AngleAxis(45f, Vector3.up));
+        var r = Snap(c, b, new Vector3(0f, 0.42f, 0f));
+        Assert.IsTrue(r.snapped, "C с поворотом 45° должна прилипнуть к B");
+    }
+
+    // ====== Особые случаи ======
+
+    [Test]
+    public void BoardOnFloor_CenterY0_2_IsValid()
+    {
+        var floor = Make("Floor", new Vector3Int(3000, 18, 3000), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), new Vector3(0f, 0.209f, 0f));
+        // Доска стоит на полу: валидация должна пройти
+        var val = ConstraintValidator.Validate(new List<KitchenElement> { floor, b });
+        Assert.IsTrue(val.isValid, "доска на полу должна быть валидна");
+    }
+
+    [Test]
+    public void BoardOnFloor_SnapsFromAbove()
+    {
+        var floor = Make("Floor", new Vector3Int(3000, 18, 3000), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero);
+        var r = Snap(b, floor, new Vector3(0f, 0.30f, 0f));
+        Assert.IsTrue(r.snapped, "доска в воздухе должна прилипнуть к полу");
+        Assert.AreEqual(0.209f, r.position.y, 0.001f);
+    }
+
+    [Test]
+    public void BoardDisabled_DoesNotSnap()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero);
+        a.gameObject.SetActive(false); // цель отключена
+
+        var r = SnapSystem.TrySnap(b, new List<KitchenElement> { a },
+            new Vector3(0.82f, 0f, 0f));
+        Assert.IsFalse(r.snapped, "отключённая цель не участвует в снэпе");
+    }
+
+    [Test]
+    public void MovedBoardDisabled_DoesNotSnap()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero);
+        b.gameObject.SetActive(false);
+
+        var r = SnapSystem.TrySnap(b, new List<KitchenElement> { a },
+            new Vector3(0.82f, 0f, 0f));
+        Assert.IsFalse(r.snapped, "отключённая доска не может снэпаться");
+    }
+
+    [Test]
+    public void ZeroDimensions_ClampedToOne()
+    {
+        var b = Make("B", new Vector3Int(0, -5, 0), Vector3.zero);
+        Assert.AreEqual(1, b.DimensionsMM.x, "X должен быть ≥1");
+        Assert.AreEqual(1, b.DimensionsMM.y, "Y должен быть ≥1");
+        Assert.AreEqual(1, b.DimensionsMM.z, "Z должен быть ≥1");
+    }
 }

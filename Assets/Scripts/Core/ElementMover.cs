@@ -10,12 +10,22 @@ namespace KitchenDesigner.Core
         private KitchenElement _target;
         private Vector3 _offset;
         private Vector3 _startPosition;
+        private Quaternion _startRotation;
         private bool _wasMoved;
         private bool _wasShift;
         private float _vOffset;
+        private AxisLock _axisLock = AxisLock.None;
+
+        private enum AxisLock { None, X, Z }
 
         private Material _dragOriginalMaterial;
         private Material _dragTintMaterial;
+
+        private Mesh _ghostMesh;
+        private Material _ghostMaterial;
+        private Vector3? _ghostPosition;
+        private Quaternion _ghostRotation;
+        private bool _showGhost;
 
         private void Start()
         {
@@ -24,6 +34,27 @@ namespace KitchenDesigner.Core
                 sel.OnSelectionChanged += OnSelectionChanged;
             else
                 Debug.LogError("[Mover] No SelectionManager found on same GameObject");
+
+            CreateGhostMaterial();
+        }
+
+        private void OnDestroy()
+        {
+            if (_ghostMaterial != null)
+                Destroy(_ghostMaterial);
+        }
+
+        private void CreateGhostMaterial()
+        {
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) return;
+            _ghostMaterial = new Material(shader);
+            _ghostMaterial.SetFloat("_Surface", 1);
+            _ghostMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            _ghostMaterial.renderQueue = 3000;
+            _ghostMaterial.color = new Color(0.3f, 0.6f, 1f, 0.2f);
+            _ghostMaterial.SetFloat("_Metallic", 0f);
+            _ghostMaterial.SetFloat("_Smoothness", 0.1f);
         }
 
         private void OnSelectionChanged(KitchenElement element)
@@ -55,6 +86,7 @@ namespace KitchenDesigner.Core
                     IsDragging = true;
                     Debug.Log("[Mover] Начато перемещение: " + _target.Describe());
                     _startPosition = _target.transform.position;
+                    _startRotation = _target.transform.rotation;
                     _wasMoved = false;
                     _wasShift = false;
 
@@ -82,8 +114,12 @@ namespace KitchenDesigner.Core
             {
                 var dup = ElementFactory.Duplicate(_target);
                 var newElement = dup != null ? dup.GetComponent<KitchenElement>() : null;
-                if (newElement != null && SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(newElement);
+                if (newElement != null)
+                {
+                    CommandStack.Execute(new CreateCommand(dup));
+                    if (SelectionManager.Instance != null)
+                        SelectionManager.Instance.Select(newElement);
+                }
             }
         }
 
@@ -121,16 +157,24 @@ namespace KitchenDesigner.Core
             RefreshHighlights();
         }
 
+        private void OnRenderObject()
+        {
+            if (_showGhost && _ghostMesh != null && _ghostPosition.HasValue && _ghostMaterial != null)
+                Graphics.DrawMesh(_ghostMesh, _ghostPosition.Value, _ghostRotation, _ghostMaterial, 0);
+        }
+
         private void HandleDragInput()
         {
             if (Input.GetKeyDown(KeyCode.Escape) && IsDragging)
             {
-                _target.transform.position = _startPosition;
-                RestoreDragMaterial();
-                IsDragging = false;
-                _wasMoved = false;
-                RefreshHighlights();
-                return;
+            _showGhost = false;
+            _axisLock = AxisLock.None;
+            _target.transform.position = _startPosition;
+            RestoreDragMaterial();
+            IsDragging = false;
+            _wasMoved = false;
+            RefreshHighlights();
+            return;
             }
 
             if (_target == null) return;
@@ -196,26 +240,51 @@ namespace KitchenDesigner.Core
             if (_dragTintMaterial == null) SaveDragMaterial();
             _wasMoved = true;
 
-            // Прилипание во время перетаскивания: доска «липнет» к снэп-позиции.
-            var others = new List<KitchenElement>(FindObjectsByType<KitchenElement>());
+            if (Input.GetKeyDown(KeyCode.X)) _axisLock = _axisLock == AxisLock.X ? AxisLock.None : AxisLock.X;
+            if (Input.GetKeyDown(KeyCode.Z)) _axisLock = _axisLock == AxisLock.Z ? AxisLock.None : AxisLock.Z;
+            if (_axisLock == AxisLock.X) { newPos.z = _startPosition.z; newPos.y = _startPosition.y; }
+            else if (_axisLock == AxisLock.Z) { newPos.x = _startPosition.x; newPos.y = _startPosition.y; }
+
+            var others = BoardRegistry.GetAll();
             var snap = SnapSystem.TrySnap(_target, others, newPos);
             _target.transform.position = snap.snapped ? snap.position : newPos;
+
+            // Ghost-preview: полупрозрачная доска в позиции снэпа.
+            if (snap.snapped && snap.position != _target.transform.position)
+            {
+                _showGhost = true;
+                _ghostPosition = snap.position;
+                _ghostRotation = _target.transform.rotation;
+                if (_ghostMesh == null)
+                {
+                    var mf = _target.GetComponent<MeshFilter>();
+                    if (mf != null) _ghostMesh = mf.sharedMesh;
+                }
+            }
+            else
+            {
+                _showGhost = false;
+            }
 
             UpdateDragTint();
         }
 
         private void FinishDrag()
         {
+            _showGhost = false;
+
             if (_wasMoved)
             {
                 if (KitchenSettings.Instance.BlockOnViolation && MovedCausesViolation())
                 {
-                    Debug.Log("[Mover] Заблокировано (нарушение): " + _target.Describe() + " → откат");
+                    Debug.Log("[Mover] Blocked (violation): " + _target.Describe() + " → revert");
                     _target.transform.position = _startPosition;
                 }
                 else
                 {
-                    Debug.Log("[Mover] Размещено: " + _target.Describe());
+                    CommandStack.Execute(new MoveCommand(_target, _startPosition,
+                        _target.transform.position, _startRotation, _target.transform.rotation));
+                    Debug.Log("[Mover] Placed: " + _target.Describe());
                 }
             }
             else
@@ -223,19 +292,32 @@ namespace KitchenDesigner.Core
                 _target.transform.position = _startPosition;
             }
 
+            _axisLock = AxisLock.None;
             RestoreDragMaterial();
             IsDragging = false;
             _wasShift = false;
             RefreshHighlights();
         }
 
-        // Блокировка должна смотреть на саму перемещаемую доску, а не на всю сцену:
-        // иначе любая чужая ошибка мешала бы двигать валидную доску.
+        // Проверяет, есть ли нарушения среди перемещаемой доски и её соседей
+        // (в радиусе snapThreshold * 2). Это предотвращает ситуацию, когда
+        // движение доски B разрывает связь доски A с полом — и это остаётся
+        // незамеченным. При этом чужая ошибка вдали не блокирует перемещение.
         private bool MovedCausesViolation()
         {
-            var list = new List<KitchenElement>(FindObjectsByType<KitchenElement>());
+            var list = BoardRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
-            return result.violations.Contains(_target);
+            if (!result.isValid)
+            {
+                float radius = KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;
+                foreach (var v in result.violations)
+                {
+                    if (v == _target) return true;
+                    float dist = Vector3.Distance(v.transform.position, _target.transform.position);
+                    if (dist <= radius) return true;
+                }
+            }
+            return false;
         }
 
         private static void RefreshHighlights()
@@ -263,7 +345,7 @@ namespace KitchenDesigner.Core
             if (_dragTintMaterial == null || _target == null) return;
 
             bool overlaps = false;
-            foreach (var other in FindObjectsByType<KitchenElement>())
+            foreach (var other in BoardRegistry.GetAll())
             {
                 if (other == _target || other == null) continue;
                 if (SnapSystem.ElementsIntersect(_target, other)) { overlaps = true; break; }
