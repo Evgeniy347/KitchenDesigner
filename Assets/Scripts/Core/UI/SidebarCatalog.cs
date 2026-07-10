@@ -13,11 +13,17 @@ namespace KitchenDesigner.Core.UI
             public Vector3Int dims;
             public bool isWall;
             public bool isFacade;
-            public int gapMM;
-            public Item(string name, Vector3Int dims, bool isWall = false, bool isFacade = false, int gapMM = 2)
+            public int gapLeft;
+            public int gapRight;
+            public int gapTop;
+            public int gapBottom;
+            public Item(string name, Vector3Int dims, bool isWall = false, bool isFacade = false,
+                int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2)
             {
                 this.name = name; this.dims = dims; this.isWall = isWall;
-                this.isFacade = isFacade; this.gapMM = gapMM;
+                this.isFacade = isFacade;
+                this.gapLeft = gapLeft; this.gapRight = gapRight;
+                this.gapTop = gapTop; this.gapBottom = gapBottom;
             }
         }
 
@@ -77,8 +83,8 @@ namespace KitchenDesigner.Core.UI
                 shortLabel = "Ф",
                 items = new List<Item>
                 {
-                    new Item("Фасад 800×400×18", new Vector3Int(800, 400, 18), false, true, 2),
-                    new Item("Фасад 600×400×18", new Vector3Int(600, 400, 18), false, true, 2),
+                    new Item("Фасад 800×400×18", new Vector3Int(800, 400, 18), false, true, 2, 2, 2, 2),
+                    new Item("Фасад 600×400×18", new Vector3Int(600, 400, 18), false, true, 2, 2, 2, 2),
                 }
             };
         }

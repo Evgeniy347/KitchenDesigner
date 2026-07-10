@@ -12,8 +12,9 @@ namespace KitchenDesigner.Core.UI
         private KitchenElement _target;
         private Text _titleLabel;
 
-        private InputField _name, _w, _h, _d, _x, _y, _z, _rx, _ry, _rz;
+        private InputField _name, _w, _h, _d, _gapL, _gapR, _gapT, _gapB, _x, _y, _z, _rx, _ry, _rz;
         private Toggle _lockToggle;
+        private GameObject _gapRow;
 
         private void Awake()
         {
@@ -39,6 +40,10 @@ namespace KitchenDesigner.Core.UI
             _w = Row(panel.transform, "Ширина, мм", ref y, rowStep);
             _h = Row(panel.transform, "Высота, мм", ref y, rowStep);
             _d = Row(panel.transform, "Глубина, мм", ref y, rowStep);
+
+            // ── Зазоры (только для фасадов) ──
+            _gapRow = CreateGapSection(panel.transform, ref y);
+
             _x = Row(panel.transform, "X, м", ref y, rowStep);
             _y = Row(panel.transform, "Y, м", ref y, rowStep);
             _z = Row(panel.transform, "Z, м", ref y, rowStep);
@@ -47,6 +52,7 @@ namespace KitchenDesigner.Core.UI
             _rz = Row(panel.transform, "Поворот Z°", ref y, rowStep);
 
             foreach (var f in new[] { _w, _h, _d }) f.contentType = InputField.ContentType.IntegerNumber;
+            foreach (var f in new[] { _gapL, _gapR, _gapT, _gapB }) f.contentType = InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f.contentType = InputField.ContentType.DecimalNumber;
 
             // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
@@ -108,6 +114,36 @@ namespace KitchenDesigner.Core.UI
                 Close();
         }
 
+        private GameObject CreateGapSection(Transform parent, ref float y)
+        {
+            var root = new GameObject("_GapSection");
+            var rt = root.AddComponent<RectTransform>();
+            UIFactory.AnchorTopLeft(rt);
+            rt.SetParent(parent, false);
+            rt.anchoredPosition = new Vector2(0, y);
+            rt.sizeDelta = new Vector2(260, 100);
+
+            UIFactory.CreateLabel("CtxGapHdr", root.transform, "Отступы, мм:", 14,
+                new Vector2(-72, 0), new Vector2(130, 20), TextAnchor.MiddleLeft);
+
+            _gapL = MakeGapField(root.transform, "Слева", -72, -26);
+            _gapR = MakeGapField(root.transform, "Справа", 20, -26);
+            _gapT = MakeGapField(root.transform, "Сверху", -72, -52);
+            _gapB = MakeGapField(root.transform, "Снизу", 20, -52);
+
+            y -= 72f;
+            root.SetActive(false);
+            return root;
+        }
+
+        private static InputField MakeGapField(Transform parent, string label, float labelX, float fieldX)
+        {
+            UIFactory.CreateLabel("Gap_" + label, parent, label, 13,
+                new Vector2(labelX, 0), new Vector2(55, 20), TextAnchor.MiddleLeft);
+            return UIFactory.CreateInputField("F_gap_" + label, parent, "2",
+                new Vector2(fieldX, 0), new Vector2(48, 22));
+        }
+
         private InputField Row(Transform parent, string label, ref float y, float step)
         {
             UIFactory.CreateLabel("L_" + label, parent, label, 15, new Vector2(-72, y), new Vector2(130, 24));
@@ -156,6 +192,20 @@ namespace KitchenDesigner.Core.UI
             _w.text = dims.x.ToString();
             _h.text = dims.y.ToString();
             _d.text = dims.z.ToString();
+
+            var facade = element as FacadeElement;
+            if (_gapRow != null)
+            {
+                _gapRow.SetActive(facade != null);
+                if (facade != null)
+                {
+                    _gapL.text = facade.GapLeft.ToString();
+                    _gapR.text = facade.GapRight.ToString();
+                    _gapT.text = facade.GapTop.ToString();
+                    _gapB.text = facade.GapBottom.ToString();
+                }
+            }
+
             RefreshTransformFields();
 
             _lockToggle.SetIsOnWithoutNotify(!element.Movable);
@@ -183,6 +233,15 @@ namespace KitchenDesigner.Core.UI
                 ParseInt(_w.text, oldDims.x),
                 ParseInt(_h.text, oldDims.y),
                 ParseInt(_d.text, oldDims.z));
+
+            var facade = _target as FacadeElement;
+            if (facade != null)
+            {
+                facade.GapLeft = ParseInt(_gapL.text, facade.GapLeft);
+                facade.GapRight = ParseInt(_gapR.text, facade.GapRight);
+                facade.GapTop = ParseInt(_gapT.text, facade.GapTop);
+                facade.GapBottom = ParseInt(_gapB.text, facade.GapBottom);
+            }
 
             _target.transform.position = new Vector3(
                 ParseFloat(_x.text, oldPos.x),
@@ -212,6 +271,14 @@ namespace KitchenDesigner.Core.UI
             _w.text = _target.DimensionsMM.x.ToString();
             _h.text = _target.DimensionsMM.y.ToString();
             _d.text = _target.DimensionsMM.z.ToString();
+
+            if (facade != null)
+            {
+                _gapL.text = facade.GapLeft.ToString();
+                _gapR.text = facade.GapRight.ToString();
+                _gapT.text = facade.GapTop.ToString();
+                _gapB.text = facade.GapBottom.ToString();
+            }
 
             RefreshHighlights();
         }

@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core.MCP
             ["set_scale"] = "Установить масштаб GameObject",
             ["get_all_elements"] = "Список всех KitchenElement (доски, пол, стены)",
             ["get_element_info"] = "Информация о KitchenElement по имени",
-            ["create_element"] = "Создать доску/стену/пол/фасад. Параметры: template_name, x, y, z, width, height, depth, is_wall, is_floor, is_facade, gapMM",
+            ["create_element"] = "Создать доску/стену/пол/фасад. Параметры: template_name, x, y, z, width, height, depth, is_wall, is_floor, is_facade, gapLeft, gapRight, gapTop, gapBottom",
             ["delete_element"] = "Удалить KitchenElement (с undo)",
             ["move_element"] = "Переместить KitchenElement (name, x, y, z)",
             ["resize_element"] = "Изменить размер KitchenElement (name, width, height, depth)",
@@ -602,7 +602,10 @@ namespace KitchenDesigner.Core.MCP
                 var facade = go.AddComponent<FacadeElement>();
                 facade.BoardName = elementName;
                 facade.DimensionsMM = dims;
-                facade.GapMM = p.gapMM;
+                facade.GapLeft = p.gapLeft;
+                facade.GapRight = p.gapRight;
+                facade.GapTop = p.gapTop;
+                facade.GapBottom = p.gapBottom;
                 element = facade;
             }
             else

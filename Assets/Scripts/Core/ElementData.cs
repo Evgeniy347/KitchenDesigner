@@ -12,7 +12,10 @@ namespace KitchenDesigner.Core
         public bool movable = true;
         public bool isWall = false;
         public bool isFacade = false;
-        public int gapMM = 2;
+        public int gapLeft = 2;
+        public int gapRight = 2;
+        public int gapTop = 2;
+        public int gapBottom = 2;
         public int groupId = 0;
         public string materialId = MaterialCatalog.DefaultId;
 
@@ -37,7 +40,13 @@ namespace KitchenDesigner.Core
             d.isWall = wall != null;
             var facade = element as FacadeElement;
             d.isFacade = facade != null;
-            d.gapMM = facade != null ? facade.GapMM : 2;
+            if (facade != null)
+            {
+                d.gapLeft = facade.GapLeft;
+                d.gapRight = facade.GapRight;
+                d.gapTop = facade.GapTop;
+                d.gapBottom = facade.GapBottom;
+            }
             d.groupId = element.GroupId;
             d.materialId = element.MaterialId;
             return d;

@@ -194,13 +194,14 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        public void SpawnFacade(Vector3Int dims, string name, int gapMM = 2)
+        public void SpawnFacade(Vector3Int dims, string name,
+            int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2)
         {
             Vector3 pos = GroundPointInFrontOfCamera();
             pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
             pos = GridManager.SnapToGrid(pos);
 
-            var go = ElementFactory.CreateFacade(dims, name, pos, gapMM);
+            var go = ElementFactory.CreateFacade(dims, name, pos, gapLeft, gapRight, gapTop, gapBottom);
             var element = go.GetComponent<KitchenElement>();
             if (element != null)
             {

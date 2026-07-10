@@ -76,7 +76,8 @@ namespace KitchenDesigner.Core
             var facade = source as FacadeElement;
             if (facade != null)
             {
-                var go = CreateFacade(dims, source.BoardName + " (copy)", offset, facade.GapMM);
+                var go = CreateFacade(dims, source.BoardName + " (copy)", offset,
+                    facade.GapLeft, facade.GapRight, facade.GapTop, facade.GapBottom);
                 go.transform.rotation = source.transform.rotation;
                 return go;
             }
@@ -99,7 +100,8 @@ namespace KitchenDesigner.Core
             return go;
         }
 
-        public static GameObject CreateFacade(Vector3Int dimensionsMM, string name, Vector3 position, int gapMM = 2)
+        public static GameObject CreateFacade(Vector3Int dimensionsMM, string name, Vector3 position,
+            int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = string.IsNullOrEmpty(name) ? "Facade" : name;
@@ -107,7 +109,10 @@ namespace KitchenDesigner.Core
             var facade = go.AddComponent<FacadeElement>();
             facade.BoardName = go.name;
             facade.DimensionsMM = dimensionsMM;
-            facade.GapMM = gapMM;
+            facade.GapLeft = gapLeft;
+            facade.GapRight = gapRight;
+            facade.GapTop = gapTop;
+            facade.GapBottom = gapBottom;
 
             go.transform.position = position;
 

@@ -200,7 +200,10 @@ namespace KitchenDesigner.Core
                 if (ed == null) { resolved.Add(null); continue; }
                 var go = ed.isWall
                     ? ElementFactory.CreateWall(ed.Dimensions, ed.name, ed.Position)
-                    : ElementFactory.CreateBoard(ed.Dimensions, ed.name, ed.Position);
+                    : ed.isFacade
+                        ? ElementFactory.CreateFacade(ed.Dimensions, ed.name, ed.Position,
+                            ed.gapLeft, ed.gapRight, ed.gapTop, ed.gapBottom)
+                        : ElementFactory.CreateBoard(ed.Dimensions, ed.name, ed.Position);
                 go.transform.rotation = ed.Rotation;
                 var el = go.GetComponent<KitchenElement>();
                 if (el != null)

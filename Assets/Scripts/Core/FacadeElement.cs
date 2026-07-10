@@ -4,16 +4,33 @@ namespace KitchenDesigner.Core
 {
     public class FacadeElement : KitchenElement
     {
-        [SerializeField] private int _gapMM = 2;
+        [SerializeField] private int _gapLeft = 2;
+        [SerializeField] private int _gapRight = 2;
+        [SerializeField] private int _gapTop = 2;
+        [SerializeField] private int _gapBottom = 2;
 
-        public int GapMM
+        public int GapLeft
         {
-            get => _gapMM;
-            set
-            {
-                _gapMM = Mathf.Max(0, value);
-                ApplyDimensions();
-            }
+            get => _gapLeft;
+            set { _gapLeft = Mathf.Max(0, value); ApplyDimensions(); }
+        }
+
+        public int GapRight
+        {
+            get => _gapRight;
+            set { _gapRight = Mathf.Max(0, value); ApplyDimensions(); }
+        }
+
+        public int GapTop
+        {
+            get => _gapTop;
+            set { _gapTop = Mathf.Max(0, value); ApplyDimensions(); }
+        }
+
+        public int GapBottom
+        {
+            get => _gapBottom;
+            set { _gapBottom = Mathf.Max(0, value); ApplyDimensions(); }
         }
 
         protected override Vector3 EffectiveScale
@@ -21,8 +38,9 @@ namespace KitchenDesigner.Core
             get
             {
                 var physical = transform.localScale;
-                var gapUnits = _gapMM * AppConstants.MM_TO_UNITS * 2;
-                return physical + new Vector3(gapUnits, gapUnits, gapUnits);
+                var gapX = (_gapLeft + _gapRight) * AppConstants.MM_TO_UNITS;
+                var gapY = (_gapTop + _gapBottom) * AppConstants.MM_TO_UNITS;
+                return physical + new Vector3(gapX, gapY, 0);
             }
         }
     }
