@@ -22,10 +22,16 @@ namespace KitchenDesigner.Core
         private void Update()
         {
             if (ElementMover.IsDragging)
-            {
-                Debug.Log("[Selection] Skipping: IsDragging=true");
                 return;
-            }
+
+            // Alt+ЛКМ — орбита камеры, не выбор.
+            if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+                return;
+
+            // Клик по UI не должен снимать/менять выбор.
+            if (UnityEngine.EventSystems.EventSystem.current != null &&
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                return;
 
             if (Input.GetMouseButtonDown(0))
             {

@@ -27,32 +27,30 @@ namespace KitchenDesigner.Core
         private void Update()
         {
             bool alt = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
-            bool lmbDown = Input.GetMouseButtonDown(0);
-            bool lmbUp = Input.GetMouseButtonUp(0);
+            // Орбита: Alt+ЛКМ (ПКМ свободна под контекстное меню). Pan: Alt+СКМ или СКМ.
+            bool orbitDown = alt && Input.GetMouseButtonDown(0);
+            bool orbitHeld = alt && Input.GetMouseButton(0);
             bool mmbDown = Input.GetMouseButtonDown(2);
             bool mmbUp = Input.GetMouseButtonUp(2);
             float scroll = Input.GetAxis("Mouse ScrollWheel");
 
-            if (alt && lmbDown)
+            if (orbitDown)
             {
                 _isOrbiting = true;
                 _lastMouse = Input.mousePosition;
                 Debug.Log("[Camera] Orbit START");
             }
-            if (alt && mmbDown)
+            if (mmbDown)
             {
                 _isPanning = true;
                 _lastMouse = Input.mousePosition;
                 Debug.Log("[Camera] Pan START");
             }
 
-            if (lmbUp && _isOrbiting) { Debug.Log("[Camera] Orbit STOP"); _isOrbiting = false; }
+            if ((!orbitHeld || Input.GetMouseButtonUp(0)) && _isOrbiting) { Debug.Log("[Camera] Orbit STOP"); _isOrbiting = false; }
             if (mmbUp && _isPanning) { Debug.Log("[Camera] Pan STOP"); _isPanning = false; }
 
-            if (!alt && _isOrbiting) { Debug.Log("[Camera] Orbit CANCEL - Alt released"); _isOrbiting = false; }
-            if (!alt && _isPanning) { Debug.Log("[Camera] Pan CANCEL - Alt released"); _isPanning = false; }
-
-            if (alt && _isOrbiting)
+            if (_isOrbiting)
             {
                 Vector3 delta = Input.mousePosition - _lastMouse;
                 _angleY += delta.x * _orbitSpeed * 0.1f;
@@ -61,7 +59,7 @@ namespace KitchenDesigner.Core
                 _lastMouse = Input.mousePosition;
             }
 
-            if (alt && _isPanning)
+            if (_isPanning)
             {
                 Vector3 delta = Input.mousePosition - _lastMouse;
                 Vector3 forward = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.forward;

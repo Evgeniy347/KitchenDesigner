@@ -51,10 +51,10 @@ namespace KitchenDesigner.Core
                             continue;
                         if (overlapRatio < 0.3f) continue;
 
-                        Vector3 snapPos = moved.transform.position + offset;
+                        Vector3 snapPos = testPosition + offset;
                         snapPos = GridManager.SnapToGrid(snapPos);
 
-                        float dist = Vector3.Distance(snapPos, moved.transform.position);
+                        float dist = Vector3.Distance(snapPos, testPosition);
                         if (dist < bestDist)
                         {
                             bestDist = dist;
@@ -115,6 +115,12 @@ namespace KitchenDesigner.Core
             return new Rect(center.x - halfU, center.y - halfV, halfU * 2, halfV * 2);
         }
 
+        // Допуск (0.1 мм) для AABB-пересечения: доски, стоящие вплотную гранями,
+        // из-за погрешности float могут давать ничтожное (~1e-9 м) перекрытие.
+        // Без допуска такой контакт ошибочно считался бы пересечением и
+        // пропускался валидатором/снэпом. 0.1 мм заметно меньше порога контакта 0.5 мм.
+        private const float IntersectEpsilon = 1e-4f;
+
         public static bool ElementsIntersect(KitchenElement a, KitchenElement b)
         {
             Vector3[] va = a.GetVertices();
@@ -140,9 +146,9 @@ namespace KitchenDesigner.Core
                 bMinZ = Mathf.Min(bMinZ, vb[i].z); bMaxZ = Mathf.Max(bMaxZ, vb[i].z);
             }
 
-            return aMinX < bMaxX && aMaxX > bMinX &&
-                   aMinY < bMaxY && aMaxY > bMinY &&
-                   aMinZ < bMaxZ && aMaxZ > bMinZ;
+            return aMinX < bMaxX - IntersectEpsilon && aMaxX > bMinX + IntersectEpsilon &&
+                   aMinY < bMaxY - IntersectEpsilon && aMaxY > bMinY + IntersectEpsilon &&
+                   aMinZ < bMaxZ - IntersectEpsilon && aMaxZ > bMinZ + IntersectEpsilon;
         }
     }
 }
