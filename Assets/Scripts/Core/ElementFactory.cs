@@ -31,6 +31,10 @@ namespace KitchenDesigner.Core
             int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2) =>
             Instance.CreateFacade(dimensionsMM, name, position, gapLeft, gapRight, gapTop, gapBottom);
 
+        public static GameObject CreateAssembledFacade(Vector3Int dimensionsMM, string name,
+            Vector3 position, AssembledFill fill = AssembledFill.Blind) =>
+            Instance.CreateAssembledFacade(dimensionsMM, name, position, fill);
+
         public static GameObject Duplicate(KitchenElement source) =>
             Instance.Duplicate(source);
 

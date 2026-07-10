@@ -145,6 +145,16 @@ namespace KitchenDesigner.Core
             var dims = source.DimensionsMM;
             var offset = source.transform.position + new Vector3(0.1f, 0, 0);
 
+            if (source is AssembledFacadeElement assembled)
+            {
+                var go = CreateAssembledFacade(dims, source.BoardName + " (copy)", offset, assembled.Fill);
+                go.transform.rotation = source.transform.rotation;
+                var copy = go.GetComponent<AssembledFacadeElement>();
+                if (copy != null) { copy.Mode = assembled.Mode; copy.GrooveCount = assembled.GrooveCount; }
+                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
+                return go;
+            }
+
             var facade = source as FacadeElement;
             if (facade != null)
             {
@@ -197,6 +207,33 @@ namespace KitchenDesigner.Core
             return go;
         }
 
+        public GameObject CreateAssembledFacade(Vector3Int dimensionsMM, string name, Vector3 position,
+            AssembledFill fill = AssembledFill.Blind)
+        {
+            // Сборный фасад НЕ пулим: процедурный меш + дочерние объекты не переживают
+            // сброс пула. Создаём свежий GameObject по образцу пула досок.
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = string.IsNullOrEmpty(name) ? "Сборный фасад" : name;
+            go.tag = "KitchenElement";
+            go.transform.position = position;
+
+            var rb = go.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+
+            var facade = go.AddComponent<AssembledFacadeElement>();
+            facade.BoardName = go.name;
+            facade.DimensionsMM = dimensionsMM; // ApplyDimensions → RebuildMesh
+            facade.Fill = fill;
+            MaterialManager.ApplyById(facade, facade.MaterialId); // декор в сабмеш 0
+
+            BoardRegistry.Register(facade);
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+
+            return go;
+        }
+
         public void DestroyBoard(GameObject go)
         {
             if (go == null) return;
@@ -212,7 +249,13 @@ namespace KitchenDesigner.Core
         public void DestroyElement(GameObject go)
         {
             if (go == null) return;
-            if (go.GetComponent<FacadeElement>() != null)
+            // Сборный фасад не из пула — уничтожаем напрямую.
+            if (go.GetComponent<AssembledFacadeElement>() != null)
+            {
+                BoardRegistry.Unregister(go.GetComponent<KitchenElement>());
+                Object.Destroy(go);
+            }
+            else if (go.GetComponent<FacadeElement>() != null)
                 _facadePool.Release(go);
             else
                 _boardPool.Release(go);
