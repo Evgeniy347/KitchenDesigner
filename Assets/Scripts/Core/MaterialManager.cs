@@ -37,7 +37,21 @@ namespace KitchenDesigner.Core
             if (r == null) return;
 
             var mat = GetSharedMaterial(def);
-            if (mat != null) r.sharedMaterial = mat;
+            if (mat != null)
+            {
+                // У сборного фасада 2 сабмеша (декор + фрезеровки) — меняем только
+                // декор (индекс 0), сохраняя остальные материалы.
+                var mats = r.sharedMaterials;
+                if (mats.Length > 1)
+                {
+                    mats[0] = mat;
+                    r.sharedMaterials = mats;
+                }
+                else
+                {
+                    r.sharedMaterial = mat;
+                }
+            }
             RefreshTiling(element, def);
         }
 
