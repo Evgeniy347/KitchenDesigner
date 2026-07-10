@@ -144,6 +144,21 @@ public class SaveLoadManagerTests
     }
 
     [Test]
+    public void Transparent_RoundTripsThroughSaveAndRestore()
+    {
+        var el = CreateElement("Transparent", new Vector3Int(600, 400, 18), Vector3.zero);
+        el.Transparent = true;
+        var data = SaveLoadManager.CaptureScene(_spawned.ConvertAll(g => g.GetComponent<KitchenElement>()));
+        Assert.IsTrue(data.elements[0].transparent);
+
+        var restored = SaveLoadManager.Deserialize(SaveLoadManager.Serialize(data));
+        var created = SaveLoadManager.RestoreScene(restored);
+
+        Assert.AreEqual(1, created.Count);
+        Assert.IsTrue(created[0].GetComponent<KitchenElement>().Transparent);
+    }
+
+    [Test]
     public void HandleMode_RoundTripsThroughCaptureAndRestore()
     {
         ResizeHandleManager.SetMode(ResizeHandleManager.HandleMode.Move);

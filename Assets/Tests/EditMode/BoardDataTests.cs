@@ -18,6 +18,24 @@ public class BoardDataTests
         Assert.AreEqual(0, data.GapTop);
         Assert.AreEqual(0, data.GapBottom);
         Assert.AreEqual(0, data.GapMM);
+        Assert.IsFalse(data.Transparent);
+    }
+
+    [Test]
+    public void Transparent_DefaultsFalse()
+    {
+        var data = new BoardData();
+        Assert.IsFalse(data.Transparent);
+    }
+
+    [Test]
+    public void Transparent_Setter()
+    {
+        var data = new BoardData();
+        data.Transparent = true;
+        Assert.IsTrue(data.Transparent);
+        data.Transparent = false;
+        Assert.IsFalse(data.Transparent);
     }
 
     [Test]
@@ -153,6 +171,7 @@ public class BoardDataTests
         element.Movable = false;
         element.GroupId = 5;
         element.MaterialId = "cherry";
+        element.Transparent = true;
 
         var data = element.Data;
         Assert.AreEqual("Custom", data.BoardName);
@@ -160,6 +179,7 @@ public class BoardDataTests
         Assert.IsFalse(data.Movable);
         Assert.AreEqual(5, data.GroupId);
         Assert.AreEqual("cherry", data.MaterialId);
+        Assert.IsTrue(data.Transparent);
 
         Object.DestroyImmediate(go);
     }
@@ -173,11 +193,13 @@ public class BoardDataTests
         element.Data.DimensionsMM = new Vector3Int(400, 300, 16);
         element.Data.Movable = false;
         element.Data.GroupId = 99;
+        element.Data.Transparent = true;
 
         Assert.AreEqual("ViaData", element.BoardName);
         Assert.AreEqual(new Vector3Int(400, 300, 16), element.DimensionsMM);
         Assert.IsFalse(element.Movable);
         Assert.AreEqual(99, element.GroupId);
+        Assert.IsTrue(element.Transparent);
 
         Object.DestroyImmediate(go);
     }
