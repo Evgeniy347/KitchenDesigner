@@ -41,6 +41,9 @@ namespace KitchenDesigner.Core.UI
             _contextMenu = gameObject.AddComponent<ContextMenuUI>();
             _contextMenu.Build(_canvas.transform);
 
+            var sidebar = gameObject.AddComponent<SidebarUI>();
+            sidebar.Build(_canvas.transform);
+
             var toast = gameObject.AddComponent<ToastNotification>();
             toast.Build(_canvas.transform);
         }
@@ -54,18 +57,7 @@ namespace KitchenDesigner.Core.UI
             const float y = -6f;
             const float h = 40f;
 
-            for (int i = 0; i < AppConstants.PRESET_DIMENSIONS_MM.Length; i++)
-            {
-                var dims = AppConstants.PRESET_DIMENSIONS_MM[i];
-                int idx = i;
-                var btn = UIFactory.CreateButton($"Preset{i}", bar.transform, $"{dims.x}×{dims.y}",
-                    new Vector2(x, y), new Vector2(90, h), () => SpawnPreset(idx));
-                UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
-                btn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
-                x += 96;
-            }
-
-            x += 12;
+            // Кнопки добавления досок переехали в левый сайдбар (SidebarUI).
             AddBarButton(bar.transform, "Spec", "Спецификация", ref x, y, h, 150, ToggleSpecification);
             // Понятные значки вместо текста.
             AddIconButton(bar.transform, "Settings", IconFactory.Gear, ref x, y, h, ToggleSettings);
@@ -145,13 +137,16 @@ namespace KitchenDesigner.Core.UI
             SpawnBoard(AppConstants.PRESET_DIMENSIONS_MM[index]);
         }
 
-        public void SpawnBoard(Vector3Int dims)
+        public void SpawnBoard(Vector3Int dims) =>
+            SpawnBoard(dims, $"Board {dims.x}x{dims.y}x{dims.z}");
+
+        public void SpawnBoard(Vector3Int dims, string name)
         {
             Vector3 pos = GroundPointInFrontOfCamera();
             pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS; // на полу
             pos = GridManager.SnapToGrid(pos);
 
-            var go = ElementFactory.CreateBoard(dims, $"Board {dims.x}x{dims.y}x{dims.z}", pos);
+            var go = ElementFactory.CreateBoard(dims, name, pos);
             var element = go.GetComponent<KitchenElement>();
             if (element != null)
             {

@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core.UI
         private static readonly Color Accent = new Color(0.45f, 0.85f, 0.5f, 1f);
         private static readonly Color Clear = new Color(0, 0, 0, 0);
 
-        private static Sprite _gear, _floppy, _floppyPlus, _folder, _undo, _redo;
+        private static Sprite _gear, _floppy, _floppyPlus, _folder, _undo, _redo, _pin;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -22,6 +22,7 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Folder => _folder ??= BuildFolder();
         public static Sprite Undo => _undo ??= BuildArrow(false);
         public static Sprite Redo => _redo ??= BuildArrow(true);
+        public static Sprite Pin => _pin ??= BuildPin();
 
         // --- Иконки ---
 
@@ -75,6 +76,16 @@ namespace KitchenDesigner.Core.UI
             var px = NewCanvas();
             Arc(px, 32, 28, 15, 10f, 170f, 3, Ink);
             ArrowDown(px, redo ? 47 : 17, 32, 11, Ink);
+            return Finish(px);
+        }
+
+        // Канцелярская булавка: круглая головка + игла вниз.
+        private static Sprite BuildPin()
+        {
+            var px = NewCanvas();
+            Disc(px, 32, 44, 12, Ink);    // головка
+            Disc(px, 32, 46, 5, Ink2);    // блик на головке
+            Rect(px, 30, 12, 35, 44, Ink); // игла
             return Finish(px);
         }
 
