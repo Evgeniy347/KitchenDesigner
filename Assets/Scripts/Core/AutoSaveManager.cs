@@ -27,13 +27,25 @@ namespace KitchenDesigner.Core
             SaveOnQuit();
         }
 
-        /// <summary>Сохранить проект автосохранения при выходе, если включена
-        /// настройка AutoSave. Возвращает true, если файл записан. Чистый метод —
-        /// тестируется без жизненного цикла MonoBehaviour.</summary>
+        /// <summary>Сохранить при выходе, если включена настройка AutoSave.
+        /// Возвращает true, если файл записан. Чистый метод — тестируется без
+        /// жизненного цикла MonoBehaviour.</summary>
         public static bool SaveOnQuit()
         {
             var settings = KitchenSettings.Instance;
             if (settings == null || !settings.AutoSave) return false;
+            return SaveActiveTarget();
+        }
+
+        /// <summary>Записать текущую сцену в АКТИВНУЮ цель сохранения: открытый
+        /// пользователем файл (его и грузит <see cref="SaveLoadManager.LoadLastSession"/>
+        /// при старте), иначе — в проект автосохранения. Без этого правки при
+        /// закрытии уходили в отдельный autosave-файл и не подхватывались при
+        /// следующем запуске (грузился исходный открытый файл).</summary>
+        private static bool SaveActiveTarget()
+        {
+            if (SaveLoadManager.HasLastPath)
+                return SaveLoadManager.SaveToLastPath();
             return SaveLoadManager.SaveProject(AutoSaveName, backup: false);
         }
 
@@ -53,8 +65,9 @@ namespace KitchenDesigner.Core
                 string current = SaveLoadManager.CaptureCurrentJson();
                 if (current == _lastSavedJson) continue; // нет изменений
 
-                // Автосохранение без архивации (иначе zip плодились бы каждые 2с).
-                if (SaveLoadManager.SaveProject(AutoSaveName, backup: false))
+                // Пишем в открытый файл (его грузит старт), иначе — в проект
+                // автосохранения. Без архивации (иначе zip плодились бы постоянно).
+                if (SaveActiveTarget())
                 {
                     _lastSavedJson = current;
                     if (UI.AutoSaveIndicator.Instance != null)
