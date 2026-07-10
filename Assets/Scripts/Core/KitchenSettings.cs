@@ -123,6 +123,27 @@ namespace KitchenDesigner.Core
             PlayerPrefs.Save();
         }
 
+        /// <summary>Возвращает текущий JSON настроек (для снапшот-тестов).</summary>
+        public string GetSettingsJson()
+        {
+            var data = new SettingsData
+            {
+                gridStep = _gridStep,
+                gridEnabled = _gridEnabled,
+                snapEnabled = _snapEnabled,
+                snapThreshold = _snapThreshold,
+                blockOnViolation = _blockOnViolation,
+                autoSave = _autoSave,
+                autoSaveInterval = _autoSaveInterval,
+                spatialGrid = _spatialGrid,
+                windowedMode = _windowedMode,
+                edgeOutline = _edgeOutline,
+                wallsHidden = !_wallsEnabled,
+                lowerNearWalls = _lowerNearWalls
+            };
+            return JsonUtility.ToJson(data, true);
+        }
+
         public void Load()
         {
             if (!PlayerPrefs.HasKey("KitchenSettings"))

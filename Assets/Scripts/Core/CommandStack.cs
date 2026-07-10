@@ -59,7 +59,7 @@ namespace KitchenDesigner.Core
 
         public string Description => $"Move {_element?.PartName}";
 
-        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
+        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf, int depth = 0)
         {
             int idx = _element != null ? indexOf(_element) : -1;
             if (idx < 0) return null;
@@ -177,7 +177,7 @@ namespace KitchenDesigner.Core
 
         public string Description => $"Resize {_element?.PartName}";
 
-        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
+        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf, int depth = 0)
         {
             int idx = _element != null ? indexOf(_element) : -1;
             if (idx < 0) return null;
@@ -237,12 +237,18 @@ namespace KitchenDesigner.Core
             _commands = commands;
         }
 
-        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
+        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf, int depth = 0)
         {
             var kids = new List<CommandRecord>();
+            int nextDepth = depth + 1;
+
+            // На предпоследнем уровне разворачиваем детей (не гнездим дальше),
+            // чтобы избежать превышения лимита JsonUtility (10).
+            bool flatten = nextDepth >= CommandRecord.SafeDepth;
+
             foreach (var c in _commands)
             {
-                var rec = (c as ISerializableCommand)?.ToRecord(indexOf);
+                var rec = (c as ISerializableCommand)?.ToRecord(indexOf, flatten ? 0 : nextDepth);
                 if (rec != null) kids.Add(rec);
             }
             if (kids.Count == 0) return null;

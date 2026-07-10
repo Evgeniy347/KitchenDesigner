@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core
     /// попадает в сохранение — тогда команда в историю не пишется).</summary>
     public interface ISerializableCommand
     {
-        CommandRecord ToRecord(Func<KitchenElement, int> indexOf);
+        CommandRecord ToRecord(Func<KitchenElement, int> indexOf, int depth = 0);
     }
 
     /// <summary>Сериализуемая запись одной команды undo/redo. Плоская структура с
@@ -19,6 +19,10 @@ namespace KitchenDesigner.Core
     [Serializable]
     public class CommandRecord
     {
+        /// <summary>JsonUtility обрывает сериализацию глубже 10 уровней.
+        /// На этой глубине composite-команды разворачиваются без детей.</summary>
+        public const int SafeDepth = 8;
+
         public string type;          // move | resize | composite
         public string description;
         public int elementIndex = -1;

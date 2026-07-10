@@ -1,0 +1,133 @@
+﻿{
+    "version": 1,
+    "elements": [
+        {
+            "name": "Board_1",
+            "dimensionsMM": [
+                800,
+                400,
+                18
+            ],
+            "position": [
+                0.5,
+                0.20000000298023225,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 1,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        },
+        {
+            "name": "Facade_1",
+            "dimensionsMM": [
+                450,
+                700,
+                18
+            ],
+            "position": [
+                0.0,
+                0.3499999940395355,
+                -1.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 3,
+            "gapRight": 3,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 1,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0
+        }
+    ],
+    "groups": [
+        {
+            "id": 1,
+            "name": "Группа",
+            "movable": true
+        }
+    ],
+    "camera": {
+        "valid": true,
+        "targetX": 0.5,
+        "targetY": 0.30000001192092898,
+        "targetZ": -1.0,
+        "angleX": 35.0,
+        "angleY": 45.0,
+        "distance": 6.0
+    },
+    "handleMode": "Resize",
+    "basePlateValid": true,
+    "basePlate": {
+        "name": "BasePlate",
+        "dimensionsMM": [
+            3500,
+            18,
+            4000
+        ],
+        "position": [
+            0.0,
+            -0.008999999612569809,
+            0.0
+        ],
+        "rotation": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "movable": true,
+        "isWall": false,
+        "isFacade": false,
+        "isRadialShelf": false,
+        "gapLeft": 0,
+        "gapRight": 0,
+        "gapTop": 0,
+        "gapBottom": 0,
+        "groupId": 0,
+        "materialId": "default",
+        "transparent": false,
+        "doorMode": 0,
+        "doorOpen": false,
+        "assembled": false,
+        "assembledFill": 0,
+        "grooveCount": 0,
+        "radius": 0
+    },
+    "undoHistory": [],
+    "redoHistory": []
+}

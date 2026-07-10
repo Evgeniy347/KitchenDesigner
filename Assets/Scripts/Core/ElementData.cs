@@ -58,6 +58,8 @@ namespace KitchenDesigner.Core
             d.isRadialShelf = radialShelf != null;
             if (radialShelf != null)
                 d.radius = radialShelf.Radius;
+            else
+                d.radius = 0;
 
             if (facade != null)
             {
@@ -73,6 +75,24 @@ namespace KitchenDesigner.Core
                     d.assembledFill = (int)assembled.Fill;
                     d.grooveCount = assembled.GrooveCount;
                 }
+                else
+                {
+                    d.assembled = false;
+                    d.assembledFill = 0;
+                    d.grooveCount = 0;
+                }
+            }
+            else
+            {
+                d.gapLeft = 0;
+                d.gapRight = 0;
+                d.gapTop = 0;
+                d.gapBottom = 0;
+                d.doorMode = 0;
+                d.doorOpen = false;
+                d.assembled = false;
+                d.assembledFill = 0;
+                d.grooveCount = 0;
             }
             d.groupId = element.GroupId;
             d.materialId = element.MaterialId;
