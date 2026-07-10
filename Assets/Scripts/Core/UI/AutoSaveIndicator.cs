@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core.UI
         private float _flashUntil;
 
         private static readonly Color IdleOn = new Color(0.55f, 0.58f, 0.62f, 1f);
-        private static readonly Color IdleOff = new Color(0.45f, 0.45f, 0.48f, 1f);
+        private static readonly Color IdleOff = new Color(0.85f, 0.25f, 0.25f, 1f);
         private static readonly Color Saved = new Color(0.45f, 0.85f, 0.45f, 1f);
 
         private void Awake() => Instance = this;
