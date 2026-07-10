@@ -27,6 +27,7 @@ namespace KitchenDesigner.Core
         public static HandleMode Mode { get; private set; } = HandleMode.Resize;
         public static void ToggleMode() =>
             Mode = Mode == HandleMode.Resize ? HandleMode.Move : HandleMode.Resize;
+        public static void SetMode(HandleMode mode) => Mode = mode;
 
         /// <summary>Идёт перетаскивание ручки (другие системы не должны реагировать).</summary>
         public static bool IsResizing { get; private set; }

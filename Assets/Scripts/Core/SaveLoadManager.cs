@@ -99,17 +99,35 @@ namespace KitchenDesigner.Core
 
         // --- Чистая логика (тестируемая без файлов) ---
 
-        /// <summary>Снимок сцены в ProjectData. BasePlate исключается (это пол, не доска).</summary>
+        /// <summary>Снимок сцены в ProjectData. BasePlate исключается из elements,
+        /// но захватывается отдельно в basePlate (пол).</summary>
         public static ProjectData CaptureScene(IEnumerable<KitchenElement> elements)
         {
             var items = new List<ElementData>();
             var ordered = new List<KitchenElement>(); // параллельно items — для индексов истории
+            ElementData basePlateData = null;
             foreach (var e in elements)
             {
                 if (e == null) continue;
-                if (e.GetComponent<BasePlate>() != null) continue;
+                if (e.GetComponent<BasePlate>() != null)
+                {
+                    if (basePlateData == null)
+                        basePlateData = ElementData.FromElement(e);
+                    continue;
+                }
                 items.Add(ElementData.FromElement(e));
                 ordered.Add(e);
+            }
+            // Fallback: пол может отсутствовать в elements (он не в BoardRegistry).
+            if (basePlateData == null)
+            {
+                var floorGo = GameObject.FindWithTag("Floor");
+                if (floorGo != null)
+                {
+                    var bp = floorGo.GetComponent<BasePlate>();
+                    if (bp != null && bp.Element != null)
+                        basePlateData = ElementData.FromElement(bp.Element);
+                }
             }
 
             var data = new ProjectData(items);
@@ -120,6 +138,15 @@ namespace KitchenDesigner.Core
 
             if (CameraController.Instance != null)
                 data.camera = CameraController.Instance.GetState();
+
+            // Режим ручек (Resize / Move).
+            data.handleMode = ResizeHandleManager.Mode.ToString();
+
+            if (basePlateData != null)
+            {
+                data.basePlate = basePlateData;
+                data.basePlateValid = true;
+            }
 
             // История undo/redo: объекты сериализуются по индексу в elements.
             var indexOf = new Dictionary<KitchenElement, int>();
@@ -189,10 +216,43 @@ namespace KitchenDesigner.Core
             if (data.camera.valid && CameraController.Instance != null)
                 CameraController.Instance.SetState(data.camera);
 
+            // Режим ручек.
+            if (!string.IsNullOrEmpty(data.handleMode) &&
+                System.Enum.TryParse<ResizeHandleManager.HandleMode>(data.handleMode, out var mode))
+                ResizeHandleManager.SetMode(mode);
+
+            // Пол (BasePlate): позиция, размеры, поворот.
+            if (data.basePlateValid)
+                RestoreBasePlate(data.basePlate);
+
             // История undo/redo: восстанавливаем команды по индексам объектов.
             CommandStack.Import(data.undoHistory, data.redoHistory,
                 i => (i >= 0 && i < resolved.Count) ? resolved[i] : null);
             return created;
+        }
+
+        /// <summary>Восстановить положение, размеры и поворот пола из сохранения.
+        /// Если пол в сцене есть — обновляем его; если нет (тесты, свежая сцена) — создаём.</summary>
+        private static void RestoreBasePlate(ElementData data)
+        {
+            if (data == null) return;
+            var floorGo = GameObject.FindWithTag("Floor");
+            KitchenElement element;
+            if (floorGo != null)
+            {
+                var bp = floorGo.GetComponent<BasePlate>();
+                element = bp != null ? (bp.Element ?? bp.GetComponent<KitchenElement>()) : null;
+                if (element == null)
+                    element = floorGo.GetComponent<KitchenElement>();
+            }
+            else
+            {
+                element = BasePlate.Create().Element;
+            }
+            if (element == null) return;
+            element.DimensionsMM = data.Dimensions;
+            element.transform.position = data.Position;
+            element.transform.rotation = data.Rotation;
         }
 
         // --- Файловый IO ---
