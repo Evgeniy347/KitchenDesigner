@@ -37,7 +37,8 @@ thickness (smallest side, usually 18 mm).
 
 ```bash
 npm install
-npm run build      # tsc -> dist/index.js
+npm run check      # verify tool list matches the C# handler (see below)
+npm run build      # runs check, then tsc -> dist/index.js
 npm start          # node dist/index.js
 ```
 
@@ -55,3 +56,12 @@ The tool list here must stay **1:1** with the `switch` in
 matching `server.registerTool(...)` here (with units in the description) and rebuild.
 Parameter field names must match the C# `Params*` classes in `McpModels.cs`
 (e.g. facade gaps are sent as `gapLeft/gapRight/gapTop/gapBottom`).
+
+This is enforced automatically: `scripts/check-parity.mjs` compares the tool names
+here against the C# dispatcher and **`npm run build` fails** (via the `prebuild` hook)
+if anything is missing or extra, naming exactly what to fix. So adding a method is
+still two edits (C# handler + this file), but you can never *silently* forget the
+second one. Intentional exceptions (`get_methods`, `guide`) are listed in that script.
+Full end-to-end code generation is deliberately avoided: the hand-written
+descriptions carry the units and wording a weak model needs, which a generator
+cannot invent.
