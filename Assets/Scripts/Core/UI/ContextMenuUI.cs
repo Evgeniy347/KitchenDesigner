@@ -15,17 +15,39 @@ namespace KitchenDesigner.Core.UI
 
         private InputField _name, _w, _h, _d, _gapW, _gapH, _x, _y, _z, _rx, _ry, _rz;
         private Toggle _lockToggle;
-        private GameObject _gapRow;
-        private readonly List<(RectTransform rt, float baseY)> _postGapElements = new();
         private RectTransform _panelRt;
-        private float _panelBaseH;
-        private float _gapSectionH;
-        private const float RowStep = 31f;
-        private const float GapRowStep = 26f;
+
+        // ── Раскладка ──────────────────────────────────────────────────
+        // Меню собирается один раз (Build), а позиции пересчитываются в Layout
+        // сверху вниз. Каждый видимый блок — одна строка в _layout. Всё якорится
+        // к ВЕРХУ панели, поэтому изменение высоты панели не двигает содержимое,
+        // а добавление нового пункта = добавить строку в список (без ручных
+        // сдвигов и без риска забыть «затрекать» элемент).
+        private struct LayoutRow
+        {
+            public RectTransform[] rects; // элементы одной вертикальной полосы (общий верх)
+            public float height;          // высота полосы
+            public float gapAfter;        // отступ под полосой
+            public bool facadeOnly;       // показывать только для фасадов (секция зазоров)
+            public GameObject toggleGO;   // объект, который включать/выключать по режиму
+        }
+        private readonly List<LayoutRow> _layout = new();
+
+        // Геометрия
         private const float LabelX = -72f;
         private const float FieldX = 82f;
         private const float LabelH = 24f;
         private const float FieldH = 24f;
+        private const float RowH = 24f;      // высота строки «подпись + поле»
+        private const float RowGap = 7f;     // отступ между строками (шаг ≈ 31)
+        private const float TitleH = 28f;
+        private const float TitleGap = 8f;
+        private const float RotLblH = 22f;
+        private const float RotLblGap = 4f;
+        private const float BtnH = 28f;
+        private const float ActionGap = 8f;
+        private const float TopPad = 12f;
+        private const float BottomPad = 12f;
 
         private void Awake()
         {
@@ -39,37 +61,30 @@ namespace KitchenDesigner.Core.UI
             panel.rectTransform.anchoredPosition = new Vector2(-10, -60);
             _root = panel.gameObject;
             _panelRt = panel.rectTransform;
+            _layout.Clear();
 
-            const float rowStartY = 220f;
-            const float rotLabelGap = 23f;
-            const float rotBtnGap = 4f;
-            const float actionGap = 8f;
-            const float btnH = 28f;
-            const float labelH = 22f;
-            float y = rowStartY;
-            _name = Row(panel.transform, "Название", ref y, RowStep);
-            _w = Row(panel.transform, "Ширина, мм", ref y, RowStep);
-            _h = Row(panel.transform, "Высота, мм", ref y, RowStep);
-            _d = Row(panel.transform, "Глубина, мм", ref y, RowStep);
+            // Заголовок — первая строка потока (стоит вплотную под верхом панели).
+            _titleLabel = UIFactory.CreateLabel("CtxTitle", panel.transform, "Доска", 20,
+                Vector2.zero, new Vector2(260, TitleH), TextAnchor.MiddleCenter);
+            AddRow(TitleH, TitleGap, _titleLabel.rectTransform);
 
-            // ── Зазоры (только для фасадов) ──
-            _gapRow = CreateGapSection(panel.transform, ref y);
+            // Размеры.
+            _name = Row(panel.transform, "Название");
+            _w = Row(panel.transform, "Ширина, мм");
+            _h = Row(panel.transform, "Высота, мм");
+            _d = Row(panel.transform, "Глубина, мм");
 
-            _postGapElements.Clear();
-            System.Action<InputField> track = f =>
-            {
-                if (f != null)
-                {
-                    var rt = f.GetComponent<RectTransform>();
-                    _postGapElements.Add((rt, rt.anchoredPosition.y));
-                }
-            };
-            _x = Row(panel.transform, "X, м", ref y, RowStep); track(_x);
-            _y = Row(panel.transform, "Y, м", ref y, RowStep); track(_y);
-            _z = Row(panel.transform, "Z, м", ref y, RowStep); track(_z);
-            _rx = Row(panel.transform, "Поворот X°", ref y, RowStep); track(_rx);
-            _ry = Row(panel.transform, "Поворот Y°", ref y, RowStep); track(_ry);
-            _rz = Row(panel.transform, "Поворот Z°", ref y, RowStep); track(_rz);
+            // Зазоры (только для фасадов) — блок скрывается в режиме «Доска».
+            var gapSection = CreateGapSection(panel.transform, out float gapSectionH);
+            AddFacadeRow(gapSection, gapSection.GetComponent<RectTransform>(), gapSectionH, RowGap);
+
+            // Позиция и поворот.
+            _x = Row(panel.transform, "X, м");
+            _y = Row(panel.transform, "Y, м");
+            _z = Row(panel.transform, "Z, м");
+            _rx = Row(panel.transform, "Поворот X°");
+            _ry = Row(panel.transform, "Поворот Y°");
+            _rz = Row(panel.transform, "Поворот Z°");
 
             foreach (var f in new[] { _w, _h, _d }) f.contentType = InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _gapW, _gapH }) f.contentType = InputField.ContentType.IntegerNumber;
@@ -77,56 +92,45 @@ namespace KitchenDesigner.Core.UI
 
             // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
             // ставить доски вертикально (поворот по X/Z), а не только крутить по Y.
-            float rotLabelY = y - rotLabelGap;
-            float rotBtnY = rotLabelY - labelH - rotBtnGap;
-            float actionY = rotBtnY - btnH - actionGap;
             var rotLbl = UIFactory.CreateLabel("CtxRotLbl", panel.transform, "Повернуть на 90°:", 15,
-                new Vector2(0, rotLabelY), new Vector2(260, labelH), TextAnchor.MiddleCenter);
-            _postGapElements.Add((rotLbl.rectTransform, rotLbl.rectTransform.anchoredPosition.y));
+                Vector2.zero, new Vector2(260, RotLblH), TextAnchor.MiddleCenter);
+            AddRow(RotLblH, RotLblGap, rotLbl.rectTransform);
+
             var rotX = UIFactory.CreateButton("CtxRotX", panel.transform, "X 90°",
-                new Vector2(-90, rotBtnY), new Vector2(86, btnH), () => RotateAxis(Vector3.right));
-            _postGapElements.Add((rotX.GetComponent<RectTransform>(), rotBtnY));
+                new Vector2(-90, 0), new Vector2(86, BtnH), () => RotateAxis(Vector3.right));
             var rotY = UIFactory.CreateButton("CtxRotY", panel.transform, "Y 90°",
-                new Vector2(0, rotBtnY), new Vector2(86, btnH), () => RotateAxis(Vector3.up));
-            _postGapElements.Add((rotY.GetComponent<RectTransform>(), rotBtnY));
+                new Vector2(0, 0), new Vector2(86, BtnH), () => RotateAxis(Vector3.up));
             var rotZ = UIFactory.CreateButton("CtxRotZ", panel.transform, "Z 90°",
-                new Vector2(90, rotBtnY), new Vector2(86, btnH), () => RotateAxis(Vector3.forward));
-            _postGapElements.Add((rotZ.GetComponent<RectTransform>(), rotBtnY));
+                new Vector2(90, 0), new Vector2(86, BtnH), () => RotateAxis(Vector3.forward));
+            AddRow(BtnH, ActionGap,
+                rotX.GetComponent<RectTransform>(),
+                rotY.GetComponent<RectTransform>(),
+                rotZ.GetComponent<RectTransform>());
 
             var apply = UIFactory.CreateButton("CtxApply", panel.transform, "Применить",
-                new Vector2(-65, actionY), new Vector2(120, 32), Apply);
-            _postGapElements.Add((apply.GetComponent<RectTransform>(), actionY));
+                new Vector2(-65, 0), new Vector2(120, 32), Apply);
             var dup = UIFactory.CreateButton("CtxDup", panel.transform, "Дублировать",
-                new Vector2(65, actionY), new Vector2(120, 32), Duplicate);
-            _postGapElements.Add((dup.GetComponent<RectTransform>(), actionY));
+                new Vector2(65, 0), new Vector2(120, 32), Duplicate);
+            AddRow(32f, ActionGap,
+                apply.GetComponent<RectTransform>(),
+                dup.GetComponent<RectTransform>());
+
             var del = UIFactory.CreateButton("CtxDel", panel.transform, "Удалить",
-                new Vector2(0, actionY - 36), new Vector2(248, 32), Delete);
-            _postGapElements.Add((del.GetComponent<RectTransform>(), actionY - 36));
+                new Vector2(0, 0), new Vector2(248, 32), Delete);
+            AddRow(32f, ActionGap, del.GetComponent<RectTransform>());
 
             _lockToggle = UIFactory.CreateToggle("CtxLock", panel.transform, "Запретить перемещение", false,
-                new Vector2(0, actionY - 74), new Vector2(248, 26), v => { if (_target != null) _target.Movable = !v; });
-            var lockRt = _lockToggle.GetComponent<RectTransform>();
-            _postGapElements.Add((lockRt, actionY - 74));
+                new Vector2(0, 0), new Vector2(248, 26), v => { if (_target != null) _target.Movable = !v; });
+            AddRow(26f, 0f, _lockToggle.GetComponent<RectTransform>());
 
-            _titleLabel = UIFactory.CreateLabel("CtxTitle", panel.transform, "Доска", 20,
-                Vector2.zero, new Vector2(260, 28), TextAnchor.MiddleCenter);
-            _titleLabel.rectTransform.anchorMin = new Vector2(0, 1);
-            _titleLabel.rectTransform.anchorMax = new Vector2(1, 1);
-            _titleLabel.rectTransform.pivot = new Vector2(0.5f, 1f);
-            _titleLabel.rectTransform.anchoredPosition = Vector2.zero;
-
+            // Кнопка закрытия живёт в углу панели, вне потока раскладки.
             var closeBtn = UIFactory.CreateButton("CtxClose", panel.transform, "✕",
                 Vector2.zero, new Vector2(24, 24), Close);
             UIFactory.AnchorTopRight(closeBtn.GetComponent<RectTransform>());
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
             closeBtn.transform.SetAsLastSibling();
 
-            float topContent = (rowStartY + 35) + 14f;
-            float bottomContent = (actionY - 74) - 13f;
-            float halfHeight = Mathf.Max(topContent, -bottomContent);
-            _panelBaseH = halfHeight * 2f + 40f;
-            panel.rectTransform.sizeDelta = new Vector2(280, _panelBaseH);
-
+            Layout(isFacade: false); // стартовая раскладка (как обычная доска)
             _root.SetActive(false);
 
             if (SelectionManager.Instance != null)
@@ -148,52 +152,115 @@ namespace KitchenDesigner.Core.UI
                 Close();
         }
 
-        private GameObject CreateGapSection(Transform parent, ref float y)
+        // ── Построение элементов ───────────────────────────────────────
+
+        private InputField Row(Transform parent, string label)
+        {
+            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
+                new Vector2(LabelX, 0), new Vector2(130, LabelH));
+            var field = UIFactory.CreateInputField("F_" + label, parent, "",
+                new Vector2(FieldX, 0), new Vector2(100, FieldH));
+            AddRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
+            return field;
+        }
+
+        private GameObject CreateGapSection(Transform parent, out float sectionH)
         {
             var root = new GameObject("_GapSection");
             var rt = root.AddComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = new Vector2(0, y);
 
             const float headerH = 20f;
             const float fieldH = 22f;
+            const float pad = 2f;
+            const float innerGap = 4f;
 
-            float localY = 0;
+            // Содержимое раскладывается сверху вниз (та же конвенция, что и панель):
+            // курсор = расстояние от верха секции до верхней кромки строки. Высота
+            // секции берётся из курсора, поэтому строки гарантированно помещаются.
+            float top = pad;
+            AddTopAnchoredChild(UIFactory.CreateLabel("CtxGapHdr", root.transform, "Зазоры:", 14,
+                new Vector2(LabelX, -top), new Vector2(130, headerH), TextAnchor.MiddleLeft).rectTransform);
+            top += headerH + innerGap;
+            _gapW = GapField(root.transform, "Ширина X, мм", -top);
+            top += fieldH + innerGap;
+            _gapH = GapField(root.transform, "Высота Y, мм", -top);
+            top += fieldH + pad;
 
-            UIFactory.CreateLabel("CtxGapHdr", root.transform, "Зазоры:", 14,
-                new Vector2(LabelX, localY), new Vector2(130, headerH), TextAnchor.MiddleLeft);
-
-            localY -= GapRowStep;
-            _gapW = GapField(root.transform, "Ширина X, мм", LabelX, FieldX, localY);
-
-            localY -= GapRowStep;
-            _gapH = GapField(root.transform, "Высота Y, мм", LabelX, FieldX, localY);
-
-            float topExtent = headerH / 2f;
-            float bottomExtent = -localY + fieldH / 2f;
-            float sectionH = topExtent + bottomExtent + 4f;
+            sectionH = top;
             rt.sizeDelta = new Vector2(260, sectionH);
-
-            y -= sectionH;
-            _gapSectionH = sectionH;
             root.SetActive(false);
             return root;
         }
 
-        private static InputField GapField(Transform parent, string label, float labelX, float fieldX, float y)
+        private static InputField GapField(Transform parent, string label, float y)
         {
-            UIFactory.CreateLabel("Gap_" + label, parent, label, 13,
-                new Vector2(labelX, y), new Vector2(130, 20), TextAnchor.MiddleLeft);
-            return UIFactory.CreateInputField("F_gap_" + label, parent, "0",
-                new Vector2(fieldX, y), new Vector2(100, 22));
+            AddTopAnchoredChild(UIFactory.CreateLabel("Gap_" + label, parent, label, 13,
+                new Vector2(LabelX, y), new Vector2(130, 20), TextAnchor.MiddleLeft).rectTransform);
+            var field = UIFactory.CreateInputField("F_gap_" + label, parent, "0",
+                new Vector2(FieldX, y), new Vector2(100, 22));
+            AddTopAnchoredChild(field.GetComponent<RectTransform>());
+            return field;
         }
 
-        private InputField Row(Transform parent, string label, ref float y, float step)
+        private static void AddTopAnchoredChild(RectTransform rt) => AnchorTop(rt);
+
+        // ── Регистрация строк раскладки ────────────────────────────────
+
+        private void AddRow(float height, float gapAfter, params RectTransform[] rects)
         {
-            UIFactory.CreateLabel("L_" + label, parent, label, 15, new Vector2(LabelX, y), new Vector2(130, LabelH));
-            var field = UIFactory.CreateInputField("F_" + label, parent, "", new Vector2(FieldX, y), new Vector2(100, FieldH));
-            y -= step;
-            return field;
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter });
+        }
+
+        private void AddFacadeRow(GameObject toggleGO, RectTransform rt, float height, float gapAfter)
+        {
+            AnchorTop(rt);
+            _layout.Add(new LayoutRow
+            {
+                rects = new[] { rt },
+                height = height,
+                gapAfter = gapAfter,
+                facadeOnly = true,
+                toggleGO = toggleGO
+            });
+        }
+
+        // Якорим к верхней кромке панели, pivot тоже сверху — тогда
+        // anchoredPosition.y = отступ верхней кромки элемента от верха панели
+        // (со знаком минус). Это домовая конвенция панелей проекта.
+        private static void AnchorTop(RectTransform rt)
+        {
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 1f);
+        }
+
+        // ── Раскладка сверху вниз ───────────────────────────────────────
+
+        private void Layout(bool isFacade)
+        {
+            float cursor = TopPad;
+            float contentBottom = TopPad;
+            foreach (var row in _layout)
+            {
+                if (row.facadeOnly && !isFacade)
+                {
+                    if (row.toggleGO != null) row.toggleGO.SetActive(false);
+                    continue;
+                }
+                if (row.toggleGO != null) row.toggleGO.SetActive(true);
+
+                float topY = -cursor; // pivot сверху → это и есть верхняя кромка
+                foreach (var rt in row.rects)
+                    if (rt != null)
+                        rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, topY);
+
+                contentBottom = cursor + row.height;
+                cursor = contentBottom + row.gapAfter;
+            }
+
+            if (_panelRt != null)
+                _panelRt.sizeDelta = new Vector2(_panelRt.sizeDelta.x, contentBottom + BottomPad);
         }
 
         private void Update()
@@ -228,8 +295,9 @@ namespace KitchenDesigner.Core.UI
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.Select(element);
 
+            bool isFacade = element is FacadeElement;
             if (_titleLabel != null)
-                _titleLabel.text = element is FacadeElement ? "Фасад" : "Доска";
+                _titleLabel.text = isFacade ? "Фасад" : "Доска";
 
             var dims = element.DimensionsMM;
             _name.text = element.BoardName;
@@ -238,28 +306,17 @@ namespace KitchenDesigner.Core.UI
             _d.text = dims.z.ToString();
 
             var facade = element as FacadeElement;
-            if (_gapRow != null)
+            if (facade != null)
             {
-                _gapRow.SetActive(facade != null);
-                if (facade != null)
-                {
-                    _gapW.text = (facade.GapLeft + facade.GapRight).ToString();
-                    _gapH.text = (facade.GapTop + facade.GapBottom).ToString();
-                }
+                _gapW.text = (facade.GapLeft + facade.GapRight).ToString();
+                _gapH.text = (facade.GapTop + facade.GapBottom).ToString();
             }
 
-            float shift = facade != null ? 0f : _gapSectionH;
-            foreach (var entry in _postGapElements)
-            {
-                if (entry.rt != null)
-                    entry.rt.anchoredPosition = new Vector2(
-                        entry.rt.anchoredPosition.x, entry.baseY + shift);
-            }
-            if (_panelRt != null)
-                _panelRt.sizeDelta = new Vector2(_panelRt.sizeDelta.x, _panelBaseH - shift);
+            // Пересчитываем раскладку под режим: секция зазоров показывается
+            // только для фасадов, панель сама подгоняется по высоте.
+            Layout(isFacade);
 
             RefreshTransformFields();
-
             _lockToggle.SetIsOnWithoutNotify(!element.Movable);
 
             _root.SetActive(true);
