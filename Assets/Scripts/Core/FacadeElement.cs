@@ -41,6 +41,104 @@ namespace KitchenDesigner.Core
             }
         }
 
+        public override Vector3[] GetVertices()
+        {
+            CornerUnits(out var minX, out var maxX, out var minY, out var maxY, out var minZ, out var maxZ);
+            var localCorners = new Vector3[]
+            {
+                new Vector3(minX, minY, minZ),
+                new Vector3(maxX, minY, minZ),
+                new Vector3(maxX, minY, maxZ),
+                new Vector3(minX, minY, maxZ),
+                new Vector3(minX, maxY, minZ),
+                new Vector3(maxX, maxY, minZ),
+                new Vector3(maxX, maxY, maxZ),
+                new Vector3(minX, maxY, maxZ),
+            };
+            var pos = transform.position;
+            var rot = transform.rotation;
+            var result = new Vector3[8];
+            for (int i = 0; i < 8; i++)
+                result[i] = pos + rot * localCorners[i];
+            return result;
+        }
+
+        public override Face[] GetFaces()
+        {
+            CornerUnits(out var minX, out var maxX, out var minY, out var maxY, out var minZ, out var maxZ);
+            var pos = transform.position;
+            var rot = transform.rotation;
+            var axes = new Vector3[]
+            {
+                rot * Vector3.right,
+                rot * Vector3.up,
+                rot * Vector3.forward
+            };
+            float w = maxX - minX;
+            float h = maxY - minY;
+            float d = maxZ - minZ;
+            var localCenter = new Vector3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, (minZ + maxZ) * 0.5f);
+            // Из-за асимметричных зазоров AABB может быть НЕ центрирован вокруг transform.position.
+            // Сдвигаем все центры граней на это смещение.
+            var centerShift = rot * localCenter;
+            var faceDims = new Vector2[]
+            {
+                new Vector2(h, d), new Vector2(w, d), new Vector2(w, h),
+            };
+            var half = new Vector3[]
+            {
+                new Vector3(w * 0.5f, 0, 0), new Vector3(0, h * 0.5f, 0), new Vector3(0, 0, d * 0.5f),
+            };
+            var offsets = new Vector3[]
+            {
+                 axes[0] * half[0].x, -axes[0] * half[0].x,
+                 axes[1] * half[1].y, -axes[1] * half[1].y,
+                 axes[2] * half[2].z, -axes[2] * half[2].z,
+            };
+            var normals = new Vector3[]
+            {
+                 axes[0], -axes[0],
+                 axes[1], -axes[1],
+                 axes[2], -axes[2],
+            };
+            var rightAxis = new Vector3[]
+            {
+                axes[1], axes[1], axes[0], axes[0], axes[0], axes[0],
+            };
+            var upAxis = new Vector3[]
+            {
+                axes[2], axes[2], axes[2], axes[2], axes[1], axes[1],
+            };
+            var faces = new Face[6];
+            for (int i = 0; i < 6; i++)
+            {
+                int dimIdx = i / 2;
+                faces[i] = new Face(
+                    pos + centerShift + offsets[i],
+                    normals[i],
+                    faceDims[dimIdx],
+                    rightAxis[i],
+                    upAxis[i]
+                );
+            }
+            return faces;
+        }
+
+        private void CornerUnits(out float minX, out float maxX, out float minY, out float maxY, out float minZ, out float maxZ)
+        {
+            var phys = transform.localScale;
+            float gl = Data.GapLeft  * AppConstants.MM_TO_UNITS;
+            float gr = Data.GapRight * AppConstants.MM_TO_UNITS;
+            float gt = Data.GapTop    * AppConstants.MM_TO_UNITS;
+            float gb = Data.GapBottom * AppConstants.MM_TO_UNITS;
+            minX = -phys.x * 0.5f - gl;
+            maxX =  phys.x * 0.5f + gr;
+            minY = -phys.y * 0.5f - gb;
+            maxY =  phys.y * 0.5f + gt;
+            minZ = -phys.z * 0.5f;
+            maxZ =  phys.z * 0.5f;
+        }
+
         // ── Открывание (дверца) ─────────────────────────────────────────
         // Дверца поворачивается вокруг выбранного ребра на 90° и обратно, с
         // плавностью по синусу (см. FacadeDoor). Позиция/поворот трансформа

@@ -90,7 +90,7 @@ namespace KitchenDesigner.Core
             );
         }
 
-        public Vector3[] GetVertices()
+        public virtual Vector3[] GetVertices()
         {
             var size = EffectiveScale;
             var half = size * 0.5f;
@@ -115,7 +115,7 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        public Face[] GetFaces()
+        public virtual Face[] GetFaces()
         {
             var size = EffectiveScale;
             var half = size * 0.5f;

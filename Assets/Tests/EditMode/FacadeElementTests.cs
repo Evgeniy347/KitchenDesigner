@@ -108,7 +108,7 @@ public class FacadeElementTests
         var verts = f.GetVertices();
 
         // Physical half-extents: 0.2, 0.15, 0.009
-        // Gap 2mm each side → +0.002 per side → +0.004 total → half: 0.202, 0.152, Z unchanged
+        // Gap 2mm each side → +0.002 per side → vertices: ±0.202, ±0.152, ±0.009
         foreach (var v in verts)
         {
             Assert.IsTrue(Mathf.Abs(v.x) <= 0.202f + 1e-5f, $"v.x={v.x} exceeds 0.202");
@@ -123,18 +123,64 @@ public class FacadeElementTests
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero, 1, 3, 0, 5);
         var verts = f.GetVertices();
 
-        // Gap left=1, right=3 → +4mm total X → half-ext X = 0.202
-        // Gap top=0, bottom=5 → +5mm total Y → half-ext Y = 0.1525
-        // Z unchanged
-        float maxX = 0.202f;
-        float maxY = 0.1525f;
-        float maxZ = 0.009f;
+        // Gap left=1, right=3 → каждый зазор влияет НА СВОЮ сторону:
+        //   minX = -0.2 - 0.001 = -0.201 (gap left=1mm)
+        //   maxX =  0.2 + 0.003 =  0.203 (gap right=3mm)
+        // Gap top=0, bottom=5 → то же на Y:
+        //   minY = -0.15 - 0.005 = -0.155 (gap bottom=5mm)
+        //   maxY =  0.15 + 0.000 =  0.150 (gap top=0mm)
+        // Z не меняется
+        float minX = -0.201f, maxX = 0.203f;
+        float minY = -0.155f, maxY = 0.150f;
+        float minZ = -0.009f, maxZ = 0.009f;
         foreach (var v in verts)
         {
-            Assert.IsTrue(Mathf.Abs(v.x) <= maxX + 1e-4f, $"v.x={v.x} exceeds {maxX}");
-            Assert.IsTrue(Mathf.Abs(v.y) <= maxY + 1e-4f, $"v.y={v.y} exceeds {maxY}");
-            Assert.IsTrue(Mathf.Abs(v.z) <= maxZ + 1e-4f, $"v.z={v.z} exceeds {maxZ}");
+            Assert.IsTrue(v.x >= minX - 1e-4f && v.x <= maxX + 1e-4f, $"v.x={v.x} out of [{minX},{maxX}]");
+            Assert.IsTrue(v.y >= minY - 1e-4f && v.y <= maxY + 1e-4f, $"v.y={v.y} out of [{minY},{maxY}]");
+            Assert.IsTrue(v.z >= minZ - 1e-4f && v.z <= maxZ + 1e-4f, $"v.z={v.z} out of [{minZ},{maxZ}]");
         }
+
+        // Проверяем, что крайние вершины действительно достигают новых границ
+        // (а не симметричных, как было раньше).
+        bool hasMinX = false, hasMaxX = false, hasMinY = false, hasMaxY = false;
+        foreach (var v in verts)
+        {
+            if (Mathf.Abs(v.x - minX) < 1e-5f) hasMinX = true;
+            if (Mathf.Abs(v.x - maxX) < 1e-5f) hasMaxX = true;
+            if (Mathf.Abs(v.y - minY) < 1e-5f) hasMinY = true;
+            if (Mathf.Abs(v.y - maxY) < 1e-5f) hasMaxY = true;
+        }
+        Assert.IsTrue(hasMinX, "Left edge at -0.201 not found");
+        Assert.IsTrue(hasMaxX, "Right edge at 0.203 not found");
+        Assert.IsTrue(hasMinY, "Bottom edge at -0.155 not found");
+        Assert.IsTrue(hasMaxY, "Top edge at 0.150 not found");
+    }
+
+    [Test]
+    public void Facade_AsymmetricGap_Faces_LocalBounds()
+    {
+        // Тот же асимметричный случай — проверяем, что грани (GetFaces) тоже
+        // смещены корректно: левая грань на -0.201, правая на 0.203.
+        var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero, 1, 3, 0, 5);
+        var faces = f.GetFaces();
+
+        // Грани X (индексы 0,1): правая (+X) и левая (-X)
+        // Порядок как в KitchenElement.GetFaces: [0]=+X, [1]=-X
+        float rightCenter =  0.203f;
+        float leftCenter  = -0.201f;
+        Assert.AreEqual(rightCenter, faces[0].center.x, 2e-5f);
+        Assert.AreEqual(leftCenter,  faces[1].center.x, 2e-5f);
+
+        // Грани Y (индексы 2,3): верхняя (+Y) и нижняя (-Y)
+        float topCenter    =  0.150f;
+        float bottomCenter = -0.155f;
+        Assert.AreEqual(topCenter,    faces[2].center.y, 2e-5f);
+        Assert.AreEqual(bottomCenter, faces[3].center.y, 2e-5f);
+
+        // Размеры граней учитывают ПОЛНУЮ эффективную высоту/ширину
+        // X-грани: ширина = effHeight = 0.15+0.155 = 0.305, высота = effDepth = 0.018
+        Assert.AreEqual(0.305f, faces[0].size.x, 2e-5f);
+        Assert.AreEqual(0.018f, faces[0].size.y, 2e-5f);
     }
 
     [Test]
