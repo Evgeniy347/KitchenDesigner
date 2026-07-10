@@ -44,6 +44,9 @@ namespace KitchenDesigner.Core.MCP
                     case "select_element": return HandleSelectElement(request);
                     case "get_undo_stack_info": return HandleUndoStackInfo(request);
                     case "get_console_logs": return HandleConsoleLogs(request);
+                    case "get_settings": return HandleGetSettings(request);
+                    case "set_snap_verbose": return HandleSetSnapVerbose(request);
+                    case "snap_diagnose": return HandleSnapDiagnose(request);
                     case "take_screenshot": return HandleTakeScreenshot(request);
                     case "execute_menu_item": return HandleExecuteMenuItem(request);
                     case "enter_play_mode": return HandleEnterPlayMode(request);
@@ -416,6 +419,51 @@ namespace KitchenDesigner.Core.MCP
             int count = (p != null && p.count > 0) ? Mathf.Min(p.count, 200) : 50;
             var entries = ConsoleLogCapture.GetRecent(count);
             return McpResponse.Result(req.id, entries);
+        }
+
+        private McpResponse HandleGetSettings(McpRequest req)
+        {
+            var s = KitchenSettings.Instance;
+            if (s == null) return McpResponse.Error(req.id, -1, "KitchenSettings not loaded");
+            return McpResponse.Result(req.id, new
+            {
+                snapEnabled = s.SnapEnabled,
+                snapThresholdMM = s.SnapThreshold,
+                gridEnabled = s.GridEnabled,
+                gridStepMM = s.GridStep,
+                blockOnViolation = s.BlockOnViolation,
+                autoSave = s.AutoSave,
+                autoSaveIntervalSec = s.AutoSaveInterval,
+                snapVerboseLog = SnapSystem.VerboseLog
+            });
+        }
+
+        private McpResponse HandleSetSnapVerbose(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsSetEnabled>(req.parameters);
+            if (p == null) return McpResponse.Error(req.id, -32602, "enabled required");
+            SnapSystem.VerboseLog = p.enabled;
+            Debug.Log($"[MCP] Snap verbose log: {p.enabled}");
+            return McpResponse.Result(req.id, new { ok = true, enabled = p.enabled });
+        }
+
+        /// <summary>Разбор прилипания: почему доска (не) прилипает из текущей или
+        /// заданной позиции — по каждому соседу лучшая пара граней и причина.</summary>
+        private McpResponse HandleSnapDiagnose(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsSnapDiagnose>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            var element = FindElementByName(p.name);
+            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            var pos = element.transform.position;
+            if (p.x.HasValue) pos.x = p.x.Value;
+            if (p.y.HasValue) pos.y = p.y.Value;
+            if (p.z.HasValue) pos.z = p.z.Value;
+
+            var diagnosis = SnapSystem.Diagnose(element, BoardRegistry.GetAll(), pos);
+            return McpResponse.Result(req.id, diagnosis);
         }
 
         private McpResponse HandleTakeScreenshot(McpRequest req)

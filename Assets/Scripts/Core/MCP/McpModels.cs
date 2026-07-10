@@ -9,6 +9,11 @@ namespace KitchenDesigner.Core.MCP
         public string id;
         public string method;
         public string parameters; // raw JSON string
+
+        // Альтернативная форма: клиент прислал параметры объектом `params`
+        // (а не строкой `parameters`). Нормализуется в ProcessLine.
+        [Newtonsoft.Json.JsonProperty("params")]
+        public Newtonsoft.Json.Linq.JObject paramsObject;
     }
 
     [Serializable]
@@ -111,6 +116,22 @@ namespace KitchenDesigner.Core.MCP
     public class ParamsExportCsv
     {
         public string path;
+    }
+
+    [Serializable]
+    public class ParamsSetEnabled
+    {
+        public bool enabled;
+    }
+
+    [Serializable]
+    public class ParamsSnapDiagnose
+    {
+        public string name;
+        // Тестовая позиция; отсутствующие оси берутся из текущей позиции доски.
+        public float? x;
+        public float? y;
+        public float? z;
     }
 
     // ── Return types ──────────────────────────────────────────────────
