@@ -31,7 +31,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>8 углов короба в МИРОВЫХ координатах через матрицу детали
         /// (localToWorld). Учитывает позицию, поворот и масштаб — поэтому рёбра
-        /// ложатся точно на грани при любой ориентации доски. Чистая функция.</summary>
+        /// ложатся точно на грани при любой ориентации детали. Чистая функция.</summary>
         public static void WorldCorners(Matrix4x4 localToWorld, Vector3[] into)
         {
             for (int i = 0; i < 8; i++)
@@ -42,7 +42,7 @@ namespace KitchenDesigner.Core
     /// <summary>Чёрный контур короба для «прозрачного» режима: грани детали
     /// делаются сквозными, а форма читается по 12 рёбрам. Каждое ребро — тонкий
     /// брусок в МИРОВЫХ координатах (не дочерний масштаб!), поэтому контур не
-    /// «плывёт» при повороте/неравномерном масштабе доски и всегда заметной
+    /// «плывёт» при повороте/неравномерном масштабе детали и всегда заметной
     /// толщины. Коллайдеров у брусков нет — клик по-прежнему ловит саму деталь.</summary>
     [DisallowMultipleComponent]
     public class ElementOutline : MonoBehaviour
@@ -155,7 +155,7 @@ namespace KitchenDesigner.Core
         {
             // ВАЖНО: URP/Unlit вырезается из сборки, если им не пользуется ни один
             // материал (Shader.Find → null в билде → краш). Падаем на гарантированно
-            // включённый URP/Lit (его используют все доски), затем на любой доступный.
+            // включённый URP/Lit (его используют все детали), затем на любой доступный.
             var shader = Shader.Find("Universal Render Pipeline/Unlit");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) shader = Shader.Find("Sprites/Default");

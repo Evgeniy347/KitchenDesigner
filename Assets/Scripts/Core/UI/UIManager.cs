@@ -76,7 +76,7 @@ namespace KitchenDesigner.Core.UI
             const float y = -6f;
             const float h = 40f;
 
-            // Кнопки добавления досок переехали в левый сайдбар (SidebarUI).
+            // Кнопки добавления деталей переехали в левый сайдбар (SidebarUI).
             AddBarButton(bar.transform, "Spec", "Спецификация", ref x, y, h, 150, ToggleSpecification);
             // Понятные значки вместо текста.
             AddIconButton(bar.transform, "Settings", IconFactory.Gear, ref x, y, h, ToggleSettings);
@@ -158,7 +158,7 @@ namespace KitchenDesigner.Core.UI
             AfterUndoRedo();
         }
 
-        // После отмены/повтора доска могла стать неактивной (отмена создания) —
+        // После отмены/повтора деталь могла стать неактивной (отмена создания) —
         // снимаем с неё выделение и пересчитываем подсветку валидности.
         private static void AfterUndoRedo()
         {
@@ -184,7 +184,7 @@ namespace KitchenDesigner.Core.UI
             pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS; // на полу
             pos = GridManager.SnapToGrid(pos);
 
-            var go = ElementFactory.CreateBoard(dims, name, pos);
+            var go = ElementFactory.CreatePart(dims, name, pos);
             var element = go.GetComponent<KitchenElement>();
             if (element != null)
             {
@@ -256,7 +256,7 @@ namespace KitchenDesigner.Core.UI
             return cam.transform.position + cam.transform.forward * 2f;
         }
 
-        /// <summary>Открыть контекстное меню доски (вызывается из ElementMover по клику ЛКМ).</summary>
+        /// <summary>Открыть контекстное меню детали (вызывается из ElementMover по клику ЛКМ).</summary>
         public void OpenContextMenu(KitchenElement element)
         {
             if (_contextMenu != null)

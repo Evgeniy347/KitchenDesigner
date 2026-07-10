@@ -36,7 +36,7 @@ namespace KitchenDesigner.Core
             GL.Begin(GL.LINES);
             GL.Color(Color.black);
 
-            foreach (var e in BoardRegistry.GetAll())
+            foreach (var e in PartRegistry.GetAll())
             {
                 if (e == null || e.GetComponent<BasePlate>() != null) continue;
                 var v = e.GetVertices();

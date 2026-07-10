@@ -53,7 +53,7 @@ public class SnapSystemTests
     [Test]
     public void TrySnap_ElementAboveFloor_SnapsToFloor()
     {
-        // Пол: верхняя грань на y=0.009. Доска 400мм высотой висит над полом
+        // Пол: верхняя грань на y=0.009. деталь 400мм высотой висит над полом
         // (низ на y=0.05, зазор 41мм < порога 50мм) → снэп опускает центр на
         // 0.009 + 0.2 = 0.209.
         var floor = CreateElement("Floor", new Vector3Int(3000, 18, 3000), Vector3.zero);
@@ -75,8 +75,8 @@ public class SnapSystemTests
 
         var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA }, _elementB.transform.position);
 
-        // Полностью совпадающие доски: грани ±Z в зазоре 18 мм → снэп разведёт по Z.
-        Assert.IsTrue(result.snapped, "снэп разведёт пересекающиеся доски по Z");
+        // Полностью совпадающие детали: грани ±Z в зазоре 18 мм → снэп разведёт по Z.
+        Assert.IsTrue(result.snapped, "снэп разведёт пересекающиеся детали по Z");
         Assert.AreEqual(0f, result.position.x, 0.001f);
         Assert.AreEqual(0f, result.position.y, 0.001f);
         Assert.AreEqual(-0.018f, result.position.z, 0.001f, "Z — встык");
@@ -97,7 +97,7 @@ public class SnapSystemTests
     [Test]
     public void TrySnap_SmallBoardNearEdge_AlignsEdgesNotCenter()
     {
-        // Большая доска A (800 шир) в плоскости XY, тонкая по Z. Маленькая B (400 шир)
+        // Большая деталь A (800 шир) в плоскости XY, тонкая по Z. Маленькая B (400 шир)
         // подносится к передней грани A около ЛЕВОГО края → должны совпасть левые кромки,
         // а НЕ центры (это и была жалоба на «прилипание по середине»).
         var a = CreateElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
@@ -136,7 +136,7 @@ public class SnapSystemTests
         var go = new GameObject(name);
         go.transform.position = position;
         var element = go.AddComponent<KitchenElement>();
-        element.BoardName = name;
+        element.PartName = name;
         element.DimensionsMM = dims;
         return element;
     }

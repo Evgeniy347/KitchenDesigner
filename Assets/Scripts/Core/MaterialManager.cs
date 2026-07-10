@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Применение декоров к доскам. Материал шарится по декору (один
+    /// <summary>Применение декоров к деталям. Материал шарится по декору (один
     /// Material на id — для батчинга), а индивидуальный «вырез» текстуры под
     /// размер щита задаётся через MaterialPropertyBlock (_BaseMap_ST).</summary>
     public static class MaterialManager
@@ -20,13 +20,32 @@ namespace KitchenDesigner.Core
         /// масштаб декора, картинка обрезается/повторяется, а не вписывается.
         /// scale = размер_щита_мм / размер_декора_мм. Чистая функция.</summary>
         public static Vector4 ComputeTileST(Vector3Int dimsMM, int tileSizeMM)
+            => ComputeTileST(dimsMM, tileSizeMM, tileSizeMM);
+
+        /// <summary>Как выше, но с раздельными физ. размерами плитки по X и Y
+        /// (декор может быть неквадратным — грейн/направленная текстура).</summary>
+        public static Vector4 ComputeTileST(Vector3Int dimsMM, int tileWidthMM, int tileHeightMM)
         {
-            float tile = Mathf.Max(1, tileSizeMM);
-            return new Vector4(dimsMM.x / tile, dimsMM.y / tile, 0f, 0f);
+            float tw = Mathf.Max(1, tileWidthMM);
+            float th = Mathf.Max(1, tileHeightMM);
+            return new Vector4(dimsMM.x / tw, dimsMM.y / th, 0f, 0f);
         }
 
         public static void ApplyById(KitchenElement element, string materialId)
             => Apply(element, MaterialCatalog.Get(materialId));
+
+        /// <summary>У элемента назначен НЕстандартный декор (не дефолтный серый) —
+        /// т.е. пользователь выбрал текстуру и её надо показывать вместо
+        /// валидационного тона подсветки.</summary>
+        public static bool HasCustomDecor(KitchenElement element)
+            => element != null
+               && !string.IsNullOrEmpty(element.MaterialId)
+               && element.MaterialId != MaterialCatalog.DefaultId;
+
+        /// <summary>Повесить на элемент его СОБСТВЕННЫЙ декор (по текущему MaterialId).
+        /// Используется подсветкой, чтобы показать текстуру объекта.</summary>
+        public static void ApplyOwnDecor(KitchenElement element)
+            => Apply(element, MaterialCatalog.Get(element != null ? element.MaterialId : null));
 
         public static void Apply(KitchenElement element, MaterialDef def)
         {
@@ -68,7 +87,7 @@ namespace KitchenDesigner.Core
 
             var mpb = new MaterialPropertyBlock();
             r.GetPropertyBlock(mpb);
-            mpb.SetVector(BaseMapST, ComputeTileST(element.DimensionsMM, def.tileSizeMM));
+            mpb.SetVector(BaseMapST, ComputeTileST(element.DimensionsMM, def.tileSizeMM, def.TileHeightMM));
             r.SetPropertyBlock(mpb);
         }
 
@@ -87,15 +106,14 @@ namespace KitchenDesigner.Core
             mat.SetFloat(Metallic, def.metallic);
             mat.SetFloat(Smoothness, def.smoothness);
 
-            if (!string.IsNullOrEmpty(def.baseMapResource))
+            // Текстура: уже загруженная из внешней папки (приоритет) или из Resources.
+            var tex = def.texture != null ? def.texture
+                : (!string.IsNullOrEmpty(def.baseMapResource) ? Resources.Load<Texture2D>(def.baseMapResource) : null);
+            if (tex != null)
             {
-                var tex = Resources.Load<Texture2D>(def.baseMapResource);
-                if (tex != null)
-                {
-                    tex.wrapMode = TextureWrapMode.Repeat; // повтор декора при крупном щите
-                    mat.SetTexture(BaseMap, tex);
-                    mat.mainTexture = tex;
-                }
+                tex.wrapMode = TextureWrapMode.Repeat; // повтор декора при крупном щите
+                mat.SetTexture(BaseMap, tex);
+                mat.mainTexture = tex;
             }
 
             _cache[def.id] = mat;

@@ -16,7 +16,7 @@ namespace KitchenDesigner.Core
             go.name = "BasePlate";
 
             var element = go.AddComponent<KitchenElement>();
-            element.BoardName = "BasePlate";
+            element.PartName = "BasePlate";
             element.DimensionsMM = new Vector3Int(PLATE_SIZE, PLATE_THICKNESS, PLATE_SIZE);
             go.transform.position = new Vector3(0, -PLATE_THICKNESS * 0.5f * AppConstants.MM_TO_UNITS, 0);
 

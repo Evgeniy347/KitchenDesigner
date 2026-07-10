@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
     {
         public static ElementHighlighter Instance { get; private set; }
 
+        public int RefreshCount { get; set; }
+
         private Material _validMaterial;
         private Material _invalidMaterial;
         private Material _validTransparentMaterial;
@@ -21,7 +23,7 @@ namespace KitchenDesigner.Core
 
         private void Start()
         {
-            InitMaterials();
+            CreateMaterials();
             RefreshHighlights();
             // Вход/выход из режима редактирования модуля меняет затемнение сцены.
             ModuleEditMode.Changed += RefreshHighlights;
@@ -82,9 +84,10 @@ namespace KitchenDesigner.Core
 
         public void RefreshHighlights()
         {
+            RefreshCount++;
             if (!_materialsInitialized) return;
 
-            var list = BoardRegistry.GetAll();
+            var list = PartRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
 
             foreach (var element in list)
@@ -102,7 +105,7 @@ namespace KitchenDesigner.Core
         {
             if (element == null || !_materialsInitialized) return;
 
-            var list = BoardRegistry.GetAll();
+            var list = PartRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
 
             bool isValid = !result.violations.Contains(element);
@@ -129,6 +132,13 @@ namespace KitchenDesigner.Core
             {
                 renderer.material = isValid ? _validTransparentMaterial : _invalidTransparentMaterial;
                 ElementOutline.Ensure(element).Show(selected: false); // чёрные рёбра
+            }
+            else if (isValid && MaterialManager.HasCustomDecor(element))
+            {
+                // Объекту назначена текстура/декор — показываем ЕЁ, а не плоский
+                // валидационный тон (нарушения всё равно видны красным ниже).
+                MaterialManager.ApplyOwnDecor(element);
+                ElementOutline.For(element)?.Hide();
             }
             else
             {

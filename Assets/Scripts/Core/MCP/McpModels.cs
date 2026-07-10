@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace KitchenDesigner.Core.MCP
 {
@@ -11,10 +12,34 @@ namespace KitchenDesigner.Core.MCP
 
         /// <summary>
         /// Параметры как прямой JSON-объект.
-        /// Клиент присылает {id, method, params: {name: "...", x: 1.5, ...}}
+        /// Основной клиент (MCP-сервер на TS) присылает {id, method, params: {name: "...", x: 1.5, ...}}
         /// </summary>
         [Newtonsoft.Json.JsonProperty("params")]
-        public Newtonsoft.Json.Linq.JObject Params { get; set; }
+        public JObject Params { get; set; }
+
+        /// <summary>
+        /// Совместимость с альтернативными клиентами (напр. PowerShell-мост
+        /// <c>tools/unity-bridge.ps1</c>), которые шлют поле <c>parameters</c> —
+        /// иногда ОБЪЕКТОМ, иногда СТРОКОЙ с JSON внутри. Принимаем оба варианта и
+        /// нормализуем в <see cref="Params"/>, чтобы обработчикам был один вход.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("parameters")]
+        private JToken ParametersCompat
+        {
+            set
+            {
+                if (value == null || Params != null) return; // "params" приоритетнее
+                if (value.Type == JTokenType.Object)
+                {
+                    Params = (JObject)value;
+                }
+                else if (value.Type == JTokenType.String)
+                {
+                    var s = value.ToString().Trim();
+                    if (s.StartsWith("{")) Params = JObject.Parse(s);
+                }
+            }
+        }
 
         /// <summary>Опциональные HTTP-подобные заголовки (If-None-Match и т.д.).</summary>
         [Newtonsoft.Json.JsonProperty("headers")]
@@ -65,43 +90,46 @@ namespace KitchenDesigner.Core.MCP
         public bool active;
     }
 
+    // Координаты/размеры — nullable: отсутствующая ось/измерение означает
+    // «оставить текущее значение», а не 0. Так слабой модели можно слать только
+    // те параметры, что реально меняются (см. resolve в McpCommandHandler).
     [Serializable]
     public class ParamsSetTransform
     {
         public string object_path;
-        public float x;
-        public float y;
-        public float z;
+        public float? x;
+        public float? y;
+        public float? z;
     }
 
     [Serializable]
     public class ParamsMoveElement
     {
         public string name;
-        public float x;
-        public float y;
-        public float z;
+        public float? x;
+        public float? y;
+        public float? z;
     }
 
     [Serializable]
     public class ParamsResizeElement
     {
         public string name;
-        public int width;
-        public int height;
-        public int depth;
-        public int dimX;
-        public int dimY;
-        public int dimZ;
+        public int? width;
+        public int? height;
+        public int? depth;
+        public int? dimX;
+        public int? dimY;
+        public int? dimZ;
     }
 
     [Serializable]
     public class ParamsRotateElement
     {
         public string name;
-        public float x;
-        public float y;
-        public float z;
+        public float? x;
+        public float? y;
+        public float? z;
     }
 
     [Serializable]
@@ -116,6 +144,13 @@ namespace KitchenDesigner.Core.MCP
     {
         public string name;
         public string mode;
+    }
+
+    [Serializable]
+    public class ParamsSetMaterial
+    {
+        public string name;
+        public string material; // id (напр. "oak") ИЛИ отображаемое имя ("Дуб сонома")
     }
 
     [Serializable]
@@ -173,7 +208,7 @@ namespace KitchenDesigner.Core.MCP
     public class ParamsSnapDiagnose
     {
         public string name;
-        // Тестовая позиция; отсутствующие оси берутся из текущей позиции доски.
+        // Тестовая позиция; отсутствующие оси берутся из текущей позиции детали.
         public float? x;
         public float? y;
         public float? z;
@@ -183,28 +218,28 @@ namespace KitchenDesigner.Core.MCP
     public class ParamsSimulateMove
     {
         public string name;
-        public float x;
-        public float y;
-        public float z;
+        public float? x;
+        public float? y;
+        public float? z;
     }
 
     [Serializable]
     public class ParamsSimulateResize
     {
         public string name;
-        public int width;
-        public int height;
-        public int depth;
-        public int dimX;
-        public int dimY;
-        public int dimZ;
+        public int? width;
+        public int? height;
+        public int? depth;
+        public int? dimX;
+        public int? dimY;
+        public int? dimZ;
     }
 
     [Serializable]
     public class ParamsCreateModule
     {
         public string name;      // имя модуля («Тумба с ящиками»)
-        public string[] members; // имена деталей (BoardName)
+        public string[] members; // имена деталей (PartName)
     }
 
     [Serializable]
@@ -239,6 +274,7 @@ namespace KitchenDesigner.Core.MCP
         public bool active;
         public int moduleId;      // 0 — не в модуле
         public string moduleName; // null — не в модуле
+        public string materialId;  // id декора/текстуры (см. list_materials)
         public bool hasViolations; // true — элемент нарушает ограничения (пересечение/нет связи)
         public float aabbMinX, aabbMinY, aabbMinZ;
         public float aabbMaxX, aabbMaxY, aabbMaxZ;

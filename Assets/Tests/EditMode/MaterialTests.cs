@@ -13,7 +13,7 @@ public class MaterialTests
     {
         var go = new GameObject(name);
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = dims;
         if (materialId != null) e.MaterialId = materialId;
         _spawned.Add(go);
@@ -24,6 +24,7 @@ public class MaterialTests
     public void Teardown()
     {
         MaterialManager.ClearCache();
+        MaterialCatalog.ClearDynamic();
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
@@ -125,11 +126,111 @@ public class MaterialTests
     [Test]
     public void Apply_SetsMaterialId_OnRealBoard()
     {
-        var go = ElementFactory.CreateBoard(new Vector3Int(800, 400, 18), "B", Vector3.zero);
+        var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "B", Vector3.zero);
         _spawned.Add(go);
         var e = go.GetComponent<KitchenElement>();
 
         MaterialManager.ApplyById(e, "oak");
         Assert.AreEqual("oak", e.MaterialId);
+    }
+
+    // --- «Включать текстуру, если задана»: декор поверх валидационного тона ---
+
+    [Test]
+    public void HasCustomDecor_TrueForNonDefault_FalseForDefault()
+    {
+        var plain = Make("Plain", new Vector3Int(800, 400, 18));
+        Assert.IsFalse(MaterialManager.HasCustomDecor(plain), "дефолтный декор — не «текстура»");
+
+        var oak = Make("Oak", new Vector3Int(800, 400, 18), "oak");
+        Assert.IsTrue(MaterialManager.HasCustomDecor(oak), "выбранный декор — текстура задана");
+    }
+
+    [Test]
+    public void ApplyOwnDecor_PutsDecorColorOnRenderer()
+    {
+        var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "B", Vector3.zero);
+        _spawned.Add(go);
+        var e = go.GetComponent<KitchenElement>();
+        e.MaterialId = "wenge";
+
+        MaterialManager.ApplyOwnDecor(e);
+
+        var r = go.GetComponentInChildren<MeshRenderer>();
+        var expected = MaterialCatalog.Get("wenge").baseColor;
+        Assert.AreEqual(expected, r.sharedMaterial.GetColor("_BaseColor"),
+            "декор должен лечь на рендерер (текстура/цвет объекта включена)");
+    }
+
+    // --- Внешние текстуры: разбор имени файла и динамический каталог ---
+
+    [Test]
+    public void ParseName_WithSizeSuffix_SplitsNameAndTile()
+    {
+        ExternalTextureCatalog.ParseName("abrikos_ba_03_cd_100_100",
+            out string display, out int w, out int h);
+        Assert.AreEqual("abrikos ba 03 cd", display);
+        Assert.AreEqual(100, w);
+        Assert.AreEqual(100, h);
+    }
+
+    [Test]
+    public void ParseName_NonSquare_KeepsBothSizes()
+    {
+        ExternalTextureCatalog.ParseName("grain_1200_600", out string display, out int w, out int h);
+        Assert.AreEqual("grain", display);
+        Assert.AreEqual(1200, w);
+        Assert.AreEqual(600, h);
+    }
+
+    [Test]
+    public void ParseName_NoSuffix_DefaultsTile800()
+    {
+        ExternalTextureCatalog.ParseName("plainoak", out string display, out int w, out int h);
+        Assert.AreEqual("plainoak", display);
+        Assert.AreEqual(800, w);
+        Assert.AreEqual(800, h);
+    }
+
+    [Test]
+    public void Catalog_RegisterDynamic_AppearsInAll_AndGet()
+    {
+        int before = MaterialCatalog.All.Count;
+        var def = new MaterialDef("ext_test", "Ext Test", "ЛДСП", Color.white, null, 100) { tileHeightMM = 100 };
+        MaterialCatalog.RegisterDynamic(def);
+
+        Assert.AreEqual(before + 1, MaterialCatalog.All.Count);
+        Assert.AreSame(def, MaterialCatalog.Get("ext_test"));
+    }
+
+    [Test]
+    public void Catalog_RegisterDynamic_SameId_Replaces_NoDuplicate()
+    {
+        MaterialCatalog.RegisterDynamic(new MaterialDef("dup", "One", "ЛДСП", Color.white));
+        int after1 = MaterialCatalog.All.Count;
+        MaterialCatalog.RegisterDynamic(new MaterialDef("dup", "Two", "ЛДСП", Color.white));
+
+        Assert.AreEqual(after1, MaterialCatalog.All.Count, "тот же id не должен дублироваться");
+        Assert.AreEqual("Two", MaterialCatalog.Get("dup").displayName);
+    }
+
+    [Test]
+    public void Catalog_ClearDynamic_RemovesOnlyDynamic()
+    {
+        int builtin = MaterialCatalog.All.Count;
+        MaterialCatalog.RegisterDynamic(new MaterialDef("x", "X", "ЛДСП", Color.white));
+        MaterialCatalog.ClearDynamic();
+
+        Assert.AreEqual(builtin, MaterialCatalog.All.Count);
+        Assert.AreEqual(MaterialCatalog.DefaultId, MaterialCatalog.Get("default").id, "встроенные остаются");
+    }
+
+    [Test]
+    public void ComputeTileST_NonSquareTile_UsesSeparateAxes()
+    {
+        // Щит 1200×1200 на плитке 1200(Ш)×600(В) → по X 1 повтор, по Y 2 повтора.
+        var st = MaterialManager.ComputeTileST(new Vector3Int(1200, 1200, 18), 1200, 600);
+        Assert.AreEqual(1f, st.x, 0.0001f);
+        Assert.AreEqual(2f, st.y, 0.0001f);
     }
 }

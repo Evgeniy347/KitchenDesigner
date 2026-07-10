@@ -57,7 +57,7 @@ namespace KitchenDesigner.Core
         private Quaternion _rotBefore;
         private Quaternion _rotAfter;
 
-        public string Description => $"Move {_element?.BoardName}";
+        public string Description => $"Move {_element?.PartName}";
 
         public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
         {
@@ -105,7 +105,7 @@ namespace KitchenDesigner.Core
         private GameObject _created;
         private KitchenElement _element;
 
-        public string Description => $"Create {_element?.BoardName}";
+        public string Description => $"Create {_element?.PartName}";
 
         public CreateCommand(GameObject created)
         {
@@ -118,7 +118,7 @@ namespace KitchenDesigner.Core
             if (_created == null) return;
             _created.SetActive(true);
             if (_element != null)
-                BoardRegistry.Register(_element);
+                PartRegistry.Register(_element);
         }
 
         public void Undo()
@@ -126,7 +126,7 @@ namespace KitchenDesigner.Core
             if (_created == null) return;
             _created.SetActive(false);
             if (_element != null)
-                BoardRegistry.Unregister(_element);
+                PartRegistry.Unregister(_element);
         }
     }
 
@@ -137,7 +137,7 @@ namespace KitchenDesigner.Core
         private int _siblingIndex;
         private Transform _parent;
 
-        public string Description => $"Delete {_element?.BoardName}";
+        public string Description => $"Delete {_element?.PartName}";
 
         public DeleteCommand(GameObject deleted)
         {
@@ -152,7 +152,7 @@ namespace KitchenDesigner.Core
             if (_deleted == null) return;
             _deleted.SetActive(false);
             if (_element != null)
-                BoardRegistry.Unregister(_element);
+                PartRegistry.Unregister(_element);
         }
 
         public void Undo()
@@ -160,7 +160,7 @@ namespace KitchenDesigner.Core
             if (_deleted == null) return;
             _deleted.SetActive(true);
             if (_element != null)
-                BoardRegistry.Register(_element);
+                PartRegistry.Register(_element);
             _deleted.transform.SetSiblingIndex(_siblingIndex);
         }
     }
@@ -175,7 +175,7 @@ namespace KitchenDesigner.Core
         private Quaternion _rotBefore;
         private Quaternion _rotAfter;
 
-        public string Description => $"Resize {_element?.BoardName}";
+        public string Description => $"Resize {_element?.PartName}";
 
         public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
         {

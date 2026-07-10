@@ -11,7 +11,7 @@ namespace KitchenDesigner.Core
     }
 
     /// <summary>Связывание объектов в группу. Элемент хранит GroupId; реестр —
-    /// сами группы (имя/подвижность). Состав группы выводится из BoardRegistry.</summary>
+    /// сами группы (имя/подвижность). Состав группы выводится из PartRegistry.</summary>
     public static class GroupManager
     {
         private static readonly Dictionary<int, LinkGroup> _groups = new Dictionary<int, LinkGroup>();
@@ -46,7 +46,7 @@ namespace KitchenDesigner.Core
         {
             var list = new List<KitchenElement>();
             if (g == null) return list;
-            foreach (var e in BoardRegistry.GetAll())
+            foreach (var e in PartRegistry.GetAll())
                 if (e != null && e.GroupId == g.id) list.Add(e);
             return list;
         }

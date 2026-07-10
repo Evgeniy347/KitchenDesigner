@@ -104,7 +104,7 @@ public class AssembledFacadeElementTests
         // (шейдеры/материалы не трогаются), а логика размеров/спеки доступна.
         var go = new GameObject("Assembled");
         var af = go.AddComponent<AssembledFacadeElement>();
-        af.BoardName = "Сборный";
+        af.PartName = "Сборный";
         af.DimensionsMM = dims;
         _spawned.Add(go);
         return af;

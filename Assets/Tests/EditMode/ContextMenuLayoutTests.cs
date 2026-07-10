@@ -30,14 +30,14 @@ public class ContextMenuLayoutTests
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
     }
 
     private FacadeElement MakeFacade(string name)
     {
         var go = new GameObject(name);
         var facade = go.AddComponent<FacadeElement>();
-        facade.BoardName = name;
+        facade.PartName = name;
         facade.DimensionsMM = new Vector3Int(400, 300, 18);
         _spawned.Add(go);
         return facade;
@@ -47,7 +47,7 @@ public class ContextMenuLayoutTests
     {
         var go = new GameObject(name);
         var el = go.AddComponent<KitchenElement>();
-        el.BoardName = name;
+        el.PartName = name;
         el.DimensionsMM = new Vector3Int(800, 400, 18);
         _spawned.Add(go);
         return el;
@@ -141,7 +141,7 @@ public class ContextMenuLayoutTests
         Assert.Less(h, 200, "section should not be unreasonably tall");
     }
 
-    // Bug B: в режиме «Доска» подпись строки должна ехать вместе с полем.
+    // Bug B: в режиме «деталь» подпись строки должна ехать вместе с полем.
     // Раньше сдвигалось только поле — подписи оставались на месте, поля
     // и блок «Повернуть на 90°» наезжали на них.
     [Test]
@@ -180,7 +180,7 @@ public class ContextMenuLayoutTests
     }
 
     // Заголовок должен быть ВНУТРИ панели (верхняя кромка ниже верха панели),
-    // а не выезжать над окном в режиме «Доска» — прямой репорт пользователя.
+    // а не выезжать над окном в режиме «деталь» — прямой репорт пользователя.
     [Test]
     public void Board_TitleStaysInsidePanel()
     {
@@ -281,7 +281,7 @@ public class ContextMenuLayoutTests
         {
             var t = panel.Find(name);
             Assert.NotNull(t, $"{name} существует");
-            Assert.IsFalse(t.gameObject.activeSelf, $"{name} должна быть скрыта для доски");
+            Assert.IsFalse(t.gameObject.activeSelf, $"{name} должна быть скрыта для детали");
         }
     }
 

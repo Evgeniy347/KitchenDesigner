@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Контекстное меню по клику ЛКМ на доске: размеры, позиция, поворот, действия.</summary>
+    /// <summary>Контекстное меню по клику ЛКМ на детали: размеры, позиция, поворот, действия.</summary>
     public class ContextMenuUI : MonoBehaviour
     {
         public static ContextMenuUI Instance { get; private set; }
@@ -20,6 +20,8 @@ namespace KitchenDesigner.Core.UI
         private Text _doorButtonLabel;  // подпись кнопки «Открыть»/«Закрыть»
         private Dropdown _modeDropdown; // выпадающий список режима открывания
         private Dropdown _fillDropdown; // центр сборного фасада (Глухой/Витрина/Стекло)
+        private Dropdown _materialDropdown; // выбор текстуры/декора (детали и фасады)
+        private Dropdown _typeDropdown; // конвертация: деталь ⇄ фасад ⇄ сборный фасад
 
         // ── Раскладка ──────────────────────────────────────────────────
         // Меню собирается один раз (Build), а позиции пересчитываются в Layout
@@ -69,9 +71,15 @@ namespace KitchenDesigner.Core.UI
             _layout.Clear();
 
             // Заголовок — первая строка потока (стоит вплотную под верхом панели).
-            _titleLabel = UIFactory.CreateLabel("CtxTitle", panel.transform, "Доска", 20,
+            _titleLabel = UIFactory.CreateLabel("CtxTitle", panel.transform, "деталь", 20,
                 Vector2.zero, new Vector2(260, TitleH), TextAnchor.MiddleCenter);
             AddRow(TitleH, TitleGap, _titleLabel.rectTransform);
+
+            // Тип детали: конвертация между Part / Facade / AssembledFacade.
+            var typeOptions = new List<string> { "Деталь", "Фасад", "Сборный фасад" };
+            _typeDropdown = UIFactory.CreateDropdown("CtxType", panel.transform, typeOptions,
+                new Vector2(0, 0), new Vector2(248, 28), OnTypeSelected);
+            AddRow(28f, RowGap, _typeDropdown.GetComponent<RectTransform>());
 
             // Размеры.
             _name = Row(panel.transform, "Название");
@@ -79,7 +87,7 @@ namespace KitchenDesigner.Core.UI
             _h = Row(panel.transform, "Высота, мм");
             _d = Row(panel.transform, "Глубина, мм");
 
-            // Зазоры (только для фасадов) — блок скрывается в режиме «Доска».
+            // Зазоры (только для фасадов) — блок скрывается в режиме «деталь».
             var gapSection = CreateGapSection(panel.transform, out float gapSectionH);
             AddFacadeRow(gapSection, gapSection.GetComponent<RectTransform>(), gapSectionH, RowGap);
 
@@ -103,6 +111,17 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, 0), new Vector2(248, 28), OnFillSelected);
             AddAssembledRow(28f, ActionGap, _fillDropdown.GetComponent<RectTransform>());
 
+            // Текстура/декор (детали И фасады) — всегда видимая строка.
+            var matLbl = UIFactory.CreateLabel("CtxMatLbl", panel.transform, "Текстура:", 15,
+                Vector2.zero, new Vector2(260, RotLblH), TextAnchor.MiddleCenter);
+            AddRow(RotLblH, RotLblGap, matLbl.rectTransform);
+
+            var matOptions = new List<string>();
+            foreach (var m in MaterialCatalog.All) matOptions.Add(m.displayName);
+            _materialDropdown = UIFactory.CreateDropdown("CtxMaterial", panel.transform, matOptions,
+                new Vector2(0, 0), new Vector2(248, 28), OnMaterialSelected);
+            AddRow(28f, ActionGap, _materialDropdown.GetComponent<RectTransform>());
+
             // Позиция и поворот.
             _x = Row(panel.transform, "X, м");
             _y = Row(panel.transform, "Y, м");
@@ -116,7 +135,7 @@ namespace KitchenDesigner.Core.UI
             foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f.contentType = InputField.ContentType.DecimalNumber;
 
             // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
-            // ставить доски вертикально (поворот по X/Z), а не только крутить по Y.
+            // ставить детали вертикально (поворот по X/Z), а не только крутить по Y.
             var rotLbl = UIFactory.CreateLabel("CtxRotLbl", panel.transform, "Повернуть на 90°:", 15,
                 Vector2.zero, new Vector2(260, RotLblH), TextAnchor.MiddleCenter);
             AddRow(RotLblH, RotLblGap, rotLbl.rectTransform);
@@ -167,7 +186,7 @@ namespace KitchenDesigner.Core.UI
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
             closeBtn.transform.SetAsLastSibling();
 
-            Layout(isFacade: false, isAssembled: false); // стартовая раскладка (как обычная доска)
+            Layout(isFacade: false, isAssembled: false); // стартовая раскладка (как обычная деталь)
             _root.SetActive(false);
 
             if (SelectionManager.Instance != null)
@@ -180,8 +199,8 @@ namespace KitchenDesigner.Core.UI
                 SelectionManager.Instance.OnSelectionChanged -= OnSelectionChanged;
         }
 
-        // Меню закрывается, когда выделение ушло с его доски (клик в пустоту,
-        // выбор другой доски, удаление).
+        // Меню закрывается, когда выделение ушло с его детали (клик в пустоту,
+        // выбор другой детали, удаление).
         private void OnSelectionChanged(KitchenElement element)
         {
             if (_root == null || !_root.activeSelf) return;
@@ -299,7 +318,7 @@ namespace KitchenDesigner.Core.UI
             {
                 bool visible = (!row.facadeOnly || isFacade) && (!row.assembledOnly || isAssembled);
 
-                // Скрытие фасад-строк в режиме «Доска»: через контейнер (toggleGO)
+                // Скрытие фасад-строк в режиме «деталь»: через контейнер (toggleGO)
                 // либо, если контейнера нет, включая/выключая сами элементы строки.
                 if (row.toggleGO != null)
                     row.toggleGO.SetActive(visible);
@@ -360,10 +379,16 @@ namespace KitchenDesigner.Core.UI
 
             bool isFacade = element is FacadeElement;
             if (_titleLabel != null)
-                _titleLabel.text = isFacade ? "Фасад" : "Доска";
+                _titleLabel.text = isFacade ? "Фасад" : "деталь";
+
+            if (_typeDropdown != null)
+            {
+                _typeDropdown.SetValueWithoutNotify((int)ElementConverter.GetElementType(element));
+                _typeDropdown.RefreshShownValue();
+            }
 
             var dims = element.DimensionsMM;
-            _name.text = element.BoardName;
+            _name.text = element.PartName;
             _w.text = dims.x.ToString();
             _h.text = dims.y.ToString();
             _d.text = dims.z.ToString();
@@ -380,6 +405,15 @@ namespace KitchenDesigner.Core.UI
             var assembled = element as AssembledFacadeElement;
             if (assembled != null && _fillDropdown != null)
                 _fillDropdown.SetValueWithoutNotify(FillToIndex(assembled.Fill));
+
+            if (_materialDropdown != null)
+            {
+                // Пересобираем список каждый раз — так подгруженные в рантайме
+                // внешние текстуры появляются без перезапуска (reload_textures).
+                RebuildMaterialOptions();
+                _materialDropdown.SetValueWithoutNotify(MaterialIndex(element.MaterialId));
+                _materialDropdown.RefreshShownValue();
+            }
 
             // Пересчитываем раскладку под режим: секция зазоров показывается
             // только для фасадов, панель сама подгоняется по высоте.
@@ -408,7 +442,7 @@ namespace KitchenDesigner.Core.UI
             var oldPos = _target.transform.position;
             var oldRot = _target.transform.rotation;
 
-            _target.BoardName = string.IsNullOrWhiteSpace(_name.text) ? "Board" : _name.text;
+            _target.PartName = string.IsNullOrWhiteSpace(_name.text) ? "Board" : _name.text;
 
             _target.DimensionsMM = new Vector3Int(
                 ParseInt(_w.text, oldDims.x),
@@ -466,7 +500,7 @@ namespace KitchenDesigner.Core.UI
 
         private bool WouldCauseViolation()
         {
-            var list = BoardRegistry.GetAll();
+            var list = PartRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
             return result.violations.Contains(_target);
         }
@@ -519,6 +553,51 @@ namespace KitchenDesigner.Core.UI
                 if (SelectionManager.Instance != null)
                     SelectionManager.Instance.RefreshHighlight(a);
             }
+        }
+
+        // ── Текстура/декор (детали и фасады) ────────────────────────────
+
+        private static int MaterialIndex(string materialId)
+        {
+            var all = MaterialCatalog.All;
+            for (int i = 0; i < all.Count; i++)
+                if (all[i].id == materialId) return i;
+            return 0; // неизвестный/дефолтный — первый пункт
+        }
+
+        private void RebuildMaterialOptions()
+        {
+            var opts = new List<Dropdown.OptionData>();
+            foreach (var m in MaterialCatalog.All)
+                opts.Add(new Dropdown.OptionData(m.displayName));
+            _materialDropdown.options = opts;
+        }
+
+        private void OnMaterialSelected(int index)
+        {
+            if (_target == null) return;
+            var all = MaterialCatalog.All;
+            if (index < 0 || index >= all.Count) return;
+
+            MaterialManager.Apply(_target, all[index]); // задаёт MaterialId + декор
+            // Выделенный элемент перекрашен подсветкой выделения — обновляем её,
+            // чтобы поверх лёг новый декор; невыделенные обновит RefreshHighlights.
+            if (SelectionManager.Instance != null)
+                SelectionManager.Instance.RefreshHighlight(_target);
+            RefreshHighlights();
+        }
+
+        private void OnTypeSelected(int index)
+        {
+            if (_target == null) return;
+            var targetType = (ElementConverter.TargetType)index;
+            if (ElementConverter.GetElementType(_target) == targetType) return;
+
+            var go = _target.gameObject;
+            var converted = ElementConverter.Convert(_target, targetType);
+            if (converted != null)
+                Open(converted);
+            RefreshHighlights();
         }
 
         private void UpdateDoorButton(FacadeElement facade)

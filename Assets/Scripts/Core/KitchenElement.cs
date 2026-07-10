@@ -6,14 +6,14 @@ namespace KitchenDesigner.Core
     [SelectionBase]
     public class KitchenElement : MonoBehaviour
     {
-        [SerializeField] private BoardData _data = new BoardData();
+        [SerializeField] private PartData _data = new PartData();
 
-        public BoardData Data => _data;
+        public PartData Data => _data;
 
-        public string BoardName
+        public string PartName
         {
-            get => _data.BoardName;
-            set => _data.BoardName = value;
+            get => _data.PartName;
+            set => _data.PartName = value;
         }
 
         public Vector3Int DimensionsMM
@@ -71,12 +71,12 @@ namespace KitchenDesigner.Core
         private void Awake()
         {
             ApplyDimensions();
-            BoardRegistry.Register(this);
+            PartRegistry.Register(this);
         }
 
         private void OnDestroy()
         {
-            BoardRegistry.Unregister(this);
+            PartRegistry.Unregister(this);
         }
 
         protected virtual Vector3 EffectiveScale => transform.localScale;
@@ -187,7 +187,7 @@ namespace KitchenDesigner.Core
         public string Describe()
         {
             var p = transform.position;
-            return $"{_data.BoardName} ({_data.DimensionsMM.x}x{_data.DimensionsMM.y}x{_data.DimensionsMM.z}мм @ " +
+            return $"{_data.PartName} ({_data.DimensionsMM.x}x{_data.DimensionsMM.y}x{_data.DimensionsMM.z}мм @ " +
                    $"{p.x:F3},{p.y:F3},{p.z:F3})";
         }
 

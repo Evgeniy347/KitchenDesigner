@@ -3,14 +3,14 @@ using UnityEngine;
 using KitchenDesigner.Core;
 
 /// <summary>
-/// Базовые сценарии прилипания ДВУХ досок: контакт плоскостью (6 направлений),
+/// Базовые сценарии прилипания ДВУХ деталей: контакт плоскостью (6 направлений),
 /// выравнивание по кромкам (min/max/центр), по вершине (углу), повороты.
 /// Координаты вычислены точно (оракул — автор теста); см. геометрию в SnapTestBase.
 /// </summary>
 public class SnapScenarioTests : SnapTestBase
 {
     // ===== Контакт плоскостью (face-to-face) по всем 6 направлениям =====
-    // Две одинаковые доски 800×400×18; цель A в начале координат.
+    // Две одинаковые детали 800×400×18; цель A в начале координат.
 
     [Test]
     public void FaceToFace_Right_AlignsAtPlusHalfWidth()
@@ -33,7 +33,7 @@ public class SnapScenarioTests : SnapTestBase
     {
         var a = MakeStd("A", Vector3.zero);
         var b = MakeStd("B", Vector3.zero);
-        // Две доски «лист к листу» по Z: суммарная толщина 36 мм → центр B на 0.018.
+        // Две детали «лист к листу» по Z: суммарная толщина 36 мм → центр B на 0.018.
         AssertSnappedAt(b, a, new Vector3(0f, 0f, 0.048f), new Vector3(0f, 0f, 0.018f));
     }
 
@@ -69,7 +69,7 @@ public class SnapScenarioTests : SnapTestBase
         AssertFlushContact(b, a, new Vector3(0.83f, 0f, 0f));
     }
 
-    // ===== Выравнивание по кромкам (мелкая доска у большой грани) =====
+    // ===== Выравнивание по кромкам (мелкая деталь у большой грани) =====
     // A 800×400×18, B 400×400×18 подносится к передней (+Z) грани A.
 
     [Test]
@@ -96,7 +96,7 @@ public class SnapScenarioTests : SnapTestBase
         var a = MakeStd("A", Vector3.zero);
         var b = Make("B", new Vector3Int(400, 400, 18), Vector3.zero);
         AssertSnappedAt(b, a, new Vector3(0.02f, 0f, 0.048f), new Vector3(0f, 0f, 0.018f),
-            "у центра — центры совпадают, мелкая доска не липнет к кромке");
+            "у центра — центры совпадают, мелкая деталь не липнет к кромке");
     }
 
     [Test]
@@ -154,9 +154,9 @@ public class SnapScenarioTests : SnapTestBase
     {
         var floor = MakeFloor();
         var b = MakeStd("B", Vector3.zero);
-        // Низ доски (центр y=0.25, низ 0.05) в 41 мм над полом (верх пола y=0.009).
+        // Низ детали (центр y=0.25, низ 0.05) в 41 мм над полом (верх пола y=0.009).
         AssertSnappedAt(b, floor, new Vector3(0f, 0.25f, 0f), new Vector3(0f, 0.209f, 0f),
-            "доска опускается на пол: центр = 0.009 + 0.2");
+            "деталь опускается на пол: центр = 0.009 + 0.2");
     }
 
     [Test]
@@ -165,7 +165,7 @@ public class SnapScenarioTests : SnapTestBase
         var floor = MakeFloor();
         var b = MakeStd("B", new Vector3(0f, 0.209f, 0f));
         var val = ConstraintValidator.Validate(new System.Collections.Generic.List<KitchenElement> { floor, b });
-        Assert.IsTrue(val.isValid, "доска ровно на полу валидна");
+        Assert.IsTrue(val.isValid, "деталь ровно на полу валидна");
     }
 
     // ===== Повороты, дающие параллельные грани (снэп работает) =====
@@ -191,8 +191,8 @@ public class SnapScenarioTests : SnapTestBase
     [Test]
     public void Rotated90AroundX_SnapsToFloor_FlushContact()
     {
-        // Поворот по X кладёт доску плашмя (толщина 18 мм вдоль Y → центр на ~0.018).
-        // Проверяем, что повёрнутая по X доска всё равно прилипает к полу плоскостью.
+        // Поворот по X кладёт деталь плашмя (толщина 18 мм вдоль Y → центр на ~0.018).
+        // Проверяем, что повёрнутая по X деталь всё равно прилипает к полу плоскостью.
         var floor = MakeFloor();
         var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero,
             Quaternion.AngleAxis(90f, Vector3.right));
@@ -214,10 +214,10 @@ public class SnapScenarioTests : SnapTestBase
     {
         var a = MakeStd("A", Vector3.zero);
         var b = MakeStd("B", Vector3.zero);
-        // Доски смещены по X на 100 мм, но грани ±Z в зазоре 18 мм —
-        // снэп разведёт доски по Z встык.
+        // детали смещены по X на 100 мм, но грани ±Z в зазоре 18 мм —
+        // снэп разведёт детали по Z встык.
         var r = Snap(b, a, new Vector3(0.1f, 0f, 0f));
-        Assert.IsTrue(r.snapped, "снэп разведёт пересекающиеся доски");
+        Assert.IsTrue(r.snapped, "снэп разведёт пересекающиеся детали");
         Assert.AreEqual(0.1f, r.position.x, Tol, "X не изменился");
         Assert.AreEqual(-0.018f, r.position.z, Tol, "Z — встык по Z-граням");
     }

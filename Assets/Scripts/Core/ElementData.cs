@@ -29,7 +29,7 @@ namespace KitchenDesigner.Core
 
         public static ElementData FromElement(KitchenElement element)
         {
-            var d = new ElementData { name = element.BoardName };
+            var d = new ElementData { name = element.PartName };
             var dims = element.DimensionsMM;
             d.dimensionsMM = new[] { dims.x, dims.y, dims.z };
 

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Панель спецификации: таблица групп досок + итог.</summary>
+    /// <summary>Панель спецификации: таблица групп деталей + итог.</summary>
     public class SpecificationPanelUI : MonoBehaviour
     {
         private GameObject _root;
@@ -42,7 +42,7 @@ namespace KitchenDesigner.Core.UI
 
         private void Refresh()
         {
-            var result = SpecificationManager.Build(BoardRegistry.All);
+            var result = SpecificationManager.Build(PartRegistry.All);
 
             var sb = new StringBuilder();
             sb.AppendLine("№   Название              Ш×В×Г (мм)        Кол-во   S, м²");
@@ -55,7 +55,7 @@ namespace KitchenDesigner.Core.UI
                 n++;
             }
             sb.AppendLine("─────────────────────────────────────────────────────────");
-            sb.AppendLine($"Всего: {result.totalCount} досок | Площадь: {result.totalAreaM2:F2} м²");
+            sb.AppendLine($"Всего: {result.totalCount} деталей | Площадь: {result.totalAreaM2:F2} м²");
             _content.text = sb.ToString();
         }
 
@@ -64,7 +64,7 @@ namespace KitchenDesigner.Core.UI
 
         private void ExportCsv()
         {
-            var result = SpecificationManager.Build(BoardRegistry.All);
+            var result = SpecificationManager.Build(PartRegistry.All);
             string path = System.IO.Path.Combine(
                 System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop),
                 $"KitchenSpec_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");

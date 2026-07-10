@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
-/// <summary>Связка «прилипание + растягивание» (ResizeMath): доски и стены.</summary>
+/// <summary>Связка «прилипание + растягивание» (ResizeMath): детали и стены.</summary>
 public class ResizeMathTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();

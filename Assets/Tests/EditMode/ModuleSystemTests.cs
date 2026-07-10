@@ -5,7 +5,7 @@ using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
 
 /// <summary>
-/// Система модулей: сборка модуля из досок (именованная группа), режим
+/// Система модулей: сборка модуля из деталей (именованная группа), режим
 /// редактирования модуля (детали модуля редактируются, остальное заблокировано)
 /// и MCP-доступ к конфигурации («модуль X состоит из…»).
 /// </summary>
@@ -19,9 +19,9 @@ public class ModuleSystemTests
         var go = new GameObject(name);
         go.transform.position = pos;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = dims;
-        BoardRegistry.Register(e);
+        PartRegistry.Register(e);
         _spawned.Add(go);
         return e;
     }
@@ -55,7 +55,7 @@ public class ModuleSystemTests
         foreach (var go in _spawned)
         {
             if (go == null) continue;
-            BoardRegistry.Unregister(go.GetComponent<KitchenElement>());
+            PartRegistry.Unregister(go.GetComponent<KitchenElement>());
             Object.DestroyImmediate(go);
         }
         _spawned.Clear();
@@ -151,7 +151,7 @@ public class ModuleSystemTests
             new[] { "Бок левый", "Бок правый", "Дно" },
             m.elements.ConvertAll(e => e.name));
         Assert.IsNotNull(m.boundsSizeMM, "габариты модуля посчитаны");
-        Assert.AreEqual(1082, m.boundsSizeMM[0], 2, "ширина: 582мм смещение + 500мм доска");
+        Assert.AreEqual(1082, m.boundsSizeMM[0], 2, "ширина: 582мм смещение + 500мм деталь");
 
         // Принадлежность видна и на самом элементе.
         var elInfo = _handler.Handle(Req("get_element_info", new { name = "Дно" }));
@@ -244,7 +244,7 @@ public class ModuleSystemTests
         // «Перезапуск»: чистим сцену и группы, восстанавливаем из json.
         foreach (var go in _spawned)
         {
-            BoardRegistry.Unregister(go.GetComponent<KitchenElement>());
+            PartRegistry.Unregister(go.GetComponent<KitchenElement>());
             Object.DestroyImmediate(go);
         }
         _spawned.Clear();

@@ -10,7 +10,7 @@ public class SidebarCatalogTests
         var groups = SidebarCatalog.Build();
 
         Assert.AreEqual(3, groups.Count);
-        Assert.AreEqual("Доски", groups[0].title);
+        Assert.AreEqual("детали", groups[0].title);
         Assert.AreEqual("Фасады", groups[1].title);
         Assert.AreEqual("Помещение", groups[2].title);
     }
@@ -27,8 +27,8 @@ public class SidebarCatalogTests
             if (it.dims.z == 16) count16++;
             if (it.dims.z == 18) count18++;
         }
-        Assert.AreEqual(5, count16, "5 досок толщиной 16 мм");
-        Assert.AreEqual(5, count18, "5 досок толщиной 18 мм");
+        Assert.AreEqual(5, count16, "5 деталей толщиной 16 мм");
+        Assert.AreEqual(5, count18, "5 деталей толщиной 18 мм");
     }
 
     [Test]

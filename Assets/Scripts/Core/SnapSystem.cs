@@ -19,8 +19,8 @@ namespace KitchenDesigner.Core
     public class SnapNeighborReport
     {
         public string name;
-        public float centerDistanceMM;      // расстояние между центрами досок
-        public bool intersects;             // AABB-пересечение — снэп с этой доской невозможен
+        public float centerDistanceMM;      // расстояние между центрами деталей
+        public bool intersects;             // AABB-пересечение — снэп с этой деталью невозможен
         public bool hasFacingFaces;         // есть ли встречные параллельные грани (dot≈-1)
         public float bestDot;               // самый «встречный» dot нормалей (-1 = идеально)
         public int movedFaceIndex = -1;     // лучшая пара граней (движимая/цель)
@@ -29,7 +29,7 @@ namespace KitchenDesigner.Core
         public float overlapRatio = -1f;    // перекрытие граней у лучшей пары (0..1+)
         public bool withinThreshold;
         public bool overlapEnough;
-        public bool wouldSnap;              // все условия для ЭТОЙ доски выполнены
+        public bool wouldSnap;              // все условия для ЭТОЙ детали выполнены
         public string verdict;              // человекочитаемая причина
     }
 
@@ -51,8 +51,8 @@ namespace KitchenDesigner.Core
         private const float ThresholdEpsilon = 1e-5f;
 
         // «Нулевое» смещение (0.1 мм): кандидат, чей сдвиг меньше, — это уже
-        // существующий контакт (доска и так заподлицо), а не новое прилипание.
-        // Такой кандидат не должен побеждать содержательные снэпы — иначе доска,
+        // существующий контакт (деталь и так заподлицо), а не новое прилипание.
+        // Такой кандидат не должен побеждать содержательные снэпы — иначе деталь,
         // скользящая по грани соседа (или стоящая на полу), никогда не прилипнет
         // к стене: подтверждение текущего контакта (сдвиг 0) всегда «ближе».
         private const float ZeroShiftEpsilon = 1e-4f;
@@ -73,7 +73,7 @@ namespace KitchenDesigner.Core
             KitchenElement.Face[] movedFaces = moved.GetFaces();
 
             // Кандидаты делятся на два сорта:
-            //  - «нулевые» (сдвиг ≈ 0) — доска УЖЕ заподлицо с этой гранью; это
+            //  - «нулевые» (сдвиг ≈ 0) — деталь УЖЕ заподлицо с этой гранью; это
             //    подтверждение текущего контакта, а не новое прилипание;
             //  - содержательные — реальное притяжение к новой грани.
             // Содержательный снэп предпочтительнее нулевого, но не должен рвать
@@ -87,7 +87,7 @@ namespace KitchenDesigner.Core
             {
                 if (other == moved || other == null) continue;
                 if (!other.gameObject.activeInHierarchy) continue;
-                // AABB-пересечение НЕ отсеиваем: для повёрнутых досок AABB может
+                // AABB-пересечение НЕ отсеиваем: для повёрнутых деталей AABB может
                 // быть избыточно большим и ложно блокировать снэп перпендикулярных
                 // кромок. Face-pair loop ниже сам отфильтрует глубокие пересечения
                 // по planeDist > maxDist.
@@ -100,7 +100,7 @@ namespace KitchenDesigner.Core
                     {
                         // Контакт возможен только между гранями, смотрящими навстречу
                         // друг другу (нормали противоположны, dot≈-1). Со-направленные
-                        // грани (dot≈+1) не образуют стык — иначе доска липла бы «не с той стороны».
+                        // грани (dot≈+1) не образуют стык — иначе деталь липла бы «не с той стороны».
                         float dot = Vector3.Dot(movedFaces[i].normal, otherFaces[j].normal);
                         if (dot > -0.999f) continue;
 
@@ -119,7 +119,7 @@ namespace KitchenDesigner.Core
                         float planeShift = Vector3.Dot(offset, mf.normal);
 
                         // Сдвиг в плоскости грани: выравнивание по ближайшей кромке/центру
-                        // (а не принудительно по центру — иначе мелкая доска центрируется).
+                        // (а не принудительно по центру — иначе мелкая деталь центрируется).
                         Vector3 u = mf.rightAxis;
                         Vector3 v = mf.upAxis;
                         Rect mRect = GetFaceRect(mf, u, v);
@@ -128,7 +128,7 @@ namespace KitchenDesigner.Core
                         float dv = BestEdgeDelta(mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax, maxDist, out string labelV);
 
                         // Точное выравнивание заподлицо. Сетку НЕ применяем: при крупном
-                        // шаге она сдвинула бы доску с плоскости контакта и разорвала стык.
+                        // шаге она сдвинула бы деталь с плоскости контакта и разорвала стык.
                         Vector3 snapPos = testPosition + planeShift * mf.normal + du * u + dv * v;
 
                         float dist = Vector3.Distance(snapPos, testPosition);
@@ -136,7 +136,7 @@ namespace KitchenDesigner.Core
                         {
                             snapped = true,
                             position = snapPos,
-                            targetName = other.BoardName,
+                            targetName = other.PartName,
                             faceIndex = j,
                             snapPoint = mf.center,
                             targetPoint = of.center
@@ -162,7 +162,7 @@ namespace KitchenDesigner.Core
 
             moved.transform.position = prevPos;
 
-            // Лучший содержательный кандидат, не отрывающий доску от существующих
+            // Лучший содержательный кандидат, не отрывающий деталь от существующих
             // контактов (сдвиг перпендикулярен их нормалям).
             candidates.Sort((a, b) => a.dist.CompareTo(b.dist));
             foreach (var c in candidates)
@@ -189,7 +189,7 @@ namespace KitchenDesigner.Core
         public static bool VerboseLog = false;
 
         /// <summary>
-        /// Диагностика: почему доска прилипает/не прилипает из позиции testPosition.
+        /// Диагностика: почему деталь прилипает/не прилипает из позиции testPosition.
         /// Прогоняет ту же геометрию, что и <see cref="TrySnap"/>, но вместо раннего
         /// отсева собирает по каждому соседу лучшую пару граней и причину отказа:
         /// пересечение AABB, нет встречных граней, зазор больше порога, перекрытие &lt;30%.
@@ -223,7 +223,7 @@ namespace KitchenDesigner.Core
 
                 var n = new SnapNeighborReport
                 {
-                    name = other.BoardName,
+                    name = other.PartName,
                     centerDistanceMM = Vector3.Distance(testPosition, other.transform.position) / AppConstants.MM_TO_UNITS,
                     intersects = ElementsIntersect(moved, other),
                     bestDot = 1f,
@@ -264,10 +264,10 @@ namespace KitchenDesigner.Core
 
                 n.wouldSnap = n.hasFacingFaces && n.withinThreshold && n.overlapEnough;
                 n.verdict =
-                    !n.hasFacingFaces ? $"нет встречных параллельных граней (лучший dot={n.bestDot:F3}) — доска повёрнута?"
+                    !n.hasFacingFaces ? $"нет встречных параллельных граней (лучший dot={n.bestDot:F3}) — деталь повёрнута?"
                     : !n.withinThreshold ? $"зазор {n.gapMM:F1} мм больше порога {report.thresholdMM:F0} мм"
                     : !n.overlapEnough ? $"перекрытие граней {n.overlapRatio:P0} меньше минимума 30%"
-                    : n.intersects ? "AABB пересекаются из-за поворота, но снэп сработает (разведёт доски заподлицо)"
+                    : n.intersects ? "AABB пересекаются из-за поворота, но снэп сработает (разведёт детали заподлицо)"
                     : "OK — прилипнет";
 
                 report.neighbors.Add(n);
@@ -275,7 +275,7 @@ namespace KitchenDesigner.Core
 
             moved.transform.position = prevPos;
 
-            // Ближние — первыми; у досок без встречных граней зазора нет,
+            // Ближние — первыми; у деталей без встречных граней зазора нет,
             // ранжируем их по расстоянию между центрами.
             report.neighbors.Sort((a, b) =>
                 (a.gapMM >= 0 ? a.gapMM : a.centerDistanceMM)
@@ -370,7 +370,7 @@ namespace KitchenDesigner.Core
             return new Rect(center.x - halfU, center.y - halfV, halfU * 2, halfV * 2);
         }
 
-        // Допуск (0.1 мм) для AABB-пересечения: доски, стоящие вплотную гранями,
+        // Допуск (0.1 мм) для AABB-пересечения: детали, стоящие вплотную гранями,
         // из-за погрешности float могут давать ничтожное (~1e-9 м) перекрытие.
         // Без допуска такой контакт ошибочно считался бы пересечением и
         // пропускался валидатором/снэпом. 0.1 мм заметно меньше порога контакта 0.5 мм.

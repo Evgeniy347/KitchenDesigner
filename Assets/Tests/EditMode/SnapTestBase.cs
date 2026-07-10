@@ -5,9 +5,9 @@ using KitchenDesigner.Core;
 
 /// <summary>
 /// Общая база для EditMode-тестов прилипания: детерминированные настройки,
-/// фабрика досок с авто-очисткой и набор «оракулов» (проверок ожидаемого
+/// фабрика деталей с авто-очисткой и набор «оракулов» (проверок ожидаемого
 /// поведения снэпа). Геометрия (в метрах, identity-поворот):
-///   доска (W,H,D) мм → полуразмеры (W/2,H/2,D/2)*0.001;
+///   деталь (W,H,D) мм → полуразмеры (W/2,H/2,D/2)*0.001;
 ///   грани ±X (нормаль X, размер H×D), ±Y (W×D), ±Z (W×H).
 /// </summary>
 public abstract class SnapTestBase
@@ -55,13 +55,13 @@ public abstract class SnapTestBase
         go.transform.position = pos;
         go.transform.rotation = rot ?? Quaternion.identity;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = dims;
         _spawned.Add(go);
         return e;
     }
 
-    /// <summary>Стандартная доска 800×400×18.</summary>
+    /// <summary>Стандартная деталь 800×400×18.</summary>
     protected KitchenElement MakeStd(string name, Vector3 pos, Quaternion? rot = null)
         => Make(name, new Vector3Int(800, 400, 18), pos, rot);
 
@@ -99,7 +99,7 @@ public abstract class SnapTestBase
         moved.transform.position = r.position;
 
         Assert.IsFalse(SnapSystem.ElementsIntersect(moved, target),
-            $"после снэпа доски не должны пересекаться. {msg}");
+            $"после снэпа детали не должны пересекаться. {msg}");
 
         var val = ConstraintValidator.Validate(new List<KitchenElement> { moved, target });
         Assert.IsTrue(val.contacts.Exists(c => c.isFaceToFace),

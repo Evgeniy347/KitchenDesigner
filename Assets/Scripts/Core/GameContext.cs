@@ -2,18 +2,18 @@ namespace KitchenDesigner.Core
 {
     public class GameServices
     {
-        public IBoardRegistry BoardRegistry { get; }
+        public IPartRegistry PartRegistry { get; }
         public ICommandStack CommandStack { get; }
         public IElementFactory ElementFactory { get; }
         public ISaveLoadManager SaveLoadManager { get; }
 
         public GameServices(
-            IBoardRegistry boardRegistry,
+            IPartRegistry partRegistry,
             ICommandStack commandStack,
             IElementFactory elementFactory,
             ISaveLoadManager saveLoadManager)
         {
-            BoardRegistry = boardRegistry;
+            PartRegistry = partRegistry;
             CommandStack = commandStack;
             ElementFactory = elementFactory;
             SaveLoadManager = saveLoadManager;
@@ -32,7 +32,7 @@ namespace KitchenDesigner.Core
         public static void InitializeWithDefaults()
         {
             Initialize(new GameServices(
-                new BoardRegistryInstance(),
+                new PartRegistryInstance(),
                 new CommandStackInstance(),
                 new ElementFactoryInstance(),
                 new SaveLoadManagerInstance()

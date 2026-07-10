@@ -63,7 +63,7 @@ const READ_ONLY = new Set<string>([
   "get_undo_stack_info", "get_object_info", "get_element_info", "get_console_logs",
   "get_settings", "get_modules", "module_info", "get_floor_info", "get_violations",
   "get_element_debug", "get_element_gaps", "simulate_move", "simulate_resize",
-  "snap_diagnose", "find_objects", "take_screenshot",
+  "snap_diagnose", "find_objects", "take_screenshot", "list_materials",
 ]);
 
 function friendly(err: { message?: string; code?: string }): string {
@@ -348,8 +348,10 @@ LOCKED ELEMENTS
 
 TOOL GROUPS
   Read:   get_all_elements, get_element_info, get_specification, get_violations,
-          get_element_gaps, get_element_debug, get_floor_info, get_settings, get_modules
-  Edit:   create_element, move_element, resize_element, rotate_element, delete_element
+          get_element_gaps, get_element_debug, get_floor_info, get_settings, get_modules,
+          list_materials
+  Edit:   create_element, move_element, resize_element, rotate_element, delete_element,
+          set_material, reload_textures
   Check:  simulate_move, simulate_resize, snap_diagnose
   Undo:   undo, redo, get_undo_stack_info
   Groups: create_module, dissolve_module, add_to_module, remove_from_module,
@@ -410,22 +412,22 @@ server.registerTool("get_settings",
 // ── Check (dry-run) ──────────────────────────────────────────────────────────
 
 server.registerTool("simulate_move",
-  { title: "Simulate move (dry-run)", description: "DRY-RUN of a move: does NOT move anything. Returns simulatedAABB, overlapsWith and wouldHaveViolations. Call BEFORE move_element. x/y/z in METERS.", annotations: READ,
+  { title: "Simulate move (dry-run)", description: "DRY-RUN of a move: does NOT move anything. Returns simulatedAABB, overlapsWith and wouldHaveViolations. Call BEFORE move_element. x/y/z in METERS. Each axis is OPTIONAL — omit an axis to keep the board's current value on it (a missing axis is NOT treated as 0).", annotations: READ,
     inputSchema: {
       name: z.string().min(1, "Required").describe("Exact board name."),
-      x: z.number().finite().min(0, "Must be >= 0").describe("Target X in METERS."),
-      y: z.number().finite().min(0, "Must be >= 0").describe("Target Y in METERS."),
-      z: z.number().finite().min(0, "Must be >= 0").describe("Target Z in METERS."),
+      x: z.number().finite().min(0, "Must be >= 0").optional().describe("Target X in METERS. Omit to keep current X."),
+      y: z.number().finite().min(0, "Must be >= 0").optional().describe("Target Y in METERS. Omit to keep current Y."),
+      z: z.number().finite().min(0, "Must be >= 0").optional().describe("Target Z in METERS. Omit to keep current Z."),
     } },
   async (a) => safe("simulate_move", a));
 
 server.registerTool("simulate_resize",
-  { title: "Simulate resize (dry-run)", description: "DRY-RUN of a resize: does NOT change size. Returns simulatedAABB, overlapsWith and wouldHaveViolations. Call BEFORE resize_element. width/height/depth in MILLIMETERS.", annotations: READ,
+  { title: "Simulate resize (dry-run)", description: "DRY-RUN of a resize: does NOT change size. Returns simulatedAABB, overlapsWith and wouldHaveViolations. Call BEFORE resize_element. width/height/depth in MILLIMETERS. Each is OPTIONAL — omit a dimension to keep the board's current size on it (a missing dimension is NOT treated as 0).", annotations: READ,
     inputSchema: {
       name: z.string().min(1, "Required").describe("Exact board name."),
-      width: z.number().int().positive("Must be positive").describe("Target width (X) in MM."),
-      height: z.number().int().positive("Must be positive").describe("Target height (Y) in MM."),
-      depth: z.number().int().positive("Must be positive").describe("Target depth/thickness (Z) in MM."),
+      width: z.number().int().positive("Must be positive").optional().describe("Target width (X) in MM. Omit to keep current width."),
+      height: z.number().int().positive("Must be positive").optional().describe("Target height (Y) in MM. Omit to keep current height."),
+      depth: z.number().int().positive("Must be positive").optional().describe("Target depth/thickness (Z) in MM. Omit to keep current depth."),
     } },
   async (a) => safe("simulate_resize", a));
 
@@ -475,32 +477,32 @@ server.registerTool("create_element",
   });
 
 server.registerTool("move_element",
-  { title: "Move element", description: "Move a board to an absolute position. Undoable, validated, snaps to neighbours. x/y/z in METERS. Fails if the element is locked. Run simulate_move first.", annotations: WRITE,
+  { title: "Move element", description: "Move a board to an absolute position. Undoable, validated, snaps to neighbours. x/y/z in METERS. Each axis is OPTIONAL — omit an axis to keep the board's current value on it (a missing axis is NOT treated as 0), so you can move on one axis only. Fails if the element is locked. Run simulate_move first.", annotations: WRITE,
     inputSchema: {
       name: z.string().min(1, "Required").describe("Exact board name."),
-      x: z.number().finite().min(0, "Must be >= 0").describe("Target X in METERS."),
-      y: z.number().finite().min(0, "Must be >= 0").describe("Target Y in METERS."),
-      z: z.number().finite().min(0, "Must be >= 0").describe("Target Z in METERS."),
+      x: z.number().finite().min(0, "Must be >= 0").optional().describe("Target X in METERS. Omit to keep current X."),
+      y: z.number().finite().min(0, "Must be >= 0").optional().describe("Target Y in METERS. Omit to keep current Y."),
+      z: z.number().finite().min(0, "Must be >= 0").optional().describe("Target Z in METERS. Omit to keep current Z."),
     } },
   async (a) => safe("move_element", a));
 
 server.registerTool("resize_element",
-  { title: "Resize element", description: "Set a board's size in MILLIMETERS. Undoable and validated. depth is the thickness (Z). Fails if locked. Run simulate_resize first.", annotations: WRITE,
+  { title: "Resize element", description: "Set a board's size in MILLIMETERS. Undoable and validated. depth is the thickness (Z). Each dimension is OPTIONAL — omit one to keep the board's current size on it (a missing dimension is NOT treated as 0), so you can change one dimension only. Fails if locked. Run simulate_resize first.", annotations: WRITE,
     inputSchema: {
       name: z.string().min(1, "Required").describe("Exact board name."),
-      width: z.number().int().positive("Must be positive").describe("New width (X) in MM."),
-      height: z.number().int().positive("Must be positive").describe("New height (Y) in MM."),
-      depth: z.number().int().positive("Must be positive").describe("New depth/thickness (Z) in MM."),
+      width: z.number().int().positive("Must be positive").optional().describe("New width (X) in MM. Omit to keep current width."),
+      height: z.number().int().positive("Must be positive").optional().describe("New height (Y) in MM. Omit to keep current height."),
+      depth: z.number().int().positive("Must be positive").optional().describe("New depth/thickness (Z) in MM. Omit to keep current depth."),
     } },
   async (a) => safe("resize_element", a));
 
 server.registerTool("rotate_element",
-  { title: "Rotate element", description: "Set a board's rotation as Euler angles in DEGREES. Undoable. Common: rotate (0,90,0) to swap width and thickness. Fails if locked.", annotations: WRITE,
+  { title: "Rotate element", description: "Set a board's rotation as Euler angles in DEGREES. Undoable. Common: rotate (0,90,0) to swap width and thickness. Each axis is OPTIONAL — omit an axis to keep the board's current angle on it (a missing axis is NOT treated as 0). Fails if locked.", annotations: WRITE,
     inputSchema: {
       name: z.string().min(1, "Required").describe("Exact board name."),
-      x: z.number().finite("Must be finite").describe("Rotation around X in DEGREES."),
-      y: z.number().finite("Must be finite").describe("Rotation around Y in DEGREES."),
-      z: z.number().finite("Must be finite").describe("Rotation around Z in DEGREES."),
+      x: z.number().finite("Must be finite").optional().describe("Rotation around X in DEGREES. Omit to keep current."),
+      y: z.number().finite("Must be finite").optional().describe("Rotation around Y in DEGREES. Omit to keep current."),
+      z: z.number().finite("Must be finite").optional().describe("Rotation around Z in DEGREES. Omit to keep current."),
     } },
   async (a) => safe("rotate_element", a));
 
@@ -536,6 +538,22 @@ server.registerTool("set_facade_mode",
       mode: z.enum(FACADE_MODES).describe("Opening mode:\n  front_* — hinged on front face edge\n  back_* — hinged on back face edge\n  edge_* — hinged on thickness edge\n  drawer_* — sliding along axis"),
     } },
   async (a) => safe("set_facade_mode", a));
+
+server.registerTool("list_materials",
+  { title: "List materials / textures", description: "List the available material decors / textures (id, display name, kind, whether it has a texture, and its physical tile size in MM). Use before set_material to pick a valid id.", annotations: READ },
+  async () => safe("list_materials"));
+
+server.registerTool("set_material",
+  { title: "Set material / texture", description: "Assign a material decor / texture to a board or facade. When a non-default decor is set, the object shows that texture instead of the flat validation tint. Undoable via re-set; call list_materials first for valid ids.", annotations: WRITE,
+    inputSchema: {
+      name: z.string().min(1, "Required").describe("Exact board/facade name."),
+      material: z.string().min(1, "Required").describe("Material id (e.g. 'oak') or its display name (e.g. 'Дуб сонома'). See list_materials."),
+    } },
+  async (a) => safe("set_material", a));
+
+server.registerTool("reload_textures",
+  { title: "Reload external textures", description: "Re-scan the external textures folder (<app>/Resources/Textures) and refresh the decor catalog WITHOUT restarting the app. Drop new image files there (named '<name>_<widthMM>_<heightMM>.jpg' to set tile size), then call this. Returns how many were loaded and the folder path.", annotations: WRITE },
+  async () => safe("reload_textures"));
 
 server.registerTool("add_wall_component",
   { title: "Make element a wall", description: "Turn an existing board into a wall (structural anchor). No-op if it is already a wall.", annotations: WRITE,
@@ -664,18 +682,18 @@ server.registerTool("delete_object",
   async (a) => safe("delete_object", a));
 
 server.registerTool("set_position",
-  { title: "Set position (advanced)", description: "ADVANCED. Set a raw GameObject world position in METERS, with NO undo/validation/snap. For boards prefer move_element.", annotations: WRITE,
-    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().finite().min(0, "Must be >= 0").describe("X in METERS."), y: z.number().finite().min(0, "Must be >= 0").describe("Y in METERS."), z: z.number().finite().min(0, "Must be >= 0").describe("Z in METERS.") } },
+  { title: "Set position (advanced)", description: "ADVANCED. Set a raw GameObject world position in METERS, with NO undo/validation/snap. x/y/z are OPTIONAL — omit an axis to keep its current value. For boards prefer move_element.", annotations: WRITE,
+    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().finite().min(0, "Must be >= 0").optional().describe("X in METERS. Omit to keep current."), y: z.number().finite().min(0, "Must be >= 0").optional().describe("Y in METERS. Omit to keep current."), z: z.number().finite().min(0, "Must be >= 0").optional().describe("Z in METERS. Omit to keep current.") } },
   async (a) => safe("set_position", a));
 
 server.registerTool("set_rotation",
-  { title: "Set rotation (advanced)", description: "ADVANCED. Set a raw GameObject rotation (Euler DEGREES), no undo. For boards prefer rotate_element.", annotations: WRITE,
-    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().finite("Must be finite").describe("X in DEGREES."), y: z.number().finite("Must be finite").describe("Y in DEGREES."), z: z.number().finite("Must be finite").describe("Z in DEGREES.") } },
+  { title: "Set rotation (advanced)", description: "ADVANCED. Set a raw GameObject rotation (Euler DEGREES), no undo. x/y/z are OPTIONAL — omit an axis to keep its current value. For boards prefer rotate_element.", annotations: WRITE,
+    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().finite("Must be finite").optional().describe("X in DEGREES. Omit to keep current."), y: z.number().finite("Must be finite").optional().describe("Y in DEGREES. Omit to keep current."), z: z.number().finite("Must be finite").optional().describe("Z in DEGREES. Omit to keep current.") } },
   async (a) => safe("set_rotation", a));
 
 server.registerTool("set_scale",
   { title: "Set scale (advanced)", description: "ADVANCED and RISKY. Sets raw Transform scale — this does NOT change a board's mm size and can distort meshes. To change a board size use resize_element instead.", annotations: WRITE,
-    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().positive("Must be positive"), y: z.number().positive("Must be positive"), z: z.number().positive("Must be positive") } },
+    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().positive("Must be positive").optional().describe("Omit to keep current."), y: z.number().positive("Must be positive").optional().describe("Omit to keep current."), z: z.number().positive("Must be positive").optional().describe("Omit to keep current.") } },
   async (a) => safe("set_scale", a));
 
 server.registerTool("execute_menu_item",

@@ -66,8 +66,8 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
-            // Орбита: ПКМ по чему угодно (доска или пустота). Контекстное меню теперь по ЛКМ.
-            // Pan: ЛКМ по пустому месту или СКМ. ЛКМ по доске = перемещение доски.
+            // Орбита: ПКМ по чему угодно (деталь или пустота). Контекстное меню теперь по ЛКМ.
+            // Pan: ЛКМ по пустому месту или СКМ. ЛКМ по детали = перемещение детали.
             bool overUI = PointerOverUI();
             bool lmbDown = Input.GetMouseButtonDown(0);
             bool rmbDown = Input.GetMouseButtonDown(1);

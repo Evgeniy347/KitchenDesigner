@@ -5,8 +5,8 @@ using KitchenDesigner.Core;
 
 /// <summary>
 /// Баг «в конкретных позициях не прилипает»: кандидат с нулевым сдвигом
-/// (доска УЖЕ заподлицо с соседом/полом) побеждал содержательные снэпы,
-/// и доска, скользящая по грани соседа, никогда не прилипала к стене.
+/// (деталь УЖЕ заподлицо с соседом/полом) побеждал содержательные снэпы,
+/// и деталь, скользящая по грани соседа, никогда не прилипала к стене.
 /// Правило после фикса: содержательный снэп предпочтительнее подтверждения
 /// текущего контакта, но не должен этот контакт разрывать (сдвиг ⊥ нормалям
 /// существующих контактов). Сцена в тестах — снятая с реального проекта
@@ -14,10 +14,10 @@ using KitchenDesigner.Core;
 /// </summary>
 public class SnapExistingContactTests : SnapTestBase
 {
-    // --- Реальная сцена: лежащая доска прижата торцом к стоящей, рядом стена ---
+    // --- Реальная сцена: лежащая деталь прижата торцом к стоящей, рядом стена ---
 
-    private KitchenElement _standing; // стоящая доска, торец лежащей прижат к ней
-    private KitchenElement _lying;    // лежащая плашмя доска (активная деталь)
+    private KitchenElement _standing; // стоящая деталь, торец лежащей прижат к ней
+    private KitchenElement _lying;    // лежащая плашмя деталь (активная деталь)
     private KitchenElement _wall;     // стена: передняя грань на z=1.40
 
     private void BuildUserScene()
@@ -46,7 +46,7 @@ public class SnapExistingContactTests : SnapTestBase
 
         Assert.IsTrue(r.snapped, "должна прилипнуть к стене");
         Assert.AreEqual("Wall", r.targetName,
-            "цель — стена (контакт со стоящей доской не должен её маскировать)");
+            "цель — стена (контакт со стоящей деталью не должен её маскировать)");
         Assert.AreEqual(1.04f, r.position.z, Tol, "прижатие задней кромки к стене (1.40-0.36)");
         Assert.AreEqual(testPos.x, r.position.x, Tol, "сдвиг только по Z");
         Assert.AreEqual(testPos.y, r.position.y, Tol, "сдвиг только по Z");
@@ -69,14 +69,14 @@ public class SnapExistingContactTests : SnapTestBase
         }
     }
 
-    // --- Общий случай: доска стоит на полу и должна липнуть к соседу ---
+    // --- Общий случай: деталь стоит на полу и должна липнуть к соседу ---
 
     [Test]
     public void BoardOnFloor_SnapsToNearbyBoard()
     {
         // Вдали от центра/кромок пола, чтобы контакт с полом был чистым
         // «нулевым» кандидатом (без притяжения к кромке/центру пола).
-        // Верх пола на y=0.009 → доска «стоит» при центре y=0.209.
+        // Верх пола на y=0.009 → деталь «стоит» при центре y=0.209.
         MakeFloor();
         var a = MakeStd("A", new Vector3(0.5f, 0.209f, 0.3f));
         var b = MakeStd("B", new Vector3(0.5f, 0.209f, 0.34f)); // зазор граней 22мм
@@ -107,9 +107,9 @@ public class SnapExistingContactTests : SnapTestBase
     [Test]
     public void SnapThatWouldBreakExistingContact_IsRejected()
     {
-        // Полка нависает в 30мм над стоящей на полу доской: прилипание к ней
-        // потребовало бы оторвать доску от пола (сдвиг вдоль нормали пола) —
-        // такой снэп отвергается, доска остаётся на месте.
+        // Полка нависает в 30мм над стоящей на полу деталью: прилипание к ней
+        // потребовало бы оторвать деталь от пола (сдвиг вдоль нормали пола) —
+        // такой снэп отвергается, деталь остаётся на месте.
         MakeFloor();
         var a = MakeStd("A", new Vector3(0.5f, 0.209f, 0.5f)); // на полу, верх на y=0.409
         Make("Shelf", new Vector3Int(800, 18, 400),
@@ -118,7 +118,7 @@ public class SnapExistingContactTests : SnapTestBase
         var r = SnapSystem.TrySnap(a, Others(), a.transform.position);
 
         Assert.IsTrue(r.snapped, "контакт с полом подтверждён");
-        Assert.AreEqual(0.209f, r.position.y, Tol, "доска НЕ оторвалась от пола ради полки");
+        Assert.AreEqual(0.209f, r.position.y, Tol, "деталь НЕ оторвалась от пола ради полки");
     }
 
     [Test]

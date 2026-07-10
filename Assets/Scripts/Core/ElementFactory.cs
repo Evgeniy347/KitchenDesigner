@@ -18,8 +18,8 @@ namespace KitchenDesigner.Core
         }
         private static IElementFactory _fallback;
 
-        public static GameObject CreateBoard(Vector3Int dimensionsMM, string name, Vector3 position) =>
-            Instance.CreateBoard(dimensionsMM, name, position);
+        public static GameObject CreatePart(Vector3Int dimensionsMM, string name, Vector3 position) =>
+            Instance.CreatePart(dimensionsMM, name, position);
 
         public static GameObject CreatePreset(int presetIndex, Vector3 position) =>
             Instance.CreatePreset(presetIndex, position);
@@ -38,7 +38,7 @@ namespace KitchenDesigner.Core
         public static GameObject Duplicate(KitchenElement source) =>
             Instance.Duplicate(source);
 
-        public static void DestroyBoard(GameObject go) => Instance.DestroyBoard(go);
+        public static void DestroyPart(GameObject go) => Instance.DestroyPart(go);
 
         public static void DestroyFacade(GameObject go) => Instance.DestroyFacade(go);
 

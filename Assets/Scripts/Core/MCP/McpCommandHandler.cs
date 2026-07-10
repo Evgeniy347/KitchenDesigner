@@ -21,7 +21,7 @@ namespace KitchenDesigner.Core.MCP
         /// - get_all_elements — единственный источник истины (snapshot) перед изменениями.
         /// - simulate_move / simulate_resize — dry-run; проверяй wouldHaveViolations до apply.
         /// - После каждой мутации вызывай get_violations для проверки регрессий.
-        /// - dimZ всегда толщина доски (Board convention в AGENTS.md).
+        /// - dimZ всегда толщина детали (Board convention в AGENTS.md).
         /// </summary>
         public McpResponse Handle(McpRequest request)
         {
@@ -79,6 +79,9 @@ namespace KitchenDesigner.Core.MCP
                     case "simulate_resize": return HandleSimulateResize(request);
                     case "set_element_lock": return HandleSetElementLock(request);
                     case "set_facade_mode": return HandleSetFacadeMode(request);
+                    case "set_material": return HandleSetMaterial(request);
+                    case "list_materials": return HandleListMaterials(request);
+                    case "reload_textures": return HandleReloadTextures(request);
                     default:
                         return McpResponse.Error(request.id, -32601, $"Unknown method: {request.method}");
                 }
@@ -212,6 +215,23 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, deleted = go.name });
         }
 
+        /// <summary>Собрать вектор из nullable-полей, беря текущее значение для
+        /// отсутствующих осей (омитить = «не менять эту ось»).</summary>
+        private static Vector3 ResolveVec(float? x, float? y, float? z, Vector3 current)
+            => new Vector3(x ?? current.x, y ?? current.y, z ?? current.z);
+
+        /// <summary>Собрать размеры (мм) из nullable-полей. Приоритет: width/height/depth,
+        /// затем алиасы dimX/dimY/dimZ, затем текущий размер. Отсутствующее измерение =
+        /// «не менять». Каждое измерение не меньше 1 мм.</summary>
+        private static Vector3Int ResolveDims(int? width, int? height, int? depth,
+            int? dimX, int? dimY, int? dimZ, Vector3Int current)
+        {
+            int w = width ?? dimX ?? current.x;
+            int h = height ?? dimY ?? current.y;
+            int d = depth ?? dimZ ?? current.z;
+            return new Vector3Int(Mathf.Max(1, w), Mathf.Max(1, h), Mathf.Max(1, d));
+        }
+
         private McpResponse HandleSetPosition(McpRequest req)
         {
             var p = req.Params?.ToObject<ParamsSetTransform>();
@@ -219,8 +239,9 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "object_path required");
             var go = FindGameObject(p.object_path);
             if (go == null) return McpResponse.Error(req.id, -1, $"Object not found: {p.object_path}");
-            go.transform.position = new Vector3(p.x, p.y, p.z);
-            return McpResponse.Result(req.id, new { ok = true, position = new { p.x, p.y, p.z } });
+            var v = ResolveVec(p.x, p.y, p.z, go.transform.position);
+            go.transform.position = v;
+            return McpResponse.Result(req.id, new { ok = true, position = new { x = v.x, y = v.y, z = v.z } });
         }
 
         private McpResponse HandleSetRotation(McpRequest req)
@@ -230,8 +251,9 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "object_path required");
             var go = FindGameObject(p.object_path);
             if (go == null) return McpResponse.Error(req.id, -1, $"Object not found: {p.object_path}");
-            go.transform.eulerAngles = new Vector3(p.x, p.y, p.z);
-            return McpResponse.Result(req.id, new { ok = true, rotation = new { p.x, p.y, p.z } });
+            var v = ResolveVec(p.x, p.y, p.z, go.transform.eulerAngles);
+            go.transform.eulerAngles = v;
+            return McpResponse.Result(req.id, new { ok = true, rotation = new { x = v.x, y = v.y, z = v.z } });
         }
 
         private McpResponse HandleSetScale(McpRequest req)
@@ -241,8 +263,9 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "object_path required");
             var go = FindGameObject(p.object_path);
             if (go == null) return McpResponse.Error(req.id, -1, $"Object not found: {p.object_path}");
-            go.transform.localScale = new Vector3(p.x, p.y, p.z);
-            return McpResponse.Result(req.id, new { ok = true, scale = new { p.x, p.y, p.z } });
+            var v = ResolveVec(p.x, p.y, p.z, go.transform.localScale);
+            go.transform.localScale = v;
+            return McpResponse.Result(req.id, new { ok = true, scale = new { x = v.x, y = v.y, z = v.z } });
         }
 
         /// <summary>Инфо об элементе, включая принадлежность модулю (группе) —
@@ -271,13 +294,14 @@ namespace KitchenDesigner.Core.MCP
 
             return new ElementInfo
             {
-                name = el.BoardName, type = el.GetType().Name,
+                name = el.PartName, type = el.GetType().Name,
                 dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
                 posX = pos.x, posY = pos.y, posZ = pos.z,
                 rotX = t.eulerAngles.x, rotY = t.eulerAngles.y, rotZ = t.eulerAngles.z,
                 active = el.gameObject.activeInHierarchy,
                 moduleId = group != null ? group.id : 0,
                 moduleName = group != null ? group.name : null,
+                materialId = el.MaterialId,
                 hasViolations = hasViolations,
                 aabbMinX = aabb.minX, aabbMinY = aabb.minY, aabbMinZ = aabb.minZ,
                 aabbMaxX = aabb.maxX, aabbMaxY = aabb.maxY, aabbMaxZ = aabb.maxZ,
@@ -287,7 +311,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetAllElements(McpRequest req)
         {
-            var elements = BoardRegistry.GetAll();
+            var elements = PartRegistry.GetAll();
             var list = new List<ElementInfo>();
             foreach (var el in elements)
             {
@@ -329,10 +353,10 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            return McpResponse.Result(req.id, BuildElementInfo(element, BoardRegistry.GetAll()));
+            return McpResponse.Result(req.id, BuildElementInfo(element, PartRegistry.GetAll()));
         }
 
-        // ── Модули (именованные группы досок) ───────────────────────────
+        // ── Модули (именованные группы деталей) ───────────────────────────
 
         /// <summary>Модуль по id или имени (без учёта регистра).</summary>
         private static LinkGroup FindModule(string module)
@@ -390,7 +414,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetModules(McpRequest req)
         {
-            var allElements = BoardRegistry.GetAll();
+            var allElements = PartRegistry.GetAll();
             var list = new List<ModuleInfo>();
             foreach (var g in GroupManager.AllGroups())
                 list.Add(BuildModuleInfo(g, allElements));
@@ -404,7 +428,7 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "module (id или имя) required");
             var g = FindModule(p.module);
             if (g == null) return McpResponse.Error(req.id, -1, $"Module not found: {p.module}");
-            return McpResponse.Result(req.id, BuildModuleInfo(g, BoardRegistry.GetAll()));
+            return McpResponse.Result(req.id, BuildModuleInfo(g, PartRegistry.GetAll()));
         }
 
         private McpResponse HandleCreateModule(McpRequest req)
@@ -429,7 +453,7 @@ namespace KitchenDesigner.Core.MCP
             if (!string.IsNullOrEmpty(p.name)) g.name = p.name;
 
             Debug.Log($"[MCP] Module '{g.name}' (id {g.id}) created from {resolved.Count} elements");
-            return McpResponse.Result(req.id, BuildModuleInfo(g, BoardRegistry.GetAll()));
+            return McpResponse.Result(req.id, BuildModuleInfo(g, PartRegistry.GetAll()));
         }
 
         private McpResponse HandleDissolveModule(McpRequest req)
@@ -455,7 +479,7 @@ namespace KitchenDesigner.Core.MCP
             if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
 
             el.GroupId = g.id;
-            return McpResponse.Result(req.id, BuildModuleInfo(g, BoardRegistry.GetAll()));
+            return McpResponse.Result(req.id, BuildModuleInfo(g, PartRegistry.GetAll()));
         }
 
         private McpResponse HandleRemoveFromModule(McpRequest req)
@@ -471,7 +495,7 @@ namespace KitchenDesigner.Core.MCP
             var g = GroupManager.GroupOf(el);
             el.GroupId = 0;
             return McpResponse.Result(req.id, g != null
-                ? (object)BuildModuleInfo(g, BoardRegistry.GetAll())
+                ? (object)BuildModuleInfo(g, PartRegistry.GetAll())
                 : new { ok = true });
         }
 
@@ -507,14 +531,14 @@ namespace KitchenDesigner.Core.MCP
 
             var before = element.transform.position;
             var rotBefore = element.transform.rotation;
-            var after = new Vector3(p.x, p.y, p.z);
+            var after = ResolveVec(p.x, p.y, p.z, before);
             CommandStack.Execute(new MoveCommand(element, before, after, rotBefore, element.transform.rotation));
             RefreshElementHighlights();
-            Debug.Log($"[MCP] Moved {element.BoardName} to ({p.x}, {p.y}, {p.z})");
+            Debug.Log($"[MCP] Moved {element.PartName} to ({after.x}, {after.y}, {after.z})");
             var (hasViol, aabb, gaps) = DescribeAfterMutation(element);
             return McpResponse.Result(req.id, new {
                 ok = true, element = p.name,
-                position = new { p.x, p.y, p.z },
+                position = new { x = after.x, y = after.y, z = after.z },
                 hasViolations = hasViol,
                 aabb = aabb,
                 faceGaps = gaps
@@ -531,22 +555,17 @@ namespace KitchenDesigner.Core.MCP
             var lockErr = RequireMovable(element, p.name, req.id);
             if (lockErr != null) return lockErr;
 
-            int w = p.width > 0 ? p.width : p.dimX;
-            int h = p.height > 0 ? p.height : p.dimY;
-            int d = p.depth > 0 ? p.depth : p.dimZ;
-            w = Mathf.Max(1, w);
-            h = Mathf.Max(1, h);
-            d = Mathf.Max(1, d);
-
             var dimsBefore = element.DimensionsMM;
+            var dimsAfter = ResolveDims(p.width, p.height, p.depth, p.dimX, p.dimY, p.dimZ, dimsBefore);
+            int w = dimsAfter.x, h = dimsAfter.y, d = dimsAfter.z;
+
             var posBefore = element.transform.position;
             var rotBefore = element.transform.rotation;
-            var dimsAfter = new Vector3Int(w, h, d);
 
             CommandStack.Execute(new ResizeCommand(element, dimsBefore, dimsAfter,
                 posBefore, posBefore, rotBefore, rotBefore));
             RefreshElementHighlights();
-            Debug.Log($"[MCP] Resized {element.BoardName} to ({w}, {h}, {d})mm");
+            Debug.Log($"[MCP] Resized {element.PartName} to ({w}, {h}, {d})mm");
             var (hasViol, aabb, gaps) = DescribeAfterMutation(element);
             return McpResponse.Result(req.id, new {
                 ok = true, element = p.name,
@@ -569,11 +588,12 @@ namespace KitchenDesigner.Core.MCP
 
             var before = element.transform.position;
             var rotBefore = element.transform.rotation;
-            var rotAfter = Quaternion.Euler(p.x, p.y, p.z);
+            var euler = ResolveVec(p.x, p.y, p.z, element.transform.eulerAngles);
+            var rotAfter = Quaternion.Euler(euler.x, euler.y, euler.z);
             CommandStack.Execute(new MoveCommand(element, before, before, rotBefore, rotAfter));
             RefreshElementHighlights();
-            Debug.Log($"[MCP] Rotated {element.BoardName} to ({p.x}, {p.y}, {p.z})");
-            return McpResponse.Result(req.id, new { ok = true, element = p.name, rotation = new { p.x, p.y, p.z }, hasViolations = HasViolations(element) });
+            Debug.Log($"[MCP] Rotated {element.PartName} to ({euler.x}, {euler.y}, {euler.z})");
+            return McpResponse.Result(req.id, new { ok = true, element = p.name, rotation = new { x = euler.x, y = euler.y, z = euler.z }, hasViolations = HasViolations(element) });
         }
 
         private McpResponse HandleCreateElement(McpRequest req)
@@ -587,7 +607,7 @@ namespace KitchenDesigner.Core.MCP
             if (p.is_floor)
             {
                 var plate = BasePlate.Create();
-                plate.Element.BoardName = elementName;
+                plate.Element.PartName = elementName;
                 CommandStack.Execute(new CreateCommand(plate.gameObject));
                 RefreshElementHighlights();
                 Debug.Log($"[MCP] Created floor '{elementName}'");
@@ -607,18 +627,19 @@ namespace KitchenDesigner.Core.MCP
             if (p.is_facade)
             {
                 var facade = go.AddComponent<FacadeElement>();
-                facade.BoardName = elementName;
+                facade.PartName = elementName;
                 facade.DimensionsMM = dims;
                 facade.GapLeft = p.gapLeft;
                 facade.GapRight = p.gapRight;
                 facade.GapTop = p.gapTop;
                 facade.GapBottom = p.gapBottom;
+                MaterialManager.ApplyById(facade, MaterialCatalog.DefaultId);
                 element = facade;
             }
             else
             {
                 element = go.AddComponent<KitchenElement>();
-                element.BoardName = elementName;
+                element.PartName = elementName;
                 element.DimensionsMM = dims;
                 MaterialManager.ApplyById(element, MaterialCatalog.DefaultId);
             }
@@ -671,7 +692,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetSpecification(McpRequest req)
         {
-            var spec = SpecificationManager.Build(BoardRegistry.GetAll());
+            var spec = SpecificationManager.Build(PartRegistry.GetAll());
             var lines = spec.lines.Select(l => new SpecLineInfo
             {
                 name = l.name,
@@ -690,7 +711,7 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObject<ParamsExportCsv>();
             if (p == null || string.IsNullOrEmpty(p.path))
                 return McpResponse.Error(req.id, -32602, "path required");
-            var spec = SpecificationManager.Build(BoardRegistry.GetAll());
+            var spec = SpecificationManager.Build(PartRegistry.GetAll());
             SpecificationExport.SaveToFile(spec, p.path);
             return McpResponse.Result(req.id, new { ok = true, path = p.path });
         }
@@ -779,7 +800,7 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, enabled = p.enabled });
         }
 
-        /// <summary>Разбор прилипания: почему доска (не) прилипает из текущей или
+        /// <summary>Разбор прилипания: почему деталь (не) прилипает из текущей или
         /// заданной позиции — по каждому соседу лучшая пара граней и причина.</summary>
         private McpResponse HandleSnapDiagnose(McpRequest req)
         {
@@ -794,7 +815,7 @@ namespace KitchenDesigner.Core.MCP
             if (p.y.HasValue) pos.y = p.y.Value;
             if (p.z.HasValue) pos.z = p.z.Value;
 
-            var diagnosis = SnapSystem.Diagnose(element, BoardRegistry.GetAll(), pos);
+            var diagnosis = SnapSystem.Diagnose(element, PartRegistry.GetAll(), pos);
             return McpResponse.Result(req.id, diagnosis);
         }
 
@@ -812,14 +833,14 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetViolations(McpRequest req)
         {
-            var all = BoardRegistry.GetAll();
+            var all = PartRegistry.GetAll();
             if (all == null || all.Count == 0)
                 return McpResponse.Result(req.id, new { violations = new string[0], count = 0 });
 
             var result = ConstraintValidator.Validate(all);
             var list = new List<object>();
             foreach (var el in result.violations)
-                list.Add(new { name = el.BoardName, type = el.GetType().Name });
+                list.Add(new { name = el.PartName, type = el.GetType().Name });
             return McpResponse.Result(req.id, new { violations = list, count = list.Count });
         }
 
@@ -841,7 +862,7 @@ namespace KitchenDesigner.Core.MCP
             var pos = el.transform.position;
             return McpResponse.Result(req.id, new
             {
-                name = el.BoardName,
+                name = el.PartName,
                 dimX = dims.x, dimY = dims.y, dimZ = dims.z,
                 posX = pos.x, posY = pos.y, posZ = pos.z,
                 hasViolations = HasViolations(el)
@@ -863,13 +884,8 @@ namespace KitchenDesigner.Core.MCP
             var posBefore = el.transform.position;
             var rotBefore = el.transform.rotation;
 
-            int w = p.width > 0 ? p.width : p.dimX;
-            int h = p.height > 0 ? p.height : p.dimY;
-            int d = p.depth > 0 ? p.depth : p.dimZ;
-            w = Mathf.Max(1, w);
-            h = Mathf.Max(1, h);
-            d = Mathf.Max(1, d);
-            var dimsAfter = new Vector3Int(w, h, d);
+            var dimsAfter = ResolveDims(p.width, p.height, p.depth, p.dimX, p.dimY, p.dimZ, dimsBefore);
+            int w = dimsAfter.x, h = dimsAfter.y, d = dimsAfter.z;
 
             CommandStack.Execute(new ResizeCommand(el,
                 dimsBefore, dimsAfter,
@@ -964,7 +980,7 @@ namespace KitchenDesigner.Core.MCP
             var effDim = GetEffectiveDimMM(el);
             return McpResponse.Result(req.id, new ElementDebugInfo
             {
-                name = el.BoardName, type = el.GetType().Name,
+                name = el.PartName, type = el.GetType().Name,
                 aabb = aabb, faces = faces, vertices = vertices,
                 dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
                 effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z
@@ -980,9 +996,9 @@ namespace KitchenDesigner.Core.MCP
             var el = FindElementByName(p.name);
             if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
 
-            var all = BoardRegistry.GetAll();
+            var all = PartRegistry.GetAll();
             var gaps = all != null ? ComputeAxisGaps(el, all) : new List<AxisGapInfo>();
-            return McpResponse.Result(req.id, new ElementGapsResult { name = el.BoardName, gaps = gaps });
+            return McpResponse.Result(req.id, new ElementGapsResult { name = el.PartName, gaps = gaps });
         }
 
         // ── simulate_move ───────────────────────────────────────────────
@@ -999,8 +1015,9 @@ namespace KitchenDesigner.Core.MCP
             var el = FindElementByName(p.name);
             if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
 
-            var all = BoardRegistry.GetAll();
-            var result = SimulateMoveAt(el, new Vector3(p.x, p.y, p.z), all);
+            var all = PartRegistry.GetAll();
+            var target = ResolveVec(p.x, p.y, p.z, el.transform.position);
+            var result = SimulateMoveAt(el, target, all);
             return McpResponse.Result(req.id, result);
         }
 
@@ -1018,15 +1035,10 @@ namespace KitchenDesigner.Core.MCP
             var el = FindElementByName(p.name);
             if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
 
-            int w = p.width > 0 ? p.width : p.dimX;
-            int h = p.height > 0 ? p.height : p.dimY;
-            int d = p.depth > 0 ? p.depth : p.dimZ;
-            w = Mathf.Max(1, w);
-            h = Mathf.Max(1, h);
-            d = Mathf.Max(1, d);
+            var dims = ResolveDims(p.width, p.height, p.depth, p.dimX, p.dimY, p.dimZ, el.DimensionsMM);
 
-            var all = BoardRegistry.GetAll();
-            var result = SimulateResizeTo(el, new Vector3Int(w, h, d), all);
+            var all = PartRegistry.GetAll();
+            var result = SimulateResizeTo(el, dims, all);
             return McpResponse.Result(req.id, result);
         }
 
@@ -1046,14 +1058,15 @@ namespace KitchenDesigner.Core.MCP
         /// (MCP, UI, drag, undo/redo) должны вызывать это, иначе визуал устаревает.</summary>
         private static void RefreshElementHighlights()
         {
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
+            var hl = Object.FindAnyObjectByType<ElementHighlighter>();
+            if (hl != null)
+                hl.RefreshHighlights();
         }
 
         /// <summary>Есть ли у элемента нарушения (пересечение / нет связности) в текущей сцене.</summary>
         private static bool HasViolations(KitchenElement element)
         {
-            var all = BoardRegistry.GetAll();
+            var all = PartRegistry.GetAll();
             if (all == null || all.Count == 0) return false;
             var vr = ConstraintValidator.Validate(all);
             return vr != null && vr.violations.Contains(element);
@@ -1063,7 +1076,7 @@ namespace KitchenDesigner.Core.MCP
         /// Единый источник формы ответа для move_element / resize_element.</summary>
         private static (bool hasViolations, AabbInfo aabb, List<AxisGapInfo> gaps) DescribeAfterMutation(KitchenElement element)
         {
-            var all = BoardRegistry.GetAll();
+            var all = PartRegistry.GetAll();
             var vr = all != null ? ConstraintValidator.Validate(all) : null;
             var aabb = ComputeAABB(element.GetVertices());
             var gaps = all != null ? ComputeAxisGaps(element, all) : null;
@@ -1134,7 +1147,7 @@ namespace KitchenDesigner.Core.MCP
                     if (Mathf.Abs(gap) < Mathf.Abs(bestGapUnits))
                     {
                         bestGapUnits = gap;
-                        bestNeighbor = other.BoardName;
+                        bestNeighbor = other.PartName;
                     }
                 }
 
@@ -1168,7 +1181,7 @@ namespace KitchenDesigner.Core.MCP
                     {
                         if (other == element || other == null) continue;
                         if (AABBsOverlap(simAabb, ComputeAABB(other.GetVertices())))
-                            overlaps.Add(other.BoardName);
+                            overlaps.Add(other.PartName);
                     }
                 }
 
@@ -1183,7 +1196,7 @@ namespace KitchenDesigner.Core.MCP
 
                 return new SimulateResult
                 {
-                    name = element.BoardName,
+                    name = element.PartName,
                     currentAABB = currentAabb,
                     simulatedAABB = simAabb,
                     overlapsWith = overlaps,
@@ -1217,7 +1230,7 @@ namespace KitchenDesigner.Core.MCP
                     {
                         if (other == element || other == null) continue;
                         if (AABBsOverlap(simAabb, ComputeAABB(other.GetVertices())))
-                            overlaps.Add(other.BoardName);
+                            overlaps.Add(other.PartName);
                     }
                 }
 
@@ -1232,7 +1245,7 @@ namespace KitchenDesigner.Core.MCP
 
                 return new SimulateResult
                 {
-                    name = element.BoardName,
+                    name = element.PartName,
                     currentAABB = currentAabb,
                     simulatedAABB = simAabb,
                     overlapsWith = overlaps,
@@ -1304,6 +1317,92 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, name = p.name, mode = p.mode });
         }
 
+        // ── Материалы / текстуры ────────────────────────────────────────
+
+        /// <summary>Декор по id ИЛИ отображаемому имени (без учёта регистра).
+        /// Возвращает null для неизвестного — чтобы явно ошибиться, а не молча
+        /// подставить дефолт (в отличие от MaterialCatalog.Get).</summary>
+        private static MaterialDef ResolveMaterial(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return null;
+            foreach (var d in MaterialCatalog.All)
+                if (string.Equals(d.id, key, StringComparison.OrdinalIgnoreCase)) return d;
+            foreach (var d in MaterialCatalog.All)
+                if (string.Equals(d.displayName, key, StringComparison.OrdinalIgnoreCase)) return d;
+            return null;
+        }
+
+        private McpResponse HandleSetMaterial(McpRequest req)
+        {
+            var p = req.Params?.ToObject<ParamsSetMaterial>();
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            if (string.IsNullOrEmpty(p.material))
+                return McpResponse.Error(req.id, -32602, "material required (id или имя из list_materials)");
+
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            var def = ResolveMaterial(p.material);
+            if (def == null)
+                return McpResponse.Error(req.id, -1,
+                    $"Unknown material '{p.material}'. Вызови list_materials для доступных id/имён.");
+
+            MaterialManager.Apply(el, def);
+            RefreshElementHighlights();
+            // Если элемент выделен — обновить подсветку выделения поверх нового декора.
+            var sel = Object.FindAnyObjectByType<SelectionManager>();
+            if (sel != null) sel.RefreshHighlight(el);
+
+            Debug.Log($"[MCP] Material of '{p.name}' set to {def.id} ({def.displayName})");
+            return McpResponse.Result(req.id, new
+            {
+                ok = true, element = p.name,
+                materialId = def.id, material = def.displayName,
+                hasTexture = !string.IsNullOrEmpty(def.baseMapResource)
+            });
+        }
+
+        private McpResponse HandleListMaterials(McpRequest req)
+        {
+            var list = new List<object>();
+            foreach (var m in MaterialCatalog.All)
+                list.Add(new
+                {
+                    id = m.id,
+                    name = m.displayName,
+                    kind = m.kind,
+                    hasTexture = m.texture != null || !string.IsNullOrEmpty(m.baseMapResource),
+                    tileWidthMM = m.tileSizeMM,
+                    tileHeightMM = m.TileHeightMM
+                });
+            return McpResponse.Result(req.id, new { materials = list, defaultId = MaterialCatalog.DefaultId });
+        }
+
+        /// <summary>Пере-сканировать внешнюю папку текстур (добавили файлы — обновить
+        /// без перезапуска). Пере-применяет декоры на всех элементах + подсветку.</summary>
+        private McpResponse HandleReloadTextures(McpRequest req)
+        {
+            int n = ExternalTextureCatalog.LoadAll();
+
+            // Кэш материалов сброшен внутри LoadAll — пере-вешаем декор каждого элемента
+            // по его текущему materialId, затем обновляем валидационную подсветку.
+            var all = PartRegistry.GetAll();
+            if (all != null)
+                foreach (var el in all)
+                    if (el != null) MaterialManager.ApplyById(el, el.MaterialId);
+            RefreshElementHighlights();
+
+            Debug.Log($"[MCP] reload_textures: {n} decors from {ExternalTextureCatalog.DirectoryPath}");
+            return McpResponse.Result(req.id, new
+            {
+                ok = true,
+                loaded = n,
+                directory = ExternalTextureCatalog.DirectoryPath,
+                totalMaterials = MaterialCatalog.All.Count
+            });
+        }
+
         private static GameObject FindGameObject(string path)
         {
             if (path.Contains("/"))
@@ -1338,8 +1437,8 @@ namespace KitchenDesigner.Core.MCP
 
         private static KitchenElement FindElementByName(string name)
         {
-            foreach (var el in BoardRegistry.All)
-                if (el != null && (el.BoardName == name || el.name == name))
+            foreach (var el in PartRegistry.All)
+                if (el != null && (el.PartName == name || el.name == name))
                     return el;
             return null;
         }

@@ -16,10 +16,10 @@ public class WallManagerTests
         go.transform.position = pos;
         go.AddComponent<MeshRenderer>();
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = dims;
         go.AddComponent<Wall>();
-        BoardRegistry.Register(e);
+        PartRegistry.Register(e);
         _spawned.Add(go);
         return e;
     }
@@ -42,7 +42,7 @@ public class WallManagerTests
     [TearDown]
     public void TearDown()
     {
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
 
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);

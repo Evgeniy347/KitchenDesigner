@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
-public class BoardRegistryTests
+public class PartRegistryTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
@@ -18,7 +18,7 @@ public class BoardRegistryTests
     [TearDown]
     public void Teardown()
     {
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
     }
@@ -26,62 +26,62 @@ public class BoardRegistryTests
     [Test]
     public void Register_AddsElement_GetAllReturnsCopy()
     {
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
         var e = Make();
-        BoardRegistry.Register(e);
+        PartRegistry.Register(e);
 
-        var all = BoardRegistry.GetAll();
+        var all = PartRegistry.GetAll();
         Assert.Contains(e, all);
 
         // GetAll отдаёт копию — мутация списка не влияет на реестр.
         all.Clear();
-        Assert.AreEqual(1, BoardRegistry.GetAll().Count);
+        Assert.AreEqual(1, PartRegistry.GetAll().Count);
     }
 
     [Test]
     public void Register_Duplicate_DoesNotAddTwice()
     {
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
         var e = Make();
-        BoardRegistry.Register(e);
-        BoardRegistry.Register(e);
-        Assert.AreEqual(1, BoardRegistry.GetAll().Count);
+        PartRegistry.Register(e);
+        PartRegistry.Register(e);
+        Assert.AreEqual(1, PartRegistry.GetAll().Count);
     }
 
     [Test]
     public void Register_Null_Ignored()
     {
-        BoardRegistry.Clear();
-        BoardRegistry.Register(null);
-        Assert.AreEqual(0, BoardRegistry.GetAll().Count);
+        PartRegistry.Clear();
+        PartRegistry.Register(null);
+        Assert.AreEqual(0, PartRegistry.GetAll().Count);
     }
 
     [Test]
     public void Unregister_RemovesElement()
     {
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
         var e = Make();
-        BoardRegistry.Register(e);
-        BoardRegistry.Unregister(e);
-        Assert.AreEqual(0, BoardRegistry.GetAll().Count);
+        PartRegistry.Register(e);
+        PartRegistry.Unregister(e);
+        Assert.AreEqual(0, PartRegistry.GetAll().Count);
     }
 
     [Test]
     public void All_ReflectsRegistrations()
     {
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
         var e = Make();
-        BoardRegistry.Register(e);
-        Assert.AreEqual(1, BoardRegistry.All.Count);
-        Assert.AreSame(e, BoardRegistry.All[0]);
+        PartRegistry.Register(e);
+        Assert.AreEqual(1, PartRegistry.All.Count);
+        Assert.AreSame(e, PartRegistry.All[0]);
     }
 
     [Test]
     public void Clear_RemovesAll()
     {
         var e = Make();
-        BoardRegistry.Register(e);
-        BoardRegistry.Clear();
-        Assert.AreEqual(0, BoardRegistry.GetAll().Count);
+        PartRegistry.Register(e);
+        PartRegistry.Clear();
+        Assert.AreEqual(0, PartRegistry.GetAll().Count);
     }
 }

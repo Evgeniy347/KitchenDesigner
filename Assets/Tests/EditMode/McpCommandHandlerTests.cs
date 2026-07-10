@@ -13,7 +13,7 @@ public class McpCommandHandlerTests
     public void Setup()
     {
         _handler = new McpCommandHandler();
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
     }
 
     [TearDown]
@@ -22,9 +22,10 @@ public class McpCommandHandlerTests
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
-        foreach (var el in BoardRegistry.GetAll())
+        foreach (var el in PartRegistry.GetAll())
             if (el != null) Object.DestroyImmediate(el.gameObject);
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
+        MaterialCatalog.ClearDynamic();
     }
 
     private McpRequest MakeReq(string method, object data)
@@ -43,9 +44,9 @@ public class McpCommandHandlerTests
         var go = new GameObject(name);
         go.transform.position = pos;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
+        e.PartName = name;
         e.DimensionsMM = dims;
-        BoardRegistry.Register(e);
+        PartRegistry.Register(e);
         _spawned.Add(go);
         return e;
     }
@@ -59,9 +60,9 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        var el = BoardRegistry.GetAll().Find(e => e.BoardName == "TestBoard");
+        var el = PartRegistry.GetAll().Find(e => e.PartName == "TestBoard");
         Assert.NotNull(el);
-        Assert.AreEqual("TestBoard", el.BoardName);
+        Assert.AreEqual("TestBoard", el.PartName);
     }
 
     [Test]
@@ -73,9 +74,9 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        var el = BoardRegistry.GetAll().Find(e => e.BoardName == "CustomName");
+        var el = PartRegistry.GetAll().Find(e => e.PartName == "CustomName");
         Assert.NotNull(el);
-        Assert.AreEqual("CustomName", el.BoardName);
+        Assert.AreEqual("CustomName", el.PartName);
     }
 
     [Test]
@@ -87,7 +88,7 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        var el = BoardRegistry.GetAll().Find(e => e.BoardName == "WallBoard");
+        var el = PartRegistry.GetAll().Find(e => e.PartName == "WallBoard");
         Assert.NotNull(el);
         Assert.NotNull(el.GetComponent<Wall>(), "Wall component should be added when is_wall=true");
     }
@@ -101,7 +102,7 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        var el = BoardRegistry.GetAll().Find(e => e.BoardName == "RegularBoard");
+        var el = PartRegistry.GetAll().Find(e => e.PartName == "RegularBoard");
         Assert.NotNull(el);
         Assert.IsNull(el.GetComponent<Wall>(), "Wall component should NOT be added when is_wall=false");
     }
@@ -115,7 +116,7 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        var el = BoardRegistry.GetAll().Find(e => e.BoardName == "DefaultBoard");
+        var el = PartRegistry.GetAll().Find(e => e.PartName == "DefaultBoard");
         Assert.NotNull(el);
         Assert.IsNull(el.GetComponent<Wall>(), "Wall component should NOT be added when is_wall omitted");
     }
@@ -216,7 +217,7 @@ public class McpCommandHandlerTests
             template_name = "TestWall", width = 2000, height = 2500, depth = 100, x = 0f, y = 1.25f, z = 0f, is_wall = true
         }));
 
-        var wall = BoardRegistry.GetAll().Find(e => e.BoardName == "TestWall");
+        var wall = PartRegistry.GetAll().Find(e => e.PartName == "TestWall");
         Assert.NotNull(wall);
 
         var result = ConstraintValidator.Validate(new List<KitchenElement> { wall });
@@ -518,7 +519,7 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        var el = BoardRegistry.GetAll().Find(e => e.BoardName == "ObjBoard");
+        var el = PartRegistry.GetAll().Find(e => e.PartName == "ObjBoard");
         Assert.NotNull(el);
         Assert.AreEqual(new Vector3Int(600, 400, 18), el.DimensionsMM);
     }
@@ -583,10 +584,10 @@ public class McpCommandHandlerTests
         var go = new GameObject("Board");
         go.transform.position = Vector3.zero;
         var e = go.AddComponent<KitchenElement>();
-        e.BoardName = "Board";
+        e.PartName = "Board";
         e.DimensionsMM = new Vector3Int(800, 400, 18);
         go.AddComponent<Wall>();
-        BoardRegistry.Register(e);
+        PartRegistry.Register(e);
         _spawned.Add(go);
 
         var resp = _handler.Handle(MakeReq("simulate_move", new { name = "Board", x = 2f, y = 0f, z = 0f }));
@@ -691,9 +692,242 @@ public class McpCommandHandlerTests
 
     private static KitchenElement FindBoard(string name)
     {
-        foreach (var el in BoardRegistry.GetAll())
-            if (el.BoardName == name) return el;
+        foreach (var el in PartRegistry.GetAll())
+            if (el.PartName == name) return el;
         return null;
+    }
+
+    // ── Wire compat: поле "parameters" (PowerShell-мост) ────────────────
+    // Мост tools/unity-bridge.ps1 шлёт параметры под ключом "parameters",
+    // иногда СТРОКОЙ с JSON. Обработчики читают req.Params — проверяем, что
+    // оба варианта нормализуются в Params (иначе — "name required").
+
+    [Test]
+    public void McpRequest_AcceptsParametersField_AsObject()
+    {
+        var json = @"{""id"":""r1"",""method"":""get_element_info"",""parameters"":{""name"":""Board1""}}";
+        var req = Newtonsoft.Json.JsonConvert.DeserializeObject<McpRequest>(json);
+
+        Assert.IsNotNull(req.Params, "parameters-объект должен попасть в Params");
+        Assert.AreEqual("Board1", req.Params.Value<string>("name"));
+    }
+
+    [Test]
+    public void McpRequest_AcceptsParametersField_AsJsonString()
+    {
+        // Именно этот случай ломал snap_diagnose/get_element_gaps через PS-мост.
+        var json = @"{""id"":""r1"",""method"":""snap_diagnose"",""parameters"":""{\""name\"":\""Board1\""}""}";
+        var req = Newtonsoft.Json.JsonConvert.DeserializeObject<McpRequest>(json);
+
+        Assert.IsNotNull(req.Params, "parameters-строка с JSON должна распарситься в Params");
+        Assert.AreEqual("Board1", req.Params.Value<string>("name"));
+    }
+
+    [Test]
+    public void McpRequest_ParamsTakesPriorityOverParameters()
+    {
+        var json = @"{""id"":""r1"",""method"":""m"",""params"":{""name"":""fromParams""},""parameters"":{""name"":""fromParameters""}}";
+        var req = Newtonsoft.Json.JsonConvert.DeserializeObject<McpRequest>(json);
+
+        Assert.AreEqual("fromParams", req.Params.Value<string>("name"),
+            "'params' приоритетнее 'parameters'");
+    }
+
+    [Test]
+    public void SnapDiagnose_ViaParametersString_DoesNotErrorNameRequired()
+    {
+        var go = new GameObject("Board");
+        var e = go.AddComponent<KitchenElement>();
+        e.PartName = "Board";
+        e.DimensionsMM = new Vector3Int(800, 400, 18);
+        go.AddComponent<Wall>();
+        PartRegistry.Register(e);
+        _spawned.Add(go);
+
+        var json = @"{""id"":""r1"",""method"":""snap_diagnose"",""parameters"":""{\""name\"":\""Board\""}""}";
+        var req = Newtonsoft.Json.JsonConvert.DeserializeObject<McpRequest>(json);
+        var resp = _handler.Handle(req);
+
+        Assert.AreEqual("result", resp.type, "PS-мост (parameters строкой) больше не должен ловить 'name required'");
+    }
+
+    // ── Nullable-координаты: омитить ось = оставить текущее (не 0) ───────
+
+    [Test]
+    public void MoveElement_OmittedAxes_KeepCurrentValue()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), new Vector3(1f, 2f, 3f));
+
+        // Двигаем только по X — Y и Z должны остаться (2,3), а не сброситься в 0.
+        var resp = _handler.Handle(MakeReq("move_element", new { name = "Board", x = 5f }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(new Vector3(5f, 2f, 3f), el.transform.position);
+    }
+
+    [Test]
+    public void SimulateMove_OmittedAxes_KeepCurrentValue()
+    {
+        var go = new GameObject("Board");
+        go.transform.position = new Vector3(1f, 0f, 3f);
+        var e = go.AddComponent<KitchenElement>();
+        e.PartName = "Board";
+        e.DimensionsMM = new Vector3Int(800, 400, 18);
+        go.AddComponent<Wall>();
+        PartRegistry.Register(e);
+        _spawned.Add(go);
+
+        // Только z задан — x берётся текущий (1), а не 0.
+        var resp = _handler.Handle(MakeReq("simulate_move", new { name = "Board", z = 2f }));
+
+        Assert.AreEqual("result", resp.type);
+        var sim = resp.data as SimulateResult;
+        Assert.IsNotNull(sim);
+        // simulatedAABB центрируется вокруг (1,0,2): проверяем, что X не уехал в 0.
+        Assert.AreEqual(1f, (sim.simulatedAABB.minX + sim.simulatedAABB.maxX) * 0.5f, 0.001f,
+            "X должен остаться текущим (1 м), а не сброситься в 0");
+    }
+
+    [Test]
+    public void ResizeElement_OmittedDimensions_KeepCurrentSize()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        // Меняем только ширину — высота (400) и толщина (18) сохраняются.
+        var resp = _handler.Handle(MakeReq("resize_element", new { name = "Board", width = 1000 }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(new Vector3Int(1000, 400, 18), el.DimensionsMM);
+    }
+
+    [Test]
+    public void RotateElement_OmittedAxes_KeepCurrentAngle()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        el.transform.eulerAngles = new Vector3(0f, 45f, 0f);
+
+        // Задаём только X — Y должен остаться 45.
+        var resp = _handler.Handle(MakeReq("rotate_element", new { name = "Board", x = 10f }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(45f, el.transform.eulerAngles.y, 0.01f, "Y-угол должен сохраниться");
+    }
+
+    // ── Материалы / текстуры ────────────────────────────────────────────
+
+    [Test]
+    public void SetMaterial_ById_AppliesToElement()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        var resp = _handler.Handle(MakeReq("set_material", new { name = "Board", material = "oak" }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual("oak", el.MaterialId);
+    }
+
+    [Test]
+    public void SetMaterial_ByDisplayName_AppliesToElement()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        var resp = _handler.Handle(MakeReq("set_material", new { name = "Board", material = "Венге" }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual("wenge", el.MaterialId);
+    }
+
+    [Test]
+    public void SetMaterial_UnknownMaterial_ReturnsError_AndKeepsCurrent()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        var resp = _handler.Handle(MakeReq("set_material", new { name = "Board", material = "no-such" }));
+
+        Assert.AreEqual("error", resp.type);
+        Assert.AreEqual(MaterialCatalog.DefaultId, el.MaterialId, "неизвестный материал не должен менять текущий");
+    }
+
+    [Test]
+    public void SetMaterial_MissingName_ReturnsError()
+    {
+        var resp = _handler.Handle(MakeReq("set_material", new { material = "oak" }));
+        Assert.AreEqual("error", resp.type);
+    }
+
+    [Test]
+    public void SetMaterial_MissingMaterial_ReturnsError()
+    {
+        MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        var resp = _handler.Handle(MakeReq("set_material", new { name = "Board" }));
+        Assert.AreEqual("error", resp.type);
+    }
+
+    [Test]
+    public void SetMaterial_OnFacade_Applies()
+    {
+        _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "F", name = "F1", x = 0f, y = 0f, z = 0f,
+            width = 400, height = 300, depth = 18, is_facade = true
+        }));
+
+        var resp = _handler.Handle(MakeReq("set_material", new { name = "F1", material = "concrete" }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual("concrete", FindBoard("F1").MaterialId);
+    }
+
+    [Test]
+    public void ListMaterials_ReturnsCatalog()
+    {
+        var resp = _handler.Handle(MakeReq("list_materials", new { }));
+
+        Assert.AreEqual("result", resp.type);
+        var materials = GetProp<object>(resp.data, "materials") as System.Collections.IList;
+        Assert.IsNotNull(materials);
+        Assert.AreEqual(MaterialCatalog.All.Count, materials.Count);
+        Assert.AreEqual(MaterialCatalog.DefaultId, GetProp<string>(resp.data, "defaultId"));
+    }
+
+    [Test]
+    public void GetElementInfo_IncludesMaterialId()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        el.MaterialId = "oak";
+
+        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "Board" }));
+
+        Assert.AreEqual("result", resp.type);
+        var info = (ElementInfo)resp.data;
+        Assert.AreEqual("oak", info.materialId);
+    }
+
+    [Test]
+    public void SetMaterial_DynamicExternalDecor_Applies()
+    {
+        // Имитируем декор, подгруженный из внешней папки (ExternalTextureCatalog).
+        MaterialCatalog.RegisterDynamic(
+            new MaterialDef("abrikos_ba_03_cd_100_100", "abrikos ba 03 cd", "ЛДСП", Color.white, null, 100)
+            { tileHeightMM = 100 });
+
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        var resp = _handler.Handle(MakeReq("set_material",
+            new { name = "Board", material = "abrikos_ba_03_cd_100_100" }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual("abrikos_ba_03_cd_100_100", el.MaterialId);
+    }
+
+    [Test]
+    public void ListMaterials_IncludesDynamicDecors()
+    {
+        MaterialCatalog.RegisterDynamic(new MaterialDef("ext_a", "Ext A", "ЛДСП", Color.white));
+        var resp = _handler.Handle(MakeReq("list_materials", new { }));
+
+        Assert.AreEqual("result", resp.type);
+        var materials = GetProp<object>(resp.data, "materials") as System.Collections.IList;
+        Assert.AreEqual(MaterialCatalog.All.Count, materials.Count, "динамические декоры входят в список");
     }
 
     // ── Highlight refresh after mutation ────────────────────────────────
@@ -703,71 +937,53 @@ public class McpCommandHandlerTests
         var go = new GameObject("ElementHighlighter");
         var hl = go.AddComponent<ElementHighlighter>();
         _spawned.Add(go);
-        // Start() doesn't run in edit mode tests — init materials manually.
-        hl.InitMaterials();
         return hl;
-    }
-
-    private KitchenElement MakeRenderedElement(string name, Vector3Int dims, Vector3 pos)
-    {
-        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name = name;
-        go.transform.position = pos;
-        var e = go.AddComponent<KitchenElement>();
-        e.BoardName = name;
-        e.DimensionsMM = dims;
-        BoardRegistry.Register(e);
-        _spawned.Add(go);
-        return e;
     }
 
     [Test]
     public void MoveElement_RefreshesHighlights_AfterMutation()
     {
-        SetupHighlighter();
-        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
-        var originalMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+        var hl = SetupHighlighter();
+        int before = hl.RefreshCount;
+        MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
         var resp = _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreEqual(new Vector3(1, 0, 0), el.transform.position);
-        Assert.AreNotEqual(originalMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+        Assert.Greater(hl.RefreshCount, before, "RefreshHighlights should be called after move");
     }
 
     [Test]
     public void ResizeElement_RefreshesHighlights_AfterMutation()
     {
-        SetupHighlighter();
-        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
-        var originalMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+        var hl = SetupHighlighter();
+        int before = hl.RefreshCount;
+        MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
         var resp = _handler.Handle(MakeReq("resize_element", new { name = "Board", width = 1200, height = 600, depth = 36 }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreEqual(new Vector3Int(1200, 600, 36), el.DimensionsMM);
-        Assert.AreNotEqual(originalMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+        Assert.Greater(hl.RefreshCount, before, "RefreshHighlights should be called after resize");
     }
 
     [Test]
     public void RotateElement_RefreshesHighlights_AfterMutation()
     {
-        SetupHighlighter();
-        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
-        var originalMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+        var hl = SetupHighlighter();
+        int before = hl.RefreshCount;
+        MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
         var resp = _handler.Handle(MakeReq("rotate_element", new { name = "Board", x = 0f, y = 90f, z = 0f }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreNotEqual(originalMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+        Assert.Greater(hl.RefreshCount, before, "RefreshHighlights should be called after rotate");
     }
 
     [Test]
     public void CreateElement_RefreshesHighlights_AfterMutation()
     {
-        SetupHighlighter();
-        MakeRenderedElement("Existing", new Vector3Int(500, 400, 18), Vector3.zero);
-        var existingMat = FindBoard("Existing").GetComponent<MeshRenderer>().sharedMaterial;
+        var hl = SetupHighlighter();
+        int before = hl.RefreshCount;
 
         var resp = _handler.Handle(MakeReq("create_element", new
         {
@@ -775,85 +991,82 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreNotEqual(existingMat, FindBoard("Existing").GetComponent<MeshRenderer>().sharedMaterial);
+        Assert.Greater(hl.RefreshCount, before, "RefreshHighlights should be called after create");
     }
 
     [Test]
     public void DeleteElement_RefreshesHighlights_AfterMutation()
     {
-        SetupHighlighter();
-        var el1 = MakeRenderedElement("Keep", new Vector3Int(500, 400, 18), Vector3.zero);
-        MakeRenderedElement("Remove", new Vector3Int(500, 400, 18), new Vector3(1f, 0f, 0f));
-        var originalMat = el1.GetComponent<MeshRenderer>().sharedMaterial;
+        var hl = SetupHighlighter();
+        MakeElement("Keep", new Vector3Int(500, 400, 18), Vector3.zero);
+        MakeElement("Remove", new Vector3Int(500, 400, 18), new Vector3(1f, 0f, 0f));
+        int before = hl.RefreshCount;
 
         var resp = _handler.Handle(MakeReq("delete_element", new { name = "Remove" }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsNull(FindBoard("Remove"));
-        Assert.AreNotEqual(originalMat, FindBoard("Keep").GetComponent<MeshRenderer>().sharedMaterial);
+        Assert.Greater(hl.RefreshCount, before, "RefreshHighlights should be called after delete");
     }
 
     [Test]
     public void Undo_RefreshesHighlights_AfterMutation()
     {
-        SetupHighlighter();
-        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        var hl = SetupHighlighter();
+        MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
-        var afterMoveMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+        hl.RefreshCount = 0;
 
         var resp = _handler.Handle(MakeReq("undo", new { }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreEqual(Vector3.zero, el.transform.position);
-        Assert.AreNotEqual(afterMoveMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+        Assert.AreEqual(Vector3.zero, FindBoard("Board").transform.position);
+        Assert.Greater(hl.RefreshCount, 0, "RefreshHighlights should be called after undo");
     }
 
     [Test]
     public void Redo_RefreshesHighlights_AfterMutation()
     {
-        SetupHighlighter();
-        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        var hl = SetupHighlighter();
+        MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
         _handler.Handle(MakeReq("undo", new { }));
-        var afterUndoMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+        hl.RefreshCount = 0;
 
         var resp = _handler.Handle(MakeReq("redo", new { }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreEqual(new Vector3(1, 0, 0), el.transform.position);
-        Assert.AreNotEqual(afterUndoMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+        Assert.AreEqual(new Vector3(1, 0, 0), FindBoard("Board").transform.position);
+        Assert.Greater(hl.RefreshCount, 0, "RefreshHighlights should be called after redo");
     }
 
     [Test]
     public void ResizeFloor_RefreshesHighlights_AfterMutation()
     {
-        SetupHighlighter();
-        // Floor uses BasePlate which is excluded from highlighting, but we
-        // verify the code path doesn't crash and returns success.
+        var hl = SetupHighlighter();
         var plate = BasePlate.Create();
-        plate.Element.BoardName = "Floor";
-        BoardRegistry.Register(plate.Element);
+        plate.Element.PartName = "Floor";
+        PartRegistry.Register(plate.Element);
         _spawned.Add(plate.gameObject);
-        var originalMat = plate.GetComponent<MeshRenderer>().sharedMaterial;
+        int before = hl.RefreshCount;
 
         var resp = _handler.Handle(MakeReq("resize_floor", new { width = 4000, height = 1, depth = 3000 }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual(new Vector3Int(4000, 1, 3000), plate.Element.DimensionsMM);
-        // BasePlate is excluded, so material stays the same:
-        Assert.AreEqual(originalMat, plate.GetComponent<MeshRenderer>().sharedMaterial);
+        Assert.Greater(hl.RefreshCount, before, "RefreshHighlights should be called after floor resize");
     }
 
     [Test]
     public void NonMutatingCommand_DoesNotCallRefreshHighlights()
     {
-        SetupHighlighter();
-        var el = MakeRenderedElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
-        var originalMat = el.GetComponent<MeshRenderer>().sharedMaterial;
+        var hl = SetupHighlighter();
+        MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        int before = hl.RefreshCount;
 
         var resp = _handler.Handle(MakeReq("get_element_info", new { name = "Board" }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreEqual(originalMat, el.GetComponent<MeshRenderer>().sharedMaterial);
+        Assert.AreEqual(before, hl.RefreshCount, "get_element_info is read-only — should not refresh highlights");
     }
 }

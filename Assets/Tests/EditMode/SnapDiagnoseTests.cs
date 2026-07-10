@@ -59,11 +59,11 @@ public class SnapDiagnoseTests : SnapTestBase
         var d = Diagnose(b, a, b.transform.position);
 
         // Хотя AABB пересекаются, gap = 23 мм < порога 50 мм, поэтому
-        // снэп сработает и разведёт доски заподлицо.
-        Assert.IsTrue(d.wouldSnap, "снэп разведёт пересекающиеся доски");
+        // снэп сработает и разведёт детали заподлицо.
+        Assert.IsTrue(d.wouldSnap, "снэп разведёт пересекающиеся детали");
         var n = d.neighbors[0];
         Assert.IsTrue(n.intersects, "AABB действительно пересекаются");
-        Assert.IsTrue(n.wouldSnap, "face-pair разведёт доски");
+        Assert.IsTrue(n.wouldSnap, "face-pair разведёт детали");
         StringAssert.Contains("снэп сработает", n.verdict);
     }
 
@@ -108,7 +108,7 @@ public class SnapDiagnoseTests : SnapTestBase
 
         SnapSystem.Diagnose(b, new List<KitchenElement> { a }, new Vector3(5f, 5f, 5f));
 
-        Assert.AreEqual(before, b.transform.position, "диагностика не должна двигать доску");
+        Assert.AreEqual(before, b.transform.position, "диагностика не должна двигать деталь");
     }
 
     [Test]
@@ -131,7 +131,7 @@ public class SnapDiagnoseTests : SnapTestBase
     [Test]
     public void Diagnosis_AgreesWithTrySnap_OnScatteredPositions()
     {
-        // Инвариант: neighbors[0].wouldSnap == реальный TrySnap для пары досок.
+        // Инвариант: neighbors[0].wouldSnap == реальный TrySnap для пары деталей.
         var a = MakeStd("A", new Vector3(0f, 0.2f, 0f));
         var b = MakeStd("B", Vector3.zero);
 

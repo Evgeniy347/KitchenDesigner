@@ -206,7 +206,7 @@ public class FacadeDoorAnimationTests
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
     }
 
     [Test]

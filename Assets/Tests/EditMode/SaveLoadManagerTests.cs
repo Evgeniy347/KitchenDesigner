@@ -15,7 +15,7 @@ public class SaveLoadManagerTests
         var go = new GameObject(name);
         go.transform.position = pos;
         var element = go.AddComponent<KitchenElement>();
-        element.BoardName = name;
+        element.PartName = name;
         element.DimensionsMM = dims;
         _spawned.Add(go);
         return element;
@@ -28,7 +28,7 @@ public class SaveLoadManagerTests
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
 
-        // Подчистить созданные RestoreScene/Factory доски.
+        // Подчистить созданные RestoreScene/Factory детали.
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null) Object.DestroyImmediate(e.gameObject);
     }
@@ -217,7 +217,7 @@ public class SaveLoadManagerTests
         Assert.IsTrue(loaded);
         var restored = Object.FindObjectsByType<KitchenElement>();
         Assert.AreEqual(1, restored.Length);
-        Assert.AreEqual("Saved", restored[0].BoardName);
+        Assert.AreEqual("Saved", restored[0].PartName);
 
         SaveLoadManager.LastPath = prevLast;
         File.Delete(path);
@@ -230,7 +230,7 @@ public class SaveLoadManagerTests
             new Vector3Int(600, 400, 18), "MyFacade", Vector3.zero, 3, 5, 7, 9);
         _spawned.Add(go);
         var facade = go.GetComponent<FacadeElement>();
-        BoardRegistry.Register(facade);
+        PartRegistry.Register(facade);
 
         var data = SaveLoadManager.CaptureScene(
             new List<KitchenElement> { facade });
@@ -246,7 +246,7 @@ public class SaveLoadManagerTests
         _spawned.Clear();
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null) Object.DestroyImmediate(e.gameObject);
-        BoardRegistry.Clear();
+        PartRegistry.Clear();
 
         var restoredData = SaveLoadManager.Deserialize(
             SaveLoadManager.Serialize(data));
@@ -255,7 +255,7 @@ public class SaveLoadManagerTests
         Assert.AreEqual(1, created.Count);
         var restoredFacade = created[0].GetComponent<FacadeElement>();
         Assert.IsNotNull(restoredFacade, "Restored element should be FacadeElement");
-        Assert.AreEqual("MyFacade", restoredFacade.BoardName);
+        Assert.AreEqual("MyFacade", restoredFacade.PartName);
         Assert.AreEqual(3, restoredFacade.GapLeft);
         Assert.AreEqual(5, restoredFacade.GapRight);
         Assert.AreEqual(7, restoredFacade.GapTop);
