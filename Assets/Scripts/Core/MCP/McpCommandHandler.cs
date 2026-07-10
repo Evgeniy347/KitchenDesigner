@@ -55,6 +55,7 @@ namespace KitchenDesigner.Core.MCP
             ["get_floor_info"] = "Размеры и позиция пола (BasePlate)",
             ["resize_floor"] = "Изменить размер пола (width, height, depth)",
             ["add_wall_component"] = "Добавить Wall компонент к существующему элементу (name)",
+            ["set_setting"] = "Изменить настройку (name, value). name: lower_near_walls | snap_enabled | grid_enabled | walls_enabled",
             ["execute_menu_item"] = "Выполнить пункт меню Editor (menu_path)",
             ["enter_play_mode"] = "Войти в Play Mode",
             ["exit_play_mode"] = "Выйти из Play Mode",
@@ -106,6 +107,7 @@ namespace KitchenDesigner.Core.MCP
                     case "get_floor_info": return HandleGetFloorInfo(request);
                     case "resize_floor": return HandleResizeFloor(request);
                     case "add_wall_component": return HandleAddWallComponent(request);
+                    case "set_setting": return HandleSetSetting(request);
                     case "execute_menu_item": return HandleExecuteMenuItem(request);
                     case "enter_play_mode": return HandleEnterPlayMode(request);
                     case "exit_play_mode": return HandleExitPlayMode(request);
@@ -289,11 +291,13 @@ namespace KitchenDesigner.Core.MCP
         {
             var t = el.transform;
             var group = GroupManager.GroupOf(el);
+            var wall = el.GetComponent<Wall>();
+            Vector3 pos = wall != null ? wall.FullPosition : t.position;
             return new ElementInfo
             {
                 name = el.BoardName, type = el.GetType().Name,
                 dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
-                posX = t.position.x, posY = t.position.y, posZ = t.position.z,
+                posX = pos.x, posY = pos.y, posZ = pos.z,
                 rotX = t.eulerAngles.x, rotY = t.eulerAngles.y, rotZ = t.eulerAngles.z,
                 active = el.gameObject.activeInHierarchy,
                 moduleId = group != null ? group.id : 0,
@@ -563,7 +567,6 @@ namespace KitchenDesigner.Core.MCP
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = elementName;
-            go.transform.position = pos;
             var element = go.AddComponent<KitchenElement>();
             element.BoardName = elementName;
             element.DimensionsMM = dims;
@@ -571,9 +574,10 @@ namespace KitchenDesigner.Core.MCP
             if (p.is_wall)
                 go.AddComponent<Wall>();
 
+            go.transform.position = pos;
             CommandStack.Execute(new CreateCommand(go));
             Debug.Log($"[MCP] Created {go.name} at ({p.x}, {p.y}, {p.z})");
-            return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, path = GetGameObjectPath(go) });
+            return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, path = GetGameObjectPath(go), posX = pos.x, posY = pos.y, posZ = pos.z });
         }
 
         private McpResponse HandleDeleteElement(McpRequest req)
@@ -682,6 +686,30 @@ namespace KitchenDesigner.Core.MCP
                 autoSaveIntervalSec = s.AutoSaveInterval,
                 snapVerboseLog = SnapSystem.VerboseLog
             });
+        }
+
+        private McpResponse HandleSetSetting(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsSetSetting>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name and value required");
+
+            var s = KitchenSettings.Instance;
+            if (s == null) return McpResponse.Error(req.id, -1, "KitchenSettings not loaded");
+
+            switch (p.name.ToLowerInvariant())
+            {
+                case "lower_near_walls": s.LowerNearWalls = p.value; break;
+                case "snap_enabled": s.SnapEnabled = p.value; break;
+                case "grid_enabled": s.GridEnabled = p.value; break;
+                case "walls_enabled": s.WallsEnabled = p.value; break;
+                default:
+                    return McpResponse.Error(req.id, -32602, $"Unknown setting: {p.name}");
+            }
+
+            s.Save();
+            Debug.Log($"[MCP] Setting '{p.name}' = {p.value}");
+            return McpResponse.Result(req.id, new { ok = true, name = p.name, value = p.value });
         }
 
         private McpResponse HandleSetSnapVerbose(McpRequest req)
