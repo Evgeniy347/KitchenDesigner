@@ -100,6 +100,7 @@ namespace KitchenDesigner.Core
             var element = hit.collider.GetComponentInParent<KitchenElement>();
             if (element == null) return;
             if (element.GetComponent<BasePlate>() != null) return; // пол не таскаем
+            if (!ModuleEditMode.IsEditable(element)) return; // вне активного модуля — заблокировано
 
             _target = element;
             _pressed = true;
@@ -158,7 +159,7 @@ namespace KitchenDesigner.Core
             if (group)
             {
                 foreach (var e in sel.SelectedElements)
-                    if (e != null && e.Movable) _moveSet.Add(e);
+                    if (e != null && e.Movable && ModuleEditMode.IsEditable(e)) _moveSet.Add(e);
             }
             if (_moveSet.Count == 0)
                 _moveSet.Add(_target);
@@ -209,10 +210,15 @@ namespace KitchenDesigner.Core
             if (Input.GetKeyDown(KeyCode.D) && !IsDragging && _target != null &&
                 (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
             {
+                if (!ModuleEditMode.IsEditable(_target)) return;
                 var dup = ElementFactory.Duplicate(_target);
                 var newElement = dup != null ? dup.GetComponent<KitchenElement>() : null;
                 if (newElement != null)
                 {
+                    // В режиме редактирования модуля дубль остаётся в модуле —
+                    // иначе новая деталь оказалась бы заблокированной (вне модуля).
+                    if (ModuleEditMode.IsActive)
+                        newElement.GroupId = ModuleEditMode.Active.id;
                     CommandStack.Execute(new CreateCommand(dup));
                     if (SelectionManager.Instance != null)
                         SelectionManager.Instance.Select(newElement);
@@ -225,6 +231,7 @@ namespace KitchenDesigner.Core
         {
             if (_target == null || IsDragging) return;
             if (!_target.Movable) return;
+            if (!ModuleEditMode.IsEditable(_target)) return;
 
             var s = KitchenSettings.Instance;
             float stepMM = (s != null && s.GridEnabled) ? s.GridStep : 1f;
@@ -312,7 +319,10 @@ namespace KitchenDesigner.Core
         private void OpenContextMenuForTarget()
         {
             if (_target == null) return;
-            if (GroupManager.GroupOf(_target) != null) return; // у связанной группы своё меню (ПКМ)
+            // В режиме редактирования модуля детали настраиваются поштучно — меню
+            // открывается; вне режима у связанной группы своё меню (ПКМ).
+            bool editingInModule = ModuleEditMode.IsActive && ModuleEditMode.IsEditable(_target);
+            if (!editingInModule && GroupManager.GroupOf(_target) != null) return;
             if (UI.UIManager.Instance != null)
                 UI.UIManager.Instance.OpenContextMenu(_target);
         }

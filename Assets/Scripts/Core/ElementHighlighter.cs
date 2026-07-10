@@ -9,6 +9,7 @@ namespace KitchenDesigner.Core
 
         private Material _validMaterial;
         private Material _invalidMaterial;
+        private Material _dimmedMaterial;
         private bool _materialsInitialized;
 
         private void Awake()
@@ -20,6 +21,13 @@ namespace KitchenDesigner.Core
         {
             CreateMaterials();
             RefreshHighlights();
+            // Вход/выход из режима редактирования модуля меняет затемнение сцены.
+            ModuleEditMode.Changed += RefreshHighlights;
+        }
+
+        private void OnDestroy()
+        {
+            ModuleEditMode.Changed -= RefreshHighlights;
         }
 
         private void CreateMaterials()
@@ -36,6 +44,10 @@ namespace KitchenDesigner.Core
             _invalidMaterial.EnableKeyword("_EMISSION");
             _invalidMaterial.SetColor("_EmissionColor", new Color(1f, 0f, 0f) * 0.4f);
             _invalidMaterial.color = new Color(1f, 0.8f, 0.8f);
+
+            // Затемнение элементов вне редактируемого модуля.
+            _dimmedMaterial = new Material(shader);
+            _dimmedMaterial.color = new Color(0.35f, 0.35f, 0.38f);
 
             _materialsInitialized = true;
         }
@@ -75,6 +87,14 @@ namespace KitchenDesigner.Core
             if (renderer == null) return;
 
             if (element.GetComponent<BasePlate>() != null || element.GetComponent<Wall>() != null) return;
+
+            // В режиме редактирования модуля всё вне модуля затемнено —
+            // визуальный сигнал «заблокировано».
+            if (ModuleEditMode.IsActive && !ModuleEditMode.IsEditable(element))
+            {
+                renderer.material = _dimmedMaterial;
+                return;
+            }
 
             renderer.material = isValid ? _validMaterial : _invalidMaterial;
         }

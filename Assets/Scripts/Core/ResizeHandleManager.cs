@@ -108,7 +108,8 @@ namespace KitchenDesigner.Core
             // Ручки доступны только для подвижного объекта: запрет перемещения
             // запрещает и ресайз. Переключается на лету (чекбокс в свойствах).
             // Смена режима (Resize/Move) пересобирает ручки с другим наконечником.
-            bool show = _target.Movable;
+            // В режиме редактирования модуля чужие элементы недоступны.
+            bool show = _target.Movable && ModuleEditMode.IsEditable(_target);
             bool needRebuild = show && (_handles.Count == 0 || _builtMode != Mode) && !IsResizing;
             if (needRebuild) { ClearHandles(); BuildHandles(); }
             else if (!show && _handles.Count > 0) { IsResizing = false; ClearHandles(); }

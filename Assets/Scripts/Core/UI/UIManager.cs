@@ -54,6 +54,9 @@ namespace KitchenDesigner.Core.UI
 
             var autoSaveIndicator = gameObject.AddComponent<AutoSaveIndicator>();
             autoSaveIndicator.Build(_canvas.transform);
+
+            var moduleBanner = gameObject.AddComponent<ModuleEditBannerUI>();
+            moduleBanner.Build(_canvas.transform);
         }
 
         private void BuildToolbar()

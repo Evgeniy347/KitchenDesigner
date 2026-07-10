@@ -47,7 +47,16 @@ namespace KitchenDesigner.Core.MCP
                     case "get_settings": return HandleGetSettings(request);
                     case "set_snap_verbose": return HandleSetSnapVerbose(request);
                     case "snap_diagnose": return HandleSnapDiagnose(request);
+                    case "get_modules": return HandleGetModules(request);
+                    case "module_info": return HandleModuleInfo(request);
+                    case "create_module": return HandleCreateModule(request);
+                    case "dissolve_module": return HandleDissolveModule(request);
+                    case "add_to_module": return HandleAddToModule(request);
+                    case "remove_from_module": return HandleRemoveFromModule(request);
+                    case "enter_module_edit": return HandleEnterModuleEdit(request);
+                    case "exit_module_edit": return HandleExitModuleEdit(request);
                     case "take_screenshot": return HandleTakeScreenshot(request);
+                    case "add_wall_component": return HandleAddWallComponent(request);
                     case "execute_menu_item": return HandleExecuteMenuItem(request);
                     case "enter_play_mode": return HandleEnterPlayMode(request);
                     case "exit_play_mode": return HandleExitPlayMode(request);
@@ -217,6 +226,24 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, scale = new { p.x, p.y, p.z } });
         }
 
+        /// <summary>Инфо об элементе, включая принадлежность модулю (группе) —
+        /// чтобы через MCP была видна конфигурация сцены.</summary>
+        private static ElementInfo BuildElementInfo(KitchenElement el)
+        {
+            var t = el.transform;
+            var group = GroupManager.GroupOf(el);
+            return new ElementInfo
+            {
+                name = el.BoardName, type = el.GetType().Name,
+                dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
+                posX = t.position.x, posY = t.position.y, posZ = t.position.z,
+                rotX = t.eulerAngles.x, rotY = t.eulerAngles.y, rotZ = t.eulerAngles.z,
+                active = el.gameObject.activeInHierarchy,
+                moduleId = group != null ? group.id : 0,
+                moduleName = group != null ? group.name : null
+            };
+        }
+
         private McpResponse HandleGetAllElements(McpRequest req)
         {
             var elements = BoardRegistry.GetAll();
@@ -224,15 +251,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var el in elements)
             {
                 if (el == null) continue;
-                var t = el.transform;
-                list.Add(new ElementInfo
-                {
-                    name = el.BoardName, type = el.GetType().Name,
-                    dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
-                    posX = t.position.x, posY = t.position.y, posZ = t.position.z,
-                    rotX = t.eulerAngles.x, rotY = t.eulerAngles.y, rotZ = t.eulerAngles.z,
-                    active = el.gameObject.activeInHierarchy
-                });
+                list.Add(BuildElementInfo(el));
             }
             return McpResponse.Result(req.id, list);
         }
@@ -244,15 +263,164 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            var t = element.transform;
-            return McpResponse.Result(req.id, new ElementInfo
+            return McpResponse.Result(req.id, BuildElementInfo(element));
+        }
+
+        // ── Модули (именованные группы досок) ───────────────────────────
+
+        /// <summary>Модуль по id или имени (без учёта регистра).</summary>
+        private static LinkGroup FindModule(string module)
+        {
+            if (string.IsNullOrEmpty(module)) return null;
+            if (int.TryParse(module, out int id))
             {
-                name = element.BoardName, type = element.GetType().Name,
-                dimX = element.DimensionsMM.x, dimY = element.DimensionsMM.y, dimZ = element.DimensionsMM.z,
-                posX = t.position.x, posY = t.position.y, posZ = t.position.z,
-                rotX = t.eulerAngles.x, rotY = t.eulerAngles.y, rotZ = t.eulerAngles.z,
-                active = element.gameObject.activeInHierarchy
-            });
+                foreach (var g in GroupManager.AllGroups())
+                    if (g.id == id) return g;
+            }
+            foreach (var g in GroupManager.AllGroups())
+                if (string.Equals(g.name, module, StringComparison.OrdinalIgnoreCase)) return g;
+            return null;
+        }
+
+        private static ModuleInfo BuildModuleInfo(LinkGroup g)
+        {
+            var members = GroupManager.MembersOf(g);
+            var info = new ModuleInfo
+            {
+                id = g.id,
+                name = g.name,
+                movable = g.movable,
+                editing = ModuleEditMode.Active == g,
+                elementCount = members.Count,
+                elements = new List<ElementInfo>()
+            };
+
+            Vector3 min = Vector3.positiveInfinity, max = Vector3.negativeInfinity;
+            foreach (var el in members)
+            {
+                if (el == null) continue;
+                info.elements.Add(BuildElementInfo(el));
+                foreach (var v in el.GetVertices())
+                {
+                    min = Vector3.Min(min, v);
+                    max = Vector3.Max(max, v);
+                }
+            }
+            if (info.elements.Count > 0)
+            {
+                Vector3 c = (min + max) * 0.5f;
+                Vector3 s = (max - min) / AppConstants.MM_TO_UNITS;
+                info.boundsCenter = new[] { c.x, c.y, c.z };
+                info.boundsSizeMM = new[]
+                    { Mathf.RoundToInt(s.x), Mathf.RoundToInt(s.y), Mathf.RoundToInt(s.z) };
+            }
+            return info;
+        }
+
+        private McpResponse HandleGetModules(McpRequest req)
+        {
+            var list = new List<ModuleInfo>();
+            foreach (var g in GroupManager.AllGroups())
+                list.Add(BuildModuleInfo(g));
+            return McpResponse.Result(req.id, list);
+        }
+
+        private McpResponse HandleModuleInfo(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsModule>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.module))
+                return McpResponse.Error(req.id, -32602, "module (id или имя) required");
+            var g = FindModule(p.module);
+            if (g == null) return McpResponse.Error(req.id, -1, $"Module not found: {p.module}");
+            return McpResponse.Result(req.id, BuildModuleInfo(g));
+        }
+
+        private McpResponse HandleCreateModule(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsCreateModule>(req.parameters);
+            if (p == null || p.members == null || p.members.Length < 2)
+                return McpResponse.Error(req.id, -32602, "members: минимум 2 имени деталей");
+
+            var resolved = new List<KitchenElement>();
+            var missing = new List<string>();
+            foreach (var name in p.members)
+            {
+                var el = FindElementByName(name);
+                if (el == null) missing.Add(name);
+                else resolved.Add(el);
+            }
+            if (missing.Count > 0)
+                return McpResponse.Error(req.id, -1, $"Elements not found: {string.Join(", ", missing)}");
+
+            var g = GroupManager.Link(resolved);
+            if (g == null) return McpResponse.Error(req.id, -1, "Не удалось создать модуль");
+            if (!string.IsNullOrEmpty(p.name)) g.name = p.name;
+
+            Debug.Log($"[MCP] Module '{g.name}' (id {g.id}) created from {resolved.Count} elements");
+            return McpResponse.Result(req.id, BuildModuleInfo(g));
+        }
+
+        private McpResponse HandleDissolveModule(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsModule>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.module))
+                return McpResponse.Error(req.id, -32602, "module required");
+            var g = FindModule(p.module);
+            if (g == null) return McpResponse.Error(req.id, -1, $"Module not found: {p.module}");
+            GroupManager.Unlink(g);
+            Debug.Log($"[MCP] Module '{g.name}' dissolved");
+            return McpResponse.Result(req.id, new { ok = true, name = g.name });
+        }
+
+        private McpResponse HandleAddToModule(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsModuleElement>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.module) || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "module и name required");
+            var g = FindModule(p.module);
+            if (g == null) return McpResponse.Error(req.id, -1, $"Module not found: {p.module}");
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            el.GroupId = g.id;
+            return McpResponse.Result(req.id, BuildModuleInfo(g));
+        }
+
+        private McpResponse HandleRemoveFromModule(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            if (el.GroupId == 0)
+                return McpResponse.Error(req.id, -1, $"Element '{p.name}' не входит в модуль");
+
+            var g = GroupManager.GroupOf(el);
+            el.GroupId = 0;
+            return McpResponse.Result(req.id, g != null
+                ? (object)BuildModuleInfo(g)
+                : new { ok = true });
+        }
+
+        private McpResponse HandleEnterModuleEdit(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsModule>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.module))
+                return McpResponse.Error(req.id, -32602, "module required");
+            var g = FindModule(p.module);
+            if (g == null) return McpResponse.Error(req.id, -1, $"Module not found: {p.module}");
+
+            ModuleEditMode.Enter(g);
+            Debug.Log($"[MCP] Module edit: '{g.name}'");
+            return McpResponse.Result(req.id, new { ok = true, editing = g.name });
+        }
+
+        private McpResponse HandleExitModuleEdit(McpRequest req)
+        {
+            bool was = ModuleEditMode.IsActive;
+            ModuleEditMode.Exit();
+            return McpResponse.Result(req.id, new { ok = true, wasEditing = was });
         }
 
         private McpResponse HandleMoveElement(McpRequest req)
@@ -279,15 +447,22 @@ namespace KitchenDesigner.Core.MCP
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
 
+            int w = p.width > 0 ? p.width : p.dimX;
+            int h = p.height > 0 ? p.height : p.dimY;
+            int d = p.depth > 0 ? p.depth : p.dimZ;
+            w = Mathf.Max(1, w);
+            h = Mathf.Max(1, h);
+            d = Mathf.Max(1, d);
+
             var dimsBefore = element.DimensionsMM;
             var posBefore = element.transform.position;
             var rotBefore = element.transform.rotation;
-            var dimsAfter = new Vector3Int(Mathf.Max(1, p.width), Mathf.Max(1, p.height), Mathf.Max(1, p.depth));
+            var dimsAfter = new Vector3Int(w, h, d);
 
             CommandStack.Execute(new ResizeCommand(element, dimsBefore, dimsAfter,
                 posBefore, posBefore, rotBefore, rotBefore));
-            Debug.Log($"[MCP] Resized {element.BoardName} to ({p.width}, {p.height}, {p.depth})mm");
-            return McpResponse.Result(req.id, new { ok = true, element = p.name, dimensions = new { p.width, p.height, p.depth } });
+            Debug.Log($"[MCP] Resized {element.BoardName} to ({w}, {h}, {d})mm");
+            return McpResponse.Result(req.id, new { ok = true, element = p.name, dimensions = new { width = w, height = h, depth = d } });
         }
 
         private McpResponse HandleRotateElement(McpRequest req)
@@ -312,6 +487,8 @@ namespace KitchenDesigner.Core.MCP
             if (p == null || string.IsNullOrEmpty(p.template_name))
                 return McpResponse.Error(req.id, -32602, "template_name required");
 
+            string elementName = string.IsNullOrEmpty(p.name) ? p.template_name : p.name;
+
             var pos = new Vector3(p.x, p.y, p.z);
             var dims = new Vector3Int(
                 p.width > 0 ? p.width : 800,
@@ -319,15 +496,18 @@ namespace KitchenDesigner.Core.MCP
                 p.depth > 0 ? p.depth : 18);
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = p.template_name;
+            go.name = elementName;
             go.transform.position = pos;
             var element = go.AddComponent<KitchenElement>();
-            element.BoardName = p.template_name;
+            element.BoardName = elementName;
             element.DimensionsMM = dims;
+
+            if (p.is_wall)
+                go.AddComponent<Wall>();
 
             CommandStack.Execute(new CreateCommand(go));
             Debug.Log($"[MCP] Created {go.name} at ({p.x}, {p.y}, {p.z})");
-            return McpResponse.Result(req.id, new { ok = true, name = go.name, path = GetGameObjectPath(go) });
+            return McpResponse.Result(req.id, new { ok = true, name = go.name, is_wall = p.is_wall, path = GetGameObjectPath(go) });
         }
 
         private McpResponse HandleDeleteElement(McpRequest req)
@@ -476,6 +656,21 @@ namespace KitchenDesigner.Core.MCP
             System.IO.File.WriteAllBytes(path, bytes);
             Object.Destroy(tex);
             return McpResponse.Result(req.id, new { ok = true, path });
+        }
+
+        private McpResponse HandleAddWallComponent(McpRequest req)
+        {
+            var p = JsonConvert.DeserializeObject<ParamsWithName>(req.parameters);
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            var element = FindElementByName(p.name);
+            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            if (element.GetComponent<Wall>() != null)
+                return McpResponse.Result(req.id, new { ok = true, name = p.name, was_already_wall = true });
+
+            element.gameObject.AddComponent<Wall>();
+            Debug.Log($"[MCP] Added Wall component to {p.name}");
+            return McpResponse.Result(req.id, new { ok = true, name = p.name, was_already_wall = false });
         }
 
         private McpResponse HandleExecuteMenuItem(McpRequest req)

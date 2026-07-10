@@ -30,6 +30,7 @@ namespace KitchenDesigner.Core
         public static void Unlink(LinkGroup g)
         {
             if (g == null) return;
+            if (ModuleEditMode.Active == g) ModuleEditMode.Exit(); // роспуск редактируемого модуля
             foreach (var m in MembersOf(g))
                 m.GroupId = 0;
             _groups.Remove(g.id);
@@ -61,6 +62,7 @@ namespace KitchenDesigner.Core
 
         public static void Clear()
         {
+            ModuleEditMode.Exit(); // сцена перезагружается — режим не переживает загрузку
             _groups.Clear();
             _nextId = 1;
         }
