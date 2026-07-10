@@ -1,0 +1,1756 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="259" result="Passed" total="259" passed="259" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:13Z" duration="0,6218415">
+  <test-suite type="TestSuite" id="1000" name="opencode-game-studio" fullname="opencode-game-studio" runstate="Runnable" testcasecount="259" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:13Z" duration="0.621842" total="259" passed="259" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1295" name="KitchenDesigner.Tests.EditMode.dll" fullname="F:/repos/KitchenDesigner2/opencode-game-studio/Library/ScriptAssemblies/KitchenDesigner.Tests.EditMode.dll" runstate="Runnable" testcasecount="259" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:13Z" duration="0.611386" total="259" passed="259" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="17568" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestFixture" id="1001" name="AlignDistributeToolTests" fullname="AlignDistributeToolTests" classname="AlignDistributeToolTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.055029" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1005" name="Align_LessThanTwo_NoThrow_NoChange" fullname="AlignDistributeToolTests.Align_LessThanTwo_NoThrow_NoChange" methodname="Align_LessThanTwo_NoThrow_NoChange" classname="AlignDistributeToolTests" runstate="Runnable" seed="1738982949" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.029244" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1002" name="Align_X_Min_MovesAllToMinX" fullname="AlignDistributeToolTests.Align_X_Min_MovesAllToMinX" methodname="Align_X_Min_MovesAllToMinX" classname="AlignDistributeToolTests" runstate="Runnable" seed="549693177" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001458" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1003" name="Align_Y_Max_MovesAllToMaxY" fullname="AlignDistributeToolTests.Align_Y_Max_MovesAllToMaxY" methodname="Align_Y_Max_MovesAllToMaxY" classname="AlignDistributeToolTests" runstate="Runnable" seed="447505285" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001084" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1004" name="Align_Z_Center_MovesAllToCenterZ" fullname="AlignDistributeToolTests.Align_Z_Center_MovesAllToCenterZ" methodname="Align_Z_Center_MovesAllToCenterZ" classname="AlignDistributeToolTests" runstate="Runnable" seed="806305672" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000901" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1007" name="Distribute_LessThanThree_NoChange" fullname="AlignDistributeToolTests.Distribute_LessThanThree_NoChange" methodname="Distribute_LessThanThree_NoChange" classname="AlignDistributeToolTests" runstate="Runnable" seed="472585131" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002565" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1006" name="Distribute_X_EvenlySpacesMiddle" fullname="AlignDistributeToolTests.Distribute_X_EvenlySpacesMiddle" methodname="Distribute_X_EvenlySpacesMiddle" classname="AlignDistributeToolTests" runstate="Runnable" seed="528931456" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001671" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1008" name="AutoSaveQuitTests" fullname="AutoSaveQuitTests" classname="AutoSaveQuitTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.057783" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1012" name="OpenFile_ChangeScene_QuitSave_Reload_SeesChanges" fullname="AutoSaveQuitTests.OpenFile_ChangeScene_QuitSave_Reload_SeesChanges" methodname="OpenFile_ChangeScene_QuitSave_Reload_SeesChanges" classname="AutoSaveQuitTests" runstate="Runnable" seed="13034387" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.045283" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[Serialization depth limit 10 exceeded at 'KitchenDesigner.Core::CommandRecord.posBefore'. There may be an object composition cycle in one or more of your serialized classes. Consider rearranging data or use `[SerializeReference]`. 
+
+Serialization hierarchy:
+11: KitchenDesigner.Core::CommandRecord.posBefore
+10: KitchenDesigner.Core::CommandRecord.children
+9: KitchenDesigner.Core::CommandRecord.children
+8: KitchenDesigner.Core::CommandRecord.children
+7: KitchenDesigner.Core::CommandRecord.children
+6: KitchenDesigner.Core::CommandRecord.children
+5: KitchenDesigner.Core::CommandRecord.children
+4: KitchenDesigner.Core::CommandRecord.children
+3: KitchenDesigner.Core::CommandRecord.children
+2: KitchenDesigner.Core::CommandRecord.children
+1: KitchenDesigner.Core::CommandRecord.children
+0: KitchenDesigner.Core::ProjectData.undoHistory
+
+Serialization depth limit 10 exceeded at 'KitchenDesigner.Core::CommandRecord.posBefore'. There may be an object composition cycle in one or more of your serialized classes. Consider rearranging data or use `[SerializeReference]`. 
+
+Serialization hierarchy:
+11: KitchenDesigner.Core::CommandRecord.posBefore
+10: KitchenDesigner.Core::CommandRecord.children
+9: KitchenDesigner.Core::CommandRecord.children
+8: KitchenDesigner.Core::CommandRecord.children
+7: KitchenDesigner.Core::CommandRecord.children
+6: KitchenDesigner.Core::CommandRecord.children
+5: KitchenDesigner.Core::CommandRecord.children
+4: KitchenDesigner.Core::CommandRecord.children
+3: KitchenDesigner.Core::CommandRecord.children
+2: KitchenDesigner.Core::CommandRecord.children
+1: KitchenDesigner.Core::CommandRecord.children
+0: KitchenDesigner.Core::CommandRecord.children
+
+]]></output>
+        </test-case>
+        <test-case id="1011" name="SaveOnQuit_Disabled_DoesNotWrite" fullname="AutoSaveQuitTests.SaveOnQuit_Disabled_DoesNotWrite" methodname="SaveOnQuit_Disabled_DoesNotWrite" classname="AutoSaveQuitTests" runstate="Runnable" seed="412164248" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002833" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1009" name="SaveOnQuit_Enabled_NoOpenFile_WritesAutosaveProject" fullname="AutoSaveQuitTests.SaveOnQuit_Enabled_NoOpenFile_WritesAutosaveProject" methodname="SaveOnQuit_Enabled_NoOpenFile_WritesAutosaveProject" classname="AutoSaveQuitTests" runstate="Runnable" seed="1947126395" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.004288" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1010" name="SaveOnQuit_Enabled_WithOpenFile_WritesThatFile_NotAutosave" fullname="AutoSaveQuitTests.SaveOnQuit_Enabled_WithOpenFile_WritesThatFile_NotAutosave" methodname="SaveOnQuit_Enabled_WithOpenFile_WritesThatFile_NotAutosave" classname="AutoSaveQuitTests" runstate="Runnable" seed="386511751" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.003474" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1013" name="BoardRegistryTests" fullname="BoardRegistryTests" classname="BoardRegistryTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.008511" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1018" name="All_ReflectsRegistrations" fullname="BoardRegistryTests.All_ReflectsRegistrations" methodname="All_ReflectsRegistrations" classname="BoardRegistryTests" runstate="Runnable" seed="1501359665" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001251" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1019" name="Clear_RemovesAll" fullname="BoardRegistryTests.Clear_RemovesAll" methodname="Clear_RemovesAll" classname="BoardRegistryTests" runstate="Runnable" seed="1210638121" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001098" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1014" name="Register_AddsElement_GetAllReturnsCopy" fullname="BoardRegistryTests.Register_AddsElement_GetAllReturnsCopy" methodname="Register_AddsElement_GetAllReturnsCopy" classname="BoardRegistryTests" runstate="Runnable" seed="1567032863" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001382" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1015" name="Register_Duplicate_DoesNotAddTwice" fullname="BoardRegistryTests.Register_Duplicate_DoesNotAddTwice" methodname="Register_Duplicate_DoesNotAddTwice" classname="BoardRegistryTests" runstate="Runnable" seed="1887422355" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000341" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1016" name="Register_Null_Ignored" fullname="BoardRegistryTests.Register_Null_Ignored" methodname="Register_Null_Ignored" classname="BoardRegistryTests" runstate="Runnable" seed="1954189205" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000227" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1017" name="Unregister_RemovesElement" fullname="BoardRegistryTests.Unregister_RemovesElement" methodname="Unregister_RemovesElement" classname="BoardRegistryTests" runstate="Runnable" seed="1458379918" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000301" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1020" name="CameraStateTests" fullname="CameraStateTests" classname="CameraStateTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.003811" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1023" name="CameraState_DefaultInvalid_NotApplied" fullname="CameraStateTests.CameraState_DefaultInvalid_NotApplied" methodname="CameraState_DefaultInvalid_NotApplied" classname="CameraStateTests" runstate="Runnable" seed="353641620" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000556" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1022" name="CameraState_SurvivesProjectSerialize" fullname="CameraStateTests.CameraState_SurvivesProjectSerialize" methodname="CameraState_SurvivesProjectSerialize" classname="CameraStateTests" runstate="Runnable" seed="1192013018" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000353" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1021" name="GetState_SetState_RoundTrips" fullname="CameraStateTests.GetState_SetState_RoundTrips" methodname="GetState_SetState_RoundTrips" classname="CameraStateTests" runstate="Runnable" seed="469318694" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001852" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1024" name="CommandHistoryTests" fullname="CommandHistoryTests" classname="CommandHistoryTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.014254" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1026" name="Command_WithUnresolvableElement_IsSkipped" fullname="CommandHistoryTests.Command_WithUnresolvableElement_IsSkipped" methodname="Command_WithUnresolvableElement_IsSkipped" classname="CommandHistoryTests" runstate="Runnable" seed="1303554672" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001889" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1029" name="LoadingProject_WithoutHistory_ClearsStaleCommands" fullname="CommandHistoryTests.LoadingProject_WithoutHistory_ClearsStaleCommands" methodname="LoadingProject_WithoutHistory_ClearsStaleCommands" classname="CommandHistoryTests" runstate="Runnable" seed="1577095692" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001377" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1025" name="MoveCommand_ToRecord_AndBack_UndoRedoWork" fullname="CommandHistoryTests.MoveCommand_ToRecord_AndBack_UndoRedoWork" methodname="MoveCommand_ToRecord_AndBack_UndoRedoWork" classname="CommandHistoryTests" runstate="Runnable" seed="553168434" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001639" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1027" name="MoveHistory_SurvivesSaveLoad_UndoRedoAfterLoad" fullname="CommandHistoryTests.MoveHistory_SurvivesSaveLoad_UndoRedoAfterLoad" methodname="MoveHistory_SurvivesSaveLoad_UndoRedoAfterLoad" classname="CommandHistoryTests" runstate="Runnable" seed="941877595" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.003845" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1028" name="ResizeHistory_SurvivesSaveLoad_UndoRedoAfterLoad" fullname="CommandHistoryTests.ResizeHistory_SurvivesSaveLoad_UndoRedoAfterLoad" methodname="ResizeHistory_SurvivesSaveLoad_UndoRedoAfterLoad" classname="CommandHistoryTests" runstate="Runnable" seed="1046619681" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.003952" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1030" name="CommandStackTests" fullname="CommandStackTests" classname="CommandStackTests" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.013654" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1036" name="Clear_ResetsBothStacks" fullname="CommandStackTests.Clear_ResetsBothStacks" methodname="Clear_ResetsBothStacks" classname="CommandStackTests" runstate="Runnable" seed="621295270" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000760" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1042" name="CompositeCommand_ExecuteUndo_AffectsAllMembers" fullname="CommandStackTests.CompositeCommand_ExecuteUndo_AffectsAllMembers" methodname="CompositeCommand_ExecuteUndo_AffectsAllMembers" classname="CommandStackTests" runstate="Runnable" seed="1706821246" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001467" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1039" name="CreateCommand_Undo_DeactivatesAndUnregisters" fullname="CommandStackTests.CreateCommand_Undo_DeactivatesAndUnregisters" methodname="CreateCommand_Undo_DeactivatesAndUnregisters" classname="CommandStackTests" runstate="Runnable" seed="1672177394" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001036" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1040" name="DeleteCommand_Execute_Removes_Undo_Restores" fullname="CommandStackTests.DeleteCommand_Execute_Removes_Undo_Restores" methodname="DeleteCommand_Execute_Removes_Undo_Restores" classname="CommandStackTests" runstate="Runnable" seed="798909997" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001565" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1034" name="Execute_AfterUndo_ClearsRedoStack" fullname="CommandStackTests.Execute_AfterUndo_ClearsRedoStack" methodname="Execute_AfterUndo_ClearsRedoStack" classname="CommandStackTests" runstate="Runnable" seed="1377832449" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000377" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1035" name="Execute_BeyondMaxUndo_TrimsOldest" fullname="CommandStackTests.Execute_BeyondMaxUndo_TrimsOldest" methodname="Execute_BeyondMaxUndo_TrimsOldest" classname="CommandStackTests" runstate="Runnable" seed="1808449971" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000419" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1031" name="Execute_RunsCommand_EnablesUndo_ClearsRedo" fullname="CommandStackTests.Execute_RunsCommand_EnablesUndo_ClearsRedo" methodname="Execute_RunsCommand_EnablesUndo_ClearsRedo" classname="CommandStackTests" runstate="Runnable" seed="203990040" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000323" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1038" name="MoveCommand_ExecuteUndo_MovesAndReverts" fullname="CommandStackTests.MoveCommand_ExecuteUndo_MovesAndReverts" methodname="MoveCommand_ExecuteUndo_MovesAndReverts" classname="CommandStackTests" runstate="Runnable" seed="1201253680" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001143" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1033" name="Redo_ReappliesCommand" fullname="CommandStackTests.Redo_ReappliesCommand" methodname="Redo_ReappliesCommand" classname="CommandStackTests" runstate="Runnable" seed="25781774" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000328" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1041" name="ResizeCommand_ExecuteUndo_ChangesDimensions" fullname="CommandStackTests.ResizeCommand_ExecuteUndo_ChangesDimensions" methodname="ResizeCommand_ExecuteUndo_ChangesDimensions" classname="CommandStackTests" runstate="Runnable" seed="1768120526" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001024" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1037" name="Undo_Redo_EmptyStacks_NoThrow" fullname="CommandStackTests.Undo_Redo_EmptyStacks_NoThrow" methodname="Undo_Redo_EmptyStacks_NoThrow" classname="CommandStackTests" runstate="Runnable" seed="20322333" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000536" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1032" name="Undo_RevertsCommand_EnablesRedo" fullname="CommandStackTests.Undo_RevertsCommand_EnablesRedo" methodname="Undo_RevertsCommand_EnablesRedo" classname="CommandStackTests" runstate="Runnable" seed="1079209710" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000329" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1043" name="ConstraintValidatorTests" fullname="ConstraintValidatorTests" classname="ConstraintValidatorTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.018782" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1046" name="Validate_BoardOnFloor_IsValid" fullname="ConstraintValidatorTests.Validate_BoardOnFloor_IsValid" methodname="Validate_BoardOnFloor_IsValid" classname="ConstraintValidatorTests" runstate="Runnable" seed="249759980" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.007370" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1047" name="Validate_BoardTouchingByEdge_Violation" fullname="ConstraintValidatorTests.Validate_BoardTouchingByEdge_Violation" methodname="Validate_BoardTouchingByEdge_Violation" classname="ConstraintValidatorTests" runstate="Runnable" seed="2044276946" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001332" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1048" name="Validate_ChainABC_IsValid" fullname="ConstraintValidatorTests.Validate_ChainABC_IsValid" methodname="Validate_ChainABC_IsValid" classname="ConstraintValidatorTests" runstate="Runnable" seed="126206215" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000892" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1052" name="Validate_EmptyList_IsValid" fullname="ConstraintValidatorTests.Validate_EmptyList_IsValid" methodname="Validate_EmptyList_IsValid" classname="ConstraintValidatorTests" runstate="Runnable" seed="443548345" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000177" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1051" name="Validate_IntersectingBoards_NoContact" fullname="ConstraintValidatorTests.Validate_IntersectingBoards_NoContact" methodname="Validate_IntersectingBoards_NoContact" classname="ConstraintValidatorTests" runstate="Runnable" seed="1416244756" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000639" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1050" name="Validate_PartialOverlapBelow50Percent_NotFaceToFace" fullname="ConstraintValidatorTests.Validate_PartialOverlapBelow50Percent_NotFaceToFace" methodname="Validate_PartialOverlapBelow50Percent_NotFaceToFace" classname="ConstraintValidatorTests" runstate="Runnable" seed="1077445072" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002786" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1045" name="Validate_SingleBoardInAir_Violation" fullname="ConstraintValidatorTests.Validate_SingleBoardInAir_Violation" methodname="Validate_SingleBoardInAir_Violation" classname="ConstraintValidatorTests" runstate="Runnable" seed="1528013907" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000624" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1044" name="Validate_TwoBoardsFaceToFace_IsValid" fullname="ConstraintValidatorTests.Validate_TwoBoardsFaceToFace_IsValid" methodname="Validate_TwoBoardsFaceToFace_IsValid" classname="ConstraintValidatorTests" runstate="Runnable" seed="1559046871" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000827" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1049" name="Validate_TwoIsolatedGroups_Violation" fullname="ConstraintValidatorTests.Validate_TwoIsolatedGroups_Violation" methodname="Validate_TwoIsolatedGroups_Violation" classname="ConstraintValidatorTests" runstate="Runnable" seed="265969873" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001575" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1053" name="ElementFactoryTests" fullname="ElementFactoryTests" classname="ElementFactoryTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.006984" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1054" name="CreateBoard_ReturnsNonNull" fullname="ElementFactoryTests.CreateBoard_ReturnsNonNull" methodname="CreateBoard_ReturnsNonNull" classname="ElementFactoryTests" runstate="Runnable" seed="821082407" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000752" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1055" name="CreateBoard_SetsCorrectScale" fullname="ElementFactoryTests.CreateBoard_SetsCorrectScale" methodname="CreateBoard_SetsCorrectScale" classname="ElementFactoryTests" runstate="Runnable" seed="606280081" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000684" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1059" name="CreatePreset_CreatesCorrectDimensions" fullname="ElementFactoryTests.CreatePreset_CreatesCorrectDimensions" methodname="CreatePreset_CreatesCorrectDimensions" classname="ElementFactoryTests" runstate="Runnable" seed="1372401564" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000769" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1056" name="DimensionsMM_Clamp_ClampsToMinimum" fullname="ElementFactoryTests.DimensionsMM_Clamp_ClampsToMinimum" methodname="DimensionsMM_Clamp_ClampsToMinimum" classname="ElementFactoryTests" runstate="Runnable" seed="1718616222" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000467" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1060" name="Duplicate_CreatesCopyWithSameDimensions" fullname="ElementFactoryTests.Duplicate_CreatesCopyWithSameDimensions" methodname="Duplicate_CreatesCopyWithSameDimensions" classname="ElementFactoryTests" runstate="Runnable" seed="1975171073" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001400" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1058" name="GetFaces_Returns6Elements" fullname="ElementFactoryTests.GetFaces_Returns6Elements" methodname="GetFaces_Returns6Elements" classname="ElementFactoryTests" runstate="Runnable" seed="1648384190" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000510" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1057" name="GetVertices_Returns8Elements" fullname="ElementFactoryTests.GetVertices_Returns8Elements" methodname="GetVertices_Returns8Elements" classname="ElementFactoryTests" runstate="Runnable" seed="831952518" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000428" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1061" name="ElementMoverTests" fullname="ElementMoverTests" classname="ElementMoverTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.005981" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1062" name="ApplyDelta_MovesAllMembersByDelta" fullname="ElementMoverTests.ApplyDelta_MovesAllMembersByDelta" methodname="ApplyDelta_MovesAllMembersByDelta" classname="ElementMoverTests" runstate="Runnable" seed="1847312626" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001906" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1063" name="ApplyDelta_ZeroDelta_RestoresStarts" fullname="ElementMoverTests.ApplyDelta_ZeroDelta_RestoresStarts" methodname="ApplyDelta_ZeroDelta_RestoresStarts" classname="ElementMoverTests" runstate="Runnable" seed="825090601" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000978" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1064" name="CompositeCommand_UndoRestoresAllMembers" fullname="ElementMoverTests.CompositeCommand_UndoRestoresAllMembers" methodname="CompositeCommand_UndoRestoresAllMembers" classname="ElementMoverTests" runstate="Runnable" seed="1006329068" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001865" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1065" name="EventBusTests" fullname="EventBusTests" classname="EventBusTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.005872" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1071" name="Clear_RemovesAllSubscribers" fullname="EventBusTests.Clear_RemovesAllSubscribers" methodname="Clear_RemovesAllSubscribers" classname="EventBusTests" runstate="Runnable" seed="699668406" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001207" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1067" name="MultipleHandlers_AllInvoked" fullname="EventBusTests.MultipleHandlers_AllInvoked" methodname="MultipleHandlers_AllInvoked" classname="EventBusTests" runstate="Runnable" seed="806523799" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000763" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1070" name="Publish_NoSubscribers_NoThrow" fullname="EventBusTests.Publish_NoSubscribers_NoThrow" methodname="Publish_NoSubscribers_NoThrow" classname="EventBusTests" runstate="Runnable" seed="2122499407" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000470" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1066" name="Subscribe_Publish_InvokesHandler" fullname="EventBusTests.Subscribe_Publish_InvokesHandler" methodname="Subscribe_Publish_InvokesHandler" classname="EventBusTests" runstate="Runnable" seed="425964797" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000333" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1069" name="Unsubscribe_LastHandler_RemovesEventType" fullname="EventBusTests.Unsubscribe_LastHandler_RemovesEventType" methodname="Unsubscribe_LastHandler_RemovesEventType" classname="EventBusTests" runstate="Runnable" seed="411756922" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000493" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1068" name="Unsubscribe_StopsReceiving" fullname="EventBusTests.Unsubscribe_StopsReceiving" methodname="Unsubscribe_StopsReceiving" classname="EventBusTests" runstate="Runnable" seed="392898668" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000337" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1072" name="Vector3Serializer_RoundTripsVector" fullname="EventBusTests.Vector3Serializer_RoundTripsVector" methodname="Vector3Serializer_RoundTripsVector" classname="EventBusTests" runstate="Runnable" seed="1818338434" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000366" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1073" name="GridManagerTests" fullname="GridManagerTests" classname="GridManagerTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001709" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1076" name="SnapToGrid_0Stays0" fullname="GridManagerTests.SnapToGrid_0Stays0" methodname="SnapToGrid_0Stays0" classname="GridManagerTests" runstate="Runnable" seed="874931252" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000300" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1074" name="SnapToGrid_17RoundsTo16" fullname="GridManagerTests.SnapToGrid_17RoundsTo16" methodname="SnapToGrid_17RoundsTo16" classname="GridManagerTests" runstate="Runnable" seed="500918842" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000180" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1075" name="SnapToGrid_9RoundsTo16" fullname="GridManagerTests.SnapToGrid_9RoundsTo16" methodname="SnapToGrid_9RoundsTo16" classname="GridManagerTests" runstate="Runnable" seed="170885982" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000177" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1077" name="SnapToGrid_DisabledReturnsInput" fullname="GridManagerTests.SnapToGrid_DisabledReturnsInput" methodname="SnapToGrid_DisabledReturnsInput" classname="GridManagerTests" runstate="Runnable" seed="2075806130" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000219" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1078" name="GroupTests" fullname="GroupTests" classname="GroupTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.012057" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1084" name="Groups_SurviveSerializeRestore" fullname="GroupTests.Groups_SurviveSerializeRestore" methodname="Groups_SurviveSerializeRestore" classname="GroupTests" runstate="Runnable" seed="952948224" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.006520" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1079" name="Link_AssignsSharedGroupId" fullname="GroupTests.Link_AssignsSharedGroupId" methodname="Link_AssignsSharedGroupId" classname="GroupTests" runstate="Runnable" seed="1667059706" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001086" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1080" name="Link_SingleElement_ReturnsNull" fullname="GroupTests.Link_SingleElement_ReturnsNull" methodname="Link_SingleElement_ReturnsNull" classname="GroupTests" runstate="Runnable" seed="1626370607" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000626" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1082" name="MembersOf_ReturnsAllLinked" fullname="GroupTests.MembersOf_ReturnsAllLinked" methodname="MembersOf_ReturnsAllLinked" classname="GroupTests" runstate="Runnable" seed="677343027" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000757" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1083" name="SetMovable_PropagatesToMembers" fullname="GroupTests.SetMovable_PropagatesToMembers" methodname="SetMovable_PropagatesToMembers" classname="GroupTests" runstate="Runnable" seed="1055560633" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000644" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1081" name="Unlink_ClearsGroupId" fullname="GroupTests.Unlink_ClearsGroupId" methodname="Unlink_ClearsGroupId" classname="GroupTests" runstate="Runnable" seed="1630678600" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000953" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1085" name="KitchenElementTests" fullname="KitchenElementTests" classname="KitchenElementTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.005636" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1091" name="Movable_DefaultsTrue_AndIsSettable" fullname="KitchenElementTests.Movable_DefaultsTrue_AndIsSettable" methodname="Movable_DefaultsTrue_AndIsSettable" classname="KitchenElementTests" runstate="Runnable" seed="349651589" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000454" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1092" name="Rotate_ComposesWithExistingRotation" fullname="KitchenElementTests.Rotate_ComposesWithExistingRotation" methodname="Rotate_ComposesWithExistingRotation" classname="KitchenElementTests" runstate="Runnable" seed="844263271" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000897" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1090" name="Rotate_PreservesPosition" fullname="KitchenElementTests.Rotate_PreservesPosition" methodname="Rotate_PreservesPosition" classname="KitchenElementTests" runstate="Runnable" seed="1840942174" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000413" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1089" name="RotateAroundX_RotatesFaceNormals" fullname="KitchenElementTests.RotateAroundX_RotatesFaceNormals" methodname="RotateAroundX_RotatesFaceNormals" classname="KitchenElementTests" runstate="Runnable" seed="510261144" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000466" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1087" name="RotateAroundX90_SwapsYZExtents" fullname="KitchenElementTests.RotateAroundX90_SwapsYZExtents" methodname="RotateAroundX90_SwapsYZExtents" classname="KitchenElementTests" runstate="Runnable" seed="636626929" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000673" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1086" name="RotateAroundY90_SwapsXZExtents" fullname="KitchenElementTests.RotateAroundY90_SwapsXZExtents" methodname="RotateAroundY90_SwapsXZExtents" classname="KitchenElementTests" runstate="Runnable" seed="236781786" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000369" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1088" name="RotateAroundZ90_SwapsXYExtents" fullname="KitchenElementTests.RotateAroundZ90_SwapsXYExtents" methodname="RotateAroundZ90_SwapsXYExtents" classname="KitchenElementTests" runstate="Runnable" seed="597538979" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000434" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1093" name="KitchenSettingsTests" fullname="KitchenSettingsTests" classname="KitchenSettingsTests" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.010290" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1102" name="AutoSaveInterval_ClampsToMinimum10" fullname="KitchenSettingsTests.AutoSaveInterval_ClampsToMinimum10" methodname="AutoSaveInterval_ClampsToMinimum10" classname="KitchenSettingsTests" runstate="Runnable" seed="1883794052" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000243" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1104" name="BasePlate_CreatesWithCorrectSize" fullname="KitchenSettingsTests.BasePlate_CreatesWithCorrectSize" methodname="BasePlate_CreatesWithCorrectSize" classname="KitchenSettingsTests" runstate="Runnable" seed="1046659888" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001085" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1099" name="EdgeOutline_SavesAndLoads" fullname="KitchenSettingsTests.EdgeOutline_SavesAndLoads" methodname="EdgeOutline_SavesAndLoads" classname="KitchenSettingsTests" runstate="Runnable" seed="1705127839" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001330" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1096" name="GridStep_ClampsToMinimum1" fullname="KitchenSettingsTests.GridStep_ClampsToMinimum1" methodname="GridStep_ClampsToMinimum1" classname="KitchenSettingsTests" runstate="Runnable" seed="1451485066" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000258" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1095" name="GridStep_DefaultsTo16" fullname="KitchenSettingsTests.GridStep_DefaultsTo16" methodname="GridStep_DefaultsTo16" classname="KitchenSettingsTests" runstate="Runnable" seed="1571811204" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000201" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1094" name="Instance_IsNotNull" fullname="KitchenSettingsTests.Instance_IsNotNull" methodname="Instance_IsNotNull" classname="KitchenSettingsTests" runstate="Runnable" seed="1546036578" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000279" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1103" name="Load_WithoutSavedKey_DoesNotThrow_KeepsValues" fullname="KitchenSettingsTests.Load_WithoutSavedKey_DoesNotThrow_KeepsValues" methodname="Load_WithoutSavedKey_DoesNotThrow_KeepsValues" classname="KitchenSettingsTests" runstate="Runnable" seed="1135497158" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002401" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1098" name="SaveAndLoad_RestoresAllFields" fullname="KitchenSettingsTests.SaveAndLoad_RestoresAllFields" methodname="SaveAndLoad_RestoresAllFields" classname="KitchenSettingsTests" runstate="Runnable" seed="1298506943" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001450" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1097" name="SnapThreshold_ClampsToMinimum1" fullname="KitchenSettingsTests.SnapThreshold_ClampsToMinimum1" methodname="SnapThreshold_ClampsToMinimum1" classname="KitchenSettingsTests" runstate="Runnable" seed="508707564" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000200" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1101" name="SpatialGridAndWindowedMode_SaveAndLoad" fullname="KitchenSettingsTests.SpatialGridAndWindowedMode_SaveAndLoad" methodname="SpatialGridAndWindowedMode_SaveAndLoad" classname="KitchenSettingsTests" runstate="Runnable" seed="2045291137" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000384" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1100" name="WallSettings_SaveAndLoad" fullname="KitchenSettingsTests.WallSettings_SaveAndLoad" methodname="WallSettings_SaveAndLoad" classname="KitchenSettingsTests" runstate="Runnable" seed="1539241985" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000318" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1105" name="MaterialTests" fullname="MaterialTests" classname="MaterialTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.027130" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1114" name="Apply_SetsMaterialId_OnRealBoard" fullname="MaterialTests.Apply_SetsMaterialId_OnRealBoard" methodname="Apply_SetsMaterialId_OnRealBoard" classname="MaterialTests" runstate="Runnable" seed="1824427612" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.013466" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1106" name="Catalog_HasDefault_AndKnownDecors" fullname="MaterialTests.Catalog_HasDefault_AndKnownDecors" methodname="Catalog_HasDefault_AndKnownDecors" classname="MaterialTests" runstate="Runnable" seed="679538024" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.004369" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1107" name="Catalog_UnknownOrEmptyId_FallsBackToDefault" fullname="MaterialTests.Catalog_UnknownOrEmptyId_FallsBackToDefault" methodname="Catalog_UnknownOrEmptyId_FallsBackToDefault" classname="MaterialTests" runstate="Runnable" seed="1041186317" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000243" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1109" name="ComputeTileST_BigBoard_RepeatsDecor" fullname="MaterialTests.ComputeTileST_BigBoard_RepeatsDecor" methodname="ComputeTileST_BigBoard_RepeatsDecor" classname="MaterialTests" runstate="Runnable" seed="621369593" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000248" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1108" name="ComputeTileST_BoardEqualsTile_ScaleOne" fullname="MaterialTests.ComputeTileST_BoardEqualsTile_ScaleOne" methodname="ComputeTileST_BoardEqualsTile_ScaleOne" classname="MaterialTests" runstate="Runnable" seed="1441987068" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000207" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1110" name="ComputeTileST_SmallBoard_ShowsCropBelowOne" fullname="MaterialTests.ComputeTileST_SmallBoard_ShowsCropBelowOne" methodname="ComputeTileST_SmallBoard_ShowsCropBelowOne" classname="MaterialTests" runstate="Runnable" seed="780703374" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000215" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1112" name="MaterialId_DefaultsToDefault_WhenUnset" fullname="MaterialTests.MaterialId_DefaultsToDefault_WhenUnset" methodname="MaterialId_DefaultsToDefault_WhenUnset" classname="MaterialTests" runstate="Runnable" seed="442269907" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000540" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1111" name="MaterialId_RoundTrips_ThroughSaveLoad" fullname="MaterialTests.MaterialId_RoundTrips_ThroughSaveLoad" methodname="MaterialId_RoundTrips_ThroughSaveLoad" classname="MaterialTests" runstate="Runnable" seed="480150627" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000450" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1113" name="Spec_SameSizeDifferentMaterial_SeparateLines" fullname="MaterialTests.Spec_SameSizeDifferentMaterial_SeparateLines" methodname="Spec_SameSizeDifferentMaterial_SeparateLines" classname="MaterialTests" runstate="Runnable" seed="1455614400" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.005441" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1115" name="McpCommandHandlerTests" fullname="McpCommandHandlerTests" classname="McpCommandHandlerTests" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.045877" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1124" name="AddWallComponent_AddsWallToElement" fullname="McpCommandHandlerTests.AddWallComponent_AddsWallToElement" methodname="AddWallComponent_AddsWallToElement" classname="McpCommandHandlerTests" runstate="Runnable" seed="1289271840" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.010280" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Added Wall component to TestBoard
+]]></output>
+        </test-case>
+        <test-case id="1126" name="AddWallComponent_Errors_WhenElementNotFound" fullname="McpCommandHandlerTests.AddWallComponent_Errors_WhenElementNotFound" methodname="AddWallComponent_Errors_WhenElementNotFound" classname="McpCommandHandlerTests" runstate="Runnable" seed="1217353688" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000530" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1125" name="AddWallComponent_Idempotent_WhenAlreadyWall" fullname="McpCommandHandlerTests.AddWallComponent_Idempotent_WhenAlreadyWall" methodname="AddWallComponent_Idempotent_WhenAlreadyWall" classname="McpCommandHandlerTests" runstate="Runnable" seed="1746616456" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000665" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1118" name="CreateElement_AddsWall_WhenIsWallTrue" fullname="McpCommandHandlerTests.CreateElement_AddsWall_WhenIsWallTrue" methodname="CreateElement_AddsWall_WhenIsWallTrue" classname="McpCommandHandlerTests" runstate="Runnable" seed="913210917" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.012229" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Created WallBoard at (0, 1,25, 0)
+]]></output>
+        </test-case>
+        <test-case id="1120" name="CreateElement_DefaultsIsWallFalse_WhenOmitted" fullname="McpCommandHandlerTests.CreateElement_DefaultsIsWallFalse_WhenOmitted" methodname="CreateElement_DefaultsIsWallFalse_WhenOmitted" classname="McpCommandHandlerTests" runstate="Runnable" seed="271012328" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001420" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Created DefaultBoard at (0, 0, 0)
+]]></output>
+        </test-case>
+        <test-case id="1119" name="CreateElement_DoesNotAddWall_WhenIsWallFalse" fullname="McpCommandHandlerTests.CreateElement_DoesNotAddWall_WhenIsWallFalse" methodname="CreateElement_DoesNotAddWall_WhenIsWallFalse" classname="McpCommandHandlerTests" runstate="Runnable" seed="1176969406" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001384" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Created RegularBoard at (0, 0, 0)
+]]></output>
+        </test-case>
+        <test-case id="1117" name="CreateElement_UsesName_WhenProvided" fullname="McpCommandHandlerTests.CreateElement_UsesName_WhenProvided" methodname="CreateElement_UsesName_WhenProvided" classname="McpCommandHandlerTests" runstate="Runnable" seed="782614570" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002114" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Created CustomName at (0, 0, 0)
+]]></output>
+        </test-case>
+        <test-case id="1116" name="CreateElement_UsesTemplateName_WhenNameNotGiven" fullname="McpCommandHandlerTests.CreateElement_UsesTemplateName_WhenNameNotGiven" methodname="CreateElement_UsesTemplateName_WhenNameNotGiven" classname="McpCommandHandlerTests" runstate="Runnable" seed="1232916406" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.003075" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Created TestBoard at (0, 0, 0)
+]]></output>
+        </test-case>
+        <test-case id="1123" name="ResizeElement_PrefersWidthOverDimX" fullname="McpCommandHandlerTests.ResizeElement_PrefersWidthOverDimX" methodname="ResizeElement_PrefersWidthOverDimX" classname="McpCommandHandlerTests" runstate="Runnable" seed="2140769522" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.005193" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Resized TestBoard to (100, 200, 300)mm
+]]></output>
+        </test-case>
+        <test-case id="1122" name="ResizeElement_UsesDimXDimYDimZ_AsAliases" fullname="McpCommandHandlerTests.ResizeElement_UsesDimXDimYDimZ_AsAliases" methodname="ResizeElement_UsesDimXDimYDimZ_AsAliases" classname="McpCommandHandlerTests" runstate="Runnable" seed="364894892" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001335" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Resized TestBoard to (3170, 2500, 7240)mm
+]]></output>
+        </test-case>
+        <test-case id="1121" name="ResizeElement_UsesWidthHeightDepth" fullname="McpCommandHandlerTests.ResizeElement_UsesWidthHeightDepth" methodname="ResizeElement_UsesWidthHeightDepth" classname="McpCommandHandlerTests" runstate="Runnable" seed="369000252" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001132" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Resized TestBoard to (1200, 600, 36)mm
+]]></output>
+        </test-case>
+        <test-case id="1127" name="WallElement_CreatedViaMCP_IsAnchor_NotViolation" fullname="McpCommandHandlerTests.WallElement_CreatedViaMCP_IsAnchor_NotViolation" methodname="WallElement_CreatedViaMCP_IsAnchor_NotViolation" classname="McpCommandHandlerTests" runstate="Runnable" seed="2116392531" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001581" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Created TestWall at (0, 1,25, 0)
+]]></output>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1128" name="ModuleSystemTests" fullname="ModuleSystemTests" classname="ModuleSystemTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.028254" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1130" name="ActiveModule_OnlyMembersEditable" fullname="ModuleSystemTests.ActiveModule_OnlyMembersEditable" methodname="ActiveModule_OnlyMembersEditable" classname="ModuleSystemTests" runstate="Runnable" seed="2118921887" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001468" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1131" name="EnterExit_FiresChangedEvent" fullname="ModuleSystemTests.EnterExit_FiresChangedEvent" methodname="EnterExit_FiresChangedEvent" classname="ModuleSystemTests" runstate="Runnable" seed="882956793" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000784" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1136" name="Mcp_AddAndRemoveFromModule" fullname="ModuleSystemTests.Mcp_AddAndRemoveFromModule" methodname="Mcp_AddAndRemoveFromModule" classname="ModuleSystemTests" runstate="Runnable" seed="788652712" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.008184" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Module 'М1' (id 1) created from 2 elements
+]]></output>
+        </test-case>
+        <test-case id="1133" name="Mcp_CreateModule_AndReadConfiguration" fullname="ModuleSystemTests.Mcp_CreateModule_AndReadConfiguration" methodname="Mcp_CreateModule_AndReadConfiguration" classname="ModuleSystemTests" runstate="Runnable" seed="1391678890" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.004391" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Module 'Тумба с ящиками' (id 1) created from 3 elements
+]]></output>
+        </test-case>
+        <test-case id="1134" name="Mcp_CreateModule_MissingElement_Fails" fullname="ModuleSystemTests.Mcp_CreateModule_MissingElement_Fails" methodname="Mcp_CreateModule_MissingElement_Fails" classname="ModuleSystemTests" runstate="Runnable" seed="19521857" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000850" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1135" name="Mcp_EnterExitModuleEdit" fullname="ModuleSystemTests.Mcp_EnterExitModuleEdit" methodname="Mcp_EnterExitModuleEdit" classname="ModuleSystemTests" runstate="Runnable" seed="1787971060" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002433" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Module 'М1' (id 1) created from 2 elements
+[MCP] Module edit: 'М1'
+]]></output>
+        </test-case>
+        <test-case id="1137" name="Mcp_GetModules_ListsAll" fullname="ModuleSystemTests.Mcp_GetModules_ListsAll" methodname="Mcp_GetModules_ListsAll" classname="ModuleSystemTests" runstate="Runnable" seed="1174386945" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.004495" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MCP] Module 'М1' (id 1) created from 2 elements
+[MCP] Module 'М2' (id 2) created from 2 elements
+]]></output>
+        </test-case>
+        <test-case id="1138" name="Module_SurvivesSaveLoad" fullname="ModuleSystemTests.Module_SurvivesSaveLoad" methodname="Module_SurvivesSaveLoad" classname="ModuleSystemTests" runstate="Runnable" seed="578298578" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002142" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1129" name="NoActiveModule_EverythingEditable" fullname="ModuleSystemTests.NoActiveModule_EverythingEditable" methodname="NoActiveModule_EverythingEditable" classname="ModuleSystemTests" runstate="Runnable" seed="361053726" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000332" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1132" name="UnlinkActiveModule_ExitsEditMode" fullname="ModuleSystemTests.UnlinkActiveModule_ExitsEditMode" methodname="UnlinkActiveModule_ExitsEditMode" classname="ModuleSystemTests" runstate="Runnable" seed="468683263" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000640" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1139" name="ResizeMathTests" fullname="ResizeMathTests" classname="ResizeMathTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.007844" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1140" name="FreeResize_NoNeighbour_GrowsByDelta" fullname="ResizeMathTests.FreeResize_NoNeighbour_GrowsByDelta" methodname="FreeResize_NoNeighbour_GrowsByDelta" classname="ResizeMathTests" runstate="Runnable" seed="1190568503" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002514" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1142" name="Resize_LCornerPartialOverlap_Snaps" fullname="ResizeMathTests.Resize_LCornerPartialOverlap_Snaps" methodname="Resize_LCornerPartialOverlap_Snaps" classname="ResizeMathTests" runstate="Runnable" seed="2009168186" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001040" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1141" name="Resize_SnapsToOpposingBoard_Flush" fullname="ResizeMathTests.Resize_SnapsToOpposingBoard_Flush" methodname="Resize_SnapsToOpposingBoard_Flush" classname="ResizeMathTests" runstate="Runnable" seed="2013252617" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000754" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1145" name="Resize_WallBottom_BeyondThreshold_NoSnap" fullname="ResizeMathTests.Resize_WallBottom_BeyondThreshold_NoSnap" methodname="Resize_WallBottom_BeyondThreshold_NoSnap" classname="ResizeMathTests" runstate="Runnable" seed="1758819427" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000637" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1143" name="Resize_WallBottom_SnapsToFloor" fullname="ResizeMathTests.Resize_WallBottom_SnapsToFloor" methodname="Resize_WallBottom_SnapsToFloor" classname="ResizeMathTests" runstate="Runnable" seed="565663042" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000841" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1144" name="ToggleMode_FlipsResizeAndMove" fullname="ResizeMathTests.ToggleMode_FlipsResizeAndMove" methodname="ToggleMode_FlipsResizeAndMove" classname="ResizeMathTests" runstate="Runnable" seed="1852270667" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000396" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1146" name="ResizeSnapTests" fullname="ResizeSnapTests" classname="ResizeSnapTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.006992" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1148" name="SnapDelta_BeyondThreshold_ReturnsFalse" fullname="ResizeSnapTests.SnapDelta_BeyondThreshold_ReturnsFalse" methodname="SnapDelta_BeyondThreshold_ReturnsFalse" classname="ResizeSnapTests" runstate="Runnable" seed="1636353020" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.003236" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1150" name="SnapDelta_CoDirectionalFace_NotSnapped" fullname="ResizeSnapTests.SnapDelta_CoDirectionalFace_NotSnapped" methodname="SnapDelta_CoDirectionalFace_NotSnapped" classname="ResizeSnapTests" runstate="Runnable" seed="1242394318" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000730" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1149" name="SnapDelta_NoInPlaneOverlap_ReturnsFalse" fullname="ResizeSnapTests.SnapDelta_NoInPlaneOverlap_ReturnsFalse" methodname="SnapDelta_NoInPlaneOverlap_ReturnsFalse" classname="ResizeSnapTests" runstate="Runnable" seed="106089451" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000547" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1151" name="SnapDelta_NullOthers_ReturnsFalse" fullname="ResizeSnapTests.SnapDelta_NullOthers_ReturnsFalse" methodname="SnapDelta_NullOthers_ReturnsFalse" classname="ResizeSnapTests" runstate="Runnable" seed="1933394783" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000350" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1147" name="SnapDelta_OpposingFaceWithinThreshold_ReturnsGap" fullname="ResizeSnapTests.SnapDelta_OpposingFaceWithinThreshold_ReturnsGap" methodname="SnapDelta_OpposingFaceWithinThreshold_ReturnsGap" classname="ResizeSnapTests" runstate="Runnable" seed="67271331" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000519" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1152" name="SaveLoadManagerFileTests" fullname="SaveLoadManagerFileTests" classname="SaveLoadManagerFileTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.037903" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1158" name="CaptureCurrentJson_ReflectsScene" fullname="SaveLoadManagerFileTests.CaptureCurrentJson_ReflectsScene" methodname="CaptureCurrentJson_ReflectsScene" classname="SaveLoadManagerFileTests" runstate="Runnable" seed="272751715" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001720" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1159" name="ClearBoards_RemovesBoards_KeepsBasePlate" fullname="SaveLoadManagerFileTests.ClearBoards_RemovesBoards_KeepsBasePlate" methodname="ClearBoards_RemovesBoards_KeepsBasePlate" classname="SaveLoadManagerFileTests" runstate="Runnable" seed="1134069064" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001534" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1156" name="GetSaveFiles_ContainsSavedProject" fullname="SaveLoadManagerFileTests.GetSaveFiles_ContainsSavedProject" methodname="GetSaveFiles_ContainsSavedProject" classname="SaveLoadManagerFileTests" runstate="Runnable" seed="1983026725" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002229" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1160" name="LastDirectory_WhenNoLastPath_IsSavesDirectory" fullname="SaveLoadManagerFileTests.LastDirectory_WhenNoLastPath_IsSavesDirectory" methodname="LastDirectory_WhenNoLastPath_IsSavesDirectory" classname="SaveLoadManagerFileTests" runstate="Runnable" seed="371540919" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001300" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1153" name="PathForName_ReturnsJsonInSavesDirectory" fullname="SaveLoadManagerFileTests.PathForName_ReturnsJsonInSavesDirectory" methodname="PathForName_ReturnsJsonInSavesDirectory" classname="SaveLoadManagerFileTests" runstate="Runnable" seed="2070805120" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000656" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1154" name="SaveProject_ThenLoadProject_RoundTrips" fullname="SaveLoadManagerFileTests.SaveProject_ThenLoadProject_RoundTrips" methodname="SaveProject_ThenLoadProject_RoundTrips" classname="SaveLoadManagerFileTests" runstate="Runnable" seed="654203264" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.005187" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1155" name="SaveProject_Twice_CreatesBackupZip" fullname="SaveLoadManagerFileTests.SaveProject_Twice_CreatesBackupZip" methodname="SaveProject_Twice_CreatesBackupZip" classname="SaveLoadManagerFileTests" runstate="Runnable" seed="1720440318" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.019538" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1157" name="SaveToPath_SetsLastPath_AndLoadFromPath_Restores" fullname="SaveLoadManagerFileTests.SaveToPath_SetsLastPath_AndLoadFromPath_Restores" methodname="SaveToPath_SetsLastPath_AndLoadFromPath_Restores" classname="SaveLoadManagerFileTests" runstate="Runnable" seed="2024134261" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.003634" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1161" name="SaveLoadManagerTests" fullname="SaveLoadManagerTests" classname="SaveLoadManagerTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.017433" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1162" name="CaptureScene_ExcludesBasePlate_KeepsBoards" fullname="SaveLoadManagerTests.CaptureScene_ExcludesBasePlate_KeepsBoards" methodname="CaptureScene_ExcludesBasePlate_KeepsBoards" classname="SaveLoadManagerTests" runstate="Runnable" seed="177143524" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001948" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1167" name="IsVersionCompatible_MatchingVersion_True" fullname="SaveLoadManagerTests.IsVersionCompatible_MatchingVersion_True" methodname="IsVersionCompatible_MatchingVersion_True" classname="SaveLoadManagerTests" runstate="Runnable" seed="1253078577" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000252" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1165" name="LoadFromFile_Missing_ReturnsNullAndLogsError" fullname="SaveLoadManagerTests.LoadFromFile_Missing_ReturnsNullAndLogsError" methodname="LoadFromFile_Missing_ReturnsNullAndLogsError" classname="SaveLoadManagerTests" runstate="Runnable" seed="809997955" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.003956" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[SaveLoad] File not found: C:/Users/gtx54/AppData/Local/Temp/DefaultCompany/opencode-game-studio\does_not_exist_xyz.json
+]]></output>
+        </test-case>
+        <test-case id="1169" name="LoadLastSession_RestoresBoards_FromLastPath" fullname="SaveLoadManagerTests.LoadLastSession_RestoresBoards_FromLastPath" methodname="LoadLastSession_RestoresBoards_FromLastPath" classname="SaveLoadManagerTests" runstate="Runnable" seed="1983423351" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.003219" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1168" name="Movable_RoundTripsThroughSaveAndRestore" fullname="SaveLoadManagerTests.Movable_RoundTripsThroughSaveAndRestore" methodname="Movable_RoundTripsThroughSaveAndRestore" classname="SaveLoadManagerTests" runstate="Runnable" seed="1790110787" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000876" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1166" name="RestoreScene_CreatesBoardsWithDimensions" fullname="SaveLoadManagerTests.RestoreScene_CreatesBoardsWithDimensions" methodname="RestoreScene_CreatesBoardsWithDimensions" classname="SaveLoadManagerTests" runstate="Runnable" seed="1052098127" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001290" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1164" name="SaveToFile_LoadFromFile_RoundTrips" fullname="SaveLoadManagerTests.SaveToFile_LoadFromFile_RoundTrips" methodname="SaveToFile_LoadFromFile_RoundTrips" classname="SaveLoadManagerTests" runstate="Runnable" seed="2104911127" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002144" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1163" name="Serialize_Deserialize_RoundTrips" fullname="SaveLoadManagerTests.Serialize_Deserialize_RoundTrips" methodname="Serialize_Deserialize_RoundTrips" classname="SaveLoadManagerTests" runstate="Runnable" seed="811585157" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000724" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1170" name="SidebarCatalogTests" fullname="SidebarCatalogTests" classname="SidebarCatalogTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.009594" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1171" name="Build_HasTwoThicknessGroups_AndRoom" fullname="SidebarCatalogTests.Build_HasTwoThicknessGroups_AndRoom" methodname="Build_HasTwoThicknessGroups_AndRoom" classname="SidebarCatalogTests" runstate="Runnable" seed="222574986" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001888" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1173" name="Room_ContainsKorob_600Cube" fullname="SidebarCatalogTests.Room_ContainsKorob_600Cube" methodname="Room_ContainsKorob_600Cube" classname="SidebarCatalogTests" runstate="Runnable" seed="278121590" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000420" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1174" name="Room_ContainsWall_MarkedAsWall" fullname="SidebarCatalogTests.Room_ContainsWall_MarkedAsWall" methodname="Room_ContainsWall_MarkedAsWall" classname="SidebarCatalogTests" runstate="Runnable" seed="1207250561" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001121" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1172" name="ThicknessGroups_HaveFiveSizes_WithCorrectThickness" fullname="SidebarCatalogTests.ThicknessGroups_HaveFiveSizes_WithCorrectThickness" methodname="ThicknessGroups_HaveFiveSizes_WithCorrectThickness" classname="SidebarCatalogTests" runstate="Runnable" seed="382626896" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.004964" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1175" name="SnapDiagnoseTests" fullname="SnapDiagnoseTests" classname="SnapDiagnoseTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.019444" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1176" name="BoardsWithinThreshold_DiagnosisSaysWouldSnap" fullname="SnapDiagnoseTests.BoardsWithinThreshold_DiagnosisSaysWouldSnap" methodname="BoardsWithinThreshold_DiagnosisSaysWouldSnap" classname="SnapDiagnoseTests" runstate="Runnable" seed="643779760" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.008097" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1183" name="Diagnosis_AgreesWithTrySnap_OnScatteredPositions" fullname="SnapDiagnoseTests.Diagnosis_AgreesWithTrySnap_OnScatteredPositions" methodname="Diagnosis_AgreesWithTrySnap_OnScatteredPositions" classname="SnapDiagnoseTests" runstate="Runnable" seed="1516149380" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001074" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1181" name="Diagnosis_DoesNotMoveBoard" fullname="SnapDiagnoseTests.Diagnosis_DoesNotMoveBoard" methodname="Diagnosis_DoesNotMoveBoard" classname="SnapDiagnoseTests" runstate="Runnable" seed="1586084541" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000577" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1182" name="Diagnosis_SortsNeighborsByGap_AndLimitsCount" fullname="SnapDiagnoseTests.Diagnosis_SortsNeighborsByGap_AndLimitsCount" methodname="Diagnosis_SortsNeighborsByGap_AndLimitsCount" classname="SnapDiagnoseTests" runstate="Runnable" seed="101779417" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.003147" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1177" name="GapAboveThreshold_DiagnosisExplainsGap" fullname="SnapDiagnoseTests.GapAboveThreshold_DiagnosisExplainsGap" methodname="GapAboveThreshold_DiagnosisExplainsGap" classname="SnapDiagnoseTests" runstate="Runnable" seed="77727940" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001381" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1178" name="IntersectingBoards_DiagnosisReportsIntersection" fullname="SnapDiagnoseTests.IntersectingBoards_DiagnosisReportsIntersection" methodname="IntersectingBoards_DiagnosisReportsIntersection" classname="SnapDiagnoseTests" runstate="Runnable" seed="576813401" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000971" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1179" name="RotatedBoard_DiagnosisReportsNoFacingFaces" fullname="SnapDiagnoseTests.RotatedBoard_DiagnosisReportsNoFacingFaces" methodname="RotatedBoard_DiagnosisReportsNoFacingFaces" classname="SnapDiagnoseTests" runstate="Runnable" seed="1841423053" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000747" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1180" name="SmallOverlap_DiagnosisReportsOverlapTooSmall" fullname="SnapDiagnoseTests.SmallOverlap_DiagnosisReportsOverlapTooSmall" methodname="SmallOverlap_DiagnosisReportsOverlapTooSmall" classname="SnapDiagnoseTests" runstate="Runnable" seed="2008632464" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001466" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1184" name="SnapEdgeCaseTests" fullname="SnapEdgeCaseTests" classname="SnapEdgeCaseTests" runstate="Runnable" testcasecount="20" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.016646" total="20" passed="20" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1204" name="DisabledMoved_NoSnap" fullname="SnapEdgeCaseTests.DisabledMoved_NoSnap" methodname="DisabledMoved_NoSnap" classname="SnapEdgeCaseTests" runstate="Runnable" seed="356549091" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001034" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1203" name="DisabledTarget_NoSnap" fullname="SnapEdgeCaseTests.DisabledTarget_NoSnap" methodname="DisabledTarget_NoSnap" classname="SnapEdgeCaseTests" runstate="Runnable" seed="111009019" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000421" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1197" name="Intersecting_NoSnap" fullname="SnapEdgeCaseTests.Intersecting_NoSnap" methodname="Intersecting_NoSnap" classname="SnapEdgeCaseTests" runstate="Runnable" seed="918997696" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000385" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1202" name="LargeCoordinate_1000m_StillSnaps" fullname="SnapEdgeCaseTests.LargeCoordinate_1000m_StillSnaps" methodname="LargeCoordinate_1000m_StillSnaps" classname="SnapEdgeCaseTests" runstate="Runnable" seed="1477661421" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000464" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1199" name="MovingAwayFromTarget_NoSnap" fullname="SnapEdgeCaseTests.MovingAwayFromTarget_NoSnap" methodname="MovingAwayFromTarget_NoSnap" classname="SnapEdgeCaseTests" runstate="Runnable" seed="16955591" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000400" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1194" name="Overlap_Above30Percent_Snaps" fullname="SnapEdgeCaseTests.Overlap_Above30Percent_Snaps" methodname="Overlap_Above30Percent_Snaps" classname="SnapEdgeCaseTests" runstate="Runnable" seed="1835189640" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000407" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1195" name="Overlap_Below30Percent_NoSnap" fullname="SnapEdgeCaseTests.Overlap_Below30Percent_NoSnap" methodname="Overlap_Below30Percent_NoSnap" classname="SnapEdgeCaseTests" runstate="Runnable" seed="1614993169" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000382" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1193" name="Overlap_Full_Snaps" fullname="SnapEdgeCaseTests.Overlap_Full_Snaps" methodname="Overlap_Full_Snaps" classname="SnapEdgeCaseTests" runstate="Runnable" seed="120067402" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000616" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1196" name="Overlap_None_ParallelFacesApart_NoSnap" fullname="SnapEdgeCaseTests.Overlap_None_ParallelFacesApart_NoSnap" methodname="Overlap_None_ParallelFacesApart_NoSnap" classname="SnapEdgeCaseTests" runstate="Runnable" seed="1942043976" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000920" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1185" name="SnapDisabled_ReturnsNotSnapped" fullname="SnapEdgeCaseTests.SnapDisabled_ReturnsNotSnapped" methodname="SnapDisabled_ReturnsNotSnapped" classname="SnapEdgeCaseTests" runstate="Runnable" seed="494722198" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000549" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1192" name="Threshold_100mm_NoSnap" fullname="SnapEdgeCaseTests.Threshold_100mm_NoSnap" methodname="Threshold_100mm_NoSnap" classname="SnapEdgeCaseTests" runstate="Runnable" seed="1113652956" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000449" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1189" name="Threshold_49mm_Snaps" fullname="SnapEdgeCaseTests.Threshold_49mm_Snaps" methodname="Threshold_49mm_Snaps" classname="SnapEdgeCaseTests" runstate="Runnable" seed="2075180630" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002772" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1190" name="Threshold_50mm_BoundarySnaps" fullname="SnapEdgeCaseTests.Threshold_50mm_BoundarySnaps" methodname="Threshold_50mm_BoundarySnaps" classname="SnapEdgeCaseTests" runstate="Runnable" seed="587609260" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000827" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1191" name="Threshold_51mm_NoSnap" fullname="SnapEdgeCaseTests.Threshold_51mm_NoSnap" methodname="Threshold_51mm_NoSnap" classname="SnapEdgeCaseTests" runstate="Runnable" seed="912195411" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000750" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1188" name="ThresholdLarge_SnapsFarBoards" fullname="SnapEdgeCaseTests.ThresholdLarge_SnapsFarBoards" methodname="ThresholdLarge_SnapsFarBoards" classname="SnapEdgeCaseTests" runstate="Runnable" seed="1040515305" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000629" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1186" name="ThresholdMin1mm_GapAboveIt_NoSnap" fullname="SnapEdgeCaseTests.ThresholdMin1mm_GapAboveIt_NoSnap" methodname="ThresholdMin1mm_GapAboveIt_NoSnap" classname="SnapEdgeCaseTests" runstate="Runnable" seed="1447398415" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000472" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1187" name="ThresholdMin1mm_WithinIt_Snaps" fullname="SnapEdgeCaseTests.ThresholdMin1mm_WithinIt_Snaps" methodname="ThresholdMin1mm_WithinIt_Snaps" classname="SnapEdgeCaseTests" runstate="Runnable" seed="1950068551" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000457" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1198" name="Touching_Gap0_NotCountedAsIntersection" fullname="SnapEdgeCaseTests.Touching_Gap0_NotCountedAsIntersection" methodname="Touching_Gap0_NotCountedAsIntersection" classname="SnapEdgeCaseTests" runstate="Runnable" seed="1579705558" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000409" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1200" name="VeryLargeBoards_Snap" fullname="SnapEdgeCaseTests.VeryLargeBoards_Snap" methodname="VeryLargeBoards_Snap" classname="SnapEdgeCaseTests" runstate="Runnable" seed="1015411570" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000460" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1201" name="VerySmallBoards_Snap" fullname="SnapEdgeCaseTests.VerySmallBoards_Snap" methodname="VerySmallBoards_Snap" classname="SnapEdgeCaseTests" runstate="Runnable" seed="1793201384" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000446" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1205" name="SnapExistingContactTests" fullname="SnapExistingContactTests" classname="SnapExistingContactTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.008380" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1209" name="BoardOnFloor_NoNeighbors_StaysPut" fullname="SnapExistingContactTests.BoardOnFloor_NoNeighbors_StaysPut" methodname="BoardOnFloor_NoNeighbors_StaysPut" classname="SnapExistingContactTests" runstate="Runnable" seed="1970693827" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000983" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1208" name="BoardOnFloor_SnapsToNearbyBoard" fullname="SnapExistingContactTests.BoardOnFloor_SnapsToNearbyBoard" methodname="BoardOnFloor_SnapsToNearbyBoard" classname="SnapExistingContactTests" runstate="Runnable" seed="685742002" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000990" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1211" name="FreeBoard_BehavesAsBefore_NearestWins" fullname="SnapExistingContactTests.FreeBoard_BehavesAsBefore_NearestWins" methodname="FreeBoard_BehavesAsBefore_NearestWins" classname="SnapExistingContactTests" runstate="Runnable" seed="1276073968" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000907" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1206" name="LyingBoard_SlidingAlongNeighbor_SnapsToWall" fullname="SnapExistingContactTests.LyingBoard_SlidingAlongNeighbor_SnapsToWall" methodname="LyingBoard_SlidingAlongNeighbor_SnapsToWall" classname="SnapExistingContactTests" runstate="Runnable" seed="466100973" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001497" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1207" name="LyingBoard_WholeUserRange_SnapsToWall" fullname="SnapExistingContactTests.LyingBoard_WholeUserRange_SnapsToWall" methodname="LyingBoard_WholeUserRange_SnapsToWall" classname="SnapExistingContactTests" runstate="Runnable" seed="1444746019" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001001" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1210" name="SnapThatWouldBreakExistingContact_IsRejected" fullname="SnapExistingContactTests.SnapThatWouldBreakExistingContact_IsRejected" methodname="SnapThatWouldBreakExistingContact_IsRejected" classname="SnapExistingContactTests" runstate="Runnable" seed="1548793173" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000961" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1212" name="SnapInvariantTests" fullname="SnapInvariantTests" classname="SnapInvariantTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.013982" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1218" name="Invariant_Disabled_NeverSnaps" fullname="SnapInvariantTests.Invariant_Disabled_NeverSnaps" methodname="Invariant_Disabled_NeverSnaps" classname="SnapInvariantTests" runstate="Runnable" seed="2080022622" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001162" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1216" name="Invariant_SnapIsIdempotent" fullname="SnapInvariantTests.Invariant_SnapIsIdempotent" methodname="Invariant_SnapIsIdempotent" classname="SnapInvariantTests" runstate="Runnable" seed="1789920241" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000640" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1213" name="Invariant_SnapNeverProducesIntersection" fullname="SnapInvariantTests.Invariant_SnapNeverProducesIntersection" methodname="Invariant_SnapNeverProducesIntersection" classname="SnapInvariantTests" runstate="Runnable" seed="2083843640" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002737" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1217" name="Invariant_SnappedFacesAreFlush" fullname="SnapInvariantTests.Invariant_SnappedFacesAreFlush" methodname="Invariant_SnappedFacesAreFlush" classname="SnapInvariantTests" runstate="Runnable" seed="1210371117" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002364" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1214" name="Invariant_SnapPreservesRotation" fullname="SnapInvariantTests.Invariant_SnapPreservesRotation" methodname="Invariant_SnapPreservesRotation" classname="SnapInvariantTests" runstate="Runnable" seed="777880618" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.002307" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1215" name="Invariant_TrySnapDoesNotMoveBoard" fullname="SnapInvariantTests.Invariant_TrySnapDoesNotMoveBoard" methodname="Invariant_TrySnapDoesNotMoveBoard" classname="SnapInvariantTests" runstate="Runnable" seed="1770178119" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000635" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1219" name="SnapKnownLimitationTests" fullname="SnapKnownLimitationTests" classname="SnapKnownLimitationTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.004387" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties>
+          <property name="Category" value="KnownLimitation" />
+        </properties>
+        <test-case id="1222" name="BothRotatedSame45_FacesParallel_Snaps" fullname="SnapKnownLimitationTests.BothRotatedSame45_FacesParallel_Snaps" methodname="BothRotatedSame45_FacesParallel_Snaps" classname="SnapKnownLimitationTests" runstate="Runnable" seed="661359592" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000687" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1221" name="Rotated30AroundY_FacesNotParallel_NoSnap" fullname="SnapKnownLimitationTests.Rotated30AroundY_FacesNotParallel_NoSnap" methodname="Rotated30AroundY_FacesNotParallel_NoSnap" classname="SnapKnownLimitationTests" runstate="Runnable" seed="1538770926" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000528" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1220" name="Rotated45AroundY_FacesNotParallel_NoSnap" fullname="SnapKnownLimitationTests.Rotated45AroundY_FacesNotParallel_NoSnap" methodname="Rotated45AroundY_FacesNotParallel_NoSnap" classname="SnapKnownLimitationTests" runstate="Runnable" seed="993535867" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000917" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1223" name="Threshold_CannotBeZero_ClampedTo1mm" fullname="SnapKnownLimitationTests.Threshold_CannotBeZero_ClampedTo1mm" methodname="Threshold_CannotBeZero_ClampedTo1mm" classname="SnapKnownLimitationTests" runstate="Runnable" seed="1860919559" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000651" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1224" name="SnapMultiBoardTests" fullname="SnapMultiBoardTests" classname="SnapMultiBoardTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.009838" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1226" name="Chain_ABC_AllConnected_Valid" fullname="SnapMultiBoardTests.Chain_ABC_AllConnected_Valid" methodname="Chain_ABC_AllConnected_Valid" classname="SnapMultiBoardTests" runstate="Runnable" seed="885790746" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000939" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1225" name="Chain_ABC_Linear_PositionsCorrect" fullname="SnapMultiBoardTests.Chain_ABC_Linear_PositionsCorrect" methodname="Chain_ABC_Linear_PositionsCorrect" classname="SnapMultiBoardTests" runstate="Runnable" seed="127028987" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001445" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1232" name="Conflict_Deterministic_SameResultTwice" fullname="SnapMultiBoardTests.Conflict_Deterministic_SameResultTwice" methodname="Conflict_Deterministic_SameResultTwice" classname="SnapMultiBoardTests" runstate="Runnable" seed="631763793" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000967" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1231" name="NearestTarget_SnapsToCloser" fullname="SnapMultiBoardTests.NearestTarget_SnapsToCloser" methodname="NearestTarget_SnapsToCloser" classname="SnapMultiBoardTests" runstate="Runnable" seed="1150541585" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000659" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1227" name="Stack_ABC_OnFloor_PositionsCorrect" fullname="SnapMultiBoardTests.Stack_ABC_OnFloor_PositionsCorrect" methodname="Stack_ABC_OnFloor_PositionsCorrect" classname="SnapMultiBoardTests" runstate="Runnable" seed="650305444" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000888" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1228" name="Stack_OnFloor_AllValid" fullname="SnapMultiBoardTests.Stack_OnFloor_AllValid" methodname="Stack_OnFloor_AllValid" classname="SnapMultiBoardTests" runstate="Runnable" seed="205214642" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000720" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1230" name="TShape_VerticalOnHorizontal_FlushContact" fullname="SnapMultiBoardTests.TShape_VerticalOnHorizontal_FlushContact" methodname="TShape_VerticalOnHorizontal_FlushContact" classname="SnapMultiBoardTests" runstate="Runnable" seed="1807426481" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.001251" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1229" name="TwoWallsOnFloor_BothSnapAndValid" fullname="SnapMultiBoardTests.TwoWallsOnFloor_BothSnapAndValid" methodname="TwoWallsOnFloor_BothSnapAndValid" classname="SnapMultiBoardTests" runstate="Runnable" seed="660334938" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.000805" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1233" name="SnapPerformanceTests" fullname="SnapPerformanceTests" classname="SnapPerformanceTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:13Z" duration="0.084447" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1235" name="Snap_100Boards_Under32ms" fullname="SnapPerformanceTests.Snap_100Boards_Under32ms" methodname="Snap_100Boards_Under32ms" classname="SnapPerformanceTests" runstate="Runnable" seed="1361945577" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.008224" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[Perf] Snap_100Boards: 0ms snapped=True
+]]></output>
+        </test-case>
+        <test-case id="1236" name="Snap_200Boards_Under64ms" fullname="SnapPerformanceTests.Snap_200Boards_Under64ms" methodname="Snap_200Boards_Under64ms" classname="SnapPerformanceTests" runstate="Runnable" seed="2086907309" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.009521" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[Perf] Snap_200Boards: 1ms snapped=True
+]]></output>
+        </test-case>
+        <test-case id="1234" name="Snap_50Boards_Under16ms" fullname="SnapPerformanceTests.Snap_50Boards_Under16ms" methodname="Snap_50Boards_Under16ms" classname="SnapPerformanceTests" runstate="Runnable" seed="226944699" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:12Z" duration="0.005817" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[Perf] Snap_50Boards: 0ms snapped=True
+]]></output>
+        </test-case>
+        <test-case id="1238" name="Validate_100Boards_Under64ms" fullname="SnapPerformanceTests.Validate_100Boards_Under64ms" methodname="Validate_100Boards_Under64ms" classname="SnapPerformanceTests" runstate="Runnable" seed="928646153" result="Passed" start-time="2026-07-05 09:10:12Z" end-time="2026-07-05 09:10:13Z" duration="0.045755" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[Perf] Validate_100Boards: 40ms valid=False
+]]></output>
+        </test-case>
+        <test-case id="1237" name="Validate_50Boards_Under32ms" fullname="SnapPerformanceTests.Validate_50Boards_Under32ms" methodname="Validate_50Boards_Under32ms" classname="SnapPerformanceTests" runstate="Runnable" seed="542910817" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.013601" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[Perf] Validate_50Boards: 9ms valid=False
+]]></output>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1239" name="SnapScenarioTests" fullname="SnapScenarioTests" classname="SnapScenarioTests" runstate="Runnable" testcasecount="23" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.017002" total="23" passed="23" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1255" name="BoardAboveFloor_SnapsDownToTopFace" fullname="SnapScenarioTests.BoardAboveFloor_SnapsDownToTopFace" methodname="BoardAboveFloor_SnapsDownToTopFace" classname="SnapScenarioTests" runstate="Runnable" seed="1456197966" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000636" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1256" name="BoardOnFloor_IsValid" fullname="SnapScenarioTests.BoardOnFloor_IsValid" methodname="BoardOnFloor_IsValid" classname="SnapScenarioTests" runstate="Runnable" seed="1058852174" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000878" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1253" name="DifferentSizes_Long1200_ButtJoint" fullname="SnapScenarioTests.DifferentSizes_Long1200_ButtJoint" methodname="DifferentSizes_Long1200_ButtJoint" classname="SnapScenarioTests" runstate="Runnable" seed="558261716" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.001652" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1254" name="DifferentSizes_Square600_OnFront_Flush" fullname="SnapScenarioTests.DifferentSizes_Square600_OnFront_Flush" methodname="DifferentSizes_Square600_OnFront_Flush" classname="SnapScenarioTests" runstate="Runnable" seed="1923742298" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000765" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1250" name="EdgeAlign_ChoosesNearestEdge" fullname="SnapScenarioTests.EdgeAlign_ChoosesNearestEdge" methodname="EdgeAlign_ChoosesNearestEdge" classname="SnapScenarioTests" runstate="Runnable" seed="2043684809" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000522" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1247" name="EdgeAlign_LeftEdges_Coincide" fullname="SnapScenarioTests.EdgeAlign_LeftEdges_Coincide" methodname="EdgeAlign_LeftEdges_Coincide" classname="SnapScenarioTests" runstate="Runnable" seed="1838984796" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000434" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1249" name="EdgeAlign_NearCenter_CentersCoincide" fullname="SnapScenarioTests.EdgeAlign_NearCenter_CentersCoincide" methodname="EdgeAlign_NearCenter_CentersCoincide" classname="SnapScenarioTests" runstate="Runnable" seed="747426430" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000456" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1248" name="EdgeAlign_RightEdges_Coincide" fullname="SnapScenarioTests.EdgeAlign_RightEdges_Coincide" methodname="EdgeAlign_RightEdges_Coincide" classname="SnapScenarioTests" runstate="Runnable" seed="199847162" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000428" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1243" name="FaceToFace_Back_AlignsAtMinusThickness" fullname="SnapScenarioTests.FaceToFace_Back_AlignsAtMinusThickness" methodname="FaceToFace_Back_AlignsAtMinusThickness" classname="SnapScenarioTests" runstate="Runnable" seed="555412095" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000407" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1245" name="FaceToFace_Bottom_AlignsAtMinusHalfHeight" fullname="SnapScenarioTests.FaceToFace_Bottom_AlignsAtMinusHalfHeight" methodname="FaceToFace_Bottom_AlignsAtMinusHalfHeight" classname="SnapScenarioTests" runstate="Runnable" seed="613929520" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000443" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1242" name="FaceToFace_Front_AlignsAtThickness" fullname="SnapScenarioTests.FaceToFace_Front_AlignsAtThickness" methodname="FaceToFace_Front_AlignsAtThickness" classname="SnapScenarioTests" runstate="Runnable" seed="323346938" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000441" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1241" name="FaceToFace_Left_AlignsAtMinusHalfWidth" fullname="SnapScenarioTests.FaceToFace_Left_AlignsAtMinusHalfWidth" methodname="FaceToFace_Left_AlignsAtMinusHalfWidth" classname="SnapScenarioTests" runstate="Runnable" seed="1294276854" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000444" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1246" name="FaceToFace_ProducesFlushContact_NoIntersection" fullname="SnapScenarioTests.FaceToFace_ProducesFlushContact_NoIntersection" methodname="FaceToFace_ProducesFlushContact_NoIntersection" classname="SnapScenarioTests" runstate="Runnable" seed="1455693694" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000637" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1240" name="FaceToFace_Right_AlignsAtPlusHalfWidth" fullname="SnapScenarioTests.FaceToFace_Right_AlignsAtPlusHalfWidth" methodname="FaceToFace_Right_AlignsAtPlusHalfWidth" classname="SnapScenarioTests" runstate="Runnable" seed="2055921618" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000571" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1244" name="FaceToFace_Top_AlignsAtPlusHalfHeight" fullname="SnapScenarioTests.FaceToFace_Top_AlignsAtPlusHalfHeight" methodname="FaceToFace_Top_AlignsAtPlusHalfHeight" classname="SnapScenarioTests" runstate="Runnable" seed="914912901" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000461" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1260" name="NoSnap_TooFar" fullname="SnapScenarioTests.NoSnap_TooFar" methodname="NoSnap_TooFar" classname="SnapScenarioTests" runstate="Runnable" seed="2085530450" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000405" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1261" name="NoSnap_WhenIntersecting" fullname="SnapScenarioTests.NoSnap_WhenIntersecting" methodname="NoSnap_WhenIntersecting" classname="SnapScenarioTests" runstate="Runnable" seed="456589361" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000382" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1258" name="Rotated180AroundY_SnapsLikeUnrotated" fullname="SnapScenarioTests.Rotated180AroundY_SnapsLikeUnrotated" methodname="Rotated180AroundY_SnapsLikeUnrotated" classname="SnapScenarioTests" runstate="Runnable" seed="474960275" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000673" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1259" name="Rotated90AroundX_SnapsToFloor_FlushContact" fullname="SnapScenarioTests.Rotated90AroundX_SnapsToFloor_FlushContact" methodname="Rotated90AroundX_SnapsToFloor_FlushContact" classname="SnapScenarioTests" runstate="Runnable" seed="122199365" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000532" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1257" name="Rotated90AroundY_ButtJoint_FlushContact" fullname="SnapScenarioTests.Rotated90AroundY_ButtJoint_FlushContact" methodname="Rotated90AroundY_ButtJoint_FlushContact" classname="SnapScenarioTests" runstate="Runnable" seed="602686221" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000529" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1252" name="VertexAlign_BottomRightCorner_BothEdges" fullname="SnapScenarioTests.VertexAlign_BottomRightCorner_BothEdges" methodname="VertexAlign_BottomRightCorner_BothEdges" classname="SnapScenarioTests" runstate="Runnable" seed="162694957" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000488" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1251" name="VertexAlign_TopLeftCorner_BothEdges" fullname="SnapScenarioTests.VertexAlign_TopLeftCorner_BothEdges" methodname="VertexAlign_TopLeftCorner_BothEdges" classname="SnapScenarioTests" runstate="Runnable" seed="398390799" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000437" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1262" name="ZeroDimensions_ClampedToOne" fullname="SnapScenarioTests.ZeroDimensions_ClampedToOne" methodname="ZeroDimensions_ClampedToOne" classname="SnapScenarioTests" runstate="Runnable" seed="1517861727" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000394" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1263" name="SnapSystemTests" fullname="SnapSystemTests" classname="SnapSystemTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.008676" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1264" name="TrySnap_30mmGap_Snapped" fullname="SnapSystemTests.TrySnap_30mmGap_Snapped" methodname="TrySnap_30mmGap_Snapped" classname="SnapSystemTests" runstate="Runnable" seed="1466963114" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.001027" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1265" name="TrySnap_60mmGap_NotSnapped" fullname="SnapSystemTests.TrySnap_60mmGap_NotSnapped" methodname="TrySnap_60mmGap_NotSnapped" classname="SnapSystemTests" runstate="Runnable" seed="424420329" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000547" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1266" name="TrySnap_ElementAboveFloor_SnapsToFloor" fullname="SnapSystemTests.TrySnap_ElementAboveFloor_SnapsToFloor" methodname="TrySnap_ElementAboveFloor_SnapsToFloor" classname="SnapSystemTests" runstate="Runnable" seed="25989692" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.001895" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1267" name="TrySnap_IntersectingElements_NotSnapped" fullname="SnapSystemTests.TrySnap_IntersectingElements_NotSnapped" methodname="TrySnap_IntersectingElements_NotSnapped" classname="SnapSystemTests" runstate="Runnable" seed="1863971775" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.001444" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1270" name="TrySnap_SmallBoardNearCenter_AlignsCenters" fullname="SnapSystemTests.TrySnap_SmallBoardNearCenter_AlignsCenters" methodname="TrySnap_SmallBoardNearCenter_AlignsCenters" classname="SnapSystemTests" runstate="Runnable" seed="2145759340" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000803" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1269" name="TrySnap_SmallBoardNearEdge_AlignsEdgesNotCenter" fullname="SnapSystemTests.TrySnap_SmallBoardNearEdge_AlignsEdgesNotCenter" methodname="TrySnap_SmallBoardNearEdge_AlignsEdgesNotCenter" classname="SnapSystemTests" runstate="Runnable" seed="447324168" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000946" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1268" name="TrySnap_SnapDisabled_NotSnapped" fullname="SnapSystemTests.TrySnap_SnapDisabled_NotSnapped" methodname="TrySnap_SnapDisabled_NotSnapped" classname="SnapSystemTests" runstate="Runnable" seed="2124053644" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000486" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1271" name="SpecificationExportTests" fullname="SpecificationExportTests" classname="SpecificationExportTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.005209" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1275" name="SaveToFile_InvalidPath_ReturnsFalse" fullname="SpecificationExportTests.SaveToFile_InvalidPath_ReturnsFalse" methodname="SaveToFile_InvalidPath_ReturnsFalse" classname="SpecificationExportTests" runstate="Runnable" seed="445579862" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.001374" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[SpecExport] Failed: Illegal characters in path.
+]]></output>
+        </test-case>
+        <test-case id="1274" name="SaveToFile_WritesCsvFile" fullname="SpecificationExportTests.SaveToFile_WritesCsvFile" methodname="SaveToFile_WritesCsvFile" classname="SpecificationExportTests" runstate="Runnable" seed="1536849438" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.001898" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1273" name="ToCsv_EscapesNameContainingSemicolon" fullname="SpecificationExportTests.ToCsv_EscapesNameContainingSemicolon" methodname="ToCsv_EscapesNameContainingSemicolon" classname="SpecificationExportTests" runstate="Runnable" seed="365208156" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000214" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1272" name="ToCsv_HasHeaderAndTotalRow" fullname="SpecificationExportTests.ToCsv_HasHeaderAndTotalRow" methodname="ToCsv_HasHeaderAndTotalRow" classname="SpecificationExportTests" runstate="Runnable" seed="1307618847" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000578" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1276" name="SpecificationManagerTests" fullname="SpecificationManagerTests" classname="SpecificationManagerTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.004588" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1279" name="Build_EmptyList_ZeroBoardsZeroArea" fullname="SpecificationManagerTests.Build_EmptyList_ZeroBoardsZeroArea" methodname="Build_EmptyList_ZeroBoardsZeroArea" classname="SpecificationManagerTests" runstate="Runnable" seed="1881490369" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000229" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1282" name="Build_ExcludesBasePlate" fullname="SpecificationManagerTests.Build_ExcludesBasePlate" methodname="Build_ExcludesBasePlate" classname="SpecificationManagerTests" runstate="Runnable" seed="2122735824" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000830" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1280" name="Build_TotalArea_SumsGroups" fullname="SpecificationManagerTests.Build_TotalArea_SumsGroups" methodname="Build_TotalArea_SumsGroups" classname="SpecificationManagerTests" runstate="Runnable" seed="902383355" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000575" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1278" name="Build_TwoIdenticalOneDifferent_TwoGroups" fullname="SpecificationManagerTests.Build_TwoIdenticalOneDifferent_TwoGroups" methodname="Build_TwoIdenticalOneDifferent_TwoGroups" classname="SpecificationManagerTests" runstate="Runnable" seed="262282316" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000875" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1277" name="SurfaceArea_800x400x18_Is0_6832" fullname="SpecificationManagerTests.SurfaceArea_800x400x18_Is0_6832" methodname="SurfaceArea_800x400x18_Is0_6832" classname="SpecificationManagerTests" runstate="Runnable" seed="1279288666" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000184" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1281" name="ToCsv_TotalRow_CountAndAreaInCorrectColumns" fullname="SpecificationManagerTests.ToCsv_TotalRow_CountAndAreaInCorrectColumns" methodname="ToCsv_TotalRow_CountAndAreaInCorrectColumns" classname="SpecificationManagerTests" runstate="Runnable" seed="82233280" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000845" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1283" name="WallCutawayTests" fullname="WallCutawayTests" classname="WallCutawayTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.003838" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1285" name="FarWall_BeyondCenter_StaysUp" fullname="WallCutawayTests.FarWall_BeyondCenter_StaysUp" methodname="FarWall_BeyondCenter_StaysUp" classname="WallCutawayTests" runstate="Runnable" seed="946360332" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000686" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1284" name="NearWall_BetweenCameraAndCenter_Lowers" fullname="WallCutawayTests.NearWall_BetweenCameraAndCenter_Lowers" methodname="NearWall_BetweenCameraAndCenter_Lowers" classname="WallCutawayTests" runstate="Runnable" seed="1011243513" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000267" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1287" name="Partition_OnCameraSide_Lowers" fullname="WallCutawayTests.Partition_OnCameraSide_Lowers" methodname="Partition_OnCameraSide_Lowers" classname="WallCutawayTests" runstate="Runnable" seed="1189155320" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000220" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1286" name="SideWall_Perpendicular_StaysUp" fullname="WallCutawayTests.SideWall_Perpendicular_StaysUp" methodname="SideWall_Perpendicular_StaysUp" classname="WallCutawayTests" runstate="Runnable" seed="982656718" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000250" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1288" name="WallTests" fullname="WallTests" classname="WallTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.006929" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1292" name="LoweredWall_CapturedAtFullHeight" fullname="WallTests.LoweredWall_CapturedAtFullHeight" methodname="LoweredWall_CapturedAtFullHeight" classname="WallTests" runstate="Runnable" seed="507174960" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.001231" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1291" name="LoweredWall_Grab_RestoresFull_AndMovesFromFullBase" fullname="WallTests.LoweredWall_Grab_RestoresFull_AndMovesFromFullBase" methodname="LoweredWall_Grab_RestoresFull_AndMovesFromFullBase" classname="WallTests" runstate="Runnable" seed="1293206063" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000805" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1293" name="LoweredWall_SaveAndRestore_KeepsFullGeometry" fullname="WallTests.LoweredWall_SaveAndRestore_KeepsFullGeometry" methodname="LoweredWall_SaveAndRestore_KeepsFullGeometry" classname="WallTests" runstate="Runnable" seed="1837738762" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.001113" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1294" name="SetLowered_ReducesHeight_KeepsBaseOnFloor" fullname="WallTests.SetLowered_ReducesHeight_KeepsBaseOnFloor" methodname="SetLowered_ReducesHeight_KeepsBaseOnFloor" classname="WallTests" runstate="Runnable" seed="400037183" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000924" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1289" name="Specification_ExcludesWalls" fullname="WallTests.Specification_ExcludesWalls" methodname="Specification_ExcludesWalls" classname="WallTests" runstate="Runnable" seed="291674972" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000872" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1290" name="Validator_LoneWall_IsNotViolation" fullname="WallTests.Validator_LoneWall_IsNotViolation" methodname="Validator_LoneWall_IsNotViolation" classname="WallTests" runstate="Runnable" seed="243069450" result="Passed" start-time="2026-07-05 09:10:13Z" end-time="2026-07-05 09:10:13Z" duration="0.000770" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[Saving results to: C:/Users/gtx54/AppData/LocalLow/DefaultCompany/opencode-game-studio\TestResults.xml
+]]></output>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
