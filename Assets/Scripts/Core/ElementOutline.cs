@@ -27,34 +27,40 @@ namespace KitchenDesigner.Core
             0,4, 1,5, 2,6, 3,7, // вертикальные рёбра
         };
 
-        /// <summary>Меш с топологией Lines — 8 вершин, 24 индекса (12 рёбер).</summary>
-        public static Mesh CreateLinesMesh()
+        public const int EdgeCount = 12;
+
+        /// <summary>8 углов короба в МИРОВЫХ координатах через матрицу детали
+        /// (localToWorld). Учитывает позицию, поворот и масштаб — поэтому рёбра
+        /// ложатся точно на грани при любой ориентации доски. Чистая функция.</summary>
+        public static void WorldCorners(Matrix4x4 localToWorld, Vector3[] into)
         {
-            var mesh = new Mesh { name = "BoxWireframe" };
-            mesh.vertices = Corners;
-            mesh.SetIndices(EdgeIndices, MeshTopology.Lines, 0);
-            mesh.RecalculateBounds();
-            return mesh;
+            for (int i = 0; i < 8; i++)
+                into[i] = localToWorld.MultiplyPoint3x4(Corners[i]);
         }
     }
 
-    /// <summary>Чёрный проволочный контур короба для «прозрачного» режима: грани
-    /// детали делаются сквозными, а форма читается по рёбрам. Живёт отдельным
-    /// дочерним объектом, поэтому НЕ конфликтует с материалами детали и с
-    /// подсветкой выделения. Коллайдера нет — клик по-прежнему ловит саму деталь.</summary>
+    /// <summary>Чёрный контур короба для «прозрачного» режима: грани детали
+    /// делаются сквозными, а форма читается по 12 рёбрам. Каждое ребро — тонкий
+    /// брусок в МИРОВЫХ координатах (не дочерний масштаб!), поэтому контур не
+    /// «плывёт» при повороте/неравномерном масштабе доски и всегда заметной
+    /// толщины. Коллайдеров у брусков нет — клик по-прежнему ловит саму деталь.</summary>
+    [DisallowMultipleComponent]
     public class ElementOutline : MonoBehaviour
     {
-        private static Mesh _sharedMesh;
+        /// <summary>Толщина ребра в метрах.</summary>
+        private const float ThicknessMeters = 0.004f;
+
         private static Material _blackMat;
         private static Material _selectedMat;
 
-        private GameObject _child;
+        private Transform _root;
+        private readonly Transform[] _edges = new Transform[BoxWireframe.EdgeCount];
+        private readonly Vector3[] _corners = new Vector3[8];
+        private bool _visible;
 
-        /// <summary>Получить контур, если он уже создан (иначе null).</summary>
         public static ElementOutline For(KitchenElement element)
             => element != null ? element.GetComponent<ElementOutline>() : null;
 
-        /// <summary>Получить или создать контур на детали.</summary>
         public static ElementOutline Ensure(KitchenElement element)
         {
             if (element == null) return null;
@@ -66,44 +72,82 @@ namespace KitchenDesigner.Core
 
         private void Build()
         {
-            if (_child != null) return;
+            if (_root != null) return;
 
-            _child = new GameObject("__Outline");
-            _child.transform.SetParent(transform, false);
-            _child.transform.localPosition = Vector3.zero;
-            _child.transform.localRotation = Quaternion.identity;
-            _child.transform.localScale = Vector3.one; // рёбра ±0.5 * localScale детали
+            var rootGo = new GameObject("__Outline");
+            _root = rootGo.transform;
+            _root.SetParent(null, false); // мировые координаты, без наследования масштаба
 
-            var mf = _child.AddComponent<MeshFilter>();
-            mf.sharedMesh = SharedMesh();
+            for (int i = 0; i < BoxWireframe.EdgeCount; i++)
+            {
+                var seg = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                seg.name = "Edge" + i;
+                // Примитив-куб приносит BoxCollider — снимаем, чтобы контур не
+                // перехватывал клики мыши (клик должен попадать в саму деталь).
+                var col = seg.GetComponent<Collider>();
+                if (col != null) Destroy(col);
 
-            var mr = _child.AddComponent<MeshRenderer>();
-            mr.sharedMaterial = BlackMaterial();
-            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            mr.receiveShadows = false;
-            mr.renderingLayerMask = uint.MaxValue;
+                var mr = seg.GetComponent<MeshRenderer>();
+                mr.sharedMaterial = BlackMaterial();
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                mr.receiveShadows = false;
 
-            _child.SetActive(false);
+                seg.transform.SetParent(_root, false);
+                _edges[i] = seg.transform;
+            }
+
+            _root.gameObject.SetActive(false);
         }
 
-        /// <summary>Показать контур. selected → жёлтый (иначе чёрный).</summary>
         public void Show(bool selected)
         {
-            if (_child == null) Build();
-            var mr = _child.GetComponent<MeshRenderer>();
-            if (mr != null) mr.sharedMaterial = selected ? SelectedMaterial() : BlackMaterial();
-            _child.SetActive(true);
+            if (_root == null) Build();
+            var mat = selected ? SelectedMaterial() : BlackMaterial();
+            foreach (var e in _edges)
+                if (e != null) e.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            _root.gameObject.SetActive(true);
+            _visible = true;
+            UpdateEdges();
         }
 
         public void Hide()
         {
-            if (_child != null) _child.SetActive(false);
+            _visible = false;
+            if (_root != null) _root.gameObject.SetActive(false);
         }
 
-        private static Mesh SharedMesh()
+        private void LateUpdate()
         {
-            if (_sharedMesh == null) _sharedMesh = BoxWireframe.CreateLinesMesh();
-            return _sharedMesh;
+            if (_visible) UpdateEdges();
+        }
+
+        private void OnDestroy()
+        {
+            if (_root != null) Destroy(_root.gameObject);
+        }
+
+        /// <summary>Разложить 12 брусков по рёбрам мирового короба детали.</summary>
+        private void UpdateEdges()
+        {
+            if (_root == null) return;
+            BoxWireframe.WorldCorners(transform.localToWorldMatrix, _corners);
+
+            var idx = BoxWireframe.EdgeIndices;
+            for (int e = 0; e < BoxWireframe.EdgeCount; e++)
+            {
+                var seg = _edges[e];
+                if (seg == null) continue;
+                Vector3 a = _corners[idx[e * 2]];
+                Vector3 b = _corners[idx[e * 2 + 1]];
+                Vector3 dir = b - a;
+                float len = dir.magnitude;
+
+                seg.position = (a + b) * 0.5f;
+                seg.rotation = len > 1e-6f
+                    ? Quaternion.LookRotation(dir / len) // локальный +Z вдоль ребра
+                    : Quaternion.identity;
+                seg.localScale = new Vector3(ThicknessMeters, ThicknessMeters, len);
+            }
         }
 
         private static Material MakeUnlit(Color color)

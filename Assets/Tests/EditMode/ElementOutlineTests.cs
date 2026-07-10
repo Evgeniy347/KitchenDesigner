@@ -19,7 +19,7 @@ public class BoxWireframeTests
     [Test]
     public void EdgeIndices_Describe12Edges_InRange()
     {
-        Assert.AreEqual(24, BoxWireframe.EdgeIndices.Length, "12 рёбер * 2 индекса");
+        Assert.AreEqual(BoxWireframe.EdgeCount * 2, BoxWireframe.EdgeIndices.Length, "12 рёбер * 2 индекса");
         foreach (var i in BoxWireframe.EdgeIndices)
             Assert.IsTrue(i >= 0 && i < 8, "индекс ссылается на существующий угол");
     }
@@ -37,18 +37,33 @@ public class BoxWireframeTests
     }
 
     [Test]
-    public void CreateLinesMesh_HasLinesTopology()
+    public void WorldCorners_Identity_MatchLocal()
     {
-        var mesh = BoxWireframe.CreateLinesMesh();
-        try
-        {
-            Assert.AreEqual(8, mesh.vertexCount);
-            Assert.AreEqual(MeshTopology.Lines, mesh.GetTopology(0));
-            Assert.AreEqual(24, mesh.GetIndices(0).Length);
-        }
-        finally
-        {
-            Object.DestroyImmediate(mesh);
-        }
+        var into = new Vector3[8];
+        BoxWireframe.WorldCorners(Matrix4x4.identity, into);
+        for (int i = 0; i < 8; i++)
+            Assert.Less(Vector3.Distance(into[i], BoxWireframe.Corners[i]), 1e-6f);
+    }
+
+    [Test]
+    public void WorldCorners_ScaledAndTranslated_MapsBox()
+    {
+        // Доска 600×360×18 мм, смещённая и повёрнутая на 90° по Y.
+        var pos = new Vector3(1f, 0.5f, -2f);
+        var rot = Quaternion.Euler(0f, 90f, 0f);
+        var scale = new Vector3(0.6f, 0.36f, 0.018f);
+        var m = Matrix4x4.TRS(pos, rot, scale);
+
+        var into = new Vector3[8];
+        BoxWireframe.WorldCorners(m, into);
+
+        // Габарит по мировым углам совпадает с ожидаемым после поворота (оси X↔Z).
+        var min = into[0]; var max = into[0];
+        foreach (var p in into) { min = Vector3.Min(min, p); max = Vector3.Max(max, p); }
+        Assert.AreEqual(0.018f, max.x - min.x, 1e-4f, "после поворота ширина короба по X = толщина");
+        Assert.AreEqual(0.36f, max.y - min.y, 1e-4f, "высота по Y сохраняется");
+        Assert.AreEqual(0.6f, max.z - min.z, 1e-4f, "после поворота глубина по Z = ширина");
+        // Центр короба = позиция детали.
+        Assert.Less(Vector3.Distance((min + max) * 0.5f, pos), 1e-4f);
     }
 }

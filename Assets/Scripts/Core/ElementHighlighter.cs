@@ -60,14 +60,22 @@ namespace KitchenDesigner.Core
             _materialsInitialized = true;
         }
 
-        /// <summary>URP/Lit в режиме прозрачности с заданным цветом (alpha &lt; 1).</summary>
-        private static Material MakeTransparent(Shader shader, Color color)
+        /// <summary>URP/Lit в режиме прозрачности с заданным цветом (alpha &lt; 1).
+        /// Одного `_Surface=1` мало: в рантайме нужно ЯВНО задать blend-состояния,
+        /// иначе URP оставит непрозрачный проход и грань нарисуется сплошной.</summary>
+        public static Material MakeTransparent(Shader shader, Color color)
         {
             var m = new Material(shader);
             m.SetFloat("_Surface", 1);                       // 1 = Transparent
             m.SetFloat("_Blend", 0);                         // 0 = Alpha blend
+            m.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            m.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            m.SetInt("_ZWrite", 0);
+            m.DisableKeyword("_ALPHATEST_ON");
+            m.DisableKeyword("_ALPHAPREMULTIPLY_ON");
             m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            m.renderQueue = 3000;
+            m.SetOverrideTag("RenderType", "Transparent");
+            m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             m.SetColor("_BaseColor", color);
             return m;
         }
