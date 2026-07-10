@@ -6,6 +6,11 @@ namespace KitchenDesigner.Core
     {
         private void Awake()
         {
+            // Без этого плеер замирает при потере фокуса окна: перестают работать
+            // автосохранение по таймеру и TCP-мост отладки (запрос принимается
+            // фоновым потоком, а ответ шлётся из главного цикла — он на паузе).
+            Application.runInBackground = true;
+
             if (KitchenSettings.Instance != null)
                 KitchenSettings.Instance.Load();
             DisplaySettings.ApplyWindowMode();
