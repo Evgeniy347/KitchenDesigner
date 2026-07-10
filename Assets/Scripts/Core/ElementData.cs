@@ -30,18 +30,24 @@ namespace KitchenDesigner.Core
             var dims = element.DimensionsMM;
             d.dimensionsMM = new[] { dims.x, dims.y, dims.z };
 
-            // Полускрытая (опущенная) стена временно смещена вниз — в сохранение
-            // пишем её ПОЛНУЮ позицию, иначе после загрузки она «утонет» (станет ниже).
             var wall = element.GetComponent<Wall>();
-            var p = wall != null ? wall.FullPosition : element.transform.position;
+            var facade = element as FacadeElement;
+
+            // Позицию/поворот пишем как ЛОГИЧЕСКУЮ, а не текущую (смещённую) позу:
+            //  • полускрытая стена временно опущена вниз → берём FullPosition,
+            //    иначе после загрузки она «утонет»;
+            //  • открытая дверца отведена от петли → берём ЗАКРЫТУЮ позу, иначе
+            //    после загрузки она отводится ещё раз и «уезжает».
+            var p = wall != null ? wall.FullPosition
+                  : facade != null ? facade.ClosedPosition
+                  : element.transform.position;
             d.position = new[] { p.x, p.y, p.z };
 
-            var r = element.transform.rotation;
+            var r = facade != null ? facade.ClosedRotation : element.transform.rotation;
             d.rotation = new[] { r.x, r.y, r.z, r.w };
 
             d.movable = element.Movable;
             d.isWall = wall != null;
-            var facade = element as FacadeElement;
             d.isFacade = facade != null;
             if (facade != null)
             {

@@ -226,23 +226,28 @@ namespace KitchenDesigner.Core
                 }
 
                 var mat = new Material(renderer.material);
-                float alpha = renderer.material.GetColor("_BaseColor").a;
-                if (alpha < 0.99f)
+                // Прозрачность определяем по ФЛАГУ элемента, а не по альфе
+                // текущего материала (иначе подсветка «залипает» в непрозрачную
+                // ветку и красит сквозной элемент сплошным цветом).
+                if (element.Transparent)
                 {
+                    // Грань остаётся сквозной; выделение показываем жёлтым контуром.
                     mat.SetFloat("_Surface", 1);
+                    mat.SetFloat("_Blend", 0);
                     mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
                     mat.renderQueue = 3000;
-                    mat.SetColor("_BaseColor", new Color(1f, 0.95f, 0.6f, 0f));
+                    mat.SetColor("_BaseColor", new Color(1f, 0.9f, 0.4f, 0.12f));
+                    renderer.material = mat;
+                    ElementOutline.Ensure(element).Show(selected: true);
+                    return;
                 }
-                else
-                {
-                    mat.EnableKeyword("_EMISSION");
-                    float intensity = isMulti ? 0.3f : 0.5f;
-                    mat.SetColor("_EmissionColor", new Color(0.8f, 0.7f, 0.1f) * intensity);
-                    mat.SetColor("_BaseColor", isMulti
-                        ? new Color(1f, 0.97f, 0.7f, 1f)
-                        : new Color(1f, 0.95f, 0.6f, 1f));
-                }
+
+                mat.EnableKeyword("_EMISSION");
+                float intensity = isMulti ? 0.3f : 0.5f;
+                mat.SetColor("_EmissionColor", new Color(0.8f, 0.7f, 0.1f) * intensity);
+                mat.SetColor("_BaseColor", isMulti
+                    ? new Color(1f, 0.97f, 0.7f, 1f)
+                    : new Color(1f, 0.95f, 0.6f, 1f));
                 renderer.material = mat;
             }
         }

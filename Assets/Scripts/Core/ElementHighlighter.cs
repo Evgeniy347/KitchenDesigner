@@ -51,19 +51,25 @@ namespace KitchenDesigner.Core
             _dimmedMaterial = new Material(shader);
             _dimmedMaterial.SetColor("_BaseColor", new Color(0.35f, 0.35f, 0.38f, 1f));
 
-            _validTransparentMaterial = new Material(shader);
-            _validTransparentMaterial.SetFloat("_Surface", 1);
-            _validTransparentMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            _validTransparentMaterial.renderQueue = 3000;
-            _validTransparentMaterial.SetColor("_BaseColor", new Color(0f, 0f, 0f, 0f));
-
-            _invalidTransparentMaterial = new Material(shader);
-            _invalidTransparentMaterial.SetFloat("_Surface", 1);
-            _invalidTransparentMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            _invalidTransparentMaterial.renderQueue = 3000;
-            _invalidTransparentMaterial.SetColor("_BaseColor", new Color(0f, 0f, 0f, 0f));
+            // «Прозрачный» режим: грани почти сквозные (еле заметная тонировка),
+            // а форма читается по чёрным рёбрам контура (ElementOutline).
+            // Коллайдер не трогаем — клик по-прежнему попадает в объект.
+            _validTransparentMaterial = MakeTransparent(shader, new Color(0.7f, 0.85f, 0.7f, 0.08f));
+            _invalidTransparentMaterial = MakeTransparent(shader, new Color(0.9f, 0.55f, 0.55f, 0.12f));
 
             _materialsInitialized = true;
+        }
+
+        /// <summary>URP/Lit в режиме прозрачности с заданным цветом (alpha &lt; 1).</summary>
+        private static Material MakeTransparent(Shader shader, Color color)
+        {
+            var m = new Material(shader);
+            m.SetFloat("_Surface", 1);                       // 1 = Transparent
+            m.SetFloat("_Blend", 0);                         // 0 = Alpha blend
+            m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            m.renderQueue = 3000;
+            m.SetColor("_BaseColor", color);
+            return m;
         }
 
         public void RefreshHighlights()
@@ -107,12 +113,20 @@ namespace KitchenDesigner.Core
             if (ModuleEditMode.IsActive && !ModuleEditMode.IsEditable(element))
             {
                 renderer.material = _dimmedMaterial;
+                ElementOutline.For(element)?.Hide();
                 return;
             }
 
-            renderer.material = element.Transparent
-                ? (isValid ? _validTransparentMaterial : _invalidTransparentMaterial)
-                : (isValid ? _validMaterial : _invalidMaterial);
+            if (element.Transparent)
+            {
+                renderer.material = isValid ? _validTransparentMaterial : _invalidTransparentMaterial;
+                ElementOutline.Ensure(element).Show(selected: false); // чёрные рёбра
+            }
+            else
+            {
+                renderer.material = isValid ? _validMaterial : _invalidMaterial;
+                ElementOutline.For(element)?.Hide();
+            }
         }
     }
 }
