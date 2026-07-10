@@ -12,6 +12,8 @@ namespace KitchenDesigner.Core
         [SerializeField] private float _zoomSpeed = 1f;
         [SerializeField] private float _orbitSpeed = 2f;
         [SerializeField] private float _panSpeed = 0.02f;
+        [SerializeField] private float _moveSpeed = 3f;
+        [SerializeField] private float _keyboardOrbitSpeed = 90f;
 
         private Vector3 _target = Vector3.zero;
         private float _angleX = 30f;
@@ -131,7 +133,53 @@ namespace KitchenDesigner.Core
             if (Input.GetKeyDown(KeyCode.F))
                 FocusOnSelection();
 
+            HandleWASD();
+            HandleArrowOrbit();
+            HandlePlusMinusZoom();
+
             UpdateCameraPosition();
+        }
+
+        private void HandleWASD()
+        {
+            float dt = Time.deltaTime;
+            if (dt < 1e-6f) return;
+            float speed = _moveSpeed * _distance * 0.5f * dt;
+
+            Vector3 fwd = Quaternion.Euler(0, _angleY, 0) * Vector3.forward;
+            Vector3 right = Quaternion.Euler(0, _angleY, 0) * Vector3.right;
+
+            if (Input.GetKey(KeyCode.W)) _target += fwd * speed;
+            if (Input.GetKey(KeyCode.S)) _target -= fwd * speed;
+            if (Input.GetKey(KeyCode.A)) _target -= right * speed;
+            if (Input.GetKey(KeyCode.D)) _target += right * speed;
+        }
+
+        private void HandleArrowOrbit()
+        {
+            float dt = Time.deltaTime;
+            if (dt < 1e-6f) return;
+            float speed = _keyboardOrbitSpeed * dt;
+
+            if (Input.GetKey(KeyCode.LeftArrow)) _angleY -= speed;
+            if (Input.GetKey(KeyCode.RightArrow)) _angleY += speed;
+            if (Input.GetKey(KeyCode.UpArrow)) _angleX += speed;
+            if (Input.GetKey(KeyCode.DownArrow)) _angleX -= speed;
+            _angleX = Mathf.Clamp(_angleX, -89f, 89f);
+        }
+
+        private void HandlePlusMinusZoom()
+        {
+            float delta = 0f;
+            if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus))
+                delta = -1f;
+            else if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
+                delta = 1f;
+            if (Mathf.Abs(delta) > 0.01f)
+            {
+                _distance += delta * _zoomSpeed * _distance * 0.2f;
+                _distance = Mathf.Clamp(_distance, _minDistance, _maxDistance);
+            }
         }
 
         private static bool PointerOverUI()

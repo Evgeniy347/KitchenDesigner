@@ -201,7 +201,7 @@ namespace KitchenDesigner.Core
         private void Update()
         {
             HandleDuplicate();
-            HandleArrowKeys();
+            HandleDelete();
             HandleDragInput();
         }
 
@@ -226,40 +226,22 @@ namespace KitchenDesigner.Core
             }
         }
 
-        // Сдвиг выделенной доски стрелками на шаг сетки (или 1мм). Shift → по вертикали.
-        private void HandleArrowKeys()
+        private void HandleDelete()
         {
-            if (_target == null || IsDragging) return;
-            if (!_target.Movable) return;
-            if (!ModuleEditMode.IsEditable(_target)) return;
+            if (IsDragging) return;
+            if (!Input.GetKeyDown(KeyCode.Delete)) return;
 
-            var s = KitchenSettings.Instance;
-            float stepMM = (s != null && s.GridEnabled) ? s.GridStep : 1f;
-            float step = stepMM * AppConstants.MM_TO_UNITS;
+            var sel = SelectionManager.Instance;
+            if (sel == null) return;
 
-            Vector3 d = Vector3.zero;
-            if (Input.GetKeyDown(KeyCode.LeftArrow)) d.x -= step;
-            if (Input.GetKeyDown(KeyCode.RightArrow)) d.x += step;
-            if (ShiftHeld)
-            {
-                if (Input.GetKeyDown(KeyCode.UpArrow)) d.y += step;
-                if (Input.GetKeyDown(KeyCode.DownArrow)) d.y -= step;
-            }
-            else
-            {
-                if (Input.GetKeyDown(KeyCode.UpArrow)) d.z += step;
-                if (Input.GetKeyDown(KeyCode.DownArrow)) d.z -= step;
-            }
+            // Удаляем все выделенные элементы.
+            var list = sel.SelectedElements;
+            if (list == null || list.Count == 0) return;
 
-            if (d == Vector3.zero) return;
+            foreach (var e in list)
+                CommandStack.Execute(new DeleteCommand(e.gameObject));
 
-            Vector3 prev = _target.transform.position;
-            _target.transform.position = GridManager.SnapToGrid(prev + d);
-
-            if (KitchenSettings.Instance.BlockOnViolation && MovedCausesViolation())
-                _target.transform.position = prev;
-
-            RefreshHighlights();
+            sel.DeselectAll();
         }
 
         private void OnRenderObject()
