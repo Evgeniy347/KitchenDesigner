@@ -313,13 +313,13 @@ public class ContextMenuLayoutTests
         var label = mode.GetComponentInChildren<Text>(true);
         var button = mode.GetComponent<Button>();
 
-        Assert.AreEqual(DoorMode.Left, facade.Mode);
+        Assert.AreEqual(DoorMode.HingeFrontLeft, facade.Mode);
         button.onClick.Invoke();
-        Assert.AreEqual(DoorMode.Right, facade.Mode, "клик переключает режим");
-        Assert.AreEqual(FacadeDoor.Symbol(DoorMode.Right), label.text, "символ обновляется");
+        Assert.AreEqual(DoorMode.HingeFrontRight, facade.Mode, "клик переключает режим");
+        Assert.AreEqual(FacadeDoor.Symbol(DoorMode.HingeFrontRight), label.text, "символ обновляется");
 
-        // Полный цикл возвращает к началу (4 ребра + ящик = 5).
-        for (int i = 0; i < 4; i++) button.onClick.Invoke();
-        Assert.AreEqual(DoorMode.Left, facade.Mode);
+        // Полный цикл (12 рёбер + 6 ящиков = 18) возвращает к началу.
+        for (int i = 0; i < FacadeDoor.Count - 1; i++) button.onClick.Invoke();
+        Assert.AreEqual(DoorMode.HingeFrontLeft, facade.Mode);
     }
 }

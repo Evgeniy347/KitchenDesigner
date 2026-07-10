@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core.UI
 
             // Открывание фасада (только фасад): переключатель режима (один символ,
             // 4 ребра + ящик) и кнопка Открыть/Закрыть — в одном ряду.
-            var modeButton = UIFactory.CreateButton("CtxMode", panel.transform, FacadeDoor.Symbol(DoorMode.Left),
+            var modeButton = UIFactory.CreateButton("CtxMode", panel.transform, FacadeDoor.Symbol(DoorMode.HingeFrontLeft),
                 new Vector2(-100, 0), new Vector2(48, BtnH), CycleDoorMode);
             _modeButtonLabel = modeButton.GetComponentInChildren<Text>();
 
@@ -477,7 +477,7 @@ namespace KitchenDesigner.Core.UI
         private void UpdateModeButton(FacadeElement facade)
         {
             if (_modeButtonLabel != null)
-                _modeButtonLabel.text = FacadeDoor.Symbol(facade != null ? facade.Mode : DoorMode.Left);
+                _modeButtonLabel.text = FacadeDoor.Symbol(facade != null ? facade.Mode : DoorMode.HingeFrontLeft);
         }
 
         private void Duplicate()

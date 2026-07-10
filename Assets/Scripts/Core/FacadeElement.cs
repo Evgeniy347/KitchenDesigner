@@ -47,7 +47,7 @@ namespace KitchenDesigner.Core
         // вычисляются из ЗАКРЫТОЙ позы каждый кадр — без накопления ошибки.
         private const float OpenSeconds = 0.4f;
 
-        [SerializeField] private DoorMode _mode = DoorMode.Left;
+        [SerializeField] private DoorMode _mode = DoorMode.HingeFrontLeft;
         private bool _open;                              // целевое состояние
         private float _t;                                // прогресс 0..1 (линейный по времени)
         private Vector3 _closedPos;

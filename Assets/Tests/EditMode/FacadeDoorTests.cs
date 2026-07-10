@@ -9,6 +9,9 @@ public class FacadeDoorTests
     // 600×700×18 мм → половины в юнитах (метрах).
     private static readonly Vector3 Half = new Vector3(0.3f, 0.35f, 0.009f);
 
+    private static IEnumerable<DoorMode> AllModes() =>
+        (DoorMode[])System.Enum.GetValues(typeof(DoorMode));
+
     // ── Плавность (синус ease-in-out) ────────────────────────────────
     [Test]
     public void Ease_Endpoints()
@@ -49,28 +52,35 @@ public class FacadeDoorTests
         Assert.AreEqual(1f, FacadeDoor.Ease(5f), 1e-5f);
     }
 
-    // ── Переключатель режима ─────────────────────────────────────────
+    // ── Переключатель режима (18 = 12 рёбер + 6 ящиков) ───────────────
     [Test]
-    public void Next_Cycles_ThroughAllFive()
+    public void Count_Is18()
     {
-        Assert.AreEqual(DoorMode.Right, FacadeDoor.Next(DoorMode.Left));
-        Assert.AreEqual(DoorMode.Top, FacadeDoor.Next(DoorMode.Right));
-        Assert.AreEqual(DoorMode.Bottom, FacadeDoor.Next(DoorMode.Top));
-        Assert.AreEqual(DoorMode.Drawer, FacadeDoor.Next(DoorMode.Bottom));
-        Assert.AreEqual(DoorMode.Left, FacadeDoor.Next(DoorMode.Drawer), "после ящика — снова слева");
+        Assert.AreEqual(18, FacadeDoor.Count);
     }
 
     [Test]
-    public void Symbol_IsSingleChar_AndDistinct()
+    public void Next_Advances_AndWrapsFullCircle()
     {
-        var modes = new[] { DoorMode.Left, DoorMode.Right, DoorMode.Top, DoorMode.Bottom, DoorMode.Drawer };
+        Assert.AreEqual(DoorMode.HingeFrontRight, FacadeDoor.Next(DoorMode.HingeFrontLeft));
+        Assert.AreEqual(DoorMode.HingeFrontLeft, FacadeDoor.Next(DoorMode.DrawerDown), "после последнего — первый");
+
+        var m = DoorMode.HingeFrontLeft;
+        for (int i = 0; i < FacadeDoor.Count; i++) m = FacadeDoor.Next(m);
+        Assert.AreEqual(DoorMode.HingeFrontLeft, m, "полный цикл возвращает к началу");
+    }
+
+    [Test]
+    public void Symbol_EveryMode_IsSingleChar_AndDistinct()
+    {
         var seen = new HashSet<string>();
-        foreach (var m in modes)
+        foreach (var m in AllModes())
         {
             var s = FacadeDoor.Symbol(m);
             Assert.AreEqual(1, s.Length, $"символ режима {m} должен быть одним знаком");
             Assert.IsTrue(seen.Add(s), $"символ режима {m} должен быть уникальным");
         }
+        Assert.AreEqual(18, seen.Count);
     }
 
     // ── Поза: рёбра ──────────────────────────────────────────────────
@@ -79,29 +89,46 @@ public class FacadeDoorTests
     {
         var cp = new Vector3(1f, 0.5f, -2f);
         var cr = Quaternion.Euler(0f, 30f, 0f);
-        FacadeDoor.Pose(cp, cr, Half, DoorMode.Left, 0f, out var pos, out var rot);
+        FacadeDoor.Pose(cp, cr, Half, DoorMode.HingeFrontLeft, 0f, out var pos, out var rot);
         Assert.Less(Vector3.Distance(pos, cp), 1e-4f);
         Assert.Less(Quaternion.Angle(rot, cr), 1e-3f);
+    }
+
+    [Test]
+    public void Pose_ClosedAtProgressZero_ForEveryMode()
+    {
+        var cp = new Vector3(1f, 0.5f, -2f);
+        var cr = Quaternion.Euler(10f, 30f, 0f);
+        foreach (var m in AllModes())
+        {
+            FacadeDoor.Pose(cp, cr, Half, m, 0f, out var pos, out var rot);
+            Assert.Less(Vector3.Distance(pos, cp), 1e-4f, $"{m}: закрыто ≠ исходное");
+            Assert.Less(Quaternion.Angle(rot, cr), 1e-3f, $"{m}: закрыто ≠ исходное");
+        }
     }
 
     [Test]
     public void Pose_FullyOpen_Rotates90()
     {
         var cr = Quaternion.identity;
-        FacadeDoor.Pose(Vector3.zero, cr, Half, DoorMode.Left, 1f, out _, out var rot);
+        FacadeDoor.Pose(Vector3.zero, cr, Half, DoorMode.HingeFrontLeft, 1f, out _, out var rot);
         Assert.AreEqual(90f, Quaternion.Angle(cr, rot), 0.5f);
     }
 
-    [TestCase(DoorMode.Left)]
-    [TestCase(DoorMode.Right)]
-    [TestCase(DoorMode.Top)]
-    [TestCase(DoorMode.Bottom)]
+    [TestCase(DoorMode.HingeFrontLeft)]
+    [TestCase(DoorMode.HingeFrontRight)]
+    [TestCase(DoorMode.HingeFrontTop)]
+    [TestCase(DoorMode.HingeFrontBottom)]
+    [TestCase(DoorMode.HingeBackLeft)]
+    [TestCase(DoorMode.HingeBackTop)]
+    [TestCase(DoorMode.HingeEdgeTopLeft)]
+    [TestCase(DoorMode.HingeEdgeBottomRight)]
     public void Pose_HingeEdge_StaysFixed(DoorMode mode)
     {
         var cp = new Vector3(0.5f, 1f, 0.25f);
         var cr = Quaternion.Euler(0f, 90f, 0f);
 
-        Assert.IsTrue(FacadeDoor.Hinge(mode, Half, out var pivotLocal, out _, out _));
+        Assert.IsTrue(FacadeDoor.Hinge(mode, Half, out var pivotLocal, out _));
         var pivotClosed = cp + cr * pivotLocal;
 
         FacadeDoor.Pose(cp, cr, Half, mode, 1f, out var pos, out var rot);
@@ -111,45 +138,49 @@ public class FacadeDoorTests
             "ребро-петля не должно смещаться при открытии");
     }
 
-    [TestCase(DoorMode.Left)]
-    [TestCase(DoorMode.Right)]
-    [TestCase(DoorMode.Top)]
-    [TestCase(DoorMode.Bottom)]
-    public void Pose_Edge_TiltsOutOfPlane(DoorMode mode)
+    [Test]
+    public void Pose_FrontEdges_OpenOutward_CenterMovesTowardMinusZ()
     {
+        // 4 передних ребра распахиваются наружу: центр фасада уезжает к −Z
+        // (при 90° нормаль ложится в плоскость, поэтому проверяем именно центр).
         var cr = Quaternion.identity;
-        FacadeDoor.Pose(Vector3.zero, cr, Half, mode, 1f, out _, out var rot);
-        Assert.Greater(Quaternion.Angle(cr, rot), 1f, "открытая дверца выходит из плоскости");
+        foreach (var m in new[] { DoorMode.HingeFrontLeft, DoorMode.HingeFrontRight,
+                                  DoorMode.HingeFrontTop, DoorMode.HingeFrontBottom })
+        {
+            FacadeDoor.Pose(Vector3.zero, cr, Half, m, 1f, out var pos, out _);
+            Assert.Less(pos.z, -0.05f, $"{m}: центр не ушёл наружу (к −Z)");
+        }
     }
 
     // ── Поза: ящик ───────────────────────────────────────────────────
     [Test]
-    public void Pose_Drawer_SlidesForward_NoRotation()
+    public void Pose_DrawerOut_SlidesTowardViewer_NoRotation()
     {
         var cp = new Vector3(1f, 0.5f, -2f);
         var cr = Quaternion.Euler(0f, 90f, 0f);
 
-        FacadeDoor.Pose(cp, cr, Half, DoorMode.Drawer, 1f, out var pos, out var rot);
+        FacadeDoor.Pose(cp, cr, Half, DoorMode.DrawerOut, 1f, out var pos, out var rot);
 
         Assert.Less(Quaternion.Angle(cr, rot), 1e-3f, "ящик не поворачивается");
-        var expected = cp + cr * (Vector3.back * FacadeDoor.DrawerSlideMeters);
-        Assert.Less(Vector3.Distance(pos, expected), 1e-4f, "ящик выдвигается вперёд по нормали");
+        var expected = cp + cr * (Vector3.back * FacadeDoor.DrawerSlideMeters); // −Z локально
+        Assert.Less(Vector3.Distance(pos, expected), 1e-4f);
     }
 
     [Test]
-    public void Pose_Drawer_Closed_EqualsClosed()
+    public void Pose_DrawerRight_SlidesAlongPlusX()
     {
-        var cp = new Vector3(1f, 0.5f, -2f);
-        var cr = Quaternion.Euler(0f, 90f, 0f);
-        FacadeDoor.Pose(cp, cr, Half, DoorMode.Drawer, 0f, out var pos, out var rot);
-        Assert.Less(Vector3.Distance(pos, cp), 1e-4f);
-        Assert.Less(Quaternion.Angle(rot, cr), 1e-3f);
+        var cp = Vector3.zero;
+        var cr = Quaternion.identity;
+        FacadeDoor.Pose(cp, cr, Half, DoorMode.DrawerRight, 1f, out var pos, out _);
+        var expected = Vector3.right * FacadeDoor.DrawerSlideMeters;
+        Assert.Less(Vector3.Distance(pos, expected), 1e-4f);
     }
 
     [Test]
-    public void Hinge_ReturnsFalse_ForDrawer()
+    public void Hinge_ReturnsFalse_ForDrawerModes()
     {
-        Assert.IsFalse(FacadeDoor.Hinge(DoorMode.Drawer, Half, out _, out _, out _));
+        Assert.IsFalse(FacadeDoor.Hinge(DoorMode.DrawerOut, Half, out _, out _));
+        Assert.IsFalse(FacadeDoor.Hinge(DoorMode.DrawerUp, Half, out _, out _));
     }
 }
 
@@ -188,21 +219,21 @@ public class FacadeDoorAnimationTests
     }
 
     [Test]
-    public void Mode_Default_IsLeft()
+    public void Mode_Default_IsHingeFrontLeft()
     {
         var f = MakeFacade();
-        Assert.AreEqual(DoorMode.Left, f.Mode);
+        Assert.AreEqual(DoorMode.HingeFrontLeft, f.Mode);
     }
 
     [Test]
-    public void CycleMode_Advances_AndWraps()
+    public void CycleMode_Advances_AndWrapsAfter18()
     {
         var f = MakeFacade();
-        f.CycleMode(); Assert.AreEqual(DoorMode.Right, f.Mode);
-        f.CycleMode(); Assert.AreEqual(DoorMode.Top, f.Mode);
-        f.CycleMode(); Assert.AreEqual(DoorMode.Bottom, f.Mode);
-        f.CycleMode(); Assert.AreEqual(DoorMode.Drawer, f.Mode);
-        f.CycleMode(); Assert.AreEqual(DoorMode.Left, f.Mode, "цикл возвращается к началу");
+        f.CycleMode();
+        Assert.AreEqual(DoorMode.HingeFrontRight, f.Mode);
+
+        for (int i = 0; i < FacadeDoor.Count; i++) f.CycleMode();
+        Assert.AreEqual(DoorMode.HingeFrontRight, f.Mode, "полный цикл (18) возвращает в ту же точку");
     }
 
     [Test]
@@ -247,7 +278,7 @@ public class FacadeDoorAnimationTests
         var f = MakeFacade();
         var closedPos = f.transform.position;
         var closedRot = f.transform.rotation;
-        f.Mode = DoorMode.Drawer;
+        f.Mode = DoorMode.DrawerOut;
 
         f.SetOpen(true);
         f.StepDoor(1f);
