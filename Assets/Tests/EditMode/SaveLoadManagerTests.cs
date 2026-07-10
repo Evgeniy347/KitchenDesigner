@@ -129,6 +129,21 @@ public class SaveLoadManagerTests
     }
 
     [Test]
+    public void Movable_RoundTripsThroughSaveAndRestore()
+    {
+        var el = CreateElement("Locked", new Vector3Int(600, 400, 18), Vector3.zero);
+        el.Movable = false;
+        var data = SaveLoadManager.CaptureScene(_spawned.ConvertAll(g => g.GetComponent<KitchenElement>()));
+        Assert.IsFalse(data.elements[0].movable);
+
+        var restored = SaveLoadManager.Deserialize(SaveLoadManager.Serialize(data));
+        var created = SaveLoadManager.RestoreScene(restored);
+
+        Assert.AreEqual(1, created.Count);
+        Assert.IsFalse(created[0].GetComponent<KitchenElement>().Movable);
+    }
+
+    [Test]
     public void LoadLastSession_RestoresBoards_FromLastPath()
     {
         CreateElement("Saved", new Vector3Int(800, 400, 18), new Vector3(0.5f, 0.2f, 0.3f));

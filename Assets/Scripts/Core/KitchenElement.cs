@@ -8,6 +8,7 @@ namespace KitchenDesigner.Core
     {
         [SerializeField] private string _boardName = "Board";
         [SerializeField] private Vector3Int _dimensionsMM = new Vector3Int(800, 400, 18);
+        [SerializeField] private bool _movable = true;
 
         public string BoardName
         {
@@ -28,6 +29,14 @@ namespace KitchenDesigner.Core
                 _dimensionsMM = clamped;
                 ApplyDimensions();
             }
+        }
+
+        /// <summary>Можно ли перемещать объект (ЛКМ-drag и стрелки). Управляется
+        /// чекбоксом «Запретить перемещение» в свойствах объекта.</summary>
+        public bool Movable
+        {
+            get => _movable;
+            set => _movable = value;
         }
 
         public struct Face

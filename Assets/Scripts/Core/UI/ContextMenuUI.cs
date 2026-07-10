@@ -12,6 +12,7 @@ namespace KitchenDesigner.Core.UI
         private KitchenElement _target;
 
         private InputField _name, _w, _h, _d, _x, _y, _z, _rx, _ry, _rz;
+        private Toggle _lockToggle;
 
         private void Awake()
         {
@@ -61,6 +62,9 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(65, -144), new Vector2(120, 32), Duplicate);
             UIFactory.CreateButton("CtxDel", panel.transform, "Удалить",
                 new Vector2(0, -180), new Vector2(248, 32), Delete);
+
+            _lockToggle = UIFactory.CreateToggle("CtxLock", panel.transform, "Запретить перемещение", false,
+                new Vector2(0, -218), new Vector2(248, 26), v => { if (_target != null) _target.Movable = !v; });
 
             _root.SetActive(false);
 
@@ -129,6 +133,8 @@ namespace KitchenDesigner.Core.UI
             _h.text = dims.y.ToString();
             _d.text = dims.z.ToString();
             RefreshTransformFields();
+
+            _lockToggle.SetIsOnWithoutNotify(!element.Movable);
 
             _root.SetActive(true);
         }
