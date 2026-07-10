@@ -379,6 +379,122 @@ public class McpCommandHandlerTests
         Assert.AreEqual(2, facade.GapBottom);
     }
 
+    // ── set_element_lock ──────────────────────────────────────────────
+
+    [Test]
+    public void SetElementLock_LocksElement()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        Assert.IsTrue(el.Movable);
+
+        var resp = _handler.Handle(MakeReq("set_element_lock",
+            @"{""name"":""Board"",""locked"":true}"));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.IsFalse(el.Movable);
+    }
+
+    [Test]
+    public void SetElementLock_UnlocksElement()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        el.Movable = false;
+
+        var resp = _handler.Handle(MakeReq("set_element_lock",
+            @"{""name"":""Board"",""locked"":false}"));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.IsTrue(el.Movable);
+    }
+
+    [Test]
+    public void SetElementLock_Errors_WhenNameMissing()
+    {
+        var resp = _handler.Handle(MakeReq("set_element_lock", @"{}"));
+        Assert.AreEqual("error", resp.type);
+    }
+
+    [Test]
+    public void SetElementLock_Errors_WhenElementNotFound()
+    {
+        var resp = _handler.Handle(MakeReq("set_element_lock",
+            @"{""name"":""NonExistent"",""locked"":true}"));
+        Assert.AreEqual("error", resp.type);
+    }
+
+    // ── Lock guard on mutations ───────────────────────────────────────
+
+    [Test]
+    public void MoveElement_Errors_WhenLocked()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        el.Movable = false;
+
+        var resp = _handler.Handle(MakeReq("move_element",
+            @"{""name"":""Board"",""x"":1,""y"":0,""z"":0}"));
+
+        Assert.AreEqual("error", resp.type);
+        Assert.AreEqual(Vector3.zero, el.transform.position);
+    }
+
+    [Test]
+    public void ResizeElement_Errors_WhenLocked()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        el.Movable = false;
+
+        var resp = _handler.Handle(MakeReq("resize_element",
+            @"{""name"":""Board"",""width"":1200,""height"":600,""depth"":36}"));
+
+        Assert.AreEqual("error", resp.type);
+        Assert.AreEqual(new Vector3Int(800, 400, 18), el.DimensionsMM);
+    }
+
+    [Test]
+    public void RotateElement_Errors_WhenLocked()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        el.Movable = false;
+
+        var resp = _handler.Handle(MakeReq("rotate_element",
+            @"{""name"":""Board"",""x"":0,""y"":90,""z"":0}"));
+
+        Assert.AreEqual("error", resp.type);
+        Assert.AreEqual(Quaternion.identity, el.transform.rotation);
+    }
+
+    [Test]
+    public void DeleteElement_Errors_WhenLocked()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        el.Movable = false;
+
+        var resp = _handler.Handle(MakeReq("delete_element",
+            @"{""name"":""Board""}"));
+
+        Assert.AreEqual("error", resp.type);
+        Assert.IsNotNull(FindBoard("Board"), "Element should not be deleted");
+    }
+
+    [Test]
+    public void LockedElement_CanBeUnlockedAndMoved()
+    {
+        var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        el.Movable = false;
+
+        // unlock
+        var unlockResp = _handler.Handle(MakeReq("set_element_lock",
+            @"{""name"":""Board"",""locked"":false}"));
+        Assert.AreEqual("result", unlockResp.type);
+        Assert.IsTrue(el.Movable);
+
+        // now move succeeds
+        var moveResp = _handler.Handle(MakeReq("move_element",
+            @"{""name"":""Board"",""x"":1,""y"":0,""z"":0}"));
+        Assert.AreEqual("result", moveResp.type);
+        Assert.AreEqual(new Vector3(1, 0, 0), el.transform.position);
+    }
+
     private static KitchenElement FindBoard(string name)
     {
         foreach (var el in BoardRegistry.GetAll())
