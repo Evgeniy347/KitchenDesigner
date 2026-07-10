@@ -144,6 +144,45 @@ public class SaveLoadManagerTests
     }
 
     [Test]
+    public void HandleMode_RoundTripsThroughCaptureAndRestore()
+    {
+        ResizeHandleManager.SetMode(ResizeHandleManager.HandleMode.Move);
+        var data = SaveLoadManager.CaptureScene(new List<KitchenElement>());
+        Assert.AreEqual("Move", data.handleMode);
+
+        ResizeHandleManager.SetMode(ResizeHandleManager.HandleMode.Resize);
+
+        SaveLoadManager.RestoreScene(data);
+        Assert.AreEqual(ResizeHandleManager.HandleMode.Move, ResizeHandleManager.Mode);
+
+        ResizeHandleManager.SetMode(ResizeHandleManager.HandleMode.Resize);
+    }
+
+    [Test]
+    public void BasePlate_PositionAndSize_RoundTripThroughCaptureAndRestore()
+    {
+        var floor = CreateElement("BasePlate", new Vector3Int(3000, 18, 3000), new Vector3(0, -0.009f, 0));
+        floor.gameObject.AddComponent<BasePlate>();
+        floor.gameObject.tag = "Floor";
+        CreateElement("Board", new Vector3Int(800, 400, 18), new Vector3(0.5f, 0.2f, 0.3f));
+
+        var data = SaveLoadManager.CaptureScene(_spawned.ConvertAll(g => g.GetComponent<KitchenElement>()));
+
+        Assert.IsNotNull(data.basePlate, "BasePlate должен быть в сохранении");
+        Assert.AreEqual(new[] { 3000, 18, 3000 }, data.basePlate.dimensionsMM);
+        Assert.AreEqual(0f, data.basePlate.position[0], 0.0001f);
+        Assert.AreEqual(-0.009f, data.basePlate.position[1], 0.001f);
+        Assert.AreEqual(0f, data.basePlate.position[2], 0.0001f);
+
+        floor.transform.position = new Vector3(1f, 2f, 3f);
+
+        SaveLoadManager.RestoreScene(data);
+        Assert.AreEqual(0f, floor.transform.position.x, 0.0001f);
+        Assert.AreEqual(-0.009f, floor.transform.position.y, 0.001f);
+        Assert.AreEqual(0f, floor.transform.position.z, 0.0001f);
+    }
+
+    [Test]
     public void LoadLastSession_RestoresBoards_FromLastPath()
     {
         CreateElement("Saved", new Vector3Int(800, 400, 18), new Vector3(0.5f, 0.2f, 0.3f));
