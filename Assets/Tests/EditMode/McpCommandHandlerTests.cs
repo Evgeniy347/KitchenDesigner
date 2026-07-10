@@ -430,6 +430,64 @@ public class McpCommandHandlerTests
     }
 
     [Test]
+    public void CreateRadialShelf_UsesProvidedRadiusAndThickness()
+    {
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "RS1", name = "RS1", x = 0.5f, y = 0.1f, z = -1f,
+            depth = 25, radius = 450, is_radial_shelf = true
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.IsTrue(GetProp<bool>(resp.data, "is_radial_shelf"));
+        Assert.AreEqual(450, GetProp<int>(resp.data, "radius"));
+        var el = FindBoard("RS1");
+        Assert.IsNotNull(el);
+        var shelf = el.GetComponent<RadialShelfElement>();
+        Assert.IsNotNull(shelf);
+        Assert.AreEqual(450, shelf.Radius);
+        Assert.AreEqual(new Vector3Int(450, 25, 450), shelf.DimensionsMM);
+    }
+
+    [Test]
+    public void CreateRadialShelf_DefaultsRadius_WhenNotProvided()
+    {
+        var resp = _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "RS2", name = "RS2", x = 0f, y = 0f, z = 0f,
+            is_radial_shelf = true
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.IsTrue(GetProp<bool>(resp.data, "is_radial_shelf"));
+        Assert.AreEqual(300, GetProp<int>(resp.data, "radius"));
+        var el = FindBoard("RS2");
+        Assert.IsNotNull(el);
+        Assert.AreEqual(300, el.GetComponent<RadialShelfElement>().Radius);
+    }
+
+    [Test]
+    public void ConvertElement_PartToRadialShelf_ChangesType()
+    {
+        _handler.Handle(MakeReq("create_element", new
+        {
+            template_name = "Part1", name = "Part1", x = 0f, y = 0f, z = 0f,
+            width = 400, height = 18, depth = 300
+        }));
+
+        var resp = _handler.Handle(MakeReq("convert_element", new
+        {
+            name = "Part1", target = "radial_shelf"
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        var el = FindBoard("Part1");
+        Assert.IsNotNull(el);
+        Assert.IsNotNull(el.GetComponent<RadialShelfElement>());
+        Assert.AreEqual(400, el.GetComponent<RadialShelfElement>().Radius);
+    }
+
+    [Test]
     public void SetElementLock_LocksElement()
     {
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);

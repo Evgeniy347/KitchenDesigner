@@ -92,9 +92,11 @@ export interface CreateElementParams {
   width?: number;
   height?: number;
   depth?: number;
+  radius?: number;
   is_wall?: boolean;
   is_facade?: boolean;
   is_assembled?: boolean;
+  is_radial_shelf?: boolean;
   is_floor?: boolean;
   fill?: string;
   gapLeft?: number;

@@ -240,6 +240,43 @@ public class ElementConverterTests
         Assert.AreEqual(0, result.GapBottom);
     }
 
+    // ── Radial shelf conversions ───────────────────────────────────────
+
+    [Test]
+    public void Part_To_RadialShelf_PreservesCommon_SetsRadiusFromMaxSide()
+    {
+        var src = Make<KitchenElement>("Src", new Vector3Int(500, 18, 400), Vector3.zero);
+        src.Movable = true;
+        src.GroupId = 21;
+        src.MaterialId = "oak";
+
+        var result = (RadialShelfElement)ElementConverter.Convert(
+            src, ElementConverter.TargetType.RadialShelf);
+        Assert.IsNotNull(result);
+        Assert.AreEqual("Src", result.PartName);
+        Assert.AreEqual(true, result.Movable);
+        Assert.AreEqual(21, result.GroupId);
+        Assert.AreEqual("oak", result.MaterialId);
+        Assert.AreEqual(500, result.Radius);
+        Assert.AreEqual(new Vector3Int(500, 18, 500), result.DimensionsMM);
+    }
+
+    [Test]
+    public void RadialShelf_To_Part_PreservesCommon_DropsRadius()
+    {
+        var src = Make<RadialShelfElement>("Src", new Vector3Int(400, 25, 400), Vector3.zero);
+        src.Movable = false;
+        src.GroupId = 23;
+        src.MaterialId = "cherry";
+
+        var result = ElementConverter.Convert(src, ElementConverter.TargetType.Part);
+        Assert.IsNotNull(result);
+        Assert.IsNotInstanceOf<RadialShelfElement>(result);
+        Assert.IsInstanceOf<KitchenElement>(result);
+        AssertCommon(src, result);
+        Assert.AreEqual(new Vector3Int(400, 25, 400), result.DimensionsMM);
+    }
+
     // ── Idempotency ────────────────────────────────────────────────────
 
     [Test]
@@ -295,7 +332,9 @@ public class ElementConverterTests
         "GapLeft", "GapRight", "GapTop", "GapBottom", "GapMM", "Mode",
         "IsOpen", "DoorProgress", "IsDoorClosed", "ClosedPosition", "ClosedRotation",
         // AssembledFacadeElement
-        "Fill", "GrooveCount"
+        "Fill", "GrooveCount",
+        // RadialShelfElement
+        "Radius"
     };
 
     [Test]
@@ -303,7 +342,7 @@ public class ElementConverterTests
     {
         var declared = new HashSet<string>();
 
-        foreach (var type in new[] { typeof(KitchenElement), typeof(FacadeElement), typeof(AssembledFacadeElement) })
+        foreach (var type in new[] { typeof(KitchenElement), typeof(FacadeElement), typeof(AssembledFacadeElement), typeof(RadialShelfElement) })
         {
             var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
             foreach (var p in props)

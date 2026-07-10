@@ -11,6 +11,7 @@ namespace KitchenDesigner.Core
             int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2);
         GameObject CreateAssembledFacade(Vector3Int dimensionsMM, string name, Vector3 position,
             AssembledFill fill = AssembledFill.Blind);
+        GameObject CreateRadialShelf(int radiusMM, int thicknessMM, string name, Vector3 position);
         GameObject Duplicate(KitchenElement source);
         void DestroyPart(GameObject go);
         void DestroyFacade(GameObject go);

@@ -138,6 +138,37 @@ namespace KitchenDesigner.Core
             return CreatePart(dims, name, position);
         }
 
+        public GameObject CreateRadialShelf(int radiusMM, int thicknessMM, string name, Vector3 position)
+        {
+            thicknessMM = Mathf.Max(1, thicknessMM);
+            radiusMM = Mathf.Max(1, radiusMM);
+
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = string.IsNullOrEmpty(name) ? "Радиусная полка" : name;
+            go.tag = "KitchenElement";
+            go.transform.position = position;
+
+            var rb = go.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+
+            // Удаляем стандартный BoxCollider — заменим на MeshCollider в ApplyDimensions.
+            var boxCollider = go.GetComponent<BoxCollider>();
+            if (boxCollider != null) Object.DestroyImmediate(boxCollider);
+
+            var shelf = go.AddComponent<RadialShelfElement>();
+            shelf.PartName = go.name;
+            shelf.DimensionsMM = new Vector3Int(radiusMM, thicknessMM, radiusMM);
+
+            MaterialManager.ApplyById(shelf, MaterialCatalog.DefaultId);
+            PartRegistry.Register(shelf);
+
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+
+            return go;
+        }
+
         public GameObject Duplicate(KitchenElement source)
         {
             if (source == null) return null;
@@ -151,6 +182,14 @@ namespace KitchenDesigner.Core
                 go.transform.rotation = source.transform.rotation;
                 var copy = go.GetComponent<AssembledFacadeElement>();
                 if (copy != null) { copy.Mode = assembled.Mode; copy.GrooveCount = assembled.GrooveCount; }
+                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
+                return go;
+            }
+
+            if (source is RadialShelfElement radial)
+            {
+                var go = CreateRadialShelf(radial.Radius, dims.y, source.PartName + " (copy)", offset);
+                go.transform.rotation = source.transform.rotation;
                 MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
                 return go;
             }
@@ -249,11 +288,14 @@ namespace KitchenDesigner.Core
         public void DestroyElement(GameObject go)
         {
             if (go == null) return;
-            // Сборный фасад не из пула — уничтожаем напрямую.
-            if (go.GetComponent<AssembledFacadeElement>() != null)
+            // Сборный фасад и радиусная полка не из пула — уничтожаем напрямую.
+            if (go.GetComponent<AssembledFacadeElement>() != null || go.GetComponent<RadialShelfElement>() != null)
             {
                 PartRegistry.Unregister(go.GetComponent<KitchenElement>());
-                Object.Destroy(go);
+                if (Application.isPlaying)
+                    Object.Destroy(go);
+                else
+                    Object.DestroyImmediate(go);
             }
             else if (go.GetComponent<FacadeElement>() != null)
                 _facadePool.Release(go);

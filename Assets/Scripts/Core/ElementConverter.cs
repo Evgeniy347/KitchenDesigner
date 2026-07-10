@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public static class ElementConverter
     {
-        public enum TargetType { Part, Facade, AssembledFacade }
+        public enum TargetType { Part, Facade, AssembledFacade, RadialShelf }
 
         public static KitchenElement Convert(KitchenElement source, TargetType targetType)
         {
@@ -48,6 +48,11 @@ namespace KitchenDesigner.Core
                 grooveCount = assembled.GrooveCount;
             }
 
+            int radius = Mathf.Max(dims.x, dims.z);
+            if (source is RadialShelfElement radial)
+                radius = radial.Radius;
+
+            PartRegistry.Unregister(source);
             UnityEngine.Object.DestroyImmediate(source);
 
             KitchenElement result;
@@ -59,10 +64,14 @@ namespace KitchenDesigner.Core
                 case TargetType.Facade:
                     result = go.AddComponent<FacadeElement>();
                     break;
+                case TargetType.RadialShelf:
+                    result = go.AddComponent<RadialShelfElement>();
+                    break;
                 default:
                     result = go.AddComponent<KitchenElement>();
                     break;
             }
+            PartRegistry.Register(result);
 
             go.transform.position = pos;
             go.transform.rotation = rot;
@@ -70,11 +79,22 @@ namespace KitchenDesigner.Core
             go.name = goName;
 
             result.PartName = partName;
-            result.DimensionsMM = dims;
             result.Movable = movable;
             result.GroupId = groupId;
             result.MaterialId = materialId;
             result.Transparent = transparent;
+
+            // Размеры: для радиусной полки формируем из radius×thickness×radius.
+            if (result is RadialShelfElement newRadial)
+            {
+                int thickness = Mathf.Max(1, dims.y);
+                newRadial.Radius = Mathf.Max(1, radius);
+                newRadial.DimensionsMM = new Vector3Int(newRadial.Radius, thickness, newRadial.Radius);
+            }
+            else
+            {
+                result.DimensionsMM = dims;
+            }
 
             if (result is FacadeElement newFacade)
             {
@@ -98,6 +118,7 @@ namespace KitchenDesigner.Core
         public static TargetType GetElementType(KitchenElement element)
         {
             if (element is AssembledFacadeElement) return TargetType.AssembledFacade;
+            if (element is RadialShelfElement) return TargetType.RadialShelf;
             if (element is FacadeElement) return TargetType.Facade;
             return TargetType.Part;
         }

@@ -293,6 +293,7 @@ namespace KitchenDesigner.Core.MCP
             var aabb = ComputeAABB(el.GetVertices());
             var effDim = GetEffectiveDimMM(el);
             var gaps = allElements != null ? ComputeAxisGaps(el, allElements) : null;
+            var radial = el as RadialShelfElement;
 
             return new ElementInfo
             {
@@ -308,7 +309,8 @@ namespace KitchenDesigner.Core.MCP
                 aabbMinX = aabb.minX, aabbMinY = aabb.minY, aabbMinZ = aabb.minZ,
                 aabbMaxX = aabb.maxX, aabbMaxY = aabb.maxY, aabbMaxZ = aabb.maxZ,
                 effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z,
-                faceGaps = gaps
+                faceGaps = gaps,
+                radius = radial != null ? radial.Radius : 0
             };
         }
 
@@ -638,6 +640,22 @@ namespace KitchenDesigner.Core.MCP
                     hasViolations = HasViolations(elA) });
             }
 
+            if (p.is_radial_shelf)
+            {
+                int radius = p.radius > 0 ? p.radius : 300;
+                int thickness = p.depth > 0 ? p.depth : AppConstants.BOARD_THICKNESS_DEFAULT;
+                var posR = new Vector3(p.x, p.y, p.z);
+                var goR = ElementFactory.CreateRadialShelf(radius, thickness, elementName, posR);
+                CommandStack.Execute(new CreateCommand(goR));
+                RefreshElementHighlights();
+                var elR = goR.GetComponent<KitchenElement>();
+                Debug.Log($"[MCP] Created radial shelf '{elementName}' radius={radius} thickness={thickness}");
+                return McpResponse.Result(req.id, new {
+                    ok = true, name = goR.name, is_radial_shelf = true, radius = radius,
+                    path = GetGameObjectPath(goR), posX = posR.x, posY = posR.y, posZ = posR.z,
+                    hasViolations = HasViolations(elR) });
+            }
+
             var pos = new Vector3(p.x, p.y, p.z);
             var dims = new Vector3Int(
                 p.width > 0 ? p.width : 800,
@@ -701,6 +719,8 @@ namespace KitchenDesigner.Core.MCP
                     target = ElementConverter.TargetType.Facade; return true;
                 case "assembled_facade": case "assembled": case "assembledfacade": case "сборный":
                     target = ElementConverter.TargetType.AssembledFacade; return true;
+                case "radial_shelf": case "radial": case "radialshelf": case "радиусная": case "полка":
+                    target = ElementConverter.TargetType.RadialShelf; return true;
                 default:
                     target = ElementConverter.TargetType.Part; return false;
             }
@@ -716,7 +736,7 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, "name required");
             if (!TryParseTarget(p.target, out var target))
                 return McpResponse.Error(req.id, -32602,
-                    $"Unknown target '{p.target}'. Valid: part | facade | assembled_facade");
+                    $"Unknown target '{p.target}'. Valid: part | facade | assembled_facade | radial_shelf");
 
             var element = FindElementByName(p.name);
             if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");

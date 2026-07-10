@@ -35,6 +35,9 @@ namespace KitchenDesigner.Core
             Vector3 position, AssembledFill fill = AssembledFill.Blind) =>
             Instance.CreateAssembledFacade(dimensionsMM, name, position, fill);
 
+        public static GameObject CreateRadialShelf(int radiusMM, int thicknessMM, string name, Vector3 position) =>
+            Instance.CreateRadialShelf(radiusMM, thicknessMM, name, position);
+
         public static GameObject Duplicate(KitchenElement source) =>
             Instance.Duplicate(source);
 
