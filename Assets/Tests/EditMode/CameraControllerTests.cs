@@ -91,6 +91,26 @@ public class CameraControllerTests
     }
 
     [Test]
+    public void UpdateFloorVisibility_DisablesCollider_WhenCameraBelowFloorTop()
+    {
+        _cameraGo.transform.position = new Vector3(0, -1f, 0);
+        _controller.UpdateFloorVisibility();
+
+        var collider = _floorGo.GetComponent<Collider>();
+        Assert.IsFalse(collider.enabled, "floor collider should be disabled when camera is below it");
+    }
+
+    [Test]
+    public void UpdateFloorVisibility_EnablesCollider_WhenCameraAboveFloorTop()
+    {
+        _cameraGo.transform.position = new Vector3(0, 10f, 0);
+        _controller.UpdateFloorVisibility();
+
+        var collider = _floorGo.GetComponent<Collider>();
+        Assert.IsTrue(collider.enabled, "floor collider should be enabled when camera is above it");
+    }
+
+    [Test]
     public void UpdateFloorVisibility_DoesNotThrow_WhenFloorIsNull()
     {
         Object.DestroyImmediate(_floorGo);
