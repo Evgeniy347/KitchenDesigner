@@ -2,6 +2,8 @@
 	"name": "KitchenDesigner.Tests.PlayMode",
 	"rootNamespace": "",
 	"references": [
+		"UnityEngine.TestRunner",
+		"UnityEditor.TestRunner",
 		"KitchenDesigner.Runtime"
 	],
 	"includePlatforms": [],
@@ -15,5 +17,6 @@
 	"defineConstraints": [
 		"UNITY_INCLUDE_TESTS"
 	],
+	"versionDefines": [],
 	"noEngineReferences": false
 }

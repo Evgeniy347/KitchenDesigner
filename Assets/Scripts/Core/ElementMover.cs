@@ -49,6 +49,13 @@ namespace KitchenDesigner.Core
         {
             if (_target == null) return false;
 
+            // Alt+ЛКМ — орбита камеры; клик по UI — не перетаскивание.
+            if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+                return false;
+            if (UnityEngine.EventSystems.EventSystem.current != null &&
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                return false;
+
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {

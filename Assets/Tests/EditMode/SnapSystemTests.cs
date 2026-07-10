@@ -53,13 +53,16 @@ public class SnapSystemTests
     [Test]
     public void TrySnap_ElementAboveFloor_SnapsToFloor()
     {
+        // Пол: верхняя грань на y=0.009. Доска 400мм высотой висит над полом
+        // (низ на y=0.05, зазор 41мм < порога 50мм) → снэп опускает центр на
+        // 0.009 + 0.2 = 0.209.
         var floor = CreateElement("Floor", new Vector3Int(3000, 18, 3000), Vector3.zero);
-        _elementB.transform.position = new Vector3(0, 0.050f, 0);
+        _elementB.transform.position = new Vector3(0, 0.25f, 0);
 
         var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { floor }, _elementB.transform.position);
 
         Assert.IsTrue(result.snapped, "Element above floor should snap down to it");
-        Assert.AreEqual(0.018f, result.position.y, 0.001f);
+        Assert.AreEqual(0.209f, result.position.y, 0.001f);
 
         Object.DestroyImmediate(floor.gameObject);
     }

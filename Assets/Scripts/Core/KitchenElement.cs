@@ -155,5 +155,17 @@ namespace KitchenDesigner.Core
         {
             DimensionsMM = new Vector3Int(w, h, d);
         }
+
+        /// <summary>Поворот вокруг собственного центра (позиция не меняется).</summary>
+        public void Rotate(Quaternion rotation)
+        {
+            transform.rotation = rotation * transform.rotation;
+        }
+
+        /// <summary>Повернуть на angle градусов вокруг оси (в мировых координатах).</summary>
+        public void RotateAroundAxis(Vector3 axis, float angle)
+        {
+            Rotate(Quaternion.AngleAxis(angle, axis));
+        }
     }
 }

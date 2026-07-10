@@ -24,11 +24,17 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<ElementMover>() == null)
                 gameObject.AddComponent<ElementMover>();
 
-            if (FindAnyObjectByType<InputCapture>() == null)
-                gameObject.AddComponent<InputCapture>();
+            // InputCapture — диагностический логгер ввода, не подключаем по умолчанию
+            // (создаётся вручную при отладке). Спамит консоль каждым нажатием.
 
             if (FindAnyObjectByType<ElementHighlighter>() == null)
                 gameObject.AddComponent<ElementHighlighter>();
+
+            if (FindAnyObjectByType<UI.UIManager>() == null)
+                gameObject.AddComponent<UI.UIManager>();
+
+            if (FindAnyObjectByType<AutoSaveManager>() == null)
+                gameObject.AddComponent<AutoSaveManager>();
 
             Debug.Log("[Bootstrap] Kitchen Designer initialized");
         }
