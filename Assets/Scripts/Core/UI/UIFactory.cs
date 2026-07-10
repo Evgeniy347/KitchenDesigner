@@ -175,6 +175,11 @@ namespace KitchenDesigner.Core.UI
             var img = rect.gameObject.AddComponent<Image>();
             img.color = FieldColor;
 
+            var outline = rect.gameObject.AddComponent<Outline>();
+            outline.effectColor = HighlightColor;
+            outline.effectDistance = new Vector2(2, 2);
+            outline.enabled = false;
+
             var input = rect.gameObject.AddComponent<InputField>();
 
             var text = CreateLabel(name + "_Text", rect, initial, 16, Vector2.zero, size, TextAnchor.MiddleLeft);
@@ -193,9 +198,9 @@ namespace KitchenDesigner.Core.UI
         public static void SetHighlight(InputField field, bool highlight)
         {
             if (field == null) return;
-            var img = field.GetComponent<Image>();
-            if (img != null)
-                img.color = highlight ? HighlightColor : FieldColor;
+            var outline = field.GetComponent<Outline>();
+            if (outline != null)
+                outline.enabled = highlight;
         }
 
         public static Toggle CreateToggle(string name, Transform parent, string label, bool value, Vector2 anchoredPos, Vector2 size, System.Action<bool> onChanged)
