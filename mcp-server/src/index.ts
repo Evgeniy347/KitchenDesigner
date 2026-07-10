@@ -54,7 +54,8 @@ function connectToUnity(): Promise<void> {
 async function callUnity(method: string, params: Record<string, unknown> = {}): Promise<unknown> {
   if (!unitySocket) await connectToUnity();
   const id = `req-${++requestId}`;
-  const msg = JSON.stringify({ id, method, params }) + "\n";
+  // Unity-сторона (McpRequest) ждёт поле `parameters` как JSON-СТРОКУ.
+  const msg = JSON.stringify({ id, method, parameters: JSON.stringify(params) }) + "\n";
   return new Promise((resolve, reject) => {
     pending.set(id, { resolve, reject });
     unitySocket!.write(msg, (err) => { if (err) { pending.delete(id); reject(err); } });
@@ -148,6 +149,19 @@ server.tool("select_element", "Select and highlight an element", {
 server.tool("get_console_logs", "Recent Unity console logs", {
   count: z.number().optional().describe("Number of entries (max 200, default 50)")
 }, async (args) => safe("get_console_logs", args));
+
+server.tool("get_settings", "Current KitchenSettings (snap/grid/autosave) and snap verbose flag", async () => safe("get_settings"));
+
+server.tool("set_snap_verbose", "Toggle verbose snap logging in Unity console", {
+  enabled: z.boolean()
+}, async (args) => safe("set_snap_verbose", args));
+
+server.tool("snap_diagnose", "Explain why a board does or does not snap: per-neighbor best face pair, gap vs threshold, overlap, intersection", {
+  name: z.string().describe("Board name"),
+  x: z.number().optional().describe("Test position X (default: current)"),
+  y: z.number().optional().describe("Test position Y (default: current)"),
+  z: z.number().optional().describe("Test position Z (default: current)")
+}, async (args) => safe("snap_diagnose", args));
 
 server.tool("execute_menu_item", "Execute Unity Editor menu command", {
   menu_path: z.string().describe("e.g. 'Edit/Undo'")
