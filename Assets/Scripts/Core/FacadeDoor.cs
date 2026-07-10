@@ -38,10 +38,12 @@ namespace KitchenDesigner.Core
             public readonly bool isDrawer;
             public readonly Vector3 pivotSigns; // ребро: pivot = Scale(pivotSigns, half)
             public readonly Vector3 dir;        // ребро: знаковая ось; ящик: направление сдвига (локально)
-            public readonly string symbol;
-            public Variant(bool isDrawer, Vector3 pivotSigns, Vector3 dir, string symbol)
+            public readonly string symbol;      // один знак для компактной подписи
+            public readonly string name;        // читаемое название (для выпадающего списка)
+            public Variant(bool isDrawer, Vector3 pivotSigns, Vector3 dir, string symbol, string name)
             {
-                this.isDrawer = isDrawer; this.pivotSigns = pivotSigns; this.dir = dir; this.symbol = symbol;
+                this.isDrawer = isDrawer; this.pivotSigns = pivotSigns; this.dir = dir;
+                this.symbol = symbol; this.name = name;
             }
         }
 
@@ -52,27 +54,27 @@ namespace KitchenDesigner.Core
         private static readonly Variant[] V =
         {
             // Передняя грань (z=−hz).
-            new Variant(false, new Vector3(-1f, 0f, -1f),  Y, "◄"), // FrontLeft
-            new Variant(false, new Vector3( 1f, 0f, -1f), -Y, "►"), // FrontRight
-            new Variant(false, new Vector3( 0f, 1f, -1f),  X, "▲"), // FrontTop
-            new Variant(false, new Vector3( 0f,-1f, -1f), -X, "▼"), // FrontBottom
+            new Variant(false, new Vector3(-1f, 0f, -1f),  Y, "◄", "Дверь: слева"),
+            new Variant(false, new Vector3( 1f, 0f, -1f), -Y, "►", "Дверь: справа"),
+            new Variant(false, new Vector3( 0f, 1f, -1f),  X, "▲", "Дверь: сверху"),
+            new Variant(false, new Vector3( 0f,-1f, -1f), -X, "▼", "Дверь: снизу"),
             // Задняя грань (z=+hz) — оси зеркальны передним.
-            new Variant(false, new Vector3(-1f, 0f,  1f), -Y, "◁"), // BackLeft
-            new Variant(false, new Vector3( 1f, 0f,  1f),  Y, "▷"), // BackRight
-            new Variant(false, new Vector3( 0f, 1f,  1f), -X, "△"), // BackTop
-            new Variant(false, new Vector3( 0f,-1f,  1f),  X, "▽"), // BackBottom
+            new Variant(false, new Vector3(-1f, 0f,  1f), -Y, "◁", "Сзади: слева"),
+            new Variant(false, new Vector3( 1f, 0f,  1f),  Y, "▷", "Сзади: справа"),
+            new Variant(false, new Vector3( 0f, 1f,  1f), -X, "△", "Сзади: сверху"),
+            new Variant(false, new Vector3( 0f,-1f,  1f),  X, "▽", "Сзади: снизу"),
             // Рёбра по толщине (ось Z) в 4 углах.
-            new Variant(false, new Vector3(-1f, 1f,  0f),  Z, "◤"), // EdgeTopLeft
-            new Variant(false, new Vector3( 1f, 1f,  0f),  Z, "◥"), // EdgeTopRight
-            new Variant(false, new Vector3(-1f,-1f,  0f),  Z, "◣"), // EdgeBottomLeft
-            new Variant(false, new Vector3( 1f,-1f,  0f),  Z, "◢"), // EdgeBottomRight
+            new Variant(false, new Vector3(-1f, 1f,  0f),  Z, "◤", "Угол: верх-лево"),
+            new Variant(false, new Vector3( 1f, 1f,  0f),  Z, "◥", "Угол: верх-право"),
+            new Variant(false, new Vector3(-1f,-1f,  0f),  Z, "◣", "Угол: низ-лево"),
+            new Variant(false, new Vector3( 1f,-1f,  0f),  Z, "◢", "Угол: низ-право"),
             // Ящик — сдвиг по нормали грани.
-            new Variant(true, Vector3.zero, -Z, "⊙"), // Out  (−Z, к зрителю)
-            new Variant(true, Vector3.zero,  Z, "⊗"), // In   (+Z)
-            new Variant(true, Vector3.zero,  X, "→"), // Right (+X)
-            new Variant(true, Vector3.zero, -X, "←"), // Left  (−X)
-            new Variant(true, Vector3.zero,  Y, "↑"), // Up    (+Y)
-            new Variant(true, Vector3.zero, -Y, "↓"), // Down  (−Y)
+            new Variant(true, Vector3.zero, -Z, "⊙", "Ящик: вперёд"),
+            new Variant(true, Vector3.zero,  Z, "⊗", "Ящик: назад"),
+            new Variant(true, Vector3.zero,  X, "→", "Ящик: вправо"),
+            new Variant(true, Vector3.zero, -X, "←", "Ящик: влево"),
+            new Variant(true, Vector3.zero,  Y, "↑", "Ящик: вверх"),
+            new Variant(true, Vector3.zero, -Y, "↓", "Ящик: вниз"),
         };
 
         /// <summary>Число режимов (12 рёбер + 6 ящиков = 18).</summary>
@@ -81,8 +83,11 @@ namespace KitchenDesigner.Core
         /// <summary>Следующий режим по кругу (для кнопки-переключателя).</summary>
         public static DoorMode Next(DoorMode mode) => (DoorMode)(((int)mode + 1) % V.Length);
 
-        /// <summary>Один символ для кнопки-переключателя, зависящий от режима.</summary>
+        /// <summary>Один символ, зависящий от режима (компактная подпись).</summary>
         public static string Symbol(DoorMode mode) => V[(int)mode].symbol;
+
+        /// <summary>Читаемая подпись для выпадающего списка: символ + название.</summary>
+        public static string Label(DoorMode mode) => V[(int)mode].symbol + " " + V[(int)mode].name;
 
         /// <summary>Плавность «синус» (ease-in-out): 0→0, 1→1, плавный разгон и торможение.</summary>
         public static float Ease(float t)
