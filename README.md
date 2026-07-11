@@ -66,11 +66,49 @@ To connect an agent, simply ask it to read the [`readme-mcp.md`](readme-mcp.md) 
 # Hit Play
 ```
 
+### Launch configurations
+
+**Local (debug):**
+
+| Script | Purpose |
+|--------|---------|
+| `run-desktop.cmd` | Fastest iteration: incremental Windows development build (Mono) → `Build_Debug/`, launches the exe. `-NoBuild` to just launch |
+| `run-webgl.cmd` | WebGL debug in Docker: builds `Builds/WebGL_Debug` (no compression, no stripping), starts nginx+web+db from `server/docker-compose.local.yml`, opens http://localhost:8080. nginx bind-mounts the build folder — rebuild WebGL and refresh the browser, no docker restart needed. `-NoBuild` to skip the Unity build |
+
+**Release:**
+
+| Script | Purpose |
+|--------|---------|
+| `build.cmd -WebGL` | WebGL release build (gzip, high stripping) → `Builds/WebGL` |
+| `deploy.cmd` | Publish server + copy WebGL build + `server/docker-compose.yml` to the production host |
+
+**Measured build times** (Ryzen-class dev machine, warm Library cache; wall time includes ~15 s Unity editor startup):
+
+| Variant | Wall time | Unity pipeline | Output size |
+|---------|-----------|----------------|-------------|
+| Windows Debug, incremental (`-WinDebug`) | 19 s | 6 s | 157 MB |
+| Windows Debug, first run | 71 s | 55 s | 157 MB |
+| WebGL Debug (`-WebGLDebug`) | 73 s | 56 s | 200 MB |
+| WebGL Release (`-WebGL`) | 9.5 min | 549 s | 13.5 MB |
+
+### Server architecture
+
+The `web` container is self-contained and exposes **two ports**:
+
+| Port | Purpose | Routes |
+|------|---------|--------|
+| 8080 | HTTP — site, API, WebGL | Blazor pages, `/api/*`, `/unity/*` (WebGL build from the `WebGL:RootPath` mount), `/api/mcp/ws` (client channel) |
+| 8081 | MCP — AI agents only | `/hubs/mcp` (SignalR), `/api/mcp/connect` (key handshake), `/health` |
+
+nginx is a pure reverse proxy in front of 8080; agents connect to 8081 directly. The database schema is created automatically on first start (with retries while PostgreSQL boots). Project saves are **files** under `/app/data/projects/{userId}/{projectId}.json` (source of truth, size limit + JSON validation + rotated `.bak` backups); the DB keeps metadata. Auth: ASP.NET Identity with static-SSR login/register/profile pages, POST-only logout, lockout after failed attempts, 401/403 (not redirects) for `/api/*`.
+
+MCP flow: create a session on `/mcp-panel` → give the agent the access key → agent calls `GET :8081/api/mcp/connect?key=…` → connects to `ws(s)://…:8081/hubs/mcp?access_key=…` → commands are relayed to the WebGL/desktop client connected to `/api/mcp/ws?key=…`.
+
 ### Scripts
 
 | Script | Purpose |
 |--------|---------|
-| `build.cmd` | Build Windows (.exe) or WebGL. Flags: `-Clean`, `-RunTests`, `-RunPlayMode`, `-BuildOnly`, `-WebGL` |
+| `build.cmd` | Build Windows (.exe) or WebGL. Flags: `-Clean`, `-RunTests`, `-RunPlayMode`, `-BuildOnly`, `-WebGL`, `-WebGLDebug`, `-WinDebug` |
 | `build-server.cmd` | Build ASP.NET server |
 | `clean.cmd` | Clean temporary files (Unity + server) |
 
@@ -143,9 +181,47 @@ Kitchen Designer доступен по **MCP (Model Context Protocol)** — ИИ
 
 | Скрипт | Назначение |
 |--------|-----------|
-| `build.cmd` | Сборка Windows (.exe). Флаги: `-Clean`, `-RunTests`, `-RunPlayMode`, `-BuildOnly`, `-WebGL` |
+| `build.cmd` | Сборка Windows (.exe) или WebGL. Флаги: `-Clean`, `-RunTests`, `-RunPlayMode`, `-BuildOnly`, `-WebGL`, `-WebGLDebug`, `-WinDebug` |
 | `build-server.cmd` | Сборка ASP.NET сервера |
 | `clean.cmd` | Очистка временных файлов (Unity + сервер) |
+
+### Конфигурации запуска
+
+**Локально (отладка):**
+
+| Скрипт | Назначение |
+|--------|-----------|
+| `run-desktop.cmd` | Самая быстрая итерация: инкрементальная development-сборка Windows (Mono) → `Build_Debug/`, запускает exe. `-NoBuild` — только запуск |
+| `run-webgl.cmd` | WebGL-отладка в Docker: собирает `Builds/WebGL_Debug` (без сжатия и стриппинга), поднимает nginx+web+db из `server/docker-compose.local.yml`, открывает http://localhost:8080. nginx монтирует папку сборки напрямую — пересобрал WebGL, обновил страницу, Docker не перезапускаешь. `-NoBuild` — пропустить сборку Unity |
+
+**Релиз:**
+
+| Скрипт | Назначение |
+|--------|-----------|
+| `build.cmd -WebGL` | Релизная сборка WebGL (gzip, high stripping) → `Builds/WebGL` |
+| `deploy.cmd` | Публикация сервера + копирование WebGL-сборки и `server/docker-compose.yml` на прод-хост |
+
+**Замеры сборки** (тёплый кеш Library; полное время включает ~15 с запуска редактора Unity):
+
+| Вариант | Полное время | Пайплайн Unity | Размер |
+|---------|--------------|----------------|--------|
+| Windows Debug, инкрементально (`-WinDebug`) | 19 с | 6 с | 157 МБ |
+| Windows Debug, первый прогон | 71 с | 55 с | 157 МБ |
+| WebGL Debug (`-WebGLDebug`) | 73 с | 56 с | 200 МБ |
+| WebGL Release (`-WebGL`) | 9,5 мин | 549 с | 13,5 МБ |
+
+### Архитектура сервера
+
+Контейнер `web` самодостаточен и открывает **два порта**:
+
+| Порт | Назначение | Маршруты |
+|------|-----------|----------|
+| 8080 | HTTP — сайт, API, WebGL | Blazor-страницы, `/api/*`, `/unity/*` (WebGL-сборка из монтирования `WebGL:RootPath`), `/api/mcp/ws` (канал клиента) |
+| 8081 | MCP — только ИИ-агенты | `/hubs/mcp` (SignalR), `/api/mcp/connect` (хендшейк по ключу), `/health` |
+
+nginx — чистый reverse-proxy перед 8080; агенты подключаются к 8081 напрямую. Схема БД создаётся автоматически при первом старте (с ретраями, пока поднимается PostgreSQL). Сохранения проектов — **файлы** `/app/data/projects/{userId}/{projectId}.json` (источник истины; лимит размера, валидация JSON, ротация `.bak`-бекапов); в БД — метаданные. Аутентификация: ASP.NET Identity, static-SSR страницы входа/регистрации/профиля, выход только по POST, lockout после неудачных попыток, для `/api/*` — 401/403 вместо редиректов.
+
+Поток MCP: создать сессию на `/mcp-panel` → передать агенту access key → агент вызывает `GET :8081/api/mcp/connect?key=…` → подключается к `ws(s)://…:8081/hubs/mcp?access_key=…` → команды ретранслируются WebGL/десктоп-клиенту, подключённому к `/api/mcp/ws?key=…`.
 
 ### Стек
 
