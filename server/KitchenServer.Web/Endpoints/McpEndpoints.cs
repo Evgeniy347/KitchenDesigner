@@ -29,6 +29,9 @@ public static class McpEndpoints
     {
         var api = app.MapGroup("/api/mcp");
 
+        // The access key IS the credential here; RequireAuthorization set on the
+        // group below would otherwise apply to this endpoint too (group metadata
+        // is order-independent in minimal APIs).
         api.MapGet("/connect", (string key, McpSessionManager sessions, McpUrlBuilder urls, HttpContext ctx) =>
         {
             var session = sessions.ValidateAccess(key);
@@ -46,7 +49,7 @@ public static class McpEndpoints
                 accessKey = session.AccessKey,
                 createdAt = session.CreatedAt
             });
-        });
+        }).AllowAnonymous();
 
         var auth = api.RequireAuthorization();
 
