@@ -354,10 +354,23 @@ namespace KitchenDesigner.Core.UI
         public void LoadDialog()
         {
 #if UNITY_WEBGL
+            if (!Networking.ProjectApiClient.Enabled)
+            {
+                LocalLoad();
+                return;
+            }
             BuildProjectListPanel();
             var api = Networking.ProjectApiClient.Instance;
             api.FetchList(projects =>
             {
+                // Reset title for server projects.
+                var titleText = _projectListPanel.transform.Find("Title");
+                if (titleText != null)
+                {
+                    var t = titleText.GetComponent<Text>();
+                    if (t != null) t.text = "Проекты";
+                }
+
                 if (projects.Count == 0)
                 {
                     Toast("Нет сохранённых проектов");
@@ -422,6 +435,12 @@ namespace KitchenDesigner.Core.UI
 
         private void ServerSave(bool forceNew)
         {
+            if (!Networking.ProjectApiClient.Enabled)
+            {
+                LocalSave(forceNew);
+                return;
+            }
+
             string json = SaveLoadManager.CaptureCurrentJson();
             var api = Networking.ProjectApiClient.Instance;
 
@@ -444,6 +463,79 @@ namespace KitchenDesigner.Core.UI
                         Toast("Сохранено: " + name);
                     }, err => Toast("Ошибка: " + err));
                 });
+            }
+        }
+
+        private void LocalSave(bool forceNew)
+        {
+            string json = SaveLoadManager.CaptureCurrentJson();
+            if (!forceNew && SaveLoadManager.HasLastPath)
+            {
+                if (SaveLoadManager.SaveToLastPath())
+                {
+                    Toast("Сохранено");
+                    return;
+                }
+            }
+
+            string defaultName = SaveLoadManager.HasLastPath
+                ? System.IO.Path.GetFileNameWithoutExtension(SaveLoadManager.LastPath)
+                : QuickSaveName;
+            ShowNamePrompt(defaultName, name =>
+            {
+                string path = SaveLoadManager.PathForName(name);
+                SaveLoadManager.LastPath = path;
+                if (SaveLoadManager.SaveToPath(path))
+                    Toast("Сохранено: " + name);
+            });
+        }
+
+        private void LocalLoad()
+        {
+            string[] files = SaveLoadManager.GetSaveFiles();
+            if (files == null || files.Length == 0)
+            {
+                Toast("Нет локальных сохранений");
+                return;
+            }
+
+            BuildProjectListPanel();
+            var scroll = _projectListPanel.GetComponentInChildren<ScrollRect>();
+            var content = scroll.content;
+            foreach (Transform child in content)
+                Object.Destroy(child.gameObject);
+
+            // Update title
+            var titleText = _projectListPanel.transform.Find("Title");
+            if (titleText != null)
+            {
+                var t = titleText.GetComponent<Text>();
+                if (t != null) t.text = "Локальные файлы";
+            }
+
+            foreach (var file in files)
+            {
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+                float btnHeight = 38f;
+                var btnGo = UIFactory.CreateButton("LocalBtn_" + fileName,
+                    content, fileName,
+                    Vector2.zero, new Vector2(0, btnHeight),
+                    () => LoadLocalFile(file));
+                var btnRt = btnGo.GetComponent<RectTransform>();
+                btnRt.sizeDelta = new Vector2(0, btnHeight);
+            }
+
+            ShowProjectListPanel();
+        }
+
+        private void LoadLocalFile(string path)
+        {
+            HideProjectListPanel();
+            if (SaveLoadManager.LoadFromPath(path))
+            {
+                if (ElementHighlighter.Instance != null)
+                    ElementHighlighter.Instance.RefreshHighlights();
+                Toast("Загружено: " + System.IO.Path.GetFileNameWithoutExtension(path));
             }
         }
 

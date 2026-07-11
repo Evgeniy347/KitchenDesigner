@@ -46,13 +46,16 @@ namespace KitchenDesigner.Core
         {
 #if UNITY_WEBGL
             var api = Object.FindAnyObjectByType<Networking.ProjectApiClient>();
-            if (api != null && api.HasCurrentProject)
+            if (api != null && Networking.ProjectApiClient.Enabled && api.HasCurrentProject)
             {
                 string json = SaveLoadManager.CaptureCurrentJson();
                 api.SaveCurrent(json, null, null);
                 return true;
             }
-            return false;
+            // Server save disabled or no project — fall back to local persistent save.
+            if (SaveLoadManager.HasLastPath)
+                return SaveLoadManager.SaveToLastPath();
+            return SaveLoadManager.SaveProject(AutoSaveName, backup: false);
 #else
             if (SaveLoadManager.HasLastPath)
                 return SaveLoadManager.SaveToLastPath();

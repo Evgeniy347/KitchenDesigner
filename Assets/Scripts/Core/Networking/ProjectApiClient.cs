@@ -27,9 +27,15 @@ namespace KitchenDesigner.Core.Networking
     [Serializable]
     internal class ProjectListWrapper { public List<ServerProjectInfo> items; }
 
+    [Serializable]
+    internal class ServerConfigResponse { public bool serverSaveEnabled; }
+
     public class ProjectApiClient : MonoBehaviour
     {
         public static ProjectApiClient Instance { get; private set; }
+
+        /// <summary>Set to true after FetchConfig confirms the server has save enabled.</summary>
+        public static bool Enabled { get; private set; }
 
         private const string BasePath = "/api/projects";
         private const string ProjectIdKey = "KitchenCurrentProjectId";
@@ -60,6 +66,30 @@ namespace KitchenDesigner.Core.Networking
         private void Awake()
         {
             Instance = this;
+        }
+
+        public void FetchConfig(Action<bool> onComplete)
+        {
+            StartCoroutine(FetchConfigRoutine(onComplete));
+        }
+
+        private IEnumerator FetchConfigRoutine(Action<bool> onComplete)
+        {
+            using (var req = UnityWebRequest.Get("/api/config"))
+            {
+                yield return req.SendWebRequest();
+
+                if (req.result == UnityWebRequest.Result.Success)
+                {
+                    var cfg = JsonUtility.FromJson<ServerConfigResponse>(req.downloadHandler.text);
+                    Enabled = cfg != null && cfg.serverSaveEnabled;
+                }
+                else
+                {
+                    Enabled = false;
+                }
+                onComplete?.Invoke(Enabled);
+            }
         }
 
         public void FetchList(Action<List<ServerProjectInfo>> onSuccess, Action<string> onError)

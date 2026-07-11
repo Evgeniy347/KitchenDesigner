@@ -24,6 +24,7 @@ services:
     environment:
       ConnectionStrings__kitchendb: Host=db;Database=kitchendb;Username=${DB_USER:?DB_USER must be set};Password=${DB_PASSWORD:?DB_PASSWORD must be set}
       WebGL__RootPath: /app/webgl
+      ServerSave__Enabled: "true"
     ports:
       # MCP port for AI agents, exposed directly (HTTP goes through nginx)
       - "8081:8081"

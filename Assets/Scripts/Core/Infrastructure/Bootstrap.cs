@@ -36,30 +36,34 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<Networking.ProjectApiClient>() == null)
                 gameObject.AddComponent<Networking.ProjectApiClient>();
 
-            var api = Networking.ProjectApiClient.Instance;
-            if (api.HasCurrentProject)
+            Networking.ProjectApiClient.Instance.FetchConfig(enabled =>
             {
-                api.LoadProject(api.CurrentProjectId,
-                    (name, jsonData) =>
+                if (enabled)
+                {
+                    var api = Networking.ProjectApiClient.Instance;
+                    if (api.HasCurrentProject)
                     {
-                        var projectData = SaveLoadManager.Deserialize(jsonData);
-                        if (projectData == null) return;
-                        SaveLoadManager.LastPath = api.CurrentProjectId;
-                        SaveLoadManager.ClearBoards(PartRegistry.Instance.GetAll());
-                        SaveLoadManager.RestoreScene(projectData);
-                        if (ElementHighlighter.Instance != null)
-                            ElementHighlighter.Instance.RefreshHighlights();
-                    },
-                    _ =>
-                    {
-                        // Server unreachable — fall back to local save.
-                        GameContext.Services.SaveLoadManager.LoadLastSession();
-                    });
-            }
-            else
-            {
+                        api.LoadProject(api.CurrentProjectId,
+                            (name, jsonData) =>
+                            {
+                                var projectData = SaveLoadManager.Deserialize(jsonData);
+                                if (projectData == null) return;
+                                SaveLoadManager.LastPath = api.CurrentProjectId;
+                                SaveLoadManager.ClearBoards(PartRegistry.Instance.GetAll());
+                                SaveLoadManager.RestoreScene(projectData);
+                                if (ElementHighlighter.Instance != null)
+                                    ElementHighlighter.Instance.RefreshHighlights();
+                            },
+                            _ =>
+                            {
+                                GameContext.Services.SaveLoadManager.LoadLastSession();
+                            });
+                        return;
+                    }
+                }
+                // Server save disabled or no current project — fall back to local.
                 GameContext.Services.SaveLoadManager.LoadLastSession();
-            }
+            });
 #else
             GameContext.Services.SaveLoadManager.LoadLastSession();
 #endif
