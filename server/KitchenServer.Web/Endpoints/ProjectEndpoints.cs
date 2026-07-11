@@ -27,23 +27,27 @@ public static class ProjectEndpoints
             return Results.Ok(projects);
         });
 
-        group.MapPost("/", async (CreateProjectRequest req, AppDbContext db, ClaimsPrincipal user) =>
+        group.MapPost("/", async (CreateProjectRequest req, AppDbContext db, ProjectStorageService storage, ClaimsPrincipal user) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId is null)
                 return Results.Unauthorized();
 
+            if (string.IsNullOrWhiteSpace(req.Name))
+                return Results.BadRequest(new { error = "Name is required" });
+
             var project = new Project
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
-                Name = req.Name,
+                Name = req.Name.Trim(),
                 JsonData = "{}",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
             db.Projects.Add(project);
+            await storage.Save(project.Id, userId, "{}");
             await db.SaveChangesAsync();
 
             return Results.Created($"/api/projects/{project.Id}",
@@ -93,14 +97,20 @@ public static class ProjectEndpoints
 
             if (req.JsonData is not null)
             {
-                await storage.Save(id, userId, req.JsonData);
+                try
+                {
+                    // Files are the source of truth for content; the DB keeps
+                    // metadata. The legacy jsonb column is read-only fallback.
+                    await storage.Save(id, userId, req.JsonData);
+                }
+                catch (ProjectStorageException ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
             }
 
             if (req.Name is not null)
                 project.Name = req.Name;
-
-            if (req.JsonData is not null)
-                project.JsonData = req.JsonData;
 
             project.UpdatedAt = DateTime.UtcNow;
             await db.SaveChangesAsync();
@@ -156,7 +166,14 @@ public static class ProjectEndpoints
             };
 
             db.Projects.Add(duplicate);
-            await storage.Save(duplicate.Id, userId, json);
+            try
+            {
+                await storage.Save(duplicate.Id, userId, json);
+            }
+            catch (ProjectStorageException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
             await db.SaveChangesAsync();
 
             return Results.Created($"/api/projects/{duplicate.Id}",

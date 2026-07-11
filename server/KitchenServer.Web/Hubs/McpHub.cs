@@ -1,5 +1,5 @@
-using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 using KitchenServer.Web.Services;
 using Microsoft.AspNetCore.SignalR;
 
@@ -48,20 +48,47 @@ public class McpHub : Hub
         const int maxSize = 64 * 1024;
         if (Encoding.UTF8.GetByteCount(json) > maxSize)
         {
-            _logger.LogWarning("MCP command from {ConnectionId} exceeds 64KB limit", Context.ConnectionId);
+            await ReplyError(json, -32600, "Command exceeds 64KB limit");
             return;
         }
 
         var session = _sessionManager.GetSessionByMCPConnection(Context.ConnectionId);
-        if (session?.BrowserWebSocket == null) return;
+        if (session == null)
+        {
+            await ReplyError(json, -32000, "Session not found — reconnect with a valid access key");
+            return;
+        }
 
         _sessionManager.Touch(session.SessionId);
 
-        var ws = session.BrowserWebSocket;
-        if (ws.State != WebSocketState.Open) return;
-
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var data = Encoding.UTF8.GetBytes(json);
-        await ws.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, cts.Token);
+        var delivered = await session.SendToBrowserAsync(json, cts.Token);
+        if (!delivered)
+        {
+            // Without this the agent would hang until its own timeout.
+            await ReplyError(json, -32001,
+                "Kitchen client is not connected. Open the project in the browser (or desktop app) and retry.");
+        }
+    }
+
+    /// <summary>Sends a JSON-RPC style error back to the calling agent, echoing the request id when parseable.</summary>
+    private async Task ReplyError(string requestJson, int code, string message)
+    {
+        string id = "unknown";
+        try
+        {
+            using var doc = JsonDocument.Parse(requestJson);
+            if (doc.RootElement.TryGetProperty("id", out var idProp))
+                id = idProp.ValueKind == JsonValueKind.String ? idProp.GetString() ?? "unknown" : idProp.GetRawText();
+        }
+        catch (JsonException) { }
+
+        var error = JsonSerializer.Serialize(new
+        {
+            id,
+            type = "error",
+            error = new { code, message }
+        });
+        await Clients.Caller.SendAsync("OnResponse", error);
     }
 }
