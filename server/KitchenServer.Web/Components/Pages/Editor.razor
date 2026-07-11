@@ -1,15 +1,15 @@
 @page "/editor/{projectId:guid}"
 @rendermode InteractiveServer
 @attribute [Authorize]
-@implements IDisposable
 @using Microsoft.AspNetCore.Components.Authorization
 @using KitchenServer.Web.Data
-@using KitchenServer.Web.Services
-@inject AppDbContext Db
-@inject ProjectStorageService Storage
-@inject NavigationManager Navigation
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<AppDbContext> DbFactory
 @inject AuthenticationStateProvider AuthProvider
-@inject IJSRuntime JsRuntime
+
+@* The Unity WebGL client inside the iframe reads projectId from its query string
+   and talks to /api/projects directly (same-origin cookies), so this page only
+   hosts the frame. The build is served at /unity (UnityWebGLStaticFiles). *@
 
 <PageTitle>@_projectName — KitchenDesigner Editor</PageTitle>
 
@@ -20,14 +20,6 @@
             <span class="project-name">@_projectName</span>
         </div>
         <div class="toolbar-right">
-            @if (_isSaving)
-            {
-                <span class="save-indicator saving">Saving...</span>
-            }
-            else if (_lastSaved is not null)
-            {
-                <span class="save-indicator saved">Saved @_lastSaved.Value.ToString("HH:mm:ss")</span>
-            }
             <span class="project-id" title="Project ID: @ProjectId">ID: @ProjectId.ToString()[..8]</span>
         </div>
     </div>
@@ -40,7 +32,7 @@
     <div class="unity-container">
         @if (_ready)
         {
-            <iframe src="@_unityUrl?projectId=@ProjectId"
+            <iframe src="/unity/index.html?projectId=@ProjectId"
                     class="unity-frame"
                     allow="autoplay; fullscreen"
                     title="KitchenDesigner Editor">
@@ -59,26 +51,22 @@
     private string _projectName = "Loading...";
     private string _error = "";
     private bool _ready;
-    private bool _isSaving;
-    private DateTime? _lastSaved;
-    private string _userId = "";
-    private string _unityUrl = "/unity/index.html";
-    private DotNetObjectReference<Components.Pages.Editor>? _dotNetRef;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var authState = await AuthProvider.GetAuthenticationStateAsync();
-            _userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
-            if (string.IsNullOrEmpty(_userId))
+            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+            if (string.IsNullOrEmpty(userId))
             {
                 _error = "Not authenticated.";
                 return;
             }
 
-            var project = await Db.Projects.FindAsync(ProjectId);
-            if (project is null || project.UserId != _userId)
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == ProjectId && p.UserId == userId);
+            if (project is null)
             {
                 _error = "Project not found.";
                 return;
@@ -91,58 +79,6 @@
         {
             _error = $"Failed to load project: {ex.Message}";
         }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && _ready)
-        {
-            try
-            {
-                _dotNetRef = DotNetObjectReference.Create(this);
-                await JsRuntime.InvokeVoidAsync("KitchenEditor.init", ProjectId.ToString(), _dotNetRef);
-            }
-            catch (Exception ex)
-            {
-                _error = $"Failed to initialize editor: {ex.Message}";
-                _ready = false;
-            }
-        }
-    }
-
-    [JSInvokable]
-    public async Task SaveProjectAsync(string jsonData)
-    {
-        try
-        {
-            _isSaving = true;
-            StateHasChanged();
-            await Storage.Save(ProjectId, _userId, jsonData);
-
-            var project = await Db.Projects.FindAsync(ProjectId);
-            if (project is not null)
-            {
-                project.JsonData = jsonData;
-                project.UpdatedAt = DateTime.UtcNow;
-                await Db.SaveChangesAsync();
-            }
-
-            _lastSaved = DateTime.UtcNow;
-        }
-        catch (Exception ex)
-        {
-            _error = $"Failed to save: {ex.Message}";
-        }
-        finally
-        {
-            _isSaving = false;
-            StateHasChanged();
-        }
-    }
-
-    public void Dispose()
-    {
-        _dotNetRef?.Dispose();
     }
 }
 
@@ -180,9 +116,6 @@
         align-items: center;
         gap: 16px;
     }
-    .save-indicator { font-size: 12px; padding: 4px 8px; border-radius: 3px; }
-    .save-indicator.saving { background: #3a5afe33; color: #3a5afe; }
-    .save-indicator.saved { background: #2a5a2a; color: #6bff6b; }
     .project-id { color: #666; font-size: 11px; font-family: monospace; }
     .unity-container {
         flex: 1;

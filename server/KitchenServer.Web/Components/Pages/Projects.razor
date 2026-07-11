@@ -5,7 +5,7 @@
 @using KitchenServer.Web.Data
 @using Microsoft.EntityFrameworkCore
 @using KitchenServer.Web.Services
-@inject AppDbContext Db
+@inject IDbContextFactory<AppDbContext> DbFactory
 @inject ProjectStorageService Storage
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthProvider
@@ -45,7 +45,7 @@
                         @if (_editingId == p.Id)
                         {
                             <input type="text" @bind="_editName" class="rename-input"
-                                                                      @onkeydown="@(e => { if (e.Key == "Enter") RenameSave(p); if (e.Key == "Escape") CancelEdit(); })" />
+                                                                      @onkeydown="@(async e => { if (e.Key == "Enter") await RenameSave(p); if (e.Key == "Escape") CancelEdit(); })" />
                             <button class="btn-small" @onclick="() => RenameSave(p)" @onclick:stopPropagation>Save</button>
                             <button class="btn-small btn-ghost" @onclick="CancelEdit" @onclick:stopPropagation>Cancel</button>
                         }
@@ -108,7 +108,8 @@
             }
 
             _projects.Clear();
-            var dbProjects = await Db.Projects
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var dbProjects = await db.Projects
                 .Where(p => p.UserId == userId && !p.IsArchived)
                 .OrderByDescending(p => p.UpdatedAt)
                 .Select(p => new ProjectInfo(p.Id, p.Name, p.CreatedAt, p.UpdatedAt))
@@ -143,8 +144,10 @@
                 UpdatedAt = DateTime.UtcNow
             };
 
-            Db.Projects.Add(project);
-            await Db.SaveChangesAsync();
+            await using var db = await DbFactory.CreateDbContextAsync();
+            db.Projects.Add(project);
+            await Storage.Save(project.Id, userId, "{}");
+            await db.SaveChangesAsync();
             await LoadProjects();
         }
         catch (Exception ex)
@@ -170,12 +173,13 @@
             var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (userId is null) return;
 
-            var project = await Db.Projects.FirstOrDefaultAsync(pr => pr.Id == p.Id && pr.UserId == userId);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var project = await db.Projects.FirstOrDefaultAsync(pr => pr.Id == p.Id && pr.UserId == userId);
             if (project is not null)
             {
                 project.Name = _editName;
                 project.UpdatedAt = DateTime.UtcNow;
-                await Db.SaveChangesAsync();
+                await db.SaveChangesAsync();
             }
             CancelEdit();
             await LoadProjects();
@@ -200,11 +204,12 @@
             var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (userId is null) return;
 
-            var project = await Db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
             if (project is not null)
             {
-                Db.Projects.Remove(project);
-                await Db.SaveChangesAsync();
+                db.Projects.Remove(project);
+                await db.SaveChangesAsync();
                 Storage.Delete(id, userId);
             }
             await LoadProjects();
@@ -223,7 +228,8 @@
             var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (userId is null) return;
 
-            var original = await Db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var original = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
             if (original is null) return;
 
             var json = await Storage.Load(id, userId) ?? original.JsonData;
@@ -238,9 +244,9 @@
                 UpdatedAt = DateTime.UtcNow
             };
 
-            Db.Projects.Add(duplicate);
+            db.Projects.Add(duplicate);
             await Storage.Save(duplicate.Id, userId, json);
-            await Db.SaveChangesAsync();
+            await db.SaveChangesAsync();
             await LoadProjects();
         }
         catch (Exception ex)

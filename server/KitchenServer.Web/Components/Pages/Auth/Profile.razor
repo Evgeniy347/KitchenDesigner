@@ -1,0 +1,177 @@
+@page "/profile"
+@attribute [Authorize]
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using KitchenServer.Web.Data
+@using KitchenServer.Web.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<IdentityUser> SignInManager
+@inject IDbContextFactory<AppDbContext> DbFactory
+@inject ProjectStorageService Storage
+
+@* Static SSR: ChangePasswordAsync + RefreshSignInAsync re-issue the auth cookie,
+   which requires a regular HTTP request. *@
+
+<PageTitle>Профиль — KitchenDesigner</PageTitle>
+
+<div class="profile-page">
+    <h1>Профиль</h1>
+
+    @if (_user is null)
+    {
+        <p>Загрузка...</p>
+    }
+    else
+    {
+        <section class="card">
+            <h2>Аккаунт</h2>
+            <div class="row"><span class="label">Email:</span> @_user.Email</div>
+            <div class="row"><span class="label">Проектов:</span> @_projectCount</div>
+            <div class="row"><span class="label">Хранилище:</span> @FormatBytes(_usageBytes)</div>
+        </section>
+
+        <section class="card">
+            <h2>Смена пароля</h2>
+
+            <EditForm Model="Input" method="post" OnValidSubmit="HandleChangePassword" FormName="change-password">
+                <DataAnnotationsValidator />
+
+                <InputText @bind-Value="Input.CurrentPassword" type="password" placeholder="Текущий пароль"
+                           class="input" autocomplete="current-password" />
+                <InputText @bind-Value="Input.NewPassword" type="password" placeholder="Новый пароль"
+                           class="input" autocomplete="new-password" />
+                <InputText @bind-Value="Input.ConfirmPassword" type="password" placeholder="Подтвердите новый пароль"
+                           class="input" autocomplete="new-password" />
+
+                @if (!string.IsNullOrEmpty(_error))
+                {
+                    <div class="error">@_error</div>
+                }
+                @if (!string.IsNullOrEmpty(_success))
+                {
+                    <div class="success">@_success</div>
+                }
+                <ValidationSummary class="error" />
+
+                <button type="submit" class="btn">Сменить пароль</button>
+            </EditForm>
+        </section>
+    }
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = default!;
+
+    private IdentityUser? _user;
+    private int _projectCount;
+    private long _usageBytes;
+    private string _error = "";
+    private string _success = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+        _user = await UserManager.GetUserAsync(HttpContext.User);
+        if (_user is null)
+            return;
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+        _projectCount = await db.Projects.CountAsync(p => p.UserId == _user.Id && !p.IsArchived);
+        _usageBytes = Storage.GetUsageBytes(_user.Id);
+    }
+
+    private async Task HandleChangePassword()
+    {
+        _error = "";
+        _success = "";
+        if (_user is null)
+            return;
+
+        var result = await UserManager.ChangePasswordAsync(_user, Input.CurrentPassword, Input.NewPassword);
+        if (result.Succeeded)
+        {
+            // Re-issue the cookie: the password change rotated the security stamp,
+            // which would otherwise invalidate this session within minutes.
+            await SignInManager.RefreshSignInAsync(_user);
+            _success = "Пароль изменён";
+            Input = new InputModel();
+        }
+        else
+        {
+            _error = string.Join("; ", result.Errors.Select(e =>
+                e.Code == "PasswordMismatch" ? "Неверный текущий пароль" : e.Description));
+        }
+    }
+
+    private static string FormatBytes(long bytes) => bytes switch
+    {
+        < 1024 => $"{bytes} B",
+        < 1024 * 1024 => $"{bytes / 1024.0:F1} KB",
+        _ => $"{bytes / 1048576.0:F1} MB"
+    };
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Введите текущий пароль")]
+        public string CurrentPassword { get; set; } = "";
+
+        [Required(ErrorMessage = "Введите новый пароль")]
+        [MinLength(6, ErrorMessage = "Пароль должен быть не менее 6 символов")]
+        public string NewPassword { get; set; } = "";
+
+        [Compare(nameof(NewPassword), ErrorMessage = "Пароли не совпадают")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+}
+
+<style>
+    .profile-page {
+        max-width: 480px;
+        margin: 40px auto;
+        padding: 0 16px;
+        color: #ccc;
+        font-family: sans-serif;
+    }
+    h1 { color: #fff; font-size: 24px; }
+    h2 { color: #ddd; font-size: 16px; margin: 0 0 16px; }
+    .card {
+        background: #1e1e2e;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 16px;
+    }
+    .row { margin: 8px 0; font-size: 14px; }
+    .label { color: #888; margin-right: 8px; }
+    .input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 12px;
+        background: #2a2a3e;
+        border: 1px solid #3a3a5e;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+    .btn {
+        width: 100%;
+        padding: 10px;
+        background: #3a5afe;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .btn:hover { background: #2e4ecc; }
+    .error { background: #5a1a1a; padding: 8px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
+    .error ul { margin: 0; padding-left: 18px; }
+    .success { background: #1a5a2a; padding: 8px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; color: #6bff6b; }
+</style>

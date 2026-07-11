@@ -1,28 +1,32 @@
 @page "/auth/register"
-@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.Components.Authorization
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @inject NavigationManager Navigation
+
+@* Static SSR: SignInAsync sets the auth cookie during a regular HTTP request. *@
 
 <PageTitle>Регистрация — KitchenDesigner</PageTitle>
 
 <div class="auth-form">
     <h2>Регистрация</h2>
 
-    <InputText @bind-Value="_email" type="email" placeholder="Email" class="input" />
-    <InputText @bind-Value="_password" type="password" placeholder="Пароль" class="input" />
-    <InputText @bind-Value="_confirmPassword" type="password" placeholder="Подтвердите пароль" class="input" />
+    <EditForm Model="Input" method="post" OnValidSubmit="HandleRegister" FormName="register">
+        <DataAnnotationsValidator />
 
-    @if (!string.IsNullOrEmpty(_error))
-    {
-        <div class="error">@_error</div>
-    }
+        <InputText @bind-Value="Input.Email" type="email" placeholder="Email" class="input" autocomplete="username" />
+        <InputText @bind-Value="Input.Password" type="password" placeholder="Пароль" class="input" autocomplete="new-password" />
+        <InputText @bind-Value="Input.ConfirmPassword" type="password" placeholder="Подтвердите пароль" class="input" autocomplete="new-password" />
 
-    <button class="btn" @onclick="HandleRegister" disabled="@_loading">
-        @(_loading ? "Создаю..." : "Создать аккаунт")
-    </button>
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <div class="error">@_error</div>
+        }
+        <ValidationSummary class="error" />
+
+        <button type="submit" class="btn">Создать аккаунт</button>
+    </EditForm>
 
     <p class="link">
         Уже есть аккаунт? <a href="/auth/login">Войти</a>
@@ -30,45 +34,41 @@
 </div>
 
 @code {
-    private string _email = "";
-    private string _password = "";
-    private string _confirmPassword = "";
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = default!;
+
     private string _error = "";
-    private bool _loading;
+
+    protected override void OnInitialized() => Input ??= new();
 
     private async Task HandleRegister()
     {
-        _error = "";
-        if (string.IsNullOrWhiteSpace(_email) || string.IsNullOrWhiteSpace(_password))
-        {
-            _error = "Email и пароль обязательны";
-            return;
-        }
-        if (_password != _confirmPassword)
-        {
-            _error = "Пароли не совпадают";
-            return;
-        }
-        if (_password.Length < 6)
-        {
-            _error = "Пароль должен быть не менее 6 символов";
-            return;
-        }
-
-        _loading = true;
-        var user = new IdentityUser { UserName = _email, Email = _email };
-        var result = await UserManager.CreateAsync(user, _password);
+        var user = new IdentityUser { UserName = Input.Email, Email = Input.Email };
+        var result = await UserManager.CreateAsync(user, Input.Password);
 
         if (result.Succeeded)
         {
-            await SignInManager.SignInAsync(user, isPersistent: false);
+            await SignInManager.SignInAsync(user, isPersistent: true);
             Navigation.NavigateTo("/");
         }
         else
         {
             _error = string.Join("; ", result.Errors.Select(e => e.Description));
         }
-        _loading = false;
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Email обязателен")]
+        [EmailAddress(ErrorMessage = "Некорректный email")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Пароль обязателен")]
+        [MinLength(6, ErrorMessage = "Пароль должен быть не менее 6 символов")]
+        public string Password { get; set; } = "";
+
+        [Compare(nameof(Password), ErrorMessage = "Пароли не совпадают")]
+        public string ConfirmPassword { get; set; } = "";
     }
 }
 
@@ -106,6 +106,7 @@
     .btn:hover { background: #2e4ecc; }
     .btn:disabled { opacity: 0.6; }
     .error { background: #5a1a1a; padding: 8px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
+    .error ul { margin: 0; padding-left: 18px; }
     .link { text-align: center; margin-top: 16px; font-size: 13px; }
     .link a { color: #3a5afe; }
 </style>
