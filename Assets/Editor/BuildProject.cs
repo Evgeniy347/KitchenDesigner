@@ -13,6 +13,42 @@ public static class BuildProject
         BuildWindows();
     }
 
+    // ── Windows Debug (fastest iteration) ──────────────────
+
+    [MenuItem("KitchenDesigner/Build Windows Debug")]
+    public static void BuildWindowsDebug()
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        Debug.Log("[BuildProject] Windows Debug — starting (development, incremental)...");
+
+        EnsureShadersIncluded();
+        EnsureURPAssigned();
+        EnsureWindowSettings();
+        EditorUserBuildSettings.development = true;
+        EditorUserBuildSettings.allowDebugging = true;
+
+        // Separate folder: a running release exe from Build/ must not lock the debug loop.
+        var location = "Build_Debug/KitchenDesigner.exe";
+        var options = new BuildPlayerOptions
+        {
+            scenes = new[] { "Assets/Scenes/TestScene.unity" },
+            locationPathName = location,
+            targetGroup = BuildTargetGroup.Standalone,
+            target = BuildTarget.StandaloneWindows64,
+            options = BuildOptions.Development | BuildOptions.AllowDebugging
+        };
+
+        var report = BuildPipeline.BuildPlayer(options);
+
+        sw.Stop();
+        if (report.summary.result == BuildResult.Succeeded)
+            Debug.Log($"[BuildProject] Windows Debug OK: {location} ({report.summary.totalSize / 1048576.0:F1} MB) in {sw.Elapsed.TotalSeconds:F0}s");
+        else
+            LogBuildFailure(report);
+
+        EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
+    }
+
     // ── WebGL Release ──────────────────────────────────────
 
     [MenuItem("KitchenDesigner/Build WebGL Release")]
@@ -89,6 +125,12 @@ public static class BuildProject
 
     private static void ConfigureWebGL(bool isDebug)
     {
+        // Debug: no compression — nginx serves plain files, build skips the gzip pass.
+        // Release: gzip matches nginx.conf (gzip_static + Content-Encoding locations).
+        PlayerSettings.WebGL.compressionFormat = isDebug
+            ? WebGLCompressionFormat.Disabled
+            : WebGLCompressionFormat.Gzip;
+
         PlayerSettings.WebGL.debugSymbols = isDebug;
         PlayerSettings.WebGL.exceptionSupport = isDebug
             ? WebGLExceptionSupport.FullWithStacktrace
@@ -115,9 +157,12 @@ public static class BuildProject
 
     private static void BuildWindows()
     {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         EnsureShadersIncluded();
         EnsureURPAssigned();
         EnsureWindowSettings();
+        EditorUserBuildSettings.development = false;
+        EditorUserBuildSettings.allowDebugging = false;
 
         var scenes = new[] { "Assets/Scenes/TestScene.unity" };
         var location = "Build/KitchenDesigner.exe";
@@ -133,9 +178,10 @@ public static class BuildProject
 
         var report = BuildPipeline.BuildPlayer(options);
 
+        sw.Stop();
         if (report.summary.result == BuildResult.Succeeded)
         {
-            Debug.Log($"[BuildProject] BUILD OK: {location} ({report.summary.totalSize / 1048576.0:F1} MB)");
+            Debug.Log($"[BuildProject] BUILD OK: {location} ({report.summary.totalSize / 1048576.0:F1} MB) in {sw.Elapsed.TotalSeconds:F0}s");
             EditorApplication.Exit(0);
         }
         else
