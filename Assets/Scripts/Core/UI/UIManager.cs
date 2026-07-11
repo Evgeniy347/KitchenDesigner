@@ -318,12 +318,24 @@ namespace KitchenDesigner.Core.UI
             if (SaveLoadManager.HasLastPath)
             {
                 if (SaveLoadManager.SaveToLastPath())
-                    Toast("Сохранено: " + System.IO.Path.GetFileName(SaveLoadManager.LastPath));
+                    Toast(
+#if UNITY_WEBGL
+                        "Сохранено"
+#else
+                        "Сохранено: " + System.IO.Path.GetFileName(SaveLoadManager.LastPath)
+#endif
+                    );
             }
             else if (SaveLoadManager.SaveProject(QuickSaveName))
             {
                 SaveLoadManager.LastPath = SaveLoadManager.PathForName(QuickSaveName);
-                Toast("Сохранено: " + QuickSaveName);
+                Toast(
+#if UNITY_WEBGL
+                    "Сохранено"
+#else
+                    "Сохранено: " + QuickSaveName
+#endif
+                );
             }
         }
 
@@ -337,7 +349,13 @@ namespace KitchenDesigner.Core.UI
                 suggested, SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return; // отмена
             if (SaveLoadManager.SaveToPath(path))
-                Toast("Сохранено: " + System.IO.Path.GetFileName(path));
+                Toast(
+#if UNITY_WEBGL
+                    "Сохранено"
+#else
+                    "Сохранено: " + System.IO.Path.GetFileName(path)
+#endif
+                );
         }
 
         /// <summary>«Загрузить»: системный диалог выбора файла, путь запоминается.</summary>
@@ -347,7 +365,13 @@ namespace KitchenDesigner.Core.UI
                 SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return; // отмена
             if (SaveLoadManager.LoadFromPath(path))
-                Toast("Загружено: " + System.IO.Path.GetFileName(path));
+                Toast(
+#if UNITY_WEBGL
+                    "Загружено"
+#else
+                    "Загружено: " + System.IO.Path.GetFileName(path)
+#endif
+                );
         }
 
         private static void Toast(string msg)
