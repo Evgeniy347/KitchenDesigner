@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -342,36 +343,36 @@ namespace KitchenDesigner.Core.UI
         /// <summary>«Сохранить как»: системный диалог, путь запоминается.</summary>
         public void SaveAs()
         {
+#if UNITY_WEBGL
+            string json = SaveLoadManager.CaptureCurrentJson();
+            string suggested = SaveLoadManager.HasLastPath
+                ? System.IO.Path.GetFileName(SaveLoadManager.LastPath)
+                : "kitchen.json";
+            FileDialogSave(gameObject.name, json, suggested);
+#else
             string suggested = SaveLoadManager.HasLastPath
                 ? System.IO.Path.GetFileName(SaveLoadManager.LastPath)
                 : "kitchen.json";
             string path = NativeFileDialog.SaveDialog("Сохранить проект кухни",
                 suggested, SaveLoadManager.LastDirectory);
-            if (string.IsNullOrEmpty(path)) return; // отмена
+            if (string.IsNullOrEmpty(path)) return;
             if (SaveLoadManager.SaveToPath(path))
-                Toast(
-#if UNITY_WEBGL
-                    "Сохранено"
-#else
-                    "Сохранено: " + System.IO.Path.GetFileName(path)
+                Toast("Сохранено: " + System.IO.Path.GetFileName(path));
 #endif
-                );
         }
 
         /// <summary>«Загрузить»: системный диалог выбора файла, путь запоминается.</summary>
         public void LoadDialog()
         {
+#if UNITY_WEBGL
+            FileDialogOpen(gameObject.name);
+#else
             string path = NativeFileDialog.OpenDialog("Открыть проект кухни",
                 SaveLoadManager.LastDirectory);
-            if (string.IsNullOrEmpty(path)) return; // отмена
+            if (string.IsNullOrEmpty(path)) return;
             if (SaveLoadManager.LoadFromPath(path))
-                Toast(
-#if UNITY_WEBGL
-                    "Загружено"
-#else
-                    "Загружено: " + System.IO.Path.GetFileName(path)
+                Toast("Загружено: " + System.IO.Path.GetFileName(path));
 #endif
-                );
         }
 
         private static void Toast(string msg)
@@ -406,5 +407,43 @@ namespace KitchenDesigner.Core.UI
         {
             if (_help != null) _help.Toggle();
         }
+
+#if UNITY_WEBGL
+        [DllImport("__Internal")]
+        private static extern void FileDialogOpen(string gameObjectName);
+        [DllImport("__Internal")]
+        private static extern void FileDialogSave(string gameObjectName, string content, string defaultName);
+
+        public void OnWebGLFileOpened(string data)
+        {
+            int sep = data.IndexOf('\x1F');
+            if (sep < 0) return;
+            string fileName = data.Substring(0, sep);
+            string json = data.Substring(sep + 1);
+
+            var projectData = SaveLoadManager.Deserialize(json);
+            if (projectData == null)
+            {
+                Toast("Ошибка загрузки");
+                return;
+            }
+
+            SaveLoadManager.LastPath = fileName;
+            SaveLoadManager.ClearBoards(PartRegistry.Instance.GetAll());
+            SaveLoadManager.RestoreScene(projectData);
+
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+
+            Toast("Загружено");
+        }
+
+        public void OnWebGLFileSaved(string fileName)
+        {
+            if (!string.IsNullOrEmpty(fileName))
+                SaveLoadManager.LastPath = fileName;
+            Toast("Сохранено");
+        }
+#endif
     }
 }
