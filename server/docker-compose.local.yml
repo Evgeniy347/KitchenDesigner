@@ -26,6 +26,7 @@ services:
       ConnectionStrings__kitchendb: Host=db;Database=kitchendb;Username=${DB_USER:-kitchen};Password=${DB_PASSWORD:-kitchen-local}
       ASPNETCORE_ENVIRONMENT: Development
       WebGL__RootPath: /app/webgl
+      ServerSave__Enabled: "true"
     ports:
       - "8081:8081"
     volumes:

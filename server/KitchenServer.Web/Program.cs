@@ -68,6 +68,7 @@ if (!string.IsNullOrEmpty(keysPath))
 
 builder.Services.Configure<McpOptions>(builder.Configuration.GetSection(McpOptions.SectionName));
 builder.Services.Configure<ProjectStorageOptions>(builder.Configuration.GetSection(ProjectStorageOptions.SectionName));
+builder.Services.Configure<ServerSaveOptions>(builder.Configuration.GetSection(ServerSaveOptions.SectionName));
 
 builder.Services.AddSingleton<ProjectStorageService>();
 builder.Services.AddSingleton<McpUrlBuilder>();
@@ -128,6 +129,7 @@ app.MapRazorComponents<App>()
 app.MapHealthChecks("/health");
 
 app.MapAuthEndpoints();
+app.MapConfigEndpoints();
 app.MapProjectEndpoints();
 app.MapMcpEndpoints();
 app.MapHub<McpHub>("/hubs/mcp");
