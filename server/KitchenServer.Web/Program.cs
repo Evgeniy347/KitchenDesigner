@@ -72,7 +72,21 @@ app.MapHub<McpHub>("/hubs/mcp");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+    for (int retry = 0; retry < 10; retry++)
+    {
+        try
+        {
+            db.Database.EnsureCreated();
+            app.Logger.LogInformation("Database initialized");
+            break;
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning("DB init attempt {Attempt} failed: {Error}", retry + 1, ex.Message);
+            if (retry == 9) throw;
+            Thread.Sleep(2000);
+        }
+    }
 }
 
 app.Run();
