@@ -1,0 +1,332 @@
+@page "/projects"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using KitchenServer.Web.Data
+@using Microsoft.EntityFrameworkCore
+@using KitchenServer.Web.Services
+@inject AppDbContext Db
+@inject ProjectStorageService Storage
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthProvider
+
+<PageTitle>Projects — KitchenDesigner</PageTitle>
+
+<div class="projects-page">
+    <div class="header">
+        <h1>Projects</h1>
+        <button class="btn-primary" @onclick="CreateNew">+ New Project</button>
+    </div>
+
+    @if (_loading)
+    {
+        <p class="loading">Loading...</p>
+    }
+    else if (!string.IsNullOrEmpty(_error))
+    {
+        <p class="error">@_error</p>
+    }
+    else if (_projects.Count == 0)
+    {
+        <p class="empty">No projects yet. Create your first one!</p>
+    }
+    else
+    {
+        <div class="toolbar">
+            <input type="text" placeholder="Search projects..." @bind="_filter" @bind:event="oninput"
+                   class="search-input" />
+        </div>
+
+        <div class="project-list">
+            @foreach (var p in FilteredProjects)
+            {
+                <div class="project-card" @onclick="() => OpenProject(p.Id)" @onclick:preventDefault>
+                    <div class="card-body">
+                        @if (_editingId == p.Id)
+                        {
+                            <input type="text" @bind="_editName" class="rename-input"
+                                                                      @onkeydown="@(e => { if (e.Key == "Enter") RenameSave(p); if (e.Key == "Escape") CancelEdit(); })" />
+                            <button class="btn-small" @onclick="() => RenameSave(p)" @onclick:stopPropagation>Save</button>
+                            <button class="btn-small btn-ghost" @onclick="CancelEdit" @onclick:stopPropagation>Cancel</button>
+                        }
+                        else
+                        {
+                            <span class="project-name">@p.Name</span>
+                        }
+                        <span class="project-date">@p.UpdatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-small btn-ghost" @onclick="() => StartRename(p)" @onclick:stopPropagation
+                                title="Rename">
+                            Rename
+                        </button>
+                        <button class="btn-small btn-ghost" @onclick="() => DuplicateProject(p.Id)" @onclick:stopPropagation
+                                title="Duplicate">
+                            Dup
+                        </button>
+                        <button class="btn-small btn-danger" @onclick="() => DeleteProject(p.Id)" @onclick:stopPropagation
+                                title="Delete">
+                            Del
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<ProjectInfo> _projects = new();
+    private string _filter = "";
+    private string _error = "";
+    private bool _loading = true;
+    private Guid? _editingId;
+    private string _editName = "";
+
+    private List<ProjectInfo> FilteredProjects =>
+        string.IsNullOrWhiteSpace(_filter)
+            ? _projects
+            : _projects.Where(p => p.Name.Contains(_filter, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProjects();
+    }
+
+    private async Task LoadProjects()
+    {
+        _loading = true;
+        _error = "";
+        try
+        {
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userId is null)
+            {
+                _error = "Not authenticated.";
+                return;
+            }
+
+            _projects.Clear();
+            var dbProjects = await Db.Projects
+                .Where(p => p.UserId == userId && !p.IsArchived)
+                .OrderByDescending(p => p.UpdatedAt)
+                .Select(p => new ProjectInfo(p.Id, p.Name, p.CreatedAt, p.UpdatedAt))
+                .ToListAsync();
+            _projects.AddRange(dbProjects);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load projects: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CreateNew()
+    {
+        try
+        {
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userId is null) return;
+
+            var project = new KitchenServer.Web.Data.Entities.Project
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Name = "New Project",
+                JsonData = "{}",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            Db.Projects.Add(project);
+            await Db.SaveChangesAsync();
+            await LoadProjects();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to create project: {ex.Message}";
+        }
+    }
+
+    private void OpenProject(Guid id) => Navigation.NavigateTo($"/editor/{id}");
+
+    private void StartRename(ProjectInfo p)
+    {
+        _editingId = p.Id;
+        _editName = p.Name;
+    }
+
+    private async Task RenameSave(ProjectInfo p)
+    {
+        if (string.IsNullOrWhiteSpace(_editName)) return;
+        try
+        {
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userId is null) return;
+
+            var project = await Db.Projects.FirstOrDefaultAsync(pr => pr.Id == p.Id && pr.UserId == userId);
+            if (project is not null)
+            {
+                project.Name = _editName;
+                project.UpdatedAt = DateTime.UtcNow;
+                await Db.SaveChangesAsync();
+            }
+            CancelEdit();
+            await LoadProjects();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to rename: {ex.Message}";
+        }
+    }
+
+    private void CancelEdit()
+    {
+        _editingId = null;
+        _editName = "";
+    }
+
+    private async Task DeleteProject(Guid id)
+    {
+        try
+        {
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userId is null) return;
+
+            var project = await Db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            if (project is not null)
+            {
+                Db.Projects.Remove(project);
+                Storage.Delete(id, userId);
+                await Db.SaveChangesAsync();
+            }
+            await LoadProjects();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to delete: {ex.Message}";
+        }
+    }
+
+    private async Task DuplicateProject(Guid id)
+    {
+        try
+        {
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userId is null) return;
+
+            var original = await Db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            if (original is null) return;
+
+            var json = await Storage.Load(id, userId) ?? original.JsonData;
+
+            var duplicate = new KitchenServer.Web.Data.Entities.Project
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Name = $"{original.Name} (Copy)",
+                JsonData = json,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            Db.Projects.Add(duplicate);
+            await Storage.Save(duplicate.Id, userId, json);
+            await Db.SaveChangesAsync();
+            await LoadProjects();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to duplicate: {ex.Message}";
+        }
+    }
+
+    private record ProjectInfo(Guid Id, string Name, DateTime CreatedAt, DateTime UpdatedAt);
+}
+
+<style>
+    .projects-page {
+        padding: 32px;
+        max-width: 800px;
+        margin: 0 auto;
+        color: #ccc;
+        font-family: sans-serif;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .header h1 { color: #fff; margin: 0; font-size: 24px; }
+    .btn-primary {
+        padding: 10px 20px;
+        background: #3a5afe;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .btn-primary:hover { background: #2e4ecc; }
+    .btn-small {
+        padding: 4px 12px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+        color: #ccc;
+        background: #2a2a3e;
+    }
+    .btn-small:hover { background: #3a3a5e; }
+    .btn-danger { color: #ff6b6b; }
+    .btn-danger:hover { background: #5a1a1a; }
+    .btn-ghost { background: transparent; }
+    .btn-ghost:hover { background: #2a2a3e; }
+    .toolbar { margin-bottom: 16px; }
+    .search-input {
+        width: 100%;
+        padding: 8px 12px;
+        background: #2a2a3e;
+        border: 1px solid #3a3a5e;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+    .search-input::placeholder { color: #666; }
+    .project-list { display: flex; flex-direction: column; gap: 8px; }
+    .project-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background: #1e1e2e;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .project-card:hover { background: #262640; }
+    .card-body { display: flex; flex-direction: column; gap: 4px; }
+    .project-name { color: #fff; font-size: 15px; }
+    .project-date { color: #888; font-size: 12px; }
+    .card-actions { display: flex; gap: 6px; }
+    .rename-input {
+        padding: 4px 8px;
+        background: #2a2a3e;
+        border: 1px solid #3a5afe;
+        border-radius: 3px;
+        color: #fff;
+        font-size: 14px;
+    }
+    .loading, .empty, .error { text-align: center; padding: 40px; }
+    .error { color: #ff6b6b; }
+</style>

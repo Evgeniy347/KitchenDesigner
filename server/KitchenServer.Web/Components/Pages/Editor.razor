@@ -1,0 +1,203 @@
+@page "/editor/{projectId:guid}"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@implements IDisposable
+@using Microsoft.AspNetCore.Components.Authorization
+@using KitchenServer.Web.Data
+@using KitchenServer.Web.Services
+@inject AppDbContext Db
+@inject ProjectStorageService Storage
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthProvider
+@inject IJSRuntime JsRuntime
+
+<PageTitle>@_projectName — KitchenDesigner Editor</PageTitle>
+
+<div class="editor-page">
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <a href="/projects" class="back-link">← Projects</a>
+            <span class="project-name">@_projectName</span>
+        </div>
+        <div class="toolbar-right">
+            @if (_isSaving)
+            {
+                <span class="save-indicator saving">Saving...</span>
+            }
+            else if (_lastSaved is not null)
+            {
+                <span class="save-indicator saved">Saved @_lastSaved.Value.ToString("HH:mm:ss")</span>
+            }
+            <span class="project-id" title="Project ID: @ProjectId">ID: @ProjectId.ToString()[..8]</span>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="error-banner">@_error</div>
+    }
+
+    <div class="unity-container">
+        @if (_ready)
+        {
+            <iframe src="@_unityUrl?projectId=@ProjectId"
+                    class="unity-frame"
+                    allow="autoplay; fullscreen"
+                    title="KitchenDesigner Editor">
+            </iframe>
+        }
+        else
+        {
+            <div class="loading">Loading project...</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid ProjectId { get; set; }
+
+    private string _projectName = "Loading...";
+    private string _error = "";
+    private bool _ready;
+    private bool _isSaving;
+    private DateTime? _lastSaved;
+    private string _userId = "";
+    private string _unityUrl = "/unity/index.html";
+    private DotNetObjectReference<Components.Pages.Editor>? _dotNetRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            _userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+            if (string.IsNullOrEmpty(_userId))
+            {
+                _error = "Not authenticated.";
+                return;
+            }
+
+            var project = await Db.Projects.FindAsync(ProjectId);
+            if (project is null || project.UserId != _userId)
+            {
+                _error = "Project not found.";
+                return;
+            }
+
+            _projectName = project.Name;
+            _ready = true;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load project: {ex.Message}";
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _ready)
+        {
+            try
+            {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                await JsRuntime.InvokeVoidAsync("KitchenEditor.init", ProjectId.ToString(), _dotNetRef);
+            }
+            catch (Exception ex)
+            {
+                _error = $"Failed to initialize editor: {ex.Message}";
+                _ready = false;
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task SaveProjectAsync(string jsonData)
+    {
+        try
+        {
+            _isSaving = true;
+            StateHasChanged();
+            await Storage.Save(ProjectId, _userId, jsonData);
+            _lastSaved = DateTime.UtcNow;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to save: {ex.Message}";
+        }
+        finally
+        {
+            _isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}
+
+<style>
+    .editor-page {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 16px;
+        background: #1e1e2e;
+        border-bottom: 1px solid #2a2a3e;
+        flex-shrink: 0;
+        min-height: 40px;
+    }
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .back-link {
+        color: #3a5afe;
+        text-decoration: none;
+        font-size: 14px;
+    }
+    .back-link:hover { color: #5a7afe; }
+    .project-name { color: #fff; font-size: 14px; font-weight: 600; }
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .save-indicator { font-size: 12px; padding: 4px 8px; border-radius: 3px; }
+    .save-indicator.saving { background: #3a5afe33; color: #3a5afe; }
+    .save-indicator.saved { background: #2a5a2a; color: #6bff6b; }
+    .project-id { color: #666; font-size: 11px; font-family: monospace; }
+    .unity-container {
+        flex: 1;
+        display: flex;
+        background: #000;
+    }
+    .unity-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        color: #ccc;
+        font-size: 16px;
+    }
+    .error-banner {
+        padding: 8px 16px;
+        background: #5a1a1a;
+        color: #ff6b6b;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+</style>

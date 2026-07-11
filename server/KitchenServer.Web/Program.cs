@@ -1,6 +1,9 @@
 using Aspire.Npgsql.EntityFrameworkCore.PostgreSQL;
 using KitchenServer.Web.Components;
 using KitchenServer.Web.Data;
+using KitchenServer.Web.Endpoints;
+using KitchenServer.Web.Hubs;
+using KitchenServer.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +33,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/auth/login";
 });
 
+builder.Services.AddSingleton<ProjectStorageService>();
+builder.Services.AddSingleton<McpSessionManager>();
+builder.Services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<McpSessionManager>());
+builder.Services.AddSignalR();
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -46,11 +54,20 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseWebSockets(new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(30)
+});
+
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.MapDefaultEndpoints();
+
+app.MapProjectEndpoints();
+app.MapMcpEndpoints();
+app.MapHub<McpHub>("/hubs/mcp");
 
 using (var scope = app.Services.CreateScope())
 {
