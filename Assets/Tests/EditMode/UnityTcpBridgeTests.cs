@@ -1,3 +1,5 @@
+#if !UNITY_WEBGL
+
 using System;
 using NUnit.Framework;
 using UnityEngine;
@@ -46,3 +48,5 @@ public class UnityTcpBridgeTests
         Assert.AreEqual(5555, UnityTcpBridge.ResolvePort(5555));
     }
 }
+
+#endif // !UNITY_WEBGL

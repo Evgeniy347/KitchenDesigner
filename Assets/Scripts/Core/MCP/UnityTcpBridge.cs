@@ -1,3 +1,5 @@
+#if !UNITY_WEBGL
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -244,3 +246,5 @@ namespace KitchenDesigner.Core.MCP
 #endif
     }
 }
+
+#endif // !UNITY_WEBGL

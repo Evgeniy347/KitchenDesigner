@@ -1,3 +1,5 @@
+#if !UNITY_WEBGL
+
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -57,3 +59,5 @@ namespace KitchenDesigner.Core
         public void SendResponse(string json) { }
     }
 }
+
+#endif // !UNITY_WEBGL

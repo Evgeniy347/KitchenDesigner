@@ -19,6 +19,8 @@ public static class PlayModeTestConfig
     /// </summary>
     public static void ConfigureForTests()
     {
+#if !UNITY_WEBGL
         UnityTcpBridge.TestPort = TestMcpPort;
+#endif
     }
 }

@@ -10,6 +10,52 @@ public static class BuildProject
     [MenuItem("KitchenDesigner/Build")]
     public static void Build()
     {
+        BuildWindows();
+    }
+
+    [MenuItem("KitchenDesigner/Build WebGL")]
+    public static void BuildWebGL()
+    {
+        EnsureShadersIncluded();
+        EnsureURPAssigned();
+        PlayerSettings.runInBackground = true;
+
+        var scenes = new[] { "Assets/Scenes/TestScene.unity" };
+        var location = "Builds/WebGL";
+
+        var options = new BuildPlayerOptions
+        {
+            scenes = scenes,
+            locationPathName = location,
+            targetGroup = BuildTargetGroup.WebGL,
+            target = BuildTarget.WebGL,
+            options = BuildOptions.None
+        };
+
+        var report = BuildPipeline.BuildPlayer(options);
+
+        if (report.summary.result == BuildResult.Succeeded)
+        {
+            Debug.Log($"[BuildProject] WEBGL BUILD OK: {location} ({report.summary.totalSize / 1048576.0:F1} MB)");
+            EditorApplication.Exit(0);
+        }
+        else
+        {
+            Debug.LogError($"[BuildProject] WEBGL BUILD FAILED: {report.summary.result}");
+            foreach (var step in report.steps)
+            {
+                foreach (var msg in step.messages)
+                {
+                    if (msg.type == LogType.Error || msg.type == LogType.Exception)
+                        Debug.LogError($"[Build] {step.name}: {msg.content}");
+                }
+            }
+            EditorApplication.Exit(1);
+        }
+    }
+
+    private static void BuildWindows()
+    {
         EnsureShadersIncluded();
         EnsureURPAssigned();
         EnsureWindowSettings();
