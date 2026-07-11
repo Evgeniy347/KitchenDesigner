@@ -1,0 +1,27 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>KitchenDesigner</PageTitle>
+
+<div class="home">
+    <h1>KitchenDesigner</h1>
+
+    <AuthorizeView>
+        <Authorized>
+            <p>Добро пожаловать, <strong>@context.User.Identity?.Name</strong></p>
+            <a href="/auth/logout">Выйти</a>
+        </Authorized>
+        <NotAuthorized>
+            <p>
+                <a href="/auth/login">Войти</a> или
+                <a href="/auth/register">Создать аккаунт</a>
+            </p>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+<style>
+    .home { padding: 40px; font-family: sans-serif; color: #ccc; background: #1a1a2e; min-height: 100vh; }
+    h1 { color: #fff; }
+    a { color: #3a5afe; margin-right: 16px; }
+</style>
