@@ -9,8 +9,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("kitchendb")));
 
@@ -63,8 +61,6 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.MapDefaultEndpoints();
-
 app.MapProjectEndpoints();
 app.MapMcpEndpoints();
 app.MapHub<McpHub>("/hubs/mcp");
@@ -72,7 +68,7 @@ app.MapHub<McpHub>("/hubs/mcp");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    for (int retry = 0; retry < 10; retry++)
+    for (int retry = 0; retry < 5; retry++)
     {
         try
         {
@@ -80,11 +76,10 @@ using (var scope = app.Services.CreateScope())
             app.Logger.LogInformation("Database initialized");
             break;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (retry < 4)
         {
             app.Logger.LogWarning("DB init attempt {Attempt} failed: {Error}", retry + 1, ex.Message);
-            if (retry == 9) throw;
-            Thread.Sleep(2000);
+            await Task.Delay(1000);
         }
     }
 }
