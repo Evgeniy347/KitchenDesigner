@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace KitchenServer.Web.Services;
 
@@ -12,6 +13,13 @@ public class McpSessionManager : IHostedService
     private readonly ConcurrentDictionary<string, McpSession> _byMCPConnection = new();
     private readonly ConcurrentDictionary<string, McpSession> _byBrowserConnection = new();
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _cancellations = new();
+
+    public McpSessionManager() { }
+
+    public McpSessionManager(IOptions<McpOptions> options)
+    {
+        SessionTtl = TimeSpan.FromMinutes(options.Value.SessionTtlMinutes);
+    }
 
     public TimeSpan SessionTtl { get; set; } = TimeSpan.FromMinutes(30);
 
@@ -103,10 +111,12 @@ public class McpSessionManager : IHostedService
             try { cts.Dispose(); } catch { }
         }
 
+        // Abort instead of a blocking CloseAsync: this runs on the cleanup timer
+        // thread and must never wait on a remote peer.
         var ws = session.BrowserWebSocket;
         if (ws != null && (ws.State == WebSocketState.Open || ws.State == WebSocketState.CloseReceived))
         {
-            try { ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).GetAwaiter().GetResult(); }
+            try { ws.Abort(); }
             catch { }
         }
         session.BrowserWebSocket = null;

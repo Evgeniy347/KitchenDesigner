@@ -12,23 +12,37 @@ public static class McpEndpoints
     private record SessionResponse(string SessionId, string AccessKey, string? ProjectId, DateTime CreatedAt,
         string McpUrl, string WsUrl, bool IsActive);
 
+    private static string BaseUrl(HttpContext ctx) =>
+        $"{ctx.Request.Scheme}://{ctx.Request.Host}";
+
+    private static SessionResponse ToResponse(McpSession s, McpUrlBuilder urls, HttpContext ctx)
+    {
+        var baseUrl = BaseUrl(ctx);
+        return new SessionResponse(
+            s.SessionId, s.AccessKey, s.ProjectId, s.CreatedAt,
+            urls.HubUrl(baseUrl, s.AccessKey),
+            urls.BrowserWsUrl(baseUrl, s.AccessKey),
+            s.IsActive);
+    }
+
     public static void MapMcpEndpoints(this WebApplication app)
     {
         var api = app.MapGroup("/api/mcp");
 
-        api.MapGet("/connect", (string key, McpSessionManager sessions) =>
+        api.MapGet("/connect", (string key, McpSessionManager sessions, McpUrlBuilder urls, HttpContext ctx) =>
         {
             var session = sessions.ValidateAccess(key);
             if (session == null)
                 return Results.NotFound(new { error = "Invalid or expired access key" });
 
+            var baseUrl = BaseUrl(ctx);
             return Results.Ok(new
             {
                 sessionId = session.SessionId,
                 userId = session.UserId,
                 projectId = session.ProjectId,
-                mcpUrl = $"ws://localhost:5000/hubs/mcp?access_key={session.AccessKey}",
-                wsUrl = $"ws://localhost:5000/api/mcp/ws?key={session.AccessKey}",
+                mcpUrl = urls.HubUrl(baseUrl, session.AccessKey),
+                wsUrl = urls.BrowserWsUrl(baseUrl, session.AccessKey),
                 accessKey = session.AccessKey,
                 createdAt = session.CreatedAt
             });
@@ -36,33 +50,22 @@ public static class McpEndpoints
 
         var auth = api.RequireAuthorization();
 
-        auth.MapGet("/sessions", (McpSessionManager sessions, ClaimsPrincipal user) =>
+        auth.MapGet("/sessions", (McpSessionManager sessions, McpUrlBuilder urls, HttpContext ctx, ClaimsPrincipal user) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null) return Results.Unauthorized();
 
-            var list = sessions.GetUserSessions(userId).Select(s => new SessionResponse(
-                s.SessionId, s.AccessKey, s.ProjectId, s.CreatedAt,
-                $"ws://localhost:5000/hubs/mcp?access_key={s.AccessKey}",
-                $"ws://localhost:5000/api/mcp/ws?key={s.AccessKey}",
-                s.IsActive
-            ));
-
+            var list = sessions.GetUserSessions(userId).Select(s => ToResponse(s, urls, ctx));
             return Results.Ok(list);
         });
 
-        auth.MapPost("/sessions", (CreateSessionRequest req, McpSessionManager sessions, ClaimsPrincipal user) =>
+        auth.MapPost("/sessions", (CreateSessionRequest req, McpSessionManager sessions, McpUrlBuilder urls, HttpContext ctx, ClaimsPrincipal user) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null) return Results.Unauthorized();
 
             var session = sessions.CreateSession(userId, req.ProjectId);
-            return Results.Created($"/api/mcp/sessions/{session.SessionId}", new SessionResponse(
-                session.SessionId, session.AccessKey, session.ProjectId, session.CreatedAt,
-                $"ws://localhost:5000/hubs/mcp?access_key={session.AccessKey}",
-                $"ws://localhost:5000/api/mcp/ws?key={session.AccessKey}",
-                session.IsActive
-            ));
+            return Results.Created($"/api/mcp/sessions/{session.SessionId}", ToResponse(session, urls, ctx));
         });
 
         auth.MapDelete("/sessions/{id}", (string id, McpSessionManager sessions, ClaimsPrincipal user) =>
