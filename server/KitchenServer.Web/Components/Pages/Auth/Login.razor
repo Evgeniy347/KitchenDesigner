@@ -1,0 +1,95 @@
+@page "/auth/login"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject NavigationManager Navigation
+
+<PageTitle>Вход — KitchenDesigner</PageTitle>
+
+<div class="auth-form">
+    <h2>Вход</h2>
+
+    <InputText @bind-Value="_email" type="email" placeholder="Email" class="input" />
+    <InputText @bind-Value="_password" type="password" placeholder="Пароль" class="input" />
+
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="error">@_error</div>
+    }
+
+    <button class="btn" @onclick="HandleLogin" disabled="@_loading">
+        @(_loading ? "Вхожу..." : "Войти")
+    </button>
+
+    <p class="link">
+        Нет аккаунта? <a href="/auth/register">Регистрация</a>
+    </p>
+</div>
+
+@code {
+    private string _email = "";
+    private string _password = "";
+    private string _error = "";
+    private bool _loading;
+
+    private async Task HandleLogin()
+    {
+        _error = "";
+        if (string.IsNullOrWhiteSpace(_email) || string.IsNullOrWhiteSpace(_password))
+        {
+            _error = "Email и пароль обязательны";
+            return;
+        }
+
+        _loading = true;
+        var result = await SignInManager.PasswordSignInAsync(_email, _password, false, false);
+
+        if (result.Succeeded)
+        {
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            _error = "Неверный email или пароль";
+        }
+        _loading = false;
+    }
+}
+
+<style>
+    .auth-form {
+        max-width: 360px;
+        margin: 80px auto;
+        padding: 32px;
+        background: #1e1e2e;
+        border-radius: 8px;
+        color: #ccc;
+    }
+    h2 { margin: 0 0 20px; color: #fff; font-size: 20px; }
+    .input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 12px;
+        background: #2a2a3e;
+        border: 1px solid #3a3a5e;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+    .btn {
+        width: 100%;
+        padding: 10px;
+        background: #3a5afe;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .btn:hover { background: #2e4ecc; }
+    .btn:disabled { opacity: 0.6; }
+    .error { background: #5a1a1a; padding: 8px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
+    .link { text-align: center; margin-top: 16px; font-size: 13px; }
+    .link a { color: #3a5afe; }
+</style>

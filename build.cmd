@@ -5,6 +5,7 @@ set "FLAG_CLEAN="
 set "FLAG_TESTS="
 set "FLAG_PLAY="
 set "FLAG_BUILD="
+set "FLAG_WEBGL="
 
 :parse_args
 if "%~1"=="" goto :args_done
@@ -12,6 +13,7 @@ if /i "%~1"=="-Clean" set "FLAG_CLEAN=1"
 if /i "%~1"=="-RunTests" set "FLAG_TESTS=1"
 if /i "%~1"=="-RunPlayMode" set "FLAG_PLAY=1"
 if /i "%~1"=="-BuildOnly" set "FLAG_BUILD=1"
+if /i "%~1"=="-WebGL" set "FLAG_WEBGL=1"
 shift
 goto :parse_args
 :args_done
@@ -33,8 +35,10 @@ if defined FLAG_CLEAN (
     call "%~dp0clean.cmd"
 )
 
-REM ---- Tests ----
+REM ---- Tests (skip for WebGL builds) ----
 set "testsOk=1"
+
+if defined FLAG_WEBGL goto :build_webgl
 
 if defined FLAG_TESTS if not defined FLAG_BUILD (
     echo === EditMode Tests ===
@@ -59,8 +63,8 @@ if not defined testsOk if not defined FLAG_BUILD (
     exit /b 1
 )
 
-REM ---- Build ----
-echo === Build ===
+REM ---- Build Windows ----
+echo === Build Windows ===
 if exist "%root%\Build" rmdir /s /q "%root%\Build"
 
 "%unity%" -quit -batchMode -projectPath "%root%" -executeMethod BuildProject.Build -logFile "%log%"
@@ -82,6 +86,28 @@ if !buildExit! equ 0 if exist "!buildPath!" (
     echo.
     echo =================================
     echo  BUILD FAILED - exit code: !buildExit!
+    echo =================================
+    exit /b 1
+)
+
+:build_webgl
+echo === Build WebGL ===
+if exist "%root%\Builds\WebGL" rmdir /s /q "%root%\Builds\WebGL"
+
+"%unity%" -quit -batchMode -projectPath "%root%" -executeMethod BuildProject.BuildWebGL -logFile "%log%"
+set "buildExit=!errorlevel!"
+
+if !buildExit! equ 0 if exist "%root%\Builds\WebGL\index.html" (
+    echo.
+    echo =================================
+    echo  WEBGL BUILD OK
+    echo  Output: %root%\Builds\WebGL\
+    echo =================================
+    exit /b 0
+) else (
+    echo.
+    echo =================================
+    echo  WEBGL BUILD FAILED - exit code: !buildExit!
     echo =================================
     exit /b 1
 )
