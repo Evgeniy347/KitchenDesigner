@@ -1,0 +1,10 @@
+<linker>
+  <!-- WebGL Release (ManagedStrippingLevel.High) may strip legacy Text rendering.
+       These preserve only the types needed for Font + Text to generate meshes. -->
+  <assembly fullname="UnityEngine.CoreModule">
+    <type fullname="UnityEngine.Font" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.UI">
+    <type fullname="UnityEngine.UI.Text" preserve="all" />
+  </assembly>
+</linker>

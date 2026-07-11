@@ -29,6 +29,24 @@ if %errorlevel% neq 0 (
 )
 
 echo.
+echo === Waiting for server to be ready (checking for non-502 response) ===
+set "retries=0"
+:waitloop
+set /a retries+=1
+if %retries% gtr 20 goto :noready
+powershell -NoProfile -Command "try { $r=Invoke-WebRequest -Uri 'http://localhost:8080' -TimeoutSec 2 -UseBasicParsing; exit ($r.StatusCode -eq 502) } catch { exit 1 }"
+if %errorlevel% equ 0 (
+    >nul timeout /t 1 /nobreak
+    goto :waitloop
+)
+echo === Server responded with non-502 (attempt %retries%) ===
+goto :open
+
+:noready
+echo [WARN] Server still returning 502 after 20 seconds, opening anyway...
+
+:open
+echo.
 echo =================================
 echo  LOCAL WEBGL UP
 echo  URL: http://localhost:8080

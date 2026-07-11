@@ -10,6 +10,12 @@ namespace KitchenDesigner.Core
             // В редакторе не трогаем — настройка влияет только на собранный плеер.
             if (Application.isEditor) return;
 
+#if UNITY_WEBGL
+            // WebGL: браузер сам управляет размером canvas через CSS (ширина 100%).
+            // Screen.SetResolution фиксирует canvas в DOM-пикселях, оставляя пустые поля
+            // вокруг Unity, пока пользователь не нажмёт F11 — не вызываем.
+            return;
+#else
             var s = KitchenSettings.Instance;
             bool windowed = s == null || s.WindowedMode;
 
@@ -26,6 +32,7 @@ namespace KitchenDesigner.Core
                     Screen.currentResolution.height,
                     FullScreenMode.FullScreenWindow);
             }
+#endif
         }
     }
 }

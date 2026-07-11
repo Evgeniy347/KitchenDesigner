@@ -16,7 +16,15 @@ namespace KitchenDesigner.Core.UI
             get
             {
                 if (_font == null)
-                    _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                {
+                    // Реальный .ttf из Resources: текстура шрифта генерируется на этапе билда
+                    // и работает на всех платформах, включая WebGL (где GetBuiltinResource
+                    // возвращает шрифт без текстуры, потому что WebGL не умеет рендерить
+                    // системные шрифты на лету).
+                    _font = Resources.Load<Font>("Fonts/arial");
+                    if (_font == null)
+                        _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                }
                 return _font;
             }
         }
