@@ -118,6 +118,15 @@
             _isSaving = true;
             StateHasChanged();
             await Storage.Save(ProjectId, _userId, jsonData);
+
+            var project = await Db.Projects.FindAsync(ProjectId);
+            if (project is not null)
+            {
+                project.JsonData = jsonData;
+                project.UpdatedAt = DateTime.UtcNow;
+                await Db.SaveChangesAsync();
+            }
+
             _lastSaved = DateTime.UtcNow;
         }
         catch (Exception ex)

@@ -25,7 +25,7 @@ echo   Done.
 
 echo.
 echo [2/5] Creating remote directories...
-ssh %SSH_FLAGS% %SERVER% "mkdir -p %REMOTE_DIR%/webgl %REMOTE_DIR%/data %REMOTE_DIR%/publish"
+ssh %SSH_FLAGS% %SERVER% "mkdir -p %REMOTE_DIR%/webgl %REMOTE_DIR%/data"
 if %ERRORLEVEL% neq 0 (
     echo ERROR: failed to create remote directories
     exit /b 1
@@ -46,15 +46,13 @@ if exist "%SCRIPT_DIR%Builds\WebGL\" (
 )
 
 echo.
-echo [4/5] Copying server publish output and Docker config...
-scp %SSH_FLAGS% -r "%SCRIPT_DIR%server\publish\*" %SERVER%:%REMOTE_DIR%/publish/
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: scp publish output failed
-    exit /b 1
-)
+echo [4/5] Copying Docker config...
 scp %SSH_FLAGS% "%SCRIPT_DIR%server\Dockerfile" %SERVER%:%REMOTE_DIR%/
+if %ERRORLEVEL% neq 0 (echo ERROR: scp Dockerfile failed & exit /b 1)
 scp %SSH_FLAGS% "%SCRIPT_DIR%server\docker-compose.yml" %SERVER%:%REMOTE_DIR%/
+if %ERRORLEVEL% neq 0 (echo ERROR: scp docker-compose.yml failed & exit /b 1)
 scp %SSH_FLAGS% "%SCRIPT_DIR%server\nginx.conf" %SERVER%:%REMOTE_DIR%/
+if %ERRORLEVEL% neq 0 (echo ERROR: scp nginx.conf failed & exit /b 1)
 echo   Done.
 
 echo.

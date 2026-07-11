@@ -204,8 +204,8 @@
             if (project is not null)
             {
                 Db.Projects.Remove(project);
-                Storage.Delete(id, userId);
                 await Db.SaveChangesAsync();
+                Storage.Delete(id, userId);
             }
             await LoadProjects();
         }

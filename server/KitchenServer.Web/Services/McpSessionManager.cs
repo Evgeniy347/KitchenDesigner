@@ -120,10 +120,19 @@ public class McpSessionManager : IHostedService
             session.Touch();
     }
 
+    public void RemoveSessionCancellation(string sessionId)
+    {
+        if (_cancellations.TryRemove(sessionId, out var cts))
+        {
+            try { cts.Cancel(); } catch { }
+            try { cts.Dispose(); } catch { }
+        }
+    }
+
     public void CleanupExpiredSessions()
     {
         var expired = _bySessionId.Values
-            .Where(s => !s.IsActive)
+            .Where(s => DateTime.UtcNow - s.LastActivity > s.SessionTtl)
             .Select(s => s.SessionId)
             .ToList();
         foreach (var id in expired)
@@ -143,6 +152,9 @@ public class McpSessionManager : IHostedService
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _cleanupTimer?.Dispose();
+        var sessionIds = _bySessionId.Keys.ToList();
+        foreach (var id in sessionIds)
+            CloseSession(id);
         return Task.CompletedTask;
     }
 }

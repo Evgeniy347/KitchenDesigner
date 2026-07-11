@@ -3,17 +3,20 @@ namespace KitchenServer.Web.Services;
 public class ProjectStorageService
 {
     private readonly string _rootPath;
+    private readonly ILogger<ProjectStorageService> _logger;
 
-    public ProjectStorageService(IConfiguration configuration)
+    public ProjectStorageService(IConfiguration configuration, ILogger<ProjectStorageService> logger)
     {
+        _logger = logger;
         _rootPath = configuration.GetValue<string>("ProjectStorage:RootPath") ?? "data/projects";
 
         try
         {
             Directory.CreateDirectory(_rootPath);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogWarning(ex, "Failed to create project storage root at {Path}, falling back to current directory", _rootPath);
             _rootPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "projects");
             Directory.CreateDirectory(_rootPath);
         }
@@ -36,7 +39,10 @@ public class ProjectStorageService
     {
         var dir = GetUserDir(userId);
         Directory.CreateDirectory(dir);
-        await File.WriteAllTextAsync(GetFilePath(projectId, userId), json);
+        var targetPath = GetFilePath(projectId, userId);
+        var tempPath = targetPath + ".tmp";
+        await File.WriteAllTextAsync(tempPath, json);
+        File.Move(tempPath, targetPath, overwrite: true);
     }
 
     public async Task<string?> Load(Guid projectId, string userId)
@@ -69,7 +75,18 @@ public class ProjectStorageService
     public void Delete(Guid projectId, string userId)
     {
         var filePath = GetFilePath(projectId, userId);
-        if (File.Exists(filePath))
-            File.Delete(filePath);
+        try
+        {
+            if (File.Exists(filePath))
+                File.Delete(filePath);
+        }
+        catch (IOException ex)
+        {
+            _logger.LogWarning(ex, "Failed to delete project file {FilePath} due to I/O error, retrying once", filePath);
+            try { File.Delete(filePath); } catch (IOException retryEx)
+            {
+                _logger.LogWarning(retryEx, "Retry also failed to delete project file {FilePath}", filePath);
+            }
+        }
     }
 }

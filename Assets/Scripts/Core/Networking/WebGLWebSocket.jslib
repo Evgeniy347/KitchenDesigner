@@ -17,6 +17,7 @@ var WebGLWebSocketImpl = {
 
             wsInstance.onopen = function() {
                 console.log('[MCP-WS] WebGL WebSocket connected to ' + url);
+                SendMessage(wsGameObjectName, 'OnWebSocketOpen', '');
             };
 
             wsInstance.onmessage = function(event) {

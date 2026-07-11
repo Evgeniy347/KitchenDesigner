@@ -119,8 +119,15 @@ namespace KitchenDesigner.Core.MCP
             if (_ws?.State == WebSocketState.Open && _running)
             {
                 var data = Encoding.UTF8.GetBytes(json);
-                try { _ws.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, _cts?.Token ?? CancellationToken.None).Wait(3000); }
-                catch (Exception ex) { Debug.LogError($"[MCP-WS] Send error: {ex.Message}"); }
+                var ws = _ws;
+                var cts = new CancellationTokenSource(3000);
+                _ = ws.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, cts.Token)
+                    .ContinueWith(t =>
+                    {
+                        cts.Dispose();
+                        if (t.IsFaulted)
+                            Debug.LogError($"[MCP-WS] Send error: {t.Exception?.InnerException?.Message}");
+                    }, TaskScheduler.Default);
             }
 #endif
         }

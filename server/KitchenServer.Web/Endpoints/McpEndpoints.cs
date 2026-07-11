@@ -101,9 +101,6 @@ public static class McpEndpoints
             session.BrowserWebSocket = ws;
             sessions.RegisterBrowserConnection(session.SessionId, context.Connection.Id);
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-            sessions.AddSessionCancellation(session.SessionId, cts);
-
             var buffer = new byte[1024 * 64];
             var messageBuilder = new StringBuilder();
 
@@ -111,7 +108,7 @@ public static class McpEndpoints
             {
                 while (ws.State == WebSocketState.Open)
                 {
-                    var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
+                    var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
@@ -148,6 +145,7 @@ public static class McpEndpoints
             {
                 session.BrowserWebSocket = null;
                 sessions.RemoveConnection(context.Connection.Id);
+                sessions.RemoveSessionCancellation(session.SessionId);
                 if (ws.State == WebSocketState.Open || ws.State == WebSocketState.CloseReceived)
                 {
                     try { await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None); }

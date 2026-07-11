@@ -60,7 +60,8 @@ public class McpHub : Hub
         var ws = session.BrowserWebSocket;
         if (ws.State != WebSocketState.Open) return;
 
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var data = Encoding.UTF8.GetBytes(json);
-        await ws.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, CancellationToken.None);
+        await ws.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, cts.Token);
     }
 }

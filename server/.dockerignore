@@ -2,8 +2,13 @@ bin/
 obj/
 .vs/
 .git/
-*.cs
-*.csproj
-*.slnx
 *.user
+*.slnx
 .gitignore
+publish/
+data/
+webgl/
+Dockerfile
+docker-compose.yml
+nginx.conf
+.dockerignore
