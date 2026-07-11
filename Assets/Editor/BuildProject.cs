@@ -1,21 +1,27 @@
+using System;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.SceneManagement;
 
 public static class BuildProject
 {
-    [MenuItem("KitchenDesigner/Build")]
+    [MenuItem("KitchenDesigner/Build Windows")]
     public static void Build()
     {
         BuildWindows();
     }
 
-    [MenuItem("KitchenDesigner/Build WebGL")]
-    public static void BuildWebGL()
+    // ── WebGL Release ──────────────────────────────────────
+
+    [MenuItem("KitchenDesigner/Build WebGL Release")]
+    public static void BuildWebGLRelease()
     {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        Debug.Log("[BuildProject] WebGL Release — starting...");
+
+        ConfigureWebGL(isDebug: false);
         EnsureShadersIncluded();
         EnsureURPAssigned();
         PlayerSettings.runInBackground = true;
@@ -34,25 +40,78 @@ public static class BuildProject
 
         var report = BuildPipeline.BuildPlayer(options);
 
+        sw.Stop();
         if (report.summary.result == BuildResult.Succeeded)
-        {
-            Debug.Log($"[BuildProject] WEBGL BUILD OK: {location} ({report.summary.totalSize / 1048576.0:F1} MB)");
-            EditorApplication.Exit(0);
-        }
+            Debug.Log($"[BuildProject] WebGL Release OK: {location} ({report.summary.totalSize / 1048576.0:F1} MB) in {sw.Elapsed.TotalSeconds:F0}s");
         else
-        {
-            Debug.LogError($"[BuildProject] WEBGL BUILD FAILED: {report.summary.result}");
-            foreach (var step in report.steps)
-            {
-                foreach (var msg in step.messages)
-                {
-                    if (msg.type == LogType.Error || msg.type == LogType.Exception)
-                        Debug.LogError($"[Build] {step.name}: {msg.content}");
-                }
-            }
-            EditorApplication.Exit(1);
-        }
+            LogBuildFailure(report);
+
+        EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
     }
+
+    // ── WebGL Debug (fast iteration) ───────────────────────
+
+    [MenuItem("KitchenDesigner/Build WebGL Debug")]
+    public static void BuildWebGLDebug()
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        Debug.Log("[BuildProject] WebGL Debug — starting (no compression, no stripping)...");
+
+        ConfigureWebGL(isDebug: true);
+        EnsureShadersIncluded();
+        EnsureURPAssigned();
+        PlayerSettings.runInBackground = true;
+
+        var scenes = new[] { "Assets/Scenes/TestScene.unity" };
+        var location = "Builds/WebGL_Debug";
+
+        var options = new BuildPlayerOptions
+        {
+            scenes = scenes,
+            locationPathName = location,
+            targetGroup = BuildTargetGroup.WebGL,
+            target = BuildTarget.WebGL,
+            options = BuildOptions.Development | BuildOptions.AllowDebugging
+        };
+
+        var report = BuildPipeline.BuildPlayer(options);
+
+        sw.Stop();
+        if (report.summary.result == BuildResult.Succeeded)
+            Debug.Log($"[BuildProject] WebGL Debug OK: {location} ({report.summary.totalSize / 1048576.0:F1} MB) in {sw.Elapsed.TotalSeconds:F0}s");
+        else
+            LogBuildFailure(report);
+
+        EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
+    }
+
+    // ── Configuration ──────────────────────────────────────
+
+    private static void ConfigureWebGL(bool isDebug)
+    {
+        PlayerSettings.WebGL.debugSymbols = isDebug;
+        PlayerSettings.WebGL.exceptionSupport = isDebug
+            ? WebGLExceptionSupport.FullWithStacktrace
+            : WebGLExceptionSupport.None;
+
+        PlayerSettings.SetManagedStrippingLevel(
+            BuildTargetGroup.WebGL,
+            isDebug ? ManagedStrippingLevel.Disabled : ManagedStrippingLevel.High);
+
+        PlayerSettings.WebGL.dataCaching = false;
+        PlayerSettings.WebGL.memorySize = isDebug ? 512 : 256;
+        PlayerSettings.WebGL.threadsSupport = false;
+
+        EditorUserBuildSettings.development = isDebug;
+        EditorUserBuildSettings.allowDebugging = isDebug;
+        EditorUserBuildSettings.waitForPlayerConnection = false;
+        EditorUserBuildSettings.connectProfiler = false;
+        EditorUserBuildSettings.buildWithDeepProfilingSupport = false;
+
+        Debug.Log($"[BuildProject] WebGL configured: debug={isDebug}, stripping={(isDebug ? "off" : "high")}, exceptions={(isDebug ? "full" : "none")}");
+    }
+
+    // ── Windows ────────────────────────────────────────────
 
     private static void BuildWindows()
     {
@@ -81,27 +140,32 @@ public static class BuildProject
         }
         else
         {
-            Debug.LogError($"[BuildProject] BUILD FAILED: {report.summary.result}");
-            foreach (var step in report.steps)
-            {
-                foreach (var msg in step.messages)
-                {
-                    if (msg.type == LogType.Error || msg.type == LogType.Exception)
-                        Debug.LogError($"[Build] {step.name}: {msg.content}");
-                }
-            }
+            LogBuildFailure(report);
             EditorApplication.Exit(1);
+        }
+    }
+
+    // ── Helpers ────────────────────────────────────────────
+
+    private static void LogBuildFailure(BuildReport report)
+    {
+        Debug.LogError($"[BuildProject] BUILD FAILED: {report.summary.result}");
+        foreach (var step in report.steps)
+        {
+            foreach (var msg in step.messages)
+            {
+                if (msg.type == LogType.Error || msg.type == LogType.Exception)
+                    Debug.LogError($"[Build] {step.name}: {msg.content}");
+            }
         }
     }
 
     private static void EnsureWindowSettings()
     {
-        // Полноценное окно Windows: с рамкой и растягиваемое.
         PlayerSettings.resizableWindow = true;
         PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
         PlayerSettings.defaultScreenWidth = 1280;
         PlayerSettings.defaultScreenHeight = 720;
-        // Не замирать без фокуса: иначе стоят автосейв-таймер и TCP-мост отладки.
         PlayerSettings.runInBackground = true;
         Debug.Log("[BuildProject] Window: resizable, windowed 1280x720, runInBackground");
     }
