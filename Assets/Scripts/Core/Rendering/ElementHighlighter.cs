@@ -85,7 +85,12 @@ namespace KitchenDesigner.Core
         public void RefreshHighlights()
         {
             RefreshCount++;
-            if (!_materialsInitialized) return;
+            if (!_materialsInitialized)
+            {
+                CreateMaterials();
+                if (!_materialsInitialized)
+                    return;
+            }
 
             var list = PartRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
