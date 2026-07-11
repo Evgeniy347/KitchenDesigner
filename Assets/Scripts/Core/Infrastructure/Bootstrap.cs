@@ -32,7 +32,13 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<UI.ConsoleOverlay>() == null) gameObject.AddComponent<UI.ConsoleOverlay>();
             if (FindAnyObjectByType<UndoHandler>() == null) gameObject.AddComponent<UndoHandler>();
             GameContext.Services.SaveLoadManager.LoadLastSession();
-#if !UNITY_WEBGL
+#if UNITY_WEBGL
+            if (FindAnyObjectByType<MCP.WebSocketBridge>() == null)
+            {
+                var wsBridge = gameObject.AddComponent<MCP.WebSocketBridge>();
+                wsBridge.SetAutoConnect(false);
+            }
+#else
             if (FindAnyObjectByType<MCP.UnityTcpBridge>() == null) gameObject.AddComponent<MCP.UnityTcpBridge>();
 #endif
             MCP.ConsoleLogCapture.Initialize();

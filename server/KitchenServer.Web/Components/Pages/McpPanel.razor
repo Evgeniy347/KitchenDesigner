@@ -1,0 +1,188 @@
+@page "/mcp-panel"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using System.Net.Http.Json
+@using System.Security.Claims
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>MCP Sessions</PageTitle>
+
+<div class="mcp-panel">
+    <h1>MCP Sessions</h1>
+    <p class="subtitle">Manage AI agent connections to your kitchen projects</p>
+
+    <div class="create-section">
+        <h2>Create New Session</h2>
+        <div class="form-row">
+            <input @bind="NewProjectId" placeholder="Project ID (optional)" class="input" />
+            <button class="btn btn-primary" @onclick="CreateSession" disabled="@IsCreating">
+                @(IsCreating ? "Creating..." : "Create Session")
+            </button>
+        </div>
+        @if (!string.IsNullOrEmpty(Error))
+        {
+            <p class="error">@Error</p>
+        }
+    </div>
+
+    <div class="sessions-section">
+        <h2>Active Sessions</h2>
+        @if (Sessions == null)
+        {
+            <p>Loading...</p>
+        }
+        else if (Sessions.Count == 0)
+        {
+            <p class="empty">No active MCP sessions. Create one above.</p>
+        }
+        else
+        {
+            @foreach (var s in Sessions)
+            {
+                <div class="session-card">
+                    <div class="session-header">
+                        <span class="session-id">@s.SessionId</span>
+                        <span class="badge @(s.IsActive ? "active" : "inactive")">
+                            @(s.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </div>
+                    <div class="session-detail">Project: @(s.ProjectId ?? "—")</div>
+                    <div class="session-detail">Created: @s.CreatedAt.ToString("g")</div>
+                    <div class="session-detail">
+                        <span class="label">MCP URL:</span>
+                        <code class="url">@s.McpUrl</code>
+                        <button class="btn btn-sm" @onclick="() => CopyToClipboard(s.McpUrl)">
+                            Copy
+                        </button>
+                    </div>
+                    <div class="session-detail">
+                        <span class="label">WS URL:</span>
+                        <code class="url">@s.WsUrl</code>
+                        <button class="btn btn-sm" @onclick="() => CopyToClipboard(s.WsUrl)">
+                            Copy
+                        </button>
+                    </div>
+                    <div class="session-detail">
+                        <span class="label">Access Key:</span>
+                        <code class="key">@s.AccessKey</code>
+                        <button class="btn btn-sm" @onclick="() => CopyToClipboard(s.AccessKey)">
+                            Copy
+                        </button>
+                    </div>
+                    <button class="btn btn-danger" @onclick="() => CloseSession(s.SessionId)">
+                        Revoke
+                    </button>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .mcp-panel { padding: 40px; font-family: sans-serif; color: #ccc; background: #1a1a2e; min-height: 100vh; }
+    h1 { color: #fff; margin-bottom: 4px; }
+    h2 { color: #ddd; margin: 24px 0 12px 0; font-size: 1.2em; }
+    .subtitle { color: #888; margin: 0 0 32px 0; }
+    .form-row { display: flex; gap: 12px; align-items: center; }
+    .input { background: #2a2a4a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 4px; min-width: 240px; }
+    .btn { background: #3a5afe; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+    .btn:hover { background: #2a4ae0; }
+    .btn-sm { padding: 2px 8px; font-size: 0.8em; margin-left: 8px; background: #4a4a6a; }
+    .btn-sm:hover { background: #5a5a7a; }
+    .btn-danger { background: #e04040; }
+    .btn-danger:hover { background: #c03030; }
+    .btn:disabled { opacity: 0.5; cursor: default; }
+    .error { color: #e04040; margin: 8px 0; }
+    .empty { color: #666; }
+    .session-card { background: #2a2a4a; border: 1px solid #3a3a5a; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .session-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .session-id { color: #fff; font-weight: bold; font-size: 1.1em; }
+    .session-detail { margin: 4px 0; font-size: 0.9em; }
+    .label { color: #888; margin-right: 4px; }
+    .badge { padding: 2px 10px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
+    .badge.active { background: #2e7d32; color: #a5d6a7; }
+    .badge.inactive { background: #555; color: #999; }
+    code.url, code.key { background: #1a1a2e; padding: 2px 6px; border-radius: 3px; font-size: 0.85em; word-break: break-all; }
+</style>
+
+@code {
+    private string? NewProjectId;
+    private bool IsCreating;
+    private string? Error;
+    private List<SessionDto>? Sessions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSessions();
+    }
+
+    private async Task LoadSessions()
+    {
+        try
+        {
+            Sessions = await Http.GetFromJsonAsync<List<SessionDto>>("/api/mcp/sessions");
+        }
+        catch (Exception ex)
+        {
+            Error = $"Failed to load sessions: {ex.Message}";
+        }
+    }
+
+    private async Task CreateSession()
+    {
+        IsCreating = true;
+        Error = null;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/api/mcp/sessions", new { projectId = NewProjectId });
+            if (response.IsSuccessStatusCode)
+            {
+                NewProjectId = null;
+                await LoadSessions();
+            }
+            else
+            {
+                Error = await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsCreating = false;
+        }
+    }
+
+    private async Task CloseSession(string sessionId)
+    {
+        try
+        {
+            await Http.DeleteAsync($"/api/mcp/sessions/{sessionId}");
+            await LoadSessions();
+        }
+        catch (Exception ex)
+        {
+            Error = $"Failed to close session: {ex.Message}";
+        }
+    }
+
+    private async Task CopyToClipboard(string text)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        }
+        catch
+        {
+            // clipboard API unavailable (e.g. non-HTTPS or unsupported browser)
+        }
+    }
+
+    private record SessionDto(
+        string SessionId, string AccessKey, string? ProjectId, DateTime CreatedAt,
+        string McpUrl, string WsUrl, bool IsActive);
+}
