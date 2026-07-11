@@ -13,14 +13,9 @@
 </head>
 
 <body>
-    <AuthorizeView>
-        <Authorized>
-            <Routes />
-        </Authorized>
-        <NotAuthorized>
-            <Routes />
-        </NotAuthorized>
-    </AuthorizeView>
+    <CascadingAuthenticationState>
+        <Routes />
+    </CascadingAuthenticationState>
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
