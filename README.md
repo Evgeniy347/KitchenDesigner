@@ -2,7 +2,7 @@
   <h1 align="center">Kitchen Designer</h1>
   <p align="center">
     3D-конструктор мебельных щитов / 3D Furniture Board Constructor<br>
-    Unity 6000 • C# • URP
+    Unity 6000 • C# • URP • ASP.NET Core 10 • PostgreSQL
   </p>
 </p>
 
@@ -70,8 +70,9 @@ Kitchen Designer доступен по **MCP (Model Context Protocol)** — ИИ
 
 | Скрипт | Назначение |
 |--------|-----------|
-| `build.cmd` | Сборка .exe. Флаги: `-Clean -RunTests -RunPlayMode -BuildOnly` |
-| `clean.cmd` | Очистка проекта от временных файлов (Library, Temp, Logs, Build, .vs, UserSettings) |
+| `build.cmd` | Сборка Windows (.exe). Флаги: `-Clean`, `-RunTests`, `-RunPlayMode`, `-BuildOnly`, `-WebGL` |
+| `build-server.cmd` | Сборка ASP.NET сервера |
+| `clean.cmd` | Очистка временных файлов (Unity + сервер) |
 
 ### Стек
 
@@ -79,7 +80,11 @@ Kitchen Designer доступен по **MCP (Model Context Protocol)** — ИИ
 |-----------|--------|
 | Unity | 6000.4.3f1 |
 | Render Pipeline | URP 17.4.0 |
-| Язык | C# |
+| Язык (front) | C# |
+| Бэкенд | ASP.NET Core 10 + Blazor Server |
+| Оркестрация | .NET Aspire 13 |
+| Аутентификация | ASP.NET Identity |
+| База данных | PostgreSQL |
 | Тесты | Unity Test Framework (NUnit) |
 
 ---
@@ -138,8 +143,9 @@ To connect an agent, simply ask it to read the [`readme-mcp.md`](readme-mcp.md) 
 
 | Script | Purpose |
 |--------|---------|
-| `build.cmd` | Build .exe. Flags: `-Clean -RunTests -RunPlayMode -BuildOnly` |
-| `clean.cmd` | Clean temporary files (Library, Temp, Logs, Build, .vs, UserSettings) |
+| `build.cmd` | Build Windows (.exe) or WebGL. Flags: `-Clean`, `-RunTests`, `-RunPlayMode`, `-BuildOnly`, `-WebGL` |
+| `build-server.cmd` | Build ASP.NET server |
+| `clean.cmd` | Clean temporary files (Unity + server) |
 
 ### Stack
 
@@ -147,7 +153,11 @@ To connect an agent, simply ask it to read the [`readme-mcp.md`](readme-mcp.md) 
 |-----------|---------|
 | Unity | 6000.4.3f1 |
 | Render Pipeline | URP 17.4.0 |
-| Language | C# |
+| Language (front) | C# |
+| Backend | ASP.NET Core 10 + Blazor Server |
+| Orchestration | .NET Aspire 13 |
+| Auth | ASP.NET Identity |
+| Database | PostgreSQL |
 | Tests | Unity Test Framework (NUnit) |
 
 ---
