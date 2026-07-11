@@ -91,14 +91,16 @@ public static class ProjectEndpoints
             if (project is null)
                 return Results.NotFound();
 
+            if (req.JsonData is not null)
+            {
+                await storage.Save(id, userId, req.JsonData);
+            }
+
             if (req.Name is not null)
                 project.Name = req.Name;
 
             if (req.JsonData is not null)
-            {
                 project.JsonData = req.JsonData;
-                await storage.Save(id, userId, req.JsonData);
-            }
 
             project.UpdatedAt = DateTime.UtcNow;
             await db.SaveChangesAsync();
