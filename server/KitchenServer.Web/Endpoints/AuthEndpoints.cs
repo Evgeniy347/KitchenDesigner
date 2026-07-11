@@ -8,7 +8,7 @@ public static class AuthEndpoints
     public static void MapAuthEndpoints(this WebApplication app)
     {
         // Logout is a state change: POST with antiforgery, never GET.
-        app.MapPost("/auth/logout", async (
+        app.MapPost("/auth/logout/perform", async (
             HttpContext ctx,
             IAntiforgery antiforgery,
             SignInManager<IdentityUser> signInManager) =>

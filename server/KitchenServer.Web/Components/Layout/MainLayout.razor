@@ -19,7 +19,7 @@
                     <NavLink href="/profile" class="nav-link" ActiveClass="nav-link-active">
                         @context.User.Identity?.Name
                     </NavLink>
-                    <form method="post" action="/auth/logout" class="logout-form">
+                    <form method="post" action="/auth/logout/perform" class="logout-form">
                         <AntiforgeryToken />
                         <button type="submit" class="nav-link nav-logout">Logout</button>
                     </form>
