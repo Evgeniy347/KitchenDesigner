@@ -11,10 +11,18 @@
                     <NavLink href="/projects" class="nav-link" ActiveClass="nav-link-active">
                         Projects
                     </NavLink>
+                    <NavLink href="/mcp-panel" class="nav-link" ActiveClass="nav-link-active">
+                        MCP
+                    </NavLink>
                 </div>
                 <div class="nav-right">
-                    <span class="nav-user">@context.User.Identity?.Name</span>
-                    <a href="/auth/logout" class="nav-link nav-logout">Logout</a>
+                    <NavLink href="/profile" class="nav-link" ActiveClass="nav-link-active">
+                        @context.User.Identity?.Name
+                    </NavLink>
+                    <form method="post" action="/auth/logout" class="logout-form">
+                        <AntiforgeryToken />
+                        <button type="submit" class="nav-link nav-logout">Logout</button>
+                    </form>
                 </div>
             </nav>
         </Authorized>
@@ -54,7 +62,8 @@
     .nav-link:hover { color: #fff; }
     .nav-link-active { color: var(--accent); background: #3a5afe1a; }
     .nav-user { color: #aaa; font-size: 13px; }
-    .nav-logout { color: #ff6b6b; }
+    .logout-form { display: inline; margin: 0; }
+    .nav-logout { color: #ff6b6b; background: none; border: none; cursor: pointer; font-family: inherit; }
 
     .main-content { flex: 1; }
 </style>

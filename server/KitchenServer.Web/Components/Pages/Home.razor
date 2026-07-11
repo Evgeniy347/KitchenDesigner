@@ -9,7 +9,12 @@
     <AuthorizeView>
         <Authorized>
             <p>Добро пожаловать, <strong>@context.User.Identity?.Name</strong></p>
-            <a href="/auth/logout">Выйти</a>
+            <p>
+                <a href="/projects">Проекты</a>
+                <a href="/mcp-panel">MCP-сессии</a>
+                <a href="/profile">Профиль</a>
+                <a href="/auth/logout">Выйти</a>
+            </p>
         </Authorized>
         <NotAuthorized>
             <p>

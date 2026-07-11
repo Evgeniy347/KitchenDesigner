@@ -1,25 +1,31 @@
 @page "/auth/login"
-@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject NavigationManager Navigation
+
+@* Static SSR on purpose: PasswordSignInAsync sets the auth cookie, which is only
+   possible during a regular HTTP request — not inside an interactive circuit. *@
 
 <PageTitle>Вход — KitchenDesigner</PageTitle>
 
 <div class="auth-form">
     <h2>Вход</h2>
 
-    <InputText @bind-Value="_email" type="email" placeholder="Email" class="input" />
-    <InputText @bind-Value="_password" type="password" placeholder="Пароль" class="input" />
+    <EditForm Model="Input" method="post" OnValidSubmit="HandleLogin" FormName="login">
+        <DataAnnotationsValidator />
 
-    @if (!string.IsNullOrEmpty(_error))
-    {
-        <div class="error">@_error</div>
-    }
+        <InputText @bind-Value="Input.Email" type="email" placeholder="Email" class="input" autocomplete="username" />
+        <InputText @bind-Value="Input.Password" type="password" placeholder="Пароль" class="input" autocomplete="current-password" />
 
-    <button class="btn" @onclick="HandleLogin" disabled="@_loading">
-        @(_loading ? "Вхожу..." : "Войти")
-    </button>
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <div class="error">@_error</div>
+        }
+        <ValidationSummary class="error" />
+
+        <button type="submit" class="btn">Войти</button>
+    </EditForm>
 
     <p class="link">
         Нет аккаунта? <a href="/auth/register">Регистрация</a>
@@ -27,32 +33,49 @@
 </div>
 
 @code {
-    private string _email = "";
-    private string _password = "";
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
     private string _error = "";
-    private bool _loading;
+
+    protected override void OnInitialized() => Input ??= new();
 
     private async Task HandleLogin()
     {
-        _error = "";
-        if (string.IsNullOrWhiteSpace(_email) || string.IsNullOrWhiteSpace(_password))
-        {
-            _error = "Email и пароль обязательны";
-            return;
-        }
-
-        _loading = true;
-        var result = await SignInManager.PasswordSignInAsync(_email, _password, false, false);
+        var result = await SignInManager.PasswordSignInAsync(
+            Input.Email, Input.Password, isPersistent: Input.RememberMe, lockoutOnFailure: true);
 
         if (result.Succeeded)
         {
-            Navigation.NavigateTo("/");
+            // Only same-site relative paths — never redirect to an external URL.
+            var target = !string.IsNullOrEmpty(ReturnUrl) && ReturnUrl.StartsWith('/') && !ReturnUrl.StartsWith("//")
+                ? ReturnUrl
+                : "/";
+            Navigation.NavigateTo(target);
+        }
+        else if (result.IsLockedOut)
+        {
+            _error = "Слишком много неудачных попыток. Аккаунт временно заблокирован, попробуйте через несколько минут.";
         }
         else
         {
             _error = "Неверный email или пароль";
         }
-        _loading = false;
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Email обязателен")]
+        [EmailAddress(ErrorMessage = "Некорректный email")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Пароль обязателен")]
+        public string Password { get; set; } = "";
+
+        public bool RememberMe { get; set; } = true;
     }
 }
 
@@ -90,6 +113,7 @@
     .btn:hover { background: #2e4ecc; }
     .btn:disabled { opacity: 0.6; }
     .error { background: #5a1a1a; padding: 8px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
+    .error ul { margin: 0; padding-left: 18px; }
     .link { text-align: center; margin-top: 16px; font-size: 13px; }
     .link a { color: #3a5afe; }
 </style>

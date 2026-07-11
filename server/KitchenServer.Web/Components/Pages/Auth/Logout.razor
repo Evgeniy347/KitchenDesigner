@@ -1,13 +1,43 @@
 @page "/auth/logout"
-@rendermode InteractiveServer
-@using Microsoft.AspNetCore.Identity
-@inject SignInManager<IdentityUser> SignInManager
-@inject NavigationManager Navigation
 
-@code {
-    protected override async Task OnInitializedAsync()
-    {
-        await SignInManager.SignOutAsync();
-        Navigation.NavigateTo("/auth/login");
+@* GET shows a confirmation; the actual sign-out is the POST endpoint
+   (/auth/logout, AuthEndpoints.cs) — state changes never happen on GET. *@
+
+<PageTitle>Выход — KitchenDesigner</PageTitle>
+
+<div class="auth-form">
+    <h2>Выход</h2>
+    <p>Выйти из аккаунта?</p>
+
+    <form method="post" action="/auth/logout">
+        <AntiforgeryToken />
+        <button type="submit" class="btn">Выйти</button>
+    </form>
+
+    <p class="link"><a href="/">Отмена</a></p>
+</div>
+
+<style>
+    .auth-form {
+        max-width: 360px;
+        margin: 80px auto;
+        padding: 32px;
+        background: #1e1e2e;
+        border-radius: 8px;
+        color: #ccc;
     }
-}
+    h2 { margin: 0 0 20px; color: #fff; font-size: 20px; }
+    .btn {
+        width: 100%;
+        padding: 10px;
+        background: #e04040;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .btn:hover { background: #c03030; }
+    .link { text-align: center; margin-top: 16px; font-size: 13px; }
+    .link a { color: #3a5afe; }
+</style>

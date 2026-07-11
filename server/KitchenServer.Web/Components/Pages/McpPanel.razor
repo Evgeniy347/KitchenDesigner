@@ -1,11 +1,14 @@
 @page "/mcp-panel"
 @rendermode InteractiveServer
 @attribute [Authorize]
-@using System.Net.Http.Json
 @using System.Security.Claims
+@using KitchenServer.Web.Services
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IJSRuntime JS
-@inject HttpClient Http
+@inject McpSessionManager SessionManager
+@inject McpUrlBuilder Urls
 @inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthProvider
 
 <PageTitle>MCP Sessions</PageTitle>
 
@@ -51,16 +54,16 @@
                     <div class="session-detail">Project: @(s.ProjectId ?? "—")</div>
                     <div class="session-detail">Created: @s.CreatedAt.ToString("g")</div>
                     <div class="session-detail">
-                        <span class="label">MCP URL:</span>
-                        <code class="url">@s.McpUrl</code>
-                        <button class="btn btn-sm" @onclick="() => CopyToClipboard(s.McpUrl)">
+                        <span class="label">MCP URL (agent):</span>
+                        <code class="url">@HubUrl(s)</code>
+                        <button class="btn btn-sm" @onclick="() => CopyToClipboard(HubUrl(s))">
                             Copy
                         </button>
                     </div>
                     <div class="session-detail">
-                        <span class="label">WS URL:</span>
-                        <code class="url">@s.WsUrl</code>
-                        <button class="btn btn-sm" @onclick="() => CopyToClipboard(s.WsUrl)">
+                        <span class="label">WS URL (client):</span>
+                        <code class="url">@WsUrl(s)</code>
+                        <button class="btn btn-sm" @onclick="() => CopyToClipboard(WsUrl(s))">
                             Copy
                         </button>
                     </div>
@@ -111,41 +114,39 @@
     private string? NewProjectId;
     private bool IsCreating;
     private string? Error;
-    private List<SessionDto>? Sessions;
+    private List<McpSession>? Sessions;
+    private string _userId = "";
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSessions();
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        _userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+        LoadSessions();
     }
 
-    private async Task LoadSessions()
+    private void LoadSessions()
     {
-        try
+        if (string.IsNullOrEmpty(_userId))
         {
-            Sessions = await Http.GetFromJsonAsync<List<SessionDto>>("/api/mcp/sessions");
+            Error = "Not authenticated";
+            return;
         }
-        catch (Exception ex)
-        {
-            Error = $"Failed to load sessions: {ex.Message}";
-        }
+        Sessions = SessionManager.GetUserSessions(_userId);
     }
 
-    private async Task CreateSession()
+    private string HubUrl(McpSession s) => Urls.HubUrl(Nav.BaseUri, s.AccessKey);
+    private string WsUrl(McpSession s) => Urls.BrowserWsUrl(Nav.BaseUri, s.AccessKey);
+
+    private void CreateSession()
     {
         IsCreating = true;
         Error = null;
         try
         {
-            var response = await Http.PostAsJsonAsync("/api/mcp/sessions", new { projectId = NewProjectId });
-            if (response.IsSuccessStatusCode)
-            {
-                NewProjectId = null;
-                await LoadSessions();
-            }
-            else
-            {
-                Error = await response.Content.ReadAsStringAsync();
-            }
+            SessionManager.CreateSession(_userId,
+                string.IsNullOrWhiteSpace(NewProjectId) ? null : NewProjectId.Trim());
+            NewProjectId = null;
+            LoadSessions();
         }
         catch (Exception ex)
         {
@@ -157,17 +158,12 @@
         }
     }
 
-    private async Task CloseSession(string sessionId)
+    private void CloseSession(string sessionId)
     {
-        try
-        {
-            await Http.DeleteAsync($"/api/mcp/sessions/{sessionId}");
-            await LoadSessions();
-        }
-        catch (Exception ex)
-        {
-            Error = $"Failed to close session: {ex.Message}";
-        }
+        var session = SessionManager.GetSession(sessionId);
+        if (session != null && session.UserId == _userId)
+            SessionManager.CloseSession(sessionId);
+        LoadSessions();
     }
 
     private async Task CopyToClipboard(string text)
@@ -181,8 +177,4 @@
             // clipboard API unavailable (e.g. non-HTTPS or unsupported browser)
         }
     }
-
-    private record SessionDto(
-        string SessionId, string AccessKey, string? ProjectId, DateTime CreatedAt,
-        string McpUrl, string WsUrl, bool IsActive);
 }
