@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -312,43 +311,32 @@ namespace KitchenDesigner.Core.UI
             _settingsPanel.Toggle();
         }
 
-        /// <summary>«Сохранить»: пишет в последний выбранный файл. Если файла ещё
-        /// нет — быстрое сохранение в quicksave.json (без диалога).</summary>
+        /// <summary>«Сохранить»: на WebGL отправляет на сервер; на остальных
+        /// платформах пишет в последний выбранный файл.</summary>
         public void SaveCurrent()
         {
+#if UNITY_WEBGL
+            ServerSave(forceNew: false);
+#else
             if (SaveLoadManager.HasLastPath)
             {
                 if (SaveLoadManager.SaveToLastPath())
-                    Toast(
-#if UNITY_WEBGL
-                        "Сохранено"
-#else
-                        "Сохранено: " + System.IO.Path.GetFileName(SaveLoadManager.LastPath)
-#endif
-                    );
+                    Toast("Сохранено: " + System.IO.Path.GetFileName(SaveLoadManager.LastPath));
             }
             else if (SaveLoadManager.SaveProject(QuickSaveName))
             {
                 SaveLoadManager.LastPath = SaveLoadManager.PathForName(QuickSaveName);
-                Toast(
-#if UNITY_WEBGL
-                    "Сохранено"
-#else
-                    "Сохранено: " + QuickSaveName
-#endif
-                );
+                Toast("Сохранено: " + QuickSaveName);
             }
+#endif
         }
 
-        /// <summary>«Сохранить как»: системный диалог, путь запоминается.</summary>
+        /// <summary>«Сохранить как»: на WebGL создаёт новый проект на сервере;
+        /// на остальных платформах — системный диалог.</summary>
         public void SaveAs()
         {
 #if UNITY_WEBGL
-            string json = SaveLoadManager.CaptureCurrentJson();
-            string suggested = SaveLoadManager.HasLastPath
-                ? System.IO.Path.GetFileName(SaveLoadManager.LastPath)
-                : "kitchen.json";
-            FileDialogSave(gameObject.name, json, suggested);
+            ServerSave(forceNew: true);
 #else
             string suggested = SaveLoadManager.HasLastPath
                 ? System.IO.Path.GetFileName(SaveLoadManager.LastPath)
@@ -361,11 +349,28 @@ namespace KitchenDesigner.Core.UI
 #endif
         }
 
-        /// <summary>«Загрузить»: системный диалог выбора файла, путь запоминается.</summary>
+        /// <summary>«Загрузить»: на WebGL — список проектов с сервера;
+        /// на остальных платформах — системный диалог выбора файла.</summary>
         public void LoadDialog()
         {
 #if UNITY_WEBGL
-            FileDialogOpen(gameObject.name);
+            BuildProjectListPanel();
+            var api = Networking.ProjectApiClient.Instance;
+            api.FetchList(projects =>
+            {
+                if (projects.Count == 0)
+                {
+                    Toast("Нет сохранённых проектов");
+                    HideProjectListPanel();
+                    return;
+                }
+                PopulateProjectList(projects);
+                ShowProjectListPanel();
+            },
+            err =>
+            {
+                Toast("Ошибка загрузки списка: " + err);
+            });
 #else
             string path = NativeFileDialog.OpenDialog("Открыть проект кухни",
                 SaveLoadManager.LastDirectory);
@@ -409,40 +414,244 @@ namespace KitchenDesigner.Core.UI
         }
 
 #if UNITY_WEBGL
-        [DllImport("__Internal")]
-        private static extern void FileDialogOpen(string gameObjectName);
-        [DllImport("__Internal")]
-        private static extern void FileDialogSave(string gameObjectName, string content, string defaultName);
+        // ── Server project save/load ──────────────────────────────────────
 
-        public void OnWebGLFileOpened(string data)
+        private GameObject _projectListPanel;
+        private GameObject _namePromptPanel;
+        private InputField _nameInputField;
+
+        private void ServerSave(bool forceNew)
         {
-            int sep = data.IndexOf('\x1F');
-            if (sep < 0) return;
-            string fileName = data.Substring(0, sep);
-            string json = data.Substring(sep + 1);
+            string json = SaveLoadManager.CaptureCurrentJson();
+            var api = Networking.ProjectApiClient.Instance;
 
-            var projectData = SaveLoadManager.Deserialize(json);
-            if (projectData == null)
+            if (!forceNew && api.HasCurrentProject)
             {
-                Toast("Ошибка загрузки");
-                return;
+                api.SaveCurrent(json,
+                    () => Toast("Сохранено: " + api.CurrentProjectName),
+                    err => Toast("Ошибка сохранения: " + err));
             }
-
-            SaveLoadManager.LastPath = fileName;
-            SaveLoadManager.ClearBoards(PartRegistry.Instance.GetAll());
-            SaveLoadManager.RestoreScene(projectData);
-
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
-
-            Toast("Загружено");
+            else
+            {
+                string defaultName = api.HasCurrentProject
+                    ? api.CurrentProjectName
+                    : "Новый проект";
+                ShowNamePrompt(defaultName, name =>
+                {
+                    api.CreateAndSave(name, json, id =>
+                    {
+                        SaveLoadManager.LastPath = id;
+                        Toast("Сохранено: " + name);
+                    }, err => Toast("Ошибка: " + err));
+                });
+            }
         }
 
-        public void OnWebGLFileSaved(string fileName)
+        // ── Project list panel ────────────────────────────────────────────
+
+        private void BuildProjectListPanel()
         {
-            if (!string.IsNullOrEmpty(fileName))
-                SaveLoadManager.LastPath = fileName;
-            Toast("Сохранено");
+            if (_projectListPanel != null) return;
+
+            _projectListPanel = new GameObject("ProjectListPanel");
+            _projectListPanel.transform.SetParent(_canvas.transform, false);
+            var rt = _projectListPanel.AddComponent<RectTransform>();
+            UIFactory.AnchorCenter(rt);
+            rt.sizeDelta = new Vector2(480, 520);
+            rt.anchoredPosition = Vector2.zero;
+
+            var bg = _projectListPanel.AddComponent<Image>();
+            bg.color = UIFactory.PanelColor;
+
+            // Title
+            UIFactory.CreateLabel("Title", _projectListPanel.transform,
+                "Проекты", 22,
+                new Vector2(0, -12), new Vector2(440, 36),
+                TextAnchor.MiddleCenter);
+
+            // Close button
+            var closeBtn = UIFactory.CreateButton("CloseBtn", _projectListPanel.transform,
+                "✕", new Vector2(210, -14), new Vector2(36, 30), HideProjectListPanel);
+            var closeRt = closeBtn.GetComponent<RectTransform>();
+            UIFactory.AnchorTopRight(closeRt);
+            closeRt.anchoredPosition = new Vector2(-10, -12);
+
+            // Scroll area
+            var scrollGo = new GameObject("ScrollArea", typeof(RectTransform));
+            scrollGo.transform.SetParent(_projectListPanel.transform, false);
+            var scrollRt = scrollGo.GetComponent<RectTransform>();
+            scrollRt.anchorMin = new Vector2(0, 0);
+            scrollRt.anchorMax = new Vector2(1, 1);
+            scrollRt.offsetMin = new Vector2(12, 60);
+            scrollRt.offsetMax = new Vector2(-12, -54);
+
+            var scrollImg = scrollGo.AddComponent<Image>();
+            scrollImg.color = UIFactory.FieldColor;
+
+            var scroll = scrollGo.AddComponent<ScrollRect>();
+            scroll.horizontal = false;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 20f;
+
+            var viewport = UIFactory.CreateRect("Viewport", scrollGo.transform);
+            viewport.anchorMin = Vector2.zero;
+            viewport.anchorMax = Vector2.one;
+            viewport.pivot = new Vector2(0, 1);
+            viewport.sizeDelta = Vector2.zero;
+            var mask = viewport.gameObject.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+            var vpImg = viewport.gameObject.AddComponent<Image>();
+            vpImg.color = new Color(0, 0, 0, 0.01f);
+
+            var content = UIFactory.CreateRect("Content", viewport);
+            content.anchorMin = new Vector2(0, 1);
+            content.anchorMax = new Vector2(1, 1);
+            content.pivot = new Vector2(0.5f, 1f);
+            content.sizeDelta = new Vector2(0, 0);
+
+            var fitter = content.gameObject.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            var layout = content.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.childAlignment = TextAnchor.UpperCenter;
+            layout.spacing = 4;
+            layout.padding = new RectOffset(6, 6, 6, 6);
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.childControlWidth = true;
+            layout.childControlHeight = false;
+
+            scroll.content = content;
+            scroll.viewport = viewport;
+
+            _projectListPanel.SetActive(false);
+        }
+
+        private void PopulateProjectList(List<Networking.ServerProjectInfo> projects)
+        {
+            var scroll = _projectListPanel.GetComponentInChildren<ScrollRect>();
+            var content = scroll.content;
+
+            foreach (Transform child in content)
+                Object.Destroy(child.gameObject);
+
+            foreach (var proj in projects)
+            {
+                float btnHeight = 38f;
+                var btnGo = UIFactory.CreateButton("ProjBtn_" + proj.id,
+                    content, proj.name,
+                    Vector2.zero, new Vector2(0, btnHeight),
+                    () => LoadProjectFromServer(proj.id));
+                var btnRt = btnGo.GetComponent<RectTransform>();
+                btnRt.sizeDelta = new Vector2(0, btnHeight);
+            }
+        }
+
+        private void ShowProjectListPanel()
+        {
+            if (_projectListPanel != null)
+                _projectListPanel.SetActive(true);
+        }
+
+        private void HideProjectListPanel()
+        {
+            if (_projectListPanel != null)
+                _projectListPanel.SetActive(false);
+        }
+
+        private void LoadProjectFromServer(string projectId)
+        {
+            HideProjectListPanel();
+            var api = Networking.ProjectApiClient.Instance;
+            api.LoadProject(projectId,
+                (name, jsonData) =>
+                {
+                    var projectData = SaveLoadManager.Deserialize(jsonData);
+                    if (projectData == null)
+                    {
+                        Toast("Ошибка загрузки проекта");
+                        return;
+                    }
+                    SaveLoadManager.LastPath = projectId;
+                    SaveLoadManager.ClearBoards(PartRegistry.Instance.GetAll());
+                    SaveLoadManager.RestoreScene(projectData);
+                    if (ElementHighlighter.Instance != null)
+                        ElementHighlighter.Instance.RefreshHighlights();
+                    Toast("Загружено: " + name);
+                },
+                err => Toast("Ошибка: " + err));
+        }
+
+        // ── Name prompt panel (for Save / SaveAs when no project exists) ───
+
+        private void ShowNamePrompt(string defaultName, System.Action<string> onConfirm)
+        {
+            BuildNamePromptPanel();
+            _nameInputField.text = defaultName;
+            _namePromptPanel.SetActive(true);
+
+            void confirmAction()
+            {
+                string name = _nameInputField.text.Trim();
+                if (string.IsNullOrEmpty(name)) return;
+                _namePromptPanel.SetActive(false);
+                onConfirm(name);
+            }
+
+            var okBtn = _namePromptPanel.transform.Find("OkBtn");
+            var cancelBtn = _namePromptPanel.transform.Find("CancelBtn");
+
+            if (okBtn != null)
+            {
+                var btn = okBtn.GetComponent<Button>();
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(confirmAction);
+            }
+
+            if (cancelBtn != null)
+            {
+                var btn = cancelBtn.GetComponent<Button>();
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(() => _namePromptPanel.SetActive(false));
+            }
+
+            _nameInputField.onEndEdit.RemoveAllListeners();
+            _nameInputField.onEndEdit.AddListener(text =>
+            {
+                if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+                    confirmAction();
+            });
+        }
+
+        private void BuildNamePromptPanel()
+        {
+            if (_namePromptPanel != null) return;
+
+            _namePromptPanel = new GameObject("NamePromptPanel");
+            _namePromptPanel.transform.SetParent(_canvas.transform, false);
+            var rt = _namePromptPanel.AddComponent<RectTransform>();
+            UIFactory.AnchorCenter(rt);
+            rt.sizeDelta = new Vector2(380, 160);
+            rt.anchoredPosition = Vector2.zero;
+
+            var bg = _namePromptPanel.AddComponent<Image>();
+            bg.color = UIFactory.PanelColor;
+
+            UIFactory.CreateLabel("PromptTitle", _namePromptPanel.transform,
+                "Название проекта", 20,
+                new Vector2(0, -14), new Vector2(340, 32),
+                TextAnchor.MiddleCenter);
+
+            _nameInputField = UIFactory.CreateInputField("NameInput",
+                _namePromptPanel.transform, "",
+                new Vector2(0, 28), new Vector2(340, 34));
+
+            var okBtn = UIFactory.CreateButton("OkBtn", _namePromptPanel.transform,
+                "OK", new Vector2(-70, 68), new Vector2(110, 32), null);
+            UIFactory.CreateButton("CancelBtn", _namePromptPanel.transform,
+                "Отмена", new Vector2(70, 68), new Vector2(110, 32), null);
+
+            _namePromptPanel.SetActive(false);
         }
 #endif
     }
