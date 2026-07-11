@@ -1,7 +1,6 @@
 @page "/auth/logout"
 
-@* GET shows a confirmation; the actual sign-out is the POST endpoint
-   (/auth/logout, AuthEndpoints.cs) — state changes never happen on GET. *@
+@* GET shows a confirmation; actual sign-out is POST to /auth/logout/perform *@
 
 <PageTitle>Выход — KitchenDesigner</PageTitle>
 
@@ -9,7 +8,7 @@
     <h2>Выход</h2>
     <p>Выйти из аккаунта?</p>
 
-    <form method="post" action="/auth/logout">
+    <form method="post" action="/auth/logout/perform">
         <AntiforgeryToken />
         <button type="submit" class="btn">Выйти</button>
     </form>
