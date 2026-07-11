@@ -4,6 +4,9 @@
   <assembly fullname="UnityEngine.CoreModule">
     <type fullname="UnityEngine.Font" preserve="all" />
   </assembly>
+  <assembly fullname="UnityEngine.PhysicsModule">
+    <type fullname="UnityEngine.CapsuleCollider" preserve="all" />
+  </assembly>
   <assembly fullname="UnityEngine.UI">
     <type fullname="UnityEngine.UI.Text" preserve="all" />
   </assembly>
