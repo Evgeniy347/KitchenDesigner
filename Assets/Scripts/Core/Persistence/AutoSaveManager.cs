@@ -44,9 +44,20 @@ namespace KitchenDesigner.Core
         /// следующем запуске (грузился исходный открытый файл).</summary>
         private static bool SaveActiveTarget()
         {
+#if UNITY_WEBGL
+            var api = Object.FindAnyObjectByType<Networking.ProjectApiClient>();
+            if (api != null && api.HasCurrentProject)
+            {
+                string json = SaveLoadManager.CaptureCurrentJson();
+                api.SaveCurrent(json, null, null);
+                return true;
+            }
+            return false;
+#else
             if (SaveLoadManager.HasLastPath)
                 return SaveLoadManager.SaveToLastPath();
             return SaveLoadManager.SaveProject(AutoSaveName, backup: false);
+#endif
         }
 
         private IEnumerator AutoSaveLoop()

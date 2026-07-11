@@ -31,7 +31,39 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<ResizeHandleManager>() == null) gameObject.AddComponent<ResizeHandleManager>();
             if (FindAnyObjectByType<UI.ConsoleOverlay>() == null) gameObject.AddComponent<UI.ConsoleOverlay>();
             if (FindAnyObjectByType<UndoHandler>() == null) gameObject.AddComponent<UndoHandler>();
+
+#if UNITY_WEBGL
+            if (FindAnyObjectByType<Networking.ProjectApiClient>() == null)
+                gameObject.AddComponent<Networking.ProjectApiClient>();
+
+            var api = Networking.ProjectApiClient.Instance;
+            if (api.HasCurrentProject)
+            {
+                api.LoadProject(api.CurrentProjectId,
+                    (name, jsonData) =>
+                    {
+                        var projectData = SaveLoadManager.Deserialize(jsonData);
+                        if (projectData == null) return;
+                        SaveLoadManager.LastPath = api.CurrentProjectId;
+                        SaveLoadManager.ClearBoards(PartRegistry.Instance.GetAll());
+                        SaveLoadManager.RestoreScene(projectData);
+                        if (ElementHighlighter.Instance != null)
+                            ElementHighlighter.Instance.RefreshHighlights();
+                    },
+                    _ =>
+                    {
+                        // Server unreachable — fall back to local save.
+                        GameContext.Services.SaveLoadManager.LoadLastSession();
+                    });
+            }
+            else
+            {
+                GameContext.Services.SaveLoadManager.LoadLastSession();
+            }
+#else
             GameContext.Services.SaveLoadManager.LoadLastSession();
+#endif
+
 #if UNITY_WEBGL
             if (FindAnyObjectByType<MCP.WebSocketBridge>() == null)
             {
