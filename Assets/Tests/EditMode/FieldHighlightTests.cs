@@ -95,9 +95,11 @@ public class FieldHighlightTests
     public void CreateInputField_ReturnsFieldWithCorrectInitialText()
     {
         var field = UIFactory.CreateInputField("Test", _root.transform, "hello", Vector2.zero, new Vector2(100, 28));
-        Assert.AreEqual("hello", field.text);
+        // TMP_InputField.text/textComponent несут служебный zero-width space (U+200B);
+        // сравниваем видимый текст.
+        Assert.AreEqual("hello", field.text.Replace("\u200b", ""));
         Assert.IsNotNull(field.textComponent);
-        Assert.AreEqual("hello", field.textComponent.text);
+        Assert.AreEqual("hello", field.textComponent.text.Replace("\u200b", ""));
     }
 
     [Test]

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
@@ -253,7 +254,7 @@ public class ContextMenuLayoutTests
         var door = panel.Find("CtxDoor");
         Assert.NotNull(door, "у фасада должна быть кнопка открытия");
         Assert.IsTrue(door.gameObject.activeSelf, "кнопка активна для фасада");
-        Assert.AreEqual("Открыть", door.GetComponentInChildren<Text>(true).text);
+        Assert.AreEqual("Открыть", door.GetComponentInChildren<TMP_Text>(true).text);
     }
 
     [Test]
@@ -266,8 +267,8 @@ public class ContextMenuLayoutTests
         var mode = panel.Find("CtxMode");
         Assert.NotNull(mode, "у фасада должен быть список режимов");
         Assert.IsTrue(mode.gameObject.activeSelf, "список активен для фасада");
-        var dd = mode.GetComponent<Dropdown>();
-        Assert.NotNull(dd, "CtxMode — это Dropdown");
+        var dd = mode.GetComponent<TMP_Dropdown>();
+        Assert.NotNull(dd, "CtxMode — это TMP_Dropdown");
         Assert.AreEqual(18, dd.options.Count, "18 режимов (12 рёбер + 6 ящиков)");
     }
 
@@ -293,7 +294,7 @@ public class ContextMenuLayoutTests
         _menu.Open(facade);
         var panel = _canvas.transform.Find("ContextMenu");
         var door = panel.Find("CtxDoor");
-        var label = door.GetComponentInChildren<Text>(true);
+        var label = door.GetComponentInChildren<TMP_Text>(true);
 
         Assert.IsFalse(facade.IsOpen);
         door.GetComponent<Button>().onClick.Invoke();
@@ -311,7 +312,7 @@ public class ContextMenuLayoutTests
         var facade = MakeFacade("F1");
         _menu.Open(facade);
         var panel = _canvas.transform.Find("ContextMenu");
-        var dd = panel.Find("CtxMode").GetComponent<Dropdown>();
+        var dd = panel.Find("CtxMode").GetComponent<TMP_Dropdown>();
 
         Assert.AreEqual(DoorMode.HingeFrontLeft, facade.Mode);
         dd.value = (int)DoorMode.DrawerOut;
