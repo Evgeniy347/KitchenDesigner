@@ -32,6 +32,7 @@ services:
     volumes:
       - appdata-local:/app/data
       - ../Builds/WebGL_Debug:/app/webgl:ro
+      - ./KitchenServer.Web/wwwroot/app.css:/app/wwwroot/app.css:ro
     depends_on:
       db:
         condition: service_healthy
