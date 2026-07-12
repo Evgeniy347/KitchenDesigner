@@ -4,7 +4,8 @@ using UnityEngine;
 using KitchenDesigner.Core;
 
 /// <summary>История отмены/повтора должна сохраняться в проект и работать после
-/// загрузки (кнопки «вперёд/назад» оживают на восстановленных объектах).</summary>
+/// загрузки (кнопки «вперёд/назад» оживают на восстановленных объектах).
+/// Структура сериализации покрывается снапшотами (Snapshot.Match).</summary>
 public class CommandHistoryTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
@@ -19,6 +20,11 @@ public class CommandHistoryTests
         PartRegistry.Register(e);
         _spawned.Add(go);
         return e;
+    }
+
+    private string CaptureJson(IEnumerable<KitchenElement> elements)
+    {
+        return SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(elements));
     }
 
     [SetUp]
@@ -36,7 +42,6 @@ public class CommandHistoryTests
         }
         _spawned.Clear();
 
-        // Объекты, созданные RestoreScene.
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null) Object.DestroyImmediate(e.gameObject);
     }
@@ -77,7 +82,6 @@ public class CommandHistoryTests
         var e = Make("B", new Vector3Int(800, 400, 18), Vector3.zero);
         var cmd = new MoveCommand(e, Vector3.zero, Vector3.one, Quaternion.identity, Quaternion.identity);
 
-        // Объект не попал в сохранение → индекс -1 → запись не создаётся.
         var rec = ((ISerializableCommand)cmd).ToRecord(_ => -1);
         Assert.IsNull(rec);
     }
@@ -99,7 +103,6 @@ public class CommandHistoryTests
         var json = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(new[] { e }));
         Assert.IsTrue(json.Contains("undoHistory"), "история попала в JSON");
 
-        // Имитация перезапуска: убрать сцену и историю.
         PartRegistry.Unregister(e);
         Object.DestroyImmediate(e.gameObject);
         _spawned.Clear();
@@ -113,12 +116,10 @@ public class CommandHistoryTests
         var restored = created[0].GetComponent<KitchenElement>();
         AssertVec(after, restored.transform.position, "загружено в актуальном состоянии");
 
-        // Кнопка «назад» работает на восстановленном объекте.
         Assert.IsTrue(CommandStack.CanUndo, "undo доступен после загрузки");
         CommandStack.Undo();
         AssertVec(pos0, restored.transform.position, "undo откатывает к исходной позиции");
 
-        // Кнопка «вперёд» работает.
         Assert.IsTrue(CommandStack.CanRedo);
         CommandStack.Redo();
         AssertVec(after, restored.transform.position, "redo возвращает сдвиг");
@@ -158,14 +159,12 @@ public class CommandHistoryTests
     [Test]
     public void LoadingProject_WithoutHistory_ClearsStaleCommands()
     {
-        // Старый проект без истории не должен оставлять команды, ссылающиеся на
-        // уничтоженные объекты.
         var e = Make("Old", new Vector3Int(800, 400, 18), new Vector3(0, 0.2f, 0));
         CommandStack.Execute(new MoveCommand(e, Vector3.zero, Vector3.one,
             Quaternion.identity, Quaternion.identity));
         Assert.IsTrue(CommandStack.CanUndo);
 
-        var data = new ProjectData(new[] { ElementData.FromElement(e) }); // без undoHistory
+        var data = new ProjectData(new[] { ElementData.FromElement(e) });
         PartRegistry.Unregister(e);
         Object.DestroyImmediate(e.gameObject);
         _spawned.Clear();
@@ -174,5 +173,136 @@ public class CommandHistoryTests
         foreach (var go in created) _spawned.Add(go);
 
         Assert.IsFalse(CommandStack.CanUndo, "история очищена при загрузке проекта без истории");
+    }
+
+    // --- Снапшоты: структура сериализации истории ---
+
+    [Test]
+    public void Snapshot_UndoHistory_CompositeTwoMoves()
+    {
+        var a = Make("Board_A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("Board_B", new Vector3Int(600, 400, 18), new Vector3(1, 0, 0));
+        CommandStack.Execute(new CompositeCommand("group", new List<IUndoCommand>
+        {
+            new MoveCommand(a, Vector3.zero, new Vector3(0, 0.5f, 0),
+                Quaternion.identity, Quaternion.identity),
+            new MoveCommand(b, new Vector3(1, 0, 0), new Vector3(1, 0.5f, 0),
+                Quaternion.identity, Quaternion.identity),
+        }));
+        Snapshot.Match(CaptureJson(new[] { a, b }), "undo_composite_two_moves");
+    }
+
+    [Test]
+    public void Snapshot_UndoHistory_DeepChain50_TrimmedToEmpty()
+    {
+        var e = Make("Board_D", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        // 50 вложенных composites, каждый оборачивает предыдущий.
+        // SafeDepth=5: depth≥5 → null, вся цепочка всплывает пустой.
+        IUndoCommand leaf = new MoveCommand(e, Vector3.zero, Vector3.one,
+            Quaternion.identity, Quaternion.identity);
+        for (int i = 0; i < 50; i++)
+            leaf = new CompositeCommand($"L{i}", new List<IUndoCommand> { leaf });
+
+        CommandStack.Execute(leaf);
+        Snapshot.Match(CaptureJson(new[] { e }), "undo_deep_chain_50_trimmed");
+    }
+
+    [Test]
+    public void Snapshot_UndoHistory_DeepWithSiblings50_PreservesSafeDepth()
+    {
+        var e = Make("Board_S", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        // Каждый уровень: Composite([MoveCommand, nextComposite]).
+        // SafeDepth=5: levels 0–4 сохраняют MoveCommand, level 5 → null.
+        IUndoCommand current = null;
+        for (int i = 49; i >= 0; i--)
+        {
+            var from = new Vector3(i * 0.001f, 0, 0);
+            var to   = new Vector3((i + 1) * 0.001f, 0, 0);
+            var move = new MoveCommand(e, from, to,
+                Quaternion.identity, Quaternion.identity);
+            var siblings = new List<IUndoCommand> { move };
+            if (current != null) siblings.Add(current);
+            current = new CompositeCommand($"L{i}", siblings);
+        }
+
+        CommandStack.Execute(current);
+        Snapshot.Match(CaptureJson(new[] { e }), "undo_deep_siblings_50_preserved");
+    }
+
+    [Test]
+    public void Snapshot_UndoHistory_ResizeCommand()
+    {
+        var e = Make("Board_R", new Vector3Int(800, 400, 18), Vector3.zero);
+        CommandStack.Execute(new ResizeCommand(e,
+            new Vector3Int(800, 400, 18), new Vector3Int(1200, 600, 18),
+            Vector3.zero, new Vector3(0.2f, 0.1f, 0),
+            Quaternion.identity, Quaternion.identity));
+        Snapshot.Match(CaptureJson(new[] { e }), "undo_resize_command");
+    }
+
+    // --- Нагрузочные: важна целостность, а не структура JSON ---
+
+    [Test]
+    public void LargeFlatHistory_1000Commands_SerializeOk()
+    {
+        var e = Make("L", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        for (int i = 0; i < 1000; i++)
+        {
+            var from = new Vector3(i * 0.001f, 0.2f, 0);
+            var to   = new Vector3(i * 0.001f + 0.1f, 0.2f, 0);
+            CommandStack.Execute(new MoveCommand(e, from, to,
+                Quaternion.identity, Quaternion.identity));
+        }
+        Assert.AreEqual(1000, CommandStack.UndoCount);
+
+        var json = SaveLoadManager.Serialize(
+            SaveLoadManager.CaptureScene(new[] { e }));
+        var data = SaveLoadManager.Deserialize(json);
+        Assert.AreEqual(1000, data.undoHistory.Length,
+            "все 1000 команд пережили сериализацию");
+
+        var created = SaveLoadManager.RestoreScene(data);
+        Assert.IsTrue(CommandStack.CanUndo);
+        CommandStack.Undo();
+        Assert.IsTrue(CommandStack.CanUndo);
+    }
+
+    [Test]
+    public void LargeHistory_WithGroupMoves_SerializeOk()
+    {
+        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B", new Vector3Int(800, 400, 18), new Vector3(1, 0, 0));
+
+        for (int i = 0; i < 500; i++)
+        {
+            var dx = i * 0.01f;
+            CommandStack.Execute(new MoveCommand(a,
+                new Vector3(dx, 0, 0), new Vector3(dx + 0.01f, 0, 0),
+                Quaternion.identity, Quaternion.identity));
+
+            var cmds = new List<IUndoCommand>
+            {
+                new MoveCommand(a,
+                    new Vector3(dx + 0.01f, 0, 0), new Vector3(dx + 0.02f, 0, 0),
+                    Quaternion.identity, Quaternion.identity),
+                new MoveCommand(b,
+                    new Vector3(1 + dx, 0, 0), new Vector3(1 + dx + 0.01f, 0, 0),
+                    Quaternion.identity, Quaternion.identity),
+            };
+            CommandStack.Execute(new CompositeCommand($"group {i}", cmds));
+        }
+        Assert.AreEqual(1000, CommandStack.UndoCount);
+
+        var json = SaveLoadManager.Serialize(
+            SaveLoadManager.CaptureScene(new[] { a, b }));
+        var data = SaveLoadManager.Deserialize(json);
+        Assert.AreEqual(1000, data.undoHistory.Length,
+            "1000 команд (включая composite) пережили сериализацию");
+
+        var created = SaveLoadManager.RestoreScene(data);
+        Assert.IsTrue(CommandStack.CanUndo);
     }
 }
