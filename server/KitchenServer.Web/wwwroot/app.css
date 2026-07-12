@@ -731,6 +731,34 @@ code.mcp-url, code.mcp-key {
     color: var(--accent);
 }
 
+.auth-password-wrap {
+    position: relative;
+    margin-bottom: 12px;
+}
+.auth-password-wrap .auth-input {
+    margin-bottom: 0;
+    padding-right: 40px;
+}
+.auth-pw-toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.auth-pw-toggle:hover {
+    color: #aaa;
+}
+
 /* ══════════════════════════════════════════════════════════════
    PROFILE page (.profile-*)
    ══════════════════════════════════════════════════════════════ */
