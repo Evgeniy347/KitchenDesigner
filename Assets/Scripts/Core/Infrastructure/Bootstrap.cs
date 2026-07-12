@@ -8,6 +8,9 @@ namespace KitchenDesigner.Core
         private void Awake()
         {
             Application.runInBackground = true;
+#if UNITY_WEBGL
+            Application.targetFrameRate = 30;
+#endif
             GameContext.InitializeWithDefaults();
             if (KitchenSettings.Instance != null)
                 KitchenSettings.Instance.Load();
