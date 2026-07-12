@@ -15,19 +15,19 @@
     <EditForm Model="Input" method="post" OnValidSubmit="HandleLogin" FormName="login">
         <DataAnnotationsValidator />
 
-        <InputText @bind-Value="Input.Email" type="email" placeholder="Email" class="input" autocomplete="username" />
-        <InputText @bind-Value="Input.Password" type="password" placeholder="Пароль" class="input" autocomplete="current-password" />
+        <InputText @bind-Value="Input.Email" type="email" placeholder="Email" class="auth-input" autocomplete="username" />
+        <InputText @bind-Value="Input.Password" type="password" placeholder="Пароль" class="auth-input" autocomplete="current-password" />
 
         @if (!string.IsNullOrEmpty(_error))
         {
-            <div class="error">@_error</div>
+            <div class="auth-error">@_error</div>
         }
-        <ValidationSummary class="error" />
+        <ValidationSummary class="auth-error" />
 
-        <button type="submit" class="btn">Войти</button>
+        <button type="submit" class="auth-btn">Войти</button>
     </EditForm>
 
-    <p class="link">
+    <p class="auth-link">
         Нет аккаунта? <a href="/auth/register">Регистрация</a>
     </p>
 </div>
@@ -79,41 +79,3 @@
     }
 }
 
-<style>
-    .auth-form {
-        max-width: 360px;
-        margin: 80px auto;
-        padding: 32px;
-        background: #1e1e2e;
-        border-radius: 8px;
-        color: #ccc;
-    }
-    h2 { margin: 0 0 20px; color: #fff; font-size: 20px; }
-    .input {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 12px;
-        background: #2a2a3e;
-        border: 1px solid #3a3a5e;
-        border-radius: 4px;
-        color: #fff;
-        font-size: 14px;
-        box-sizing: border-box;
-    }
-    .btn {
-        width: 100%;
-        padding: 10px;
-        background: #3a5afe;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    .btn:hover { background: #2e4ecc; }
-    .btn:disabled { opacity: 0.6; }
-    .error { background: #5a1a1a; padding: 8px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
-    .error ul { margin: 0; padding-left: 18px; }
-    .link { text-align: center; margin-top: 16px; font-size: 13px; }
-    .link a { color: #3a5afe; }
-</style>

@@ -14,14 +14,14 @@
 <PageTitle>Projects — KitchenDesigner</PageTitle>
 
 <div class="projects-page">
-    <div class="header">
+    <div class="projects-header">
         <h1>Projects</h1>
-        <div class="header-actions">
-            <label class="btn-secondary" title="Load a project from a .json file">
+        <div class="projects-header-actions">
+            <label class="projects-btn-secondary" title="Load a project from a .json file">
                 <i class="bi bi-upload"></i> @(_importing ? "Importing..." : "Import")
-                <InputFile OnChange="ImportFromFile" accept=".json" disabled="@_importing" class="file-input-hidden" />
+                <InputFile OnChange="ImportFromFile" accept=".json" disabled="@_importing" class="projects-file-input-hidden" />
             </label>
-            <button class="btn-primary" @onclick="CreateNew">
+            <button class="projects-btn-primary" @onclick="CreateNew">
                 <i class="bi bi-plus-lg"></i> New Project
             </button>
         </div>
@@ -29,65 +29,65 @@
 
     @if (_loading)
     {
-        <p class="loading">Loading...</p>
+        <p class="projects-loading">Loading...</p>
     }
     else if (!string.IsNullOrEmpty(_error))
     {
-        <p class="error">@_error</p>
+        <p class="projects-error">@_error</p>
     }
     else if (_projects.Count == 0)
     {
-        <p class="empty">No projects yet. Create your first one!</p>
+        <p class="projects-empty">No projects yet. Create your first one!</p>
     }
     else
     {
-        <div class="toolbar">
-            <div class="search-box">
-                <i class="bi bi-search search-icon"></i>
+        <div class="projects-toolbar">
+            <div class="projects-search-box">
+                <i class="bi bi-search projects-search-icon"></i>
                 <input type="text" placeholder="Search projects..." @bind="_filter" @bind:event="oninput"
-                       class="search-input" />
+                       class="projects-search-input" />
             </div>
         </div>
 
-        <div class="project-list">
+        <div class="projects-list">
             @foreach (var p in FilteredProjects)
             {
-                <div class="project-card">
-                    <button class="btn-play" @onclick="() => OpenProject(p.Id)"
+                <div class="projects-card">
+                    <button class="projects-btn-play" @onclick="() => OpenProject(p.Id)"
                             title="Open project">
                         <i class="bi bi-play-fill"></i>
                     </button>
-                    <div class="card-body">
+                    <div class="projects-card-body">
                         @if (_editingId == p.Id)
                         {
-                            <div class="rename-row">
-                                <input type="text" @bind="_editName" class="rename-input"
+                            <div class="projects-rename-row">
+                                <input type="text" @bind="_editName" class="projects-rename-input"
                                        @onkeydown="@(async e => { if (e.Key == "Enter") await RenameSave(p); if (e.Key == "Escape") CancelEdit(); })" />
-                                <button class="btn-small btn-ghost" @onclick="CancelEdit">Cancel</button>
-                                <button class="btn-small" @onclick="() => RenameSave(p)">Save</button>
+                                <button class="projects-btn-small projects-btn-ghost" @onclick="CancelEdit">Cancel</button>
+                                <button class="projects-btn-small" @onclick="() => RenameSave(p)">Save</button>
                             </div>
                         }
                         else
                         {
-                            <span class="project-name">@p.Name</span>
+                            <span class="projects-card-name">@p.Name</span>
                         }
-                        <span class="project-date">@p.UpdatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                        <span class="projects-card-date">@p.UpdatedAt.ToString("MMM dd, yyyy HH:mm")</span>
                     </div>
-                    <div class="card-actions">
-                        <button class="btn-icon" @onclick="() => StartRename(p)"
+                    <div class="projects-card-actions">
+                        <button class="projects-btn-icon" @onclick="() => StartRename(p)"
                                 title="Rename">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn-icon" @onclick="() => DuplicateProject(p.Id)"
+                        <button class="projects-btn-icon" @onclick="() => DuplicateProject(p.Id)"
                                 title="Duplicate">
                             <i class="bi bi-files"></i>
                         </button>
-                        <button class="btn-icon btn-icon-danger @(IsDeletePending(p.Id) ? "btn-delete-confirm" : "")"
+                        <button class="projects-btn-icon projects-btn-icon-danger @(IsDeletePending(p.Id) ? "projects-btn-delete-confirm" : "")"
                                 @onclick="() => ToggleDeleteConfirm(p.Id)"
                                 title="Delete">
                             @if (IsDeletePending(p.Id))
                             {
-                                <span class="delete-confirm-text">sure?</span>
+                                <span class="projects-delete-confirm-text">sure?</span>
                             }
                             else
                             {
@@ -357,163 +357,3 @@
     private record ProjectInfo(Guid Id, string Name, DateTime CreatedAt, DateTime UpdatedAt);
 }
 
-<style>
-    .projects-page {
-        padding: 32px;
-        width: 800px;
-        margin: 0 auto;
-        color: #ccc;
-        font-family: sans-serif;
-    }
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-    }
-    .header h1 { color: #fff; margin: 0; font-size: 24px; }
-    .btn-primary {
-        padding: 10px 20px;
-        background: #3a5afe;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .btn-primary:hover { background: #2e4ecc; }
-    .header-actions { display: flex; gap: 8px; align-items: center; }
-    .btn-secondary {
-        padding: 10px 20px;
-        background: #2a2a3e;
-        color: #ccc;
-        border: 1px solid #3a3a5e;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .btn-secondary:hover { background: #3a3a5e; color: #fff; }
-    .file-input-hidden { display: none; }
-    .btn-small {
-        padding: 4px 12px;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 12px;
-        color: #ccc;
-        background: #2a2a3e;
-    }
-    .btn-small:hover { background: #3a3a5e; }
-    .btn-ghost { background: transparent; }
-    .btn-ghost:hover { background: #2a2a3e; }
-    .toolbar { margin-bottom: 16px; }
-    .search-box {
-        display: flex;
-        align-items: center;
-        background: #2a2a3e;
-        border: 1px solid #3a3a5e;
-        border-radius: 4px;
-        padding: 0 12px;
-    }
-    .search-icon {
-        color: #666;
-        font-size: 16px;
-        margin-right: 8px;
-        flex-shrink: 0;
-    }
-    .search-input {
-        flex: 1;
-        padding: 8px 0;
-        background: transparent;
-        border: none;
-        color: #fff;
-        font-size: 14px;
-        outline: none;
-    }
-    .search-input::placeholder { color: #666; }
-    .project-list { display: flex; flex-direction: column; gap: 8px; }
-    .project-card {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
-        background: #1e1e2e;
-        border-radius: 6px;
-        transition: background 0.15s;
-    }
-    .project-card:hover { background: #262640; }
-    .btn-play {
-        width: 36px;
-        height: 36px;
-        padding: 0;
-        background: #28a745;
-        color: #fff;
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 18px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition: background 0.15s;
-    }
-    .btn-play:hover { background: #218838; }
-    .btn-play i { font-size: 20px; }
-    .card-body { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-    .project-name { color: #fff; font-size: 15px; }
-    .project-date { color: #888; font-size: 12px; }
-    .card-actions { display: flex; gap: 4px; flex-shrink: 0; }
-    .btn-icon {
-        padding: 6px 8px;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 15px;
-        color: #888;
-        background: transparent;
-        line-height: 1;
-        min-width: 34px;
-        min-height: 28px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.15s, color 0.15s;
-    }
-    .btn-icon:hover { background: #2a2a3e; color: #ccc; }
-    .btn-icon-danger:hover { background: #5a1a1a; color: #ff6b6b; }
-    .btn-delete-confirm {
-        background: #5a1a1a;
-        color: #ff6b6b;
-    }
-    .btn-delete-confirm:hover { background: #7a2020; }
-    .delete-confirm-text {
-        font-size: 9px;
-        font-weight: 700;
-        text-transform: lowercase;
-        white-space: nowrap;
-    }
-    .rename-row {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .rename-input {
-        flex: 1;
-        padding: 4px 8px;
-        background: #2a2a3e;
-        border: 1px solid #3a5afe;
-        border-radius: 3px;
-        color: #fff;
-        font-size: 14px;
-        min-width: 0;
-    }
-    .loading, .empty, .error { text-align: center; padding: 40px; }
-    .error { color: #ff6b6b; }
-</style>
