@@ -16,33 +16,33 @@
 <PageTitle>@_projectName — KitchenDesigner Editor</PageTitle>
 
 <div class="editor-page">
-    <div class="toolbar">
-        <div class="toolbar-left">
-            <a href="/projects" class="back-link">← Projects</a>
-            <span class="project-name">@_projectName</span>
+    <div class="editor-toolbar">
+        <div class="editor-toolbar-left">
+            <a href="/projects" class="editor-back-link">← Projects</a>
+            <span class="editor-project-name">@_projectName</span>
         </div>
-        <div class="toolbar-right">
-            <span class="project-id" title="Project ID: @ProjectId">ID: @ProjectId.ToString()[..8]</span>
+        <div class="editor-toolbar-right">
+            <span class="editor-project-id" title="Project ID: @ProjectId">ID: @ProjectId.ToString()[..8]</span>
         </div>
     </div>
 
     @if (!string.IsNullOrEmpty(_error))
     {
-        <div class="error-banner">@_error</div>
+        <div class="editor-error-banner">@_error</div>
     }
 
-    <div class="unity-container">
+    <div class="editor-unity-container">
         @if (_ready)
         {
             <iframe src="@_iframeSrc"
-                    class="unity-frame"
+                    class="editor-unity-frame"
                     allow="autoplay; fullscreen"
                     title="KitchenDesigner Editor">
             </iframe>
         }
         else
         {
-            <div class="loading">Loading project...</div>
+            <div class="editor-loading">Loading project...</div>
         }
     </div>
 </div>
@@ -94,64 +94,3 @@
     }
 }
 
-<style>
-    .editor-page {
-        display: flex;
-        flex-direction: column; 
-        flex: 1; 
-        min-height: 0;
-        overflow: hidden;
-    }
-    .toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 16px;
-        background: #1e1e2e;
-        border-bottom: 1px solid #2a2a3e;
-        flex-shrink: 0;
-        min-height: 40px;
-    }
-    .toolbar-left {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-    .back-link {
-        color: #3a5afe;
-        text-decoration: none;
-        font-size: 14px;
-    }
-    .back-link:hover { color: #5a7afe; }
-    .project-name { color: #fff; font-size: 14px; font-weight: 600; }
-    .toolbar-right {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-    .project-id { color: #666; font-size: 11px; font-family: monospace; }
-    .unity-container {
-        flex: 1;
-        display: flex;
-        background: #000;
-    }
-    .unity-frame {
-        width: 100%; 
-        border: none;
-    }
-    .loading {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        color: #ccc;
-        font-size: 16px;
-    }
-    .error-banner {
-        padding: 8px 16px;
-        background: #5a1a1a;
-        color: #ff6b6b;
-        font-size: 13px;
-        flex-shrink: 0;
-    }
-</style>

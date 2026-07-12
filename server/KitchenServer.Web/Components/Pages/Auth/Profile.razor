@@ -26,37 +26,37 @@
     }
     else
     {
-        <section class="card">
+        <section class="profile-card">
             <h2>Аккаунт</h2>
-            <div class="row"><span class="label">Email:</span> @_user.Email</div>
-            <div class="row"><span class="label">Проектов:</span> @_projectCount</div>
-            <div class="row"><span class="label">Хранилище:</span> @FormatBytes(_usageBytes)</div>
+            <div class="profile-row"><span class="profile-label">Email:</span> @_user.Email</div>
+            <div class="profile-row"><span class="profile-label">Проектов:</span> @_projectCount</div>
+            <div class="profile-row"><span class="profile-label">Хранилище:</span> @FormatBytes(_usageBytes)</div>
         </section>
 
-        <section class="card">
+        <section class="profile-card">
             <h2>Смена пароля</h2>
 
             <EditForm Model="Input" method="post" OnValidSubmit="HandleChangePassword" FormName="change-password">
                 <DataAnnotationsValidator />
 
                 <InputText @bind-Value="Input.CurrentPassword" type="password" placeholder="Текущий пароль"
-                           class="input" autocomplete="current-password" />
+                           class="profile-input" autocomplete="current-password" />
                 <InputText @bind-Value="Input.NewPassword" type="password" placeholder="Новый пароль"
-                           class="input" autocomplete="new-password" />
+                           class="profile-input" autocomplete="new-password" />
                 <InputText @bind-Value="Input.ConfirmPassword" type="password" placeholder="Подтвердите новый пароль"
-                           class="input" autocomplete="new-password" />
+                           class="profile-input" autocomplete="new-password" />
 
                 @if (!string.IsNullOrEmpty(_error))
                 {
-                    <div class="error">@_error</div>
+                    <div class="profile-error">@_error</div>
                 }
                 @if (!string.IsNullOrEmpty(_success))
                 {
-                    <div class="success">@_success</div>
+                    <div class="profile-success">@_success</div>
                 }
-                <ValidationSummary class="error" />
+                <ValidationSummary class="profile-error" />
 
-                <button type="submit" class="btn">Сменить пароль</button>
+                <button type="submit" class="profile-btn">Сменить пароль</button>
             </EditForm>
         </section>
     }
@@ -131,47 +131,3 @@
     }
 }
 
-<style>
-    .profile-page {
-        max-width: 480px;
-        margin: 40px auto;
-        padding: 0 16px;
-        color: #ccc;
-        font-family: sans-serif;
-    }
-    h1 { color: #fff; font-size: 24px; }
-    h2 { color: #ddd; font-size: 16px; margin: 0 0 16px; }
-    .card {
-        background: #1e1e2e;
-        border-radius: 8px;
-        padding: 24px;
-        margin-bottom: 16px;
-    }
-    .row { margin: 8px 0; font-size: 14px; }
-    .label { color: #888; margin-right: 8px; }
-    .input {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 12px;
-        background: #2a2a3e;
-        border: 1px solid #3a3a5e;
-        border-radius: 4px;
-        color: #fff;
-        font-size: 14px;
-        box-sizing: border-box;
-    }
-    .btn {
-        width: 100%;
-        padding: 10px;
-        background: #3a5afe;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    .btn:hover { background: #2e4ecc; }
-    .error { background: #5a1a1a; padding: 8px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
-    .error ul { margin: 0; padding-left: 18px; }
-    .success { background: #1a5a2a; padding: 8px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; color: #6bff6b; }
-</style>

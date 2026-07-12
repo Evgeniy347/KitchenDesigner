@@ -39,31 +39,3 @@
     <span class="dismiss">🗙</span>
 </div>
 
-<style>
-    :root { --bg: #1a1a2e; --surface: #1e1e2e; --border: #2a2a3e; --accent: #3a5afe; }
-
-    html, body { margin: 0; padding: 0; background: var(--bg); color: #ccc; font-family: sans-serif; }
-
-    .layout { display: flex; flex-direction: column; min-height: 100vh; }
-
-    .top-nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 24px;
-        height: 48px;
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        flex-shrink: 0;
-    }
-    .nav-left, .nav-right { display: flex; align-items: center; gap: 16px; }
-    .nav-brand { color: #fff; font-weight: 700; font-size: 16px; text-decoration: none; }
-    .nav-link { color: #888; text-decoration: none; font-size: 14px; padding: 4px 8px; border-radius: 4px; transition: color 0.15s; }
-    .nav-link:hover { color: #fff; }
-    .nav-link-active { color: var(--accent); background: #3a5afe1a; }
-    .nav-user { color: #aaa; font-size: 13px; }
-    .logout-form { display: inline; margin: 0; }
-    .nav-logout { color: #ff6b6b; background: none; border: none; cursor: pointer; font-family: inherit; }
-
-    .main-content { flex: 1; display: flex; }
-</style>

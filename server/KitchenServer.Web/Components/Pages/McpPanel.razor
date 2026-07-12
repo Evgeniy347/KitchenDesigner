@@ -14,19 +14,19 @@
 
 <div class="mcp-panel">
     <h1>MCP Sessions</h1>
-    <p class="subtitle">Manage AI agent connections to your kitchen projects</p>
+    <p class="mcp-subtitle">Manage AI agent connections to your kitchen projects</p>
 
     <div class="create-section">
         <h2>Create New Session</h2>
-        <div class="form-row">
-            <input @bind="NewProjectId" placeholder="Project ID (optional)" class="input" />
-            <button class="btn btn-primary" @onclick="CreateSession" disabled="@IsCreating">
+        <div class="mcp-form-row">
+            <input @bind="NewProjectId" placeholder="Project ID (optional)" class="mcp-input" />
+            <button class="mcp-btn" @onclick="CreateSession" disabled="@IsCreating">
                 @(IsCreating ? "Creating..." : "Create Session")
             </button>
         </div>
         @if (!string.IsNullOrEmpty(Error))
         {
-            <p class="error">@Error</p>
+            <p class="mcp-error">@Error</p>
         }
     </div>
 
@@ -38,43 +38,43 @@
         }
         else if (Sessions.Count == 0)
         {
-            <p class="empty">No active MCP sessions. Create one above.</p>
+            <p class="mcp-empty">No active MCP sessions. Create one above.</p>
         }
         else
         {
             @foreach (var s in Sessions)
             {
-                <div class="session-card">
-                    <div class="session-header">
-                        <span class="session-id">@s.SessionId</span>
-                        <span class="badge @(s.IsActive ? "active" : "inactive")">
+                <div class="mcp-session-card">
+                    <div class="mcp-session-header">
+                        <span class="mcp-session-id">@s.SessionId</span>
+                        <span class="mcp-badge @(s.IsActive ? "mcp-active" : "mcp-inactive")">
                             @(s.IsActive ? "Active" : "Inactive")
                         </span>
                     </div>
-                    <div class="session-detail">Project: @(s.ProjectId ?? "—")</div>
-                    <div class="session-detail">Created: @s.CreatedAt.ToString("g")</div>
-                    <div class="session-detail">
-                        <span class="label">MCP URL (agent):</span>
-                        <code class="url">@HubUrl(s)</code>
-                        <button class="btn btn-sm" @onclick="() => CopyToClipboard(HubUrl(s))">
+                    <div class="mcp-session-detail">Project: @(s.ProjectId ?? "—")</div>
+                    <div class="mcp-session-detail">Created: @s.CreatedAt.ToString("g")</div>
+                    <div class="mcp-session-detail">
+                        <span class="mcp-label">MCP URL (agent):</span>
+                        <code class="mcp-url">@HubUrl(s)</code>
+                        <button class="mcp-btn mcp-btn-sm" @onclick="() => CopyToClipboard(HubUrl(s))">
                             Copy
                         </button>
                     </div>
-                    <div class="session-detail">
-                        <span class="label">WS URL (client):</span>
-                        <code class="url">@WsUrl(s)</code>
-                        <button class="btn btn-sm" @onclick="() => CopyToClipboard(WsUrl(s))">
+                    <div class="mcp-session-detail">
+                        <span class="mcp-label">WS URL (client):</span>
+                        <code class="mcp-url">@WsUrl(s)</code>
+                        <button class="mcp-btn mcp-btn-sm" @onclick="() => CopyToClipboard(WsUrl(s))">
                             Copy
                         </button>
                     </div>
-                    <div class="session-detail">
-                        <span class="label">Access Key:</span>
-                        <code class="key">@s.AccessKey</code>
-                        <button class="btn btn-sm" @onclick="() => CopyToClipboard(s.AccessKey)">
+                    <div class="mcp-session-detail">
+                        <span class="mcp-label">Access Key:</span>
+                        <code class="mcp-key">@s.AccessKey</code>
+                        <button class="mcp-btn mcp-btn-sm" @onclick="() => CopyToClipboard(s.AccessKey)">
                             Copy
                         </button>
                     </div>
-                    <button class="btn btn-danger" @onclick="() => CloseSession(s.SessionId)">
+                    <button class="mcp-btn mcp-btn-danger" @onclick="() => CloseSession(s.SessionId)">
                         Revoke
                     </button>
                 </div>
@@ -83,32 +83,6 @@
     </div>
 </div>
 
-<style>
-    .mcp-panel { padding: 40px; font-family: sans-serif; color: #ccc; background: #1a1a2e; margin: 0 auto; min-width: 640px; }
-    h1 { color: #fff; margin-bottom: 4px; }
-    h2 { color: #ddd; margin: 24px 0 12px 0; font-size: 1.2em; }
-    .subtitle { color: #888; margin: 0 0 32px 0; }
-    .form-row { display: flex; gap: 12px; align-items: center; }
-    .input { background: #2a2a4a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 4px; min-width: 240px; }
-    .btn { background: #3a5afe; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
-    .btn:hover { background: #2a4ae0; }
-    .btn-sm { padding: 2px 8px; font-size: 0.8em; margin-left: 8px; background: #4a4a6a; }
-    .btn-sm:hover { background: #5a5a7a; }
-    .btn-danger { background: #e04040; }
-    .btn-danger:hover { background: #c03030; }
-    .btn:disabled { opacity: 0.5; cursor: default; }
-    .error { color: #e04040; margin: 8px 0; }
-    .empty { color: #666; }
-    .session-card { background: #2a2a4a; border: 1px solid #3a3a5a; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
-    .session-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .session-id { color: #fff; font-weight: bold; font-size: 1.1em; }
-    .session-detail { margin: 4px 0; font-size: 0.9em; }
-    .label { color: #888; margin-right: 4px; }
-    .badge { padding: 2px 10px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
-    .badge.active { background: #2e7d32; color: #a5d6a7; }
-    .badge.inactive { background: #555; color: #999; }
-    code.url, code.key { background: #1a1a2e; padding: 2px 6px; border-radius: 3px; font-size: 0.85em; word-break: break-all; }
-</style>
 
 @code {
     private string? NewProjectId;
