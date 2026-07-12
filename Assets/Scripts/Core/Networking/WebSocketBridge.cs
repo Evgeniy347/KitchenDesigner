@@ -86,6 +86,10 @@ namespace KitchenDesigner.Core.MCP
                 fullUrl += "?key=" + Uri.EscapeDataString(accessKey);
 
 #if UNITY_WEBGL
+            // Connect может прийти раньше нашего Start (Bootstrap подключает бридж
+            // сразу после AddComponent) — имя объекта берём на месте, иначе
+            // JS-коллбеки уйдут на null и соединение молча повиснет.
+            _gameObjectName = gameObject.name;
             Debug.Log($"[MCP-WS] Connecting to {fullUrl}");
             WebSocketConnect(fullUrl, _gameObjectName);
 #else
