@@ -130,11 +130,13 @@ h1:focus { outline: none; }
     align-items: center;
     text-align: center;
     max-width: 600px;
-    animation: homeHeroIn .8s ease-out;
 }
 @keyframes homeHeroIn {
     from { opacity: 0; transform: translateY(24px); }
     to   { opacity: 1; transform: translateY(0); }
+}
+.home-hero-content.hero-animate {
+    animation: homeHeroIn .8s ease-out forwards;
 }
 
 .home-logo-icon {
