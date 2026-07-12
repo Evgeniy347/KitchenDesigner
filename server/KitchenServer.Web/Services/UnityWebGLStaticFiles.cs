@@ -64,8 +64,7 @@ public static class UnityWebGLStaticFiles
                 ctx.Context.Response.ContentType = contentType;
                 if (encoding != null)
                     ctx.Context.Response.Headers.ContentEncoding = encoding;
-                // Debug iteration: a rebuilt wasm must not be shadowed by browser cache.
-                ctx.Context.Response.Headers.CacheControl = "no-cache";
+                ctx.Context.Response.Headers.CacheControl = "public, max-age=3600";
             }
         });
 
