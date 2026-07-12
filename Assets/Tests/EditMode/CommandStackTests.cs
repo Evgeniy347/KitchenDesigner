@@ -94,10 +94,10 @@ public class CommandStackTests
     [Test]
     public void Execute_BeyondMaxUndo_TrimsOldest()
     {
-        for (int i = 0; i < 25; i++) CommandStack.Execute(new FakeCommand());
+        for (int i = 0; i < 1005; i++) CommandStack.Execute(new FakeCommand());
         int undone = 0;
         while (CommandStack.CanUndo) { CommandStack.Undo(); undone++; }
-        Assert.AreEqual(20, undone, "стек ограничен 20 командами");
+        Assert.AreEqual(1000, undone, "стек ограничен 1000 командами");
     }
 
     [Test]

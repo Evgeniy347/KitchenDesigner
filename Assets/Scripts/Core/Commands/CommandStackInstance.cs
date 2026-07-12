@@ -7,7 +7,7 @@ namespace KitchenDesigner.Core
     {
         private readonly List<IUndoCommand> _undoStack = new List<IUndoCommand>();
         private readonly List<IUndoCommand> _redoStack = new List<IUndoCommand>();
-        private const int MaxUndo = 20;
+        private const int MaxUndo = 1000;
 
         public bool CanUndo => _undoStack.Count > 0;
         public bool CanRedo => _redoStack.Count > 0;

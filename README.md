@@ -42,7 +42,7 @@ A visual 3D furniture board constructor for laying out cabinets, kitchens, and o
 
 - **Save/Load** — projects saved as JSON. Load a ready-made configuration from file (see `docs/example.save.json`)
 - **Auto-save** — configurable interval, only when changes detected. **Backup** — on manual save, the old file is archived to `saves/backups/`
-- **Undo/Redo** — command stack of up to 20 operations
+- **Undo/Redo** — command stack of up to 1000 operations
 - **Camera controls** — orbit (RMB), pan (MMB), zoom (scroll), WASD movement
 - **Resize handles** — interactive resize via handles on selected boards
 - **Material catalog** — apply textures/decor to boards
@@ -153,7 +153,7 @@ MCP flow: create a session on `/mcp-panel` → give the agent the access key →
 
 - **Сохранение/загрузка** — проекты сохраняются в JSON. Можно загрузить готовую конфигурацию из файла (см. `docs/example.save.json`)
 - **Автосохранение** — с настраиваемым интервалом, только при наличии изменений. **Бекап** — при ручном сохранении старый файл архивируется в `saves/backups/`
-- **Undo/Redo** — стек команд до 20 операций
+- **Undo/Redo** — стек команд до 1000 операций
 - **Управление камерой** — орбита (ПКМ), панорама (СММ), зум (колесо), WASD
 - **Ручки изменения размера** — интерактивное изменение через ручки на выделенной доске
 - **Каталог материалов** — применение текстур/декора к доскам
