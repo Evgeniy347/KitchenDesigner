@@ -6,7 +6,7 @@
 <div class="home-page">
     <div class="home-hero">
         <div class="home-hero-bg"></div>
-        <div class="home-hero-content">
+        <div class="home-hero-content @(_heroAnimated ? "hero-animate" : "")">
             <div class="home-logo-icon">
                 <svg viewBox="0 0 64 64" fill="none">
                     <rect x="8" y="20" width="48" height="36" rx="4" stroke="currentColor" stroke-width="2.5" fill="none"/>
@@ -104,3 +104,16 @@
         </div>
     </div>
 </div>
+
+@code {
+    private bool _heroAnimated;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _heroAnimated = true;
+            StateHasChanged();
+        }
+    }
+}
