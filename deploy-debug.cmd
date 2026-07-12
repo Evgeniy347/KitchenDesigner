@@ -7,17 +7,16 @@ set SERVER=%DEPLOY_SERVER%
 set REMOTE_DIR=%DEPLOY_DIR%
 set SCRIPT_DIR=%~dp0
 set SSH_FLAGS=-o ConnectTimeout=10 -o StrictHostKeyChecking=no
-set HTTP_PORT=23443
 
 echo.
 echo ========================================
-echo  Kitchen Designer - Deploy to %SERVER%
+echo  Kitchen Designer DEBUG - Deploy to %SERVER%
 echo ========================================
 echo.
 
-echo [1/5] Building ASP.NET server...
+echo [1/5] Building ASP.NET server (Debug)...
 cd /d "%SCRIPT_DIR%server"
-dotnet publish KitchenServer.Web\KitchenServer.Web.csproj -c Release -o publish
+dotnet publish KitchenServer.Web\KitchenServer.Web.csproj -c Debug -o publish
 if %ERRORLEVEL% neq 0 (
     echo ERROR: dotnet publish failed
     exit /b 1
@@ -34,31 +33,31 @@ if %ERRORLEVEL% neq 0 (
 echo   Done.
 
 echo.
-echo [3/5] Copying WebGL build...
-if exist "%SCRIPT_DIR%Builds\WebGL\" (
-    scp %SSH_FLAGS% -r "%SCRIPT_DIR%Builds\WebGL\*" %SERVER%:%REMOTE_DIR%/webgl/
+echo [3/5] Copying WebGL Debug build...
+if exist "%SCRIPT_DIR%Builds\WebGL_Debug\" (
+    scp %SSH_FLAGS% -r "%SCRIPT_DIR%Builds\WebGL_Debug\*" %SERVER%:%REMOTE_DIR%/webgl/
     if %ERRORLEVEL% neq 0 (
-        echo WARNING: scp WebGL build failed - continuing anyway
+        echo WARNING: scp WebGL Debug build failed - continuing anyway
     ) else (
         echo   Done.
     )
 ) else (
-    echo   WARNING: Builds\WebGL not found - skipping. Build Unity WebGL first.
+    echo   ERROR: Builds\WebGL_Debug not found. Run build.cmd -WebGLDebug first.
+    exit /b 1
 )
 
 echo.
-echo [4/5] Copying Docker config...
-scp %SSH_FLAGS% "%SCRIPT_DIR%server\Dockerfile" %SERVER%:%REMOTE_DIR%/
-if %ERRORLEVEL% neq 0 (echo ERROR: scp Dockerfile failed & exit /b 1)
-scp %SSH_FLAGS% "%SCRIPT_DIR%server\docker-compose.yml" %SERVER%:%REMOTE_DIR%/
+echo [4/5] Copying server source (for Docker build) + Docker configs...
+ssh %SSH_FLAGS% %SERVER% "mkdir -p %REMOTE_DIR%/server"
+scp %SSH_FLAGS% -r "%SCRIPT_DIR%server\*" %SERVER%:%REMOTE_DIR%/server/
+if %ERRORLEVEL% neq 0 (echo ERROR: scp server source failed & exit /b 1)
+scp %SSH_FLAGS% "%SCRIPT_DIR%server\docker-compose.yml" %SERVER%:%REMOTE_DIR%/docker-compose.yml
 if %ERRORLEVEL% neq 0 (echo ERROR: scp docker-compose.yml failed & exit /b 1)
-scp %SSH_FLAGS% "%SCRIPT_DIR%server\nginx.conf" %SERVER%:%REMOTE_DIR%/
-if %ERRORLEVEL% neq 0 (echo ERROR: scp nginx.conf failed & exit /b 1)
 echo   Done.
 
 echo.
 echo [5/5] Starting Docker services on server...
-ssh %SSH_FLAGS% %SERVER% "HTTP_PORT=23443 docker compose -f %REMOTE_DIR%/docker-compose.yml up -d --build"
+ssh %SSH_FLAGS% %SERVER% "cd %REMOTE_DIR% && docker compose up -d --build"
 if %ERRORLEVEL% neq 0 (
     echo ERROR: docker compose up failed
     exit /b 1
@@ -66,9 +65,9 @@ if %ERRORLEVEL% neq 0 (
 
 echo.
 echo ========================================
-echo  Deploy complete!
-echo  WebGL:  http://192.168.0.189:23443/
-echo  Server: http://192.168.0.189:23443/api/
+echo  Deploy DEBUG complete!
+echo  WebGL:  http://192.168.0.189:23080/
+echo  Server: http://192.168.0.189:23080/api/
 echo ========================================
 
 endlocal

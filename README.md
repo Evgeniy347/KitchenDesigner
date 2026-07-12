@@ -8,6 +8,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+  <a href="http://192.168.0.189:23080"><img src="https://img.shields.io/badge/ Live Demo-23080-green.svg" alt="Live Demo"></a>
 </p>
 
 <p align="center">
@@ -21,6 +22,8 @@
 ### Overview
 
 A visual 3D furniture board constructor for laying out cabinets, kitchens, and other case furniture.
+
+**Live demo:** [http://192.168.0.189:23080](http://192.168.0.189:23080)
 
 ### Features
 
@@ -132,6 +135,8 @@ MCP flow: create a session on `/mcp-panel` → give the agent the access key →
 ### Что это
 
 Визуальный 3D-конструктор для раскладки мебельных щитов (досок). Позволяет проектировать кухни, шкафы и другую корпусную мебель.
+
+**Демо:** [http://192.168.0.189:23080](http://192.168.0.189:23080)
 
 ### Возможности
 
