@@ -81,6 +81,19 @@ public class ElementConverterTests
         return a;
     }
 
+    private DrawerElement MakeDrawer(string name, Vector3Int dims, Vector3 pos)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = name;
+        go.transform.position = pos;
+        var d = go.AddComponent<DrawerElement>();
+        d.PartName = name;
+        d.DimensionsMM = dims;
+        PartRegistry.Register(d);
+        _spawned.Add(go);
+        return d;
+    }
+
     private static void AssertCommon(KitchenElement src, KitchenElement dst)
     {
         Assert.AreEqual(src.PartName, dst.PartName);
@@ -275,6 +288,128 @@ public class ElementConverterTests
         Assert.IsInstanceOf<KitchenElement>(result);
         AssertCommon(src, result);
         Assert.AreEqual(new Vector3Int(400, 25, 400), result.DimensionsMM);
+    }
+
+    // ── Facade → RadialShelf ──────────────────────────────────────────
+
+    [Test]
+    public void Facade_To_RadialShelf_PreservesCommon_DropsFacadeProperties()
+    {
+        var src = MakeFacade("Src", new Vector3Int(500, 350, 18), Vector3.zero,
+            1, 2, 3, 4, DoorMode.HingeFrontRight, true);
+        src.Movable = false;
+        src.GroupId = 31;
+        src.MaterialId = "wenge";
+
+        var result = (RadialShelfElement)ElementConverter.Convert(
+            src, ElementConverter.TargetType.RadialShelf);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<RadialShelfElement>(result);
+        Assert.IsNotInstanceOf<FacadeElement>(result);
+        Assert.AreEqual("Src", result.PartName);
+        Assert.AreEqual(false, result.Movable);
+        Assert.AreEqual(31, result.GroupId);
+        Assert.AreEqual("wenge", result.MaterialId);
+        Assert.AreEqual(500, result.Radius);
+        Assert.AreEqual(new Vector3Int(500, 350, 500), result.DimensionsMM);
+    }
+
+    // ── Assembled → RadialShelf ────────────────────────────────────────
+
+    [Test]
+    public void Assembled_To_RadialShelf_PreservesCommon_DropsAssembledAndFacadeProperties()
+    {
+        var src = MakeAssembled("Src", new Vector3Int(700, 400, 18), Vector3.zero,
+            1, 2, 3, 4, AssembledFill.Glass, 3);
+        src.Movable = true;
+        src.GroupId = 33;
+        src.MaterialId = "oak";
+
+        var result = (RadialShelfElement)ElementConverter.Convert(
+            src, ElementConverter.TargetType.RadialShelf);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<RadialShelfElement>(result);
+        Assert.IsNotInstanceOf<FacadeElement>(result);
+        Assert.AreEqual("Src", result.PartName);
+        Assert.AreEqual(true, result.Movable);
+        Assert.AreEqual(33, result.GroupId);
+        Assert.AreEqual("oak", result.MaterialId);
+        Assert.AreEqual(700, result.Radius);
+        Assert.AreEqual(new Vector3Int(700, 400, 700), result.DimensionsMM);
+    }
+
+    // ── RadialShelf → Facade ──────────────────────────────────────────
+
+    [Test]
+    public void RadialShelf_To_Facade_PreservesCommon_DropsRadius_HasDefaultGaps()
+    {
+        var src = Make<RadialShelfElement>("Src", new Vector3Int(500, 18, 500), Vector3.zero);
+        src.Movable = false;
+        src.GroupId = 35;
+        src.MaterialId = "cherry";
+
+        var result = (FacadeElement)ElementConverter.Convert(
+            src, ElementConverter.TargetType.Facade);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<FacadeElement>(result);
+        Assert.IsNotInstanceOf<AssembledFacadeElement>(result);
+        Assert.IsNotInstanceOf<RadialShelfElement>(result);
+        AssertCommon(src, result);
+        Assert.AreEqual(2, result.GapLeft);
+        Assert.AreEqual(2, result.GapRight);
+        Assert.AreEqual(2, result.GapTop);
+        Assert.AreEqual(2, result.GapBottom);
+        Assert.AreEqual(DoorMode.HingeFrontLeft, result.Mode);
+        Assert.IsFalse(result.IsOpen);
+    }
+
+    // ── RadialShelf → Assembled ───────────────────────────────────────
+
+    [Test]
+    public void RadialShelf_To_Assembled_PreservesCommon_DropsRadius_HasDefaultFill()
+    {
+        var src = Make<RadialShelfElement>("Src", new Vector3Int(600, 25, 600), Vector3.zero);
+        src.Movable = true;
+        src.GroupId = 37;
+        src.MaterialId = "white";
+
+        var result = (AssembledFacadeElement)ElementConverter.Convert(
+            src, ElementConverter.TargetType.AssembledFacade);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<AssembledFacadeElement>(result);
+        Assert.IsNotInstanceOf<RadialShelfElement>(result);
+        AssertCommon(src, result);
+        Assert.AreEqual(2, result.GapLeft);
+        Assert.AreEqual(2, result.GapRight);
+        Assert.AreEqual(2, result.GapTop);
+        Assert.AreEqual(2, result.GapBottom);
+        Assert.AreEqual(AssembledFill.Blind, result.Fill);
+        Assert.AreEqual(AppConstants.ASSEMBLED_DEFAULT_GROOVES, result.GrooveCount);
+    }
+
+    // ── Drawer conversions (no-op) ────────────────────────────────────
+
+    [Test]
+    public void Drawer_ToAnyType_ReturnsSameInstance()
+    {
+        var src = MakeDrawer("Src", new Vector3Int(600, 400, 18), Vector3.zero);
+        foreach (var target in new[] {
+            ElementConverter.TargetType.Part,
+            ElementConverter.TargetType.Facade,
+            ElementConverter.TargetType.AssembledFacade,
+            ElementConverter.TargetType.RadialShelf })
+        {
+            var result = ElementConverter.Convert(src, target);
+            Assert.AreSame(src, result, $"Drawer → {target} should be no-op");
+        }
+    }
+
+    [Test]
+    public void AnyType_ToDrawer_ReturnsSameInstance()
+    {
+        var part = Make<KitchenElement>("Part", new Vector3Int(600, 400, 18), Vector3.zero);
+        var result = ElementConverter.Convert(part, ElementConverter.TargetType.Drawer);
+        Assert.AreSame(part, result, "Any → Drawer should be no-op");
     }
 
     // ── Idempotency ────────────────────────────────────────────────────

@@ -34,6 +34,7 @@ namespace KitchenDesigner.Core.UI
         // ── Подсветка изменённых полей ──────────────────────────────────
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
         private int _applyFrame = -1;  // защита от двойного Apply
+        private bool _opening;  // защита от OnSelectionChanged → Close() внутри Open()
 
         // ── Раскладка ──────────────────────────────────────────────────
         // Меню собирается один раз (Build), а позиции пересчитываются в Layout
@@ -269,9 +270,12 @@ namespace KitchenDesigner.Core.UI
         }
 
         // Меню закрывается, когда выделение ушло с его детали (клик в пустоту,
-        // выбор другой детали, удаление).
+        // выбор другой детали, удаление). Не закрываем во время Open(), т.к.
+        // SelectionManager.Select → DeselectAll → OnSelectionChanged(null) иначе
+        // обнуляет _target и роняет RefreshTransformFields.
         private void OnSelectionChanged(KitchenElement element)
         {
+            if (_opening) return;
             if (_root == null || !_root.activeSelf) return;
             if (element == null || element != _target)
                 Close();
@@ -513,86 +517,94 @@ namespace KitchenDesigner.Core.UI
         public void Open(KitchenElement element)
         {
             if (element == null) return;
-            _target = element;
-            if (SelectionManager.Instance != null)
-                SelectionManager.Instance.Select(element);
-
-            bool isFacade = element is FacadeElement;
-            bool isRadial = element is RadialShelfElement;
-            bool isDrawer = element is DrawerElement;
-            if (_titleLabel != null)
-                _titleLabel.text = isDrawer ? "Ящик GTV" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
-
-            if (_typeDropdown != null)
+            _opening = true;
+            try
             {
-                _typeDropdown.SetValueWithoutNotify((int)ElementConverter.GetElementType(element));
-                _typeDropdown.RefreshShownValue();
+                _target = element;
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.Select(element);
+
+                bool isFacade = element is FacadeElement;
+                bool isRadial = element is RadialShelfElement;
+                bool isDrawer = element is DrawerElement;
+                if (_titleLabel != null)
+                    _titleLabel.text = isDrawer ? "Ящик GTV" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
+
+                if (_typeDropdown != null)
+                {
+                    _typeDropdown.SetValueWithoutNotify((int)ElementConverter.GetElementType(element));
+                    _typeDropdown.RefreshShownValue();
+                }
+
+                var dims = element.DimensionsMM;
+                _name.text = element.PartName;
+                _w.text = dims.x.ToString();
+                _h.text = dims.y.ToString();
+                _d.text = dims.z.ToString();
+                var radial = element as RadialShelfElement;
+                _radius.text = radial != null ? radial.Radius.ToString() : "300";
+
+                var facade = element as FacadeElement;
+                if (facade != null)
+                {
+                    _gapLeft.text = facade.GapLeft.ToString();
+                    _gapRight.text = facade.GapRight.ToString();
+                    _gapTop.text = facade.GapTop.ToString();
+                    _gapBottom.text = facade.GapBottom.ToString();
+                }
+                UpdateDoorButton(facade);
+                UpdateModeDropdown(facade);
+
+                var assembled = element as AssembledFacadeElement;
+                if (assembled != null && _fillDropdown != null)
+                    _fillDropdown.SetValueWithoutNotify(FillToIndex(assembled.Fill));
+
+                var drawer = element as DrawerElement;
+                if (drawer != null)
+                {
+                    if (_drawerTypeDropdown != null)
+                        _drawerTypeDropdown.SetValueWithoutNotify((int)drawer.Type);
+                    if (_drawerLengthDropdown != null)
+                        _drawerLengthDropdown.SetValueWithoutNotify(System.Array.IndexOf(DrawerConstants.ValidLengths, drawer.NominalLength));
+                    if (_drawerColorDropdown != null)
+                        _drawerColorDropdown.SetValueWithoutNotify((int)drawer.Color);
+                    if (_drawerWidth != null)
+                        _drawerWidth.text = drawer.InternalWidth.ToString();
+                    if (_drawerDoubleToggle != null)
+                        _drawerDoubleToggle.SetIsOnWithoutNotify(drawer.IsDouble);
+                    if (_drawerUpperToggle != null)
+                        _drawerUpperToggle.SetIsOnWithoutNotify(drawer.IsUpperDrawer);
+                    UpdateDrawerAnimButton(drawer);
+                    RebuildDrawerFacadeOptions();
+                    SetDrawerFacadeValue(drawer.AttachedFacadeName);
+                }
+
+                if (_materialDropdown != null)
+                {
+                    // Пересобираем список каждый раз — так подгруженные в рантайме
+                    // внешние текстуры появляются без перезапуска (reload_textures).
+                    RebuildMaterialOptions();
+                    _materialDropdown.SetValueWithoutNotify(MaterialIndex(element.MaterialId));
+                    _materialDropdown.RefreshShownValue();
+                }
+
+                // Пересчитываем раскладку под режим: секция зазоров показывается
+                // только для фасадов, радиус — только для радиусной полки, панель сама подгоняется по высоте.
+                Layout(isFacade, assembled != null, isRadial, isDrawer);
+
+                RefreshTransformFields();
+                _transparentToggle.SetIsOnWithoutNotify(element.Transparent);
+                _lockToggle.SetIsOnWithoutNotify(!element.Movable);
+
+                ClearAllHighlights();
+                TrackAllFields();
+
+                _root.SetActive(true);
             }
-
-            var dims = element.DimensionsMM;
-            _name.text = element.PartName;
-            _w.text = dims.x.ToString();
-            _h.text = dims.y.ToString();
-            _d.text = dims.z.ToString();
-            var radial = element as RadialShelfElement;
-            _radius.text = radial != null ? radial.Radius.ToString() : "300";
-
-            var facade = element as FacadeElement;
-            if (facade != null)
+            finally
             {
-                _gapLeft.text = facade.GapLeft.ToString();
-                _gapRight.text = facade.GapRight.ToString();
-                _gapTop.text = facade.GapTop.ToString();
-                _gapBottom.text = facade.GapBottom.ToString();
+                _opening = false;
             }
-            UpdateDoorButton(facade);
-            UpdateModeDropdown(facade);
-
-            var assembled = element as AssembledFacadeElement;
-            if (assembled != null && _fillDropdown != null)
-                _fillDropdown.SetValueWithoutNotify(FillToIndex(assembled.Fill));
-
-            var drawer = element as DrawerElement;
-            if (drawer != null)
-            {
-                if (_drawerTypeDropdown != null)
-                    _drawerTypeDropdown.SetValueWithoutNotify((int)drawer.Type);
-                if (_drawerLengthDropdown != null)
-                    _drawerLengthDropdown.SetValueWithoutNotify(System.Array.IndexOf(DrawerConstants.ValidLengths, drawer.NominalLength));
-                if (_drawerColorDropdown != null)
-                    _drawerColorDropdown.SetValueWithoutNotify((int)drawer.Color);
-                if (_drawerWidth != null)
-                    _drawerWidth.text = drawer.InternalWidth.ToString();
-                if (_drawerDoubleToggle != null)
-                    _drawerDoubleToggle.SetIsOnWithoutNotify(drawer.IsDouble);
-                if (_drawerUpperToggle != null)
-                    _drawerUpperToggle.SetIsOnWithoutNotify(drawer.IsUpperDrawer);
-                UpdateDrawerAnimButton(drawer);
-                RebuildDrawerFacadeOptions();
-                SetDrawerFacadeValue(drawer.AttachedFacadeName);
-            }
-
-            if (_materialDropdown != null)
-            {
-                // Пересобираем список каждый раз — так подгруженные в рантайме
-                // внешние текстуры появляются без перезапуска (reload_textures).
-                RebuildMaterialOptions();
-                _materialDropdown.SetValueWithoutNotify(MaterialIndex(element.MaterialId));
-                _materialDropdown.RefreshShownValue();
-            }
-
-            // Пересчитываем раскладку под режим: секция зазоров показывается
-            // только для фасадов, радиус — только для радиусной полки, панель сама подгоняется по высоте.
-            Layout(isFacade, assembled != null, isRadial, isDrawer);
-
-            RefreshTransformFields();
-            _transparentToggle.SetIsOnWithoutNotify(element.Transparent);
-            _lockToggle.SetIsOnWithoutNotify(!element.Movable);
-
-            ClearAllHighlights();
-            TrackAllFields();
-
-            _root.SetActive(true);
         }
 
         public void Close()
