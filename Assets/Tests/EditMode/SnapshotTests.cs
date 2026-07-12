@@ -385,7 +385,6 @@ public class SnapshotTests
             "settings_default", "settings_custom",
             "full_project_data",
             "undo_composite_two_moves", "undo_resize_command",
-            "undo_deep_chain_50_trimmed", "undo_deep_siblings_50_preserved",
         };
 
         var missing = new System.Text.StringBuilder();

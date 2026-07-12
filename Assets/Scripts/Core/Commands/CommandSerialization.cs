@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core
     /// попадает в сохранение — тогда команда в историю не пишется).</summary>
     public interface ISerializableCommand
     {
-        CommandRecord ToRecord(Func<KitchenElement, int> indexOf, int depth = 0);
+        CommandRecord ToRecord(Func<KitchenElement, int> indexOf);
     }
 
     /// <summary>Сериализуемая запись одной команды undo/redo. Плоская структура с
@@ -19,12 +19,9 @@ namespace KitchenDesigner.Core
     [Serializable]
     public class CommandRecord
     {
-        /// <summary>JsonUtility обрывает десериализацию на глубине 10.
-        /// Каждый уровень composite добавляет 2 к глубине JSON
-        /// (объект + массив children). Обёртка ProjectData→undoHistory = 2.
-        /// SafeDepth=3 → глубина 2+3×2=8, запас 2 уровня.</summary>
-        public const int SafeDepth = 3;
-
+        // composite-записи всегда сериализуются ПЛОСКО (один уровень children,
+        // см. CompositeCommand.ToRecord), поэтому глубина JSON ограничена
+        // константой и жёсткий лимит JsonUtility (10) не достигается.
         public string type;          // move | resize | composite
         public string description;
         public int elementIndex = -1;

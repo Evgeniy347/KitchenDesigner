@@ -59,7 +59,7 @@ namespace KitchenDesigner.Core
 
         public string Description => $"Move {_element?.PartName}";
 
-        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf, int depth = 0)
+        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
         {
             int idx = _element != null ? indexOf(_element) : -1;
             if (idx < 0) return null;
@@ -177,7 +177,7 @@ namespace KitchenDesigner.Core
 
         public string Description => $"Resize {_element?.PartName}";
 
-        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf, int depth = 0)
+        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
         {
             int idx = _element != null ? indexOf(_element) : -1;
             if (idx < 0) return null;
@@ -237,19 +237,16 @@ namespace KitchenDesigner.Core
             _commands = commands;
         }
 
-        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf, int depth = 0)
+        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
         {
-            if (depth >= CommandRecord.SafeDepth)
-                return null;
-
+            // Плоская сериализация: рекурсивно собираем ВСЕ листовые команды
+            // поддерева в один уровень children. Глубина JSON становится
+            // константой (~6) при любой вложенности composite — иначе JsonUtility
+            // на WebGL/IL2CPP жёстко падает при глубине сериализации >10.
+            // Семантика undo не теряется: composite и так отменяет все свои
+            // листовые команды атомарно, вложенность на это не влияет.
             var kids = new List<CommandRecord>();
-            int nextDepth = depth + 1;
-
-            foreach (var c in _commands)
-            {
-                var rec = (c as ISerializableCommand)?.ToRecord(indexOf, nextDepth);
-                if (rec != null) kids.Add(rec);
-            }
+            CollectLeafRecords(_commands, indexOf, kids);
             if (kids.Count == 0) return null;
             return new CommandRecord
             {
@@ -257,6 +254,21 @@ namespace KitchenDesigner.Core
                 description = Description,
                 children = kids.ToArray()
             };
+        }
+
+        private static void CollectLeafRecords(List<IUndoCommand> commands,
+            Func<KitchenElement, int> indexOf, List<CommandRecord> outList)
+        {
+            foreach (var c in commands)
+            {
+                if (c is CompositeCommand nested)
+                {
+                    CollectLeafRecords(nested._commands, indexOf, outList);
+                    continue;
+                }
+                var rec = (c as ISerializableCommand)?.ToRecord(indexOf);
+                if (rec != null) outList.Add(rec);
+            }
         }
 
         public void Execute()
