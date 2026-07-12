@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: a54395dbac6c4474b9f86481d55d2bb6
+guid: d0ba83f95e4ef2d42a70996b9f0d80d6
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Arial
+  - Liberation Sans
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

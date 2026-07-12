@@ -18,18 +18,20 @@ namespace KitchenDesigner.Core.UI
             {
                 if (_fontAsset == null)
                 {
-                    _fontAsset = Resources.Load<TMP_FontAsset>("Fonts/arial SDF");
-                    if (_fontAsset == null)
-                        _fontAsset = TMP_Settings.defaultFontAsset;
+                    _fontAsset = Resources.Load<TMP_FontAsset>("Fonts/LiberationSans SDF");
                     if (_fontAsset == null)
                     {
-                        var unityFont = Resources.Load<Font>("Fonts/arial");
+                        // Runtime-генерация раньше TMP-дефолта: дефолтный статический
+                        // атлас LiberationSans SDF не содержит кириллицы.
+                        var unityFont = Resources.Load<Font>("Fonts/LiberationSans");
                         if (unityFont != null)
                         {
                             _fontAsset = TMP_FontAsset.CreateFontAsset(unityFont);
-                            Debug.LogWarning("[UIFactory] TMPro font created at runtime — run Tools/Kitchen/Create TMP Font From Arial in Editor for better quality and no first-frame hitch.");
+                            Debug.LogWarning("[UIFactory] TMPro font created at runtime — run Tools/Kitchen/Create TMP Font From LiberationSans in Editor for better quality and no first-frame hitch.");
                         }
                     }
+                    if (_fontAsset == null)
+                        _fontAsset = TMP_Settings.defaultFontAsset;
                     if (_fontAsset == null)
                         Debug.LogError("[UIFactory] No TMP_FontAsset available!");
                 }

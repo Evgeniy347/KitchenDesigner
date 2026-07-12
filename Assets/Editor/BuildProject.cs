@@ -21,6 +21,7 @@ public static class BuildProject
         var sw = System.Diagnostics.Stopwatch.StartNew();
         Debug.Log("[BuildProject] Windows Debug — starting (development, incremental)...");
 
+        EnsureTMProFont();
         EnsureShadersIncluded();
         EnsureURPAssigned();
         EnsureWindowSettings();
@@ -140,7 +141,12 @@ public static class BuildProject
 
         PlayerSettings.SetManagedStrippingLevel(
             BuildTargetGroup.WebGL,
-            isDebug ? ManagedStrippingLevel.Disabled : ManagedStrippingLevel.High);
+            isDebug ? ManagedStrippingLevel.Low : ManagedStrippingLevel.High);
+
+        // Debug: C++ без оптимизаций — быстрее фаза emscripten/il2cpp.
+        PlayerSettings.SetIl2CppCompilerConfiguration(
+            UnityEditor.Build.NamedBuildTarget.WebGL,
+            isDebug ? Il2CppCompilerConfiguration.Debug : Il2CppCompilerConfiguration.Release);
 
         PlayerSettings.WebGL.dataCaching = false;
         PlayerSettings.WebGL.memorySize = isDebug ? 512 : 256;
@@ -152,7 +158,7 @@ public static class BuildProject
         EditorUserBuildSettings.connectProfiler = false;
         EditorUserBuildSettings.buildWithDeepProfilingSupport = false;
 
-        Debug.Log($"[BuildProject] WebGL configured: debug={isDebug}, stripping={(isDebug ? "off" : "high")}, exceptions={(isDebug ? "full" : "none")}");
+        Debug.Log($"[BuildProject] WebGL configured: debug={isDebug}, stripping={(isDebug ? "low" : "high")}, exceptions={(isDebug ? "full" : "none")}");
     }
 
     // ── Windows ────────────────────────────────────────────
@@ -160,6 +166,7 @@ public static class BuildProject
     private static void BuildWindows()
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
+        EnsureTMProFont();
         EnsureShadersIncluded();
         EnsureURPAssigned();
         EnsureWindowSettings();
@@ -303,14 +310,13 @@ public static class BuildProject
 
     private static void EnsureTMProFont()
     {
-        var sdfPath = "Assets/Resources/Fonts/arial SDF.asset";
-        if (AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(sdfPath) != null)
+        if (AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(CreateTMPFontFromLiberation.AssetPath) != null)
         {
             Debug.Log("[BuildProject] TMPro SDF font already exists, skipping");
             return;
         }
 
-        Debug.Log("[BuildProject] Creating TMPro SDF font from arial.ttf...");
-        CreateTMPFontFromArial.Create();
+        Debug.Log("[BuildProject] Creating TMPro SDF font from LiberationSans.ttf...");
+        CreateTMPFontFromLiberation.Create();
     }
 }
