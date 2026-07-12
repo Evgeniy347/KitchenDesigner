@@ -143,32 +143,10 @@ namespace KitchenDesigner.Core
         public ProjectData Deserialize(string json)
         {
             if (string.IsNullOrEmpty(json)) return null;
-            var data = JsonUtility.FromJson<ProjectData>(json);
-            if (data != null && HasDeepHistory(data))
-            {
-                Debug.LogWarning("[SaveLoad] undoHistory/redoHistory contain " +
-                    "deeply nested composites (depth > 10) — clearing stale history.");
-                data.undoHistory = new CommandRecord[0];
-                data.redoHistory = new CommandRecord[0];
-            }
-            return data;
-        }
-
-        private static bool HasDeepHistory(ProjectData data)
-        {
-            return HasDeepNesting(data.undoHistory, 0) ||
-                   HasDeepNesting(data.redoHistory, 0);
-        }
-
-        private static bool HasDeepNesting(CommandRecord[] records, int depth)
-        {
-            if (records == null) return false;
-            if (depth >= CommandRecord.SafeDepth + 2) return true;
-            foreach (var r in records)
-                if (r?.children != null && r.children.Length > 0 &&
-                    HasDeepNesting(r.children, depth + 1))
-                    return true;
-            return false;
+            // composite-история пишется плоско (CompositeCommand.ToRecord), поэтому
+            // глубоко вложенных записей, на которых падал JsonUtility, больше нет —
+            // защитная чистка истории при загрузке не нужна.
+            return JsonUtility.FromJson<ProjectData>(json);
         }
 
         public bool IsVersionCompatible(ProjectData data) =>
