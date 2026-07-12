@@ -9,6 +9,7 @@
 @inject IDbContextFactory<AppDbContext> DbFactory
 @inject AuthenticationStateProvider AuthProvider
 @inject McpSessionManager McpSessions
+@inject EditorNavState NavState
 @inject IJSRuntime JS
 
 @* The Unity WebGL client inside the iframe reads projectId and lockGuid from its
@@ -18,16 +19,7 @@
 <PageTitle>@_projectName — KitchenDesigner Editor</PageTitle>
 
 <div class="editor-page">
-    <div class="editor-toolbar">
-        <div class="editor-toolbar-left">
-            <a href="/projects" class="editor-back-link">← Projects</a>
-            <span class="editor-project-name">@_projectName</span>
-        </div>
-        <div class="editor-toolbar-right">
-            <span class="editor-project-id" title="Project ID: @ProjectId">ID: @ProjectId.ToString()[..8]</span>
-        </div>
-    </div>
-
+    @* Project name/ID live in the top-nav (see EditorNavInfo) — no separate toolbar row. *@
     @if (!string.IsNullOrEmpty(_error))
     {
         <div class="editor-error-banner">@_error</div>
@@ -106,6 +98,7 @@
                          (mcpSession != null ? $"&mcpKey={Uri.EscapeDataString(mcpSession.AccessKey)}" : "");
 
             _ready = true;
+            NavState.Set(_projectName, ProjectId);
         }
         catch (Exception ex)
         {
@@ -130,6 +123,7 @@
 
     public async ValueTask DisposeAsync()
     {
+        NavState.Clear();
         await ReleaseLock();
     }
 }
