@@ -250,7 +250,7 @@ namespace KitchenDesigner.Core.UI
             AddRow(26f, 0f, _lockToggle.GetComponent<RectTransform>());
 
             // Кнопка закрытия живёт в углу панели, вне потока раскладки.
-            var closeBtn = UIFactory.CreateButton("CtxClose", panel.transform, "✕",
+            var closeBtn = UIFactory.CreateButton("CtxClose", panel.transform, "×",
                 Vector2.zero, new Vector2(24, 24), Close);
             UIFactory.AnchorTopRight(closeBtn.GetComponent<RectTransform>());
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
