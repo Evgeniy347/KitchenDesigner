@@ -82,8 +82,12 @@ namespace KitchenDesigner.Core.UI
             // Понятные значки вместо текста.
             AddIconButton(bar.transform, "Settings", IconFactory.Gear, ref x, y, h, ToggleSettings);
             AddIconButton(bar.transform, "Save", IconFactory.Floppy, ref x, y, h, SaveCurrent);
+#if !UNITY_WEBGL
+            // На WebGL проекты выбираются на сайте (/projects), внутри Unity
+            // открыт конкретный проект — «Сохранить как» и «Загрузить» не нужны.
             AddIconButton(bar.transform, "SaveAs", IconFactory.FloppyPlus, ref x, y, h, SaveAs);
             AddIconButton(bar.transform, "Load", IconFactory.Folder, ref x, y, h, LoadDialog);
+#endif
 
             x += 12;
             _undoButton = AddIconButton(bar.transform, "Undo", IconFactory.Undo, ref x, y, h, DoUndo);
