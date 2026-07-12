@@ -44,7 +44,7 @@ namespace KitchenDesigner.Core.Networking
         public string CurrentProjectId
         {
             get => PlayerPrefs.GetString(ProjectIdKey, "");
-            private set
+            internal set
             {
                 PlayerPrefs.SetString(ProjectIdKey, value ?? "");
                 PlayerPrefs.Save();
