@@ -68,8 +68,11 @@ h1:focus { outline: none; }
 .logout-form { display: inline; margin: 0; }
 .nav-logout { color: #ff6b6b; background: none; border: none; cursor: pointer; font-family: inherit; }
 
-.main-content { flex: 1; display: flex; }
-
+.main-content { flex: 1; } 
+    .main-content:has(.editor-page) {
+        flex: 1;
+        display: flex;
+    }
 /* ══════════════════════════════════════════════════════════════
    HOME page (.home-*)
    ══════════════════════════════════════════════════════════════ */
