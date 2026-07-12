@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,8 +12,8 @@ namespace KitchenDesigner.Core.UI
         private GameObject _root;
         private KitchenElement _floorElement;
 
-        private InputField _w, _h, _d, _x, _y, _z;
-        private readonly Dictionary<InputField, string> _cleanValues = new();
+        private TMP_InputField _w, _h, _d, _x, _y, _z;
+        private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
         private int _applyFrame = -1;
 
         private void Awake()
@@ -38,8 +39,8 @@ namespace KitchenDesigner.Core.UI
             _y = Row(panel.transform, "Y, м", ref y, rowStep);
             _z = Row(panel.transform, "Z, м", ref y, rowStep);
 
-            foreach (var f in new[] { _w, _h, _d }) f.contentType = InputField.ContentType.IntegerNumber;
-            foreach (var f in new[] { _x, _y, _z }) f.contentType = InputField.ContentType.DecimalNumber;
+            foreach (var f in new[] { _w, _h, _d }) f.contentType = TMP_InputField.ContentType.IntegerNumber;
+            foreach (var f in new[] { _x, _y, _z }) f.contentType = TMP_InputField.ContentType.DecimalNumber;
 
             UIFactory.CreateButton("FlrApply", panel.transform, "Применить",
                 new Vector2(0, y - buttonGap), new Vector2(248, 32), Apply);
@@ -61,7 +62,7 @@ namespace KitchenDesigner.Core.UI
             _root.SetActive(false);
         }
 
-        private InputField Row(Transform parent, string label, ref float y, float step)
+        private TMP_InputField Row(Transform parent, string label, ref float y, float step)
         {
             UIFactory.CreateLabel("L_" + label, parent, label, 15, new Vector2(-72, y), new Vector2(130, 24));
             var field = UIFactory.CreateInputField("F_" + label, parent, "", new Vector2(82, y), new Vector2(100, 24));
@@ -160,7 +161,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Подсветка изменённых полей ──────────────────────────────────
 
-        private void TrackField(InputField field, string cleanValue)
+        private void TrackField(TMP_InputField field, string cleanValue)
         {
             if (field == null) return;
             _cleanValues[field] = cleanValue;
@@ -177,7 +178,7 @@ namespace KitchenDesigner.Core.UI
             Apply();
         }
 
-        private void UpdateFieldHighlight(InputField field)
+        private void UpdateFieldHighlight(TMP_InputField field)
         {
             if (field == null) return;
             var clean = _cleanValues.TryGetValue(field, out var v) ? v : field.text;

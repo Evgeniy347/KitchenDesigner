@@ -1,4 +1,5 @@
 using System.Text;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,7 +9,7 @@ namespace KitchenDesigner.Core.UI
     public class SpecificationPanelUI : MonoBehaviour
     {
         private GameObject _root;
-        private Text _content;
+        private TMP_Text _content;
 
         public void Build(Transform canvas)
         {

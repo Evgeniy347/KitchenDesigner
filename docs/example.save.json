@@ -22,12 +22,30 @@
             "movable": false,
             "isWall": true,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "LeftWall",
@@ -50,12 +68,30 @@
             "movable": false,
             "isWall": true,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A5_Refrigerator",
@@ -78,12 +114,30 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A",
@@ -106,12 +160,30 @@
             "movable": false,
             "isWall": true,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B",
@@ -134,24 +206,42 @@
             "movable": false,
             "isWall": true,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A2_side_A3",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                1.2940000295639039,
+                1.315000057220459,
                 0.46000000834465029,
-                -2.428999900817871
+                -2.4710631370544435
             ],
             "rotation": [
                 0.0,
@@ -159,27 +249,45 @@
                 0.0,
                 1.0
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A12_bottom",
             "dimensionsMM": [
-                582,
-                1182,
+                540,
+                1140,
                 16
             ],
             "position": [
-                1.2940000295639039,
+                1.315000057220459,
                 0.10999999940395355,
-                -3.0290000438690187
+                -3.049999952316284
             ],
             "rotation": [
                 -0.7071068286895752,
@@ -187,15 +295,33 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A2_A_planck",
@@ -205,9 +331,9 @@
                 18
             ],
             "position": [
-                0.9940000772476196,
-                0.46000003814697268,
-                -2.990499973297119
+                1.0360000133514405,
+                0.46000000834465029,
+                -3.0325000286102297
             ],
             "rotation": [
                 0.0,
@@ -215,43 +341,33 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
-        },
-        {
-            "name": "A2_door",
-            "dimensionsMM": [
-                537,
-                716,
-                18
-            ],
-            "position": [
-                0.9940000176429749,
-                0.46000000834465029,
-                -2.690500020980835
-            ],
-            "rotation": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "movable": false,
-            "isWall": false,
-            "isFacade": true,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
-            "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B1_B2_planck",
@@ -261,9 +377,9 @@
                 18
             ],
             "position": [
-                0.9645000100135803,
+                1.006500005722046,
                 0.46000000834465029,
-                -3.0290000438690187
+                -3.071000099182129
             ],
             "rotation": [
                 0.0,
@@ -274,24 +390,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B1_side_L",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                0.9940000176429749,
+                1.0360000133514405,
                 0.46000000834465029,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.0,
@@ -302,24 +436,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B2_side_R",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                0.9760000109672546,
+                1.0180000066757203,
                 0.46000000834465029,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.0,
@@ -330,24 +482,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B2_side_L",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                0.39399999380111697,
+                0.4359999895095825,
                 0.46000000834465029,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.0,
@@ -358,24 +528,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B2_bottom",
             "dimensionsMM": [
                 564,
-                582,
+                540,
                 16
             ],
             "position": [
-                0.6850000023841858,
+                0.7269999980926514,
                 0.1080000028014183,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.7071068286895752,
@@ -386,80 +574,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
-        },
-        {
-            "name": "B2_door",
-            "dimensionsMM": [
-                533,
-                716,
-                18
-            ],
-            "position": [
-                0.6554999947547913,
-                0.46000000834465029,
-                -3.0290000438690187
-            ],
-            "rotation": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "movable": false,
-            "isWall": false,
-            "isFacade": true,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
-            "groupId": 0,
-            "materialId": "default"
-        },
-        {
-            "name": "B3_door",
-            "dimensionsMM": [
-                596,
-                716,
-                18
-            ],
-            "position": [
-                0.08500000089406967,
-                0.46000000834465029,
-                -3.0290000438690187
-            ],
-            "rotation": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "movable": false,
-            "isWall": false,
-            "isFacade": true,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
-            "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B4_side_R",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                -0.2240000069141388,
+                -0.18199999630451203,
                 0.46000000834465029,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.0,
@@ -470,24 +620,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B4_side_L",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                -0.8059999942779541,
+                -0.7639999985694885,
                 0.46000000834465029,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.0,
@@ -498,24 +666,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B4_bottom",
             "dimensionsMM": [
                 564,
-                582,
+                540,
                 16
             ],
             "position": [
-                -0.5149999856948853,
+                -0.4729999899864197,
                 0.1080000028014183,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.7071068286895752,
@@ -526,12 +712,30 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B4_drawer",
@@ -541,37 +745,55 @@
                 18
             ],
             "position": [
-                -0.5149999856948853,
+                -0.4729999899864197,
                 0.16249999403953553,
-                -3.0290000438690187
+                -3.071000099182129
             ],
             "rotation": [
                 0.0,
+                1.0,
                 0.0,
-                0.0,
-                1.0
+                -4.371138828673793e-8
             ],
             "movable": false,
             "isWall": false,
             "isFacade": true,
+            "isRadialShelf": false,
             "gapLeft": 2,
             "gapRight": 2,
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 12,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B4_shelf",
             "dimensionsMM": [
                 564,
-                582,
+                540,
                 16
             ],
             "position": [
-                -0.5149999856948853,
+                -0.4729999899864197,
                 0.2329999953508377,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.7071068286895752,
@@ -582,24 +804,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B5_side_R",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                -0.8240000009536743,
+                -0.7820000052452087,
                 0.46000000834465029,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.0,
@@ -610,24 +850,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B5_side_L",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                -1.406000018119812,
+                -1.3639999628067017,
                 0.46000000834465029,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.0,
@@ -638,24 +896,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "B5_bottom",
             "dimensionsMM": [
                 564,
-                582,
+                540,
                 16
             ],
             "position": [
-                -1.1150000095367432,
+                -1.0729999542236329,
                 0.1080000028014183,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.7071068286895752,
@@ -666,80 +942,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
-        },
-        {
-            "name": "B5_drawer_lower",
-            "dimensionsMM": [
-                596,
-                356,
-                18
-            ],
-            "position": [
-                -1.1150000095367432,
-                0.2800000011920929,
-                -3.0290000438690187
-            ],
-            "rotation": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "movable": false,
-            "isWall": false,
-            "isFacade": true,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
-            "groupId": 0,
-            "materialId": "default"
-        },
-        {
-            "name": "B5_drawer_upper",
-            "dimensionsMM": [
-                596,
-                356,
-                18
-            ],
-            "position": [
-                -1.1150000095367432,
-                0.6399999856948853,
-                -3.0290000438690187
-            ],
-            "rotation": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "movable": false,
-            "isWall": false,
-            "isFacade": true,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
-            "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "K2_side_R",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                -1.4240000247955323,
+                -1.3819999694824219,
                 0.46000000834465029,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.0,
@@ -750,24 +988,42 @@
             "movable": false,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "K2_side_L",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                -1.5759999752044678,
+                -1.5760000944137574,
                 0.46000000834465029,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.0,
@@ -775,27 +1031,45 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "K2_bottom",
             "dimensionsMM": [
-                134,
-                582,
+                176,
+                540,
                 16
             ],
             "position": [
-                -1.5,
+                -1.4789999723434449,
                 0.1080000028014183,
-                -3.3289999961853029
+                -3.3499999046325685
             ],
             "rotation": [
                 0.7071068286895752,
@@ -803,55 +1077,91 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "K2_door",
             "dimensionsMM": [
-                146,
+                178,
                 716,
                 18
             ],
             "position": [
-                -1.4900000095367432,
+                -1.4639999866485596,
                 0.46000000834465029,
-                -3.0290000438690187
+                -3.071000099182129
             ],
             "rotation": [
                 0.0,
+                1.0,
                 0.0,
-                0.0,
-                1.0
+                -4.371138828673793e-8
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": true,
+            "isRadialShelf": false,
             "gapLeft": 2,
             "gapRight": 2,
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "K2_planck",
             "dimensionsMM": [
-                20,
+                30,
                 720,
                 18
             ],
             "position": [
-                -1.5750000476837159,
+                -1.5700000524520875,
                 0.46000000834465029,
-                -3.0290000438690187
+                -3.071000099182129
             ],
             "rotation": [
                 0.0,
@@ -859,27 +1169,45 @@
                 0.0,
                 1.0
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A3_side_L",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                1.2940000295639039,
+                1.315000057220459,
                 0.46000000834465029,
-                -2.4110000133514406
+                -2.4530630111694338
             ],
             "rotation": [
                 0.0,
@@ -887,27 +1215,45 @@
                 0.0,
                 1.0
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A3_side_R",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                1.2940000295639039,
+                1.315000057220459,
                 0.46000000834465029,
-                -1.8289999961853028
+                -1.8710628747940064
             ],
             "rotation": [
                 0.0,
@@ -915,27 +1261,45 @@
                 0.0,
                 1.0
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A3_bottom",
             "dimensionsMM": [
-                582,
+                540,
                 564,
                 16
             ],
             "position": [
-                1.2940000295639039,
-                0.1080000028014183,
-                -2.119999885559082
+                1.315000057220459,
+                0.10799999535083771,
+                -2.162062883377075
             ],
             "rotation": [
                 0.7071068286895752,
@@ -943,83 +1307,45 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
-        },
-        {
-            "name": "A3_drawer_lower",
-            "dimensionsMM": [
-                596,
-                356,
-                18
-            ],
-            "position": [
-                0.9940000176429749,
-                0.2800000011920929,
-                -2.119999885559082
-            ],
-            "rotation": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "movable": false,
-            "isWall": false,
-            "isFacade": true,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
-            "groupId": 0,
-            "materialId": "default"
-        },
-        {
-            "name": "A3_drawer_upper",
-            "dimensionsMM": [
-                596,
-                356,
-                18
-            ],
-            "position": [
-                0.9940000176429749,
-                0.6399999856948853,
-                -2.119999885559082
-            ],
-            "rotation": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "movable": false,
-            "isWall": false,
-            "isFacade": true,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
-            "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A4_side_L",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                1.2940000295639039,
+                1.315000057220459,
                 0.46000000834465029,
-                -1.8109999895095826
+                -1.8530629873275757
             ],
             "rotation": [
                 0.0,
@@ -1027,27 +1353,45 @@
                 0.0,
                 1.0
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A4_side_R",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                1.2940000295639039,
+                1.315000057220459,
                 0.46000000834465029,
-                -1.2289999723434449
+                -1.2710635662078858
             ],
             "rotation": [
                 0.0,
@@ -1055,27 +1399,45 @@
                 0.0,
                 1.0
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A4_bottom",
             "dimensionsMM": [
-                582,
+                540,
                 564,
                 16
             ],
             "position": [
-                1.2940000295639039,
-                0.1080000028014183,
-                -1.5199999809265137
+                1.315000057220459,
+                0.10799999535083771,
+                -1.5620629787445069
             ],
             "rotation": [
                 0.7071068286895752,
@@ -1083,27 +1445,45 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "K1_side_L",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                1.2940000295639039,
+                1.315000057220459,
                 0.46000000834465029,
-                -1.2109999656677247
+                -1.2530632019042969
             ],
             "rotation": [
                 0.0,
@@ -1111,27 +1491,45 @@
                 0.0,
                 1.0
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "K1_side_R",
             "dimensionsMM": [
-                582,
+                540,
                 720,
                 18
             ],
             "position": [
-                1.2940000295639039,
+                1.315000057220459,
                 0.46000000834465029,
-                -1.0789999961853028
+                -1.0739998817443848
             ],
             "rotation": [
                 0.0,
@@ -1139,27 +1537,45 @@
                 0.0,
                 1.0
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "K1_bottom",
             "dimensionsMM": [
-                582,
-                114,
+                540,
+                161,
                 16
             ],
             "position": [
-                1.2940000295639039,
-                0.1080000028014183,
-                -1.1449999809265137
+                1.315000057220459,
+                0.10799999535083771,
+                -1.1634998321533204
             ],
             "rotation": [
                 0.7071068286895752,
@@ -1167,27 +1583,45 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
-            "name": "A4_drawer_lower",
+            "name": "K1_door",
             "dimensionsMM": [
-                596,
-                356,
+                191,
+                716,
                 18
             ],
             "position": [
-                0.9940000176429749,
-                0.2800000011920929,
-                -1.5199999809265137
+                1.0360000133514405,
+                0.46000000834465029,
+                -1.1640000343322755
             ],
             "rotation": [
                 0.0,
@@ -1195,15 +1629,1413 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": true,
+            "isRadialShelf": false,
             "gapLeft": 2,
             "gapRight": 2,
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 1,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "Countertop_A",
+            "dimensionsMM": [
+                600,
+                40,
+                2555
+            ],
+            "position": [
+                1.284999966621399,
+                0.8399999737739563,
+                -2.3424999713897707
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": true,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "Countertop_B",
+            "dimensionsMM": [
+                2570,
+                40,
+                600
+            ],
+            "position": [
+                -0.30000001192092898,
+                0.8399999737739563,
+                -3.319999933242798
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": true,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A12_upper_A_bottom",
+            "dimensionsMM": [
+                332,
+                1090,
+                18
+            ],
+            "position": [
+                1.4190000295639039,
+                1.36899995803833,
+                -3.075000047683716
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A12_upper_A_top",
+            "dimensionsMM": [
+                332,
+                1090,
+                18
+            ],
+            "position": [
+                1.4190000295639039,
+                2.250999927520752,
+                -3.075000047683716
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A12_upper_B_planck",
+            "dimensionsMM": [
+                58,
+                900,
+                18
+            ],
+            "position": [
+                1.2060000896453858,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A12_upper_A_side",
+            "dimensionsMM": [
+                408,
+                900,
+                18
+            ],
+            "position": [
+                1.2440000772476197,
+                1.8100000619888306,
+                -3.4160003662109377
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B3_upper_side_L",
+            "dimensionsMM": [
+                18,
+                900,
+                332
+            ],
+            "position": [
+                -0.164000004529953,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B4_upper_bottom",
+            "dimensionsMM": [
+                564,
+                332,
+                18
+            ],
+            "position": [
+                -0.4729999899864197,
+                1.36899995803833,
+                -3.4539999961853029
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B4_upper_top",
+            "dimensionsMM": [
+                564,
+                332,
+                18
+            ],
+            "position": [
+                -0.4729999899864197,
+                2.250999927520752,
+                -3.4539999961853029
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B4_upper_side_L",
+            "dimensionsMM": [
+                18,
+                900,
+                332
+            ],
+            "position": [
+                -0.7639999985694885,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B4_upper_side_R",
+            "dimensionsMM": [
+                18,
+                900,
+                332
+            ],
+            "position": [
+                -0.18199999630451203,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A34K1_upper_bottom",
+            "dimensionsMM": [
+                332,
+                1364,
+                18
+            ],
+            "position": [
+                1.4190000295639039,
+                1.36899995803833,
+                -1.8119999170303345
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A34K1_upper_top",
+            "dimensionsMM": [
+                332,
+                1364,
+                18
+            ],
+            "position": [
+                1.4190000295639039,
+                2.250999927520752,
+                -1.8119999170303345
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A34K1_upper_side_L",
+            "dimensionsMM": [
+                332,
+                900,
+                18
+            ],
+            "position": [
+                1.4190000295639039,
+                1.809999942779541,
+                -2.503000020980835
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A34K1_upper_side_R",
+            "dimensionsMM": [
+                332,
+                900,
+                18
+            ],
+            "position": [
+                1.4190000295639039,
+                1.809999942779541,
+                -1.121000051498413
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B23_upper_bottom",
+            "dimensionsMM": [
+                1372,
+                332,
+                18
+            ],
+            "position": [
+                0.531000018119812,
+                1.36899995803833,
+                -3.4539999961853029
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B23_upper_top",
+            "dimensionsMM": [
+                1372,
+                332,
+                18
+            ],
+            "position": [
+                0.531000018119812,
+                2.250999927520752,
+                -3.4539999961853029
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B23_upper_side_R",
+            "dimensionsMM": [
+                18,
+                900,
+                332
+            ],
+            "position": [
+                1.2259999513626099,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A12_upper_B_side_L",
+            "dimensionsMM": [
+                18,
+                900,
+                332
+            ],
+            "position": [
+                1.4190000295639039,
+                1.809999942779541,
+                -2.5210001468658449
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B3_fake_bottom",
+            "dimensionsMM": [
+                564,
+                540,
+                16
+            ],
+            "position": [
+                0.12700000405311585,
+                0.1080000028014183,
+                -3.3499999046325685
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B5_upper_back",
+            "dimensionsMM": [
+                18,
+                900,
+                332
+            ],
+            "position": [
+                -0.9390000104904175,
+                1.809999942779541,
+                -3.6110000610351564
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B45_upper_shelf_1",
+            "dimensionsMM": [
+                300,
+                18,
+                300
+            ],
+            "position": [
+                -0.7730000019073486,
+                1.5099999904632569,
+                -3.619999885559082
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": true,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 300,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B45_upper_shelf_2",
+            "dimensionsMM": [
+                300,
+                18,
+                300
+            ],
+            "position": [
+                -0.7730000019073486,
+                1.809999942779541,
+                -3.619999885559082
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": true,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 300,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B45_upper_shelf_3",
+            "dimensionsMM": [
+                300,
+                18,
+                300
+            ],
+            "position": [
+                -0.7730000019073486,
+                2.109999895095825,
+                -3.619999885559082
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": true,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 300,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A12_upper_door",
+            "dimensionsMM": [
+                694,
+                896,
+                18
+            ],
+            "position": [
+                1.24399995803833,
+                1.809999942779541,
+                -2.861999988555908
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B23_upper_door_L",
+            "dimensionsMM": [
+                671,
+                896,
+                18
+            ],
+            "position": [
+                0.8395000696182251,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 1,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B23_upper_door_R",
+            "dimensionsMM": [
+                671,
+                896,
+                18
+            ],
+            "position": [
+                0.16449999809265138,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B4_upper_door",
+            "dimensionsMM": [
+                596,
+                896,
+                18
+            ],
+            "position": [
+                -0.4729999899864197,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A34K1_upper_door_R",
+            "dimensionsMM": [
+                694,
+                896,
+                18
+            ],
+            "position": [
+                1.24399995803833,
+                1.809999942779541,
+                -1.4620000123977662
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 1,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A2_door",
+            "dimensionsMM": [
+                537,
+                716,
+                18
+            ],
+            "position": [
+                1.0360000133514405,
+                0.46000000834465029,
+                -2.732499837875366
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
             "name": "A4_drawer_upper",
@@ -1213,64 +3045,422 @@
                 18
             ],
             "position": [
-                0.9940000176429749,
+                1.0360000133514405,
                 0.6399999856948853,
-                -1.5199999809265137
+                -1.562000036239624
             ],
             "rotation": [
                 0.0,
                 0.7071068286895752,
                 0.0,
-                0.7071068286895752
+                -0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": true,
+            "isRadialShelf": false,
             "gapLeft": 2,
             "gapRight": 2,
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 12,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         },
         {
-            "name": "K1_door",
+            "name": "A4_drawer_lower",
             "dimensionsMM": [
-                146,
+                596,
+                356,
+                18
+            ],
+            "position": [
+                1.0360000133514405,
+                0.2800000011920929,
+                -1.562000036239624
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 12,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B2_door",
+            "dimensionsMM": [
+                537,
                 716,
                 18
             ],
             "position": [
-                0.9940000176429749,
+                0.6974999904632568,
                 0.46000000834465029,
-                -1.1449999809265137
+                -3.071000099182129
             ],
             "rotation": [
                 0.0,
-                0.7071068286895752,
                 0.0,
-                0.7071068286895752
+                0.0,
+                1.0
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": true,
+            "isRadialShelf": false,
             "gapLeft": 2,
             "gapRight": 2,
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default"
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B3_door",
+            "dimensionsMM": [
+                596,
+                716,
+                18
+            ],
+            "position": [
+                0.12700000405311585,
+                0.46000000834465029,
+                -3.071000099182129
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A3_drawer_lower",
+            "dimensionsMM": [
+                596,
+                356,
+                18
+            ],
+            "position": [
+                1.0360000133514405,
+                0.2800000011920929,
+                -2.1619999408721926
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 12,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A3_drawer_upper",
+            "dimensionsMM": [
+                596,
+                356,
+                18
+            ],
+            "position": [
+                1.0360000133514405,
+                0.6399999856948853,
+                -2.1619999408721926
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 12,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B5_drawer_lower",
+            "dimensionsMM": [
+                596,
+                356,
+                18
+            ],
+            "position": [
+                -1.0729999542236329,
+                0.2800000011920929,
+                -3.071000099182129
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 12,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "B5_drawer_upper",
+            "dimensionsMM": [
+                596,
+                356,
+                18
+            ],
+            "position": [
+                -1.0729999542236329,
+                0.6399999856948853,
+                -3.071000099182129
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 12,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "A34K1_upper_door_L",
+            "dimensionsMM": [
+                694,
+                896,
+                18
+            ],
+            "position": [
+                1.24399995803833,
+                1.809999942779541,
+                -2.1619999408721926
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": true,
+            "assembledFill": 0,
+            "grooveCount": 1,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         }
     ],
     "groups": [],
     "camera": {
         "valid": true,
-        "targetX": 0.4975370466709137,
+        "targetX": -0.7921285629272461,
         "targetY": 0.46000000834465029,
-        "targetZ": -3.0634796619415285,
-        "angleX": 32.600059509277347,
-        "angleY": 513.898193359375,
-        "distance": 4.899997234344482
+        "targetZ": -2.736619710922241,
+        "angleX": 8.770732879638672,
+        "angleY": 654.624267578125,
+        "distance": 3.5686936378479006
     },
     "handleMode": "Move",
     "basePlateValid": true,
@@ -1295,27 +3485,75 @@
         "movable": true,
         "isWall": false,
         "isFacade": false,
-        "gapLeft": 2,
-        "gapRight": 2,
-        "gapTop": 2,
-        "gapBottom": 2,
+        "isRadialShelf": false,
+        "gapLeft": 0,
+        "gapRight": 0,
+        "gapTop": 0,
+        "gapBottom": 0,
         "groupId": 0,
-        "materialId": "default"
+        "materialId": "default",
+        "transparent": false,
+        "doorMode": 0,
+        "doorOpen": false,
+        "assembled": false,
+        "assembledFill": 0,
+        "grooveCount": 0,
+        "radius": 0,
+        "isDrawer": false,
+        "drawerType": 0,
+        "drawerNominalLength": 350,
+        "drawerColor": 0,
+        "drawerInternalWidth": 400,
+        "drawerIsDouble": false,
+        "drawerIsUpper": false,
+        "drawerPairedName": "",
+        "drawerAttachedFacadeName": "",
+        "doubleDrawerState": 0
     },
     "undoHistory": [
         {
             "type": "move",
-            "description": "Move A3_drawer_lower",
-            "elementIndex": 34,
+            "description": "Move A12_upper_door",
+            "elementIndex": 60,
             "posBefore": [
-                0.9940000176429749,
-                0.2800000011920929,
-                -2.119999885559082
+                1.24399995803833,
+                1.812000036239624,
+                -2.861999988555908
             ],
             "posAfter": [
-                0.9940000176429749,
-                0.2800000011920929,
-                -2.119999885559082
+                1.24399995803833,
+                1.809999942779541,
+                -2.861999988555908
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B23_upper_door_L",
+            "elementIndex": 61,
+            "posBefore": [
+                0.8399999737739563,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.8399999737739563,
+                1.809999942779541,
+                -3.2790000438690187
             ],
             "rotBefore": [
                 0.0,
@@ -1325,27 +3563,35 @@
             ],
             "rotAfter": [
                 0.0,
-                0.7071067690849304,
                 0.0,
-                0.7071067690849304
+                0.0,
+                1.0
             ],
-            "dimsBefore": [],
-            "dimsAfter": [],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
             "children": []
         },
         {
-            "type": "move",
-            "description": "Move A3_drawer_upper",
-            "elementIndex": 35,
+            "type": "resize",
+            "description": "Resize B23_upper_door_L",
+            "elementIndex": 61,
             "posBefore": [
-                0.9940000176429749,
-                0.6399999856948853,
-                -2.119999885559082
+                0.8399999737739563,
+                1.809999942779541,
+                -3.2790000438690187
             ],
             "posAfter": [
-                0.9940000176429749,
-                0.6399999856948853,
-                -2.119999885559082
+                0.8399999737739563,
+                1.809999942779541,
+                -3.2790000438690187
             ],
             "rotBefore": [
                 0.0,
@@ -1355,87 +3601,35 @@
             ],
             "rotAfter": [
                 0.0,
-                0.7071067690849304,
-                0.0,
-                0.7071067690849304
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_bottom",
-            "elementIndex": 38,
-            "posBefore": [
-                1.2940000295639039,
-                0.1080000028014183,
-                -1.5199999809265137
-            ],
-            "posAfter": [
-                1.2940000295639039,
-                0.1080000028014183,
-                -1.5199999809265137
-            ],
-            "rotBefore": [
-                0.0,
                 0.0,
                 0.0,
                 1.0
             ],
-            "rotAfter": [
-                0.7071067690849304,
-                0.0,
-                0.0,
-                -0.7071067690849304
+            "dimsBefore": [
+                671,
+                896,
+                18
             ],
-            "dimsBefore": [],
-            "dimsAfter": [],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
             "children": []
         },
         {
-            "type": "move",
-            "description": "Move K1_bottom",
-            "elementIndex": 41,
+            "type": "resize",
+            "description": "Resize B23_upper_door_L",
+            "elementIndex": 61,
             "posBefore": [
-                1.2940000295639039,
-                0.1080000028014183,
-                -1.1449999809265137
+                0.8399999737739563,
+                1.809999942779541,
+                -3.2790000438690187
             ],
             "posAfter": [
-                1.2940000295639039,
-                0.1080000028014183,
-                -1.1449999809265137
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.7071067690849304,
-                0.0,
-                0.0,
-                -0.7071067690849304
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_drawer_lower",
-            "elementIndex": 42,
-            "posBefore": [
-                0.9940000176429749,
-                0.2800000011920929,
-                -1.5199999809265137
-            ],
-            "posAfter": [
-                0.9940000176429749,
-                0.2800000011920929,
-                -1.5199999809265137
+                0.8399999737739563,
+                1.809999942779541,
+                -3.2790000438690187
             ],
             "rotBefore": [
                 0.0,
@@ -1445,27 +3639,35 @@
             ],
             "rotAfter": [
                 0.0,
-                0.7071067690849304,
                 0.0,
-                0.7071067690849304
+                0.0,
+                1.0
             ],
-            "dimsBefore": [],
-            "dimsAfter": [],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
             "children": []
         },
         {
-            "type": "move",
-            "description": "Move A4_drawer_upper",
-            "elementIndex": 43,
+            "type": "resize",
+            "description": "Resize B23_upper_door_L",
+            "elementIndex": 61,
             "posBefore": [
-                0.9940000176429749,
-                0.6399999856948853,
-                -1.5199999809265137
+                0.8399999737739563,
+                1.809999942779541,
+                -3.2790000438690187
             ],
             "posAfter": [
-                0.9940000176429749,
-                0.6399999856948853,
-                -1.5199999809265137
+                0.8399999737739563,
+                1.809999942779541,
+                -3.2790000438690187
             ],
             "rotBefore": [
                 0.0,
@@ -1475,27 +3677,513 @@
             ],
             "rotAfter": [
                 0.0,
-                0.7071067690849304,
                 0.0,
-                0.7071067690849304
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B23_upper_door_R",
+            "elementIndex": 62,
+            "posBefore": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B23_upper_door_R",
+            "elementIndex": 62,
+            "posBefore": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B23_upper_door_R",
+            "elementIndex": 62,
+            "posBefore": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B23_upper_door_R",
+            "elementIndex": 62,
+            "posBefore": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_upper_door",
+            "elementIndex": 63,
+            "posBefore": [
+                -0.4729999899864197,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                596,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                596,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_upper_door",
+            "elementIndex": 63,
+            "posBefore": [
+                -0.4729999899864197,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                596,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                596,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_upper_door",
+            "elementIndex": 63,
+            "posBefore": [
+                -0.4729999899864197,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                596,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                596,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_upper_door",
+            "elementIndex": 63,
+            "posBefore": [
+                -0.4729999899864197,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                596,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                596,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B23_upper_door_L",
+            "elementIndex": 61,
+            "posBefore": [
+                0.8399999737739563,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.8395000696182251,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
             ],
             "dimsBefore": [],
             "dimsAfter": [],
             "children": []
         },
         {
+            "type": "resize",
+            "description": "Resize B23_upper_top",
+            "elementIndex": 52,
+            "posBefore": [
+                0.531000018119812,
+                2.250999927520752,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                0.531000018119812,
+                2.250999927520752,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1372,
+                332,
+                18
+            ],
+            "dimsAfter": [
+                1372,
+                332,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B23_upper_top",
+            "elementIndex": 52,
+            "posBefore": [
+                0.531000018119812,
+                2.250999927520752,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                0.531000018119812,
+                2.250999927520752,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1372,
+                332,
+                18
+            ],
+            "dimsAfter": [
+                1372,
+                332,
+                18
+            ],
+            "children": []
+        },
+        {
             "type": "move",
-            "description": "Move K1_door",
+            "description": "Move B4_upper_door",
+            "elementIndex": 63,
+            "posBefore": [
+                -0.4729999899864197,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                -0.4725000262260437,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_upper_top",
             "elementIndex": 44,
             "posBefore": [
-                0.9940000176429749,
-                0.46000000834465029,
-                -1.1449999809265137
+                -0.4729999899864197,
+                2.250999927520752,
+                -3.4539999961853029
             ],
             "posAfter": [
-                0.9940000176429749,
-                0.46000000834465029,
-                -1.1449999809265137
+                -0.4729999899864197,
+                2.250999927520752,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                564,
+                332,
+                18
+            ],
+            "dimsAfter": [
+                564,
+                332,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_upper_door",
+            "elementIndex": 63,
+            "posBefore": [
+                -0.4725000262260437,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                1.809999942779541,
+                -3.2790000438690187
             ],
             "rotBefore": [
                 0.0,
@@ -1505,9 +4193,9 @@
             ],
             "rotAfter": [
                 0.0,
-                0.7071067690849304,
                 0.0,
-                0.7071067690849304
+                0.0,
+                1.0
             ],
             "dimsBefore": [],
             "dimsAfter": [],
@@ -1515,17 +4203,17 @@
         },
         {
             "type": "move",
-            "description": "Move A5_Refrigerator",
-            "elementIndex": 2,
+            "description": "Move B23_upper_door_R",
+            "elementIndex": 62,
             "posBefore": [
-                1.284999966621399,
-                1.0,
-                -0.210999995470047
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
             ],
             "posAfter": [
-                1.284999966621399,
-                1.0,
-                -0.75
+                0.16449999809265138,
+                1.809999942779541,
+                -3.2790000438690187
             ],
             "rotBefore": [
                 0.0,

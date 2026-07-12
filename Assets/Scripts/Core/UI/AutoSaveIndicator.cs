@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,7 @@ namespace KitchenDesigner.Core.UI
     {
         public static AutoSaveIndicator Instance { get; private set; }
 
-        private Text _label;
+        private TMP_Text _label;
         private float _flashUntil;
 
         private static readonly Color IdleOn = new Color(0.55f, 0.58f, 0.62f, 1f);

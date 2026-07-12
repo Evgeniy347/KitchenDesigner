@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -241,7 +242,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>
-        /// Возвращает true, если фокус сейчас в любом InputField (набор текста).
+        /// Возвращает true, если фокус сейчас в любом поле ввода (набор текста).
         /// В этом случае горячие клавиши камеры (WASD, стрелки, +/-, F и т.д.) не должны срабатывать.
         /// </summary>
         public static bool IsTypingInInputField()
@@ -252,12 +253,12 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>
-        /// Проверяет, является ли выбранный объект InputField. Публично для тестирования.
+        /// Проверяет, является ли выбранный объект полем ввода TMP_InputField. Публично для тестирования.
         /// </summary>
         public static bool IsInputField(GameObject selected)
         {
             if (selected == null) return false;
-            return selected.GetComponent<UnityEngine.UI.InputField>() != null;
+            return selected.GetComponent<TMP_InputField>() != null;
         }
 
         private static bool PointerOverUI()

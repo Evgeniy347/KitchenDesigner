@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,7 +17,7 @@ namespace KitchenDesigner.Core.UI
         private RectTransform _panel;
         private GameObject _fullRoot;
         private GameObject _miniRoot;
-        private Text _collapseLabel;
+        private TMP_Text _collapseLabel;
         private Image _pinBg;
 
         private bool _expanded = true;
@@ -42,7 +43,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(4, -4), new Vector2(36, 28), () => SetExpanded(!_expanded));
             UIFactory.AnchorTopLeft(collapseBtn.GetComponent<RectTransform>());
             collapseBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(4, -4);
-            _collapseLabel = collapseBtn.GetComponentInChildren<Text>();
+            _collapseLabel = collapseBtn.GetComponentInChildren<TMP_Text>();
 
             var pinBtn = UIFactory.CreateIconButton("SbPin", _panel, IconFactory.Pin,
                 new Vector2(46, -4), new Vector2(28, 28), TogglePin);

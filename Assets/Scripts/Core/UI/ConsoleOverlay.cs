@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,7 +16,7 @@ namespace KitchenDesigner.Core.UI
         private const int VisibleLines = 32; // показываем хвост
 
         private GameObject _root;
-        private Text _text;
+        private TMP_Text _text;
         private readonly Queue<string> _lines = new Queue<string>();
         private bool _dirty;
 
@@ -39,13 +40,13 @@ namespace KitchenDesigner.Core.UI
             textRect.anchorMax = Vector2.one;
             textRect.offsetMin = new Vector2(10, 8);
             textRect.offsetMax = new Vector2(-10, -8);
-            _text = textRect.gameObject.AddComponent<Text>();
-            _text.font = UIFactory.Font;
+            _text = textRect.gameObject.AddComponent<TextMeshProUGUI>();
+            _text.font = UIFactory.FontAsset;
             _text.fontSize = 14;
             _text.color = new Color(0.85f, 0.9f, 0.85f);
-            _text.alignment = TextAnchor.LowerLeft;
-            _text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            _text.verticalOverflow = VerticalWrapMode.Truncate;
+            _text.alignment = TextAlignmentOptions.BottomLeft;
+            _text.enableWordWrapping = true;
+            _text.overflowMode = TextOverflowModes.Truncate;
             _text.raycastTarget = false;
 
             _root.SetActive(false);

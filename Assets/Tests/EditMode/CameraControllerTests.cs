@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
@@ -200,7 +201,7 @@ public class CameraControllerTests
     public void IsInputField_ReturnsTrue_ForSelectedInputField()
     {
         var inputGo = new GameObject("InputField");
-        inputGo.AddComponent<InputField>();
+        inputGo.AddComponent<TMP_InputField>();
 
         Assert.IsTrue(CameraController.IsInputField(inputGo),
             "selected GameObject with InputField should be detected as typing");

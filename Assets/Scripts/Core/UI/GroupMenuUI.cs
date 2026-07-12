@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,7 +15,7 @@ namespace KitchenDesigner.Core.UI
         private GameObject _root;
         private GameObject _linkRoot;
         private GameObject _groupRoot;
-        private InputField _nameField;
+        private TMP_InputField _nameField;
         private Toggle _lockMove;
         private LinkGroup _group;
 

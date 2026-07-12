@@ -1,4 +1,4 @@
-using System;
+using KitchenDesigner.Editor;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -125,6 +125,8 @@ public static class BuildProject
 
     private static void ConfigureWebGL(bool isDebug)
     {
+        EnsureTMProFont();
+
         // Debug: no compression — nginx serves plain files, build skips the gzip pass.
         // Release: gzip matches nginx.conf (gzip_static + Content-Encoding locations).
         PlayerSettings.WebGL.compressionFormat = isDebug
@@ -297,5 +299,18 @@ public static class BuildProject
             AssetDatabase.SaveAssets();
             Debug.Log("[BuildProject] Added URP Lit to always included shaders");
         }
+    }
+
+    private static void EnsureTMProFont()
+    {
+        var sdfPath = "Assets/Resources/Fonts/arial SDF.asset";
+        if (AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(sdfPath) != null)
+        {
+            Debug.Log("[BuildProject] TMPro SDF font already exists, skipping");
+            return;
+        }
+
+        Debug.Log("[BuildProject] Creating TMPro SDF font from arial.ttf...");
+        CreateTMPFontFromArial.Create();
     }
 }
