@@ -1,5 +1,6 @@
 using System.Reflection;
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
@@ -170,9 +171,11 @@ public class ContextMenuRefreshBugTests
         var field = typeof(ContextMenuUI).GetField(fieldName,
             BindingFlags.NonPublic | BindingFlags.Instance);
         Assert.IsNotNull(field, $"Field '{fieldName}' should exist");
-        var inputField = field.GetValue(_ctx) as InputField;
-        Assert.IsNotNull(inputField, $"Field '{fieldName}' should be an InputField");
-        return inputField.text;
+        var inputField = field.GetValue(_ctx) as TMP_InputField;
+        Assert.IsNotNull(inputField, $"Field '{fieldName}' should be a TMP_InputField");
+        // TMP_InputField.text содержит служебный zero-width space (U+200B) —
+        // приложение читает «чистое» значение отдельно, тесты сравнивают видимый текст.
+        return inputField.text.Replace("\u200b", "");
     }
 
     private KitchenElement CreateBoard(string name, Vector3Int dims, Vector3 pos)
