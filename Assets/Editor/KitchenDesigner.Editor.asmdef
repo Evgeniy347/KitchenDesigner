@@ -3,7 +3,8 @@
 	"rootNamespace": "",
 	"references": [
 		"KitchenDesigner.Runtime",
-		"Unity.RenderPipelines.Universal.Runtime"
+		"Unity.RenderPipelines.Universal.Runtime",
+		"Unity.TextMeshPro"
 	],
 	"includePlatforms": [
 		"Editor"

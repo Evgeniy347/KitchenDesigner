@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,7 @@ namespace KitchenDesigner.Core.UI
         public static ToastNotification Instance { get; private set; }
 
         private CanvasGroup _group;
-        private Text _label;
+        private TMP_Text _label;
         private Coroutine _activeRoutine;
 
         private void Awake()

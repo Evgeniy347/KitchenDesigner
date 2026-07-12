@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,7 +22,7 @@ namespace KitchenDesigner.Core.UI
         private HelpUI _help;
         private Button _undoButton;
         private Button _redoButton;
-        private Text _modeButtonLabel;
+        private TMP_Text _modeButtonLabel;
 
         public Canvas Canvas => _canvas;
         public const string QuickSaveName = "quicksave";
@@ -105,7 +106,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(x, y), new Vector2(150, h), ToggleHandleMode);
             UIFactory.AnchorTopLeft(modeBtn.GetComponent<RectTransform>());
             modeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
-            _modeButtonLabel = modeBtn.GetComponentInChildren<Text>();
+            _modeButtonLabel = modeBtn.GetComponentInChildren<TMP_Text>();
             x += 156;
         }
 
@@ -367,7 +368,7 @@ namespace KitchenDesigner.Core.UI
                 var titleText = _projectListPanel.transform.Find("Title");
                 if (titleText != null)
                 {
-                    var t = titleText.GetComponent<Text>();
+                    var t = titleText.GetComponent<TMP_Text>();
                     if (t != null) t.text = "Проекты";
                 }
 
@@ -431,7 +432,7 @@ namespace KitchenDesigner.Core.UI
 
         private GameObject _projectListPanel;
         private GameObject _namePromptPanel;
-        private InputField _nameInputField;
+        private TMP_InputField _nameInputField;
 
         private void ServerSave(bool forceNew)
         {
@@ -509,7 +510,7 @@ namespace KitchenDesigner.Core.UI
             var titleText = _projectListPanel.transform.Find("Title");
             if (titleText != null)
             {
-                var t = titleText.GetComponent<Text>();
+                var t = titleText.GetComponent<TMP_Text>();
                 if (t != null) t.text = "Локальные файлы";
             }
 

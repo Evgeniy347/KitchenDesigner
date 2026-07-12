@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,27 +12,27 @@ namespace KitchenDesigner.Core.UI
 
         private GameObject _root;
         private KitchenElement _target;
-        private Text _titleLabel;
+        private TMP_Text _titleLabel;
 
-        private InputField _name, _w, _h, _d, _radius,
+        private TMP_InputField _name, _w, _h, _d, _radius,
             _gapLeft, _gapRight, _gapTop, _gapBottom,
             _x, _y, _z, _rx, _ry, _rz;
         private Toggle _lockToggle;
         private Toggle _transparentToggle;
         private RectTransform _panelRt;
-        private Text _doorButtonLabel;  // подпись кнопки «Открыть»/«Закрыть»
-        private Dropdown _modeDropdown; // выпадающий список режима открывания
-        private Dropdown _fillDropdown; // центр сборного фасада (Глухой/Витрина/Стекло)
-        private Dropdown _materialDropdown; // выбор текстуры/декора (детали и фасады)
-        private Dropdown _typeDropdown; // конвертация: деталь ⇄ фасад ⇄ сборный фасад
-        private Dropdown _drawerTypeDropdown, _drawerLengthDropdown, _drawerColorDropdown;
+        private TMP_Text _doorButtonLabel;  // подпись кнопки «Открыть»/«Закрыть»
+        private TMP_Dropdown _modeDropdown; // выпадающий список режима открывания
+        private TMP_Dropdown _fillDropdown; // центр сборного фасада (Глухой/Витрина/Стекло)
+        private TMP_Dropdown _materialDropdown; // выбор текстуры/декора (детали и фасады)
+        private TMP_Dropdown _typeDropdown; // конвертация: деталь ⇄ фасад ⇄ сборный фасад
+        private TMP_Dropdown _drawerTypeDropdown, _drawerLengthDropdown, _drawerColorDropdown;
         private Toggle _drawerDoubleToggle, _drawerUpperToggle;
-        private InputField _drawerWidth;
-        private Text _drawerAnimLabel;
-        private Dropdown _drawerFacadeDropdown; // прикреплённый фасад (выбор существующего)
+        private TMP_InputField _drawerWidth;
+        private TMP_Text _drawerAnimLabel;
+        private TMP_Dropdown _drawerFacadeDropdown; // прикреплённый фасад (выбор существующего)
 
         // ── Подсветка изменённых полей ──────────────────────────────────
-        private readonly Dictionary<InputField, string> _cleanValues = new();
+        private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
         private int _applyFrame = -1;  // защита от двойного Apply
 
         // ── Раскладка ──────────────────────────────────────────────────
@@ -116,7 +117,7 @@ namespace KitchenDesigner.Core.UI
 
             var doorButton = UIFactory.CreateButton("CtxDoor", panel.transform, "Открыть",
                 new Vector2(0, 0), new Vector2(248, BtnH), ToggleDoor);
-            _doorButtonLabel = doorButton.GetComponentInChildren<Text>();
+            _doorButtonLabel = doorButton.GetComponentInChildren<TMP_Text>();
             AddFacadeRow(BtnH, ActionGap, doorButton.GetComponent<RectTransform>());
 
             // Центр сборного фасада (только для сборного): Глухой / Витрина / Стекло.
@@ -159,7 +160,7 @@ namespace KitchenDesigner.Core.UI
 
             var drawerAnimBtn = UIFactory.CreateButton("CtxDrawerAnim", panel.transform, "Открыть",
                 new Vector2(0, 0), new Vector2(248, BtnH), CycleDrawerAnimation);
-            _drawerAnimLabel = drawerAnimBtn.GetComponentInChildren<Text>();
+            _drawerAnimLabel = drawerAnimBtn.GetComponentInChildren<TMP_Text>();
             AddDrawerRow(BtnH, ActionGap, drawerAnimBtn.GetComponent<RectTransform>());
 
             // Фасад ящика: выпадающий список существующих фасадов + кнопки создать/настроить.
@@ -198,9 +199,9 @@ namespace KitchenDesigner.Core.UI
             _ry = Row(panel.transform, "Поворот Y°");
             _rz = Row(panel.transform, "Поворот Z°");
 
-            foreach (var f in new[] { _w, _h, _d, _radius }) f.contentType = InputField.ContentType.IntegerNumber;
-            foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f.contentType = InputField.ContentType.IntegerNumber;
-            foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f.contentType = InputField.ContentType.DecimalNumber;
+            foreach (var f in new[] { _w, _h, _d, _radius }) f.contentType = TMP_InputField.ContentType.IntegerNumber;
+            foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f.contentType = TMP_InputField.ContentType.IntegerNumber;
+            foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f.contentType = TMP_InputField.ContentType.DecimalNumber;
 
             // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
             // ставить детали вертикально (поворот по X/Z), а не только крутить по Y.
@@ -278,7 +279,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Построение элементов ───────────────────────────────────────
 
-        private InputField Row(Transform parent, string label)
+        private TMP_InputField Row(Transform parent, string label)
         {
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(130, LabelH));
@@ -288,7 +289,7 @@ namespace KitchenDesigner.Core.UI
             return field;
         }
 
-        private InputField RadialRow(Transform parent, string label)
+        private TMP_InputField RadialRow(Transform parent, string label)
         {
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(130, LabelH));
@@ -502,7 +503,7 @@ namespace KitchenDesigner.Core.UI
 
         /// <summary>Обновить поле, если оно не в фокусе (юзер не редактирует).
         /// Также синхронизирует _cleanValues, чтобы подсветка не сбивалась.</summary>
-        private void MaybeRefresh(InputField field, string newValue)
+        private void MaybeRefresh(TMP_InputField field, string newValue)
         {
             if (field == null || field.isFocused) return;
             field.SetTextWithoutNotify(newValue);
@@ -757,9 +758,9 @@ namespace KitchenDesigner.Core.UI
 
         private void RebuildMaterialOptions()
         {
-            var opts = new List<Dropdown.OptionData>();
+            var opts = new List<TMP_Dropdown.OptionData>();
             foreach (var m in MaterialCatalog.All)
-                opts.Add(new Dropdown.OptionData(m.displayName));
+                opts.Add(new TMP_Dropdown.OptionData(m.displayName));
             _materialDropdown.options = opts;
         }
 
@@ -846,10 +847,10 @@ namespace KitchenDesigner.Core.UI
         private void RebuildDrawerFacadeOptions()
         {
             if (_drawerFacadeDropdown == null) return;
-            var opts = new List<Dropdown.OptionData> { new Dropdown.OptionData("(нет фасада)") };
+            var opts = new List<TMP_Dropdown.OptionData> { new TMP_Dropdown.OptionData("(нет фасада)") };
             foreach (var el in PartRegistry.GetAll())
                 if (el is FacadeElement fe && !string.IsNullOrEmpty(fe.PartName))
-                    opts.Add(new Dropdown.OptionData(fe.PartName));
+                    opts.Add(new TMP_Dropdown.OptionData(fe.PartName));
             _drawerFacadeDropdown.options = opts;
         }
 
@@ -972,7 +973,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Подсветка изменённых полей ──────────────────────────────────
 
-        private void TrackField(InputField field, string cleanValue)
+        private void TrackField(TMP_InputField field, string cleanValue)
         {
             if (field == null) return;
             _cleanValues[field] = cleanValue;
@@ -991,7 +992,7 @@ namespace KitchenDesigner.Core.UI
             Apply();
         }
 
-        private void UpdateFieldHighlight(InputField field)
+        private void UpdateFieldHighlight(TMP_InputField field)
         {
             if (field == null) return;
             var clean = _cleanValues.TryGetValue(field, out var v) ? v : field.text;

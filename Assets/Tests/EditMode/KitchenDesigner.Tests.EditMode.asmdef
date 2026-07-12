@@ -2,7 +2,8 @@
 	"name": "KitchenDesigner.Tests.EditMode",
 	"rootNamespace": "",
 	"references": [
-		"KitchenDesigner.Runtime"
+		"KitchenDesigner.Runtime",
+		"Unity.TextMeshPro"
 	],
 	"includePlatforms": [
 		"Editor"

@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -5,29 +6,51 @@ using UnityEngine.UI;
 namespace KitchenDesigner.Core.UI
 {
     /// <summary>
-    /// Помощники для процедурной сборки uGUI (без префабов/TMP).
-    /// Весь интерфейс строится из кода — в духе остального проекта.
+    /// Помощники для процедурной сборки uGUI на TextMeshPro (SDF-шрифты —
+    /// чёткий текст на любом разрешении, включая WebGL).
     /// </summary>
     public static class UIFactory
     {
-        private static Font _font;
-        public static Font Font
+        private static TMP_FontAsset _fontAsset;
+        public static TMP_FontAsset FontAsset
         {
             get
             {
-                if (_font == null)
+                if (_fontAsset == null)
                 {
-                    // Реальный .ttf из Resources: текстура шрифта генерируется на этапе билда
-                    // и работает на всех платформах, включая WebGL (где GetBuiltinResource
-                    // возвращает шрифт без текстуры, потому что WebGL не умеет рендерить
-                    // системные шрифты на лету).
-                    _font = Resources.Load<Font>("Fonts/arial");
-                    if (_font == null)
-                        _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                    _fontAsset = Resources.Load<TMP_FontAsset>("Fonts/arial SDF");
+                    if (_fontAsset == null)
+                        _fontAsset = TMP_Settings.defaultFontAsset;
+                    if (_fontAsset == null)
+                    {
+                        var unityFont = Resources.Load<Font>("Fonts/arial");
+                        if (unityFont != null)
+                        {
+                            _fontAsset = TMP_FontAsset.CreateFontAsset(unityFont);
+                            Debug.LogWarning("[UIFactory] TMPro font created at runtime — run Tools/Kitchen/Create TMP Font From Arial in Editor for better quality and no first-frame hitch.");
+                        }
+                    }
+                    if (_fontAsset == null)
+                        Debug.LogError("[UIFactory] No TMP_FontAsset available!");
                 }
-                return _font;
+                return _fontAsset;
             }
         }
+
+        // Сохраняем обратную совместимость: вызовы с TextAnchor не требуют правок.
+        private static TextAlignmentOptions MapAlignment(TextAnchor anchor) => anchor switch
+        {
+            TextAnchor.UpperLeft => TextAlignmentOptions.TopLeft,
+            TextAnchor.UpperCenter => TextAlignmentOptions.Top,
+            TextAnchor.UpperRight => TextAlignmentOptions.TopRight,
+            TextAnchor.MiddleLeft => TextAlignmentOptions.Left,
+            TextAnchor.MiddleCenter => TextAlignmentOptions.Center,
+            TextAnchor.MiddleRight => TextAlignmentOptions.Right,
+            TextAnchor.LowerLeft => TextAlignmentOptions.BottomLeft,
+            TextAnchor.LowerCenter => TextAlignmentOptions.Bottom,
+            TextAnchor.LowerRight => TextAlignmentOptions.BottomRight,
+            _ => TextAlignmentOptions.Left
+        };
 
         public static readonly Color PanelColor = new Color(0.12f, 0.12f, 0.14f, 0.92f);
         public static readonly Color ButtonColor = new Color(0.22f, 0.24f, 0.30f, 1f);
@@ -109,19 +132,17 @@ namespace KitchenDesigner.Core.UI
             return img;
         }
 
-        public static Text CreateLabel(string name, Transform parent, string text, int fontSize, Vector2 anchoredPos, Vector2 size, TextAnchor align = TextAnchor.MiddleLeft)
+        public static TextMeshProUGUI CreateLabel(string name, Transform parent, string text, int fontSize, Vector2 anchoredPos, Vector2 size, TextAnchor align = TextAnchor.MiddleLeft)
         {
             var rect = CreateRect(name, parent);
             rect.sizeDelta = size;
             rect.anchoredPosition = anchoredPos;
-            var label = rect.gameObject.AddComponent<Text>();
-            label.font = Font;
+            var label = rect.gameObject.AddComponent<TextMeshProUGUI>();
+            label.font = FontAsset;
             label.text = text;
             label.fontSize = fontSize;
             label.color = TextColor;
-            label.alignment = align;
-            label.horizontalOverflow = HorizontalWrapMode.Overflow;
-            label.verticalOverflow = VerticalWrapMode.Overflow;
+            label.alignment = MapAlignment(align);
             return label;
         }
 
@@ -174,7 +195,7 @@ namespace KitchenDesigner.Core.UI
             return button;
         }
 
-        public static InputField CreateInputField(string name, Transform parent, string initial, Vector2 anchoredPos, Vector2 size)
+        public static TMP_InputField CreateInputField(string name, Transform parent, string initial, Vector2 anchoredPos, Vector2 size)
         {
             var rect = CreateRect(name, parent);
             rect.sizeDelta = size;
@@ -188,22 +209,30 @@ namespace KitchenDesigner.Core.UI
             outline.effectDistance = new Vector2(2, 2);
             outline.enabled = false;
 
-            var input = rect.gameObject.AddComponent<InputField>();
+            var input = rect.gameObject.AddComponent<TMP_InputField>();
 
-            var text = CreateLabel(name + "_Text", rect, initial, 16, Vector2.zero, size, TextAnchor.MiddleLeft);
-            text.rectTransform.anchorMin = Vector2.zero;
-            text.rectTransform.anchorMax = Vector2.one;
-            text.rectTransform.offsetMin = new Vector2(6, 2);
-            text.rectTransform.offsetMax = new Vector2(-6, -2);
-            text.supportRichText = false;
+            var textArea = CreateRect("Text Area", rect);
+            textArea.anchorMin = Vector2.zero;
+            textArea.anchorMax = Vector2.one;
+            textArea.offsetMin = new Vector2(6, 2);
+            textArea.offsetMax = new Vector2(-6, -2);
 
+            var text = textArea.gameObject.AddComponent<TextMeshProUGUI>();
+            text.font = FontAsset;
+            text.text = initial;
+            text.fontSize = 16;
+            text.color = TextColor;
+            text.alignment = TextAlignmentOptions.Left;
+            text.richText = false;
+
+            input.textViewport = textArea;
             input.textComponent = text;
             input.text = initial;
             return input;
         }
 
         /// <summary>Подсветить/снять подсветку изменённого поля (жёлтая рамка).</summary>
-        public static void SetHighlight(InputField field, bool highlight)
+        public static void SetHighlight(TMP_InputField field, bool highlight)
         {
             if (field == null) return;
             var outline = field.GetComponent<Outline>();
@@ -224,9 +253,6 @@ namespace KitchenDesigner.Core.UI
             toggle.graphic = check;
             toggle.targetGraphic = box;
 
-            // Текст начинается правее бокса с галочкой (его правый край ≈ -size.x/2+25),
-            // с отступом ~11px — иначе «X» и подпись слипаются. Ширину области урезаем
-            // на этот отступ, чтобы метка не вылезала за правый край тоггла.
             const float textInset = 36f;
             CreateLabel(name + "_Label", rect, label, 16,
                 new Vector2(textInset * 0.5f, 0), new Vector2(size.x - textInset, size.y), TextAnchor.MiddleLeft);
@@ -237,10 +263,9 @@ namespace KitchenDesigner.Core.UI
             return toggle;
         }
 
-        /// <summary>Выпадающий список (legacy uGUI Dropdown), собранный из кода —
-        /// с прокручиваемым шаблоном списка. Возвращает Dropdown; текущий индекс —
-        /// через .value / SetValueWithoutNotify.</summary>
-        public static Dropdown CreateDropdown(string name, Transform parent,
+        /// <summary>Выпадающий список (TMPro Dropdown), собранный из кода —
+        /// с прокручиваемым шаблоном списка. Возвращает TMP_Dropdown.</summary>
+        public static TMP_Dropdown CreateDropdown(string name, Transform parent,
             System.Collections.Generic.List<string> options,
             Vector2 anchoredPos, Vector2 size, System.Action<int> onChanged)
         {
@@ -251,20 +276,18 @@ namespace KitchenDesigner.Core.UI
             var bg = rect.gameObject.AddComponent<Image>();
             bg.color = ButtonColor;
 
-            var dropdown = rect.gameObject.AddComponent<Dropdown>();
+            var dropdown = rect.gameObject.AddComponent<TMP_Dropdown>();
 
-            // Подпись текущего выбора + стрелка.
             var caption = CreateLabel(name + "_Label", rect, "", 15, Vector2.zero, size, TextAnchor.MiddleLeft);
             var capRt = caption.rectTransform;
             capRt.anchorMin = Vector2.zero; capRt.anchorMax = Vector2.one;
             capRt.offsetMin = new Vector2(8, 2); capRt.offsetMax = new Vector2(-18, -2);
 
-            var arrow = CreateLabel(name + "_Arrow", rect, "▾", 14, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
+            var arrow = CreateLabel(name + "_Arrow", rect, "\u25BE", 14, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
             var arRt = arrow.rectTransform;
             arRt.anchorMin = arRt.anchorMax = arRt.pivot = new Vector2(1, 0.5f);
             arRt.sizeDelta = new Vector2(16, 16); arRt.anchoredPosition = new Vector2(-4, 0);
 
-            // Шаблон списка (выключен, пока список закрыт) со скроллом.
             var template = CreateRect(name + "_Template", rect);
             template.anchorMin = new Vector2(0, 0);
             template.anchorMax = new Vector2(1, 0);
@@ -324,10 +347,7 @@ namespace KitchenDesigner.Core.UI
             dropdown.itemText = itemLabel;
             dropdown.targetGraphic = bg;
 
-            dropdown.options.Clear();
-            if (options != null)
-                foreach (var o in options)
-                    dropdown.options.Add(new Dropdown.OptionData(o));
+            dropdown.options = options?.ConvertAll(o => new TMP_Dropdown.OptionData(o));
 
             template.gameObject.SetActive(false);
             dropdown.value = 0;

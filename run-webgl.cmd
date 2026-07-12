@@ -29,21 +29,24 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo === Waiting for server to be ready (checking for non-502 response) ===
+echo === Waiting for server to be ready ===
 set "retries=0"
 :waitloop
 set /a retries+=1
 if %retries% gtr 20 goto :noready
-powershell -NoProfile -Command "try { $r=Invoke-WebRequest -Uri 'http://localhost:8080' -TimeoutSec 2 -UseBasicParsing; exit ($r.StatusCode -eq 502) } catch { exit 1 }"
-if %errorlevel% equ 0 (
-    >nul timeout /t 1 /nobreak
-    goto :waitloop
-)
-echo === Server responded with non-502 (attempt %retries%) ===
+REM Windows PowerShell 5.1: Invoke-WebRequest throws on 4xx/5xx AND on
+REM connection errors, so "no exception" == server is truly up.
+powershell -NoProfile -Command "try { $null = Invoke-WebRequest -Uri 'http://localhost:8080' -TimeoutSec 2 -UseBasicParsing; exit 0 } catch { exit 1 }"
+if %errorlevel% equ 0 goto :ready
+>nul timeout /t 1 /nobreak
+goto :waitloop
+
+:ready
+echo === Server is up (attempt %retries%) ===
 goto :open
 
 :noready
-echo [WARN] Server still returning 502 after 20 seconds, opening anyway...
+echo [WARN] Server not responding after 20 attempts, opening anyway...
 
 :open
 echo.

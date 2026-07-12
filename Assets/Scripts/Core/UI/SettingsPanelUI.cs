@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,7 +9,7 @@ namespace KitchenDesigner.Core.UI
     public class SettingsPanelUI : MonoBehaviour
     {
         private GameObject _root;
-        private readonly Dictionary<InputField, string> _cleanValues = new();
+        private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
 
         public void Build(Transform canvas)
         {
@@ -34,7 +35,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(-110, 148), new Vector2(180, 28));
             var stepField = UIFactory.CreateInputField("StepField", panel.transform, s.GridStep.ToString(),
                 new Vector2(120, 148), new Vector2(120, 28));
-            stepField.contentType = InputField.ContentType.IntegerNumber;
+            stepField.contentType = TMP_InputField.ContentType.IntegerNumber;
             TrackField(stepField, s.GridStep.ToString());
             stepField.onEndEdit.AddListener(t =>
             {
@@ -49,7 +50,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(-110, 64), new Vector2(180, 28));
             var thrField = UIFactory.CreateInputField("ThrField", panel.transform, s.SnapThreshold.ToString("F0"),
                 new Vector2(120, 64), new Vector2(120, 28));
-            thrField.contentType = InputField.ContentType.DecimalNumber;
+            thrField.contentType = TMP_InputField.ContentType.DecimalNumber;
             TrackField(thrField, s.SnapThreshold.ToString("F0"));
             thrField.onEndEdit.AddListener(t =>
             {
@@ -67,7 +68,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(-110, -56), new Vector2(200, 28));
             var autoIntField = UIFactory.CreateInputField("AutoIntField", panel.transform, s.AutoSaveInterval.ToString(),
                 new Vector2(140, -56), new Vector2(100, 28));
-            autoIntField.contentType = InputField.ContentType.IntegerNumber;
+            autoIntField.contentType = TMP_InputField.ContentType.IntegerNumber;
             TrackField(autoIntField, s.AutoSaveInterval.ToString());
             autoIntField.onEndEdit.AddListener(t =>
             {
@@ -105,14 +106,14 @@ namespace KitchenDesigner.Core.UI
 
         // ── Подсветка изменённых полей ──────────────────────────────────
 
-        private void TrackField(InputField field, string cleanValue)
+        private void TrackField(TMP_InputField field, string cleanValue)
         {
             if (field == null) return;
             _cleanValues[field] = cleanValue;
             field.onValueChanged.AddListener(_ => UpdateFieldHighlight(field));
         }
 
-        private void UpdateFieldHighlight(InputField field)
+        private void UpdateFieldHighlight(TMP_InputField field)
         {
             if (field == null) return;
             var clean = _cleanValues.TryGetValue(field, out var v) ? v : field.text;

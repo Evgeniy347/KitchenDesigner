@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
@@ -73,7 +74,7 @@ public class FieldHighlightTests
     {
         var go = new GameObject("NoOutline");
         go.transform.SetParent(_root.transform);
-        var field = go.AddComponent<InputField>();
+        var field = go.AddComponent<TMP_InputField>();
         Assert.DoesNotThrow(() => UIFactory.SetHighlight(field, true));
         Object.DestroyImmediate(go);
     }

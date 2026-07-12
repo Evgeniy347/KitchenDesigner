@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +11,7 @@ namespace KitchenDesigner.Core.UI
         public static ModuleEditBannerUI Instance { get; private set; }
 
         private GameObject _root;
-        private Text _label;
+        private TMP_Text _label;
 
         private void Awake() => Instance = this;
 

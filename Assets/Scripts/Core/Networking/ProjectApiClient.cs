@@ -198,6 +198,11 @@ namespace KitchenDesigner.Core.Networking
                 }
 
                 var created = JsonUtility.FromJson<ServerProjectInfo>(req.downloadHandler.text);
+                if (created == null || string.IsNullOrEmpty(created.id))
+                {
+                    onError?.Invoke("Неожиданный ответ сервера при создании проекта");
+                    yield break;
+                }
                 CurrentProjectId = created.id;
                 CurrentProjectName = created.name;
             }
