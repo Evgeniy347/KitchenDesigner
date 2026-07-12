@@ -26,4 +26,13 @@ public class Project
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     public bool IsArchived { get; set; }
+
+    /// <summary>
+    /// Random GUID set when a browser tab acquires the project lock.
+    /// Only the tab holding this GUID may save the project.
+    /// </summary>
+    [MaxLength(64)]
+    public string? LockGuid { get; set; }
+
+    public DateTime? LockAcquiredAt { get; set; }
 }

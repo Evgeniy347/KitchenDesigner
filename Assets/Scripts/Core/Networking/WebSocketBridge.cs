@@ -32,6 +32,8 @@ namespace KitchenDesigner.Core.MCP
         private static extern void WebSocketSend(string message);
         [DllImport("__Internal")]
         private static extern void WebSocketClose();
+        [DllImport("__Internal")]
+        private static extern void ShowLockTakenAlert();
 #else
         private ClientWebSocket _ws;
         private CancellationTokenSource _cts;
@@ -83,7 +85,7 @@ namespace KitchenDesigner.Core.MCP
 
             var fullUrl = url;
             if (!string.IsNullOrEmpty(accessKey))
-                fullUrl += "?key=" + Uri.EscapeDataString(accessKey);
+                fullUrl += (fullUrl.Contains('?') ? "&" : "?") + "key=" + Uri.EscapeDataString(accessKey);
 
 #if UNITY_WEBGL
             // Connect может прийти раньше нашего Start (Bootstrap подключает бридж
@@ -149,6 +151,19 @@ namespace KitchenDesigner.Core.MCP
 
         private void ProcessMessage(string json)
         {
+            // Handle server-pushed notifications (not MCP requests).
+            if (json.Contains("\"lock_taken\""))
+            {
+                Debug.LogWarning("[MCP-WS] Project opened in another tab — shutting down.");
+#if UNITY_WEBGL
+                ShowLockTakenAlert();
+#else
+                // In the editor, just log the event.
+                UnityEngine.Debug.LogError("[MCP-WS] Project lock lost — opened in another tab.");
+#endif
+                return;
+            }
+
             McpRequest request = null;
             try { request = JsonConvert.DeserializeObject<McpRequest>(json); }
             catch (Exception ex)

@@ -53,6 +53,11 @@ var WebGLWebSocketImpl = {
             wsInstance.close();
             wsInstance = null;
         }
+    },
+
+    ShowLockTakenAlert: function() {
+        alert('Проект открыт в другой вкладке. Приложение будет закрыто.');
+        window.location.href = '/projects';
     }
 };
 

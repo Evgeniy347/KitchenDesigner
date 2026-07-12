@@ -95,6 +95,10 @@ public static class ProjectEndpoints
             if (project is null)
                 return Results.NotFound();
 
+            // Validate project lock if one is held.
+            if (!string.IsNullOrEmpty(project.LockGuid) && req.LockGuid != project.LockGuid)
+                return Results.Conflict(new { error = "Project is locked by another tab. Open it there or refresh." });
+
             if (req.JsonData is not null)
             {
                 try
@@ -179,8 +183,49 @@ public static class ProjectEndpoints
             return Results.Created($"/api/projects/{duplicate.Id}",
                 new { duplicate.Id, duplicate.Name, duplicate.CreatedAt });
         });
+
+        // ── Project lock (tab-level concurrency guard) ──────────────────
+
+        group.MapPost("/{id:guid}/lock", async (
+            Guid id,
+            AppDbContext db,
+            McpSessionManager sessions,
+            ClaimsPrincipal user) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId is null)
+                return Results.Unauthorized();
+
+            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            if (project is null)
+                return Results.NotFound();
+
+            var lockGuid = await ProjectLockHelper.AcquireLockAsync(db, sessions, project);
+            return Results.Ok(new { lockGuid });
+        });
+
+        group.MapDelete("/{id:guid}/lock/{lockGuid}", async (
+            Guid id,
+            string lockGuid,
+            AppDbContext db,
+            ClaimsPrincipal user) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId is null)
+                return Results.Unauthorized();
+
+            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            if (project is null)
+                return Results.NotFound();
+
+            var released = await ProjectLockHelper.ReleaseLockAsync(db, project, lockGuid);
+            if (!released)
+                return Results.Conflict(new { error = "Lock held by another tab" });
+
+            return Results.Ok(new { ok = true });
+        });
     }
 }
 
 public record CreateProjectRequest(string Name);
-public record UpdateProjectRequest(string? Name, string? JsonData);
+public record UpdateProjectRequest(string? Name, string? JsonData, string? LockGuid);

@@ -41,6 +41,10 @@ namespace KitchenDesigner.Core
             if (!string.IsNullOrEmpty(urlProjectId))
                 Networking.ProjectApiClient.Instance.CurrentProjectId = urlProjectId;
 
+            var urlLockGuid = GetQueryParam("lockGuid");
+            if (!string.IsNullOrEmpty(urlLockGuid))
+                Networking.ProjectApiClient.Instance.LockGuid = urlLockGuid;
+
             Networking.ProjectApiClient.Instance.FetchConfig(enabled =>
             {
                 if (enabled)
@@ -83,6 +87,9 @@ namespace KitchenDesigner.Core
                 if (!string.IsNullOrEmpty(mcpKey))
                 {
                     var wsUrl = BuildWebSocketUrl("/api/mcp/ws");
+                    var projectId = GetQueryParam("projectId");
+                    if (!string.IsNullOrEmpty(projectId))
+                        wsUrl += "?projectId=" + Uri.EscapeDataString(projectId);
                     wsBridge.Connect(wsUrl, mcpKey);
                 }
             }

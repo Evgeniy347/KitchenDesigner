@@ -146,6 +146,22 @@ using (var scope = app.Services.CreateScope())
         {
             db.Database.EnsureCreated();
             app.Logger.LogInformation("Database initialized (attempt {Attempt})", attempt);
+
+            // EnsureCreated() won't add columns to an existing schema.
+            // Run ALTER TABLE for new columns — safe to repeat (IF NOT EXISTS).
+            try
+            {
+                await db.Database.ExecuteSqlRawAsync("""
+                    ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "LockGuid" text NULL;
+                    ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "LockAcquiredAt" timestamp with time zone NULL;
+                    """);
+                app.Logger.LogInformation("Project lock columns ensured");
+            }
+            catch (Exception ex)
+            {
+                app.Logger.LogWarning(ex, "Failed to add lock columns (may already exist)");
+            }
+
             break;
         }
         catch (Exception ex) when (attempt < maxAttempts)
