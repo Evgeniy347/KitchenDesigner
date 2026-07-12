@@ -61,7 +61,7 @@ namespace KitchenDesigner.Core
         /// Разбирает полезную нагрузку колбэка открытия вида «имя\x1Fсодержимое».
         /// Возвращает false, если строка пустая или в ней нет разделителя.
         /// </summary>
-        internal static bool TryParseOpenPayload(string payload, out string fileName, out string content)
+        public static bool TryParseOpenPayload(string payload, out string fileName, out string content)
         {
             fileName = null;
             content = null;
@@ -79,7 +79,7 @@ namespace KitchenDesigner.Core
         /// Имя файла по умолчанию для «Сохранить как»: имя последнего файла,
         /// если оно похоже на .json, иначе «kitchen.json».
         /// </summary>
-        internal static string SuggestedFileName(string lastPath)
+        public static string SuggestedFileName(string lastPath)
         {
             if (!string.IsNullOrEmpty(lastPath))
             {
