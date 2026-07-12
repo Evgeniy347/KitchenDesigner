@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -77,6 +78,13 @@ namespace KitchenDesigner.Core
             {
                 var wsBridge = gameObject.AddComponent<MCP.WebSocketBridge>();
                 wsBridge.SetAutoConnect(false);
+
+                var mcpKey = GetQueryParam("mcpKey");
+                if (!string.IsNullOrEmpty(mcpKey))
+                {
+                    var wsUrl = BuildWebSocketUrl("/api/mcp/ws");
+                    wsBridge.Connect(wsUrl, mcpKey);
+                }
             }
 #else
             if (FindAnyObjectByType<MCP.UnityTcpBridge>() == null) gameObject.AddComponent<MCP.UnityTcpBridge>();
@@ -90,7 +98,7 @@ namespace KitchenDesigner.Core
         }
 
 #if UNITY_WEBGL
-        private static string ParseProjectIdFromUrl()
+        private static string GetQueryParam(string name)
         {
             var url = Application.absoluteURL;
             if (string.IsNullOrEmpty(url)) return null;
@@ -105,14 +113,25 @@ namespace KitchenDesigner.Core
                 if (eqIndex < 0) continue;
 
                 var key = pair.Substring(0, eqIndex);
-                if (!string.Equals(key, "projectId", System.StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(key, name, StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                var value = pair.Substring(eqIndex + 1);
-                return Uri.UnescapeDataString(value);
+                return Uri.UnescapeDataString(pair.Substring(eqIndex + 1));
             }
 
             return null;
+        }
+
+        private static string ParseProjectIdFromUrl() => GetQueryParam("projectId");
+
+        private static string BuildWebSocketUrl(string path)
+        {
+            var url = Application.absoluteURL;
+            if (string.IsNullOrEmpty(url)) return null;
+
+            var uri = new Uri(url);
+            var scheme = uri.Scheme == Uri.UriSchemeHttps ? "wss" : "ws";
+            return $"{scheme}://{uri.Authority}{path}";
         }
 #endif
     }
