@@ -152,6 +152,11 @@ public static class BuildProject
         PlayerSettings.WebGL.memorySize = isDebug ? 512 : 256;
         PlayerSettings.WebGL.threadsSupport = false;
 
+        // Debug: allow plain HTTP so UnityWebRequest works on local/insecure hosts.
+        PlayerSettings.insecureHttpOption = isDebug
+            ? InsecureHttpOption.AlwaysAllowed
+            : InsecureHttpOption.NotAllowed;
+
         EditorUserBuildSettings.development = isDebug;
         EditorUserBuildSettings.allowDebugging = isDebug;
         EditorUserBuildSettings.waitForPlayerConnection = false;
