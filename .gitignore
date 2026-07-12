@@ -112,6 +112,11 @@ mcp-server/node_modules/
 /AGENTS.md
 /todo*.md
 
+# ===========================
+# .NET Publish Output
+# ===========================
+server/publish/
+
 # Deployment secrets
 .env
 server/.env
