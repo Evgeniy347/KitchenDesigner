@@ -1,0 +1,327 @@
+﻿{
+    "version": 1,
+    "elements": [
+        {
+            "name": "Board_S",
+            "dimensionsMM": [
+                800,
+                400,
+                18
+            ],
+            "position": [
+                0.05000000074505806,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "radius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        }
+    ],
+    "groups": [],
+    "camera": {
+        "valid": false,
+        "targetX": 0.0,
+        "targetY": 0.0,
+        "targetZ": 0.0,
+        "angleX": 0.0,
+        "angleY": 0.0,
+        "distance": 0.0
+    },
+    "handleMode": "Resize",
+    "basePlateValid": false,
+    "basePlate": {
+        "name": "",
+        "dimensionsMM": [
+            0,
+            0,
+            0
+        ],
+        "position": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "rotation": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "movable": true,
+        "isWall": false,
+        "isFacade": false,
+        "isRadialShelf": false,
+        "gapLeft": 2,
+        "gapRight": 2,
+        "gapTop": 2,
+        "gapBottom": 2,
+        "groupId": 0,
+        "materialId": "default",
+        "transparent": false,
+        "doorMode": 0,
+        "doorOpen": false,
+        "assembled": false,
+        "assembledFill": 0,
+        "grooveCount": 1,
+        "radius": 300,
+        "isDrawer": false,
+        "drawerType": 0,
+        "drawerNominalLength": 350,
+        "drawerColor": 0,
+        "drawerInternalWidth": 400,
+        "drawerIsDouble": false,
+        "drawerIsUpper": false,
+        "drawerPairedName": "",
+        "drawerAttachedFacadeName": "",
+        "doubleDrawerState": 0
+    },
+    "undoHistory": [
+        {
+            "type": "composite",
+            "description": "L0",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "move",
+                    "description": "Move Board_S",
+                    "elementIndex": 0,
+                    "posBefore": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "posAfter": [
+                        0.0010000000474974514,
+                        0.0,
+                        0.0
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [],
+                    "dimsAfter": [],
+                    "children": []
+                },
+                {
+                    "type": "composite",
+                    "description": "L1",
+                    "elementIndex": -1,
+                    "posBefore": [],
+                    "posAfter": [],
+                    "rotBefore": [],
+                    "rotAfter": [],
+                    "dimsBefore": [],
+                    "dimsAfter": [],
+                    "children": [
+                        {
+                            "type": "move",
+                            "description": "Move Board_S",
+                            "elementIndex": 0,
+                            "posBefore": [
+                                0.0010000000474974514,
+                                0.0,
+                                0.0
+                            ],
+                            "posAfter": [
+                                0.0020000000949949028,
+                                0.0,
+                                0.0
+                            ],
+                            "rotBefore": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ],
+                            "rotAfter": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ],
+                            "dimsBefore": [],
+                            "dimsAfter": [],
+                            "children": []
+                        },
+                        {
+                            "type": "composite",
+                            "description": "L2",
+                            "elementIndex": -1,
+                            "posBefore": [],
+                            "posAfter": [],
+                            "rotBefore": [],
+                            "rotAfter": [],
+                            "dimsBefore": [],
+                            "dimsAfter": [],
+                            "children": [
+                                {
+                                    "type": "move",
+                                    "description": "Move Board_S",
+                                    "elementIndex": 0,
+                                    "posBefore": [
+                                        0.0020000000949949028,
+                                        0.0,
+                                        0.0
+                                    ],
+                                    "posAfter": [
+                                        0.003000000026077032,
+                                        0.0,
+                                        0.0
+                                    ],
+                                    "rotBefore": [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        1.0
+                                    ],
+                                    "rotAfter": [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        1.0
+                                    ],
+                                    "dimsBefore": [],
+                                    "dimsAfter": [],
+                                    "children": []
+                                },
+                                {
+                                    "type": "composite",
+                                    "description": "L3",
+                                    "elementIndex": -1,
+                                    "posBefore": [],
+                                    "posAfter": [],
+                                    "rotBefore": [],
+                                    "rotAfter": [],
+                                    "dimsBefore": [],
+                                    "dimsAfter": [],
+                                    "children": [
+                                        {
+                                            "type": "move",
+                                            "description": "Move Board_S",
+                                            "elementIndex": 0,
+                                            "posBefore": [
+                                                0.003000000026077032,
+                                                0.0,
+                                                0.0
+                                            ],
+                                            "posAfter": [
+                                                0.004000000189989805,
+                                                0.0,
+                                                0.0
+                                            ],
+                                            "rotBefore": [
+                                                0.0,
+                                                0.0,
+                                                0.0,
+                                                1.0
+                                            ],
+                                            "rotAfter": [
+                                                0.0,
+                                                0.0,
+                                                0.0,
+                                                1.0
+                                            ],
+                                            "dimsBefore": [],
+                                            "dimsAfter": [],
+                                            "children": []
+                                        },
+                                        {
+                                            "type": "composite",
+                                            "description": "L4",
+                                            "elementIndex": -1,
+                                            "posBefore": [],
+                                            "posAfter": [],
+                                            "rotBefore": [],
+                                            "rotAfter": [],
+                                            "dimsBefore": [],
+                                            "dimsAfter": [],
+                                            "children": [
+                                                {
+                                                    "type": "move",
+                                                    "description": "Move Board_S",
+                                                    "elementIndex": 0,
+                                                    "posBefore": [
+                                                        0.004000000189989805,
+                                                        0.0,
+                                                        0.0
+                                                    ],
+                                                    "posAfter": [
+                                                        0.005000000353902578,
+                                                        0.0,
+                                                        0.0
+                                                    ],
+                                                    "rotBefore": [
+                                                        0.0,
+                                                        0.0,
+                                                        0.0,
+                                                        1.0
+                                                    ],
+                                                    "rotAfter": [
+                                                        0.0,
+                                                        0.0,
+                                                        0.0,
+                                                        1.0
+                                                    ],
+                                                    "dimsBefore": [],
+                                                    "dimsAfter": [],
+                                                    "children": []
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "redoHistory": []
+}
