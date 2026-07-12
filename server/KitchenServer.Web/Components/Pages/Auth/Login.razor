@@ -16,7 +16,10 @@
         <DataAnnotationsValidator />
 
         <InputText @bind-Value="Input.Email" type="email" placeholder="Email" class="auth-input" autocomplete="username" />
-        <InputText @bind-Value="Input.Password" type="password" placeholder="Пароль" class="auth-input" autocomplete="current-password" />
+        <div class="auth-password-wrap">
+            <InputText @bind-Value="Input.Password" type="password" placeholder="Пароль" class="auth-input" autocomplete="current-password" />
+            <button type="button" class="auth-pw-toggle" onclick="togglePassword(this)" aria-label="Показать пароль"><i class="bi bi-eye"></i></button>
+        </div>
 
         @if (!string.IsNullOrEmpty(_error))
         {
@@ -78,4 +81,19 @@
         public bool RememberMe { get; set; } = true;
     }
 }
+
+<script>
+    function togglePassword(btn) {
+        var wrap = btn.closest('.auth-password-wrap');
+        var input = wrap.querySelector('input');
+        var icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+    }
+</script>
 
