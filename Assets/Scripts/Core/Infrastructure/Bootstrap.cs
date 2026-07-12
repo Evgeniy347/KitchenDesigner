@@ -36,6 +36,10 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<Networking.ProjectApiClient>() == null)
                 gameObject.AddComponent<Networking.ProjectApiClient>();
 
+            var urlProjectId = ParseProjectIdFromUrl();
+            if (!string.IsNullOrEmpty(urlProjectId))
+                Networking.ProjectApiClient.Instance.CurrentProjectId = urlProjectId;
+
             Networking.ProjectApiClient.Instance.FetchConfig(enabled =>
             {
                 if (enabled)
@@ -84,5 +88,32 @@ namespace KitchenDesigner.Core
         {
             GameContext.Clear();
         }
+
+#if UNITY_WEBGL
+        private static string ParseProjectIdFromUrl()
+        {
+            var url = Application.absoluteURL;
+            if (string.IsNullOrEmpty(url)) return null;
+
+            var queryIndex = url.IndexOf('?');
+            if (queryIndex < 0) return null;
+
+            var query = url.Substring(queryIndex + 1);
+            foreach (var pair in query.Split('&'))
+            {
+                var eqIndex = pair.IndexOf('=');
+                if (eqIndex < 0) continue;
+
+                var key = pair.Substring(0, eqIndex);
+                if (!string.Equals(key, "projectId", System.StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var value = pair.Substring(eqIndex + 1);
+                return Uri.UnescapeDataString(value);
+            }
+
+            return null;
+        }
+#endif
     }
 }
