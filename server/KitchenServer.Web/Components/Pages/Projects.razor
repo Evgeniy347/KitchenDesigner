@@ -10,6 +10,7 @@
 @inject ProjectStorageService Storage
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthProvider
+@inject IJSRuntime JS
 
 <PageTitle>Projects — KitchenDesigner</PageTitle>
 
@@ -81,6 +82,10 @@
                         <button class="projects-btn-icon" @onclick="() => DuplicateProject(p.Id)"
                                 title="Duplicate">
                             <i class="bi bi-files"></i>
+                        </button>
+                        <button class="projects-btn-icon" @onclick="() => DownloadProject(p)"
+                                title="Download as .json">
+                            <i class="bi bi-download"></i>
                         </button>
                         <button class="projects-btn-icon projects-btn-icon-danger @(IsDeletePending(p.Id) ? "projects-btn-delete-confirm" : "")"
                                 @onclick="() => ToggleDeleteConfirm(p.Id)"
@@ -319,6 +324,25 @@
         }
     }
 
+    private async Task DownloadProject(ProjectInfo p)
+    {
+        try
+        {
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userId is null) return;
+
+            var json = await Storage.Load(p.Id, userId) ?? "{}";
+            var base64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json));
+            var fileName = $"{p.Name}.json";
+            await JS.InvokeVoidAsync("downloadFile", fileName, base64, "application/json");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to download: {ex.Message}";
+        }
+    }
+
     private async Task DuplicateProject(Guid id)
     {
         try
@@ -356,4 +380,6 @@
 
     private record ProjectInfo(Guid Id, string Name, DateTime CreatedAt, DateTime UpdatedAt);
 }
+
+<script src="/downloadFile.js"></script>
 
