@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
 @using KitchenServer.Web.Data
 @using Microsoft.EntityFrameworkCore
 @using KitchenServer.Web.Services
@@ -15,9 +16,15 @@
 <div class="projects-page">
     <div class="header">
         <h1>Projects</h1>
-        <button class="btn-primary" @onclick="CreateNew">
-            <i class="bi bi-plus-lg"></i> New Project
-        </button>
+        <div class="header-actions">
+            <label class="btn-secondary" title="Load a project from a .json file">
+                <i class="bi bi-upload"></i> @(_importing ? "Importing..." : "Import")
+                <InputFile OnChange="ImportFromFile" accept=".json" disabled="@_importing" class="file-input-hidden" />
+            </label>
+            <button class="btn-primary" @onclick="CreateNew">
+                <i class="bi bi-plus-lg"></i> New Project
+            </button>
+        </div>
     </div>
 
     @if (_loading)
@@ -99,6 +106,7 @@
     private string _filter = "";
     private string _error = "";
     private bool _loading = true;
+    private bool _importing;
     private Guid? _editingId;
     private string _editName = "";
     private Guid? _pendingDeleteId;
@@ -143,6 +151,62 @@
         finally
         {
             _loading = false;
+        }
+    }
+
+    private async Task ImportFromFile(InputFileChangeEventArgs e)
+    {
+        _importing = true;
+        _error = "";
+        try
+        {
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userId is null) return;
+
+            var file = e.File;
+            using var stream = file.OpenReadStream(Storage.MaxSizeBytes);
+            using var reader = new System.IO.StreamReader(stream);
+            var json = await reader.ReadToEndAsync();
+
+            var name = System.IO.Path.GetFileNameWithoutExtension(file.Name);
+            if (string.IsNullOrWhiteSpace(name))
+                name = "Imported Project";
+
+            var project = new KitchenServer.Web.Data.Entities.Project
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Name = name,
+                JsonData = "{}",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            // Storage.Save валидирует JSON и лимит размера — при отказе проект
+            // в БД не попадает.
+            await Storage.Save(project.Id, userId, json);
+
+            await using var db = await DbFactory.CreateDbContextAsync();
+            db.Projects.Add(project);
+            await db.SaveChangesAsync();
+            await LoadProjects();
+        }
+        catch (ProjectStorageException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (System.IO.IOException)
+        {
+            _error = $"File is too large (limit {Storage.MaxSizeBytes / 1048576} MB)";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Import failed: {ex.Message}";
+        }
+        finally
+        {
+            _importing = false;
         }
     }
 
@@ -321,6 +385,21 @@
         gap: 6px;
     }
     .btn-primary:hover { background: #2e4ecc; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-secondary {
+        padding: 10px 20px;
+        background: #2a2a3e;
+        color: #ccc;
+        border: 1px solid #3a3a5e;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-secondary:hover { background: #3a3a5e; color: #fff; }
+    .file-input-hidden { display: none; }
     .btn-small {
         padding: 4px 12px;
         border: none;
