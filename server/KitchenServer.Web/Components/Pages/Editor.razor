@@ -3,17 +3,21 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Components.Authorization
 @using KitchenServer.Web.Data
+@using KitchenServer.Web.Endpoints
 @using KitchenServer.Web.Services
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<AppDbContext> DbFactory
 @inject AuthenticationStateProvider AuthProvider
 @inject McpSessionManager McpSessions
+@inject IJSRuntime JS
 
-@* The Unity WebGL client inside the iframe reads projectId from its query string
-   and talks to /api/projects directly (same-origin cookies), so this page only
-   hosts the frame. The build is served at /unity (UnityWebGLStaticFiles). *@
+@* The Unity WebGL client inside the iframe reads projectId and lockGuid from its
+   query string and talks to /api/projects directly (same-origin cookies), so this
+   page only hosts the frame. The build is served at /unity (UnityWebGLStaticFiles). *@
 
 <PageTitle>@_projectName — KitchenDesigner Editor</PageTitle>
+
+<script src="/editor-lock.js"></script>
 
 <div class="editor-page">
     <div class="editor-toolbar">
@@ -54,6 +58,8 @@
     private string _error = "";
     private string _iframeSrc = "";
     private bool _ready;
+    private string? _lockGuid;
+    private bool _disposed;
 
     protected override async Task OnInitializedAsync()
     {
@@ -77,12 +83,28 @@
 
             _projectName = project.Name;
 
+            // Acquire project lock (takes over if already locked, notifies previous holder).
+            var lockGuid = await ProjectLockHelper.AcquireLockAsync(db, McpSessions, project);
+            if (lockGuid == null)
+            {
+                _error = "Failed to acquire project lock.";
+                return;
+            }
+            _lockGuid = lockGuid;
+
+            // Register beforeunload handler to release lock on tab close.
+            var projectIdStr = ProjectId.ToString();
+            var capturedLockGuid = _lockGuid;
+            await JS.InvokeVoidAsync("editorLock.registerRelease",
+                projectIdStr, capturedLockGuid);
+
             // Если у пользователя есть MCP-сессия для этого проекта (или без
             // привязки к проекту) — прокидываем ключ: WebGL-клиент подключится
             // к /api/mcp/ws и агент сможет управлять сценой.
             var mcpSession = McpSessions.GetUserSessions(userId)
                 .FirstOrDefault(s => s.ProjectId == null || s.ProjectId == ProjectId.ToString());
             _iframeSrc = $"/unity/index.html?projectId={ProjectId}" +
+                         $"&lockGuid={Uri.EscapeDataString(_lockGuid)}" +
                          (mcpSession != null ? $"&mcpKey={Uri.EscapeDataString(mcpSession.AccessKey)}" : "");
 
             _ready = true;
@@ -92,5 +114,24 @@
             _error = $"Failed to load project: {ex.Message}";
         }
     }
-}
 
+    private async Task ReleaseLock()
+    {
+        if (_disposed || _lockGuid == null) return;
+        _disposed = true;
+
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var project = await db.Projects.FindAsync(ProjectId);
+            if (project != null)
+                await ProjectLockHelper.ReleaseLockAsync(db, project, _lockGuid);
+        }
+        catch { /* best-effort cleanup */ }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await ReleaseLock();
+    }
+}

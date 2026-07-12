@@ -63,6 +63,18 @@ namespace KitchenDesigner.Core.Networking
 
         public bool HasCurrentProject => !string.IsNullOrEmpty(CurrentProjectId);
 
+        public string LockGuid
+        {
+            get => PlayerPrefs.GetString("KitchenLockGuid", "");
+            internal set
+            {
+                PlayerPrefs.SetString("KitchenLockGuid", value ?? "");
+                PlayerPrefs.Save();
+            }
+        }
+
+        public bool HasLock => !string.IsNullOrEmpty(LockGuid);
+
         private void Awake()
         {
             Instance = this;
@@ -157,7 +169,7 @@ namespace KitchenDesigner.Core.Networking
 
         private IEnumerator SaveCurrentRoutine(string jsonData, Action onSuccess, Action<string> onError)
         {
-            var body = new UpdateRequestBody { jsonData = jsonData };
+            var body = new UpdateRequestBody { jsonData = jsonData, lockGuid = LockGuid };
             var bodyJson = JsonUtility.ToJson(body);
             using (var req = UnityWebRequest.Put(BasePath + "/" + CurrentProjectId, bodyJson))
             {
@@ -239,7 +251,7 @@ namespace KitchenDesigner.Core.Networking
         private class CreateRequestBody { public string name; }
 
         [Serializable]
-        private class UpdateRequestBody { public string jsonData; }
+        private class UpdateRequestBody { public string jsonData; public string lockGuid; }
     }
 }
 #endif

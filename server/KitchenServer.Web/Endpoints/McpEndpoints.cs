@@ -103,6 +103,13 @@ public static class McpEndpoints
                 return;
             }
 
+            // Associate the session with the project if provided.
+            var projectId = context.Request.Query["projectId"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(projectId) && string.IsNullOrEmpty(session.ProjectId))
+            {
+                session.ProjectId = projectId;
+            }
+
             var ws = await context.WebSockets.AcceptWebSocketAsync();
             session.BrowserWebSocket = ws;
             sessions.RegisterBrowserConnection(session.SessionId, context.Connection.Id);

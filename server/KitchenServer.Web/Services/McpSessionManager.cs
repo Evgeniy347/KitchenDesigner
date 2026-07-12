@@ -94,6 +94,12 @@ public class McpSessionManager : IHostedService
             .ToList();
     }
 
+    public McpSession? GetSessionByProjectId(string projectId)
+    {
+        return _bySessionId.Values
+            .FirstOrDefault(s => s.ProjectId == projectId);
+    }
+
     public bool CloseSession(string sessionId)
     {
         if (!_bySessionId.TryRemove(sessionId, out var session))

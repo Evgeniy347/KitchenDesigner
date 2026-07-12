@@ -16,7 +16,7 @@ public class McpSession
     public string SessionId { get; init; } = Guid.NewGuid().ToString("N")[..12];
     public string UserId { get; init; } = "";
     public string AccessKey { get; init; } = Guid.NewGuid().ToString("N");
-    public string? ProjectId { get; init; }
+    public string? ProjectId { get; set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public TimeSpan SessionTtl { get; set; } = TimeSpan.FromMinutes(30);
 
