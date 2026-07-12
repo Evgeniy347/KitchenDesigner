@@ -19,11 +19,11 @@ namespace KitchenDesigner.Core
     [Serializable]
     public class CommandRecord
     {
-        /// <summary>JsonUtility обрывает сериализацию на глубине 10.
-        /// ProjectData → undoHistory → children[0]… children[N] добавляют ~3
-        /// уровня поверх SafeDepth, поэтому реальный лимит ≈ 7.
-        /// На этой глубине composite-команды разворачиваются без детей.</summary>
-        public const int SafeDepth = 5;
+        /// <summary>JsonUtility обрывает десериализацию на глубине 10.
+        /// Каждый уровень composite добавляет 2 к глубине JSON
+        /// (объект + массив children). Обёртка ProjectData→undoHistory = 2.
+        /// SafeDepth=3 → глубина 2+3×2=8, запас 2 уровня.</summary>
+        public const int SafeDepth = 3;
 
         public string type;          // move | resize | composite
         public string description;

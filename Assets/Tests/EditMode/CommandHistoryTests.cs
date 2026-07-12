@@ -178,6 +178,47 @@ public class CommandHistoryTests
     // --- Снапшоты: структура сериализации истории ---
 
     [Test]
+    public void RoundTrip_FlatComposite_Survives()
+    {
+        var a = Make("A_RT", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = Make("B_RT", new Vector3Int(600, 400, 18), new Vector3(1, 0, 0));
+        CommandStack.Execute(new CompositeCommand("flat", new List<IUndoCommand>
+        {
+            new MoveCommand(a, Vector3.zero, new Vector3(0, 0.5f, 0),
+                Quaternion.identity, Quaternion.identity),
+            new MoveCommand(b, new Vector3(1, 0, 0), new Vector3(1, 0.5f, 0),
+                Quaternion.identity, Quaternion.identity),
+        }));
+
+        var json = SaveLoadManager.Serialize(
+            SaveLoadManager.CaptureScene(new[] { a, b }));
+        var data = SaveLoadManager.Deserialize(json);
+        Assert.IsNotNull(data);
+        Assert.AreEqual(1, data.undoHistory.Length,
+            "плоский composite переживает round-trip");
+    }
+
+    [Test]
+    public void RoundTrip_3LevelComposite_Survives()
+    {
+        var e = Make("E_RT", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        var leaf = new MoveCommand(e, Vector3.zero, Vector3.one,
+            Quaternion.identity, Quaternion.identity);
+        var level2 = new CompositeCommand("L2", new List<IUndoCommand> { leaf });
+        var level1 = new CompositeCommand("L1", new List<IUndoCommand> { level2 });
+        var level0 = new CompositeCommand("L0", new List<IUndoCommand> { level1 });
+        CommandStack.Execute(level0);
+
+        var json = SaveLoadManager.Serialize(
+            SaveLoadManager.CaptureScene(new[] { e }));
+        var data = SaveLoadManager.Deserialize(json);
+        Assert.IsNotNull(data);
+        Assert.AreEqual(1, data.undoHistory.Length,
+            "3-уровневый composite (в пределах SafeDepth=3) переживает round-trip");
+    }
+
+    [Test]
     public void Snapshot_UndoHistory_CompositeTwoMoves()
     {
         var a = Make("Board_A", new Vector3Int(800, 400, 18), Vector3.zero);
@@ -268,6 +309,37 @@ public class CommandHistoryTests
         Assert.IsTrue(CommandStack.CanUndo);
         CommandStack.Undo();
         Assert.IsTrue(CommandStack.CanUndo);
+    }
+
+    [Test]
+    public void RoundTrip_DeepComposite_TruncatedToSafeDepth()
+    {
+        var e = Make("Board_RT", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        IUndoCommand current = null;
+        for (int i = 49; i >= 0; i--)
+        {
+            var from = new Vector3(i * 0.001f, 0, 0);
+            var to   = new Vector3((i + 1) * 0.001f, 0, 0);
+            var move = new MoveCommand(e, from, to,
+                Quaternion.identity, Quaternion.identity);
+            var siblings = new List<IUndoCommand> { move };
+            if (current != null) siblings.Add(current);
+            current = new CompositeCommand($"L{i}", siblings);
+        }
+        CommandStack.Execute(current);
+
+        var json = SaveLoadManager.Serialize(
+            SaveLoadManager.CaptureScene(new[] { e }));
+        Assert.IsTrue(json.Contains("undoHistory"), "сериализация прошла");
+
+        var data = SaveLoadManager.Deserialize(json);
+        Assert.IsNotNull(data, "ProjectData десериализуется");
+
+        Assert.IsTrue(data.undoHistory.Length <= 1,
+            "50-уровневая цепочка обрезается до ≤1 записи (SafeDepth=3)");
+        Assert.IsTrue(data.undoHistory.Length < 50,
+            $"глубокая история обрезана: было 50, стало {data.undoHistory.Length}");
     }
 
     [Test]
