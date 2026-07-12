@@ -76,6 +76,9 @@ builder.Services.AddSingleton<McpSessionManager>();
 builder.Services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<McpSessionManager>());
 builder.Services.AddSignalR();
 
+// Per-circuit bridge: editor page → nav-bar island (see EditorNavState).
+builder.Services.AddScoped<EditorNavState>();
+
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddRazorComponents()
