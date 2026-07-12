@@ -82,12 +82,11 @@ namespace KitchenDesigner.Core.UI
             // Понятные значки вместо текста.
             AddIconButton(bar.transform, "Settings", IconFactory.Gear, ref x, y, h, ToggleSettings);
             AddIconButton(bar.transform, "Save", IconFactory.Floppy, ref x, y, h, SaveCurrent);
-#if !UNITY_WEBGL
-            // На WebGL проекты выбираются на сайте (/projects), внутри Unity
-            // открыт конкретный проект — «Сохранить как» и «Загрузить» не нужны.
+            // «Сохранить как» и «Загрузить» доступны на всех платформах:
+            //   • WebGL — браузерные окна сохранения/выбора файла;
+            //   • desktop/редактор — системные диалоги Windows.
             AddIconButton(bar.transform, "SaveAs", IconFactory.FloppyPlus, ref x, y, h, SaveAs);
             AddIconButton(bar.transform, "Load", IconFactory.Folder, ref x, y, h, LoadDialog);
-#endif
 
             x += 12;
             _undoButton = AddIconButton(bar.transform, "Undo", IconFactory.Undo, ref x, y, h, DoUndo);
@@ -336,12 +335,14 @@ namespace KitchenDesigner.Core.UI
 #endif
         }
 
-        /// <summary>«Сохранить как»: на WebGL создаёт новый проект на сервере;
-        /// на остальных платформах — системный диалог.</summary>
+        /// <summary>«Сохранить как»: на WebGL — браузерное окно сохранения
+        /// (скачивание файла); на остальных платформах — системный диалог Windows.</summary>
         public void SaveAs()
         {
-#if UNITY_WEBGL
-            ServerSave(forceNew: true);
+#if UNITY_WEBGL && !UNITY_EDITOR
+            string suggested = WebFileDialog.SuggestedFileName(SaveLoadManager.LastPath);
+            WebFileDialog.Save(SaveLoadManager.CaptureCurrentJson(), suggested,
+                name => Toast("Сохранено: " + name));
 #else
             string suggested = SaveLoadManager.HasLastPath
                 ? System.IO.Path.GetFileName(SaveLoadManager.LastPath)
@@ -354,40 +355,24 @@ namespace KitchenDesigner.Core.UI
 #endif
         }
 
-        /// <summary>«Загрузить»: на WebGL — список проектов с сервера;
-        /// на остальных платформах — системный диалог выбора файла.</summary>
+        /// <summary>«Загрузить»: на WebGL — браузерное окно выбора файла, проект
+        /// открывается прямо в Unity; на остальных платформах — системный диалог Windows.</summary>
         public void LoadDialog()
         {
-#if UNITY_WEBGL
-            if (!Networking.ProjectApiClient.Enabled)
+#if UNITY_WEBGL && !UNITY_EDITOR
+            WebFileDialog.Open((fileName, content) =>
             {
-                LocalLoad();
-                return;
-            }
-            BuildProjectListPanel();
-            var api = Networking.ProjectApiClient.Instance;
-            api.FetchList(projects =>
-            {
-                // Reset title for server projects.
-                var titleText = _projectListPanel.transform.Find("Title");
-                if (titleText != null)
+                var data = SaveLoadManager.Deserialize(content);
+                if (data == null)
                 {
-                    var t = titleText.GetComponent<TMP_Text>();
-                    if (t != null) t.text = "Проекты";
-                }
-
-                if (projects.Count == 0)
-                {
-                    Toast("Нет сохранённых проектов");
-                    HideProjectListPanel();
+                    Toast("Не удалось прочитать файл");
                     return;
                 }
-                PopulateProjectList(projects);
-                ShowProjectListPanel();
-            },
-            err =>
-            {
-                Toast("Ошибка загрузки списка: " + err);
+                SaveLoadManager.ClearBoards(PartRegistry.GetAll());
+                SaveLoadManager.RestoreScene(data);
+                if (ElementHighlighter.Instance != null)
+                    ElementHighlighter.Instance.RefreshHighlights();
+                Toast("Загружено: " + fileName);
             });
 #else
             string path = NativeFileDialog.OpenDialog("Открыть проект кухни",
@@ -432,9 +417,8 @@ namespace KitchenDesigner.Core.UI
         }
 
 #if UNITY_WEBGL
-        // ── Server project save/load ──────────────────────────────────────
+        // ── Server project save (кнопка «Сохранить») ──────────────────────
 
-        private GameObject _projectListPanel;
         private GameObject _namePromptPanel;
         private TMP_InputField _nameInputField;
 
@@ -495,191 +479,7 @@ namespace KitchenDesigner.Core.UI
             });
         }
 
-        private void LocalLoad()
-        {
-            string[] files = SaveLoadManager.GetSaveFiles();
-            if (files == null || files.Length == 0)
-            {
-                Toast("Нет локальных сохранений");
-                return;
-            }
-
-            BuildProjectListPanel();
-            var scroll = _projectListPanel.GetComponentInChildren<ScrollRect>();
-            var content = scroll.content;
-            foreach (Transform child in content)
-                Object.Destroy(child.gameObject);
-
-            // Update title
-            var titleText = _projectListPanel.transform.Find("Title");
-            if (titleText != null)
-            {
-                var t = titleText.GetComponent<TMP_Text>();
-                if (t != null) t.text = "Локальные файлы";
-            }
-
-            foreach (var file in files)
-            {
-                string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
-                float btnHeight = 38f;
-                var btnGo = UIFactory.CreateButton("LocalBtn_" + fileName,
-                    content, fileName,
-                    Vector2.zero, new Vector2(0, btnHeight),
-                    () => LoadLocalFile(file));
-                var btnRt = btnGo.GetComponent<RectTransform>();
-                btnRt.sizeDelta = new Vector2(0, btnHeight);
-            }
-
-            ShowProjectListPanel();
-        }
-
-        private void LoadLocalFile(string path)
-        {
-            HideProjectListPanel();
-            if (SaveLoadManager.LoadFromPath(path))
-            {
-                if (ElementHighlighter.Instance != null)
-                    ElementHighlighter.Instance.RefreshHighlights();
-                Toast("Загружено: " + System.IO.Path.GetFileNameWithoutExtension(path));
-            }
-        }
-
-        // ── Project list panel ────────────────────────────────────────────
-
-        private void BuildProjectListPanel()
-        {
-            if (_projectListPanel != null) return;
-
-            _projectListPanel = new GameObject("ProjectListPanel");
-            _projectListPanel.transform.SetParent(_canvas.transform, false);
-            var rt = _projectListPanel.AddComponent<RectTransform>();
-            UIFactory.AnchorCenter(rt);
-            rt.sizeDelta = new Vector2(480, 520);
-            rt.anchoredPosition = Vector2.zero;
-
-            var bg = _projectListPanel.AddComponent<Image>();
-            bg.color = UIFactory.PanelColor;
-
-            // Title
-            UIFactory.CreateLabel("Title", _projectListPanel.transform,
-                "Проекты", 22,
-                new Vector2(0, -12), new Vector2(440, 36),
-                TextAnchor.MiddleCenter);
-
-            // Close button
-            var closeBtn = UIFactory.CreateButton("CloseBtn", _projectListPanel.transform,
-                "✕", new Vector2(210, -14), new Vector2(36, 30), HideProjectListPanel);
-            var closeRt = closeBtn.GetComponent<RectTransform>();
-            UIFactory.AnchorTopRight(closeRt);
-            closeRt.anchoredPosition = new Vector2(-10, -12);
-
-            // Scroll area
-            var scrollGo = new GameObject("ScrollArea", typeof(RectTransform));
-            scrollGo.transform.SetParent(_projectListPanel.transform, false);
-            var scrollRt = scrollGo.GetComponent<RectTransform>();
-            scrollRt.anchorMin = new Vector2(0, 0);
-            scrollRt.anchorMax = new Vector2(1, 1);
-            scrollRt.offsetMin = new Vector2(12, 60);
-            scrollRt.offsetMax = new Vector2(-12, -54);
-
-            var scrollImg = scrollGo.AddComponent<Image>();
-            scrollImg.color = UIFactory.FieldColor;
-
-            var scroll = scrollGo.AddComponent<ScrollRect>();
-            scroll.horizontal = false;
-            scroll.movementType = ScrollRect.MovementType.Clamped;
-            scroll.scrollSensitivity = 20f;
-
-            var viewport = UIFactory.CreateRect("Viewport", scrollGo.transform);
-            viewport.anchorMin = Vector2.zero;
-            viewport.anchorMax = Vector2.one;
-            viewport.pivot = new Vector2(0, 1);
-            viewport.sizeDelta = Vector2.zero;
-            var mask = viewport.gameObject.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
-            var vpImg = viewport.gameObject.AddComponent<Image>();
-            vpImg.color = new Color(0, 0, 0, 0.01f);
-
-            var content = UIFactory.CreateRect("Content", viewport);
-            content.anchorMin = new Vector2(0, 1);
-            content.anchorMax = new Vector2(1, 1);
-            content.pivot = new Vector2(0.5f, 1f);
-            content.sizeDelta = new Vector2(0, 0);
-
-            var fitter = content.gameObject.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            var layout = content.gameObject.AddComponent<VerticalLayoutGroup>();
-            layout.childAlignment = TextAnchor.UpperCenter;
-            layout.spacing = 4;
-            layout.padding = new RectOffset(6, 6, 6, 6);
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
-            layout.childControlWidth = true;
-            layout.childControlHeight = false;
-
-            scroll.content = content;
-            scroll.viewport = viewport;
-
-            _projectListPanel.SetActive(false);
-        }
-
-        private void PopulateProjectList(List<Networking.ServerProjectInfo> projects)
-        {
-            var scroll = _projectListPanel.GetComponentInChildren<ScrollRect>();
-            var content = scroll.content;
-
-            foreach (Transform child in content)
-                Object.Destroy(child.gameObject);
-
-            foreach (var proj in projects)
-            {
-                float btnHeight = 38f;
-                var btnGo = UIFactory.CreateButton("ProjBtn_" + proj.id,
-                    content, proj.name,
-                    Vector2.zero, new Vector2(0, btnHeight),
-                    () => LoadProjectFromServer(proj.id));
-                var btnRt = btnGo.GetComponent<RectTransform>();
-                btnRt.sizeDelta = new Vector2(0, btnHeight);
-            }
-        }
-
-        private void ShowProjectListPanel()
-        {
-            if (_projectListPanel != null)
-                _projectListPanel.SetActive(true);
-        }
-
-        private void HideProjectListPanel()
-        {
-            if (_projectListPanel != null)
-                _projectListPanel.SetActive(false);
-        }
-
-        private void LoadProjectFromServer(string projectId)
-        {
-            HideProjectListPanel();
-            var api = Networking.ProjectApiClient.Instance;
-            api.LoadProject(projectId,
-                (name, jsonData) =>
-                {
-                    var projectData = SaveLoadManager.Deserialize(jsonData);
-                    if (projectData == null)
-                    {
-                        Toast("Ошибка загрузки проекта");
-                        return;
-                    }
-                    SaveLoadManager.LastPath = projectId;
-                    SaveLoadManager.ClearBoards(PartRegistry.Instance.GetAll());
-                    SaveLoadManager.RestoreScene(projectData);
-                    if (ElementHighlighter.Instance != null)
-                        ElementHighlighter.Instance.RefreshHighlights();
-                    Toast("Загружено: " + name);
-                },
-                err => Toast("Ошибка: " + err));
-        }
-
-        // ── Name prompt panel (for Save / SaveAs when no project exists) ───
+        // ── Name prompt panel (для «Сохранить» нового серверного проекта) ──
 
         private void ShowNamePrompt(string defaultName, System.Action<string> onConfirm)
         {
