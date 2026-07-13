@@ -14,6 +14,7 @@ namespace KitchenDesigner.Core.Networking
         public string name;
         public string createdAt;
         public string updatedAt;
+        public int version;
     }
 
     [Serializable]

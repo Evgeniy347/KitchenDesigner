@@ -9,6 +9,9 @@ public class Project
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
 
+    /// <summary>Stable identifier shared across all versions of the same project.</summary>
+    public Guid ProjectGroupId { get; set; }
+
     [Required]
     public string UserId { get; set; } = string.Empty;
 
@@ -21,9 +24,20 @@ public class Project
     [Column(TypeName = "jsonb")]
     public string JsonData { get; set; } = string.Empty;
 
+    /// <summary>Monotonically incremented version number. First version is 1.</summary>
+    public int Version { get; set; } = 1;
+
+    /// <summary>True for the current (newest) version of the project.</summary>
+    public bool IsLatest { get; set; } = true;
+
+    /// <summary>Soft-delete flag. Deleted projects are hidden but never physically removed.</summary>
+    public bool IsDeleted { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime? DeletedAt { get; set; }
 
     public bool IsArchived { get; set; }
 

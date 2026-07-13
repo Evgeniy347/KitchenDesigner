@@ -22,6 +22,8 @@ public class AppDbContext : IdentityDbContext<IdentityUser>
             entity.HasIndex(p => p.UserId);
 
             entity.HasIndex(p => new { p.UserId, p.IsArchived });
+
+            entity.HasIndex(p => new { p.ProjectGroupId, p.IsLatest });
         });
     }
 }

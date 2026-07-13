@@ -87,6 +87,10 @@
                                 title="Download as .json">
                             <i class="bi bi-download"></i>
                         </button>
+                        <button class="projects-btn-icon" @onclick="() => OpenVersions(p.Id)"
+                                title="Version history">
+                            <i class="bi bi-clock-history"></i>
+                        </button>
                         <button class="projects-btn-icon projects-btn-icon-danger @(IsDeletePending(p.Id) ? "projects-btn-delete-confirm" : "")"
                                 @onclick="() => ToggleDeleteConfirm(p.Id)"
                                 title="Delete">
@@ -143,9 +147,9 @@
             _projects.Clear();
             await using var db = await DbFactory.CreateDbContextAsync();
             var dbProjects = await db.Projects
-                .Where(p => p.UserId == userId && !p.IsArchived)
+                .Where(p => p.UserId == userId && p.IsLatest && !p.IsDeleted && !p.IsArchived)
                 .OrderByDescending(p => p.UpdatedAt)
-                .Select(p => new ProjectInfo(p.Id, p.Name, p.CreatedAt, p.UpdatedAt))
+                .Select(p => new ProjectInfo(p.ProjectGroupId, p.Name, p.CreatedAt, p.UpdatedAt, p.Version))
                 .ToListAsync();
             _projects.AddRange(dbProjects);
         }
@@ -181,16 +185,19 @@
             var project = new KitchenServer.Web.Data.Entities.Project
             {
                 Id = Guid.NewGuid(),
+                ProjectGroupId = Guid.NewGuid(),
                 UserId = userId,
                 Name = name,
                 JsonData = "{}",
+                Version = 1,
+                IsLatest = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
             // Storage.Save валидирует JSON и лимит размера — при отказе проект
             // в БД не попадает.
-            await Storage.Save(project.Id, userId, json);
+            await Storage.Save(project.ProjectGroupId, userId, json);
 
             await using var db = await DbFactory.CreateDbContextAsync();
             db.Projects.Add(project);
@@ -226,16 +233,19 @@
             var project = new KitchenServer.Web.Data.Entities.Project
             {
                 Id = Guid.NewGuid(),
+                ProjectGroupId = Guid.NewGuid(),
                 UserId = userId,
                 Name = "New Project",
                 JsonData = "{}",
+                Version = 1,
+                IsLatest = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
             await using var db = await DbFactory.CreateDbContextAsync();
             db.Projects.Add(project);
-            await Storage.Save(project.Id, userId, "{}");
+            await Storage.Save(project.ProjectGroupId, userId, "{}");
             await db.SaveChangesAsync();
             await LoadProjects();
         }
@@ -246,6 +256,8 @@
     }
 
     private void OpenProject(Guid id) => Navigation.NavigateTo($"/editor/{id}");
+
+    private void OpenVersions(Guid id) => Navigation.NavigateTo($"/projects/{id}/versions");
 
     private void StartRename(ProjectInfo p)
     {
@@ -264,7 +276,8 @@
             if (userId is null) return;
 
             await using var db = await DbFactory.CreateDbContextAsync();
-            var project = await db.Projects.FirstOrDefaultAsync(pr => pr.Id == p.Id && pr.UserId == userId);
+            var project = await db.Projects
+                .FirstOrDefaultAsync(pr => pr.ProjectGroupId == p.Id && pr.UserId == userId && pr.IsLatest && !pr.IsDeleted);
             if (project is not null)
             {
                 project.Name = _editName;
@@ -309,12 +322,19 @@
             if (userId is null) return;
 
             await using var db = await DbFactory.CreateDbContextAsync();
-            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
-            if (project is not null)
+            var versions = await db.Projects
+                .Where(p => p.ProjectGroupId == id && p.UserId == userId && !p.IsDeleted)
+                .ToListAsync();
+            if (versions.Count > 0)
             {
-                db.Projects.Remove(project);
+                var now = DateTime.UtcNow;
+                foreach (var v in versions)
+                {
+                    v.IsDeleted = true;
+                    v.IsLatest = false;
+                    v.DeletedAt = now;
+                }
                 await db.SaveChangesAsync();
-                Storage.Delete(id, userId);
             }
             await LoadProjects();
         }
@@ -352,23 +372,29 @@
             if (userId is null) return;
 
             await using var db = await DbFactory.CreateDbContextAsync();
-            var original = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            var original = await db.Projects
+                .FirstOrDefaultAsync(p => p.ProjectGroupId == id && p.UserId == userId && p.IsLatest && !p.IsDeleted);
             if (original is null) return;
 
             var json = await Storage.Load(id, userId) ?? original.JsonData;
 
+            var duplicateGroupId = Guid.NewGuid();
+            var now = DateTime.UtcNow;
             var duplicate = new KitchenServer.Web.Data.Entities.Project
             {
                 Id = Guid.NewGuid(),
+                ProjectGroupId = duplicateGroupId,
                 UserId = userId,
                 Name = $"{original.Name} (Copy)",
                 JsonData = json,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                Version = 1,
+                IsLatest = true,
+                CreatedAt = now,
+                UpdatedAt = now
             };
 
             db.Projects.Add(duplicate);
-            await Storage.Save(duplicate.Id, userId, json);
+            await Storage.Save(duplicateGroupId, userId, json);
             await db.SaveChangesAsync();
             await LoadProjects();
         }
@@ -378,7 +404,7 @@
         }
     }
 
-    private record ProjectInfo(Guid Id, string Name, DateTime CreatedAt, DateTime UpdatedAt);
+    private record ProjectInfo(Guid Id, string Name, DateTime CreatedAt, DateTime UpdatedAt, int Version);
 }
 
 <script src="/downloadFile.js"></script>

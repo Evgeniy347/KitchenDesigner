@@ -649,6 +649,106 @@ code.mcp-url, code.mcp-key {
     word-break: break-all;
 }
 
+.mcp-key-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #3a5afe;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.mcp-key-help:hover { background: #5a7aff; }
+
+/* ══════════════════════════════════════════════════════════════
+   MCP guide page
+   ══════════════════════════════════════════════════════════════ */
+
+.mcp-guide-page {
+    max-width: 640px;
+    margin: 48px auto;
+    padding: 0 24px;
+}
+.mcp-guide-title {
+    color: #fff;
+    font-size: 24px;
+    margin: 0 0 32px;
+}
+.mcp-guide-section {
+    margin-bottom: 32px;
+}
+.mcp-guide-section h3 {
+    color: #cdd;
+    font-size: 16px;
+    margin: 0 0 10px;
+}
+.mcp-guide-section p {
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 10px;
+}
+.mcp-guide-address-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: #1a1a2e;
+    border: 1px solid #3a3a5a;
+    border-radius: 6px;
+}
+.mcp-guide-address {
+    color: #cdd;
+    font-family: monospace;
+    font-size: 14px;
+    user-select: all;
+}
+.mcp-guide-copy {
+    background: #3a3a5a;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+}
+.mcp-guide-copy:hover { background: #4a4a6a; }
+
+.mcp-guide-quote {
+    margin: 12px 0;
+    padding: 10px 16px;
+    background: #1e1e2e;
+    border-left: 3px solid #3a5afe;
+    border-radius: 0 6px 6px 0;
+    color: #aaa;
+    font-size: 14px;
+    line-height: 1.5;
+}
+.mcp-guide-quote em {
+    color: #7c8aff;
+    font-style: normal;
+}
+
+.mcp-guide-light-demo {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin: 0 2px;
+}
+.mcp-guide-light-demo-on {
+    background: #2ecc71;
+    box-shadow: 0 0 5px #2ecc71;
+}
+
 /* ══════════════════════════════════════════════════════════════
    AUTH forms (.auth-*) — Login, Register, Logout
    ══════════════════════════════════════════════════════════════ */
@@ -816,3 +916,113 @@ code.mcp-url, code.mcp-key {
     font-size: 13px;
     color: #6bff6b;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   VERSION HISTORY page (.versions-*)
+   ══════════════════════════════════════════════════════════════ */
+
+.versions-page {
+    padding: 32px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.versions-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.versions-header h1 {
+    color: #fff;
+    margin: 0;
+    font-size: 24px;
+}
+
+.versions-btn-back {
+    padding: 6px 14px;
+    background: #2a2a3e;
+    color: #ccc;
+    border: 1px solid #3a3a5e;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.versions-btn-back:hover { background: #3a3a5e; color: #fff; }
+
+.versions-project-name {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+.versions-project-name strong { color: #ddd; }
+
+.versions-table-wrapper {
+    border: 1px solid #2a2a3e;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.versions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.versions-table thead { background: #1a1a2e; }
+.versions-table th {
+    color: #888;
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.versions-table td {
+    padding: 10px 14px;
+    color: #ccc;
+    border-top: 1px solid #2a2a3e;
+}
+.versions-table tbody tr:hover { background: #1e1e2e; }
+
+.versions-row-latest td { color: #fff; }
+.versions-row-deleted td { color: #666; text-decoration: line-through; }
+
+.versions-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.versions-badge-latest {
+    background: #1a3a2a;
+    color: #2ecc71;
+}
+.versions-badge-old {
+    background: #2a2a3e;
+    color: #888;
+}
+.versions-badge-deleted {
+    background: #3a1a1a;
+    color: #ff6b6b;
+}
+
+.versions-footer {
+    margin-top: 16px;
+    color: #888;
+    font-size: 13px;
+}
+
+.versions-loading,
+.versions-error {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+}
+.versions-error { color: #ff6b6b; }
