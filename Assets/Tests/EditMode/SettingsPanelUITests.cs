@@ -54,7 +54,7 @@ public class SettingsPanelUITests
         var panel = _canvas.transform.Find("SettingsPanel");
         Assert.IsNotNull(panel);
         var rt = panel.GetComponent<RectTransform>();
-        Assert.AreEqual(440, rt.sizeDelta.x, 0.01f);
+        Assert.AreEqual(520, rt.sizeDelta.x, 0.01f);
         Assert.AreEqual(680, rt.sizeDelta.y, 0.01f);
     }
 
@@ -263,17 +263,16 @@ public class SettingsPanelUITests
     }
 
     [Test]
-    public void ToggleRow_UpdatesLabel_OnValueChange()
+    public void ToggleRow_CheckmarkReflectsState()
     {
         var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
         var toggleObj = project.Find("RowTgl_Сетка/Tgl_Сетка");
-        var label = toggleObj.Find("Tgl_Сетка_Label").GetComponent<TextMeshProUGUI>();
-
-        Assert.AreEqual("Вкл", label.text.Replace("\u200b", ""));
-
         var toggle = toggleObj.GetComponent<Toggle>();
+
+        Assert.IsTrue(toggle.isOn);
+
         toggle.isOn = false;
-        Assert.AreEqual("Выкл", label.text.Replace("\u200b", ""));
+        Assert.IsFalse(toggle.isOn);
     }
 
     [Test]

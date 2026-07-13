@@ -18,12 +18,12 @@ namespace KitchenDesigner.Core.UI
         private static readonly Color ActiveTabColor = new(0.28f, 0.33f, 0.42f, 1f);
         private static readonly Color InactiveTabColor = new(0.15f, 0.16f, 0.20f, 1f);
 
-        private const float PanelW = 440;
+        private const float PanelW = 520;
         private const float PanelH = 680;
-        private const float ContentW = 400;
+        private const float ContentW = 480;
         private const float RowH = 32;
         private const float RowStep = 38;
-        private const float LabelW = 230;
+        private const float LabelW = 300;
         private const float ControlW = 150;
         private const float TitleY = 285;
         private const float TabY = 246;
@@ -196,27 +196,21 @@ namespace KitchenDesigner.Core.UI
         private void CreateRightToggle(string name, Transform parent, bool value, Action<bool> onChanged)
         {
             var rect = UIFactory.CreateRect(name, parent);
-            rect.sizeDelta = new Vector2(ControlW, RowH);
-            rect.anchoredPosition = new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0);
+            rect.sizeDelta = new Vector2(26, RowH);
+            rect.anchoredPosition = new Vector2(ContentW * 0.5f - 26, 0);
 
             var toggle = rect.gameObject.AddComponent<Toggle>();
 
             var box = UIFactory.CreatePanel(name + "_Box", rect,
-                new Vector2(ControlW * 0.5f - 26, 0), new Vector2(22, 22), UIFactory.FieldColor);
+                Vector2.zero, new Vector2(22, 22), UIFactory.FieldColor);
             var check = UIFactory.CreateLabel(name + "_Check", box.transform, "X", 16,
                 Vector2.zero, new Vector2(22, 22), TextAnchor.MiddleCenter);
             toggle.graphic = check;
             toggle.targetGraphic = box;
 
-            var lbl = UIFactory.CreateLabel(name + "_Label", rect, value ? "Вкл" : "Выкл", 14,
-                new Vector2(-ControlW * 0.5f, 0), new Vector2(ControlW - 32, RowH), TextAnchor.MiddleRight);
-            toggle.onValueChanged.AddListener(v =>
-            {
-                lbl.text = v ? "Вкл" : "Выкл";
-                onChanged?.Invoke(v);
-            });
-
             toggle.isOn = value;
+            if (onChanged != null)
+                toggle.onValueChanged.AddListener(v => onChanged(v));
         }
 
         private TMP_InputField AddInputRow(Transform parent, ref float y, string label,
