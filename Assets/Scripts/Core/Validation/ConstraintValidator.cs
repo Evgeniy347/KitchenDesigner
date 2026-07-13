@@ -195,7 +195,6 @@ namespace KitchenDesigner.Core
                 }
             }
 
-            if (queue.Count == 0)
             {
                 KitchenElement start = null;
                 foreach (var e in all)
