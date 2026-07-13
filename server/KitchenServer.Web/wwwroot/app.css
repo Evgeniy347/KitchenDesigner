@@ -487,11 +487,15 @@ h1:focus { outline: none; }
     overflow: hidden;
 }
 
-/* Инфо об открытом проекте живёт в верхней навигации (EditorNavInfo). */
+/* Инфо об открытом проекте живёт в верхней навигации (EditorNavInfo).
+   Показываем её только на странице редактора, где есть .editor-page. */
 .editor-nav-info {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 12px;
+}
+.layout:has(.editor-page) .editor-nav-info {
+    display: flex;
 }
 .editor-project-name {
     color: #fff;
