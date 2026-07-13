@@ -186,15 +186,20 @@ namespace KitchenDesigner.Core
             var queue = new Queue<KitchenElement>();
 
             // Якоря (пол и стены) — корни BFS: всё пристыкованное к ним заземлено.
+            bool hasAnchor = false;
             foreach (var e in all)
             {
                 if (IsAnchor(e))
                 {
+                    hasAnchor = true;
                     visited.Add(e);
                     queue.Enqueue(e);
                 }
             }
 
+            // Если якорей нет, заземляем первую связную компоненту
+            // (без пола/стен отсутствие внешней опоры не считается нарушением).
+            if (!hasAnchor)
             {
                 KitchenElement start = null;
                 foreach (var e in all)
