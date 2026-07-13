@@ -51,30 +51,31 @@ namespace KitchenDesigner.Core
 
         // Оси у рёбер знаковые так, чтобы поворот +90° распахивал их «наружу»
         // (передние — к −Z, задние — к +Z). Порядок строго совпадает с DoorMode.
+        // Символы — ASCII, потому что LiberationSans SDF в WebGL не содержит Unicode-стрелок.
         private static readonly Variant[] V =
         {
             // Передняя грань (z=−hz). Распахиваются наружу — к +Z.
-            new Variant(false, new Vector3(-1f, 0f, -1f),  Y, "◄", "Дверь: слева"),
-            new Variant(false, new Vector3( 1f, 0f, -1f), -Y, "►", "Дверь: справа"),
-            new Variant(false, new Vector3( 0f, 1f, -1f),  X, "▲", "Дверь: сверху"),
-            new Variant(false, new Vector3( 0f,-1f, -1f), -X, "▼", "Дверь: снизу"),
+            new Variant(false, new Vector3(-1f, 0f, -1f),  Y, "<", "Дверь: слева"),
+            new Variant(false, new Vector3( 1f, 0f, -1f), -Y, ">", "Дверь: справа"),
+            new Variant(false, new Vector3( 0f, 1f, -1f),  X, "^", "Дверь: сверху"),
+            new Variant(false, new Vector3( 0f,-1f, -1f), -X, "v", "Дверь: снизу"),
             // Задняя грань (z=+hz) — оси зеркальны передним.
-            new Variant(false, new Vector3(-1f, 0f,  1f), -Y, "◁", "Сзади: слева"),
-            new Variant(false, new Vector3( 1f, 0f,  1f),  Y, "▷", "Сзади: справа"),
-            new Variant(false, new Vector3( 0f, 1f,  1f), -X, "△", "Сзади: сверху"),
-            new Variant(false, new Vector3( 0f,-1f,  1f),  X, "▽", "Сзади: снизу"),
+            new Variant(false, new Vector3(-1f, 0f,  1f), -Y, "[", "Сзади: слева"),
+            new Variant(false, new Vector3( 1f, 0f,  1f),  Y, "]", "Сзади: справа"),
+            new Variant(false, new Vector3( 0f, 1f,  1f), -X, "{", "Сзади: сверху"),
+            new Variant(false, new Vector3( 0f,-1f,  1f),  X, "}", "Сзади: снизу"),
             // Рёбра по толщине (ось Z) в 4 углах.
-            new Variant(false, new Vector3(-1f, 1f,  0f),  Z, "◤", "Угол: верх-лево"),
-            new Variant(false, new Vector3( 1f, 1f,  0f),  Z, "◥", "Угол: верх-право"),
-            new Variant(false, new Vector3(-1f,-1f,  0f),  Z, "◣", "Угол: низ-лево"),
-            new Variant(false, new Vector3( 1f,-1f,  0f),  Z, "◢", "Угол: низ-право"),
+            new Variant(false, new Vector3(-1f, 1f,  0f),  Z, "(", "Угол: верх-лево"),
+            new Variant(false, new Vector3( 1f, 1f,  0f),  Z, ")", "Угол: верх-право"),
+            new Variant(false, new Vector3(-1f,-1f,  0f),  Z, "\\", "Угол: низ-лево"),
+            new Variant(false, new Vector3( 1f,-1f,  0f),  Z, "/", "Угол: низ-право"),
             // Ящик — сдвиг по нормали грани. "Вперёд" = наружу = +Z.
-            new Variant(true, Vector3.zero,  Z, "⊙", "Ящик: вперёд"),
-            new Variant(true, Vector3.zero, -Z, "⊗", "Ящик: назад"),
-            new Variant(true, Vector3.zero, -X, "→", "Ящик: вправо"),
-            new Variant(true, Vector3.zero,  X, "←", "Ящик: влево"),
-            new Variant(true, Vector3.zero, -Y, "↑", "Ящик: вверх"),
-            new Variant(true, Vector3.zero,  Y, "↓", "Ящик: вниз"),
+            new Variant(true, Vector3.zero,  Z, "O", "Ящик: вперёд"),
+            new Variant(true, Vector3.zero, -Z, "X", "Ящик: назад"),
+            new Variant(true, Vector3.zero, -X, "R", "Ящик: вправо"),
+            new Variant(true, Vector3.zero,  X, "L", "Ящик: влево"),
+            new Variant(true, Vector3.zero, -Y, "U", "Ящик: вверх"),
+            new Variant(true, Vector3.zero,  Y, "D", "Ящик: вниз"),
         };
 
         /// <summary>Число режимов (12 рёбер + 6 ящиков = 18).</summary>
