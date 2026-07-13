@@ -66,8 +66,9 @@ if %ERRORLEVEL% neq 0 (
 echo.
 echo ========================================
 echo  Deploy DEBUG complete!
-echo  WebGL:  http://192.168.0.189:23080/
-echo  Server: http://192.168.0.189:23080/api/
+echo  HTTPS: https://kitchendesigner.duckdns.org/
+echo  HTTP:  http://kitchendesigner.duckdns.org/ (redirects to HTTPS)
+echo  MCP:   http://192.168.0.189:8081/hubs/mcp
 echo ========================================
 
 endlocal
