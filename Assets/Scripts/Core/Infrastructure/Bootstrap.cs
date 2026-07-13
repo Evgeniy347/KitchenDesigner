@@ -8,9 +8,8 @@ namespace KitchenDesigner.Core
         private void Awake()
         {
             Application.runInBackground = true;
-#if UNITY_WEBGL
-            Application.targetFrameRate = 30;
-#endif
+            // Ограничение FPS теперь динамическое — им управляет FrameRateManager
+            // (активный FPS при активности, «почти ноль» в простое).
             GameContext.InitializeWithDefaults();
             if (KitchenSettings.Instance != null)
                 KitchenSettings.Instance.Load();
@@ -29,6 +28,8 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<ElementHighlighter>() == null) gameObject.AddComponent<ElementHighlighter>();
             if (FindAnyObjectByType<UI.UIManager>() == null) gameObject.AddComponent<UI.UIManager>();
             if (FindAnyObjectByType<AutoSaveManager>() == null) gameObject.AddComponent<AutoSaveManager>();
+            if (FindAnyObjectByType<FrameRateManager>() == null)
+                new GameObject("FrameRateManager").AddComponent<FrameRateManager>();
             if (FindAnyObjectByType<SpatialGridRenderer>() == null) gameObject.AddComponent<SpatialGridRenderer>();
             if (FindAnyObjectByType<EdgeOutlineRenderer>() == null) gameObject.AddComponent<EdgeOutlineRenderer>();
             if (FindAnyObjectByType<WallManager>() == null) gameObject.AddComponent<WallManager>();

@@ -25,6 +25,9 @@ namespace KitchenDesigner.Core.MCP
         /// </summary>
         public McpResponse Handle(McpRequest request)
         {
+            // Команда агента — считаем это активностью, чтобы сцена не «спала»
+            // на 1 FPS и агент не ждал кадр при каждом вызове.
+            FrameRateManager.KeepAwake(1f);
             try
             {
                 switch (request.method)
