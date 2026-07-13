@@ -50,6 +50,7 @@
     private bool _ready;
     private string? _lockGuid;
     private bool _disposed;
+    private McpSession? _session;
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,17 +90,17 @@
             await JS.InvokeVoidAsync("editorLock.registerRelease",
                 projectIdStr, capturedLockGuid);
 
-            // Если у пользователя есть MCP-сессия для этого проекта (или без
-            // привязки к проекту) — прокидываем ключ: WebGL-клиент подключится
-            // к /api/mcp/ws и агент сможет управлять сценой.
-            var mcpSession = McpSessions.GetUserSessions(userId)
-                .FirstOrDefault(s => s.ProjectId == null || s.ProjectId == ProjectId.ToString());
+            // Fresh MCP session for THIS tab: a unique project key generated on every
+            // load. The WebGL client connects it to /api/mcp/ws; the user copies the
+            // key (shown in the top nav, see EditorNavInfo) and passes it to the agent.
+            _session = McpSessions.CreateSession(userId, ProjectId.ToString());
+            McpSessions.SessionStateChanged += OnSessionStateChanged;
             _iframeSrc = $"/unity/index.html?projectId={ProjectId}" +
                          $"&lockGuid={Uri.EscapeDataString(_lockGuid)}" +
-                         (mcpSession != null ? $"&mcpKey={Uri.EscapeDataString(mcpSession.AccessKey)}" : "");
+                         $"&mcpKey={Uri.EscapeDataString(_session.TabKey)}";
 
             _ready = true;
-            NavState.Set(_projectName, ProjectId);
+            NavState.Set(_projectName, ProjectId, _session.TabKey);
         }
         catch (Exception ex)
         {
@@ -123,8 +124,17 @@
         catch { /* best-effort cleanup */ }
     }
 
+    // Flip the tab's status light when an agent binds/unbinds to THIS tab's key.
+    private void OnSessionStateChanged(McpSession s)
+    {
+        if (_session == null || s.TabKey != _session.TabKey) return;
+        InvokeAsync(() => NavState.SetAgentConnected(s.AgentBound));
+    }
+
     public async ValueTask DisposeAsync()
     {
+        McpSessions.SessionStateChanged -= OnSessionStateChanged;
+        if (_session != null) McpSessions.CloseSession(_session.TabKey);
         NavState.Clear();
         await ReleaseLock();
     }

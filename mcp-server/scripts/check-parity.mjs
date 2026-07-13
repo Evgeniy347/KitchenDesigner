@@ -1,10 +1,12 @@
-// Parity guard: the tools exposed in src/index.ts MUST match the dispatcher
-// switch in McpCommandHandler.cs 1:1. Run automatically before `npm run build`
-// (prebuild) and manually via `npm run check`. Fails with a clear list of what
-// to add/remove so a forgotten method can never ship.
+// Parity guard: the generated tool table (src/tools.generated.ts) MUST match the
+// dispatcher switch in McpCommandHandler.cs 1:1. Run automatically before
+// `npm run build` (prebuild) and manually via `npm run check`. Fails with a clear
+// list of what to add/remove so a forgotten method can never ship.
 //
-// It does NOT generate code — the hand-written descriptions carry the units and
-// wording a weak model needs, which a generator cannot invent. It only checks.
+// The tool table is generated from the C# contract (McpToolRegistry) via
+// `npm run gen:tools`. This guard is the cheap, dotnet-free cross-check that the
+// committed generated file still lines up with the Unity handler switch. The C#
+// side additionally guards registry<->switch parity in McpToolRegistryParityTests.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -12,7 +14,7 @@ import { dirname, resolve } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const CS = resolve(here, "..", "..", "Assets", "Scripts", "Core", "MCP", "McpCommandHandler.cs");
-const TS = resolve(here, "..", "src", "index.ts");
+const TS = resolve(here, "..", "src", "tools.generated.ts");
 
 // Intentional, documented exceptions:
 const CS_ONLY = new Set([]);        // C# switch cases deliberately not exposed to the model (none currently)
@@ -29,10 +31,10 @@ const csMethods = new Set(
   [...csText.matchAll(/case\s+"([^"]+)"\s*:\s*return\s+Handle\w+\(/g)].map((m) => m[1])
 );
 
-// TS tools:  server.registerTool("move_element", { ... })
-const tsText = readOrDie(TS, "index.ts");
+// Generated tool table entries look like:  name: "move_element",
+const tsText = readOrDie(TS, "tools.generated.ts");
 const tsTools = new Set(
-  [...tsText.matchAll(/registerTool\(\s*"([^"]+)"/g)].map((m) => m[1])
+  [...tsText.matchAll(/^\s*name:\s*"([^"]+)",/gm)].map((m) => m[1])
 );
 
 const missingInTs = [...csMethods].filter((m) => !tsTools.has(m) && !CS_ONLY.has(m)).sort();

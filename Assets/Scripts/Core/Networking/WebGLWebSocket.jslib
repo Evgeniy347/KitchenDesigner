@@ -1,7 +1,11 @@
+// NB: $wsInstance / $wsGameObjectName are jslib "library" variables. Each function
+// that uses them MUST declare a __deps on them, otherwise Emscripten (Unity 6000.4)
+// tree-shakes the declarations and the runtime throws "wsInstance is not defined".
 var WebGLWebSocketImpl = {
     $wsInstance: null,
     $wsGameObjectName: null,
 
+    WebSocketConnect__deps: ['$wsInstance', '$wsGameObjectName'],
     WebSocketConnect: function(urlPtr, gameObjectNamePtr) {
         var url = UTF8ToString(urlPtr);
         wsGameObjectName = UTF8ToString(gameObjectNamePtr);
@@ -39,6 +43,7 @@ var WebGLWebSocketImpl = {
         }
     },
 
+    WebSocketSend__deps: ['$wsInstance'],
     WebSocketSend: function(messagePtr) {
         var message = UTF8ToString(messagePtr);
         if (wsInstance && wsInstance.readyState === WebSocket.OPEN) {
@@ -48,6 +53,7 @@ var WebGLWebSocketImpl = {
         }
     },
 
+    WebSocketClose__deps: ['$wsInstance'],
     WebSocketClose: function() {
         if (wsInstance) {
             wsInstance.close();

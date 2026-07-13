@@ -10,6 +10,8 @@ namespace KitchenDesigner.Core.UI
     {
         private GameObject _root;
         private TMP_Text _content;
+        private RectTransform _contentRect;
+        private ScrollRect _scrollRect;
 
         public void Build(Transform canvas)
         {
@@ -21,8 +23,47 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateLabel("SpecTitle", panel.transform, "Спецификация", 24,
                 new Vector2(0, 290), new Vector2(540, 36), TextAnchor.MiddleCenter);
 
-            _content = UIFactory.CreateLabel("SpecContent", panel.transform, "", 18,
-                new Vector2(0, -10), new Vector2(540, 540), TextAnchor.UpperLeft);
+            // Viewport для скролла: область между заголовком и кнопками.
+            var viewportRect = UIFactory.CreateRect("SpecViewport", panel.transform);
+            viewportRect.sizeDelta = new Vector2(540, 520);
+            viewportRect.anchoredPosition = new Vector2(0, -10);
+
+            // Content внутри viewport.
+            _contentRect = UIFactory.CreateRect("SpecContent", viewportRect.transform);
+            _contentRect.sizeDelta = new Vector2(540, 0);
+            _contentRect.anchoredPosition = Vector2.zero;
+
+            _content = _contentRect.gameObject.AddComponent<TextMeshProUGUI>();
+            _content.font = UIFactory.FontAsset;
+            _content.fontSize = 18;
+            _content.color = UIFactory.TextColor;
+            _content.alignment = TextAlignmentOptions.TopLeft;
+            _content.enableAutoSizing = false;
+            _content.overflowMode = TextOverflowModes.Overflow;
+
+            // ScrollRect на viewport.
+            _scrollRect = viewportRect.gameObject.AddComponent<ScrollRect>();
+            _scrollRect.content = _contentRect;
+            _scrollRect.viewport = viewportRect;
+            _scrollRect.horizontal = false;
+            _scrollRect.vertical = true;
+            _scrollRect.movementType = ScrollRect.MovementType.Clamped;
+
+            // Scrollbar справа от viewport.
+            var scrollbarRect = UIFactory.CreateRect("SpecScrollbar", panel.transform);
+            scrollbarRect.sizeDelta = new Vector2(16, 520);
+            scrollbarRect.anchoredPosition = new Vector2(278, -10);
+            var scrollbarImage = scrollbarRect.gameObject.AddComponent<Image>();
+            scrollbarImage.color = new Color(0.2f, 0.2f, 0.25f, 1f);
+            var scrollbar = scrollbarRect.gameObject.AddComponent<Scrollbar>();
+            scrollbar.direction = Scrollbar.Direction.BottomToTop;
+            var handleRect = UIFactory.CreateRect("Handle", scrollbarRect.transform);
+            handleRect.sizeDelta = new Vector2(14, 100);
+            handleRect.anchoredPosition = Vector2.zero;
+            var handleImage = handleRect.gameObject.AddComponent<Image>();
+            handleImage.color = new Color(0.5f, 0.5f, 0.55f, 1f);
+            scrollbar.targetGraphic = handleImage;
+            _scrollRect.verticalScrollbar = scrollbar;
 
             UIFactory.CreateButton("SpecExport", panel.transform, "Экспорт CSV",
                 new Vector2(-140, -300), new Vector2(130, 40), ExportCsv);
@@ -58,6 +99,18 @@ namespace KitchenDesigner.Core.UI
             sb.AppendLine("─────────────────────────────────────────────────────────");
             sb.AppendLine($"Всего: {result.totalCount} деталей | Площадь: {result.totalAreaM2:F2} м²");
             _content.text = sb.ToString();
+
+            // Вычисляем высоту текста вручную и устанавливаем размер content.
+            _content.ForceMeshUpdate();
+            var preferred = _content.GetPreferredValues(540f, 0f);
+            _contentRect.sizeDelta = new Vector2(540, preferred.y);
+
+            // Форсируем пересчёт Layout чтобы ScrollRect увидел новый размер.
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRect);
+            _scrollRect.Rebuild(CanvasUpdate.PostLayout);
+            
+            // Сбрасываем скролл вверх.
+            _scrollRect.verticalNormalizedPosition = 1f;
         }
 
         private static string Trim(string s, int max) =>

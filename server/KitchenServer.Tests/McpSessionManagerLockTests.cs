@@ -55,21 +55,8 @@ public class McpSessionManagerLockTests
         var mgr = new McpSessionManager();
         var session = mgr.CreateSession("user1", "proj-abc");
 
-        mgr.CloseSession(session.SessionId);
+        mgr.CloseSession(session.TabKey);
 
         Assert.Null(mgr.GetSessionByProjectId("proj-abc"));
-    }
-
-    [Fact]
-    public void GetSessionByProjectId_ProjectIdCanBeUpdated()
-    {
-        var mgr = new McpSessionManager();
-        var session = mgr.CreateSession("user1");
-
-        Assert.Null(mgr.GetSessionByProjectId("proj-new"));
-
-        session.ProjectId = "proj-new";
-
-        Assert.Same(session, mgr.GetSessionByProjectId("proj-new"));
     }
 }

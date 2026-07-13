@@ -16,8 +16,11 @@ services:
 
   web:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      # Repo root: the build needs Assets/Scripts/Core/MCP/Contract (shared tool
+      # contract) plus server/. On prod the pre-built image override is used
+      # instead (docker-compose.debug.yml), so this build path is dev-only.
+      context: ..
+      dockerfile: server/Dockerfile
     environment:
       ConnectionStrings__kitchendb: Host=db;Database=kitchendb;Username=${DB_USER:-kitchen};Password=${DB_PASSWORD:-kitchen-prod}
       WebGL__RootPath: /app/webgl

@@ -106,7 +106,7 @@ namespace KitchenDesigner.Core.MCP
         {
             _running = false;
 #if UNITY_WEBGL
-            WebSocketClose();
+            try { WebSocketClose(); } catch (EntryPointNotFoundException) { }
 #else
             _cts?.Cancel();
             try { _ws?.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).Wait(500); }

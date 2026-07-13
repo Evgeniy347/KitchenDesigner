@@ -186,7 +186,7 @@ namespace KitchenDesigner.Core.UI
             rowRect.anchoredPosition = new Vector2(0, y);
 
             UIFactory.CreateLabel("Lbl_" + label, rowRect, label, 16,
-                new Vector2(-ContentW * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
+                new Vector2(-(ContentW - LabelW) * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
 
             CreateRightToggle("Tgl_" + label, rowRect, value, onChanged);
 
@@ -197,7 +197,7 @@ namespace KitchenDesigner.Core.UI
         {
             var rect = UIFactory.CreateRect(name, parent);
             rect.sizeDelta = new Vector2(26, RowH);
-            rect.anchoredPosition = new Vector2(ContentW * 0.5f - 26, 0);
+            rect.anchoredPosition = new Vector2(ContentW * 0.5f - 13, 0);
 
             var toggle = rect.gameObject.AddComponent<Toggle>();
 
@@ -222,10 +222,10 @@ namespace KitchenDesigner.Core.UI
             rowRect.anchoredPosition = new Vector2(0, y);
 
             UIFactory.CreateLabel("Lbl_" + label, rowRect, label, 16,
-                new Vector2(-ContentW * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
+                new Vector2(-(ContentW - LabelW) * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
 
             var field = UIFactory.CreateInputField("Fld_" + label, rowRect, initial,
-                new Vector2(ContentW * 0.5f - ControlW, 0), new Vector2(ControlW, RowH));
+                new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0), new Vector2(ControlW, RowH));
             field.contentType = contentType;
             TrackField(field, cleanValue);
             field.onEndEdit.AddListener(t =>

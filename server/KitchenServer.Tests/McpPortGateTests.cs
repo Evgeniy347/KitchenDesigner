@@ -8,10 +8,8 @@ public class McpPortGateTests
     private const int McpPort = 8081;
 
     [Theory]
-    [InlineData("/hubs/mcp")]
-    [InlineData("/hubs/mcp/negotiate")]
-    [InlineData("/api/mcp/connect")]
-    [InlineData("/api/mcp/ws")]
+    [InlineData("/mcp")]
+    [InlineData("/mcp/message")]
     [InlineData("/health")]
     [InlineData("/alive")]
     public void McpPort_AllowsAgentRoutes(string path)
@@ -23,7 +21,7 @@ public class McpPortGateTests
     [InlineData("/")]
     [InlineData("/auth/login")]
     [InlineData("/api/projects")]
-    [InlineData("/api/mcp/sessions")]
+    [InlineData("/api/mcp/ws")]       // browser channel lives on the HTTP port, not here
     [InlineData("/unity/index.html")]
     [InlineData("/_blazor")]
     public void McpPort_RejectsEverythingElse(string path)
@@ -32,9 +30,9 @@ public class McpPortGateTests
     }
 
     [Theory]
-    [InlineData("/hubs/mcp")]
-    [InlineData("/hubs/mcp/negotiate")]
-    public void HttpPort_RejectsAgentHub(string path)
+    [InlineData("/mcp")]
+    [InlineData("/mcp/message")]
+    public void HttpPort_RejectsAgentMcpEndpoint(string path)
     {
         Assert.True(McpPortGate.ShouldReject(HttpPort, path, McpPort));
     }
@@ -43,8 +41,7 @@ public class McpPortGateTests
     [InlineData("/")]
     [InlineData("/auth/login")]
     [InlineData("/api/projects")]
-    [InlineData("/api/mcp/ws")]      // browser/desktop client channel stays on HTTP
-    [InlineData("/api/mcp/sessions")]
+    [InlineData("/api/mcp/ws")]       // browser/desktop client channel stays on HTTP
     [InlineData("/unity/index.html")]
     public void HttpPort_AllowsRegularRoutes(string path)
     {

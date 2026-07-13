@@ -2,15 +2,14 @@ namespace KitchenServer.Web.Services;
 
 /// <summary>
 /// Partitions routes between the public HTTP port and the dedicated MCP port.
-/// MCP port serves only agent-facing routes; the HTTP port serves everything else.
+/// The MCP port serves only the agent-facing MCP endpoint (+ health); the HTTP
+/// port serves everything else, and must NOT expose the MCP endpoint.
 /// </summary>
 public static class McpPortGate
 {
     private static readonly string[] McpPathPrefixes =
     {
-        "/hubs/mcp",        // SignalR hub for MCP agents
-        "/api/mcp/connect", // agent handshake
-        "/api/mcp/ws",      // raw WS channel (browser / desktop client)
+        "/mcp",     // real MCP over Streamable HTTP (agents connect here)
         "/health",
         "/alive",
     };
@@ -21,7 +20,7 @@ public static class McpPortGate
 
     /// <summary>Agent-only paths that must NOT be reachable via the public HTTP port.</summary>
     public static bool IsMcpOnlyPath(PathString path) =>
-        path.StartsWithSegments("/hubs/mcp");
+        path.StartsWithSegments("/mcp");
 
     /// <returns>true when the request must be rejected with 404.</returns>
     public static bool ShouldReject(int localPort, PathString path, int mcpPort)

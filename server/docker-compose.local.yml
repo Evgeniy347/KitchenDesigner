@@ -20,8 +20,10 @@ services:
 
   web:
     build:
-      context: .
-      dockerfile: Dockerfile
+      # Repo root: the image build needs Assets/Scripts/Core/MCP/Contract (shared
+      # tool contract) in addition to server/. See server/Dockerfile.
+      context: ..
+      dockerfile: server/Dockerfile
     environment:
       ConnectionStrings__kitchendb: Host=db;Database=kitchendb;Username=${DB_USER:-kitchen};Password=${DB_PASSWORD:-kitchen-local}
       ASPNETCORE_ENVIRONMENT: Development

@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using KitchenDesigner.Core.MCP.Contract;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -172,7 +173,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetObjectInfo(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsWithName>();
+            var p = req.Params?.ToObject<ParamsObjectPath>();
             if (p == null || (string.IsNullOrEmpty(p.name) && string.IsNullOrEmpty(p.object_path)))
                 return McpResponse.Error(req.id, -32602, "name or object_path required");
 
@@ -211,7 +212,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleDeleteObject(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsWithName>();
+            var p = req.Params?.ToObject<ParamsObjectPath>();
             var path = p?.object_path ?? p?.name;
             if (string.IsNullOrEmpty(path))
                 return McpResponse.Error(req.id, -32602, "name or object_path required");
@@ -444,7 +445,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetElementInfo(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsWithName>();
+            var p = req.Params?.ToObject<ParamsName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -580,7 +581,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleRemoveFromModule(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsWithName>();
+            var p = req.Params?.ToObject<ParamsName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var el = FindElementByName(p.name);
@@ -715,8 +716,8 @@ namespace KitchenDesigner.Core.MCP
         private McpResponse HandleCreateElement(McpRequest req)
         {
             var p = req.Params?.ToObject<ParamsCreateElement>();
-            if (p == null || string.IsNullOrEmpty(p.template_name))
-                return McpResponse.Error(req.id, -32602, "template_name required");
+            if (p == null || (string.IsNullOrEmpty(p.name) && string.IsNullOrEmpty(p.template_name)))
+                return McpResponse.Error(req.id, -32602, "name required");
 
             string elementName = string.IsNullOrEmpty(p.name) ? p.template_name : p.name;
 
@@ -917,7 +918,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleDeleteElement(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsWithName>();
+            var p = req.Params?.ToObject<ParamsName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -979,7 +980,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSelectElement(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsWithName>();
+            var p = req.Params?.ToObject<ParamsName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -1254,7 +1255,7 @@ namespace KitchenDesigner.Core.MCP
             if (plate == null || plate.Element == null)
                 return McpResponse.Error(req.id, -1, "Floor not found");
 
-            var p = req.Params?.ToObject<ParamsResizeElement>();
+            var p = req.Params?.ToObject<ParamsResizeFloor>();
             if (p == null)
                 return McpResponse.Error(req.id, -32602, "invalid parameters");
 
@@ -1263,7 +1264,7 @@ namespace KitchenDesigner.Core.MCP
             var posBefore = el.transform.position;
             var rotBefore = el.transform.rotation;
 
-            var dimsAfter = ResolveDims(p.width, p.height, p.depth, p.dimX, p.dimY, p.dimZ, dimsBefore);
+            var dimsAfter = ResolveDims(p.width, p.height, p.depth, null, null, null, dimsBefore);
             int w = dimsAfter.x, h = dimsAfter.y, d = dimsAfter.z;
 
             CommandStack.Execute(new ResizeCommand(el,
@@ -1282,7 +1283,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleAddWallComponent(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsWithName>();
+            var p = req.Params?.ToObject<ParamsName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var element = FindElementByName(p.name);
@@ -1331,7 +1332,7 @@ namespace KitchenDesigner.Core.MCP
         // ── get_element_debug ───────────────────────────────────────────
         private McpResponse HandleGetElementDebug(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsWithName>();
+            var p = req.Params?.ToObject<ParamsName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var el = FindElementByName(p.name);
@@ -1369,7 +1370,7 @@ namespace KitchenDesigner.Core.MCP
         // ── get_element_gaps ─────────────────────────────────────────────
         private McpResponse HandleGetElementGaps(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsWithName>();
+            var p = req.Params?.ToObject<ParamsName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
             var el = FindElementByName(p.name);
@@ -1750,7 +1751,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleCycleDrawerAnimation(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsWithName>();
+            var p = req.Params?.ToObject<ParamsName>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
 
