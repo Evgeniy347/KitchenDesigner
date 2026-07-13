@@ -371,7 +371,7 @@ namespace KitchenDesigner.Core
             {
                 if (e == null) continue;
                 if (e.GetComponent<BasePlate>() != null) continue;
-                UnityEngine.Object.Destroy(e.gameObject);
+                DestroyElement(e.gameObject);
             }
         }
 
@@ -392,10 +392,11 @@ namespace KitchenDesigner.Core
 
         private static void DestroyElement(GameObject go)
         {
+            if (go == null) return;
             if (Application.isPlaying)
                 UnityEngine.Object.Destroy(go);
             else
-                UnityEngine.Object.Destroy(go);
+                UnityEngine.Object.DestroyImmediate(go);
         }
     }
 }
