@@ -120,6 +120,11 @@ server/publish/
 # Build counter
 build_count.txt
 
+# ===========================
+# Generated Build Info
+# ===========================
+/Assets/Scripts/Core/Infrastructure/BuildInfo.Generated.cs
+
 # Deployment secrets
 .env
 server/.env
