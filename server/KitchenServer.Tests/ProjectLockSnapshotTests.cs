@@ -92,9 +92,13 @@ public class ProjectLockSnapshotTests
         var expected = """
         {
           "id": "00000000-0000-0000-0000-000000000001",
+          "projectGroupId": "00000000-0000-0000-0000-000000000000",
           "userId": "user1",
           "name": "Snapshot Kitchen",
           "jsonData": "",
+          "version": 1,
+          "isLatest": true,
+          "isDeleted": false,
           "createdAt": "2026-01-01T00:00:00Z",
           "updatedAt": "2026-01-01T00:00:00Z",
           "isArchived": false
@@ -120,12 +124,16 @@ public class ProjectLockSnapshotTests
 
         var json = JsonSerializer.Serialize(project, JsonOpts).Replace("\r\n", "\n");
 
-        var expected = """
+        var expected2 = """
         {
           "id": "00000000-0000-0000-0000-000000000001",
+          "projectGroupId": "00000000-0000-0000-0000-000000000000",
           "userId": "user1",
           "name": "Snapshot Kitchen",
           "jsonData": "",
+          "version": 1,
+          "isLatest": true,
+          "isDeleted": false,
           "createdAt": "2026-01-01T00:00:00Z",
           "updatedAt": "2026-01-01T00:00:00Z",
           "isArchived": false,
@@ -134,7 +142,7 @@ public class ProjectLockSnapshotTests
         }
         """;
 
-        Assert.Equal(expected.Trim(), json);
+        Assert.Equal(expected2.Trim(), json);
     }
 
     [Fact]

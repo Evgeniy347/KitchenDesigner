@@ -1,8 +1,8 @@
 using KitchenServer.Web.Components;
 using KitchenServer.Web.Data;
 using KitchenServer.Web.Endpoints;
-using KitchenServer.Web.Hubs;
 using KitchenServer.Web.Services;
+using ModelContextProtocol.Protocol;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -71,10 +71,21 @@ builder.Services.Configure<ProjectStorageOptions>(builder.Configuration.GetSecti
 builder.Services.Configure<ServerSaveOptions>(builder.Configuration.GetSection(ServerSaveOptions.SectionName));
 
 builder.Services.AddSingleton<ProjectStorageService>();
-builder.Services.AddSingleton<McpUrlBuilder>();
 builder.Services.AddSingleton<McpSessionManager>();
 builder.Services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<McpSessionManager>());
-builder.Services.AddSignalR();
+builder.Services.AddHttpContextAccessor();
+
+// Real MCP over Streamable HTTP (port 8081). tools/list + tools/call come from the
+// shared C# contract; auth-first gate + relay to the browser tab live in McpToolHandlers.
+builder.Services.AddMcpServer(options =>
+{
+    options.ServerInfo = new Implementation { Name = "unity-kitchen", Version = "2.0.0" };
+    options.ServerInstructions = McpToolHandlers.Instructions;
+    options.Capabilities = new ServerCapabilities { Tools = new ToolsCapability() };
+    options.Handlers.ListToolsHandler = McpToolHandlers.ListToolsAsync;
+    options.Handlers.CallToolHandler = McpToolHandlers.CallToolAsync;
+})
+.WithHttpTransport();
 
 // Per-circuit bridge: editor page → nav-bar island (see EditorNavState).
 builder.Services.AddScoped<EditorNavState>();
@@ -135,7 +146,7 @@ app.MapAuthEndpoints();
 app.MapConfigEndpoints();
 app.MapProjectEndpoints();
 app.MapMcpEndpoints();
-app.MapHub<McpHub>("/hubs/mcp");
+app.MapMcp("/mcp");
 
 // First-run database initialization with retries: the DB container may still be
 // starting. Fail hard if it never comes up — a half-alive app is worse.
@@ -157,12 +168,30 @@ using (var scope = app.Services.CreateScope())
                 await db.Database.ExecuteSqlRawAsync("""
                     ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "LockGuid" text NULL;
                     ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "LockAcquiredAt" timestamp with time zone NULL;
+                    ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "ProjectGroupId" uuid NULL;
+                    ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "Version" integer NOT NULL DEFAULT 1;
+                    ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "IsLatest" boolean NOT NULL DEFAULT true;
+                    ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "IsDeleted" boolean NOT NULL DEFAULT false;
+                    ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "DeletedAt" timestamp with time zone NULL;
                     """);
-                app.Logger.LogInformation("Project lock columns ensured");
+                app.Logger.LogInformation("Project versioning columns ensured");
             }
             catch (Exception ex)
             {
-                app.Logger.LogWarning(ex, "Failed to add lock columns (may already exist)");
+                app.Logger.LogWarning(ex, "Failed to add versioning columns (may already exist)");
+            }
+
+            // Backfill ProjectGroupId for existing rows.
+            try
+            {
+                await db.Database.ExecuteSqlRawAsync("""
+                    UPDATE "Projects" SET "ProjectGroupId" = "Id" WHERE "ProjectGroupId" IS NULL;
+                    """);
+                app.Logger.LogInformation("ProjectGroupId backfill completed");
+            }
+            catch (Exception ex)
+            {
+                app.Logger.LogWarning(ex, "ProjectGroupId backfill failed (may already be done)");
             }
 
             break;

@@ -64,7 +64,8 @@
             }
 
             await using var db = await DbFactory.CreateDbContextAsync();
-            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == ProjectId && p.UserId == userId);
+            var project = await db.Projects
+                .FirstOrDefaultAsync(p => p.ProjectGroupId == ProjectId && p.UserId == userId && p.IsLatest && !p.IsDeleted);
             if (project is null)
             {
                 _error = "Project not found.";
@@ -114,7 +115,8 @@
         try
         {
             await using var db = await DbFactory.CreateDbContextAsync();
-            var project = await db.Projects.FindAsync(ProjectId);
+            var project = await db.Projects
+                .FirstOrDefaultAsync(p => p.ProjectGroupId == ProjectId && p.IsLatest);
             if (project != null)
                 await ProjectLockHelper.ReleaseLockAsync(db, project, _lockGuid);
         }

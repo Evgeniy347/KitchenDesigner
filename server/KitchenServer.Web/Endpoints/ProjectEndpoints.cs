@@ -19,9 +19,9 @@ public static class ProjectEndpoints
                 return Results.Unauthorized();
 
             var projects = await db.Projects
-                .Where(p => p.UserId == userId && !p.IsArchived)
+                .Where(p => p.UserId == userId && p.IsLatest && !p.IsDeleted && !p.IsArchived)
                 .OrderByDescending(p => p.UpdatedAt)
-                .Select(p => new { p.Id, p.Name, p.CreatedAt, p.UpdatedAt })
+                .Select(p => new { Id = p.ProjectGroupId, p.Name, p.CreatedAt, p.UpdatedAt, p.Version })
                 .ToListAsync();
 
             return Results.Ok(projects);
@@ -36,22 +36,28 @@ public static class ProjectEndpoints
             if (string.IsNullOrWhiteSpace(req.Name))
                 return Results.BadRequest(new { error = "Name is required" });
 
+            var projectGroupId = Guid.NewGuid();
+            var now = DateTime.UtcNow;
+
             var project = new Project
             {
                 Id = Guid.NewGuid(),
+                ProjectGroupId = projectGroupId,
                 UserId = userId,
                 Name = req.Name.Trim(),
                 JsonData = "{}",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                Version = 1,
+                IsLatest = true,
+                CreatedAt = now,
+                UpdatedAt = now
             };
 
             db.Projects.Add(project);
-            await storage.Save(project.Id, userId, "{}");
+            await storage.Save(projectGroupId, userId, "{}");
             await db.SaveChangesAsync();
 
-            return Results.Created($"/api/projects/{project.Id}",
-                new { project.Id, project.Name, project.CreatedAt, project.UpdatedAt });
+            return Results.Created($"/api/projects/{project.ProjectGroupId}",
+                new { Id = project.ProjectGroupId, project.Name, project.CreatedAt, project.UpdatedAt, project.Version });
         });
 
         group.MapGet("/{id:guid}", async (
@@ -64,7 +70,8 @@ public static class ProjectEndpoints
             if (userId is null)
                 return Results.Unauthorized();
 
-            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            var project = await db.Projects
+                .FirstOrDefaultAsync(p => p.ProjectGroupId == id && p.UserId == userId && p.IsLatest && !p.IsDeleted);
             if (project is null)
                 return Results.NotFound();
 
@@ -72,10 +79,11 @@ public static class ProjectEndpoints
 
             return Results.Ok(new
             {
-                project.Id,
+                Id = project.ProjectGroupId,
                 project.Name,
                 project.CreatedAt,
                 project.UpdatedAt,
+                project.Version,
                 JsonData = json
             });
         });
@@ -91,20 +99,21 @@ public static class ProjectEndpoints
             if (userId is null)
                 return Results.Unauthorized();
 
-            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
-            if (project is null)
+            var current = await db.Projects
+                .FirstOrDefaultAsync(p => p.ProjectGroupId == id && p.UserId == userId && p.IsLatest && !p.IsDeleted);
+            if (current is null)
                 return Results.NotFound();
 
             // Validate project lock if one is held.
-            if (!string.IsNullOrEmpty(project.LockGuid) && req.LockGuid != project.LockGuid)
+            if (!string.IsNullOrEmpty(current.LockGuid) && req.LockGuid != current.LockGuid)
                 return Results.Conflict(new { error = "Project is locked by another tab. Open it there or refresh." });
+
+            var now = DateTime.UtcNow;
 
             if (req.JsonData is not null)
             {
                 try
                 {
-                    // Files are the source of truth for content; the DB keeps
-                    // metadata. The legacy jsonb column is read-only fallback.
                     await storage.Save(id, userId, req.JsonData);
                 }
                 catch (ProjectStorageException ex)
@@ -113,33 +122,53 @@ public static class ProjectEndpoints
                 }
             }
 
-            if (req.Name is not null)
-                project.Name = req.Name;
+            var newVersion = new Project
+            {
+                Id = Guid.NewGuid(),
+                ProjectGroupId = current.ProjectGroupId,
+                UserId = current.UserId,
+                Name = req.Name ?? current.Name,
+                JsonData = req.JsonData ?? current.JsonData,
+                Version = current.Version + 1,
+                IsLatest = true,
+                CreatedAt = current.CreatedAt,
+                UpdatedAt = now
+            };
 
-            project.UpdatedAt = DateTime.UtcNow;
+            current.IsLatest = false;
+            current.UpdatedAt = now;
+
+            db.Projects.Add(newVersion);
             await db.SaveChangesAsync();
 
-            return Results.Ok(new { project.Id, project.Name, project.UpdatedAt });
+            return Results.Ok(new { Id = newVersion.ProjectGroupId, newVersion.Name, newVersion.UpdatedAt, newVersion.Version });
         });
 
         group.MapDelete("/{id:guid}", async (
             Guid id,
             AppDbContext db,
-            ProjectStorageService storage,
             ClaimsPrincipal user) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId is null)
                 return Results.Unauthorized();
 
-            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
-            if (project is null)
+            var now = DateTime.UtcNow;
+            var versions = await db.Projects
+                .Where(p => p.ProjectGroupId == id && p.UserId == userId && !p.IsDeleted)
+                .ToListAsync();
+
+            if (versions.Count == 0)
                 return Results.NotFound();
 
-            db.Projects.Remove(project);
-            await db.SaveChangesAsync();
-            storage.Delete(id, userId);
+            foreach (var v in versions)
+            {
+                v.IsDeleted = true;
+                v.IsLatest = false;
+                v.DeletedAt = now;
+            }
 
+            await db.SaveChangesAsync();
             return Results.Ok();
         });
 
@@ -153,26 +182,33 @@ public static class ProjectEndpoints
             if (userId is null)
                 return Results.Unauthorized();
 
-            var original = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            var original = await db.Projects
+                .FirstOrDefaultAsync(p => p.ProjectGroupId == id && p.UserId == userId && p.IsLatest && !p.IsDeleted);
             if (original is null)
                 return Results.NotFound();
 
             var json = await storage.Load(id, userId) ?? original.JsonData;
 
+            var duplicateGroupId = Guid.NewGuid();
+            var now = DateTime.UtcNow;
+
             var duplicate = new Project
             {
                 Id = Guid.NewGuid(),
+                ProjectGroupId = duplicateGroupId,
                 UserId = userId,
                 Name = $"{original.Name} (Copy)",
                 JsonData = json,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                Version = 1,
+                IsLatest = true,
+                CreatedAt = now,
+                UpdatedAt = now
             };
 
             db.Projects.Add(duplicate);
             try
             {
-                await storage.Save(duplicate.Id, userId, json);
+                await storage.Save(duplicateGroupId, userId, json);
             }
             catch (ProjectStorageException ex)
             {
@@ -180,8 +216,43 @@ public static class ProjectEndpoints
             }
             await db.SaveChangesAsync();
 
-            return Results.Created($"/api/projects/{duplicate.Id}",
-                new { duplicate.Id, duplicate.Name, duplicate.CreatedAt });
+            return Results.Created($"/api/projects/{duplicate.ProjectGroupId}",
+                new { Id = duplicate.ProjectGroupId, duplicate.Name, duplicate.CreatedAt, duplicate.Version });
+        });
+
+        // ── Version history ─────────────────────────────────────────
+
+        group.MapGet("/{id:guid}/versions", async (
+            Guid id,
+            AppDbContext db,
+            ClaimsPrincipal user) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId is null)
+                return Results.Unauthorized();
+
+            var project = await db.Projects
+                .FirstOrDefaultAsync(p => p.ProjectGroupId == id && p.UserId == userId);
+            if (project is null)
+                return Results.NotFound();
+
+            var versions = await db.Projects
+                .Where(p => p.ProjectGroupId == id && p.UserId == userId)
+                .OrderByDescending(p => p.Version)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Name,
+                    p.Version,
+                    p.IsLatest,
+                    p.IsDeleted,
+                    p.CreatedAt,
+                    p.UpdatedAt,
+                    p.DeletedAt
+                })
+                .ToListAsync();
+
+            return Results.Ok(versions);
         });
 
         // ── Project lock (tab-level concurrency guard) ──────────────────
@@ -196,7 +267,8 @@ public static class ProjectEndpoints
             if (userId is null)
                 return Results.Unauthorized();
 
-            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            var project = await db.Projects
+                .FirstOrDefaultAsync(p => p.ProjectGroupId == id && p.UserId == userId && p.IsLatest && !p.IsDeleted);
             if (project is null)
                 return Results.NotFound();
 
@@ -214,7 +286,8 @@ public static class ProjectEndpoints
             if (userId is null)
                 return Results.Unauthorized();
 
-            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            var project = await db.Projects
+                .FirstOrDefaultAsync(p => p.ProjectGroupId == id && p.UserId == userId && p.IsLatest && !p.IsDeleted);
             if (project is null)
                 return Results.NotFound();
 
