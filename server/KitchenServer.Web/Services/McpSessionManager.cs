@@ -5,14 +5,20 @@ using Microsoft.Extensions.Options;
 
 namespace KitchenServer.Web.Services;
 
+/// <summary>
+/// Tracks open editor tabs (keyed by their ephemeral <see cref="McpSession.TabKey"/>)
+/// and the MCP agent sessions bound to them. The agent authenticates with a tab key
+/// (first tool call); after that its MCP session forwards commands to that tab.
+/// </summary>
 public class McpSessionManager : IHostedService
 {
     private Timer? _cleanupTimer;
-    private readonly ConcurrentDictionary<string, McpSession> _byAccessKey = new();
-    private readonly ConcurrentDictionary<string, McpSession> _bySessionId = new();
-    private readonly ConcurrentDictionary<string, McpSession> _byMCPConnection = new();
-    private readonly ConcurrentDictionary<string, McpSession> _byBrowserConnection = new();
-    private readonly ConcurrentDictionary<string, CancellationTokenSource> _cancellations = new();
+    private readonly ConcurrentDictionary<string, McpSession> _byKey = new();
+    // MCP server instance (one per Streamable-HTTP session) -> the tab it is bound to.
+    // In Streamable-HTTP transport ctx.Server is a different object per request, so
+    // the authoritative binding is the Mcp-Session-Id header value (see _sessionBindings).
+    private readonly ConcurrentDictionary<object, McpSession> _agentBindings = new();
+    private readonly ConcurrentDictionary<string, McpSession> _sessionBindings = new();
 
     public McpSessionManager() { }
 
@@ -23,154 +29,122 @@ public class McpSessionManager : IHostedService
 
     public TimeSpan SessionTtl { get; set; } = TimeSpan.FromMinutes(30);
 
+    /// <summary>Raised when a tab's connection state changes (browser attach/detach,
+    /// agent bind/unbind). The editor nav island uses it to flip the status light.</summary>
+    public event Action<McpSession>? SessionStateChanged;
+
+    /// <summary>Create (register) a tab session for a freshly generated key.</summary>
     public McpSession CreateSession(string userId, string? projectId = null)
     {
-        var session = new McpSession
+        var session = new McpSession { UserId = userId, ProjectId = projectId, SessionTtl = SessionTtl };
+        _byKey[session.TabKey] = session;
+        return session;
+    }
+
+    public McpSession? GetByKey(string key) =>
+        string.IsNullOrEmpty(key) ? null : _byKey.GetValueOrDefault(key);
+
+    /// <summary>Used by the project-lock takeover path to reach the previous tab.</summary>
+    public McpSession? GetSessionByProjectId(string projectId) =>
+        _byKey.Values.FirstOrDefault(s => s.ProjectId == projectId);
+
+    /// <summary>Attach the browser WebSocket for a (pre-registered) tab key.</summary>
+    public McpSession? AttachBrowser(string key, WebSocket ws)
+    {
+        var session = GetByKey(key);
+        if (session == null) return null;
+        session.BrowserWebSocket = ws;
+        session.Touch();
+        SessionStateChanged?.Invoke(session);
+        return session;
+    }
+
+    public void DetachBrowser(McpSession session)
+    {
+        session.BrowserWebSocket = null;
+        session.FailAllPending("Browser disconnected.");
+        SessionStateChanged?.Invoke(session);
+    }
+
+    /// <summary>
+    /// Bind an authenticated agent to a tab. Returns a stable session id the client must
+    /// send in the <c>Mcp-Session-Id</c> header on subsequent tool calls.
+    /// </summary>
+    public string BindAgent(object mcpServer, McpSession session)
+    {
+        var sessionId = Guid.NewGuid().ToString("N");
+        _agentBindings[mcpServer] = session;
+        _sessionBindings[sessionId] = session;
+        session.AgentBound = true;
+        session.Touch();
+        SessionStateChanged?.Invoke(session);
+        return sessionId;
+    }
+
+    /// <summary>
+    /// Look up the tab bound to this agent. Prefer the <paramref name="sessionId"/> header
+    /// value because <paramref name="mcpServer"/> is not stable across Streamable-HTTP requests.
+    /// </summary>
+    public McpSession? GetBoundSession(object mcpServer, string? sessionId = null)
+    {
+        if (!string.IsNullOrEmpty(sessionId) && _sessionBindings.TryGetValue(sessionId, out var byHeader))
+            return byHeader;
+
+        return _agentBindings.GetValueOrDefault(mcpServer);
+    }
+
+    public void UnbindAgent(object mcpServer)
+    {
+        if (_agentBindings.TryRemove(mcpServer, out var session))
         {
-            UserId = userId,
-            ProjectId = projectId,
-            SessionTtl = SessionTtl
-        };
-
-        _byAccessKey[session.AccessKey] = session;
-        _bySessionId[session.SessionId] = session;
-        return session;
-    }
-
-    public McpSession? ValidateAccess(string accessKey)
-    {
-        _byAccessKey.TryGetValue(accessKey, out var session);
-        return session;
-    }
-
-    public McpSession? GetSession(string sessionId)
-    {
-        _bySessionId.TryGetValue(sessionId, out var session);
-        return session;
-    }
-
-    public McpSession? GetSessionByMCPConnection(string connectionId)
-    {
-        _byMCPConnection.TryGetValue(connectionId, out var session);
-        return session;
-    }
-
-    public void RegisterMCPConnection(string sessionId, string connectionId)
-    {
-        if (_bySessionId.TryGetValue(sessionId, out var session))
-        {
-            session.MCPConnectionId = connectionId;
-            _byMCPConnection[connectionId] = session;
+            session.AgentBound = _agentBindings.Values.Contains(session);
+            SessionStateChanged?.Invoke(session);
         }
     }
 
-    public void RegisterBrowserConnection(string sessionId, string connectionId)
+    public bool CloseSession(string key)
     {
-        if (_bySessionId.TryGetValue(sessionId, out var session))
-        {
-            session.BrowserConnectionId = connectionId;
-            _byBrowserConnection[connectionId] = session;
-        }
-    }
+        if (!_byKey.TryRemove(key, out var session)) return false;
 
-    public void RemoveConnection(string connectionId)
-    {
-        if (_byMCPConnection.TryRemove(connectionId, out var session))
-            session.MCPConnectionId = null;
-        if (_byBrowserConnection.TryRemove(connectionId, out var session2))
-            session2.BrowserConnectionId = null;
-    }
+        foreach (var kv in _agentBindings.Where(kv => kv.Value == session).ToList())
+            _agentBindings.TryRemove(kv.Key, out _);
 
-    public void AddSessionCancellation(string sessionId, CancellationTokenSource cts)
-    {
-        _cancellations[sessionId] = cts;
-    }
+        foreach (var kv in _sessionBindings.Where(kv => kv.Value == session).ToList())
+            _sessionBindings.TryRemove(kv.Key, out _);
 
-    public List<McpSession> GetUserSessions(string userId)
-    {
-        return _bySessionId.Values
-            .Where(s => s.UserId == userId)
-            .OrderByDescending(s => s.CreatedAt)
-            .ToList();
-    }
-
-    public McpSession? GetSessionByProjectId(string projectId)
-    {
-        return _bySessionId.Values
-            .FirstOrDefault(s => s.ProjectId == projectId);
-    }
-
-    public bool CloseSession(string sessionId)
-    {
-        if (!_bySessionId.TryRemove(sessionId, out var session))
-            return false;
-
-        _byAccessKey.TryRemove(session.AccessKey, out _);
-        if (session.MCPConnectionId != null)
-            _byMCPConnection.TryRemove(session.MCPConnectionId, out _);
-        if (session.BrowserConnectionId != null)
-            _byBrowserConnection.TryRemove(session.BrowserConnectionId, out _);
-
-        if (_cancellations.TryRemove(sessionId, out var cts))
-        {
-            try { cts.Cancel(); } catch { }
-            try { cts.Dispose(); } catch { }
-        }
-
-        // Abort instead of a blocking CloseAsync: this runs on the cleanup timer
-        // thread and must never wait on a remote peer.
+        session.FailAllPending("Session closed.");
         var ws = session.BrowserWebSocket;
         if (ws != null && (ws.State == WebSocketState.Open || ws.State == WebSocketState.CloseReceived))
         {
-            try { ws.Abort(); }
-            catch { }
+            try { ws.Abort(); } catch { }
         }
         session.BrowserWebSocket = null;
-
+        SessionStateChanged?.Invoke(session);
         return true;
-    }
-
-    public void Touch(string sessionId)
-    {
-        if (_bySessionId.TryGetValue(sessionId, out var session))
-            session.Touch();
-    }
-
-    public void RemoveSessionCancellation(string sessionId)
-    {
-        if (_cancellations.TryRemove(sessionId, out var cts))
-        {
-            try { cts.Cancel(); } catch { }
-            try { cts.Dispose(); } catch { }
-        }
     }
 
     public void CleanupExpiredSessions()
     {
-        var expired = _bySessionId.Values
-            .Where(s => DateTime.UtcNow - s.LastActivity > s.SessionTtl)
-            .Select(s => s.SessionId)
+        var expired = _byKey.Values
+            .Where(s => !s.IsBrowserConnected && DateTime.UtcNow - s.LastActivity > s.SessionTtl)
+            .Select(s => s.TabKey)
             .ToList();
-        foreach (var id in expired)
-            CloseSession(id);
+        foreach (var key in expired)
+            CloseSession(key);
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _cleanupTimer = new Timer(
-            _ => CleanupExpiredSessions(),
-            null,
-            TimeSpan.FromMinutes(1),
-            TimeSpan.FromMinutes(1));
+        _cleanupTimer = new Timer(_ => CleanupExpiredSessions(), null,
+            TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _cleanupTimer?.Dispose();
-        var sessionIds = _bySessionId.Keys.ToList();
-        foreach (var id in sessionIds)
-            CloseSession(id);
+        foreach (var key in _byKey.Keys.ToList())
+            CloseSession(key);
         return Task.CompletedTask;
     }
 }
