@@ -2,105 +2,116 @@ using KitchenServer.Web.Services;
 
 namespace KitchenServer.Tests;
 
+/// <summary>
+/// Tests for the reworked <see cref="McpSessionManager"/>: tabs are keyed by their
+/// ephemeral <see cref="McpSession.TabKey"/>, agents bind to a tab by object identity.
+/// </summary>
 public class McpSessionManagerTests
 {
     [Fact]
-    public void CreateSession_IsRetrievableByKeyAndId()
+    public void CreateSession_IsFoundByItsKey()
     {
         var mgr = new McpSessionManager();
-        var session = mgr.CreateSession("user1", "proj1");
+        var session = mgr.CreateSession("user1", "proj-1");
 
-        Assert.Same(session, mgr.ValidateAccess(session.AccessKey));
-        Assert.Same(session, mgr.GetSession(session.SessionId));
+        Assert.Same(session, mgr.GetByKey(session.TabKey));
         Assert.Equal("user1", session.UserId);
-        Assert.Equal("proj1", session.ProjectId);
+        Assert.Equal("proj-1", session.ProjectId);
     }
 
     [Fact]
-    public void ValidateAccess_UnknownKey_ReturnsNull()
+    public void EachCreateSession_GetsAUniqueKey()
     {
         var mgr = new McpSessionManager();
-        Assert.Null(mgr.ValidateAccess("nope"));
+        var a = mgr.CreateSession("user1");
+        var b = mgr.CreateSession("user1");
+
+        Assert.NotEqual(a.TabKey, b.TabKey);
     }
 
     [Fact]
-    public void CloseSession_RevokesAccess()
+    public void GetByKey_UnknownOrEmpty_ReturnsNull()
     {
         var mgr = new McpSessionManager();
-        var session = mgr.CreateSession("user1");
-
-        Assert.True(mgr.CloseSession(session.SessionId));
-        Assert.Null(mgr.ValidateAccess(session.AccessKey));
-        Assert.Null(mgr.GetSession(session.SessionId));
-        Assert.False(mgr.CloseSession(session.SessionId));
+        Assert.Null(mgr.GetByKey("nope"));
+        Assert.Null(mgr.GetByKey(""));
     }
 
     [Fact]
-    public void GetUserSessions_FiltersByUser()
-    {
-        var mgr = new McpSessionManager();
-        mgr.CreateSession("user1");
-        mgr.CreateSession("user1");
-        mgr.CreateSession("user2");
-
-        Assert.Equal(2, mgr.GetUserSessions("user1").Count);
-        Assert.Single(mgr.GetUserSessions("user2"));
-        Assert.Empty(mgr.GetUserSessions("user3"));
-    }
-
-    [Fact]
-    public void RegisterMCPConnection_MapsConnectionToSession()
+    public void BindAgent_ThenGetBoundSession_ReturnsIt()
     {
         var mgr = new McpSessionManager();
         var session = mgr.CreateSession("user1");
+        var agent = new object();
 
-        mgr.RegisterMCPConnection(session.SessionId, "conn-1");
+        var sessionId = mgr.BindAgent(agent, session);
 
-        Assert.Same(session, mgr.GetSessionByMCPConnection("conn-1"));
-        Assert.Equal("conn-1", session.MCPConnectionId);
-
-        mgr.RemoveConnection("conn-1");
-        Assert.Null(mgr.GetSessionByMCPConnection("conn-1"));
-        Assert.Null(session.MCPConnectionId);
+        Assert.NotNull(sessionId);
+        Assert.Same(session, mgr.GetBoundSession(agent));
+        Assert.Same(session, mgr.GetBoundSession(new object(), sessionId));
+        Assert.True(session.AgentBound);
     }
 
     [Fact]
-    public void CleanupExpiredSessions_RemovesOnlyExpired()
-    {
-        var mgr = new McpSessionManager();
-        var fresh = mgr.CreateSession("user1");
-        var stale = mgr.CreateSession("user1");
-        stale.SessionTtl = TimeSpan.FromMilliseconds(-1); // already expired
-
-        mgr.CleanupExpiredSessions();
-
-        Assert.NotNull(mgr.GetSession(fresh.SessionId));
-        Assert.Null(mgr.GetSession(stale.SessionId));
-        Assert.Null(mgr.ValidateAccess(stale.AccessKey));
-    }
-
-    [Fact]
-    public void Touch_ProlongsSession()
+    public void UnbindAgent_ClearsBinding()
     {
         var mgr = new McpSessionManager();
         var session = mgr.CreateSession("user1");
-        var before = session.LastActivity;
+        var agent = new object();
+        mgr.BindAgent(agent, session);
 
-        Thread.Sleep(15);
-        mgr.Touch(session.SessionId);
+        mgr.UnbindAgent(agent);
 
-        Assert.True(session.LastActivity > before);
+        Assert.Null(mgr.GetBoundSession(agent));
+        Assert.False(session.AgentBound);
     }
 
     [Fact]
-    public void IsActive_FalseWithoutConnections()
+    public void GetBoundSession_PrefersSessionIdOverUnboundServer()
     {
         var mgr = new McpSessionManager();
         var session = mgr.CreateSession("user1");
+        var agent = new object();
+        var sessionId = mgr.BindAgent(agent, session);
 
-        Assert.False(session.IsActive);
+        var differentServer = new object();
+        Assert.Null(mgr.GetBoundSession(differentServer));
+        Assert.Same(session, mgr.GetBoundSession(differentServer, sessionId));
+    }
 
-        mgr.RegisterMCPConnection(session.SessionId, "conn-1");
-        Assert.True(session.IsActive);
+    [Fact]
+    public void CloseSession_RemovesTabAndUnbindsAgents()
+    {
+        var mgr = new McpSessionManager();
+        var session = mgr.CreateSession("user1", "proj-1");
+        var agent = new object();
+        var sessionId = mgr.BindAgent(agent, session);
+
+        Assert.True(mgr.CloseSession(session.TabKey));
+
+        Assert.Null(mgr.GetByKey(session.TabKey));
+        Assert.Null(mgr.GetBoundSession(agent));
+        Assert.Null(mgr.GetBoundSession(agent, sessionId));
+        Assert.Null(mgr.GetSessionByProjectId("proj-1"));
+    }
+
+    [Fact]
+    public void CloseSession_UnknownKey_ReturnsFalse()
+    {
+        var mgr = new McpSessionManager();
+        Assert.False(mgr.CloseSession("missing"));
+    }
+
+    [Fact]
+    public void SessionStateChanged_FiresOnBind()
+    {
+        var mgr = new McpSessionManager();
+        var session = mgr.CreateSession("user1");
+        McpSession? notified = null;
+        mgr.SessionStateChanged += s => notified = s;
+
+        mgr.BindAgent(new object(), session);
+
+        Assert.Same(session, notified);
     }
 }
