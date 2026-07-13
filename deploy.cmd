@@ -7,7 +7,6 @@ set SERVER=%DEPLOY_SERVER%
 set REMOTE_DIR=%DEPLOY_DIR%
 set SCRIPT_DIR=%~dp0
 set SSH_FLAGS=-o ConnectTimeout=10 -o StrictHostKeyChecking=no
-set HTTP_PORT=23443
 
 echo.
 echo ========================================
@@ -58,7 +57,7 @@ echo   Done.
 
 echo.
 echo [5/5] Starting Docker services on server...
-ssh %SSH_FLAGS% %SERVER% "HTTP_PORT=23443 docker compose -f %REMOTE_DIR%/docker-compose.yml up -d --build"
+ssh %SSH_FLAGS% %SERVER% "cd %REMOTE_DIR% && docker compose up -d --build"
 if %ERRORLEVEL% neq 0 (
     echo ERROR: docker compose up failed
     exit /b 1
@@ -67,8 +66,9 @@ if %ERRORLEVEL% neq 0 (
 echo.
 echo ========================================
 echo  Deploy complete!
-echo  WebGL:  http://192.168.0.189:23443/
-echo  Server: http://192.168.0.189:23443/api/
+echo  HTTPS: https://kitchendesigner.duckdns.org/
+echo  HTTP:  http://kitchendesigner.duckdns.org/ (redirects to HTTPS)
+echo  MCP:   http://192.168.0.189:8081/hubs/mcp
 echo ========================================
 
 endlocal
