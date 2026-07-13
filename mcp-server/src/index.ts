@@ -24,7 +24,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { connect } from "net";
-import type { CreateElementParams } from "./types.js";
+import { GEN_TOOLS } from "./tools.generated.js";
 
 // ── Wire protocol types ─────────────────────────────────────────────────────
 
@@ -57,14 +57,11 @@ const pending = new Map<string, { resolve: (v: ResponseMessage) => void; reject:
 const mcpCache = new Map<string, CacheEntry>();
 let responseBuffer = "";
 
-/** Read-only methods: safe to auto-retry once after a transient disconnect. */
-const READ_ONLY = new Set<string>([
-  "ping", "get_status", "get_scene_hierarchy", "get_all_elements", "get_specification",
-  "get_undo_stack_info", "get_object_info", "get_element_info", "get_console_logs",
-  "get_settings", "get_modules", "module_info", "get_floor_info", "get_violations",
-  "get_element_debug", "get_element_gaps", "simulate_move", "simulate_resize",
-  "snap_diagnose", "find_objects", "take_screenshot", "list_materials",
-]);
+/** Read-only methods: safe to auto-retry once after a transient disconnect.
+ *  Derived from the generated contract so it never drifts from the tool table. */
+const READ_ONLY = new Set<string>(
+  GEN_TOOLS.filter((t) => t.kind === "read" && !t.staticText).map((t) => t.name),
+);
 
 function friendly(err: { message?: string; code?: string }): string {
   const code = err.code || "";
@@ -369,401 +366,42 @@ TOOL GROUPS
           set_position, set_rotation, set_scale, delete_object, set_object_active,
           get_object_info, find_objects, get_scene_hierarchy`;
 
-server.registerTool("guide",
-  { title: "Guide / cheat-sheet", description: "Full usage cheat-sheet: units, the core workflow, and worked examples. Call this first if unsure.", annotations: READ },
-  async () => textResult(GUIDE));
+// ── Register tools from the generated contract table ─────────────────────────
+// Every tool comes from Assets/Scripts/Core/MCP/Contract (McpToolRegistry) via
+// tools.generated.ts — no hand-written tool defs here. `guide` answers locally;
+// everything else forwards to Unity (with optional param renames).
+const ADVANCED_OPEN_WORLD = { readOnlyHint: false, openWorldHint: true } as const;
 
-// ── Read: scene & elements ───────────────────────────────────────────────────
+function applyRename(
+  args: Record<string, unknown>,
+  rename: Record<string, string>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(args)) out[rename[k] ?? k] = v;
+  return out;
+}
 
-server.registerTool("ping",
-  { title: "Ping", description: "Check that Unity is reachable. Returns Unity version.", annotations: READ },
-  async () => safe("ping"));
+for (const tool of GEN_TOOLS) {
+  const annotations =
+    tool.kind === "read" ? READ
+    : tool.kind === "destructive" ? DESTRUCTIVE
+    : tool.openWorld ? ADVANCED_OPEN_WORLD
+    : WRITE;
 
-server.registerTool("get_status",
-  { title: "Scene status", description: "Basic scene info: scene name, object count, play mode, platform.", annotations: READ },
-  async () => safe("get_status"));
+  const config: {
+    title: string;
+    description: string;
+    annotations: typeof annotations;
+    inputSchema?: Record<string, z.ZodTypeAny>;
+  } = { title: tool.title, description: tool.description, annotations };
+  if (tool.inputSchema) config.inputSchema = tool.inputSchema;
 
-server.registerTool("get_all_elements",
-  { title: "List elements", description: "List ALL boards/walls/floor with name, size (mm), position (m), rotation, AABB and hasViolations. Call this FIRST before editing.", annotations: READ },
-  async () => safeCached("get_all_elements"));
-
-server.registerTool("get_element_info",
-  { title: "Element info", description: "Full info for one element by name: size (mm), position (m), rotation, module, hasViolations, AABB.", annotations: READ,
-    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name (from get_all_elements).") } },
-  async (a) => safe("get_element_info", a));
-
-server.registerTool("get_specification",
-  { title: "Specification", description: "Cut list: every distinct board size with count and area (m2), plus totals.", annotations: READ },
-  async () => safe("get_specification"));
-
-server.registerTool("get_violations",
-  { title: "List violations", description: "List every element that currently overlaps another or is disconnected from the wall/floor structure. Call after each change; expect count 0.", annotations: READ },
-  async () => safe("get_violations"));
-
-server.registerTool("get_element_gaps",
-  { title: "Element gaps", description: "Gap or overlap (in mm) to the nearest neighbour on each axis X/Y/Z. Negative gapMM = overlap.", annotations: READ,
-    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name.") } },
-  async (a) => safe("get_element_gaps", a));
-
-server.registerTool("get_element_debug",
-  { title: "Element geometry", description: "Detailed geometry of one element: AABB, face centers/normals, vertices, dims and effective dims (mm). For precise placement checks.", annotations: READ,
-    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name.") } },
-  async (a) => safe("get_element_debug", a));
-
-server.registerTool("get_floor_info",
-  { title: "Floor info", description: "Size (mm) and position (m) of the floor plate (BasePlate).", annotations: READ },
-  async () => safe("get_floor_info"));
-
-server.registerTool("get_settings",
-  { title: "Get settings", description: "Current project settings: snap on/off, snap threshold (mm), grid, autosave, verbose snap flag.", annotations: READ },
-  async () => safe("get_settings"));
-
-// ── Check (dry-run) ──────────────────────────────────────────────────────────
-
-server.registerTool("simulate_move",
-  { title: "Simulate move (dry-run)", description: "DRY-RUN of a move: does NOT move anything. Returns simulatedAABB, overlapsWith and wouldHaveViolations. Call BEFORE move_element. x/y/z in METERS. Each axis is OPTIONAL — omit an axis to keep the board's current value on it (a missing axis is NOT treated as 0).", annotations: READ,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Exact board name."),
-      x: z.number().finite().optional().describe("Target X in METERS. Omit to keep current X."),
-      y: z.number().finite().optional().describe("Target Y in METERS. Omit to keep current Y."),
-      z: z.number().finite().optional().describe("Target Z in METERS. Omit to keep current Z."),
-    } },
-  async (a) => safe("simulate_move", a));
-
-server.registerTool("simulate_resize",
-  { title: "Simulate resize (dry-run)", description: "DRY-RUN of a resize: does NOT change size. Returns simulatedAABB, overlapsWith and wouldHaveViolations. Call BEFORE resize_element. width/height/depth in MILLIMETERS. Each is OPTIONAL — omit a dimension to keep the board's current size on it (a missing dimension is NOT treated as 0).", annotations: READ,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Exact board name."),
-      width: z.number().int().positive("Must be positive").optional().describe("Target width (X) in MM. Omit to keep current width."),
-      height: z.number().int().positive("Must be positive").optional().describe("Target height (Y) in MM. Omit to keep current height."),
-      depth: z.number().int().positive("Must be positive").optional().describe("Target depth/thickness (Z) in MM. Omit to keep current depth."),
-    } },
-  async (a) => safe("simulate_resize", a));
-
-server.registerTool("snap_diagnose",
-  { title: "Diagnose snapping", description: "Explain why a board does or does not snap to neighbours from its current (or a test) position: best face pair, gap vs threshold, overlap. x/y/z in METERS (optional, default = current position).", annotations: READ,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Exact board name."),
-      x: z.number().finite().optional().describe("Test X in METERS (default: current)."),
-      y: z.number().finite().optional().describe("Test Y in METERS (default: current)."),
-      z: z.number().finite().optional().describe("Test Z in METERS (default: current)."),
-    } },
-  async (a) => safe("snap_diagnose", a));
-
-// ── Edit elements ────────────────────────────────────────────────────────────
-
-server.registerTool("create_element",
-  { title: "Create element", description: "Create a new board (default), or a wall / facade / assembled facade / floor. x/y/z in METERS; width/height/depth in MILLIMETERS (defaults 800x400x18, assembled default 450x700x18). Set is_wall/is_facade/is_assembled/is_floor for other kinds. Prefer this over raw Unity object creation.", annotations: WRITE,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Name for the new element (becomes its board name)."),
-      x: z.number().finite().default(0).describe("Position X in METERS."),
-      y: z.number().finite().default(0).describe("Position Y in METERS."),
-      z: z.number().finite().default(0).describe("Position Z in METERS."),
-      width: z.number().int().positive("Must be positive").optional().describe("Size along X in MM (default 800)."),
-      height: z.number().int().positive("Must be positive").optional().describe("Size along Y in MM (default 400)."),
-      depth: z.number().int().positive("Must be positive").optional().describe("Thickness along Z in MM (default 18)."),
-      radius: z.number().int().min(1, "Must be >= 1").optional().describe("Radial shelf only: outer radius in MM (default 300)."),
-      is_wall: z.boolean().optional().describe("Create as a WALL (structural anchor). Default false."),
-      is_facade: z.boolean().optional().describe("Create as a FACADE (door/front with gaps). Default false."),
-      is_assembled: z.boolean().optional().describe("Create as an ASSEMBLED (framed) facade — real frame geometry. Default false. Pair with fill."),
-      is_radial_shelf: z.boolean().optional().describe("Create as a RADIAL (corner) shelf. Default false. Pair with radius."),
-      is_floor: z.boolean().optional().describe("Create the FLOOR plate. Ignores size/position. Default false."),
-      is_drawer: z.boolean().optional().describe("Create as a GTV DRAWER (sliding box inside a cabinet). Default false. Pair with drawer_type/drawer_length/drawer_color/drawer_internal_width; width/height/depth are ignored."),
-      drawer_type: z.enum(["A", "B", "C", "D"]).optional().describe("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Default A."),
-      drawer_length: z.number().int().optional().describe("Drawer only: nominal slide length in MM, one of 250/300/350/400/450/500/550/600. Default 350."),
-      drawer_color: z.enum(["anthracite", "white", "black"]).optional().describe("Drawer only: GTV color. Default anthracite."),
-      drawer_internal_width: z.number().int().positive("Must be positive").optional().describe("Drawer only: internal box width in MM (default 400, min 100)."),
-      fill: z.enum(["blind", "glass", "open"]).optional().describe("Assembled facade only: center fill — blind (panel), glass (vitrine with glass), open (empty vitrine). Default blind."),
-      gap_left: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: left gap in MM (default 2)."),
-      gap_right: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: right gap in MM (default 2)."),
-      gap_top: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: top gap in MM (default 2)."),
-      gap_bottom: z.number().int().min(0, "Must be >= 0").optional().describe("Facade only: bottom gap in MM (default 2)."),
-    } },
-  async (a) => {
-    const params: CreateElementParams = { template_name: a.name, name: a.name, x: a.x, y: a.y, z: a.z };
-    if (a.width !== undefined) params.width = a.width;
-    if (a.height !== undefined) params.height = a.height;
-    if (a.depth !== undefined) params.depth = a.depth;
-    if (a.radius !== undefined) params.radius = a.radius;
-    if (a.is_wall !== undefined) params.is_wall = a.is_wall;
-    if (a.is_facade !== undefined) params.is_facade = a.is_facade;
-    if (a.is_assembled !== undefined) params.is_assembled = a.is_assembled;
-    if (a.is_radial_shelf !== undefined) params.is_radial_shelf = a.is_radial_shelf;
-    if (a.is_floor !== undefined) params.is_floor = a.is_floor;
-    if (a.is_drawer !== undefined) params.is_drawer = a.is_drawer;
-    if (a.drawer_type !== undefined) params.drawer_type = a.drawer_type;
-    if (a.drawer_length !== undefined) params.drawer_length = a.drawer_length;
-    if (a.drawer_color !== undefined) params.drawer_color = a.drawer_color;
-    if (a.drawer_internal_width !== undefined) params.drawer_internal_width = a.drawer_internal_width;
-    if (a.fill !== undefined) params.fill = a.fill;
-    if (a.gap_left !== undefined) params.gapLeft = a.gap_left;
-    if (a.gap_right !== undefined) params.gapRight = a.gap_right;
-    if (a.gap_top !== undefined) params.gapTop = a.gap_top;
-    if (a.gap_bottom !== undefined) params.gapBottom = a.gap_bottom;
-    return safe("create_element", params);
+  server.registerTool(tool.name, config, async (args: Record<string, unknown> = {}) => {
+    if (tool.staticText) return textResult(GUIDE);
+    const params = tool.rename ? applyRename(args, tool.rename) : args;
+    return tool.cached ? safeCached(tool.name, params) : safe(tool.name, params);
   });
-
-server.registerTool("convert_element",
-  { title: "Convert element type", description: "Change the TYPE of an existing element in place — board(part) <-> facade <-> assembled facade — keeping its name, size, position and material. Use this to turn a regular facade into an assembled (framed) one, or vice versa. NOT undoable.", annotations: WRITE,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Exact element name to convert."),
-      target: z.enum(["part", "facade", "assembled_facade", "radial_shelf"]).describe("Target type: part (plain board), facade (door/front), assembled_facade (framed facade), radial_shelf (corner shelf)."),
-      fill: z.enum(["blind", "glass", "open"]).optional().describe("When target=assembled_facade: center fill — blind (panel), glass, open (empty). Default keeps/blind."),
-    } },
-  async (a) => safe("convert_element", a));
-
-server.registerTool("move_element",
-  { title: "Move element", description: "Move a board to an absolute position. Undoable, validated, snaps to neighbours. x/y/z in METERS. Each axis is OPTIONAL — omit an axis to keep the board's current value on it (a missing axis is NOT treated as 0), so you can move on one axis only. Fails if the element is locked. Run simulate_move first.", annotations: WRITE,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Exact board name."),
-      x: z.number().finite().optional().describe("Target X in METERS. Omit to keep current X."),
-      y: z.number().finite().optional().describe("Target Y in METERS. Omit to keep current Y."),
-      z: z.number().finite().optional().describe("Target Z in METERS. Omit to keep current Z."),
-    } },
-  async (a) => safe("move_element", a));
-
-server.registerTool("resize_element",
-  { title: "Resize element", description: "Set a board's size in MILLIMETERS. Undoable and validated. depth is the thickness (Z). Each dimension is OPTIONAL — omit one to keep the board's current size on it (a missing dimension is NOT treated as 0), so you can change one dimension only. Fails if locked. Run simulate_resize first.", annotations: WRITE,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Exact board name."),
-      width: z.number().int().positive("Must be positive").optional().describe("New width (X) in MM. Omit to keep current width."),
-      height: z.number().int().positive("Must be positive").optional().describe("New height (Y) in MM. Omit to keep current height."),
-      depth: z.number().int().positive("Must be positive").optional().describe("New depth/thickness (Z) in MM. Omit to keep current depth."),
-    } },
-  async (a) => safe("resize_element", a));
-
-server.registerTool("rotate_element",
-  { title: "Rotate element", description: "Set a board's rotation as Euler angles in DEGREES. Undoable. Common: rotate (0,90,0) to swap width and thickness. Each axis is OPTIONAL — omit an axis to keep the board's current angle on it (a missing axis is NOT treated as 0). Fails if locked.", annotations: WRITE,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Exact board name."),
-      x: z.number().finite("Must be finite").optional().describe("Rotation around X in DEGREES. Omit to keep current."),
-      y: z.number().finite("Must be finite").optional().describe("Rotation around Y in DEGREES. Omit to keep current."),
-      z: z.number().finite("Must be finite").optional().describe("Rotation around Z in DEGREES. Omit to keep current."),
-    } },
-  async (a) => safe("rotate_element", a));
-
-server.registerTool("delete_element",
-  { title: "Delete element", description: "Delete a board. Undoable with undo. Fails if the element is locked.", annotations: DESTRUCTIVE,
-    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name.") } },
-  async (a) => safe("delete_element", a));
-
-server.registerTool("select_element",
-  { title: "Select element", description: "Select and highlight a board in the app (visual only, no geometry change).", annotations: WRITE,
-    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name.") } },
-  async (a) => safe("select_element", a));
-
-server.registerTool("set_element_lock",
-  { title: "Lock / unlock element", description: "Lock or unlock a board. Locked boards cannot be moved/resized/deleted. Set locked:false ONLY with the user's explicit permission.", annotations: WRITE,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Exact board name."),
-      locked: z.boolean().describe("true = lock (protect), false = unlock (allow editing)."),
-    } },
-  async (a) => safe("set_element_lock", a));
-
-const FACADE_MODES = [
-  "front_left", "front_right", "front_top", "front_bottom",
-  "back_left", "back_right", "back_top", "back_bottom",
-  "edge_top_left", "edge_top_right", "edge_bottom_left", "edge_bottom_right",
-  "drawer_out", "drawer_in", "drawer_right", "drawer_left", "drawer_up", "drawer_down",
-] as const;
-
-server.registerTool("set_facade_mode",
-  { title: "Facade open mode", description: "Change how a facade element opens: hinge (door swinging around one edge) or drawer (sliding along a face). 18 modes. Fails if the element is not a facade.", annotations: WRITE,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Exact facade element name."),
-      mode: z.enum(FACADE_MODES).describe("Opening mode:\n  front_* — hinged on front face edge\n  back_* — hinged on back face edge\n  edge_* — hinged on thickness edge\n  drawer_* — sliding along axis"),
-    } },
-  async (a) => safe("set_facade_mode", a));
-
-server.registerTool("set_drawer_properties",
-  { title: "Set drawer properties", description: "Change a GTV drawer's parameters: type (A/B/C/D side height), nominal length, color, internal width, double-drawer pairing and attached facade. Every field is optional — omit to keep current. Fails if the element is not a drawer. Use this instead of resize_element for drawers.", annotations: WRITE,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Exact drawer element name."),
-      drawer_type: z.enum(["A", "B", "C", "D"]).optional().describe("Side height type: A=86, B=120, C=168, D=200 mm."),
-      drawer_length: z.number().int().optional().describe("Nominal slide length in MM, one of 250/300/350/400/450/500/550/600. Invalid values are ignored."),
-      drawer_color: z.enum(["anthracite", "white", "black"]).optional().describe("GTV color."),
-      internal_width: z.number().int().positive("Must be positive").optional().describe("Internal box width in MM (min 100)."),
-      is_double: z.boolean().optional().describe("Mark as part of a DOUBLE drawer (two stacked boxes)."),
-      is_upper: z.boolean().optional().describe("Double drawer only: this box is the UPPER one."),
-      paired_drawer_name: z.string().optional().describe("Double drawer only: exact name of the paired drawer element (link both ways for sync)."),
-      attached_facade_name: z.string().optional().describe("Exact name of the facade element acting as this drawer's front — it opens/closes together with the drawer. Empty string detaches."),
-    } },
-  async (a) => safe("set_drawer_properties", a));
-
-server.registerTool("cycle_drawer_animation",
-  { title: "Open / close drawer", description: "Animate a GTV drawer: a single drawer toggles open/closed; a double drawer cycles Closed -> BothOpen -> LowerOnly -> Closed (its paired drawer and attached facades move in sync). Returns isOpen and doubleState.", annotations: WRITE,
-    inputSchema: { name: z.string().min(1, "Required").describe("Exact drawer element name.") } },
-  async (a) => safe("cycle_drawer_animation", a));
-
-server.registerTool("list_materials",
-  { title: "List materials / textures", description: "List the available material decors / textures (id, display name, kind, whether it has a texture, and its physical tile size in MM). Use before set_material to pick a valid id.", annotations: READ },
-  async () => safe("list_materials"));
-
-server.registerTool("set_material",
-  { title: "Set material / texture", description: "Assign a material decor / texture to a board or facade. When a non-default decor is set, the object shows that texture instead of the flat validation tint. Undoable via re-set; call list_materials first for valid ids.", annotations: WRITE,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Exact board/facade name."),
-      material: z.string().min(1, "Required").describe("Material id (e.g. 'oak') or its display name (e.g. 'Дуб сонома'). See list_materials."),
-    } },
-  async (a) => safe("set_material", a));
-
-server.registerTool("reload_textures",
-  { title: "Reload external textures", description: "Re-scan the external textures folder (<app>/Resources/Textures) and refresh the decor catalog WITHOUT restarting the app. Drop new image files there (named '<name>_<widthMM>_<heightMM>.jpg' to set tile size), then call this. Returns how many were loaded and the folder path.", annotations: WRITE },
-  async () => safe("reload_textures"));
-
-server.registerTool("add_wall_component",
-  { title: "Make element a wall", description: "Turn an existing board into a wall (structural anchor). No-op if it is already a wall.", annotations: WRITE,
-    inputSchema: { name: z.string().min(1, "Required").describe("Exact board name.") } },
-  async (a) => safe("add_wall_component", a));
-
-server.registerTool("resize_floor",
-  { title: "Resize floor", description: "Set the floor plate size in MILLIMETERS. Undoable.", annotations: WRITE,
-    inputSchema: {
-      width: z.number().int().positive("Must be positive").describe("Floor width (X) in MM."),
-      height: z.number().int().positive("Must be positive").describe("Floor length (Y) in MM."),
-      depth: z.number().int().positive("Must be positive").describe("Floor thickness (Z) in MM."),
-    } },
-  async (a) => safe("resize_floor", a));
-
-// ── Undo / redo ──────────────────────────────────────────────────────────────
-
-server.registerTool("undo",
-  { title: "Undo", description: "Undo the last edit. Returns ok:false if there is nothing to undo.", annotations: WRITE },
-  async () => safe("undo"));
-
-server.registerTool("redo",
-  { title: "Redo", description: "Redo the last undone edit.", annotations: WRITE },
-  async () => safe("redo"));
-
-server.registerTool("get_undo_stack_info",
-  { title: "Undo stack info", description: "Whether undo/redo are available and a description of the next undo.", annotations: READ },
-  async () => safe("get_undo_stack_info"));
-
-// ── Modules (named groups of boards) ─────────────────────────────────────────
-
-server.registerTool("get_modules",
-  { title: "List modules", description: "List all modules (named groups) with their member boards and bounding box.", annotations: READ },
-  async () => safe("get_modules"));
-
-server.registerTool("module_info",
-  { title: "Module info", description: "Full configuration of one module: members, bounds, edit state.", annotations: READ,
-    inputSchema: { module: z.string().min(1, "Required").describe("Module id (number) or name.") } },
-  async (a) => safe("module_info", a));
-
-server.registerTool("create_module",
-  { title: "Create module", description: "Group two or more boards into a named module (they then move together).", annotations: WRITE,
-    inputSchema: {
-      name: z.string().min(1, "Required").describe("Module name, e.g. 'Тумба с ящиками'."),
-      members: z.array(z.string().min(1, "Required")).min(2).describe("Board names (at least 2)."),
-    } },
-  async (a) => safe("create_module", a));
-
-server.registerTool("dissolve_module",
-  { title: "Dissolve module", description: "Ungroup a module. The boards stay in the scene.", annotations: DESTRUCTIVE,
-    inputSchema: { module: z.string().min(1, "Required").describe("Module id or name.") } },
-  async (a) => safe("dissolve_module", a));
-
-server.registerTool("add_to_module",
-  { title: "Add to module", description: "Add one board to an existing module.", annotations: WRITE,
-    inputSchema: { module: z.string().min(1, "Required").describe("Module id or name."), name: z.string().min(1, "Required").describe("Board name to add.") } },
-  async (a) => safe("add_to_module", a));
-
-server.registerTool("remove_from_module",
-  { title: "Remove from module", description: "Remove one board from its module.", annotations: WRITE,
-    inputSchema: { name: z.string().min(1, "Required").describe("Board name to remove.") } },
-  async (a) => safe("remove_from_module", a));
-
-server.registerTool("enter_module_edit",
-  { title: "Enter module edit", description: "Enter module edit mode: only that module's boards are editable, the rest of the scene is locked/dimmed.", annotations: WRITE,
-    inputSchema: { module: z.string().min(1, "Required").describe("Module id or name.") } },
-  async (a) => safe("enter_module_edit", a));
-
-server.registerTool("exit_module_edit",
-  { title: "Exit module edit", description: "Leave module edit mode.", annotations: WRITE },
-  async () => safe("exit_module_edit"));
-
-// ── Settings / diagnostics / export ──────────────────────────────────────────
-
-server.registerTool("set_setting",
-  { title: "Change a setting", description: "Toggle one boolean project setting. name is one of: lower_near_walls | snap_enabled | grid_enabled | walls_enabled.", annotations: WRITE,
-    inputSchema: {
-      name: z.enum(["lower_near_walls", "snap_enabled", "grid_enabled", "walls_enabled"]).describe("Setting key."),
-      value: z.boolean().describe("New on/off value."),
-    } },
-  async (a) => safe("set_setting", a));
-
-server.registerTool("set_snap_verbose",
-  { title: "Verbose snap log", description: "Turn detailed snap logging in the Unity console on or off (debugging).", annotations: WRITE,
-    inputSchema: { enabled: z.boolean() } },
-  async (a) => safe("set_snap_verbose", a));
-
-server.registerTool("get_console_logs",
-  { title: "Console logs", description: "Recent Unity console log entries (for debugging).", annotations: READ,
-    inputSchema: { count: z.number().int().min(1, "Must be >= 1").max(200, "Max 200").optional().describe("How many entries (max 200, default 50).") } },
-  async (a) => safe("get_console_logs", a));
-
-server.registerTool("export_specification_csv",
-  { title: "Export CSV", description: "Export the specification (cut list) to a CSV file on disk.", annotations: WRITE,
-    inputSchema: { path: z.string().min(1, "Required").describe("Full file path to write the CSV to.") } },
-  async (a) => safe("export_specification_csv", a));
-
-server.registerTool("take_screenshot",
-  { title: "Screenshot", description: "Capture a screenshot of the app; returns the saved PNG file path.", annotations: READ },
-  async () => safe("take_screenshot"));
-
-// ── Advanced: raw Unity objects (no undo / no validation — prefer *_element) ──
-
-server.registerTool("find_objects",
-  { title: "Find objects (advanced)", description: "ADVANCED. Find GameObjects by partial name. For kitchen boards prefer get_all_elements.", annotations: READ,
-    inputSchema: { name_filter: z.string().min(1, "Required").describe("Full or partial object name.") } },
-  async (a) => safe("find_objects", a));
-
-server.registerTool("get_object_info",
-  { title: "Object info (advanced)", description: "ADVANCED. Raw GameObject info (transform, components, children). For boards prefer get_element_info.", annotations: READ,
-    inputSchema: { object_path: z.string().min(1, "Required").describe("Object name or hierarchy path (Parent/Child).") } },
-  async (a) => safe("get_object_info", a));
-
-server.registerTool("get_scene_hierarchy",
-  { title: "Scene hierarchy (advanced)", description: "ADVANCED. Full GameObject hierarchy of the scene.", annotations: READ },
-  async () => safe("get_scene_hierarchy"));
-
-server.registerTool("set_object_active",
-  { title: "Show/hide object (advanced)", description: "ADVANCED. Enable or disable a raw GameObject.", annotations: WRITE,
-    inputSchema: { object_path: z.string().min(1, "Required").describe("Object name or path."), active: z.boolean() } },
-  async (a) => safe("set_object_active", a));
-
-server.registerTool("delete_object",
-  { title: "Delete object (advanced)", description: "ADVANCED. Destroy a raw GameObject with NO undo. For boards prefer delete_element (undoable).", annotations: DESTRUCTIVE,
-    inputSchema: { object_path: z.string().min(1, "Required").describe("Object name or path.") } },
-  async (a) => safe("delete_object", a));
-
-server.registerTool("set_position",
-  { title: "Set position (advanced)", description: "ADVANCED. Set a raw GameObject world position in METERS, with NO undo/validation/snap. x/y/z are OPTIONAL — omit an axis to keep its current value. For boards prefer move_element.", annotations: WRITE,
-    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().finite().optional().describe("X in METERS. Omit to keep current."), y: z.number().finite().optional().describe("Y in METERS. Omit to keep current."), z: z.number().finite().optional().describe("Z in METERS. Omit to keep current.") } },
-  async (a) => safe("set_position", a));
-
-server.registerTool("set_rotation",
-  { title: "Set rotation (advanced)", description: "ADVANCED. Set a raw GameObject rotation (Euler DEGREES), no undo. x/y/z are OPTIONAL — omit an axis to keep its current value. For boards prefer rotate_element.", annotations: WRITE,
-    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().finite("Must be finite").optional().describe("X in DEGREES. Omit to keep current."), y: z.number().finite("Must be finite").optional().describe("Y in DEGREES. Omit to keep current."), z: z.number().finite("Must be finite").optional().describe("Z in DEGREES. Omit to keep current.") } },
-  async (a) => safe("set_rotation", a));
-
-server.registerTool("set_scale",
-  { title: "Set scale (advanced)", description: "ADVANCED and RISKY. Sets raw Transform scale — this does NOT change a board's mm size and can distort meshes. To change a board size use resize_element instead.", annotations: WRITE,
-    inputSchema: { object_path: z.string().min(1, "Required"), x: z.number().positive("Must be positive").optional().describe("Omit to keep current."), y: z.number().positive("Must be positive").optional().describe("Omit to keep current."), z: z.number().positive("Must be positive").optional().describe("Omit to keep current.") } },
-  async (a) => safe("set_scale", a));
-
-server.registerTool("execute_menu_item",
-  { title: "Run editor menu (advanced)", description: "ADVANCED (Editor only). Execute a Unity Editor menu command by path, e.g. 'Edit/Undo'.", annotations: { readOnlyHint: false, openWorldHint: true },
-    inputSchema: { menu_path: z.string().min(1, "Required").describe("Menu path, e.g. 'Edit/Undo'.") } },
-  async (a) => safe("execute_menu_item", a));
-
-server.registerTool("enter_play_mode",
-  { title: "Enter play mode (advanced)", description: "ADVANCED (Editor only). Enter Unity Play Mode.", annotations: WRITE },
-  async () => safe("enter_play_mode"));
-
-server.registerTool("exit_play_mode",
-  { title: "Exit play mode (advanced)", description: "ADVANCED (Editor only). Exit Unity Play Mode.", annotations: WRITE },
-  async () => safe("exit_play_mode"));
+}
 
 // ── Start ────────────────────────────────────────────────────────────────────
 try {

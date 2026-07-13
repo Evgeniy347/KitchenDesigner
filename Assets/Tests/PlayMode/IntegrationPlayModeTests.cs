@@ -122,9 +122,10 @@ public class IntegrationPlayModeTests
 
         Assert.IsNotNull(saveBtn, "кнопка «Сохранить» должна существовать в тулбаре");
 
-        // Без выбранного файла «Сохранить» делает быстрый quicksave (без диалога).
-        SaveLoadManager.LastPath = "";
-        var path = SaveLoadManager.PathForName(UIManager.QuickSaveName);
+        // Задаём LastPath явно — иначе LocalSave покажет диалог ввода имени
+        // и сохранение не произойдёт до подтверждения (которого в тесте нет).
+        SaveLoadManager.LastPath = SaveLoadManager.PathForName(UIManager.QuickSaveName);
+        var path = SaveLoadManager.LastPath;
         if (File.Exists(path)) File.Delete(path);
 
         saveBtn.onClick.Invoke();
@@ -132,6 +133,7 @@ public class IntegrationPlayModeTests
 
         Assert.IsTrue(File.Exists(path), "клик по «Сохранить» должен создать файл проекта");
         File.Delete(path);
+        SaveLoadManager.LastPath = "";
     }
 
     [UnityTest]

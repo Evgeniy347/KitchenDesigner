@@ -56,8 +56,9 @@ namespace KitchenDesigner.Core.UI
         private readonly List<LayoutRow> _layout = new();
 
         // Геометрия
-        private const float LabelX = -72f;
-        private const float FieldX = 82f;
+        private const float LabelW = 140f;     // ширина колонки подписей (вмещает «Ширина короба, мм» почти без переноса)
+        private const float LabelX = -62f;     // центр подписи (панель 280px → края ±140)
+        private const float FieldX = 75f;      // центр поля ввода
         private const float LabelH = 24f;
         private const float FieldH = 24f;
         private const float RowH = 24f;      // высота строки «подпись + поле»
@@ -286,7 +287,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_InputField Row(Transform parent, string label)
         {
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-                new Vector2(LabelX, 0), new Vector2(130, LabelH));
+                new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
             var field = UIFactory.CreateInputField("F_" + label, parent, "",
                 new Vector2(FieldX, 0), new Vector2(100, FieldH));
             AddRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
@@ -296,7 +297,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_InputField RadialRow(Transform parent, string label)
         {
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-                new Vector2(LabelX, 0), new Vector2(130, LabelH));
+                new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
             var field = UIFactory.CreateInputField("F_" + label, parent, "",
                 new Vector2(FieldX, 0), new Vector2(100, FieldH));
             AddRadialRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());

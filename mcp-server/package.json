@@ -5,6 +5,7 @@
   "description": "MCP server bridge to Unity Kitchen Designer",
   "type": "module",
   "scripts": {
+    "gen:tools": "dotnet run --project ../server/tools/McpContractGen -- src/tools.generated.ts",
     "check": "node scripts/check-parity.mjs",
     "prebuild": "node scripts/check-parity.mjs",
     "typecheck": "tsc --noEmit",

@@ -101,11 +101,11 @@ The `web` container is self-contained and exposes **two ports**:
 | Port | Purpose | Routes |
 |------|---------|--------|
 | 8080 | HTTP — site, API, WebGL | Blazor pages, `/api/*`, `/unity/*` (WebGL build from the `WebGL:RootPath` mount), `/api/mcp/ws` (client channel) |
-| 8081 | MCP — AI agents only | `/hubs/mcp` (SignalR), `/api/mcp/connect` (key handshake), `/health` |
+| 8081 | MCP — AI agents only | `/mcp` (real MCP over Streamable HTTP), `/health` |
 
 nginx is a pure reverse proxy in front of 8080; agents connect to 8081 directly. The database schema is created automatically on first start (with retries while PostgreSQL boots). Project saves are **files** under `/app/data/projects/{userId}/{projectId}.json` (source of truth, size limit + JSON validation + rotated `.bak` backups); the DB keeps metadata. Auth: ASP.NET Identity with static-SSR login/register/profile pages, POST-only logout, lockout after failed attempts, 401/403 (not redirects) for `/api/*`.
 
-MCP flow: create a session on `/mcp-panel` → give the agent the access key → agent calls `GET :8081/api/mcp/connect?key=…` → connects to `ws(s)://…:8081/hubs/mcp?access_key=…` → commands are relayed to the WebGL/desktop client connected to `/api/mcp/ws?key=…`.
+MCP flow: the server hosts a **real MCP server** at `http(s)://…:8081/mcp` (Streamable HTTP). The tool set is generated from one C# contract (`Assets/Scripts/Core/MCP/Contract`, shared with the Unity handler; `index.ts` is generated from it too). The agent connects, then **must call `authenticate` first** with the tab's project key — until then every tool returns *"требуется подключение к проекту…"*. The user opens the project in a tab (a unique key is shown in the top nav next to a red/green light), copies the key to the agent; on authenticate the server pings that tab over `/api/mcp/ws`, binds the MCP session to it (light turns green), and relays all subsequent commands to it.
 
 ### Scripts
 
@@ -222,11 +222,11 @@ Kitchen Designer доступен по **MCP (Model Context Protocol)** — ИИ
 | Порт | Назначение | Маршруты |
 |------|-----------|----------|
 | 8080 | HTTP — сайт, API, WebGL | Blazor-страницы, `/api/*`, `/unity/*` (WebGL-сборка из монтирования `WebGL:RootPath`), `/api/mcp/ws` (канал клиента) |
-| 8081 | MCP — только ИИ-агенты | `/hubs/mcp` (SignalR), `/api/mcp/connect` (хендшейк по ключу), `/health` |
+| 8081 | MCP — только ИИ-агенты | `/mcp` (настоящий MCP по Streamable HTTP), `/health` |
 
 nginx — чистый reverse-proxy перед 8080; агенты подключаются к 8081 напрямую. Схема БД создаётся автоматически при первом старте (с ретраями, пока поднимается PostgreSQL). Сохранения проектов — **файлы** `/app/data/projects/{userId}/{projectId}.json` (источник истины; лимит размера, валидация JSON, ротация `.bak`-бекапов); в БД — метаданные. Аутентификация: ASP.NET Identity, static-SSR страницы входа/регистрации/профиля, выход только по POST, lockout после неудачных попыток, для `/api/*` — 401/403 вместо редиректов.
 
-Поток MCP: создать сессию на `/mcp-panel` → передать агенту access key → агент вызывает `GET :8081/api/mcp/connect?key=…` → подключается к `ws(s)://…:8081/hubs/mcp?access_key=…` → команды ретранслируются WebGL/десктоп-клиенту, подключённому к `/api/mcp/ws?key=…`.
+Поток MCP: сервер держит **настоящий MCP-сервер** на `http(s)://…:8081/mcp` (Streamable HTTP). Набор тулзов генерируется из одного C#-контракта (`Assets/Scripts/Core/MCP/Contract`, общего с Unity-обработчиком; из него же генерируется `index.ts`). Агент подключается и **первой командой обязан вызвать `authenticate`** с ключом проекта из вкладки — до этого любой тул отдаёт *«требуется подключение к проекту…»*. Пользователь открывает проект во вкладке (уникальный ключ показан в верхней навигации рядом с красной/зелёной лампочкой), копирует ключ агенту; на authenticate сервер пингует вкладку по `/api/mcp/ws`, привязывает к ней MCP-сессию (лампочка зеленеет) и ретранслирует туда все последующие команды.
 
 ### Стек
 

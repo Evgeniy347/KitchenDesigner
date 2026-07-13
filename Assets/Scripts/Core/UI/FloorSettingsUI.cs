@@ -16,6 +16,10 @@ namespace KitchenDesigner.Core.UI
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
         private int _applyFrame = -1;
 
+        private const float LabelW = 130f;
+        private const float LabelX = -62f;
+        private const float FieldX = 75f;
+
         private void Awake()
         {
             Instance = this;
@@ -64,8 +68,8 @@ namespace KitchenDesigner.Core.UI
 
         private TMP_InputField Row(Transform parent, string label, ref float y, float step)
         {
-            UIFactory.CreateLabel("L_" + label, parent, label, 15, new Vector2(-72, y), new Vector2(130, 24));
-            var field = UIFactory.CreateInputField("F_" + label, parent, "", new Vector2(82, y), new Vector2(100, 24));
+            UIFactory.CreateLabel("L_" + label, parent, label, 15, new Vector2(LabelX, y), new Vector2(LabelW, 24));
+            var field = UIFactory.CreateInputField("F_" + label, parent, "", new Vector2(FieldX, y), new Vector2(100, 24));
             y -= step;
             return field;
         }

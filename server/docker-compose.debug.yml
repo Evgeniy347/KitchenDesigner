@@ -1,0 +1,7 @@
+# Debug deploy override.
+# Uses a pre-built image pushed to the server via `docker save | ssh docker load`,
+# instead of building from source on the server.
+# Apply with: docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d
+services:
+  web:
+    image: kitchen-server:debug

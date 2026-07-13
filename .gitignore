@@ -120,6 +120,9 @@ server/publish/
 # Build counter
 build_count.txt
 
+# Test result images
+test-results/
+
 # ===========================
 # Generated Build Info
 # ===========================

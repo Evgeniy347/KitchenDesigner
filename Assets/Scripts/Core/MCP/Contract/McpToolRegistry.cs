@@ -1,0 +1,212 @@
+using System;
+using System.Collections.Generic;
+
+// The one authoritative list of MCP tools. Consumed by:
+//   • Unity  — McpCommandHandler dispatches these method names (parity test guards it).
+//   • Server — builds tools/list for real MCP over Streamable HTTP.
+//   • Codegen — emits mcp-server/src/tools.generated.ts (Zod) for the local bridge.
+// Keep this in sync with McpCommandHandler's switch (McpToolRegistryParityTests).
+
+namespace KitchenDesigner.Core.MCP.Contract
+{
+    public static class McpToolRegistry
+    {
+        public static readonly IReadOnlyList<McpToolDef> Tools = new List<McpToolDef>
+        {
+            // ── Meta / cheat-sheet (answered locally, no Unity call) ──────────────
+            new McpToolDef("guide", "Guide / cheat-sheet",
+                "Full usage cheat-sheet: units, the core workflow, and worked examples. Call this first if unsure.",
+                McpToolKind.Read, null, staticText: true),
+
+            // ── Read: scene & elements ────────────────────────────────────────────
+            new McpToolDef("ping", "Ping",
+                "Check that Unity is reachable. Returns Unity version.",
+                McpToolKind.Read, null),
+            new McpToolDef("get_status", "Scene status",
+                "Basic scene info: scene name, object count, play mode, platform.",
+                McpToolKind.Read, null),
+            new McpToolDef("get_all_elements", "List elements",
+                "List ALL boards/walls/floor with name, size (mm), position (m), rotation, AABB and hasViolations. Call this FIRST before editing.",
+                McpToolKind.Read, null, cached: true),
+            new McpToolDef("get_element_info", "Element info",
+                "Full info for one element by name: size (mm), position (m), rotation, module, hasViolations, AABB.",
+                McpToolKind.Read, typeof(ParamsName)),
+            new McpToolDef("get_specification", "Specification",
+                "Cut list: every distinct board size with count and area (m2), plus totals.",
+                McpToolKind.Read, null),
+            new McpToolDef("get_violations", "List violations",
+                "List every element that currently overlaps another or is disconnected from the wall/floor structure. Call after each change; expect count 0.",
+                McpToolKind.Read, null),
+            new McpToolDef("get_element_gaps", "Element gaps",
+                "Gap or overlap (in mm) to the nearest neighbour on each axis X/Y/Z. Negative gapMM = overlap.",
+                McpToolKind.Read, typeof(ParamsName)),
+            new McpToolDef("get_element_debug", "Element geometry",
+                "Detailed geometry of one element: AABB, face centers/normals, vertices, dims and effective dims (mm). For precise placement checks.",
+                McpToolKind.Read, typeof(ParamsName)),
+            new McpToolDef("get_floor_info", "Floor info",
+                "Size (mm) and position (m) of the floor plate (BasePlate).",
+                McpToolKind.Read, null),
+            new McpToolDef("get_settings", "Get settings",
+                "Current project settings: snap on/off, snap threshold (mm), grid, autosave, verbose snap flag.",
+                McpToolKind.Read, null),
+
+            // ── Check (dry-run) ───────────────────────────────────────────────────
+            new McpToolDef("simulate_move", "Simulate move (dry-run)",
+                "DRY-RUN of a move: does NOT move anything. Returns simulatedAABB, overlapsWith and wouldHaveViolations. Call BEFORE move_element. x/y/z in METERS. Each axis is OPTIONAL — omit an axis to keep the board's current value on it (a missing axis is NOT treated as 0).",
+                McpToolKind.Read, typeof(ParamsSimulateMove)),
+            new McpToolDef("simulate_resize", "Simulate resize (dry-run)",
+                "DRY-RUN of a resize: does NOT change size. Returns simulatedAABB, overlapsWith and wouldHaveViolations. Call BEFORE resize_element. width/height/depth in MILLIMETERS. Each is OPTIONAL — omit a dimension to keep the board's current size on it (a missing dimension is NOT treated as 0).",
+                McpToolKind.Read, typeof(ParamsSimulateResize)),
+            new McpToolDef("snap_diagnose", "Diagnose snapping",
+                "Explain why a board does or does not snap to neighbours from its current (or a test) position: best face pair, gap vs threshold, overlap. x/y/z in METERS (optional, default = current position).",
+                McpToolKind.Read, typeof(ParamsSnapDiagnose)),
+
+            // ── Edit elements ─────────────────────────────────────────────────────
+            new McpToolDef("create_element", "Create element",
+                "Create a new board (default), or a wall / facade / assembled facade / floor. x/y/z in METERS; width/height/depth in MILLIMETERS (defaults 800x400x18, assembled default 450x700x18). Set is_wall/is_facade/is_assembled/is_floor for other kinds. Prefer this over raw Unity object creation.",
+                McpToolKind.Write, typeof(ParamsCreateElement)),
+            new McpToolDef("convert_element", "Convert element type",
+                "Change the TYPE of an existing element in place — board(part) <-> facade <-> assembled facade — keeping its name, size, position and material. Use this to turn a regular facade into an assembled (framed) one, or vice versa. NOT undoable.",
+                McpToolKind.Write, typeof(ParamsConvertElement)),
+            new McpToolDef("move_element", "Move element",
+                "Move a board to an absolute position. Undoable, validated, snaps to neighbours. x/y/z in METERS. Each axis is OPTIONAL — omit an axis to keep the board's current value on it (a missing axis is NOT treated as 0), so you can move on one axis only. Fails if the element is locked. Run simulate_move first.",
+                McpToolKind.Write, typeof(ParamsMoveElement)),
+            new McpToolDef("resize_element", "Resize element",
+                "Set a board's size in MILLIMETERS. Undoable and validated. depth is the thickness (Z). Each dimension is OPTIONAL — omit one to keep the board's current size on it (a missing dimension is NOT treated as 0), so you can change one dimension only. Fails if locked. Run simulate_resize first.",
+                McpToolKind.Write, typeof(ParamsResizeElement)),
+            new McpToolDef("rotate_element", "Rotate element",
+                "Set a board's rotation as Euler angles in DEGREES. Undoable. Common: rotate (0,90,0) to swap width and thickness. Each axis is OPTIONAL — omit an axis to keep the board's current angle on it (a missing axis is NOT treated as 0). Fails if locked.",
+                McpToolKind.Write, typeof(ParamsRotateElement)),
+            new McpToolDef("delete_element", "Delete element",
+                "Delete a board. Undoable with undo. Fails if the element is locked.",
+                McpToolKind.Destructive, typeof(ParamsName)),
+            new McpToolDef("select_element", "Select element",
+                "Select and highlight a board in the app (visual only, no geometry change).",
+                McpToolKind.Write, typeof(ParamsName)),
+            new McpToolDef("set_element_lock", "Lock / unlock element",
+                "Lock or unlock a board. Locked boards cannot be moved/resized/deleted. Set locked:false ONLY with the user's explicit permission.",
+                McpToolKind.Write, typeof(ParamsElementLock)),
+            new McpToolDef("set_facade_mode", "Facade open mode",
+                "Change how a facade element opens: hinge (door swinging around one edge) or drawer (sliding along a face). 18 modes. Fails if the element is not a facade.",
+                McpToolKind.Write, typeof(ParamsSetFacadeMode)),
+            new McpToolDef("set_drawer_properties", "Set drawer properties",
+                "Change a GTV drawer's parameters: type (A/B/C/D side height), nominal length, color, internal width, double-drawer pairing and attached facade. Every field is optional — omit to keep current. Fails if the element is not a drawer. Use this instead of resize_element for drawers.",
+                McpToolKind.Write, typeof(ParamsSetDrawerProperties)),
+            new McpToolDef("cycle_drawer_animation", "Open / close drawer",
+                "Animate a GTV drawer: a single drawer toggles open/closed; a double drawer cycles Closed -> BothOpen -> LowerOnly -> Closed (its paired drawer and attached facades move in sync). Returns isOpen and doubleState.",
+                McpToolKind.Write, typeof(ParamsName)),
+            new McpToolDef("list_materials", "List materials / textures",
+                "List the available material decors / textures (id, display name, kind, whether it has a texture, and its physical tile size in MM). Use before set_material to pick a valid id.",
+                McpToolKind.Read, null),
+            new McpToolDef("set_material", "Set material / texture",
+                "Assign a material decor / texture to a board or facade. When a non-default decor is set, the object shows that texture instead of the flat validation tint. Undoable via re-set; call list_materials first for valid ids.",
+                McpToolKind.Write, typeof(ParamsSetMaterial)),
+            new McpToolDef("reload_textures", "Reload external textures",
+                "Re-scan the external textures folder (<app>/Resources/Textures) and refresh the decor catalog WITHOUT restarting the app. Drop new image files there (named '<name>_<widthMM>_<heightMM>.jpg' to set tile size), then call this. Returns how many were loaded and the folder path.",
+                McpToolKind.Write, null),
+            new McpToolDef("add_wall_component", "Make element a wall",
+                "Turn an existing board into a wall (structural anchor). No-op if it is already a wall.",
+                McpToolKind.Write, typeof(ParamsName)),
+            new McpToolDef("resize_floor", "Resize floor",
+                "Set the floor plate size in MILLIMETERS. Undoable.",
+                McpToolKind.Write, typeof(ParamsResizeFloor)),
+
+            // ── Undo / redo ───────────────────────────────────────────────────────
+            new McpToolDef("undo", "Undo",
+                "Undo the last edit. Returns ok:false if there is nothing to undo.",
+                McpToolKind.Write, null),
+            new McpToolDef("redo", "Redo",
+                "Redo the last undone edit.",
+                McpToolKind.Write, null),
+            new McpToolDef("get_undo_stack_info", "Undo stack info",
+                "Whether undo/redo are available and a description of the next undo.",
+                McpToolKind.Read, null),
+
+            // ── Modules (named groups of boards) ──────────────────────────────────
+            new McpToolDef("get_modules", "List modules",
+                "List all modules (named groups) with their member boards and bounding box.",
+                McpToolKind.Read, null),
+            new McpToolDef("module_info", "Module info",
+                "Full configuration of one module: members, bounds, edit state.",
+                McpToolKind.Read, typeof(ParamsModule)),
+            new McpToolDef("create_module", "Create module",
+                "Group two or more boards into a named module (they then move together).",
+                McpToolKind.Write, typeof(ParamsCreateModule)),
+            new McpToolDef("dissolve_module", "Dissolve module",
+                "Ungroup a module. The boards stay in the scene.",
+                McpToolKind.Destructive, typeof(ParamsModule)),
+            new McpToolDef("add_to_module", "Add to module",
+                "Add one board to an existing module.",
+                McpToolKind.Write, typeof(ParamsModuleElement)),
+            new McpToolDef("remove_from_module", "Remove from module",
+                "Remove one board from its module.",
+                McpToolKind.Write, typeof(ParamsName)),
+            new McpToolDef("enter_module_edit", "Enter module edit",
+                "Enter module edit mode: only that module's boards are editable, the rest of the scene is locked/dimmed.",
+                McpToolKind.Write, typeof(ParamsModule)),
+            new McpToolDef("exit_module_edit", "Exit module edit",
+                "Leave module edit mode.",
+                McpToolKind.Write, null),
+
+            // ── Settings / diagnostics / export ───────────────────────────────────
+            new McpToolDef("set_setting", "Change a setting",
+                "Toggle one boolean project setting. name is one of: lower_near_walls | snap_enabled | grid_enabled | walls_enabled.",
+                McpToolKind.Write, typeof(ParamsSetSetting)),
+            new McpToolDef("set_snap_verbose", "Verbose snap log",
+                "Turn detailed snap logging in the Unity console on or off (debugging).",
+                McpToolKind.Write, typeof(ParamsSetEnabled)),
+            new McpToolDef("get_console_logs", "Console logs",
+                "Recent Unity console log entries (for debugging).",
+                McpToolKind.Read, typeof(ParamsLogCount)),
+            new McpToolDef("export_specification_csv", "Export CSV",
+                "Export the specification (cut list) to a CSV file on disk.",
+                McpToolKind.Write, typeof(ParamsExportCsv)),
+            new McpToolDef("take_screenshot", "Screenshot",
+                "Capture a screenshot of the app; returns the saved PNG file path.",
+                McpToolKind.Read, null),
+
+            // ── Advanced: raw Unity objects (no undo / no validation) ─────────────
+            new McpToolDef("find_objects", "Find objects (advanced)",
+                "ADVANCED. Find GameObjects by partial name. For kitchen boards prefer get_all_elements.",
+                McpToolKind.Read, typeof(ParamsFindObjects)),
+            new McpToolDef("get_object_info", "Object info (advanced)",
+                "ADVANCED. Raw GameObject info (transform, components, children). For boards prefer get_element_info.",
+                McpToolKind.Read, typeof(ParamsObjectPath)),
+            new McpToolDef("get_scene_hierarchy", "Scene hierarchy (advanced)",
+                "ADVANCED. Full GameObject hierarchy of the scene.",
+                McpToolKind.Read, null),
+            new McpToolDef("set_object_active", "Show/hide object (advanced)",
+                "ADVANCED. Enable or disable a raw GameObject.",
+                McpToolKind.Write, typeof(ParamsSetActive)),
+            new McpToolDef("delete_object", "Delete object (advanced)",
+                "ADVANCED. Destroy a raw GameObject with NO undo. For boards prefer delete_element (undoable).",
+                McpToolKind.Destructive, typeof(ParamsObjectPath)),
+            new McpToolDef("set_position", "Set position (advanced)",
+                "ADVANCED. Set a raw GameObject world position in METERS, with NO undo/validation/snap. x/y/z are OPTIONAL — omit an axis to keep its current value. For boards prefer move_element.",
+                McpToolKind.Write, typeof(ParamsSetTransform)),
+            new McpToolDef("set_rotation", "Set rotation (advanced)",
+                "ADVANCED. Set a raw GameObject rotation (Euler DEGREES), no undo. x/y/z are OPTIONAL — omit an axis to keep its current value. For boards prefer rotate_element.",
+                McpToolKind.Write, typeof(ParamsSetTransform)),
+            new McpToolDef("set_scale", "Set scale (advanced)",
+                "ADVANCED and RISKY. Sets raw Transform scale — this does NOT change a board's mm size and can distort meshes. To change a board size use resize_element instead.",
+                McpToolKind.Write, typeof(ParamsSetTransform)),
+            new McpToolDef("execute_menu_item", "Run editor menu (advanced)",
+                "ADVANCED (Editor only). Execute a Unity Editor menu command by path, e.g. 'Edit/Undo'.",
+                McpToolKind.Write, typeof(ParamsMenuPath), openWorld: true),
+            new McpToolDef("enter_play_mode", "Enter play mode (advanced)",
+                "ADVANCED (Editor only). Enter Unity Play Mode.",
+                McpToolKind.Write, null),
+            new McpToolDef("exit_play_mode", "Exit play mode (advanced)",
+                "ADVANCED (Editor only). Exit Unity Play Mode.",
+                McpToolKind.Write, null),
+        };
+
+        /// <summary>Method names in the registry (excludes staticText-only tools like guide).</summary>
+        public static IEnumerable<string> UnityMethodNames()
+        {
+            foreach (var t in Tools)
+                if (!t.StaticText)
+                    yield return t.Name;
+        }
+    }
+}
