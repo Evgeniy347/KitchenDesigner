@@ -117,6 +117,9 @@ mcp-server/node_modules/
 # ===========================
 server/publish/
 
+# Build counter
+build_count.txt
+
 # Deployment secrets
 .env
 server/.env

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -5,21 +6,38 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Панель настроек, связанная с KitchenSettings.Instance.</summary>
     public class SettingsPanelUI : MonoBehaviour
     {
         private GameObject _root;
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
 
+        private readonly List<GameObject> _tabPages = new();
+        private readonly List<Button> _tabButtons = new();
+        private int _activeTab;
+
+        private static readonly Color ActiveTabColor = new(0.28f, 0.33f, 0.42f, 1f);
+        private static readonly Color InactiveTabColor = new(0.15f, 0.16f, 0.20f, 1f);
+
+        private const float PanelW = 440;
+        private const float PanelH = 680;
+        private const float ContentW = 400;
+        private const float RowH = 32;
+        private const float RowStep = 38;
+        private const float LabelW = 230;
+        private const float ControlW = 150;
+        private const float TitleY = 285;
+        private const float TabY = 246;
+        private const float ContentTopY = 202;
+
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("SettingsPanel", canvas, Vector2.zero, new Vector2(420, 640));
+            var panel = UIFactory.CreatePanel("SettingsPanel", canvas, Vector2.zero, new Vector2(PanelW, PanelH));
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
 
             UIFactory.CreateLabel("SetTitle", panel.transform, "Настройки", 24,
-                new Vector2(0, 240), new Vector2(400, 36), TextAnchor.MiddleCenter);
+                new Vector2(0, TitleY), new Vector2(PanelW - 40, 36), TextAnchor.MiddleCenter);
 
             var s = KitchenSettings.Instance;
             if (s == null)
@@ -28,74 +46,205 @@ namespace KitchenDesigner.Core.UI
                 return;
             }
 
-            UIFactory.CreateToggle("TglGrid", panel.transform, "Сетка", s.GridEnabled,
-                new Vector2(0, 190), new Vector2(360, 30), v => { s.GridEnabled = v; s.Save(); });
+            BuildTabs(panel.transform);
+            BuildProjectTab(panel.transform, s);
+            BuildGraphicsTab(panel.transform);
+            BuildAboutTab(panel.transform);
 
-            UIFactory.CreateLabel("LblStep", panel.transform, "Шаг сетки, мм", 16,
-                new Vector2(-110, 148), new Vector2(180, 28));
-            var stepField = UIFactory.CreateInputField("StepField", panel.transform, s.GridStep.ToString(),
-                new Vector2(120, 148), new Vector2(120, 28));
-            stepField.contentType = TMP_InputField.ContentType.IntegerNumber;
-            TrackField(stepField, s.GridStep.ToString());
-            stepField.onEndEdit.AddListener(t =>
-            {
-                if (int.TryParse(t, out int v)) { s.GridStep = v; stepField.text = s.GridStep.ToString(); s.Save(); }
-                UpdateFieldHighlight(stepField);
-            });
+            SwitchTab(0);
 
-            UIFactory.CreateToggle("TglSnap", panel.transform, "Снэппинг", s.SnapEnabled,
-                new Vector2(0, 106), new Vector2(360, 30), v => { s.SnapEnabled = v; s.Save(); });
-
-            UIFactory.CreateLabel("LblThr", panel.transform, "Порог снэпа, мм", 16,
-                new Vector2(-110, 64), new Vector2(180, 28));
-            var thrField = UIFactory.CreateInputField("ThrField", panel.transform, s.SnapThreshold.ToString("F0"),
-                new Vector2(120, 64), new Vector2(120, 28));
-            thrField.contentType = TMP_InputField.ContentType.DecimalNumber;
-            TrackField(thrField, s.SnapThreshold.ToString("F0"));
-            thrField.onEndEdit.AddListener(t =>
-            {
-                if (float.TryParse(t, out float v)) { s.SnapThreshold = v; thrField.text = s.SnapThreshold.ToString("F0"); s.Save(); }
-                UpdateFieldHighlight(thrField);
-            });
-
-            UIFactory.CreateToggle("TglBlock", panel.transform, "Блокировать ошибки", s.BlockOnViolation,
-                new Vector2(0, 22), new Vector2(360, 30), v => { s.BlockOnViolation = v; s.Save(); });
-
-            UIFactory.CreateToggle("TglAutoSave", panel.transform, "Автосохранение (при изменениях)", s.AutoSave,
-                new Vector2(0, -18), new Vector2(360, 30), v => { s.AutoSave = v; s.Save(); });
-
-            UIFactory.CreateLabel("LblAutoInt", panel.transform, "Интервал автосейва, с", 16,
-                new Vector2(-110, -56), new Vector2(200, 28));
-            var autoIntField = UIFactory.CreateInputField("AutoIntField", panel.transform, s.AutoSaveInterval.ToString(),
-                new Vector2(140, -56), new Vector2(100, 28));
-            autoIntField.contentType = TMP_InputField.ContentType.IntegerNumber;
-            TrackField(autoIntField, s.AutoSaveInterval.ToString());
-            autoIntField.onEndEdit.AddListener(t =>
-            {
-                if (int.TryParse(t, out int v)) { s.AutoSaveInterval = v; autoIntField.text = s.AutoSaveInterval.ToString(); s.Save(); }
-                UpdateFieldHighlight(autoIntField);
-            });
-
-            UIFactory.CreateToggle("TglSpatialGrid", panel.transform, "Пространственная сетка", s.SpatialGrid,
-                new Vector2(0, -96), new Vector2(360, 30), v => { s.SpatialGrid = v; s.Save(); });
-
-            UIFactory.CreateToggle("TglWindowed", panel.transform, "Оконный режим", s.WindowedMode,
-                new Vector2(0, -136), new Vector2(360, 30), v => { s.WindowedMode = v; s.Save(); DisplaySettings.ApplyWindowMode(); });
-
-            UIFactory.CreateToggle("TglEdgeOutline", panel.transform, "Контур (чёрные рёбра)", s.EdgeOutline,
-                new Vector2(0, -176), new Vector2(360, 30), v => { s.EdgeOutline = v; s.Save(); });
-
-            UIFactory.CreateToggle("TglWalls", panel.transform, "Стены", s.WallsEnabled,
-                new Vector2(0, -216), new Vector2(360, 30), v => { s.WallsEnabled = v; s.Save(); });
-
-            UIFactory.CreateToggle("TglLowerWalls", panel.transform, "Опускать ближние стены", s.LowerNearWalls,
-                new Vector2(0, -256), new Vector2(360, 30), v => { s.LowerNearWalls = v; s.Save(); });
-
+            float closeY = ContentTopY - 12 * RowStep - 3 * 6 - 20;
             UIFactory.CreateButton("SetClose", panel.transform, "Закрыть",
-                new Vector2(0, -300), new Vector2(160, 40), () => SetVisible(false));
+                new Vector2(0, closeY), new Vector2(160, 40),
+                () => SetVisible(false));
 
             _root.SetActive(false);
         }
+
+        // ── Tabs ─────────────────────────────────────────────
+
+        private void BuildTabs(Transform parent)
+        {
+            string[] labels = { "Проект", "Графика", "О программе" };
+            float tabW = (PanelW - 40) / labels.Length;
+
+            for (int i = 0; i < labels.Length; i++)
+            {
+                int idx = i;
+                float posX = -(PanelW - 40) * 0.5f + tabW * i + tabW * 0.5f;
+                var btn = UIFactory.CreateButton($"Tab_{idx}", parent, labels[idx],
+                    new Vector2(posX, TabY), new Vector2(tabW - 4, 32),
+                    () => SwitchTab(idx));
+                btn.GetComponent<Image>().color = InactiveTabColor;
+                _tabButtons.Add(btn);
+            }
+        }
+
+        private void SwitchTab(int index)
+        {
+            _activeTab = index;
+            for (int i = 0; i < _tabButtons.Count; i++)
+                _tabButtons[i].GetComponent<Image>().color = i == index ? ActiveTabColor : InactiveTabColor;
+            for (int i = 0; i < _tabPages.Count; i++)
+                _tabPages[i].SetActive(i == index);
+        }
+
+        // ── Tab: Проект ─────────────────────────────────────
+
+        private void BuildProjectTab(Transform panel, KitchenSettings s)
+        {
+            var page = new GameObject("Tab_Project");
+            page.transform.SetParent(panel, false);
+            _tabPages.Add(page);
+            var t = page.transform;
+
+            float y = ContentTopY;
+
+            AddToggleRow(t, ref y, "Сетка", s.GridEnabled,
+                v => { s.GridEnabled = v; s.Save(); });
+
+            AddInputRow(t, ref y, "Шаг сетки, мм", s.GridStep.ToString(),
+                TMP_InputField.ContentType.IntegerNumber,
+                (TMP_InputField f) =>
+                {
+                    if (int.TryParse(f.text, out int v)) { s.GridStep = v; f.text = s.GridStep.ToString(); s.Save(); }
+                }, s.GridStep.ToString());
+
+            y -= 6;
+            AddToggleRow(t, ref y, "Снэппинг", s.SnapEnabled,
+                v => { s.SnapEnabled = v; s.Save(); });
+
+            AddInputRow(t, ref y, "Порог снэпа, мм", s.SnapThreshold.ToString("F0"),
+                TMP_InputField.ContentType.DecimalNumber,
+                (TMP_InputField f) =>
+                {
+                    if (float.TryParse(f.text, out float v)) { s.SnapThreshold = v; f.text = s.SnapThreshold.ToString("F0"); s.Save(); }
+                }, s.SnapThreshold.ToString("F0"));
+
+            y -= 6;
+            AddToggleRow(t, ref y, "Блокировать ошибки", s.BlockOnViolation,
+                v => { s.BlockOnViolation = v; s.Save(); });
+
+            AddToggleRow(t, ref y, "Автосохранение", s.AutoSave,
+                v => { s.AutoSave = v; s.Save(); });
+
+            AddInputRow(t, ref y, "Интервал автосейва, с", s.AutoSaveInterval.ToString(),
+                TMP_InputField.ContentType.IntegerNumber,
+                (TMP_InputField f) =>
+                {
+                    if (int.TryParse(f.text, out int v)) { s.AutoSaveInterval = v; f.text = s.AutoSaveInterval.ToString(); s.Save(); }
+                }, s.AutoSaveInterval.ToString());
+
+            y -= 6;
+            AddToggleRow(t, ref y, "Пространственная сетка", s.SpatialGrid,
+                v => { s.SpatialGrid = v; s.Save(); });
+
+            AddToggleRow(t, ref y, "Оконный режим", s.WindowedMode,
+                v => { s.WindowedMode = v; s.Save(); DisplaySettings.ApplyWindowMode(); });
+
+            AddToggleRow(t, ref y, "Контур (чёрные рёбра)", s.EdgeOutline,
+                v => { s.EdgeOutline = v; s.Save(); });
+
+            AddToggleRow(t, ref y, "Стены", s.WallsEnabled,
+                v => { s.WallsEnabled = v; s.Save(); });
+
+            AddToggleRow(t, ref y, "Опускать ближние стены", s.LowerNearWalls,
+                v => { s.LowerNearWalls = v; s.Save(); });
+        }
+
+        // ── Tab: Графика ────────────────────────────────────
+
+        private void BuildGraphicsTab(Transform panel)
+        {
+            var page = new GameObject("Tab_Graphics");
+            page.transform.SetParent(panel, false);
+            _tabPages.Add(page);
+        }
+
+        // ── Tab: О программе ────────────────────────────────
+
+        private void BuildAboutTab(Transform panel)
+        {
+            var page = new GameObject("Tab_About");
+            page.transform.SetParent(panel, false);
+            _tabPages.Add(page);
+            var t = page.transform;
+
+            UIFactory.CreateLabel("AboutVersion", t, $"Версия: {BuildInfo.Version}", 18,
+                new Vector2(0, ContentTopY), new Vector2(ContentW, 32), TextAnchor.MiddleCenter);
+
+            UIFactory.CreateLabel("AboutDate", t, $"Сборка: {BuildInfo.BuildDate}", 16,
+                new Vector2(0, ContentTopY - RowStep), new Vector2(ContentW, 28), TextAnchor.MiddleCenter);
+        }
+
+        // ── Row helpers ─────────────────────────────────────
+
+        private void AddToggleRow(Transform parent, ref float y, string label, bool value, Action<bool> onChanged)
+        {
+            var rowRect = UIFactory.CreateRect("RowTgl_" + label, parent);
+            rowRect.sizeDelta = new Vector2(ContentW, RowH);
+            rowRect.anchoredPosition = new Vector2(0, y);
+
+            UIFactory.CreateLabel("Lbl_" + label, rowRect, label, 16,
+                new Vector2(-ContentW * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
+
+            CreateRightToggle("Tgl_" + label, rowRect, value, onChanged);
+
+            y -= RowStep;
+        }
+
+        private void CreateRightToggle(string name, Transform parent, bool value, Action<bool> onChanged)
+        {
+            var rect = UIFactory.CreateRect(name, parent);
+            rect.sizeDelta = new Vector2(ControlW, RowH);
+            rect.anchoredPosition = new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0);
+
+            var toggle = rect.gameObject.AddComponent<Toggle>();
+
+            var box = UIFactory.CreatePanel(name + "_Box", rect,
+                new Vector2(ControlW * 0.5f - 26, 0), new Vector2(22, 22), UIFactory.FieldColor);
+            var check = UIFactory.CreateLabel(name + "_Check", box.transform, "X", 16,
+                Vector2.zero, new Vector2(22, 22), TextAnchor.MiddleCenter);
+            toggle.graphic = check;
+            toggle.targetGraphic = box;
+
+            var lbl = UIFactory.CreateLabel(name + "_Label", rect, value ? "Вкл" : "Выкл", 14,
+                new Vector2(-ControlW * 0.5f, 0), new Vector2(ControlW - 32, RowH), TextAnchor.MiddleRight);
+            toggle.onValueChanged.AddListener(v =>
+            {
+                lbl.text = v ? "Вкл" : "Выкл";
+                onChanged?.Invoke(v);
+            });
+
+            toggle.isOn = value;
+        }
+
+        private TMP_InputField AddInputRow(Transform parent, ref float y, string label,
+            string initial, TMP_InputField.ContentType contentType,
+            Action<TMP_InputField> onEndEdit, string cleanValue)
+        {
+            var rowRect = UIFactory.CreateRect("RowFld_" + label, parent);
+            rowRect.sizeDelta = new Vector2(ContentW, RowH);
+            rowRect.anchoredPosition = new Vector2(0, y);
+
+            UIFactory.CreateLabel("Lbl_" + label, rowRect, label, 16,
+                new Vector2(-ContentW * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
+
+            var field = UIFactory.CreateInputField("Fld_" + label, rowRect, initial,
+                new Vector2(ContentW * 0.5f - ControlW, 0), new Vector2(ControlW, RowH));
+            field.contentType = contentType;
+            TrackField(field, cleanValue);
+            field.onEndEdit.AddListener(t =>
+            {
+                onEndEdit?.Invoke(field);
+                UpdateFieldHighlight(field);
+            });
+
+            y -= RowStep;
+            return field;
+        }
+
+        // ── Public API ──────────────────────────────────────
 
         public void Toggle() => SetVisible(_root != null && !_root.activeSelf);
 
@@ -104,7 +253,7 @@ namespace KitchenDesigner.Core.UI
             if (_root != null) _root.SetActive(visible);
         }
 
-        // ── Подсветка изменённых полей ──────────────────────────────────
+        // ── Подсветка изменённых полей ──────────────────────
 
         private void TrackField(TMP_InputField field, string cleanValue)
         {

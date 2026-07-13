@@ -10,6 +10,7 @@ public static class BuildProject
     [MenuItem("KitchenDesigner/Build Windows")]
     public static void Build()
     {
+        BuildInfoGenerator.Generate();
         BuildWindows();
     }
 
@@ -18,6 +19,7 @@ public static class BuildProject
     [MenuItem("KitchenDesigner/Build Windows Debug")]
     public static void BuildWindowsDebug()
     {
+        BuildInfoGenerator.Generate();
         var sw = System.Diagnostics.Stopwatch.StartNew();
         Debug.Log("[BuildProject] Windows Debug — starting (development, incremental)...");
 
@@ -55,6 +57,7 @@ public static class BuildProject
     [MenuItem("KitchenDesigner/Build WebGL Release")]
     public static void BuildWebGLRelease()
     {
+        BuildInfoGenerator.Generate();
         var sw = System.Diagnostics.Stopwatch.StartNew();
         Debug.Log("[BuildProject] WebGL Release — starting...");
 
@@ -91,6 +94,7 @@ public static class BuildProject
     [MenuItem("KitchenDesigner/Build WebGL Debug")]
     public static void BuildWebGLDebug()
     {
+        BuildInfoGenerator.Generate();
         var sw = System.Diagnostics.Stopwatch.StartNew();
         Debug.Log("[BuildProject] WebGL Debug — starting (no compression, no stripping)...");
 
