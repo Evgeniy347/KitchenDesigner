@@ -115,8 +115,8 @@ namespace KitchenDesigner.Core.UI
 
         private static string ModeLabel() =>
             ResizeHandleManager.Mode == ResizeHandleManager.HandleMode.Resize
-                ? "Режим: ═▣"
-                : "Режим: ➡";
+                ? "Режим: [ ]"
+                : "Режим: ->";
 
         private void ToggleHandleMode()
         {

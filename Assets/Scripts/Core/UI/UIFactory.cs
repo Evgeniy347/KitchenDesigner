@@ -285,7 +285,7 @@ namespace KitchenDesigner.Core.UI
             capRt.anchorMin = Vector2.zero; capRt.anchorMax = Vector2.one;
             capRt.offsetMin = new Vector2(8, 2); capRt.offsetMax = new Vector2(-18, -2);
 
-            var arrow = CreateLabel(name + "_Arrow", rect, "\u25BE", 14, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
+            var arrow = CreateLabel(name + "_Arrow", rect, "v", 14, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
             var arRt = arrow.rectTransform;
             arRt.anchorMin = arRt.anchorMax = arRt.pivot = new Vector2(1, 0.5f);
             arRt.sizeDelta = new Vector2(16, 16); arRt.anchoredPosition = new Vector2(-4, 0);
