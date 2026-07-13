@@ -194,6 +194,9 @@ namespace KitchenDesigner.Core
             if (open && _t <= 0f) CaptureClosed();
             _open = open;
             SyncAttachedFacade();
+            // Держим активный FPS, пока ящик будет анимироваться.
+            if (!Mathf.Approximately(_t, open ? 1f : 0f))
+                FrameRateManager.KeepAwake(OpenSeconds + 0.2f);
         }
 
         public void ToggleOpen() => SetOpen(!_open);

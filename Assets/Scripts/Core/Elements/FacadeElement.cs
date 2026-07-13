@@ -181,6 +181,9 @@ namespace KitchenDesigner.Core
         {
             if (open && _t <= 0f) CaptureClosed();
             _open = open;
+            // Держим активный FPS, пока дверь будет анимироваться.
+            if (!Mathf.Approximately(_t, open ? 1f : 0f))
+                FrameRateManager.KeepAwake(OpenSeconds + 0.2f);
         }
 
         /// <summary>Мгновенно вернуть закрытую позу (перед правкой размеров/позиции/поворота).</summary>
