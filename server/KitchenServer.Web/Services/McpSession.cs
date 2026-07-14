@@ -42,6 +42,13 @@ public class McpSession
     /// <summary>True while at least one authenticated agent is bound to this tab (drives the green light).</summary>
     public bool AgentBound { get; set; }
 
+    /// <summary>True when another tab has taken over the project lock — changes in this tab will not be saved.</summary>
+    public bool LockLost { get; set; }
+
+    public string SessionId => TabKey;
+    public bool IsActive => IsBrowserConnected;
+    public string AccessKey => TabKey;
+
     public void Touch() { lock (_lock) _lastActivity = DateTime.UtcNow; }
 
     /// <summary>
@@ -106,7 +113,7 @@ public class McpSession
     }
 
     /// <summary>Serialized send: a WebSocket allows only one outstanding SendAsync.</summary>
-    private async Task<bool> SendToBrowserAsync(string json, CancellationToken ct)
+    public async Task<bool> SendToBrowserAsync(string json, CancellationToken ct)
     {
         var ws = BrowserWebSocket;
         if (ws is null || ws.State != WebSocketState.Open) return false;

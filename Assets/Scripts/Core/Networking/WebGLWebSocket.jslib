@@ -62,8 +62,7 @@ var WebGLWebSocketImpl = {
     },
 
     ShowLockTakenAlert: function() {
-        alert('Проект открыт в другой вкладке. Приложение будет закрыто.');
-        window.location.href = '/projects';
+        alert('Проект открыт на соседней вкладке, текущие изменения не будут сохранены.');
     }
 };
 

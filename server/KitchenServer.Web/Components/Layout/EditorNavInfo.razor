@@ -13,6 +13,10 @@
         <span class="editor-project-id" title="Project ID: @NavState.ProjectId">
             ID: @NavState.ProjectId!.Value.ToString()[..8]
         </span>
+        @if (NavState.LockLost)
+        {
+            <span class="editor-lock-lost" title="Проект открыт в другой вкладке — изменения не сохраняются">Изменения не сохраняются</span>
+        }
         @if (!string.IsNullOrEmpty(NavState.McpKey))
         {
             <span class="mcp-key-box" title="MCP project key — copy it and give it to the AI agent">

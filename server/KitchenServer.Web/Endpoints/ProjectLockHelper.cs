@@ -31,16 +31,23 @@ public static class ProjectLockHelper
         if (!string.IsNullOrEmpty(previousLockGuid))
         {
             var previousSession = sessions.GetSessionByProjectId(project.Id.ToString());
-            if (previousSession?.BrowserWebSocket is { State: WebSocketState.Open })
+            if (previousSession != null)
             {
-                try
+                // Mark the old session as lock-lost so the Blazor UI shows a warning.
+                previousSession.LockLost = true;
+                sessions.RaiseSessionStateChanged(previousSession);
+
+                if (previousSession.BrowserWebSocket is { State: WebSocketState.Open })
                 {
-                    var notification = JsonSerializer.Serialize(new { type = "lock_taken", newLockGuid });
-                    var data = Encoding.UTF8.GetBytes(notification);
-                    await previousSession.BrowserWebSocket.SendAsync(
-                        new ArraySegment<byte>(data), WebSocketMessageType.Text, true, CancellationToken.None);
+                    try
+                    {
+                        var notification = JsonSerializer.Serialize(new { type = "lock_taken", newLockGuid });
+                        var data = Encoding.UTF8.GetBytes(notification);
+                        await previousSession.BrowserWebSocket.SendAsync(
+                            new ArraySegment<byte>(data), WebSocketMessageType.Text, true, CancellationToken.None);
+                    }
+                    catch { /* best-effort notification */ }
                 }
-                catch { /* best-effort notification */ }
             }
         }
 
