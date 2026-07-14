@@ -19,6 +19,7 @@ public class McpSessionManager : IHostedService
     // the authoritative binding is the Mcp-Session-Id header value (see _sessionBindings).
     private readonly ConcurrentDictionary<object, McpSession> _agentBindings = new();
     private readonly ConcurrentDictionary<string, McpSession> _sessionBindings = new();
+    private readonly ConcurrentDictionary<string, McpSession> _mcpConnections = new();
 
     public McpSessionManager() { }
 
@@ -32,6 +33,9 @@ public class McpSessionManager : IHostedService
     /// <summary>Raised when a tab's connection state changes (browser attach/detach,
     /// agent bind/unbind). The editor nav island uses it to flip the status light.</summary>
     public event Action<McpSession>? SessionStateChanged;
+
+    public void RaiseSessionStateChanged(McpSession session) =>
+        SessionStateChanged?.Invoke(session);
 
     /// <summary>Create (register) a tab session for a freshly generated key.</summary>
     public McpSession CreateSession(string userId, string? projectId = null)
@@ -112,6 +116,9 @@ public class McpSessionManager : IHostedService
         foreach (var kv in _sessionBindings.Where(kv => kv.Value == session).ToList())
             _sessionBindings.TryRemove(kv.Key, out _);
 
+        foreach (var kv in _mcpConnections.Where(kv => kv.Value == session).ToList())
+            _mcpConnections.TryRemove(kv.Key, out _);
+
         session.FailAllPending("Session closed.");
         var ws = session.BrowserWebSocket;
         if (ws != null && (ws.State == WebSocketState.Open || ws.State == WebSocketState.CloseReceived))
@@ -132,6 +139,28 @@ public class McpSessionManager : IHostedService
         foreach (var key in expired)
             CloseSession(key);
     }
+
+    public McpSession? ValidateAccess(string key) => GetByKey(key);
+
+    public void RegisterMCPConnection(string sessionId, string connectionId)
+    {
+        var session = GetByKey(sessionId);
+        if (session != null)
+            _mcpConnections[connectionId] = session;
+    }
+
+    public void RemoveConnection(string connectionId) =>
+        _mcpConnections.TryRemove(connectionId, out _);
+
+    public McpSession? GetSessionByMCPConnection(string connectionId) =>
+        _mcpConnections.GetValueOrDefault(connectionId);
+
+    public void Touch(string sessionId) => GetByKey(sessionId)?.Touch();
+
+    public List<McpSession> GetUserSessions(string userId) =>
+        _byKey.Values.Where(s => s.UserId == userId).ToList();
+
+    public McpSession? GetSession(string sessionId) => GetByKey(sessionId);
 
     public Task StartAsync(CancellationToken cancellationToken)
     {

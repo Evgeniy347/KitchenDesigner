@@ -18,6 +18,9 @@ public class EditorNavState
     /// <summary>True once an agent has authenticated against this tab (green light).</summary>
     public bool AgentConnected { get; private set; }
 
+    /// <summary>True when another tab has taken the project lock — changes will not be saved.</summary>
+    public bool LockLost { get; private set; }
+
     /// <summary>Raised whenever anything above changes.</summary>
     public event Action? Changed;
 
@@ -34,6 +37,13 @@ public class EditorNavState
     {
         if (AgentConnected == connected) return;
         AgentConnected = connected;
+        Changed?.Invoke();
+    }
+
+    public void SetLockLost(bool lost)
+    {
+        if (LockLost == lost) return;
+        LockLost = lost;
         Changed?.Invoke();
     }
 

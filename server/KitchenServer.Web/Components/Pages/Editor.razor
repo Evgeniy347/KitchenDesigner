@@ -128,7 +128,11 @@
     private void OnSessionStateChanged(McpSession s)
     {
         if (_session == null || s.TabKey != _session.TabKey) return;
-        InvokeAsync(() => NavState.SetAgentConnected(s.AgentBound));
+        InvokeAsync(() =>
+        {
+            NavState.SetAgentConnected(s.AgentBound);
+            NavState.SetLockLost(s.LockLost);
+        });
     }
 
     public async ValueTask DisposeAsync()
