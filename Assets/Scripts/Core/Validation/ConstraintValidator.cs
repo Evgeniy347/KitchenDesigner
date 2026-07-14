@@ -239,6 +239,32 @@ namespace KitchenDesigner.Core
             }
         }
 
+        public static bool AreInFaceToFaceContact(KitchenElement a, KitchenElement b)
+        {
+            float contactDist = ContactDistMM * AppConstants.MM_TO_UNITS;
+            var facesA = a.GetFaces();
+            var facesB = b.GetFaces();
+            for (int fa = 0; fa < 6; fa++)
+            {
+                for (int fb = 0; fb < 6; fb++)
+                {
+                    float dot = Vector3.Dot(facesA[fa].normal, facesB[fb].normal);
+                    if (Mathf.Abs(dot) < 0.999f) continue;
+
+                    Vector3 offset = facesB[fb].center - facesA[fa].center;
+                    float planeDist = Mathf.Abs(Vector3.Dot(offset, facesA[fa].normal));
+                    if (planeDist > contactDist) continue;
+
+                    if (!FacesOverlap(facesA[fa], facesB[fb], out _, out float overlapRatio))
+                        continue;
+
+                    if (overlapRatio >= FaceToFaceOverlap)
+                        return true;
+                }
+            }
+            return false;
+        }
+
         private static bool FacesOverlap(
             KitchenElement.Face a, KitchenElement.Face b,
             out float overlapArea, out float overlapRatio)
