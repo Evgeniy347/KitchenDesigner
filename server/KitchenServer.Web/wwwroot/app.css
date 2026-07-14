@@ -965,6 +965,12 @@ code.mcp-key-value {
 }
 .versions-table tbody tr:hover { background: #1e1e2e; }
 
+.versions-cell-name {
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 .versions-row-latest td { color: #fff; }
 .versions-row-deleted td { color: #666; text-decoration: line-through; }
 
