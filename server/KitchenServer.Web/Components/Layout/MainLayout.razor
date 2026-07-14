@@ -3,17 +3,18 @@
 @using KitchenServer.Web.Services
 @inject NavigationManager Navigation
 @inject AdminEmailsService AdminEmails
+@inject ImpersonationService Impersonation
 
 <div class="layout">
     <AuthorizeView>
         <Authorized>
-            <nav class="top-nav">
+            <nav class="top-nav @(Impersonation.IsImpersonating ? "top-nav-impersonating" : "")">
                 <div class="nav-left">
                     <a href="/" class="nav-brand">KitchenDesigner</a>
                     <NavLink href="/projects" class="nav-link" ActiveClass="nav-link-active">
                         Projects
                     </NavLink>
-                    @if (AdminEmails.IsAdmin(context.User.Identity?.Name))
+                    @if (AdminEmails.IsAdmin(context.User.Identity?.Name) && !Impersonation.IsImpersonating)
                     {
                         <NavLink href="/admin/users" class="nav-link" ActiveClass="nav-link-active">
                             Admin
@@ -22,13 +23,28 @@
                 </div>
                 <EditorNavInfo @rendermode="InteractiveServer" />
                 <div class="nav-right">
-                    <NavLink href="/profile" class="nav-link" ActiveClass="nav-link-active">
-                        @context.User.Identity?.Name
-                    </NavLink>
-                    <form method="post" action="/auth/logout/perform" class="logout-form">
-                        <AntiforgeryToken />
-                        <button type="submit" class="nav-link nav-logout">Logout</button>
-                    </form>
+                    @if (Impersonation.IsImpersonating)
+                    {
+                        <span class="nav-impersonation-badge" title="Режим имперсонализации">
+                            <i class="bi bi-person-check"></i> @context.User.Identity?.Name
+                        </span>
+                        <form method="post" action="/admin/stop-impersonation" class="logout-form">
+                            <AntiforgeryToken />
+                            <button type="submit" class="nav-link nav-stop-impersonation" title="Вернуться к себе">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <NavLink href="/profile" class="nav-link" ActiveClass="nav-link-active">
+                            @context.User.Identity?.Name
+                        </NavLink>
+                        <form method="post" action="/auth/logout/perform" class="logout-form">
+                            <AntiforgeryToken />
+                            <button type="submit" class="nav-link nav-logout">Logout</button>
+                        </form>
+                    }
                 </div>
             </nav>
         </Authorized>

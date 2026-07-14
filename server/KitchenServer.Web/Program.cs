@@ -100,6 +100,7 @@ builder.Services.AddOptions<HttpServerTransportOptions>()
 // Per-circuit bridge: editor page → nav-bar island (see EditorNavState).
 builder.Services.AddScoped<EditorNavState>();
 builder.Services.AddSingleton<AdminEmailsService>();
+builder.Services.AddScoped<ImpersonationService>();
 builder.Services.AddSingleton<IAuthorizationHandler, AdminAuthorizationHandler>();
 
 builder.Services.AddAuthorizationBuilder()
@@ -162,6 +163,7 @@ app.MapAuthEndpoints();
 app.MapConfigEndpoints();
 app.MapProjectEndpoints();
 app.MapMcpEndpoints();
+app.MapImpersonationEndpoints();
 app.MapMcp("/mcp");
 
 // First-run database initialization with retries: the DB container may still be
