@@ -11,9 +11,9 @@ using KitchenDesigner.Core.UI;
 
 public class SpecificationDiagramTests
 {
-    private GameObject _bootstrap = null!;
-    private GameObject _mainCamera = null!;
-    private Canvas _uiCanvas = null!;
+    private GameObject? _bootstrap;
+    private GameObject? _mainCamera;
+    private Canvas? _uiCanvas;
 
     [UnitySetUp]
     public IEnumerator SetUp()
@@ -36,7 +36,7 @@ public class SpecificationDiagramTests
         yield return null;
         yield return null;
 
-        _uiCanvas = UIManager.Instance.Canvas;
+        _uiCanvas = UIManager.Instance!.Canvas;
         Assert.IsNotNull(_uiCanvas, "Canvas should be created by Bootstrap");
     }
 
@@ -58,7 +58,7 @@ public class SpecificationDiagramTests
         System.Action setupPanel, System.Action? teardownPanel = null)
     {
         var hidden = new List<GameObject>();
-        foreach (Transform child in _uiCanvas.transform)
+        foreach (Transform child in _uiCanvas!.transform)
         {
             if (child.name != panelName)
             {
@@ -67,7 +67,7 @@ public class SpecificationDiagramTests
             }
         }
 
-        var panelT = _uiCanvas.transform.Find(panelName);
+        var panelT = _uiCanvas!.transform.Find(panelName);
         Assert.IsNotNull(panelT, $"Panel '{panelName}' not found under canvas");
         var panelRt = panelT.GetComponent<RectTransform>();
         var origAnchorMin = panelRt.anchorMin;
@@ -76,14 +76,14 @@ public class SpecificationDiagramTests
         var origPos = panelRt.anchoredPosition;
         var origSize = panelRt.sizeDelta;
 
-        var scaler = _uiCanvas.GetComponent<CanvasScaler>();
+        var scaler = _uiCanvas!.GetComponent<CanvasScaler>();
         var origScaleMode = scaler.uiScaleMode;
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
         scaler.scaleFactor = 1f;
 
-        var origRenderMode = _uiCanvas.renderMode;
-        _uiCanvas.renderMode = RenderMode.ScreenSpaceCamera;
-        _uiCanvas.planeDistance = 1f;
+        var origRenderMode = _uiCanvas!.renderMode;
+        _uiCanvas!.renderMode = RenderMode.ScreenSpaceCamera;
+        _uiCanvas!.planeDistance = 1f;
 
         panelRt.anchorMin = panelRt.anchorMax = panelRt.pivot = new Vector2(0.5f, 0.5f);
         panelRt.anchoredPosition = Vector2.zero;
@@ -105,8 +105,8 @@ public class SpecificationDiagramTests
         cam.orthographic = true;
         cam.orthographicSize = panelH * 0.5f;
         cam.aspect = (float)panelW / panelH;
-        cam.cullingMask = 1 << _uiCanvas.gameObject.layer;
-        _uiCanvas.worldCamera = cam;
+        cam.cullingMask = 1 << _uiCanvas!.gameObject.layer;
+        _uiCanvas!.worldCamera = cam;
 
         var rt = new RenderTexture(panelW, panelH, 24, RenderTextureFormat.ARGB32);
         cam.targetTexture = rt;
@@ -129,8 +129,8 @@ public class SpecificationDiagramTests
 
         teardownPanel?.Invoke();
 
-        _uiCanvas.renderMode = origRenderMode;
-        _uiCanvas.worldCamera = null;
+        _uiCanvas!.renderMode = origRenderMode;
+        _uiCanvas!.worldCamera = null;
         scaler.uiScaleMode = origScaleMode;
 
         panelRt.anchorMin = origAnchorMin;
@@ -281,12 +281,12 @@ public class SpecificationDiagramTests
         yield return CapturePanel("SpecPanel", "specification_table.png",
             () =>
             {
-                var specUI = UIManager.Instance.GetComponent<SpecificationPanelUI>();
+                var specUI = UIManager.Instance!.GetComponent<SpecificationPanelUI>();
                 specUI.SetVisible(true);
             },
             () =>
             {
-                var specUI = UIManager.Instance.GetComponent<SpecificationPanelUI>();
+                var specUI = UIManager.Instance!.GetComponent<SpecificationPanelUI>();
                 specUI.SetVisible(false);
             });
     }

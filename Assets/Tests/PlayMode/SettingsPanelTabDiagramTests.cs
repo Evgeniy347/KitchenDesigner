@@ -12,9 +12,9 @@ public class SettingsPanelTabDiagramTests
     private const int PanelW = 520;
     private const int PanelH = 680;
 
-    private GameObject _canvasGo = null!;
-    private GameObject _camGo = null!;
-    private GameObject _eventSystem = null!;
+    private GameObject? _canvasGo;
+    private GameObject? _camGo;
+    private GameObject? _eventSystem;
 
     [UnityTearDown]
     public IEnumerator TearDown()
@@ -28,10 +28,10 @@ public class SettingsPanelTabDiagramTests
     private (Canvas canvas, Camera cam, SettingsPanelUI ui) BuildPanel()
     {
         _canvasGo = new GameObject("TestCanvas");
-        var canvas = _canvasGo.AddComponent<Canvas>();
+        var canvas = _canvasGo!.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceCamera;
-        _canvasGo.AddComponent<CanvasScaler>();
-        _canvasGo.AddComponent<GraphicRaycaster>();
+        _canvasGo!.AddComponent<CanvasScaler>();
+        _canvasGo!.AddComponent<GraphicRaycaster>();
 
         if (Object.FindAnyObjectByType<EventSystem>() == null)
         {
@@ -41,16 +41,16 @@ public class SettingsPanelTabDiagramTests
         }
 
         _camGo = new GameObject("UICamera");
-        var cam = _camGo.AddComponent<Camera>();
+        var cam = _camGo!.AddComponent<Camera>();
         cam.clearFlags = CameraClearFlags.SolidColor;
         cam.backgroundColor = new Color(0.08f, 0.08f, 0.10f, 1f);
         cam.orthographic = true;
         cam.orthographicSize = PanelH * 0.5f;
         cam.aspect = (float)PanelW / PanelH;
-        cam.cullingMask = 1 << _canvasGo.layer;
+        cam.cullingMask = 1 << _canvasGo!.layer;
         canvas.worldCamera = cam;
 
-        var ui = _canvasGo.AddComponent<SettingsPanelUI>();
+        var ui = _canvasGo!.AddComponent<SettingsPanelUI>();
         ui.Build(canvas.transform);
         ui.SetVisible(true);
 
@@ -59,7 +59,7 @@ public class SettingsPanelTabDiagramTests
 
     private void SwitchToTab(int index)
     {
-        var panel = _canvasGo.transform.Find("SettingsPanel");
+        var panel = _canvasGo!.transform.Find("SettingsPanel");
         if (panel == null) return;
 
         var tabBtn = panel.Find($"Tab_{index}");
@@ -71,7 +71,7 @@ public class SettingsPanelTabDiagramTests
 
     private IEnumerator CaptureAndSave(string fileName)
     {
-        var cam = _camGo.GetComponent<Camera>();
+        var cam = _camGo!.GetComponent<Camera>();
         var rt = new RenderTexture(PanelW, PanelH, 24, RenderTextureFormat.ARGB32);
         cam.targetTexture = rt;
         yield return null;

@@ -17,9 +17,9 @@ public class SettingsPanelLayoutDiagramTests
     private const int PanelW = 520;
     private const int PanelH = 680;
 
-    private GameObject _canvasGo = null!;
-    private GameObject _camGo = null!;
-    private GameObject _eventSystem = null!;
+    private GameObject? _canvasGo;
+    private GameObject? _camGo;
+    private GameObject? _eventSystem;
 
     [UnityTearDown]
     public IEnumerator TearDown()

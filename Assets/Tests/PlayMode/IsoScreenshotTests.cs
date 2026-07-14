@@ -18,8 +18,8 @@ public class IsoScreenshotTests
     private const int RenderH = 512;
     private const float IsoFov = 45f;
 
-    private GameObject _bootstrap = null!;
-    private GameObject _mainCamera = null!;
+    private GameObject? _bootstrap;
+    private GameObject? _mainCamera;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     [UnitySetUp]
@@ -28,10 +28,10 @@ public class IsoScreenshotTests
         PlayModeTestConfig.ConfigureForTests();
 
         _mainCamera = new GameObject("Main Camera");
-        _mainCamera.tag = "MainCamera";
-        _mainCamera.AddComponent<Camera>();
-        _mainCamera.transform.position = new Vector3(0f, 3f, -5f);
-        _mainCamera.transform.LookAt(Vector3.zero);
+        _mainCamera!.tag = "MainCamera";
+        _mainCamera!.AddComponent<Camera>();
+        _mainCamera!.transform.position = new Vector3(0f, 3f, -5f);
+        _mainCamera!.transform.LookAt(Vector3.zero);
 
         SaveLoadManager.LastPath = "";
         var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
@@ -234,7 +234,7 @@ public class IsoScreenshotTests
 
         // Выключаем основную камеру, чтобы WallManager использовал изо-камеру
         // для определения «ближних» стен (LowerNearWalls).
-        _mainCamera.SetActive(false);
+        _mainCamera!.SetActive(false);
 
         // Камера снаружи, смотрит в центр помещения.
         Vector3 roomSize = new Vector3(3f, wallH, 3f);
@@ -249,7 +249,7 @@ public class IsoScreenshotTests
         yield return RenderToPng(cam, fileName);
 
         camGo.tag = "Untagged";
-        _mainCamera.SetActive(true);
+        _mainCamera!.SetActive(true);
         Object.DestroyImmediate(camGo);
     }
 }

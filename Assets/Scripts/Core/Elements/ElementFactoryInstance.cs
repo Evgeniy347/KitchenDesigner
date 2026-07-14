@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public class ElementFactoryInstance : IElementFactory
     {
-        private Material _defaultMaterial = null!;
+        private Material? _defaultMaterial;
         private readonly ObjectPool<GameObject> _partPool;
         private readonly ObjectPool<GameObject> _facadePool;
 

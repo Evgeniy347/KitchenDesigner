@@ -15,8 +15,8 @@ namespace KitchenDesigner.Core.UI
         private const int MaxLines = 300;   // храним
         private const int VisibleLines = 32; // показываем хвост
 
-        private GameObject _root = null!;
-        private TMP_Text _text = null!;
+        private GameObject? _root;
+        private TMP_Text? _text;
         private readonly Queue<string> _lines = new Queue<string>();
         private bool _dirty;
 
@@ -49,7 +49,7 @@ namespace KitchenDesigner.Core.UI
             _text.overflowMode = TextOverflowModes.Truncate;
             _text.raycastTarget = false;
 
-            _root.SetActive(false);
+            _root!.SetActive(false);
         }
 
         private void OnEnable() => Application.logMessageReceived += OnLog;
@@ -72,13 +72,13 @@ namespace KitchenDesigner.Core.UI
         {
             if (Input.GetKeyDown(KeyCode.BackQuote))
             {
-                _root.SetActive(!_root.activeSelf);
+                _root!.SetActive(!_root.activeSelf);
                 _dirty = true;
             }
 
-            if (_dirty && _root.activeSelf)
+            if (_dirty && _root!.activeSelf)
             {
-                _text.text = BuildTail();
+                _text!.text = BuildTail();
                 _dirty = false;
             }
         }

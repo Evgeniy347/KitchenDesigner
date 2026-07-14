@@ -6,7 +6,7 @@ using KitchenDesigner.Core.MCP;
 
 public class McpCommandHandlerTests
 {
-    private McpCommandHandler _handler = null!;
+    private McpCommandHandler? _handler;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     [SetUp]
@@ -54,7 +54,7 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_UsesTemplateName_WhenNameNotGiven()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "TestBoard", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f
         }));
@@ -68,7 +68,7 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_UsesName_WhenProvided()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "tmpl", name = "CustomName", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f
         }));
@@ -82,7 +82,7 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_AddsWall_WhenIsWallTrue()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "WallBoard", width = 2000, height = 2500, depth = 100, x = 0f, y = 1.25f, z = 0f, is_wall = true
         }));
@@ -96,7 +96,7 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_DoesNotAddWall_WhenIsWallFalse()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "RegularBoard", width = 800, height = 400, depth = 18, x = 0f, y = 0f, z = 0f, is_wall = false
         }));
@@ -110,7 +110,7 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateElement_DefaultsIsWallFalse_WhenOmitted()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "DefaultBoard", width = 800, height = 400, depth = 18, x = 0f, y = 0f, z = 0f
         }));
@@ -125,7 +125,7 @@ public class McpCommandHandlerTests
     public void ResizeElement_UsesWidthHeightDepth()
     {
         var el = MakeElement("TestBoard", new Vector3Int(800, 400, 18), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("resize_element", new
+        var resp = _handler!.Handle(MakeReq("resize_element", new
         {
             name = "TestBoard", width = 1200, height = 600, depth = 36
         }));
@@ -142,7 +142,7 @@ public class McpCommandHandlerTests
     {
         var el = MakeElement("TestBoard", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("resize_element", new
+        var resp = _handler!.Handle(MakeReq("resize_element", new
         {
             name = "TestBoard", dimX = 3170, dimY = 2500, dimZ = 7240
         }));
@@ -159,7 +159,7 @@ public class McpCommandHandlerTests
     {
         var el = MakeElement("TestBoard", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("resize_element", new
+        var resp = _handler!.Handle(MakeReq("resize_element", new
         {
             name = "TestBoard", width = 100, height = 200, depth = 300, dimX = 9999, dimY = 9999, dimZ = 9999
         }));
@@ -177,7 +177,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("TestBoard", new Vector3Int(800, 400, 18), Vector3.zero);
         Assert.IsNull(el.GetComponent<Wall>());
 
-        var resp = _handler.Handle(MakeReq("add_wall_component", new { name = "TestBoard" }));
+        var resp = _handler!.Handle(MakeReq("add_wall_component", new { name = "TestBoard" }));
 
         if (resp.type == "error")
             Assert.Fail("AddWallComponent failed: data=" + (resp.data != null ? resp.data.GetType() + ": " + resp.data.ToString() : "null"));
@@ -192,7 +192,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("TestBoard", new Vector3Int(800, 400, 18), Vector3.zero);
         el.gameObject.AddComponent<Wall>();
 
-        var resp = _handler.Handle(MakeReq("add_wall_component", new { name = "TestBoard" }));
+        var resp = _handler!.Handle(MakeReq("add_wall_component", new { name = "TestBoard" }));
 
         if (resp.type == "error")
             Assert.Fail("AddWallComponent failed: data=" + (resp.data != null ? resp.data.GetType() + ": " + resp.data.ToString() : "null"));
@@ -204,7 +204,7 @@ public class McpCommandHandlerTests
     [Test]
     public void AddWallComponent_Errors_WhenElementNotFound()
     {
-        var resp = _handler.Handle(MakeReq("add_wall_component", new { name = "NonExistent" }));
+        var resp = _handler!.Handle(MakeReq("add_wall_component", new { name = "NonExistent" }));
 
         Assert.AreEqual("error", resp.type);
     }
@@ -212,7 +212,7 @@ public class McpCommandHandlerTests
     [Test]
     public void WallElement_CreatedViaMCP_IsAnchor_NotViolation()
     {
-        _handler.Handle(MakeReq("create_element", new
+        _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "TestWall", width = 2000, height = 2500, depth = 100, x = 0f, y = 1.25f, z = 0f, is_wall = true
         }));
@@ -242,7 +242,7 @@ public class McpCommandHandlerTests
     public void CreateElement_Wall_Response_HasNoViolations()
     {
         MakeWall("Existing", new Vector3Int(2000, 2500, 100), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "Wall2", width = 2000, height = 2500, depth = 100, x = 2.2f, y = 1.25f, z = 0f, is_wall = true
         }));
@@ -255,7 +255,7 @@ public class McpCommandHandlerTests
     public void CreateElement_Response_HasViolations_WhenOverlapping()
     {
         MakeElement("Existing", new Vector3Int(1000, 1000, 1000), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "Overlap", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f
         }));
@@ -268,7 +268,7 @@ public class McpCommandHandlerTests
     public void CreateElement_Wall_Response_NoViolations_WhenOverlappingWithAnotherWall()
     {
         MakeWall("W1", new Vector3Int(2000, 2500, 100), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "W2", width = 2000, height = 2500, depth = 100, x = 0f, y = 1.25f, z = 0f, is_wall = true
         }));
@@ -282,7 +282,7 @@ public class McpCommandHandlerTests
     {
         MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
         MakeElement("B", new Vector3Int(1000, 1000, 1000), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "A" }));
+        var resp = _handler!.Handle(MakeReq("get_element_info", new { name = "A" }));
 
         Assert.AreEqual("result", resp.type);
         var info = (ElementInfo)resp.data!;
@@ -293,7 +293,7 @@ public class McpCommandHandlerTests
     public void GetElementInfo_Wall_Response_HasNoViolations()
     {
         MakeWall("W", new Vector3Int(2000, 2500, 100), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "W" }));
+        var resp = _handler!.Handle(MakeReq("get_element_info", new { name = "W" }));
 
         Assert.AreEqual("result", resp.type);
         var info = (ElementInfo)resp.data!;
@@ -306,7 +306,7 @@ public class McpCommandHandlerTests
         MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
         MakeElement("B", new Vector3Int(1000, 1000, 1000), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("get_all_elements", new { }));
+        var resp = _handler!.Handle(MakeReq("get_all_elements", new { }));
 
         Assert.AreEqual("result", resp.type);
         var list = (List<ElementInfo>)resp.data!;
@@ -320,7 +320,7 @@ public class McpCommandHandlerTests
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
-        var resp = _handler.Handle(MakeReq("move_element", new { name = "A", x = 1.8f, y = 0f, z = 0f }));
+        var resp = _handler!.Handle(MakeReq("move_element", new { name = "A", x = 1.8f, y = 0f, z = 0f }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(GetProp<bool>(resp.data!, "hasViolations"));
@@ -331,7 +331,7 @@ public class McpCommandHandlerTests
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(0.45f, 0f, 0f));
-        var resp = _handler.Handle(MakeReq("resize_element", new { name = "A", width = 1000, height = 400, depth = 18 }));
+        var resp = _handler!.Handle(MakeReq("resize_element", new { name = "A", width = 1000, height = 400, depth = 18 }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(GetProp<bool>(resp.data!, "hasViolations"));
@@ -343,7 +343,7 @@ public class McpCommandHandlerTests
         MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
         MakeElement("B", new Vector3Int(1000, 1000, 1000), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("get_violations", new { }));
+        var resp = _handler!.Handle(MakeReq("get_violations", new { }));
 
         Assert.AreEqual("result", resp.type);
         var count = GetProp<int>(resp.data!, "count");
@@ -359,7 +359,7 @@ public class McpCommandHandlerTests
         MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
         MakeElement("B", new Vector3Int(1000, 1000, 1000), new Vector3(0f, 0f, 0f));
 
-        var resp = _handler.Handle(MakeReq("get_violations", new { }));
+        var resp = _handler!.Handle(MakeReq("get_violations", new { }));
         var violations = GetProp<object>(resp.data!, "violations") as System.Collections.IList;
 
         var vA = violations![0];
@@ -381,7 +381,7 @@ public class McpCommandHandlerTests
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(0.5f, 0f, 0f));
 
-        var resp = _handler.Handle(MakeReq("get_violations", new { }));
+        var resp = _handler!.Handle(MakeReq("get_violations", new { }));
 
         Assert.AreEqual("result", resp.type);
         var count = GetProp<int>(resp.data!, "count");
@@ -391,7 +391,7 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateFacade_ReturnsOk()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "TestFacade", name = "F1", x = 0f, y = 0f, z = 0f,
             width = 400, height = 300, depth = 18, is_facade = true,
@@ -414,7 +414,7 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateFacade_DefaultGap_IsTwoOnAllSides()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "Facade2", name = "F2", x = 0f, y = 0f, z = 0f,
             width = 400, height = 300, depth = 18, is_facade = true
@@ -432,7 +432,7 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateRadialShelf_UsesProvidedRadiusAndThickness()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "RS1", name = "RS1", x = 0.5f, y = 0.1f, z = -1f,
             depth = 25, radius = 450, is_radial_shelf = true
@@ -452,7 +452,7 @@ public class McpCommandHandlerTests
     [Test]
     public void CreateRadialShelf_DefaultsRadius_WhenNotProvided()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "RS2", name = "RS2", x = 0f, y = 0f, z = 0f,
             is_radial_shelf = true
@@ -469,13 +469,13 @@ public class McpCommandHandlerTests
     [Test]
     public void ConvertElement_PartToRadialShelf_ChangesType()
     {
-        _handler.Handle(MakeReq("create_element", new
+        _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "Part1", name = "Part1", x = 0f, y = 0f, z = 0f,
             width = 400, height = 18, depth = 300
         }));
 
-        var resp = _handler.Handle(MakeReq("convert_element", new
+        var resp = _handler!.Handle(MakeReq("convert_element", new
         {
             name = "Part1", target = "radial_shelf"
         }));
@@ -493,7 +493,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         Assert.IsTrue(el.Movable);
 
-        var resp = _handler.Handle(MakeReq("set_element_lock", new { name = "Board", locked = true }));
+        var resp = _handler!.Handle(MakeReq("set_element_lock", new { name = "Board", locked = true }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsFalse(el.Movable);
@@ -505,7 +505,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        var resp = _handler.Handle(MakeReq("set_element_lock", new { name = "Board", locked = false }));
+        var resp = _handler!.Handle(MakeReq("set_element_lock", new { name = "Board", locked = false }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(el.Movable);
@@ -514,14 +514,14 @@ public class McpCommandHandlerTests
     [Test]
     public void SetElementLock_Errors_WhenNameMissing()
     {
-        var resp = _handler.Handle(MakeReq("set_element_lock", new { }));
+        var resp = _handler!.Handle(MakeReq("set_element_lock", new { }));
         Assert.AreEqual("error", resp.type);
     }
 
     [Test]
     public void SetElementLock_Errors_WhenElementNotFound()
     {
-        var resp = _handler.Handle(MakeReq("set_element_lock", new { name = "NonExistent", locked = true }));
+        var resp = _handler!.Handle(MakeReq("set_element_lock", new { name = "NonExistent", locked = true }));
         Assert.AreEqual("error", resp.type);
     }
 
@@ -531,7 +531,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        var resp = _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
+        var resp = _handler!.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
 
         Assert.AreEqual("error", resp.type);
         Assert.AreEqual(Vector3.zero, el.transform.position);
@@ -543,7 +543,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        var resp = _handler.Handle(MakeReq("resize_element", new { name = "Board", width = 1200, height = 600, depth = 36 }));
+        var resp = _handler!.Handle(MakeReq("resize_element", new { name = "Board", width = 1200, height = 600, depth = 36 }));
 
         Assert.AreEqual("error", resp.type);
         Assert.AreEqual(new Vector3Int(800, 400, 18), el.DimensionsMM);
@@ -555,7 +555,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        var resp = _handler.Handle(MakeReq("rotate_element", new { name = "Board", x = 0f, y = 90f, z = 0f }));
+        var resp = _handler!.Handle(MakeReq("rotate_element", new { name = "Board", x = 0f, y = 90f, z = 0f }));
 
         Assert.AreEqual("error", resp.type);
         Assert.AreEqual(Quaternion.identity, el.transform.rotation);
@@ -567,7 +567,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        var resp = _handler.Handle(MakeReq("delete_element", new { name = "Board" }));
+        var resp = _handler!.Handle(MakeReq("delete_element", new { name = "Board" }));
 
         Assert.AreEqual("error", resp.type);
         Assert.IsNotNull(FindBoard("Board"), "Element should not be deleted");
@@ -579,11 +579,11 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.Movable = false;
 
-        var unlockResp = _handler.Handle(MakeReq("set_element_lock", new { name = "Board", locked = false }));
+        var unlockResp = _handler!.Handle(MakeReq("set_element_lock", new { name = "Board", locked = false }));
         Assert.AreEqual("result", unlockResp.type);
         Assert.IsTrue(el.Movable);
 
-        var moveResp = _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
+        var moveResp = _handler!.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
         Assert.AreEqual("result", moveResp.type);
         Assert.AreEqual(new Vector3(1, 0, 0), el.transform.position);
     }
@@ -593,7 +593,7 @@ public class McpCommandHandlerTests
     [Test]
     public void ParamsObject_CreateElement_WorksIdenticalToStringFormat()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "ObjBoard", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f
         }));
@@ -609,7 +609,7 @@ public class McpCommandHandlerTests
     {
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("move_element", new { name = "Board", x = 2.5f, y = 1.0f, z = 0.5f }));
+        var resp = _handler!.Handle(MakeReq("move_element", new { name = "Board", x = 2.5f, y = 1.0f, z = 0.5f }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual(new Vector3(2.5f, 1f, 0.5f), el.transform.position);
@@ -620,7 +620,7 @@ public class McpCommandHandlerTests
     {
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("resize_element", new
+        var resp = _handler!.Handle(MakeReq("resize_element", new
         {
             name = "Board", width = 500, height = 600, depth = 36,
             dimX = 9999, dimY = 9999, dimZ = 9999
@@ -670,7 +670,7 @@ public class McpCommandHandlerTests
         PartRegistry.Register(e);
         _spawned.Add(go);
 
-        var resp = _handler.Handle(MakeReq("simulate_move", new { name = "Board", x = 2f, y = 0f, z = 0f }));
+        var resp = _handler!.Handle(MakeReq("simulate_move", new { name = "Board", x = 2f, y = 0f, z = 0f }));
 
         Assert.AreEqual("result", resp.type);
         var sim = resp.data as SimulateResult;
@@ -685,7 +685,7 @@ public class McpCommandHandlerTests
     {
         MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "Board" }));
+        var resp = _handler!.Handle(MakeReq("get_element_info", new { name = "Board" }));
 
         Assert.AreEqual("result", resp.type);
         var info = resp.data as ElementInfo;
@@ -697,7 +697,7 @@ public class McpCommandHandlerTests
     [Test]
     public void ParamsObject_EmptyObject_ReturnsError()
     {
-        var resp = _handler.Handle(MakeReq("move_element", new { }));
+        var resp = _handler!.Handle(MakeReq("move_element", new { }));
 
         Assert.AreEqual("error", resp.type);
     }
@@ -712,7 +712,7 @@ public class McpCommandHandlerTests
             Params = null
         };
 
-        var resp = _handler.Handle(req);
+        var resp = _handler!.Handle(req);
         Assert.AreEqual("result", resp.type);
     }
 
@@ -720,7 +720,7 @@ public class McpCommandHandlerTests
     public void GetElements_ReturnsEtag()
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("get_all_elements", new { }));
+        var resp = _handler!.Handle(MakeReq("get_all_elements", new { }));
         Assert.AreEqual("result", resp.type);
         Assert.IsNotEmpty(resp.etag, "etag should be present");
     }
@@ -729,14 +729,14 @@ public class McpCommandHandlerTests
     public void GetElements_NotModified_WhenEtagMatches()
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        var first = _handler.Handle(MakeReq("get_all_elements", new { }));
+        var first = _handler!.Handle(MakeReq("get_all_elements", new { }));
         Assert.AreEqual("result", first.type);
         var etag = first.etag;
 
         // Повторный запрос без изменений — должен вернуть not_modified
         var req = MakeReq("get_all_elements", new { });
         req.Headers = new Dictionary<string, string> { { "If-None-Match", etag! } };
-        var second = _handler.Handle(req);
+        var second = _handler!.Handle(req);
         Assert.AreEqual("not_modified", second.type);
         Assert.AreEqual(etag, second.etag);
     }
@@ -745,9 +745,9 @@ public class McpCommandHandlerTests
     public void GetElements_NotModified_WithoutHeaders_ReturnsResult()
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        var first = _handler.Handle(MakeReq("get_all_elements", new { }));
+        var first = _handler!.Handle(MakeReq("get_all_elements", new { }));
         // Второй запрос без заголовка If-None-Match — обычный result
-        var second = _handler.Handle(MakeReq("get_all_elements", new { }));
+        var second = _handler!.Handle(MakeReq("get_all_elements", new { }));
         Assert.AreEqual("result", second.type);
         Assert.AreEqual(first.etag, second.etag);
     }
@@ -756,7 +756,7 @@ public class McpCommandHandlerTests
     public void GetElements_ReturnsNewResult_AfterElementChange()
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        var first = _handler.Handle(MakeReq("get_all_elements", new { }));
+        var first = _handler!.Handle(MakeReq("get_all_elements", new { }));
         var etag = first.etag;
 
         // Добавляем новый элемент
@@ -765,7 +765,7 @@ public class McpCommandHandlerTests
         // Запрос со старым etag — должен вернуть новый result
         var req = MakeReq("get_all_elements", new { });
         req.Headers = new Dictionary<string, string> { { "If-None-Match", etag! } };
-        var second = _handler.Handle(req);
+        var second = _handler!.Handle(req);
         Assert.AreEqual("result", second.type);
         Assert.AreNotEqual(etag, second.etag, "etag changed after adding element");
     }
@@ -785,7 +785,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), new Vector3(1f, 2f, 3f));
 
         // Двигаем только по X — Y и Z должны остаться (2,3), а не сброситься в 0.
-        var resp = _handler.Handle(MakeReq("move_element", new { name = "Board", x = 5f }));
+        var resp = _handler!.Handle(MakeReq("move_element", new { name = "Board", x = 5f }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual(new Vector3(5f, 2f, 3f), el.transform.position);
@@ -804,12 +804,12 @@ public class McpCommandHandlerTests
         _spawned.Add(go);
 
         // Только z задан — x берётся текущий (1), а не 0.
-        var resp = _handler.Handle(MakeReq("simulate_move", new { name = "Board", z = 2f }));
+        var resp = _handler!.Handle(MakeReq("simulate_move", new { name = "Board", z = 2f }));
 
         Assert.AreEqual("result", resp.type);
         var sim = resp.data as SimulateResult;
         Assert.IsNotNull(sim);
-        Assert.AreEqual(1f, (sim!.simulatedAABB.minX + sim.simulatedAABB.maxX) * 0.5f, 0.001f,
+        Assert.AreEqual(1f, (sim!.simulatedAABB!.minX + sim!.simulatedAABB!.maxX) * 0.5f, 0.001f,
             "X должен остаться текущим (1 м), а не сброситься в 0");
     }
 
@@ -819,7 +819,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
         // Меняем только ширину — высота (400) и толщина (18) сохраняются.
-        var resp = _handler.Handle(MakeReq("resize_element", new { name = "Board", width = 1000 }));
+        var resp = _handler!.Handle(MakeReq("resize_element", new { name = "Board", width = 1000 }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual(new Vector3Int(1000, 400, 18), el.DimensionsMM);
@@ -832,7 +832,7 @@ public class McpCommandHandlerTests
         el.transform.eulerAngles = new Vector3(0f, 45f, 0f);
 
         // Задаём только X — Y должен остаться 45.
-        var resp = _handler.Handle(MakeReq("rotate_element", new { name = "Board", x = 10f }));
+        var resp = _handler!.Handle(MakeReq("rotate_element", new { name = "Board", x = 10f }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual(45f, el.transform.eulerAngles.y, 0.01f, "Y-угол должен сохраниться");
@@ -845,7 +845,7 @@ public class McpCommandHandlerTests
     {
         var el = MakeElement("F1", new Vector3Int(600, 716, 18), new Vector3(1f, 0.5f, 2f));
 
-        var resp = _handler.Handle(MakeReq("convert_element",
+        var resp = _handler!.Handle(MakeReq("convert_element",
             new { name = "F1", target = "assembled_facade", fill = "glass" }));
 
         Assert.AreEqual("result", resp.type);
@@ -862,14 +862,14 @@ public class McpCommandHandlerTests
     public void ConvertElement_UnknownTarget_ReturnsError()
     {
         MakeElement("F1", new Vector3Int(600, 716, 18), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("convert_element", new { name = "F1", target = "banana" }));
+        var resp = _handler!.Handle(MakeReq("convert_element", new { name = "F1", target = "banana" }));
         Assert.AreEqual("error", resp.type);
     }
 
     [Test]
     public void ConvertElement_NotFound_ReturnsError()
     {
-        var resp = _handler.Handle(MakeReq("convert_element", new { name = "Nope", target = "facade" }));
+        var resp = _handler!.Handle(MakeReq("convert_element", new { name = "Nope", target = "facade" }));
         Assert.AreEqual("error", resp.type);
     }
 
@@ -878,14 +878,14 @@ public class McpCommandHandlerTests
     {
         var el = MakeElement("F1", new Vector3Int(600, 716, 18), Vector3.zero);
         el.Movable = false;
-        var resp = _handler.Handle(MakeReq("convert_element", new { name = "F1", target = "assembled_facade" }));
+        var resp = _handler!.Handle(MakeReq("convert_element", new { name = "F1", target = "assembled_facade" }));
         Assert.AreEqual("error", resp.type);
     }
 
     [Test]
     public void CreateElement_Assembled_CreatesAssembledFacade_WithFill()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "Asm1", x = 1f, y = 0.5f, z = 2f,
             width = 450, height = 700, depth = 18, is_assembled = true, fill = "open"
@@ -907,7 +907,7 @@ public class McpCommandHandlerTests
     {
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("set_material", new { name = "Board", material = "oak" }));
+        var resp = _handler!.Handle(MakeReq("set_material", new { name = "Board", material = "oak" }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual("oak", el.MaterialId);
@@ -918,7 +918,7 @@ public class McpCommandHandlerTests
     {
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("set_material", new { name = "Board", material = "Венге" }));
+        var resp = _handler!.Handle(MakeReq("set_material", new { name = "Board", material = "Венге" }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual("wenge", el.MaterialId);
@@ -929,7 +929,7 @@ public class McpCommandHandlerTests
     {
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("set_material", new { name = "Board", material = "no-such" }));
+        var resp = _handler!.Handle(MakeReq("set_material", new { name = "Board", material = "no-such" }));
 
         Assert.AreEqual("error", resp.type);
         Assert.AreEqual(MaterialCatalog.DefaultId, el.MaterialId, "неизвестный материал не должен менять текущий");
@@ -938,7 +938,7 @@ public class McpCommandHandlerTests
     [Test]
     public void SetMaterial_MissingName_ReturnsError()
     {
-        var resp = _handler.Handle(MakeReq("set_material", new { material = "oak" }));
+        var resp = _handler!.Handle(MakeReq("set_material", new { material = "oak" }));
         Assert.AreEqual("error", resp.type);
     }
 
@@ -946,20 +946,20 @@ public class McpCommandHandlerTests
     public void SetMaterial_MissingMaterial_ReturnsError()
     {
         MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("set_material", new { name = "Board" }));
+        var resp = _handler!.Handle(MakeReq("set_material", new { name = "Board" }));
         Assert.AreEqual("error", resp.type);
     }
 
     [Test]
     public void SetMaterial_OnFacade_Applies()
     {
-        _handler.Handle(MakeReq("create_element", new
+        _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "F", name = "F1", x = 0f, y = 0f, z = 0f,
             width = 400, height = 300, depth = 18, is_facade = true
         }));
 
-        var resp = _handler.Handle(MakeReq("set_material", new { name = "F1", material = "concrete" }));
+        var resp = _handler!.Handle(MakeReq("set_material", new { name = "F1", material = "concrete" }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual("concrete", FindBoard("F1")!.MaterialId);
@@ -968,7 +968,7 @@ public class McpCommandHandlerTests
     [Test]
     public void ListMaterials_ReturnsCatalog()
     {
-        var resp = _handler.Handle(MakeReq("list_materials", new { }));
+        var resp = _handler!.Handle(MakeReq("list_materials", new { }));
 
         Assert.AreEqual("result", resp.type);
         var materials = GetProp<object>(resp.data!, "materials") as System.Collections.IList;
@@ -983,7 +983,7 @@ public class McpCommandHandlerTests
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         el.MaterialId = "oak";
 
-        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "Board" }));
+        var resp = _handler!.Handle(MakeReq("get_element_info", new { name = "Board" }));
 
         Assert.AreEqual("result", resp.type);
         var info = (ElementInfo)resp.data!;
@@ -999,7 +999,7 @@ public class McpCommandHandlerTests
             { tileHeightMM = 100 });
 
         var el = MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("set_material",
+        var resp = _handler!.Handle(MakeReq("set_material",
             new { name = "Board", material = "abrikos_ba_03_cd_100_100" }));
 
         Assert.AreEqual("result", resp.type);
@@ -1010,7 +1010,7 @@ public class McpCommandHandlerTests
     public void ListMaterials_IncludesDynamicDecors()
     {
         MaterialCatalog.RegisterDynamic(new MaterialDef("ext_a", "Ext A", "ЛДСП", Color.white));
-        var resp = _handler.Handle(MakeReq("list_materials", new { }));
+        var resp = _handler!.Handle(MakeReq("list_materials", new { }));
 
         Assert.AreEqual("result", resp.type);
         var materials = GetProp<object>(resp.data!, "materials") as System.Collections.IList;
@@ -1034,7 +1034,7 @@ public class McpCommandHandlerTests
         int before = hl.RefreshCount;
         MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
+        var resp = _handler!.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
 
         Assert.AreEqual("result", resp.type);
         Assert.Greater(hl.RefreshCount, before, "RefreshHighlights should be called after move");
@@ -1047,7 +1047,7 @@ public class McpCommandHandlerTests
         int before = hl.RefreshCount;
         MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("resize_element", new { name = "Board", width = 1200, height = 600, depth = 36 }));
+        var resp = _handler!.Handle(MakeReq("resize_element", new { name = "Board", width = 1200, height = 600, depth = 36 }));
 
         Assert.AreEqual("result", resp.type);
         Assert.Greater(hl.RefreshCount, before, "RefreshHighlights should be called after resize");
@@ -1060,7 +1060,7 @@ public class McpCommandHandlerTests
         int before = hl.RefreshCount;
         MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
 
-        var resp = _handler.Handle(MakeReq("rotate_element", new { name = "Board", x = 0f, y = 90f, z = 0f }));
+        var resp = _handler!.Handle(MakeReq("rotate_element", new { name = "Board", x = 0f, y = 90f, z = 0f }));
 
         Assert.AreEqual("result", resp.type);
         Assert.Greater(hl.RefreshCount, before, "RefreshHighlights should be called after rotate");
@@ -1072,7 +1072,7 @@ public class McpCommandHandlerTests
         var hl = SetupHighlighter();
         int before = hl.RefreshCount;
 
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "NewBoard", width = 600, height = 400, depth = 18, x = 2f, y = 0f, z = 0f
         }));
@@ -1089,7 +1089,7 @@ public class McpCommandHandlerTests
         MakeElement("Remove", new Vector3Int(500, 400, 18), new Vector3(1f, 0f, 0f));
         int before = hl.RefreshCount;
 
-        var resp = _handler.Handle(MakeReq("delete_element", new { name = "Remove" }));
+        var resp = _handler!.Handle(MakeReq("delete_element", new { name = "Remove" }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsNull(FindBoard("Remove"));
@@ -1101,10 +1101,10 @@ public class McpCommandHandlerTests
     {
         var hl = SetupHighlighter();
         MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
-        _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
+        _handler!.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
         hl.RefreshCount = 0;
 
-        var resp = _handler.Handle(MakeReq("undo", new { }));
+        var resp = _handler!.Handle(MakeReq("undo", new { }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual(Vector3.zero, FindBoard("Board")!.transform.position);
@@ -1116,11 +1116,11 @@ public class McpCommandHandlerTests
     {
         var hl = SetupHighlighter();
         MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
-        _handler.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
-        _handler.Handle(MakeReq("undo", new { }));
+        _handler!.Handle(MakeReq("move_element", new { name = "Board", x = 1f, y = 0f, z = 0f }));
+        _handler!.Handle(MakeReq("undo", new { }));
         hl.RefreshCount = 0;
 
-        var resp = _handler.Handle(MakeReq("redo", new { }));
+        var resp = _handler!.Handle(MakeReq("redo", new { }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual(new Vector3(1, 0, 0), FindBoard("Board")!.transform.position);
@@ -1137,7 +1137,7 @@ public class McpCommandHandlerTests
         _spawned.Add(plate.gameObject);
         int before = hl.RefreshCount;
 
-        var resp = _handler.Handle(MakeReq("resize_floor", new { width = 4000, height = 1, depth = 3000 }));
+        var resp = _handler!.Handle(MakeReq("resize_floor", new { width = 4000, height = 1, depth = 3000 }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual(new Vector3Int(4000, 1, 3000), plate.Element.DimensionsMM);
@@ -1151,7 +1151,7 @@ public class McpCommandHandlerTests
         MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
         int before = hl.RefreshCount;
 
-        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "Board" }));
+        var resp = _handler!.Handle(MakeReq("get_element_info", new { name = "Board" }));
 
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual(before, hl.RefreshCount, "get_element_info is read-only — should not refresh highlights");

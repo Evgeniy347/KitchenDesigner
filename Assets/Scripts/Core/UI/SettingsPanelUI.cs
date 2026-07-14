@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core.UI
 {
     public class SettingsPanelUI : MonoBehaviour
     {
-        private GameObject _root = null!;
+        private GameObject? _root;
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
 
         private readonly List<GameObject> _tabPages = new();
@@ -42,7 +42,7 @@ namespace KitchenDesigner.Core.UI
             var s = KitchenSettings.Instance;
             if (s == null)
             {
-                _root.SetActive(false);
+                _root!.SetActive(false);
                 return;
             }
 
@@ -58,7 +58,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, closeY), new Vector2(160, 40),
                 () => SetVisible(false));
 
-            _root.SetActive(false);
+            _root!.SetActive(false);
         }
 
         // ── Tabs ─────────────────────────────────────────────

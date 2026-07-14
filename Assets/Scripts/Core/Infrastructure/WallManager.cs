@@ -11,7 +11,7 @@ namespace KitchenDesigner.Core
     {
         private const float LoweredHeightMM = 100f;
 
-        private Camera _cachedCamera = null!;
+        private Camera? _cachedCamera;
 
         private void Awake()
         {

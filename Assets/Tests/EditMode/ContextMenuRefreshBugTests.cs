@@ -12,19 +12,19 @@ using KitchenDesigner.Core.UI;
 /// </summary>
 public class ContextMenuRefreshBugTests
 {
-    private GameObject _canvasGo = null!;
-    private GameObject _ctxGo = null!;
-    private ContextMenuUI _ctx = null!;
-    private KitchenElement _element = null!;
+    private GameObject? _canvasGo;
+    private GameObject? _ctxGo;
+    private ContextMenuUI? _ctx;
+    private KitchenElement? _element;
 
     [SetUp]
     public void Setup()
     {
         _canvasGo = new GameObject("Canvas");
-        var canvas = _canvasGo.AddComponent<Canvas>();
+        var canvas = _canvasGo!.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        _canvasGo.AddComponent<CanvasScaler>();
-        _canvasGo.AddComponent<GraphicRaycaster>();
+        _canvasGo!.AddComponent<CanvasScaler>();
+        _canvasGo!.AddComponent<GraphicRaycaster>();
 
         if (Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
         {
@@ -34,19 +34,19 @@ public class ContextMenuRefreshBugTests
         }
 
         _ctxGo = new GameObject("CtxMenu");
-        _ctxGo.transform.SetParent(_canvasGo.transform);
-        _ctx = _ctxGo.AddComponent<ContextMenuUI>();
-        _ctx.Build(_canvasGo.transform);
+        _ctxGo!.transform.SetParent(_canvasGo!.transform);
+        _ctx = _ctxGo!.AddComponent<ContextMenuUI>();
+        _ctx!.Build(_canvasGo!.transform);
 
         _element = CreateBoard("Test", new Vector3Int(400, 400, 18), Vector3.zero);
-        _ctx.Open(_element);
+        _ctx!.Open(_element);
     }
 
     [TearDown]
     public void Teardown()
     {
         if (_ctx != null && _element != null)
-            _ctx.Close();
+            _ctx!.Close();
 
         if (_canvasGo != null) Object.DestroyImmediate(_canvasGo);
         var es = Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
@@ -65,7 +65,7 @@ public class ContextMenuRefreshBugTests
     [Test]
     public void Dimensions_DoNotUpdate_WhenElementResizedExternally()
     {
-        _element.DimensionsMM = new Vector3Int(800, 600, 18);
+        _element!.DimensionsMM = new Vector3Int(800, 600, 18);
         CallRefreshTransformFields();
 
         Assert.AreEqual("800", FieldText("_w"),
@@ -85,7 +85,7 @@ public class ContextMenuRefreshBugTests
     [Test]
     public void Position_Updates_WhenElementMovedExternally()
     {
-        _element.transform.position = new Vector3(1.5f, 2.5f, 3.5f);
+        _element!.transform.position = new Vector3(1.5f, 2.5f, 3.5f);
         CallRefreshTransformFields();
 
         // Сравниваем численно — локаль ОС может давать запятую вместо точки
@@ -100,7 +100,7 @@ public class ContextMenuRefreshBugTests
     [Test]
     public void Name_DoesNotUpdate_WhenElementRenamedExternally()
     {
-        _element.PartName = "NewName";
+        _element!.PartName = "NewName";
         CallRefreshTransformFields();
 
         Assert.AreEqual("NewName", FieldText("_name"),
@@ -110,13 +110,13 @@ public class ContextMenuRefreshBugTests
     [Test]
     public void Radius_DoesNotUpdate_WhenRadialShelfResizedExternally()
     {
-        _ctx.Close();
+        _ctx!.Close();
         DestroyAllElements();
 
         var shelfGo = ElementFactory.CreateRadialShelf(300, 18, "Shelf", Vector3.zero);
-        shelfGo.transform.SetParent(_canvasGo.transform);
+        shelfGo.transform.SetParent(_canvasGo!.transform);
         var shelf = shelfGo.GetComponent<RadialShelfElement>();
-        _ctx.Open(shelf);
+        _ctx!.Open(shelf);
 
         Assert.AreEqual("300", FieldText("_radius"), "initial radius");
 
@@ -130,15 +130,15 @@ public class ContextMenuRefreshBugTests
     [Test]
     public void Gaps_DoNotUpdate_WhenFacadeGapsChangedExternally()
     {
-        _ctx.Close();
+        _ctx!.Close();
         DestroyAllElements();
 
         var facadeGo = ElementFactory.CreateFacade(
             new Vector3Int(450, 700, 18), "Facade", Vector3.zero,
             gapLeft: 3, gapRight: 3, gapTop: 2, gapBottom: 2);
-        facadeGo.transform.SetParent(_canvasGo.transform);
+        facadeGo.transform.SetParent(_canvasGo!.transform);
         var facade = facadeGo.GetComponent<FacadeElement>();
-        _ctx.Open(facade);
+        _ctx!.Open(facade);
 
         facade.GapLeft = 10;
         facade.GapRight = 20;
@@ -181,7 +181,7 @@ public class ContextMenuRefreshBugTests
     private KitchenElement CreateBoard(string name, Vector3Int dims, Vector3 pos)
     {
         var go = ElementFactory.CreatePart(dims, name, pos);
-        go.transform.SetParent(_canvasGo.transform);
+        go.transform.SetParent(_canvasGo!.transform);
         return go.GetComponent<KitchenElement>();
     }
 

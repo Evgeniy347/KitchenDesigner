@@ -10,18 +10,18 @@ using KitchenDesigner.Core.UI;
 /// </summary>
 public class FieldHighlightTests
 {
-    private GameObject _root = null!;
-    private Canvas _canvas = null!;
+    private GameObject? _root;
+    private Canvas? _canvas;
 
     [SetUp]
     public void Setup()
     {
         _root = new GameObject("TestRoot");
         // InputField требует Canvas для работы isFocused и onEndEdit
-        _canvas = _root.AddComponent<Canvas>();
+        _canvas = _root!.AddComponent<Canvas>();
         _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        _root.AddComponent<CanvasScaler>();
-        _root.AddComponent<GraphicRaycaster>();
+        _root!.AddComponent<CanvasScaler>();
+        _root!.AddComponent<GraphicRaycaster>();
         // EventSystem нужен для InputField.isFocused
         if (Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
         {
@@ -44,7 +44,7 @@ public class FieldHighlightTests
     [Test]
     public void CreateInputField_HasDisabledOutline()
     {
-        var field = UIFactory.CreateInputField("Test", _root.transform, "42", Vector2.zero, new Vector2(100, 28));
+        var field = UIFactory.CreateInputField("Test", _root!.transform, "42", Vector2.zero, new Vector2(100, 28));
         var outline = field.GetComponent<Outline>();
         Assert.IsNotNull(outline, "Outline component should be present");
         Assert.IsFalse(outline.enabled, "Outline should start disabled");
@@ -56,7 +56,7 @@ public class FieldHighlightTests
     [Test]
     public void SetHighlight_EnablesOutline()
     {
-        var field = UIFactory.CreateInputField("Test", _root.transform, "42", Vector2.zero, new Vector2(100, 28));
+        var field = UIFactory.CreateInputField("Test", _root!.transform, "42", Vector2.zero, new Vector2(100, 28));
         UIFactory.SetHighlight(field, true);
         Assert.IsTrue(field.GetComponent<Outline>().enabled, "Outline should be enabled");
         UIFactory.SetHighlight(field, false);
@@ -73,7 +73,7 @@ public class FieldHighlightTests
     public void SetHighlight_FieldWithoutOutline_DoesNotThrow()
     {
         var go = new GameObject("NoOutline");
-        go.transform.SetParent(_root.transform);
+        go.transform.SetParent(_root!.transform);
         var field = go.AddComponent<TMP_InputField>();
         Assert.DoesNotThrow(() => UIFactory.SetHighlight(field, true));
         Object.DestroyImmediate(go);
@@ -84,7 +84,7 @@ public class FieldHighlightTests
     [Test]
     public void InputField_IsFocused_IsFalse_InEditModeByDefault()
     {
-        var field = UIFactory.CreateInputField("Test", _root.transform, "42", Vector2.zero, new Vector2(100, 28));
+        var field = UIFactory.CreateInputField("Test", _root!.transform, "42", Vector2.zero, new Vector2(100, 28));
         Assert.IsFalse(field.isFocused,
             "isFocused should be false when no EventSystem selection is active");
     }
@@ -94,7 +94,7 @@ public class FieldHighlightTests
     [Test]
     public void CreateInputField_ReturnsFieldWithCorrectInitialText()
     {
-        var field = UIFactory.CreateInputField("Test", _root.transform, "hello", Vector2.zero, new Vector2(100, 28));
+        var field = UIFactory.CreateInputField("Test", _root!.transform, "hello", Vector2.zero, new Vector2(100, 28));
         // TMP_InputField.text/textComponent несут служебный zero-width space (U+200B);
         // сравниваем видимый текст.
         Assert.AreEqual("hello", field.text.Replace("\u200b", ""));
@@ -105,7 +105,7 @@ public class FieldHighlightTests
     [Test]
     public void CreateInputField_HasBackgroundImage()
     {
-        var field = UIFactory.CreateInputField("Test", _root.transform, "", Vector2.zero, new Vector2(100, 28));
+        var field = UIFactory.CreateInputField("Test", _root!.transform, "", Vector2.zero, new Vector2(100, 28));
         var img = field.GetComponent<Image>();
         Assert.IsNotNull(img, "background Image should exist");
         Assert.AreEqual(UIFactory.FieldColor, img.color, "background should be dark");
@@ -117,10 +117,10 @@ public class FieldHighlightTests
     public void ContextMenuUI_Build_DoesNotThrow()
     {
         var go = new GameObject("Ctx");
-        go.transform.SetParent(_root.transform);
+        go.transform.SetParent(_root!.transform);
         var ctx = go.AddComponent<ContextMenuUI>();
 
-        Assert.DoesNotThrow(() => ctx.Build(_root.transform));
+        Assert.DoesNotThrow(() => ctx.Build(_root!.transform));
         // Cleanup — Build creates children under _root
     }
 
@@ -128,9 +128,9 @@ public class FieldHighlightTests
     public void ContextMenuUI_OpenClose_DoesNotThrow()
     {
         var go = new GameObject("Ctx");
-        go.transform.SetParent(_root.transform);
+        go.transform.SetParent(_root!.transform);
         var ctx = go.AddComponent<ContextMenuUI>();
-        ctx.Build(_root.transform);
+        ctx.Build(_root!.transform);
 
         var board = CreateBoard("TestBoard", new Vector3Int(400, 400, 18), Vector3.zero);
 
@@ -142,9 +142,9 @@ public class FieldHighlightTests
     public void ContextMenuUI_ApplyViaFieldEdit_UpdatesElement()
     {
         var go = new GameObject("Ctx");
-        go.transform.SetParent(_root.transform);
+        go.transform.SetParent(_root!.transform);
         var ctx = go.AddComponent<ContextMenuUI>();
-        ctx.Build(_root.transform);
+        ctx.Build(_root!.transform);
 
         var board = CreateBoard("OldName", new Vector3Int(400, 400, 18), Vector3.zero);
         ctx.Open(board);
@@ -162,10 +162,10 @@ public class FieldHighlightTests
     public void FloorSettingsUI_Build_DoesNotThrow()
     {
         var go = new GameObject("Flr");
-        go.transform.SetParent(_root.transform);
+        go.transform.SetParent(_root!.transform);
         var flr = go.AddComponent<FloorSettingsUI>();
 
-        Assert.DoesNotThrow(() => flr.Build(_root.transform));
+        Assert.DoesNotThrow(() => flr.Build(_root!.transform));
     }
 
     // ── helpers ─────────────────────────────────────────────────────────
@@ -173,7 +173,7 @@ public class FieldHighlightTests
     private KitchenElement CreateBoard(string name, Vector3Int dims, Vector3 pos)
     {
         var goEl = ElementFactory.CreatePart(dims, name, pos);
-        goEl.transform.SetParent(_root.transform);
+        goEl.transform.SetParent(_root!.transform);
         return goEl.GetComponent<KitchenElement>();
     }
 }

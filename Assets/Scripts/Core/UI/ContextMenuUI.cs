@@ -8,28 +8,28 @@ namespace KitchenDesigner.Core.UI
     /// <summary>Контекстное меню по клику ЛКМ на детали: размеры, позиция, поворот, действия.</summary>
     public class ContextMenuUI : MonoBehaviour
     {
-        public static ContextMenuUI Instance { get; private set; } = null!;
+        public static ContextMenuUI? Instance { get; private set; }
 
-        private GameObject _root = null!;
+        private GameObject? _root;
         private KitchenElement? _target;
-        private TMP_Text _titleLabel = null!;
+        private TMP_Text? _titleLabel;
 
-        private TMP_InputField _name = null!, _w = null!, _h = null!, _d = null!, _radius = null!,
-            _gapLeft = null!, _gapRight = null!, _gapTop = null!, _gapBottom = null!,
-            _x = null!, _y = null!, _z = null!, _rx = null!, _ry = null!, _rz = null!;
-        private Toggle _lockToggle = null!;
-        private Toggle _transparentToggle = null!;
-        private RectTransform _panelRt = null!;
-        private TMP_Text _doorButtonLabel = null!;  // подпись кнопки «Открыть»/«Закрыть»
-        private TMP_Dropdown _modeDropdown = null!; // выпадающий список режима открывания
-        private TMP_Dropdown _fillDropdown = null!; // центр сборного фасада (Глухой/Витрина/Стекло)
-        private TMP_Dropdown _materialDropdown = null!; // выбор текстуры/декора (детали и фасады)
-        private TMP_Dropdown _typeDropdown = null!; // конвертация: деталь ⇄ фасад ⇄ сборный фасад
-        private TMP_Dropdown _drawerTypeDropdown = null!, _drawerLengthDropdown = null!, _drawerColorDropdown = null!;
-        private Toggle _drawerDoubleToggle = null!, _drawerUpperToggle = null!;
-        private TMP_InputField _drawerWidth = null!;
-        private TMP_Text _drawerAnimLabel = null!;
-        private TMP_Dropdown _drawerFacadeDropdown = null!; // прикреплённый фасад (выбор существующего)
+        private TMP_InputField? _name, _w, _h, _d, _radius,
+            _gapLeft, _gapRight, _gapTop, _gapBottom,
+            _x, _y, _z, _rx, _ry, _rz;
+        private Toggle? _lockToggle;
+        private Toggle? _transparentToggle;
+        private RectTransform? _panelRt;
+        private TMP_Text? _doorButtonLabel;
+        private TMP_Dropdown? _modeDropdown;
+        private TMP_Dropdown? _fillDropdown;
+        private TMP_Dropdown? _materialDropdown;
+        private TMP_Dropdown? _typeDropdown;
+        private TMP_Dropdown? _drawerTypeDropdown, _drawerLengthDropdown, _drawerColorDropdown;
+        private Toggle? _drawerDoubleToggle, _drawerUpperToggle;
+        private TMP_InputField? _drawerWidth;
+        private TMP_Text? _drawerAnimLabel;
+        private TMP_Dropdown? _drawerFacadeDropdown;
 
         // ── Подсветка изменённых полей ──────────────────────────────────
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
@@ -201,9 +201,9 @@ namespace KitchenDesigner.Core.UI
             _ry = Row(panel.transform, "Поворот Y°");
             _rz = Row(panel.transform, "Поворот Z°");
 
-            foreach (var f in new[] { _w, _h, _d, _radius }) f.contentType = TMP_InputField.ContentType.IntegerNumber;
-            foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f.contentType = TMP_InputField.ContentType.IntegerNumber;
-            foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f.contentType = TMP_InputField.ContentType.DecimalNumber;
+            foreach (var f in new[] { _w, _h, _d, _radius }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
+            foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
+            foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.DecimalNumber;
 
             // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
             // ставить детали вертикально (поворот по X/Z), а не только крутить по Y.
@@ -257,8 +257,8 @@ namespace KitchenDesigner.Core.UI
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
             closeBtn.transform.SetAsLastSibling();
 
-            Layout(isFacade: false, isAssembled: false, isRadial: false, isDrawer: false); // стартовая раскладка (как обычная деталь)
-            _root.SetActive(false);
+            Layout(isFacade: false, isAssembled: false, isRadial: false, isDrawer: false);
+            _root!.SetActive(false);
 
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.OnSelectionChanged += OnSelectionChanged;
@@ -509,7 +509,7 @@ namespace KitchenDesigner.Core.UI
 
         /// <summary>Обновить поле, если оно не в фокусе (юзер не редактирует).
         /// Также синхронизирует _cleanValues, чтобы подсветка не сбивалась.</summary>
-        private void MaybeRefresh(TMP_InputField field, string newValue)
+        private void MaybeRefresh(TMP_InputField? field, string newValue)
         {
             if (field == null || field.isFocused) return;
             field.SetTextWithoutNotify(newValue);
@@ -539,20 +539,20 @@ namespace KitchenDesigner.Core.UI
                 }
 
                 var dims = element.DimensionsMM;
-                _name.text = element.PartName;
-                _w.text = dims.x.ToString();
-                _h.text = dims.y.ToString();
-                _d.text = dims.z.ToString();
+                _name!.text = element.PartName;
+                _w!.text = dims.x.ToString();
+                _h!.text = dims.y.ToString();
+                _d!.text = dims.z.ToString();
                 var radial = element as RadialShelfElement;
-                _radius.text = radial != null ? radial.Radius.ToString() : "300";
+                _radius!.text = radial != null ? radial.Radius.ToString() : "300";
 
                 var facade = element as FacadeElement;
                 if (facade != null)
                 {
-                    _gapLeft.text = facade.GapLeft.ToString();
-                    _gapRight.text = facade.GapRight.ToString();
-                    _gapTop.text = facade.GapTop.ToString();
-                    _gapBottom.text = facade.GapBottom.ToString();
+                    _gapLeft!.text = facade.GapLeft.ToString();
+                    _gapRight!.text = facade.GapRight.ToString();
+                    _gapTop!.text = facade.GapTop.ToString();
+                    _gapBottom!.text = facade.GapBottom.ToString();
                 }
                 UpdateDoorButton(facade);
                 UpdateModeDropdown(facade);
@@ -595,13 +595,13 @@ namespace KitchenDesigner.Core.UI
                 Layout(isFacade, assembled != null, isRadial, isDrawer);
 
                 RefreshTransformFields();
-                _transparentToggle.SetIsOnWithoutNotify(element.Transparent);
-                _lockToggle.SetIsOnWithoutNotify(!element.Movable);
+                _transparentToggle!.SetIsOnWithoutNotify(element.Transparent);
+                _lockToggle!.SetIsOnWithoutNotify(!element.Movable);
 
                 ClearAllHighlights();
                 TrackAllFields();
 
-                _root.SetActive(true);
+                _root!.SetActive(true);
             }
             finally
             {
@@ -628,13 +628,13 @@ namespace KitchenDesigner.Core.UI
 
             // Через DrawerLinks: переименование обновляет обратные ссылки
             // (PairedDrawerName пары, AttachedFacadeName ящиков с этим фасадом).
-            DrawerLinks.Rename(_target, string.IsNullOrWhiteSpace(_name.text) ? "Board" : _name.text);
+            DrawerLinks.Rename(_target, string.IsNullOrWhiteSpace(_name!.text) ? "Board" : _name!.text);
 
             var radial = _target as RadialShelfElement;
             var drawer = _target as DrawerElement;
             if (radial != null)
             {
-                radial.Radius = ParseInt(_radius.text, radial.Radius);
+                radial.Radius = ParseInt(_radius!.text, radial.Radius);
             }
             else if (drawer != null)
             {
@@ -643,30 +643,30 @@ namespace KitchenDesigner.Core.UI
             else
             {
                 _target.DimensionsMM = new Vector3Int(
-                    ParseInt(_w.text, oldDims.x),
-                    ParseInt(_h.text, oldDims.y),
-                    ParseInt(_d.text, oldDims.z));
+                    ParseInt(_w!.text, oldDims.x),
+                    ParseInt(_h!.text, oldDims.y),
+                    ParseInt(_d!.text, oldDims.z));
             }
 
             var facade = _target as FacadeElement;
             if (facade != null)
             {
-                facade.GapLeft = ParseInt(_gapLeft.text, facade.GapLeft);
-                facade.GapRight = ParseInt(_gapRight.text, facade.GapRight);
-                facade.GapTop = ParseInt(_gapTop.text, facade.GapTop);
-                facade.GapBottom = ParseInt(_gapBottom.text, facade.GapBottom);
+                facade.GapLeft = ParseInt(_gapLeft!.text, facade.GapLeft);
+                facade.GapRight = ParseInt(_gapRight!.text, facade.GapRight);
+                facade.GapTop = ParseInt(_gapTop!.text, facade.GapTop);
+                facade.GapBottom = ParseInt(_gapBottom!.text, facade.GapBottom);
             }
 
             _target.transform.position = new Vector3(
-                ParseFloat(_x.text, oldPos.x),
-                ParseFloat(_y.text, oldPos.y),
-                ParseFloat(_z.text, oldPos.z));
+                ParseFloat(_x!.text, oldPos.x),
+                ParseFloat(_y!.text, oldPos.y),
+                ParseFloat(_z!.text, oldPos.z));
 
             var euler = oldRot.eulerAngles;
             _target.transform.rotation = Quaternion.Euler(
-                ParseFloat(_rx.text, euler.x),
-                ParseFloat(_ry.text, euler.y),
-                ParseFloat(_rz.text, euler.z));
+                ParseFloat(_rx!.text, euler.x),
+                ParseFloat(_ry!.text, euler.y),
+                ParseFloat(_rz!.text, euler.z));
 
             if (KitchenSettings.Instance.BlockOnViolation && WouldCauseViolation())
             {
@@ -683,18 +683,18 @@ namespace KitchenDesigner.Core.UI
             }
 
             var newDims = _target.DimensionsMM;
-            _w.text = newDims.x.ToString();
-            _h.text = newDims.y.ToString();
-            _d.text = newDims.z.ToString();
+            _w!.text = newDims.x.ToString();
+            _h!.text = newDims.y.ToString();
+            _d!.text = newDims.z.ToString();
             if (radial != null)
-                _radius.text = radial.Radius.ToString();
+                _radius!.text = radial.Radius.ToString();
 
             if (facade != null)
             {
-                _gapLeft.text = facade.GapLeft.ToString();
-                _gapRight.text = facade.GapRight.ToString();
-                _gapTop.text = facade.GapTop.ToString();
-                _gapBottom.text = facade.GapBottom.ToString();
+                _gapLeft!.text = facade.GapLeft.ToString();
+                _gapRight!.text = facade.GapRight.ToString();
+                _gapTop!.text = facade.GapTop.ToString();
+                _gapBottom!.text = facade.GapBottom.ToString();
             }
 
             RefreshHighlights();
@@ -776,7 +776,7 @@ namespace KitchenDesigner.Core.UI
             var opts = new List<TMP_Dropdown.OptionData>();
             foreach (var m in MaterialCatalog.All)
                 opts.Add(new TMP_Dropdown.OptionData(m.displayName));
-            _materialDropdown.options = opts;
+            _materialDropdown!.options = opts;
         }
 
         private void OnMaterialSelected(int index)
@@ -988,7 +988,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Подсветка изменённых полей ──────────────────────────────────
 
-        private void TrackField(TMP_InputField field, string cleanValue)
+        private void TrackField(TMP_InputField? field, string cleanValue)
         {
             if (field == null) return;
             _cleanValues[field] = cleanValue;

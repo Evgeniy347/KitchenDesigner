@@ -10,8 +10,8 @@ using KitchenDesigner.Core.UI;
 
 public class IntegrationPlayModeTests
 {
-    private GameObject _bootstrap = null!;
-    private GameObject _camera = null!;
+    private GameObject? _bootstrap;
+    private GameObject? _camera;
 
     [UnitySetUp]
     public IEnumerator SetUp()
@@ -70,7 +70,7 @@ public class IntegrationPlayModeTests
         Assert.IsNotNull(SelectionManager.Instance, "SelectionManager.Instance");
         Assert.IsNotNull(ElementHighlighter.Instance, "ElementHighlighter.Instance");
         Assert.IsNotNull(UIManager.Instance, "UIManager.Instance");
-        Assert.IsNotNull(UIManager.Instance.Canvas, "Canvas должен быть создан");
+        Assert.IsNotNull(UIManager.Instance!.Canvas, "Canvas должен быть создан");
         Assert.IsNotNull(Object.FindAnyObjectByType<EventSystem>(), "EventSystem");
         yield return null;
     }
@@ -79,7 +79,7 @@ public class IntegrationPlayModeTests
     public IEnumerator SpawnPreset_AddsBoardWithPresetDimensions()
     {
         int before = BoardCount();
-        UIManager.Instance.SpawnPreset(0);
+        UIManager.Instance!.SpawnPreset(0);
         yield return null;
 
         Assert.AreEqual(before + 1, BoardCount(), "должна добавиться одна деталь");
@@ -95,9 +95,9 @@ public class IntegrationPlayModeTests
     [UnityTest]
     public IEnumerator SaveProject_ThenLoadProject_RestoresBoards()
     {
-        UIManager.Instance.SpawnPreset(0);
-        UIManager.Instance.SpawnPreset(1);
-        UIManager.Instance.SpawnPreset(2);
+        UIManager.Instance!.SpawnPreset(0);
+        UIManager.Instance!.SpawnPreset(1);
+        UIManager.Instance!.SpawnPreset(2);
         yield return null;
 
         Assert.AreEqual(3, BoardCount());
@@ -139,14 +139,14 @@ public class IntegrationPlayModeTests
     [UnityTest]
     public IEnumerator SelectionManager_SelectAndDeselect()
     {
-        UIManager.Instance.SpawnPreset(0);
+        UIManager.Instance!.SpawnPreset(0);
         yield return null;
 
         KitchenElement? board = null;
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null && e.GetComponent<BasePlate>() == null) board = e;
 
-        SelectionManager.Instance.Select(board!);
+        SelectionManager.Instance!.Select(board!);
         Assert.AreEqual(board, SelectionManager.Instance.Selected);
 
         SelectionManager.Instance.Deselect();

@@ -5,8 +5,8 @@ using KitchenDesigner.Core;
 
 public class WallManagerTests
 {
-    private GameObject _cameraGo = null!;
-    private WallManager _wallManager = null!;
+    private GameObject? _cameraGo;
+    private WallManager? _wallManager;
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private bool _originalLowerNearWalls;
 
@@ -28,8 +28,8 @@ public class WallManagerTests
     public void SetUp()
     {
         _cameraGo = new GameObject("TestCamera");
-        _cameraGo.tag = "MainCamera";
-        _cameraGo.AddComponent<Camera>();
+        _cameraGo!.tag = "MainCamera";
+        _cameraGo!.AddComponent<Camera>();
 
         var go = new GameObject("WallManager");
         _wallManager = go.AddComponent<WallManager>();
@@ -59,7 +59,7 @@ public class WallManagerTests
     {
         Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0));
 
-        _wallManager.LateUpdate();
+        _wallManager!.LateUpdate();
     }
 
     [Test]
@@ -69,7 +69,7 @@ public class WallManagerTests
         var renderer = e.GetComponent<MeshRenderer>();
         Assert.IsNotNull(renderer);
 
-        _wallManager.LateUpdate();
+        _wallManager!.LateUpdate();
 
         Assert.IsTrue(renderer.enabled, "wall should be visible when WallsEnabled is true");
     }
@@ -81,13 +81,13 @@ public class WallManagerTests
         Assert.IsNotNull(settings, "KitchenSettings.Instance should be loadable from Resources");
         settings.LowerNearWalls = true;
 
-        _cameraGo.transform.position = new Vector3(0, 1.25f, -5f);
-        _cameraGo.transform.LookAt(Vector3.zero);
+        _cameraGo!.transform.position = new Vector3(0, 1.25f, -5f);
+        _cameraGo!.transform.LookAt(Vector3.zero);
 
         var e = Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, -2f));
         var wall = e.GetComponent<Wall>();
 
-        _wallManager.LateUpdate();
+        _wallManager!.LateUpdate();
 
         Assert.IsTrue(wall.IsLowered, "wall between camera and scene center should be lowered");
     }
@@ -99,13 +99,13 @@ public class WallManagerTests
         Assert.IsNotNull(settings);
         settings.LowerNearWalls = true;
 
-        _cameraGo.transform.position = new Vector3(0, 1.25f, -5f);
-        _cameraGo.transform.LookAt(Vector3.zero);
+        _cameraGo!.transform.position = new Vector3(0, 1.25f, -5f);
+        _cameraGo!.transform.LookAt(Vector3.zero);
 
         var e = Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 3f));
         var wall = e.GetComponent<Wall>();
 
-        _wallManager.LateUpdate();
+        _wallManager!.LateUpdate();
 
         Assert.IsFalse(wall.IsLowered, "wall behind scene center should not be lowered");
     }
@@ -114,11 +114,11 @@ public class WallManagerTests
     public void LateUpdate_DoesNotThrow_WhenCameraDestroyed()
     {
         Object.DestroyImmediate(_cameraGo);
-        _cameraGo = null!;
+        _cameraGo = null;
 
         Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0));
 
-        _wallManager.LateUpdate();
+        _wallManager!.LateUpdate();
     }
 
     [Test]
@@ -133,7 +133,7 @@ public class WallManagerTests
         var wall = e.GetComponent<Wall>();
         wall.SetLowered(true, 0.1f);
 
-        _wallManager.LateUpdate();
+        _wallManager!.LateUpdate();
 
         Assert.IsFalse(wall.IsLowered, "wall should be restored to full height when walls are disabled");
         Assert.AreEqual(2.5f, e.transform.localScale.y, 0.001f, "wall height should be restored");

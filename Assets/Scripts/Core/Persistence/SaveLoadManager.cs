@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core
             }
             set => _fallback = value;
         }
-        private static ISaveLoadManager _fallback = null!;
+        private static ISaveLoadManager? _fallback;
 
         public static string LastPath { get => Instance.LastPath; set => Instance.LastPath = value; }
         public static bool HasLastPath => Instance.HasLastPath;

@@ -5,15 +5,15 @@ namespace KitchenDesigner.Core
 {
     public class ElementHighlighter : MonoBehaviour
     {
-        public static ElementHighlighter Instance { get; private set; } = null!;
+        public static ElementHighlighter? Instance { get; private set; }
 
         public int RefreshCount { get; set; }
 
-        private Material _validMaterial = null!;
-        private Material _invalidMaterial = null!;
-        private Material _validTransparentMaterial = null!;
-        private Material _invalidTransparentMaterial = null!;
-        private Material _dimmedMaterial = null!;
+        private Material? _validMaterial;
+        private Material? _invalidMaterial;
+        private Material? _validTransparentMaterial;
+        private Material? _invalidTransparentMaterial;
+        private Material? _dimmedMaterial;
         private bool _materialsInitialized;
 
         private void Awake()
@@ -128,14 +128,14 @@ namespace KitchenDesigner.Core
             // визуальный сигнал «заблокировано».
             if (ModuleEditMode.IsActive && !ModuleEditMode.IsEditable(element))
             {
-                renderer.material = _dimmedMaterial;
+                renderer.material = _dimmedMaterial!;
                 ElementOutline.For(element)?.Hide();
                 return;
             }
 
             if (element.Transparent)
             {
-                renderer.material = isValid ? _validTransparentMaterial : _invalidTransparentMaterial;
+                renderer.material = isValid ? _validTransparentMaterial! : _invalidTransparentMaterial!;
                 ElementOutline.Ensure(element)?.Show(selected: false);
             }
             else if (isValid && MaterialManager.HasCustomDecor(element))
@@ -147,7 +147,7 @@ namespace KitchenDesigner.Core
             }
             else
             {
-                renderer.material = isValid ? _validMaterial : _invalidMaterial;
+                renderer.material = isValid ? _validMaterial! : _invalidMaterial!;
                 ElementOutline.For(element)?.Hide();
             }
         }

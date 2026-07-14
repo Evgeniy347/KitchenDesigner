@@ -23,7 +23,7 @@ namespace KitchenDesigner.Core
     /// </summary>
     public static class Snapshot
     {
-        private static string _snapshotDir = null!;
+        private static string? _snapshotDir;
 
         public static string SnapshotDir
         {
@@ -33,8 +33,8 @@ namespace KitchenDesigner.Core
                     return _snapshotDir;
 
                 _snapshotDir = Path.Combine(Application.dataPath, "Tests", "EditMode", "Snapshots");
-                Directory.CreateDirectory(_snapshotDir);
-                return _snapshotDir;
+                Directory.CreateDirectory(_snapshotDir!);
+                return _snapshotDir!;
             }
         }
 

@@ -216,9 +216,9 @@ public class CommandHistoryTests
         Assert.IsNotNull(data);
         Assert.AreEqual(1, data!.undoHistory.Length,
             "вложенный composite схлопывается в одну плоскую запись");
-        Assert.AreEqual(1, data.undoHistory[0].children.Length,
+        Assert.AreEqual(1, data!.undoHistory[0].children!.Length,
             "единственный лист сохранён");
-        Assert.AreEqual("move", data.undoHistory[0].children[0].type);
+        Assert.AreEqual("move", data!.undoHistory[0].children![0].type);
     }
 
     [Test]
@@ -255,7 +255,7 @@ public class CommandHistoryTests
         Assert.AreEqual(1, data!.undoHistory.Length, "одна запись верхнего уровня");
         var rec = data.undoHistory[0];
         Assert.AreEqual("composite", rec.type);
-        Assert.AreEqual(1, rec.children.Length, "лист собран на один уровень");
+        Assert.AreEqual(1, rec!.children!.Length, "лист собран на один уровень");
         Assert.AreEqual("move", rec.children[0].type);
         Assert.IsTrue(IsFlat(rec), "children не вложены глубже одного уровня");
     }
@@ -286,7 +286,7 @@ public class CommandHistoryTests
         Assert.AreEqual(1, data!.undoHistory.Length);
         var rec = data.undoHistory[0];
         Assert.AreEqual("composite", rec.type);
-        Assert.AreEqual(50, rec.children.Length, "все 50 листьев сохранены (без обрезки)");
+        Assert.AreEqual(50, rec!.children!.Length, "все 50 листьев сохранены (без обрезки)");
         Assert.IsTrue(IsFlat(rec), "children не вложены глубже одного уровня");
     }
 
@@ -369,7 +369,7 @@ public class CommandHistoryTests
 
         // Одна запись верхнего уровня с 50 плоскими листьями — ничего не потеряно.
         Assert.AreEqual(1, data!.undoHistory.Length);
-        Assert.AreEqual(50, data.undoHistory[0].children.Length,
+        Assert.AreEqual(50, data!.undoHistory[0].children!.Length,
             "все 50 перемещений сохранены при плоской сериализации");
 
         // История оживает на заново созданном объекте, undo работает.

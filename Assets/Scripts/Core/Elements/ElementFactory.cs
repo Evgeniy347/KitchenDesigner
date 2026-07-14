@@ -16,7 +16,7 @@ namespace KitchenDesigner.Core
             }
             set => _fallback = value;
         }
-        private static IElementFactory _fallback = null!;
+        private static IElementFactory? _fallback;
 
         public static GameObject CreatePart(Vector3Int dimensionsMM, string name, Vector3 position) =>
             Instance.CreatePart(dimensionsMM, name, position);

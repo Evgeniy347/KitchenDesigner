@@ -16,9 +16,9 @@ public class SnapExistingContactTests : SnapTestBase
 {
     // --- Реальная сцена: лежащая деталь прижата торцом к стоящей, рядом стена ---
 
-    private KitchenElement _standing = null!; // стоящая деталь, торец лежащей прижат к ней
-    private KitchenElement _lying = null!;    // лежащая плашмя деталь (активная деталь)
-    private KitchenElement _wall = null!;     // стена: передняя грань на z=1.40
+    private KitchenElement? _standing;
+    private KitchenElement? _lying;
+    private KitchenElement? _wall;
 
     private void BuildUserScene()
     {
@@ -42,7 +42,7 @@ public class SnapExistingContactTests : SnapTestBase
         // Торец лежащей на x=-0.9 заподлицо с гранью стоящей (x=-0.9) — контакт
         // сохраняется при движении по Z. Задняя кромка на z+0.36; стена на 1.40.
         var testPos = new Vector3(-1.2f, 0.098976f, 1.03f); // зазор до стены 10мм
-        var r = SnapSystem.TrySnap(_lying, Others(), testPos);
+        var r = SnapSystem.TrySnap(_lying!, Others(), testPos);
 
         Assert.IsTrue(r.snapped, "должна прилипнуть к стене");
         Assert.AreEqual("Wall", r.targetName,
@@ -62,7 +62,7 @@ public class SnapExistingContactTests : SnapTestBase
         float[] zs = { 1.026f, 1.030f, 1.035f, 1.039f };
         foreach (var z in zs)
         {
-            var r = SnapSystem.TrySnap(_lying, Others(), new Vector3(-1.2f, 0.098976f, z));
+            var r = SnapSystem.TrySnap(_lying!, Others(), new Vector3(-1.2f, 0.098976f, z));
             Assert.IsTrue(r.snapped, $"z={z}: должна прилипнуть");
             Assert.AreEqual("Wall", r.targetName, $"z={z}: цель — стена");
             Assert.AreEqual(1.04f, r.position.z, Tol, $"z={z}: прижатие к стене");

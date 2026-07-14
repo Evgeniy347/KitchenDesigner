@@ -22,16 +22,16 @@ namespace KitchenDesigner.Core
         // composite-записи всегда сериализуются ПЛОСКО (один уровень children,
         // см. CompositeCommand.ToRecord), поэтому глубина JSON ограничена
         // константой и жёсткий лимит JsonUtility (10) не достигается.
-        public string type = null!;          // move | resize | composite
-        public string description = null!;
+        public string type = string.Empty;          // move | resize | composite
+        public string description = string.Empty;
         public int elementIndex = -1;
-        public float[] posBefore = null!;
-        public float[] posAfter = null!;
-        public float[] rotBefore = null!;
-        public float[] rotAfter = null!;
-        public int[] dimsBefore = null!;
-        public int[] dimsAfter = null!;
-        public CommandRecord[] children = null!;
+        public float[] posBefore = new float[0];
+        public float[] posAfter = new float[0];
+        public float[] rotBefore = new float[0];
+        public float[] rotAfter = new float[0];
+        public int[] dimsBefore = new int[0];
+        public int[] dimsAfter = new int[0];
+        public CommandRecord[]? children;
 
         public static float[] V3(Vector3 v) => new[] { v.x, v.y, v.z };
         public static float[] V4(Quaternion q) => new[] { q.x, q.y, q.z, q.w };

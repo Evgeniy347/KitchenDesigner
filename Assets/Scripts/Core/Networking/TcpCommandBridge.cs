@@ -13,8 +13,8 @@ namespace KitchenDesigner.Core
         public bool IsRunning { get; private set; }
         public event Action<string>? OnCommandReceived;
 
-        private TcpListener? _listener = null!;
-        private Thread? _thread = null!;
+        private TcpListener? _listener;
+        private Thread? _thread;
         private readonly int _port;
 
         public TcpCommandBridge(int port = 9337)

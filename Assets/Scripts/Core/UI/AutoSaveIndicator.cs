@@ -8,9 +8,9 @@ namespace KitchenDesigner.Core.UI
     /// (вкл/выкл) и подсвечивается «💾 Сохранено ЧЧ:ММ:СС» в момент автосохранения.</summary>
     public class AutoSaveIndicator : MonoBehaviour
     {
-        public static AutoSaveIndicator Instance { get; private set; } = null!;
+        public static AutoSaveIndicator? Instance { get; private set; }
 
-        private TMP_Text _label = null!;
+        private TMP_Text? _label;
         private float _flashUntil;
 
         private static readonly Color IdleOn = new Color(0.55f, 0.58f, 0.62f, 1f);

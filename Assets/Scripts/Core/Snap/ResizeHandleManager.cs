@@ -21,7 +21,7 @@ namespace KitchenDesigner.Core
     {
         public enum HandleMode { Resize, Move }
 
-        public static ResizeHandleManager Instance { get; private set; } = null!;
+        public static ResizeHandleManager? Instance { get; private set; }
 
         /// <summary>Текущий режим ручек (переключается кнопкой в тулбаре).</summary>
         public static HandleMode Mode { get; private set; } = HandleMode.Resize;
