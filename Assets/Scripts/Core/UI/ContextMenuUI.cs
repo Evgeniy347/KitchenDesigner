@@ -903,8 +903,9 @@ namespace KitchenDesigner.Core.UI
         private void CreateFacadeForDrawer()
         {
             if (!(_target is DrawerElement d)) return;
+            // Фасад перекрывает весь проём корпуса (контурный бокс ящика).
             int width = d.InternalWidth;
-            int height = DrawerConstants.GetTypeHeight(d.Type);
+            int height = DrawerConstants.GetMinOpeningHeight(d.Type);
             const int thickness = 18;
             const int gapMm = 2;
             const int sideGap = 2;

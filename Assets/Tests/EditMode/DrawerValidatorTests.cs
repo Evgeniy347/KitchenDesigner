@@ -9,7 +9,9 @@ public class DrawerValidatorTests
 
     private const int WallThicknessMM = 18;
     private const int WallHeightMM = 720;
-    private const float ClearanceMM = DrawerConstants.SLIDE_CLEARANCE_PER_SIDE;
+    // AABB ящика — контурный бокс проёма (зазор направляющих уже внутри),
+    // поэтому правильная установка — стенка вплотную к контуру (зазор 0).
+    private const float ClearanceMM = 0f;
 
     [SetUp]
     public void Setup()
@@ -190,7 +192,8 @@ public class DrawerValidatorTests
 
     private (DrawerElement lower, DrawerElement upper) MakeDoublePair()
     {
-        float h = DrawerConstants.GetTypeHeight(DrawerType.A) * AppConstants.MM_TO_UNITS; // 0.086
+        // Шаг пары — высота контурного бокса (мин. проём типа A = 115 мм → 0.115).
+        float h = DrawerConstants.GetMinOpeningHeight(DrawerType.A) * AppConstants.MM_TO_UNITS;
         var lower = MakeDrawer("Lower", DrawerType.A, 350, 400, DrawerColor.Anthracite,
             new Vector3(0f, h * 0.5f, 0f));
         var upper = MakeDrawer("Upper", DrawerType.A, 350, 400, DrawerColor.Anthracite,
@@ -206,9 +209,9 @@ public class DrawerValidatorTests
     public void ValidateCabinetFit_PairInsideCabinet_ReturnsOk()
     {
         var (lower, _) = MakeDoublePair();
-        // Дно под парой и крыша над парой (пара занимает 0..0.172 по Y).
+        // Дно под парой и крыша над парой (пара занимает 0..0.230 по Y).
         MakeBoard("Bottom", new Vector3Int(600, 18, 600), new Vector3(0f, -0.009f, 0f));
-        MakeBoard("Top", new Vector3Int(600, 18, 600), new Vector3(0f, 0.190f, 0f));
+        MakeBoard("Top", new Vector3Int(600, 18, 600), new Vector3(0f, 0.248f, 0f));
 
         var result = DrawerValidator.ValidateCabinetFit(lower, All());
 
@@ -220,7 +223,7 @@ public class DrawerValidatorTests
     {
         var (lower, _) = MakeDoublePair();
         MakeBoard("Bottom", new Vector3Int(600, 18, 600), new Vector3(0f, -0.009f, 0f));
-        // «Крыша» на высоте 0.1 — выше нижнего короба, но НИЖЕ верха пары (0.172).
+        // «Крыша» на высоте 0.1 — внутри нижнего контура, НИЖЕ верха пары (0.230).
         // Если бы AABB считалась только по нижнему ящику, панель сошла бы за верх
         // корпуса; по AABB пары верх корпуса не найден.
         MakeBoard("MidPanel", new Vector3Int(600, 18, 600), new Vector3(0f, 0.109f, 0f));

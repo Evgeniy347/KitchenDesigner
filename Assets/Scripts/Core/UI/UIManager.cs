@@ -253,7 +253,8 @@ namespace KitchenDesigner.Core.UI
             var type = drawerType switch { "B" => DrawerType.B, "C" => DrawerType.C, "D" => DrawerType.D, _ => DrawerType.A };
             var color = colorName.ToLowerInvariant() switch { "white" => DrawerColor.White, "black" => DrawerColor.Black, _ => DrawerColor.Anthracite };
             Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = DrawerConstants.GetTypeHeight(type) * 0.5f * AppConstants.MM_TO_UNITS;
+            // Контурный бокс ящика (проём) ставится низом на пол.
+            pos.y = DrawerConstants.GetMinOpeningHeight(type) * 0.5f * AppConstants.MM_TO_UNITS;
             pos = GridManager.SnapToGrid(pos);
 
             // Имя уникально: пара и фасад ящика ищутся по имени.

@@ -2,10 +2,17 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
+    /// <summary>Ящик GTV AXIS PRO. Видимый короб — 4 панели (2 боковины, дно,
+    /// задник, см. DrawerMesh); фасад — отдельный элемент. Габариты элемента
+    /// (DimensionsMM/localScale/коллайдер) — КОНТУРНЫЙ бокс проёма корпуса
+    /// LW × минПроём × NL: по нему рисуются чёрные рёбра и работает снэп.</summary>
     public class DrawerElement : KitchenElement
     {
         private const float OpenSeconds = DrawerConstants.DRAWER_ANIM_DURATION;
         private const float DrawerSlideMeters = DrawerConstants.DRAWER_SLIDE_METERS;
+
+        private MeshFilter? _filter;
+        private Mesh? _ownedMesh;
 
         [SerializeField] private DrawerType _type = DrawerType.A;
         [SerializeField] private int _nominalLength = 350;
@@ -49,6 +56,8 @@ namespace KitchenDesigner.Core
             }
         }
 
+        /// <summary>LW — ширина проёма корпуса «в свету», мм. Все размеры панелей
+        /// считаются от неё по формулам каталога (дно LW−75, задник LW−87).</summary>
         public int InternalWidth
         {
             get => _internalWidth;
@@ -162,16 +171,43 @@ namespace KitchenDesigner.Core
 
         public override void ApplyDimensions()
         {
+            // Габарит элемента — контурный бокс проёма (не видимого короба):
+            // зазоры направляющих и монтажный подъём входят в бокс.
+            int openingHeight = DrawerConstants.GetMinOpeningHeight(_type);
             Data.DimensionsMM = new Vector3Int(
                 _internalWidth,
-                DrawerConstants.GetTypeHeight(_type),
+                openingHeight,
                 _nominalLength
             );
             transform.localScale = new Vector3(
                 _internalWidth * AppConstants.MM_TO_UNITS,
-                DrawerConstants.GetTypeHeight(_type) * AppConstants.MM_TO_UNITS,
+                openingHeight * AppConstants.MM_TO_UNITS,
                 _nominalLength * AppConstants.MM_TO_UNITS
             );
+            RebuildMesh();
+        }
+
+        /// <summary>Пересобрать процедурный меш короба (боковины + дно + задник).</summary>
+        public void RebuildMesh()
+        {
+            if (_filter == null) _filter = GetComponent<MeshFilter>();
+            if (_filter == null) return;
+
+            var mesh = DrawerMesh.Build(_internalWidth, _type, _nominalLength);
+            if (_ownedMesh != null) DestroyImmediate(_ownedMesh);
+            _ownedMesh = mesh;
+            _filter.sharedMesh = mesh;
+        }
+
+        private void OnDestroy()
+        {
+            // Скрывает KitchenElement.OnDestroy — повторяем его обязанность.
+            PartRegistry.Unregister(this);
+            if (_ownedMesh != null)
+            {
+                DestroyImmediate(_ownedMesh);
+                _ownedMesh = null;
+            }
         }
 
         private void Update() => StepAnimation(Time.deltaTime);

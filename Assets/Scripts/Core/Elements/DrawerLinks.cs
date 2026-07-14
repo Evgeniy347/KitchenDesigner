@@ -21,7 +21,8 @@ namespace KitchenDesigner.Core
             if (source.FindPaired() != null) return null; // пара уже существует
 
             bool newIsUpper = !source.IsUpperDrawer;
-            float heightUnits = DrawerConstants.GetTypeHeight(source.Type) * AppConstants.MM_TO_UNITS;
+            // Шаг пары — высота контурного бокса (проёма): проёмы идут друг над другом.
+            float heightUnits = DrawerConstants.GetMinOpeningHeight(source.Type) * AppConstants.MM_TO_UNITS;
             var pos = source.ClosedPosition + (newIsUpper ? Vector3.up : Vector3.down) * heightUnits;
 
             string pairName = UniqueName(source.PartName + (newIsUpper ? " (верх)" : " (низ)"));
