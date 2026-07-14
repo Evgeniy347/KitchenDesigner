@@ -55,11 +55,13 @@ namespace KitchenDesigner.Core.UI
             public System.Func<bool>? visibleWhen; // доп. условие видимости (состояние элемента)
         }
         private readonly List<LayoutRow> _layout = new();
+        private readonly List<RectTransform> _triLabels = new();
+        private readonly List<RectTransform> _triFields = new();
 
         // Геометрия
         private const float LabelW = 140f;     // ширина колонки подписей (вмещает «Ширина короба, мм» почти без переноса)
-        private const float LabelX = -62f;     // центр подписи (панель 280px → края ±140)
-        private const float FieldX = 75f;      // центр поля ввода
+        private const float LabelX = -80f;     // центр подписи (панель 364px → края ±182)
+        private const float FieldX = 100f;     // центр поля ввода
         private const float LabelH = 24f;
         private const float FieldH = 24f;
         private const float RowH = 24f;      // высота строки «подпись + поле»
@@ -73,6 +75,13 @@ namespace KitchenDesigner.Core.UI
         private const float TopPad = 12f;
         private const float BottomPad = 12f;
 
+        private const float TriCol1 = -110f;
+        private const float TriCol2 = 0f;
+        private const float TriCol3 = 110f;
+        private const float TriLabelW = 80f;
+        private const float TriFieldW = 80f;
+        private const float TriLabelH = 18f;
+
         private void Awake()
         {
             Instance = this;
@@ -80,7 +89,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("ContextMenu", canvas, Vector2.zero, new Vector2(280, 560));
+            var panel = UIFactory.CreatePanel("ContextMenu", canvas, Vector2.zero, new Vector2(364, 560));
             UIFactory.AnchorTopRight(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(-10, -60);
             _root = panel.gameObject;
@@ -89,13 +98,13 @@ namespace KitchenDesigner.Core.UI
 
             // Заголовок — первая строка потока (стоит вплотную под верхом панели).
             _titleLabel = UIFactory.CreateLabel("CtxTitle", panel.transform, "деталь", 20,
-                Vector2.zero, new Vector2(260, TitleH), TextAnchor.MiddleCenter);
+                Vector2.zero, new Vector2(340, TitleH), TextAnchor.MiddleCenter);
             AddRow(TitleH, TitleGap, _titleLabel.rectTransform);
 
             // Тип детали: конвертация между Part / Facade / AssembledFacade / RadialShelf.
             var typeOptions = new List<string> { "Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV" };
             _typeDropdown = UIFactory.CreateDropdown("CtxType", panel.transform, typeOptions,
-                new Vector2(0, 0), new Vector2(248, 28), OnTypeSelected);
+                new Vector2(0, 0), new Vector2(332, 28), OnTypeSelected);
             AddRow(28f, RowGap, _typeDropdown.GetComponent<RectTransform>());
 
             // Размеры.
@@ -115,35 +124,35 @@ namespace KitchenDesigner.Core.UI
             for (int i = 0; i < FacadeDoor.Count; i++)
                 modeOptions.Add(FacadeDoor.Label((DoorMode)i));
             _modeDropdown = UIFactory.CreateDropdown("CtxMode", panel.transform, modeOptions,
-                new Vector2(0, 0), new Vector2(248, 28), OnModeSelected);
+                new Vector2(0, 0), new Vector2(332, 28), OnModeSelected);
             AddFacadeRow(28f, RowGap, _modeDropdown.GetComponent<RectTransform>());
 
             var doorButton = UIFactory.CreateButton("CtxDoor", panel.transform, "Открыть",
-                new Vector2(0, 0), new Vector2(248, BtnH), ToggleDoor);
+                new Vector2(0, 0), new Vector2(332, BtnH), ToggleDoor);
             _doorButtonLabel = doorButton.GetComponentInChildren<TMP_Text>();
             AddFacadeRow(BtnH, ActionGap, doorButton.GetComponent<RectTransform>());
 
             // Центр сборного фасада (только для сборного): Глухой / Витрина / Стекло.
             var fillOptions = new List<string> { "Глухой (панель)", "Витрина (пусто)", "Стекло" };
             _fillDropdown = UIFactory.CreateDropdown("CtxFill", panel.transform, fillOptions,
-                new Vector2(0, 0), new Vector2(248, 28), OnFillSelected);
+                new Vector2(0, 0), new Vector2(332, 28), OnFillSelected);
             AddAssembledRow(28f, ActionGap, _fillDropdown.GetComponent<RectTransform>());
 
             // Ящик GTV: тип, длина, цвет, ширина, двойной ящик, анимация.
             var drawerTypeNames = new List<string> { "A (86 мм)", "B (120 мм)", "C (168 мм)", "D (200 мм)" };
             _drawerTypeDropdown = UIFactory.CreateDropdown("CtxDrawerType", panel.transform, drawerTypeNames,
-                new Vector2(0, 0), new Vector2(248, 28), OnDrawerTypeChanged);
+                new Vector2(0, 0), new Vector2(332, 28), OnDrawerTypeChanged);
             AddDrawerRow(28f, ActionGap, _drawerTypeDropdown.GetComponent<RectTransform>());
 
             var drawerLenNames = new List<string>();
             foreach (var l in DrawerConstants.ValidLengths) drawerLenNames.Add($"L={l} мм");
             _drawerLengthDropdown = UIFactory.CreateDropdown("CtxDrawerLen", panel.transform, drawerLenNames,
-                new Vector2(0, 0), new Vector2(248, 28), OnDrawerLengthChanged);
+                new Vector2(0, 0), new Vector2(332, 28), OnDrawerLengthChanged);
             AddDrawerRow(28f, ActionGap, _drawerLengthDropdown.GetComponent<RectTransform>());
 
             var drawerColorNames = new List<string> { "Антрацит", "Белый", "Чёрный" };
             _drawerColorDropdown = UIFactory.CreateDropdown("CtxDrawerColor", panel.transform, drawerColorNames,
-                new Vector2(0, 0), new Vector2(248, 28), OnDrawerColorChanged);
+                new Vector2(0, 0), new Vector2(332, 28), OnDrawerColorChanged);
             AddDrawerRow(28f, ActionGap, _drawerColorDropdown.GetComponent<RectTransform>());
 
             _drawerWidth = DrawerFieldRow(panel.transform, "Ширина короба, мм");
@@ -151,7 +160,7 @@ namespace KitchenDesigner.Core.UI
             // «Двойной ящик» — только для одиночного нижнего, когда над контуром
             // есть место под верхний внутренний ящик (мин. проём типа A).
             var drawerDoubleBtn = UIFactory.CreateButton("CtxDrawerDouble", panel.transform, "Двойной ящик",
-                new Vector2(0, 0), new Vector2(248, BtnH), CreatePairedDrawer);
+                new Vector2(0, 0), new Vector2(332, BtnH), CreatePairedDrawer);
             AddDrawerRowWhen(CanCreateDoubleDrawer, BtnH, ActionGap,
                 drawerDoubleBtn.GetComponent<RectTransform>());
 
@@ -159,48 +168,51 @@ namespace KitchenDesigner.Core.UI
             var upperLenNames = new List<string>();
             foreach (var l in DrawerConstants.ValidLengths) upperLenNames.Add($"Верхний: L={l} мм");
             _drawerUpperLenDropdown = UIFactory.CreateDropdown("CtxDrawerUpperLen", panel.transform, upperLenNames,
-                new Vector2(0, 0), new Vector2(248, 28), OnDrawerUpperLengthChanged);
+                new Vector2(0, 0), new Vector2(332, 28), OnDrawerUpperLengthChanged);
             AddDrawerRowWhen(HasUpperDrawer, 28f, ActionGap,
                 _drawerUpperLenDropdown.GetComponent<RectTransform>());
 
             var drawerRemoveUpperBtn = UIFactory.CreateButton("CtxDrawerRemoveUpper", panel.transform,
-                "Убрать верхний ящик", new Vector2(0, 0), new Vector2(248, BtnH), RemoveUpperDrawer);
+                "Убрать верхний ящик", new Vector2(0, 0), new Vector2(332, BtnH), RemoveUpperDrawer);
             AddDrawerRowWhen(HasUpperDrawer, BtnH, ActionGap,
                 drawerRemoveUpperBtn.GetComponent<RectTransform>());
 
             var drawerAnimBtn = UIFactory.CreateButton("CtxDrawerAnim", panel.transform, "Открыть",
-                new Vector2(0, 0), new Vector2(248, BtnH), CycleDrawerAnimation);
+                new Vector2(0, 0), new Vector2(332, BtnH), CycleDrawerAnimation);
             _drawerAnimLabel = drawerAnimBtn.GetComponentInChildren<TMP_Text>();
             AddDrawerRow(BtnH, ActionGap, drawerAnimBtn.GetComponent<RectTransform>());
 
             // Фасад ящика: выбор из существующих (создание/настройка — через сам фасад).
             var drawerFacadeLbl = UIFactory.CreateLabel("CtxDrawerFacadeLbl", panel.transform, "Фасад ящика:", 15,
-                Vector2.zero, new Vector2(260, RotLblH), TextAnchor.MiddleCenter);
+                Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
             AddDrawerRow(RotLblH, RotLblGap, drawerFacadeLbl.rectTransform);
 
             _drawerFacadeDropdown = UIFactory.CreateDropdown("CtxDrawerFacade", panel.transform,
                 new List<string> { "(нет фасада)" },
-                new Vector2(0, 0), new Vector2(248, 28), OnDrawerFacadeSelected);
+                new Vector2(0, 0), new Vector2(332, 28), OnDrawerFacadeSelected);
             AddDrawerRow(28f, ActionGap, _drawerFacadeDropdown.GetComponent<RectTransform>());
 
             // Текстура/декор (детали И фасады) — всегда видимая строка.
             var matLbl = UIFactory.CreateLabel("CtxMatLbl", panel.transform, "Текстура:", 15,
-                Vector2.zero, new Vector2(260, RotLblH), TextAnchor.MiddleCenter);
+                Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
             AddRow(RotLblH, RotLblGap, matLbl.rectTransform);
 
             var matOptions = new List<string>();
             foreach (var m in MaterialCatalog.All) matOptions.Add(m.displayName);
             _materialDropdown = UIFactory.CreateDropdown("CtxMaterial", panel.transform, matOptions,
-                new Vector2(0, 0), new Vector2(248, 28), OnMaterialSelected);
+                new Vector2(0, 0), new Vector2(332, 28), OnMaterialSelected);
             AddRow(28f, ActionGap, _materialDropdown.GetComponent<RectTransform>());
 
-            // Позиция и поворот.
-            _x = Row(panel.transform, "X, м");
-            _y = Row(panel.transform, "Y, м");
-            _z = Row(panel.transform, "Z, м");
-            _rx = Row(panel.transform, "Поворот X°");
-            _ry = Row(panel.transform, "Поворот Y°");
-            _rz = Row(panel.transform, "Поворот Z°");
+            // Позиция и поворот — компактная раскладка 3 колонки.
+            _x = TriField(panel.transform, "X, м", TriCol1);
+            _y = TriField(panel.transform, "Y, м", TriCol2);
+            _z = TriField(panel.transform, "Z, м", TriCol3);
+            TriEndRow();
+
+            _rx = TriField(panel.transform, "X°", TriCol1);
+            _ry = TriField(panel.transform, "Y°", TriCol2);
+            _rz = TriField(panel.transform, "Z°", TriCol3);
+            TriEndRow();
 
             foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
@@ -209,34 +221,34 @@ namespace KitchenDesigner.Core.UI
             // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
             // ставить детали вертикально (поворот по X/Z), а не только крутить по Y.
             var rotLbl = UIFactory.CreateLabel("CtxRotLbl", panel.transform, "Повернуть на 90°:", 15,
-                Vector2.zero, new Vector2(260, RotLblH), TextAnchor.MiddleCenter);
+                Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
             AddRow(RotLblH, RotLblGap, rotLbl.rectTransform);
 
             var rotX = UIFactory.CreateButton("CtxRotX", panel.transform, "X 90°",
-                new Vector2(-90, 0), new Vector2(86, BtnH), () => RotateAxis(Vector3.right));
+                new Vector2(-112, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.right));
             var rotY = UIFactory.CreateButton("CtxRotY", panel.transform, "Y 90°",
-                new Vector2(0, 0), new Vector2(86, BtnH), () => RotateAxis(Vector3.up));
+                new Vector2(0, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.up));
             var rotZ = UIFactory.CreateButton("CtxRotZ", panel.transform, "Z 90°",
-                new Vector2(90, 0), new Vector2(86, BtnH), () => RotateAxis(Vector3.forward));
+                new Vector2(112, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.forward));
             AddRow(BtnH, ActionGap,
                 rotX.GetComponent<RectTransform>(),
                 rotY.GetComponent<RectTransform>(),
                 rotZ.GetComponent<RectTransform>());
 
             var apply = UIFactory.CreateButton("CtxApply", panel.transform, "Применить",
-                new Vector2(-65, 0), new Vector2(120, 32), Apply);
+                new Vector2(-85, 0), new Vector2(156, 32), Apply);
             var dup = UIFactory.CreateButton("CtxDup", panel.transform, "Дублировать",
-                new Vector2(65, 0), new Vector2(120, 32), Duplicate);
+                new Vector2(85, 0), new Vector2(156, 32), Duplicate);
             AddRow(32f, ActionGap,
                 apply.GetComponent<RectTransform>(),
                 dup.GetComponent<RectTransform>());
 
             var del = UIFactory.CreateButton("CtxDel", panel.transform, "Удалить",
-                new Vector2(0, 0), new Vector2(248, 32), Delete);
+                new Vector2(0, 0), new Vector2(332, 32), Delete);
             AddRow(32f, ActionGap, del.GetComponent<RectTransform>());
 
             _transparentToggle = UIFactory.CreateToggle("CtxTransparent", panel.transform, "Прозрачный", false,
-                new Vector2(0, 0), new Vector2(248, 26), v =>
+                new Vector2(0, 0), new Vector2(332, 26), v =>
                 {
                     if (_target == null) return;
                     _target.Transparent = v;
@@ -248,7 +260,7 @@ namespace KitchenDesigner.Core.UI
             AddRow(26f, 7f, _transparentToggle.GetComponent<RectTransform>());
 
             _lockToggle = UIFactory.CreateToggle("CtxLock", panel.transform, "Запретить перемещение", false,
-                new Vector2(0, 0), new Vector2(248, 26), v => { if (_target != null) _target.Movable = !v; });
+                new Vector2(0, 0), new Vector2(332, 26), v => { if (_target != null) _target.Movable = !v; });
             AddRow(26f, 0f, _lockToggle.GetComponent<RectTransform>());
 
             // Кнопка закрытия живёт в углу панели, вне потока раскладки.
@@ -290,7 +302,7 @@ namespace KitchenDesigner.Core.UI
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
             var field = UIFactory.CreateInputField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(100, FieldH));
+                new Vector2(FieldX, 0), new Vector2(120, FieldH));
             AddRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
@@ -300,7 +312,7 @@ namespace KitchenDesigner.Core.UI
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
             var field = UIFactory.CreateInputField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(100, FieldH));
+                new Vector2(FieldX, 0), new Vector2(120, FieldH));
             AddRadialRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
@@ -347,7 +359,7 @@ namespace KitchenDesigner.Core.UI
             top += fieldH + pad;
 
             sectionH = top;
-            rt.sizeDelta = new Vector2(260, sectionH);
+            rt.sizeDelta = new Vector2(340, sectionH);
             root.SetActive(false);
             return root;
         }
@@ -427,9 +439,28 @@ namespace KitchenDesigner.Core.UI
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
             var field = UIFactory.CreateInputField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(100, FieldH));
+                new Vector2(FieldX, 0), new Vector2(120, FieldH));
             AddDrawerRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
+        }
+
+        private TMP_InputField TriField(Transform parent, string label, float colX)
+        {
+            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 13,
+                new Vector2(colX, 0), new Vector2(TriLabelW, TriLabelH), TextAnchor.MiddleCenter);
+            var field = UIFactory.CreateInputField("F_" + label, parent, "",
+                new Vector2(colX, 0), new Vector2(TriFieldW, FieldH));
+            _triLabels.Add(lbl.rectTransform);
+            _triFields.Add(field.GetComponent<RectTransform>());
+            return field;
+        }
+
+        private void TriEndRow()
+        {
+            AddRow(TriLabelH, 2f, _triLabels.ToArray());
+            AddRow(FieldH, RowGap, _triFields.ToArray());
+            _triLabels.Clear();
+            _triFields.Clear();
         }
 
         // Якорим к верхней кромке панели, pivot тоже сверху — тогда
