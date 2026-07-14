@@ -142,27 +142,51 @@ public class ContextMenuLayoutTests
         Assert.Less(h, 200, "section should not be unreasonably tall");
     }
 
-    // Bug B: в режиме «деталь» подпись строки должна ехать вместе с полем.
-    // Раньше сдвигалось только поле — подписи оставались на месте, поля
-    // и блок «Повернуть на 90°» наезжали на них.
+    // Позиция и поворот теперь в компактной раскладке 3 колонки:
+    // подписи в одной строке, поля ввода в следующей.
     [Test]
-    public void Board_RowLabelAndFieldStayAligned()
+    public void Board_TripleRowLabelsAndFieldsAligned()
     {
         var board = MakeBoard("B1");
         _menu!.Open(board);
         var panel = _canvas!.transform.Find("ContextMenu");
 
-        foreach (var row in new[] { "X, м", "Y, м", "Z, м",
-                                    "Поворот X°", "Поворот Y°", "Поворот Z°" })
+        //.Position labels все на одной Y
+        float? posLabelY = null;
+        float? posFieldY = null;
+        foreach (var name in new[] { "X, м", "Y, м", "Z, м" })
         {
-            var lbl = panel.Find("L_" + row).GetComponent<RectTransform>();
-            var fld = panel.Find("F_" + row).GetComponent<RectTransform>();
-            Assert.AreEqual(lbl.anchoredPosition.y, fld.anchoredPosition.y, 0.5f,
-                $"label and field of «{row}» must be on the same row in board mode");
+            var lbl = panel.Find("L_" + name).GetComponent<RectTransform>();
+            var fld = panel.Find("F_" + name).GetComponent<RectTransform>();
+            posLabelY ??= lbl.anchoredPosition.y;
+            posFieldY ??= fld.anchoredPosition.y;
+            Assert.AreEqual(posLabelY.Value, lbl.anchoredPosition.y, 0.5f,
+                $"position label «{name}» must be on the same row");
+            Assert.AreEqual(posFieldY.Value, fld.anchoredPosition.y, 0.5f,
+                $"position field «{name}» must be on the same row");
+            Assert.Less(fld.anchoredPosition.y, lbl.anchoredPosition.y,
+                $"field «{name}» must be below its label");
+        }
+
+        // Rotation labels все на одной Y
+        float? rotLabelY = null;
+        float? rotFieldY = null;
+        foreach (var name in new[] { "X°", "Y°", "Z°" })
+        {
+            var lbl = panel.Find("L_" + name).GetComponent<RectTransform>();
+            var fld = panel.Find("F_" + name).GetComponent<RectTransform>();
+            rotLabelY ??= lbl.anchoredPosition.y;
+            rotFieldY ??= fld.anchoredPosition.y;
+            Assert.AreEqual(rotLabelY.Value, lbl.anchoredPosition.y, 0.5f,
+                $"rotation label «{name}» must be on the same row");
+            Assert.AreEqual(rotFieldY.Value, fld.anchoredPosition.y, 0.5f,
+                $"rotation field «{name}» must be on the same row");
+            Assert.Less(fld.anchoredPosition.y, lbl.anchoredPosition.y,
+                $"field «{name}» must be below its label");
         }
     }
 
-    // Bug B: блок «Повернуть на 90°» не должен перекрывать строку «Поворот Z°».
+    // Блок «Повернуть на 90°» не должен перекрывать строку полей поворота.
     [Test]
     public void Board_RotationLabelBelowRotationRows_NoOverlap()
     {
@@ -171,13 +195,13 @@ public class ContextMenuLayoutTests
         var panel = _canvas!.transform.Find("ContextMenu");
 
         var rotLbl = panel.Find("CtxRotLbl").GetComponent<RectTransform>();
-        var rzLbl = panel.Find("L_Поворот Z°").GetComponent<RectTransform>();
+        var rzFld = panel.Find("F_Z°").GetComponent<RectTransform>();
 
         float rotLblTop = rotLbl.anchoredPosition.y;
-        float rzBottom = rzLbl.anchoredPosition.y - rzLbl.sizeDelta.y;
+        float rzBottom = rzFld.anchoredPosition.y - rzFld.sizeDelta.y;
 
         Assert.LessOrEqual(rotLblTop, rzBottom,
-            "«Повернуть на 90°» must sit below the «Поворот Z°» row without overlap");
+            "«Повернуть на 90°» must sit below the rotation fields row without overlap");
     }
 
     // Заголовок должен быть ВНУТРИ панели (верхняя кромка ниже верха панели),

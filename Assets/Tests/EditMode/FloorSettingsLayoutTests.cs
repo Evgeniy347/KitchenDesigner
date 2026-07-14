@@ -88,7 +88,7 @@ public class FloorSettingsLayoutTests
         var root = canvas.transform.Find("ContextMenu");
         Assert.IsNotNull(root, "panel root не найден");
 
-        var lastRow = root.Find("F_Поворот Z°");
+        var lastRow = root.Find("F_Z°");
         Assert.IsNotNull(lastRow, "последний ряд Z° не найден");
         float lastRowY = lastRow.GetComponent<RectTransform>().anchoredPosition.y;
 
