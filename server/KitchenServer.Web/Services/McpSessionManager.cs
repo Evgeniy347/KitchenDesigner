@@ -19,6 +19,7 @@ public class McpSessionManager : IHostedService
     // the authoritative binding is the Mcp-Session-Id header value (see _sessionBindings).
     private readonly ConcurrentDictionary<object, McpSession> _agentBindings = new();
     private readonly ConcurrentDictionary<string, McpSession> _sessionBindings = new();
+    private readonly ConcurrentDictionary<string, McpSession> _ipBindings = new();
     private readonly ConcurrentDictionary<string, McpSession> _mcpConnections = new();
 
     public McpSessionManager() { }
@@ -120,15 +121,36 @@ public class McpSessionManager : IHostedService
     }
 
     /// <summary>
+    /// Bind an authenticated agent to its remote IP address. Used as a fallback for clients
+    /// (like opencode) that operate in stateless Streamable-HTTP mode and do not send a
+    /// session id header.
+    /// </summary>
+    public void BindIp(string ipAddress, McpSession session)
+    {
+        if (string.IsNullOrEmpty(ipAddress)) return;
+        _ipBindings[ipAddress] = session;
+        session.AgentBound = true;
+        session.Touch();
+        SessionStateChanged?.Invoke(session);
+    }
+
+    /// <summary>
     /// Look up the tab bound to this agent. Prefer the <paramref name="sessionId"/> header
     /// value because <paramref name="mcpServer"/> is not stable across Streamable-HTTP requests.
+    /// Falls back to the remote IP address for stateless clients.
     /// </summary>
-    public McpSession? GetBoundSession(object mcpServer, string? sessionId = null)
+    public McpSession? GetBoundSession(object mcpServer, string? sessionId = null, string? ipAddress = null)
     {
         if (!string.IsNullOrEmpty(sessionId) && _sessionBindings.TryGetValue(sessionId, out var byHeader))
             return byHeader;
 
-        return _agentBindings.GetValueOrDefault(mcpServer);
+        var byAgent = _agentBindings.GetValueOrDefault(mcpServer);
+        if (byAgent != null) return byAgent;
+
+        if (!string.IsNullOrEmpty(ipAddress) && _ipBindings.TryGetValue(ipAddress, out var byIp))
+            return byIp;
+
+        return null;
     }
 
     public void UnbindAgent(object mcpServer)

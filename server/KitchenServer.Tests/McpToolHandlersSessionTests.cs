@@ -4,7 +4,6 @@ using System.Text.Json;
 using KitchenServer.Web.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
@@ -117,51 +116,13 @@ public class McpToolHandlersSessionTests
     }
 
     [Fact]
-    public async Task Initialize_CreatesAnonymousSessionAndSetsHeader()
-    {
-        var (manager, _, services, accessor) = CreateServices();
-        accessor.HttpContext = new DefaultHttpContext { RequestServices = services };
-        var initializer = new McpSessionInitializer(manager, NullLogger<McpSessionInitializer>.Instance);
-        var sessionId = Guid.NewGuid().ToString("N");
-
-        await initializer.OnSessionInitializedAsync(
-            accessor.HttpContext,
-            sessionId,
-            new InitializeRequestParams
-            {
-                ProtocolVersion = "2024-11-05",
-                Capabilities = new ClientCapabilities(),
-                ClientInfo = new Implementation { Name = "test", Version = "1.0" },
-            },
-            default);
-
-        Assert.True(accessor.HttpContext.Response.Headers.ContainsKey(SessionIdHeader));
-        Assert.Equal(sessionId, accessor.HttpContext.Response.Headers[SessionIdHeader].ToString());
-        Assert.NotNull(manager.GetByKey(sessionId));
-    }
-
-    [Fact]
-    public async Task Authenticate_WithExistingSessionIdHeader_BindsProjectSessionWithoutChangingId()
+    public async Task CallTool_WithRemoteIpFallback_FindsBoundSessionWithoutSessionIdHeader()
     {
         var (manager, session, services, accessor) = CreateServices();
         session.BrowserWebSocket = new RespondingWebSocket(session);
         accessor.HttpContext = new DefaultHttpContext { RequestServices = services };
-        var initializer = new McpSessionInitializer(manager, NullLogger<McpSessionInitializer>.Instance);
-        var sessionId = Guid.NewGuid().ToString("N");
-        await initializer.OnSessionInitializedAsync(
-            accessor.HttpContext,
-            sessionId,
-            new InitializeRequestParams
-            {
-                ProtocolVersion = "2024-11-05",
-                Capabilities = new ClientCapabilities(),
-                ClientInfo = new Implementation { Name = "test", Version = "1.0" },
-            },
-            default);
+        accessor.HttpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("192.168.1.100");
 
-        // Simulate a second HTTP request carrying the session id from initialize.
-        accessor.HttpContext = new DefaultHttpContext { RequestServices = services };
-        accessor.HttpContext.Request.Headers[SessionIdHeader] = sessionId;
         var authRequest = new RequestContext<CallToolRequestParams>(new FakeMcpServer(), new JsonRpcRequest { Method = "tools/call" }, new CallToolRequestParams
         {
             Name = "authenticate",
@@ -173,12 +134,9 @@ public class McpToolHandlersSessionTests
 
         await McpToolHandlers.CallToolAsync(authRequest, default);
 
-        Assert.True(accessor.HttpContext.Response.Headers.ContainsKey(SessionIdHeader));
-        Assert.Equal(sessionId, accessor.HttpContext.Response.Headers[SessionIdHeader].ToString());
-
-        // The same session id must now resolve to the project tab session.
+        // New HTTP request: different server, no session id header, same IP -> binding survives.
         accessor.HttpContext = new DefaultHttpContext { RequestServices = services };
-        accessor.HttpContext.Request.Headers[SessionIdHeader] = sessionId;
+        accessor.HttpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("192.168.1.100");
         var toolRequest = new RequestContext<CallToolRequestParams>(new FakeMcpServer(), new JsonRpcRequest { Method = "tools/call" }, new CallToolRequestParams
         {
             Name = "get_all_elements",
