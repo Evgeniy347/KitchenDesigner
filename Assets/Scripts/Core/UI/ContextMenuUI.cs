@@ -78,8 +78,8 @@ namespace KitchenDesigner.Core.UI
         private const float TriCol1 = -110f;
         private const float TriCol2 = 0f;
         private const float TriCol3 = 110f;
-        private const float TriLabelW = 80f;
-        private const float TriFieldW = 80f;
+        private const float TriLabelW = 95f;
+        private const float TriFieldW = 70f;
         private const float TriLabelH = 18f;
 
         private void Awake()
@@ -446,7 +446,7 @@ namespace KitchenDesigner.Core.UI
 
         private TMP_InputField TriField(Transform parent, string label, float colX)
         {
-            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 13,
+            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 12,
                 new Vector2(colX, 0), new Vector2(TriLabelW, TriLabelH), TextAnchor.MiddleCenter);
             var field = UIFactory.CreateInputField("F_" + label, parent, "",
                 new Vector2(colX, 0), new Vector2(TriFieldW, FieldH));
