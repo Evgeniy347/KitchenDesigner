@@ -42,7 +42,8 @@ public class ServerMcpToolsTests
     public void AuthGateMessage_IsTheExactRussianWording()
     {
         Assert.Equal(
-            "требуется подключение к проекту, попроси пользователя передать ключ проекта",
+            "требуется подключение к проекту. Если ты уже был подключён, соединение могло оборваться — " +
+            "попробуй вызвать authenticate с тем же ключом ещё раз. Иначе попроси пользователя передать ключ проекта.",
             McpToolHandlers.NotAuthenticatedMessage);
     }
 

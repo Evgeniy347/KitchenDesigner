@@ -19,6 +19,7 @@ public class McpSessionManager : IHostedService
     // the authoritative binding is the Mcp-Session-Id header value (see _sessionBindings).
     private readonly ConcurrentDictionary<object, McpSession> _agentBindings = new();
     private readonly ConcurrentDictionary<string, McpSession> _sessionBindings = new();
+    private readonly ConcurrentDictionary<string, McpSession> _endpointBindings = new();
     private readonly ConcurrentDictionary<string, McpSession> _ipBindings = new();
     private readonly ConcurrentDictionary<string, McpSession> _mcpConnections = new();
 
@@ -121,31 +122,45 @@ public class McpSessionManager : IHostedService
     }
 
     /// <summary>
-    /// Bind an authenticated agent to its remote IP address. Used as a fallback for clients
-    /// (like opencode) that operate in stateless Streamable-HTTP mode and do not send a
-    /// session id header.
+    /// Bind an authenticated agent to its remote endpoint (IP:port). Used as the primary
+    /// fallback for clients (like opencode) that operate in stateless Streamable-HTTP mode
+    /// and do not send a session id header. Different browser tabs / opencode windows from
+    /// the same public IP usually use different source ports, so this keeps their sessions
+    /// separate. If only the IP is known, it falls back to IP-only binding.
     /// </summary>
-    public void BindIp(string ipAddress, McpSession session)
+    public void BindEndpoint(string? endpoint, string? ipAddress, McpSession session)
     {
-        if (string.IsNullOrEmpty(ipAddress)) return;
-        _ipBindings[ipAddress] = session;
         session.AgentBound = true;
         session.Touch();
+
+        if (!string.IsNullOrEmpty(endpoint))
+            _endpointBindings[endpoint] = session;
+
+        if (!string.IsNullOrEmpty(ipAddress))
+            _ipBindings[ipAddress] = session;
+
         SessionStateChanged?.Invoke(session);
     }
 
     /// <summary>
     /// Look up the tab bound to this agent. Prefer the <paramref name="sessionId"/> header
     /// value because <paramref name="mcpServer"/> is not stable across Streamable-HTTP requests.
-    /// Falls back to the remote IP address for stateless clients.
+    /// Falls back to the remote endpoint (IP:port) and then to the IP address for stateless clients.
     /// </summary>
-    public McpSession? GetBoundSession(object mcpServer, string? sessionId = null, string? ipAddress = null)
+    public McpSession? GetBoundSession(
+        object mcpServer,
+        string? sessionId = null,
+        string? endpoint = null,
+        string? ipAddress = null)
     {
         if (!string.IsNullOrEmpty(sessionId) && _sessionBindings.TryGetValue(sessionId, out var byHeader))
             return byHeader;
 
         var byAgent = _agentBindings.GetValueOrDefault(mcpServer);
         if (byAgent != null) return byAgent;
+
+        if (!string.IsNullOrEmpty(endpoint) && _endpointBindings.TryGetValue(endpoint, out var byEndpoint))
+            return byEndpoint;
 
         if (!string.IsNullOrEmpty(ipAddress) && _ipBindings.TryGetValue(ipAddress, out var byIp))
             return byIp;
