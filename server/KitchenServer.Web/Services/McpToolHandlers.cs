@@ -22,7 +22,8 @@ public static class McpToolHandlers
 
     /// <summary>Returned for any tool call before the agent has authenticated.</summary>
     public const string NotAuthenticatedMessage =
-        "требуется подключение к проекту, попроси пользователя передать ключ проекта";
+        "требуется подключение к проекту. Если ты уже был подключён, соединение могло оборваться — " +
+        "попробуй вызвать authenticate с тем же ключом ещё раз. Иначе попроси пользователя передать ключ проекта.";
 
     private static readonly TimeSpan CallTimeout = TimeSpan.FromSeconds(30);
 
@@ -99,18 +100,20 @@ public static class McpToolHandlers
         var httpAccessor = services.GetService<IHttpContextAccessor>();
         var sessionId = httpAccessor?.HttpContext?.Request.Headers[SessionIdHeader].FirstOrDefault();
         var remoteIp = httpAccessor?.HttpContext?.Connection.RemoteIpAddress?.ToString();
+        var remotePort = httpAccessor?.HttpContext?.Connection.RemotePort ?? 0;
+        var remoteEndpoint = !string.IsNullOrEmpty(remoteIp) && remotePort > 0 ? $"{remoteIp}:{remotePort}" : null;
         var agent = (object)ctx.Server;
         var name = ctx.Params?.Name ?? "";
         var args = ctx.Params?.Arguments;
 
         if (name == AuthToolName)
-            return await AuthenticateAsync(manager, agent, sessionId, remoteIp, args, httpAccessor, ct);
+            return await AuthenticateAsync(manager, agent, sessionId, remoteEndpoint, remoteIp, args, httpAccessor, ct);
 
         var def = McpToolRegistry.Tools.FirstOrDefault(t => t.Name == name && !t.StaticText);
         if (def == null)
             return Error($"Unknown tool: {name}");
 
-        var session = manager.GetBoundSession(agent, sessionId, remoteIp);
+        var session = manager.GetBoundSession(agent, sessionId, remoteEndpoint, remoteIp);
         if (session == null)
             return Error(NotAuthenticatedMessage);
 
@@ -127,7 +130,7 @@ public static class McpToolHandlers
     }
 
     private static async ValueTask<CallToolResult> AuthenticateAsync(
-        McpSessionManager manager, object agent, string? requestSessionId, string? remoteIp,
+        McpSessionManager manager, object agent, string? requestSessionId, string? remoteEndpoint, string? remoteIp,
         IDictionary<string, JsonElement>? args,
         IHttpContextAccessor? httpAccessor, CancellationToken ct)
     {
@@ -162,9 +165,9 @@ public static class McpToolHandlers
         if (!string.IsNullOrEmpty(requestSessionId))
             manager.BindAgentToSessionId(requestSessionId, session);
 
-        // Also bind by remote IP for stateless clients (e.g. opencode) that never send
-        // a session id header.
-        manager.BindIp(remoteIp, session);
+        // Bind by remote endpoint (IP:port) for stateless clients (e.g. opencode) that never
+        // send a session id header. Falls back to IP-only if the port is not available.
+        manager.BindEndpoint(remoteEndpoint, remoteIp, session);
 
         WriteSessionIdHeader(httpAccessor, sessionId);
         var project = string.IsNullOrEmpty(session.ProjectId) ? "" : $" (project {session.ProjectId})";

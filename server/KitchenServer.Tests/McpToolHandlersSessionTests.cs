@@ -114,14 +114,12 @@ public class McpToolHandlersSessionTests
         var text = Assert.Single(result.Content) is TextContentBlock tb ? tb.Text : "";
         Assert.Contains(McpToolHandlers.NotAuthenticatedMessage, text);
     }
-
     [Fact]
-    public async Task CallTool_WithRemoteIpFallback_FindsBoundSessionWithoutSessionIdHeader()
+    public async Task CallTool_WithRemoteEndpointFallback_FindsBoundSessionWithoutSessionIdHeader()
     {
         var (manager, session, services, accessor) = CreateServices();
         session.BrowserWebSocket = new RespondingWebSocket(session);
-        accessor.HttpContext = new DefaultHttpContext { RequestServices = services };
-        accessor.HttpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("192.168.1.100");
+        accessor.HttpContext = CreateHttpContext(services, "192.168.1.100", 12345);
 
         var authRequest = new RequestContext<CallToolRequestParams>(new FakeMcpServer(), new JsonRpcRequest { Method = "tools/call" }, new CallToolRequestParams
         {
@@ -134,9 +132,8 @@ public class McpToolHandlersSessionTests
 
         await McpToolHandlers.CallToolAsync(authRequest, default);
 
-        // New HTTP request: different server, no session id header, same IP -> binding survives.
-        accessor.HttpContext = new DefaultHttpContext { RequestServices = services };
-        accessor.HttpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("192.168.1.100");
+        // Same endpoint, different server, no session id header -> binding survives.
+        accessor.HttpContext = CreateHttpContext(services, "192.168.1.100", 12345);
         var toolRequest = new RequestContext<CallToolRequestParams>(new FakeMcpServer(), new JsonRpcRequest { Method = "tools/call" }, new CallToolRequestParams
         {
             Name = "get_all_elements",
@@ -148,6 +145,93 @@ public class McpToolHandlersSessionTests
         var result = await McpToolHandlers.CallToolAsync(toolRequest, default);
         var text = Assert.Single(result.Content) is TextContentBlock tb ? tb.Text : "";
         Assert.DoesNotContain(McpToolHandlers.NotAuthenticatedMessage, text);
+    }
+
+    [Fact]
+    public async Task CallTool_AfterPortChange_FallsBackToIpBinding()
+    {
+        var (manager, session, services, accessor) = CreateServices();
+        session.BrowserWebSocket = new RespondingWebSocket(session);
+        accessor.HttpContext = CreateHttpContext(services, "192.168.1.100", 12345);
+
+        var authRequest = new RequestContext<CallToolRequestParams>(new FakeMcpServer(), new JsonRpcRequest { Method = "tools/call" }, new CallToolRequestParams
+        {
+            Name = "authenticate",
+            Arguments = new Dictionary<string, JsonElement> { ["key"] = JsonSerializer.SerializeToElement(session.TabKey) },
+        })
+        {
+            Services = services,
+        };
+
+        await McpToolHandlers.CallToolAsync(authRequest, default);
+
+        // Simulate connection reset: same IP, different port -> falls back to IP binding.
+        accessor.HttpContext = CreateHttpContext(services, "192.168.1.100", 12346);
+        var toolRequest = new RequestContext<CallToolRequestParams>(new FakeMcpServer(), new JsonRpcRequest { Method = "tools/call" }, new CallToolRequestParams
+        {
+            Name = "get_all_elements",
+        })
+        {
+            Services = services,
+        };
+
+        var result = await McpToolHandlers.CallToolAsync(toolRequest, default);
+        var text = Assert.Single(result.Content) is TextContentBlock tb ? tb.Text : "";
+        Assert.DoesNotContain(McpToolHandlers.NotAuthenticatedMessage, text);
+    }
+
+    [Fact]
+    public async Task Authenticate_WithSameKeyAfterDisconnect_RebindsNewEndpoint()
+    {
+        var (manager, session, services, accessor) = CreateServices();
+        session.BrowserWebSocket = new RespondingWebSocket(session);
+        accessor.HttpContext = CreateHttpContext(services, "192.168.1.100", 12345);
+
+        var authRequest1 = new RequestContext<CallToolRequestParams>(new FakeMcpServer(), new JsonRpcRequest { Method = "tools/call" }, new CallToolRequestParams
+        {
+            Name = "authenticate",
+            Arguments = new Dictionary<string, JsonElement> { ["key"] = JsonSerializer.SerializeToElement(session.TabKey) },
+        })
+        {
+            Services = services,
+        };
+        await McpToolHandlers.CallToolAsync(authRequest1, default);
+
+        // Connection reset: re-authenticate with the same key from a new port.
+        accessor.HttpContext = CreateHttpContext(services, "192.168.1.100", 12346);
+        var authRequest2 = new RequestContext<CallToolRequestParams>(new FakeMcpServer(), new JsonRpcRequest { Method = "tools/call" }, new CallToolRequestParams
+        {
+            Name = "authenticate",
+            Arguments = new Dictionary<string, JsonElement> { ["key"] = JsonSerializer.SerializeToElement(session.TabKey) },
+        })
+        {
+            Services = services,
+        };
+        var authResult = await McpToolHandlers.CallToolAsync(authRequest2, default);
+        var authText = Assert.Single(authResult.Content) is TextContentBlock authTb ? authTb.Text : "";
+        Assert.DoesNotContain(McpToolHandlers.NotAuthenticatedMessage, authText);
+
+        // Subsequent calls from the new endpoint work.
+        accessor.HttpContext = CreateHttpContext(services, "192.168.1.100", 12346);
+        var toolRequest = new RequestContext<CallToolRequestParams>(new FakeMcpServer(), new JsonRpcRequest { Method = "tools/call" }, new CallToolRequestParams
+        {
+            Name = "get_all_elements",
+        })
+        {
+            Services = services,
+        };
+
+        var result = await McpToolHandlers.CallToolAsync(toolRequest, default);
+        var text = Assert.Single(result.Content) is TextContentBlock toolTb ? toolTb.Text : "";
+        Assert.DoesNotContain(McpToolHandlers.NotAuthenticatedMessage, text);
+    }
+
+    private static DefaultHttpContext CreateHttpContext(IServiceProvider services, string ip, int port)
+    {
+        var ctx = new DefaultHttpContext { RequestServices = services };
+        ctx.Connection.RemoteIpAddress = System.Net.IPAddress.Parse(ip);
+        ctx.Connection.RemotePort = port;
+        return ctx;
     }
 
     private static (McpSessionManager Manager, KitchenServer.Web.Services.McpSession Session, IServiceProvider Services, IHttpContextAccessor Accessor) CreateServices()
