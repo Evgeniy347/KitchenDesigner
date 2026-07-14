@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public class SelectionManager : MonoBehaviour
     {
-        public static SelectionManager Instance { get; private set; } = null!;
+        public static SelectionManager? Instance { get; private set; }
 
         private KitchenElement? _selected;
         private readonly List<KitchenElement> _selectedElements = new List<KitchenElement>();
@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core
 
         public KitchenElement? Selected => _selected;
         public IReadOnlyList<KitchenElement> SelectedElements => _selectedElements;
-        public event System.Action<KitchenElement?> OnSelectionChanged = null!;
+        public event System.Action<KitchenElement?>? OnSelectionChanged;
 
         private struct SavedMaterial
         {

@@ -19,7 +19,7 @@ namespace KitchenDesigner.Core
         public static bool IsActive => Active != null;
 
         /// <summary>Вход/выход/смена активного модуля.</summary>
-        public static event Action Changed = null!;
+        public static event Action? Changed;
 
         public static void Enter(LinkGroup module)
         {

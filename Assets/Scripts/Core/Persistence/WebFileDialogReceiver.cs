@@ -10,10 +10,10 @@ namespace KitchenDesigner.Core
     /// </summary>
     public class WebFileDialogReceiver : MonoBehaviour
     {
-        public Action<string, string>? PendingOpen = null!;
-        public Action<string>? PendingSaved = null!;
+        public Action<string, string>? PendingOpen;
+        public Action<string>? PendingSaved;
 
-        private static WebFileDialogReceiver _instance = null!;
+        private static WebFileDialogReceiver? _instance;
 
         internal static WebFileDialogReceiver GetOrCreate()
         {

@@ -4,7 +4,7 @@ using KitchenDesigner.Core;
 
 public class CameraStateTests
 {
-    private GameObject _go = null!;
+    private GameObject? _go;
 
     [TearDown]
     public void Teardown()

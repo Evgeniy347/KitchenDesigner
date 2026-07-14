@@ -8,10 +8,10 @@ namespace KitchenDesigner.Core.UI
     /// кнопку «Готово». Виден только пока режим активен (ModuleEditMode).</summary>
     public class ModuleEditBannerUI : MonoBehaviour
     {
-        public static ModuleEditBannerUI Instance { get; private set; } = null!;
+        public static ModuleEditBannerUI? Instance { get; private set; }
 
-        private GameObject _root = null!;
-        private TMP_Text _label = null!;
+        private GameObject? _root;
+        private TMP_Text? _label;
 
         private void Awake() => Instance = this;
 
@@ -49,7 +49,7 @@ namespace KitchenDesigner.Core.UI
             var m = ModuleEditMode.Active;
             _root.SetActive(m != null);
             if (m != null)
-                _label.text = $"Редактирование модуля: {m.name}  (Esc — выход)";
+                _label!.text = $"Редактирование модуля: {m.name}  (Esc — выход)";
         }
 
         private void Done()

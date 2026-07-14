@@ -7,14 +7,14 @@ using KitchenDesigner.Core.UI;
 
 public class SettingsPanelLayoutDiagramTests
 {
-    private Canvas _canvas = null!;
+    private Canvas? _canvas;
 
     [SetUp]
     public void Setup()
     {
         var go = new GameObject("TestCanvas");
         _canvas = go.AddComponent<Canvas>();
-        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _canvas!.renderMode = RenderMode.ScreenSpaceOverlay;
         go.AddComponent<CanvasScaler>();
         go.AddComponent<GraphicRaycaster>();
 
@@ -29,7 +29,7 @@ public class SettingsPanelLayoutDiagramTests
     [TearDown]
     public void TearDown()
     {
-        if (_canvas != null) Object.DestroyImmediate(_canvas.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
         var es = Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
         if (es != null) Object.DestroyImmediate(es.gameObject);
     }
@@ -37,11 +37,11 @@ public class SettingsPanelLayoutDiagramTests
     [Test]
     public void GenerateLayoutDiagram_Ascii_LogsToConsole()
     {
-        var ui = _canvas.gameObject.AddComponent<SettingsPanelUI>();
-        ui.Build(_canvas.transform);
+        var ui = _canvas!.gameObject.AddComponent<SettingsPanelUI>();
+        ui.Build(_canvas!.transform);
         ui.SetVisible(true);
 
-        var panel = _canvas.transform.Find("SettingsPanel");
+        var panel = _canvas!.transform.Find("SettingsPanel");
         var panelRt = panel.GetComponent<RectTransform>();
         float w = panelRt.sizeDelta.x;
         float h = panelRt.sizeDelta.y;

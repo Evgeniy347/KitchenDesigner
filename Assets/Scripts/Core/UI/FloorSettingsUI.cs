@@ -7,12 +7,12 @@ namespace KitchenDesigner.Core.UI
 {
     public class FloorSettingsUI : MonoBehaviour
     {
-        public static FloorSettingsUI Instance { get; private set; } = null!;
+        public static FloorSettingsUI? Instance { get; private set; }
 
-        private GameObject _root = null!;
+        private GameObject? _root;
         private KitchenElement? _floorElement;
 
-        private TMP_InputField _w = null!, _h = null!, _d = null!, _x = null!, _y = null!, _z = null!;
+        private TMP_InputField? _w, _h, _d, _x, _y, _z;
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
         private int _applyFrame = -1;
 
@@ -88,19 +88,19 @@ namespace KitchenDesigner.Core.UI
             if (_floorElement == null) return;
 
             var dims = _floorElement.DimensionsMM;
-            _w.text = dims.x.ToString();
-            _h.text = dims.y.ToString();
-            _d.text = dims.z.ToString();
+            _w!.text = dims.x.ToString();
+            _h!.text = dims.y.ToString();
+            _d!.text = dims.z.ToString();
 
             var pos = _floorElement.transform.position;
-            _x.SetTextWithoutNotify(pos.x.ToString("F3"));
-            _y.SetTextWithoutNotify(pos.y.ToString("F3"));
-            _z.SetTextWithoutNotify(pos.z.ToString("F3"));
+            _x!.SetTextWithoutNotify(pos.x.ToString("F3"));
+            _y!.SetTextWithoutNotify(pos.y.ToString("F3"));
+            _z!.SetTextWithoutNotify(pos.z.ToString("F3"));
 
             ClearAllHighlights();
             TrackAllFields();
 
-            _root.SetActive(true);
+            _root!.SetActive(true);
         }
 
         public void Close()
@@ -117,9 +117,9 @@ namespace KitchenDesigner.Core.UI
             if (_root != null && _root.activeSelf && _floorElement != null)
             {
                 var pos = _floorElement.transform.position;
-                if (!_x.isFocused) _x.SetTextWithoutNotify(pos.x.ToString("F3"));
-                if (!_y.isFocused) _y.SetTextWithoutNotify(pos.y.ToString("F3"));
-                if (!_z.isFocused) _z.SetTextWithoutNotify(pos.z.ToString("F3"));
+                if (!_x!.isFocused) _x!.SetTextWithoutNotify(pos.x.ToString("F3"));
+                if (!_y!.isFocused) _y!.SetTextWithoutNotify(pos.y.ToString("F3"));
+                if (!_z!.isFocused) _z!.SetTextWithoutNotify(pos.z.ToString("F3"));
             }
         }
 
@@ -132,23 +132,23 @@ namespace KitchenDesigner.Core.UI
             var oldRot = _floorElement.transform.rotation;
 
             _floorElement.DimensionsMM = new Vector3Int(
-                ParseInt(_w.text, oldDims.x),
-                ParseInt(_h.text, oldDims.y),
-                ParseInt(_d.text, oldDims.z));
+                ParseInt(_w!.text, oldDims.x),
+                ParseInt(_h!.text, oldDims.y),
+                ParseInt(_d!.text, oldDims.z));
 
             _floorElement.transform.position = new Vector3(
-                ParseFloat(_x.text, oldPos.x),
-                ParseFloat(_y.text, oldPos.y),
-                ParseFloat(_z.text, oldPos.z));
+                ParseFloat(_x!.text, oldPos.x),
+                ParseFloat(_y!.text, oldPos.y),
+                ParseFloat(_z!.text, oldPos.z));
 
             CommandStack.Execute(new ResizeCommand(_floorElement,
                 oldDims, _floorElement.DimensionsMM,
                 oldPos, _floorElement.transform.position,
                 oldRot, _floorElement.transform.rotation));
 
-            _w.text = _floorElement.DimensionsMM.x.ToString();
-            _h.text = _floorElement.DimensionsMM.y.ToString();
-            _d.text = _floorElement.DimensionsMM.z.ToString();
+            _w!.text = _floorElement.DimensionsMM.x.ToString();
+            _h!.text = _floorElement.DimensionsMM.y.ToString();
+            _d!.text = _floorElement.DimensionsMM.z.ToString();
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
@@ -165,7 +165,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Подсветка изменённых полей ──────────────────────────────────
 
-        private void TrackField(TMP_InputField field, string cleanValue)
+        private void TrackField(TMP_InputField? field, string cleanValue)
         {
             if (field == null) return;
             _cleanValues[field] = cleanValue;

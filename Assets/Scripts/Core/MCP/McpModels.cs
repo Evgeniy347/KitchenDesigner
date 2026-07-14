@@ -218,9 +218,9 @@ namespace KitchenDesigner.Core.MCP
     {
         public string name = string.Empty;
         public string type = string.Empty;
-        public AabbInfo aabb = null!;
-        public FaceInfo[] faces = null!;
-        public VertexInfo[] vertices = null!;
+        public AabbInfo? aabb;
+        public FaceInfo[]? faces;
+        public VertexInfo[]? vertices;
         public int dimX, dimY, dimZ;
         public int effectiveDimX, effectiveDimY, effectiveDimZ;
     }
@@ -245,8 +245,8 @@ namespace KitchenDesigner.Core.MCP
     public class SimulateResult
     {
         public string name = string.Empty;
-        public AabbInfo currentAABB = null!;
-        public AabbInfo simulatedAABB = null!;
+        public AabbInfo? currentAABB;
+        public AabbInfo? simulatedAABB;
         public List<string> overlapsWith = new();
         public List<AxisGapInfo> faceGaps = new();
         public bool wouldHaveViolations;

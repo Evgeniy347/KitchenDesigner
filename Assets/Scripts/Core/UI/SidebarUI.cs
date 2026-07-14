@@ -14,18 +14,18 @@ namespace KitchenDesigner.Core.UI
         private const float CollapsedW = 52f;
         private const float TopOffset = 52f; // под верхним тулбаром
 
-        private RectTransform _panel = null!;
-        private GameObject _fullRoot = null!;
-        private GameObject _miniRoot = null!;
-        private TMP_Text _collapseLabel = null!;
-        private Image _pinBg = null!;
+        private RectTransform? _panel;
+        private GameObject? _fullRoot;
+        private GameObject? _miniRoot;
+        private TMP_Text? _collapseLabel;
+        private Image? _pinBg;
 
         private bool _expanded = true;
         private bool _pinned = true;
 
         private class GroupUI
         {
-            public RectTransform header = null!;
+            public RectTransform? header;
             public readonly List<RectTransform> items = new List<RectTransform>();
             public bool open = true;
         }
@@ -62,7 +62,7 @@ namespace KitchenDesigner.Core.UI
 
         private GameObject CreateRoot(string name, Vector2 pos, Vector2 size)
         {
-            var rt = UIFactory.CreateRect(name, _panel);
+            var rt = UIFactory.CreateRect(name, _panel!);
             UIFactory.AnchorTopLeft(rt);
             rt.anchoredPosition = pos;
             rt.sizeDelta = size;
@@ -75,7 +75,7 @@ namespace KitchenDesigner.Core.UI
             foreach (var g in SidebarCatalog.Build())
             {
                 var gu = new GroupUI();
-                var header = UIFactory.CreateButton("SbGrp_" + g.title, _fullRoot.transform, g.title,
+                var header = UIFactory.CreateButton("SbGrp_" + g.title, _fullRoot!.transform, g.title,
                     Vector2.zero, new Vector2(ExpandedW - 2 * pad, 30f), () => ToggleGroup(gu));
                 UIFactory.AnchorTopLeft(header.GetComponent<RectTransform>());
                 gu.header = header.GetComponent<RectTransform>();
@@ -99,7 +99,7 @@ namespace KitchenDesigner.Core.UI
             float y = -pad;
             foreach (var gu in _groups)
             {
-                gu.header.anchoredPosition = new Vector2(pad, y);
+                gu.header!.anchoredPosition = new Vector2(pad, y);
                 y -= 30f + 4f;
                 foreach (var item in gu.items)
                 {
@@ -121,7 +121,7 @@ namespace KitchenDesigner.Core.UI
             foreach (var g in SidebarCatalog.Build())
             {
                 int i = index;
-                var btn = UIFactory.CreateButton("SbMini_" + g.title, _miniRoot.transform, g.shortLabel,
+                var btn = UIFactory.CreateButton("SbMini_" + g.title, _miniRoot!.transform, g.shortLabel,
                     Vector2.zero, new Vector2(CollapsedW - 2 * pad, 38f), () => OpenGroup(i));
                 UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
                 btn.GetComponent<RectTransform>().anchoredPosition = new Vector2(pad, y);
@@ -180,12 +180,12 @@ namespace KitchenDesigner.Core.UI
 
         private void ApplyState()
         {
-            var size = _panel.sizeDelta;
+            var size = _panel!.sizeDelta;
             size.x = _expanded ? ExpandedW : CollapsedW;
             _panel.sizeDelta = size;
 
-            _fullRoot.SetActive(_expanded);
-            _miniRoot.SetActive(!_expanded);
+            _fullRoot!.SetActive(_expanded);
+            _miniRoot!.SetActive(!_expanded);
             if (_collapseLabel != null) _collapseLabel.text = _expanded ? "«" : "»";
             if (_pinBg != null)
             {
@@ -199,7 +199,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (_pinned || !_expanded) return;
             if (Input.GetMouseButtonDown(0) &&
-                !RectTransformUtility.RectangleContainsScreenPoint(_panel, Input.mousePosition, null))
+                !RectTransformUtility.RectangleContainsScreenPoint(_panel!, Input.mousePosition, null))
             {
                 SetExpanded(false);
             }

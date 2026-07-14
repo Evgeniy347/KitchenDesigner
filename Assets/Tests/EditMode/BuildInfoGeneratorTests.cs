@@ -6,8 +6,8 @@ using KitchenDesigner.Editor;
 
 public class BuildInfoGeneratorTests
 {
-    private string _originalGeneratedPath = null!;
-    private string _counterPath = null!;
+    private string? _originalGeneratedPath;
+    private string? _counterPath;
     private string? _generatedBackup;
     private string? _counterBackup;
 
@@ -17,25 +17,25 @@ public class BuildInfoGeneratorTests
         _originalGeneratedPath = BuildInfoGenerator.OutputPath;
         _counterPath = Path.Combine(Application.dataPath, "..", BuildInfoGenerator.CounterFile);
 
-        if (File.Exists(_originalGeneratedPath))
-            _generatedBackup = File.ReadAllText(_originalGeneratedPath);
+        if (File.Exists(_originalGeneratedPath!))
+            _generatedBackup = File.ReadAllText(_originalGeneratedPath!);
 
-        if (File.Exists(_counterPath))
-            _counterBackup = File.ReadAllText(_counterPath);
+        if (File.Exists(_counterPath!))
+            _counterBackup = File.ReadAllText(_counterPath!);
     }
 
     [TearDown]
     public void TearDown()
     {
         if (_generatedBackup != null)
-            File.WriteAllText(_originalGeneratedPath, _generatedBackup);
-        else if (File.Exists(_originalGeneratedPath))
-            File.Delete(_originalGeneratedPath);
+            File.WriteAllText(_originalGeneratedPath!, _generatedBackup);
+        else if (File.Exists(_originalGeneratedPath!))
+            File.Delete(_originalGeneratedPath!);
 
         if (_counterBackup != null)
-            File.WriteAllText(_counterPath, _counterBackup);
-        else if (File.Exists(_counterPath))
-            File.Delete(_counterPath);
+            File.WriteAllText(_counterPath!, _counterBackup);
+        else if (File.Exists(_counterPath!))
+            File.Delete(_counterPath!);
     }
 
     // ── GetVersion ──────────────────────────────────────────
@@ -78,11 +78,11 @@ public class BuildInfoGeneratorTests
     [Test]
     public void WriteFile_CreatesGeneratedFile()
     {
-        File.Delete(_originalGeneratedPath);
+        File.Delete(_originalGeneratedPath!);
 
         BuildInfoGenerator.WriteFile();
 
-        Assert.IsTrue(File.Exists(_originalGeneratedPath), "Generated file should exist");
+        Assert.IsTrue(File.Exists(_originalGeneratedPath!), "Generated file should exist");
     }
 
     [Test]
@@ -90,7 +90,7 @@ public class BuildInfoGeneratorTests
     {
         BuildInfoGenerator.WriteFile();
 
-        string content = File.ReadAllText(_originalGeneratedPath);
+        string content = File.ReadAllText(_originalGeneratedPath!);
         Assert.IsTrue(content.Contains("namespace KitchenDesigner.Core"),
             "Should contain correct namespace");
     }
@@ -100,7 +100,7 @@ public class BuildInfoGeneratorTests
     {
         BuildInfoGenerator.WriteFile();
 
-        string content = File.ReadAllText(_originalGeneratedPath);
+        string content = File.ReadAllText(_originalGeneratedPath!);
         Assert.IsTrue(content.Contains("public static partial class BuildInfo"),
             "Should contain partial class declaration");
     }
@@ -110,7 +110,7 @@ public class BuildInfoGeneratorTests
     {
         BuildInfoGenerator.WriteFile();
 
-        string content = File.ReadAllText(_originalGeneratedPath);
+        string content = File.ReadAllText(_originalGeneratedPath!);
         Assert.IsTrue(content.Contains("public const string Version"),
             "Should contain Version constant");
     }
@@ -120,7 +120,7 @@ public class BuildInfoGeneratorTests
     {
         BuildInfoGenerator.WriteFile();
 
-        string content = File.ReadAllText(_originalGeneratedPath);
+        string content = File.ReadAllText(_originalGeneratedPath!);
         Assert.IsTrue(content.Contains("public const string BuildDate"),
             "Should contain BuildDate constant");
     }
@@ -130,7 +130,7 @@ public class BuildInfoGeneratorTests
     {
         BuildInfoGenerator.WriteFile();
 
-        string content = File.ReadAllText(_originalGeneratedPath);
+        string content = File.ReadAllText(_originalGeneratedPath!);
         var match = Regex.Match(content, @"Version = ""(0\.\d+)""");
         Assert.IsTrue(match.Success, $"Version value not found in file content:\n{content}");
     }
@@ -140,7 +140,7 @@ public class BuildInfoGeneratorTests
     {
         BuildInfoGenerator.WriteFile();
 
-        string content = File.ReadAllText(_originalGeneratedPath);
+        string content = File.ReadAllText(_originalGeneratedPath!);
         var match = Regex.Match(content, @"BuildDate = ""(\d{4}-\d{2}-\d{2} \d{2}:\d{2})""");
         Assert.IsTrue(match.Success, $"BuildDate should be 'yyyy-MM-dd HH:mm', got content:\n{content}");
     }
@@ -148,15 +148,15 @@ public class BuildInfoGeneratorTests
     [Test]
     public void WriteFile_OverwritesExistingFile()
     {
-        File.WriteAllText(_originalGeneratedPath, "// old content");
-        long sizeBefore = new FileInfo(_originalGeneratedPath).Length;
+        File.WriteAllText(_originalGeneratedPath!, "// old content");
+        long sizeBefore = new FileInfo(_originalGeneratedPath!).Length;
 
         BuildInfoGenerator.WriteFile();
 
-        long sizeAfter = new FileInfo(_originalGeneratedPath).Length;
+        long sizeAfter = new FileInfo(_originalGeneratedPath!).Length;
         Assert.AreNotEqual(sizeBefore, sizeAfter, "File should be overwritten");
 
-        string content = File.ReadAllText(_originalGeneratedPath);
+        string content = File.ReadAllText(_originalGeneratedPath!);
         Assert.IsTrue(content.Contains("namespace KitchenDesigner.Core"),
             "New content should replace old");
     }
@@ -166,7 +166,7 @@ public class BuildInfoGeneratorTests
     {
         BuildInfoGenerator.WriteFile();
 
-        string content = File.ReadAllText(_originalGeneratedPath);
+        string content = File.ReadAllText(_originalGeneratedPath!);
         Assert.IsTrue(content.Contains("namespace KitchenDesigner.Core"));
         Assert.IsTrue(content.Contains("public static partial class BuildInfo"));
         Assert.IsTrue(content.Contains("public const string Version"));
@@ -181,7 +181,7 @@ public class BuildInfoGeneratorTests
     [Test]
     public void ReadAndIncrementCounter_StartsFromOne()
     {
-        File.Delete(_counterPath);
+        File.Delete(_counterPath!);
 
         int result = BuildInfoGenerator.ReadAndIncrementCounter();
 
@@ -191,30 +191,30 @@ public class BuildInfoGeneratorTests
     [Test]
     public void ReadAndIncrementCounter_WritesFile()
     {
-        File.Delete(_counterPath);
+        File.Delete(_counterPath!);
 
         BuildInfoGenerator.ReadAndIncrementCounter();
 
-        Assert.IsTrue(File.Exists(_counterPath), "Counter file should be created");
-        string content = File.ReadAllText(_counterPath).Trim();
+        Assert.IsTrue(File.Exists(_counterPath!), "Counter file should be created");
+        string content = File.ReadAllText(_counterPath!).Trim();
         Assert.AreEqual("1", content);
     }
 
     [Test]
     public void ReadAndIncrementCounter_IncrementsExistingValue()
     {
-        File.WriteAllText(_counterPath, "5");
+        File.WriteAllText(_counterPath!, "5");
 
         int result = BuildInfoGenerator.ReadAndIncrementCounter();
 
         Assert.AreEqual(6, result);
-        Assert.AreEqual("6", File.ReadAllText(_counterPath).Trim());
+        Assert.AreEqual("6", File.ReadAllText(_counterPath!).Trim());
     }
 
     [Test]
     public void ReadAndIncrementCounter_HandlesEmptyFile()
     {
-        File.WriteAllText(_counterPath, "");
+        File.WriteAllText(_counterPath!, "");
 
         int result = BuildInfoGenerator.ReadAndIncrementCounter();
 
@@ -224,7 +224,7 @@ public class BuildInfoGeneratorTests
     [Test]
     public void ReadAndIncrementCounter_HandlesWhitespaceFile()
     {
-        File.WriteAllText(_counterPath, "  \n  ");
+        File.WriteAllText(_counterPath!, "  \n  ");
 
         int result = BuildInfoGenerator.ReadAndIncrementCounter();
 

@@ -9,8 +9,8 @@ namespace KitchenDesigner.Core
     /// localScale остаётся полным коробом, поэтому коллайдер/ручки/выделение не меняются.</summary>
     public class AssembledFacadeElement : FacadeElement, ISpecificationParts
     {
-        private static Material _grooveMat = null!;
-        private static Material _glassMat = null!;
+        private static Material? _grooveMat;
+        private static Material? _glassMat;
 
         private AssembledFill _fill = AssembledFill.Blind;
         private int _grooveCount = AppConstants.ASSEMBLED_DEFAULT_GROOVES;
@@ -120,7 +120,7 @@ namespace KitchenDesigner.Core
                 _grooveMat.SetColor("_BaseColor", new Color(0.18f, 0.18f, 0.20f, 1f));
                 _grooveMat.color = new Color(0.18f, 0.18f, 0.20f, 1f);
             }
-            return _grooveMat;
+            return _grooveMat!;
         }
 
         private static Material GlassMaterial()
@@ -130,7 +130,7 @@ namespace KitchenDesigner.Core
                 var shader = Shader.Find("Universal Render Pipeline/Lit");
                 _glassMat = ElementHighlighter.MakeTransparent(shader, new Color(0.6f, 0.75f, 0.85f, 0.18f));
             }
-            return _glassMat;
+            return _glassMat!;
         }
     }
 }

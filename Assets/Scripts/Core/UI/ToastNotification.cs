@@ -7,10 +7,10 @@ namespace KitchenDesigner.Core.UI
 {
     public class ToastNotification : MonoBehaviour
     {
-        public static ToastNotification Instance { get; private set; } = null!;
+        public static ToastNotification? Instance { get; private set; }
 
-        private CanvasGroup _group = null!;
-        private TMP_Text _label = null!;
+        private CanvasGroup? _group;
+        private TMP_Text? _label;
         private Coroutine? _activeRoutine;
 
         private void Awake()
@@ -47,18 +47,18 @@ namespace KitchenDesigner.Core.UI
 
         private IEnumerator ShowRoutine(string message, float duration)
         {
-            _label.text = message;
-            _group.alpha = 0f;
-            _group.gameObject.SetActive(true);
+            _label!.text = message;
+            _group!.alpha = 0f;
+            _group!.gameObject.SetActive(true);
 
             float elapsed = 0f;
             while (elapsed < 0.15f)
             {
                 elapsed += Time.deltaTime;
-                _group.alpha = Mathf.Lerp(0f, 1f, elapsed / 0.15f);
+                _group!.alpha = Mathf.Lerp(0f, 1f, elapsed / 0.15f);
                 yield return null;
             }
-            _group.alpha = 1f;
+            _group!.alpha = 1f;
 
             yield return new WaitForSeconds(duration);
 
@@ -66,11 +66,11 @@ namespace KitchenDesigner.Core.UI
             while (elapsed < 0.3f)
             {
                 elapsed += Time.deltaTime;
-                _group.alpha = Mathf.Lerp(1f, 0f, elapsed / 0.3f);
+                _group!.alpha = Mathf.Lerp(1f, 0f, elapsed / 0.3f);
                 yield return null;
             }
-            _group.alpha = 0f;
-            _group.gameObject.SetActive(false);
+            _group!.alpha = 0f;
+            _group!.gameObject.SetActive(false);
             _activeRoutine = null;
         }
     }

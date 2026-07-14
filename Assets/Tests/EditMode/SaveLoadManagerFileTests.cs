@@ -9,7 +9,7 @@ using KitchenDesigner.Core;
 public class SaveLoadManagerFileTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
-    private string _prevLastPath = null!;
+    private string? _prevLastPath;
     private const string ProjName = "sl_filetests_proj";
 
     private KitchenElement Make(string name, Vector3Int dims, Vector3 pos)
@@ -30,7 +30,7 @@ public class SaveLoadManagerFileTests
     [TearDown]
     public void Teardown()
     {
-        SaveLoadManager.LastPath = _prevLastPath;
+        SaveLoadManager.LastPath = _prevLastPath!;
 
         foreach (var go in _spawned)
         {

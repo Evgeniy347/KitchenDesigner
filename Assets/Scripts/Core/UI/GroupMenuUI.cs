@@ -10,13 +10,13 @@ namespace KitchenDesigner.Core.UI
     /// перемещения, разорвать связь). Замок закрыт = связано, открыт = разорвать.</summary>
     public class GroupMenuUI : MonoBehaviour
     {
-        public static GroupMenuUI Instance { get; private set; } = null!;
+        public static GroupMenuUI? Instance { get; private set; }
 
-        private GameObject _root = null!;
-        private GameObject _linkRoot = null!;
-        private GameObject _groupRoot = null!;
-        private TMP_InputField _nameField = null!;
-        private Toggle _lockMove = null!;
+        private GameObject? _root;
+        private GameObject? _linkRoot;
+        private GameObject? _groupRoot;
+        private TMP_InputField? _nameField;
+        private Toggle? _lockMove;
         private LinkGroup? _group;
 
         private void Awake() => Instance = this;
@@ -49,7 +49,7 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateButton("GmUnlink", _groupRoot.transform, "Разорвать связь",
                 new Vector2(0, -82), new Vector2(200, 36), DoUnlink);
 
-            _root.SetActive(false);
+            _root!.SetActive(false);
 
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.OnSelectionChanged += OnSelectionChanged;
@@ -71,19 +71,19 @@ namespace KitchenDesigner.Core.UI
 
             if (_group != null)
             {
-                _linkRoot.SetActive(false);
-                _groupRoot.SetActive(true);
-                _nameField.SetTextWithoutNotify(_group.name);
-                _lockMove.SetIsOnWithoutNotify(!_group.movable);
-                _root.SetActive(true);
+                _linkRoot!.SetActive(false);
+                _groupRoot!.SetActive(true);
+                _nameField!.SetTextWithoutNotify(_group.name);
+                _lockMove!.SetIsOnWithoutNotify(!_group.movable);
+                _root!.SetActive(true);
                 return;
             }
 
             var sel = SelectionManager.Instance;
             if (sel == null || sel.SelectedElements.Count < 2) { Close(); return; }
-            _linkRoot.SetActive(true);
-            _groupRoot.SetActive(false);
-            _root.SetActive(true);
+            _linkRoot!.SetActive(true);
+            _groupRoot!.SetActive(false);
+            _root!.SetActive(true);
         }
 
         public void Close()

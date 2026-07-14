@@ -20,13 +20,13 @@ namespace KitchenDesigner.Core.MCP
         [SerializeField] private int _port = DefaultPort;
         [SerializeField] private bool _autoStart = true;
 
-        private TcpListener? _listener = null!;
-        private Thread? _serverThread = null!;
+        private TcpListener? _listener;
+        private Thread? _serverThread;
         private volatile bool _running;
         private readonly ConcurrentQueue<Action> _mainThreadActions = new ConcurrentQueue<Action>();
         private readonly List<TcpClient> _clients = new List<TcpClient>();
         private readonly object _clientsLock = new object();
-        private McpCommandHandler _handler = null!;
+        private McpCommandHandler? _handler;
 
         /// <summary>
         /// Static override used by tests to force a non-default port.
@@ -196,7 +196,7 @@ namespace KitchenDesigner.Core.MCP
             var capturedClient = client;
             _mainThreadActions.Enqueue(() =>
             {
-                var result = _handler.Handle(capturedRequest);
+                var result = _handler!.Handle(capturedRequest);
                 var json = JsonConvert.SerializeObject(result);
                 SendJson(capturedClient, json);
             });

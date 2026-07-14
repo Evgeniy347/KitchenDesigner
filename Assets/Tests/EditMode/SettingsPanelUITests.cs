@@ -9,15 +9,15 @@ using KitchenDesigner.Core.UI;
 
 public class SettingsPanelUITests
 {
-    private Canvas _canvas = null!;
-    private SettingsPanelUI _ui = null!;
+    private Canvas? _canvas;
+    private SettingsPanelUI? _ui;
 
     [SetUp]
     public void Setup()
     {
         var go = new GameObject("TestCanvas");
         _canvas = go.AddComponent<Canvas>();
-        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _canvas!.renderMode = RenderMode.ScreenSpaceOverlay;
         go.AddComponent<CanvasScaler>();
         go.AddComponent<GraphicRaycaster>();
 
@@ -28,14 +28,14 @@ public class SettingsPanelUITests
             es.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
         }
 
-        _ui = _canvas.gameObject.AddComponent<SettingsPanelUI>();
-        _ui.Build(_canvas.transform);
+        _ui = _canvas!.gameObject.AddComponent<SettingsPanelUI>();
+        _ui!.Build(_canvas!.transform);
     }
 
     [TearDown]
     public void TearDown()
     {
-        if (_canvas != null) Object.DestroyImmediate(_canvas.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
         var es = Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
         if (es != null) Object.DestroyImmediate(es.gameObject);
     }
@@ -45,13 +45,13 @@ public class SettingsPanelUITests
     [Test]
     public void Build_DoesNotThrow()
     {
-        Assert.DoesNotThrow(() => _ui.Build(_canvas.transform));
+        Assert.DoesNotThrow(() => _ui!.Build(_canvas!.transform));
     }
 
     [Test]
     public void Panel_Exists_WithCorrectSize()
     {
-        var panel = _canvas.transform.Find("SettingsPanel");
+        var panel = _canvas!.transform.Find("SettingsPanel");
         Assert.IsNotNull(panel);
         var rt = panel.GetComponent<RectTransform>();
         Assert.AreEqual(520, rt.sizeDelta.x, 0.01f);
@@ -61,7 +61,7 @@ public class SettingsPanelUITests
     [Test]
     public void Title_Exists_WithCorrectText()
     {
-        var title = _canvas.transform.Find("SettingsPanel/SetTitle");
+        var title = _canvas!.transform.Find("SettingsPanel/SetTitle");
         Assert.IsNotNull(title);
         var label = title.GetComponent<TextMeshProUGUI>();
         Assert.AreEqual("Настройки", label.text.Replace("\u200b", ""));
@@ -75,7 +75,7 @@ public class SettingsPanelUITests
     {
         for (int i = 0; i < 3; i++)
         {
-            var tab = _canvas.transform.Find($"SettingsPanel/Tab_{i}");
+            var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
             Assert.IsNotNull(tab, $"Tab_{i} should exist");
         }
     }
@@ -86,7 +86,7 @@ public class SettingsPanelUITests
         string[] expected = { "Проект", "Графика", "О программе" };
         for (int i = 0; i < expected.Length; i++)
         {
-            var tab = _canvas.transform.Find($"SettingsPanel/Tab_{i}");
+            var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
             var label = tab.Find($"Tab_{i}_Label");
             Assert.IsNotNull(label, $"Tab_{i}_Label should exist");
             Assert.AreEqual(expected[i], label.GetComponent<TextMeshProUGUI>().text.Replace("\u200b", ""));
@@ -96,29 +96,29 @@ public class SettingsPanelUITests
     [Test]
     public void ThreeTabPages_Exist()
     {
-        Assert.IsNotNull(_canvas.transform.Find("SettingsPanel/Tab_Project"), "Tab_Project page should exist");
-        Assert.IsNotNull(_canvas.transform.Find("SettingsPanel/Tab_Graphics"), "Tab_Graphics page should exist");
-        Assert.IsNotNull(_canvas.transform.Find("SettingsPanel/Tab_About"), "Tab_About page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Project"), "Tab_Project page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Graphics"), "Tab_Graphics page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_About"), "Tab_About page should exist");
     }
 
     [Test]
     public void SwitchTab_OnlyActivePageVisible()
     {
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project").gameObject;
-        var graphics = _canvas.transform.Find("SettingsPanel/Tab_Graphics").gameObject;
-        var about = _canvas.transform.Find("SettingsPanel/Tab_About").gameObject;
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project").gameObject;
+        var graphics = _canvas!.transform.Find("SettingsPanel/Tab_Graphics").gameObject;
+        var about = _canvas!.transform.Find("SettingsPanel/Tab_About").gameObject;
 
         Assert.IsTrue(project.activeSelf, "Project tab should be active by default");
         Assert.IsFalse(graphics.activeSelf, "Graphics tab should be hidden by default");
         Assert.IsFalse(about.activeSelf, "About tab should be hidden by default");
 
-        var tab2Btn = _canvas.transform.Find("SettingsPanel/Tab_1").GetComponent<Button>();
+        var tab2Btn = _canvas!.transform.Find("SettingsPanel/Tab_1").GetComponent<Button>();
         tab2Btn.onClick.Invoke();
         Assert.IsFalse(project.activeSelf, "Project should hide after switching to Graphics");
         Assert.IsTrue(graphics.activeSelf, "Graphics should show after click");
         Assert.IsFalse(about.activeSelf);
 
-        var tab3Btn = _canvas.transform.Find("SettingsPanel/Tab_2").GetComponent<Button>();
+        var tab3Btn = _canvas!.transform.Find("SettingsPanel/Tab_2").GetComponent<Button>();
         tab3Btn.onClick.Invoke();
         Assert.IsFalse(project.activeSelf);
         Assert.IsFalse(graphics.activeSelf);
@@ -128,8 +128,8 @@ public class SettingsPanelUITests
     [Test]
     public void ActiveTab_HasHighlightColor()
     {
-        var tab0Img = _canvas.transform.Find("SettingsPanel/Tab_0").GetComponent<Image>();
-        var tab1Img = _canvas.transform.Find("SettingsPanel/Tab_1").GetComponent<Image>();
+        var tab0Img = _canvas!.transform.Find("SettingsPanel/Tab_0").GetComponent<Image>();
+        var tab1Img = _canvas!.transform.Find("SettingsPanel/Tab_1").GetComponent<Image>();
 
         Color active = new(0.28f, 0.33f, 0.42f, 1f);
         Color inactive = new(0.15f, 0.16f, 0.20f, 1f);
@@ -137,7 +137,7 @@ public class SettingsPanelUITests
         AssertColorEqual(active, tab0Img.color);
         AssertColorEqual(inactive, tab1Img.color);
 
-        var tab1Btn = _canvas.transform.Find("SettingsPanel/Tab_1").GetComponent<Button>();
+        var tab1Btn = _canvas!.transform.Find("SettingsPanel/Tab_1").GetComponent<Button>();
         tab1Btn.onClick.Invoke();
 
         AssertColorEqual(inactive, tab0Img.color);
@@ -149,28 +149,28 @@ public class SettingsPanelUITests
     [Test]
     public void Panel_StartsHidden()
     {
-        var panel = _canvas.transform.Find("SettingsPanel");
+        var panel = _canvas!.transform.Find("SettingsPanel");
         Assert.IsFalse(panel.gameObject.activeSelf);
     }
 
     [Test]
     public void SetVisible_ShowsAndHides()
     {
-        var panel = _canvas.transform.Find("SettingsPanel").gameObject;
-        _ui.SetVisible(true);
+        var panel = _canvas!.transform.Find("SettingsPanel").gameObject;
+        _ui!.SetVisible(true);
         Assert.IsTrue(panel.activeSelf);
-        _ui.SetVisible(false);
+        _ui!.SetVisible(false);
         Assert.IsFalse(panel.activeSelf);
     }
 
     [Test]
     public void Toggle_FlipsVisibility()
     {
-        var panel = _canvas.transform.Find("SettingsPanel").gameObject;
+        var panel = _canvas!.transform.Find("SettingsPanel").gameObject;
         Assert.IsFalse(panel.activeSelf);
-        _ui.Toggle();
+        _ui!.Toggle();
         Assert.IsTrue(panel.activeSelf);
-        _ui.Toggle();
+        _ui!.Toggle();
         Assert.IsFalse(panel.activeSelf);
     }
 
@@ -189,18 +189,18 @@ public class SettingsPanelUITests
     [Test]
     public void CloseButton_Exists()
     {
-        var btn = _canvas.transform.Find("SettingsPanel/SetClose");
+        var btn = _canvas!.transform.Find("SettingsPanel/SetClose");
         Assert.IsNotNull(btn);
     }
 
     [Test]
     public void CloseButton_HidesPanel()
     {
-        var panel = _canvas.transform.Find("SettingsPanel").gameObject;
-        _ui.SetVisible(true);
+        var panel = _canvas!.transform.Find("SettingsPanel").gameObject;
+        _ui!.SetVisible(true);
         Assert.IsTrue(panel.activeSelf);
 
-        var btn = _canvas.transform.Find("SettingsPanel/SetClose").GetComponent<Button>();
+        var btn = _canvas!.transform.Find("SettingsPanel/SetClose").GetComponent<Button>();
         btn.onClick.Invoke();
         Assert.IsFalse(panel.activeSelf);
     }
@@ -208,9 +208,9 @@ public class SettingsPanelUITests
     [Test]
     public void CloseButton_IsBelowTabs()
     {
-        var panel = _canvas.transform.Find("SettingsPanel").GetComponent<RectTransform>();
-        var closeBtn = _canvas.transform.Find("SettingsPanel/SetClose").GetComponent<RectTransform>();
-        var projectTab = _canvas.transform.Find("SettingsPanel/Tab_Project").GetComponent<RectTransform>();
+        var panel = _canvas!.transform.Find("SettingsPanel").GetComponent<RectTransform>();
+        var closeBtn = _canvas!.transform.Find("SettingsPanel/SetClose").GetComponent<RectTransform>();
+        var projectTab = _canvas!.transform.Find("SettingsPanel/Tab_Project").GetComponent<RectTransform>();
 
         float closeY = closeBtn.anchoredPosition.y;
         Assert.IsTrue(closeY < 0, "Close button should be below the panel center");
@@ -228,7 +228,7 @@ public class SettingsPanelUITests
             "Стены", "Опускать ближние стены"
         };
 
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
 
         foreach (var label in expectedToggles)
         {
@@ -249,7 +249,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         Assert.IsNotNull(s);
 
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
 
         AssertToggleValue(project, "Сетка", s.GridEnabled);
         AssertToggleValue(project, "Снэппинг", s.SnapEnabled);
@@ -265,7 +265,7 @@ public class SettingsPanelUITests
     [Test]
     public void ToggleRow_CheckmarkReflectsState()
     {
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
         var toggleObj = project.Find("RowTgl_Сетка/Tgl_Сетка");
         var toggle = toggleObj.GetComponent<Toggle>();
 
@@ -281,7 +281,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         bool prev = s.GridEnabled;
 
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
         var toggle = project.Find("RowTgl_Сетка/Tgl_Сетка").GetComponent<Toggle>();
         toggle.isOn = !prev;
 
@@ -301,7 +301,7 @@ public class SettingsPanelUITests
             "Шаг сетки, мм", "Порог снэпа, мм", "Интервал автосейва, с"
         };
 
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
 
         foreach (var label in expectedInputs)
         {
@@ -320,7 +320,7 @@ public class SettingsPanelUITests
     public void InputRows_HaveCorrectInitialValues()
     {
         var s = KitchenSettings.Instance;
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
 
         AssertFieldValue(project, "Шаг сетки, мм", s.GridStep.ToString());
         AssertFieldValue(project, "Порог снэпа, мм", s.SnapThreshold.ToString("F0"));
@@ -333,7 +333,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         int prev = s.GridStep;
 
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
         var field = project.Find("RowFld_Шаг сетки, мм/Fld_Шаг сетки, мм").GetComponent<TMP_InputField>();
         field.text = "42";
         field.onEndEdit.Invoke("42");
@@ -350,7 +350,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         int prev = s.GridStep;
 
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
         var field = project.Find("RowFld_Шаг сетки, мм/Fld_Шаг сетки, мм").GetComponent<TMP_InputField>();
         field.text = "abc";
         field.onEndEdit.Invoke("abc");
@@ -363,7 +363,7 @@ public class SettingsPanelUITests
     [Test]
     public void InputField_HasOutlineComponent()
     {
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
         var field = project.Find("RowFld_Шаг сетки, мм/Fld_Шаг сетки, мм").GetComponent<TMP_InputField>();
         var outline = field.GetComponent<Outline>();
         Assert.IsNotNull(outline, "InputField should have Outline component");
@@ -374,7 +374,7 @@ public class SettingsPanelUITests
     [Test]
     public void AboutTab_HasVersionAndBuildDate()
     {
-        var about = _canvas.transform.Find("SettingsPanel/Tab_About");
+        var about = _canvas!.transform.Find("SettingsPanel/Tab_About");
         Assert.IsNotNull(about);
 
         var verLabel = about.Find("AboutVersion");
@@ -393,7 +393,7 @@ public class SettingsPanelUITests
     [Test]
     public void GraphicsTab_Exists_WithNoContent()
     {
-        var graphics = _canvas.transform.Find("SettingsPanel/Tab_Graphics");
+        var graphics = _canvas!.transform.Find("SettingsPanel/Tab_Graphics");
         Assert.IsNotNull(graphics);
         Assert.AreEqual(0, graphics.childCount, "Graphics tab should have no child rows");
     }
@@ -403,7 +403,7 @@ public class SettingsPanelUITests
     [Test]
     public void ProjectRows_AreOrderedDescending()
     {
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
         var rows = new List<RectTransform>();
         foreach (Transform child in project)
         {
@@ -423,7 +423,7 @@ public class SettingsPanelUITests
     [Test]
     public void PanelHeight_FitsAllContent()
     {
-        var root = _canvas.transform.Find("SettingsPanel");
+        var root = _canvas!.transform.Find("SettingsPanel");
         var panel = root.GetComponent<RectTransform>();
         float panelTop = panel.sizeDelta.y * 0.5f;
         float panelBottom = -panelTop;
@@ -446,13 +446,13 @@ public class SettingsPanelUITests
     [Test]
     public void TwoConsecutiveBuilds_DoNotThrow()
     {
-        Assert.DoesNotThrow(() => _ui.Build(_canvas.transform));
+        Assert.DoesNotThrow(() => _ui!.Build(_canvas!.transform));
     }
 
     [Test]
     public void ToggleRows_HaveCheckboxGraphic()
     {
-        var project = _canvas.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
         var toggle = project.Find("RowTgl_Сетка/Tgl_Сетка").GetComponent<Toggle>();
         Assert.IsNotNull(toggle.graphic);
         Assert.IsNotNull(toggle.targetGraphic);

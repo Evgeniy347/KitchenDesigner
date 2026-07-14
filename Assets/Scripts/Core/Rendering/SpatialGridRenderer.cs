@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
     [RequireComponent(typeof(Transform))]
     public class SpatialGridRenderer : MonoBehaviour
     {
-        private Material _lineMaterial = null!;
+        private Material? _lineMaterial;
 
         private const float Extent = 3f;     // ±3 м (размер базовой плиты)
         private const float Step = 0.1f;      // 100 мм

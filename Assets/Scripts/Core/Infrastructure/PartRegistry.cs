@@ -12,11 +12,11 @@ namespace KitchenDesigner.Core
                     return GameContext.Services.PartRegistry;
                 if (_fallback == null)
                     _fallback = new PartRegistryInstance();
-                return _fallback;
+                return _fallback!;
             }
             set => _fallback = value;
         }
-        private static IPartRegistry _fallback = null!;
+        private static IPartRegistry? _fallback;
 
         public static IReadOnlyList<KitchenElement> All => Instance.All;
 

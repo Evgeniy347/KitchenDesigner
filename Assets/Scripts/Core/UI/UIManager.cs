@@ -11,20 +11,20 @@ namespace KitchenDesigner.Core.UI
     /// </summary>
     public class UIManager : MonoBehaviour
     {
-        public static UIManager Instance { get; private set; } = null!;
+        public static UIManager? Instance { get; private set; }
 
-        private Canvas _canvas = null!;
-        private SpecificationPanelUI _specPanel = null!;
-        private SettingsPanelUI _settingsPanel = null!;
-        private ContextMenuUI _contextMenu = null!;
-        private FloorSettingsUI _floorSettings = null!;
-        private GroupMenuUI _groupMenu = null!;
-        private HelpUI _help = null!;
-        private Button _undoButton = null!;
-        private Button _redoButton = null!;
-        private TMP_Text _modeButtonLabel = null!;
+        private Canvas? _canvas;
+        private SpecificationPanelUI? _specPanel;
+        private SettingsPanelUI? _settingsPanel;
+        private ContextMenuUI? _contextMenu;
+        private FloorSettingsUI? _floorSettings;
+        private GroupMenuUI? _groupMenu;
+        private HelpUI? _help;
+        private Button? _undoButton;
+        private Button? _redoButton;
+        private TMP_Text? _modeButtonLabel;
 
-        public Canvas Canvas => _canvas;
+        public Canvas? Canvas => _canvas;
         public const string QuickSaveName = "quicksave";
 
         private void Awake()
@@ -38,7 +38,7 @@ namespace KitchenDesigner.Core.UI
             BuildToolbar();
 
             _specPanel = gameObject.AddComponent<SpecificationPanelUI>();
-            _specPanel.Build(_canvas.transform);
+            _specPanel.Build(_canvas!.transform);
 
             _settingsPanel = gameObject.AddComponent<SettingsPanelUI>();
             _settingsPanel.Build(_canvas.transform);
@@ -70,7 +70,7 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildToolbar()
         {
-            var bar = UIFactory.CreatePanel("Toolbar", _canvas.transform, Vector2.zero, Vector2.zero);
+            var bar = UIFactory.CreatePanel("Toolbar", _canvas!.transform, Vector2.zero, Vector2.zero);
             UIFactory.StretchTopBar(bar.rectTransform, 52f);
 
             float x = 8f;
@@ -288,8 +288,8 @@ namespace KitchenDesigner.Core.UI
 
         public void OpenFloorSettings()
         {
-            _specPanel.SetVisible(false);
-            _settingsPanel.SetVisible(false);
+            _specPanel!.SetVisible(false);
+            _settingsPanel!.SetVisible(false);
             if (_contextMenu != null) _contextMenu.Close();
             if (_floorSettings != null) _floorSettings.Open();
         }
@@ -304,14 +304,14 @@ namespace KitchenDesigner.Core.UI
         public void ToggleSpecification()
         {
             if (_specPanel == null) return;
-            _settingsPanel.SetVisible(false);
+            _settingsPanel!.SetVisible(false);
             _specPanel.Toggle();
         }
 
         public void ToggleSettings()
         {
             if (_settingsPanel == null) return;
-            _specPanel.SetVisible(false);
+            _specPanel!.SetVisible(false);
             _settingsPanel.Toggle();
         }
 
@@ -525,7 +525,7 @@ namespace KitchenDesigner.Core.UI
             if (_namePromptPanel != null) return;
 
             _namePromptPanel = new GameObject("NamePromptPanel");
-            _namePromptPanel.transform.SetParent(_canvas.transform, false);
+            _namePromptPanel.transform.SetParent(_canvas!.transform, false);
             var rt = _namePromptPanel.AddComponent<RectTransform>();
             UIFactory.AnchorCenter(rt);
             rt.sizeDelta = new Vector2(380, 160);

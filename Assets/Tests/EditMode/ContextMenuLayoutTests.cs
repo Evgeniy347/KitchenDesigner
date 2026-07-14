@@ -9,8 +9,8 @@ using KitchenDesigner.Core.UI;
 
 public class ContextMenuLayoutTests
 {
-    private Canvas _canvas = null!;
-    private ContextMenuUI _menu = null!;
+    private Canvas? _canvas;
+    private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     [SetUp]
@@ -20,14 +20,14 @@ public class ContextMenuLayoutTests
         _canvas = UIFactory.CreateCanvas("TestCanvas");
         var go = new GameObject("CtxMenu");
         _menu = go.AddComponent<ContextMenuUI>();
-        _menu.Build(_canvas.transform);
+        _menu!.Build(_canvas!.transform);
     }
 
     [TearDown]
     public void Teardown()
     {
-        if (_menu != null) Object.DestroyImmediate(_menu.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas.gameObject);
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -58,8 +58,8 @@ public class ContextMenuLayoutTests
     public void Facade_GapSectionBottomAboveNextRow()
     {
         var facade = MakeFacade("F1");
-        _menu.Open(facade);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(facade);
+        var panel = _canvas!.transform.Find("ContextMenu");
         Assert.NotNull(panel);
 
         var gapSection = panel.Find("_GapSection");
@@ -82,13 +82,13 @@ public class ContextMenuLayoutTests
     [Test]
     public void Board_GapSectionInactive_PositionRowsShiftedUp()
     {
-        var panel = _canvas.transform.Find("ContextMenu");
+        var panel = _canvas!.transform.Find("ContextMenu");
         Assert.NotNull(panel);
         var gapSection = panel.Find("_GapSection");
         Assert.NotNull(gapSection);
 
         var board = MakeBoard("B1");
-        _menu.Open(board);
+        _menu!.Open(board);
 
         Assert.IsFalse(gapSection.gameObject.activeSelf,
             "gap section must be hidden for regular board");
@@ -98,8 +98,8 @@ public class ContextMenuLayoutTests
     public void Facade_NoOverlap_BetweenGapAndNextRow()
     {
         var facade = MakeFacade("F1");
-        _menu.Open(facade);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(facade);
+        var panel = _canvas!.transform.Find("ContextMenu");
 
         var gapSection = panel.Find("_GapSection");
         var xInput = panel.Find("F_X, м");
@@ -133,7 +133,7 @@ public class ContextMenuLayoutTests
     [Test]
     public void GapSection_AddNewRow_AdjustsHeightAutomatically()
     {
-        var panel = _canvas.transform.Find("ContextMenu");
+        var panel = _canvas!.transform.Find("ContextMenu");
         var gapSection = panel.Find("_GapSection");
         var gapRt = gapSection.GetComponent<RectTransform>();
         float h = gapRt.sizeDelta.y;
@@ -149,8 +149,8 @@ public class ContextMenuLayoutTests
     public void Board_RowLabelAndFieldStayAligned()
     {
         var board = MakeBoard("B1");
-        _menu.Open(board);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(board);
+        var panel = _canvas!.transform.Find("ContextMenu");
 
         foreach (var row in new[] { "X, м", "Y, м", "Z, м",
                                     "Поворот X°", "Поворот Y°", "Поворот Z°" })
@@ -167,8 +167,8 @@ public class ContextMenuLayoutTests
     public void Board_RotationLabelBelowRotationRows_NoOverlap()
     {
         var board = MakeBoard("B1");
-        _menu.Open(board);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(board);
+        var panel = _canvas!.transform.Find("ContextMenu");
 
         var rotLbl = panel.Find("CtxRotLbl").GetComponent<RectTransform>();
         var rzLbl = panel.Find("L_Поворот Z°").GetComponent<RectTransform>();
@@ -186,8 +186,8 @@ public class ContextMenuLayoutTests
     public void Board_TitleStaysInsidePanel()
     {
         var board = MakeBoard("B1");
-        _menu.Open(board);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(board);
+        var panel = _canvas!.transform.Find("ContextMenu");
 
         var title = panel.Find("CtxTitle").GetComponent<RectTransform>();
         // Заголовок заякорен к верху панели, pivot сверху → anchoredPosition.y
@@ -203,8 +203,8 @@ public class ContextMenuLayoutTests
     public void Facade_GapSectionContainsItsChildren()
     {
         var facade = MakeFacade("F1");
-        _menu.Open(facade);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(facade);
+        var panel = _canvas!.transform.Find("ContextMenu");
         var gapSection = panel.Find("_GapSection");
         var gapRt = gapSection.GetComponent<RectTransform>();
 
@@ -227,8 +227,8 @@ public class ContextMenuLayoutTests
     public void Title_SitsJustAboveFirstRow()
     {
         var board = MakeBoard("B1");
-        _menu.Open(board);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(board);
+        var panel = _canvas!.transform.Find("ContextMenu");
 
         var title = panel.Find("CtxTitle").GetComponent<RectTransform>();
         // Первая строка под заголовком — выпадающий список типа детали (CtxType).
@@ -248,8 +248,8 @@ public class ContextMenuLayoutTests
     public void Facade_HasDoorButton_WithOpenLabel()
     {
         var facade = MakeFacade("F1");
-        _menu.Open(facade);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(facade);
+        var panel = _canvas!.transform.Find("ContextMenu");
 
         var door = panel.Find("CtxDoor");
         Assert.NotNull(door, "у фасада должна быть кнопка открытия");
@@ -261,8 +261,8 @@ public class ContextMenuLayoutTests
     public void Facade_HasModeDropdown_With18Options()
     {
         var facade = MakeFacade("F1");
-        _menu.Open(facade);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(facade);
+        var panel = _canvas!.transform.Find("ContextMenu");
 
         var mode = panel.Find("CtxMode");
         Assert.NotNull(mode, "у фасада должен быть список режимов");
@@ -276,8 +276,8 @@ public class ContextMenuLayoutTests
     public void Board_DoorControls_Hidden()
     {
         var board = MakeBoard("B1");
-        _menu.Open(board);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(board);
+        var panel = _canvas!.transform.Find("ContextMenu");
 
         foreach (var name in new[] { "CtxDoor", "CtxMode" })
         {
@@ -291,8 +291,8 @@ public class ContextMenuLayoutTests
     public void DoorButton_Click_TogglesFacadeAndLabel()
     {
         var facade = MakeFacade("F1");
-        _menu.Open(facade);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(facade);
+        var panel = _canvas!.transform.Find("ContextMenu");
         var door = panel.Find("CtxDoor");
         var label = door.GetComponentInChildren<TMP_Text>(true);
 
@@ -310,8 +310,8 @@ public class ContextMenuLayoutTests
     public void ModeDropdown_Select_SetsFacadeMode()
     {
         var facade = MakeFacade("F1");
-        _menu.Open(facade);
-        var panel = _canvas.transform.Find("ContextMenu");
+        _menu!.Open(facade);
+        var panel = _canvas!.transform.Find("ContextMenu");
         var dd = panel.Find("CtxMode").GetComponent<TMP_Dropdown>();
 
         Assert.AreEqual(DoorMode.HingeFrontLeft, facade.Mode);

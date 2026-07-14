@@ -16,10 +16,10 @@ namespace KitchenDesigner.Core.UI
         private const float ViewportCenterY = -30f;
         private const int MaxNameChars = 22;
 
-        private GameObject _root = null!;
-        private TMP_Text _content = null!;
-        private RectTransform _contentRect = null!;
-        private ScrollRect _scrollRect = null!;
+        private GameObject? _root;
+        private TMP_Text? _content;
+        private RectTransform? _contentRect;
+        private ScrollRect? _scrollRect;
 
         public void Build(Transform canvas)
         {
@@ -36,7 +36,7 @@ namespace KitchenDesigner.Core.UI
             BuildScrollArea(panel.transform);
             BuildButtons(panel.transform);
 
-            _root.SetActive(false);
+            _root!.SetActive(false);
         }
 
         private void BuildStaticHeaders(Transform parent)
@@ -163,15 +163,15 @@ namespace KitchenDesigner.Core.UI
             sb.Append($"<pos={ColName}>Всего:" +
                       $"<pos={ColCount}>{result.totalCount}" +
                       $"<pos={ColArea}>{result.totalAreaM2:F2}");
-            _content.text = sb.ToString();
+            _content!.text = sb.ToString();
 
-            _content.ForceMeshUpdate();
-            var preferred = _content.GetPreferredValues(ContentWidth, 0f);
-            _contentRect.sizeDelta = new Vector2(ContentWidth, Mathf.Max(preferred.y, 10f));
+            _content!.ForceMeshUpdate();
+            var preferred = _content!.GetPreferredValues(ContentWidth, 0f);
+            _contentRect!.sizeDelta = new Vector2(ContentWidth, Mathf.Max(preferred.y, 10f));
 
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRect);
-            _scrollRect.Rebuild(CanvasUpdate.PostLayout);
-            _scrollRect.verticalNormalizedPosition = 1f;
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRect!);
+            _scrollRect!.Rebuild(CanvasUpdate.PostLayout);
+            _scrollRect!.verticalNormalizedPosition = 1f;
         }
 
         private static string Trim(string s, int max) =>

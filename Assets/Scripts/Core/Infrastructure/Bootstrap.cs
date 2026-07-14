@@ -69,7 +69,7 @@ namespace KitchenDesigner.Core
                             },
                             _ =>
                             {
-            GameContext.Services.SaveLoadManager!.LoadLastSession();
+            GameContext.Services!.SaveLoadManager.LoadLastSession();
                             });
                         return;
                     }

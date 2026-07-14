@@ -25,7 +25,7 @@ namespace KitchenDesigner.Core
             }
             set => _fallback = value;
         }
-        private static ICommandStack _fallback = null!;
+        private static ICommandStack? _fallback;
 
         public static bool CanUndo => Instance.CanUndo;
         public static bool CanRedo => Instance.CanRedo;
@@ -51,7 +51,7 @@ namespace KitchenDesigner.Core
 
     public class MoveCommand : IUndoCommand, ISerializableCommand
     {
-        private KitchenElement _element = null!;
+        private KitchenElement? _element;
         private Vector3 _before;
         private Vector3 _after;
         private Quaternion _rotBefore;
@@ -167,7 +167,7 @@ namespace KitchenDesigner.Core
 
     public class ResizeCommand : IUndoCommand, ISerializableCommand
     {
-        private KitchenElement _element = null!;
+        private KitchenElement? _element;
         private Vector3Int _dimsBefore;
         private Vector3Int _dimsAfter;
         private Vector3 _posBefore;

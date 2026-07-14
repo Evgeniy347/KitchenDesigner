@@ -50,10 +50,10 @@ namespace KitchenDesigner.Core
         /// <summary>Толщина ребра в метрах.</summary>
         private const float ThicknessMeters = 0.004f;
 
-        private static Material? _blackMat = null!;
-        private static Material? _selectedMat = null!;
+        private static Material? _blackMat;
+        private static Material? _selectedMat;
 
-        private Transform _root = null!;
+        private Transform? _root;
         private readonly Transform[] _edges = new Transform[BoxWireframe.EdgeCount];
         private readonly Vector3[] _corners = new Vector3[8];
         private bool _visible;

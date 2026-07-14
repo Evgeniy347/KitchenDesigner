@@ -5,8 +5,8 @@ using KitchenDesigner.Core;
 
 public class SnapSystemTests
 {
-    private KitchenElement _elementA = null!;
-    private KitchenElement _elementB = null!;
+    private KitchenElement? _elementA;
+    private KitchenElement? _elementB;
 
     [SetUp]
     public void Setup()
@@ -23,17 +23,17 @@ public class SnapSystemTests
     [TearDown]
     public void Teardown()
     {
-        if (_elementA != null) Object.DestroyImmediate(_elementA.gameObject);
-        if (_elementB != null) Object.DestroyImmediate(_elementB.gameObject);
+        if (_elementA != null) Object.DestroyImmediate(_elementA!.gameObject);
+        if (_elementB != null) Object.DestroyImmediate(_elementB!.gameObject);
     }
 
     [Test]
     public void TrySnap_30mmGap_Snapped()
     {
-        _elementA.transform.position = Vector3.zero;
-        _elementB.transform.position = new Vector3(0.83f, 0, 0);
+        _elementA!.transform.position = Vector3.zero;
+        _elementB!.transform.position = new Vector3(0.83f, 0, 0);
 
-        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA }, _elementB.transform.position);
+        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA }, _elementB!.transform.position);
 
         Assert.IsTrue(result.snapped, "Should snap when gap is 30mm < threshold 50mm");
         Assert.AreEqual(0.800f, result.position.x, 0.001f);
@@ -42,10 +42,10 @@ public class SnapSystemTests
     [Test]
     public void TrySnap_60mmGap_NotSnapped()
     {
-        _elementA.transform.position = Vector3.zero;
-        _elementB.transform.position = new Vector3(0.86f, 0, 0);
+        _elementA!.transform.position = Vector3.zero;
+        _elementB!.transform.position = new Vector3(0.86f, 0, 0);
 
-        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA }, _elementB.transform.position);
+        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA }, _elementB!.transform.position);
 
         Assert.IsFalse(result.snapped, "Should NOT snap when gap is 60mm > threshold 50mm");
     }
@@ -57,9 +57,9 @@ public class SnapSystemTests
         // (низ на y=0.05, зазор 41мм < порога 50мм) → снэп опускает центр на
         // 0.009 + 0.2 = 0.209.
         var floor = CreateElement("Floor", new Vector3Int(3000, 18, 3000), Vector3.zero);
-        _elementB.transform.position = new Vector3(0, 0.25f, 0);
+        _elementB!.transform.position = new Vector3(0, 0.25f, 0);
 
-        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { floor }, _elementB.transform.position);
+        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { floor }, _elementB!.transform.position);
 
         Assert.IsTrue(result.snapped, "Element above floor should snap down to it");
         Assert.AreEqual(0.209f, result.position.y, 0.001f);
@@ -70,10 +70,10 @@ public class SnapSystemTests
     [Test]
     public void TrySnap_IntersectingElements_SnapsApart()
     {
-        _elementA.transform.position = Vector3.zero;
-        _elementB.transform.position = Vector3.zero;
+        _elementA!.transform.position = Vector3.zero;
+        _elementB!.transform.position = Vector3.zero;
 
-        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA }, _elementB.transform.position);
+        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA }, _elementB!.transform.position);
 
         // Полностью совпадающие детали: грани ±Z в зазоре 18 мм → снэп разведёт по Z.
         Assert.IsTrue(result.snapped, "снэп разведёт пересекающиеся детали по Z");
@@ -86,10 +86,10 @@ public class SnapSystemTests
     public void TrySnap_SnapDisabled_NotSnapped()
     {
         KitchenSettings.Instance.SnapEnabled = false;
-        _elementA.transform.position = Vector3.zero;
-        _elementB.transform.position = new Vector3(0.83f, 0, 0);
+        _elementA!.transform.position = Vector3.zero;
+        _elementB!.transform.position = new Vector3(0.83f, 0, 0);
 
-        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA }, _elementB.transform.position);
+        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA }, _elementB!.transform.position);
 
         Assert.IsFalse(result.snapped, "Should NOT snap when snap is disabled");
     }

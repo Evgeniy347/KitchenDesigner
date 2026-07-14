@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 public class FacadeMcpTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
-    private McpCommandHandler _handler = null!;
+    private McpCommandHandler? _handler;
 
     [SetUp]
     public void Setup()
@@ -71,7 +71,7 @@ public class FacadeMcpTests
     public void GetElementInfo_Facade_ReturnsFaceNormalAndNoObstructions()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "F" }));
+        var resp = _handler!.Handle(MakeReq("get_element_info", new { name = "F" }));
         Assert.AreEqual("result", resp.type);
 
         var json = JObject.FromObject(resp.data!);
@@ -89,7 +89,7 @@ public class FacadeMcpTests
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         MakeElement("Obstacle", new Vector3Int(200, 200, 18), new Vector3(0f, 0f, 0.038f));
 
-        var resp = _handler.Handle(MakeReq("get_element_info", new { name = "F" }));
+        var resp = _handler!.Handle(MakeReq("get_element_info", new { name = "F" }));
         var json = JObject.FromObject(resp.data!);
         var obs = json["faceObstructions"] as JArray;
         Assert.AreEqual(1, obs!.Count);
@@ -104,7 +104,7 @@ public class FacadeMcpTests
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, -0.3f));
         GroupManager.Link(new List<KitchenElement> { box, f });
 
-        var resp = _handler.Handle(MakeReq("get_violations", new { }));
+        var resp = _handler!.Handle(MakeReq("get_violations", new { }));
         var json = JObject.FromObject(resp.data!);
         var violations = json["violations"] as JArray;
 
@@ -121,7 +121,7 @@ public class FacadeMcpTests
     [Test]
     public void CreateElement_Facade_ReturnsFaceValidationFields()
     {
-        var resp = _handler.Handle(MakeReq("create_element", new
+        var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "Door", x = 0f, y = 0f, z = 0f,
             width = 400, height = 300, depth = 18, is_facade = true
@@ -140,7 +140,7 @@ public class FacadeMcpTests
     public void RotateElement_Facade_ReturnsFaceValidationFields()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
-        var resp = _handler.Handle(MakeReq("rotate_element", new { name = "F", y = 90f }));
+        var resp = _handler!.Handle(MakeReq("rotate_element", new { name = "F", y = 90f }));
 
         var json = JObject.FromObject(resp.data!);
         Assert.IsNotNull(json["faceNormal"]);
@@ -155,7 +155,7 @@ public class FacadeMcpTests
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         MakeElement("Obstacle", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, 0.3f));
 
-        var resp = _handler.Handle(MakeReq("set_facade_mode", new { name = "F", mode = "drawer_out" }));
+        var resp = _handler!.Handle(MakeReq("set_facade_mode", new { name = "F", mode = "drawer_out" }));
         var json = JObject.FromObject(resp.data!);
         Assert.AreEqual("drawer_out", json["mode"]!.Value<string>());
         var viol = json["openingViolations"] as JArray;
