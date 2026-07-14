@@ -1084,12 +1084,16 @@ namespace KitchenDesigner.Core.MCP
         private McpResponse HandleTakeScreenshot(McpRequest req)
         {
             var path = System.IO.Path.Combine(Application.temporaryCachePath, "mcp_screenshot.png");
+#if UNITY_WEBGL
+            ScreenCapture.CaptureScreenshot(path);
+#else
             var tex = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
             tex.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
             tex.Apply();
             var bytes = ImageConversion.EncodeToPNG(tex);
             System.IO.File.WriteAllBytes(path, bytes);
             Object.Destroy(tex);
+#endif
             return McpResponse.Result(req.id, new { ok = true, path });
         }
 
