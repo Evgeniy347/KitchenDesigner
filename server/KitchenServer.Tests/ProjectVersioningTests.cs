@@ -35,13 +35,14 @@ public sealed class ProjectVersioningTests : IDisposable
         string userId = "user1",
         int version = 1,
         bool isLatest = true,
-        bool isDeleted = false) => new()
+        bool isDeleted = false,
+        string jsonData = """{"boards":[]}""") => new()
     {
         Id = id ?? Guid.NewGuid(),
         ProjectGroupId = projectGroupId ?? id ?? Guid.NewGuid(),
         UserId = userId,
         Name = name,
-        JsonData = """{"boards":[]}""",
+        JsonData = jsonData,
         Version = version,
         IsLatest = isLatest,
         IsDeleted = isDeleted,
@@ -702,5 +703,208 @@ public sealed class ProjectVersioningTests : IDisposable
         var reloaded = await verifyDb.Projects.FirstAsync(x => x.Id == p.Id);
         Assert.Equal("Renamed Project", reloaded.Name);
         Assert.Equal(1, reloaded.Version); // version unchanged — inline metadata edit
+    }
+
+    // ── Restore version — creates new version from old JSON ─────────────
+
+    [Fact]
+    public async Task Restore_CreatesNewVersion_WithIncrementedNumber()
+    {
+        var pgId = Guid.NewGuid();
+        var v1 = MakeProject(id: Guid.NewGuid(), projectGroupId: pgId, version: 1,
+            isLatest: false, jsonData: """{"boards":[1]}""");
+        var v2 = MakeProject(id: Guid.NewGuid(), projectGroupId: pgId, version: 2,
+            isLatest: false, jsonData: """{"boards":[1,2]}""");
+        var v3 = MakeProject(id: Guid.NewGuid(), projectGroupId: pgId, version: 3,
+            isLatest: true, jsonData: """{"boards":[1,2,3]}""");
+
+        await SeedAsync(v1);
+        await SeedAsync(v2);
+        await SeedAsync(v3);
+
+        // Restore v1
+        await using var db = new AppDbContext(_options);
+        var current = await db.Projects
+            .FirstAsync(x => x.ProjectGroupId == pgId && x.IsLatest && !x.IsDeleted);
+
+        var restoredJson = """{"boards":[1]}"""; // v1's JSON
+        var now = DateTime.UtcNow;
+
+        current.IsLatest = false;
+        current.UpdatedAt = now;
+
+        var restored = new Project
+        {
+            Id = Guid.NewGuid(),
+            ProjectGroupId = pgId,
+            UserId = current.UserId,
+            Name = current.Name,
+            JsonData = restoredJson,
+            Version = current.Version + 1,
+            IsLatest = true,
+            CreatedAt = current.CreatedAt,
+            UpdatedAt = now
+        };
+        db.Projects.Add(restored);
+        await db.SaveChangesAsync();
+
+        await using var verifyDb = new AppDbContext(_options);
+        var latest = await verifyDb.Projects
+            .FirstAsync(x => x.ProjectGroupId == pgId && x.IsLatest);
+        Assert.Equal(4, latest.Version);
+        Assert.Equal(restoredJson, latest.JsonData);
+    }
+
+    [Fact]
+    public async Task Restore_OldLatestGetsIsLatestFalse()
+    {
+        var pgId = Guid.NewGuid();
+        var v1 = MakeProject(id: Guid.NewGuid(), projectGroupId: pgId, version: 1,
+            isLatest: false, jsonData: """{"v":1}""");
+        var v2 = MakeProject(id: Guid.NewGuid(), projectGroupId: pgId, version: 2,
+            isLatest: true, jsonData: """{"v":2}""");
+
+        await SeedAsync(v1);
+        await SeedAsync(v2);
+
+        await using var db = new AppDbContext(_options);
+        var current = await db.Projects
+            .FirstAsync(x => x.ProjectGroupId == pgId && x.IsLatest);
+        current.IsLatest = false;
+        current.UpdatedAt = DateTime.UtcNow;
+
+        var restored = new Project
+        {
+            Id = Guid.NewGuid(),
+            ProjectGroupId = pgId,
+            UserId = current.UserId,
+            Name = current.Name,
+            JsonData = """{"v":1}""",
+            Version = current.Version + 1,
+            IsLatest = true,
+            CreatedAt = current.CreatedAt,
+            UpdatedAt = DateTime.UtcNow
+        };
+        db.Projects.Add(restored);
+        await db.SaveChangesAsync();
+
+        await using var verifyDb = new AppDbContext(_options);
+        var oldV2 = await verifyDb.Projects.FirstAsync(x => x.Id == v2.Id);
+        Assert.False(oldV2.IsLatest);
+    }
+
+    [Fact]
+    public async Task Restore_NewVersionHasOldJson()
+    {
+        var pgId = Guid.NewGuid();
+        var v1 = MakeProject(id: Guid.NewGuid(), projectGroupId: pgId, version: 1,
+            isLatest: true, jsonData: """{"elements":["wall","cabinet"]}""");
+        await SeedAsync(v1);
+
+        var oldJson = """{"elements":["wall"]}""";
+
+        await using var db = new AppDbContext(_options);
+        var current = await db.Projects
+            .FirstAsync(x => x.ProjectGroupId == pgId && x.IsLatest);
+        current.IsLatest = false;
+        current.UpdatedAt = DateTime.UtcNow;
+
+        var restored = new Project
+        {
+            Id = Guid.NewGuid(),
+            ProjectGroupId = pgId,
+            UserId = current.UserId,
+            Name = current.Name,
+            JsonData = oldJson,
+            Version = 2,
+            IsLatest = true,
+            CreatedAt = current.CreatedAt,
+            UpdatedAt = DateTime.UtcNow
+        };
+        db.Projects.Add(restored);
+        await db.SaveChangesAsync();
+
+        await using var verifyDb = new AppDbContext(_options);
+        var latest = await verifyDb.Projects
+            .FirstAsync(x => x.ProjectGroupId == pgId && x.IsLatest);
+        Assert.Equal(oldJson, latest.JsonData);
+        Assert.NotEqual(v1.JsonData, latest.JsonData);
+    }
+
+    [Fact]
+    public async Task Restore_PreservesCreatedAtFromFirstVersion()
+    {
+        var pgId = Guid.NewGuid();
+        var v1 = MakeProject(id: Guid.NewGuid(), projectGroupId: pgId, version: 1,
+            isLatest: false, jsonData: """{"v":1}""");
+        var v2 = MakeProject(id: Guid.NewGuid(), projectGroupId: pgId, version: 2,
+            isLatest: true, jsonData: """{"v":2}""");
+
+        var originalCreatedAt = v1.CreatedAt;
+
+        await SeedAsync(v1);
+        await SeedAsync(v2);
+
+        await using var db = new AppDbContext(_options);
+        var current = await db.Projects
+            .FirstAsync(x => x.ProjectGroupId == pgId && x.IsLatest);
+        current.IsLatest = false;
+        current.UpdatedAt = DateTime.UtcNow;
+
+        var restored = new Project
+        {
+            Id = Guid.NewGuid(),
+            ProjectGroupId = pgId,
+            UserId = current.UserId,
+            Name = current.Name,
+            JsonData = """{"v":1}""",
+            Version = 3,
+            IsLatest = true,
+            CreatedAt = current.CreatedAt,
+            UpdatedAt = DateTime.UtcNow
+        };
+        db.Projects.Add(restored);
+        await db.SaveChangesAsync();
+
+        await using var verifyDb = new AppDbContext(_options);
+        var all = await verifyDb.Projects
+            .Where(x => x.ProjectGroupId == pgId)
+            .ToListAsync();
+        Assert.Equal(3, all.Count);
+        Assert.All(all, x => Assert.Equal(originalCreatedAt, x.CreatedAt));
+    }
+
+    [Fact]
+    public async Task Restore_OnlyOneIsLatestAfterRestore()
+    {
+        var pgId = Guid.NewGuid();
+        var v1 = MakeProject(id: Guid.NewGuid(), projectGroupId: pgId, version: 1,
+            isLatest: true, jsonData: """{"v":1}""");
+        await SeedAsync(v1);
+
+        await using var db = new AppDbContext(_options);
+        var current = await db.Projects
+            .FirstAsync(x => x.ProjectGroupId == pgId && x.IsLatest);
+        current.IsLatest = false;
+        current.UpdatedAt = DateTime.UtcNow;
+
+        db.Projects.Add(new Project
+        {
+            Id = Guid.NewGuid(),
+            ProjectGroupId = pgId,
+            UserId = current.UserId,
+            Name = current.Name,
+            JsonData = current.JsonData,
+            Version = 2,
+            IsLatest = true,
+            CreatedAt = current.CreatedAt,
+            UpdatedAt = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        await using var verifyDb = new AppDbContext(_options);
+        var latestCount = await verifyDb.Projects
+            .CountAsync(x => x.ProjectGroupId == pgId && x.IsLatest);
+        Assert.Equal(1, latestCount);
     }
 }

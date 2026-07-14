@@ -8,6 +8,7 @@
 @using KitchenServer.Web.Services
 @inject IDbContextFactory<AppDbContext> DbFactory
 @inject ProjectStorageService Storage
+@inject ExampleProjectService ExampleService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthProvider
 @inject IJSRuntime JS
@@ -146,6 +147,17 @@
 
             _projects.Clear();
             await using var db = await DbFactory.CreateDbContextAsync();
+
+            // Ensure example project exists for this user (create/update if needed).
+            try
+            {
+                await ExampleService.EnsureAsync(DbFactory, Storage, userId);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Example seeding skipped: {ex.Message}");
+            }
+
             var dbProjects = await db.Projects
                 .Where(p => p.UserId == userId && p.IsLatest && !p.IsDeleted && !p.IsArchived)
                 .OrderByDescending(p => p.UpdatedAt)
