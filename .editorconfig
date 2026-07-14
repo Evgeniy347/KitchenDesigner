@@ -89,6 +89,10 @@ dotnet_diagnostic.CA1849.severity = none
 dotnet_diagnostic.CA1062.severity = none
 dotnet_diagnostic.CA1822.severity = none
 dotnet_diagnostic.CA1812.severity = none
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
+dotnet_diagnostic.CA1001.severity = none
+dotnet_diagnostic.CA1852.severity = none
 
 [**/Tests/**.cs]
 dotnet_diagnostic.CA1307.severity = none
