@@ -86,5 +86,23 @@ namespace KitchenDesigner.Core
                 if (e != null && e.PartName == name) return true;
             return false;
         }
+
+        public static bool IsFacadeInContact(DrawerElement drawer, FacadeElement facade)
+        {
+            if (drawer == null || facade == null) return false;
+            var savedPos = drawer.transform.position;
+            var savedRot = drawer.transform.rotation;
+            try
+            {
+                drawer.transform.position = drawer.ClosedPosition;
+                drawer.transform.rotation = drawer.ClosedRotation;
+                return ConstraintValidator.AreInFaceToFaceContact(drawer, facade);
+            }
+            finally
+            {
+                drawer.transform.position = savedPos;
+                drawer.transform.rotation = savedRot;
+            }
+        }
     }
 }

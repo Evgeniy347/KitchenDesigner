@@ -863,9 +863,16 @@ namespace KitchenDesigner.Core.UI
         {
             if (_drawerFacadeDropdown == null) return;
             var opts = new List<TMP_Dropdown.OptionData> { new TMP_Dropdown.OptionData("(нет фасада)") };
+            var drawer = _target as DrawerElement;
+            var attachedName = drawer?.AttachedFacadeName ?? "";
             foreach (var el in PartRegistry.GetAll())
-                if (el is FacadeElement fe && !string.IsNullOrEmpty(fe.PartName))
-                    opts.Add(new TMP_Dropdown.OptionData(fe.PartName));
+            {
+                if (!(el is FacadeElement fe) || string.IsNullOrEmpty(fe.PartName)) continue;
+                bool isAttached = !string.IsNullOrEmpty(attachedName) && fe.PartName == attachedName;
+                bool inContact = drawer != null && DrawerLinks.IsFacadeInContact(drawer, fe);
+                if (!isAttached && !inContact) continue;
+                opts.Add(new TMP_Dropdown.OptionData(fe.PartName));
+            }
             _drawerFacadeDropdown.options = opts;
         }
 
