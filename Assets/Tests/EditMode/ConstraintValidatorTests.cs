@@ -165,4 +165,49 @@ public class ConstraintValidatorTests
         var result = ConstraintValidator.Validate(new List<KitchenElement>());
         Assert.IsTrue(result.isValid);
     }
+
+    // Broad-phase сетка не должна терять пары: далеко стоящая изолированная деталь
+    // обязана остаться нарушением, а близкая цепочка — дать ровно 2 контакта.
+    // Сцена сознательно раскидана по X, чтобы элементы попали в разные ячейки.
+    [Test]
+    public void Validate_NearChainAndFarIsolated_GridKeepsPairs()
+    {
+        var floor = CreateElement("Floor", new Vector3Int(3000, 18, 3000), new Vector3(0, -0.009f, 0));
+        var a = CreateElement("A", new Vector3Int(800, 400, 18), new Vector3(0, 0.2f, 0));
+        var b = CreateElement("B", new Vector3Int(800, 400, 18), new Vector3(0.8f, 0.2f, 0));
+        // D висит в воздухе далеко (50м) — в отдельной ячейке, не касается никого.
+        var d = CreateElement("D", new Vector3Int(800, 400, 18), new Vector3(50f, 5f, 0));
+
+        var result = ConstraintValidator.Validate(new List<KitchenElement> { floor, a, b, d });
+
+        Assert.IsFalse(result.isValid);
+        // floor-A, floor-B (B тоже стоит на полу) и A-B — три face-контакта.
+        Assert.AreEqual(3, result.contacts.Count, "floor-A, floor-B, A-B должны дать 3 контакта");
+        Assert.AreEqual(1, result.violations.Count, "только D — нарушение");
+        Assert.AreEqual(d, result.violations[0]);
+        Assert.AreEqual(1, result.isolatedGroups.Count);
+
+        Object.DestroyImmediate(floor.gameObject);
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
+        Object.DestroyImmediate(d.gameObject);
+    }
+
+    // Пересечение вдали от начала координат: проверяет, что сетка корректно
+    // работает с большими/отрицательными индексами ячеек и не пропускает пару.
+    [Test]
+    public void Validate_IntersectingFarFromOrigin_StillDetected()
+    {
+        var a = CreateElement("A", new Vector3Int(800, 400, 18), new Vector3(100f, -30f, 7f));
+        var b = CreateElement("B", new Vector3Int(800, 400, 18), new Vector3(100.1f, -30f, 7f));
+
+        var result = ConstraintValidator.Validate(new List<KitchenElement> { a, b });
+
+        Assert.AreEqual(0, result.contacts.Count, "пересекающиеся детали не дают контакт");
+        Assert.IsFalse(result.isValid);
+        Assert.AreEqual(2, result.violations.Count);
+
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
+    }
 }

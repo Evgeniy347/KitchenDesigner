@@ -16,13 +16,74 @@ namespace KitchenDesigner.Core
         private const float ContactDistMM = 0.5f;
         private const float FaceToFaceOverlap = 0.5f;
 
+        // Должен совпадать с SnapSystem.ElementsIntersect: AABB-пересечение с этим
+        // допуском не считает пересечением детали, стоящие вплотную гранями (их AABB
+        // могут давать ничтожное ~1e-9 м перекрытие из-за погрешности float).
+        private const float IntersectEpsilon = 1e-4f;
+
+        // Размер ячейки равномерной сетки broad-phase (метры). Деталь заносится во ВСЕ
+        // ячейки, которых касается её AABB, расширенный на contactDist. Тогда любая пара,
+        // способная пересечься или образовать face-контакт (грани в пределах contactDist
+        // и перекрывающиеся в плоскости), гарантированно оказывается в общей ячейке:
+        // |pa-pb| <= contactDist => pa попадает в расширенный AABB соседа.
+        private const float GridCellSize = 1.0f;
+
         // Якорь графа связности — пол или стена (к ним заземляются детали).
         private static bool IsAnchor(KitchenElement e) =>
             e != null && (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null);
 
+        // ── Статический скратч: контейнеры переиспользуются между вызовами Validate,
+        //    чтобы в горячем пути (перетаскивание — Validate каждый кадр) не было
+        //    аллокаций. Validate НЕ реентерабелен (вложенных вызовов нет), поэтому
+        //    статическое состояние безопасно.
+        private static readonly List<KitchenElement> _elems = new List<KitchenElement>();
+        private static readonly List<AABB> _aabbs = new List<AABB>();
+        private static readonly List<KitchenElement.Face[]> _faces = new List<KitchenElement.Face[]>();
+        private static readonly Dictionary<long, List<int>> _grid = new Dictionary<long, List<int>>();
+        private static readonly Stack<List<int>> _cellPool = new Stack<List<int>>();
+        private static readonly HashSet<long> _seenPairs = new HashSet<long>();
+        private static readonly List<(int lo, int hi)> _candidates = new List<(int lo, int hi)>();
+        private static readonly HashSet<KitchenElement> _overlapping = new HashSet<KitchenElement>();
+
+        // 21 бит на координату ячейки (сдвиг +Offset => диапазон ±1M ячеек). Три оси
+        // упаковываются в 63 бита без знаковых коллизий — ключ ячейки без коллизий.
+        private const long CellOffset = 1 << 20;
+        private static long CellKey(int cx, int cy, int cz) =>
+            ((long)(cx + CellOffset) << 42) | ((long)(cy + CellOffset) << 21) | (long)(cz + CellOffset);
+
+        private static int CellFloor(float coord) => Mathf.FloorToInt(coord / GridCellSize);
+
+        private static List<int> GridCell(int cx, int cy, int cz)
+        {
+            long key = CellKey(cx, cy, cz);
+            if (!_grid.TryGetValue(key, out var list))
+            {
+                list = _cellPool.Count > 0 ? _cellPool.Pop() : new List<int>();
+                _grid[key] = list;
+            }
+            return list;
+        }
+
+        private static void ClearScratch()
+        {
+            _elems.Clear();
+            _aabbs.Clear();
+            _faces.Clear();
+            foreach (var kv in _grid)
+            {
+                kv.Value.Clear();
+                _cellPool.Push(kv.Value);
+            }
+            _grid.Clear();
+            _seenPairs.Clear();
+            _candidates.Clear();
+            _overlapping.Clear();
+        }
+
         public static ValidationResult Validate(List<KitchenElement> all)
         {
             var result = new ValidationResult();
+            ClearScratch();
 
             if (all == null || all.Count == 0)
             {
@@ -31,52 +92,81 @@ namespace KitchenDesigner.Core
             }
 
             float contactDist = ContactDistMM * AppConstants.MM_TO_UNITS;
-            var overlapping = new HashSet<KitchenElement>();
 
+            // 1) Кэш геометрии: для каждой валидной детали ОДИН раз считаем вершины,
+            //    AABB и грани. Раньше GetVertices()/GetFaces() вызывались на каждую пару
+            //    (O(n²) аллокаций массивов), теперь — O(n). Этим убирается основной
+            //    источник GC-провалов при перетаскивании.
             for (int i = 0; i < all.Count; i++)
             {
-                for (int j = i + 1; j < all.Count; j++)
+                var e = all[i];
+                if (e == null) continue;
+                _elems.Add(e);
+                _aabbs.Add(ComputeAABB(e.GetVertices()));
+                _faces.Add(e.GetFaces());
+            }
+
+            int m = _elems.Count;
+            if (m == 0)
+            {
+                result.isValid = true;
+                return result;
+            }
+
+            // 2) Broad-phase: равномерная сетка. Каждая деталь заносится во все ячейки,
+            //    которых касается её AABB + contactDist. Пары-кандидаты собираем из
+            //    общих ячеек с дедупом по упакованному ключу (lo,hi).
+            for (int k = 0; k < m; k++)
+            {
+                var b = _aabbs[k];
+                int cx0 = CellFloor(b.minX - contactDist), cx1 = CellFloor(b.maxX + contactDist);
+                int cy0 = CellFloor(b.minY - contactDist), cy1 = CellFloor(b.maxY + contactDist);
+                int cz0 = CellFloor(b.minZ - contactDist), cz1 = CellFloor(b.maxZ + contactDist);
+                for (int cx = cx0; cx <= cx1; cx++)
+                    for (int cy = cy0; cy <= cy1; cy++)
+                        for (int cz = cz0; cz <= cz1; cz++)
+                            GridCell(cx, cy, cz).Add(k);
+            }
+
+            foreach (var kv in _grid)
+            {
+                var cell = kv.Value;
+                int count = cell.Count;
+                if (count < 2) continue;
+                for (int x = 0; x < count; x++)
                 {
-                    var a = all[i];
-                    var b = all[j];
-                    if (a == null || b == null) continue;
-                    if (SnapSystem.ElementsIntersect(a, b))
+                    int a = cell[x];
+                    for (int y = x + 1; y < count; y++)
                     {
-                        bool aDrawer = a is DrawerElement;
-                        bool bDrawer = b is DrawerElement;
-
-                        if (aDrawer && bDrawer)
-                        {
-                            // Парная двойная ящика намеренно делят пространство.
-                            var da = (DrawerElement)a; var db = (DrawerElement)b;
-                            if (!string.IsNullOrEmpty(da.PairedDrawerName) && da.PairedDrawerName == db.PartName) continue;
-                            if (!string.IsNullOrEmpty(db.PairedDrawerName) && db.PairedDrawerName == da.PartName) continue;
-                        }
-                        else if (aDrawer != bDrawer)
-                        {
-                            // Ящик живёт ВНУТРИ корпуса — пересечение с панелями своего же
-                            // модуля (GroupId) штатно (дно/задняя стенка/боковины). Не нарушение.
-                            // Два разных ящика в одном модуле сюда не попадают (см. ветку выше).
-                            if (a.GroupId != 0 && a.GroupId == b.GroupId) continue;
-                        }
-
-                        // Пересечение объёмов физически недопустимо: две детали не могут
-                        // занимать одно место. Помечаем обе как нарушение (даже если по
-                        // связности они валидны) — это и есть «красный» при перетаскивании.
-                        overlapping.Add(a);
-                        overlapping.Add(b);
-                        continue;
+                        int b = cell[y];
+                        int lo = a < b ? a : b;
+                        int hi = a < b ? b : a;
+                        long key = (long)lo << 32 | (uint)hi;
+                        if (!_seenPairs.Add(key)) continue;
+                        _candidates.Add((lo, hi));
                     }
-
-                    CheckPair(a, b, contactDist, result);
                 }
+            }
+
+            // Сортируем кандидатов по (lo,hi) — порядок пар совпадает с исходным
+            // двойным циклом for(i){for(j=i+1)}, значит порядок контактов в
+            // result.contacts не меняется (на него опираются тесты и подсветка).
+            _candidates.Sort((p, q) => p.lo != q.lo ? p.lo.CompareTo(q.lo) : p.hi.CompareTo(q.hi));
+
+            // 3) Точная per-pair проверка по той же логике, что и раньше: пересечение
+            //    AABB (с допуском) => особые случаи ящиков => пометка overlap; иначе
+            //    CheckPair по кэшированным граням.
+            for (int c = 0; c < _candidates.Count; c++)
+            {
+                var pair = _candidates[c];
+                ProcessPair(pair.lo, pair.hi, contactDist, result);
             }
 
             CheckConnectivity(all, result);
 
             // Пересекающиеся детали добавляем к нарушениям поверх проверки связности
             // (BasePlate исключаем — он якорь, его «пересечения» с деталями — это контакт).
-            foreach (var e in overlapping)
+            foreach (var e in _overlapping)
             {
                 if (e == null || IsAnchor(e)) continue;
                 if (!result.violations.Contains(e))
@@ -87,11 +177,48 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        private static void CheckPair(KitchenElement a, KitchenElement b, float contactDist, ValidationResult result)
+        private static void ProcessPair(int aIdx, int bIdx, float contactDist, ValidationResult result)
         {
-            var facesA = a.GetFaces();
-            var facesB = b.GetFaces();
+            var a = _elems[aIdx];
+            var b = _elems[bIdx];
+            var aabbA = _aabbs[aIdx];
+            var aabbB = _aabbs[bIdx];
 
+            if (AABBsIntersect(aabbA, aabbB))
+            {
+                bool aDrawer = a is DrawerElement;
+                bool bDrawer = b is DrawerElement;
+
+                if (aDrawer && bDrawer)
+                {
+                    // Парная двойная ящика намеренно делят пространство.
+                    var da = (DrawerElement)a; var db = (DrawerElement)b;
+                    if (!string.IsNullOrEmpty(da.PairedDrawerName) && da.PairedDrawerName == db.PartName) return;
+                    if (!string.IsNullOrEmpty(db.PairedDrawerName) && db.PairedDrawerName == da.PartName) return;
+                }
+                else if (aDrawer != bDrawer)
+                {
+                    // Ящик живёт ВНУТРИ корпуса — пересечение с панелями своего же
+                    // модуля (GroupId) штатно (дно/задняя стенка/боковины). Не нарушение.
+                    // Два разных ящика в одном модуле сюда не попадают (см. ветку выше).
+                    if (a.GroupId != 0 && a.GroupId == b.GroupId) return;
+                }
+
+                // Пересечение объёмов физически недопустимо: две детали не могут
+                // занимать одно место. Помечаем обе как нарушение (даже если по
+                // связности они валидны) — это и есть «красный» при перетаскивании.
+                _overlapping.Add(a);
+                _overlapping.Add(b);
+                return;
+            }
+
+            CheckPair(a, b, _faces[aIdx], _faces[bIdx], contactDist, result);
+        }
+
+        private static void CheckPair(KitchenElement a, KitchenElement b,
+            KitchenElement.Face[] facesA, KitchenElement.Face[] facesB,
+            float contactDist, ValidationResult result)
+        {
             for (int fa = 0; fa < 6; fa++)
             {
                 for (int fb = 0; fb < 6; fb++)
@@ -163,6 +290,39 @@ namespace KitchenDesigner.Core
                        + Mathf.Abs(Vector3.Dot(face.upAxis, v)) * face.size.y * 0.5f;
 
             return new Rect(center.x - halfU, center.y - halfV, halfU * 2, halfV * 2);
+        }
+
+        // AABB из мировых вершин — идентичен тому, что считала SnapSystem.ElementsIntersect
+        // из GetVertices(). Кэшируем один раз на деталь вместо пересчёта на каждую пару.
+        private static AABB ComputeAABB(Vector3[] v)
+        {
+            float minX = v[0].x, maxX = v[0].x;
+            float minY = v[0].y, maxY = v[0].y;
+            float minZ = v[0].z, maxZ = v[0].z;
+            for (int i = 1; i < 8; i++)
+            {
+                if (v[i].x < minX) minX = v[i].x; else if (v[i].x > maxX) maxX = v[i].x;
+                if (v[i].y < minY) minY = v[i].y; else if (v[i].y > maxY) maxY = v[i].y;
+                if (v[i].z < minZ) minZ = v[i].z; else if (v[i].z > maxZ) maxZ = v[i].z;
+            }
+            return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
+        }
+
+        // Та же проверка пересечения AABB с допуском, что в SnapSystem.ElementsIntersect:
+        // строгое «<» с epsilon, чтобы плотный face-контакт не считался пересечением.
+        private static bool AABBsIntersect(in AABB a, in AABB b) =>
+            a.minX < b.maxX - IntersectEpsilon && a.maxX > b.minX + IntersectEpsilon &&
+            a.minY < b.maxY - IntersectEpsilon && a.maxY > b.minY + IntersectEpsilon &&
+            a.minZ < b.maxZ - IntersectEpsilon && a.maxZ > b.minZ + IntersectEpsilon;
+
+        private readonly struct AABB
+        {
+            public readonly float minX, minY, minZ, maxX, maxY, maxZ;
+            public AABB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
+            {
+                this.minX = minX; this.minY = minY; this.minZ = minZ;
+                this.maxX = maxX; this.maxY = maxY; this.maxZ = maxZ;
+            }
         }
 
         private static void CheckConnectivity(List<KitchenElement> all, ValidationResult result)
