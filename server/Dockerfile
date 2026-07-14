@@ -21,6 +21,9 @@ COPY --from=build /app/publish .
 # /app/data holds project saves and data-protection keys; owned by the app user
 # so a named volume inherits writable permissions.
 RUN mkdir -p /app/data && chown app:app /app/data
+# Seed data — example project that gets auto-imported for new users.
+RUN mkdir -p /app/seed && chown app:app /app/seed
+COPY docs/example.save.json /app/seed/example.save.json
 # 8080 = HTTP (site, API, WebGL); 8081 = MCP (real MCP over Streamable HTTP)
 ENV ASPNETCORE_URLS="http://+:8080;http://+:8081"
 ENV Mcp__Port=8081

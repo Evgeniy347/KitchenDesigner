@@ -101,7 +101,8 @@ public class ProjectLockSnapshotTests
           "isDeleted": false,
           "createdAt": "2026-01-01T00:00:00Z",
           "updatedAt": "2026-01-01T00:00:00Z",
-          "isArchived": false
+          "isArchived": false,
+          "isExample": false
         }
         """;
 
@@ -137,6 +138,7 @@ public class ProjectLockSnapshotTests
           "createdAt": "2026-01-01T00:00:00Z",
           "updatedAt": "2026-01-01T00:00:00Z",
           "isArchived": false,
+          "isExample": false,
           "lockGuid": "a1b2c3d4e5f6g7h8",
           "lockAcquiredAt": "2026-07-12T15:30:00Z"
         }

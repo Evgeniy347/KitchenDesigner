@@ -41,6 +41,9 @@ public class Project
 
     public bool IsArchived { get; set; }
 
+    /// <summary>True for the built-in example project that gets auto-seeded for new users.</summary>
+    public bool IsExample { get; set; }
+
     /// <summary>
     /// Random GUID set when a browser tab acquires the project lock.
     /// Only the tab holding this GUID may save the project.

@@ -73,6 +73,7 @@ builder.Services.Configure<ProjectStorageOptions>(builder.Configuration.GetSecti
 builder.Services.Configure<ServerSaveOptions>(builder.Configuration.GetSection(ServerSaveOptions.SectionName));
 
 builder.Services.AddSingleton<ProjectStorageService>();
+builder.Services.AddSingleton<ExampleProjectService>();
 builder.Services.AddSingleton<McpSessionManager>();
 builder.Services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<McpSessionManager>());
 builder.Services.AddHttpContextAccessor();
@@ -191,6 +192,7 @@ using (var scope = app.Services.CreateScope())
                     ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "IsLatest" boolean NOT NULL DEFAULT true;
                     ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "IsDeleted" boolean NOT NULL DEFAULT false;
                     ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "DeletedAt" timestamp with time zone NULL;
+                    ALTER TABLE "Projects" ADD COLUMN IF NOT EXISTS "IsExample" boolean NOT NULL DEFAULT false;
                     """);
                 app.Logger.LogInformation("Project versioning columns ensured");
             }
