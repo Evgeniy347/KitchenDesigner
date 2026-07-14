@@ -45,6 +45,24 @@ public class McpSessionManager : IHostedService
         return session;
     }
 
+    /// <summary>
+    /// Create an anonymous MCP session for a Streamable-HTTP session id that has not
+    /// authenticated yet. The session will be bound to a real project tab in
+    /// <see cref="BindAgentToSessionId"/>.
+    /// </summary>
+    public McpSession CreateAnonymousSession(string sessionId)
+    {
+        var session = new McpSession
+        {
+            TabKey = sessionId,
+            UserId = "agent",
+            ProjectId = null,
+            SessionTtl = SessionTtl,
+        };
+        _byKey[sessionId] = session;
+        return session;
+    }
+
     public McpSession? GetByKey(string key) =>
         string.IsNullOrEmpty(key) ? null : _byKey.GetValueOrDefault(key);
 
@@ -83,6 +101,22 @@ public class McpSessionManager : IHostedService
         session.Touch();
         SessionStateChanged?.Invoke(session);
         return sessionId;
+    }
+
+    /// <summary>
+    /// Bind an already-known Streamable-HTTP session id to a real project tab.
+    /// Used when the client obtained its session id during the MCP initialize handshake.
+    /// </summary>
+    public void BindAgentToSessionId(string sessionId, McpSession session)
+    {
+        _sessionBindings[sessionId] = session;
+        session.AgentBound = true;
+        session.Touch();
+
+        // Remove the temporary anonymous placeholder, if any.
+        _byKey.TryRemove(sessionId, out _);
+
+        SessionStateChanged?.Invoke(session);
     }
 
     /// <summary>
