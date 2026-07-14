@@ -74,7 +74,6 @@ builder.Services.Configure<ServerSaveOptions>(builder.Configuration.GetSection(S
 builder.Services.AddSingleton<ProjectStorageService>();
 builder.Services.AddSingleton<McpSessionManager>();
 builder.Services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<McpSessionManager>());
-builder.Services.AddSingleton<McpSessionInitializer>();
 builder.Services.AddHttpContextAccessor();
 
 // Real MCP over Streamable HTTP (port 8081). tools/list + tools/call come from the
@@ -89,15 +88,12 @@ builder.Services.AddMcpServer(options =>
 })
 .WithHttpTransport();
 
-// Wire up the session-migration hook explicitly. The DI-based ISessionMigrationHandler
-// registration is not picked up by the preview SDK, so we attach the initializer to
-// HttpServerTransportOptions directly. Stateful mode is required because each agent
-// session is bound to a specific browser tab / WebSocket.
+// Stateless mode: opencode does not send Mcp-Session-Id, so session binding relies on
+// the remote IP address as a fallback (single-user / home NAT scenario).
 builder.Services.AddOptions<HttpServerTransportOptions>()
-    .Configure<McpSessionInitializer>((options, initializer) =>
+    .Configure(options =>
     {
-        options.Stateless = false;
-        options.SessionMigrationHandler = initializer;
+        options.Stateless = true;
     });
 
 // Per-circuit bridge: editor page → nav-bar island (see EditorNavState).

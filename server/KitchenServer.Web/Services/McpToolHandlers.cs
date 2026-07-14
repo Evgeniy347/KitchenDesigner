@@ -98,18 +98,19 @@ public static class McpToolHandlers
         var manager = services.GetRequiredService<McpSessionManager>();
         var httpAccessor = services.GetService<IHttpContextAccessor>();
         var sessionId = httpAccessor?.HttpContext?.Request.Headers[SessionIdHeader].FirstOrDefault();
+        var remoteIp = httpAccessor?.HttpContext?.Connection.RemoteIpAddress?.ToString();
         var agent = (object)ctx.Server;
         var name = ctx.Params?.Name ?? "";
         var args = ctx.Params?.Arguments;
 
         if (name == AuthToolName)
-            return await AuthenticateAsync(manager, agent, sessionId, args, httpAccessor, ct);
+            return await AuthenticateAsync(manager, agent, sessionId, remoteIp, args, httpAccessor, ct);
 
         var def = McpToolRegistry.Tools.FirstOrDefault(t => t.Name == name && !t.StaticText);
         if (def == null)
             return Error($"Unknown tool: {name}");
 
-        var session = manager.GetBoundSession(agent, sessionId);
+        var session = manager.GetBoundSession(agent, sessionId, remoteIp);
         if (session == null)
             return Error(NotAuthenticatedMessage);
 
@@ -126,7 +127,7 @@ public static class McpToolHandlers
     }
 
     private static async ValueTask<CallToolResult> AuthenticateAsync(
-        McpSessionManager manager, object agent, string? requestSessionId,
+        McpSessionManager manager, object agent, string? requestSessionId, string? remoteIp,
         IDictionary<string, JsonElement>? args,
         IHttpContextAccessor? httpAccessor, CancellationToken ct)
     {
@@ -160,6 +161,10 @@ public static class McpToolHandlers
 
         if (!string.IsNullOrEmpty(requestSessionId))
             manager.BindAgentToSessionId(requestSessionId, session);
+
+        // Also bind by remote IP for stateless clients (e.g. opencode) that never send
+        // a session id header.
+        manager.BindIp(remoteIp, session);
 
         WriteSessionIdHeader(httpAccessor, sessionId);
         var project = string.IsNullOrEmpty(session.ProjectId) ? "" : $" (project {session.ProjectId})";
