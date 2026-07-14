@@ -148,7 +148,7 @@ namespace KitchenDesigner.Core.UI
             return label;
         }
 
-        public static Button CreateButton(string name, Transform parent, string text, Vector2 anchoredPos, Vector2 size, System.Action onClick)
+        public static Button CreateButton(string name, Transform parent, string text, Vector2 anchoredPos, Vector2 size, System.Action? onClick)
         {
             var rect = CreateRect(name, parent);
             rect.sizeDelta = size;

@@ -419,8 +419,8 @@ namespace KitchenDesigner.Core.UI
 #if UNITY_WEBGL
         // ── Server project save (кнопка «Сохранить») ──────────────────────
 
-        private GameObject _namePromptPanel;
-        private TMP_InputField _nameInputField;
+        private GameObject? _namePromptPanel;
+        private TMP_InputField? _nameInputField;
 
         private void ServerSave(bool forceNew)
         {
@@ -433,7 +433,7 @@ namespace KitchenDesigner.Core.UI
             string json = SaveLoadManager.CaptureCurrentJson();
             var api = Networking.ProjectApiClient.Instance;
 
-            if (!forceNew && api.HasCurrentProject)
+            if (!forceNew && api!.HasCurrentProject)
             {
                 api.SaveCurrent(json,
                     () => Toast("Сохранено: " + api.CurrentProjectName),
@@ -441,7 +441,7 @@ namespace KitchenDesigner.Core.UI
             }
             else
             {
-                string defaultName = api.HasCurrentProject
+                string defaultName = api!.HasCurrentProject
                     ? api.CurrentProjectName
                     : "Новый проект";
                 ShowNamePrompt(defaultName, name =>
@@ -484,8 +484,8 @@ namespace KitchenDesigner.Core.UI
         private void ShowNamePrompt(string defaultName, System.Action<string> onConfirm)
         {
             BuildNamePromptPanel();
-            _nameInputField.text = defaultName;
-            _namePromptPanel.SetActive(true);
+            _nameInputField!.text = defaultName;
+            _namePromptPanel!.SetActive(true);
 
             void confirmAction()
             {

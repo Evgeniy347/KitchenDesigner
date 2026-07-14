@@ -49,7 +49,7 @@ namespace KitchenDesigner.Core
             if (api != null && Networking.ProjectApiClient.Enabled && api.HasCurrentProject)
             {
                 string json = SaveLoadManager.CaptureCurrentJson();
-                api.SaveCurrent(json, null, null);
+                api.SaveCurrent(json, () => { }, _ => { });
                 return true;
             }
             // Server save disabled or no project — fall back to local persistent save.
