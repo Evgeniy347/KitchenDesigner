@@ -2,6 +2,7 @@ using KitchenServer.Web.Components;
 using KitchenServer.Web.Data;
 using KitchenServer.Web.Endpoints;
 using KitchenServer.Web.Services;
+using ModelContextProtocol.AspNetCore;
 using ModelContextProtocol.Protocol;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -73,6 +74,7 @@ builder.Services.Configure<ServerSaveOptions>(builder.Configuration.GetSection(S
 builder.Services.AddSingleton<ProjectStorageService>();
 builder.Services.AddSingleton<McpSessionManager>();
 builder.Services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<McpSessionManager>());
+builder.Services.AddSingleton<McpSessionInitializer>();
 builder.Services.AddHttpContextAccessor();
 
 // Real MCP over Streamable HTTP (port 8081). tools/list + tools/call come from the
@@ -86,6 +88,17 @@ builder.Services.AddMcpServer(options =>
     options.Handlers.CallToolHandler = McpToolHandlers.CallToolAsync;
 })
 .WithHttpTransport();
+
+// Wire up the session-migration hook explicitly. The DI-based ISessionMigrationHandler
+// registration is not picked up by the preview SDK, so we attach the initializer to
+// HttpServerTransportOptions directly. Stateful mode is required because each agent
+// session is bound to a specific browser tab / WebSocket.
+builder.Services.AddOptions<HttpServerTransportOptions>()
+    .Configure<McpSessionInitializer>((options, initializer) =>
+    {
+        options.Stateless = false;
+        options.SessionMigrationHandler = initializer;
+    });
 
 // Per-circuit bridge: editor page → nav-bar island (see EditorNavState).
 builder.Services.AddScoped<EditorNavState>();

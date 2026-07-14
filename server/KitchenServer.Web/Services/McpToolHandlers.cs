@@ -103,7 +103,7 @@ public static class McpToolHandlers
         var args = ctx.Params?.Arguments;
 
         if (name == AuthToolName)
-            return await AuthenticateAsync(manager, agent, args, httpAccessor, ct);
+            return await AuthenticateAsync(manager, agent, sessionId, args, httpAccessor, ct);
 
         var def = McpToolRegistry.Tools.FirstOrDefault(t => t.Name == name && !t.StaticText);
         if (def == null)
@@ -126,7 +126,8 @@ public static class McpToolHandlers
     }
 
     private static async ValueTask<CallToolResult> AuthenticateAsync(
-        McpSessionManager manager, object agent, IDictionary<string, JsonElement>? args,
+        McpSessionManager manager, object agent, string? requestSessionId,
+        IDictionary<string, JsonElement>? args,
         IHttpContextAccessor? httpAccessor, CancellationToken ct)
     {
         var key = args != null && args.TryGetValue("key", out var k) && k.ValueKind == JsonValueKind.String
@@ -151,7 +152,15 @@ public static class McpToolHandlers
             return Error($"Could not reach the project tab: {ex.Message}");
         }
 
-        var sessionId = manager.BindAgent(agent, session);
+        // Prefer the session id created during the MCP initialize handshake; only fall
+        // back to minting a new one for clients that do not support Streamable-HTTP sessions.
+        var sessionId = string.IsNullOrEmpty(requestSessionId)
+            ? manager.BindAgent(agent, session)
+            : requestSessionId;
+
+        if (!string.IsNullOrEmpty(requestSessionId))
+            manager.BindAgentToSessionId(requestSessionId, session);
+
         WriteSessionIdHeader(httpAccessor, sessionId);
         var project = string.IsNullOrEmpty(session.ProjectId) ? "" : $" (project {session.ProjectId})";
         return Text($"Connected to the project tab{project}. Authentication OK — all tools now operate on that tab.");
