@@ -139,9 +139,11 @@ public class DrawerElementTests
     [Test]
     public void Drawer_SetType_ChangesHeightY()
     {
+        // Габарит элемента — контурный бокс: высота = мин. проём корпуса.
         var d = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite);
         d.Type = DrawerType.B;
-        Assert.AreEqual(120, d.DimensionsMM.y);
+        Assert.AreEqual(DrawerConstants.GetMinOpeningHeight(DrawerType.B), d.DimensionsMM.y);
+        Assert.AreEqual(147, d.DimensionsMM.y);
     }
 
     [Test]
@@ -200,7 +202,7 @@ public class DrawerElementTests
     {
         var d = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite);
         Assert.AreEqual(0.400f, d.transform.localScale.x, 1e-5f);
-        Assert.AreEqual(0.086f, d.transform.localScale.y, 1e-5f);
+        Assert.AreEqual(0.115f, d.transform.localScale.y, 1e-5f); // мин. проём типа A
         Assert.AreEqual(0.350f, d.transform.localScale.z, 1e-5f);
     }
 
@@ -212,7 +214,7 @@ public class DrawerElementTests
 
         Assert.AreEqual(8, verts.Length);
         float halfX = 0.200f;
-        float halfY = 0.043f;
+        float halfY = 0.0575f; // половина мин. проёма типа A (115 мм)
         float halfZ = 0.175f;
         foreach (var v in verts)
         {

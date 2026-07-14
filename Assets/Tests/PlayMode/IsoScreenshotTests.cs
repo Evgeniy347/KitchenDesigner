@@ -198,6 +198,37 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+    // ── Drawer (GTV AXIS PRO) isometric screenshot ───────────
+
+    [UnityTest]
+    public IEnumerator IsoDrawer_TypeC_500()
+    {
+        // Тип C (боковина 168), длина 500, проём LW=400, антрацит.
+        const int lw = 400;
+        const int nl = 500;
+        var type = DrawerType.C;
+
+        // Контурный бокс ящика (проём) ставится низом на пол.
+        int openingH = DrawerConstants.GetMinOpeningHeight(type);
+        Vector3 pos = new Vector3(0f, openingH * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateDrawer(type, nl, DrawerColor.Anthracite, lw, "IsoDrawer", pos);
+        _spawned.Add(go);
+        var drawer = go.GetComponent<DrawerElement>();
+        Assert.IsNotNull(drawer);
+
+        // Контур (чёрные рёбра) по параллелепипеду с зазорами.
+        KitchenSettings.Instance.EdgeOutline = true;
+        yield return null;
+
+        Vector3 size = MmToUnits(new Vector3Int(lw, openingH, nl));
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_drawer_C_500.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
     // ── Room screenshots (4 walls, raised + lowered) ─────────
 
     [UnityTest]

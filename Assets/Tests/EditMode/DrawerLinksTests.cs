@@ -61,7 +61,8 @@ public class DrawerLinksTests
         Assert.AreEqual(upper.PartName, lower.PairedDrawerName, "прямая ссылка");
         Assert.AreEqual(lower.PartName, upper.PairedDrawerName, "обратная ссылка");
 
-        float heightUnits = DrawerConstants.GetTypeHeight(DrawerType.A) * AppConstants.MM_TO_UNITS;
+        // Шаг пары — высота контурного бокса (мин. проём): проёмы друг над другом.
+        float heightUnits = DrawerConstants.GetMinOpeningHeight(DrawerType.A) * AppConstants.MM_TO_UNITS;
         Assert.AreEqual(lower.transform.position.y + heightUnits, upper.transform.position.y, 0.0001f,
             "пара стоит вплотную сверху");
     }

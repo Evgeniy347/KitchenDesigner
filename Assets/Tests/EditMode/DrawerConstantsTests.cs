@@ -156,4 +156,39 @@ public class DrawerConstantsTests
     {
         Assert.AreEqual(200, (int)DrawerType.D);
     }
+
+    // ── Монтажные размеры GTV AXIS PRO (брошюра, стр. 6 и 8) ──────────
+
+    [Test]
+    public void SlideClearance_Is37_5PerSide()
+    {
+        Assert.AreEqual(37.5f, DrawerConstants.SLIDE_CLEARANCE_PER_SIDE, 1e-4f);
+    }
+
+    [Test]
+    public void GetBackHeight_MatchesCatalogVersion1()
+    {
+        Assert.AreEqual(84, DrawerConstants.GetBackHeight(DrawerType.A));
+        Assert.AreEqual(116, DrawerConstants.GetBackHeight(DrawerType.B));
+        Assert.AreEqual(167, DrawerConstants.GetBackHeight(DrawerType.C));
+        Assert.AreEqual(199, DrawerConstants.GetBackHeight(DrawerType.D));
+    }
+
+    [Test]
+    public void GetMinOpeningHeight_MatchesCatalog()
+    {
+        Assert.AreEqual(115, DrawerConstants.GetMinOpeningHeight(DrawerType.A));
+        Assert.AreEqual(147, DrawerConstants.GetMinOpeningHeight(DrawerType.B));
+        Assert.AreEqual(198, DrawerConstants.GetMinOpeningHeight(DrawerType.C));
+        Assert.AreEqual(230, DrawerConstants.GetMinOpeningHeight(DrawerType.D));
+    }
+
+    [Test]
+    public void GetBottomLift_IsMountedTopMinusSideHeight()
+    {
+        Assert.AreEqual(21, DrawerConstants.GetBottomLift(DrawerType.A)); // 107−86
+        Assert.AreEqual(19, DrawerConstants.GetBottomLift(DrawerType.B)); // 139−120
+        Assert.AreEqual(22, DrawerConstants.GetBottomLift(DrawerType.C)); // 190−168
+        Assert.AreEqual(22, DrawerConstants.GetBottomLift(DrawerType.D)); // 222−200
+    }
 }
