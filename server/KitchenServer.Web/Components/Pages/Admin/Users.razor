@@ -1,12 +1,9 @@
 @page "/admin/users"
 @rendermode InteractiveServer
 @attribute [Authorize(Policy = "Admin")]
-@using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using KitchenServer.Web.Data
-@inject UserManager<IdentityUser> UserManager
 @inject IDbContextFactory<AppDbContext> DbFactory
-@inject KitchenServer.Web.Services.ImpersonationService Impersonation
 
 <PageTitle>Пользователи — Admin</PageTitle>
 
@@ -77,14 +74,23 @@
         try
         {
             await using var db = await DbFactory.CreateDbContextAsync();
-            var rows = await UserManager.Users
+            var users = await db.Users
                 .OrderBy(u => u.Email)
-                .Select(u => new UserRow(
-                    u.Id,
-                    u.Email ?? "",
-                    db.Projects.Count(p => p.UserId == u.Id && !p.IsDeleted)))
+                .Select(u => new { u.Id, u.Email })
                 .ToListAsync();
-            _users.AddRange(rows);
+
+            var userIds = users.Select(u => u.Id).ToHashSet();
+            var projectCounts = await db.Projects
+                .Where(p => userIds.Contains(p.UserId) && !p.IsDeleted)
+                .GroupBy(p => p.UserId)
+                .Select(g => new { UserId = g.Key, Count = g.Count() })
+                .ToListAsync();
+            var countMap = projectCounts.ToDictionary(p => p.UserId, p => p.Count);
+
+            _users.AddRange(users.Select(u => new UserRow(
+                u.Id,
+                u.Email ?? "",
+                countMap.GetValueOrDefault(u.Id, 0))));
         }
         catch (Exception ex)
         {

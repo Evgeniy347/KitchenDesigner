@@ -20,7 +20,8 @@ public static class ProjectEndpoints
 
             var projects = await db.Projects
                 .Where(p => p.UserId == userId && p.IsLatest && !p.IsDeleted && !p.IsArchived)
-                .OrderByDescending(p => p.UpdatedAt)
+                .OrderBy(p => p.IsExample)
+                .ThenByDescending(p => p.UpdatedAt)
                 .Select(p => new { Id = p.ProjectGroupId, p.Name, p.CreatedAt, p.UpdatedAt, p.Version })
                 .ToListAsync();
 
