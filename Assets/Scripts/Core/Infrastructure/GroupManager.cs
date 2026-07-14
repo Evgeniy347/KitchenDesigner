@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core
         private static readonly Dictionary<int, LinkGroup> _groups = new Dictionary<int, LinkGroup>();
         private static int _nextId = 1;
 
-        public static LinkGroup Link(IList<KitchenElement> members)
+        public static LinkGroup? Link(IList<KitchenElement> members)
         {
             if (members == null || members.Count < 2) return null;
             var g = new LinkGroup { id = _nextId++ };
@@ -36,7 +36,7 @@ namespace KitchenDesigner.Core
             _groups.Remove(g.id);
         }
 
-        public static LinkGroup GroupOf(KitchenElement e)
+        public static LinkGroup? GroupOf(KitchenElement e)
         {
             if (e == null || e.GroupId == 0) return null;
             return _groups.TryGetValue(e.GroupId, out var g) ? g : null;

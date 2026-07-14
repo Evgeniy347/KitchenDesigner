@@ -10,10 +10,10 @@ namespace KitchenDesigner.Core
     /// </summary>
     public class WebFileDialogReceiver : MonoBehaviour
     {
-        public Action<string, string> PendingOpen;
-        public Action<string> PendingSaved;
+        public Action<string, string>? PendingOpen = null!;
+        public Action<string>? PendingSaved = null!;
 
-        private static WebFileDialogReceiver _instance;
+        private static WebFileDialogReceiver _instance = null!;
 
         internal static WebFileDialogReceiver GetOrCreate()
         {
@@ -31,7 +31,7 @@ namespace KitchenDesigner.Core
             PendingOpen = null;
             if (cb == null) return;
             if (WebFileDialog.TryParseOpenPayload(payload, out var fileName, out var content))
-                cb(fileName, content);
+                cb(fileName!, content!);
         }
 
         /// <summary>Вызывается из JS после успешного сохранения: имя файла.</summary>

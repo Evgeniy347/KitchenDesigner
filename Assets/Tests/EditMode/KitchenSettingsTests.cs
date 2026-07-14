@@ -142,7 +142,7 @@ public class KitchenSettingsTests
         var gs = KitchenSettings.Instance;
         int prevStep = gs.GridStep;
         bool hadKey = PlayerPrefs.HasKey("KitchenSettings");
-        string saved = hadKey ? PlayerPrefs.GetString("KitchenSettings") : null;
+        string? saved = hadKey ? PlayerPrefs.GetString("KitchenSettings") : null;
 
         PlayerPrefs.DeleteKey("KitchenSettings");
         gs.GridStep = 24;

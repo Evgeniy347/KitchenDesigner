@@ -9,7 +9,7 @@ public class MaterialTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
-    private KitchenElement Make(string name, Vector3Int dims, string materialId = null)
+    private KitchenElement Make(string name, Vector3Int dims, string? materialId = null)
     {
         var go = new GameObject(name);
         var e = go.AddComponent<KitchenElement>();
@@ -89,7 +89,7 @@ public class MaterialTests
         var json = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(new[] { e }));
         var data = SaveLoadManager.Deserialize(json);
 
-        Assert.AreEqual(1, data.elements.Length);
+        Assert.AreEqual(1, data!.elements.Length);
         Assert.AreEqual("wenge", data.elements[0].materialId);
     }
 

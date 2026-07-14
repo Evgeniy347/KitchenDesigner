@@ -12,10 +12,10 @@ using KitchenDesigner.Core.UI;
 /// </summary>
 public class ContextMenuRefreshBugTests
 {
-    private GameObject _canvasGo;
-    private GameObject _ctxGo;
-    private ContextMenuUI _ctx;
-    private KitchenElement _element;
+    private GameObject _canvasGo = null!;
+    private GameObject _ctxGo = null!;
+    private ContextMenuUI _ctx = null!;
+    private KitchenElement _element = null!;
 
     [SetUp]
     public void Setup()
@@ -175,7 +175,7 @@ public class ContextMenuRefreshBugTests
         Assert.IsNotNull(inputField, $"Field '{fieldName}' should be a TMP_InputField");
         // TMP_InputField.text содержит служебный zero-width space (U+200B) —
         // приложение читает «чистое» значение отдельно, тесты сравнивают видимый текст.
-        return inputField.text.Replace("\u200b", "");
+        return inputField!.text.Replace("\u200b", "");
     }
 
     private KitchenElement CreateBoard(string name, Vector3Int dims, Vector3 pos)

@@ -14,11 +14,11 @@ namespace KitchenDesigner.Core
         bool LoadLastSession();
         ProjectData CaptureScene(IEnumerable<KitchenElement> elements);
         string Serialize(ProjectData data);
-        ProjectData Deserialize(string json);
+        ProjectData? Deserialize(string json);
         bool IsVersionCompatible(ProjectData data);
         List<GameObject> RestoreScene(ProjectData data);
         bool SaveToFile(string path, ProjectData data);
-        ProjectData LoadFromFile(string path);
+        ProjectData? LoadFromFile(string path);
         bool SaveProject(string name, bool backup = true);
         string CaptureCurrentJson();
         bool LoadProject(string name);

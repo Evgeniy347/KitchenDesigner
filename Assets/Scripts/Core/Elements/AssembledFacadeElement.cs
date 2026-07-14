@@ -9,16 +9,16 @@ namespace KitchenDesigner.Core
     /// localScale остаётся полным коробом, поэтому коллайдер/ручки/выделение не меняются.</summary>
     public class AssembledFacadeElement : FacadeElement, ISpecificationParts
     {
-        private static Material _grooveMat;
-        private static Material _glassMat;
+        private static Material _grooveMat = null!;
+        private static Material _glassMat = null!;
 
         private AssembledFill _fill = AssembledFill.Blind;
         private int _grooveCount = AppConstants.ASSEMBLED_DEFAULT_GROOVES;
 
-        private MeshFilter _filter;
-        private MeshRenderer _renderer;
-        private Mesh _ownedMesh;
-        private Transform _glassInsert;
+        private MeshFilter? _filter;
+        private MeshRenderer? _renderer;
+        private Mesh? _ownedMesh;
+        private Transform? _glassInsert;
 
         public AssembledFill Fill
         {
@@ -68,7 +68,7 @@ namespace KitchenDesigner.Core
                 float fx = AssembledFacadeMesh.Fraction(DimensionsMM.x, AppConstants.ASSEMBLED_FRAME_MM);
                 float fy = AssembledFacadeMesh.Fraction(DimensionsMM.y, AppConstants.ASSEMBLED_FRAME_MM);
                 // Дочерний масштаб * localScale детали = размер проёма (B×C) и тонкое стекло.
-                _glassInsert.localScale = new Vector3(1f - 2f * fx, 1f - 2f * fy, 0.05f);
+                _glassInsert!.localScale = new Vector3(1f - 2f * fx, 1f - 2f * fy, 0.05f);
                 _glassInsert.gameObject.SetActive(true);
             }
             else if (_glassInsert != null)

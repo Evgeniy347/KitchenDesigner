@@ -7,7 +7,7 @@ using KitchenDesigner.Core.UI;
 
 public class SettingsPanelLayoutDiagramTests
 {
-    private Canvas _canvas;
+    private Canvas _canvas = null!;
 
     [SetUp]
     public void Setup()

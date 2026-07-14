@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core.UI
 {
     public class SettingsPanelUI : MonoBehaviour
     {
-        private GameObject _root;
+        private GameObject _root = null!;
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
 
         private readonly List<GameObject> _tabPages = new();

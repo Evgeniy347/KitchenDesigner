@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 public class DrawerMcpTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
-    private McpCommandHandler _handler;
+    private McpCommandHandler _handler = null!;
 
     [SetUp]
     public void Setup()
@@ -68,7 +68,7 @@ public class DrawerMcpTests
         var resp = _handler.Handle(MakeReq("get_element_info", new { name = "InfoDrawer" }));
         Assert.AreEqual("result", resp.type);
 
-        var json = JObject.FromObject(resp.data);
+        var json = JObject.FromObject(resp.data!);
         Assert.IsNotNull(json["drawer"]);
     }
 
@@ -82,7 +82,7 @@ public class DrawerMcpTests
         var resp = _handler.Handle(MakeReq("get_all_elements", new { }));
         Assert.AreEqual("result", resp.type);
 
-        var list = (List<ElementInfo>)resp.data;
+        var list = (List<ElementInfo>)resp.data!;
         Assert.Greater(list.Count, 0);
         bool hasDrawer = false;
         foreach (var info in list)
@@ -102,7 +102,7 @@ public class DrawerMcpTests
 
         var drawer = PartRegistry.GetAll().Find(e => e.PartName == "TypeDrawer") as DrawerElement;
         Assert.IsNotNull(drawer);
-        Assert.AreEqual(DrawerType.B, drawer.Type);
+        Assert.AreEqual(DrawerType.B, drawer!.Type);
     }
 
     [Test]
@@ -117,7 +117,7 @@ public class DrawerMcpTests
 
         var drawer = PartRegistry.GetAll().Find(e => e.PartName == "ColorDrawer") as DrawerElement;
         Assert.IsNotNull(drawer);
-        Assert.AreEqual(DrawerColor.White, drawer.Color);
+        Assert.AreEqual(DrawerColor.White, drawer!.Color);
     }
 
     [Test]
@@ -132,7 +132,7 @@ public class DrawerMcpTests
 
         var drawer = PartRegistry.GetAll().Find(e => e.PartName == "DoubleDrawer") as DrawerElement;
         Assert.IsNotNull(drawer);
-        Assert.IsTrue(drawer.IsDouble);
+        Assert.IsTrue(drawer!.IsDouble);
         Assert.IsTrue(drawer.IsUpperDrawer);
     }
 
@@ -151,14 +151,14 @@ public class DrawerMcpTests
 
         var drawer = PartRegistry.GetAll().Find(e => e.PartName == "CycleDrawer") as DrawerElement;
         Assert.IsNotNull(drawer);
-        Assert.IsTrue(drawer.IsOpen, "одиночный ящик открылся");
+        Assert.IsTrue(drawer!.IsOpen, "одиночный ящик открылся");
         Assert.AreEqual(DoubleDrawerState.Closed, drawer.DoubleState);
 
         // Двойной ящик: cycle гоняет трёхфазный цикл состояний.
         _handler.Handle(MakeReq("set_drawer_properties", new { name = "CycleDrawer", is_double = true }));
         var resp2 = _handler.Handle(MakeReq("cycle_drawer_animation", new { name = "CycleDrawer" }));
         Assert.AreEqual("result", resp2.type);
-        Assert.AreEqual(DoubleDrawerState.BothOpen, drawer.DoubleState);
+        Assert.AreEqual(DoubleDrawerState.BothOpen, drawer!.DoubleState);
     }
 
     [Test]
@@ -205,11 +205,11 @@ public class DrawerMcpTests
 
         var drawer = PartRegistry.GetAll().Find(e => e.PartName == "AttachDrawer") as DrawerElement;
         Assert.IsNotNull(drawer);
-        Assert.AreEqual("TestFacade", drawer.AttachedFacadeName);
+        Assert.AreEqual("TestFacade", drawer!.AttachedFacadeName);
 
         // Пустая строка отвязывает фасад.
         var respDetach = _handler.Handle(MakeReq("set_drawer_properties", new { name = "AttachDrawer", attached_facade_name = "" }));
         Assert.AreEqual("result", respDetach.type);
-        Assert.IsEmpty(drawer.AttachedFacadeName);
+        Assert.IsEmpty(drawer!.AttachedFacadeName);
     }
 }

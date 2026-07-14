@@ -11,9 +11,9 @@ using KitchenDesigner.Core.UI;
 
 public class SpecificationDiagramTests
 {
-    private GameObject _bootstrap;
-    private GameObject _mainCamera;
-    private Canvas _uiCanvas;
+    private GameObject _bootstrap = null!;
+    private GameObject _mainCamera = null!;
+    private Canvas _uiCanvas = null!;
 
     [UnitySetUp]
     public IEnumerator SetUp()
@@ -55,7 +55,7 @@ public class SpecificationDiagramTests
     }
 
     private IEnumerator CapturePanel(string panelName, string fileName,
-        System.Action setupPanel, System.Action teardownPanel = null)
+        System.Action setupPanel, System.Action? teardownPanel = null)
     {
         var hidden = new List<GameObject>();
         foreach (Transform child in _uiCanvas.transform)

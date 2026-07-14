@@ -16,7 +16,7 @@ namespace KitchenDesigner.Core
             }
             set => _fallback = value;
         }
-        private static IPartRegistry _fallback;
+        private static IPartRegistry _fallback = null!;
 
         public static IReadOnlyList<KitchenElement> All => Instance.All;
 

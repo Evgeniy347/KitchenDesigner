@@ -4,7 +4,7 @@ using KitchenDesigner.Core;
 
 public class RadialShelfTests
 {
-    private GameObject _go;
+    private GameObject _go = null!;
 
     [TearDown]
     public void Teardown()
@@ -124,7 +124,7 @@ public class RadialShelfTests
         Assert.IsNotNull(converted as RadialShelfElement);
         Assert.AreEqual("Part1", converted.PartName);
         Assert.AreEqual(new Vector3Int(300, 18, 300), converted.DimensionsMM);
-        Assert.AreEqual(300, (converted as RadialShelfElement).Radius);
+        Assert.AreEqual(300, (converted as RadialShelfElement)!.Radius);
     }
 
     [Test]

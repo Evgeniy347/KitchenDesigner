@@ -477,14 +477,14 @@ public class DrawerElementTests
     public void Drawer_NullPairedName_DoesNotThrow()
     {
         var d = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite);
-        Assert.DoesNotThrow(() => { d.PairedDrawerName = null; });
+        Assert.DoesNotThrow(() => { d.PairedDrawerName = null!; });
     }
 
     [Test]
     public void Drawer_NullFacadeName_DoesNotThrow()
     {
         var d = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite);
-        Assert.DoesNotThrow(() => { d.AttachedFacadeName = null; });
+        Assert.DoesNotThrow(() => { d.AttachedFacadeName = null!; });
     }
 
     [Test]

@@ -18,7 +18,7 @@ namespace KitchenDesigner.Core
     {
         private const string JsonFilter = "Проект кухни (*.json)\0*.json\0Все файлы (*.*)\0*.*\0\0";
 
-        public static string OpenDialog(string title, string initialDir)
+        public static string? OpenDialog(string title, string initialDir)
         {
 #if UNITY_EDITOR
             return UnityEditor.EditorUtility.OpenFilePanel(title, SafeDir(initialDir), "json");
@@ -30,14 +30,14 @@ namespace KitchenDesigner.Core
 #endif
         }
 
-        public static string SaveDialog(string title, string defaultName, string initialDir)
+        public static string? SaveDialog(string title, string defaultName, string initialDir)
         {
 #if UNITY_EDITOR
             string dir = SafeDir(initialDir);
             string name = string.IsNullOrEmpty(defaultName) ? "project" : Path.GetFileNameWithoutExtension(defaultName);
             return UnityEditor.EditorUtility.SaveFilePanel(title, dir, name, "json");
 #elif UNITY_STANDALONE_WIN
-            string path = WinDialog(title, defaultName, initialDir, true);
+            string? path = WinDialog(title, defaultName, initialDir, true);
             if (!string.IsNullOrEmpty(path) && !path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 path += ".json";
             return path;
@@ -62,23 +62,23 @@ namespace KitchenDesigner.Core
             public int structSize = 0;
             public IntPtr dlgOwner = IntPtr.Zero;
             public IntPtr instance = IntPtr.Zero;
-            public string filter = null;
-            public string customFilter = null;
+            public string? filter = null;
+            public string? customFilter = null;
             public int maxCustFilter = 0;
             public int filterIndex = 0;
-            public string file = null;
+            public string? file = null;
             public int maxFile = 0;
-            public string fileTitle = null;
+            public string? fileTitle = null;
             public int maxFileTitle = 0;
-            public string initialDir = null;
-            public string title = null;
+            public string? initialDir = null;
+            public string? title = null;
             public int flags = 0;
             public short fileOffset = 0;
             public short fileExtension = 0;
-            public string defExt = null;
+            public string? defExt = null;
             public IntPtr custData = IntPtr.Zero;
             public IntPtr hook = IntPtr.Zero;
-            public string templateName = null;
+            public string? templateName = null;
             public IntPtr reservedPtr = IntPtr.Zero;
             public int reservedInt = 0;
             public int flagsEx = 0;
@@ -95,7 +95,7 @@ namespace KitchenDesigner.Core
         private const int OFN_OVERWRITEPROMPT = 0x00000002;
         private const int OFN_NOCHANGEDIR     = 0x00000008;
 
-        private static string WinDialog(string title, string defaultName, string initialDir, bool save)
+        private static string? WinDialog(string title, string defaultName, string initialDir, bool save)
         {
             try
             {

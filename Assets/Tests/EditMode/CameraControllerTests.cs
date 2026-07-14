@@ -6,9 +6,9 @@ using KitchenDesigner.Core;
 
 public class CameraControllerTests
 {
-    private GameObject _cameraGo;
-    private GameObject _floorGo;
-    private CameraController _controller;
+    private GameObject _cameraGo = null!;
+    private GameObject _floorGo = null!;
+    private CameraController _controller = null!;
 
     [SetUp]
     public void SetUp()
@@ -116,7 +116,7 @@ public class CameraControllerTests
     public void UpdateFloorVisibility_DoesNotThrow_WhenFloorIsNull()
     {
         Object.DestroyImmediate(_floorGo);
-        _floorGo = null;
+        _floorGo = null!;
 
         _cameraGo.transform.position = new Vector3(0, 10f, 0);
         _controller.UpdateFloorVisibility();
@@ -126,7 +126,7 @@ public class CameraControllerTests
     public void UpdateFloorVisibility_DoesNotThrow_WhenCameraIsNull()
     {
         Object.DestroyImmediate(_cameraGo);
-        _cameraGo = null;
+        _cameraGo = null!;
 
         _controller.UpdateFloorVisibility();
     }
@@ -135,7 +135,7 @@ public class CameraControllerTests
     public void UpdateCameraPosition_DoesNotThrow_WhenCameraIsNull()
     {
         Object.DestroyImmediate(_cameraGo);
-        _cameraGo = null;
+        _cameraGo = null!;
 
         _controller.UpdateCameraPosition();
     }
@@ -215,7 +215,7 @@ public class CameraControllerTests
         var plainGo = new GameObject("Plain");
         Assert.IsFalse(CameraController.IsInputField(plainGo),
             "GameObject without InputField should not report typing");
-        Assert.IsFalse(CameraController.IsInputField(null),
+        Assert.IsFalse(CameraController.IsInputField(null!),
             "null selected object should not report typing");
         Object.DestroyImmediate(plainGo);
     }

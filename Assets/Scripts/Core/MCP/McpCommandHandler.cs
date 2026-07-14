@@ -282,7 +282,7 @@ namespace KitchenDesigner.Core.MCP
             return BuildElementInfo(el, null, false);
         }
 
-        private static ElementInfo BuildElementInfo(KitchenElement el, List<KitchenElement> allElements, bool includeFacadeValidation = false)
+        private static ElementInfo BuildElementInfo(KitchenElement el, List<KitchenElement>? allElements, bool includeFacadeValidation = false)
         {
             var t = el.transform;
             var group = GroupManager.GroupOf(el);
@@ -395,7 +395,7 @@ namespace KitchenDesigner.Core.MCP
             return new FacadeValidationData(normal, faceInward, obstructions, opening);
         }
 
-        private static (object faceNormal, bool faceInward, object faceObstructions, object openingViolations)
+        private static (object? faceNormal, bool faceInward, object? faceObstructions, object? openingViolations)
             BuildFacadeResponseFields(KitchenElement element)
         {
             if (!(element is FacadeElement facade))
@@ -456,7 +456,7 @@ namespace KitchenDesigner.Core.MCP
         // ── Модули (именованные группы деталей) ───────────────────────────
 
         /// <summary>Модуль по id или имени (без учёта регистра).</summary>
-        private static LinkGroup FindModule(string module)
+        private static LinkGroup? FindModule(string module)
         {
             if (string.IsNullOrEmpty(module)) return null;
             if (int.TryParse(module, out int id))
@@ -474,7 +474,7 @@ namespace KitchenDesigner.Core.MCP
             return BuildModuleInfo(g, null);
         }
 
-        private static ModuleInfo BuildModuleInfo(LinkGroup g, List<KitchenElement> allElements)
+        private static ModuleInfo BuildModuleInfo(LinkGroup g, List<KitchenElement>? allElements)
         {
             var members = GroupManager.MembersOf(g);
             var info = new ModuleInfo
@@ -1150,10 +1150,10 @@ namespace KitchenDesigner.Core.MCP
                     type = el.GetType().Name,
                     overlapsWith = new List<object>(),
                     disconnected = false,
-                    faceNormal = (object)null,
+                    faceNormal = (object?)null,
                     faceInward = false,
-                    faceObstructions = (object)null,
-                    openingViolations = (object)null,
+                    faceObstructions = (object?)null,
+                    openingViolations = (object?)null,
                     drawerValidationErrors = kvp.Value
                 });
             }
@@ -1161,10 +1161,10 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { violations = list, count = list.Count });
         }
 
-        private static Dictionary<KitchenElement, (object faceNormal, bool faceInward, object faceObstructions, object openingViolations)>
+        private static Dictionary<KitchenElement, (object? faceNormal, bool faceInward, object? faceObstructions, object? openingViolations)>
             ComputeFacadeViolations(List<KitchenElement> all)
         {
-            var result = new Dictionary<KitchenElement, (object, bool, object, object)>();
+            var result = new Dictionary<KitchenElement, (object?, bool, object?, object?)>();
             foreach (var el in all)
             {
                 if (!(el is FacadeElement facade)) continue;
@@ -1192,7 +1192,7 @@ namespace KitchenDesigner.Core.MCP
             return result;
         }
 
-        private static (object faceNormal, bool faceInward, object faceObstructions, object openingViolations)
+        private static (object? faceNormal, bool faceInward, object? faceObstructions, object? openingViolations)
             BuildFacadeViolationFields(KitchenElement el, List<KitchenElement> all)
         {
             if (!(el is FacadeElement facade)) return (null, false, null, null);
@@ -1224,7 +1224,7 @@ namespace KitchenDesigner.Core.MCP
             return results;
         }
 
-        private static BasePlate FindFloor()
+        private static BasePlate? FindFloor()
         {
             var go = GameObject.FindWithTag("Floor");
             if (go == null) return null;
@@ -1427,7 +1427,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Единая проверка блокировки для мутирующих команд: null — можно
         /// менять; иначе готовый Error с единым текстом (один источник сообщения для
         /// модели во всех move/resize/rotate/delete).</summary>
-        private static McpResponse RequireMovable(KitchenElement element, string name, string reqId)
+        private static McpResponse? RequireMovable(KitchenElement element, string name, string reqId)
         {
             if (element.Movable) return null;
             return McpResponse.Error(reqId, -1,
@@ -1454,7 +1454,7 @@ namespace KitchenDesigner.Core.MCP
 
         /// <summary>Состояние элемента после мутации: нарушения + AABB + зазоры к соседям.
         /// Единый источник формы ответа для move_element / resize_element.</summary>
-        private static (bool hasViolations, AabbInfo aabb, List<AxisGapInfo> gaps) DescribeAfterMutation(KitchenElement element)
+        private static (bool hasViolations, AabbInfo aabb, List<AxisGapInfo>? gaps) DescribeAfterMutation(KitchenElement element)
         {
             var all = PartRegistry.GetAll();
             var vr = all != null ? ConstraintValidator.Validate(all) : null;
@@ -1507,7 +1507,7 @@ namespace KitchenDesigner.Core.MCP
             for (int axis = 0; axis < 3; axis++)
             {
                 float bestGapUnits = float.MaxValue;
-                string bestNeighbor = null;
+                string? bestNeighbor = null;
                 float am = aMin[axis], ax = aMax[axis];
 
                 foreach (var other in allElements)
@@ -1777,7 +1777,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Декор по id ИЛИ отображаемому имени (без учёта регистра).
         /// Возвращает null для неизвестного — чтобы явно ошибиться, а не молча
         /// подставить дефолт (в отличие от MaterialCatalog.Get).</summary>
-        private static MaterialDef ResolveMaterial(string key)
+        private static MaterialDef? ResolveMaterial(string key)
         {
             if (string.IsNullOrEmpty(key)) return null;
             foreach (var d in MaterialCatalog.All)
@@ -1858,7 +1858,7 @@ namespace KitchenDesigner.Core.MCP
             });
         }
 
-        private static GameObject FindGameObject(string path)
+        private static GameObject? FindGameObject(string path)
         {
             if (path.Contains("/"))
             {
@@ -1881,7 +1881,7 @@ namespace KitchenDesigner.Core.MCP
             return null;
         }
 
-        private static GameObject FindDescendant(Transform parent, string[] parts, int index)
+        private static GameObject? FindDescendant(Transform parent, string[] parts, int index)
         {
             if (index >= parts.Length) return parent.gameObject;
             foreach (Transform child in parent)
@@ -1890,7 +1890,7 @@ namespace KitchenDesigner.Core.MCP
             return null;
         }
 
-        private static KitchenElement FindElementByName(string name)
+        private static KitchenElement? FindElementByName(string name)
         {
             foreach (var el in PartRegistry.All)
                 if (el != null && (el.PartName == name || el.name == name))

@@ -52,7 +52,7 @@ public class DrawerLinksTests
 
         var upper = DrawerLinks.CreatePair(lower);
         Assert.IsNotNull(upper);
-        _spawned.Add(upper.gameObject);
+        _spawned.Add(upper!.gameObject);
 
         Assert.IsTrue(lower.IsDouble, "источник помечен двойным");
         Assert.IsTrue(upper.IsDouble, "пара помечена двойной");
@@ -72,7 +72,7 @@ public class DrawerLinksTests
         var lower = MakeDrawer("D1", Vector3.zero);
         var upper = DrawerLinks.CreatePair(lower);
         Assert.IsNotNull(upper);
-        _spawned.Add(upper.gameObject);
+        _spawned.Add(upper!.gameObject);
 
         int countBefore = PartRegistry.GetAll().Count;
         Assert.IsNull(DrawerLinks.CreatePair(lower), "повторное создание пары — no-op");
@@ -88,7 +88,7 @@ public class DrawerLinksTests
 
         var pair = DrawerLinks.CreatePair(source);
         Assert.IsNotNull(pair);
-        _spawned.Add(pair.gameObject);
+        _spawned.Add(pair!.gameObject);
 
         Assert.IsFalse(pair.IsUpperDrawer, "пара — нижний ящик");
         Assert.Less(pair.transform.position.y, source.transform.position.y, "пара стоит снизу");
@@ -101,7 +101,7 @@ public class DrawerLinksTests
     {
         var lower = MakeDrawer("D1", Vector3.zero);
         var upper = DrawerLinks.CreatePair(lower);
-        _spawned.Add(upper.gameObject);
+        _spawned.Add(upper!.gameObject);
 
         DrawerLinks.Rename(lower, "Нижний короб");
 
@@ -152,7 +152,7 @@ public class DrawerLinksTests
     {
         var lower = MakeDrawer("D1", Vector3.zero);
         var upper = DrawerLinks.CreatePair(lower);
-        _spawned.Add(upper.gameObject);
+        _spawned.Add(upper!.gameObject);
 
         var lowerFacade = MakeFacade("FL", new Vector3(0f, 0f, 0.2f));
         var upperFacade = MakeFacade("FU", new Vector3(0f, 0.086f, 0.2f));
@@ -197,7 +197,7 @@ public class DrawerLinksTests
     {
         var lower = MakeDrawer("D1", Vector3.zero);
         var upper = DrawerLinks.CreatePair(lower);
-        _spawned.Add(upper.gameObject);
+        _spawned.Add(upper!.gameObject);
         lower.AttachedFacadeName = "F1";
 
         var copyGo = ElementFactory.Duplicate(lower);

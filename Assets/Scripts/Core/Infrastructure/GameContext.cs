@@ -22,7 +22,7 @@ namespace KitchenDesigner.Core
 
     public static class GameContext
     {
-        public static GameServices Services { get; private set; }
+        public static GameServices? Services { get; private set; }
 
         public static void Initialize(GameServices services)
         {

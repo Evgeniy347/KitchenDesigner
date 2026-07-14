@@ -15,31 +15,31 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsName
     {
         [McpParam("Exact board name (from get_all_elements).", Required = true)]
-        public string name;
+        public string name = string.Empty;
     }
 
     [Serializable]
     public class ParamsObjectPath
     {
         [McpParam("Object name or hierarchy path (Parent/Child).", Required = true)]
-        public string object_path;
+        public string object_path = string.Empty;
 
         // Legacy fallback: some callers still send `name`; handler accepts either.
-        [McpIgnore] public string name;
+        [McpIgnore] public string name = string.Empty;
     }
 
     [Serializable]
     public class ParamsFindObjects
     {
         [McpParam("Full or partial object name.", Required = true)]
-        public string name_filter;
+        public string name_filter = string.Empty;
     }
 
     [Serializable]
     public class ParamsSetActive
     {
         [McpParam("Object name or path.", Required = true)]
-        public string object_path;
+        public string object_path = string.Empty;
 
         [McpParam("Enable (true) or disable (false).", Required = true)]
         public bool active;
@@ -51,7 +51,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsSetTransform
     {
         [McpParam("Object name or path.", Required = true)]
-        public string object_path;
+        public string object_path = string.Empty;
 
         [McpParam("Value for X. Omit to keep current.")] public float? x;
         [McpParam("Value for Y. Omit to keep current.")] public float? y;
@@ -63,7 +63,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsMoveElement
     {
-        [McpParam("Exact board name.", Required = true)] public string name;
+        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
         [McpParam("Target X in METERS. Omit to keep current X.")] public float? x;
         [McpParam("Target Y in METERS. Omit to keep current Y.")] public float? y;
         [McpParam("Target Z in METERS. Omit to keep current Z.")] public float? z;
@@ -72,7 +72,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsResizeElement
     {
-        [McpParam("Exact board name.", Required = true)] public string name;
+        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
         [McpParam("New width (X) in MM. Omit to keep current width.", Min = 1)] public int? width;
         [McpParam("New height (Y) in MM. Omit to keep current height.", Min = 1)] public int? height;
         [McpParam("New depth/thickness (Z) in MM. Omit to keep current depth.", Min = 1)] public int? depth;
@@ -94,7 +94,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsRotateElement
     {
-        [McpParam("Exact board name.", Required = true)] public string name;
+        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
         [McpParam("Rotation around X in DEGREES. Omit to keep current.")] public float? x;
         [McpParam("Rotation around Y in DEGREES. Omit to keep current.")] public float? y;
         [McpParam("Rotation around Z in DEGREES. Omit to keep current.")] public float? z;
@@ -103,40 +103,40 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsElementLock
     {
-        [McpParam("Exact board name.", Required = true)] public string name;
+        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
         [McpParam("true = lock (protect), false = unlock (allow editing).", Required = true)] public bool locked;
     }
 
     [Serializable]
     public class ParamsSetFacadeMode
     {
-        [McpParam("Exact facade element name.", Required = true)] public string name;
+        [McpParam("Exact facade element name.", Required = true)] public string name = string.Empty;
         [McpParam("Opening mode: front_*/back_* (hinged on a face edge), edge_* (hinged on the thickness edge), drawer_* (sliding along an axis).",
             Required = true, Enum = new[] {
                 "front_left", "front_right", "front_top", "front_bottom",
                 "back_left", "back_right", "back_top", "back_bottom",
                 "edge_top_left", "edge_top_right", "edge_bottom_left", "edge_bottom_right",
                 "drawer_out", "drawer_in", "drawer_right", "drawer_left", "drawer_up", "drawer_down" })]
-        public string mode;
+        public string mode = string.Empty;
     }
 
     [Serializable]
     public class ParamsSetMaterial
     {
-        [McpParam("Exact board/facade name.", Required = true)] public string name;
+        [McpParam("Exact board/facade name.", Required = true)] public string name = string.Empty;
         [McpParam("Material id (e.g. 'oak') or its display name (e.g. 'Дуб сонома'). See list_materials.", Required = true)]
-        public string material; // id ИЛИ отображаемое имя
+        public string material = string.Empty; // id ИЛИ отображаемое имя
     }
 
     [Serializable]
     public class ParamsCreateElement
     {
         [McpParam("Name for the new element (becomes its board name).", Required = true)]
-        public string name;
+        public string name = string.Empty;
 
         // template_name is a legacy wire field: the handler uses `name` when it is
         // absent. Kept for backward compatibility, hidden from the agent.
-        [McpIgnore] public string template_name;
+        [McpIgnore] public string template_name = string.Empty;
 
         [McpParam("Position X in METERS.")] public float x;
         [McpParam("Position Y in METERS.")] public float y;
@@ -156,16 +156,16 @@ namespace KitchenDesigner.Core.MCP.Contract
         public bool is_drawer;
 
         [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Default A.", Enum = new[] { "A", "B", "C", "D" })]
-        public string drawer_type;
+        public string drawer_type = string.Empty;
         [McpParam("Drawer only: nominal slide length in MM, one of 250/300/350/400/450/500/550/600. Default 350.")]
         public int drawer_length = 350;
         [McpParam("Drawer only: GTV color. Default anthracite.", Enum = new[] { "anthracite", "white", "black" })]
-        public string drawer_color;
+        public string drawer_color = string.Empty;
         [McpParam("Drawer only: internal box width in MM (default 400, min 100).", Min = 100)]
         public int drawer_internal_width = 400;
 
         [McpParam("Assembled facade only: center fill — blind (panel), glass (vitrine with glass), open (empty vitrine). Default blind.", Enum = new[] { "blind", "glass", "open" })]
-        public string fill;
+        public string fill = string.Empty;
 
         [McpParam("Facade only: left gap in MM (default 2).", Name = "gap_left", Min = 0)] public int gapLeft = 2;
         [McpParam("Facade only: right gap in MM (default 2).", Name = "gap_right", Min = 0)] public int gapRight = 2;
@@ -176,18 +176,18 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsConvertElement
     {
-        [McpParam("Exact element name to convert.", Required = true)] public string name;
+        [McpParam("Exact element name to convert.", Required = true)] public string name = string.Empty;
         [McpParam("Target type: part (plain board), facade (door/front), assembled_facade (framed facade), radial_shelf (corner shelf).",
             Required = true, Enum = new[] { "part", "facade", "assembled_facade", "radial_shelf" })]
-        public string target;
+        public string target = string.Empty;
         [McpParam("When target=assembled_facade: center fill — blind (panel), glass, open (empty). Default keeps/blind.", Enum = new[] { "blind", "glass", "open" })]
-        public string fill;
+        public string fill = string.Empty;
     }
 
     [Serializable]
     public class ParamsMenuPath
     {
-        [McpParam("Menu path, e.g. 'Edit/Undo'.", Required = true)] public string menu_path;
+        [McpParam("Menu path, e.g. 'Edit/Undo'.", Required = true)] public string menu_path = string.Empty;
     }
 
     [Serializable]
@@ -199,7 +199,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsExportCsv
     {
-        [McpParam("Full file path to write the CSV to.", Required = true)] public string path;
+        [McpParam("Full file path to write the CSV to.", Required = true)] public string path = string.Empty;
     }
 
     [Serializable]
@@ -212,14 +212,14 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsSetSetting
     {
         [McpParam("Setting key.", Required = true, Enum = new[] { "lower_near_walls", "snap_enabled", "grid_enabled", "walls_enabled" })]
-        public string name;
+        public string name = string.Empty;
         [McpParam("New on/off value.", Required = true)] public bool value;
     }
 
     [Serializable]
     public class ParamsSnapDiagnose
     {
-        [McpParam("Exact board name.", Required = true)] public string name;
+        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
         [McpParam("Test X in METERS (default: current).")] public float? x;
         [McpParam("Test Y in METERS (default: current).")] public float? y;
         [McpParam("Test Z in METERS (default: current).")] public float? z;
@@ -228,7 +228,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsSimulateMove
     {
-        [McpParam("Exact board name.", Required = true)] public string name;
+        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
         [McpParam("Target X in METERS. Omit to keep current X.")] public float? x;
         [McpParam("Target Y in METERS. Omit to keep current Y.")] public float? y;
         [McpParam("Target Z in METERS. Omit to keep current Z.")] public float? z;
@@ -237,7 +237,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsSimulateResize
     {
-        [McpParam("Exact board name.", Required = true)] public string name;
+        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
         [McpParam("Target width (X) in MM. Omit to keep current width.", Min = 1)] public int? width;
         [McpParam("Target height (Y) in MM. Omit to keep current height.", Min = 1)] public int? height;
         [McpParam("Target depth/thickness (Z) in MM. Omit to keep current depth.", Min = 1)] public int? depth;
@@ -249,34 +249,34 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsCreateModule
     {
-        [McpParam("Module name, e.g. 'Тумба с ящиками'.", Required = true)] public string name;
-        [McpParam("Board names (at least 2).", Required = true, Min = 2)] public string[] members;
+        [McpParam("Module name, e.g. 'Тумба с ящиками'.", Required = true)] public string name = string.Empty;
+        [McpParam("Board names (at least 2).", Required = true, Min = 2)] public string[] members = Array.Empty<string>();
     }
 
     [Serializable]
     public class ParamsModule
     {
-        [McpParam("Module id (number) or name.", Required = true)] public string module;
+        [McpParam("Module id (number) or name.", Required = true)] public string module = string.Empty;
     }
 
     [Serializable]
     public class ParamsModuleElement
     {
-        [McpParam("Module id or name.", Required = true)] public string module;
-        [McpParam("Board name to add.", Required = true)] public string name;
+        [McpParam("Module id or name.", Required = true)] public string module = string.Empty;
+        [McpParam("Board name to add.", Required = true)] public string name = string.Empty;
     }
 
     [Serializable]
     public class ParamsSetDrawerProperties
     {
-        [McpParam("Exact drawer element name.", Required = true)] public string name;
-        [McpParam("Side height type: A=86, B=120, C=168, D=200 mm.", Enum = new[] { "A", "B", "C", "D" })] public string drawer_type;
+        [McpParam("Exact drawer element name.", Required = true)] public string name = string.Empty;
+        [McpParam("Side height type: A=86, B=120, C=168, D=200 mm.", Enum = new[] { "A", "B", "C", "D" })] public string drawer_type = string.Empty;
         [McpParam("Nominal slide length in MM, one of 250/300/350/400/450/500/550/600. Invalid values are ignored.")] public int? drawer_length;
-        [McpParam("GTV color.", Enum = new[] { "anthracite", "white", "black" })] public string drawer_color;
+        [McpParam("GTV color.", Enum = new[] { "anthracite", "white", "black" })] public string drawer_color = string.Empty;
         [McpParam("Internal box width in MM (min 100).", Min = 100)] public int? internal_width;
         [McpParam("Mark as part of a DOUBLE drawer (two stacked boxes).")] public bool? is_double;
         [McpParam("Double drawer only: this box is the UPPER one.")] public bool? is_upper;
-        [McpParam("Double drawer only: exact name of the paired drawer element (link both ways for sync).")] public string paired_drawer_name;
-        [McpParam("Exact name of the facade element acting as this drawer's front — it opens/closes together with the drawer. Empty string detaches.")] public string attached_facade_name;
+        [McpParam("Double drawer only: exact name of the paired drawer element (link both ways for sync).")] public string paired_drawer_name = string.Empty;
+        [McpParam("Exact name of the facade element acting as this drawer's front — it opens/closes together with the drawer. Empty string detaches.")] public string attached_facade_name = string.Empty;
     }
 }

@@ -201,7 +201,7 @@ namespace KitchenDesigner.Core
             // (без пола/стен отсутствие внешней опоры не считается нарушением).
             if (!hasAnchor)
             {
-                KitchenElement start = null;
+                KitchenElement? start = null;
                 foreach (var e in all)
                     if (hasContact.Contains(e)) { start = e; break; }
                 if (start == null) start = all[0];

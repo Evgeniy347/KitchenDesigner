@@ -5,8 +5,8 @@ using KitchenDesigner.Core;
 
 public class SnapSystemTests
 {
-    private KitchenElement _elementA;
-    private KitchenElement _elementB;
+    private KitchenElement _elementA = null!;
+    private KitchenElement _elementB = null!;
 
     [SetUp]
     public void Setup()

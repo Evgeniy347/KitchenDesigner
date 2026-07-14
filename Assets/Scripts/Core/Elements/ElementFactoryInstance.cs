@@ -5,11 +5,11 @@ namespace KitchenDesigner.Core
 {
     public class ElementFactoryInstance : IElementFactory
     {
-        private Material _defaultMaterial;
+        private Material _defaultMaterial = null!;
         private readonly ObjectPool<GameObject> _partPool;
         private readonly ObjectPool<GameObject> _facadePool;
 
-        private Material DefaultMaterial
+        private Material? DefaultMaterial
         {
             get
             {
@@ -171,7 +171,7 @@ namespace KitchenDesigner.Core
 
         public GameObject Duplicate(KitchenElement source)
         {
-            if (source == null) return null;
+            if (source == null) return null!;
 
             var dims = source.DimensionsMM;
             var offset = source.transform.position + new Vector3(0.1f, 0, 0);

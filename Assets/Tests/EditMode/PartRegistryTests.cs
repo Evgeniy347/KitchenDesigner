@@ -52,7 +52,7 @@ public class PartRegistryTests
     public void Register_Null_Ignored()
     {
         PartRegistry.Clear();
-        PartRegistry.Register(null);
+        PartRegistry.Register(null!);
         Assert.AreEqual(0, PartRegistry.GetAll().Count);
     }
 

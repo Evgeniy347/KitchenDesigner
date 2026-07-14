@@ -43,10 +43,10 @@ namespace KitchenDesigner.Core.MCP.Contract
         /// <summary>Agent-facing JSON name when it differs from the C# field name
         /// (e.g. wire field "gapLeft" exposed to the agent as "gap_left"). Null → use
         /// the field name. The generator/server apply this rename when forwarding.</summary>
-        public string Name;
+        public string Name = string.Empty;
 
         /// <summary>Allowed string values → generates z.enum([...]) / JSON-schema enum.</summary>
-        public string[] Enum;
+        public string[] Enum = Array.Empty<string>();
 
         /// <summary>Numeric lower bound (inclusive). NaN → unset. For string[] it is minItems.</summary>
         public double Min = double.NaN;
@@ -80,13 +80,13 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string Title;         // short human title
         public string Description;   // LLM-facing description
         public McpToolKind Kind;
-        public Type ParamsType;      // params POCO, or null for a no-argument tool
+        public Type? ParamsType;      // params POCO, or null for a no-argument tool
         public bool Cached;          // large read → ETag cache (get_all_elements)
         public bool StaticText;      // answered locally without a Unity call (guide)
         public bool OpenWorld;       // openWorldHint (execute_menu_item)
 
         public McpToolDef(string name, string title, string description,
-            McpToolKind kind, Type paramsType,
+            McpToolKind kind, Type? paramsType,
             bool cached = false, bool staticText = false, bool openWorld = false)
         {
             Name = name;

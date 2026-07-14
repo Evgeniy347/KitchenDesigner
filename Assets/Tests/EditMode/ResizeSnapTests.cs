@@ -92,6 +92,6 @@ public class ResizeSnapTests
     {
         var a = Make(new Vector3(0, 0.2f, 0), new Vector3Int(800, 400, 18));
         var fa = PlusXFace(a);
-        Assert.IsFalse(ResizeSnap.SnapDelta(fa.c, fa.n, fa.u, fa.v, fa.s, null, a, 0.05f, out _));
+        Assert.IsFalse(ResizeSnap.SnapDelta(fa.c, fa.n, fa.u, fa.v, fa.s, null!, a, 0.05f, out _));
     }
 }

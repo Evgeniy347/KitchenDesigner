@@ -16,10 +16,10 @@ namespace KitchenDesigner.Core.UI
         private const float ViewportCenterY = -30f;
         private const int MaxNameChars = 22;
 
-        private GameObject _root;
-        private TMP_Text _content;
-        private RectTransform _contentRect;
-        private ScrollRect _scrollRect;
+        private GameObject _root = null!;
+        private TMP_Text _content = null!;
+        private RectTransform _contentRect = null!;
+        private ScrollRect _scrollRect = null!;
 
         public void Build(Transform canvas)
         {

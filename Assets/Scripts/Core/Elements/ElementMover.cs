@@ -11,7 +11,7 @@ namespace KitchenDesigner.Core
         private static readonly HashSet<KitchenElement> _movingSet = new HashSet<KitchenElement>();
         public static bool IsMoving(KitchenElement e) => e != null && _movingSet.Contains(e);
 
-        private KitchenElement _target;
+        private KitchenElement? _target;
         private Vector3 _offset;
         private Vector3 _startPosition;
         private Quaternion _startRotation;
@@ -30,11 +30,11 @@ namespace KitchenDesigner.Core
 
         private enum AxisLock { None, X, Z }
 
-        private Material _dragOriginalMaterial;
-        private Material _dragTintMaterial;
+        private Material? _dragOriginalMaterial;
+        private Material? _dragTintMaterial;
 
-        private Mesh _ghostMesh;
-        private Material _ghostMaterial;
+        private Mesh? _ghostMesh;
+        private Material? _ghostMaterial;
         private Vector3? _ghostPosition;
         private Quaternion _ghostRotation;
         private bool _showGhost;
@@ -73,7 +73,7 @@ namespace KitchenDesigner.Core
             _ghostMaterial.SetFloat("_Smoothness", 0.1f);
         }
 
-        private void OnSelectionChanged(KitchenElement element)
+        private void OnSelectionChanged(KitchenElement? element)
         {
             if (IsDragging) return;
             _target = element;
@@ -155,14 +155,14 @@ namespace KitchenDesigner.Core
             _moveStart.Clear();
 
             var sel = SelectionManager.Instance;
-            bool group = sel != null && sel.IsSelected(_target) && sel.SelectedElements.Count > 1;
+            bool group = sel != null && sel.IsSelected(_target!) && sel.SelectedElements.Count > 1;
             if (group)
             {
-                foreach (var e in sel.SelectedElements)
+                foreach (var e in sel!.SelectedElements)
                     if (e != null && e.Movable && ModuleEditMode.IsEditable(e)) _moveSet.Add(e);
             }
             if (_moveSet.Count == 0)
-                _moveSet.Add(_target);
+                _moveSet.Add(_target!);
 
             foreach (var e in _moveSet) _moveStart.Add(GrabStart(e));
 
@@ -218,8 +218,8 @@ namespace KitchenDesigner.Core
                     // В режиме редактирования модуля дубль остаётся в модуле —
                     // иначе новая деталь оказалась бы заблокированной (вне модуля).
                     if (ModuleEditMode.IsActive)
-                        newElement.GroupId = ModuleEditMode.Active.id;
-                    CommandStack.Execute(new CreateCommand(dup));
+                        newElement.GroupId = ModuleEditMode.Active!.id;
+                    CommandStack.Execute(new CreateCommand(dup!));
                     if (SelectionManager.Instance != null)
                         SelectionManager.Instance.Select(newElement);
                 }
@@ -312,7 +312,7 @@ namespace KitchenDesigner.Core
         private void UpdateDrag()
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            Vector3 newPos = _target.transform.position;
+            Vector3 newPos = _target!.transform.position;
             bool computed = false;
 
             if (ShiftHeld)
@@ -431,7 +431,7 @@ namespace KitchenDesigner.Core
                 foreach (var v in result.violations)
                 {
                     if (v == _target) return true;
-                    float dist = Vector3.Distance(v.transform.position, _target.transform.position);
+                    float dist = Vector3.Distance(v.transform.position, _target!.transform.position);
                     if (dist <= radius) return true;
                 }
             }
@@ -479,7 +479,7 @@ namespace KitchenDesigner.Core
 
         private void SaveDragMaterial()
         {
-            var renderer = _target.GetComponent<MeshRenderer>();
+            var renderer = _target!.GetComponent<MeshRenderer>();
             if (renderer == null) return;
 
             _dragOriginalMaterial = renderer.material;

@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core
             }
             set => _fallback = value;
         }
-        private static ISaveLoadManager _fallback;
+        private static ISaveLoadManager _fallback = null!;
 
         public static string LastPath { get => Instance.LastPath; set => Instance.LastPath = value; }
         public static bool HasLastPath => Instance.HasLastPath;
@@ -33,7 +33,7 @@ namespace KitchenDesigner.Core
         public static ProjectData CaptureScene(IEnumerable<KitchenElement> elements) =>
             Instance.CaptureScene(elements);
         public static string Serialize(ProjectData data) => Instance.Serialize(data);
-        public static ProjectData Deserialize(string json) => Instance.Deserialize(json);
+        public static ProjectData? Deserialize(string json) => Instance.Deserialize(json);
         public static bool IsVersionCompatible(ProjectData data) =>
             Instance.IsVersionCompatible(data);
         public static List<GameObject> RestoreScene(ProjectData data) =>
@@ -41,7 +41,7 @@ namespace KitchenDesigner.Core
 
         public static bool SaveToFile(string path, ProjectData data) =>
             Instance.SaveToFile(path, data);
-        public static ProjectData LoadFromFile(string path) => Instance.LoadFromFile(path);
+        public static ProjectData? LoadFromFile(string path) => Instance.LoadFromFile(path);
 
         public static string PathForName(string name) => Instance.PathForName(name);
         public static bool SaveProject(string name, bool backup = true) =>

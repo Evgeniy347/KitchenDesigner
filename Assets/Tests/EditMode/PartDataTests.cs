@@ -64,7 +64,7 @@ public class PartDataTests
     public void MaterialId_EmptyOrNull_ReturnsDefault()
     {
         var data = new PartData();
-        data.MaterialId = null;
+        data.MaterialId = null!;
         Assert.AreEqual(MaterialCatalog.DefaultId, data.MaterialId);
         data.MaterialId = "";
         Assert.AreEqual(MaterialCatalog.DefaultId, data.MaterialId);
@@ -82,7 +82,7 @@ public class PartDataTests
     public void PartName_Null_Defaults()
     {
         var data = new PartData();
-        data.PartName = null;
+        data.PartName = null!;
         Assert.AreEqual("Board", data.PartName);
     }
 

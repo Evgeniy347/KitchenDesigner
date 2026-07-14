@@ -425,7 +425,7 @@ public class ElementConverterTests
     [Test]
     public void Convert_NullSource_Throws()
     {
-        Assert.That(() => ElementConverter.Convert(null, ElementConverter.TargetType.Part),
+        Assert.That(() => ElementConverter.Convert(null!, ElementConverter.TargetType.Part),
             Throws.ArgumentNullException);
     }
 

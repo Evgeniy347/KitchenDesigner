@@ -62,7 +62,7 @@ public class WebFileDialogTests
     [Test]
     public void TryParseOpenPayload_NullOrEmpty_ReturnsFalse()
     {
-        Assert.IsFalse(WebFileDialog.TryParseOpenPayload(null, out _, out _));
+        Assert.IsFalse(WebFileDialog.TryParseOpenPayload(null!, out _, out _));
         Assert.IsFalse(WebFileDialog.TryParseOpenPayload("", out _, out _));
     }
 
@@ -71,7 +71,7 @@ public class WebFileDialogTests
     [Test]
     public void SuggestedFileName_EmptyOrNull_ReturnsDefault()
     {
-        Assert.AreEqual("kitchen.json", WebFileDialog.SuggestedFileName(null));
+        Assert.AreEqual("kitchen.json", WebFileDialog.SuggestedFileName(null!));
         Assert.AreEqual("kitchen.json", WebFileDialog.SuggestedFileName(""));
     }
 
@@ -104,7 +104,7 @@ public class WebFileDialogTests
     public void Receiver_OnWebGLFileOpened_InvokesPendingOpenWithParsedParts()
     {
         var r = MakeReceiver();
-        string gotName = null, gotContent = null;
+        string? gotName = null, gotContent = null;
         int calls = 0;
         r.PendingOpen = (n, c) => { gotName = n; gotContent = c; calls++; };
 
@@ -138,7 +138,7 @@ public class WebFileDialogTests
     public void Receiver_OnWebGLFileSaved_InvokesPendingSavedOnce()
     {
         var r = MakeReceiver();
-        string saved = null;
+        string? saved = null;
         int calls = 0;
         r.PendingSaved = n => { saved = n; calls++; };
 
@@ -181,7 +181,7 @@ public class WebFileDialogTests
             Assert.AreEqual("RoundTrip.json", name);
 
             // Как это делает LoadDialog на WebGL: разобранное содержимое → сцена.
-            var data = SaveLoadManager.Deserialize(content);
+            var data = SaveLoadManager.Deserialize(content!);
             Assert.IsNotNull(data);
 
             foreach (var g in spawned)
@@ -191,7 +191,7 @@ public class WebFileDialogTests
             }
             spawned.Clear();
 
-            var restored = SaveLoadManager.RestoreScene(data);
+            var restored = SaveLoadManager.RestoreScene(data!);
             Assert.AreEqual(1, restored.Count);
             Assert.AreEqual("RoundTripBoard",
                 restored[0].GetComponent<KitchenElement>().PartName);

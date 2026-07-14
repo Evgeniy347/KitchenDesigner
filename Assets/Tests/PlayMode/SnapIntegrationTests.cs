@@ -8,8 +8,8 @@ using KitchenDesigner.Core;
 /// <summary>PlayMode-тесты снэппинга: симуляция перетаскивания, отмены, подсветки.</summary>
 public class SnapIntegrationTests
 {
-    private GameObject _bootGo;
-    private GameObject _camera;
+    private GameObject _bootGo = null!;
+    private GameObject _camera = null!;
 
     [UnitySetUp]
     public IEnumerator SetUp()

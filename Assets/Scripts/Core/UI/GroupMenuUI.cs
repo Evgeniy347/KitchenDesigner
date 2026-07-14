@@ -10,14 +10,14 @@ namespace KitchenDesigner.Core.UI
     /// перемещения, разорвать связь). Замок закрыт = связано, открыт = разорвать.</summary>
     public class GroupMenuUI : MonoBehaviour
     {
-        public static GroupMenuUI Instance { get; private set; }
+        public static GroupMenuUI Instance { get; private set; } = null!;
 
-        private GameObject _root;
-        private GameObject _linkRoot;
-        private GameObject _groupRoot;
-        private TMP_InputField _nameField;
-        private Toggle _lockMove;
-        private LinkGroup _group;
+        private GameObject _root = null!;
+        private GameObject _linkRoot = null!;
+        private GameObject _groupRoot = null!;
+        private TMP_InputField _nameField = null!;
+        private Toggle _lockMove = null!;
+        private LinkGroup? _group;
 
         private void Awake() => Instance = this;
 
@@ -107,6 +107,7 @@ namespace KitchenDesigner.Core.UI
 
         private void DoUnlink()
         {
+            if (_group == null) return;
             GroupManager.Unlink(_group);
             Close();
         }
@@ -130,7 +131,7 @@ namespace KitchenDesigner.Core.UI
         }
 
         // Закрываем меню, если выделение ушло с нашей группы.
-        private void OnSelectionChanged(KitchenElement element)
+        private void OnSelectionChanged(KitchenElement? element)
         {
             if (_root == null || !_root.activeSelf || _group == null) return;
             if (element == null || GroupManager.GroupOf(element) != _group)

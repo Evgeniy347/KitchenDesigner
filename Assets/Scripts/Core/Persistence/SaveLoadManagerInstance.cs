@@ -87,7 +87,7 @@ namespace KitchenDesigner.Core
         {
             var items = new List<ElementData>();
             var ordered = new List<KitchenElement>();
-            ElementData basePlateData = null;
+            ElementData? basePlateData = null;
             foreach (var e in elements)
             {
                 if (e == null) continue;
@@ -140,7 +140,7 @@ namespace KitchenDesigner.Core
 
         public string Serialize(ProjectData data) => JsonUtility.ToJson(data, true);
 
-        public ProjectData Deserialize(string json)
+        public ProjectData? Deserialize(string json)
         {
             if (string.IsNullOrEmpty(json)) return null;
             // composite-история пишется плоско (CompositeCommand.ToRecord), поэтому
@@ -172,7 +172,7 @@ namespace KitchenDesigner.Core
                 foreach (var gd in data.groups)
                     if (gd != null) GroupManager.Register(gd.id, gd.name, gd.movable);
 
-            var resolved = new List<KitchenElement>();
+            var resolved = new List<KitchenElement?>();
             foreach (var ed in data.elements)
             {
                 if (ed == null) { resolved.Add(null); continue; }
@@ -232,11 +232,11 @@ namespace KitchenDesigner.Core
                 System.Enum.TryParse<ResizeHandleManager.HandleMode>(data.handleMode, out var mode))
                 ResizeHandleManager.SetMode(mode);
 
-            if (data.basePlateValid)
+            if (data.basePlateValid && data.basePlate != null)
                 RestoreBasePlate(data.basePlate);
 
             CommandStack.Instance.Import(data.undoHistory, data.redoHistory,
-                i => (i >= 0 && i < resolved.Count) ? resolved[i] : null);
+                i => (i >= 0 && i < resolved.Count) ? resolved[i]! : null!);
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
@@ -248,7 +248,7 @@ namespace KitchenDesigner.Core
         {
             if (data == null) return;
             var floorGo = GameObject.FindWithTag("Floor");
-            KitchenElement element;
+            KitchenElement? element;
             if (floorGo != null)
             {
                 var bp = floorGo.GetComponent<BasePlate>();
@@ -286,7 +286,7 @@ namespace KitchenDesigner.Core
             }
         }
 
-        public ProjectData LoadFromFile(string path)
+        public ProjectData? LoadFromFile(string path)
         {
             if (!File.Exists(path))
             {

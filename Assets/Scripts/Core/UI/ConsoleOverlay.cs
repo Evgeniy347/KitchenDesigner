@@ -15,8 +15,8 @@ namespace KitchenDesigner.Core.UI
         private const int MaxLines = 300;   // храним
         private const int VisibleLines = 32; // показываем хвост
 
-        private GameObject _root;
-        private TMP_Text _text;
+        private GameObject _root = null!;
+        private TMP_Text _text = null!;
         private readonly Queue<string> _lines = new Queue<string>();
         private bool _dirty;
 

@@ -9,7 +9,7 @@ using KitchenDesigner.Core;
 public class SaveLoadManagerFileTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
-    private string _prevLastPath;
+    private string _prevLastPath = null!;
     private const string ProjName = "sl_filetests_proj";
 
     private KitchenElement Make(string name, Vector3Int dims, Vector3 pos)

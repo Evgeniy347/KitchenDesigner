@@ -7,7 +7,7 @@ namespace KitchenDesigner.Core
         public const int PLATE_SIZE = 3000;
         public const int PLATE_THICKNESS = 18;
 
-        private KitchenElement _element;
+        private KitchenElement _element = null!;
         public KitchenElement Element => _element;
 
         public static BasePlate Create()
