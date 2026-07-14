@@ -244,6 +244,36 @@ public class DrawerValidatorTests
         Assert.IsTrue(result.IsValid, "одиночный ящик не проверяется на вместимость");
     }
 
+    // ── FreeHeightAboveMM: место под верхний ящик пары ───────────────────
+
+    [Test]
+    public void FreeHeightAbove_NoPanels_ReturnsMax()
+    {
+        var drawer = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite, new Vector3(0f, 0.0575f, 0f));
+        Assert.AreEqual(float.MaxValue, DrawerValidator.FreeHeightAboveMM(drawer, All()));
+    }
+
+    [Test]
+    public void FreeHeightAbove_PanelAbove_ReturnsGapMM()
+    {
+        // Контур типа A: верх на y = 0.115. Панель 18 мм с низом на y = 0.215 → 100 мм.
+        var drawer = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite, new Vector3(0f, 0.0575f, 0f));
+        MakeBoard("Top", new Vector3Int(600, 18, 600), new Vector3(0f, 0.224f, 0f));
+
+        float free = DrawerValidator.FreeHeightAboveMM(drawer, All());
+        Assert.AreEqual(100f, free, 0.5f);
+    }
+
+    [Test]
+    public void FreeHeightAbove_IgnoresPanelNotOverlappingInPlan()
+    {
+        var drawer = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite, new Vector3(0f, 0.0575f, 0f));
+        // Панель выше, но в двух метрах в стороне — не мешает.
+        MakeBoard("Far", new Vector3Int(600, 18, 600), new Vector3(2f, 0.224f, 0f));
+
+        Assert.AreEqual(float.MaxValue, DrawerValidator.FreeHeightAboveMM(drawer, All()));
+    }
+
     [Test]
     public void ValidateAll_EmptyScene_ReturnsErrors()
     {

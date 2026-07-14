@@ -172,6 +172,31 @@ namespace KitchenDesigner.Core
             return result;
         }
 
+        /// <summary>Свободная высота над контуром ящика до ближайшей панели, мм.
+        /// Панель учитывается, если перекрывает ящик в плане (X/Z) и лежит не ниже
+        /// верха контура. Если сверху ничего нет — float.MaxValue (места достаточно).</summary>
+        public static float FreeHeightAboveMM(DrawerElement drawer, List<KitchenElement> allElements)
+        {
+            if (drawer == null || allElements == null) return 0f;
+
+            var drawerAabb = ComputeAABB(drawer.GetVertices());
+            float nearestY = float.MaxValue;
+
+            foreach (var el in allElements)
+            {
+                if (el == null || el == drawer) continue;
+                if (el is DrawerElement d && d.PartName == drawer.PairedDrawerName) continue;
+
+                var aabb = ComputeAABB(el.GetVertices());
+                if (!OverlapsXZ(aabb, drawerAabb)) continue;
+                if (aabb.minY >= drawerAabb.maxY - 0.0001f && aabb.minY < nearestY)
+                    nearestY = aabb.minY;
+            }
+
+            if (nearestY >= float.MaxValue) return float.MaxValue;
+            return (nearestY - drawerAabb.maxY) / AppConstants.MM_TO_UNITS;
+        }
+
         public static DrawerValidationResult ValidateAll(DrawerElement drawer, List<KitchenElement> allElements)
         {
             var result = ValidateSideWalls(drawer, allElements);

@@ -26,6 +26,18 @@ namespace KitchenDesigner.Core
     {
         public static readonly int[] ValidLengths = { 250, 300, 350, 400, 450, 500, 550, 600 };
 
+        /// <summary>Типы в порядке отображения — индексы дропдаунов UI.
+        /// Значения enum — это высоты в мм, кастовать индекс↔enum напрямую нельзя.</summary>
+        public static readonly DrawerType[] Types = { DrawerType.A, DrawerType.B, DrawerType.C, DrawerType.D };
+
+        /// <summary>Верхний ящик двойной пары — всегда низкий внутренний (A).</summary>
+        public const DrawerType UPPER_DRAWER_TYPE = DrawerType.A;
+
+        public static int TypeIndex(DrawerType type) => System.Array.IndexOf(Types, type);
+
+        public static DrawerType TypeFromIndex(int index) =>
+            index >= 0 && index < Types.Length ? Types[index] : DrawerType.A;
+
         // Монтажные размеры GTV AXIS PRO (брошюра «Преимущества», стр. 6 и 8).
         // Ширина ящика задаётся как LW — проём корпуса «в свету».
         public const float SLIDE_CLEARANCE_PER_SIDE = 37.5f; // зазор направляющих на сторону

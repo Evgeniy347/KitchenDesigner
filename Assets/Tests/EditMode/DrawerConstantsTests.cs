@@ -184,6 +184,20 @@ public class DrawerConstantsTests
     }
 
     [Test]
+    public void TypeIndex_And_TypeFromIndex_RoundTrip()
+    {
+        // Значения enum — высоты в мм; прямой каст индекс↔enum ломал высоту (баг UI).
+        for (int i = 0; i < DrawerConstants.Types.Length; i++)
+            Assert.AreEqual(i, DrawerConstants.TypeIndex(DrawerConstants.TypeFromIndex(i)));
+
+        Assert.AreEqual(DrawerType.A, DrawerConstants.TypeFromIndex(0));
+        Assert.AreEqual(DrawerType.D, DrawerConstants.TypeFromIndex(3));
+        Assert.AreEqual(3, DrawerConstants.TypeIndex(DrawerType.D));
+        Assert.AreEqual(DrawerType.A, DrawerConstants.TypeFromIndex(-1), "невалидный индекс → A");
+        Assert.AreEqual(DrawerType.A, DrawerConstants.TypeFromIndex(99), "невалидный индекс → A");
+    }
+
+    [Test]
     public void GetBottomLift_IsMountedTopMinusSideHeight()
     {
         Assert.AreEqual(21, DrawerConstants.GetBottomLift(DrawerType.A)); // 107−86
