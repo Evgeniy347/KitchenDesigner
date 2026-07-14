@@ -190,6 +190,21 @@ public class DrawerElementTests
     }
 
     [Test]
+    public void Drawer_SetDimensionsMM_AcceptsOnlyWidth()
+    {
+        // Ручки ресайза/undo пишут DimensionsMM напрямую: принимается только
+        // ширина (LW), высота и глубина пересчитываются из типа и длины.
+        var d = MakeDrawer("D", DrawerType.B, 400, 400, DrawerColor.Anthracite);
+        d.DimensionsMM = new Vector3Int(555, 999, 777);
+
+        Assert.AreEqual(555, d.InternalWidth, "ширина принята");
+        Assert.AreEqual(555, d.DimensionsMM.x);
+        Assert.AreEqual(DrawerConstants.GetMinOpeningHeight(DrawerType.B), d.DimensionsMM.y,
+            "высота вернулась к контуру типа");
+        Assert.AreEqual(400, d.DimensionsMM.z, "глубина вернулась к номинальной длине");
+    }
+
+    [Test]
     public void Drawer_NegativeWidth_Clamped()
     {
         var d = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite);

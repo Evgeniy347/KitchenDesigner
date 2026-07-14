@@ -58,13 +58,33 @@ public class DrawerLinksTests
         Assert.IsTrue(upper.IsDouble, "пара помечена двойной");
         Assert.IsTrue(upper.IsUpperDrawer, "пара — верхний ящик");
         Assert.IsFalse(lower.IsUpperDrawer, "источник — нижний ящик");
+        Assert.AreEqual(DrawerConstants.UPPER_DRAWER_TYPE, upper.Type, "верхний — внутренний тип A");
+        Assert.IsFalse(upper.Movable, "верхний двигается только с нижним");
         Assert.AreEqual(upper.PartName, lower.PairedDrawerName, "прямая ссылка");
         Assert.AreEqual(lower.PartName, upper.PairedDrawerName, "обратная ссылка");
 
-        // Шаг пары — высота контурного бокса (мин. проём): проёмы друг над другом.
-        float heightUnits = DrawerConstants.GetMinOpeningHeight(DrawerType.A) * AppConstants.MM_TO_UNITS;
-        Assert.AreEqual(lower.transform.position.y + heightUnits, upper.transform.position.y, 0.0001f,
+        // Контуры проёмов друг над другом: шаг = полусумма высот контуров.
+        float step = (DrawerConstants.GetMinOpeningHeight(lower.Type)
+                    + DrawerConstants.GetMinOpeningHeight(upper.Type)) * 0.5f * AppConstants.MM_TO_UNITS;
+        Assert.AreEqual(lower.transform.position.y + step, upper.transform.position.y, 0.0001f,
             "пара стоит вплотную сверху");
+    }
+
+    [Test]
+    public void CreatePair_LowerTypeD_UpperStillTypeA()
+    {
+        var go = ElementFactory.CreateDrawer(DrawerType.D, 500, DrawerColor.Black, 450, "Big", Vector3.zero);
+        _spawned.Add(go);
+        var lower = go.GetComponent<DrawerElement>();
+
+        var upper = DrawerLinks.CreatePair(lower);
+        Assert.IsNotNull(upper);
+        _spawned.Add(upper!.gameObject);
+
+        Assert.AreEqual(DrawerType.A, upper.Type, "верхний всегда низкий (A)");
+        Assert.AreEqual(450, upper.InternalWidth, "ширина наследуется");
+        Assert.AreEqual(DrawerColor.Black, upper.Color, "цвет наследуется");
+        Assert.AreEqual(500, upper.NominalLength, "длина по умолчанию — как у нижнего");
     }
 
     [Test]
@@ -82,17 +102,78 @@ public class DrawerLinksTests
     }
 
     [Test]
-    public void CreatePair_FromUpperDrawer_StacksBelow()
+    public void CreatePair_FromUpperDrawer_ReturnsNull()
     {
+        // Пара создаётся только от нижнего ящика — верхний сам «ведомый».
         var source = MakeDrawer("Top", new Vector3(0f, 0.5f, 0f));
         source.IsUpperDrawer = true;
 
-        var pair = DrawerLinks.CreatePair(source);
-        Assert.IsNotNull(pair);
-        _spawned.Add(pair!.gameObject);
+        Assert.IsNull(DrawerLinks.CreatePair(source));
+    }
 
-        Assert.IsFalse(pair.IsUpperDrawer, "пара — нижний ящик");
-        Assert.Less(pair.transform.position.y, source.transform.position.y, "пара стоит снизу");
+    // ── DetachPair / жёсткая привязка верхнего ──────────────────────────
+
+    [Test]
+    public void DetachPair_ClearsLinksAndReturnsUpper()
+    {
+        var lower = MakeDrawer("D1", Vector3.zero);
+        var upper = DrawerLinks.CreatePair(lower);
+        _spawned.Add(upper!.gameObject);
+
+        var upperGo = DrawerLinks.DetachPair(lower);
+
+        Assert.AreEqual(upper.gameObject, upperGo, "возвращён верхний ящик");
+        Assert.IsFalse(lower.IsDouble, "нижний больше не двойной");
+        Assert.IsEmpty(lower.PairedDrawerName, "ссылка нижнего очищена");
+        Assert.IsEmpty(upper.PairedDrawerName, "ссылка верхнего очищена");
+    }
+
+    [Test]
+    public void SyncToLower_FollowsLowerPosition()
+    {
+        var lower = MakeDrawer("D1", Vector3.zero);
+        var upper = DrawerLinks.CreatePair(lower);
+        _spawned.Add(upper!.gameObject);
+
+        lower.transform.position = new Vector3(1f, 0.2f, -0.5f);
+        upper.SyncToLower();
+
+        float step = (DrawerConstants.GetMinOpeningHeight(lower.Type)
+                    + DrawerConstants.GetMinOpeningHeight(upper.Type)) * 0.5f * AppConstants.MM_TO_UNITS;
+        var expected = lower.transform.position + Vector3.up * step;
+        Assert.AreEqual(expected.x, upper.transform.position.x, 1e-4f);
+        Assert.AreEqual(expected.y, upper.transform.position.y, 1e-4f);
+        Assert.AreEqual(expected.z, upper.transform.position.z, 1e-4f);
+    }
+
+    [Test]
+    public void LowerColorAndWidth_PropagateToUpper()
+    {
+        var lower = MakeDrawer("D1", Vector3.zero);
+        var upper = DrawerLinks.CreatePair(lower);
+        _spawned.Add(upper!.gameObject);
+
+        lower.Color = DrawerColor.White;
+        lower.InternalWidth = 550;
+
+        Assert.AreEqual(DrawerColor.White, upper.Color, "цвет верхнего следует за нижним");
+        Assert.AreEqual(550, upper.InternalWidth, "ширина верхнего следует за нижним");
+    }
+
+    [Test]
+    public void CycleDoubleState_WithoutPair_BehavesSafely()
+    {
+        // Битые данные: флаг двойного есть, пары нет — цикл не должен падать.
+        var d = MakeDrawer("Одинокий", Vector3.zero);
+        d.IsDouble = true;
+        d.PairedDrawerName = "Несуществующий";
+
+        Assert.DoesNotThrow(() =>
+        {
+            d.CycleDoubleState(); // Closed → BothOpen: нижний открывается
+            d.StepAnimation(1f);
+        });
+        Assert.IsTrue(d.IsOpen, "нижний без пары открывается сам");
     }
 
     // ── Rename ──────────────────────────────────────────────────────────

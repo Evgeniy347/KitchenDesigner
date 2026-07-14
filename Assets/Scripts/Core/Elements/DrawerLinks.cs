@@ -10,23 +10,26 @@ namespace KitchenDesigner.Core
     public static class DrawerLinks
     {
         /// <summary>
-        /// Создать парный ящик к <paramref name="source"/>: второй короб того же
-        /// типа ставится вплотную сверху (или снизу, если исходный — верхний),
-        /// оба помечаются двойными и связываются по именам в обе стороны.
-        /// Возвращает созданный ящик (null, если пара уже есть).
+        /// Сделать ящик двойным: над <paramref name="source"/> создаётся верхний
+        /// внутренний ящик (всегда тип A) — вплотную над контуром нижнего, той же
+        /// ширины и цвета, той же длины. Верхний жёстко привязан к нижнему
+        /// (следует за ним, своих свойств кроме L не имеет) и заблокирован от
+        /// перемещения. Возвращает верхний ящик (null, если source — верхний
+        /// или пара уже есть).
         /// </summary>
         public static DrawerElement? CreatePair(DrawerElement source)
         {
-            if (source == null) return null;
+            if (source == null || source.IsUpperDrawer) return null;
             if (source.FindPaired() != null) return null; // пара уже существует
 
-            bool newIsUpper = !source.IsUpperDrawer;
-            // Шаг пары — высота контурного бокса (проёма): проёмы идут друг над другом.
-            float heightUnits = DrawerConstants.GetMinOpeningHeight(source.Type) * AppConstants.MM_TO_UNITS;
-            var pos = source.ClosedPosition + (newIsUpper ? Vector3.up : Vector3.down) * heightUnits;
+            var upperType = DrawerConstants.UPPER_DRAWER_TYPE;
+            // Контуры проёмов идут друг над другом: шаг = полусумма высот контуров.
+            float step = (DrawerConstants.GetMinOpeningHeight(source.Type)
+                        + DrawerConstants.GetMinOpeningHeight(upperType)) * 0.5f * AppConstants.MM_TO_UNITS;
+            var pos = source.ClosedPosition + source.ClosedRotation * Vector3.up * step;
 
-            string pairName = UniqueName(source.PartName + (newIsUpper ? " (верх)" : " (низ)"));
-            var go = ElementFactory.CreateDrawer(source.Type, source.NominalLength,
+            string pairName = UniqueName(source.PartName + " (верх)");
+            var go = ElementFactory.CreateDrawer(upperType, source.NominalLength,
                 source.Color, source.InternalWidth, pairName, pos);
             if (go == null) return null;
             go.transform.rotation = source.ClosedRotation;
@@ -35,13 +38,31 @@ namespace KitchenDesigner.Core
             if (pair == null) return null;
 
             pair.IsDouble = true;
-            pair.IsUpperDrawer = newIsUpper;
+            pair.IsUpperDrawer = true;
             pair.PairedDrawerName = source.PartName;
+            pair.Movable = false; // двигается только вместе с нижним
 
             source.IsDouble = true;
-            source.IsUpperDrawer = !newIsUpper;
+            source.IsUpperDrawer = false;
             source.PairedDrawerName = pair.PartName;
             return pair;
+        }
+
+        /// <summary>Убрать верхний ящик пары и снять с нижнего пометку двойного.
+        /// Возвращает GameObject верхнего (удаление — на вызывающем, чтобы он
+        /// мог провести его через CommandStack).</summary>
+        public static GameObject? DetachPair(DrawerElement source)
+        {
+            if (source == null || source.IsUpperDrawer) return null;
+            var pair = source.FindPaired();
+
+            source.IsDouble = false;
+            source.PairedDrawerName = "";
+            if (pair == null) return null;
+
+            pair.IsDouble = false;
+            pair.PairedDrawerName = "";
+            return pair.gameObject;
         }
 
         /// <summary>

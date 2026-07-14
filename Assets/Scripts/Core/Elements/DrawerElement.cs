@@ -53,6 +53,12 @@ namespace KitchenDesigner.Core
             {
                 _color = value;
                 MaterialManager.ApplyById(this, DrawerConstants.GetColorMaterialId(value));
+                // Верхний ящик пары настроек не имеет — цвет наследует от нижнего.
+                if (!_isUpperDrawer)
+                {
+                    var pair = FindPairedDrawer();
+                    if (pair != null && pair._color != value) pair.Color = value;
+                }
             }
         }
 
@@ -64,11 +70,14 @@ namespace KitchenDesigner.Core
             set
             {
                 int clamped = Mathf.Max(100, value);
-                if (clamped != _internalWidth)
-                {
-                    _internalWidth = clamped;
-                    ApplyDimensions();
-                }
+                if (clamped == _internalWidth) return;
+                _internalWidth = clamped;
+                // ApplyDimensions читает ширину из Data.DimensionsMM.x —
+                // синхронизируем её ДО пересчёта, иначе вернётся старое значение.
+                var dims = Data.DimensionsMM;
+                dims.x = clamped;
+                Data.DimensionsMM = dims;
+                ApplyDimensions();
             }
         }
 
@@ -171,6 +180,11 @@ namespace KitchenDesigner.Core
 
         public override void ApplyDimensions()
         {
+            // Внешняя запись DimensionsMM (ручки ресайза, undo, «Применить»)
+            // может менять только ширину (LW); высоту и глубину всегда диктуют
+            // тип и номинальная длина.
+            _internalWidth = Mathf.Max(100, Data.DimensionsMM.x);
+
             // Габарит элемента — контурный бокс проёма (не видимого короба):
             // зазоры направляющих и монтажный подъём входят в бокс.
             int openingHeight = DrawerConstants.GetMinOpeningHeight(_type);
@@ -185,6 +199,14 @@ namespace KitchenDesigner.Core
                 _nominalLength * AppConstants.MM_TO_UNITS
             );
             RebuildMesh();
+
+            // Ширина верхнего ящика пары всегда равна ширине нижнего.
+            if (!_isUpperDrawer)
+            {
+                var pair = FindPairedDrawer();
+                if (pair != null && pair._internalWidth != _internalWidth)
+                    pair.InternalWidth = _internalWidth;
+            }
         }
 
         /// <summary>Пересобрать процедурный меш короба (боковины + дно + задник).</summary>
@@ -211,6 +233,26 @@ namespace KitchenDesigner.Core
         }
 
         private void Update() => StepAnimation(Time.deltaTime);
+
+        private void LateUpdate()
+        {
+            if (_isUpperDrawer) SyncToLower();
+        }
+
+        /// <summary>Верхний ящик пары жёстко следует за нижним: закрытая поза —
+        /// вплотную над контуром нижнего, поворот совпадает. Анимация выдвижения
+        /// при этом своя (ApplyAnimPose от синхронизированной закрытой позы).</summary>
+        public void SyncToLower()
+        {
+            var lower = FindPairedDrawer();
+            if (lower == null || lower._isUpperDrawer) return;
+
+            float step = (DrawerConstants.GetMinOpeningHeight(lower.Type)
+                        + DrawerConstants.GetMinOpeningHeight(_type)) * 0.5f * AppConstants.MM_TO_UNITS;
+            _closedPos = lower.ClosedPosition + lower.ClosedRotation * Vector3.up * step;
+            _closedRot = lower.ClosedRotation;
+            ApplyAnimPose();
+        }
 
         public void StepAnimation(float dt)
         {

@@ -290,9 +290,13 @@ namespace KitchenDesigner.Core
         private void BuildHandles()
         {
             _builtMode = Mode;
+            // У ящика GTV высота и глубина фиксированы типом и длиной —
+            // растягивать можно только ширину (ось X, грани 0 и 1).
+            bool widthOnly = Mode == HandleMode.Resize && _target is DrawerElement;
             var faces = _target!.GetFaces();
             for (int i = 0; i < faces.Length; i++)
             {
+                if (widthOnly && i / 2 != 0) continue;
                 var go = new GameObject($"ResizeHandle_{i}");
                 var marker = go.AddComponent<ResizeHandle>();
                 marker.faceIndex = i;
