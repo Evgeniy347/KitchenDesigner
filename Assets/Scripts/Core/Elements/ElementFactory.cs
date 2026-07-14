@@ -41,6 +41,9 @@ namespace KitchenDesigner.Core
         public static GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position) =>
             Instance.CreateDrawer(type, nominalLength, color, internalWidth, name, position);
 
+        public static GameObject CreateTable(Vector3Int dimensionsMM, string name, Vector3 position) =>
+            Instance.CreateTable(dimensionsMM, name, position);
+
         public static GameObject Duplicate(KitchenElement source) =>
             Instance.Duplicate(source);
 

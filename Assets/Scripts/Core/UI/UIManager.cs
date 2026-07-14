@@ -253,12 +253,43 @@ namespace KitchenDesigner.Core.UI
             var type = drawerType switch { "B" => DrawerType.B, "C" => DrawerType.C, "D" => DrawerType.D, _ => DrawerType.A };
             var color = colorName.ToLowerInvariant() switch { "white" => DrawerColor.White, "black" => DrawerColor.Black, _ => DrawerColor.Anthracite };
             Vector3 pos = GroundPointInFrontOfCamera();
-            // Контурный бокс ящика (проём) ставится низом на пол.
             pos.y = DrawerConstants.GetMinOpeningHeight(type) * 0.5f * AppConstants.MM_TO_UNITS;
             pos = GridManager.SnapToGrid(pos);
 
-            // Имя уникально: пара и фасад ящика ищутся по имени.
             var go = ElementFactory.CreateDrawer(type, length, color, width, DrawerLinks.UniqueName(name), pos);
+            var element = go.GetComponent<KitchenElement>();
+            if (element != null)
+            {
+                CommandStack.Execute(new CreateCommand(go));
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.Select(element);
+            }
+        }
+
+        public void SpawnTable(Vector3Int dims, string name)
+        {
+            Vector3 pos = GroundPointInFrontOfCamera();
+            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
+            pos = GridManager.SnapToGrid(pos);
+
+            var go = ElementFactory.CreateTable(dims, name, pos);
+            var element = go.GetComponent<KitchenElement>();
+            if (element != null)
+            {
+                CommandStack.Execute(new CreateCommand(go));
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.Select(element);
+            }
+        }
+
+        public void SpawnRadialShelf(Vector3Int dims, string name)
+        {
+            Vector3 pos = GroundPointInFrontOfCamera();
+            int radius = Mathf.Max(dims.x, dims.z);
+            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
+            pos = GridManager.SnapToGrid(pos);
+
+            var go = ElementFactory.CreateRadialShelf(radius, dims.y, name, pos);
             var element = go.GetComponent<KitchenElement>();
             if (element != null)
             {

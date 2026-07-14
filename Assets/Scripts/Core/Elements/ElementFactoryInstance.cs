@@ -209,6 +209,14 @@ namespace KitchenDesigner.Core
                 return go;
             }
 
+            if (source is TableElement tbl)
+            {
+                var go = CreateTable(dims, source.PartName + " (copy)", offset);
+                go.transform.rotation = source.transform.rotation;
+                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
+                return go;
+            }
+
             var facade = source as FacadeElement;
             if (facade != null)
             {
@@ -315,6 +323,38 @@ namespace KitchenDesigner.Core
             return go;
         }
 
+        public GameObject CreateTable(Vector3Int dimensionsMM, string name, Vector3 position)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = string.IsNullOrEmpty(name) ? "Прямоугольный стол" : name;
+            go.tag = "KitchenElement";
+            go.transform.position = position;
+
+            var rb = go.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+
+            var boxCollider = go.GetComponent<BoxCollider>();
+            if (boxCollider != null) Object.DestroyImmediate(boxCollider);
+
+            var meshCollider = go.AddComponent<MeshCollider>();
+            meshCollider.convex = false;
+
+            var table = go.AddComponent<TableElement>();
+            table.PartName = go.name;
+            table.DimensionsMM = dimensionsMM;
+
+            if (DefaultMaterial != null)
+                table.SetMaterial(DefaultMaterial);
+
+            PartRegistry.Register(table);
+
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+
+            return go;
+        }
+
         public void DestroyPart(GameObject go)
         {
             if (go == null) return;
@@ -330,7 +370,17 @@ namespace KitchenDesigner.Core
         public void DestroyElement(GameObject go)
         {
             if (go == null) return;
-            // Сборный фасад, радиусная полка и ящик GTV не из пула — уничтожаем напрямую.
+            var table = go.GetComponent<TableElement>();
+            if (table != null)
+            {
+                table.DestroyChildren();
+                PartRegistry.Unregister(table);
+                if (Application.isPlaying)
+                    Object.Destroy(go);
+                else
+                    Object.DestroyImmediate(go);
+                return;
+            }
             if (go.GetComponent<AssembledFacadeElement>() != null
                 || go.GetComponent<RadialShelfElement>() != null
                 || go.GetComponent<DrawerElement>() != null)

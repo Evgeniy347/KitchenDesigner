@@ -196,6 +196,13 @@ public class ElementPropertyDiagramTests
         return go.GetComponent<KitchenElement>();
     }
 
+    private static KitchenElement SpawnTable(string name)
+    {
+        var go = ElementFactory.CreateTable(new Vector3Int(1200, 750, 600), name,
+            new Vector3(6f, 0.375f, 0f));
+        return go.GetComponent<KitchenElement>();
+    }
+
     // ── Tests ─────────────────────────────────────────────────
 
     [UnityTest]
@@ -256,5 +263,23 @@ public class ElementPropertyDiagramTests
         yield return CapturePanel("FloorSettings", "floorsettings.png",
             () => { FloorSettingsUI.Instance?.Open(); },
             () => { FloorSettingsUI.Instance?.Close(); });
+    }
+
+    [UnityTest]
+    public IEnumerator Sidebar_SavesPng()
+    {
+        yield return CapturePanel("Sidebar", "sidebar.png",
+            () => { },
+            () => { });
+    }
+
+    [UnityTest]
+    public IEnumerator ContextMenu_Table_SavesPng()
+    {
+        var el = SpawnTable("Стол_1200x750x600");
+        Assert.IsNotNull(el);
+        yield return CapturePanel("ContextMenu", "contextmenu_table.png",
+            () => { ContextMenuUI.Instance!.Open(el); },
+            () => { ContextMenuUI.Instance?.Close(); });
     }
 }
