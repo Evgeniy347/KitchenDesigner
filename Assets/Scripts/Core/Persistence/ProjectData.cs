@@ -18,7 +18,7 @@ namespace KitchenDesigner.Core
         public bool basePlateValid = false;
 
         /// <summary>Пол (BasePlate): позиция, размеры, поворот.</summary>
-        public ElementData basePlate = null;
+        public ElementData? basePlate = null;
 
         // История отмены/повтора. elementIndex в записях ссылается на позицию в
         // массиве elements. Старые сейвы без истории → пустые массивы.

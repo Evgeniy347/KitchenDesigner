@@ -6,7 +6,7 @@ using KitchenDesigner.Core.MCP;
 
 public class McpCommandHandlerTests
 {
-    private McpCommandHandler _handler;
+    private McpCommandHandler _handler = null!;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     [SetUp]
@@ -220,7 +220,7 @@ public class McpCommandHandlerTests
         var wall = PartRegistry.GetAll().Find(e => e.PartName == "TestWall");
         Assert.NotNull(wall);
 
-        var result = ConstraintValidator.Validate(new List<KitchenElement> { wall });
+        var result = ConstraintValidator.Validate(new List<KitchenElement> { wall! });
         Assert.IsFalse(result.violations.Exists(e => e.GetComponent<Wall>() != null));
     }
 
@@ -248,7 +248,7 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.IsFalse(GetProp<bool>(resp.data, "hasViolations"));
+        Assert.IsFalse(GetProp<bool>(resp.data!, "hasViolations"));
     }
 
     [Test]
@@ -261,7 +261,7 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.IsTrue(GetProp<bool>(resp.data, "hasViolations"));
+        Assert.IsTrue(GetProp<bool>(resp.data!, "hasViolations"));
     }
 
     [Test]
@@ -274,7 +274,7 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.IsFalse(GetProp<bool>(resp.data, "hasViolations"));
+        Assert.IsFalse(GetProp<bool>(resp.data!, "hasViolations"));
     }
 
     [Test]
@@ -285,7 +285,7 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("get_element_info", new { name = "A" }));
 
         Assert.AreEqual("result", resp.type);
-        var info = (ElementInfo)resp.data;
+        var info = (ElementInfo)resp.data!;
         Assert.IsTrue(info.hasViolations, "A overlaps with B → violation");
     }
 
@@ -296,7 +296,7 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("get_element_info", new { name = "W" }));
 
         Assert.AreEqual("result", resp.type);
-        var info = (ElementInfo)resp.data;
+        var info = (ElementInfo)resp.data!;
         Assert.IsFalse(info.hasViolations, "Стена — якорь → нет нарушений");
     }
 
@@ -309,7 +309,7 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("get_all_elements", new { }));
 
         Assert.AreEqual("result", resp.type);
-        var list = (List<ElementInfo>)resp.data;
+        var list = (List<ElementInfo>)resp.data!;
         Assert.AreEqual(2, list.Count);
         foreach (var info in list)
             Assert.IsTrue(info.hasViolations, $"{info.name} overlaps → violation");
@@ -323,7 +323,7 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("move_element", new { name = "A", x = 1.8f, y = 0f, z = 0f }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.IsTrue(GetProp<bool>(resp.data, "hasViolations"));
+        Assert.IsTrue(GetProp<bool>(resp.data!, "hasViolations"));
     }
 
     [Test]
@@ -334,7 +334,7 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("resize_element", new { name = "A", width = 1000, height = 400, depth = 18 }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.IsTrue(GetProp<bool>(resp.data, "hasViolations"));
+        Assert.IsTrue(GetProp<bool>(resp.data!, "hasViolations"));
     }
 
     [Test]
@@ -346,11 +346,11 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("get_violations", new { }));
 
         Assert.AreEqual("result", resp.type);
-        var count = GetProp<int>(resp.data, "count");
+        var count = GetProp<int>(resp.data!, "count");
         Assert.AreEqual(2, count);
-        var violations = GetProp<object>(resp.data, "violations") as System.Collections.IList;
+        var violations = GetProp<object>(resp.data!, "violations") as System.Collections.IList;
         Assert.IsNotNull(violations);
-        Assert.AreEqual(2, violations.Count);
+        Assert.AreEqual(2, violations!.Count);
     }
 
     [Test]
@@ -360,19 +360,19 @@ public class McpCommandHandlerTests
         MakeElement("B", new Vector3Int(1000, 1000, 1000), new Vector3(0f, 0f, 0f));
 
         var resp = _handler.Handle(MakeReq("get_violations", new { }));
-        var violations = GetProp<object>(resp.data, "violations") as System.Collections.IList;
+        var violations = GetProp<object>(resp.data!, "violations") as System.Collections.IList;
 
-        var vA = violations[0];
-        Assert.AreEqual("A", GetProp<string>(vA, "name"));
-        Assert.IsFalse(GetProp<bool>(vA, "disconnected"));
-        var overlapsA = GetProp<object>(vA, "overlapsWith") as System.Collections.IList;
+        var vA = violations![0];
+        Assert.AreEqual("A", GetProp<string>(vA!, "name"));
+        Assert.IsFalse(GetProp<bool>(vA!, "disconnected"));
+        var overlapsA = GetProp<object>(vA!, "overlapsWith") as System.Collections.IList;
         Assert.IsNotNull(overlapsA);
-        Assert.AreEqual(1, overlapsA.Count);
-        var overlap = overlapsA[0];
-        Assert.AreEqual("B", GetProp<string>(overlap, "neighbor"));
-        Assert.Greater(GetProp<float>(overlap, "overlapXmm"), 990);
-        Assert.Greater(GetProp<float>(overlap, "overlapYmm"), 990);
-        Assert.Greater(GetProp<float>(overlap, "overlapZmm"), 990);
+        Assert.AreEqual(1, overlapsA!.Count);
+        var overlap = overlapsA![0];
+        Assert.AreEqual("B", GetProp<string>(overlap!, "neighbor"));
+        Assert.Greater(GetProp<float>(overlap!, "overlapXmm"), 990);
+        Assert.Greater(GetProp<float>(overlap!, "overlapYmm"), 990);
+        Assert.Greater(GetProp<float>(overlap!, "overlapZmm"), 990);
     }
 
     [Test]
@@ -384,7 +384,7 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("get_violations", new { }));
 
         Assert.AreEqual("result", resp.type);
-        var count = GetProp<int>(resp.data, "count");
+        var count = GetProp<int>(resp.data!, "count");
         Assert.AreEqual(0, count);
     }
 
@@ -399,10 +399,10 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.IsTrue(GetProp<bool>(resp.data, "is_facade"));
+        Assert.IsTrue(GetProp<bool>(resp.data!, "is_facade"));
         var el = FindBoard("F1");
         Assert.IsNotNull(el);
-        var facade = el.GetComponent<FacadeElement>();
+        var facade = el!.GetComponent<FacadeElement>();
         Assert.IsNotNull(facade);
         Assert.AreEqual(1, facade.GapLeft);
         Assert.AreEqual(2, facade.GapRight);
@@ -422,7 +422,7 @@ public class McpCommandHandlerTests
 
         Assert.AreEqual("result", resp.type);
         var el = FindBoard("F2");
-        var facade = el.GetComponent<FacadeElement>();
+        var facade = el!.GetComponent<FacadeElement>();
         Assert.AreEqual(2, facade.GapLeft);
         Assert.AreEqual(2, facade.GapRight);
         Assert.AreEqual(2, facade.GapTop);
@@ -439,11 +439,11 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.IsTrue(GetProp<bool>(resp.data, "is_radial_shelf"));
-        Assert.AreEqual(450, GetProp<int>(resp.data, "radius"));
+        Assert.IsTrue(GetProp<bool>(resp.data!, "is_radial_shelf"));
+        Assert.AreEqual(450, GetProp<int>(resp.data!, "radius"));
         var el = FindBoard("RS1");
         Assert.IsNotNull(el);
-        var shelf = el.GetComponent<RadialShelfElement>();
+        var shelf = el!.GetComponent<RadialShelfElement>();
         Assert.IsNotNull(shelf);
         Assert.AreEqual(450, shelf.Radius);
         Assert.AreEqual(new Vector3Int(450, 25, 450), shelf.DimensionsMM);
@@ -459,11 +459,11 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.IsTrue(GetProp<bool>(resp.data, "is_radial_shelf"));
-        Assert.AreEqual(300, GetProp<int>(resp.data, "radius"));
+        Assert.IsTrue(GetProp<bool>(resp.data!, "is_radial_shelf"));
+        Assert.AreEqual(300, GetProp<int>(resp.data!, "radius"));
         var el = FindBoard("RS2");
         Assert.IsNotNull(el);
-        Assert.AreEqual(300, el.GetComponent<RadialShelfElement>().Radius);
+        Assert.AreEqual(300, el!.GetComponent<RadialShelfElement>().Radius);
     }
 
     [Test]
@@ -483,8 +483,8 @@ public class McpCommandHandlerTests
         Assert.AreEqual("result", resp.type);
         var el = FindBoard("Part1");
         Assert.IsNotNull(el);
-        Assert.IsNotNull(el.GetComponent<RadialShelfElement>());
-        Assert.AreEqual(400, el.GetComponent<RadialShelfElement>().Radius);
+        Assert.IsNotNull(el!.GetComponent<RadialShelfElement>());
+        Assert.AreEqual(400, el!.GetComponent<RadialShelfElement>().Radius);
     }
 
     [Test]
@@ -640,10 +640,10 @@ public class McpCommandHandlerTests
         var parsed = Newtonsoft.Json.Linq.JObject.Parse(json);
         var p = parsed["Params"];
         Assert.IsNotNull(p);
-        Assert.AreEqual(Newtonsoft.Json.Linq.JTokenType.Object, p.Type,
+        Assert.AreEqual(Newtonsoft.Json.Linq.JTokenType.Object, p!.Type,
             "Params должен быть JSON-объектом, не строкой");
-        Assert.AreEqual("TestBoard", p.Value<string>("name"));
-        Assert.AreEqual(1.5, p.Value<double>("x"), 0.001);
+        Assert.AreEqual("TestBoard", p!.Value<string>("name"));
+        Assert.AreEqual(1.5, p!.Value<double>("x"), 0.001);
     }
 
     [Test]
@@ -652,10 +652,10 @@ public class McpCommandHandlerTests
         var json = @"{""id"":""req-1"",""method"":""move_element"",""params"":{""name"":""Board1"",""x"":1.5,""y"":0,""z"":0}}";
         var req = Newtonsoft.Json.JsonConvert.DeserializeObject<McpRequest>(json);
 
-        Assert.AreEqual("req-1", req.id);
+        Assert.AreEqual("req-1", req!.id);
         Assert.AreEqual("move_element", req.method);
         Assert.IsNotNull(req.Params, "Params должен быть десериализован из JSON-объекта");
-        Assert.AreEqual("Board1", req.Params.Value<string>("name"));
+        Assert.AreEqual("Board1", req.Params!.Value<string>("name"));
     }
 
     [Test]
@@ -675,7 +675,7 @@ public class McpCommandHandlerTests
         Assert.AreEqual("result", resp.type);
         var sim = resp.data as SimulateResult;
         Assert.IsNotNull(sim, "simulate_move должен вернуть SimulateResult");
-        Assert.AreEqual("Board", sim.name);
+        Assert.AreEqual("Board", sim!.name);
         Assert.IsFalse(sim.wouldHaveViolations,
             "Перемещение в пустое место не должно создавать нарушений");
     }
@@ -690,7 +690,7 @@ public class McpCommandHandlerTests
         Assert.AreEqual("result", resp.type);
         var info = resp.data as ElementInfo;
         Assert.IsNotNull(info);
-        Assert.AreEqual("Board", info.name);
+        Assert.AreEqual("Board", info!.name);
         Assert.AreEqual(800, info.dimX);
     }
 
@@ -735,7 +735,7 @@ public class McpCommandHandlerTests
 
         // Повторный запрос без изменений — должен вернуть not_modified
         var req = MakeReq("get_all_elements", new { });
-        req.Headers = new Dictionary<string, string> { { "If-None-Match", etag } };
+        req.Headers = new Dictionary<string, string> { { "If-None-Match", etag! } };
         var second = _handler.Handle(req);
         Assert.AreEqual("not_modified", second.type);
         Assert.AreEqual(etag, second.etag);
@@ -764,13 +764,13 @@ public class McpCommandHandlerTests
 
         // Запрос со старым etag — должен вернуть новый result
         var req = MakeReq("get_all_elements", new { });
-        req.Headers = new Dictionary<string, string> { { "If-None-Match", etag } };
+        req.Headers = new Dictionary<string, string> { { "If-None-Match", etag! } };
         var second = _handler.Handle(req);
         Assert.AreEqual("result", second.type);
         Assert.AreNotEqual(etag, second.etag, "etag changed after adding element");
     }
 
-    private static KitchenElement FindBoard(string name)
+    private static KitchenElement? FindBoard(string name)
     {
         foreach (var el in PartRegistry.GetAll())
             if (el.PartName == name) return el;
@@ -809,8 +809,7 @@ public class McpCommandHandlerTests
         Assert.AreEqual("result", resp.type);
         var sim = resp.data as SimulateResult;
         Assert.IsNotNull(sim);
-        // simulatedAABB центрируется вокруг (1,0,2): проверяем, что X не уехал в 0.
-        Assert.AreEqual(1f, (sim.simulatedAABB.minX + sim.simulatedAABB.maxX) * 0.5f, 0.001f,
+        Assert.AreEqual(1f, (sim!.simulatedAABB.minX + sim.simulatedAABB.maxX) * 0.5f, 0.001f,
             "X должен остаться текущим (1 м), а не сброситься в 0");
     }
 
@@ -853,10 +852,10 @@ public class McpCommandHandlerTests
         // Компонент сменился на том же GameObject, имя/размер сохранены.
         var go = _spawned.Find(g => g != null && g.name == "F1");
         Assert.IsNotNull(go);
-        var asm = go.GetComponent<AssembledFacadeElement>();
+        var asm = go!.GetComponent<AssembledFacadeElement>();
         Assert.IsNotNull(asm, "элемент должен стать сборным фасадом");
-        Assert.AreEqual("F1", asm.PartName);
-        Assert.AreEqual(AssembledFill.Glass, asm.Fill, "fill=glass должен примениться");
+        Assert.AreEqual("F1", asm!.PartName);
+        Assert.AreEqual(AssembledFill.Glass, asm!.Fill, "fill=glass должен примениться");
     }
 
     [Test]
@@ -895,10 +894,10 @@ public class McpCommandHandlerTests
         Assert.AreEqual("result", resp.type);
         var el = FindBoard("Asm1");
         Assert.IsNotNull(el);
-        var asm = el as AssembledFacadeElement;
+        var asm = el! as AssembledFacadeElement;
         Assert.IsNotNull(asm, "is_assembled=true должен создать AssembledFacadeElement");
-        Assert.AreEqual(AssembledFill.Open, asm.Fill);
-        Assert.AreEqual(new Vector3Int(450, 700, 18), asm.DimensionsMM);
+        Assert.AreEqual(AssembledFill.Open, asm!.Fill);
+        Assert.AreEqual(new Vector3Int(450, 700, 18), asm!.DimensionsMM);
     }
 
     // ── Материалы / текстуры ────────────────────────────────────────────
@@ -963,7 +962,7 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("set_material", new { name = "F1", material = "concrete" }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreEqual("concrete", FindBoard("F1").MaterialId);
+        Assert.AreEqual("concrete", FindBoard("F1")!.MaterialId);
     }
 
     [Test]
@@ -972,10 +971,10 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("list_materials", new { }));
 
         Assert.AreEqual("result", resp.type);
-        var materials = GetProp<object>(resp.data, "materials") as System.Collections.IList;
+        var materials = GetProp<object>(resp.data!, "materials") as System.Collections.IList;
         Assert.IsNotNull(materials);
-        Assert.AreEqual(MaterialCatalog.All.Count, materials.Count);
-        Assert.AreEqual(MaterialCatalog.DefaultId, GetProp<string>(resp.data, "defaultId"));
+        Assert.AreEqual(MaterialCatalog.All.Count, materials!.Count);
+        Assert.AreEqual(MaterialCatalog.DefaultId, GetProp<string>(resp.data!, "defaultId"));
     }
 
     [Test]
@@ -987,7 +986,7 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("get_element_info", new { name = "Board" }));
 
         Assert.AreEqual("result", resp.type);
-        var info = (ElementInfo)resp.data;
+        var info = (ElementInfo)resp.data!;
         Assert.AreEqual("oak", info.materialId);
     }
 
@@ -1014,8 +1013,8 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("list_materials", new { }));
 
         Assert.AreEqual("result", resp.type);
-        var materials = GetProp<object>(resp.data, "materials") as System.Collections.IList;
-        Assert.AreEqual(MaterialCatalog.All.Count, materials.Count, "динамические декоры входят в список");
+        var materials = GetProp<object>(resp.data!, "materials") as System.Collections.IList;
+        Assert.AreEqual(MaterialCatalog.All.Count, materials!.Count, "динамические декоры входят в список");
     }
 
     // ── Highlight refresh after mutation ────────────────────────────────
@@ -1108,7 +1107,7 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("undo", new { }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreEqual(Vector3.zero, FindBoard("Board").transform.position);
+        Assert.AreEqual(Vector3.zero, FindBoard("Board")!.transform.position);
         Assert.Greater(hl.RefreshCount, 0, "RefreshHighlights should be called after undo");
     }
 
@@ -1124,7 +1123,7 @@ public class McpCommandHandlerTests
         var resp = _handler.Handle(MakeReq("redo", new { }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreEqual(new Vector3(1, 0, 0), FindBoard("Board").transform.position);
+        Assert.AreEqual(new Vector3(1, 0, 0), FindBoard("Board")!.transform.position);
         Assert.Greater(hl.RefreshCount, 0, "RefreshHighlights should be called after redo");
     }
 

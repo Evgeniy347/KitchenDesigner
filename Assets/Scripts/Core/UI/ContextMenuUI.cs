@@ -8,28 +8,28 @@ namespace KitchenDesigner.Core.UI
     /// <summary>Контекстное меню по клику ЛКМ на детали: размеры, позиция, поворот, действия.</summary>
     public class ContextMenuUI : MonoBehaviour
     {
-        public static ContextMenuUI Instance { get; private set; }
+        public static ContextMenuUI Instance { get; private set; } = null!;
 
-        private GameObject _root;
-        private KitchenElement _target;
-        private TMP_Text _titleLabel;
+        private GameObject _root = null!;
+        private KitchenElement? _target;
+        private TMP_Text _titleLabel = null!;
 
-        private TMP_InputField _name, _w, _h, _d, _radius,
-            _gapLeft, _gapRight, _gapTop, _gapBottom,
-            _x, _y, _z, _rx, _ry, _rz;
-        private Toggle _lockToggle;
-        private Toggle _transparentToggle;
-        private RectTransform _panelRt;
-        private TMP_Text _doorButtonLabel;  // подпись кнопки «Открыть»/«Закрыть»
-        private TMP_Dropdown _modeDropdown; // выпадающий список режима открывания
-        private TMP_Dropdown _fillDropdown; // центр сборного фасада (Глухой/Витрина/Стекло)
-        private TMP_Dropdown _materialDropdown; // выбор текстуры/декора (детали и фасады)
-        private TMP_Dropdown _typeDropdown; // конвертация: деталь ⇄ фасад ⇄ сборный фасад
-        private TMP_Dropdown _drawerTypeDropdown, _drawerLengthDropdown, _drawerColorDropdown;
-        private Toggle _drawerDoubleToggle, _drawerUpperToggle;
-        private TMP_InputField _drawerWidth;
-        private TMP_Text _drawerAnimLabel;
-        private TMP_Dropdown _drawerFacadeDropdown; // прикреплённый фасад (выбор существующего)
+        private TMP_InputField _name = null!, _w = null!, _h = null!, _d = null!, _radius = null!,
+            _gapLeft = null!, _gapRight = null!, _gapTop = null!, _gapBottom = null!,
+            _x = null!, _y = null!, _z = null!, _rx = null!, _ry = null!, _rz = null!;
+        private Toggle _lockToggle = null!;
+        private Toggle _transparentToggle = null!;
+        private RectTransform _panelRt = null!;
+        private TMP_Text _doorButtonLabel = null!;  // подпись кнопки «Открыть»/«Закрыть»
+        private TMP_Dropdown _modeDropdown = null!; // выпадающий список режима открывания
+        private TMP_Dropdown _fillDropdown = null!; // центр сборного фасада (Глухой/Витрина/Стекло)
+        private TMP_Dropdown _materialDropdown = null!; // выбор текстуры/декора (детали и фасады)
+        private TMP_Dropdown _typeDropdown = null!; // конвертация: деталь ⇄ фасад ⇄ сборный фасад
+        private TMP_Dropdown _drawerTypeDropdown = null!, _drawerLengthDropdown = null!, _drawerColorDropdown = null!;
+        private Toggle _drawerDoubleToggle = null!, _drawerUpperToggle = null!;
+        private TMP_InputField _drawerWidth = null!;
+        private TMP_Text _drawerAnimLabel = null!;
+        private TMP_Dropdown _drawerFacadeDropdown = null!; // прикреплённый фасад (выбор существующего)
 
         // ── Подсветка изменённых полей ──────────────────────────────────
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
@@ -274,7 +274,7 @@ namespace KitchenDesigner.Core.UI
         // выбор другой детали, удаление). Не закрываем во время Open(), т.к.
         // SelectionManager.Select → DeselectAll → OnSelectionChanged(null) иначе
         // обнуляет _target и роняет RefreshTransformFields.
-        private void OnSelectionChanged(KitchenElement element)
+        private void OnSelectionChanged(KitchenElement? element)
         {
             if (_opening) return;
             if (_root == null || !_root.activeSelf) return;
@@ -468,6 +468,7 @@ namespace KitchenDesigner.Core.UI
 
         private void RefreshTransformFields()
         {
+            if (_target == null) return;
             if (_target is FacadeElement f && !f.IsDoorClosed) return;
 
             var pos = _target.transform.position;
@@ -704,6 +705,7 @@ namespace KitchenDesigner.Core.UI
 
         private bool WouldCauseViolation()
         {
+            if (_target == null) return false;
             var list = PartRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
             return result.violations.Contains(_target);
@@ -935,13 +937,13 @@ namespace KitchenDesigner.Core.UI
                 if (el is FacadeElement fe && fe.PartName == d.AttachedFacadeName) { Open(fe); return; }
         }
 
-        private void UpdateDoorButton(FacadeElement facade)
+        private void UpdateDoorButton(FacadeElement? facade)
         {
             if (_doorButtonLabel != null)
                 _doorButtonLabel.text = (facade != null && facade.IsOpen) ? "Закрыть" : "Открыть";
         }
 
-        private void UpdateModeDropdown(FacadeElement facade)
+        private void UpdateModeDropdown(FacadeElement? facade)
         {
             if (_modeDropdown == null) return;
             _modeDropdown.SetValueWithoutNotify(facade != null ? (int)facade.Mode : 0);
@@ -955,7 +957,7 @@ namespace KitchenDesigner.Core.UI
             var element = dup != null ? dup.GetComponent<KitchenElement>() : null;
             if (element != null)
             {
-                CommandStack.Execute(new CreateCommand(dup));
+                CommandStack.Execute(new CreateCommand(dup!));
                 Open(element);
             }
             RefreshHighlights();

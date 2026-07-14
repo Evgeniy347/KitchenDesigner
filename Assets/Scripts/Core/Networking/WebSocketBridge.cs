@@ -19,8 +19,8 @@ namespace KitchenDesigner.Core.MCP
         [SerializeField] private string _serverUrl = "ws://localhost:5000/api/mcp/ws";
         [SerializeField] private bool _autoConnect = true;
 
-        private McpCommandHandler _handler;
-        private string _accessKey;
+        private McpCommandHandler _handler = null!;
+        private string _accessKey = string.Empty;
         private volatile bool _running;
 
 #if UNITY_WEBGL
@@ -35,10 +35,10 @@ namespace KitchenDesigner.Core.MCP
         [DllImport("__Internal")]
         private static extern void ShowLockTakenAlert();
 #else
-        private ClientWebSocket _ws;
-        private CancellationTokenSource _cts;
+        private ClientWebSocket? _ws = null!;
+        private CancellationTokenSource? _cts = null!;
         private readonly ConcurrentQueue<Action> _mainThreadActions = new ConcurrentQueue<Action>();
-        private Thread _receiveThread;
+        private Thread? _receiveThread = null!;
 #endif
 
         public bool IsConnected => _running;
@@ -164,7 +164,7 @@ namespace KitchenDesigner.Core.MCP
                 return;
             }
 
-            McpRequest request = null;
+            McpRequest? request = null;
             try { request = JsonConvert.DeserializeObject<McpRequest>(json); }
             catch (Exception ex)
             {

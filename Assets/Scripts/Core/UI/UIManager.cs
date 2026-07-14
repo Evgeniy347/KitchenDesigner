@@ -11,18 +11,18 @@ namespace KitchenDesigner.Core.UI
     /// </summary>
     public class UIManager : MonoBehaviour
     {
-        public static UIManager Instance { get; private set; }
+        public static UIManager Instance { get; private set; } = null!;
 
-        private Canvas _canvas;
-        private SpecificationPanelUI _specPanel;
-        private SettingsPanelUI _settingsPanel;
-        private ContextMenuUI _contextMenu;
-        private FloorSettingsUI _floorSettings;
-        private GroupMenuUI _groupMenu;
-        private HelpUI _help;
-        private Button _undoButton;
-        private Button _redoButton;
-        private TMP_Text _modeButtonLabel;
+        private Canvas _canvas = null!;
+        private SpecificationPanelUI _specPanel = null!;
+        private SettingsPanelUI _settingsPanel = null!;
+        private ContextMenuUI _contextMenu = null!;
+        private FloorSettingsUI _floorSettings = null!;
+        private GroupMenuUI _groupMenu = null!;
+        private HelpUI _help = null!;
+        private Button _undoButton = null!;
+        private Button _redoButton = null!;
+        private TMP_Text _modeButtonLabel = null!;
 
         public Canvas Canvas => _canvas;
         public const string QuickSaveName = "quicksave";
@@ -347,7 +347,7 @@ namespace KitchenDesigner.Core.UI
             string suggested = SaveLoadManager.HasLastPath
                 ? System.IO.Path.GetFileName(SaveLoadManager.LastPath)
                 : "kitchen.json";
-            string path = NativeFileDialog.SaveDialog("Сохранить проект кухни",
+            string? path = NativeFileDialog.SaveDialog("Сохранить проект кухни",
                 suggested, SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return;
             if (SaveLoadManager.SaveToPath(path))
@@ -375,7 +375,7 @@ namespace KitchenDesigner.Core.UI
                 Toast("Загружено: " + fileName);
             });
 #else
-            string path = NativeFileDialog.OpenDialog("Открыть проект кухни",
+            string? path = NativeFileDialog.OpenDialog("Открыть проект кухни",
                 SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return;
             if (SaveLoadManager.LoadFromPath(path))

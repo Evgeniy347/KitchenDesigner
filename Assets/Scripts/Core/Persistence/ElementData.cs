@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
     [System.Serializable]
     public class ElementData
     {
-        public string name;
+        public string name = string.Empty;
         public int[] dimensionsMM = new int[3];
         public float[] position = new float[3];
         public float[] rotation = new float[4];

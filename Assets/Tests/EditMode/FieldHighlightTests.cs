@@ -10,8 +10,8 @@ using KitchenDesigner.Core.UI;
 /// </summary>
 public class FieldHighlightTests
 {
-    private GameObject _root;
-    private Canvas _canvas;
+    private GameObject _root = null!;
+    private Canvas _canvas = null!;
 
     [SetUp]
     public void Setup()
@@ -66,7 +66,7 @@ public class FieldHighlightTests
     [Test]
     public void SetHighlight_NullField_DoesNotThrow()
     {
-        Assert.DoesNotThrow(() => UIFactory.SetHighlight(null, true));
+        Assert.DoesNotThrow(() => UIFactory.SetHighlight(null!, true));
     }
 
     [Test]

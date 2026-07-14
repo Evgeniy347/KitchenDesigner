@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core
     /// попадает в сохранение — тогда команда в историю не пишется).</summary>
     public interface ISerializableCommand
     {
-        CommandRecord ToRecord(Func<KitchenElement, int> indexOf);
+        CommandRecord? ToRecord(Func<KitchenElement, int> indexOf);
     }
 
     /// <summary>Сериализуемая запись одной команды undo/redo. Плоская структура с
@@ -22,16 +22,16 @@ namespace KitchenDesigner.Core
         // composite-записи всегда сериализуются ПЛОСКО (один уровень children,
         // см. CompositeCommand.ToRecord), поэтому глубина JSON ограничена
         // константой и жёсткий лимит JsonUtility (10) не достигается.
-        public string type;          // move | resize | composite
-        public string description;
+        public string type = null!;          // move | resize | composite
+        public string description = null!;
         public int elementIndex = -1;
-        public float[] posBefore;
-        public float[] posAfter;
-        public float[] rotBefore;
-        public float[] rotAfter;
-        public int[] dimsBefore;
-        public int[] dimsAfter;
-        public CommandRecord[] children;
+        public float[] posBefore = null!;
+        public float[] posAfter = null!;
+        public float[] rotBefore = null!;
+        public float[] rotAfter = null!;
+        public int[] dimsBefore = null!;
+        public int[] dimsAfter = null!;
+        public CommandRecord[] children = null!;
 
         public static float[] V3(Vector3 v) => new[] { v.x, v.y, v.z };
         public static float[] V4(Quaternion q) => new[] { q.x, q.y, q.z, q.w };
@@ -49,7 +49,7 @@ namespace KitchenDesigner.Core
     /// отдаёт объект по индексу (или null — тогда команда пропускается).</summary>
     public static class CommandSerialization
     {
-        public static IUndoCommand FromRecord(CommandRecord r, Func<int, KitchenElement> resolve)
+        public static IUndoCommand? FromRecord(CommandRecord r, Func<int, KitchenElement> resolve)
         {
             if (r == null) return null;
             switch (r.type)

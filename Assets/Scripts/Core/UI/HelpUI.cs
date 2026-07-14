@@ -5,9 +5,9 @@ namespace KitchenDesigner.Core.UI
 {
     public class HelpUI : MonoBehaviour
     {
-        public static HelpUI Instance { get; private set; }
+        public static HelpUI Instance { get; private set; } = null!;
 
-        private GameObject _root;
+        private GameObject _root = null!;
 
         private void Awake()
         {

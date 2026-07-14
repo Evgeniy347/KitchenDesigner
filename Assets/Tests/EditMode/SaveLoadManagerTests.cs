@@ -58,11 +58,11 @@ public class SaveLoadManagerTests
         var json = SaveLoadManager.Serialize(data);
         var restored = SaveLoadManager.Deserialize(json);
 
-        Assert.AreEqual(data.version, restored.version);
-        Assert.AreEqual(1, restored.elements.Length);
-        Assert.AreEqual("A", restored.elements[0].name);
-        Assert.AreEqual(new[] { 800, 400, 18 }, restored.elements[0].dimensionsMM);
-        Assert.AreEqual(-0.3f, restored.elements[0].position[2], 0.0001f);
+        Assert.AreEqual(data.version, restored!.version);
+        Assert.AreEqual(1, restored!.elements.Length);
+        Assert.AreEqual("A", restored!.elements[0].name);
+        Assert.AreEqual(new[] { 800, 400, 18 }, restored!.elements[0].dimensionsMM);
+        Assert.AreEqual(-0.3f, restored!.elements[0].position[2], 0.0001f);
     }
 
     [Test]
@@ -77,8 +77,8 @@ public class SaveLoadManagerTests
 
         var loaded = SaveLoadManager.LoadFromFile(path);
         Assert.IsNotNull(loaded);
-        Assert.AreEqual(1, loaded.elements.Length);
-        Assert.AreEqual("A", loaded.elements[0].name);
+        Assert.AreEqual(1, loaded!.elements.Length);
+        Assert.AreEqual("A", loaded!.elements[0].name);
 
         File.Delete(path);
     }
@@ -137,7 +137,7 @@ public class SaveLoadManagerTests
         Assert.IsFalse(data.elements[0].movable);
 
         var restored = SaveLoadManager.Deserialize(SaveLoadManager.Serialize(data));
-        var created = SaveLoadManager.RestoreScene(restored);
+        var created = SaveLoadManager.RestoreScene(restored!);
 
         Assert.AreEqual(1, created.Count);
         Assert.IsFalse(created[0].GetComponent<KitchenElement>().Movable);
@@ -152,7 +152,7 @@ public class SaveLoadManagerTests
         Assert.IsTrue(data.elements[0].transparent);
 
         var restored = SaveLoadManager.Deserialize(SaveLoadManager.Serialize(data));
-        var created = SaveLoadManager.RestoreScene(restored);
+        var created = SaveLoadManager.RestoreScene(restored!);
 
         Assert.AreEqual(1, created.Count);
         Assert.IsTrue(created[0].GetComponent<KitchenElement>().Transparent);
@@ -184,10 +184,10 @@ public class SaveLoadManagerTests
         var data = SaveLoadManager.CaptureScene(_spawned.ConvertAll(g => g.GetComponent<KitchenElement>()));
 
         Assert.IsNotNull(data.basePlate, "BasePlate должен быть в сохранении");
-        Assert.AreEqual(new[] { 3000, 18, 3000 }, data.basePlate.dimensionsMM);
-        Assert.AreEqual(0f, data.basePlate.position[0], 0.0001f);
-        Assert.AreEqual(-0.009f, data.basePlate.position[1], 0.001f);
-        Assert.AreEqual(0f, data.basePlate.position[2], 0.0001f);
+        Assert.AreEqual(new[] { 3000, 18, 3000 }, data.basePlate!.dimensionsMM);
+        Assert.AreEqual(0f, data.basePlate!.position[0], 0.0001f);
+        Assert.AreEqual(-0.009f, data.basePlate!.position[1], 0.001f);
+        Assert.AreEqual(0f, data.basePlate!.position[2], 0.0001f);
 
         floor.transform.position = new Vector3(1f, 2f, 3f);
 
@@ -250,7 +250,7 @@ public class SaveLoadManagerTests
 
         var restoredData = SaveLoadManager.Deserialize(
             SaveLoadManager.Serialize(data));
-        var created = SaveLoadManager.RestoreScene(restoredData);
+        var created = SaveLoadManager.RestoreScene(restoredData!);
 
         Assert.AreEqual(1, created.Count);
         var restoredFacade = created[0].GetComponent<FacadeElement>();

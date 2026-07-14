@@ -16,9 +16,9 @@ public class SnapExistingContactTests : SnapTestBase
 {
     // --- Реальная сцена: лежащая деталь прижата торцом к стоящей, рядом стена ---
 
-    private KitchenElement _standing; // стоящая деталь, торец лежащей прижат к ней
-    private KitchenElement _lying;    // лежащая плашмя деталь (активная деталь)
-    private KitchenElement _wall;     // стена: передняя грань на z=1.40
+    private KitchenElement _standing = null!; // стоящая деталь, торец лежащей прижат к ней
+    private KitchenElement _lying = null!;    // лежащая плашмя деталь (активная деталь)
+    private KitchenElement _wall = null!;     // стена: передняя грань на z=1.40
 
     private void BuildUserScene()
     {

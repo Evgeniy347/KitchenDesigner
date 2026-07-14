@@ -7,11 +7,11 @@ namespace KitchenDesigner.Core.UI
 {
     public class ToastNotification : MonoBehaviour
     {
-        public static ToastNotification Instance { get; private set; }
+        public static ToastNotification Instance { get; private set; } = null!;
 
-        private CanvasGroup _group;
-        private TMP_Text _label;
-        private Coroutine _activeRoutine;
+        private CanvasGroup _group = null!;
+        private TMP_Text _label = null!;
+        private Coroutine? _activeRoutine;
 
         private void Awake()
         {

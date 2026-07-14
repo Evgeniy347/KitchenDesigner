@@ -10,8 +10,8 @@ using KitchenDesigner.Core.UI;
 
 public class IntegrationPlayModeTests
 {
-    private GameObject _bootstrap;
-    private GameObject _camera;
+    private GameObject _bootstrap = null!;
+    private GameObject _camera = null!;
 
     [UnitySetUp]
     public IEnumerator SetUp()
@@ -84,12 +84,12 @@ public class IntegrationPlayModeTests
 
         Assert.AreEqual(before + 1, BoardCount(), "должна добавиться одна деталь");
 
-        KitchenElement spawned = null;
+        KitchenElement? spawned = null;
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null && e.GetComponent<BasePlate>() == null) spawned = e;
 
         Assert.IsNotNull(spawned);
-        Assert.AreEqual(AppConstants.PRESET_DIMENSIONS_MM[0], spawned.DimensionsMM);
+        Assert.AreEqual(AppConstants.PRESET_DIMENSIONS_MM[0], spawned!.DimensionsMM);
     }
 
     [UnityTest]
@@ -116,7 +116,7 @@ public class IntegrationPlayModeTests
     [UnityTest]
     public IEnumerator SaveButton_Click_CreatesFile()
     {
-        Button saveBtn = null;
+        Button? saveBtn = null;
         foreach (var b in Object.FindObjectsByType<Button>())
             if (b.name == "Save") saveBtn = b;
 
@@ -128,7 +128,7 @@ public class IntegrationPlayModeTests
         var path = SaveLoadManager.LastPath;
         if (File.Exists(path)) File.Delete(path);
 
-        saveBtn.onClick.Invoke();
+        saveBtn!.onClick.Invoke();
         yield return null;
 
         Assert.IsTrue(File.Exists(path), "клик по «Сохранить» должен создать файл проекта");
@@ -142,11 +142,11 @@ public class IntegrationPlayModeTests
         UIManager.Instance.SpawnPreset(0);
         yield return null;
 
-        KitchenElement board = null;
+        KitchenElement? board = null;
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null && e.GetComponent<BasePlate>() == null) board = e;
 
-        SelectionManager.Instance.Select(board);
+        SelectionManager.Instance.Select(board!);
         Assert.AreEqual(board, SelectionManager.Instance.Selected);
 
         SelectionManager.Instance.Deselect();

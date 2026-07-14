@@ -23,7 +23,7 @@ namespace KitchenDesigner.Core
     /// </summary>
     public static class Snapshot
     {
-        private static string _snapshotDir;
+        private static string _snapshotDir = null!;
 
         public static string SnapshotDir
         {

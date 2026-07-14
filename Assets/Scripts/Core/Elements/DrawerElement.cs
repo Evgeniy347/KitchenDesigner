@@ -121,7 +121,7 @@ namespace KitchenDesigner.Core
             }
         }
 
-        private DrawerElement FindPairedDrawer()
+        private DrawerElement? FindPairedDrawer()
         {
             if (string.IsNullOrEmpty(_pairedDrawerName)) return null;
             foreach (var e in PartRegistry.GetAll())
@@ -130,10 +130,10 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Парный ящик (по PairedDrawerName), либо null.</summary>
-        public DrawerElement FindPaired() => FindPairedDrawer();
+        public DrawerElement? FindPaired() => FindPairedDrawer();
 
         /// <summary>Фасад, прикреплённый по имени (AttachedFacadeName), либо null.</summary>
-        public FacadeElement FindAttachedFacade()
+        public FacadeElement? FindAttachedFacade()
         {
             if (string.IsNullOrEmpty(_attachedFacadeName)) return null;
             foreach (var e in PartRegistry.GetAll())

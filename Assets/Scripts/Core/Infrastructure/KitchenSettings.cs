@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
     [CreateAssetMenu(fileName = "KitchenSettings", menuName = "KitchenDesigner/KitchenSettings")]
     public class KitchenSettings : ScriptableObject
     {
-        private static KitchenSettings _instance;
+        private static KitchenSettings _instance = null!;
         public static KitchenSettings Instance
         {
             get

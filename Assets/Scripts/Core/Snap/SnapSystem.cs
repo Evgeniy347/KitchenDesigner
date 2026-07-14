@@ -18,7 +18,7 @@ namespace KitchenDesigner.Core
     [System.Serializable]
     public class SnapNeighborReport
     {
-        public string name;
+        public string name = string.Empty;
         public float centerDistanceMM;      // расстояние между центрами деталей
         public bool intersects;             // AABB-пересечение — снэп с этой деталью невозможен
         public bool hasFacingFaces;         // есть ли встречные параллельные грани (dot≈-1)
@@ -30,7 +30,7 @@ namespace KitchenDesigner.Core
         public bool withinThreshold;
         public bool overlapEnough;
         public bool wouldSnap;              // все условия для ЭТОЙ детали выполнены
-        public string verdict;              // человекочитаемая причина
+        public string verdict = string.Empty;              // человекочитаемая причина
     }
 
     /// <summary>Итог диагностики: общие настройки, результат TrySnap и разбор по соседям.</summary>
@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core
         public bool snapEnabled;
         public float thresholdMM;
         public bool wouldSnap;
-        public string snapTarget;
+        public string? snapTarget;
         public List<SnapNeighborReport> neighbors = new List<SnapNeighborReport>();
     }
 
@@ -79,9 +79,9 @@ namespace KitchenDesigner.Core
             // Содержательный снэп предпочтительнее нулевого, но не должен рвать
             // существующие контакты: его сдвиг обязан быть ⊥ нормалям нулевых пар.
             SnapResult bestZero = default;
-            string bestZeroLog = null;
+            string? bestZeroLog = null;
             var zeroNormals = new List<Vector3>();
-            var candidates = new List<(float dist, SnapResult result, string log)>();
+            var candidates = new List<(float dist, SnapResult result, string? log)>();
 
             foreach (var other in others)
             {
@@ -141,7 +141,7 @@ namespace KitchenDesigner.Core
                             snapPoint = mf.center,
                             targetPoint = of.center
                         };
-                        string log = VerboseLog
+                        string? log = VerboseLog
                             ? $"[Snap] {moved.Describe()} → {other.Describe()} | грань m{i}/o{j} " +
                               $"зазор={planeDist * 1000f:F2}мм перекр={overlapRatio:P0} " +
                               $"оси[u:{labelU} v:{labelV}] → поз {snapPos.x:F3},{snapPos.y:F3},{snapPos.z:F3}"

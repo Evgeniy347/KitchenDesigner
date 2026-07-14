@@ -85,7 +85,7 @@ public class DrawerFactoryTests
     [Test]
     public void CreateDrawer_DefaultName_Null()
     {
-        var go = ElementFactory.CreateDrawer(DrawerType.B, 500, DrawerColor.White, 450, null, Vector3.zero);
+        var go = ElementFactory.CreateDrawer(DrawerType.B, 500, DrawerColor.White, 450, null!, Vector3.zero);
         _spawned.Add(go);
 
         Assert.AreEqual("\u042F\u0449\u0438\u043A GTV", go.name);

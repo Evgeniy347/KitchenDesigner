@@ -109,10 +109,10 @@ public class RoundTripTests
 
         var loaded = SaveLoadManager.LoadFromFile(path);
         Assert.IsNotNull(loaded, "LoadFromFile should not return null");
-        SaveLoadManager.RestoreScene(loaded);
+        SaveLoadManager.RestoreScene(loaded!);
 
         File.Delete(path);
-        return loaded;
+        return loaded!;
     }
 
     /// <summary>Capture → Serialize → Deserialize (без файла).</summary>
@@ -127,7 +127,7 @@ public class RoundTripTests
         }
         var data = SaveLoadManager.CaptureScene(elements);
         var json = SaveLoadManager.Serialize(data);
-        return SaveLoadManager.Deserialize(json);
+        return SaveLoadManager.Deserialize(json)!;
     }
 
     // ── 1. KitchenElement (Board) ────────────────────────────────────────
@@ -224,26 +224,26 @@ public class RoundTripTests
 
         var r = restored[0] as FacadeElement;
         Assert.IsNotNull(r, "restored should be FacadeElement");
-        Assert.AreEqual("MyFacade", r.PartName);
-        Assert.AreEqual(new Vector3Int(600, 716, 18), r.DimensionsMM);
-        Assert.AreEqual(3, r.GapLeft);
-        Assert.AreEqual(5, r.GapRight);
-        Assert.AreEqual(2, r.GapTop);
-        Assert.AreEqual(2, r.GapBottom);
-        Assert.AreEqual(DoorMode.HingeFrontRight, r.Mode, "doorMode");
-        Assert.IsFalse(r.IsOpen, "doorOpen should be false");
-        Assert.IsFalse(r.Movable);
-        Assert.IsTrue(r.Transparent);
-        Assert.AreEqual("wenge", r.MaterialId);
+        Assert.AreEqual("MyFacade", r!.PartName);
+        Assert.AreEqual(new Vector3Int(600, 716, 18), r!.DimensionsMM);
+        Assert.AreEqual(3, r!.GapLeft);
+        Assert.AreEqual(5, r!.GapRight);
+        Assert.AreEqual(2, r!.GapTop);
+        Assert.AreEqual(2, r!.GapBottom);
+        Assert.AreEqual(DoorMode.HingeFrontRight, r!.Mode, "doorMode");
+        Assert.IsFalse(r!.IsOpen, "doorOpen should be false");
+        Assert.IsFalse(r!.Movable);
+        Assert.IsTrue(r!.Transparent);
+        Assert.AreEqual("wenge", r!.MaterialId);
 
         // позиция должна совпадать с ClosedPosition
-        Assert.AreEqual(closedPos.x, r.transform.position.x, 0.001f, "closed pos.x");
-        Assert.AreEqual(closedPos.y, r.transform.position.y, 0.001f, "closed pos.y");
-        Assert.AreEqual(closedPos.z, r.transform.position.z, 0.001f, "closed pos.z");
-        Assert.AreEqual(closedRot.x, r.transform.rotation.x, 0.001f, "closed rot.x");
-        Assert.AreEqual(closedRot.y, r.transform.rotation.y, 0.001f, "closed rot.y");
-        Assert.AreEqual(closedRot.z, r.transform.rotation.z, 0.001f, "closed rot.z");
-        Assert.AreEqual(closedRot.w, r.transform.rotation.w, 0.001f, "closed rot.w");
+        Assert.AreEqual(closedPos.x, r!.transform.position.x, 0.001f, "closed pos.x");
+        Assert.AreEqual(closedPos.y, r!.transform.position.y, 0.001f, "closed pos.y");
+        Assert.AreEqual(closedPos.z, r!.transform.position.z, 0.001f, "closed pos.z");
+        Assert.AreEqual(closedRot.x, r!.transform.rotation.x, 0.001f, "closed rot.x");
+        Assert.AreEqual(closedRot.y, r!.transform.rotation.y, 0.001f, "closed rot.y");
+        Assert.AreEqual(closedRot.z, r!.transform.rotation.z, 0.001f, "closed rot.z");
+        Assert.AreEqual(closedRot.w, r!.transform.rotation.w, 0.001f, "closed rot.w");
     }
 
     [Test]
@@ -267,12 +267,11 @@ public class RoundTripTests
 
         var r = Object.FindObjectsByType<KitchenElement>()[0] as FacadeElement;
         Assert.IsNotNull(r);
-        // Дверца открыта — проверяем что ЗАКРЫТАЯ поза восстановлена корректно
-        Assert.IsTrue(r.IsOpen, "doorOpen flag should survive");
+        Assert.IsTrue(r!.IsOpen, "doorOpen flag should survive");
         // После загрузки дверца должна быть в закрытой позе (ClosedPosition)
-        Assert.AreEqual(closedPos.x, r.ClosedPosition.x, 0.001f, "closed pos.x survives open door");
-        Assert.AreEqual(closedPos.y, r.ClosedPosition.y, 0.001f, "closed pos.y survives open door");
-        Assert.AreEqual(closedPos.z, r.ClosedPosition.z, 0.001f, "closed pos.z survives open door");
+        Assert.AreEqual(closedPos.x, r!.ClosedPosition.x, 0.001f, "closed pos.x survives open door");
+        Assert.AreEqual(closedPos.y, r!.ClosedPosition.y, 0.001f, "closed pos.y survives open door");
+        Assert.AreEqual(closedPos.z, r!.ClosedPosition.z, 0.001f, "closed pos.z survives open door");
     }
 
     [Test]
@@ -306,10 +305,10 @@ public class RoundTripTests
         FullRoundTrip();
         var r = Object.FindObjectsByType<KitchenElement>()[0] as FacadeElement;
         Assert.IsNotNull(r);
-        Assert.AreEqual(10, r.GapLeft);
-        Assert.AreEqual(20, r.GapRight);
-        Assert.AreEqual(0, r.GapTop);
-        Assert.AreEqual(0, r.GapBottom);
+        Assert.AreEqual(10, r!.GapLeft);
+        Assert.AreEqual(20, r!.GapRight);
+        Assert.AreEqual(0, r!.GapTop);
+        Assert.AreEqual(0, r!.GapBottom);
     }
 
     // ── 3. AssembledFacadeElement ────────────────────────────────────────
@@ -326,11 +325,11 @@ public class RoundTripTests
 
         var r = Object.FindObjectsByType<KitchenElement>()[0] as AssembledFacadeElement;
         Assert.IsNotNull(r, "restored should be AssembledFacadeElement");
-        Assert.AreEqual("Blind", r.PartName);
-        Assert.AreEqual(new Vector3Int(600, 700, 18), r.DimensionsMM);
-        Assert.AreEqual(AssembledFill.Blind, r.Fill, "fill");
-        Assert.AreEqual(3, r.GrooveCount, "grooveCount");
-        Assert.AreEqual(DoorMode.DrawerOut, r.Mode, "doorMode");
+        Assert.AreEqual("Blind", r!.PartName);
+        Assert.AreEqual(new Vector3Int(600, 700, 18), r!.DimensionsMM);
+        Assert.AreEqual(AssembledFill.Blind, r!.Fill, "fill");
+        Assert.AreEqual(3, r!.GrooveCount, "grooveCount");
+        Assert.AreEqual(DoorMode.DrawerOut, r!.Mode, "doorMode");
     }
 
     [Test]
@@ -346,9 +345,9 @@ public class RoundTripTests
 
         var r = Object.FindObjectsByType<KitchenElement>()[0] as AssembledFacadeElement;
         Assert.IsNotNull(r);
-        Assert.AreEqual(AssembledFill.Glass, r.Fill, "glass fill");
-        Assert.AreEqual(0, r.GrooveCount, "zero grooves");
-        Assert.AreEqual("oak", r.MaterialId);
+        Assert.AreEqual(AssembledFill.Glass, r!.Fill, "glass fill");
+        Assert.AreEqual(0, r!.GrooveCount, "zero grooves");
+        Assert.AreEqual("oak", r!.MaterialId);
         // Glass insert child должен существовать
         var glassChild = r.transform.Find("__Glass");
         Assert.IsNotNull(glassChild, "glass insert should be created for Glass fill");
@@ -365,10 +364,10 @@ public class RoundTripTests
 
         var r = Object.FindObjectsByType<KitchenElement>()[0] as AssembledFacadeElement;
         Assert.IsNotNull(r);
-        Assert.AreEqual(AssembledFill.Open, r.Fill);
-        Assert.AreEqual(2, r.GrooveCount);
+        Assert.AreEqual(AssembledFill.Open, r!.Fill);
+        Assert.AreEqual(2, r!.GrooveCount);
         // Open fill — No glass insert
-        var glassChild = r.transform.Find("__Glass");
+        var glassChild = r!.transform.Find("__Glass");
         Assert.IsTrue(glassChild == null || !glassChild.gameObject.activeSelf,
             "glass insert should not be visible for Open fill");
     }
@@ -388,17 +387,17 @@ public class RoundTripTests
 
         var r = Object.FindObjectsByType<KitchenElement>()[0] as RadialShelfElement;
         Assert.IsNotNull(r, "should be RadialShelfElement");
-        Assert.AreEqual("RadialShelf", r.PartName, "name");
-        Assert.AreEqual(350, r.Radius, "radius");
-        Assert.AreEqual(18, r.DimensionsMM.y, "thickness");
-        Assert.AreEqual(350, r.DimensionsMM.x, "dim x should equal radius");
-        Assert.AreEqual(350, r.DimensionsMM.z, "dim z should equal radius");
-        Assert.AreEqual(0.5f, r.transform.position.x, 0.001f, "pos.x");
-        Assert.AreEqual(0.01f, r.transform.position.y, 0.001f, "pos.y");
-        Assert.AreEqual(-1.0f, r.transform.position.z, 0.001f, "pos.z");
-        Assert.AreEqual(90f, r.transform.rotation.eulerAngles.y, 0.1f, "rot.y");
-        Assert.IsFalse(r.Movable, "movable");
-        Assert.AreEqual("oak", r.MaterialId, "materialId");
+        Assert.AreEqual("RadialShelf", r!.PartName, "name");
+        Assert.AreEqual(350, r!.Radius, "radius");
+        Assert.AreEqual(18, r!.DimensionsMM.y, "thickness");
+        Assert.AreEqual(350, r!.DimensionsMM.x, "dim x should equal radius");
+        Assert.AreEqual(350, r!.DimensionsMM.z, "dim z should equal radius");
+        Assert.AreEqual(0.5f, r!.transform.position.x, 0.001f, "pos.x");
+        Assert.AreEqual(0.01f, r!.transform.position.y, 0.001f, "pos.y");
+        Assert.AreEqual(-1.0f, r!.transform.position.z, 0.001f, "pos.z");
+        Assert.AreEqual(90f, r!.transform.rotation.eulerAngles.y, 0.1f, "rot.y");
+        Assert.IsFalse(r!.Movable, "movable");
+        Assert.AreEqual("oak", r!.MaterialId, "materialId");
     }
 
     [Test]
@@ -408,7 +407,7 @@ public class RoundTripTests
         FullRoundTrip();
         var r = Object.FindObjectsByType<KitchenElement>()[0] as RadialShelfElement;
         Assert.IsNotNull(r);
-        Assert.AreEqual(300, r.Radius);
+        Assert.AreEqual(300, r!.Radius);
     }
 
     [Test]
@@ -418,9 +417,9 @@ public class RoundTripTests
         FullRoundTrip();
         var r = Object.FindObjectsByType<KitchenElement>()[0] as RadialShelfElement;
         Assert.IsNotNull(r);
-        Assert.AreEqual(500, r.Radius);
-        Assert.AreEqual(500, r.DimensionsMM.x);
-        Assert.AreEqual(500, r.DimensionsMM.z);
+        Assert.AreEqual(500, r!.Radius);
+        Assert.AreEqual(500, r!.DimensionsMM.x);
+        Assert.AreEqual(500, r!.DimensionsMM.z);
     }
 
     // ── 5. Wall ──────────────────────────────────────────────────────────
@@ -447,7 +446,7 @@ public class RoundTripTests
 
         var wallComp = el.GetComponent<Wall>();
         Assert.IsNotNull(wallComp, "Wall component should survive round-trip");
-        Assert.IsFalse(wallComp.IsLowered, "wall should not be lowered after restore");
+        Assert.IsFalse(wallComp!.IsLowered, "wall should not be lowered after restore");
         Assert.IsTrue(el.Movable);
         Assert.AreEqual("concrete", el.MaterialId);
     }
@@ -769,7 +768,7 @@ public class RoundTripTests
         // Группа
         var group = GroupManager.Link(new List<KitchenElement> { board, facade });
         Assert.IsNotNull(group);
-        Assert.AreEqual(group.id, board.GroupId);
+        Assert.AreEqual(group!.id, board.GroupId);
         Assert.AreEqual(group.id, facade.GroupId);
 
         // BasePlate
@@ -785,9 +784,9 @@ public class RoundTripTests
 
         // Проверяем capture
         Assert.IsTrue(data.basePlateValid, "basePlateValid");
-        Assert.AreEqual(new[] { 3500, 18, 4000 }, data.basePlate.dimensionsMM);
+        Assert.AreEqual(new[] { 3500, 18, 4000 }, data.basePlate!.dimensionsMM);
         Assert.AreEqual(1, data.groups.Length, "groups count");
-        Assert.AreEqual(group.id, data.groups[0].id);
+        Assert.AreEqual(group!.id, data.groups[0].id);
         Assert.AreEqual("Группа", data.groups[0].name);
 
         // Serialize → Deserialize
@@ -795,7 +794,7 @@ public class RoundTripTests
         var restored = SaveLoadManager.Deserialize(json);
 
         // Элементы
-        Assert.AreEqual(2, restored.elements.Length);
+        Assert.AreEqual(2, restored!.elements.Length);
         Assert.AreEqual("BoardG", restored.elements[0].name);
         Assert.AreEqual("FacadeG", restored.elements[1].name);
 
@@ -806,7 +805,7 @@ public class RoundTripTests
 
         // BasePlate
         Assert.IsTrue(restored.basePlateValid);
-        Assert.AreEqual(new[] { 3500, 18, 4000 }, restored.basePlate.dimensionsMM);
+        Assert.AreEqual(new[] { 3500, 18, 4000 }, restored!.basePlate!.dimensionsMM);
 
         // HandleMode
         Assert.AreEqual("Resize", restored.handleMode);

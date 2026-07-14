@@ -1,0 +1,4 @@
+-nullable:enable
+-langversion:latest
+-warnaserror
+-nowarn:CS0649;CS0414;CS0169;CS0618

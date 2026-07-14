@@ -9,8 +9,8 @@ using KitchenDesigner.Core.UI;
 
 public class SettingsPanelUITests
 {
-    private Canvas _canvas;
-    private SettingsPanelUI _ui;
+    private Canvas _canvas = null!;
+    private SettingsPanelUI _ui = null!;
 
     [SetUp]
     public void Setup()

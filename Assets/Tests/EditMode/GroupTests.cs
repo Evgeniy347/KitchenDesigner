@@ -43,7 +43,7 @@ public class GroupTests
         var g = GroupManager.Link(new List<KitchenElement> { a, b });
 
         Assert.IsNotNull(g);
-        Assert.AreNotEqual(0, g.id);
+        Assert.AreNotEqual(0, g!.id);
         Assert.AreEqual(g.id, a.GroupId);
         Assert.AreEqual(g.id, b.GroupId);
         Assert.AreSame(g, GroupManager.GroupOf(a));
@@ -68,7 +68,7 @@ public class GroupTests
         var b = Make("B", new Vector3(1, 0, 0));
         var g = GroupManager.Link(new List<KitchenElement> { a, b });
 
-        GroupManager.Unlink(g);
+        GroupManager.Unlink(g!);
 
         Assert.AreEqual(0, a.GroupId);
         Assert.AreEqual(0, b.GroupId);
@@ -83,7 +83,7 @@ public class GroupTests
         Make("C_unlinked", new Vector3(2, 0, 0));
         var g = GroupManager.Link(new List<KitchenElement> { a, b });
 
-        var members = GroupManager.MembersOf(g);
+        var members = GroupManager.MembersOf(g!);
 
         Assert.AreEqual(2, members.Count);
         Assert.Contains(a, members);
@@ -97,13 +97,13 @@ public class GroupTests
         var b = Make("B", new Vector3(1, 0, 0));
         var g = GroupManager.Link(new List<KitchenElement> { a, b });
 
-        GroupManager.SetMovable(g, false);
+        GroupManager.SetMovable(g!, false);
 
-        Assert.IsFalse(g.movable);
+        Assert.IsFalse(g!.movable);
         Assert.IsFalse(a.Movable);
         Assert.IsFalse(b.Movable);
 
-        GroupManager.SetMovable(g, true);
+        GroupManager.SetMovable(g!, true);
         Assert.IsTrue(a.Movable);
         Assert.IsTrue(b.Movable);
     }
@@ -114,7 +114,7 @@ public class GroupTests
         var a = Make("A", Vector3.zero);
         var b = Make("B", new Vector3(0.8f, 0, 0));
         var g = GroupManager.Link(new List<KitchenElement> { a, b });
-        g.name = "Шкаф";
+        g!.name = "Шкаф";
         GroupManager.SetMovable(g, false);
         int originalId = g.id;
 
@@ -125,7 +125,7 @@ public class GroupTests
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
 
-        var restored = SaveLoadManager.RestoreScene(SaveLoadManager.Deserialize(json));
+        var restored = SaveLoadManager.RestoreScene(SaveLoadManager.Deserialize(json)!);
         _spawned.AddRange(restored);
         // Регистрируем восстановленные элементы (в рантайме это делает Awake).
         foreach (var go in restored) PartRegistry.Register(go.GetComponent<KitchenElement>());
@@ -134,7 +134,7 @@ public class GroupTests
         var rg = GroupManager.GroupOf(ra);
 
         Assert.IsNotNull(rg, "группа восстановлена");
-        Assert.AreEqual(originalId, rg.id);
+        Assert.AreEqual(originalId, rg!.id);
         Assert.AreEqual("Шкаф", rg.name);
         Assert.IsFalse(rg.movable);
         Assert.AreEqual(2, GroupManager.MembersOf(rg).Count);

@@ -5,8 +5,8 @@ using KitchenDesigner.Core;
 
 public class WallManagerTests
 {
-    private GameObject _cameraGo;
-    private WallManager _wallManager;
+    private GameObject _cameraGo = null!;
+    private WallManager _wallManager = null!;
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private bool _originalLowerNearWalls;
 
@@ -114,7 +114,7 @@ public class WallManagerTests
     public void LateUpdate_DoesNotThrow_WhenCameraDestroyed()
     {
         Object.DestroyImmediate(_cameraGo);
-        _cameraGo = null;
+        _cameraGo = null!;
 
         Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0));
 

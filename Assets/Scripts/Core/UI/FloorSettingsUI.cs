@@ -7,12 +7,12 @@ namespace KitchenDesigner.Core.UI
 {
     public class FloorSettingsUI : MonoBehaviour
     {
-        public static FloorSettingsUI Instance { get; private set; }
+        public static FloorSettingsUI Instance { get; private set; } = null!;
 
-        private GameObject _root;
-        private KitchenElement _floorElement;
+        private GameObject _root = null!;
+        private KitchenElement? _floorElement;
 
-        private TMP_InputField _w, _h, _d, _x, _y, _z;
+        private TMP_InputField _w = null!, _h = null!, _d = null!, _x = null!, _y = null!, _z = null!;
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
         private int _applyFrame = -1;
 
@@ -74,7 +74,7 @@ namespace KitchenDesigner.Core.UI
             return field;
         }
 
-        private KitchenElement ResolveFloor()
+        private KitchenElement? ResolveFloor()
         {
             var go = GameObject.FindWithTag("Floor");
             if (go == null) return null;

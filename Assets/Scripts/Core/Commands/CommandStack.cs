@@ -25,7 +25,7 @@ namespace KitchenDesigner.Core
             }
             set => _fallback = value;
         }
-        private static ICommandStack _fallback;
+        private static ICommandStack _fallback = null!;
 
         public static bool CanUndo => Instance.CanUndo;
         public static bool CanRedo => Instance.CanRedo;
@@ -51,7 +51,7 @@ namespace KitchenDesigner.Core
 
     public class MoveCommand : IUndoCommand, ISerializableCommand
     {
-        private KitchenElement _element;
+        private KitchenElement _element = null!;
         private Vector3 _before;
         private Vector3 _after;
         private Quaternion _rotBefore;
@@ -59,7 +59,7 @@ namespace KitchenDesigner.Core
 
         public string Description => $"Move {_element?.PartName}";
 
-        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
+        public CommandRecord? ToRecord(Func<KitchenElement, int> indexOf)
         {
             int idx = _element != null ? indexOf(_element) : -1;
             if (idx < 0) return null;
@@ -103,7 +103,7 @@ namespace KitchenDesigner.Core
     public class CreateCommand : IUndoCommand
     {
         private GameObject _created;
-        private KitchenElement _element;
+        private KitchenElement? _element;
 
         public string Description => $"Create {_element?.PartName}";
 
@@ -133,9 +133,9 @@ namespace KitchenDesigner.Core
     public class DeleteCommand : IUndoCommand
     {
         private GameObject _deleted;
-        private KitchenElement _element;
+        private KitchenElement? _element;
         private int _siblingIndex;
-        private Transform _parent;
+        private Transform? _parent;
 
         public string Description => $"Delete {_element?.PartName}";
 
@@ -167,7 +167,7 @@ namespace KitchenDesigner.Core
 
     public class ResizeCommand : IUndoCommand, ISerializableCommand
     {
-        private KitchenElement _element;
+        private KitchenElement _element = null!;
         private Vector3Int _dimsBefore;
         private Vector3Int _dimsAfter;
         private Vector3 _posBefore;
@@ -177,7 +177,7 @@ namespace KitchenDesigner.Core
 
         public string Description => $"Resize {_element?.PartName}";
 
-        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
+        public CommandRecord? ToRecord(Func<KitchenElement, int> indexOf)
         {
             int idx = _element != null ? indexOf(_element) : -1;
             if (idx < 0) return null;
@@ -237,7 +237,7 @@ namespace KitchenDesigner.Core
             _commands = commands;
         }
 
-        public CommandRecord ToRecord(Func<KitchenElement, int> indexOf)
+        public CommandRecord? ToRecord(Func<KitchenElement, int> indexOf)
         {
             // Плоская сериализация: рекурсивно собираем ВСЕ листовые команды
             // поддерева в один уровень children. Глубина JSON становится

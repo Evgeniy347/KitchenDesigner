@@ -102,7 +102,7 @@ public class WallTests
 
         var json = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(new[] { e }));
         var data = SaveLoadManager.Deserialize(json);
-        var created = SaveLoadManager.RestoreScene(data);
+        var created = SaveLoadManager.RestoreScene(data!);
         foreach (var go in created) _spawned.Add(go);
 
         Assert.AreEqual(1, created.Count);

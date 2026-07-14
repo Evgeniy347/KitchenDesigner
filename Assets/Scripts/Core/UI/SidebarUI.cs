@@ -14,18 +14,18 @@ namespace KitchenDesigner.Core.UI
         private const float CollapsedW = 52f;
         private const float TopOffset = 52f; // под верхним тулбаром
 
-        private RectTransform _panel;
-        private GameObject _fullRoot;
-        private GameObject _miniRoot;
-        private TMP_Text _collapseLabel;
-        private Image _pinBg;
+        private RectTransform _panel = null!;
+        private GameObject _fullRoot = null!;
+        private GameObject _miniRoot = null!;
+        private TMP_Text _collapseLabel = null!;
+        private Image _pinBg = null!;
 
         private bool _expanded = true;
         private bool _pinned = true;
 
         private class GroupUI
         {
-            public RectTransform header;
+            public RectTransform header = null!;
             public readonly List<RectTransform> items = new List<RectTransform>();
             public bool open = true;
         }

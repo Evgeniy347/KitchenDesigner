@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core.UI
         private static readonly Color Accent = new Color(0.45f, 0.85f, 0.5f, 1f);
         private static readonly Color Clear = new Color(0, 0, 0, 0);
 
-        private static Sprite _gear, _floppy, _floppyPlus, _folder, _undo, _redo, _pin;
+        private static Sprite _gear = null!, _floppy = null!, _floppyPlus = null!, _folder = null!, _undo = null!, _redo = null!, _pin = null!;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);

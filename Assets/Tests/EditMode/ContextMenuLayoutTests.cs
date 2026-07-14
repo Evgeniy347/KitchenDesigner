@@ -9,8 +9,8 @@ using KitchenDesigner.Core.UI;
 
 public class ContextMenuLayoutTests
 {
-    private Canvas _canvas;
-    private ContextMenuUI _menu;
+    private Canvas _canvas = null!;
+    private ContextMenuUI _menu = null!;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     [SetUp]

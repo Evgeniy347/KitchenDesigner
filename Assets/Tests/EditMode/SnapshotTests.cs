@@ -37,7 +37,7 @@ public class SnapshotTests
 
     // ── helpers ─────────────────────────────────────────────────────────
 
-    private KitchenElement Add(GameObject go)
+    private KitchenElement? Add(GameObject go)
     {
         _spawned.Add(go);
         var el = go.GetComponent<KitchenElement>();
@@ -69,11 +69,11 @@ public class SnapshotTests
             new Vector3(1.5f, 2.5f, -3.0f));
         var el = Add(go);
         go.transform.rotation = Quaternion.Euler(0, 45, 0);
-        el.Movable = false;
-        el.Transparent = true;
-        el.MaterialId = "oak";
+        el!.Movable = false;
+        el!.Transparent = true;
+        el!.MaterialId = "oak";
 
-        var json = CaptureJson(new[] { el });
+        var json = CaptureJson(new[] { el! });
         Snapshot.Match(json, "board_custom_properties");
     }
 
@@ -87,7 +87,7 @@ public class SnapshotTests
                 new Vector3Int(400 + i * 200, 400, 18),
                 $"Board_{i}",
                 new Vector3(i * 0.5f, 0.2f, 0));
-            elements.Add(Add(go));
+            elements.Add(Add(go)!);
         }
         var json = CaptureJson(elements);
         Snapshot.Match(json, "board_multiple");
@@ -240,9 +240,9 @@ public class SnapshotTests
             new Vector3Int(100, 2700, 2000), "ConcreteWall",
             new Vector3(0, 1.35f, -3.5f));
         var el = Add(go);
-        el.MaterialId = "concrete";
+        el!.MaterialId = "concrete";
 
-        var json = CaptureJson(new[] { el });
+        var json = CaptureJson(new[] { el! });
         Snapshot.Match(json, "wall_custom");
     }
 
@@ -257,7 +257,7 @@ public class SnapshotTests
         var boardGo = ElementFactory.CreatePart(
             new Vector3Int(800, 400, 18), "Board_A",
             new Vector3(0.5f, 0.2f, 1.0f));
-        elements.Add(Add(boardGo));
+        elements.Add(Add(boardGo)!);
 
         // Facade
         var facadeGo = ElementFactory.CreateFacade(
@@ -280,13 +280,13 @@ public class SnapshotTests
         // Radial shelf
         var radialGo = ElementFactory.CreateRadialShelf(350, 18, "Radial_A",
             new Vector3(0.2f, 0.01f, -1.5f));
-        elements.Add(Add(radialGo));
+        elements.Add(Add(radialGo)!);
 
         // Wall
         var wallGo = ElementFactory.CreateWall(
             new Vector3Int(100, 2700, 3000), "Wall_A",
             new Vector3(-1.6f, 1.35f, 0));
-        elements.Add(Add(wallGo));
+        elements.Add(Add(wallGo)!);
 
         var json = CaptureJson(elements);
         Snapshot.Match(json, "fullscene_all_types");

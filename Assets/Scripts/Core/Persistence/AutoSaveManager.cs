@@ -12,7 +12,7 @@ namespace KitchenDesigner.Core
     {
         public const string AutoSaveName = "autosave";
 
-        private string _lastSavedJson;
+        private string _lastSavedJson = null!;
 
         private void OnEnable()
         {

@@ -49,7 +49,7 @@ public class DrawerRoundTripTests
         return GetDrawer(go);
     }
 
-    private ProjectData FullRoundTrip()
+    private ProjectData? FullRoundTrip()
     {
         var path = TempPath();
         var elements = new List<KitchenElement>();
@@ -74,13 +74,13 @@ public class DrawerRoundTripTests
 
         var loaded = SaveLoadManager.LoadFromFile(path);
         Assert.IsNotNull(loaded, "LoadFromFile should not return null");
-        SaveLoadManager.RestoreScene(loaded);
+        SaveLoadManager.RestoreScene(loaded!);
 
         File.Delete(path);
         return loaded;
     }
 
-    private ProjectData MemoryRoundTrip()
+    private ProjectData? MemoryRoundTrip()
     {
         var elements = new List<KitchenElement>();
         foreach (var go in _spawned)
@@ -108,7 +108,7 @@ public class DrawerRoundTripTests
 
         var d = restored[0] as DrawerElement;
         Assert.IsNotNull(d, "restored should be DrawerElement");
-        Assert.AreEqual("TestDrawer", d.PartName, "name");
+        Assert.AreEqual("TestDrawer", d!.PartName, "name");
         Assert.AreEqual(DrawerType.A, d.Type, "type");
         Assert.AreEqual(350, d.NominalLength, "length");
         Assert.AreEqual(DrawerColor.Anthracite, d.Color, "color");
@@ -129,7 +129,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual(DrawerType.B, d.Type, "type B should survive");
+        Assert.AreEqual(DrawerType.B, d!.Type, "type B should survive");
     }
 
     [Test]
@@ -141,7 +141,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual(DrawerType.D, d.Type, "type D should survive");
+        Assert.AreEqual(DrawerType.D, d!.Type, "type D should survive");
     }
 
     // ── 3. Length variants ──────────────────────────────────────────────
@@ -155,7 +155,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual(250, d.NominalLength, "length 250 should survive");
+        Assert.AreEqual(250, d!.NominalLength, "length 250 should survive");
     }
 
     [Test]
@@ -167,7 +167,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual(600, d.NominalLength, "length 600 should survive");
+        Assert.AreEqual(600, d!.NominalLength, "length 600 should survive");
     }
 
     // ── 4. Color variants ───────────────────────────────────────────────
@@ -181,7 +181,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual(DrawerColor.White, d.Color, "white color should survive");
+        Assert.AreEqual(DrawerColor.White, d!.Color, "white color should survive");
     }
 
     [Test]
@@ -193,7 +193,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual(DrawerColor.Black, d.Color, "black color should survive");
+        Assert.AreEqual(DrawerColor.Black, d!.Color, "black color should survive");
     }
 
     // ── 5. Width variant ────────────────────────────────────────────────
@@ -207,7 +207,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual(750, d.InternalWidth, "width 750 should survive");
+        Assert.AreEqual(750, d!.InternalWidth, "width 750 should survive");
     }
 
     // ── 6. Double-drawer flags ──────────────────────────────────────────
@@ -223,7 +223,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.IsTrue(d.IsDouble, "IsDouble should survive");
+        Assert.IsTrue(d!.IsDouble, "IsDouble should survive");
         Assert.IsTrue(d.IsUpperDrawer, "IsUpperDrawer should survive");
     }
 
@@ -239,7 +239,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual("OtherDrawer", d.PairedDrawerName, "paired name should survive");
+        Assert.AreEqual("OtherDrawer", d!.PairedDrawerName, "paired name should survive");
     }
 
     [Test]
@@ -252,7 +252,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual("MyFacade", d.AttachedFacadeName, "attached facade name should survive");
+        Assert.AreEqual("MyFacade", d!.AttachedFacadeName, "attached facade name should survive");
     }
 
     // ── 8. DoubleState ──────────────────────────────────────────────────
@@ -267,7 +267,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual(DoubleDrawerState.BothOpen, d.DoubleState, "double state should survive");
+        Assert.AreEqual(DoubleDrawerState.BothOpen, d!.DoubleState, "double state should survive");
     }
 
     [Test]
@@ -280,7 +280,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.IsTrue(d.IsOpen, "открытость одиночного ящика переживает сохранение (doorOpen)");
+        Assert.IsTrue(d!.IsOpen, "открытость одиночного ящика переживает сохранение (doorOpen)");
     }
 
     [Test]
@@ -292,7 +292,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.IsFalse(d.IsOpen, "закрытый ящик остаётся закрытым после загрузки");
+        Assert.IsFalse(d!.IsOpen, "закрытый ящик остаётся закрытым после загрузки");
     }
 
     // ── 9. Closed pose ──────────────────────────────────────────────────
@@ -309,7 +309,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual(d.transform.position, d.ClosedPosition, "ClosedPosition should match transform.position after restore");
+        Assert.AreEqual(d!.transform.position, d.ClosedPosition, "ClosedPosition should match transform.position after restore");
     }
 
     [Test]
@@ -327,7 +327,7 @@ public class DrawerRoundTripTests
 
         var d = Object.FindObjectsByType<KitchenElement>()[0] as DrawerElement;
         Assert.IsNotNull(d);
-        Assert.AreEqual(closedPos.x, d.ClosedPosition.x, 0.001f, "closed pos.x survives open drawer");
+        Assert.AreEqual(closedPos.x, d!.ClosedPosition.x, 0.001f, "closed pos.x survives open drawer");
         Assert.AreEqual(closedPos.y, d.ClosedPosition.y, 0.001f, "closed pos.y survives open drawer");
         Assert.AreEqual(closedPos.z, d.ClosedPosition.z, 0.001f, "closed pos.z survives open drawer");
     }
@@ -339,7 +339,7 @@ public class DrawerRoundTripTests
     {
         MakeDrawer("JsonDrawer", DrawerType.A, 350, DrawerColor.Anthracite, 400, Vector3.zero);
         var data = MemoryRoundTrip();
-        var json = SaveLoadManager.Serialize(data);
+        var json = SaveLoadManager.Serialize(data!);
 
         Assert.IsTrue(json.Contains("\"isDrawer\""), "isDrawer field");
         Assert.IsTrue(json.Contains("\"drawerType\""), "drawerType field");
@@ -356,7 +356,7 @@ public class DrawerRoundTripTests
         {
             var drawer = MakeDrawer("TypeTest", type, 350, DrawerColor.Anthracite, 400, Vector3.zero);
             var restored = MemoryRoundTrip();
-            Assert.AreEqual((int)type, restored.elements[0].drawerType, $"drawerType for {type} should survive");
+            Assert.AreEqual((int)type, restored!.elements[0].drawerType, $"drawerType for {type} should survive");
             Object.DestroyImmediate(drawer.gameObject);
             _spawned.Clear();
             PartRegistry.Clear();
@@ -372,7 +372,7 @@ public class DrawerRoundTripTests
         {
             var drawer = MakeDrawer("ColorTest", DrawerType.A, 350, color, 400, Vector3.zero);
             var restored = MemoryRoundTrip();
-            Assert.AreEqual((int)color, restored.elements[0].drawerColor, $"drawerColor for {color} should survive");
+            Assert.AreEqual((int)color, restored!.elements[0].drawerColor, $"drawerColor for {color} should survive");
             Object.DestroyImmediate(drawer.gameObject);
             _spawned.Clear();
             PartRegistry.Clear();
@@ -386,7 +386,7 @@ public class DrawerRoundTripTests
         {
             var drawer = MakeDrawer("LenTest", DrawerType.A, len, DrawerColor.Anthracite, 400, Vector3.zero);
             var restored = MemoryRoundTrip();
-            Assert.AreEqual(len, restored.elements[0].drawerNominalLength, $"nominal length {len} should survive");
+            Assert.AreEqual(len, restored!.elements[0].drawerNominalLength, $"nominal length {len} should survive");
             Object.DestroyImmediate(drawer.gameObject);
             _spawned.Clear();
             PartRegistry.Clear();

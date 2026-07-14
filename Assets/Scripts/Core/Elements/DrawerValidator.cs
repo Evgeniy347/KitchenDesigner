@@ -35,8 +35,8 @@ namespace KitchenDesigner.Core
             float minWallThicknessUnits = MIN_WALL_THICKNESS_MM * AppConstants.MM_TO_UNITS;
             float toMm = 1f / AppConstants.MM_TO_UNITS;
 
-            KitchenElement leftWall = null;
-            KitchenElement rightWall = null;
+            KitchenElement? leftWall = null;
+            KitchenElement? rightWall = null;
             float leftGap = float.MaxValue;
             float rightGap = float.MaxValue;
 

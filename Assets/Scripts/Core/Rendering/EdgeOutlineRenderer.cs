@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
     /// если включена настройка EdgeOutline. BasePlate (пол) исключён.</summary>
     public class EdgeOutlineRenderer : MonoBehaviour
     {
-        private Material _lineMaterial;
+        private Material _lineMaterial = null!;
 
         // Рёбра AABB по индексам вершин из KitchenElement.GetVertices().
         private static readonly int[,] Edges =

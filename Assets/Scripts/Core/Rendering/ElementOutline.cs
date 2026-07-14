@@ -50,18 +50,18 @@ namespace KitchenDesigner.Core
         /// <summary>Толщина ребра в метрах.</summary>
         private const float ThicknessMeters = 0.004f;
 
-        private static Material _blackMat;
-        private static Material _selectedMat;
+        private static Material? _blackMat = null!;
+        private static Material? _selectedMat = null!;
 
-        private Transform _root;
+        private Transform _root = null!;
         private readonly Transform[] _edges = new Transform[BoxWireframe.EdgeCount];
         private readonly Vector3[] _corners = new Vector3[8];
         private bool _visible;
 
-        public static ElementOutline For(KitchenElement element)
+        public static ElementOutline? For(KitchenElement element)
             => element != null ? element.GetComponent<ElementOutline>() : null;
 
-        public static ElementOutline Ensure(KitchenElement element)
+        public static ElementOutline? Ensure(KitchenElement element)
         {
             if (element == null) return null;
             var outline = element.GetComponent<ElementOutline>();
@@ -106,7 +106,7 @@ namespace KitchenDesigner.Core
             if (mat != null)
                 foreach (var e in _edges)
                     if (e != null) e.GetComponent<MeshRenderer>().sharedMaterial = mat;
-            _root.gameObject.SetActive(true);
+            if (_root != null) _root.gameObject.SetActive(true);
             _visible = true;
             UpdateEdges();
         }
@@ -151,7 +151,7 @@ namespace KitchenDesigner.Core
             }
         }
 
-        private static Material MakeUnlit(Color color)
+        private static Material? MakeUnlit(Color color)
         {
             // ВАЖНО: URP/Unlit вырезается из сборки, если им не пользуется ни один
             // материал (Shader.Find → null в билде → краш). Падаем на гарантированно
@@ -166,13 +166,13 @@ namespace KitchenDesigner.Core
             return m;
         }
 
-        private static Material BlackMaterial()
+        private static Material? BlackMaterial()
         {
             if (_blackMat == null) _blackMat = MakeUnlit(Color.black);
             return _blackMat;
         }
 
-        private static Material SelectedMaterial()
+        private static Material? SelectedMaterial()
         {
             if (_selectedMat == null) _selectedMat = MakeUnlit(new Color(1f, 0.85f, 0.1f, 1f));
             return _selectedMat;

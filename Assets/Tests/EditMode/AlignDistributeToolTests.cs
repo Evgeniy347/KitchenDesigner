@@ -76,7 +76,7 @@ public class AlignDistributeToolTests
         var single = new List<KitchenElement> { Make(new Vector3(0.3f, 0, 0)) };
         Assert.DoesNotThrow(() => AlignDistributeTool.Align(single, Axis.X, AlignmentMode.Min));
         Assert.AreEqual(0.3f, single[0].transform.position.x, 0.001f);
-        Assert.DoesNotThrow(() => AlignDistributeTool.Align(null, Axis.X, AlignmentMode.Min));
+        Assert.DoesNotThrow(() => AlignDistributeTool.Align(null!, Axis.X, AlignmentMode.Min));
     }
 
     [Test]

@@ -11,8 +11,8 @@ namespace KitchenDesigner.Core.UI
     /// </summary>
     public static class UIFactory
     {
-        private static TMP_FontAsset _fontAsset;
-        public static TMP_FontAsset FontAsset
+        private static TMP_FontAsset _fontAsset = null!;
+        public static TMP_FontAsset? FontAsset
         {
             get
             {

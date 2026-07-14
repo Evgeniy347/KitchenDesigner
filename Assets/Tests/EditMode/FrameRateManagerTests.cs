@@ -9,8 +9,8 @@ using KitchenDesigner.Core;
 /// </summary>
 public class FrameRateManagerTests
 {
-    private GameObject _go;
-    private FrameRateManager _fr;
+    private GameObject _go = null!;
+    private FrameRateManager _fr = null!;
     private int _prevTargetFps;
 
     [SetUp]
@@ -89,7 +89,7 @@ public class FrameRateManagerTests
     public void KeepAwake_NoInstance_DoesNotThrow()
     {
         Object.DestroyImmediate(_go);
-        _go = null;
+        _go = null!;
         // Instance сброшен в OnDestroy — статический вызов должен быть безопасным.
         Assert.DoesNotThrow(() => FrameRateManager.KeepAwake(1f));
     }

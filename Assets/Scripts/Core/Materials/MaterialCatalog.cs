@@ -12,8 +12,8 @@ namespace KitchenDesigner.Core
         public string id;
         public string displayName;
         public string kind;            // ЛДСП / МДФ / Массив / Стекло / Металл
-        public string baseMapResource; // путь под Resources/ (без расширения), напр. "Textures/oak"
-        public Texture2D texture;      // уже загруженная текстура (из внешней папки); приоритетнее baseMapResource
+        public string? baseMapResource; // путь под Resources/ (без расширения), напр. "Textures/oak"
+        public Texture2D? texture;      // уже загруженная текстура (из внешней папки); приоритетнее baseMapResource
         public Color baseColor = Color.gray;
         public int tileSizeMM = 800;   // физ. ШИРИНА картинки декора, мм
         public int tileHeightMM = 0;   // физ. ВЫСОТА картинки, мм (0 → квадрат = tileSizeMM)
@@ -24,7 +24,7 @@ namespace KitchenDesigner.Core
         public int TileHeightMM => tileHeightMM > 0 ? tileHeightMM : tileSizeMM;
 
         public MaterialDef(string id, string displayName, string kind, Color color,
-            string baseMapResource = null, int tileSizeMM = 800,
+            string? baseMapResource = null, int tileSizeMM = 800,
             float metallic = 0f, float smoothness = 0.2f)
         {
             this.id = id;
@@ -64,7 +64,7 @@ namespace KitchenDesigner.Core
 
         // Кэш объединённого списка (встроенные + динамические); сбрасывается на null
         // при изменении _dynamic и лениво пересобирается.
-        private static List<MaterialDef> _combined;
+        private static List<MaterialDef>? _combined;
 
         private static List<MaterialDef> Combined()
         {
@@ -99,7 +99,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Декор по id. Неизвестный/пустой id → дефолтный (надёжно к
         /// повреждённым сейвам).</summary>
-        public static MaterialDef Get(string id)
+        public static MaterialDef Get(string? id)
         {
             if (!string.IsNullOrEmpty(id))
                 foreach (var d in Combined())

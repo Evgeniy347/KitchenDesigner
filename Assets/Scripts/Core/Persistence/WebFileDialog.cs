@@ -46,7 +46,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Открыть браузерное окно сохранения/скачивания файла.</summary>
-        public static void Save(string content, string defaultName, Action<string> onSaved = null)
+        public static void Save(string content, string defaultName, Action<string>? onSaved = null)
         {
             WebFileDialogReceiver.GetOrCreate().PendingSaved = onSaved;
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -61,7 +61,7 @@ namespace KitchenDesigner.Core
         /// Разбирает полезную нагрузку колбэка открытия вида «имя\x1Fсодержимое».
         /// Возвращает false, если строка пустая или в ней нет разделителя.
         /// </summary>
-        public static bool TryParseOpenPayload(string payload, out string fileName, out string content)
+        public static bool TryParseOpenPayload(string payload, out string? fileName, out string? content)
         {
             fileName = null;
             content = null;

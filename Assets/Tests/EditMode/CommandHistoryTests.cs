@@ -65,12 +65,12 @@ public class CommandHistoryTests
 
         var rec = ((ISerializableCommand)cmd).ToRecord(_ => 0);
         Assert.IsNotNull(rec);
-        Assert.AreEqual("move", rec.type);
+        Assert.AreEqual("move", rec!.type);
         Assert.AreEqual(0, rec.elementIndex);
 
-        var rebuilt = CommandSerialization.FromRecord(rec, i => e);
+        var rebuilt = CommandSerialization.FromRecord(rec!, i => e);
         Assert.IsNotNull(rebuilt);
-        rebuilt.Undo();
+        rebuilt!.Undo();
         AssertVec(before, e.transform.position, "undo возвращает before");
         rebuilt.Execute();
         AssertVec(after, e.transform.position, "redo возвращает after");
@@ -110,11 +110,11 @@ public class CommandHistoryTests
         Assert.IsFalse(CommandStack.CanUndo);
 
         var data = SaveLoadManager.Deserialize(json);
-        var created = SaveLoadManager.RestoreScene(data);
+        var created = SaveLoadManager.RestoreScene(data!);
         foreach (var go in created) _spawned.Add(go);
         Assert.AreEqual(1, created.Count);
         var restored = created[0].GetComponent<KitchenElement>();
-        AssertVec(after, restored.transform.position, "загружено в актуальном состоянии");
+        AssertVec(after, restored!.transform.position, "загружено в актуальном состоянии");
 
         Assert.IsTrue(CommandStack.CanUndo, "undo доступен после загрузки");
         CommandStack.Undo();
@@ -144,10 +144,10 @@ public class CommandHistoryTests
         _spawned.Clear();
         CommandStack.Clear();
 
-        var created = SaveLoadManager.RestoreScene(SaveLoadManager.Deserialize(json));
+        var created = SaveLoadManager.RestoreScene(SaveLoadManager.Deserialize(json)!);
         foreach (var go in created) _spawned.Add(go);
         var restored = created[0].GetComponent<KitchenElement>();
-        Assert.AreEqual(dimsAfter, restored.DimensionsMM, "загружено в увеличенном размере");
+        Assert.AreEqual(dimsAfter, restored!.DimensionsMM, "загружено в увеличенном размере");
 
         Assert.IsTrue(CommandStack.CanUndo);
         CommandStack.Undo();
@@ -194,7 +194,7 @@ public class CommandHistoryTests
             SaveLoadManager.CaptureScene(new[] { a, b }));
         var data = SaveLoadManager.Deserialize(json);
         Assert.IsNotNull(data);
-        Assert.AreEqual(1, data.undoHistory.Length,
+        Assert.AreEqual(1, data!.undoHistory.Length,
             "плоский composite переживает round-trip");
     }
 
@@ -214,7 +214,7 @@ public class CommandHistoryTests
             SaveLoadManager.CaptureScene(new[] { e }));
         var data = SaveLoadManager.Deserialize(json);
         Assert.IsNotNull(data);
-        Assert.AreEqual(1, data.undoHistory.Length,
+        Assert.AreEqual(1, data!.undoHistory.Length,
             "вложенный composite схлопывается в одну плоскую запись");
         Assert.AreEqual(1, data.undoHistory[0].children.Length,
             "единственный лист сохранён");
@@ -252,7 +252,7 @@ public class CommandHistoryTests
         CommandStack.Execute(leaf);
 
         var data = SaveLoadManager.Deserialize(CaptureJson(new[] { e }));
-        Assert.AreEqual(1, data.undoHistory.Length, "одна запись верхнего уровня");
+        Assert.AreEqual(1, data!.undoHistory.Length, "одна запись верхнего уровня");
         var rec = data.undoHistory[0];
         Assert.AreEqual("composite", rec.type);
         Assert.AreEqual(1, rec.children.Length, "лист собран на один уровень");
@@ -268,7 +268,7 @@ public class CommandHistoryTests
         // Каждый уровень: Composite([MoveCommand, nextComposite]) — 50 листьев,
         // разбросанных по 50 уровням вложенности. Плоская сериализация собирает
         // ВСЕ 50 листьев в один уровень children, ничего не теряя.
-        IUndoCommand current = null;
+        IUndoCommand? current = null;
         for (int i = 49; i >= 0; i--)
         {
             var from = new Vector3(i * 0.001f, 0, 0);
@@ -280,10 +280,10 @@ public class CommandHistoryTests
             current = new CompositeCommand($"L{i}", siblings);
         }
 
-        CommandStack.Execute(current);
+        CommandStack.Execute(current!);
 
         var data = SaveLoadManager.Deserialize(CaptureJson(new[] { e }));
-        Assert.AreEqual(1, data.undoHistory.Length);
+        Assert.AreEqual(1, data!.undoHistory.Length);
         var rec = data.undoHistory[0];
         Assert.AreEqual("composite", rec.type);
         Assert.AreEqual(50, rec.children.Length, "все 50 листьев сохранены (без обрезки)");
@@ -329,10 +329,10 @@ public class CommandHistoryTests
         var json = SaveLoadManager.Serialize(
             SaveLoadManager.CaptureScene(new[] { e }));
         var data = SaveLoadManager.Deserialize(json);
-        Assert.AreEqual(1000, data.undoHistory.Length,
+        Assert.AreEqual(1000, data!.undoHistory.Length,
             "все 1000 команд пережили сериализацию");
 
-        var created = SaveLoadManager.RestoreScene(data);
+        var created = SaveLoadManager.RestoreScene(data!);
         Assert.IsTrue(CommandStack.CanUndo);
         CommandStack.Undo();
         Assert.IsTrue(CommandStack.CanUndo);
@@ -347,7 +347,7 @@ public class CommandHistoryTests
         // 50-уровневая вложенная группа: композит из 50 перемещений одного объекта,
         // разложенных по 50 уровням. После плоской сериализации все 50 листьев
         // сохраняются на одном уровне, а undo композита атомарно откатывает всё.
-        IUndoCommand current = null;
+        IUndoCommand? current = null;
         Vector3 firstFrom = pos0;
         for (int i = 49; i >= 0; i--)
         {
@@ -360,7 +360,7 @@ public class CommandHistoryTests
             if (current != null) siblings.Add(current);
             current = new CompositeCommand($"L{i}", siblings);
         }
-        CommandStack.Execute(current);
+        CommandStack.Execute(current!);
 
         var json = SaveLoadManager.Serialize(
             SaveLoadManager.CaptureScene(new[] { e }));
@@ -368,7 +368,7 @@ public class CommandHistoryTests
         Assert.IsNotNull(data, "ProjectData десериализуется");
 
         // Одна запись верхнего уровня с 50 плоскими листьями — ничего не потеряно.
-        Assert.AreEqual(1, data.undoHistory.Length);
+        Assert.AreEqual(1, data!.undoHistory.Length);
         Assert.AreEqual(50, data.undoHistory[0].children.Length,
             "все 50 перемещений сохранены при плоской сериализации");
 
@@ -378,13 +378,13 @@ public class CommandHistoryTests
         _spawned.Clear();
         CommandStack.Clear();
 
-        var created = SaveLoadManager.RestoreScene(data);
+        var created = SaveLoadManager.RestoreScene(data!);
         foreach (var go in created) _spawned.Add(go);
         var restored = created[0].GetComponent<KitchenElement>();
 
         Assert.IsTrue(CommandStack.CanUndo, "undo доступен после загрузки");
         CommandStack.Undo();
-        AssertVec(firstFrom, restored.transform.position,
+        AssertVec(firstFrom, restored!.transform.position,
             "undo композита откатывает объект к начальной позиции");
     }
 
@@ -417,10 +417,10 @@ public class CommandHistoryTests
         var json = SaveLoadManager.Serialize(
             SaveLoadManager.CaptureScene(new[] { a, b }));
         var data = SaveLoadManager.Deserialize(json);
-        Assert.AreEqual(1000, data.undoHistory.Length,
+        Assert.AreEqual(1000, data!.undoHistory.Length,
             "1000 команд (включая composite) пережили сериализацию");
 
-        var created = SaveLoadManager.RestoreScene(data);
+        var created = SaveLoadManager.RestoreScene(data!);
         Assert.IsTrue(CommandStack.CanUndo);
     }
 }

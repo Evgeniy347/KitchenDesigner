@@ -4,7 +4,7 @@ using KitchenDesigner.Core;
 
 public class CameraStateTests
 {
-    private GameObject _go;
+    private GameObject _go = null!;
 
     [TearDown]
     public void Teardown()
@@ -50,10 +50,10 @@ public class CameraStateTests
 
         var restored = SaveLoadManager.Deserialize(SaveLoadManager.Serialize(data));
 
-        Assert.IsTrue(restored.camera.valid);
-        Assert.AreEqual(3f, restored.camera.targetX, 0.0001f);
-        Assert.AreEqual(90f, restored.camera.angleY, 0.0001f);
-        Assert.AreEqual(6f, restored.camera.distance, 0.0001f);
+        Assert.IsTrue(restored!.camera.valid);
+        Assert.AreEqual(3f, restored!.camera.targetX, 0.0001f);
+        Assert.AreEqual(90f, restored!.camera.angleY, 0.0001f);
+        Assert.AreEqual(6f, restored!.camera.distance, 0.0001f);
     }
 
     [Test]

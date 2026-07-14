@@ -18,8 +18,8 @@ public class IsoScreenshotTests
     private const int RenderH = 512;
     private const float IsoFov = 45f;
 
-    private GameObject _bootstrap;
-    private GameObject _mainCamera;
+    private GameObject _bootstrap = null!;
+    private GameObject _mainCamera = null!;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     [UnitySetUp]
@@ -163,7 +163,7 @@ public class IsoScreenshotTests
         for (int i = 0; i < FacadeDoor.Count; i++)
         {
             var mode = (DoorMode)i;
-            fe.Mode = mode;
+            fe!.Mode = mode;
             fe.ForceClose();
             yield return null;
 

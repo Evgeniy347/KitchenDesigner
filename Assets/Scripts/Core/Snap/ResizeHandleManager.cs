@@ -21,7 +21,7 @@ namespace KitchenDesigner.Core
     {
         public enum HandleMode { Resize, Move }
 
-        public static ResizeHandleManager Instance { get; private set; }
+        public static ResizeHandleManager Instance { get; private set; } = null!;
 
         /// <summary>Текущий режим ручек (переключается кнопкой в тулбаре).</summary>
         public static HandleMode Mode { get; private set; } = HandleMode.Resize;
@@ -32,7 +32,7 @@ namespace KitchenDesigner.Core
         /// <summary>Идёт перетаскивание ручки (другие системы не должны реагировать).</summary>
         public static bool IsResizing { get; private set; }
 
-        private static KitchenElement _resizingElement;
+        private static KitchenElement? _resizingElement;
         /// <summary>Этот элемент сейчас ресайзят/двигают ручкой? (WallManager не опускает его).</summary>
         public static bool IsResizingElement(KitchenElement e) =>
             IsResizing && e != null && e == _resizingElement;
@@ -44,7 +44,7 @@ namespace KitchenDesigner.Core
         private const float TipLen = 0.05f;
         private const float TipSize = 0.038f;
 
-        private KitchenElement _target;
+        private KitchenElement? _target;
         private readonly List<ResizeHandle> _handles = new List<ResizeHandle>();
         private readonly Material[] _axisMats = new Material[3];
 
@@ -80,7 +80,7 @@ namespace KitchenDesigner.Core
         }
 
         // Один выделенный объект (не пол) → показываем ручки; иначе убираем.
-        private void OnSelectionChanged(KitchenElement element)
+        private void OnSelectionChanged(KitchenElement? element)
         {
             if (IsResizing) return;
             var sel = SelectionManager.Instance;
@@ -89,7 +89,7 @@ namespace KitchenDesigner.Core
             SetTarget(single ? element : null);
         }
 
-        private void SetTarget(KitchenElement element)
+        private void SetTarget(KitchenElement? element)
         {
             if (_target == element) return;
             ClearHandles();
@@ -139,7 +139,7 @@ namespace KitchenDesigner.Core
             if (AltHeld || PointerOverUI()) return;
 
             if (RaycastHandle(out var handle))
-                BeginDrag(handle.faceIndex);
+                BeginDrag(handle!.faceIndex);
         }
 
         private static bool AltHeld => Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
@@ -158,7 +158,7 @@ namespace KitchenDesigner.Core
                    hit.collider.GetComponentInParent<ResizeHandle>() != null;
         }
 
-        private bool RaycastHandle(out ResizeHandle handle)
+        private bool RaycastHandle(out ResizeHandle? handle)
         {
             handle = null;
             var cam = Camera.main;
@@ -171,7 +171,7 @@ namespace KitchenDesigner.Core
 
         private void BeginDrag(int faceIndex)
         {
-            if (!_target.Movable) return; // запрет перемещения запрещает и ресайз/move
+            if (_target == null || !_target.Movable) return; // запрет перемещения запрещает и ресайз/move
 
             // Полускрытую стену сперва на полную высоту, ЗАТЕМ берём геометрию грани —
             // иначе стартовые размер/центр берутся в опущенном состоянии и объект «прыгает».
@@ -215,10 +215,10 @@ namespace KitchenDesigner.Core
             float threshold = settings != null ? settings.SnapThreshold * AppConstants.MM_TO_UNITS : 0f;
 
             ResizeMath.Compute(_dimsBefore, _axisIndex, _normal, _faceCenter0, _uAxis, _vAxis, _faceSize,
-                _centerStart, _sizeStartUnits, rawDelta, PartRegistry.GetAll(), _target,
+                _centerStart, _sizeStartUnits, rawDelta, PartRegistry.GetAll(), _target!,
                 snapEnabled, threshold, out Vector3Int newDims, out Vector3 newCenter, out _);
 
-            _target.DimensionsMM = newDims;
+            _target!.DimensionsMM = newDims;
             _target.transform.position = newCenter;
 
             PositionHandles();
@@ -236,12 +236,12 @@ namespace KitchenDesigner.Core
             var settings = KitchenSettings.Instance;
             if (settings != null && settings.SnapEnabled)
             {
-                var snap = SnapSystem.TrySnap(_target, PartRegistry.GetAll(), newPos);
+                var snap = SnapSystem.TrySnap(_target!, PartRegistry.GetAll(), newPos);
                 if (snap.snapped) // берём только составляющую снэпа вдоль оси
                     newPos = _centerStart + _normal * Vector3.Dot(snap.position - _centerStart, _normal);
             }
 
-            _target.transform.position = newPos;
+            _target!.transform.position = newPos;
             PositionHandles();
             if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
         }
@@ -251,7 +251,7 @@ namespace KitchenDesigner.Core
             IsResizing = false;
             _resizingElement = null;
 
-            var afterDims = _target.DimensionsMM;
+            var afterDims = _target!.DimensionsMM;
             var afterPos = _target.transform.position;
 
             if (_dragMode == HandleMode.Resize)
@@ -290,7 +290,7 @@ namespace KitchenDesigner.Core
         private void BuildHandles()
         {
             _builtMode = Mode;
-            var faces = _target.GetFaces();
+            var faces = _target!.GetFaces();
             for (int i = 0; i < faces.Length; i++)
             {
                 var go = new GameObject($"ResizeHandle_{i}");
@@ -344,7 +344,7 @@ namespace KitchenDesigner.Core
         }
 
         // Конус единичного масштаба вдоль +Z: основание (r=0.5) при z=-0.5, вершина при z=+0.5.
-        private static Mesh _coneMesh;
+        private static Mesh? _coneMesh;
         private static Mesh ConeMesh()
         {
             if (_coneMesh != null) return _coneMesh;

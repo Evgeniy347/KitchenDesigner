@@ -91,7 +91,7 @@ namespace KitchenDesigner.Core
             r.SetPropertyBlock(mpb);
         }
 
-        private static Material GetSharedMaterial(MaterialDef def)
+        private static Material? GetSharedMaterial(MaterialDef def)
         {
             if (def == null) return null;
             if (_cache.TryGetValue(def.id, out var cached) && cached != null)

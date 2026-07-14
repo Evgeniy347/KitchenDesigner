@@ -15,7 +15,7 @@ namespace KitchenDesigner.Core
         /// оба помечаются двойными и связываются по именам в обе стороны.
         /// Возвращает созданный ящик (null, если пара уже есть).
         /// </summary>
-        public static DrawerElement CreatePair(DrawerElement source)
+        public static DrawerElement? CreatePair(DrawerElement source)
         {
             if (source == null) return null;
             if (source.FindPaired() != null) return null; // пара уже существует

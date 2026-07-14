@@ -75,7 +75,7 @@ namespace KitchenDesigner.Core
             return ext == ".png" || ext == ".jpg" || ext == ".jpeg";
         }
 
-        private static MaterialDef LoadOne(string path)
+        private static MaterialDef? LoadOne(string path)
         {
             try
             {

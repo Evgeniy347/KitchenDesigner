@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core
     /// </summary>
     public class FrameRateManager : MonoBehaviour
     {
-        public static FrameRateManager Instance { get; private set; }
+        public static FrameRateManager? Instance { get; private set; }
 
         /// <summary>FPS при активности. WebGL — 30 (как было), иначе без ограничения.</summary>
         public int ActiveFps = DefaultActiveFps();

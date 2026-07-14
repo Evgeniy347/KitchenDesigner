@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 public class FacadeMcpTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
-    private McpCommandHandler _handler;
+    private McpCommandHandler _handler = null!;
 
     [SetUp]
     public void Setup()
@@ -74,11 +74,11 @@ public class FacadeMcpTests
         var resp = _handler.Handle(MakeReq("get_element_info", new { name = "F" }));
         Assert.AreEqual("result", resp.type);
 
-        var json = JObject.FromObject(resp.data);
-        Assert.AreEqual(0f, json["faceNormalX"].Value<float>(), 1e-5f);
-        Assert.AreEqual(0f, json["faceNormalY"].Value<float>(), 1e-5f);
-        Assert.AreEqual(1f, json["faceNormalZ"].Value<float>(), 1e-5f);
-        Assert.IsFalse(json["faceInward"].Value<bool>());
+        var json = JObject.FromObject(resp.data!);
+        Assert.AreEqual(0f, json["faceNormalX"]!.Value<float>(), 1e-5f);
+        Assert.AreEqual(0f, json["faceNormalY"]!.Value<float>(), 1e-5f);
+        Assert.AreEqual(1f, json["faceNormalZ"]!.Value<float>(), 1e-5f);
+        Assert.IsFalse(json["faceInward"]!.Value<bool>());
         Assert.IsEmpty(json["faceObstructions"]);
         Assert.IsEmpty(json["openingViolations"]);
     }
@@ -90,10 +90,10 @@ public class FacadeMcpTests
         MakeElement("Obstacle", new Vector3Int(200, 200, 18), new Vector3(0f, 0f, 0.038f));
 
         var resp = _handler.Handle(MakeReq("get_element_info", new { name = "F" }));
-        var json = JObject.FromObject(resp.data);
+        var json = JObject.FromObject(resp.data!);
         var obs = json["faceObstructions"] as JArray;
-        Assert.AreEqual(1, obs.Count);
-        Assert.AreEqual("Obstacle", obs[0]["neighbor"].Value<string>());
+        Assert.AreEqual(1, obs!.Count);
+        Assert.AreEqual("Obstacle", obs[0]!["neighbor"]!.Value<string>());
     }
 
     [Test]
@@ -105,15 +105,15 @@ public class FacadeMcpTests
         GroupManager.Link(new List<KitchenElement> { box, f });
 
         var resp = _handler.Handle(MakeReq("get_violations", new { }));
-        var json = JObject.FromObject(resp.data);
+        var json = JObject.FromObject(resp.data!);
         var violations = json["violations"] as JArray;
 
         bool found = false;
-        foreach (var v in violations)
+        foreach (var v in violations!)
         {
-            if (v["name"].Value<string>() != "F") continue;
+            if (v["name"]!.Value<string>() != "F") continue;
             found = true;
-            Assert.IsTrue(v["faceInward"].Value<bool>());
+            Assert.IsTrue(v["faceInward"]!.Value<bool>());
         }
         Assert.IsTrue(found, "facade F should appear in violations");
     }
@@ -127,8 +127,8 @@ public class FacadeMcpTests
             width = 400, height = 300, depth = 18, is_facade = true
         }));
 
-        var json = JObject.FromObject(resp.data);
-        Assert.IsTrue(json["is_facade"].Value<bool>());
+        var json = JObject.FromObject(resp.data!);
+        Assert.IsTrue(json["is_facade"]!.Value<bool>());
         Assert.IsNotNull(json["faceNormal"]);
         Assert.IsNotNull(json["faceObstructions"]);
         Assert.IsNotNull(json["openingViolations"]);
@@ -142,9 +142,9 @@ public class FacadeMcpTests
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         var resp = _handler.Handle(MakeReq("rotate_element", new { name = "F", y = 90f }));
 
-        var json = JObject.FromObject(resp.data);
+        var json = JObject.FromObject(resp.data!);
         Assert.IsNotNull(json["faceNormal"]);
-        Assert.AreEqual(1f, json["faceNormal"]["x"].Value<float>(), 1e-3f);
+        Assert.AreEqual(1f, json["faceNormal"]!["x"]!.Value<float>(), 1e-3f);
         Assert.IsNotNull(json["faceObstructions"]);
         Assert.IsNotNull(json["openingViolations"]);
     }
@@ -156,10 +156,10 @@ public class FacadeMcpTests
         MakeElement("Obstacle", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, 0.3f));
 
         var resp = _handler.Handle(MakeReq("set_facade_mode", new { name = "F", mode = "drawer_out" }));
-        var json = JObject.FromObject(resp.data);
-        Assert.AreEqual("drawer_out", json["mode"].Value<string>());
+        var json = JObject.FromObject(resp.data!);
+        Assert.AreEqual("drawer_out", json["mode"]!.Value<string>());
         var viol = json["openingViolations"] as JArray;
-        Assert.AreEqual(1, viol.Count);
-        Assert.AreEqual("Obstacle", viol[0]["neighbor"].Value<string>());
+        Assert.AreEqual(1, viol!.Count);
+        Assert.AreEqual("Obstacle", viol[0]!["neighbor"]!.Value<string>());
     }
 }

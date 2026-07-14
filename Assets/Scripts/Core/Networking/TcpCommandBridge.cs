@@ -11,10 +11,10 @@ namespace KitchenDesigner.Core
     public sealed class TcpCommandBridge : ICommandBridge
     {
         public bool IsRunning { get; private set; }
-        public event Action<string> OnCommandReceived;
+        public event Action<string>? OnCommandReceived;
 
-        private TcpListener _listener;
-        private Thread _thread;
+        private TcpListener? _listener = null!;
+        private Thread? _thread = null!;
         private readonly int _port;
 
         public TcpCommandBridge(int port = 9337)
@@ -45,7 +45,7 @@ namespace KitchenDesigner.Core
             {
                 try
                 {
-                    using var client = _listener.AcceptTcpClient();
+                    using var client = _listener!.AcceptTcpClient();
                     using var stream = client.GetStream();
                     var buffer = new byte[65536];
                     int read = stream.Read(buffer, 0, buffer.Length);

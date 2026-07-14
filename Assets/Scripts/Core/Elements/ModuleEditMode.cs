@@ -14,12 +14,12 @@ namespace KitchenDesigner.Core
     public static class ModuleEditMode
     {
         /// <summary>Редактируемый сейчас модуль; null — обычный режим.</summary>
-        public static LinkGroup Active { get; private set; }
+        public static LinkGroup? Active { get; private set; }
 
         public static bool IsActive => Active != null;
 
         /// <summary>Вход/выход/смена активного модуля.</summary>
-        public static event Action Changed;
+        public static event Action Changed = null!;
 
         public static void Enter(LinkGroup module)
         {
@@ -41,7 +41,7 @@ namespace KitchenDesigner.Core
         public static bool IsEditable(KitchenElement e)
         {
             if (!IsActive) return true;
-            return e != null && e.GroupId == Active.id;
+            return e != null && e.GroupId == Active!.id;
         }
     }
 }

@@ -36,7 +36,7 @@ public class UiAsciiSymbolsTests
         var dropdown = UIFactory.CreateDropdown(
             "TestDropdown", canvas.transform,
             new List<string> { "a", "b" },
-            Vector2.zero, new Vector2(100, 30), null);
+            Vector2.zero, new Vector2(100, 30), null!);
 
         var arrow = dropdown.transform.Find("TestDropdown_Arrow");
         Assert.IsNotNull(arrow, "arrow child exists");

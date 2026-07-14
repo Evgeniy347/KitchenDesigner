@@ -6,10 +6,10 @@ using KitchenDesigner.Editor;
 
 public class BuildInfoGeneratorTests
 {
-    private string _originalGeneratedPath;
-    private string _counterPath;
-    private string _generatedBackup;
-    private string _counterBackup;
+    private string _originalGeneratedPath = null!;
+    private string _counterPath = null!;
+    private string? _generatedBackup;
+    private string? _counterBackup;
 
     [SetUp]
     public void Setup()

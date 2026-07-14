@@ -69,16 +69,16 @@ namespace KitchenDesigner.Core
                             },
                             _ =>
                             {
-                                GameContext.Services.SaveLoadManager.LoadLastSession();
+            GameContext.Services.SaveLoadManager!.LoadLastSession();
                             });
                         return;
                     }
                 }
                 // Server save disabled or no current project — fall back to local.
-                GameContext.Services.SaveLoadManager.LoadLastSession();
+            GameContext.Services!.SaveLoadManager.LoadLastSession();
             });
 #else
-            GameContext.Services.SaveLoadManager.LoadLastSession();
+            GameContext.Services!.SaveLoadManager.LoadLastSession();
 #endif
 
 #if UNITY_WEBGL

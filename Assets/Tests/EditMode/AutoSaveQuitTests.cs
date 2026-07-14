@@ -11,10 +11,10 @@ public class AutoSaveQuitTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private bool _prevAutoSave;
-    private string _prevLastPath;
-    private string _autoSavePath;
-    private byte[] _autoSaveBackup; // содержимое реального autosave, чтобы не затереть
-    private string _openFilePath;   // временный «открытый файл»
+    private string _prevLastPath = null!;
+    private string _autoSavePath = null!;
+    private byte[]? _autoSaveBackup;
+    private string _openFilePath = null!;
 
     private KitchenElement Make(string name, Vector3Int dims, Vector3 pos)
     {

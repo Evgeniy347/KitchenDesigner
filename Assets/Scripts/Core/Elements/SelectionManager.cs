@@ -5,16 +5,16 @@ namespace KitchenDesigner.Core
 {
     public class SelectionManager : MonoBehaviour
     {
-        public static SelectionManager Instance { get; private set; }
+        public static SelectionManager Instance { get; private set; } = null!;
 
-        private KitchenElement _selected;
+        private KitchenElement? _selected;
         private readonly List<KitchenElement> _selectedElements = new List<KitchenElement>();
         private readonly Dictionary<KitchenElement, SavedMaterial> _savedMaterials
             = new Dictionary<KitchenElement, SavedMaterial>();
 
-        public KitchenElement Selected => _selected;
+        public KitchenElement? Selected => _selected;
         public IReadOnlyList<KitchenElement> SelectedElements => _selectedElements;
-        public event System.Action<KitchenElement> OnSelectionChanged;
+        public event System.Action<KitchenElement?> OnSelectionChanged = null!;
 
         private struct SavedMaterial
         {
@@ -114,7 +114,7 @@ namespace KitchenDesigner.Core
                    Time.unscaledTime - _lastClickTime <= DoubleClickSeconds;
         }
 
-        private void RememberClick(LinkGroup group)
+        private void RememberClick(LinkGroup? group)
         {
             _lastClickTime = Time.unscaledTime;
             _lastClickGroupId = group != null ? group.id : 0;
@@ -234,7 +234,7 @@ namespace KitchenDesigner.Core
                     // выделение показываем жёлтым контуром.
                     renderer.material = ElementHighlighter.MakeTransparent(
                         renderer.material.shader, new Color(1f, 0.9f, 0.4f, 0.12f));
-                    ElementOutline.Ensure(element).Show(selected: true);
+                    ElementOutline.Ensure(element)!.Show(selected: true);
                     return;
                 }
 

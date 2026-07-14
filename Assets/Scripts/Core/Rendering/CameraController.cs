@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public class CameraController : MonoBehaviour
     {
-        public static CameraController Instance { get; private set; }
+        public static CameraController Instance { get; private set; } = null!;
 
         [SerializeField] private float _distance = 5f;
         [SerializeField] private float _minDistance = 0.5f;
@@ -29,8 +29,8 @@ namespace KitchenDesigner.Core
         private bool _rmbMoved;
         private const float RmbDragPixels = 6f;
 
-        private Camera _cachedCamera;
-        private GameObject _floor;
+        private Camera _cachedCamera = null!;
+        private GameObject _floor = null!;
 
         public void AssignTestCamera(Camera camera) => _cachedCamera = camera;
         public void AssignTestFloor(GameObject floor) => _floor = floor;
