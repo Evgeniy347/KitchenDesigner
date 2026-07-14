@@ -927,7 +927,15 @@ code.mcp-key-value {
     font-size: 14px;
     margin-bottom: 20px;
 }
-.versions-project-name strong { color: #ddd; }
+.versions-project-name strong {
+    color: #ddd;
+    display: inline-block;
+    max-width: 500px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
 
 .versions-table-wrapper {
     border: 1px solid #2a2a3e;
