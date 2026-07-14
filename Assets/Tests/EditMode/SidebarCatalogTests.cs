@@ -5,31 +5,33 @@ using KitchenDesigner.Core.UI;
 public class SidebarCatalogTests
 {
     [Test]
-    public void Build_HasBoardFacadeDrawerAndRoom()
+    public void Build_HasFiveGroups()
     {
         var groups = SidebarCatalog.Build();
 
-        Assert.AreEqual(4, groups.Count);
+        Assert.AreEqual(5, groups.Count);
         Assert.AreEqual("детали", groups[0].title);
         Assert.AreEqual("Фасады", groups[1].title);
         Assert.AreEqual("Ящики GTV", groups[2].title);
-        Assert.AreEqual("Помещение", groups[3].title);
+        Assert.AreEqual("Мебель", groups[3].title);
+        Assert.AreEqual("Помещение", groups[4].title);
     }
 
     [Test]
-    public void BoardGroup_HasTenItems_FiveEachThickness()
+    public void BoardGroup_HasTwoItems()
     {
         var groups = SidebarCatalog.Build();
 
-        Assert.AreEqual(10, groups[0].items.Count);
-        int count16 = 0, count18 = 0;
-        foreach (var it in groups[0].items)
-        {
-            if (it.dims.z == 16) count16++;
-            if (it.dims.z == 18) count18++;
-        }
-        Assert.AreEqual(5, count16, "5 деталей толщиной 16 мм");
-        Assert.AreEqual(5, count18, "5 деталей толщиной 18 мм");
+        Assert.AreEqual(2, groups[0].items.Count);
+        var regular = groups[0].items[0];
+        Assert.AreEqual("600×400×16", regular.name);
+        Assert.AreEqual(new Vector3Int(600, 400, 16), regular.dims);
+        Assert.IsFalse(regular.isRadialShelf);
+
+        var radial = groups[0].items[1];
+        Assert.AreEqual("600×400×16 (радиусная)", radial.name);
+        Assert.AreEqual(new Vector3Int(600, 400, 16), radial.dims);
+        Assert.IsTrue(radial.isRadialShelf);
     }
 
     [Test]
@@ -58,10 +60,21 @@ public class SidebarCatalogTests
     }
 
     [Test]
+    public void FurnitureGroup_HasTable()
+    {
+        var groups = SidebarCatalog.Build();
+        Assert.AreEqual(1, groups[3].items.Count);
+        var it = groups[3].items[0];
+        Assert.AreEqual("Прямоугольный стол", it.name);
+        Assert.IsTrue(it.isFurniture);
+        Assert.AreEqual(new Vector3Int(1200, 750, 600), it.dims);
+    }
+
+    [Test]
     public void Room_ContainsKorob_600Cube()
     {
         var groups = SidebarCatalog.Build();
-        var room = groups[3];
+        var room = groups[4];
         var korob = room.items[0];
 
         Assert.AreEqual("Короб", korob.name);
@@ -73,7 +86,7 @@ public class SidebarCatalogTests
     public void Room_ContainsWall_MarkedAsWall()
     {
         var groups = SidebarCatalog.Build();
-        var room = groups[3];
+        var room = groups[4];
         var wall = room.items.Find(it => it.name == "Стена");
 
         Assert.IsTrue(wall.isWall, "элемент «Стена» помечен как стена");
@@ -84,7 +97,7 @@ public class SidebarCatalogTests
     public void Build_Room_ContainsRoomSettings()
     {
         var groups = SidebarCatalog.Build();
-        var room = groups[3];
+        var room = groups[4];
         var settings = room.items.Find(it => it.name == "Размеры помещения");
         Assert.IsNotNull(settings);
     }

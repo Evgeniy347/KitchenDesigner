@@ -595,8 +595,9 @@ namespace KitchenDesigner.Core.UI
                 bool isFacade = element is FacadeElement;
                 bool isRadial = element is RadialShelfElement;
                 bool isDrawer = element is DrawerElement;
+                bool isTable = element is TableElement;
                 if (_titleLabel != null)
-                    _titleLabel.text = isDrawer ? "Ящик GTV" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
+                    _titleLabel.text = isTable ? "Стол" : isDrawer ? "Ящик GTV" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
 
                 if (_typeDropdown != null)
                 {

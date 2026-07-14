@@ -13,9 +13,11 @@ namespace KitchenDesigner.Core.UI
             public Vector3Int dims;
             public bool isWall;
             public bool isFacade;
-            public bool isAssembled; // сборный (рамочный) фасад
+            public bool isAssembled;
             public bool isDrawer;
-            public string drawerType;  // "A"/"B"/"C"/"D"
+            public bool isRadialShelf;
+            public bool isFurniture;
+            public string drawerType;
             public int drawerLength;
             public string drawerColor;
             public int drawerWidth;
@@ -31,7 +33,8 @@ namespace KitchenDesigner.Core.UI
                 this.isFacade = isFacade; this.isAssembled = isAssembled;
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
-                isDrawer = false; drawerType = "A"; drawerLength = 350;
+                isDrawer = false; isRadialShelf = false; isFurniture = false;
+                drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400;
             }
         }
@@ -43,16 +46,6 @@ namespace KitchenDesigner.Core.UI
             public List<Item> items;
         }
 
-        // Базовые типоразмеры (ширина×высота); толщина задаётся группой.
-        private static readonly Vector2Int[] BoardSizes =
-        {
-            new Vector2Int(800, 400),
-            new Vector2Int(600, 400),
-            new Vector2Int(400, 400),
-            new Vector2Int(1200, 600),
-            new Vector2Int(600, 600),
-        };
-
         public static List<Group> Build()
         {
             return new List<Group>
@@ -60,6 +53,7 @@ namespace KitchenDesigner.Core.UI
                 BoardGroup(),
                 FacadeGroup(),
                 DrawerGroup(),
+                FurnitureGroup(),
                 new Group
                 {
                     title = "Помещение",
@@ -76,13 +70,10 @@ namespace KitchenDesigner.Core.UI
 
         private static Group BoardGroup()
         {
-            var items = new List<Item>();
-            foreach (var s in BoardSizes)
-            {
-                items.Add(new Item($"{s.x}×{s.y}×16", new Vector3Int(s.x, s.y, 16)));
-                items.Add(new Item($"{s.x}×{s.y}×18", new Vector3Int(s.x, s.y, 18)));
-            }
-            return new Group { title = "детали", shortLabel = "Д", items = items };
+            var regular = new Item("600×400×16", new Vector3Int(600, 400, 16));
+            var radial = new Item("600×400×16 (радиусная)", new Vector3Int(600, 400, 16));
+            radial.isRadialShelf = true;
+            return new Group { title = "детали", shortLabel = "Д", items = new List<Item> { regular, radial } };
         }
 
         private static Group FacadeGroup()
@@ -119,6 +110,13 @@ namespace KitchenDesigner.Core.UI
             item.drawerColor = "Anthracite";
             item.drawerWidth = 400;
             return item;
+        }
+
+        private static Group FurnitureGroup()
+        {
+            var table = new Item("Прямоугольный стол", new Vector3Int(1200, 750, 600));
+            table.isFurniture = true;
+            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table } };
         }
     }
 }
