@@ -16,7 +16,7 @@
    query string and talks to /api/projects directly (same-origin cookies), so this
    page only hosts the frame. The build is served at /unity (UnityWebGLStaticFiles). *@
 
-<PageTitle>@_projectName — KitchenDesigner Editor</PageTitle>
+<PageTitle>@_truncatedTitle — KitchenDesigner Editor</PageTitle>
 
 <div class="editor-page">
     @* Project name/ID live in the top-nav (see EditorNavInfo) — no separate toolbar row. *@
@@ -45,6 +45,7 @@
     [Parameter] public Guid ProjectId { get; set; }
 
     private string _projectName = "Loading...";
+    private string _truncatedTitle => _projectName.Length <= 50 ? _projectName : _projectName[..47] + "...";
     private string _error = "";
     private string _iframeSrc = "";
     private bool _ready;
