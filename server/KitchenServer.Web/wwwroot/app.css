@@ -398,6 +398,7 @@ h1:focus { outline: none; }
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    text-decoration: none;
     transition: background 0.15s;
 }
 .projects-btn-play:hover { background: #218838; }
@@ -410,7 +411,18 @@ h1:focus { outline: none; }
     flex: 1;
     min-width: 0;
 }
-.projects-card-name { color: #fff; font-size: 15px; }
+.projects-card-name {
+    color: #fff;
+    font-size: 15px;
+    max-width: 400px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    line-height: 1.3;
+}
 .projects-card-date { color: #888; font-size: 12px; }
 
 .projects-card-actions {
@@ -501,6 +513,14 @@ h1:focus { outline: none; }
     color: #fff;
     font-size: 14px;
     font-weight: 600;
+    max-width: 200px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    line-height: 1.3;
 }
 .editor-project-id {
     color: #666;

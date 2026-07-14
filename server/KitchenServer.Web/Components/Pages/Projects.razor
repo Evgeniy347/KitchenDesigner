@@ -54,10 +54,10 @@
             @foreach (var p in FilteredProjects)
             {
                 <div class="projects-card">
-                    <button class="projects-btn-play" @onclick="() => OpenProject(p.Id)"
-                            title="Open project">
+                    <a class="projects-btn-play" href="/editor/@p.Id" target="_blank"
+                       rel="noopener" title="Open project in new tab">
                         <i class="bi bi-play-fill"></i>
-                    </button>
+                    </a>
                     <div class="projects-card-body">
                         @if (_editingId == p.Id)
                         {
@@ -254,8 +254,6 @@
             _error = $"Failed to create project: {ex.Message}";
         }
     }
-
-    private void OpenProject(Guid id) => Navigation.NavigateTo($"/editor/{id}");
 
     private void OpenVersions(Guid id) => Navigation.NavigateTo($"/projects/{id}/versions");
 
