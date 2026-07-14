@@ -1073,3 +1073,60 @@ code.mcp-key-value {
     color: #888;
 }
 .admin-error { color: #ff6b6b; }
+
+.admin-impersonate-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-impersonate-btn {
+    background: none;
+    border: 1px solid #3a3a5e;
+    border-radius: 4px;
+    color: #888;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 14px;
+    transition: all 0.15s;
+}
+
+.admin-impersonate-btn:hover {
+    background: #2a2a3e;
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.top-nav-impersonating {
+    background: #3a2a1a;
+    border-bottom-color: #f59e0b;
+}
+
+.nav-impersonation-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #5a3a1a;
+    border: 1px solid #f59e0b;
+    border-radius: 4px;
+    color: #f59e0b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.nav-stop-impersonation {
+    color: #f59e0b;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.nav-stop-impersonation:hover {
+    background: #5a3a1a;
+    color: #ffb84d;
+}
