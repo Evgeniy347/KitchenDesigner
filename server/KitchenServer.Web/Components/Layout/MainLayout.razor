@@ -1,6 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
+@using KitchenServer.Web.Services
 @inject NavigationManager Navigation
+@inject AdminEmailsService AdminEmails
 
 <div class="layout">
     <AuthorizeView>
@@ -11,6 +13,12 @@
                     <NavLink href="/projects" class="nav-link" ActiveClass="nav-link-active">
                         Projects
                     </NavLink>
+                    @if (AdminEmails.IsAdmin(context.User.Identity?.Name))
+                    {
+                        <NavLink href="/admin/users" class="nav-link" ActiveClass="nav-link-active">
+                            Admin
+                        </NavLink>
+                    }
                 </div>
                 <EditorNavInfo @rendermode="InteractiveServer" />
                 <div class="nav-right">

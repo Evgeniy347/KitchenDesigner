@@ -4,6 +4,7 @@ using KitchenServer.Web.Endpoints;
 using KitchenServer.Web.Services;
 using ModelContextProtocol.AspNetCore;
 using ModelContextProtocol.Protocol;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -98,6 +99,12 @@ builder.Services.AddOptions<HttpServerTransportOptions>()
 
 // Per-circuit bridge: editor page → nav-bar island (see EditorNavState).
 builder.Services.AddScoped<EditorNavState>();
+builder.Services.AddSingleton<AdminEmailsService>();
+builder.Services.AddSingleton<IAuthorizationHandler, AdminAuthorizationHandler>();
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Admin", policy =>
+        policy.Requirements.Add(new AdminRequirement()));
 
 builder.Services.AddCascadingAuthenticationState();
 

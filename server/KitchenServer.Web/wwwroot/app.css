@@ -1009,3 +1009,67 @@ code.mcp-key-value {
     color: #888;
 }
 .versions-error { color: #ff6b6b; }
+
+/* ══════════════════════════════════════════════════════════════
+   ADMIN pages (.admin-*)
+   ══════════════════════════════════════════════════════════════ */
+
+.admin-page {
+    padding: 32px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.admin-page h1 {
+    color: #fff;
+    font-size: 24px;
+    margin: 0 0 24px;
+}
+
+.admin-table-wrapper {
+    border: 1px solid #2a2a3e;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.admin-table thead { background: #1a1a2e; }
+.admin-table th {
+    color: #888;
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.admin-table td {
+    padding: 10px 14px;
+    color: #ccc;
+    border-top: 1px solid #2a2a3e;
+}
+.admin-table tbody tr:hover { background: #1e1e2e; }
+
+.admin-cell-mono {
+    font-family: monospace;
+    font-size: 12px;
+    color: #888;
+}
+
+.admin-footer {
+    margin-top: 16px;
+    color: #888;
+    font-size: 13px;
+}
+
+.admin-loading,
+.admin-error {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+}
+.admin-error { color: #ff6b6b; }

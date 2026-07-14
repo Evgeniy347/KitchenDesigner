@@ -1,0 +1,100 @@
+@page "/admin/users"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "Admin")]
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using KitchenServer.Web.Data
+@inject UserManager<IdentityUser> UserManager
+@inject IDbContextFactory<AppDbContext> DbFactory
+@inject KitchenServer.Web.Services.ImpersonationService Impersonation
+
+<PageTitle>Пользователи — Admin</PageTitle>
+
+<div class="admin-page">
+    <h1>Пользователи</h1>
+
+    @if (_loading)
+    {
+        <p class="admin-loading">Загрузка...</p>
+    }
+    else if (!string.IsNullOrEmpty(_error))
+    {
+        <p class="admin-error">@_error</p>
+    }
+    else
+    {
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>ID</th>
+                        <th>Проектов</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in _users)
+                    {
+                        <tr>
+                            <td>@u.Email</td>
+                            <td class="admin-cell-mono">@u.Id[..8]...</td>
+                            <td>@u.ProjectCount</td>
+                            <td>
+                                <form method="post" action="/admin/impersonate/@u.Id" class="admin-impersonate-form">
+                                    <AntiforgeryToken />
+                                    <button type="submit" class="admin-impersonate-btn" title="Войти как @u.Email">
+                                        <i class="bi bi-person-badge"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="admin-footer">
+            Всего пользователей: <strong>@_users.Count</strong>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<UserRow> _users = new();
+    private string _error = "";
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        _loading = true;
+        _error = "";
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var rows = await UserManager.Users
+                .OrderBy(u => u.Email)
+                .Select(u => new UserRow(
+                    u.Id,
+                    u.Email ?? "",
+                    db.Projects.Count(p => p.UserId == u.Id && !p.IsDeleted)))
+                .ToListAsync();
+            _users.AddRange(rows);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Не удалось загрузить список: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private record UserRow(string Id, string Email, int ProjectCount);
+}
