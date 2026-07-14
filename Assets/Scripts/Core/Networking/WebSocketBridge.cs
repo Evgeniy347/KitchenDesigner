@@ -24,7 +24,7 @@ namespace KitchenDesigner.Core.MCP
         private volatile bool _running;
 
 #if UNITY_WEBGL
-        private string _gameObjectName;
+        private string _gameObjectName = string.Empty;
 
         [DllImport("__Internal")]
         private static extern void WebSocketConnect(string url, string gameObjectName);

@@ -10,30 +10,30 @@ namespace KitchenDesigner.Core.Networking
     [Serializable]
     public class ServerProjectInfo
     {
-        public string id;
-        public string name;
-        public string createdAt;
-        public string updatedAt;
+        public string id = string.Empty;
+        public string name = string.Empty;
+        public string createdAt = string.Empty;
+        public string updatedAt = string.Empty;
         public int version;
     }
 
     [Serializable]
     public class ServerProjectDetail
     {
-        public string id;
-        public string name;
-        public string jsonData;
+        public string id = string.Empty;
+        public string name = string.Empty;
+        public string jsonData = string.Empty;
     }
 
     [Serializable]
-    internal class ProjectListWrapper { public List<ServerProjectInfo> items; }
+    internal class ProjectListWrapper { public List<ServerProjectInfo> items = new(); }
 
     [Serializable]
     internal class ServerConfigResponse { public bool serverSaveEnabled; }
 
     public class ProjectApiClient : MonoBehaviour
     {
-        public static ProjectApiClient Instance { get; private set; }
+        public static ProjectApiClient? Instance { get; private set; }
 
         /// <summary>Set to true after FetchConfig confirms the server has save enabled.</summary>
         public static bool Enabled { get; private set; }
@@ -154,7 +154,7 @@ namespace KitchenDesigner.Core.Networking
 
                 CurrentProjectId = detail.id;
                 CurrentProjectName = detail.name ?? "Без имени";
-                onSuccess?.Invoke(detail.name, detail.jsonData);
+                onSuccess?.Invoke(detail.name ?? "", detail.jsonData ?? "");
             }
         }
 
@@ -249,10 +249,10 @@ namespace KitchenDesigner.Core.Networking
         }
 
         [Serializable]
-        private class CreateRequestBody { public string name; }
+        private class CreateRequestBody { public string name = string.Empty; }
 
         [Serializable]
-        private class UpdateRequestBody { public string jsonData; public string lockGuid; }
+        private class UpdateRequestBody { public string jsonData = string.Empty; public string lockGuid = string.Empty; }
     }
 }
 #endif
