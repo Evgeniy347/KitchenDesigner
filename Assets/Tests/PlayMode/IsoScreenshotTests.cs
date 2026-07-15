@@ -232,9 +232,9 @@ public class IsoScreenshotTests
     // ── Table isometric screenshot ──────────────────────────
 
     [UnityTest]
-    public IEnumerator IsoTable_1200x750x600()
+    public IEnumerator IsoTable_2000x750x1000()
     {
-        var dims = new Vector3Int(1200, 750, 600);
+        var dims = new Vector3Int(2000, 750, 1000);
         Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
         var go = ElementFactory.CreateTable(dims, "IsoTable", pos);
         _spawned.Add(go);
@@ -245,7 +245,7 @@ public class IsoScreenshotTests
         var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
         _spawned.Add(camGo);
 
-        yield return RenderToPng(cam, "iso_table_1200x750x600.png");
+        yield return RenderToPng(cam, "iso_table_2000x750x1000.png");
 
         Object.DestroyImmediate(camGo);
     }
@@ -253,9 +253,9 @@ public class IsoScreenshotTests
     // ─ RadiusTable isometric screenshots ───────────────────
 
     [UnityTest]
-    public IEnumerator IsoRadiusTable_1200x750x600()
+    public IEnumerator IsoRadiusTable_2000x750x1000()
     {
-        var dims = new Vector3Int(1200, 750, 600);
+        var dims = new Vector3Int(2000, 750, 1000);
         Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
         var go = ElementFactory.CreateRadiusTable(dims, "IsoRadiusTable", pos);
         _spawned.Add(go);
@@ -267,7 +267,7 @@ public class IsoScreenshotTests
         var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
         _spawned.Add(camGo);
 
-        yield return RenderToPng(cam, "iso_radius_table_1200x750x600.png");
+        yield return RenderToPng(cam, "iso_radius_table_2000x750x1000.png");
 
         Object.DestroyImmediate(camGo);
     }
