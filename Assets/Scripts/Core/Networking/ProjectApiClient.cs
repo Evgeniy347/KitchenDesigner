@@ -31,6 +31,9 @@ namespace KitchenDesigner.Core.Networking
     [Serializable]
     internal class ServerConfigResponse { public bool serverSaveEnabled; }
 
+    [Serializable]
+    internal class ServerErrorResponse { public string error = string.Empty; }
+
     public class ProjectApiClient : MonoBehaviour
     {
         public static ProjectApiClient? Instance { get; private set; }
@@ -179,7 +182,9 @@ namespace KitchenDesigner.Core.Networking
 
                 if (req.result != UnityWebRequest.Result.Success)
                 {
-                    onError?.Invoke(req.responseCode == 401 ? "Требуется вход" : req.error);
+                    var errorText = ParseServerError(req.downloadHandler.text);
+                    onError?.Invoke(!string.IsNullOrEmpty(errorText) ? errorText
+                        : req.responseCode == 401 ? "Требуется вход" : req.error);
                     yield break;
                 }
                 onSuccess?.Invoke();
@@ -206,7 +211,9 @@ namespace KitchenDesigner.Core.Networking
 
                 if (req.result != UnityWebRequest.Result.Success)
                 {
-                    onError?.Invoke(req.responseCode == 401 ? "Требуется вход" : req.error);
+                    var errorText = ParseServerError(req.downloadHandler.text);
+                    onError?.Invoke(!string.IsNullOrEmpty(errorText) ? errorText
+                        : req.responseCode == 401 ? "Требуется вход" : req.error);
                     yield break;
                 }
 
@@ -230,7 +237,9 @@ namespace KitchenDesigner.Core.Networking
 
                 if (req.result != UnityWebRequest.Result.Success)
                 {
-                    onError?.Invoke(req.error);
+                    var errorText = ParseServerError(req.downloadHandler.text);
+                    onError?.Invoke(!string.IsNullOrEmpty(errorText) ? errorText
+                        : req.responseCode == 401 ? "Требуется вход" : req.error);
                     yield break;
                 }
             }
@@ -253,6 +262,19 @@ namespace KitchenDesigner.Core.Networking
 
         [Serializable]
         private class UpdateRequestBody { public string jsonData = string.Empty; public string lockGuid = string.Empty; }
+
+        private static string ParseServerError(string body)
+        {
+            if (string.IsNullOrEmpty(body)) return string.Empty;
+            try
+            {
+                var errorObj = JsonUtility.FromJson<ServerErrorResponse>(body);
+                if (errorObj != null && !string.IsNullOrEmpty(errorObj.error))
+                    return errorObj.error;
+            }
+            catch { }
+            return body;
+        }
     }
 }
 #endif
