@@ -11,8 +11,7 @@ namespace KitchenDesigner.Core
             // Ограничение FPS теперь динамическое — им управляет FrameRateManager
             // (активный FPS при активности, «почти ноль» в простое).
             GameContext.InitializeWithDefaults();
-            if (KitchenSettings.Instance != null)
-                KitchenSettings.Instance.Load();
+            // Настройки загружаются вместе с проектом через SaveLoadManager.LoadLastSession().
             // Внешние текстуры грузим ДО загрузки сцены (Start → LoadLastSession),
             // иначе сохранённые materialId не найдут свой декор в каталоге.
             ExternalTextureCatalog.LoadAll();

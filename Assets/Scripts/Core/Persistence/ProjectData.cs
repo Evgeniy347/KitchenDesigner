@@ -25,6 +25,10 @@ namespace KitchenDesigner.Core
         public CommandRecord[] undoHistory = new CommandRecord[0];
         public CommandRecord[] redoHistory = new CommandRecord[0];
 
+        /// <summary>Настройки кухни (сетка, снап, автосейв, графика…).
+        /// null у старых сейвов — тогда настройки берутся из умолчаний ScriptableObject.</summary>
+        public KitchenSettingsData? settings = null;
+
         public ProjectData() { }
 
         public ProjectData(IEnumerable<ElementData> items)
@@ -48,5 +52,23 @@ namespace KitchenDesigner.Core
         public bool valid;
         public float targetX, targetY, targetZ;
         public float angleX, angleY, distance;
+    }
+
+    /// <summary>Сериализуемые настройки кухни (сетка, снап, автосейв, графика…).</summary>
+    [System.Serializable]
+    public class KitchenSettingsData
+    {
+        public int gridStep;
+        public bool gridEnabled;
+        public bool snapEnabled;
+        public float snapThreshold;
+        public bool blockOnViolation;
+        public bool autoSave;
+        public int autoSaveInterval;
+        public bool spatialGrid;
+        public bool windowedMode;
+        public bool edgeOutline;
+        public bool wallsEnabled;
+        public bool lowerNearWalls;
     }
 }

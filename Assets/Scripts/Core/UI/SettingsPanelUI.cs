@@ -101,55 +101,55 @@ namespace KitchenDesigner.Core.UI
             float y = ContentTopY;
 
             AddToggleRow(t, ref y, "Сетка", s.GridEnabled,
-                v => { s.GridEnabled = v; s.Save(); });
+                v => { s.GridEnabled = v; });
 
             AddInputRow(t, ref y, "Шаг сетки, мм", s.GridStep.ToString(),
                 TMP_InputField.ContentType.IntegerNumber,
                 (TMP_InputField f) =>
                 {
-                    if (int.TryParse(f.text, out int v)) { s.GridStep = v; f.text = s.GridStep.ToString(); s.Save(); }
+                    if (int.TryParse(f.text, out int v)) { s.GridStep = v; f.text = s.GridStep.ToString(); }
                 }, s.GridStep.ToString());
 
             y -= 6;
             AddToggleRow(t, ref y, "Снэппинг", s.SnapEnabled,
-                v => { s.SnapEnabled = v; s.Save(); });
+                v => { s.SnapEnabled = v; });
 
             AddInputRow(t, ref y, "Порог снэпа, мм", s.SnapThreshold.ToString("F0"),
                 TMP_InputField.ContentType.DecimalNumber,
                 (TMP_InputField f) =>
                 {
-                    if (float.TryParse(f.text, out float v)) { s.SnapThreshold = v; f.text = s.SnapThreshold.ToString("F0"); s.Save(); }
+                    if (float.TryParse(f.text, out float v)) { s.SnapThreshold = v; f.text = s.SnapThreshold.ToString("F0"); }
                 }, s.SnapThreshold.ToString("F0"));
 
             y -= 6;
             AddToggleRow(t, ref y, "Блокировать ошибки", s.BlockOnViolation,
-                v => { s.BlockOnViolation = v; s.Save(); });
+                v => { s.BlockOnViolation = v; });
 
             AddToggleRow(t, ref y, "Автосохранение", s.AutoSave,
-                v => { s.AutoSave = v; s.Save(); });
+                v => { s.AutoSave = v; });
 
             AddInputRow(t, ref y, "Интервал автосейва, с", s.AutoSaveInterval.ToString(),
                 TMP_InputField.ContentType.IntegerNumber,
                 (TMP_InputField f) =>
                 {
-                    if (int.TryParse(f.text, out int v)) { s.AutoSaveInterval = v; f.text = s.AutoSaveInterval.ToString(); s.Save(); }
+                    if (int.TryParse(f.text, out int v)) { s.AutoSaveInterval = v; f.text = s.AutoSaveInterval.ToString(); }
                 }, s.AutoSaveInterval.ToString());
 
             y -= 6;
             AddToggleRow(t, ref y, "Пространственная сетка", s.SpatialGrid,
-                v => { s.SpatialGrid = v; s.Save(); });
+                v => { s.SpatialGrid = v; });
 
             AddToggleRow(t, ref y, "Оконный режим", s.WindowedMode,
-                v => { s.WindowedMode = v; s.Save(); DisplaySettings.ApplyWindowMode(); });
+                v => { s.WindowedMode = v; DisplaySettings.ApplyWindowMode(); });
 
             AddToggleRow(t, ref y, "Контур (чёрные рёбра)", s.EdgeOutline,
-                v => { s.EdgeOutline = v; s.Save(); });
+                v => { s.EdgeOutline = v; });
 
             AddToggleRow(t, ref y, "Стены", s.WallsEnabled,
-                v => { s.WallsEnabled = v; s.Save(); });
+                v => { s.WallsEnabled = v; });
 
             AddToggleRow(t, ref y, "Опускать ближние стены", s.LowerNearWalls,
-                v => { s.LowerNearWalls = v; s.Save(); });
+                v => { s.LowerNearWalls = v; });
         }
 
         // ── Tab: Графика ────────────────────────────────────

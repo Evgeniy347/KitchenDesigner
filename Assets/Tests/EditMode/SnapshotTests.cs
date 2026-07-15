@@ -303,7 +303,6 @@ public class SnapshotTests
         gs.AutoSave = false; gs.AutoSaveInterval = 60;
         gs.SpatialGrid = false; gs.WindowedMode = true;
         gs.EdgeOutline = false; gs.WallsEnabled = true; gs.LowerNearWalls = false;
-        gs.Save();
 
         var json = gs.GetSettingsJson();
         Snapshot.Match(json, "settings_default");
@@ -318,7 +317,6 @@ public class SnapshotTests
         gs.AutoSave = true; gs.AutoSaveInterval = 120;
         gs.SpatialGrid = true; gs.WindowedMode = false;
         gs.EdgeOutline = true; gs.WallsEnabled = false; gs.LowerNearWalls = true;
-        gs.Save();
 
         var json = gs.GetSettingsJson();
         Snapshot.Match(json, "settings_custom");

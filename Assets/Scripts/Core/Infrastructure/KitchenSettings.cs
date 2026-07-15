@@ -101,9 +101,9 @@ namespace KitchenDesigner.Core
             set => _lowerNearWalls = value;
         }
 
-        public void Save()
+        public KitchenSettingsData ToData()
         {
-            var data = new SettingsData
+            return new KitchenSettingsData
             {
                 gridStep = _gridStep,
                 gridEnabled = _gridEnabled,
@@ -115,12 +115,26 @@ namespace KitchenDesigner.Core
                 spatialGrid = _spatialGrid,
                 windowedMode = _windowedMode,
                 edgeOutline = _edgeOutline,
-                wallsHidden = !_wallsEnabled,
+                wallsEnabled = _wallsEnabled,
                 lowerNearWalls = _lowerNearWalls
             };
-            var json = JsonUtility.ToJson(data);
-            PlayerPrefs.SetString("KitchenSettings", json);
-            PlayerPrefs.Save();
+        }
+
+        public void ApplyFrom(KitchenSettingsData? data)
+        {
+            if (data == null) return;
+            _gridStep = Mathf.Max(1, data.gridStep);
+            _gridEnabled = data.gridEnabled;
+            _snapEnabled = data.snapEnabled;
+            _snapThreshold = Mathf.Max(1f, data.snapThreshold);
+            _blockOnViolation = data.blockOnViolation;
+            _autoSave = data.autoSave;
+            _autoSaveInterval = Mathf.Max(10, data.autoSaveInterval);
+            _spatialGrid = data.spatialGrid;
+            _windowedMode = data.windowedMode;
+            _edgeOutline = data.edgeOutline;
+            _wallsEnabled = data.wallsEnabled;
+            _lowerNearWalls = data.lowerNearWalls;
         }
 
         /// <summary>Возвращает текущий JSON настроек (для снапшот-тестов).</summary>
@@ -142,27 +156,6 @@ namespace KitchenDesigner.Core
                 lowerNearWalls = _lowerNearWalls
             };
             return JsonUtility.ToJson(data, true);
-        }
-
-        public void Load()
-        {
-            if (!PlayerPrefs.HasKey("KitchenSettings"))
-                return;
-            var json = PlayerPrefs.GetString("KitchenSettings");
-            if (string.IsNullOrEmpty(json)) return;
-            var data = JsonUtility.FromJson<SettingsData>(json);
-            _gridStep = Mathf.Max(1, data.gridStep);
-            _gridEnabled = data.gridEnabled;
-            _snapEnabled = data.snapEnabled;
-            _snapThreshold = Mathf.Max(1f, data.snapThreshold);
-            _blockOnViolation = data.blockOnViolation;
-            _autoSave = data.autoSave;
-            _autoSaveInterval = Mathf.Max(10, data.autoSaveInterval);
-            _spatialGrid = data.spatialGrid;
-            _windowedMode = data.windowedMode;
-            _edgeOutline = data.edgeOutline;
-            _wallsEnabled = !data.wallsHidden;
-            _lowerNearWalls = data.lowerNearWalls;
         }
 
         [System.Serializable]
