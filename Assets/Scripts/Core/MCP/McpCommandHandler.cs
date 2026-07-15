@@ -85,6 +85,7 @@ namespace KitchenDesigner.Core.MCP
                     case "set_element_lock": return HandleSetElementLock(request);
                     case "set_facade_mode": return HandleSetFacadeMode(request);
                     case "set_drawer_properties": return HandleSetDrawerProperties(request);
+                    case "set_table_properties": return HandleSetTableProperties(request);
                     case "cycle_drawer_animation": return HandleCycleDrawerAnimation(request);
                     case "set_material": return HandleSetMaterial(request);
                     case "list_materials": return HandleListMaterials(request);
@@ -301,6 +302,7 @@ namespace KitchenDesigner.Core.MCP
             var gaps = allElements != null ? ComputeAxisGaps(el, allElements) : null;
             var radial = el as RadialShelfElement;
             var drawer = el as DrawerElement;
+            var table = el as TableElement;
             FacadeValidationData? facadeValidation = includeFacadeValidation && el is FacadeElement fe && allElements != null
                 ? ComputeFacadeValidation(fe, allElements)
                 : (FacadeValidationData?)null;
@@ -339,6 +341,10 @@ namespace KitchenDesigner.Core.MCP
                     attachedFacadeName = drawer.AttachedFacadeName,
                     doubleState = drawer.DoubleState.ToString(),
                     isOpen = drawer.IsOpen
+                } : null,
+                table = table != null ? new TableInfo
+                {
+                    legInsetMM = table.LegInsetMM
                 } : null
             };
         }
@@ -785,6 +791,28 @@ namespace KitchenDesigner.Core.MCP
                     drawer_type = p.drawer_type, drawer_length = length, drawer_color = drawerColor.ToString(),
                     path = GetGameObjectPath(goD), posX = posD.x, posY = posD.y, posZ = posD.z,
                     hasViolations = HasViolations(elD) });
+            }
+
+            if (p.is_table)
+            {
+                var dimsT = new Vector3Int(
+                    p.width > 0 ? p.width : 1200,
+                    p.height > 0 ? p.height : 750,
+                    p.depth > 0 ? p.depth : 600);
+                var posT = new Vector3(p.x, p.y, p.z);
+                var goT = ElementFactory.CreateTable(dimsT, elementName, posT);
+                var tableEl = goT.GetComponent<TableElement>();
+                if (tableEl != null && p.leg_inset_mm > 0)
+                    tableEl.LegInsetMM = p.leg_inset_mm;
+                CommandStack.Execute(new CreateCommand(goT));
+                RefreshElementHighlights();
+                var elT = goT.GetComponent<KitchenElement>();
+                Debug.Log($"[MCP] Created table '{elementName}' {dimsT.x}x{dimsT.y}x{dimsT.z} legInset={p.leg_inset_mm}");
+                return McpResponse.Result(req.id, new {
+                    ok = true, name = goT.name, is_table = true,
+                    leg_inset_mm = p.leg_inset_mm,
+                    path = GetGameObjectPath(goT), posX = posT.x, posY = posT.y, posZ = posT.z,
+                    hasViolations = HasViolations(elT) });
             }
 
             var pos = new Vector3(p.x, p.y, p.z);
@@ -1747,6 +1775,25 @@ namespace KitchenDesigner.Core.MCP
 
             Debug.Log($"[MCP] Drawer '{p.name}' properties updated");
             return McpResponse.Result(req.id, BuildElementInfo(drawer, PartRegistry.GetAll(), false));
+        }
+
+        private McpResponse HandleSetTableProperties(McpRequest req)
+        {
+            var p = req.Params?.ToObject<ParamsSetTableProperties>();
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            var table = el as TableElement;
+            if (table == null) return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a table");
+
+            if (p.leg_inset_mm.HasValue)
+                table.LegInsetMM = p.leg_inset_mm.Value;
+
+            Debug.Log($"[MCP] Table '{p.name}' properties updated");
+            return McpResponse.Result(req.id, BuildElementInfo(table, PartRegistry.GetAll(), false));
         }
 
         private McpResponse HandleCycleDrawerAnimation(McpRequest req)

@@ -82,6 +82,7 @@ namespace KitchenDesigner.Core.MCP
         public List<FaceObstructionInfo>? faceObstructions; // детали вплотную перед лицевой гранью
         public List<OpeningViolationInfo>? openingViolations; // детали, пересекающие траекторию открывания
         public DrawerInfo? drawer; // свойства ящика, только для DrawerElement
+        public TableInfo? table; // свойства стола, только для TableElement
     }
 
     [Serializable]
@@ -265,5 +266,11 @@ namespace KitchenDesigner.Core.MCP
         public string attachedFacadeName = string.Empty;
         public string doubleState = string.Empty;
         public bool isOpen;
+    }
+
+    [Serializable]
+    public class TableInfo
+    {
+        public int legInsetMM;
     }
 }

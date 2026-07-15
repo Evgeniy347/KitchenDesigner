@@ -63,7 +63,7 @@ namespace KitchenDesigner.Core.MCP.Contract
 
             // ── Edit elements ─────────────────────────────────────────────────────
             new McpToolDef("create_element", "Create element",
-                "Create a new board (default), or a wall / facade / assembled facade / floor. x/y/z in METERS; width/height/depth in MILLIMETERS (defaults 800x400x18, assembled default 450x700x18). Set is_wall/is_facade/is_assembled/is_floor for other kinds. Prefer this over raw Unity object creation.",
+                "Create a new board (default), or a wall / facade / assembled facade / floor / table. x/y/z in METERS; width/height/depth in MILLIMETERS (defaults 800x400x18, assembled default 450x700x18, table default 1200x750x600). Set is_wall/is_facade/is_assembled/is_floor/is_table for other kinds. Prefer this over raw Unity object creation.",
                 McpToolKind.Write, typeof(ParamsCreateElement)),
             new McpToolDef("convert_element", "Convert element type",
                 "Change the TYPE of an existing element in place — board(part) <-> facade <-> assembled facade — keeping its name, size, position and material. Use this to turn a regular facade into an assembled (framed) one, or vice versa. NOT undoable.",
@@ -92,6 +92,9 @@ namespace KitchenDesigner.Core.MCP.Contract
             new McpToolDef("set_drawer_properties", "Set drawer properties",
                 "Change a GTV drawer's parameters: type (A/B/C/D side height), nominal length, color, internal width, double-drawer pairing and attached facade. Every field is optional — omit to keep current. Fails if the element is not a drawer. Use this instead of resize_element for drawers.",
                 McpToolKind.Write, typeof(ParamsSetDrawerProperties)),
+            new McpToolDef("set_table_properties", "Set table properties",
+                "Change a table's parameters: leg inward offset from corners along X and Z axes, in MM. Every field is optional — omit to keep current. Fails if the element is not a table.",
+                McpToolKind.Write, typeof(ParamsSetTableProperties)),
             new McpToolDef("cycle_drawer_animation", "Open / close drawer",
                 "Animate a GTV drawer: a single drawer toggles open/closed; a double drawer cycles Closed -> BothOpen -> LowerOnly -> Closed (its paired drawer and attached facades move in sync). Returns isOpen and doubleState.",
                 McpToolKind.Write, typeof(ParamsName)),

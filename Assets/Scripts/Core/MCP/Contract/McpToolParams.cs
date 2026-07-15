@@ -154,6 +154,8 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Create as a RADIAL (corner) shelf. Default false. Pair with radius.")] public bool is_radial_shelf;
         [McpParam("Create as a GTV DRAWER (sliding box). Default false. Pair with drawer_type/drawer_length/drawer_color/drawer_internal_width; width/height/depth are ignored.")]
         public bool is_drawer;
+        [McpParam("Create as a TABLE (legs + tabletop). Default false. width/height/depth are table dimensions. Pair with leg_inset_mm.")]
+        public bool is_table;
 
         [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Default A.", Enum = new[] { "A", "B", "C", "D" })]
         public string drawer_type = string.Empty;
@@ -166,6 +168,9 @@ namespace KitchenDesigner.Core.MCP.Contract
 
         [McpParam("Assembled facade only: center fill — blind (panel), glass (vitrine with glass), open (empty vitrine). Default blind.", Enum = new[] { "blind", "glass", "open" })]
         public string fill = string.Empty;
+
+        [McpParam("Table only: inward offset of legs from corners along X and Z, in MM (default 100).", Min = 0)]
+        public int leg_inset_mm = 100;
 
         [McpParam("Facade only: left gap in MM (default 2).", Name = "gap_left", Min = 0)] public int gapLeft = 2;
         [McpParam("Facade only: right gap in MM (default 2).", Name = "gap_right", Min = 0)] public int gapRight = 2;
@@ -278,5 +283,12 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Double drawer only: this box is the UPPER one.")] public bool? is_upper;
         [McpParam("Double drawer only: exact name of the paired drawer element (link both ways for sync).")] public string paired_drawer_name = string.Empty;
         [McpParam("Exact name of the facade element acting as this drawer's front — it opens/closes together with the drawer. Empty string detaches.")] public string attached_facade_name = string.Empty;
+    }
+
+    [Serializable]
+    public class ParamsSetTableProperties
+    {
+        [McpParam("Exact table element name.", Required = true)] public string name = string.Empty;
+        [McpParam("Inward offset of legs from corners along X and Z, in MM (min 0).", Min = 0)] public int? leg_inset_mm;
     }
 }
