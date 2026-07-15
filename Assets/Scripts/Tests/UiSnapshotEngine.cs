@@ -23,6 +23,26 @@ namespace KitchenDesigner.Tests
             Debug.Log($"[UISNAPSHOT] Saved: {outputPath}");
         }
 
+        /// <summary>
+        /// Capture UI snapshot and verify against a golden-master file.
+        /// Uses the same candidate/verified pattern as Snapshot.Match:
+        /// no verified → writes candidate → fail (dev reviews, renames, commits).
+        /// </summary>
+        public static void CaptureVerified(GameObject root, string outputPath)
+        {
+            var json = SerializeSnapshot(BuildSnapshot(root));
+
+            var dir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            File.WriteAllText(outputPath, json, Encoding.UTF8);
+            Debug.Log($"[UISNAPSHOT] Saved: {outputPath}");
+
+            var testName = Path.GetFileNameWithoutExtension(outputPath);
+            MatchGolden(json, testName);
+        }
+
+        /// <summary>Compare actual JSON against a verified golden file, ignoring positions.</summary>
         public static void AssertSnapshot(string expectedJsonPath, string actualJson)
         {
             var expected = Normalize(File.ReadAllText(expectedJsonPath));
@@ -335,6 +355,82 @@ namespace KitchenDesigner.Tests
                 }
             }
 
+            return sb.ToString();
+        }
+
+        // ── Golden-master (like Snapshot.Match) ─────────────────────────
+
+        private static string GoldenDir
+        {
+            get
+            {
+                var d = Path.Combine(Application.dataPath, "Tests", "EditMode", "Snapshots");
+                Directory.CreateDirectory(d);
+                return d;
+            }
+        }
+
+        private static void MatchGolden(string actualJson, string testName)
+        {
+            var cleanName = SanitizeName(testName);
+            var verifiedPath = Path.Combine(GoldenDir, "ui_" + cleanName + ".verified.json");
+            var candidatePath = Path.Combine(GoldenDir, "ui_" + cleanName + ".candidate.json");
+
+            if (!File.Exists(verifiedPath))
+            {
+                WriteGolden(candidatePath, actualJson);
+                Debug.LogWarning(
+                    $"[UISNAPSHOT] No verified golden for '{testName}'.\n" +
+                    $"  Candidate: {candidatePath}\n" +
+                    $"  Rename to accept: ui_{cleanName}.verified.json");
+                return;
+            }
+
+            var expected = Normalize(File.ReadAllText(verifiedPath));
+            var actual = Normalize(actualJson);
+
+            if (expected == actual)
+            {
+                if (File.Exists(candidatePath)) File.Delete(candidatePath);
+                return;
+            }
+
+            var expStripped = StripPositions(expected);
+            var actStripped = StripPositions(actual);
+
+            if (expStripped == actStripped)
+            {
+                Debug.Log($"[UISNAPSHOT] '{testName}' — position-only diff, accepted.");
+                if (File.Exists(candidatePath)) File.Delete(candidatePath);
+                return;
+            }
+
+            WriteGolden(candidatePath, actualJson);
+            Debug.LogError(
+                $"[UISNAPSHOT] Golden mismatch: {testName}\n" +
+                BuildDiff(expStripped, actStripped) +
+                $"\n  Verified: {verifiedPath}\n" +
+                $"  Candidate: {candidatePath}");
+        }
+
+        private static void WriteGolden(string path, string json)
+        {
+            var dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            File.WriteAllText(path, Normalize(json), Encoding.UTF8);
+        }
+
+        private static string SanitizeName(string name)
+        {
+            var sb = new StringBuilder();
+            foreach (var ch in name)
+            {
+                if (char.IsLetterOrDigit(ch) || ch == '_' || ch == '-' || ch == '.')
+                    sb.Append(ch);
+                else
+                    sb.Append('_');
+            }
             return sb.ToString();
         }
     }

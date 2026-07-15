@@ -139,7 +139,7 @@ public class ElementPropertyDiagramTests
         Debug.Log($"[SCREENSHOT] Saved: {path} ({panelW}x{panelH})");
 
         var jsonPath = Path.ChangeExtension(path, ".json");
-        UiSnapshotEngine.Capture(panelT.gameObject, jsonPath);
+        UiSnapshotEngine.CaptureVerified(panelT.gameObject, jsonPath);
 
         teardownPanel?.Invoke();
 

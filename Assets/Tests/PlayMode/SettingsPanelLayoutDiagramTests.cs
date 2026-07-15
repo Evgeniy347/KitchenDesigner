@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// PlayMode: строим SettingsPanelUI, даём Unity отрисовать UI собственным
@@ -88,5 +89,8 @@ public class SettingsPanelLayoutDiagramTests
         Assert.IsTrue(File.Exists(path), $"PNG was not created at {path}");
         Assert.IsTrue(new FileInfo(path).Length > 0, "PNG file is empty");
         Debug.Log($"[DIAGRAM] Saved: {path}");
+
+        var jsonPath = Path.ChangeExtension(path, ".json");
+        UiSnapshotEngine.CaptureVerified(_canvasGo, jsonPath);
     }
 }

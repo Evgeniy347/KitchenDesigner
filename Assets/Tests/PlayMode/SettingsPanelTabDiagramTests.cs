@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class SettingsPanelTabDiagramTests
 {
@@ -95,6 +96,9 @@ public class SettingsPanelTabDiagramTests
         Assert.IsTrue(File.Exists(path), $"PNG was not created at {path}");
         Assert.IsTrue(new FileInfo(path).Length > 0, "PNG file is empty");
         Debug.Log($"[SCREENSHOT] Saved: {path}");
+
+        var jsonPath = Path.ChangeExtension(path, ".json");
+        UiSnapshotEngine.CaptureVerified(_canvasGo, jsonPath);
     }
 
     [UnityTest]
