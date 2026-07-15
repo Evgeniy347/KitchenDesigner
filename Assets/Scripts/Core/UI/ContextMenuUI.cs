@@ -16,7 +16,7 @@ namespace KitchenDesigner.Core.UI
 
         private TMP_InputField? _name, _w, _h, _d, _radius,
             _gapLeft, _gapRight, _gapTop, _gapBottom,
-            _x, _y, _z, _rx, _ry, _rz;
+            _x, _y, _z, _rx, _ry, _rz, _legInset;
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
@@ -51,6 +51,7 @@ namespace KitchenDesigner.Core.UI
             public bool drawerOnly;       // показывать только для ящиков
             public bool assembledOnly;    // показывать только для сборного фасада
             public bool radialOnly;       // показывать только для радиусной полки
+            public bool tableOnly;        // показывать только для столов
             public GameObject toggleGO;   // объект, который включать/выключать по режиму
             public System.Func<bool>? visibleWhen; // доп. условие видимости (состояние элемента)
         }
@@ -203,6 +204,9 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, 0), new Vector2(332, 28), OnMaterialSelected);
             AddRow(28f, ActionGap, _materialDropdown.GetComponent<RectTransform>());
 
+            // Сдвиг ножек внутрь стола (только для столов).
+            _legInset = TableFieldRow(panel.transform, "Сдвиг ножек, мм");
+
             // Позиция и поворот — компактная раскладка 3 колонки.
             _x = TriField(panel.transform, "X, м", TriCol1);
             _y = TriField(panel.transform, "Y, м", TriCol2);
@@ -214,7 +218,7 @@ namespace KitchenDesigner.Core.UI
             _rz = TriField(panel.transform, "Z°", TriCol3);
             TriEndRow();
 
-            foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
+            foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.DecimalNumber;
 
@@ -270,7 +274,7 @@ namespace KitchenDesigner.Core.UI
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
             closeBtn.transform.SetAsLastSibling();
 
-            Layout(isFacade: false, isAssembled: false, isRadial: false, isDrawer: false);
+            Layout(isFacade: false, isAssembled: false, isRadial: false, isDrawer: false, isTable: false);
             _root!.SetActive(false);
 
             if (SelectionManager.Instance != null)
@@ -432,6 +436,13 @@ namespace KitchenDesigner.Core.UI
             });
         }
 
+        private void AddTableRow(float height, float gapAfter, params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, tableOnly = true });
+        }
+
         // Строка «подпись + поле» только для ящика (обе части в одной drawer-строке —
         // иначе подпись и поле раскладывались бы разными циклами и разъезжались).
         private TMP_InputField DrawerFieldRow(Transform parent, string label)
@@ -441,6 +452,16 @@ namespace KitchenDesigner.Core.UI
             var field = UIFactory.CreateInputField("F_" + label, parent, "",
                 new Vector2(FieldX, 0), new Vector2(120, FieldH));
             AddDrawerRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
+            return field;
+        }
+
+        private TMP_InputField TableFieldRow(Transform parent, string label)
+        {
+            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
+                new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
+            var field = UIFactory.CreateInputField("F_" + label, parent, "",
+                new Vector2(FieldX, 0), new Vector2(120, FieldH));
+            AddTableRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
 
@@ -473,7 +494,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Раскладка сверху вниз ───────────────────────────────────────
 
-        private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer)
+        private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer, bool isTable)
         {
             float cursor = TopPad;
             float contentBottom = TopPad;
@@ -483,6 +504,7 @@ namespace KitchenDesigner.Core.UI
                     && (!row.assembledOnly || isAssembled)
                     && (!row.radialOnly || isRadial)
                     && (!row.drawerOnly || isDrawer)
+                    && (!row.tableOnly || isTable)
                     && (row.visibleWhen == null || row.visibleWhen());
 
                 if (row.toggleGO != null)
@@ -519,7 +541,7 @@ namespace KitchenDesigner.Core.UI
 
         private bool IsAnyFieldFocused()
         {
-            foreach (var f in new[] { _name, _w, _h, _d, _radius, _drawerWidth, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z, _rx, _ry, _rz })
+            foreach (var f in new[] { _name, _w, _h, _d, _radius, _drawerWidth, _legInset, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z, _rx, _ry, _rz })
                 if (f != null && f.isFocused) return true;
             return false;
         }
@@ -563,6 +585,10 @@ namespace KitchenDesigner.Core.UI
                 MaybeRefresh(_gapTop, facade.GapTop.ToString());
                 MaybeRefresh(_gapBottom, facade.GapBottom.ToString());
             }
+
+            var table = _target as TableElement;
+            if (table != null && _legInset != null)
+                MaybeRefresh(_legInset, table.LegInsetMM.ToString());
         }
 
         /// <summary>Обновить поле, если оно не в фокусе (юзер не редактирует).
@@ -648,6 +674,10 @@ namespace KitchenDesigner.Core.UI
                     SetDrawerFacadeValue(drawer.AttachedFacadeName);
                 }
 
+                var table = element as TableElement;
+                if (table != null && _legInset != null)
+                    _legInset.text = table.LegInsetMM.ToString();
+
                 // Габариты ящика (контурный бокс) вычисляются из типа/длины/ширины —
                 // прямое редактирование недоступно, поля затемняются.
                 SetDimensionFieldsEditable(!isDrawer);
@@ -662,8 +692,8 @@ namespace KitchenDesigner.Core.UI
                 }
 
                 // Пересчитываем раскладку под режим: секция зазоров показывается
-                // только для фасадов, радиус — только для радиусной полки, панель сама подгоняется по высоте.
-                Layout(isFacade, assembled != null, isRadial, isDrawer);
+                // только для фасадов, радиус — только для радиусной полки, сдвиг ножек — только для столов, панель сама подгоняется по высоте.
+                Layout(isFacade, assembled != null, isRadial, isDrawer, isTable);
 
                 RefreshTransformFields();
                 _transparentToggle!.SetIsOnWithoutNotify(element.Transparent);
@@ -703,6 +733,7 @@ namespace KitchenDesigner.Core.UI
 
             var radial = _target as RadialShelfElement;
             var drawer = _target as DrawerElement;
+            var table = _target as TableElement;
             if (radial != null)
             {
                 radial.Radius = ParseInt(_radius!.text, radial.Radius);
@@ -718,6 +749,9 @@ namespace KitchenDesigner.Core.UI
                     ParseInt(_h!.text, oldDims.y),
                     ParseInt(_d!.text, oldDims.z));
             }
+
+            if (table != null && _legInset != null)
+                table.LegInsetMM = ParseInt(_legInset.text, table.LegInsetMM);
 
             var facade = _target as FacadeElement;
             if (facade != null)
