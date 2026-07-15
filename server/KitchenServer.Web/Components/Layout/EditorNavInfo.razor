@@ -6,13 +6,20 @@
 @* Interactive island in the static top-nav: shows the open project plus its MCP
    project key + a status light (red until an agent authenticates, then green).
    Empty on every other page. *@
-@if (NavState.HasProject)
+@if (NavState.HasProject || NavState.IsDemo)
 {
     <div class="editor-nav-info">
+        @if (NavState.IsDemo)
+        {
+            <span class="editor-nav-demo-badge">Демо-пример</span>
+        }
         <span class="editor-project-name">@NavState.ProjectName</span>
-        <span class="editor-project-id" title="Project ID: @NavState.ProjectId">
-            ID: @NavState.ProjectId!.Value.ToString()[..8]
-        </span>
+        @if (!NavState.IsDemo && NavState.ProjectId.HasValue)
+        {
+            <span class="editor-project-id" title="Project ID: @NavState.ProjectId">
+                ID: @NavState.ProjectId!.Value.ToString()[..8]
+            </span>
+        }
         @if (NavState.LockLost)
         {
             <span class="editor-lock-lost" title="Проект открыт в другой вкладке — изменения не сохраняются">Изменения не сохраняются</span>

@@ -21,6 +21,9 @@ public class EditorNavState
     /// <summary>True when another tab has taken the project lock — changes will not be saved.</summary>
     public bool LockLost { get; private set; }
 
+    /// <summary>True when the current editor tab is the demo/example project.</summary>
+    public bool IsDemo { get; private set; }
+
     /// <summary>Raised whenever anything above changes.</summary>
     public event Action? Changed;
 
@@ -47,13 +50,21 @@ public class EditorNavState
         Changed?.Invoke();
     }
 
+    public void SetDemo(bool demo)
+    {
+        if (IsDemo == demo) return;
+        IsDemo = demo;
+        Changed?.Invoke();
+    }
+
     public void Clear()
     {
-        if (ProjectName is null && ProjectId is null && McpKey is null) return;
+        if (ProjectName is null && ProjectId is null && McpKey is null && !IsDemo) return;
         ProjectName = null;
         ProjectId = null;
         McpKey = null;
         AgentConnected = false;
+        IsDemo = false;
         Changed?.Invoke();
     }
 }

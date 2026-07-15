@@ -105,6 +105,9 @@ public static class ProjectEndpoints
             if (current is null)
                 return Results.NotFound();
 
+            if (current.IsExample)
+                return Results.BadRequest(new { error = "Демо-проект нельзя сохранить." });
+
             // Validate project lock if one is held.
             if (!string.IsNullOrEmpty(current.LockGuid) && req.LockGuid != current.LockGuid)
                 return Results.Conflict(new { error = "Project is locked by another tab. Open it there or refresh." });
