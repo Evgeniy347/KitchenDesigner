@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// PlayMode: изометрические снэпшоты 3D-объектов через Camera → RenderTexture.
@@ -112,6 +113,11 @@ public class IsoScreenshotTests
         Assert.IsTrue(File.Exists(path), $"PNG was not created at {path}");
         Assert.IsTrue(new FileInfo(path).Length > 0, "PNG file is empty");
         Debug.Log($"[ISO] Saved: {path}");
+
+        var jsonPath = Path.ChangeExtension(path, ".json");
+        var canvas = UIManager.Instance?.Canvas;
+        if (canvas != null)
+            UiSnapshotEngine.Capture(canvas.gameObject, jsonPath);
 
         RenderTexture.active = null;
         cam.targetTexture = null;
@@ -268,6 +274,75 @@ public class IsoScreenshotTests
         _spawned.Add(camGo);
 
         yield return RenderToPng(cam, "iso_radius_table_2000x750x1000.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
+    // ─ Radial shelf isometric screenshot ───────────────────
+
+    [UnityTest]
+    public IEnumerator IsoRadialShelf_300()
+    {
+        // Толщина 80мм — достаточна, чтобы в изометрии была видна
+        // четверть-круглая форма (дуга + две прямые грани).
+        const int radius = 300;
+        const int thickness = 80;
+        Vector3 pos = new Vector3(0f, thickness * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateRadialShelf(radius, thickness, "IsoRadialShelf", pos);
+        _spawned.Add(go);
+        var shelf = go.GetComponent<RadialShelfElement>();
+        Assert.IsNotNull(shelf);
+
+        Vector3 size = MmToUnits(new Vector3Int(radius, thickness, radius));
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_radial_shelf_300.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
+    // ─ Radial shelf top-down screenshot ───────────────────
+    // Вид сверху под 60° — форма четверть-круглого сектора
+    // хорошо различима (дуга + две прямые грани), как на референсе.
+
+    [UnityTest]
+    public IEnumerator TopDownRadialShelf_300()
+    {
+        const int radius = 300;
+        const int thickness = 80;
+        Vector3 pos = new Vector3(0f, thickness * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateRadialShelf(radius, thickness, "TopDownRadialShelf", pos);
+        _spawned.Add(go);
+        var shelf = go.GetComponent<RadialShelfElement>();
+        Assert.IsNotNull(shelf);
+
+        Vector3 size = MmToUnits(new Vector3Int(radius, thickness, radius));
+
+        var camGo = new GameObject("TopDownCam");
+        var cam = camGo.AddComponent<Camera>();
+        cam.clearFlags = CameraClearFlags.SolidColor;
+        cam.backgroundColor = new Color(0.95f, 0.95f, 0.95f, 1f);
+        cam.orthographic = false;
+        cam.fieldOfView = 30f;
+        cam.nearClipPlane = 0.01f;
+        cam.farClipPlane = 100f;
+
+        // 60° elevation — вид сверху-сбоку, видна форма сектора.
+        float dist = Mathf.Max(size.x, size.z) * 2f;
+        float elevation = 60f * Mathf.Deg2Rad;
+        float azimuth = 45f * Mathf.Deg2Rad;
+        camGo.transform.position = pos + new Vector3(
+            Mathf.Cos(elevation) * Mathf.Cos(azimuth) * dist,
+            Mathf.Sin(elevation) * dist,
+            -Mathf.Cos(elevation) * Mathf.Sin(azimuth) * dist);
+        camGo.transform.LookAt(pos);
+        _spawned.Add(camGo);
+
+        yield return null;
+        yield return null;
+
+        yield return RenderToPng(cam, "topdown_radial_shelf_300.png");
 
         Object.DestroyImmediate(camGo);
     }

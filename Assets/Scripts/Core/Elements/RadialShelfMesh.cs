@@ -50,11 +50,12 @@ namespace KitchenDesigner.Core
                 uvs.Add(new Vector2(p.x / radius * 0.5f + 0.5f, p.z / radius * 0.5f + 0.5f));
             }
 
+            // Counter-clockwise viewed from below (normal = -Y).
             for (int i = 0; i < Segments; i++)
             {
                 triangles.Add(centerIdx);
-                triangles.Add(start + i + 1);
                 triangles.Add(start + i);
+                triangles.Add(start + i + 1);
             }
         }
 
@@ -127,7 +128,7 @@ namespace KitchenDesigner.Core
         {
             float half = height * 0.5f;
 
-            // Сторона вдоль оси X (z = 0, нормаль -Z).
+            // Side along X axis (z = 0, normal -Z). Winding: CCW viewed from -Z.
             int xStart = vertices.Count;
             vertices.Add(new Vector3(0, -half, 0));
             normals.Add(-Vector3.forward);
@@ -143,13 +144,13 @@ namespace KitchenDesigner.Core
             uvs.Add(Vector2.one);
 
             triangles.Add(xStart);
-            triangles.Add(xStart + 2);
-            triangles.Add(xStart + 1);
             triangles.Add(xStart + 1);
             triangles.Add(xStart + 2);
+            triangles.Add(xStart + 1);
             triangles.Add(xStart + 3);
+            triangles.Add(xStart + 2);
 
-            // Сторона вдоль оси Z (x = 0, нормаль -X).
+            // Side along Z axis (x = 0, normal -X). Winding: CCW viewed from -X.
             int zStart = vertices.Count;
             vertices.Add(new Vector3(0, -half, 0));
             normals.Add(-Vector3.right);
@@ -165,11 +166,11 @@ namespace KitchenDesigner.Core
             uvs.Add(Vector2.one);
 
             triangles.Add(zStart);
-            triangles.Add(zStart + 1);
             triangles.Add(zStart + 2);
             triangles.Add(zStart + 1);
+            triangles.Add(zStart + 1);
+            triangles.Add(zStart + 2);
             triangles.Add(zStart + 3);
-            triangles.Add(zStart + 2);
         }
     }
 }

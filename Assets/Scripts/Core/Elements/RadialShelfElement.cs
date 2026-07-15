@@ -9,6 +9,11 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _radius = 300;
         private bool _applying;
 
+        protected override Vector3 EffectiveScale => new Vector3(
+            _radius * AppConstants.MM_TO_UNITS,
+            DimensionsMM.y * AppConstants.MM_TO_UNITS,
+            _radius * AppConstants.MM_TO_UNITS);
+
         public int Radius
         {
             get => _radius;
@@ -35,11 +40,8 @@ namespace KitchenDesigner.Core
                 if (dims.x != r || dims.z != r)
                     DimensionsMM = new Vector3Int(r, dims.y, r);
 
-                // Меш строится в единичном размере — масштабирование через localScale.
-                transform.localScale = new Vector3(
-                    r * AppConstants.MM_TO_UNITS,
-                    dims.y * AppConstants.MM_TO_UNITS,
-                    r * AppConstants.MM_TO_UNITS);
+                // Меш строится в мировых единицах — localScale остаётся единичным.
+                transform.localScale = Vector3.one;
                 RebuildMesh();
             }
             finally
