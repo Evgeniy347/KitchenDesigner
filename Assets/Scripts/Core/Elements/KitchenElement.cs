@@ -93,9 +93,19 @@ namespace KitchenDesigner.Core
         public virtual Vector3[] GetVertices()
         {
             var size = EffectiveScale;
-            var half = size * 0.5f;
             var pos = transform.position;
             var rot = transform.rotation;
+
+            // Стена может быть опущена (режим обзора WallCutaway) — используем
+            // ПОЛНУЮ геометрию, чтобы валидация связности не зависела от камеры.
+            var wall = GetComponent<Wall>();
+            if (wall != null && wall.IsLowered)
+            {
+                size.y = wall.FullScaleY;
+                pos.y = wall.FullPosition.y;
+            }
+
+            var half = size * 0.5f;
 
             var localCorners = new Vector3[]
             {
@@ -118,9 +128,17 @@ namespace KitchenDesigner.Core
         public virtual Face[] GetFaces()
         {
             var size = EffectiveScale;
-            var half = size * 0.5f;
             var pos = transform.position;
             var rot = transform.rotation;
+
+            var wall = GetComponent<Wall>();
+            if (wall != null && wall.IsLowered)
+            {
+                size.y = wall.FullScaleY;
+                pos.y = wall.FullPosition.y;
+            }
+
+            var half = size * 0.5f;
 
             var axes = new Vector3[]
             {
