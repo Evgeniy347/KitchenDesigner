@@ -24,6 +24,8 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _modeDropdown;
         private TMP_Dropdown? _fillDropdown;
         private TMP_Dropdown? _materialDropdown;
+        private TMP_Dropdown? _tabletopMaterialDropdown;
+        private TMP_Dropdown? _legsMaterialDropdown;
         private TMP_Dropdown? _typeDropdown;
         private TMP_Dropdown? _drawerTypeDropdown, _drawerLengthDropdown, _drawerColorDropdown;
         private TMP_Dropdown? _drawerUpperLenDropdown;
@@ -35,6 +37,7 @@ namespace KitchenDesigner.Core.UI
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
         private int _applyFrame = -1;  // защита от двойного Apply
         private bool _opening;  // защита от OnSelectionChanged → Close() внутри Open()
+        private bool _currentIsTable;  // true когда текущий элемент — стол
 
         // ── Раскладка ──────────────────────────────────────────────────
         // Меню собирается один раз (Build), а позиции пересчитываются в Layout
@@ -193,16 +196,36 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, 0), new Vector2(332, 28), OnDrawerFacadeSelected);
             AddDrawerRow(28f, ActionGap, _drawerFacadeDropdown.GetComponent<RectTransform>());
 
-            // Текстура/декор (детали И фасады) — всегда видимая строка.
+            // Текстура/декор (детали И фасады) — всегда видимая строка (кроме столов).
             var matLbl = UIFactory.CreateLabel("CtxMatLbl", panel.transform, "Текстура:", 15,
                 Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
-            AddRow(RotLblH, RotLblGap, matLbl.rectTransform);
+            AddRow(RotLblH, RotLblGap, () => !_currentIsTable, matLbl.rectTransform);
 
             var matOptions = new List<string>();
             foreach (var m in MaterialCatalog.All) matOptions.Add(m.displayName);
             _materialDropdown = UIFactory.CreateDropdown("CtxMaterial", panel.transform, matOptions,
                 new Vector2(0, 0), new Vector2(332, 28), OnMaterialSelected);
-            AddRow(28f, ActionGap, _materialDropdown.GetComponent<RectTransform>());
+            AddRow(28f, ActionGap, () => !_currentIsTable, _materialDropdown.GetComponent<RectTransform>());
+
+            // Текстура столешницы (только для столов).
+            var tableTopLbl = UIFactory.CreateLabel("CtxTableTopLbl", panel.transform, "Текстура столешницы:", 15,
+                Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
+            AddTableRow(RotLblH, RotLblGap, tableTopLbl.rectTransform);
+
+            _tabletopMaterialDropdown = UIFactory.CreateDropdown("CtxTableTop", panel.transform, matOptions,
+                new Vector2(0, 0), new Vector2(332, 28), OnMaterialSelected);
+            AddTableRow(28f, ActionGap, _tabletopMaterialDropdown.GetComponent<RectTransform>());
+
+            // Текстура ножек (только для столов).
+            var tableLegsLbl = UIFactory.CreateLabel("CtxTableLegsLbl", panel.transform, "Текстура ножек:", 15,
+                Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
+            AddTableRow(RotLblH, RotLblGap, tableLegsLbl.rectTransform);
+
+            var legsOptions = new List<string>();
+            foreach (var m in MaterialCatalog.All) legsOptions.Add(m.displayName);
+            _legsMaterialDropdown = UIFactory.CreateDropdown("CtxTableLegs", panel.transform, legsOptions,
+                new Vector2(0, 0), new Vector2(332, 28), OnLegsMaterialSelected);
+            AddTableRow(28f, ActionGap, _legsMaterialDropdown.GetComponent<RectTransform>());
 
             // Сдвиг ножек внутрь стола (только для столов).
             _legInset = TableFieldRow(panel.transform, "Сдвиг ножек, мм");
@@ -377,6 +400,13 @@ namespace KitchenDesigner.Core.UI
             foreach (var rt in rects)
                 if (rt != null) AnchorTop(rt);
             _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter });
+        }
+
+        private void AddRow(float height, float gapAfter, System.Func<bool> visibleWhen, params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, visibleWhen = visibleWhen });
         }
 
         private void AddRadialRow(float height, float gapAfter, params RectTransform[] rects)
@@ -627,6 +657,7 @@ namespace KitchenDesigner.Core.UI
                 bool isDrawer = element is DrawerElement;
                 bool isTable = element is TableElement;
                 bool isRadiusTable = element is RadiusTableElement;
+                _currentIsTable = isTable || isRadiusTable;
                 if (_titleLabel != null)
                     _titleLabel.text = isRadiusTable ? "Радиусный стол" : isTable ? "Стол" : isDrawer ? "Ящик GTV" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
                 if (_typeDropdown != null)
@@ -692,11 +723,26 @@ namespace KitchenDesigner.Core.UI
 
                 if (_materialDropdown != null)
                 {
-                    // Пересобираем список каждый раз — так подгруженные в рантайме
-                    // внешние текстуры появляются без перезапуска (reload_textures).
                     RebuildMaterialOptions();
                     _materialDropdown.SetValueWithoutNotify(MaterialIndex(element.MaterialId));
                     _materialDropdown.RefreshShownValue();
+                }
+
+                var tbl = element as TableElement;
+                var rTbl = element as RadiusTableElement;
+                if (_tabletopMaterialDropdown != null && (tbl != null || rTbl != null))
+                {
+                    RebuildTabletopMaterialOptions();
+                    var topId = tbl != null ? tbl.TabletopMaterialId : rTbl!.TabletopMaterialId;
+                    _tabletopMaterialDropdown.SetValueWithoutNotify(MaterialIndex(topId));
+                    _tabletopMaterialDropdown.RefreshShownValue();
+                }
+                if (_legsMaterialDropdown != null && (tbl != null || rTbl != null))
+                {
+                    RebuildLegsMaterialOptions();
+                    var legsId = tbl != null ? tbl.LegsMaterialId : rTbl!.LegsMaterialId;
+                    _legsMaterialDropdown.SetValueWithoutNotify(MaterialIndex(legsId));
+                    _legsMaterialDropdown.RefreshShownValue();
                 }
 
                 // Пересчитываем раскладку под режим: секция зазоров показывается
@@ -727,22 +773,23 @@ namespace KitchenDesigner.Core.UI
         private void Apply()
         {
             if (_target == null) return;
+            var target = _target;
             // Правки размеров/позиции применяем к закрытой (логической) позе.
-            if (_target is FacadeElement fac) { fac.ForceClose(); UpdateDoorButton(fac); }
-            if (_target is DrawerElement dr) { dr.ForceClose(); UpdateDrawerAnimButton(dr); }
+            if (target is FacadeElement fac) { fac.ForceClose(); UpdateDoorButton(fac); }
+            if (target is DrawerElement dr) { dr.ForceClose(); UpdateDrawerAnimButton(dr); }
 
-            var oldDims = _target.DimensionsMM;
-            var oldPos = _target.transform.position;
-            var oldRot = _target.transform.rotation;
+            var oldDims = target.DimensionsMM;
+            var oldPos = target.transform.position;
+            var oldRot = target.transform.rotation;
 
             // Через DrawerLinks: переименование обновляет обратные ссылки
             // (PairedDrawerName пары, AttachedFacadeName ящиков с этим фасадом).
-            DrawerLinks.Rename(_target, string.IsNullOrWhiteSpace(_name!.text) ? "Board" : _name!.text);
+            DrawerLinks.Rename(target, string.IsNullOrWhiteSpace(_name!.text) ? "Board" : _name!.text);
 
-            var radial = _target as RadialShelfElement;
-            var drawer = _target as DrawerElement;
-            var table = _target as TableElement;
-            var radiusTable = _target as RadiusTableElement;
+            var radial = target as RadialShelfElement;
+            var drawer = target as DrawerElement;
+            var table = target as TableElement;
+            var radiusTable = target as RadiusTableElement;
             if (radial != null)
             {
                 radial.Radius = ParseInt(_radius!.text, radial.Radius);
@@ -753,7 +800,7 @@ namespace KitchenDesigner.Core.UI
             }
             else
             {
-                _target.DimensionsMM = new Vector3Int(
+                target.DimensionsMM = new Vector3Int(
                     ParseInt(_w!.text, oldDims.x),
                     ParseInt(_h!.text, oldDims.y),
                     ParseInt(_d!.text, oldDims.z));
@@ -765,7 +812,28 @@ namespace KitchenDesigner.Core.UI
             if (radiusTable != null && _legInset != null)
                 radiusTable.LegInsetMM = ParseInt(_legInset.text, radiusTable.LegInsetMM);
 
-            var facade = _target as FacadeElement;
+            // Сохраняем материал ножек (материал столешницы применяется через дропдаун).
+            if (_legsMaterialDropdown != null && _currentIsTable)
+            {
+                var legsIndex = _legsMaterialDropdown.value;
+                var legsAll = MaterialCatalog.All;
+                if (legsIndex >= 0 && legsIndex < legsAll.Count)
+                {
+                    var legDef = legsAll[legsIndex];
+                    if (table != null)
+                    {
+                        table.LegsMaterialId = legDef.id;
+                        MaterialManager.ApplyLegs(table, legDef);
+                    }
+                    else if (radiusTable != null)
+                    {
+                        radiusTable.LegsMaterialId = legDef.id;
+                        MaterialManager.ApplyLegs(radiusTable, legDef);
+                    }
+                }
+            }
+
+            var facade = target as FacadeElement;
             if (facade != null)
             {
                 facade.GapLeft = ParseInt(_gapLeft!.text, facade.GapLeft);
@@ -774,32 +842,32 @@ namespace KitchenDesigner.Core.UI
                 facade.GapBottom = ParseInt(_gapBottom!.text, facade.GapBottom);
             }
 
-            _target.transform.position = new Vector3(
+            target.transform.position = new Vector3(
                 ParseFloat(_x!.text, oldPos.x),
                 ParseFloat(_y!.text, oldPos.y),
                 ParseFloat(_z!.text, oldPos.z));
 
             var euler = oldRot.eulerAngles;
-            _target.transform.rotation = Quaternion.Euler(
+            target.transform.rotation = Quaternion.Euler(
                 ParseFloat(_rx!.text, euler.x),
                 ParseFloat(_ry!.text, euler.y),
                 ParseFloat(_rz!.text, euler.z));
 
             if (KitchenSettings.Instance.BlockOnViolation && WouldCauseViolation())
             {
-                _target.DimensionsMM = oldDims;
-                _target.transform.position = oldPos;
-                _target.transform.rotation = oldRot;
+                target.DimensionsMM = oldDims;
+                target.transform.position = oldPos;
+                target.transform.rotation = oldRot;
             }
             else
             {
-                CommandStack.Execute(new ResizeCommand(_target,
-                    oldDims, _target.DimensionsMM,
-                    oldPos, _target.transform.position,
-                    oldRot, _target.transform.rotation));
+                CommandStack.Execute(new ResizeCommand(target,
+                    oldDims, target.DimensionsMM,
+                    oldPos, target.transform.position,
+                    oldRot, target.transform.rotation));
             }
 
-            var newDims = _target.DimensionsMM;
+            var newDims = target.DimensionsMM;
             _w!.text = newDims.x.ToString();
             _h!.text = newDims.y.ToString();
             _d!.text = newDims.z.ToString();
@@ -902,15 +970,58 @@ namespace KitchenDesigner.Core.UI
             _materialDropdown!.options = opts;
         }
 
+        private void RebuildTabletopMaterialOptions()
+        {
+            var opts = new List<TMP_Dropdown.OptionData>();
+            foreach (var m in MaterialCatalog.All)
+                opts.Add(new TMP_Dropdown.OptionData(m.displayName));
+            _tabletopMaterialDropdown!.options = opts;
+        }
+
+        private void RebuildLegsMaterialOptions()
+        {
+            var opts = new List<TMP_Dropdown.OptionData>();
+            foreach (var m in MaterialCatalog.All)
+                opts.Add(new TMP_Dropdown.OptionData(m.displayName));
+            _legsMaterialDropdown!.options = opts;
+        }
+
         private void OnMaterialSelected(int index)
         {
             if (_target == null) return;
             var all = MaterialCatalog.All;
             if (index < 0 || index >= all.Count) return;
 
-            MaterialManager.Apply(_target, all[index]); // задаёт MaterialId + декор
-            // Выделенный элемент перекрашен подсветкой выделения — обновляем её,
-            // чтобы поверх лёг новый декор; невыделенные обновит RefreshHighlights.
+            if (_currentIsTable)
+            {
+                var def = all[index];
+                if (_target is TableElement tableEl)
+                    MaterialManager.ApplyTabletop(tableEl, def);
+                else if (_target is RadiusTableElement rtEl)
+                    MaterialManager.ApplyTabletop(rtEl, def);
+            }
+            else
+            {
+                MaterialManager.Apply(_target, all[index]);
+            }
+
+            if (SelectionManager.Instance != null)
+                SelectionManager.Instance.RefreshHighlight(_target);
+            RefreshHighlights();
+        }
+
+        private void OnLegsMaterialSelected(int index)
+        {
+            if (_target == null) return;
+            var all = MaterialCatalog.All;
+            if (index < 0 || index >= all.Count) return;
+
+            var def = all[index];
+            if (_target is TableElement tableEl)
+                MaterialManager.ApplyLegs(tableEl, def);
+            else if (_target is RadiusTableElement rtEl)
+                MaterialManager.ApplyLegs(rtEl, def);
+
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.RefreshHighlight(_target);
             RefreshHighlights();

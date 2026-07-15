@@ -292,5 +292,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     {
         [McpParam("Exact table element name.", Required = true)] public string name = string.Empty;
         [McpParam("Inward offset of legs from corners along X and Z, in MM (min 0).", Min = 0)] public int? leg_inset_mm;
+        [McpParam("Material id for the tabletop (see list_materials).")] public string? tabletop_material_id;
+        [McpParam("Material id for the legs (see list_materials).")] public string? legs_material_id;
     }
 }

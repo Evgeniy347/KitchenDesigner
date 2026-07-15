@@ -13,13 +13,16 @@ namespace KitchenDesigner.Core
         public bool isWall = false;
         public bool isFacade = false;
         public bool isRadialShelf = false;
+        public bool isTable = false;
         public bool isRadiusTable = false;
+        public int legInsetMM = 100;
         public int gapLeft = 2;
         public int gapRight = 2;
         public int gapTop = 2;
         public int gapBottom = 2;
         public int groupId = 0;
         public string materialId = MaterialCatalog.DefaultId;
+        public string legsMaterialId = MaterialCatalog.DefaultId;
         public bool transparent = false;
         public int doorMode = 0;
         public bool doorOpen = false;
@@ -51,6 +54,7 @@ namespace KitchenDesigner.Core
             var facade = element as FacadeElement;
             var radialShelf = element as RadialShelfElement;
             var radiusTable = element as RadiusTableElement;
+            var tableEl2 = element as TableElement;
 
             // Позицию/поворот пишем как ЛОГИЧЕСКУЮ, а не текущую (смещённую) позу:
             //  • полускрытая стена временно опущена вниз → берём FullPosition,
@@ -71,6 +75,13 @@ namespace KitchenDesigner.Core
             d.isFacade = facade != null;
             d.isRadialShelf = radialShelf != null;
             d.isRadiusTable = radiusTable != null;
+            d.isTable = tableEl2 != null;
+            if (tableEl2 != null)
+                d.legInsetMM = tableEl2.LegInsetMM;
+            else if (radiusTable != null)
+                d.legInsetMM = radiusTable.LegInsetMM;
+            d.legsMaterialId = tableEl2 != null ? tableEl2.LegsMaterialId
+                : radiusTable != null ? radiusTable.LegsMaterialId : MaterialCatalog.DefaultId;
             if (radialShelf != null)
                 d.radius = radialShelf.Radius;
             else

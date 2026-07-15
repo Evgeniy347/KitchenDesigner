@@ -34,6 +34,40 @@ namespace KitchenDesigner.Core
         public static void ApplyById(KitchenElement element, string materialId)
             => Apply(element, MaterialCatalog.Get(materialId));
 
+        public static void ApplyTabletop(TableElement table, MaterialDef def)
+        {
+            if (table == null || def == null) return;
+            table.TabletopMaterialId = def.id;
+            var mat = GetSharedMaterial(def);
+            if (mat != null) table.SetTabletopMaterial(mat);
+            RefreshTiling(table, def);
+        }
+
+        public static void ApplyLegs(TableElement table, MaterialDef def)
+        {
+            if (table == null || def == null) return;
+            table.LegsMaterialId = def.id;
+            var mat = GetSharedMaterial(def);
+            if (mat != null) table.SetLegsMaterial(mat);
+        }
+
+        public static void ApplyTabletop(RadiusTableElement table, MaterialDef def)
+        {
+            if (table == null || def == null) return;
+            table.TabletopMaterialId = def.id;
+            var mat = GetSharedMaterial(def);
+            if (mat != null) table.SetTabletopMaterial(mat);
+            RefreshTiling(table, def);
+        }
+
+        public static void ApplyLegs(RadiusTableElement table, MaterialDef def)
+        {
+            if (table == null || def == null) return;
+            table.LegsMaterialId = def.id;
+            var mat = GetSharedMaterial(def);
+            if (mat != null) table.SetLegsMaterial(mat);
+        }
+
         /// <summary>У элемента назначен НЕстандартный декор (не дефолтный серый) —
         /// т.е. пользователь выбрал текстуру и её надо показывать вместо
         /// валидационного тона подсветки.</summary>
@@ -57,14 +91,16 @@ namespace KitchenDesigner.Core
 
             if (element is TableElement table)
             {
-                table.SetMaterial(mat);
+                table.TabletopMaterialId = def.id;
+                table.SetTabletopMaterial(mat);
                 RefreshTiling(element, def);
                 return;
             }
 
             if (element is RadiusTableElement radiusTable)
             {
-                radiusTable.SetMaterial(mat);
+                radiusTable.TabletopMaterialId = def.id;
+                radiusTable.SetTabletopMaterial(mat);
                 RefreshTiling(element, def);
                 return;
             }
@@ -104,7 +140,7 @@ namespace KitchenDesigner.Core
             r.SetPropertyBlock(mpb);
         }
 
-        private static Material? GetSharedMaterial(MaterialDef def)
+        public static Material? GetSharedMaterial(MaterialDef def)
         {
             if (def == null) return null;
             if (_cache.TryGetValue(def.id, out var cached) && cached != null)

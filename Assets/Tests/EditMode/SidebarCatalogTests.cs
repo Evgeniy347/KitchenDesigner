@@ -63,11 +63,21 @@ public class SidebarCatalogTests
     public void FurnitureGroup_HasTable()
     {
         var groups = SidebarCatalog.Build();
-        Assert.AreEqual(1, groups[3].items.Count);
-        var it = groups[3].items[0];
-        Assert.AreEqual("Прямоугольный стол", it.name);
+        Assert.AreEqual(2, groups[3].items.Count);
+        var it = groups[3].items.Find(i => i.name == "Прямоугольный стол");
+        Assert.IsNotNull(it);
         Assert.IsTrue(it.isFurniture);
-        Assert.AreEqual(new Vector3Int(1200, 750, 600), it.dims);
+        Assert.AreEqual(new Vector3Int(2000, 750, 1000), it.dims);
+    }
+
+    [Test]
+    public void FurnitureGroup_HasRadiusTable()
+    {
+        var groups = SidebarCatalog.Build();
+        var it = groups[3].items.Find(i => i.name == "Радиусный стол");
+        Assert.IsNotNull(it);
+        Assert.IsTrue(it.isRadiusTable);
+        Assert.AreEqual(new Vector3Int(2000, 750, 1000), it.dims);
     }
 
     [Test]
