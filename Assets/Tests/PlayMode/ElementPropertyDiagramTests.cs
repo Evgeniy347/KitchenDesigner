@@ -8,6 +8,7 @@ using UnityEngine.TestTools;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class ElementPropertyDiagramTests
 {
@@ -136,6 +137,9 @@ public class ElementPropertyDiagramTests
         Assert.IsTrue(File.Exists(path), $"PNG was not created at {path}");
         Assert.IsTrue(new FileInfo(path).Length > 0, "PNG file is empty");
         Debug.Log($"[SCREENSHOT] Saved: {path} ({panelW}x{panelH})");
+
+        var jsonPath = Path.ChangeExtension(path, ".json");
+        UiSnapshotEngine.Capture(panelT.gameObject, jsonPath);
 
         teardownPanel?.Invoke();
 
