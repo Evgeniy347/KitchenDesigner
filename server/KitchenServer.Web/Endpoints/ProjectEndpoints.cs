@@ -8,8 +8,61 @@ namespace KitchenServer.Web.Endpoints;
 
 public static class ProjectEndpoints
 {
+    /// <summary>Magic UUID that Unity WebGL uses for the unauthenticated demo.</summary>
+    public static readonly Guid DemoProjectId = new("00000000-0000-0000-0000-000000000001");
+
     public static void MapProjectEndpoints(this WebApplication app)
     {
+        // ── Public GET — Unity WebGL loads project data; must work without auth for demo ──
+
+        app.MapGet("/api/projects/{id:guid}", async (
+            Guid id,
+            AppDbContext db,
+            ProjectStorageService storage,
+            ClaimsPrincipal user,
+            ExampleProjectService exampleService) =>
+        {
+            // Demo magic ID: serve example JSON without auth
+            if (id == DemoProjectId)
+            {
+                var demoJson = exampleService.GetExampleJson();
+                if (demoJson is null)
+                    return Results.NotFound();
+                return Results.Ok(new
+                {
+                    Id = DemoProjectId,
+                    Name = "Демо-пример",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    Version = 1,
+                    JsonData = demoJson
+                });
+            }
+
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId is null)
+                return Results.Unauthorized();
+
+            var project = await db.Projects
+                .FirstOrDefaultAsync(p => p.ProjectGroupId == id && p.UserId == userId && p.IsLatest && !p.IsDeleted);
+            if (project is null)
+                return Results.NotFound();
+
+            var json = await storage.Load(id, userId) ?? project.JsonData;
+
+            return Results.Ok(new
+            {
+                Id = project.ProjectGroupId,
+                project.Name,
+                project.CreatedAt,
+                project.UpdatedAt,
+                project.Version,
+                JsonData = json
+            });
+        });
+
+        // ── Protected write endpoints ────────────────────────────────────────
+
         var group = app.MapGroup("/api/projects").RequireAuthorization();
 
         group.MapGet("/", async (AppDbContext db, ClaimsPrincipal user) =>
@@ -61,34 +114,6 @@ public static class ProjectEndpoints
                 new { Id = project.ProjectGroupId, project.Name, project.CreatedAt, project.UpdatedAt, project.Version });
         });
 
-        group.MapGet("/{id:guid}", async (
-            Guid id,
-            AppDbContext db,
-            ProjectStorageService storage,
-            ClaimsPrincipal user) =>
-        {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId is null)
-                return Results.Unauthorized();
-
-            var project = await db.Projects
-                .FirstOrDefaultAsync(p => p.ProjectGroupId == id && p.UserId == userId && p.IsLatest && !p.IsDeleted);
-            if (project is null)
-                return Results.NotFound();
-
-            var json = await storage.Load(id, userId) ?? project.JsonData;
-
-            return Results.Ok(new
-            {
-                Id = project.ProjectGroupId,
-                project.Name,
-                project.CreatedAt,
-                project.UpdatedAt,
-                project.Version,
-                JsonData = json
-            });
-        });
-
         group.MapPut("/{id:guid}", async (
             Guid id,
             UpdateProjectRequest req,
@@ -96,6 +121,9 @@ public static class ProjectEndpoints
             ProjectStorageService storage,
             ClaimsPrincipal user) =>
         {
+            if (id == DemoProjectId)
+                return Results.BadRequest(new { error = "Демо-проект нельзя сохранить." });
+
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId is null)
                 return Results.Unauthorized();
@@ -153,6 +181,9 @@ public static class ProjectEndpoints
             AppDbContext db,
             ClaimsPrincipal user) =>
         {
+            if (id == DemoProjectId)
+                return Results.BadRequest(new { error = "Демо-проект нельзя удалить." });
+
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId is null)
                 return Results.Unauthorized();
@@ -182,6 +213,9 @@ public static class ProjectEndpoints
             ProjectStorageService storage,
             ClaimsPrincipal user) =>
         {
+            if (id == DemoProjectId)
+                return Results.BadRequest(new { error = "Демо-проект нельзя копировать." });
+
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId is null)
                 return Results.Unauthorized();
@@ -231,6 +265,9 @@ public static class ProjectEndpoints
             AppDbContext db,
             ClaimsPrincipal user) =>
         {
+            if (id == DemoProjectId)
+                return Results.Ok(Array.Empty<object>());
+
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId is null)
                 return Results.Unauthorized();
@@ -267,6 +304,9 @@ public static class ProjectEndpoints
             McpSessionManager sessions,
             ClaimsPrincipal user) =>
         {
+            if (id == DemoProjectId)
+                return Results.Ok(new { lockGuid = (string?)null });
+
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId is null)
                 return Results.Unauthorized();
@@ -286,6 +326,9 @@ public static class ProjectEndpoints
             AppDbContext db,
             ClaimsPrincipal user) =>
         {
+            if (id == DemoProjectId)
+                return Results.Ok(new { ok = true });
+
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId is null)
                 return Results.Unauthorized();

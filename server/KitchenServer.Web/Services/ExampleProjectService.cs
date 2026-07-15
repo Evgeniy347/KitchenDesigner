@@ -29,6 +29,9 @@ public class ExampleProjectService
 
     public bool IsAvailable => _exampleJson.Length > 2;
 
+    /// <summary>Returns the raw example JSON, or null if unavailable.</summary>
+    public string? GetExampleJson() => IsAvailable ? _exampleJson : null;
+
     private string LoadExampleFile()
     {
         foreach (var path in _searchPaths)
