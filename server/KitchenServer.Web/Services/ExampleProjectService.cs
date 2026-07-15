@@ -80,6 +80,18 @@ public class ExampleProjectService
         return await UpdateExample(db, storage, existing, userId);
     }
 
+    public async Task<Guid?> GetOrCreateExampleIdAsync(IDbContextFactory<AppDbContext> dbFactory, ProjectStorageService storage, string userId)
+    {
+        await EnsureAsync(dbFactory, storage, userId);
+
+        await using var db = await dbFactory.CreateDbContextAsync();
+        var example = await db.Projects
+            .Where(p => p.UserId == userId && p.IsExample && p.IsLatest && !p.IsDeleted)
+            .Select(p => (Guid?)p.ProjectGroupId)
+            .FirstOrDefaultAsync();
+        return example;
+    }
+
     private async Task<bool> CreateExample(AppDbContext db, ProjectStorageService storage, string userId)
     {
         var projectGroupId = Guid.NewGuid();

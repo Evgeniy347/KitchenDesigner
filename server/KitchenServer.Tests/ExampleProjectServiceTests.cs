@@ -305,4 +305,74 @@ public sealed class ExampleProjectServiceTests : IDisposable
         Assert.False(result);
         Assert.False(svc.IsAvailable);
     }
+
+    // ── GetOrCreateExampleIdAsync ────────────────────────────────────────
+
+    [Fact]
+    public async Task GetOrCreateExampleIdAsync_ReturnsId_WhenExampleExists()
+    {
+        var svc = CreateExampleService();
+        var dbFactory = CreateDbFactory();
+        var storage = CreateStorage();
+
+        await svc.EnsureAsync(dbFactory, storage, "user1");
+
+        await using var db = await dbFactory.CreateDbContextAsync();
+        var expectedId = (await db.Projects
+            .FirstAsync(p => p.UserId == "user1" && p.IsExample && p.IsLatest))
+            .ProjectGroupId;
+
+        var result = await svc.GetOrCreateExampleIdAsync(dbFactory, storage, "user1");
+
+        Assert.NotNull(result);
+        Assert.Equal(expectedId, result!.Value);
+    }
+
+    [Fact]
+    public async Task GetOrCreateExampleIdAsync_CreatesAndReturnsId_WhenNoneExists()
+    {
+        var svc = CreateExampleService();
+        var dbFactory = CreateDbFactory();
+        var storage = CreateStorage();
+
+        var result = await svc.GetOrCreateExampleIdAsync(dbFactory, storage, "user1");
+
+        Assert.NotNull(result);
+        await using var db = await dbFactory.CreateDbContextAsync();
+        var project = await db.Projects
+            .FirstOrDefaultAsync(p => p.ProjectGroupId == result!.Value && p.IsExample);
+        Assert.NotNull(project);
+    }
+
+    [Fact]
+    public async Task GetOrCreateExampleIdAsync_ReturnsNull_WhenFileNotAvailable()
+    {
+        var svc = new ExampleProjectService(
+            NullLogger<ExampleProjectService>.Instance,
+            new[] { Path.Combine(_tempDir, "nonexistent.json") });
+        var dbFactory = CreateDbFactory();
+        var storage = CreateStorage();
+
+        var result = await svc.GetOrCreateExampleIdAsync(dbFactory, storage, "user1");
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetOrCreateExampleIdAsync_Idempotent_CalledTwice()
+    {
+        var svc = CreateExampleService();
+        var dbFactory = CreateDbFactory();
+        var storage = CreateStorage();
+
+        var id1 = await svc.GetOrCreateExampleIdAsync(dbFactory, storage, "user1");
+        var id2 = await svc.GetOrCreateExampleIdAsync(dbFactory, storage, "user1");
+
+        Assert.NotNull(id1);
+        Assert.Equal(id1, id2);
+        await using var db = await dbFactory.CreateDbContextAsync();
+        var count = await db.Projects
+            .CountAsync(p => p.UserId == "user1" && p.IsExample);
+        Assert.Equal(1, count);
+    }
 }

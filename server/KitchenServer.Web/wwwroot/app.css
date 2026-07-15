@@ -206,6 +206,16 @@ h1:focus { outline: none; }
     color: #ddd;
     border-color: #3a3a50;
 }
+.home-btn-success {
+    background: #10b981;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(16,185,129,.35);
+}
+.home-btn-success:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16,185,129,.45);
+}
 .home-btn-secondary:hover {
     background: #35354f;
     color: #fff;
@@ -526,6 +536,16 @@ h1:focus { outline: none; }
     color: #666;
     font-size: 11px;
     font-family: monospace;
+}
+
+.editor-nav-demo-badge {
+    color: #f59e0b;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border: 1px solid #f59e0b;
+    border-radius: 4px;
+    white-space: nowrap;
 }
 
 .editor-lock-lost {

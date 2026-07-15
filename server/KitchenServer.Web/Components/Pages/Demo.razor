@@ -1,0 +1,97 @@
+@page "/demo"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using KitchenServer.Web.Data
+@using KitchenServer.Web.Services
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<AppDbContext> DbFactory
+@inject AuthenticationStateProvider AuthProvider
+@inject McpSessionManager McpSessions
+@inject EditorNavState NavState
+@inject ExampleProjectService ExampleService
+@inject ProjectStorageService Storage
+
+<PageTitle>Демо-пример — KitchenDesigner</PageTitle>
+
+<div class="editor-page">
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="editor-error-banner">@_error</div>
+    }
+
+    <div class="editor-unity-container">
+        @if (_ready)
+        {
+            <iframe src="@_iframeSrc"
+                    class="editor-unity-frame"
+                    allow="autoplay; fullscreen"
+                    title="KitchenDesigner Demo">
+            </iframe>
+        }
+        else
+        {
+            <div class="editor-loading">Загрузка демо-примера...</div>
+        }
+    </div>
+</div>
+
+@code {
+    private string _error = "";
+    private string _iframeSrc = "";
+    private bool _ready;
+    private McpSession? _session;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+            if (string.IsNullOrEmpty(userId))
+            {
+                _error = "Not authenticated.";
+                return;
+            }
+
+            var exampleId = await ExampleService.GetOrCreateExampleIdAsync(DbFactory, Storage, userId);
+            if (exampleId is null)
+            {
+                _error = "Демо-пример недоступен.";
+                return;
+            }
+
+            var projectIdStr = exampleId.Value.ToString();
+
+            _session = McpSessions.CreateSession(userId, projectIdStr);
+            McpSessions.SessionStateChanged += OnSessionStateChanged;
+            _iframeSrc = $"/unity/index.html?projectId={exampleId.Value}" +
+                         $"&mcpKey={Uri.EscapeDataString(_session.TabKey)}";
+
+            _ready = true;
+            NavState.Set("Демо-пример", exampleId.Value, _session.TabKey);
+            NavState.SetDemo(true);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load demo: {ex.Message}";
+        }
+    }
+
+    private void OnSessionStateChanged(McpSession s)
+    {
+        if (_session == null || s.TabKey != _session.TabKey) return;
+        InvokeAsync(() =>
+        {
+            NavState.SetAgentConnected(s.AgentBound);
+            NavState.SetLockLost(s.LockLost);
+        });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        McpSessions.SessionStateChanged -= OnSessionStateChanged;
+        if (_session != null) McpSessions.CloseSession(_session.TabKey);
+        NavState.Clear();
+    }
+}

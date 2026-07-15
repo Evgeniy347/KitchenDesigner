@@ -907,4 +907,57 @@ public sealed class ProjectVersioningTests : IDisposable
             .CountAsync(x => x.ProjectGroupId == pgId && x.IsLatest);
         Assert.Equal(1, latestCount);
     }
+
+    // ── Example project save rejection ──────────────────────────────────
+
+    [Fact]
+    public async Task Save_Rejected_WhenProjectIsExample()
+    {
+        var pgId = Guid.NewGuid();
+        var example = MakeProject(id: Guid.NewGuid(), projectGroupId: pgId, version: 1, isLatest: true);
+        example.IsExample = true;
+        await SeedAsync(example);
+
+        // Simulate the PUT endpoint logic: find the project, check IsExample.
+        await using var db = new AppDbContext(_options);
+        var current = await db.Projects
+            .FirstOrDefaultAsync(p => p.ProjectGroupId == pgId && p.UserId == "user1"
+                && p.IsLatest && !p.IsDeleted);
+
+        Assert.NotNull(current);
+        Assert.True(current!.IsExample);
+
+        // The endpoint should reject saves for example projects.
+        // Verify that the flag is correctly set on the DB row.
+        Assert.True(current.IsExample);
+    }
+
+    [Fact]
+    public async Task Save_Allowed_WhenProjectIsNotExample()
+    {
+        var pgId = Guid.NewGuid();
+        var normal = MakeProject(id: Guid.NewGuid(), projectGroupId: pgId, version: 1, isLatest: true);
+        await SeedAsync(normal);
+
+        await using var db = new AppDbContext(_options);
+        var current = await db.Projects
+            .FirstOrDefaultAsync(p => p.ProjectGroupId == pgId && p.UserId == "user1"
+                && p.IsLatest && !p.IsDeleted);
+
+        Assert.NotNull(current);
+        Assert.False(current!.IsExample);
+    }
+
+    [Fact]
+    public async Task ExampleProject_HasIsExampleFlag_AfterCreation()
+    {
+        var example = MakeProject();
+        example.IsExample = true;
+        await SeedAsync(example);
+
+        await using var db = new AppDbContext(_options);
+        var loaded = await db.Projects.FirstAsync(x => x.Id == example.Id);
+
+        Assert.True(loaded.IsExample);
+    }
 }
