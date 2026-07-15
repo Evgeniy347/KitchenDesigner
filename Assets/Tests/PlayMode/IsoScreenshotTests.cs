@@ -250,6 +250,28 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+    // ─ RadiusTable isometric screenshots ───────────────────
+
+    [UnityTest]
+    public IEnumerator IsoRadiusTable_1200x750x600()
+    {
+        var dims = new Vector3Int(1200, 750, 600);
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateRadiusTable(dims, "IsoRadiusTable", pos);
+        _spawned.Add(go);
+        var radiusTable = go.GetComponent<RadiusTableElement>();
+        Assert.IsNotNull(radiusTable);
+        radiusTable.LegInsetMM = 100;
+
+        Vector3 size = MmToUnits(dims);
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_radius_table_1200x750x600.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
     // ── Room screenshots (4 walls, raised + lowered) ─────────
 
     [UnityTest]

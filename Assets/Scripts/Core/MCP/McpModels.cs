@@ -83,6 +83,7 @@ namespace KitchenDesigner.Core.MCP
         public List<OpeningViolationInfo>? openingViolations; // детали, пересекающие траекторию открывания
         public DrawerInfo? drawer; // свойства ящика, только для DrawerElement
         public TableInfo? table; // свойства стола, только для TableElement
+        public RadiusTableInfo? radiusTable; // свойства радиусного стола, только для RadiusTableElement
     }
 
     [Serializable]
@@ -272,5 +273,12 @@ namespace KitchenDesigner.Core.MCP
     public class TableInfo
     {
         public int legInsetMM;
+    }
+
+    [Serializable]
+    public class RadiusTableInfo
+    {
+        public int legInsetMM;
+        public string shape = "capsule";
     }
 }

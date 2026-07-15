@@ -13,6 +13,7 @@ namespace KitchenDesigner.Core
         public bool isWall = false;
         public bool isFacade = false;
         public bool isRadialShelf = false;
+        public bool isRadiusTable = false;
         public int gapLeft = 2;
         public int gapRight = 2;
         public int gapTop = 2;
@@ -49,6 +50,7 @@ namespace KitchenDesigner.Core
             var wall = element.GetComponent<Wall>();
             var facade = element as FacadeElement;
             var radialShelf = element as RadialShelfElement;
+            var radiusTable = element as RadiusTableElement;
 
             // Позицию/поворот пишем как ЛОГИЧЕСКУЮ, а не текущую (смещённую) позу:
             //  • полускрытая стена временно опущена вниз → берём FullPosition,
@@ -68,6 +70,7 @@ namespace KitchenDesigner.Core
             d.isWall = wall != null;
             d.isFacade = facade != null;
             d.isRadialShelf = radialShelf != null;
+            d.isRadiusTable = radiusTable != null;
             if (radialShelf != null)
                 d.radius = radialShelf.Radius;
             else

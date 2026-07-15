@@ -156,6 +156,8 @@ namespace KitchenDesigner.Core.UI
             }
             if (item.isDrawer)
                 UIManager.Instance.SpawnDrawer(item.drawerType, item.drawerLength, item.drawerColor, item.drawerWidth, item.name);
+            else if (item.isRadiusTable)
+                UIManager.Instance.SpawnRadiusTable(item.dims, item.name);
             else if (item.isFurniture)
                 UIManager.Instance.SpawnTable(item.dims, item.name);
             else if (item.isRadialShelf)

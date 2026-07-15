@@ -156,6 +156,8 @@ namespace KitchenDesigner.Core.MCP.Contract
         public bool is_drawer;
         [McpParam("Create as a TABLE (legs + tabletop). Default false. width/height/depth are table dimensions. Pair with leg_inset_mm.")]
         public bool is_table;
+        [McpParam("Create as a RADIUS TABLE (capsule-shaped top + 4 legs). Default false. width/height/depth are table dimensions.")]
+        public bool is_radius_table;
 
         [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Default A.", Enum = new[] { "A", "B", "C", "D" })]
         public string drawer_type = string.Empty;

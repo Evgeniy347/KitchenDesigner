@@ -355,6 +355,31 @@ namespace KitchenDesigner.Core
             return go;
         }
 
+        public GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position)
+        {
+            var go = new GameObject(string.IsNullOrEmpty(name) ? "Радиусный стол" : name);
+            go.tag = "KitchenElement";
+            go.transform.position = position;
+
+            var rb = go.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+
+            var radiusTable = go.AddComponent<RadiusTableElement>();
+            radiusTable.PartName = go.name;
+            radiusTable.DimensionsMM = dimensionsMM;
+
+            if (DefaultMaterial != null)
+                radiusTable.SetMaterial(DefaultMaterial);
+
+            PartRegistry.Register(radiusTable);
+
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+
+            return go;
+        }
+
         public void DestroyPart(GameObject go)
         {
             if (go == null) return;
