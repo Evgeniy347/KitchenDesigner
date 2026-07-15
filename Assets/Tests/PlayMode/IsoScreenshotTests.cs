@@ -117,7 +117,7 @@ public class IsoScreenshotTests
         var jsonPath = Path.ChangeExtension(path, ".json");
         var canvas = UIManager.Instance?.Canvas;
         if (canvas != null)
-            UiSnapshotEngine.Capture(canvas.gameObject, jsonPath);
+            UiSnapshotEngine.CaptureVerified(canvas.gameObject, jsonPath);
 
         RenderTexture.active = null;
         cam.targetTexture = null;
