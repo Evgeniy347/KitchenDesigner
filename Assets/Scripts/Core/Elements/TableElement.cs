@@ -11,8 +11,21 @@ namespace KitchenDesigner.Core
         private readonly List<GameObject> _children = new List<GameObject>();
         private Material? _material;
 
+        [SerializeField] private int _legInsetMM = 100;
+
+        public int LegInsetMM
+        {
+            get => _legInsetMM;
+            set { _legInsetMM = Mathf.Max(0, value); ApplyDimensions(); }
+        }
+
         public override void ApplyDimensions()
         {
+            var rootMf = GetComponent<MeshFilter>();
+            if (rootMf != null) Object.DestroyImmediate(rootMf);
+            var rootMr = GetComponent<MeshRenderer>();
+            if (rootMr != null) Object.DestroyImmediate(rootMr);
+
             var dims = DimensionsMM;
             int overallW = dims.x;
             int overallH = dims.y;
@@ -32,13 +45,14 @@ namespace KitchenDesigner.Core
             float halfW = overallW * 0.5f * toU;
             float halfD = overallD * 0.5f * toU;
             float legInset = legCross * 0.5f;
+            float insetOffset = _legInsetMM * toU;
 
             var legPositions = new Vector3[]
             {
-                new Vector3(-halfW + legInset, legCenterY, -halfD + legInset),
-                new Vector3( halfW - legInset, legCenterY, -halfD + legInset),
-                new Vector3(-halfW + legInset, legCenterY,  halfD - legInset),
-                new Vector3( halfW - legInset, legCenterY,  halfD - legInset),
+                new Vector3(-halfW + legInset + insetOffset, legCenterY, -halfD + legInset + insetOffset),
+                new Vector3( halfW - legInset - insetOffset, legCenterY, -halfD + legInset + insetOffset),
+                new Vector3(-halfW + legInset + insetOffset, legCenterY,  halfD - legInset - insetOffset),
+                new Vector3( halfW - legInset - insetOffset, legCenterY,  halfD - legInset - insetOffset),
             };
 
             var legScale = new Vector3(legCross, legH * toU, legCross);
