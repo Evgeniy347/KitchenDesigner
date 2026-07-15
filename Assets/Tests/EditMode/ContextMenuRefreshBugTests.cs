@@ -113,18 +113,18 @@ public class ContextMenuRefreshBugTests
         _ctx!.Close();
         DestroyAllElements();
 
-        var shelfGo = ElementFactory.CreateRadialShelf(300, 18, "Shelf", Vector3.zero);
+        var shelfGo = ElementFactory.CreateRadialShelf(600, 400, 18, 200, "Shelf", Vector3.zero);
         shelfGo.transform.SetParent(_canvasGo!.transform);
         var shelf = shelfGo.GetComponent<RadialShelfElement>();
         _ctx!.Open(shelf);
 
-        Assert.AreEqual("300", FieldText("_radius"), "initial radius");
+        Assert.AreEqual("200", FieldText("_radius"), "initial corner radius");
 
-        shelf.Radius = 500;
+        shelf.CornerRadius = 350;
         CallRefreshTransformFields();
 
-        Assert.AreEqual("500", FieldText("_radius"),
-            $"BUG: radius stays '{FieldText("_radius")}' instead of '500'");
+        Assert.AreEqual("350", FieldText("_radius"),
+            $"BUG: corner radius stays '{FieldText("_radius")}' instead of '350'");
     }
 
     [Test]

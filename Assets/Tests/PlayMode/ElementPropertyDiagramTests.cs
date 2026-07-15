@@ -188,7 +188,7 @@ public class ElementPropertyDiagramTests
 
     private static KitchenElement SpawnRadial(string name)
     {
-        var go = ElementFactory.CreateRadialShelf(300, 18, name,
+        var go = ElementFactory.CreateRadialShelf(600, 400, 18, 200, name,
             new Vector3(4f, 0.009f, 0f));
         return go.GetComponent<KitchenElement>();
     }

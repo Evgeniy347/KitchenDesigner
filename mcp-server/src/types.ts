@@ -92,6 +92,8 @@ export interface CreateElementParams {
   width?: number;
   height?: number;
   depth?: number;
+  corner_radius?: number;
+  /** Легаси: старый вызов радиусной полки (radius + depth-как-толщина). */
   radius?: number;
   is_wall?: boolean;
   is_facade?: boolean;

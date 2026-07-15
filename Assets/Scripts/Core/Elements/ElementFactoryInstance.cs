@@ -138,10 +138,11 @@ namespace KitchenDesigner.Core
             return CreatePart(dims, name, position);
         }
 
-        public GameObject CreateRadialShelf(int radiusMM, int thicknessMM, string name, Vector3 position)
+        public GameObject CreateRadialShelf(int widthMM, int depthMM, int thicknessMM, int cornerRadiusMM, string name, Vector3 position)
         {
+            widthMM = Mathf.Max(1, widthMM);
+            depthMM = Mathf.Max(1, depthMM);
             thicknessMM = Mathf.Max(1, thicknessMM);
-            radiusMM = Mathf.Max(1, radiusMM);
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = string.IsNullOrEmpty(name) ? "Радиусная полка" : name;
@@ -158,7 +159,8 @@ namespace KitchenDesigner.Core
 
             var shelf = go.AddComponent<RadialShelfElement>();
             shelf.PartName = go.name;
-            shelf.DimensionsMM = new Vector3Int(radiusMM, thicknessMM, radiusMM);
+            shelf.DimensionsMM = new Vector3Int(widthMM, thicknessMM, depthMM);
+            shelf.CornerRadius = cornerRadiusMM; // клампится к 1..min(ширина, глубина)
 
             MaterialManager.ApplyById(shelf, MaterialCatalog.DefaultId);
             PartRegistry.Register(shelf);
@@ -203,7 +205,7 @@ namespace KitchenDesigner.Core
 
             if (source is RadialShelfElement radial)
             {
-                var go = CreateRadialShelf(radial.Radius, dims.y, source.PartName + " (copy)", offset);
+                var go = CreateRadialShelf(dims.x, dims.z, dims.y, radial.CornerRadius, source.PartName + " (copy)", offset);
                 go.transform.rotation = source.transform.rotation;
                 MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
                 return go;

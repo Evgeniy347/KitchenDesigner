@@ -98,9 +98,14 @@ const _createGap: CreateElementParams = {
   gapLeft: 2, gapRight: 2, gapTop: 2, gapBottom: 2, is_facade: true,
 };
 
-// Create radial shelf
+// Create radial shelf (rectangular board with one rounded corner)
 const _createRadial: CreateElementParams = {
   template_name: "RS1", name: "RS1", x: 0, y: 0, z: 0,
+  is_radial_shelf: true, width: 600, height: 18, depth: 400, corner_radius: 200,
+};
+// Legacy radial call (radius + depth-as-thickness)
+const _createRadialLegacy: CreateElementParams = {
+  template_name: "RS2", name: "RS2", x: 0, y: 0, z: 0,
   is_radial_shelf: true, radius: 450, depth: 18,
 };
 

@@ -105,12 +105,12 @@ public class ElementFactoryTests
     [Test]
     public void CreateRadialShelf_CreatesMeshAndCollider()
     {
-        var go = ElementFactory.CreateRadialShelf(400, 18, "Radial", Vector3.zero);
+        var go = ElementFactory.CreateRadialShelf(600, 400, 18, 200, "Radial", Vector3.zero);
         var shelf = go.GetComponent<RadialShelfElement>();
 
         Assert.IsNotNull(shelf);
-        Assert.AreEqual(400, shelf.Radius);
-        Assert.AreEqual(new Vector3Int(400, 18, 400), shelf.DimensionsMM);
+        Assert.AreEqual(200, shelf.CornerRadius);
+        Assert.AreEqual(new Vector3Int(600, 18, 400), shelf.DimensionsMM);
         Assert.IsNotNull(go.GetComponent<MeshFilter>());
         Assert.IsNotNull(go.GetComponent<MeshCollider>());
 
@@ -118,17 +118,17 @@ public class ElementFactoryTests
     }
 
     [Test]
-    public void Duplicate_RadialShelf_KeepsRadius()
+    public void Duplicate_RadialShelf_KeepsDimensionsAndCornerRadius()
     {
-        var original = ElementFactory.CreateRadialShelf(500, 25, "RadialOriginal", Vector3.zero);
+        var original = ElementFactory.CreateRadialShelf(500, 350, 25, 150, "RadialOriginal", Vector3.zero);
         var shelf = original.GetComponent<RadialShelfElement>();
 
         var copy = ElementFactory.Duplicate(shelf);
         var copyShelf = copy.GetComponent<RadialShelfElement>();
 
         Assert.IsNotNull(copyShelf);
-        Assert.AreEqual(500, copyShelf.Radius);
-        Assert.AreEqual(new Vector3Int(500, 25, 500), copyShelf.DimensionsMM);
+        Assert.AreEqual(150, copyShelf.CornerRadius);
+        Assert.AreEqual(new Vector3Int(500, 25, 350), copyShelf.DimensionsMM);
 
         ElementFactory.DestroyElement(original);
         ElementFactory.DestroyElement(copy);

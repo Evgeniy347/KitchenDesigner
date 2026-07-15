@@ -1,0 +1,155 @@
+﻿{
+  "root": "UICanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Автосохранение выкл",
+      "position": [14, 12]
+    },
+    {
+      "type": "Button",
+      "text": "SbPin",
+      "position": [46, -4]
+    },
+    {
+      "type": "Button",
+      "text": "«",
+      "position": [4, -4]
+    },
+    {
+      "type": "Button",
+      "text": "Режим: [ ]",
+      "position": [644, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Распред.",
+      "position": [558, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Выравн.",
+      "position": [472, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Спецификация",
+      "position": [8, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Undo",
+      "position": [360, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Load",
+      "position": [302, -6]
+    },
+    {
+      "type": "Button",
+      "text": "SaveAs",
+      "position": [256, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Save",
+      "position": [210, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Settings",
+      "position": [164, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Redo",
+      "position": [406, -6]
+    },
+    {
+      "type": "Button",
+      "text": "детали",
+      "position": [8, -8]
+    },
+    {
+      "type": "Button",
+      "text": "600×400×16",
+      "position": [22, -42]
+    },
+    {
+      "type": "Button",
+      "text": "600×400×16 (радиусная)",
+      "position": [22, -71]
+    },
+    {
+      "type": "Button",
+      "text": "Фасады",
+      "position": [8, -100]
+    },
+    {
+      "type": "Button",
+      "text": "Фасад 800×400×18",
+      "position": [22, -134]
+    },
+    {
+      "type": "Button",
+      "text": "Фасад 600×400×18",
+      "position": [22, -163]
+    },
+    {
+      "type": "Button",
+      "text": "Сборный 450×700×18",
+      "position": [22, -192]
+    },
+    {
+      "type": "Button",
+      "text": "Сборный 600×716×18",
+      "position": [22, -221]
+    },
+    {
+      "type": "Button",
+      "text": "Ящики GTV",
+      "position": [8, -250]
+    },
+    {
+      "type": "Button",
+      "text": "Ящик GTV",
+      "position": [22, -284]
+    },
+    {
+      "type": "Button",
+      "text": "Мебель",
+      "position": [8, -313]
+    },
+    {
+      "type": "Button",
+      "text": "Прямоугольный стол",
+      "position": [22, -347]
+    },
+    {
+      "type": "Button",
+      "text": "Радиусный стол",
+      "position": [22, -376]
+    },
+    {
+      "type": "Button",
+      "text": "Помещение",
+      "position": [8, -405]
+    },
+    {
+      "type": "Button",
+      "text": "Короб",
+      "position": [22, -439]
+    },
+    {
+      "type": "Button",
+      "text": "Стена",
+      "position": [22, -468]
+    },
+    {
+      "type": "Button",
+      "text": "Размеры помещения",
+      "position": [22, -497]
+    }
+  ]
+}

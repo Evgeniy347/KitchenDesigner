@@ -2,30 +2,36 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Радиусная (угловая) полка — сектор цилиндра 90°.
-    /// Размеры: x = радиус, y = толщина, z = радиус.</summary>
+    /// <summary>Радиусная полка — прямоугольная доска с одним скруглённым углом.
+    /// Размеры: x = ширина, y = толщина, z = глубина; угол (x=W, z=D)
+    /// скруглён радиусом CornerRadius (1..min(ширина, глубина)).</summary>
     public class RadialShelfElement : KitchenElement
     {
-        [SerializeField] private int _radius = 300;
+        [SerializeField] private int _cornerRadius = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
         private bool _applying;
 
         protected override Vector3 EffectiveScale => new Vector3(
-            _radius * AppConstants.MM_TO_UNITS,
+            DimensionsMM.x * AppConstants.MM_TO_UNITS,
             DimensionsMM.y * AppConstants.MM_TO_UNITS,
-            _radius * AppConstants.MM_TO_UNITS);
+            DimensionsMM.z * AppConstants.MM_TO_UNITS);
 
-        public int Radius
+        public int CornerRadius
         {
-            get => _radius;
+            get => _cornerRadius;
             set
             {
-                if (value < 1) value = 1;
-                if (_radius == value) return;
-                _radius = value;
-                var dims = DimensionsMM;
-                var thickness = dims.y > 0 ? dims.y : AppConstants.BOARD_THICKNESS_DEFAULT;
-                DimensionsMM = new Vector3Int(_radius, thickness, _radius);
+                value = ClampCornerRadius(value);
+                if (_cornerRadius == value) return;
+                _cornerRadius = value;
+                RebuildMesh();
             }
+        }
+
+        private int ClampCornerRadius(int value)
+        {
+            var dims = DimensionsMM;
+            int max = Mathf.Max(1, Mathf.Min(dims.x, dims.z));
+            return Mathf.Clamp(value, 1, max);
         }
 
         public override void ApplyDimensions()
@@ -34,11 +40,9 @@ namespace KitchenDesigner.Core
             _applying = true;
             try
             {
-                var dims = DimensionsMM;
-                int r = Mathf.Max(1, Mathf.Max(dims.x, dims.z));
-                _radius = r;
-                if (dims.x != r || dims.z != r)
-                    DimensionsMM = new Vector3Int(r, dims.y, r);
+                // Ширина/толщина/глубина хранятся раздельно; радиус угла лишь
+                // клампится, чтобы дуга помещалась в доску.
+                _cornerRadius = ClampCornerRadius(_cornerRadius);
 
                 // Меш строится в мировых единицах — localScale остаётся единичным.
                 transform.localScale = Vector3.one;
@@ -55,9 +59,12 @@ namespace KitchenDesigner.Core
             var meshFilter = GetComponent<MeshFilter>();
             if (meshFilter == null) meshFilter = gameObject.AddComponent<MeshFilter>();
 
-            float radiusUnits = _radius * AppConstants.MM_TO_UNITS;
-            float heightUnits = DimensionsMM.y * AppConstants.MM_TO_UNITS;
-            var mesh = RadialShelfMesh.Build(radiusUnits, heightUnits);
+            var dims = DimensionsMM;
+            var mesh = RadialShelfMesh.Build(
+                dims.x * AppConstants.MM_TO_UNITS,
+                dims.z * AppConstants.MM_TO_UNITS,
+                dims.y * AppConstants.MM_TO_UNITS,
+                _cornerRadius * AppConstants.MM_TO_UNITS);
             meshFilter.sharedMesh = mesh;
 
             var meshRenderer = GetComponent<MeshRenderer>();

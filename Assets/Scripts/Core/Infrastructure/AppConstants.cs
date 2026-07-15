@@ -11,6 +11,9 @@ namespace KitchenDesigner.Core
         public const int BASE_PLATE_SIZE = 3000;
         public const float MM_TO_UNITS = 0.001f;
 
+        // Радиусная полка: радиус скругления угла по умолчанию.
+        public const int RADIAL_CORNER_RADIUS_DEFAULT = 200;
+
         // Сборный (рамочный) фасад, см. каталог Союз-Фасад стр. 43.
         public const int ASSEMBLED_FRAME_MM = 100;        // ширина рамки A
         public const int ASSEMBLED_GLASS_DEDUCT_MM = 180; // вычет под вкладное стекло (L-180, H-180)

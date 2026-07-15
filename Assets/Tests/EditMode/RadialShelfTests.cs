@@ -15,42 +15,57 @@ public class RadialShelfTests
     }
 
     [Test]
-    public void CreateRadialShelf_HasRadiusAndThickness()
+    public void CreateRadialShelf_HasDimensionsAndCornerRadius()
     {
-        var shelf = CreateShelf("R1", 400, 18, Vector3.zero);
+        var shelf = CreateShelf("R1", 600, 400, 18, 200, Vector3.zero);
 
-        Assert.AreEqual(400, shelf.Radius);
-        Assert.AreEqual(new Vector3Int(400, 18, 400), shelf.DimensionsMM);
+        Assert.AreEqual(new Vector3Int(600, 18, 400), shelf.DimensionsMM);
+        Assert.AreEqual(200, shelf.CornerRadius);
         Assert.IsTrue(shelf.GetComponent<MeshCollider>() != null);
     }
 
     [Test]
-    public void RadiusSetter_UpdatesDimensions()
+    public void CornerRadiusSetter_ClampsToMinOfWidthAndDepth()
     {
-        var shelf = CreateShelf("R2", 300, 18, Vector3.zero);
-        shelf.Radius = 500;
+        var shelf = CreateShelf("R2", 600, 400, 18, 200, Vector3.zero);
 
-        Assert.AreEqual(500, shelf.Radius);
-        Assert.AreEqual(new Vector3Int(500, 18, 500), shelf.DimensionsMM);
+        shelf.CornerRadius = 1000;
+        Assert.AreEqual(400, shelf.CornerRadius, "clamped to min(width, depth)");
+
+        shelf.CornerRadius = 0;
+        Assert.AreEqual(1, shelf.CornerRadius, "clamped to 1");
+
+        shelf.CornerRadius = 150;
+        Assert.AreEqual(150, shelf.CornerRadius);
     }
 
     [Test]
-    public void BuildMesh_BoundsMatchRadiusAndThickness()
+    public void ApplyDimensions_ClampsCornerRadius_WhenBoardShrinks()
     {
-        var shelf = CreateShelf("R3", 300, 18, Vector3.zero);
+        var shelf = CreateShelf("R3", 600, 400, 18, 300, Vector3.zero);
+        Assert.AreEqual(300, shelf.CornerRadius);
+
+        shelf.DimensionsMM = new Vector3Int(600, 18, 150);
+        Assert.AreEqual(150, shelf.CornerRadius, "corner radius follows the shrunken depth");
+    }
+
+    [Test]
+    public void BuildMesh_BoundsMatchDimensions()
+    {
+        var shelf = CreateShelf("R4", 600, 400, 18, 200, Vector3.zero);
         var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
 
         Assert.IsNotNull(mesh);
-        Assert.Greater(mesh.vertexCount, 24, "mesh should be radial, not default cube");
-        Assert.AreEqual(300f * AppConstants.MM_TO_UNITS, mesh.bounds.size.x, 1e-4f);
+        Assert.Greater(mesh.vertexCount, 24, "mesh should be procedural, not default cube");
+        Assert.AreEqual(600f * AppConstants.MM_TO_UNITS, mesh.bounds.size.x, 1e-4f);
         Assert.AreEqual(18f * AppConstants.MM_TO_UNITS, mesh.bounds.size.y, 1e-4f);
-        Assert.AreEqual(300f * AppConstants.MM_TO_UNITS, mesh.bounds.size.z, 1e-4f);
+        Assert.AreEqual(400f * AppConstants.MM_TO_UNITS, mesh.bounds.size.z, 1e-4f);
     }
 
     [Test]
     public void ApplyDimensions_LocalScaleIsUnity()
     {
-        var shelf = CreateShelf("R_SCALE", 400, 18, Vector3.zero);
+        var shelf = CreateShelf("R_SCALE", 600, 400, 18, 200, Vector3.zero);
         var ls = shelf.transform.localScale;
         Assert.AreEqual(1f, ls.x, 1e-6f, "localScale.x must be 1");
         Assert.AreEqual(1f, ls.y, 1e-6f, "localScale.y must be 1");
@@ -60,7 +75,7 @@ public class RadialShelfTests
     [Test]
     public void EffectiveScale_ReturnsWorldUnitSize()
     {
-        var shelf = CreateShelf("R_ESCALE", 500, 25, Vector3.zero);
+        var shelf = CreateShelf("R_ESCALE", 500, 350, 25, 200, Vector3.zero);
         // EffectiveScale is protected; verify indirectly via GetVertices bounding box.
         var verts = shelf.GetVertices();
         float minX = float.MaxValue, maxX = float.MinValue;
@@ -72,103 +87,137 @@ public class RadialShelfTests
             if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
             if (v.z < minZ) minZ = v.z; if (v.z > maxZ) maxZ = v.z;
         }
-        float rU = 500f * AppConstants.MM_TO_UNITS;
-        float tU = 25f * AppConstants.MM_TO_UNITS;
-        Assert.AreEqual(rU, maxX - minX, 1e-4f, "X extent should match radius in world units");
-        Assert.AreEqual(tU, maxY - minY, 1e-4f, "Y extent should match thickness in world units");
-        Assert.AreEqual(rU, maxZ - minZ, 1e-4f, "Z extent should match radius in world units");
+        Assert.AreEqual(500f * AppConstants.MM_TO_UNITS, maxX - minX, 1e-4f, "X extent should match width in world units");
+        Assert.AreEqual(25f * AppConstants.MM_TO_UNITS, maxY - minY, 1e-4f, "Y extent should match thickness in world units");
+        Assert.AreEqual(350f * AppConstants.MM_TO_UNITS, maxZ - minZ, 1e-4f, "Z extent should match depth in world units");
     }
 
     [Test]
     public void BuildMesh_VertexCount_MatchesExpectedTopology()
     {
-        // bottom cap: 1 center + 17 arc = 18
-        // top cap: 1 center + 17 arc = 18
+        // cap (x2): quad A 4 + quad B 4 + fan (1 center + 17 arc) = 26 → 52
         // curved side: 17 * 2 = 34
-        // flat sides: 4 + 4 = 8
-        // total = 78
-        var shelf = CreateShelf("R_VTX", 300, 18, Vector3.zero);
+        // flat sides: 4 walls * 4 = 16
+        // total = 102
+        var shelf = CreateShelf("R_VTX", 600, 400, 18, 200, Vector3.zero);
         var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
-        Assert.AreEqual(78, mesh.vertexCount);
+        Assert.AreEqual(102, mesh.vertexCount);
     }
 
     [Test]
     public void BuildMesh_TriangleCount_MatchesExpectedTopology()
     {
-        // bottom cap: 16 triangles (fan)
-        // top cap: 16 triangles (fan)
-        // curved side: 16 * 2 = 32 triangles (quads split to 2 tris)
-        // flat sides: 2 + 2 = 4 triangles
-        // total = 68
-        var shelf = CreateShelf("R_TRIS", 300, 18, Vector3.zero);
+        // cap (x2): 2 + 2 + 16 (fan) = 20 → 40
+        // curved side: 16 * 2 = 32
+        // flat sides: 4 walls * 2 = 8
+        // total = 80
+        var shelf = CreateShelf("R_TRIS", 600, 400, 18, 200, Vector3.zero);
         var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
-        Assert.AreEqual(68, mesh.triangles.Length / 3);
+        Assert.AreEqual(80, mesh.triangles.Length / 3);
+    }
+
+    [Test]
+    public void BuildMesh_ArcIsAtRoundedCorner()
+    {
+        // Доска 600×400, R=200: дуга от (600,200) до (400,400) мм вокруг
+        // центра (400,200) — в юнитах (0.6,0.2) → (0.4,0.4) вокруг (0.4,0.2).
+        var shelf = CreateShelf("R_ARC", 600, 400, 18, 200, Vector3.zero);
+        var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
+        var verts = mesh.vertices;
+
+        // Верхняя крышка: [26..51]; веер — центр 34, дуга 35..51.
+        const int fanCenter = 26 + 8;
+        var c = verts[fanCenter];
+        Assert.AreEqual(0.4f, c.x, 1e-5f, "arc center X");
+        Assert.AreEqual(0.2f, c.z, 1e-5f, "arc center Z");
+
+        for (int i = fanCenter + 1; i <= fanCenter + 17; i++)
+        {
+            float dx = verts[i].x - c.x;
+            float dz = verts[i].z - c.z;
+            Assert.AreEqual(0.2f, Mathf.Sqrt(dx * dx + dz * dz), 1e-5f, $"arc vertex {i} distance from center");
+        }
+
+        var first = verts[fanCenter + 1];
+        var last = verts[fanCenter + 17];
+        Assert.AreEqual(0.6f, first.x, 1e-5f, "arc starts at (600, 200)");
+        Assert.AreEqual(0.2f, first.z, 1e-5f);
+        Assert.AreEqual(0.4f, last.x, 1e-5f, "arc ends at (400, 400)");
+        Assert.AreEqual(0.4f, last.z, 1e-5f);
+    }
+
+    [Test]
+    public void BuildMesh_ThreeStraightCornersPresent()
+    {
+        var shelf = CreateShelf("R_CRN", 600, 400, 18, 200, Vector3.zero);
+        var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
+        var verts = mesh.vertices;
+
+        Assert.IsTrue(HasVertexAtXZ(verts, 0f, 0f), "corner (0,0) must be square");
+        Assert.IsTrue(HasVertexAtXZ(verts, 0.6f, 0f), "corner (600,0) must be square");
+        Assert.IsTrue(HasVertexAtXZ(verts, 0f, 0.4f), "corner (0,400) must be square");
+        Assert.IsFalse(HasVertexAtXZ(verts, 0.6f, 0.4f), "corner (600,400) must be rounded away");
     }
 
     [Test]
     public void BuildMesh_NormalsPointOutward()
     {
-        var shelf = CreateShelf("R_NORM", 300, 18, Vector3.zero);
+        var shelf = CreateShelf("R_NORM", 600, 400, 18, 200, Vector3.zero);
         var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
         var normals = mesh.normals;
 
-        // Curved side normals should have positive X and Z components (pointing away from origin).
-        int curvedStart = 0;
-        int bottomVerts = 18; // 1 center + 17 arc
-        int topVerts = 18;
-        curvedStart = bottomVerts + topVerts;
+        // Раскладка: bottom cap [0..25], top cap [26..51], curved [52..85], walls [86..101].
+        for (int i = 0; i < 26; i++)
+            Assert.AreEqual(-1f, normals[i].y, 1e-4f, $"bottom cap normal {i} should point down");
 
-        for (int i = curvedStart; i < curvedStart + 34; i++)
+        for (int i = 26; i < 52; i++)
+            Assert.AreEqual(1f, normals[i].y, 1e-4f, $"top cap normal {i} should point up");
+
+        for (int i = 52; i < 86; i++)
         {
             var n = normals[i];
-            // Normals on the curved side point radially outward from origin in XZ plane.
             float lenXZ = Mathf.Sqrt(n.x * n.x + n.z * n.z);
-            Assert.Greater(lenXZ, 0.9f, $"curved side normal {i} should point outward in XZ");
+            Assert.Greater(lenXZ, 0.99f, $"curved side normal {i} should point outward in XZ");
+            Assert.GreaterOrEqual(n.x, -1e-4f, $"curved side normal {i}.x is non-negative");
+            Assert.GreaterOrEqual(n.z, -1e-4f, $"curved side normal {i}.z is non-negative");
             Assert.AreEqual(0f, n.y, 1e-4f, "curved side normals must have zero Y component");
-        }
-
-        // Top cap normals should point up (+Y).
-        for (int i = bottomVerts; i < bottomVerts + topVerts; i++)
-        {
-            Assert.AreEqual(1f, normals[i].y, 1e-4f, $"top cap normal {i} should point up");
-        }
-
-        // Bottom cap normals should point down (-Y).
-        for (int i = 0; i < bottomVerts; i++)
-        {
-            Assert.AreEqual(-1f, normals[i].y, 1e-4f, $"bottom cap normal {i} should point down");
         }
     }
 
     [Test]
-    public void BuildMesh_RadiusChange_RebuildsMesh()
+    public void BuildMesh_CornerRadiusChange_RebuildsMesh()
     {
-        var shelf = CreateShelf("R_CHG", 300, 18, Vector3.zero);
-        shelf.Radius = 500;
+        var shelf = CreateShelf("R_CHG", 600, 400, 18, 200, Vector3.zero);
+        var before = shelf.GetComponent<MeshFilter>().sharedMesh;
+        Assert.IsFalse(HasVertexAtXZ(before.vertices, 0.6f, 0.4f));
 
-        var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
-        Assert.AreEqual(500f * AppConstants.MM_TO_UNITS, mesh.bounds.size.x, 1e-4f);
-        Assert.AreEqual(500f * AppConstants.MM_TO_UNITS, mesh.bounds.size.z, 1e-4f);
+        shelf.CornerRadius = 100;
+        var after = shelf.GetComponent<MeshFilter>().sharedMesh;
+
+        // Дуга сместилась к углу: центр веера теперь (0.5, 0.3).
+        const int fanCenter = 26 + 8;
+        Assert.AreEqual(0.5f, after.vertices[fanCenter].x, 1e-5f);
+        Assert.AreEqual(0.3f, after.vertices[fanCenter].z, 1e-5f);
         Assert.AreEqual(Vector3.one.x, shelf.transform.localScale.x, 1e-6f);
         Assert.AreEqual(Vector3.one.y, shelf.transform.localScale.y, 1e-6f);
         Assert.AreEqual(Vector3.one.z, shelf.transform.localScale.z, 1e-6f);
     }
 
     [Test]
-    public void ElementData_FromElement_PreservesRadius()
+    public void ElementData_FromElement_PreservesCornerRadius()
     {
-        var shelf = CreateShelf("R4", 450, 25, new Vector3(1f, 0.5f, -2f));
+        var shelf = CreateShelf("R5", 600, 400, 25, 180, new Vector3(1f, 0.5f, -2f));
         var ed = ElementData.FromElement(shelf);
 
         Assert.IsTrue(ed.isRadialShelf);
-        Assert.AreEqual(450, ed.radius);
-        Assert.AreEqual(new Vector3Int(450, 25, 450), ed.Dimensions);
+        Assert.AreEqual(180, ed.cornerRadius);
+        Assert.AreEqual(new Vector3Int(600, 25, 400), ed.Dimensions);
     }
 
     [Test]
-    public void SaveLoad_RoundTrip_KeepsRadius()
+    public void SaveLoad_RoundTrip_KeepsCornerRadius()
     {
-        var shelf = CreateShelf("R5", 350, 18, new Vector3(0.5f, 0.1f, -1f));
+        var shelf = CreateShelf("R6", 550, 350, 18, 250, new Vector3(0.5f, 0.1f, -1f));
         shelf.Movable = false;
         shelf.GroupId = 7;
         shelf.MaterialId = "oak";
@@ -178,27 +227,42 @@ public class RadialShelfTests
         var restored = JsonUtility.FromJson<ElementData>(json);
 
         Assert.IsTrue(restored.isRadialShelf);
-        Assert.AreEqual(350, restored.radius);
-        Assert.AreEqual(new Vector3Int(350, 18, 350), restored.Dimensions);
-        Assert.AreEqual("R5", restored.name);
+        Assert.AreEqual(250, restored.cornerRadius);
+        Assert.AreEqual(250, restored.EffectiveCornerRadius);
+        Assert.AreEqual(new Vector3Int(550, 18, 350), restored.Dimensions);
+        Assert.AreEqual("R6", restored.name);
         Assert.AreEqual(false, restored.movable);
         Assert.AreEqual(7, restored.groupId);
         Assert.AreEqual("oak", restored.materialId);
     }
 
     [Test]
-    public void RestoreScene_CreatesRadialShelfWithRadius()
+    public void EffectiveCornerRadius_LegacySave_FallsBackToRadius()
+    {
+        // Старый файл: полка-сектор r×r, поле cornerRadius отсутствует (=0).
+        var legacy = new ElementData
+        {
+            dimensionsMM = new[] { 350, 18, 350 },
+            isRadialShelf = true,
+            radius = 350,
+            cornerRadius = 0
+        };
+        Assert.AreEqual(350, legacy.EffectiveCornerRadius);
+    }
+
+    [Test]
+    public void RestoreScene_CreatesRadialShelfWithCornerRadius()
     {
         var data = new ProjectData(new[]
         {
             new ElementData
             {
                 name = "RSaved",
-                dimensionsMM = new[] { 400, 18, 400 },
+                dimensionsMM = new[] { 600, 18, 400 },
                 position = new[] { 0f, 0f, 0f },
                 rotation = new[] { 0f, 0f, 0f, 1f },
                 isRadialShelf = true,
-                radius = 400,
+                cornerRadius = 200,
                 materialId = "default"
             }
         });
@@ -208,7 +272,37 @@ public class RadialShelfTests
 
         var shelf = created[0].GetComponent<RadialShelfElement>();
         Assert.IsNotNull(shelf);
-        Assert.AreEqual(400, shelf.Radius);
+        Assert.AreEqual(200, shelf.CornerRadius);
+        Assert.AreEqual(new Vector3Int(600, 18, 400), shelf.DimensionsMM);
+
+        foreach (var go in created)
+            if (go != null) Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void RestoreScene_LegacySave_GetsFullyRoundedCorner()
+    {
+        var data = new ProjectData(new[]
+        {
+            new ElementData
+            {
+                name = "RLegacy",
+                dimensionsMM = new[] { 400, 18, 400 },
+                position = new[] { 0f, 0f, 0f },
+                rotation = new[] { 0f, 0f, 0f, 1f },
+                isRadialShelf = true,
+                radius = 400,
+                cornerRadius = 0,
+                materialId = "default"
+            }
+        });
+
+        var created = SaveLoadManager.RestoreScene(data);
+        Assert.AreEqual(1, created.Count);
+
+        var shelf = created[0].GetComponent<RadialShelfElement>();
+        Assert.IsNotNull(shelf);
+        Assert.AreEqual(400, shelf.CornerRadius, "legacy pie shelf → fully rounded corner");
         Assert.AreEqual(new Vector3Int(400, 18, 400), shelf.DimensionsMM);
 
         foreach (var go in created)
@@ -216,7 +310,7 @@ public class RadialShelfTests
     }
 
     [Test]
-    public void Convert_PartToRadialShelf_PreservesNameAndSetsRadius()
+    public void Convert_PartToRadialShelf_PreservesNameAndDimensions()
     {
         var go = new GameObject("Part1");
         _go = go;
@@ -230,24 +324,33 @@ public class RadialShelfTests
 
         Assert.IsNotNull(converted as RadialShelfElement);
         Assert.AreEqual("Part1", converted.PartName);
-        Assert.AreEqual(new Vector3Int(300, 18, 300), converted.DimensionsMM);
-        Assert.AreEqual(300, (converted as RadialShelfElement)!.Radius);
+        Assert.AreEqual(new Vector3Int(300, 18, 200), converted.DimensionsMM, "dimensions are preserved as-is");
+        Assert.AreEqual(200, (converted as RadialShelfElement)!.CornerRadius, "default corner radius fits min(300, 200)");
     }
 
     [Test]
-    public void Convert_RadialShelfToPart_PreservesName()
+    public void Convert_RadialShelfToPart_PreservesNameAndDimensions()
     {
-        var shelf = CreateShelf("RS", 400, 18, Vector3.zero);
+        var shelf = CreateShelf("RS", 600, 400, 18, 200, Vector3.zero);
         var converted = ElementConverter.Convert(shelf, ElementConverter.TargetType.Part);
 
         Assert.IsNull(converted as RadialShelfElement);
         Assert.AreEqual("RS", converted.PartName);
-        Assert.AreEqual(new Vector3Int(400, 18, 400), converted.DimensionsMM);
+        Assert.AreEqual(new Vector3Int(600, 18, 400), converted.DimensionsMM);
     }
 
-    private static RadialShelfElement CreateShelf(string name, int radius, int thickness, Vector3 pos)
+    private static bool HasVertexAtXZ(Vector3[] verts, float x, float z)
     {
-        var go = ElementFactory.CreateRadialShelf(radius, thickness, name, pos);
+        foreach (var v in verts)
+            if (Mathf.Abs(v.x - x) < 1e-5f && Mathf.Abs(v.z - z) < 1e-5f)
+                return true;
+        return false;
+    }
+
+    private static RadialShelfElement CreateShelf(string name, int width, int depth, int thickness,
+        int cornerRadius, Vector3 pos)
+    {
+        var go = ElementFactory.CreateRadialShelf(width, depth, thickness, cornerRadius, name, pos);
         return go.GetComponent<RadialShelfElement>();
     }
 }
