@@ -55,8 +55,8 @@ namespace KitchenDesigner.Core
                 new Vector3(maxX, maxY, maxZ),
                 new Vector3(minX, maxY, maxZ),
             };
-            var pos = transform.position;
-            var rot = transform.rotation;
+            var pos = ClosedPosition;
+            var rot = ClosedRotation;
             var result = new Vector3[8];
             for (int i = 0; i < 8; i++)
                 result[i] = pos + rot * localCorners[i];
@@ -66,8 +66,8 @@ namespace KitchenDesigner.Core
         public override Face[] GetFaces()
         {
             CornerUnits(out var minX, out var maxX, out var minY, out var maxY, out var minZ, out var maxZ);
-            var pos = transform.position;
-            var rot = transform.rotation;
+            var pos = ClosedPosition;
+            var rot = ClosedRotation;
             var axes = new Vector3[]
             {
                 rot * Vector3.right,
