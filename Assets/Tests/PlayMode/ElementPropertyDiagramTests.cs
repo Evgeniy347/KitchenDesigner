@@ -276,7 +276,7 @@ public class ElementPropertyDiagramTests
     [UnityTest]
     public IEnumerator ContextMenu_Table_SavesPng()
     {
-        var el = SpawnTable("Стол_1200x750x600");
+        var el = SpawnTable("Стол_2000x750x1000");
         Assert.IsNotNull(el);
         yield return CapturePanel("ContextMenu", "contextmenu_table.png",
             () => { ContextMenuUI.Instance!.Open(el); },
@@ -286,7 +286,7 @@ public class ElementPropertyDiagramTests
     [UnityTest]
     public IEnumerator ContextMenu_RadiusTable_SavesPng()
     {
-        var dims = new Vector3Int(1200, 750, 600);
+        var dims = new Vector3Int(2000, 750, 1000);
         Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
         var go = ElementFactory.CreateRadiusTable(dims, "Радиусный стол", pos);
         var el = go.GetComponent<KitchenElement>();

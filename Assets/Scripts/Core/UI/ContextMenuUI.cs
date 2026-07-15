@@ -806,6 +806,12 @@ namespace KitchenDesigner.Core.UI
             if (radial != null)
                 _radius!.text = radial.Radius.ToString();
 
+            if (table != null && _legInset != null)
+                _legInset.text = table.LegInsetMM.ToString();
+
+            if (radiusTable != null && _legInset != null)
+                _legInset.text = radiusTable.LegInsetMM.ToString();
+
             if (facade != null)
             {
                 _gapLeft!.text = facade.GapLeft.ToString();

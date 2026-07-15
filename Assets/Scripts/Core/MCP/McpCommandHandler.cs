@@ -802,9 +802,9 @@ namespace KitchenDesigner.Core.MCP
             if (p.is_table)
             {
                 var dimsT = new Vector3Int(
-                    p.width > 0 ? p.width : 1200,
+                    p.width > 0 ? p.width : 2000,
                     p.height > 0 ? p.height : 750,
-                    p.depth > 0 ? p.depth : 600);
+                    p.depth > 0 ? p.depth : 1000);
                 var posT = new Vector3(p.x, p.y, p.z);
                 var goT = ElementFactory.CreateTable(dimsT, elementName, posT);
                 var tableEl = goT.GetComponent<TableElement>();
@@ -824,9 +824,9 @@ namespace KitchenDesigner.Core.MCP
             if (p.is_radius_table)
             {
                 var dimsRT = new Vector3Int(
-                    p.width > 0 ? p.width : 1200,
+                    p.width > 0 ? p.width : 2000,
                     p.height > 0 ? p.height : 750,
-                    p.depth > 0 ? p.depth : 600);
+                    p.depth > 0 ? p.depth : 1000);
                 var posRT = new Vector3(p.x, p.y, p.z);
                 var goRT = ElementFactory.CreateRadiusTable(dimsRT, elementName, posRT);
                 var radiusTableEl = goRT.GetComponent<RadiusTableElement>();

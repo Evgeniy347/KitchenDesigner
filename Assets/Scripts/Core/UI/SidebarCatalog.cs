@@ -115,9 +115,9 @@ namespace KitchenDesigner.Core.UI
 
         private static Group FurnitureGroup()
         {
-            var table = new Item("Прямоугольный стол", new Vector3Int(1200, 750, 600));
+            var table = new Item("Прямоугольный стол", new Vector3Int(2000, 750, 1000));
             table.isFurniture = true;
-            var radiusTable = new Item("Радиусный стол", new Vector3Int(1200, 750, 600));
+            var radiusTable = new Item("Радиусный стол", new Vector3Int(2000, 750, 1000));
             radiusTable.isRadiusTable = true;
             return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable } };
         }
