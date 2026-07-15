@@ -319,8 +319,94 @@ public class AssembledFacadeValidationReproTests
         }
     }
 
-    private static (float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
-        ComputeAABB(Vector3[] v)
+    [Test]
+    public void LoweredWall_GetVertices_ReturnsFullGeometry()
+    {
+        var wall = MakeElement("TestWall",
+            new Vector3Int(3170, 2700, 100),
+            new Vector3(0f, 1.35f, -3.67f),
+            Quaternion.identity);
+        var wallComp = wall.gameObject.AddComponent<Wall>();
+
+        var fullVerts = wall.GetVertices();
+        wallComp.SetLowered(true, 0.1f);
+        var loweredVerts = wall.GetVertices();
+
+        for (int i = 0; i < 8; i++)
+        {
+            Assert.AreEqual(fullVerts[i].x, loweredVerts[i].x, 1e-6f,
+                $"vert[{i}].x should be full even when lowered");
+            Assert.AreEqual(fullVerts[i].y, loweredVerts[i].y, 1e-6f,
+                $"vert[{i}].y should be full even when lowered");
+            Assert.AreEqual(fullVerts[i].z, loweredVerts[i].z, 1e-6f,
+                $"vert[{i}].z should be full even when lowered");
+        }
+    }
+
+    [Test]
+    public void LoweredWall_GetFaces_ReturnsFullGeometry()
+    {
+        var wall = MakeElement("TestWall",
+            new Vector3Int(3170, 2700, 100),
+            new Vector3(0f, 1.35f, -3.67f),
+            Quaternion.identity);
+        var wallComp = wall.gameObject.AddComponent<Wall>();
+
+        var fullFaces = wall.GetFaces();
+        wallComp.SetLowered(true, 0.1f);
+        var loweredFaces = wall.GetFaces();
+
+        Assert.AreEqual(fullFaces[4].size.y, loweredFaces[4].size.y, 1e-6f,
+            "Z+ face height should be full even when wall is lowered");
+        Assert.AreEqual(fullFaces[4].center.y, loweredFaces[4].center.y, 1e-6f,
+            "Z+ face center.y should be full even when wall is lowered");
+    }
+
+    [Test]
+    public void LoweredWall_Validation_FindsContactWithB3FakeBottom()
+    {
+        var wall = MakeElement("TestWall",
+            new Vector3Int(3170, 2700, 100),
+            new Vector3(0f, 1.35f, -3.67f),
+            Quaternion.identity);
+        var wallComp = wall.gameObject.AddComponent<Wall>();
+
+        var bottom = MakeElement("B3_fake_bottom",
+            new Vector3Int(564, 540, 16),
+            new Vector3(0.127f, 0.108f, -3.35f),
+            Quaternion.Euler(270f, 0f, 0f));
+
+        var door = MakeAssembledFacade("B3_door",
+            new Vector3Int(596, 716, 18),
+            new Vector3(0.127f, 0.46f, -3.071f),
+            Quaternion.identity,
+            0, 0, 0, 0);
+
+        var all = PartRegistry.GetAll();
+
+        // Без опускания: B3_fake_bottom контактирует со стеной → оба валидны
+        var resultFull = ConstraintValidator.Validate(all);
+        var doorFull = all.Find(e => e.PartName == "B3_door");
+        var bottomFull = all.Find(e => e.PartName == "B3_fake_bottom");
+        Assert.IsFalse(resultFull.violations.Contains(doorFull),
+            "B3_door should be valid when wall is full height");
+        Assert.IsFalse(resultFull.violations.Contains(bottomFull),
+            "B3_fake_bottom should be valid when wall is full height");
+
+        // Опускаем стену — валидация всё равно должна видеть полную геометрию
+        wallComp.SetLowered(true, 0.1f);
+        var resultLowered = ConstraintValidator.Validate(all);
+        Assert.IsFalse(resultLowered.violations.Contains(doorFull),
+            "B3_door should remain valid even when wall is lowered");
+        Assert.IsFalse(resultLowered.violations.Contains(bottomFull),
+            "B3_fake_bottom should remain valid even when wall is lowered");
+
+        // Количество контактов и нарушений должно совпадать
+        Assert.AreEqual(resultFull.contacts.Count, resultLowered.contacts.Count,
+            "contact count should not change when wall is lowered");
+        Assert.AreEqual(resultFull.violations.Count, resultLowered.violations.Count,
+            "violation count should not change when wall is lowered");
+    }
     {
         float minX = v[0].x, maxX = v[0].x;
         float minY = v[0].y, maxY = v[0].y;
