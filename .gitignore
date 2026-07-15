@@ -129,6 +129,11 @@ build_count.txt
 test-results/
 
 # ===========================
+# Temp Scripts / Lock Files
+# ===========================
+tmp-scripts/
+
+# ===========================
 # Generated Build Info
 # ===========================
 /Assets/Scripts/Core/Infrastructure/BuildInfo.Generated.cs
