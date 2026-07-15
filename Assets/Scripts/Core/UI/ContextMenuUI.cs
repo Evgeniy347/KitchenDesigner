@@ -539,7 +539,7 @@ namespace KitchenDesigner.Core.UI
 
                 if (row.toggleGO != null)
                     row.toggleGO.SetActive(visible);
-                else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly)
+                else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly)
                     foreach (var rt in row.rects)
                         if (rt != null) rt.gameObject.SetActive(visible);
 
