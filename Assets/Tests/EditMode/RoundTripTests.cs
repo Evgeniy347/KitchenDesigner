@@ -693,7 +693,7 @@ public class RoundTripTests
         gs.WallsEnabled = false;
         gs.LowerNearWalls = true;
 
-        gs.Save();
+        var data = gs.ToData();
 
         // Сбрасываем ВСЕ поля в другие значения
         gs.GridStep = 1;
@@ -709,8 +709,8 @@ public class RoundTripTests
         gs.WallsEnabled = true;
         gs.LowerNearWalls = false;
 
-        // Загружаем — должны восстановиться все 12 полей
-        gs.Load();
+        // Применяем — должны восстановиться все 12 полей
+        gs.ApplyFrom(data);
 
         Assert.AreEqual(32, gs.GridStep, "GridStep");
         Assert.IsFalse(gs.GridEnabled, "GridEnabled");
@@ -731,29 +731,29 @@ public class RoundTripTests
         gs.AutoSave = false; gs.AutoSaveInterval = 60;
         gs.SpatialGrid = false; gs.WindowedMode = true;
         gs.EdgeOutline = false; gs.WallsEnabled = true; gs.LowerNearWalls = false;
-        gs.Save();
     }
 
     [Test]
-    public void Settings_WallsHiddenInversion_RoundTrip()
+    public void Settings_WallsEnabled_RoundTrip()
     {
         var gs = KitchenSettings.Instance;
         bool prevWalls = gs.WallsEnabled;
 
-        // false → wallsHidden=true в JSON
+        // false round-trips correctly
         gs.WallsEnabled = false;
-        gs.Save();
-        gs.Load();
+        var data = gs.ToData();
+        gs.WallsEnabled = true;
+        gs.ApplyFrom(data);
         Assert.IsFalse(gs.WallsEnabled, "false round-trips correctly");
 
-        // true → wallsHidden=false в JSON
+        // true round-trips correctly
         gs.WallsEnabled = true;
-        gs.Save();
-        gs.Load();
+        data = gs.ToData();
+        gs.WallsEnabled = false;
+        gs.ApplyFrom(data);
         Assert.IsTrue(gs.WallsEnabled, "true round-trips correctly");
 
         gs.WallsEnabled = prevWalls;
-        gs.Save();
     }
 
     // ── 12. Full ProjectData round-trip (groups + camera + baseplate) ────

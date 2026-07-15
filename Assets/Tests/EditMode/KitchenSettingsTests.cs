@@ -47,8 +47,18 @@ public class KitchenSettingsTests
         gs.AutoSave = true;
         gs.AutoSaveInterval = 120;
 
-        gs.Save();
-        gs.Load();
+        var data = gs.ToData();
+        Assert.IsNotNull(data);
+
+        gs.GridStep = 16;
+        gs.GridEnabled = true;
+        gs.SnapEnabled = true;
+        gs.SnapThreshold = 50f;
+        gs.BlockOnViolation = false;
+        gs.AutoSave = false;
+        gs.AutoSaveInterval = 60;
+
+        gs.ApplyFrom(data);
 
         Assert.AreEqual(32, gs.GridStep);
         Assert.AreEqual(false, gs.GridEnabled);
@@ -65,7 +75,6 @@ public class KitchenSettingsTests
         gs.BlockOnViolation = false;
         gs.AutoSave = false;
         gs.AutoSaveInterval = 60;
-        gs.Save();
     }
 
     [Test]
@@ -75,13 +84,12 @@ public class KitchenSettingsTests
         bool prev = gs.EdgeOutline;
 
         gs.EdgeOutline = true;
-        gs.Save();
+        var data = gs.ToData();
         gs.EdgeOutline = false;
-        gs.Load();
+        gs.ApplyFrom(data);
         Assert.IsTrue(gs.EdgeOutline);
 
         gs.EdgeOutline = prev;
-        gs.Save();
     }
 
     [Test]
@@ -93,16 +101,15 @@ public class KitchenSettingsTests
 
         gs.WallsEnabled = false;
         gs.LowerNearWalls = true;
-        gs.Save();
+        var data = gs.ToData();
         gs.WallsEnabled = true;
         gs.LowerNearWalls = false;
-        gs.Load();
+        gs.ApplyFrom(data);
         Assert.IsFalse(gs.WallsEnabled);
         Assert.IsTrue(gs.LowerNearWalls);
 
         gs.WallsEnabled = prevWalls;
         gs.LowerNearWalls = prevLower;
-        gs.Save();
     }
 
     [Test]
@@ -114,16 +121,15 @@ public class KitchenSettingsTests
 
         gs.SpatialGrid = true;
         gs.WindowedMode = false;
-        gs.Save();
+        var data = gs.ToData();
         gs.SpatialGrid = false;
         gs.WindowedMode = true;
-        gs.Load();
+        gs.ApplyFrom(data);
         Assert.IsTrue(gs.SpatialGrid);
         Assert.IsFalse(gs.WindowedMode);
 
         gs.SpatialGrid = prevGrid;
         gs.WindowedMode = prevWindow;
-        gs.Save();
     }
 
     [Test]
@@ -137,20 +143,16 @@ public class KitchenSettingsTests
     }
 
     [Test]
-    public void Load_WithoutSavedKey_DoesNotThrow_KeepsValues()
+    public void ApplyFrom_Null_DoesNotThrow_KeepsValues()
     {
         var gs = KitchenSettings.Instance;
         int prevStep = gs.GridStep;
-        bool hadKey = PlayerPrefs.HasKey("KitchenSettings");
-        string? saved = hadKey ? PlayerPrefs.GetString("KitchenSettings") : null;
 
-        PlayerPrefs.DeleteKey("KitchenSettings");
         gs.GridStep = 24;
-        Assert.DoesNotThrow(() => gs.Load());
-        Assert.AreEqual(24, gs.GridStep, "без ключа Load не меняет значения");
+        Assert.DoesNotThrow(() => gs.ApplyFrom(null));
+        Assert.AreEqual(24, gs.GridStep, "ApplyFrom(null) не меняет значения");
 
         gs.GridStep = prevStep;
-        if (hadKey) { PlayerPrefs.SetString("KitchenSettings", saved); PlayerPrefs.Save(); }
     }
 
     [Test]

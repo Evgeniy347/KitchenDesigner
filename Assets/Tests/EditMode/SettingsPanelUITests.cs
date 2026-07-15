@@ -288,7 +288,6 @@ public class SettingsPanelUITests
         Assert.AreEqual(!prev, s.GridEnabled);
 
         s.GridEnabled = prev;
-        s.Save();
     }
 
     // ── Project tab: input rows ─────────────────────────────
@@ -341,7 +340,6 @@ public class SettingsPanelUITests
         Assert.AreEqual(42, s.GridStep);
 
         s.GridStep = prev;
-        s.Save();
     }
 
     [Test]
@@ -356,8 +354,6 @@ public class SettingsPanelUITests
         field.onEndEdit.Invoke("abc");
 
         Assert.AreEqual(prev, s.GridStep);
-
-        s.Save();
     }
 
     [Test]
