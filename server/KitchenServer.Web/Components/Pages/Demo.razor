@@ -1,8 +1,8 @@
 @page "/demo"
 @rendermode InteractiveServer
-@attribute [Authorize]
 @using Microsoft.AspNetCore.Components.Authorization
 @using KitchenServer.Web.Data
+@using KitchenServer.Web.Endpoints
 @using KitchenServer.Web.Services
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<AppDbContext> DbFactory
@@ -47,35 +47,64 @@
         try
         {
             var authState = await AuthProvider.GetAuthenticationStateAsync();
-            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
-            if (string.IsNullOrEmpty(userId))
+            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var isAuthenticated = !string.IsNullOrEmpty(userId);
+
+            if (isAuthenticated)
             {
-                _error = "Not authenticated.";
-                return;
+                await InitAuthenticated(userId!);
             }
-
-            var exampleId = await ExampleService.GetOrCreateExampleIdAsync(DbFactory, Storage, userId);
-            if (exampleId is null)
+            else
             {
-                _error = "Демо-пример недоступен.";
-                return;
+                InitUnauthenticated();
             }
-
-            var projectIdStr = exampleId.Value.ToString();
-
-            _session = McpSessions.CreateSession(userId, projectIdStr);
-            McpSessions.SessionStateChanged += OnSessionStateChanged;
-            _iframeSrc = $"/unity/index.html?projectId={exampleId.Value}" +
-                         $"&mcpKey={Uri.EscapeDataString(_session.TabKey)}";
-
-            _ready = true;
-            NavState.Set("Демо-пример", exampleId.Value, _session.TabKey);
-            NavState.SetDemo(true);
         }
         catch (Exception ex)
         {
             _error = $"Failed to load demo: {ex.Message}";
         }
+    }
+
+    private async Task InitAuthenticated(string userId)
+    {
+        var exampleId = await ExampleService.GetOrCreateExampleIdAsync(DbFactory, Storage, userId);
+        if (exampleId is null)
+        {
+            _error = "Демо-пример недоступен.";
+            return;
+        }
+
+        var projectIdStr = exampleId.Value.ToString();
+
+        _session = McpSessions.CreateSession(userId, projectIdStr);
+        McpSessions.SessionStateChanged += OnSessionStateChanged;
+        _iframeSrc = $"/unity/index.html?projectId={exampleId.Value}" +
+                     $"&mcpKey={Uri.EscapeDataString(_session.TabKey)}";
+
+        _ready = true;
+        NavState.Set("Демо-пример", exampleId.Value, _session.TabKey);
+        NavState.SetDemo(true);
+    }
+
+    private void InitUnauthenticated()
+    {
+        var demoJson = ExampleService.GetExampleJson();
+        if (demoJson is null)
+        {
+            _error = "Демо-пример недоступен.";
+            return;
+        }
+
+        var demoId = ProjectEndpoints.DemoProjectId;
+
+        _session = McpSessions.CreateSession("anonymous", demoId.ToString());
+        McpSessions.SessionStateChanged += OnSessionStateChanged;
+        _iframeSrc = $"/unity/index.html?projectId={demoId}" +
+                     $"&mcpKey={Uri.EscapeDataString(_session.TabKey)}";
+
+        _ready = true;
+        NavState.Set("Демо-пример", demoId, _session.TabKey);
+        NavState.SetDemo(true);
     }
 
     private void OnSessionStateChanged(McpSession s)
