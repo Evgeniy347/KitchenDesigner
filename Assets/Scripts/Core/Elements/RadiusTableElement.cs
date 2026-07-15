@@ -58,6 +58,8 @@ namespace KitchenDesigner.Core
 
         public override void ApplyDimensions()
         {
+            base.ApplyDimensions();
+
             var dims = DimensionsMM;
             int overallW = dims.x;
             int overallH = dims.y;
