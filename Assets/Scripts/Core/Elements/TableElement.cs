@@ -58,6 +58,8 @@ namespace KitchenDesigner.Core
 
         public override void ApplyDimensions()
         {
+            base.ApplyDimensions();
+
             var rootMf = GetComponent<MeshFilter>();
             if (rootMf != null) Object.DestroyImmediate(rootMf);
             var rootMr = GetComponent<MeshRenderer>();
