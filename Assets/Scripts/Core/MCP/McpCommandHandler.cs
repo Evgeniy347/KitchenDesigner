@@ -85,6 +85,7 @@ namespace KitchenDesigner.Core.MCP
                     case "set_element_lock": return HandleSetElementLock(request);
                     case "set_facade_mode": return HandleSetFacadeMode(request);
                     case "set_drawer_properties": return HandleSetDrawerProperties(request);
+                    case "set_radial_shelf_properties": return HandleSetRadialShelfProperties(request);
                     case "set_table_properties": return HandleSetTableProperties(request);
                     case "cycle_drawer_animation": return HandleCycleDrawerAnimation(request);
                     case "set_material": return HandleSetMaterial(request);
@@ -323,7 +324,8 @@ namespace KitchenDesigner.Core.MCP
                 aabbMaxX = aabb.maxX, aabbMaxY = aabb.maxY, aabbMaxZ = aabb.maxZ,
                 effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z,
                 faceGaps = gaps,
-                radius = radial != null ? radial.Radius : 0,
+                radius = radial != null ? radial.CornerRadius : 0,
+                cornerRadius = radial != null ? radial.CornerRadius : 0,
                 faceNormalX = facadeValidation?.normal.x ?? 0f,
                 faceNormalY = facadeValidation?.normal.y ?? 0f,
                 faceNormalZ = facadeValidation?.normal.z ?? 0f,
@@ -770,16 +772,27 @@ namespace KitchenDesigner.Core.MCP
 
             if (p.is_radial_shelf)
             {
-                int radius = p.radius > 0 ? p.radius : 300;
-                int thickness = p.depth > 0 ? p.depth : AppConstants.BOARD_THICKNESS_DEFAULT;
+                // Легаси-вызов (radius + depth-как-толщина, без width/height) даёт
+                // прежнюю форму: доска radius×radius с полностью скруглённым углом.
+                bool legacy = p.radius > 0 && p.width <= 0 && p.height <= 0;
+                int width = legacy ? p.radius : (p.width > 0 ? p.width : 600);
+                int depthZ = legacy ? p.radius : (p.depth > 0 ? p.depth : 400);
+                int thickness = legacy
+                    ? (p.depth > 0 ? p.depth : AppConstants.BOARD_THICKNESS_DEFAULT)
+                    : (p.height > 0 ? p.height : AppConstants.BOARD_THICKNESS_DEFAULT);
+                int cornerRadius = legacy ? p.radius
+                    : (p.corner_radius > 0 ? p.corner_radius : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT);
+                cornerRadius = Mathf.Clamp(cornerRadius, 1, Mathf.Min(width, depthZ));
+
                 var posR = new Vector3(p.x, p.y, p.z);
-                var goR = ElementFactory.CreateRadialShelf(radius, thickness, elementName, posR);
+                var goR = ElementFactory.CreateRadialShelf(width, depthZ, thickness, cornerRadius, elementName, posR);
                 CommandStack.Execute(new CreateCommand(goR));
                 RefreshElementHighlights();
                 var elR = goR.GetComponent<KitchenElement>();
-                Debug.Log($"[MCP] Created radial shelf '{elementName}' radius={radius} thickness={thickness}");
+                Debug.Log($"[MCP] Created radial shelf '{elementName}' {width}x{thickness}x{depthZ} cornerRadius={cornerRadius}");
                 return McpResponse.Result(req.id, new {
-                    ok = true, name = goR.name, is_radial_shelf = true, radius = radius,
+                    ok = true, name = goR.name, is_radial_shelf = true,
+                    width = width, depth = depthZ, thickness = thickness, corner_radius = cornerRadius,
                     path = GetGameObjectPath(goR), posX = posR.x, posY = posR.y, posZ = posR.z,
                     hasViolations = HasViolations(elR) });
             }
@@ -1806,6 +1819,26 @@ namespace KitchenDesigner.Core.MCP
 
             Debug.Log($"[MCP] Drawer '{p.name}' properties updated");
             return McpResponse.Result(req.id, BuildElementInfo(drawer, PartRegistry.GetAll(), false));
+        }
+
+        private McpResponse HandleSetRadialShelfProperties(McpRequest req)
+        {
+            var p = req.Params?.ToObject<ParamsSetRadialShelfProperties>();
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            var shelf = el as RadialShelfElement;
+            if (shelf == null)
+                return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a radial shelf");
+
+            if (p.corner_radius.HasValue)
+                shelf.CornerRadius = p.corner_radius.Value;
+
+            Debug.Log($"[MCP] Radial shelf '{p.name}' cornerRadius={shelf.CornerRadius}");
+            return McpResponse.Result(req.id, BuildElementInfo(el, PartRegistry.GetAll(), false));
         }
 
         private McpResponse HandleSetTableProperties(McpRequest req)

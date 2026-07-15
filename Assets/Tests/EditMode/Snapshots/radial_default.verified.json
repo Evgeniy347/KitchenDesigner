@@ -4,9 +4,9 @@
         {
             "name": "DefaultRadial",
             "dimensionsMM": [
-                300,
+                600,
                 18,
-                300
+                400
             ],
             "position": [
                 0.0,
@@ -39,7 +39,8 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 300,
+            "radius": 200,
+            "cornerRadius": 200,
             "isDrawer": false,
             "drawerType": 0,
             "drawerNominalLength": 350,
@@ -103,6 +104,7 @@
         "assembledFill": 0,
         "grooveCount": 1,
         "radius": 300,
+        "cornerRadius": 0,
         "isDrawer": false,
         "drawerType": 0,
         "drawerNominalLength": 350,

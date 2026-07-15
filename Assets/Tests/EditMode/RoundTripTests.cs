@@ -68,9 +68,10 @@ public class RoundTripTests
         return go.GetComponent<AssembledFacadeElement>();
     }
 
-    private RadialShelfElement MakeRadial(string name, int radius, int thickness, Vector3 pos)
+    private RadialShelfElement MakeRadial(string name, int width, int depth, int thickness,
+        int cornerRadius, Vector3 pos)
     {
-        var go = ElementFactory.CreateRadialShelf(radius, thickness, name, pos);
+        var go = ElementFactory.CreateRadialShelf(width, depth, thickness, cornerRadius, name, pos);
         _spawned.Add(go);
         PartRegistry.Register(go.GetComponent<KitchenElement>());
         return go.GetComponent<RadialShelfElement>();
@@ -377,8 +378,8 @@ public class RoundTripTests
     [Test]
     public void RadialShelf_AllProperties_RoundTrip()
     {
-        var shelf = MakeRadial("RadialShelf", radius: 350, thickness: 18,
-            new Vector3(0.5f, 0.01f, -1.0f));
+        var shelf = MakeRadial("RadialShelf", width: 600, depth: 400, thickness: 18,
+            cornerRadius: 200, new Vector3(0.5f, 0.01f, -1.0f));
         shelf.transform.rotation = Quaternion.Euler(0, 90, 0);
         shelf.Movable = false;
         shelf.MaterialId = "oak";
@@ -388,10 +389,10 @@ public class RoundTripTests
         var r = Object.FindObjectsByType<KitchenElement>()[0] as RadialShelfElement;
         Assert.IsNotNull(r, "should be RadialShelfElement");
         Assert.AreEqual("RadialShelf", r!.PartName, "name");
-        Assert.AreEqual(350, r!.Radius, "radius");
+        Assert.AreEqual(200, r!.CornerRadius, "cornerRadius");
         Assert.AreEqual(18, r!.DimensionsMM.y, "thickness");
-        Assert.AreEqual(350, r!.DimensionsMM.x, "dim x should equal radius");
-        Assert.AreEqual(350, r!.DimensionsMM.z, "dim z should equal radius");
+        Assert.AreEqual(600, r!.DimensionsMM.x, "width");
+        Assert.AreEqual(400, r!.DimensionsMM.z, "depth");
         Assert.AreEqual(0.5f, r!.transform.position.x, 0.001f, "pos.x");
         Assert.AreEqual(0.01f, r!.transform.position.y, 0.001f, "pos.y");
         Assert.AreEqual(-1.0f, r!.transform.position.z, 0.001f, "pos.z");
@@ -401,23 +402,25 @@ public class RoundTripTests
     }
 
     [Test]
-    public void RadialShelf_DefaultRadius_RoundTrip()
+    public void RadialShelf_DefaultCornerRadius_RoundTrip()
     {
-        var shelf = MakeRadial("DefaultRadius", radius: 300, thickness: 18, Vector3.zero);
+        var shelf = MakeRadial("DefaultRadius", width: 600, depth: 400, thickness: 18,
+            cornerRadius: 200, Vector3.zero);
         FullRoundTrip();
         var r = Object.FindObjectsByType<KitchenElement>()[0] as RadialShelfElement;
         Assert.IsNotNull(r);
-        Assert.AreEqual(300, r!.Radius);
+        Assert.AreEqual(200, r!.CornerRadius);
     }
 
     [Test]
-    public void RadialShelf_CustomRadius_RoundTrip()
+    public void RadialShelf_CustomCornerRadius_RoundTrip()
     {
-        var shelf = MakeRadial("BigRadius", radius: 500, thickness: 18, Vector3.zero);
+        var shelf = MakeRadial("BigRadius", width: 500, depth: 500, thickness: 18,
+            cornerRadius: 500, Vector3.zero);
         FullRoundTrip();
         var r = Object.FindObjectsByType<KitchenElement>()[0] as RadialShelfElement;
         Assert.IsNotNull(r);
-        Assert.AreEqual(500, r!.Radius);
+        Assert.AreEqual(500, r!.CornerRadius);
         Assert.AreEqual(500, r!.DimensionsMM.x);
         Assert.AreEqual(500, r!.DimensionsMM.z);
     }
@@ -547,7 +550,8 @@ public class RoundTripTests
             AssembledFill.Glass);
         assembled.GrooveCount = 2;
 
-        var radialShelf = MakeRadial("SnapshotRadial", radius: 400, thickness: 18, new Vector3(0.2f, 0.01f, -1.5f));
+        var radialShelf = MakeRadial("SnapshotRadial", width: 600, depth: 400, thickness: 18,
+            cornerRadius: 200, new Vector3(0.2f, 0.01f, -1.5f));
 
         var wall = MakeWall("SnapshotWall", new Vector3Int(100, 2700, 2000), new Vector3(-2.0f, 1.35f, 0.0f));
 
@@ -588,7 +592,8 @@ public class RoundTripTests
 
         // радиусная полка
         Assert.IsTrue(json.Contains("\"isRadialShelf\""), "isRadialShelf field");
-        Assert.IsTrue(json.Contains("\"radius\""), "radius field");
+        Assert.IsTrue(json.Contains("\"radius\""), "radius field (legacy)");
+        Assert.IsTrue(json.Contains("\"cornerRadius\""), "cornerRadius field");
 
         // стена
         Assert.IsTrue(json.Contains("\"isWall\""), "isWall field");
@@ -608,7 +613,8 @@ public class RoundTripTests
             gapLeft: 3, gapRight: 3, gapTop: 2, gapBottom: 2);
         MakeAssembled("AssembledA", new Vector3Int(600, 800, 18), new Vector3(-0.3f, 0.4f, -2.0f),
             AssembledFill.Blind);
-        MakeRadial("RadialA", radius: 350, thickness: 18, new Vector3(0.2f, 0.01f, -1.5f));
+        MakeRadial("RadialA", width: 600, depth: 400, thickness: 18,
+            cornerRadius: 200, new Vector3(0.2f, 0.01f, -1.5f));
         MakeWall("WallA", new Vector3Int(100, 2700, 3000), new Vector3(-1.6f, 1.35f, 0.0f));
 
         FullRoundTrip();

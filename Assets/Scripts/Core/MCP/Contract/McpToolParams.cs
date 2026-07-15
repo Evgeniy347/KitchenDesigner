@@ -145,13 +145,18 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Size along X in MM (default 800).", Min = 1)] public int width;
         [McpParam("Size along Y in MM (default 400).", Min = 1)] public int height;
         [McpParam("Thickness along Z in MM (default 18).", Min = 1)] public int depth;
-        [McpParam("Radial shelf only: outer radius in MM (default 300).", Min = 1)] public int radius = 300;
+        [McpParam("Radial shelf only: corner rounding radius in MM (default 200, clamped to min(width, depth)).", Min = 1)]
+        public int corner_radius = 200; // = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT (Contract не зависит от Unity-кода)
+
+        // Legacy wire field: старые клиенты создавали полку-сектор как radius +
+        // depth(=толщина). radius>0 без width/height трактуется по-старому.
+        [McpIgnore] public int radius;
 
         [McpParam("Create as a WALL (structural anchor). Default false.")] public bool is_wall;
         [McpParam("Create the FLOOR plate. Ignores size/position. Default false.")] public bool is_floor;
         [McpParam("Create as a FACADE (door/front with gaps). Default false.")] public bool is_facade;
         [McpParam("Create as an ASSEMBLED (framed) facade — real frame geometry. Default false. Pair with fill.")] public bool is_assembled;
-        [McpParam("Create as a RADIAL (corner) shelf. Default false. Pair with radius.")] public bool is_radial_shelf;
+        [McpParam("Create as a RADIAL shelf — a rectangular board with ONE rounded corner (default 600x400x18, corner_radius 200). Default false. Pair with corner_radius.")] public bool is_radial_shelf;
         [McpParam("Create as a GTV DRAWER (sliding box). Default false. Pair with drawer_type/drawer_length/drawer_color/drawer_internal_width; width/height/depth are ignored.")]
         public bool is_drawer;
         [McpParam("Create as a TABLE (legs + tabletop). Default false. width/height/depth are table dimensions. Pair with leg_inset_mm.")]
@@ -285,6 +290,14 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Double drawer only: this box is the UPPER one.")] public bool? is_upper;
         [McpParam("Double drawer only: exact name of the paired drawer element (link both ways for sync).")] public string paired_drawer_name = string.Empty;
         [McpParam("Exact name of the facade element acting as this drawer's front — it opens/closes together with the drawer. Empty string detaches.")] public string attached_facade_name = string.Empty;
+    }
+
+    [Serializable]
+    public class ParamsSetRadialShelfProperties
+    {
+        [McpParam("Exact radial shelf element name.", Required = true)] public string name = string.Empty;
+        [McpParam("Corner rounding radius in MM (clamped to 1..min(width, depth)). Omit to keep current.", Min = 1)]
+        public int? corner_radius;
     }
 
     [Serializable]

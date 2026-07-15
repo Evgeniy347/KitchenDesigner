@@ -256,7 +256,7 @@ public class ElementConverterTests
     // ── Radial shelf conversions ───────────────────────────────────────
 
     [Test]
-    public void Part_To_RadialShelf_PreservesCommon_SetsRadiusFromMaxSide()
+    public void Part_To_RadialShelf_PreservesCommon_KeepsDimensions_DefaultCornerRadius()
     {
         var src = Make<KitchenElement>("Src", new Vector3Int(500, 18, 400), Vector3.zero);
         src.Movable = true;
@@ -270,8 +270,8 @@ public class ElementConverterTests
         Assert.AreEqual(true, result.Movable);
         Assert.AreEqual(21, result.GroupId);
         Assert.AreEqual("oak", result.MaterialId);
-        Assert.AreEqual(500, result.Radius);
-        Assert.AreEqual(new Vector3Int(500, 18, 500), result.DimensionsMM);
+        Assert.AreEqual(200, result.CornerRadius);
+        Assert.AreEqual(new Vector3Int(500, 18, 400), result.DimensionsMM);
     }
 
     [Test]
@@ -310,8 +310,8 @@ public class ElementConverterTests
         Assert.AreEqual(false, result.Movable);
         Assert.AreEqual(31, result.GroupId);
         Assert.AreEqual("wenge", result.MaterialId);
-        Assert.AreEqual(500, result.Radius);
-        Assert.AreEqual(new Vector3Int(500, 350, 500), result.DimensionsMM);
+        Assert.AreEqual(18, result.CornerRadius, "default 200 clamped to min(width, depth)=18");
+        Assert.AreEqual(new Vector3Int(500, 350, 18), result.DimensionsMM);
     }
 
     // ── Assembled → RadialShelf ────────────────────────────────────────
@@ -334,8 +334,8 @@ public class ElementConverterTests
         Assert.AreEqual(true, result.Movable);
         Assert.AreEqual(33, result.GroupId);
         Assert.AreEqual("oak", result.MaterialId);
-        Assert.AreEqual(700, result.Radius);
-        Assert.AreEqual(new Vector3Int(700, 400, 700), result.DimensionsMM);
+        Assert.AreEqual(18, result.CornerRadius, "default 200 clamped to min(width, depth)=18");
+        Assert.AreEqual(new Vector3Int(700, 400, 18), result.DimensionsMM);
     }
 
     // ── RadialShelf → Facade ──────────────────────────────────────────
@@ -469,7 +469,7 @@ public class ElementConverterTests
         // AssembledFacadeElement
         "Fill", "GrooveCount",
         // RadialShelfElement
-        "Radius"
+        "CornerRadius"
     };
 
     [Test]

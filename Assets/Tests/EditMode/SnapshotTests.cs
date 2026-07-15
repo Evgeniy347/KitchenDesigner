@@ -200,7 +200,7 @@ public class SnapshotTests
     [Test]
     public void Snapshot_RadialShelf_Default()
     {
-        var go = ElementFactory.CreateRadialShelf(300, 18, "DefaultRadial", Vector3.zero);
+        var go = ElementFactory.CreateRadialShelf(600, 400, 18, 200, "DefaultRadial", Vector3.zero);
         Add(go);
         var json = CaptureJson(new[] { go.GetComponent<KitchenElement>() });
         Snapshot.Match(json, "radial_default");
@@ -209,7 +209,7 @@ public class SnapshotTests
     [Test]
     public void Snapshot_RadialShelf_Custom()
     {
-        var go = ElementFactory.CreateRadialShelf(450, 18, "BigRadial",
+        var go = ElementFactory.CreateRadialShelf(450, 450, 18, 450, "BigRadial",
             new Vector3(0.5f, 0.01f, -1.0f));
         var shelf = go.GetComponent<RadialShelfElement>();
         go.transform.rotation = Quaternion.Euler(0, 90, 0);
@@ -278,7 +278,7 @@ public class SnapshotTests
         elements.Add(assembled);
 
         // Radial shelf
-        var radialGo = ElementFactory.CreateRadialShelf(350, 18, "Radial_A",
+        var radialGo = ElementFactory.CreateRadialShelf(350, 350, 18, 350, "Radial_A",
             new Vector3(0.2f, 0.01f, -1.5f));
         elements.Add(Add(radialGo)!);
 

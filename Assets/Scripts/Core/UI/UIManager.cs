@@ -301,11 +301,11 @@ namespace KitchenDesigner.Core.UI
         public void SpawnRadialShelf(Vector3Int dims, string name)
         {
             Vector3 pos = GroundPointInFrontOfCamera();
-            int radius = Mathf.Max(dims.x, dims.z);
             pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
             pos = GridManager.SnapToGrid(pos);
 
-            var go = ElementFactory.CreateRadialShelf(radius, dims.y, name, pos);
+            var go = ElementFactory.CreateRadialShelf(dims.x, dims.z, dims.y,
+                AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, name, pos);
             var element = go.GetComponent<KitchenElement>();
             if (element != null)
             {

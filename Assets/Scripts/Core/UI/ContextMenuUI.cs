@@ -116,7 +116,7 @@ namespace KitchenDesigner.Core.UI
             _w = Row(panel.transform, "Ширина, мм");
             _h = Row(panel.transform, "Высота, мм");
             _d = Row(panel.transform, "Глубина, мм");
-            _radius = RadialRow(panel.transform, "Радиус, мм");
+            _radius = RadialRow(panel.transform, "Радиус угла, мм");
 
             // Зазоры (только для фасадов) — блок скрывается в режиме «деталь».
             var gapSection = CreateGapSection(panel.transform, out float gapSectionH);
@@ -591,19 +591,14 @@ namespace KitchenDesigner.Core.UI
             MaybeRefresh(_ry, eu.y.ToString("F1"));
             MaybeRefresh(_rz, eu.z.ToString("F1"));
 
-            // Размеры, имя, радиус, зазоры — тоже обновляем в реальном времени
+            // Размеры, имя, радиус угла, зазоры — тоже обновляем в реальном времени
             var dims = _target.DimensionsMM;
+            MaybeRefresh(_w, dims.x.ToString());
+            MaybeRefresh(_h, dims.y.ToString());
+            MaybeRefresh(_d, dims.z.ToString());
             var radial = _target as RadialShelfElement;
             if (radial != null)
-            {
-                MaybeRefresh(_radius, radial.Radius.ToString());
-            }
-            else
-            {
-                MaybeRefresh(_w, dims.x.ToString());
-                MaybeRefresh(_h, dims.y.ToString());
-                MaybeRefresh(_d, dims.z.ToString());
-            }
+                MaybeRefresh(_radius, radial.CornerRadius.ToString());
 
             MaybeRefresh(_name, _target.PartName);
 
@@ -672,7 +667,9 @@ namespace KitchenDesigner.Core.UI
                 _h!.text = dims.y.ToString();
                 _d!.text = dims.z.ToString();
                 var radial = element as RadialShelfElement;
-                _radius!.text = radial != null ? radial.Radius.ToString() : "300";
+                _radius!.text = radial != null
+                    ? radial.CornerRadius.ToString()
+                    : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT.ToString();
 
                 var facade = element as FacadeElement;
                 if (facade != null)
@@ -792,7 +789,11 @@ namespace KitchenDesigner.Core.UI
             var radiusTable = target as RadiusTableElement;
             if (radial != null)
             {
-                radial.Radius = ParseInt(_radius!.text, radial.Radius);
+                target.DimensionsMM = new Vector3Int(
+                    ParseInt(_w!.text, oldDims.x),
+                    ParseInt(_h!.text, oldDims.y),
+                    ParseInt(_d!.text, oldDims.z));
+                radial.CornerRadius = ParseInt(_radius!.text, radial.CornerRadius);
             }
             else if (drawer != null)
             {
@@ -872,7 +873,7 @@ namespace KitchenDesigner.Core.UI
             _h!.text = newDims.y.ToString();
             _d!.text = newDims.z.ToString();
             if (radial != null)
-                _radius!.text = radial.Radius.ToString();
+                _radius!.text = radial.CornerRadius.ToString();
 
             if (table != null && _legInset != null)
                 _legInset.text = table.LegInsetMM.ToString();
@@ -1294,7 +1295,9 @@ namespace KitchenDesigner.Core.UI
             TrackField(_h, dims.y.ToString());
             TrackField(_d, dims.z.ToString());
             var radial = _target as RadialShelfElement;
-            TrackField(_radius, radial != null ? radial.Radius.ToString() : "300");
+            TrackField(_radius, radial != null
+                ? radial.CornerRadius.ToString()
+                : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT.ToString());
             var facade = _target as FacadeElement;
             TrackField(_gapLeft, facade != null ? facade.GapLeft.ToString() : "0");
             TrackField(_gapRight, facade != null ? facade.GapRight.ToString() : "0");

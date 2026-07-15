@@ -283,18 +283,18 @@ public class IsoScreenshotTests
     [UnityTest]
     public IEnumerator IsoRadialShelf_300()
     {
-        // Толщина 80мм — достаточна, чтобы в изометрии была видна
-        // четверть-круглая форма (дуга + две прямые грани).
-        const int radius = 300;
-        const int thickness = 80;
+        // Доска 600×400×18 с одним скруглённым углом R=200.
+        const int width = 600, depth = 400, thickness = 18, cornerRadius = 200;
         Vector3 pos = new Vector3(0f, thickness * 0.5f * AppConstants.MM_TO_UNITS, 0f);
-        var go = ElementFactory.CreateRadialShelf(radius, thickness, "IsoRadialShelf", pos);
+        var go = ElementFactory.CreateRadialShelf(width, depth, thickness, cornerRadius, "IsoRadialShelf", pos);
         _spawned.Add(go);
         var shelf = go.GetComponent<RadialShelfElement>();
         Assert.IsNotNull(shelf);
 
-        Vector3 size = MmToUnits(new Vector3Int(radius, thickness, radius));
-        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        // Меш строится от угла (0,0) → центр доски смещён на (W/2, 0, D/2).
+        Vector3 size = MmToUnits(new Vector3Int(width, thickness, depth));
+        Vector3 center = pos + new Vector3(size.x * 0.5f, 0f, size.z * 0.5f);
+        var (camGo, cam) = CreateIsoCamera(center, size, 2.5f);
         _spawned.Add(camGo);
 
         yield return RenderToPng(cam, "iso_radial_shelf_300.png");
@@ -303,40 +303,35 @@ public class IsoScreenshotTests
     }
 
     // ─ Radial shelf top-down screenshot ───────────────────
-    // Вид сверху под 60° — форма четверть-круглого сектора
-    // хорошо различима (дуга + две прямые грани), как на референсе.
+    // Строго вид сверху: прямоугольник 600×400 с одним скруглённым
+    // углом (правый-верхний, R=200), три угла прямые — как на референсе.
 
     [UnityTest]
     public IEnumerator TopDownRadialShelf_300()
     {
-        const int radius = 300;
-        const int thickness = 80;
+        const int width = 600, depth = 400, thickness = 18, cornerRadius = 200;
         Vector3 pos = new Vector3(0f, thickness * 0.5f * AppConstants.MM_TO_UNITS, 0f);
-        var go = ElementFactory.CreateRadialShelf(radius, thickness, "TopDownRadialShelf", pos);
+        var go = ElementFactory.CreateRadialShelf(width, depth, thickness, cornerRadius, "TopDownRadialShelf", pos);
         _spawned.Add(go);
         var shelf = go.GetComponent<RadialShelfElement>();
         Assert.IsNotNull(shelf);
 
-        Vector3 size = MmToUnits(new Vector3Int(radius, thickness, radius));
+        Vector3 size = MmToUnits(new Vector3Int(width, thickness, depth));
+        Vector3 center = pos + new Vector3(size.x * 0.5f, 0f, size.z * 0.5f);
 
         var camGo = new GameObject("TopDownCam");
         var cam = camGo.AddComponent<Camera>();
         cam.clearFlags = CameraClearFlags.SolidColor;
         cam.backgroundColor = new Color(0.95f, 0.95f, 0.95f, 1f);
-        cam.orthographic = false;
-        cam.fieldOfView = 30f;
+        cam.orthographic = true;
+        cam.orthographicSize = Mathf.Max(size.x, size.z) * 0.65f;
         cam.nearClipPlane = 0.01f;
         cam.farClipPlane = 100f;
 
-        // 60° elevation — вид сверху-сбоку, видна форма сектора.
-        float dist = Mathf.Max(size.x, size.z) * 2f;
-        float elevation = 60f * Mathf.Deg2Rad;
-        float azimuth = 45f * Mathf.Deg2Rad;
-        camGo.transform.position = pos + new Vector3(
-            Mathf.Cos(elevation) * Mathf.Cos(azimuth) * dist,
-            Mathf.Sin(elevation) * dist,
-            -Mathf.Cos(elevation) * Mathf.Sin(azimuth) * dist);
-        camGo.transform.LookAt(pos);
+        // Камера точно над центром, экранный «верх» = +Z: скруглённый угол
+        // (x=W, z=D) оказывается справа-сверху.
+        camGo.transform.position = center + Vector3.up * 2f;
+        camGo.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         _spawned.Add(camGo);
 
         yield return null;

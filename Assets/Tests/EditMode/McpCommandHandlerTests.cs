@@ -430,27 +430,27 @@ public class McpCommandHandlerTests
     }
 
     [Test]
-    public void CreateRadialShelf_UsesProvidedRadiusAndThickness()
+    public void CreateRadialShelf_UsesProvidedDimensionsAndCornerRadius()
     {
         var resp = _handler!.Handle(MakeReq("create_element", new
         {
             template_name = "RS1", name = "RS1", x = 0.5f, y = 0.1f, z = -1f,
-            depth = 25, radius = 450, is_radial_shelf = true
+            width = 600, height = 18, depth = 400, corner_radius = 200, is_radial_shelf = true
         }));
 
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(GetProp<bool>(resp.data!, "is_radial_shelf"));
-        Assert.AreEqual(450, GetProp<int>(resp.data!, "radius"));
+        Assert.AreEqual(200, GetProp<int>(resp.data!, "corner_radius"));
         var el = FindBoard("RS1");
         Assert.IsNotNull(el);
         var shelf = el!.GetComponent<RadialShelfElement>();
         Assert.IsNotNull(shelf);
-        Assert.AreEqual(450, shelf.Radius);
-        Assert.AreEqual(new Vector3Int(450, 25, 450), shelf.DimensionsMM);
+        Assert.AreEqual(200, shelf.CornerRadius);
+        Assert.AreEqual(new Vector3Int(600, 18, 400), shelf.DimensionsMM);
     }
 
     [Test]
-    public void CreateRadialShelf_DefaultsRadius_WhenNotProvided()
+    public void CreateRadialShelf_Defaults_WhenNotProvided()
     {
         var resp = _handler!.Handle(MakeReq("create_element", new
         {
@@ -460,10 +460,62 @@ public class McpCommandHandlerTests
 
         Assert.AreEqual("result", resp.type);
         Assert.IsTrue(GetProp<bool>(resp.data!, "is_radial_shelf"));
-        Assert.AreEqual(300, GetProp<int>(resp.data!, "radius"));
+        Assert.AreEqual(200, GetProp<int>(resp.data!, "corner_radius"));
         var el = FindBoard("RS2");
         Assert.IsNotNull(el);
-        Assert.AreEqual(300, el!.GetComponent<RadialShelfElement>().Radius);
+        var shelf = el!.GetComponent<RadialShelfElement>();
+        Assert.AreEqual(new Vector3Int(600, 18, 400), shelf.DimensionsMM);
+        Assert.AreEqual(200, shelf.CornerRadius);
+    }
+
+    [Test]
+    public void CreateRadialShelf_LegacyRadiusCall_MakesFullyRoundedSquare()
+    {
+        // Старый формат вызова: radius + depth-как-толщина, без width/height.
+        var resp = _handler!.Handle(MakeReq("create_element", new
+        {
+            template_name = "RS3", name = "RS3", x = 0f, y = 0f, z = 0f,
+            depth = 25, radius = 450, is_radial_shelf = true
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        var el = FindBoard("RS3");
+        Assert.IsNotNull(el);
+        var shelf = el!.GetComponent<RadialShelfElement>();
+        Assert.AreEqual(new Vector3Int(450, 25, 450), shelf.DimensionsMM);
+        Assert.AreEqual(450, shelf.CornerRadius);
+    }
+
+    [Test]
+    public void SetRadialShelfProperties_ChangesCornerRadius()
+    {
+        _handler!.Handle(MakeReq("create_element", new
+        {
+            template_name = "RS4", name = "RS4", x = 0f, y = 0f, z = 0f,
+            width = 600, height = 18, depth = 400, corner_radius = 200, is_radial_shelf = true
+        }));
+
+        var resp = _handler!.Handle(MakeReq("set_radial_shelf_properties", new
+        {
+            name = "RS4", corner_radius = 120
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        var el = FindBoard("RS4");
+        Assert.AreEqual(120, el!.GetComponent<RadialShelfElement>().CornerRadius);
+    }
+
+    [Test]
+    public void SetRadialShelfProperties_Errors_WhenNotRadialShelf()
+    {
+        MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+
+        var resp = _handler!.Handle(MakeReq("set_radial_shelf_properties", new
+        {
+            name = "Board", corner_radius = 120
+        }));
+
+        Assert.AreEqual("error", resp.type);
     }
 
     [Test]
@@ -484,7 +536,8 @@ public class McpCommandHandlerTests
         var el = FindBoard("Part1");
         Assert.IsNotNull(el);
         Assert.IsNotNull(el!.GetComponent<RadialShelfElement>());
-        Assert.AreEqual(400, el!.GetComponent<RadialShelfElement>().Radius);
+        Assert.AreEqual(new Vector3Int(400, 18, 300), el!.GetComponent<KitchenElement>().DimensionsMM);
+        Assert.AreEqual(200, el!.GetComponent<RadialShelfElement>().CornerRadius);
     }
 
     [Test]

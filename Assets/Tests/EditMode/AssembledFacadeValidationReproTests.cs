@@ -407,6 +407,9 @@ public class AssembledFacadeValidationReproTests
         Assert.AreEqual(resultFull.violations.Count, resultLowered.violations.Count,
             "violation count should not change when wall is lowered");
     }
+
+    private static (float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
+        ComputeAABB(Vector3[] v)
     {
         float minX = v[0].x, maxX = v[0].x;
         float minY = v[0].y, maxY = v[0].y;
@@ -420,3 +423,4 @@ public class AssembledFacadeValidationReproTests
         return (minX, minY, minZ, maxX, maxY, maxZ);
     }
 }
+

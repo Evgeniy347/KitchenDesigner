@@ -188,7 +188,8 @@ namespace KitchenDesigner.Core
                             : ed.isRadiusTable
                                 ? ElementFactory.Instance.CreateRadiusTable(ed.Dimensions, ed.name, ed.Position)
                             : ed.isRadialShelf
-                                ? ElementFactory.Instance.CreateRadialShelf(ed.radius, ed.Dimensions.y, ed.name, ed.Position)
+                                ? ElementFactory.Instance.CreateRadialShelf(ed.Dimensions.x, ed.Dimensions.z,
+                                    ed.Dimensions.y, ed.EffectiveCornerRadius, ed.name, ed.Position)
                                 : ed.assembled
                                     ? ElementFactory.Instance.CreateAssembledFacade(ed.Dimensions, ed.name,
                                         ed.Position, (AssembledFill)ed.assembledFill)

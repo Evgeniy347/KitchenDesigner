@@ -53,9 +53,9 @@ namespace KitchenDesigner.Core
                 grooveCount = assembled.GrooveCount;
             }
 
-            int radius = Mathf.Max(dims.x, dims.z);
+            int cornerRadius = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
             if (source is RadialShelfElement radial)
-                radius = radial.Radius;
+                cornerRadius = radial.CornerRadius;
 
             PartRegistry.Unregister(source);
             UnityEngine.Object.DestroyImmediate(source);
@@ -89,17 +89,11 @@ namespace KitchenDesigner.Core
             result.MaterialId = materialId;
             result.Transparent = transparent;
 
-            // Размеры: для радиусной полки формируем из radius×thickness×radius.
+            // Размеры сохраняются как есть; для радиусной полки дополнительно
+            // задаётся радиус угла (клампится к min(ширина, глубина)).
+            result.DimensionsMM = dims;
             if (result is RadialShelfElement newRadial)
-            {
-                int thickness = Mathf.Max(1, dims.y);
-                newRadial.Radius = Mathf.Max(1, radius);
-                newRadial.DimensionsMM = new Vector3Int(newRadial.Radius, thickness, newRadial.Radius);
-            }
-            else
-            {
-                result.DimensionsMM = dims;
-            }
+                newRadial.CornerRadius = cornerRadius;
 
             if (result is FacadeElement newFacade)
             {
