@@ -1,21 +1,16 @@
 {
-	"name": "KitchenDesigner.Tests.EditMode",
+	"name": "KitchenDesigner.Tests.Shared",
 	"rootNamespace": "",
 	"references": [
 		"KitchenDesigner.Runtime",
-		"KitchenDesigner.Editor",
-		"Unity.TextMeshPro",
-		"KitchenDesigner.Tests.Shared"
+		"Unity.TextMeshPro"
 	],
-	"includePlatforms": [
-		"Editor"
-	],
+	"includePlatforms": [],
 	"excludePlatforms": [],
 	"allowUnsafeCode": false,
 	"overrideReferences": true,
 	"precompiledReferences": [
-		"nunit.framework.dll",
-		"Newtonsoft.Json.dll"
+		"nunit.framework.dll"
 	],
 	"autoReferenced": false,
 	"defineConstraints": [
