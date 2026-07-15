@@ -589,6 +589,10 @@ namespace KitchenDesigner.Core.UI
             var table = _target as TableElement;
             if (table != null && _legInset != null)
                 MaybeRefresh(_legInset, table.LegInsetMM.ToString());
+
+            var radiusTable = _target as RadiusTableElement;
+            if (radiusTable != null && _legInset != null)
+                MaybeRefresh(_legInset, radiusTable.LegInsetMM.ToString());
         }
 
         /// <summary>Обновить поле, если оно не в фокусе (юзер не редактирует).
@@ -622,9 +626,9 @@ namespace KitchenDesigner.Core.UI
                 bool isRadial = element is RadialShelfElement;
                 bool isDrawer = element is DrawerElement;
                 bool isTable = element is TableElement;
+                bool isRadiusTable = element is RadiusTableElement;
                 if (_titleLabel != null)
-                    _titleLabel.text = isTable ? "Стол" : isDrawer ? "Ящик GTV" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
-
+                    _titleLabel.text = isRadiusTable ? "Радиусный стол" : isTable ? "Стол" : isDrawer ? "Ящик GTV" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
                 if (_typeDropdown != null)
                 {
                     _typeDropdown.SetValueWithoutNotify((int)ElementConverter.GetElementType(element));
@@ -678,6 +682,10 @@ namespace KitchenDesigner.Core.UI
                 if (table != null && _legInset != null)
                     _legInset.text = table.LegInsetMM.ToString();
 
+                var radiusTable = element as RadiusTableElement;
+                if (radiusTable != null && _legInset != null)
+                    _legInset.text = radiusTable.LegInsetMM.ToString();
+
                 // Габариты ящика (контурный бокс) вычисляются из типа/длины/ширины —
                 // прямое редактирование недоступно, поля затемняются.
                 SetDimensionFieldsEditable(!isDrawer);
@@ -692,8 +700,8 @@ namespace KitchenDesigner.Core.UI
                 }
 
                 // Пересчитываем раскладку под режим: секция зазоров показывается
-                // только для фасадов, радиус — только для радиусной полки, сдвиг ножек — только для столов, панель сама подгоняется по высоте.
-                Layout(isFacade, assembled != null, isRadial, isDrawer, isTable);
+                // только для фасадов, радиус — только для радиусной полки, сдвиг ножек — только для столов (включая радиусные), панель сама подгоняется по высоте.
+                Layout(isFacade, assembled != null, isRadial, isDrawer, isTable || isRadiusTable);
 
                 RefreshTransformFields();
                 _transparentToggle!.SetIsOnWithoutNotify(element.Transparent);
@@ -734,6 +742,7 @@ namespace KitchenDesigner.Core.UI
             var radial = _target as RadialShelfElement;
             var drawer = _target as DrawerElement;
             var table = _target as TableElement;
+            var radiusTable = _target as RadiusTableElement;
             if (radial != null)
             {
                 radial.Radius = ParseInt(_radius!.text, radial.Radius);
@@ -752,6 +761,9 @@ namespace KitchenDesigner.Core.UI
 
             if (table != null && _legInset != null)
                 table.LegInsetMM = ParseInt(_legInset.text, table.LegInsetMM);
+
+            if (radiusTable != null && _legInset != null)
+                radiusTable.LegInsetMM = ParseInt(_legInset.text, radiusTable.LegInsetMM);
 
             var facade = _target as FacadeElement;
             if (facade != null)

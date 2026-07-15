@@ -44,6 +44,9 @@ namespace KitchenDesigner.Core
         public static GameObject CreateTable(Vector3Int dimensionsMM, string name, Vector3 position) =>
             Instance.CreateTable(dimensionsMM, name, position);
 
+        public static GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position) =>
+            Instance.CreateRadiusTable(dimensionsMM, name, position);
+
         public static GameObject Duplicate(KitchenElement source) =>
             Instance.Duplicate(source);
 

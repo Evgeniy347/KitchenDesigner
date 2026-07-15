@@ -303,6 +303,7 @@ namespace KitchenDesigner.Core.MCP
             var radial = el as RadialShelfElement;
             var drawer = el as DrawerElement;
             var table = el as TableElement;
+            var radiusTable = el as RadiusTableElement;
             FacadeValidationData? facadeValidation = includeFacadeValidation && el is FacadeElement fe && allElements != null
                 ? ComputeFacadeValidation(fe, allElements)
                 : (FacadeValidationData?)null;
@@ -345,6 +346,11 @@ namespace KitchenDesigner.Core.MCP
                 table = table != null ? new TableInfo
                 {
                     legInsetMM = table.LegInsetMM
+                } : null,
+                radiusTable = radiusTable != null ? new RadiusTableInfo
+                {
+                    legInsetMM = radiusTable.LegInsetMM,
+                    shape = "capsule"
                 } : null
             };
         }
@@ -813,6 +819,28 @@ namespace KitchenDesigner.Core.MCP
                     leg_inset_mm = p.leg_inset_mm,
                     path = GetGameObjectPath(goT), posX = posT.x, posY = posT.y, posZ = posT.z,
                     hasViolations = HasViolations(elT) });
+            }
+
+            if (p.is_radius_table)
+            {
+                var dimsRT = new Vector3Int(
+                    p.width > 0 ? p.width : 1200,
+                    p.height > 0 ? p.height : 750,
+                    p.depth > 0 ? p.depth : 600);
+                var posRT = new Vector3(p.x, p.y, p.z);
+                var goRT = ElementFactory.CreateRadiusTable(dimsRT, elementName, posRT);
+                var radiusTableEl = goRT.GetComponent<RadiusTableElement>();
+                if (radiusTableEl != null && p.leg_inset_mm > 0)
+                    radiusTableEl.LegInsetMM = p.leg_inset_mm;
+                CommandStack.Execute(new CreateCommand(goRT));
+                RefreshElementHighlights();
+                var elRT = goRT.GetComponent<KitchenElement>();
+                Debug.Log($"[MCP] Created radius table '{elementName}' {dimsRT.x}x{dimsRT.y}x{dimsRT.z} legInset={p.leg_inset_mm}");
+                return McpResponse.Result(req.id, new {
+                    ok = true, name = goRT.name, is_radius_table = true,
+                    leg_inset_mm = p.leg_inset_mm,
+                    path = GetGameObjectPath(goRT), posX = posRT.x, posY = posRT.y, posZ = posRT.z,
+                    hasViolations = HasViolations(elRT) });
             }
 
             var pos = new Vector3(p.x, p.y, p.z);

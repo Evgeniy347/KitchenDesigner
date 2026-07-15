@@ -181,15 +181,17 @@ namespace KitchenDesigner.Core
                         (DrawerColor)ed.drawerColor, ed.drawerInternalWidth, ed.name, ed.Position)
                     : ed.isWall
                         ? ElementFactory.Instance.CreateWall(ed.Dimensions, ed.name, ed.Position)
-                        : ed.isRadialShelf
-                            ? ElementFactory.Instance.CreateRadialShelf(ed.radius, ed.Dimensions.y, ed.name, ed.Position)
-                            : ed.assembled
-                                ? ElementFactory.Instance.CreateAssembledFacade(ed.Dimensions, ed.name,
-                                    ed.Position, (AssembledFill)ed.assembledFill)
-                                : ed.isFacade
-                                    ? ElementFactory.Instance.CreateFacade(ed.Dimensions, ed.name, ed.Position,
-                                        ed.gapLeft, ed.gapRight, ed.gapTop, ed.gapBottom)
-                                    : ElementFactory.Instance.CreatePart(ed.Dimensions, ed.name, ed.Position);
+                        : ed.isRadiusTable
+                            ? ElementFactory.Instance.CreateRadiusTable(ed.Dimensions, ed.name, ed.Position)
+                            : ed.isRadialShelf
+                                ? ElementFactory.Instance.CreateRadialShelf(ed.radius, ed.Dimensions.y, ed.name, ed.Position)
+                                : ed.assembled
+                                    ? ElementFactory.Instance.CreateAssembledFacade(ed.Dimensions, ed.name,
+                                        ed.Position, (AssembledFill)ed.assembledFill)
+                                    : ed.isFacade
+                                        ? ElementFactory.Instance.CreateFacade(ed.Dimensions, ed.name, ed.Position,
+                                            ed.gapLeft, ed.gapRight, ed.gapTop, ed.gapBottom)
+                                        : ElementFactory.Instance.CreatePart(ed.Dimensions, ed.name, ed.Position);
                 go.transform.rotation = ed.Rotation;
                 var el = go.GetComponent<KitchenElement>();
                 if (el != null)

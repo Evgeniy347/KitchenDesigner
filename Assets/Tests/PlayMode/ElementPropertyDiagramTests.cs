@@ -282,4 +282,17 @@ public class ElementPropertyDiagramTests
             () => { ContextMenuUI.Instance!.Open(el); },
             () => { ContextMenuUI.Instance?.Close(); });
     }
+
+    [UnityTest]
+    public IEnumerator ContextMenu_RadiusTable_SavesPng()
+    {
+        var dims = new Vector3Int(1200, 750, 600);
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateRadiusTable(dims, "Радиусный стол", pos);
+        var el = go.GetComponent<KitchenElement>();
+        Assert.IsNotNull(el);
+        yield return CapturePanel("ContextMenu", "contextmenu_radius_table.png",
+            () => { ContextMenuUI.Instance!.Open(el); },
+            () => { ContextMenuUI.Instance?.Close(); });
+    }
 }

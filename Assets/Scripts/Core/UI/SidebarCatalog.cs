@@ -17,6 +17,7 @@ namespace KitchenDesigner.Core.UI
             public bool isDrawer;
             public bool isRadialShelf;
             public bool isFurniture;
+            public bool isRadiusTable;
             public string drawerType;
             public int drawerLength;
             public string drawerColor;
@@ -33,7 +34,7 @@ namespace KitchenDesigner.Core.UI
                 this.isFacade = isFacade; this.isAssembled = isAssembled;
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
-                isDrawer = false; isRadialShelf = false; isFurniture = false;
+                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false;
                 drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400;
             }
@@ -116,7 +117,9 @@ namespace KitchenDesigner.Core.UI
         {
             var table = new Item("Прямоугольный стол", new Vector3Int(1200, 750, 600));
             table.isFurniture = true;
-            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table } };
+            var radiusTable = new Item("Радиусный стол", new Vector3Int(1200, 750, 600));
+            radiusTable.isRadiusTable = true;
+            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable } };
         }
     }
 }

@@ -52,24 +52,37 @@ namespace KitchenDesigner.Core
             if (element == null || def == null) return;
             element.MaterialId = def.id;
 
+            var mat = GetSharedMaterial(def);
+            if (mat == null) return;
+
+            if (element is TableElement table)
+            {
+                table.SetMaterial(mat);
+                RefreshTiling(element, def);
+                return;
+            }
+
+            if (element is RadiusTableElement radiusTable)
+            {
+                radiusTable.SetMaterial(mat);
+                RefreshTiling(element, def);
+                return;
+            }
+
             var r = element.GetComponentInChildren<MeshRenderer>();
             if (r == null) return;
 
-            var mat = GetSharedMaterial(def);
-            if (mat != null)
+            // У сборного фасада 2 сабмеша (декор + фрезеровки) — меняем только
+            // декор (индекс 0), сохраняя остальные материалы.
+            var mats = r.sharedMaterials;
+            if (mats.Length > 1)
             {
-                // У сборного фасада 2 сабмеша (декор + фрезеровки) — меняем только
-                // декор (индекс 0), сохраняя остальные материалы.
-                var mats = r.sharedMaterials;
-                if (mats.Length > 1)
-                {
-                    mats[0] = mat;
-                    r.sharedMaterials = mats;
-                }
-                else
-                {
-                    r.sharedMaterial = mat;
-                }
+                mats[0] = mat;
+                r.sharedMaterials = mats;
+            }
+            else
+            {
+                r.sharedMaterial = mat;
             }
             RefreshTiling(element, def);
         }
