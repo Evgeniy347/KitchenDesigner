@@ -345,12 +345,16 @@ namespace KitchenDesigner.Core.MCP
                 } : null,
                 table = table != null ? new TableInfo
                 {
-                    legInsetMM = table.LegInsetMM
+                    legInsetMM = table.LegInsetMM,
+                    tabletopMaterialId = table.TabletopMaterialId,
+                    legsMaterialId = table.LegsMaterialId
                 } : null,
                 radiusTable = radiusTable != null ? new RadiusTableInfo
                 {
                     legInsetMM = radiusTable.LegInsetMM,
-                    shape = "capsule"
+                    shape = "capsule",
+                    tabletopMaterialId = radiusTable.TabletopMaterialId,
+                    legsMaterialId = radiusTable.LegsMaterialId
                 } : null
             };
         }
@@ -1104,7 +1108,6 @@ namespace KitchenDesigner.Core.MCP
                     return McpResponse.Error(req.id, -32602, $"Unknown setting: {p.name}");
             }
 
-            s.Save();
             Debug.Log($"[MCP] Setting '{p.name}' = {p.value}");
             return McpResponse.Result(req.id, new { ok = true, name = p.name, value = p.value });
         }
@@ -1815,13 +1818,38 @@ namespace KitchenDesigner.Core.MCP
             if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
 
             var table = el as TableElement;
-            if (table == null) return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a table");
+            var rt = el as RadiusTableElement;
+            if (table == null && rt == null)
+                return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a table");
 
             if (p.leg_inset_mm.HasValue)
-                table.LegInsetMM = p.leg_inset_mm.Value;
+            {
+                if (table != null) table.LegInsetMM = p.leg_inset_mm.Value;
+                else rt!.LegInsetMM = p.leg_inset_mm.Value;
+            }
+
+            if (p.tabletop_material_id != null)
+            {
+                var def = MaterialCatalog.Get(p.tabletop_material_id);
+                if (def != null)
+                {
+                    if (table != null) MaterialManager.ApplyTabletop(table, def);
+                    else MaterialManager.ApplyTabletop(rt!, def);
+                }
+            }
+
+            if (p.legs_material_id != null)
+            {
+                var def = MaterialCatalog.Get(p.legs_material_id);
+                if (def != null)
+                {
+                    if (table != null) MaterialManager.ApplyLegs(table, def);
+                    else MaterialManager.ApplyLegs(rt!, def);
+                }
+            }
 
             Debug.Log($"[MCP] Table '{p.name}' properties updated");
-            return McpResponse.Result(req.id, BuildElementInfo(table, PartRegistry.GetAll(), false));
+            return McpResponse.Result(req.id, BuildElementInfo(el, PartRegistry.GetAll(), false));
         }
 
         private McpResponse HandleCycleDrawerAnimation(McpRequest req)

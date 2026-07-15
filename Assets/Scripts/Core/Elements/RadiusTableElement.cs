@@ -9,14 +9,51 @@ namespace KitchenDesigner.Core
         public const int TabletopThicknessMM = 30;
 
         private readonly List<GameObject> _legs = new List<GameObject>();
-        private Material? _material;
+        private Material? _tabletopMaterial;
+        private Material? _legsMaterial;
 
         [SerializeField] private int _legInsetMM = 100;
+        [SerializeField] private string _tabletopMaterialId = MaterialCatalog.DefaultId;
+        [SerializeField] private string _legsMaterialId = MaterialCatalog.DefaultId;
 
         public int LegInsetMM
         {
             get => _legInsetMM;
             set { _legInsetMM = Mathf.Max(0, value); ApplyDimensions(); }
+        }
+
+        public string TabletopMaterialId
+        {
+            get => _tabletopMaterialId;
+            set { _tabletopMaterialId = value ?? MaterialCatalog.DefaultId; ApplyMaterial(); }
+        }
+
+        public string LegsMaterialId
+        {
+            get => _legsMaterialId;
+            set { _legsMaterialId = value ?? MaterialCatalog.DefaultId; ApplyMaterial(); }
+        }
+
+        public new string MaterialId
+        {
+            get => TabletopMaterialId;
+            set => TabletopMaterialId = value;
+        }
+
+        private void ApplyMaterial()
+        {
+            var topDef = MaterialCatalog.Get(_tabletopMaterialId);
+            var legsDef = MaterialCatalog.Get(_legsMaterialId);
+            if (topDef != null)
+            {
+                var mat = MaterialManager.GetSharedMaterial(topDef);
+                if (mat != null) SetTabletopMaterial(mat);
+            }
+            if (legsDef != null)
+            {
+                var mat = MaterialManager.GetSharedMaterial(legsDef);
+                if (mat != null) SetLegsMaterial(mat);
+            }
         }
 
         public override void ApplyDimensions()
@@ -43,8 +80,8 @@ namespace KitchenDesigner.Core
 
             var meshRenderer = GetComponent<MeshRenderer>();
             if (meshRenderer == null) meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            if (_material != null)
-                meshRenderer.sharedMaterial = _material;
+            if (_tabletopMaterial != null)
+                meshRenderer.sharedMaterial = _tabletopMaterial;
 
             UpdateCollider(mesh);
 
@@ -86,26 +123,36 @@ namespace KitchenDesigner.Core
                 if (collider != null) Object.DestroyImmediate(collider);
 
                 var renderer = leg.GetComponent<MeshRenderer>();
-                if (renderer != null && _material != null)
-                    renderer.sharedMaterial = _material;
+                if (renderer != null && _legsMaterial != null)
+                    renderer.sharedMaterial = _legsMaterial;
 
                 _legs.Add(leg);
             }
         }
 
-        public void SetMaterial(Material material)
+        public void SetTabletopMaterial(Material material)
         {
-            _material = material;
+            _tabletopMaterial = material;
             var rootRenderer = GetComponent<MeshRenderer>();
             if (rootRenderer != null)
-                rootRenderer.sharedMaterial = _material;
+                rootRenderer.sharedMaterial = _tabletopMaterial;
+        }
 
+        public void SetLegsMaterial(Material material)
+        {
+            _legsMaterial = material;
             foreach (var leg in _legs)
             {
                 var renderer = leg.GetComponent<MeshRenderer>();
                 if (renderer != null)
-                    renderer.sharedMaterial = _material;
+                    renderer.sharedMaterial = _legsMaterial;
             }
+        }
+
+        public void SetMaterial(Material material)
+        {
+            SetTabletopMaterial(material);
+            SetLegsMaterial(material);
         }
 
         public override Vector3[] GetVertices()

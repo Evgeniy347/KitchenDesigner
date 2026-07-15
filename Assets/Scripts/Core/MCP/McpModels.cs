@@ -273,6 +273,8 @@ namespace KitchenDesigner.Core.MCP
     public class TableInfo
     {
         public int legInsetMM;
+        public string tabletopMaterialId = MaterialCatalog.DefaultId;
+        public string legsMaterialId = MaterialCatalog.DefaultId;
     }
 
     [Serializable]
@@ -280,5 +282,7 @@ namespace KitchenDesigner.Core.MCP
     {
         public int legInsetMM;
         public string shape = "capsule";
+        public string tabletopMaterialId = MaterialCatalog.DefaultId;
+        public string legsMaterialId = MaterialCatalog.DefaultId;
     }
 }

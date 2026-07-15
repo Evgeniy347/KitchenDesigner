@@ -128,6 +128,8 @@ namespace KitchenDesigner.Core
                 data.basePlateValid = true;
             }
 
+            data.settings = KitchenSettings.Instance.ToData();
+
             var indexOf = new Dictionary<KitchenElement, int>();
             for (int i = 0; i < ordered.Count; i++) indexOf[ordered[i]] = i;
             int IndexOf(KitchenElement el) =>
@@ -181,8 +183,10 @@ namespace KitchenDesigner.Core
                         (DrawerColor)ed.drawerColor, ed.drawerInternalWidth, ed.name, ed.Position)
                     : ed.isWall
                         ? ElementFactory.Instance.CreateWall(ed.Dimensions, ed.name, ed.Position)
-                        : ed.isRadiusTable
-                            ? ElementFactory.Instance.CreateRadiusTable(ed.Dimensions, ed.name, ed.Position)
+                        : ed.isTable
+                            ? ElementFactory.Instance.CreateTable(ed.Dimensions, ed.name, ed.Position)
+                            : ed.isRadiusTable
+                                ? ElementFactory.Instance.CreateRadiusTable(ed.Dimensions, ed.name, ed.Position)
                             : ed.isRadialShelf
                                 ? ElementFactory.Instance.CreateRadialShelf(ed.radius, ed.Dimensions.y, ed.name, ed.Position)
                                 : ed.assembled
@@ -200,6 +204,16 @@ namespace KitchenDesigner.Core
                     el.GroupId = ed.groupId;
                     el.Transparent = ed.transparent;
                     MaterialManager.ApplyById(el, ed.materialId);
+
+                    if (el is TableElement tableEl2 && !string.IsNullOrEmpty(ed.legsMaterialId))
+                        MaterialManager.ApplyLegs(tableEl2, MaterialCatalog.Get(ed.legsMaterialId));
+                    if (el is RadiusTableElement rTableEl2 && !string.IsNullOrEmpty(ed.legsMaterialId))
+                        MaterialManager.ApplyLegs(rTableEl2, MaterialCatalog.Get(ed.legsMaterialId));
+
+                    if (el is TableElement tEl)
+                        tEl.LegInsetMM = ed.legInsetMM;
+                    if (el is RadiusTableElement rtEl)
+                        rtEl.LegInsetMM = ed.legInsetMM;
 
                     if (el is AssembledFacadeElement assembled)
                         assembled.GrooveCount = ed.grooveCount;
@@ -236,6 +250,9 @@ namespace KitchenDesigner.Core
 
             if (data.basePlateValid && data.basePlate != null)
                 RestoreBasePlate(data.basePlate);
+
+            if (data.settings != null)
+                KitchenSettings.Instance.ApplyFrom(data.settings);
 
             CommandStack.Instance.Import(data.undoHistory, data.redoHistory,
                 i => (i >= 0 && i < resolved.Count) ? resolved[i]! : null!);

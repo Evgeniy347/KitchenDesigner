@@ -6,11 +6,11 @@
 @inject ImpersonationService Impersonation
 
 <div class="layout">
-    <AuthorizeView>
-        <Authorized>
-            <nav class="top-nav @(Impersonation.IsImpersonating ? "top-nav-impersonating" : "")">
-                <div class="nav-left">
-                    <a href="/" class="nav-brand">KitchenDesigner</a>
+    <nav class="top-nav @(Impersonation.IsImpersonating ? "top-nav-impersonating" : "")">
+        <div class="nav-left">
+            <a href="/" class="nav-brand">KitchenDesigner</a>
+            <AuthorizeView>
+                <Authorized>
                     <NavLink href="/projects" class="nav-link" ActiveClass="nav-link-active">
                         Projects
                     </NavLink>
@@ -20,9 +20,13 @@
                             Admin
                         </NavLink>
                     }
-                </div>
-                <EditorNavInfo @rendermode="InteractiveServer" />
-                <div class="nav-right">
+                </Authorized>
+            </AuthorizeView>
+        </div>
+        <EditorNavInfo @rendermode="InteractiveServer" />
+        <div class="nav-right">
+            <AuthorizeView>
+                <Authorized>
                     @if (Impersonation.IsImpersonating)
                     {
                         <span class="nav-impersonation-badge" title="Режим имперсонализации">
@@ -45,10 +49,13 @@
                             <button type="submit" class="nav-link nav-logout">Logout</button>
                         </form>
                     }
-                </div>
-            </nav>
-        </Authorized>
-    </AuthorizeView>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/auth/login" class="nav-link">Login</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </nav>
 
     <main class="main-content">
         @Body

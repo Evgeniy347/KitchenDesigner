@@ -9,14 +9,51 @@ namespace KitchenDesigner.Core
         public const int TabletopThicknessMM = 30;
 
         private readonly List<GameObject> _children = new List<GameObject>();
-        private Material? _material;
+        private Material? _tabletopMaterial;
+        private Material? _legsMaterial;
 
         [SerializeField] private int _legInsetMM = 100;
+        [SerializeField] private string _tabletopMaterialId = MaterialCatalog.DefaultId;
+        [SerializeField] private string _legsMaterialId = MaterialCatalog.DefaultId;
 
         public int LegInsetMM
         {
             get => _legInsetMM;
             set { _legInsetMM = Mathf.Max(0, value); ApplyDimensions(); }
+        }
+
+        public string TabletopMaterialId
+        {
+            get => _tabletopMaterialId;
+            set { _tabletopMaterialId = value ?? MaterialCatalog.DefaultId; ApplyMaterial(); }
+        }
+
+        public string LegsMaterialId
+        {
+            get => _legsMaterialId;
+            set { _legsMaterialId = value ?? MaterialCatalog.DefaultId; ApplyMaterial(); }
+        }
+
+        public new string MaterialId
+        {
+            get => TabletopMaterialId;
+            set => TabletopMaterialId = value;
+        }
+
+        private void ApplyMaterial()
+        {
+            var topDef = MaterialCatalog.Get(_tabletopMaterialId);
+            var legsDef = MaterialCatalog.Get(_legsMaterialId);
+            if (topDef != null)
+            {
+                var mat = MaterialManager.GetSharedMaterial(topDef);
+                if (mat != null) SetTabletopMaterial(mat);
+            }
+            if (legsDef != null)
+            {
+                var mat = MaterialManager.GetSharedMaterial(legsDef);
+                if (mat != null) SetLegsMaterial(mat);
+            }
         }
 
         public override void ApplyDimensions()
@@ -78,29 +115,48 @@ namespace KitchenDesigner.Core
             while (_children.Count < count)
             {
                 var child = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                child.name = _children.Count < 4 ? $"Leg{_children.Count + 1}" : "Tabletop";
+                bool isLeg = _children.Count < 4;
+                child.name = isLeg ? $"Leg{_children.Count + 1}" : "Tabletop";
                 child.transform.SetParent(transform, false);
 
                 var childCollider = child.GetComponent<BoxCollider>();
                 if (childCollider != null) Object.DestroyImmediate(childCollider);
 
                 var renderer = child.GetComponent<MeshRenderer>();
-                if (renderer != null && _material != null)
-                    renderer.sharedMaterial = _material;
+                if (renderer != null)
+                {
+                    var mat = isLeg ? _legsMaterial : _tabletopMaterial;
+                    if (mat != null) renderer.sharedMaterial = mat;
+                }
 
                 _children.Add(child);
             }
         }
 
+        public void SetTabletopMaterial(Material material)
+        {
+            _tabletopMaterial = material;
+            if (_children.Count > 4)
+            {
+                var renderer = _children[4].GetComponent<MeshRenderer>();
+                if (renderer != null) renderer.sharedMaterial = _tabletopMaterial;
+            }
+        }
+
+        public void SetLegsMaterial(Material material)
+        {
+            _legsMaterial = material;
+            for (int i = 0; i < _children.Count && i < 4; i++)
+            {
+                var renderer = _children[i].GetComponent<MeshRenderer>();
+                if (renderer != null) renderer.sharedMaterial = _legsMaterial;
+            }
+        }
+
         public void SetMaterial(Material material)
         {
-            _material = material;
-            foreach (var child in _children)
-            {
-                var renderer = child.GetComponent<MeshRenderer>();
-                if (renderer != null)
-                    renderer.sharedMaterial = _material;
-            }
+            SetTabletopMaterial(material);
+            SetLegsMaterial(material);
         }
 
         public override Vector3[] GetVertices()
