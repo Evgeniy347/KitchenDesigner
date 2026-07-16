@@ -1783,7 +1783,7 @@
             "groupId": 0,
             "materialId": "default",
             "legsMaterialId": "default",
-            "transparent": false,
+            "transparent": true,
             "doorMode": 0,
             "doorOpen": false,
             "assembled": false,
@@ -1833,7 +1833,7 @@
             "groupId": 0,
             "materialId": "default",
             "legsMaterialId": "default",
-            "transparent": false,
+            "transparent": true,
             "doorMode": 0,
             "doorOpen": false,
             "assembled": false,
@@ -1954,14 +1954,14 @@
         {
             "name": "A12_upper_B_planck",
             "dimensionsMM": [
-                58,
+                76,
                 900,
                 18
             ],
             "position": [
-                1.2060000896453858,
+                1.215000033378601,
                 1.809999942779541,
-                -3.2790000438690187
+                -3.2789998054504396
             ],
             "rotation": [
                 0.0,
@@ -2004,14 +2004,14 @@
         {
             "name": "A12_upper_A_side",
             "dimensionsMM": [
-                408,
+                332,
                 900,
                 18
             ],
             "position": [
-                1.2440000772476197,
-                1.8100000619888306,
-                -3.4160003662109377
+                1.24399995803833,
+                1.809999942779541,
+                -3.4539999961853029
             ],
             "rotation": [
                 0.0,
@@ -4100,17 +4100,67 @@
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
             "doubleDrawerState": 0
+        },
+        {
+            "name": "A12_upper_A_planck",
+            "dimensionsMM": [
+                59,
+                900,
+                18
+            ],
+            "position": [
+                1.24399995803833,
+                1.809999942779541,
+                -3.24049973487854
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
         }
     ],
     "groups": [],
     "camera": {
         "valid": true,
-        "targetX": 0.255508691072464,
+        "targetX": 0.8949955105781555,
         "targetY": 0.46000000834465029,
-        "targetZ": -3.3063178062438967,
-        "angleX": 43.00001525878906,
-        "angleY": 860.8994750976563,
-        "distance": 4.418119430541992
+        "targetZ": -2.831799030303955,
+        "angleX": 38.800048828125,
+        "angleY": 1208.69921875,
+        "distance": 4.118119716644287
     },
     "handleMode": "Move",
     "basePlateValid": true,
@@ -7454,6 +7504,460 @@
                 0.7071068286895752,
                 0.0,
                 -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B1_side_L",
+            "elementIndex": 8,
+            "posBefore": [
+                1.0360000133514405,
+                0.46000000834465029,
+                -3.3499999046325685
+            ],
+            "posAfter": [
+                1.0360000133514405,
+                0.46000000834465029,
+                -3.3499999046325685
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                540,
+                720,
+                18
+            ],
+            "dimsAfter": [
+                540,
+                720,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B1_side_L",
+            "elementIndex": 8,
+            "posBefore": [
+                1.0360000133514405,
+                0.46000000834465029,
+                -3.3499999046325685
+            ],
+            "posAfter": [
+                1.0360000133514405,
+                0.46000000834465029,
+                -3.3499999046325685
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                540,
+                720,
+                18
+            ],
+            "dimsAfter": [
+                540,
+                720,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_A_side",
+            "elementIndex": 40,
+            "posBefore": [
+                1.2440000772476197,
+                1.8100000619888306,
+                -3.4160003662109377
+            ],
+            "posAfter": [
+                1.24399995803833,
+                1.809999942779541,
+                -3.4159998893737795
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                408,
+                900,
+                18
+            ],
+            "dimsAfter": [
+                408,
+                900,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_B_planck",
+            "elementIndex": 39,
+            "posBefore": [
+                1.2060000896453858,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                1.2059999704360963,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                58,
+                900,
+                18
+            ],
+            "dimsAfter": [
+                58,
+                900,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B23_upper_side_R",
+            "elementIndex": 52,
+            "posBefore": [
+                1.2259999513626099,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                1.2259999513626099,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                18,
+                900,
+                332
+            ],
+            "dimsAfter": [
+                18,
+                900,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_B_planck",
+            "elementIndex": 39,
+            "posBefore": [
+                1.2059999704360963,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                1.2059999704360963,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                58,
+                900,
+                18
+            ],
+            "dimsAfter": [
+                58,
+                900,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_A_side",
+            "elementIndex": 40,
+            "posBefore": [
+                1.24399995803833,
+                1.809999942779541,
+                -3.4159998893737795
+            ],
+            "posAfter": [
+                1.24399995803833,
+                1.809999942779541,
+                -3.4159998893737795
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                408,
+                900,
+                18
+            ],
+            "dimsAfter": [
+                332,
+                900,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_A_side",
+            "elementIndex": 40,
+            "posBefore": [
+                1.24399995803833,
+                1.809999942779541,
+                -3.4159998893737795
+            ],
+            "posAfter": [
+                1.24399995803833,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_A_planck",
+            "elementIndex": 82,
+            "posBefore": [
+                1.24399995803833,
+                1.809999942779541,
+                -3.258500099182129
+            ],
+            "posAfter": [
+                1.24399995803833,
+                1.809999942779541,
+                -3.258500099182129
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071067690849304,
+                0.0,
+                0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_B_planck",
+            "elementIndex": 39,
+            "posBefore": [
+                1.2059999704360963,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                1.2059999704360963,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                58,
+                900,
+                18
+            ],
+            "dimsAfter": [
+                76,
+                900,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_B_planck",
+            "elementIndex": 39,
+            "posBefore": [
+                1.2059999704360963,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                1.215000033378601,
+                1.809999942779541,
+                -3.2200000286102297
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_B_planck",
+            "elementIndex": 39,
+            "posBefore": [
+                1.215000033378601,
+                1.809999942779541,
+                -3.2200000286102297
+            ],
+            "posAfter": [
+                1.215000033378601,
+                1.809999942779541,
+                -3.2789998054504396
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_A_planck",
+            "elementIndex": 82,
+            "posBefore": [
+                1.24399995803833,
+                1.809999942779541,
+                -3.258500099182129
+            ],
+            "posAfter": [
+                1.24399995803833,
+                1.809999942779541,
+                -3.24049973487854
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
             ],
             "dimsBefore": [],
             "dimsAfter": [],
