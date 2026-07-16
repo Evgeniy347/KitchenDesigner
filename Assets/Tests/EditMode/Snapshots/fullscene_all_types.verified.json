@@ -49,7 +49,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Facade_A",
@@ -99,7 +105,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Assembled_A",
@@ -149,7 +161,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Radial_A",
@@ -199,7 +217,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Wall_A",
@@ -249,7 +273,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         }
     ],
     "groups": [],
@@ -312,7 +342,13 @@
         "drawerIsUpper": false,
         "drawerPairedName": "",
         "drawerAttachedFacadeName": "",
-        "doubleDrawerState": 0
+        "doubleDrawerState": 0,
+        "isWindow": false,
+        "windowTint": 0,
+        "windowSillProtrusionMM": 50,
+        "windowDoorMode": 0,
+        "windowIsOpen": false,
+        "windowAttachedWallName": ""
     },
     "undoHistory": [],
     "redoHistory": [],

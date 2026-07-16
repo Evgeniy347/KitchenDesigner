@@ -95,6 +95,8 @@ namespace KitchenDesigner.Core
         {
             var wall = go.GetComponent<Wall>();
             if (wall != null) Object.DestroyImmediate(wall);
+            var window = go.GetComponent<WindowElement>();
+            if (window != null) Object.DestroyImmediate(window);
         }
 
         private void ResetComponent(GameObject go)
@@ -211,10 +213,43 @@ namespace KitchenDesigner.Core
                 return go;
             }
 
-            if (source is TableElement tbl)
+			if (source is PillarElement srcPillar)
+			{
+				var go = CreatePillar(srcPillar.MidHeightMM, source.PartName + " (copy)", offset);
+				go.transform.rotation = source.transform.rotation;
+				MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
+				return go;
+			}
+
+			if (source is TableElement tbl)
+			{
+				var go = CreateTable(dims, source.PartName + " (copy)", offset);
+				go.transform.rotation = source.transform.rotation;
+				MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
+				return go;
+			}
+
+			if (source is RadiusTableElement rtSrc)
+			{
+				var go = CreateRadiusTable(dims, source.PartName + " (copy)", offset);
+				go.transform.rotation = source.transform.rotation;
+				var copy = go.GetComponent<RadiusTableElement>();
+				if (copy != null)
+				{
+					copy.LegInsetMM = rtSrc.LegInsetMM;
+					copy.TabletopMaterialId = rtSrc.TabletopMaterialId;
+					copy.LegsMaterialId = rtSrc.LegsMaterialId;
+				}
+				MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
+				return go;
+			}
+
+			if (source is WindowElement srcWin)
             {
-                var go = CreateTable(dims, source.PartName + " (copy)", offset);
+                var go = CreateWindow(dims, source.PartName + " (copy)", offset, srcWin.Tint, srcWin.SillProtrusionMM);
                 go.transform.rotation = source.transform.rotation;
+                var copy = go.GetComponent<WindowElement>();
+                if (copy != null) { copy.Mode = srcWin.Mode; }
                 MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
                 return go;
             }
@@ -242,8 +277,32 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateWall(Vector3Int dimensionsMM, string name, Vector3 position)
         {
-            var go = CreatePart(dimensionsMM, name, position);
+            var go = new GameObject(name);
+            go.tag = "KitchenElement";
+            go.transform.position = position;
+
+            var mf = go.AddComponent<MeshFilter>();
+            var mr = go.AddComponent<MeshRenderer>();
+            mf.sharedMesh = WallMeshBuilder.Build(new System.Collections.Generic.List<WallMeshBuilder.WindowCutout>());
+
+            var el = go.AddComponent<KitchenElement>();
+            el.PartName = name;
+            el.DimensionsMM = dimensionsMM;
+            MaterialManager.ApplyById(el, MaterialCatalog.DefaultId);
+
+            var rb = go.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+
+            var collider = go.AddComponent<MeshCollider>();
+            collider.sharedMesh = mf.sharedMesh;
+            collider.convex = false;
+
             go.AddComponent<Wall>();
+
+            PartRegistry.Register(el);
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
             return go;
         }
 
@@ -357,9 +416,67 @@ namespace KitchenDesigner.Core
             return go;
         }
 
-        public GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position)
+		public GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position)
+		{
+			var go = new GameObject(string.IsNullOrEmpty(name) ? "Радиусный стол" : name);
+			go.tag = "KitchenElement";
+			go.transform.position = position;
+
+			var rb = go.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
+
+			var radiusTable = go.AddComponent<RadiusTableElement>();
+			radiusTable.PartName = go.name;
+			radiusTable.DimensionsMM = dimensionsMM;
+
+			if (DefaultMaterial != null)
+				radiusTable.SetMaterial(DefaultMaterial);
+
+			PartRegistry.Register(radiusTable);
+
+			if (ElementHighlighter.Instance != null)
+				ElementHighlighter.Instance.RefreshHighlights();
+
+			return go;
+		}
+
+		public GameObject CreatePillar(int midHeightMM, string name, Vector3 position)
+		{
+			var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			go.name = string.IsNullOrEmpty(name) ? "Опора" : name;
+			go.tag = "KitchenElement";
+			go.transform.position = position;
+
+			var rb = go.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
+
+			var boxCollider = go.GetComponent<BoxCollider>();
+			if (boxCollider != null) Object.DestroyImmediate(boxCollider);
+
+			var meshCollider = go.AddComponent<MeshCollider>();
+			meshCollider.convex = false;
+
+			var pillar = go.AddComponent<PillarElement>();
+			pillar.PartName = go.name;
+			pillar.MidHeightMM = midHeightMM;
+
+			if (DefaultMaterial != null)
+				MaterialManager.ApplyById(pillar, MaterialCatalog.DefaultId);
+
+			PartRegistry.Register(pillar);
+
+			if (ElementHighlighter.Instance != null)
+				ElementHighlighter.Instance.RefreshHighlights();
+
+			return go;
+		}
+
+		public GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
+            GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50)
         {
-            var go = new GameObject(string.IsNullOrEmpty(name) ? "Радиусный стол" : name);
+            var go = new GameObject(name);
             go.tag = "KitchenElement";
             go.transform.position = position;
 
@@ -367,18 +484,20 @@ namespace KitchenDesigner.Core
             rb.isKinematic = true;
             rb.useGravity = false;
 
-            var radiusTable = go.AddComponent<RadiusTableElement>();
-            radiusTable.PartName = go.name;
-            radiusTable.DimensionsMM = dimensionsMM;
+            var meshCollider = go.AddComponent<MeshCollider>();
+            meshCollider.convex = false;
+            meshCollider.sharedMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
 
-            if (DefaultMaterial != null)
-                radiusTable.SetMaterial(DefaultMaterial);
+            var window = go.AddComponent<WindowElement>();
+            window.PartName = name;
+            window.DimensionsMM = dimensionsMM;
+            window.Tint = tint;
+            window.SillProtrusionMM = sillProtrusionMM;
+            MaterialManager.ApplyById(window, MaterialCatalog.DefaultId);
 
-            PartRegistry.Register(radiusTable);
-
+            PartRegistry.Register(window);
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
-
             return go;
         }
 
@@ -397,11 +516,43 @@ namespace KitchenDesigner.Core
         public void DestroyElement(GameObject go)
         {
             if (go == null) return;
-            var table = go.GetComponent<TableElement>();
-            if (table != null)
+			var pillar = go.GetComponent<PillarElement>();
+			if (pillar != null)
+			{
+				PartRegistry.Unregister(pillar);
+				if (Application.isPlaying)
+					Object.Destroy(go);
+				else
+					Object.DestroyImmediate(go);
+				return;
+			}
+			var table = go.GetComponent<TableElement>();
+			if (table != null)
+			{
+				table.DestroyChildren();
+				PartRegistry.Unregister(table);
+				if (Application.isPlaying)
+					Object.Destroy(go);
+				else
+					Object.DestroyImmediate(go);
+				return;
+			}
+			var rTable = go.GetComponent<RadiusTableElement>();
+			if (rTable != null)
+			{
+				rTable.DestroyChildren();
+				PartRegistry.Unregister(rTable);
+				if (Application.isPlaying)
+					Object.Destroy(go);
+				else
+					Object.DestroyImmediate(go);
+				return;
+			}
+			var window = go.GetComponent<WindowElement>();
+            if (window != null)
             {
-                table.DestroyChildren();
-                PartRegistry.Unregister(table);
+                window.DestroyChildren();
+                PartRegistry.Unregister(window);
                 if (Application.isPlaying)
                     Object.Destroy(go);
                 else

@@ -1,17 +1,17 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Маркер объекта-стены. Стена движется/выделяется как деталь, но в графе
-    /// связности — структурный якорь (как пол): исключена из спецификации и подсветки.
-    /// Умеет «опускаться» до 100 мм (режим обзора) без потери исходной высоты.</summary>
     public class Wall : MonoBehaviour
     {
         private bool _lowered;
         private float _fullScaleY;
         private float _fullPosY;
+        private readonly List<WindowElement> _attachedWindows = new List<WindowElement>();
+        private MeshFilter? _meshFilter;
+        private Mesh? _customMesh;
 
-        /// <summary>Опустить/поднять стену. loweredHeightUnits — высота в юнитах (м).</summary>
         public void SetLowered(bool lower, float loweredHeightUnits)
         {
             if (lower)
@@ -34,15 +34,10 @@ namespace KitchenDesigner.Core
 
         public void RestoreFull() => SetLowered(false, 0f);
 
-        /// <summary>Опущена ли стена сейчас (режим обзора).</summary>
         public bool IsLowered => _lowered;
 
-        /// <summary>Высота стены в юнитах при полной высоте (без учёта опускания).</summary>
         public float FullScaleY => _lowered ? _fullScaleY : transform.localScale.y;
 
-        /// <summary>Позиция центра при полной высоте. Пока стена опущена, её
-        /// transform смещён вниз — для сохранения нужна именно полная позиция,
-        /// иначе после загрузки стена «утонет» (станет ниже).</summary>
         public Vector3 FullPosition
         {
             get
@@ -55,9 +50,74 @@ namespace KitchenDesigner.Core
 
         private void ApplyLowered(float loweredHeightUnits)
         {
-            float baseY = _fullPosY - _fullScaleY * 0.5f; // низ стены остаётся на месте
+            float baseY = _fullPosY - _fullScaleY * 0.5f;
             var sc = transform.localScale; sc.y = loweredHeightUnits; transform.localScale = sc;
             var p = transform.position; p.y = baseY + loweredHeightUnits * 0.5f; transform.position = p;
+        }
+
+        public void RegisterWindow(WindowElement window)
+        {
+            if (!_attachedWindows.Contains(window))
+                _attachedWindows.Add(window);
+            RebuildMesh();
+        }
+
+        public void UnregisterWindow(WindowElement window)
+        {
+            _attachedWindows.Remove(window);
+            RebuildMesh();
+        }
+
+        public void RebuildMesh()
+        {
+            if (_meshFilter == null) _meshFilter = GetComponent<MeshFilter>();
+            if (_meshFilter == null) return;
+
+            _attachedWindows.RemoveAll(w => w == null);
+
+            var el = GetComponent<KitchenElement>();
+            var dims = el != null ? el.DimensionsMM : new Vector3Int(100, 2500, 2000);
+
+            var cutouts = new List<WallMeshBuilder.WindowCutout>();
+            foreach (var w in _attachedWindows)
+            {
+                if (w == null) continue;
+                var localPos = transform.InverseTransformPoint(w.transform.position);
+                var wDims = w.DimensionsMM;
+                float halfWallW = dims.x * 0.001f * 0.5f;
+                float halfWallH = dims.y * 0.001f * 0.5f;
+                cutouts.Add(new WallMeshBuilder.WindowCutout
+                {
+                    centerNorm = new Vector2(
+                        halfWallW > 0.001f ? localPos.x / halfWallW * 0.5f : 0f,
+                        halfWallH > 0.001f ? localPos.y / halfWallH * 0.5f : 0f),
+                    halfSizeNorm = new Vector2(
+                        wDims.x * 0.001f * 0.5f / Mathf.Max(0.001f, halfWallW) * 0.5f,
+                        wDims.y * 0.001f * 0.5f / Mathf.Max(0.001f, halfWallH) * 0.5f)
+                });
+            }
+
+            if (_customMesh != null)
+            {
+                if (Application.isPlaying) Object.Destroy(_customMesh);
+                else Object.DestroyImmediate(_customMesh);
+            }
+
+            _customMesh = WallMeshBuilder.Build(cutouts);
+            _meshFilter.sharedMesh = _customMesh;
+
+            var collider = GetComponent<MeshCollider>();
+            if (collider != null) collider.sharedMesh = _customMesh;
+        }
+
+        private void OnDestroy()
+        {
+            if (_customMesh != null)
+            {
+                if (Application.isPlaying) Object.Destroy(_customMesh);
+                else Object.DestroyImmediate(_customMesh);
+                _customMesh = null;
+            }
         }
     }
 }

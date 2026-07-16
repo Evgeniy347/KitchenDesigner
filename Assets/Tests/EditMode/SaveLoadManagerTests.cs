@@ -118,8 +118,69 @@ public class SaveLoadManagerTests
         // RestoreScene-объекты подчистит TearDown.
     }
 
-    [Test]
-    public void IsVersionCompatible_MatchingVersion_True()
+        [Test]
+        public void RestoreScene_CreatesWindowWithProperties()
+        {
+            var ed = new ElementData
+            {
+                name = "TestWindow",
+                dimensionsMM = new[] { 900, 1200, 100 },
+                position = new[] { 0.5f, 0.6f, -1.5f },
+                rotation = new[] { 0f, 0f, 0f, 1f },
+                movable = true,
+                isWindow = true,
+                windowTint = 1,
+                windowSillProtrusionMM = 70,
+                windowDoorMode = (int)DoorMode.HingeFrontRight,
+                windowIsOpen = false,
+                windowAttachedWallName = "Wall_A",
+                materialId = MaterialCatalog.DefaultId,
+            };
+            var data = new ProjectData(new[] { ed });
+
+            var created = SaveLoadManager.RestoreScene(data);
+
+            Assert.AreEqual(1, created.Count);
+            var window = created[0].GetComponent<WindowElement>();
+            Assert.IsNotNull(window);
+            Assert.AreEqual("TestWindow", window.PartName);
+            Assert.AreEqual(new Vector3Int(900, 1200, 100), window.DimensionsMM);
+            Assert.AreEqual(GlassTint.Tinted, window.Tint);
+            Assert.AreEqual(70, window.SillProtrusionMM);
+            Assert.AreEqual(DoorMode.HingeFrontRight, window.Mode);
+            Assert.IsFalse(window.IsOpen);
+            Assert.AreEqual("Wall_A", window.AttachedWallName);
+
+            foreach (var go in created) Object.DestroyImmediate(go);
+        }
+
+        [Test]
+        public void RestoreScene_WindowOpenState()
+        {
+            var ed = new ElementData
+            {
+                name = "OpenWindow",
+                dimensionsMM = new[] { 900, 1200, 100 },
+                position = new[] { 0, 0.6f, 0 },
+                rotation = new[] { 0f, 0f, 0f, 1f },
+                isWindow = true,
+                windowDoorMode = (int)DoorMode.HingeFrontLeft,
+                windowIsOpen = true,
+            };
+            var data = new ProjectData(new[] { ed });
+
+            var created = SaveLoadManager.RestoreScene(data);
+
+            Assert.AreEqual(1, created.Count);
+            var window = created[0].GetComponent<WindowElement>();
+            Assert.IsNotNull(window);
+            Assert.IsTrue(window.IsOpen);
+
+            foreach (var go in created) Object.DestroyImmediate(go);
+        }
+
+        [Test]
+        public void IsVersionCompatible_MatchingVersion_True()
     {
         var data = new ProjectData { version = AppConstants.SAVE_FORMAT_VERSION };
         Assert.IsTrue(SaveLoadManager.IsVersionCompatible(data));

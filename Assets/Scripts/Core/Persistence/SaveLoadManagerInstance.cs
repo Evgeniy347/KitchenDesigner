@@ -178,15 +178,20 @@ namespace KitchenDesigner.Core
             foreach (var ed in data.elements)
             {
                 if (ed == null) { resolved.Add(null); continue; }
-                var go = ed.isDrawer
-                    ? ElementFactory.Instance.CreateDrawer((DrawerType)ed.drawerType, ed.drawerNominalLength,
-                        (DrawerColor)ed.drawerColor, ed.drawerInternalWidth, ed.name, ed.Position)
-                    : ed.isWall
-                        ? ElementFactory.Instance.CreateWall(ed.Dimensions, ed.name, ed.Position)
-                        : ed.isTable
-                            ? ElementFactory.Instance.CreateTable(ed.Dimensions, ed.name, ed.Position)
-                            : ed.isRadiusTable
-                                ? ElementFactory.Instance.CreateRadiusTable(ed.Dimensions, ed.name, ed.Position)
+				var go = ed.isDrawer
+					? ElementFactory.Instance.CreateDrawer((DrawerType)ed.drawerType, ed.drawerNominalLength,
+						(DrawerColor)ed.drawerColor, ed.drawerInternalWidth, ed.name, ed.Position)
+					: ed.isWindow
+						? ElementFactory.Instance.CreateWindow(ed.Dimensions, ed.name, ed.Position,
+							(GlassTint)ed.windowTint, ed.windowSillProtrusionMM)
+						: ed.isWall
+						? ElementFactory.Instance.CreateWall(ed.Dimensions, ed.name, ed.Position)
+						: ed.isPillar
+							? ElementFactory.Instance.CreatePillar(ed.midHeightMM, ed.name, ed.Position)
+							: ed.isTable
+								? ElementFactory.Instance.CreateTable(ed.Dimensions, ed.name, ed.Position)
+								: ed.isRadiusTable
+									? ElementFactory.Instance.CreateRadiusTable(ed.Dimensions, ed.name, ed.Position)
                             : ed.isRadialShelf
                                 ? ElementFactory.Instance.CreateRadialShelf(ed.Dimensions.x, ed.Dimensions.z,
                                     ed.Dimensions.y, ed.cornerRadius, ed.name, ed.Position)
@@ -211,10 +216,13 @@ namespace KitchenDesigner.Core
                     if (el is RadiusTableElement rTableEl2 && !string.IsNullOrEmpty(ed.legsMaterialId))
                         MaterialManager.ApplyLegs(rTableEl2, MaterialCatalog.Get(ed.legsMaterialId));
 
-                    if (el is TableElement tEl)
-                        tEl.LegInsetMM = ed.legInsetMM;
-                    if (el is RadiusTableElement rtEl)
-                        rtEl.LegInsetMM = ed.legInsetMM;
+					if (el is TableElement tEl)
+						tEl.LegInsetMM = ed.legInsetMM;
+					if (el is RadiusTableElement rtEl)
+						rtEl.LegInsetMM = ed.legInsetMM;
+
+					if (el is PillarElement pillarEl)
+						pillarEl.MidHeightMM = ed.midHeightMM;
 
                     if (el is AssembledFacadeElement assembled)
                         assembled.GrooveCount = ed.grooveCount;
@@ -236,6 +244,13 @@ namespace KitchenDesigner.Core
                         // Одиночный ящик открыт по doorOpen (DoubleState его не описывает).
                         if (ed.doorOpen && !drawerEl.IsOpen)
                             drawerEl.SetOpen(true);
+                    }
+
+                    if (ed.isWindow && el is WindowElement winEl)
+                    {
+                        winEl.Mode = (DoorMode)ed.windowDoorMode;
+                        if (ed.windowIsOpen) winEl.SetOpen(true);
+                        winEl.AttachedWallName = ed.windowAttachedWallName;
                     }
                 }
                 created.Add(go);

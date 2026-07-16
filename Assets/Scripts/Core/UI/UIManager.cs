@@ -320,6 +320,22 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
+        public void SpawnWindow(Vector3Int dims, string name)
+        {
+            Vector3 pos = GroundPointInFrontOfCamera();
+            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
+            pos = GridManager.SnapToGrid(pos);
+
+            var go = ElementFactory.CreateWindow(dims, name, pos);
+            var element = go.GetComponent<KitchenElement>();
+            if (element != null)
+            {
+                CommandStack.Execute(new CreateCommand(go));
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.Select(element);
+            }
+        }
+
         private Vector3 GroundPointInFrontOfCamera()
         {
             var cam = Camera.main;

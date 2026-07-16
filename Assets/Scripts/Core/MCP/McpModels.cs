@@ -89,7 +89,9 @@ namespace KitchenDesigner.Core.MCP
         public List<OpeningViolationInfo>? openingViolations; // детали, пересекающие траекторию открывания
         public DrawerInfo? drawer; // свойства ящика, только для DrawerElement
         public TableInfo? table; // свойства стола, только для TableElement
-        public RadiusTableInfo? radiusTable; // свойства радиусного стола, только для RadiusTableElement
+		public RadiusTableInfo? radiusTable; // свойства радиусного стола, только для RadiusTableElement
+		public PillarInfo? pillar; // свойства опоры, только для PillarElement
+		public WindowInfo? window; // свойства окна, только для WindowElement
     }
 
     [Serializable]
@@ -291,5 +293,21 @@ namespace KitchenDesigner.Core.MCP
         public string shape = "capsule";
         public string tabletopMaterialId = MaterialCatalog.DefaultId;
         public string legsMaterialId = MaterialCatalog.DefaultId;
+    }
+
+	[Serializable]
+	public class PillarInfo
+	{
+		public int midHeightMM;
+	}
+
+	[Serializable]
+	public class WindowInfo
+    {
+        public string tint = "Clear";
+        public int sillProtrusionMM;
+        public string mode = string.Empty;
+        public bool isOpen;
+        public string attachedWallName = string.Empty;
     }
 }

@@ -49,7 +49,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_1",
@@ -99,7 +105,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_2",
@@ -149,7 +161,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_3",
@@ -199,7 +217,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_4",
@@ -249,7 +273,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_5",
@@ -299,7 +329,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_6",
@@ -349,7 +385,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_7",
@@ -399,7 +441,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_8",
@@ -449,7 +497,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_9",
@@ -499,7 +553,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_10",
@@ -549,7 +609,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_11",
@@ -599,7 +665,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_12",
@@ -649,7 +721,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_13",
@@ -699,7 +777,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_14",
@@ -749,7 +833,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_15",
@@ -799,7 +889,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_16",
@@ -849,7 +945,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Mode_17",
@@ -899,7 +1001,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         }
     ],
     "groups": [],
@@ -962,7 +1070,13 @@
         "drawerIsUpper": false,
         "drawerPairedName": "",
         "drawerAttachedFacadeName": "",
-        "doubleDrawerState": 0
+        "doubleDrawerState": 0,
+        "isWindow": false,
+        "windowTint": 0,
+        "windowSillProtrusionMM": 50,
+        "windowDoorMode": 0,
+        "windowIsOpen": false,
+        "windowAttachedWallName": ""
     },
     "undoHistory": [],
     "redoHistory": [],
