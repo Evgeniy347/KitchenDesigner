@@ -12,9 +12,9 @@ public class KitchenSettingsTests
     }
 
     [Test]
-    public void GridStep_DefaultsTo16()
+    public void GridStep_DefaultsTo18()
     {
-        Assert.AreEqual(16, KitchenSettings.Instance.GridStep);
+        Assert.AreEqual(18, KitchenSettings.Instance.GridStep);
     }
 
     [Test]

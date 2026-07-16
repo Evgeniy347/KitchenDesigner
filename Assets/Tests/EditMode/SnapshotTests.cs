@@ -298,11 +298,11 @@ public class SnapshotTests
     public void Snapshot_Settings_Default()
     {
         var gs = KitchenSettings.Instance;
-        gs.GridStep = 1; gs.GridEnabled = true; gs.SnapEnabled = true;
+        gs.GridStep = 18; gs.GridEnabled = true; gs.SnapEnabled = true;
         gs.SnapThreshold = 50f; gs.BlockOnViolation = true;
-        gs.AutoSave = false; gs.AutoSaveInterval = 60;
+        gs.AutoSave = true; gs.AutoSaveInterval = 60;
         gs.SpatialGrid = false; gs.WindowedMode = true;
-        gs.EdgeOutline = false; gs.WallsEnabled = true; gs.LowerNearWalls = false;
+        gs.EdgeOutline = true; gs.WallsEnabled = true; gs.LowerNearWalls = true;
 
         var json = gs.GetSettingsJson();
         Snapshot.Match(json, "settings_default");
