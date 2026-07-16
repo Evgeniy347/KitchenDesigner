@@ -53,7 +53,7 @@ namespace KitchenDesigner.Core.UI
 
             SwitchTab(0);
 
-            float closeY = ContentTopY - 12 * RowStep - 3 * 6 - 20;
+            float closeY = ContentTopY - 11 * RowStep - 3 * 6 - 20;
             UIFactory.CreateButton("SetClose", panel.transform, "Закрыть",
                 new Vector2(0, closeY), new Vector2(160, 40),
                 () => SetVisible(false));
@@ -138,9 +138,6 @@ namespace KitchenDesigner.Core.UI
             y -= 6;
             AddToggleRow(t, ref y, "Пространственная сетка", s.SpatialGrid,
                 v => { s.SpatialGrid = v; });
-
-            AddToggleRow(t, ref y, "Оконный режим", s.WindowedMode,
-                v => { s.WindowedMode = v; DisplaySettings.ApplyWindowMode(); });
 
             AddToggleRow(t, ref y, "Контур (чёрные рёбра)", s.EdgeOutline,
                 v => { s.EdgeOutline = v; });

@@ -224,7 +224,7 @@ public class SettingsPanelUITests
         string[] expectedToggles =
         {
             "Сетка", "Снэппинг", "Блокировать ошибки", "Автосохранение",
-            "Пространственная сетка", "Оконный режим", "Контур (чёрные рёбра)",
+            "Пространственная сетка", "Контур (чёрные рёбра)",
             "Стены", "Опускать ближние стены"
         };
 
@@ -256,7 +256,6 @@ public class SettingsPanelUITests
         AssertToggleValue(project, "Блокировать ошибки", s.BlockOnViolation);
         AssertToggleValue(project, "Автосохранение", s.AutoSave);
         AssertToggleValue(project, "Пространственная сетка", s.SpatialGrid);
-        AssertToggleValue(project, "Оконный режим", s.WindowedMode);
         AssertToggleValue(project, "Контур (чёрные рёбра)", s.EdgeOutline);
         AssertToggleValue(project, "Стены", s.WallsEnabled);
         AssertToggleValue(project, "Опускать ближние стены", s.LowerNearWalls);
