@@ -8,8 +8,8 @@ for %%I in ("%~dp0.") do set "root=%%~fI"
 
 if /i "%~1"=="-NoBuild" goto :launch
 
-REM Close only the previous DEBUG instance (from Build_Debug\) - it locks the output files.
-powershell -NoProfile -Command "Get-Process KitchenDesigner -ErrorAction SilentlyContinue | Where-Object { $_.Path -like '*Build_Debug*' } | Stop-Process -Force" >nul 2>nul
+REM Close only the previous DEBUG instance (from Builds\Win_Debug\) - it locks the output files.
+powershell -NoProfile -Command "Get-Process KitchenDesigner -ErrorAction SilentlyContinue | Where-Object { $_.Path -like '*Builds\Win_Debug*' } | Stop-Process -Force" >nul 2>nul
 
 echo === [1/2] Unity Windows Debug build ===
 call "%root%\build.cmd" -WinDebug
@@ -19,7 +19,7 @@ if %errorlevel% neq 0 (
 )
 
 :launch
-set "exe=%root%\Build_Debug\KitchenDesigner.exe"
+set "exe=%root%\Builds\Win_Debug\KitchenDesigner.exe"
 if not exist "%exe%" (
     echo [FAIL] %exe% not found. Run without -NoBuild first.
     exit /b 1
