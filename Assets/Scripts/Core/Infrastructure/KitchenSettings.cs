@@ -16,18 +16,18 @@ namespace KitchenDesigner.Core
             }
         }
 
-        [SerializeField] private int _gridStep = 1;
+        [SerializeField] private int _gridStep = 18;
         [SerializeField] private bool _gridEnabled = true;
         [SerializeField] private bool _snapEnabled = true;
         [SerializeField] private float _snapThreshold = 50f;
         [SerializeField] private bool _blockOnViolation = true;
-        [SerializeField] private bool _autoSave = false;
+        [SerializeField] private bool _autoSave = true;
         [SerializeField] private int _autoSaveInterval = 60;
         [SerializeField] private bool _spatialGrid = false;
         [SerializeField] private bool _windowedMode = true;
-        [SerializeField] private bool _edgeOutline = false;
+        [SerializeField] private bool _edgeOutline = true;
         [SerializeField] private bool _wallsEnabled = true;
-        [SerializeField] private bool _lowerNearWalls = false;
+        [SerializeField] private bool _lowerNearWalls = true;
 
         public int GridStep
         {

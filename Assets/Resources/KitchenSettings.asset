@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08581a245f91a7742ae20e14ac1e1476, type: 3}
   m_Name: KitchenSettings
   m_EditorClassIdentifier: KitchenDesigner.Runtime::KitchenDesigner.Core.KitchenSettings
-  _gridStep: 1
+  _gridStep: 18
   _gridEnabled: 1
   _snapEnabled: 1
   _snapThreshold: 50
   _blockOnViolation: 1
-  _autoSave: 0
+  _autoSave: 1
   _autoSaveInterval: 60
   _spatialGrid: 0
   _windowedMode: 1
-  _edgeOutline: 0
+  _edgeOutline: 1
   _wallsEnabled: 1
-  _lowerNearWalls: 0
+  _lowerNearWalls: 1

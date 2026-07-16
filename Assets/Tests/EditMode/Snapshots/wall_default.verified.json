@@ -1,4 +1,4 @@
-﻿{
+{
     "version": 1,
     "elements": [
         {
@@ -39,7 +39,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -103,8 +102,7 @@
         "assembled": false,
         "assembledFill": 0,
         "grooveCount": 1,
-        "radius": 300,
-        "cornerRadius": 0,
+        "cornerRadius": 200,
         "isDrawer": false,
         "drawerType": 0,
         "drawerNominalLength": 350,
@@ -119,17 +117,17 @@
     "undoHistory": [],
     "redoHistory": [],
     "settings": {
-        "gridStep": 1,
+        "gridStep": 18,
         "gridEnabled": true,
         "snapEnabled": true,
         "snapThreshold": 50.0,
         "blockOnViolation": true,
-        "autoSave": false,
+        "autoSave": true,
         "autoSaveInterval": 60,
         "spatialGrid": false,
         "windowedMode": true,
-        "edgeOutline": false,
+        "edgeOutline": true,
         "wallsEnabled": true,
-        "lowerNearWalls": false
+        "lowerNearWalls": true
     }
 }
