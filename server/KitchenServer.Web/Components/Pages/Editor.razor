@@ -52,6 +52,7 @@
     private string? _lockGuid;
     private bool _disposed;
     private McpSession? _session;
+    private string? _projectIdStr;
 
     protected override async Task OnInitializedAsync()
     {
@@ -85,11 +86,8 @@
             }
             _lockGuid = lockGuid;
 
-            // Register beforeunload handler to release lock on tab close.
-            var projectIdStr = ProjectId.ToString();
-            var capturedLockGuid = _lockGuid;
-            await JS.InvokeVoidAsync("editorLock.registerRelease",
-                projectIdStr, capturedLockGuid);
+            // Stored for JS registration in OnAfterRenderAsync (browser only).
+            _projectIdStr = ProjectId.ToString();
 
             // Fresh MCP session for THIS tab: a unique project key generated on every
             // load. The WebGL client connects it to /api/mcp/ws; the user copies the
@@ -106,6 +104,15 @@
         catch (Exception ex)
         {
             _error = $"Failed to load project: {ex.Message}";
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _projectIdStr != null && _lockGuid != null)
+        {
+            await JS.InvokeVoidAsync("editorLock.registerRelease",
+                _projectIdStr, _lockGuid);
         }
     }
 
