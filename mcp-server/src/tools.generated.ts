@@ -24,9 +24,12 @@ export const GEN_TOOLS: GenTool[] = [
   {
     name: "guide",
     title: "Guide / cheat-sheet",
-    description: "Full usage cheat-sheet: units, the core workflow, and worked examples. Call this first if unsure.",
+    description: "Usage cheat-sheet. Topics: workflow (default; units, batch editing, worked examples), elements (element types), fields (what each response field means), drawers (GTV drawers), violations (what counts as a violation). Call this first if unsure.",
     kind: "read",
     staticText: true,
+    inputSchema: {
+      topic: z.enum(["workflow", "elements", "fields", "drawers", "violations"]).optional().describe("Cheat-sheet topic. Omit for the workflow overview."),
+    },
   },
   {
     name: "ping",
@@ -57,6 +60,17 @@ export const GEN_TOOLS: GenTool[] = [
     },
   },
   {
+    name: "get_elements",
+    title: "Get elements (batch)",
+    description: "Info for SEVERAL elements in ONE call: pick by exact names and/or a name filter (substring or wildcard \u0027*\u0027). summary:true returns compact one-line info per element. Prefer this over repeated get_element_info calls.",
+    kind: "read",
+    inputSchema: {
+      names: z.array(z.string().min(1)).optional().describe("Exact board names to fetch. Omit to select by filter (or everything)."),
+      filter: z.string().optional().describe("Name filter: substring or wildcard with \u0027*\u0027, case-insensitive (e.g. \u0027B4_upper*\u0027). Omit to skip."),
+      summary: z.boolean().optional().describe("true = compact one-line info per element (name, type, position, size, locked, hasViolations). Default false = full info."),
+    },
+  },
+  {
     name: "get_specification",
     title: "Specification",
     description: "Cut list: every distinct board size with count and area (m2), plus totals.",
@@ -65,8 +79,11 @@ export const GEN_TOOLS: GenTool[] = [
   {
     name: "get_violations",
     title: "List violations",
-    description: "List every element that currently overlaps another or is disconnected from the wall/floor structure. Call after each change; expect count 0.",
+    description: "List elements that overlap another (with severity and penetration depth in mm) or are disconnected from the wall/floor structure. Optional names[] limits the report to those boards. Note: every mutation already returns its own violations \u2014 call this to check the WHOLE scene.",
     kind: "read",
+    inputSchema: {
+      names: z.array(z.string().min(1)).optional().describe("Only report violations of these boards. Omit for the whole scene."),
+    },
   },
   {
     name: "get_element_gaps",
@@ -181,6 +198,29 @@ export const GEN_TOOLS: GenTool[] = [
     },
   },
   {
+    name: "batch_edit",
+    title: "Batch edit (one undo step)",
+    description: "Apply MANY changes in ONE transactional call. Each op: exact name \u002B any of x/y/z (METERS), width/height/depth (MM), rot_x/rot_y/rot_z (DEGREES), locked, material \u2014 all given fields apply together. Atomic: if ANY op is invalid, NOTHING is applied. Undo reverts the whole batch. dry_run:true simulates, reports per-op violations and reverts. PREFER this over a series of move/resize/rotate calls.",
+    kind: "write",
+    inputSchema: {
+      ops: z.array(z.object({ name: z.string().min(1).describe("Exact board name."), x: z.number().finite().optional().describe("Target X in METERS. Omit to keep."), y: z.number().finite().optional().describe("Target Y in METERS. Omit to keep."), z: z.number().finite().optional().describe("Target Z in METERS. Omit to keep."), width: z.number().int().min(1).optional().describe("New width (X) in MM. Omit to keep."), height: z.number().int().min(1).optional().describe("New height (Y) in MM. Omit to keep."), depth: z.number().int().min(1).optional().describe("New depth/thickness (Z) in MM. Omit to keep."), rot_x: z.number().finite().optional().describe("Rotation around X in DEGREES. Omit to keep."), rot_y: z.number().finite().optional().describe("Rotation around Y in DEGREES. Omit to keep."), rot_z: z.number().finite().optional().describe("Rotation around Z in DEGREES. Omit to keep."), locked: z.boolean().optional().describe("Lock (true) / unlock (false). Omit to keep."), material: z.string().optional().describe("Material id or display name (see list_materials). Omit to keep.") })).min(1).describe("Operations to apply. Each op: exact name \u002B any of x/y/z (METERS), width/height/depth (MM), rot_x/rot_y/rot_z (DEGREES), locked, material."),
+      dry_run: z.boolean().optional().describe("true = DRY-RUN: apply, report per-op violations, then revert everything. Default false."),
+    },
+  },
+  {
+    name: "clone_element",
+    title: "Clone element",
+    description: "Create COUNT copies of a board; copy N is shifted by N*offset (METERS) from the original. Copies are named \u003Cname\u003E_2, \u003Cname\u003E_3, \u2026 Whole clone is ONE undo step. Ideal for \u0027three identical shelves 300 mm apart\u0027.",
+    kind: "write",
+    inputSchema: {
+      name: z.string().min(1).describe("Exact board name to clone."),
+      count: z.number().int().min(1).max(50).optional().describe("How many copies (default 1, max 50)."),
+      offset_x: z.number().finite().optional().describe("X shift between copies in METERS (default 0)."),
+      offset_y: z.number().finite().optional().describe("Y shift between copies in METERS (default 0)."),
+      offset_z: z.number().finite().optional().describe("Z shift between copies in METERS (default 0)."),
+    },
+  },
+  {
     name: "move_element",
     title: "Move element",
     description: "Move a board to an absolute position. Undoable, validated, snaps to neighbours. x/y/z in METERS. Each axis is OPTIONAL \u2014 omit an axis to keep the board\u0027s current value on it (a missing axis is NOT treated as 0), so you can move on one axis only. Fails if the element is locked. Run simulate_move first.",
@@ -214,6 +254,38 @@ export const GEN_TOOLS: GenTool[] = [
       x: z.number().finite().optional().describe("Rotation around X in DEGREES. Omit to keep current."),
       y: z.number().finite().optional().describe("Rotation around Y in DEGREES. Omit to keep current."),
       z: z.number().finite().optional().describe("Rotation around Z in DEGREES. Omit to keep current."),
+    },
+  },
+  {
+    name: "align_element",
+    title: "Align face to face",
+    description: "Move a board so its FACE sits flush against (or gap_mm away from) a TARGET board\u0027s face \u2014 no manual coordinate math. Example: {name:\u0027Shelf1\u0027, face:\u0027left\u0027, target:\u0027Side_L\u0027, target_face:\u0027right\u0027} presses the shelf against the panel. Undoable; returns the same envelope as move_element.",
+    kind: "write",
+    inputSchema: {
+      name: z.string().min(1).describe("Board to MOVE."),
+      face: z.enum(["left", "right", "bottom", "top", "back", "front"]).describe("Which face of THIS board to align: left/right = X axis, bottom/top = Y axis, back/front = Z axis."),
+      target: z.string().min(1).describe("Board to align AGAINST (it does not move)."),
+      target_face: z.enum(["left", "right", "bottom", "top", "back", "front"]).describe("Which face of the TARGET to align to. Must be on the same axis as \u0027face\u0027."),
+      gap_mm: z.number().finite().min(0).optional().describe("Gap between the two faces in MM (default 0 = flush contact)."),
+    },
+  },
+  {
+    name: "distribute_evenly",
+    title: "Distribute evenly",
+    description: "Space 3\u002B boards evenly along a world axis: the two outermost stay, the middle ones move so center-to-center distances are equal. ONE undo step. Ideal for \u0027three shelves evenly between top and bottom\u0027.",
+    kind: "write",
+    inputSchema: {
+      names: z.array(z.string().min(1)).min(3).describe("At least 3 board names. The two outermost (along the axis) stay; the middle ones move so center-to-center spacing is equal."),
+      axis: z.enum(["x", "y", "z"]).describe("World axis to distribute along."),
+    },
+  },
+  {
+    name: "get_free_space",
+    title: "Free space between two boards",
+    description: "The empty box between two boards: size (mm), bounds (m), center, and any elements already inside it. Use BEFORE creating or resizing something to fit between panels \u2014 no manual AABB math.",
+    kind: "read",
+    inputSchema: {
+      between: z.array(z.string().min(1)).min(2).describe("Exactly 2 board names \u2014 returns the free box between them."),
     },
   },
   {
@@ -575,3 +647,13 @@ export const GEN_TOOLS: GenTool[] = [
     kind: "write",
   },
 ];
+
+/** guide topic -> cheat-sheet text (served locally by the bridge). */
+export const GUIDE_DEFAULT_TOPIC = "workflow";
+export const GUIDE_TEXTS: Record<string, string> = {
+  workflow: "KITCHEN DESIGNER \u2014 WORKFLOW CHEAT-SHEET\nOther guide topics: guide {topic:\u0022elements\u0022 | \u0022fields\u0022 | \u0022drawers\u0022 | \u0022violations\u0022}\n\nUNITS (the #1 mistake)\n  position x/y/z  = METERS      (1.5 -\u003E 1.5 m)\n  size w/h/d      = MILLIMETERS (600 -\u003E 600 mm)\n  1 m = 1000 mm.  dimZ = board thickness (smallest side, usually 18 mm).\n\nREADING THE SCENE (prefer ONE batch call over many single calls)\n  get_elements {filter:\u0022B4_*\u0022, summary:true}  -\u003E compact list of one cabinet\n  get_elements {names:[\u0022A\u0022,\u0022B\u0022]}                -\u003E full info for exactly these\n  get_all_elements                              -\u003E everything (large!)\n  get_free_space {between:[\u0022Side_L\u0022,\u0022Side_R\u0022]} -\u003E the empty box between two panels\n\nEDITING (every mutation returns: element info \u002B ITS violations \u002B sceneViolationCount)\n  batch_edit {ops:[{name:\u0022P1\u0022, x:1.2}, {name:\u0022P2\u0022, width:600, rot_y:90}]}\n     - MANY changes in ONE transactional call, single undo step.\n     - dry_run:true = simulate first, nothing is kept.\n  align_element {name:\u0022Shelf\u0022, face:\u0022left\u0022, target:\u0022Side_L\u0022, target_face:\u0022right\u0022}\n     - face-to-face placement WITHOUT coordinate math (gap_mm optional).\n  clone_element {name:\u0022Shelf\u0022, count:2, offset_y:0.3}  -\u003E Shelf_2, Shelf_3\n  distribute_evenly {names:[...3\u002B...], axis:\u0022y\u0022}\n  Single-element tools also exist: move_element / resize_element / rotate_element.\n\nCHECKING\n  Look at \u0022violations\u0022 in EVERY mutation response: [] means this element is clean.\n  If sceneViolationCount grew after your change, call get_violations (optionally\n  with names:[...]) to see what else broke.\n  severity in overlaps: touching \u003C minor_overlap \u003C overlap \u003C deep_penetration.\n  deep_penetration means the board is INSIDE another one - that is never OK.\n\nSTEP-BY-STEP EXAMPLE: three shelves between two panels\n  1. get_free_space {between:[\u0022Side_L\u0022,\u0022Side_R\u0022]}   -\u003E inner width/position\n  2. create_element {name:\u0022Shelf1\u0022, x:.., y:.., z:.., width:.., height:.., depth:18}\n  3. align_element  {name:\u0022Shelf1\u0022, face:\u0022left\u0022, target:\u0022Side_L\u0022, target_face:\u0022right\u0022}\n  4. clone_element  {name:\u0022Shelf1\u0022, count:2, offset_y:0.3}\n  5. get_violations {names:[\u0022Shelf1\u0022,\u0022Shelf1_2\u0022,\u0022Shelf1_3\u0022]}  -\u003E expect []\n\nSAFETY\n  LOCKED elements (locked:true in element info) reject changes. Unlock with\n  set_element_lock {locked:false} ONLY if the user explicitly allowed it.\n  delete_element / batch_edit / clone_element are undoable with undo.",
+  elements: "ELEMENT TYPES (field \u0022type\u0022 in responses)\n\nKitchenElement        Plain board. The default of create_element.\n                      Size = resize_element / batch_edit (width/height/depth, MM).\nWall (component)      A board that is a structural ANCHOR (create_element {is_wall:true}\n                      or add_wall_component). Other boards must connect to a wall/floor.\nBasePlate (floor)     The floor plate: create_element {is_floor:true}, resize_floor.\nFacadeElement         Door/front with gaps (gap_left/right/top/bottom, MM). It FLOATS in\n                      its opening: a facade with gap \u003E 0 is exempt from connectivity.\n                      Opening mode: set_facade_mode (18 modes, see facadeMode field).\nAssembledFacadeElement Framed (assembled) facade with real frame geometry.\n                      create_element {is_assembled:true, fill:\u0022blind|glass|open\u0022}.\nRadialShelfElement    Board with ONE rounded corner: create_element {is_radial_shelf:true,\n                      corner_radius:..}. Radius via set_radial_shelf_properties.\nDrawerElement         GTV drawer (sliding box). SIZE COMES FROM ITS PARAMETERS -\n                      resize is REJECTED; use set_drawer_properties (type A/B/C/D,\n                      drawer_length, internal_width). See guide {topic:\u0022drawers\u0022}.\nTableElement          Table (tabletop \u002B 4 legs): create_element {is_table:true}.\n                      leg_inset_mm and materials via set_table_properties.\nRadiusTableElement    Capsule-shaped table: create_element {is_radius_table:true}.\n\nCONVERSIONS: convert_element switches board \u003C-\u003E facade \u003C-\u003E assembled_facade \u003C-\u003E\nradial_shelf in place, keeping name/size/position/material.\n\nMODULES: named groups that move together (create_module, add_to_module, ...).\nAn element\u0027s module is in moduleId/moduleName of its info.",
+  fields: "RESPONSE FIELD SEMANTICS (element info)\n\nname                  Unique text id. All tools address elements by exact name.\ntype                  Element class - see guide {topic:\u0022elements\u0022}.\ndimX/dimY/dimZ        LOCAL size in MM (dimZ = thickness). Does NOT change when\n                      the board is rotated.\nworldDimX/Y/Z         WORLD-axis extents in MM (from AABB). USE THESE when the\n                      board is rotated: after rot_y=90 a 600x18 board has\n                      worldDimX=18, worldDimZ=600.\nposX/posY/posZ        Center position in METERS (world).\nrotX/rotY/rotZ        Euler angles in DEGREES.\naabbMin*/aabbMax*     World bounding box in METERS.\neffectiveDim*         dim \u002B facade gaps (facades only). NOT rotation-aware -\n                      prefer worldDim* for world-space reasoning.\nlocked                true = move/resize/delete will be rejected (set_element_lock).\nhasViolations         true = this element overlaps something or is disconnected.\nfaceGaps              Per-axis nearest OPPOSITE neighbour: {axis, neighbor, gapMM,\n                      touching, isOverlap}. touching=true means flush contact\n                      (|gap| \u003C 0.5 mm) - that is GOOD, not a violation.\n                      Axes with no facing neighbour are omitted.\nmoduleId/moduleName   Group membership (0/absent = not grouped).\nmaterialId            Decor id (list_materials).\nfacadeMode            Facade opening mode (\u0022front_left\u0022, \u0022drawer_out\u0022, ...).\ndrawer / table / radiusTable   Type-specific sub-objects, absent otherwise.\n\nMUTATION RESPONSES (move/resize/rotate/create/align/...) always return:\n  { ok, element: \u003Cfull info above\u003E, violations: [\u003CTHIS element\u0027s problems\u003E],\n    sceneViolationCount: \u003Cstructural violations in the WHOLE scene\u003E }\nviolations kinds: overlap (with severity \u002B penetrationMm), disconnected,\nfacade_facing_inward, face_obstruction, opening_collision, drawer_invalid.",
+  drawers: "GTV DRAWERS (DrawerElement)\n\nA drawer is a parametric sliding box. Its geometry is DERIVED from parameters -\nresize_element is rejected; use set_drawer_properties instead.\n\nPARAMETERS\n  drawer_type      Side height: A=86, B=120, C=168, D=200 mm.\n  drawer_length    Nominal slide length MM: 250/300/350/400/450/500/550/600.\n  internal_width   Internal box width in MM (min 100).\n  drawer_color     anthracite | white | black.\n\nCREATE:  create_element {name, x, y, z, is_drawer:true, drawer_type:\u0022B\u0022,\n                         drawer_length:450, drawer_internal_width:400}\n\nFRONTS:  attach a facade with set_drawer_properties {attached_facade_name:\u0022F1\u0022} -\n         the facade then slides together with the drawer. Empty string detaches.\n\nDOUBLE DRAWERS: two stacked boxes moving as one system:\n  set_drawer_properties {is_double:true, paired_drawer_name:\u0022OtherDrawer\u0022}\n  (link BOTH drawers to each other; mark the upper one with is_upper:true).\n\nANIMATION: cycle_drawer_animation toggles a single drawer open/closed; a double\ndrawer cycles Closed -\u003E BothOpen -\u003E LowerOnly -\u003E Closed. State is in\nelement.drawer: isOpen, doubleState.\n\nVALIDATION: drawer problems (bad length, missing pair, ...) appear as\nkind:\u0022drawer_invalid\u0022 entries in the violations list of mutation responses\nand in get_violations.",
+  violations: "VIOLATIONS - WHAT COUNTS AND WHAT DOES NOT\n\nSTRUCTURAL (make hasViolations true):\n  overlap        Two boards occupy the same volume. Reported with severity:\n                   touching          \u003C 0.5 mm  - NOT a violation (flush contact)\n                   minor_overlap     0.5..2 mm - tiny intrusion, usually a mistake\n                   overlap           2..10 mm  - real intersection\n                   deep_penetration  \u003E 10 mm   - board is INSIDE another; never OK\n                 penetrationMm = depth of intrusion; overlapX/Y/Zmm = extent per axis.\n  disconnected   The board is not face-to-face connected (within 0.5 mm) to the\n                 wall/floor structure. Exempt: facades with gap \u003E 0 (they float in\n                 their opening) and drawers (they live inside a cabinet).\n\nFACADE-ONLY (reported per element, do not flip hasViolations):\n  facade_facing_inward   Front face points INTO the cabinet - rotate 180 deg.\n  face_obstruction       Something sits right in front of the facade (within 100 mm).\n  opening_collision      The door/drawer trajectory hits a neighbour\n                         (collisionAtProgress: 0..1 of the opening travel).\n\nDRAWER-ONLY: drawer_invalid with a message (bad parameters/pairing).\n\nTOLERANCES: everything below 0.5 mm is float noise and is filtered out server-side.\nAll numbers arrive rounded to 0.1 mm. Boards standing flush report touching:true,\ngapMM:0 - treat that as a GOOD fit.\n\nCHECKING: every mutation response carries the changed element\u0027s violations plus\nsceneViolationCount. get_violations {names:[...]} checks specific boards;\nget_violations {} audits the whole scene.",
+};

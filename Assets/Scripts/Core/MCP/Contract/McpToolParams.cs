@@ -9,6 +9,14 @@ using System;
 
 namespace KitchenDesigner.Core.MCP.Contract
 {
+    [Serializable]
+    public class ParamsGuide
+    {
+        [McpParam("Cheat-sheet topic. Omit for the workflow overview.",
+            Enum = new[] { "workflow", "elements", "fields", "drawers", "violations" })]
+        public string? topic;
+    }
+
     // ── name-only / path-only ────────────────────────────────────────────────
 
     [Serializable]
@@ -286,6 +294,101 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Double drawer only: this box is the UPPER one.")] public bool? is_upper;
         [McpParam("Double drawer only: exact name of the paired drawer element (link both ways for sync).")] public string paired_drawer_name = string.Empty;
         [McpParam("Exact name of the facade element acting as this drawer's front — it opens/closes together with the drawer. Empty string detaches.")] public string attached_facade_name = string.Empty;
+    }
+
+    // ── Батч-инструменты ─────────────────────────────────────────────────────
+
+    [Serializable]
+    public class ParamsGetElements
+    {
+        [McpParam("Exact board names to fetch. Omit to select by filter (or everything).")]
+        public string[]? names;
+
+        [McpParam("Name filter: substring or wildcard with '*', case-insensitive (e.g. 'B4_upper*'). Omit to skip.")]
+        public string? filter;
+
+        [McpParam("true = compact one-line info per element (name, type, position, size, locked, hasViolations). Default false = full info.")]
+        public bool summary;
+    }
+
+    [Serializable]
+    public class ParamsGetViolations
+    {
+        [McpParam("Only report violations of these boards. Omit for the whole scene.")]
+        public string[]? names;
+    }
+
+    /// <summary>Одна операция batch_edit. Все указанные поля применяются к
+    /// элементу разом (можно одновременно двигать, вращать и менять размер).</summary>
+    [Serializable]
+    public class BatchOp
+    {
+        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
+        [McpParam("Target X in METERS. Omit to keep.")] public float? x;
+        [McpParam("Target Y in METERS. Omit to keep.")] public float? y;
+        [McpParam("Target Z in METERS. Omit to keep.")] public float? z;
+        [McpParam("New width (X) in MM. Omit to keep.", Min = 1)] public int? width;
+        [McpParam("New height (Y) in MM. Omit to keep.", Min = 1)] public int? height;
+        [McpParam("New depth/thickness (Z) in MM. Omit to keep.", Min = 1)] public int? depth;
+        [McpParam("Rotation around X in DEGREES. Omit to keep.")] public float? rot_x;
+        [McpParam("Rotation around Y in DEGREES. Omit to keep.")] public float? rot_y;
+        [McpParam("Rotation around Z in DEGREES. Omit to keep.")] public float? rot_z;
+        [McpParam("Lock (true) / unlock (false). Omit to keep.")] public bool? locked;
+        [McpParam("Material id or display name (see list_materials). Omit to keep.")] public string? material;
+    }
+
+    [Serializable]
+    public class ParamsBatchEdit
+    {
+        [McpParam("Operations to apply. Each op: exact name + any of x/y/z (METERS), width/height/depth (MM), rot_x/rot_y/rot_z (DEGREES), locked, material.",
+            Required = true, Min = 1)]
+        public BatchOp[] ops = Array.Empty<BatchOp>();
+
+        [McpParam("true = DRY-RUN: apply, report per-op violations, then revert everything. Default false.")]
+        public bool dry_run;
+    }
+
+    [Serializable]
+    public class ParamsCloneElement
+    {
+        [McpParam("Exact board name to clone.", Required = true)] public string name = string.Empty;
+        [McpParam("How many copies (default 1, max 50).", Min = 1, Max = 50)] public int count = 1;
+        [McpParam("X shift between copies in METERS (default 0).")] public float offset_x;
+        [McpParam("Y shift between copies in METERS (default 0).")] public float offset_y;
+        [McpParam("Z shift between copies in METERS (default 0).")] public float offset_z;
+    }
+
+    // ── Высокоуровневое размещение ───────────────────────────────────────────
+
+    [Serializable]
+    public class ParamsAlignElement
+    {
+        [McpParam("Board to MOVE.", Required = true)] public string name = string.Empty;
+        [McpParam("Which face of THIS board to align: left/right = X axis, bottom/top = Y axis, back/front = Z axis.",
+            Required = true, Enum = new[] { "left", "right", "bottom", "top", "back", "front" })]
+        public string face = string.Empty;
+        [McpParam("Board to align AGAINST (it does not move).", Required = true)] public string target = string.Empty;
+        [McpParam("Which face of the TARGET to align to. Must be on the same axis as 'face'.",
+            Required = true, Enum = new[] { "left", "right", "bottom", "top", "back", "front" })]
+        public string target_face = string.Empty;
+        [McpParam("Gap between the two faces in MM (default 0 = flush contact).", Min = 0)]
+        public float gap_mm;
+    }
+
+    [Serializable]
+    public class ParamsGetFreeSpace
+    {
+        [McpParam("Exactly 2 board names — returns the free box between them.", Required = true, Min = 2)]
+        public string[] between = Array.Empty<string>();
+    }
+
+    [Serializable]
+    public class ParamsDistributeEvenly
+    {
+        [McpParam("At least 3 board names. The two outermost (along the axis) stay; the middle ones move so center-to-center spacing is equal.", Required = true, Min = 3)]
+        public string[] names = Array.Empty<string>();
+        [McpParam("World axis to distribute along.", Required = true, Enum = new[] { "x", "y", "z" })]
+        public string axis = string.Empty;
     }
 
     [Serializable]

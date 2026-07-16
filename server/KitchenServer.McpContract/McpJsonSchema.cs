@@ -108,6 +108,31 @@ namespace KitchenServer.McpContract
                 node["items"] = new JsonObject { ["type"] = "string" };
                 if (p.HasMin) node["minItems"] = (long)p.Min;
             }
+            else if (field.FieldType.IsArray
+                && field.FieldType.GetElementType() is { IsClass: true } et && et != typeof(string))
+            {
+                // Массив объектов (BatchOp[] и т.п.) — зеркалит z.array(z.object({...}))
+                // кодогенератора. Вложенные rename не поддерживаются (как и в Zod-пути).
+                var itemProps = new JsonObject();
+                var itemRequired = new JsonArray();
+                foreach (var f2 in et.GetFields(BindingFlags.Public | BindingFlags.Instance))
+                {
+                    if (f2.GetCustomAttribute<McpIgnoreAttribute>() != null) continue;
+                    var p2 = f2.GetCustomAttribute<McpParamAttribute>();
+                    if (p2 == null) continue;
+                    if (!string.IsNullOrEmpty(p2.Name) && p2.Name != f2.Name)
+                        throw new InvalidOperationException(
+                            $"Nested param rename is not supported: {et.Name}.{f2.Name} -> {p2.Name}");
+                    itemProps[f2.Name] = FieldSchema(f2, p2);
+                    if (p2.Required) itemRequired.Add(f2.Name);
+                }
+                var item = new JsonObject { ["type"] = "object", ["properties"] = itemProps };
+                if (itemRequired.Count > 0) item["required"] = itemRequired;
+                node["type"] = "array";
+                node["items"] = item;
+                if (p.HasMin) node["minItems"] = (long)p.Min;
+                if (p.HasMax) node["maxItems"] = (long)p.Max;
+            }
             else
             {
                 throw new InvalidOperationException(

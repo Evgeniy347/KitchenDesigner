@@ -142,6 +142,67 @@ export interface NamedElementParams {
   name: string;
 }
 
+/* ── Batch tools ───────────────────────────────────────────────────────── */
+
+export interface GetElementsParams {
+  names?: string[];
+  filter?: string;
+  summary?: boolean;
+}
+
+export interface GetViolationsParams {
+  names?: string[];
+}
+
+export interface BatchOp {
+  name: string;
+  x?: number;
+  y?: number;
+  z?: number;
+  width?: number;
+  height?: number;
+  depth?: number;
+  rot_x?: number;
+  rot_y?: number;
+  rot_z?: number;
+  locked?: boolean;
+  material?: string;
+}
+
+export interface BatchEditParams {
+  ops: BatchOp[];
+  dry_run?: boolean;
+}
+
+export interface CloneElementParams {
+  name: string;
+  count?: number;
+  offset_x?: number;
+  offset_y?: number;
+  offset_z?: number;
+}
+
+/* ── High-level placement ──────────────────────────────────────────────── */
+
+export type FaceName = "left" | "right" | "bottom" | "top" | "back" | "front";
+
+export interface AlignElementParams {
+  name: string;
+  face: FaceName;
+  target: string;
+  target_face: FaceName;
+  gap_mm?: number;
+}
+
+export interface GetFreeSpaceParams {
+  between: string[]; // exactly 2 names
+}
+
+export interface DistributeEvenlyParams {
+  names: string[]; // 3+
+  axis: "x" | "y" | "z";
+}
+
 /* ── Advanced: raw objects ─────────────────────────────────────────────── */
 
 export interface SetActiveParams {
@@ -218,6 +279,7 @@ export interface ElementInfo {
   rotY: number;
   rotZ: number;
   active: boolean;
+  locked: boolean;
   moduleId: number;
   moduleName?: string | null;
   materialId?: string | null;
@@ -228,13 +290,20 @@ export interface ElementInfo {
   aabbMaxX: number;
   aabbMaxY: number;
   aabbMaxZ: number;
+  /** Габариты в МИРОВЫХ осях (мм, из AABB) — учитывают поворот. */
+  worldDimX: number;
+  worldDimY: number;
+  worldDimZ: number;
   effectiveDimX: number;
   effectiveDimY: number;
   effectiveDimZ: number;
   faceGaps?: AxisGapInfo[] | null;
   cornerRadius?: number;
-  faceNormal?: Vector3Json | null;
-  faceInward?: boolean;
+  facadeMode?: string | null;
+  faceNormalX?: number | null;
+  faceNormalY?: number | null;
+  faceNormalZ?: number | null;
+  faceInward?: boolean | null;
   faceObstructions?: FaceObstruction[] | null;
   openingViolations?: OpeningViolation[] | null;
 }
@@ -243,14 +312,48 @@ export interface AxisGapInfo {
   axis: string;
   neighbor?: string | null;
   gapMM: number;
+  /** |зазор| < 0.5 мм — детали вплотную (НЕ нарушение). */
+  touching: boolean;
   isOverlap: boolean;
+}
+
+export type OverlapSeverity = "touching" | "minor_overlap" | "overlap" | "deep_penetration";
+
+/** Одно нарушение элемента в конверте мутаций / get_violations. */
+export interface ElementViolation {
+  kind: "overlap" | "disconnected" | "facade_facing_inward" | "face_obstruction"
+      | "opening_collision" | "drawer_invalid";
+  neighbor?: string;
+  severity?: OverlapSeverity;
+  penetrationMm?: number;
+  overlapXmm?: number;
+  overlapYmm?: number;
+  overlapZmm?: number;
+  message?: string;
+  openingMode?: string;
+  collisionAtProgress?: number;
+  collisionOverlapMm?: number;
+  distanceFromFaceMm?: number;
+  overlapWidthMm?: number;
+  overlapHeightMm?: number;
+}
+
+/** Единый конверт ответа всех мутаций. */
+export interface MutationResult {
+  ok: boolean;
+  element: ElementInfo;
+  violations: ElementViolation[];
+  sceneViolationCount: number;
 }
 
 export interface ViolationEntry {
   name: string;
   type: string;
   overlapsWith: Array<{
+    kind: "overlap";
     neighbor: string;
+    severity: OverlapSeverity;
+    penetrationMm: number;
     overlapXmm: number;
     overlapYmm: number;
     overlapZmm: number;
@@ -270,7 +373,7 @@ export interface ParamMap {
   readonly get_scene_hierarchy: Record<string, never>;
   readonly get_all_elements: Record<string, never>;
   readonly get_specification: Record<string, never>;
-  readonly get_violations: Record<string, never>;
+  readonly get_violations: GetViolationsParams;
   readonly get_floor_info: Record<string, never>;
   readonly get_settings: Record<string, never>;
   readonly get_undo_stack_info: Record<string, never>;
@@ -301,6 +404,13 @@ export interface ParamMap {
   readonly snap_diagnose: SnapDiagnoseParams;
   readonly simulate_move: SimulateMoveParams;
   readonly simulate_resize: SimulateResizeParams;
+
+  readonly get_elements: GetElementsParams;
+  readonly batch_edit: BatchEditParams;
+  readonly clone_element: CloneElementParams;
+  readonly align_element: AlignElementParams;
+  readonly distribute_evenly: DistributeEvenlyParams;
+  readonly get_free_space: GetFreeSpaceParams;
 
   readonly move_element: MoveElementParams;
   readonly resize_element: ResizeElementParams;

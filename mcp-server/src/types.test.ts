@@ -26,6 +26,14 @@ import type {
   SnapDiagnoseParams,
   CreateModuleParams,
   AddToModuleParams,
+  GetElementsParams,
+  GetViolationsParams,
+  BatchEditParams,
+  CloneElementParams,
+  AlignElementParams,
+  GetFreeSpaceParams,
+  DistributeEvenlyParams,
+  MutationResult,
   ParamMap,
   ParamsOf,
 } from "./types.js";
@@ -50,7 +58,6 @@ type _Empty2 = IsEmpty<"get_status">;
 type _Empty3 = IsEmpty<"get_scene_hierarchy">;
 type _Empty4 = IsEmpty<"get_all_elements">;
 type _Empty5 = IsEmpty<"get_specification">;
-type _Empty6 = IsEmpty<"get_violations">;
 type _Empty7 = IsEmpty<"get_floor_info">;
 type _Empty8 = IsEmpty<"get_settings">;
 type _Empty9 = IsEmpty<"get_undo_stack_info">;
@@ -145,3 +152,53 @@ const _snapDiagNegative: SnapDiagnoseParams = { name: "Board1", z: -3.62 };
 // Modules
 const _createMod: CreateModuleParams = { name: "М1", members: ["A", "B"] };
 const _addToMod: AddToModuleParams = { module: "М1", name: "A" };
+
+// ── Batch tools ──────────────────────────────────────────────────────────
+
+type _CheckGetElements = ParamsOf<"get_elements"> extends GetElementsParams ? true : never;
+type _CheckBatchEdit = ParamsOf<"batch_edit"> extends BatchEditParams ? true : never;
+type _CheckClone = ParamsOf<"clone_element"> extends CloneElementParams ? true : never;
+type _CheckAlign = ParamsOf<"align_element"> extends AlignElementParams ? true : never;
+type _CheckFreeSpace = ParamsOf<"get_free_space"> extends GetFreeSpaceParams ? true : never;
+type _CheckDistribute = ParamsOf<"distribute_evenly"> extends DistributeEvenlyParams ? true : never;
+
+// get_elements: всё опционально — пустой объект валиден
+const _getAll: GetElementsParams = {};
+const _getByNames: GetElementsParams = { names: ["A", "B"], summary: true };
+const _getByFilter: GetElementsParams = { filter: "B4_*" };
+
+// get_violations: опциональный фильтр по именам
+const _violAll: GetViolationsParams = {};
+const _violNamed: GetViolationsParams = { names: ["Shelf1"] };
+
+// batch_edit: один op может совмещать перемещение, поворот и размер
+const _batch: BatchEditParams = {
+  ops: [
+    { name: "A", x: 1.2, rot_y: 90 },
+    { name: "B", width: 600, locked: false, material: "oak" },
+  ],
+  dry_run: true,
+};
+
+// clone / align / distribute / free space
+const _clone: CloneElementParams = { name: "Shelf", count: 2, offset_y: 0.3 };
+const _align: AlignElementParams = { name: "Shelf", face: "left", target: "Side_L", target_face: "right", gap_mm: 0 };
+const _free: GetFreeSpaceParams = { between: ["Side_L", "Side_R"] };
+const _dist: DistributeEvenlyParams = { names: ["A", "B", "C"], axis: "y" };
+
+// Единый конверт мутаций: violations всегда массив, element всегда есть
+const _envelope: MutationResult = {
+  ok: true,
+  element: {
+    name: "A", type: "KitchenElement",
+    dimX: 600, dimY: 400, dimZ: 18,
+    posX: 0, posY: 0, posZ: 0,
+    rotX: 0, rotY: 0, rotZ: 0,
+    active: true, locked: false, moduleId: 0, hasViolations: false,
+    aabbMinX: 0, aabbMinY: 0, aabbMinZ: 0, aabbMaxX: 1, aabbMaxY: 1, aabbMaxZ: 1,
+    worldDimX: 600, worldDimY: 400, worldDimZ: 18,
+    effectiveDimX: 600, effectiveDimY: 400, effectiveDimZ: 18,
+  },
+  violations: [{ kind: "overlap", neighbor: "B", severity: "deep_penetration", penetrationMm: 18 }],
+  sceneViolationCount: 1,
+};

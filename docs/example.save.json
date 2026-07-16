@@ -39,7 +39,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -90,58 +89,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
-            "cornerRadius": 0,
-            "isDrawer": false,
-            "drawerType": 0,
-            "drawerNominalLength": 350,
-            "drawerColor": 0,
-            "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
-        },
-        {
-            "name": "A5_Refrigerator",
-            "dimensionsMM": [
-                600,
-                2000,
-                600
-            ],
-            "position": [
-                1.284999966621399,
-                1.0,
-                -0.75
-            ],
-            "rotation": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "movable": false,
-            "isWall": false,
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "groupId": 0,
-            "materialId": "default",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -192,7 +139,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -243,7 +189,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -274,7 +219,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -294,7 +239,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -325,7 +269,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -345,7 +289,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -376,7 +319,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -396,7 +339,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -447,7 +389,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -498,7 +439,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -549,7 +489,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -600,7 +539,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -651,7 +589,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -702,7 +639,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -753,7 +689,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -804,7 +739,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -831,9 +765,9 @@
             ],
             "rotation": [
                 0.0,
-                1.0,
+                -5.960465188081798e-8,
                 0.0,
-                -4.371138828673793e-8
+                -1.0
             ],
             "movable": false,
             "isWall": false,
@@ -855,7 +789,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -906,7 +839,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -957,7 +889,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1008,7 +939,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1059,7 +989,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1110,7 +1039,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1141,7 +1069,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1161,7 +1089,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1192,7 +1119,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1212,7 +1139,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1243,7 +1169,7 @@
                 0.0,
                 -4.371138828673793e-8
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -1263,7 +1189,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1294,7 +1219,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1314,7 +1239,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1345,7 +1269,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1365,7 +1289,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1396,7 +1319,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1416,7 +1339,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1447,7 +1369,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1467,7 +1389,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1498,7 +1419,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1518,7 +1439,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1549,7 +1469,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1569,7 +1489,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1600,7 +1519,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1620,7 +1539,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1651,7 +1569,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1671,7 +1589,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1702,7 +1619,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1722,7 +1639,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1753,7 +1669,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1773,7 +1689,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1804,7 +1719,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -1824,7 +1739,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1875,7 +1789,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1926,7 +1839,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -1957,7 +1869,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1977,7 +1889,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2008,7 +1919,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2028,7 +1939,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2059,7 +1969,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2079,7 +1989,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2110,7 +2019,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2130,7 +2039,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2161,7 +2069,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2181,7 +2089,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2212,7 +2119,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2232,7 +2139,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2263,7 +2169,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2283,7 +2189,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2314,7 +2219,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2334,7 +2239,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2365,7 +2269,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2385,7 +2289,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2416,7 +2319,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2436,7 +2339,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2467,7 +2369,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2487,7 +2389,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2518,7 +2419,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2538,7 +2439,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2569,7 +2469,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2589,7 +2489,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2620,7 +2519,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2640,7 +2539,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2671,7 +2569,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2691,7 +2589,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2722,7 +2619,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2742,7 +2639,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2773,7 +2669,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2793,7 +2689,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2824,7 +2719,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2844,7 +2739,6 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -2875,7 +2769,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2895,161 +2789,7 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "radius": 0,
             "cornerRadius": 0,
-            "isDrawer": false,
-            "drawerType": 0,
-            "drawerNominalLength": 350,
-            "drawerColor": 0,
-            "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
-        },
-        {
-            "name": "B45_upper_shelf_1",
-            "dimensionsMM": [
-                300,
-                18,
-                300
-            ],
-            "position": [
-                -0.7730000019073486,
-                1.5099999904632569,
-                -3.619999885559082
-            ],
-            "rotation": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "movable": true,
-            "isWall": false,
-            "isFacade": false,
-            "isRadialShelf": true,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "groupId": 0,
-            "materialId": "default",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "radius": 300,
-            "cornerRadius": 300,
-            "isDrawer": false,
-            "drawerType": 0,
-            "drawerNominalLength": 350,
-            "drawerColor": 0,
-            "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
-        },
-        {
-            "name": "B45_upper_shelf_2",
-            "dimensionsMM": [
-                300,
-                18,
-                300
-            ],
-            "position": [
-                -0.7730000019073486,
-                1.809999942779541,
-                -3.619999885559082
-            ],
-            "rotation": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "movable": true,
-            "isWall": false,
-            "isFacade": false,
-            "isRadialShelf": true,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "groupId": 0,
-            "materialId": "default",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "radius": 300,
-            "cornerRadius": 300,
-            "isDrawer": false,
-            "drawerType": 0,
-            "drawerNominalLength": 350,
-            "drawerColor": 0,
-            "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
-        },
-        {
-            "name": "B45_upper_shelf_3",
-            "dimensionsMM": [
-                300,
-                18,
-                300
-            ],
-            "position": [
-                -0.7730000019073486,
-                2.109999895095825,
-                -3.619999885559082
-            ],
-            "rotation": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "movable": true,
-            "isWall": false,
-            "isFacade": false,
-            "isRadialShelf": true,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "groupId": 0,
-            "materialId": "default",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "radius": 300,
-            "cornerRadius": 300,
             "isDrawer": false,
             "drawerType": 0,
             "drawerNominalLength": 350,
@@ -3079,7 +2819,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3099,7 +2839,6 @@
             "assembled": true,
             "assembledFill": 1,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3130,7 +2869,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3150,7 +2889,6 @@
             "assembled": true,
             "assembledFill": 1,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3181,7 +2919,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3201,7 +2939,6 @@
             "assembled": true,
             "assembledFill": 1,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3232,7 +2969,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3250,9 +2987,8 @@
             "doorMode": 0,
             "doorOpen": false,
             "assembled": true,
-            "assembledFill": 1,
+            "assembledFill": 0,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3283,7 +3019,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3303,7 +3039,6 @@
             "assembled": true,
             "assembledFill": 1,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3334,7 +3069,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3354,7 +3089,6 @@
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3385,7 +3119,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3405,7 +3139,6 @@
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3436,7 +3169,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3456,7 +3189,6 @@
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3487,7 +3219,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3507,7 +3239,6 @@
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3538,7 +3269,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3558,7 +3289,6 @@
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3589,7 +3319,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3609,7 +3339,6 @@
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3640,7 +3369,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3660,7 +3389,6 @@
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3691,7 +3419,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3711,7 +3439,6 @@
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3742,7 +3469,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3762,7 +3489,6 @@
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
-            "radius": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3793,7 +3519,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -3813,7 +3539,556 @@
             "assembled": true,
             "assembledFill": 1,
             "grooveCount": 1,
-            "radius": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "radial_shelf_upper_1",
+            "dimensionsMM": [
+                314,
+                18,
+                332
+            ],
+            "position": [
+                -0.9390000104904175,
+                1.36899995803833,
+                -3.444999933242798
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": true,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 150,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "radial_shelf_upper_2",
+            "dimensionsMM": [
+                314,
+                18,
+                332
+            ],
+            "position": [
+                -0.9390000104904175,
+                1.809999942779541,
+                -3.444999933242798
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": true,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 150,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "radial_shelf_upper_3",
+            "dimensionsMM": [
+                314,
+                18,
+                332
+            ],
+            "position": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": true,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 150,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "Fridge_Left",
+            "dimensionsMM": [
+                550,
+                2000,
+                40
+            ],
+            "position": [
+                1.309999942779541,
+                1.0,
+                -1.0299999713897706
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "Fridge_Right",
+            "dimensionsMM": [
+                550,
+                2000,
+                40
+            ],
+            "position": [
+                1.309999942779541,
+                1.0,
+                -0.4699999988079071
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "Fridge_Back",
+            "dimensionsMM": [
+                40,
+                2000,
+                520
+            ],
+            "position": [
+                1.565000057220459,
+                1.0,
+                -0.75
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "Fridge_Bottom",
+            "dimensionsMM": [
+                510,
+                520,
+                40
+            ],
+            "position": [
+                1.2899999618530274,
+                0.019999999552965165,
+                -0.75
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "Fridge_Top",
+            "dimensionsMM": [
+                510,
+                520,
+                40
+            ],
+            "position": [
+                1.2899999618530274,
+                1.9800000190734864,
+                -0.75
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "Fridge_Shelf",
+            "dimensionsMM": [
+                510,
+                520,
+                40
+            ],
+            "position": [
+                1.2899999618530274,
+                1.0,
+                -0.75
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "Fridge_Door_Upper",
+            "dimensionsMM": [
+                596,
+                996,
+                50
+            ],
+            "position": [
+                1.0099999904632569,
+                1.5,
+                -0.75
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 1,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0
+        },
+        {
+            "name": "Fridge_Door_Lower",
+            "dimensionsMM": [
+                596,
+                996,
+                50
+            ],
+            "position": [
+                1.0099999904632569,
+                0.5,
+                -0.75
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": true,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 1,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerType": 0,
@@ -3830,12 +4105,12 @@
     "groups": [],
     "camera": {
         "valid": true,
-        "targetX": 0.8112460374832153,
+        "targetX": 0.255508691072464,
         "targetY": 0.46000000834465029,
-        "targetZ": -2.143601655960083,
-        "angleX": 27.105730056762697,
-        "angleY": 496.4991760253906,
-        "distance": 4.318119525909424
+        "targetZ": -3.3063178062438967,
+        "angleX": 43.00001525878906,
+        "angleY": 860.8994750976563,
+        "distance": 4.418119430541992
     },
     "handleMode": "Move",
     "basePlateValid": true,
@@ -3857,7 +4132,7 @@
             0.0,
             1.0
         ],
-        "movable": true,
+        "movable": false,
         "isWall": false,
         "isFacade": false,
         "isRadialShelf": false,
@@ -3877,7 +4152,6 @@
         "assembled": false,
         "assembledFill": 0,
         "grooveCount": 0,
-        "radius": 0,
         "cornerRadius": 0,
         "isDrawer": false,
         "drawerType": 0,
@@ -3894,7 +4168,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_door",
-            "elementIndex": 60,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.812000036239624,
@@ -3924,7 +4198,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 61,
+            "elementIndex": 57,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -3962,7 +4236,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 61,
+            "elementIndex": 57,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -4000,7 +4274,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 61,
+            "elementIndex": 57,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -4038,7 +4312,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 61,
+            "elementIndex": 57,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -4076,7 +4350,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 62,
+            "elementIndex": 58,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -4114,7 +4388,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 62,
+            "elementIndex": 58,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -4152,7 +4426,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 62,
+            "elementIndex": 58,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -4190,7 +4464,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 62,
+            "elementIndex": 58,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -4228,7 +4502,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 63,
+            "elementIndex": 59,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -4266,7 +4540,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 63,
+            "elementIndex": 59,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -4304,7 +4578,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 63,
+            "elementIndex": 59,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -4342,7 +4616,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 63,
+            "elementIndex": 59,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -4380,7 +4654,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_L",
-            "elementIndex": 61,
+            "elementIndex": 57,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -4410,7 +4684,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 52,
+            "elementIndex": 51,
             "posBefore": [
                 0.531000018119812,
                 2.250999927520752,
@@ -4448,7 +4722,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 52,
+            "elementIndex": 51,
             "posBefore": [
                 0.531000018119812,
                 2.250999927520752,
@@ -4486,7 +4760,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 63,
+            "elementIndex": 59,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -4516,7 +4790,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_top",
-            "elementIndex": 44,
+            "elementIndex": 43,
             "posBefore": [
                 -0.4729999899864197,
                 2.250999927520752,
@@ -4554,7 +4828,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 63,
+            "elementIndex": 59,
             "posBefore": [
                 -0.4725000262260437,
                 1.809999942779541,
@@ -4584,7 +4858,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_R",
-            "elementIndex": 62,
+            "elementIndex": 58,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -4606,6 +4880,2580 @@
                 0.0,
                 0.0,
                 1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_upper_side_L",
+            "elementIndex": 44,
+            "posBefore": [
+                -0.7639999985694885,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.7639999985694885,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                18,
+                900,
+                332
+            ],
+            "dimsAfter": [
+                18,
+                900,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B5_upper_back",
+            "elementIndex": 55,
+            "posBefore": [
+                -0.9390000104904175,
+                1.809999942779541,
+                -3.6110000610351564
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                1.809999942779541,
+                -3.6110000610351564
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                18,
+                900,
+                332
+            ],
+            "dimsAfter": [
+                18,
+                900,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_drawer",
+            "elementIndex": 15,
+            "posBefore": [
+                -0.4729999899864197,
+                0.16249999403953553,
+                -3.071000099182129
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.16249999403953553,
+                -3.071000099182129
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071067094802856,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_drawer",
+            "elementIndex": 15,
+            "posBefore": [
+                -0.4729999899864197,
+                0.16249999403953553,
+                -3.071000099182129
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.16249999403953553,
+                -3.071000099182129
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071067094802856,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                -5.960465188081798e-8,
+                0.0,
+                -1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_1",
+            "elementIndex": 71,
+            "posBefore": [
+                -0.9210000038146973,
+                1.5199999809265137,
+                -3.436000108718872
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                1.5199999809265137,
+                -3.436000108718872
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                332,
+                18,
+                332
+            ],
+            "dimsAfter": [
+                296,
+                18,
+                296
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_2",
+            "elementIndex": 72,
+            "posBefore": [
+                -0.9210000038146973,
+                1.8200000524520875,
+                -3.436000108718872
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                1.8200000524520875,
+                -3.436000108718872
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                332,
+                18,
+                332
+            ],
+            "dimsAfter": [
+                296,
+                18,
+                296
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.436000108718872
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.436000108718872
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                332,
+                18,
+                332
+            ],
+            "dimsAfter": [
+                296,
+                18,
+                296
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_1",
+            "elementIndex": 71,
+            "posBefore": [
+                -0.9210000038146973,
+                1.5199999809265137,
+                -3.436000108718872
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                1.5199999809265137,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_2",
+            "elementIndex": 72,
+            "posBefore": [
+                -0.9210000038146973,
+                1.8200000524520875,
+                -3.436000108718872
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                1.8200000524520875,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.436000108718872
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                296,
+                18,
+                296
+            ],
+            "dimsAfter": [
+                296,
+                18,
+                296
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B5_upper_back",
+            "elementIndex": 55,
+            "posBefore": [
+                -0.9390000104904175,
+                1.809999942779541,
+                -3.6110000610351564
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                1.809999942779541,
+                -3.6110000610351564
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                18,
+                900,
+                332
+            ],
+            "dimsAfter": [
+                18,
+                900,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_upper_side_L",
+            "elementIndex": 44,
+            "posBefore": [
+                -0.7639999985694885,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.7639999985694885,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                18,
+                900,
+                332
+            ],
+            "dimsAfter": [
+                18,
+                900,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_1",
+            "elementIndex": 71,
+            "posBefore": [
+                -0.9210000038146973,
+                1.5199999809265137,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                1.5199999809265137,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071067690849304,
+                0.0,
+                -0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_2",
+            "elementIndex": 72,
+            "posBefore": [
+                -0.9210000038146973,
+                1.8200000524520875,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                1.8200000524520875,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071067690849304,
+                0.0,
+                -0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_1",
+            "elementIndex": 71,
+            "posBefore": [
+                -0.9210000038146973,
+                1.5199999809265137,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                1.5199999809265137,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                296,
+                18,
+                296
+            ],
+            "dimsAfter": [
+                314,
+                18,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_2",
+            "elementIndex": 72,
+            "posBefore": [
+                -0.9210000038146973,
+                1.8200000524520875,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                1.8200000524520875,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                296,
+                18,
+                296
+            ],
+            "dimsAfter": [
+                314,
+                18,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                296,
+                18,
+                296
+            ],
+            "dimsAfter": [
+                314,
+                18,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_1",
+            "elementIndex": 71,
+            "posBefore": [
+                -0.9210000038146973,
+                1.5199999809265137,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                1.3869999647140504,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_2",
+            "elementIndex": 72,
+            "posBefore": [
+                -0.9210000038146973,
+                1.8200000524520875,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                1.809999942779541,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9210000038146973,
+                2.119999885559082,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.9210000038146973,
+                2.2330000400543215,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B5_upper_back",
+            "elementIndex": 55,
+            "posBefore": [
+                -0.9390000104904175,
+                1.809999942779541,
+                -3.6110000610351564
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                1.809999942779541,
+                -3.6110000610351564
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                18,
+                900,
+                332
+            ],
+            "dimsAfter": [
+                18,
+                900,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_1",
+            "elementIndex": 71,
+            "posBefore": [
+                -0.9210000038146973,
+                1.3869999647140504,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                1.3869999647140504,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_2",
+            "elementIndex": 72,
+            "posBefore": [
+                -0.9210000038146973,
+                1.809999942779541,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                1.809999942779541,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9210000038146973,
+                2.2330000400543215,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                2.2330000400543215,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_upper_side_L",
+            "elementIndex": 44,
+            "posBefore": [
+                -0.7639999985694885,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.7639999985694885,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                18,
+                900,
+                332
+            ],
+            "dimsAfter": [
+                18,
+                900,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_1",
+            "elementIndex": 71,
+            "posBefore": [
+                -0.9390000104904175,
+                1.3869999647140504,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                1.36899995803833,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9390000104904175,
+                2.2330000400543215,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                314,
+                18,
+                332
+            ],
+            "dimsAfter": [
+                314,
+                18,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9300000071525574,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9300000071525574,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                314,
+                18,
+                332
+            ],
+            "dimsAfter": [
+                314,
+                18,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                314,
+                18,
+                332
+            ],
+            "dimsAfter": [
+                314,
+                18,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                314,
+                18,
+                332
+            ],
+            "dimsAfter": [
+                314,
+                18,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_3",
+            "elementIndex": 73,
+            "posBefore": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                2.250999927520752,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                314,
+                18,
+                332
+            ],
+            "dimsAfter": [
+                314,
+                18,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Bottom",
+            "elementIndex": 77,
+            "posBefore": [
+                1.2649999856948853,
+                0.019999999552965165,
+                -0.75
+            ],
+            "posAfter": [
+                1.2649999856948853,
+                0.019999999552965165,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Top",
+            "elementIndex": 78,
+            "posBefore": [
+                1.2649999856948853,
+                1.9800000190734864,
+                -0.75
+            ],
+            "posAfter": [
+                1.2649999856948853,
+                1.9800000190734864,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Shelf",
+            "elementIndex": 79,
+            "posBefore": [
+                1.2649999856948853,
+                1.0,
+                -0.75
+            ],
+            "posAfter": [
+                1.2649999856948853,
+                1.0,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Upper",
+            "elementIndex": 80,
+            "posBefore": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071067690849304,
+                0.0,
+                0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.9599999785423279,
+                0.5099999904632568,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                0.5099999904632568,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071067690849304,
+                0.0,
+                0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Upper",
+            "elementIndex": 80,
+            "posBefore": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071067690849304,
+                0.0,
+                -0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.9599999785423279,
+                0.5099999904632568,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                0.5099999904632568,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071067690849304,
+                0.0,
+                -0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Door_Upper",
+            "elementIndex": 80,
+            "posBefore": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                1.5180000066757203,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                516,
+                936,
+                50
+            ],
+            "dimsAfter": [
+                516,
+                992,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Door_Upper",
+            "elementIndex": 80,
+            "posBefore": [
+                0.9599999785423279,
+                1.5180000066757203,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                516,
+                992,
+                50
+            ],
+            "dimsAfter": [
+                516,
+                936,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Door_Upper",
+            "elementIndex": 80,
+            "posBefore": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                516,
+                936,
+                50
+            ],
+            "dimsAfter": [
+                596,
+                936,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Door_Upper",
+            "elementIndex": 80,
+            "posBefore": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                596,
+                936,
+                50
+            ],
+            "dimsAfter": [
+                596,
+                1016,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Door_Upper",
+            "elementIndex": 80,
+            "posBefore": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                596,
+                1016,
+                50
+            ],
+            "dimsAfter": [
+                596,
+                996,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Upper",
+            "elementIndex": 80,
+            "posBefore": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                1.5,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Door_Upper",
+            "elementIndex": 80,
+            "posBefore": [
+                0.9599999785423279,
+                1.5,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                1.5,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                596,
+                996,
+                50
+            ],
+            "dimsAfter": [
+                596,
+                996,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.9599999785423279,
+                0.5099999904632568,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                0.4699999988079071,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.9599999785423279,
+                0.4699999988079071,
+                -0.75
+            ],
+            "posAfter": [
+                0.2770000100135803,
+                0.4700000286102295,
+                0.1810000091791153
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.2770000100135803,
+                0.4700000286102295,
+                0.1810000091791153
+            ],
+            "posAfter": [
+                0.2770000100135803,
+                0.7595930695533752,
+                0.1810000091791153
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.2770000100135803,
+                0.7595930695533752,
+                0.1810000091791153
+            ],
+            "posAfter": [
+                0.2770000100135803,
+                0.7599999904632568,
+                0.1809999942779541
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                516,
+                936,
+                50
+            ],
+            "dimsAfter": [
+                516,
+                936,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.2770000100135803,
+                0.7599999904632568,
+                0.1809999942779541
+            ],
+            "posAfter": [
+                0.2770000100135803,
+                0.7599999904632568,
+                0.1809999942779541
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                516,
+                936,
+                50
+            ],
+            "dimsAfter": [
+                516,
+                996,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.2770000100135803,
+                0.7599999904632568,
+                0.1809999942779541
+            ],
+            "posAfter": [
+                0.2770000100135803,
+                0.7600000500679016,
+                0.1810000091791153
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.2770000100135803,
+                0.7600000500679016,
+                0.1810000091791153
+            ],
+            "posAfter": [
+                0.6780000329017639,
+                0.7600000500679016,
+                0.1770000010728836
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.6780000329017639,
+                0.7600000500679016,
+                0.1770000010728836
+            ],
+            "posAfter": [
+                0.6780000329017639,
+                0.5,
+                0.1770000010728836
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.6780000329017639,
+                0.5,
+                0.1770000010728836
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                0.5,
+                -0.7500001192092896
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.9599999785423279,
+                0.5,
+                -0.7500001192092896
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                0.5,
+                -0.7100000381469727
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Door_Upper",
+            "elementIndex": 80,
+            "posBefore": [
+                0.9599999785423279,
+                1.5,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                1.5,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                596,
+                996,
+                50
+            ],
+            "dimsAfter": [
+                596,
+                996,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.9599999785423279,
+                0.5,
+                -0.7100000381469727
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                0.5,
+                -0.7099999785423279
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                516,
+                996,
+                50
+            ],
+            "dimsAfter": [
+                596,
+                996,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.9599999785423279,
+                0.5,
+                -0.7099999785423279
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                0.5,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Left",
+            "elementIndex": 74,
+            "posBefore": [
+                1.284999966621399,
+                1.0,
+                -1.0299999713897706
+            ],
+            "posAfter": [
+                1.284999966621399,
+                1.0,
+                -1.0299999713897706
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                2000,
+                40
+            ],
+            "dimsAfter": [
+                550,
+                2000,
+                40
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Right",
+            "elementIndex": 75,
+            "posBefore": [
+                1.284999966621399,
+                1.0,
+                -0.4699999988079071
+            ],
+            "posAfter": [
+                1.284999966621399,
+                1.0,
+                -0.4699999988079071
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                2000,
+                40
+            ],
+            "dimsAfter": [
+                550,
+                2000,
+                40
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Bottom",
+            "elementIndex": 77,
+            "posBefore": [
+                1.2649999856948853,
+                0.019999999552965165,
+                -0.75
+            ],
+            "posAfter": [
+                1.2649999856948853,
+                0.019999999552965165,
+                -0.75
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                560,
+                520,
+                40
+            ],
+            "dimsAfter": [
+                510,
+                520,
+                40
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Top",
+            "elementIndex": 78,
+            "posBefore": [
+                1.2649999856948853,
+                1.9800000190734864,
+                -0.75
+            ],
+            "posAfter": [
+                1.2649999856948853,
+                1.9800000190734864,
+                -0.75
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                560,
+                520,
+                40
+            ],
+            "dimsAfter": [
+                510,
+                520,
+                40
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Shelf",
+            "elementIndex": 79,
+            "posBefore": [
+                1.2649999856948853,
+                1.0,
+                -0.75
+            ],
+            "posAfter": [
+                1.2649999856948853,
+                1.0,
+                -0.75
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                560,
+                520,
+                40
+            ],
+            "dimsAfter": [
+                510,
+                520,
+                40
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Left",
+            "elementIndex": 74,
+            "posBefore": [
+                1.284999966621399,
+                1.0,
+                -1.0299999713897706
+            ],
+            "posAfter": [
+                1.309999942779541,
+                1.0,
+                -1.0299999713897706
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Right",
+            "elementIndex": 75,
+            "posBefore": [
+                1.284999966621399,
+                1.0,
+                -0.4699999988079071
+            ],
+            "posAfter": [
+                1.309999942779541,
+                1.0,
+                -0.4699999988079071
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Bottom",
+            "elementIndex": 77,
+            "posBefore": [
+                1.2649999856948853,
+                0.019999999552965165,
+                -0.75
+            ],
+            "posAfter": [
+                1.2899999618530274,
+                0.019999999552965165,
+                -0.75
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Top",
+            "elementIndex": 78,
+            "posBefore": [
+                1.2649999856948853,
+                1.9800000190734864,
+                -0.75
+            ],
+            "posAfter": [
+                1.2899999618530274,
+                1.9800000190734864,
+                -0.75
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Shelf",
+            "elementIndex": 79,
+            "posBefore": [
+                1.2649999856948853,
+                1.0,
+                -0.75
+            ],
+            "posAfter": [
+                1.2899999618530274,
+                1.0,
+                -0.75
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Upper",
+            "elementIndex": 80,
+            "posBefore": [
+                0.9599999785423279,
+                1.5,
+                -0.75
+            ],
+            "posAfter": [
+                1.0099999904632569,
+                1.5,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
+            "elementIndex": 81,
+            "posBefore": [
+                0.9599999785423279,
+                0.5,
+                -0.75
+            ],
+            "posAfter": [
+                1.0099999904632569,
+                0.5,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
             ],
             "dimsBefore": [],
             "dimsAfter": [],

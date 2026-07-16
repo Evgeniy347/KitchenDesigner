@@ -47,10 +47,10 @@ export const GEN_TOOLS: GenTool[] = [
 foreach (var tool in McpToolRegistry.Tools)
 {
     sb.Append("  {\n");
-    sb.Append($"    name: {JsStr(tool.Name)},\n");
-    sb.Append($"    title: {JsStr(tool.Title)},\n");
-    sb.Append($"    description: {JsStr(tool.Description)},\n");
-    sb.Append($"    kind: {JsStr(KindStr(tool.Kind))},\n");
+    sb.Append(CultureInfo.InvariantCulture, $"    name: {JsStr(tool.Name)},\n");
+    sb.Append(CultureInfo.InvariantCulture, $"    title: {JsStr(tool.Title)},\n");
+    sb.Append(CultureInfo.InvariantCulture, $"    description: {JsStr(tool.Description)},\n");
+    sb.Append(CultureInfo.InvariantCulture, $"    kind: {JsStr(KindStr(tool.Kind))},\n");
     if (tool.Cached) sb.Append("    cached: true,\n");
     if (tool.StaticText) sb.Append("    staticText: true,\n");
     if (tool.OpenWorld) sb.Append("    openWorld: true,\n");
@@ -79,7 +79,7 @@ foreach (var tool in McpToolRegistry.Tools)
         if (rename.Count > 0)
         {
             var pairs = rename.Select(r => $"{JsKey(r.agent)}: {JsStr(r.wire)}");
-            sb.Append($"    rename: {{ {string.Join(", ", pairs)} }},\n");
+            sb.Append(CultureInfo.InvariantCulture, $"    rename: {{ {string.Join(", ", pairs)} }},\n");
         }
     }
 
@@ -87,6 +87,14 @@ foreach (var tool in McpToolRegistry.Tools)
 }
 
 sb.Append("];\n");
+
+// Тексты guide: мост отвечает ими локально, без похода в Unity.
+sb.Append("\n/** guide topic -> cheat-sheet text (served locally by the bridge). */\n");
+sb.Append(CultureInfo.InvariantCulture, $"export const GUIDE_DEFAULT_TOPIC = {JsStr(McpGuideTexts.DefaultTopic)};\n");
+sb.Append("export const GUIDE_TEXTS: Record<string, string> = {\n");
+foreach (var kv in McpGuideTexts.Topics)
+    sb.Append(CultureInfo.InvariantCulture, $"  {JsKey(kv.Key)}: {JsStr(kv.Value)},\n");
+sb.Append("};\n");
 
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outPath))!);
 File.WriteAllText(outPath, sb.ToString().Replace("\r\n", "\n"));
@@ -104,8 +112,7 @@ static string KindStr(McpToolKind k) => k switch
 static string JsStr(string s) => JsonSerializer.Serialize(s);
 
 // Object key: only quote if not a plain identifier.
-static string JsKey(string s) =>
-    System.Text.RegularExpressions.Regex.IsMatch(s, "^[A-Za-z_][A-Za-z0-9_]*$") ? s : JsStr(s);
+static string JsKey(string s) => Program.IdentRegex().IsMatch(s) ? s : JsStr(s);
 
 static string BuildZod(FieldInfo field, McpParamAttribute p)
 {
@@ -143,6 +150,27 @@ static string BuildZod(FieldInfo field, McpParamAttribute p)
         expr = "z.array(z.string().min(1))";
         if (p.HasMin) expr += $".min({(long)p.Min})";
     }
+    else if (t.IsArray && t.GetElementType() is { IsClass: true } et && et != typeof(string))
+    {
+        // Массив объектов (например BatchOp[]): z.array(z.object({...})) из полей
+        // элемента. Вложенные [McpParam(Name=...)]-переименования НЕ поддерживаются —
+        // мост применяет rename только к верхнему уровню, поэтому вложенные поля
+        // обязаны называться на проводе так же, как для агента.
+        var inner = new List<string>();
+        foreach (var f2 in et.GetFields(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (f2.GetCustomAttribute<McpIgnoreAttribute>() != null) continue;
+            var p2 = f2.GetCustomAttribute<McpParamAttribute>();
+            if (p2 == null) continue;
+            if (!string.IsNullOrEmpty(p2.Name) && p2.Name != f2.Name)
+                throw new InvalidOperationException(
+                    $"Nested param rename is not supported: {et.Name}.{f2.Name} -> {p2.Name}");
+            inner.Add($"{JsKey(f2.Name)}: {BuildZod(f2, p2)}");
+        }
+        expr = "z.array(z.object({ " + string.Join(", ", inner) + " }))";
+        if (p.HasMin) expr += $".min({(long)p.Min})";
+        if (p.HasMax) expr += $".max({(long)p.Max})";
+    }
     else
     {
         throw new InvalidOperationException(
@@ -155,3 +183,9 @@ static string BuildZod(FieldInfo field, McpParamAttribute p)
 }
 
 static string Num(double d) => d.ToString(CultureInfo.InvariantCulture);
+
+internal static partial class Program
+{
+    [System.Text.RegularExpressions.GeneratedRegex("^[A-Za-z_][A-Za-z0-9_]*$")]
+    public static partial System.Text.RegularExpressions.Regex IdentRegex();
+}
