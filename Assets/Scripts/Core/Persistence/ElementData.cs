@@ -162,7 +162,7 @@ namespace KitchenDesigner.Core
 			}
 
 			d.isPillar = pillar != null;
-			d.midHeightMM = pillar != null ? pillar.MidHeightMM : 75;
+			d.midHeightMM = pillar != null ? pillar.MidHeightMM : PillarElement.MidHeightMM_Default;
 
 			d.groupId = element.GroupId;
             d.materialId = element.MaterialId;

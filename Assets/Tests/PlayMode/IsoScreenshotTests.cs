@@ -375,6 +375,7 @@ public class IsoScreenshotTests
             var window = go.GetComponent<WindowElement>();
             Assert.IsNotNull(window);
             window.SetOpen(true);
+            window.StepDoor(1f); // мгновенно довести анимацию до конца
             yield return null;
 
             Vector3 size = MmToUnits(dims);
@@ -457,6 +458,26 @@ public class IsoScreenshotTests
 
         camGo.tag = "Untagged";
         _mainCamera!.SetActive(true);
+        Object.DestroyImmediate(camGo);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoPillar_Default()
+    {
+        const int midH = 75;
+        int totalH = PillarElement.TopHeightMM + midH + PillarElement.BottomHeightMM;
+        Vector3 pos = new Vector3(0f, totalH * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreatePillar(midH, "IsoPillar", pos);
+        _spawned.Add(go);
+        var pillar = go.GetComponent<PillarElement>();
+        Assert.IsNotNull(pillar);
+
+        Vector3 size = MmToUnits(new Vector3Int(PillarElement.TopDiameterMM, totalH, PillarElement.TopDiameterMM));
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_pillar.png");
+
         Object.DestroyImmediate(camGo);
     }
 }

@@ -1436,8 +1436,13 @@ namespace KitchenDesigner.Core.UI
             TrackField(_gapBottom, facade != null ? facade.GapBottom.ToString() : "0");
             var drawerEl2 = _target as DrawerElement;
             TrackField(_drawerWidth, drawerEl2 != null ? drawerEl2.InternalWidth.ToString() : "400");
-            var windowEl2 = _target as WindowElement;
-            TrackField(_sillProtrusion, windowEl2 != null ? windowEl2.SillProtrusionMM.ToString() : "50");
+			var windowEl2 = _target as WindowElement;
+			TrackField(_sillProtrusion, windowEl2 != null ? windowEl2.SillProtrusionMM.ToString() : "50");
+			var tableEl2 = _target as TableElement;
+			var radiusTableEl2 = _target as RadiusTableElement;
+			TrackField(_legInset, tableEl2 != null ? tableEl2.LegInsetMM.ToString() : (radiusTableEl2 != null ? radiusTableEl2.LegInsetMM.ToString() : "100"));
+			var pillarEl = _target as PillarElement;
+			TrackField(_midHeight, pillarEl != null ? pillarEl.MidHeightMM.ToString() : PillarElement.MidHeightMM_Default.ToString());
             var pos = _target.transform.position;
             TrackField(_x, pos.x.ToString("F3"));
             TrackField(_y, pos.y.ToString("F3"));

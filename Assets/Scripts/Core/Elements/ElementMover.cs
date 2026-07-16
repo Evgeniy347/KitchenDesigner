@@ -424,12 +424,10 @@ namespace KitchenDesigner.Core
 			float toU = AppConstants.MM_TO_UNITS;
 			float pillarBottomY = _target.transform.position.y - pillar.TotalHeightMM * 0.5f * toU;
 			if (pillarBottomY > 0.02f) return;
-			float pillarTopY = _target.transform.position.y + pillar.TotalHeightMM * 0.5f * toU;
-			float minAbove = pillarTopY;
-			float maxAbove = pillarTopY + (130f + PillarElement.TopHeightMM + PillarElement.BottomHeightMM) * toU;
+			float minAbove = pillarBottomY + 80f * toU;
+			float maxAbove = pillarBottomY + 130f * toU;
 			float midDiameterU = PillarElement.MidDiameterMM * 0.5f * toU;
 			Vector3 pillarCenter = _target.transform.position;
-			Vector3 up = Vector3.up;
 			KitchenElement bestAbove = null;
 			float bestAboveBottom = float.MaxValue;
 			foreach (var el in PartRegistry.GetAll())
@@ -438,8 +436,8 @@ namespace KitchenDesigner.Core
 				var aabb = ComputeElementAABB(el);
 				if (aabb.minY >= minAbove && aabb.minY <= maxAbove)
 				{
-					float dx = Mathf.Abs(aabb.minX + aabb.maxX * 0.5f - pillarCenter.x);
-					float dz = Mathf.Abs(aabb.minZ + aabb.maxZ * 0.5f - pillarCenter.z);
+					float dx = Mathf.Abs((aabb.minX + aabb.maxX) * 0.5f - pillarCenter.x);
+					float dz = Mathf.Abs((aabb.minZ + aabb.maxZ) * 0.5f - pillarCenter.z);
 					if (dx < midDiameterU + 0.05f && dz < midDiameterU + 0.05f)
 					{
 						if (aabb.minY < bestAboveBottom)
@@ -455,7 +453,10 @@ namespace KitchenDesigner.Core
 			int gapMM = Mathf.RoundToInt(gapUnits / toU);
 			int neededMid = gapMM - PillarElement.TopHeightMM - PillarElement.BottomHeightMM;
 			neededMid = Mathf.Clamp(neededMid, PillarElement.MidHeightMM_Min, PillarElement.MidHeightMM_Max);
+			float bottomY = pillar.transform.position.y - pillar.TotalHeightMM * 0.5f * toU;
 			pillar.MidHeightMM = neededMid;
+			float newTotalHeight = pillar.TotalHeightMM * toU;
+			pillar.transform.position = new Vector3(pillar.transform.position.x, bottomY + newTotalHeight * 0.5f, pillar.transform.position.z);
 		}
 
 		private static (float minX, float maxX, float minY, float maxY, float minZ, float maxZ) ComputeElementAABB(KitchenElement el)
