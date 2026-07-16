@@ -444,6 +444,7 @@ namespace KitchenDesigner.Core.MCP
             // на каждый элемент — O(n²) и заметная пауза кадра на больших сценах).
             var vr = elements != null && elements.Count > 0 ? ConstraintValidator.Validate(elements) : null;
             var list = new List<ElementInfo>();
+            if (elements == null) return McpResponse.Error(req.id, -1, "PartRegistry is not initialized");
             foreach (var el in elements)
             {
                 if (el == null) continue;
