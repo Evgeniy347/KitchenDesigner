@@ -98,21 +98,24 @@ namespace KitchenDesigner.Core.UI
             _scrollRect.vertical = true;
             _scrollRect.movementType = ScrollRect.MovementType.Clamped;
 
+            // Узкий (8px) тёмный скроллбар; прячется, когда список помещается
+            // (та же схема, что в HierarchyPanelUI).
             var scrollbarRect = UIFactory.CreateRect("SpecScrollbar", parent);
-            scrollbarRect.sizeDelta = new Vector2(16, ViewportHeight);
-            scrollbarRect.anchoredPosition = new Vector2(278, ViewportCenterY);
+            scrollbarRect.sizeDelta = new Vector2(8, ViewportHeight);
+            scrollbarRect.anchoredPosition = new Vector2(282, ViewportCenterY);
             var scrollbarImage = scrollbarRect.gameObject.AddComponent<Image>();
-            scrollbarImage.color = new Color(0.2f, 0.2f, 0.25f, 1f);
+            scrollbarImage.color = new Color(0.10f, 0.10f, 0.13f, 0.6f);
             var scrollbar = scrollbarRect.gameObject.AddComponent<Scrollbar>();
             scrollbar.direction = Scrollbar.Direction.BottomToTop;
             var handleRect = UIFactory.CreateRect("Handle", scrollbarRect.transform);
-            handleRect.sizeDelta = new Vector2(14, 100);
+            handleRect.sizeDelta = new Vector2(8, 100);
             handleRect.anchoredPosition = Vector2.zero;
             var handleImage = handleRect.gameObject.AddComponent<Image>();
-            handleImage.color = new Color(0.5f, 0.5f, 0.55f, 1f);
+            handleImage.color = new Color(0.38f, 0.40f, 0.46f, 1f);
             scrollbar.targetGraphic = handleImage;
             scrollbar.handleRect = handleRect;
             _scrollRect.verticalScrollbar = scrollbar;
+            _scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
         }
 
         private void BuildButtons(Transform parent)
