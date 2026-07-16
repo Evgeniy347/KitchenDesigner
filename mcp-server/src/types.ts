@@ -93,8 +93,6 @@ export interface CreateElementParams {
   height?: number;
   depth?: number;
   corner_radius?: number;
-  /** Легаси: старый вызов радиусной полки (radius + depth-как-толщина). */
-  radius?: number;
   is_wall?: boolean;
   is_facade?: boolean;
   is_assembled?: boolean;
@@ -234,7 +232,7 @@ export interface ElementInfo {
   effectiveDimY: number;
   effectiveDimZ: number;
   faceGaps?: AxisGapInfo[] | null;
-  radius?: number;
+  cornerRadius?: number;
   faceNormal?: Vector3Json | null;
   faceInward?: boolean;
   faceObstructions?: FaceObstruction[] | null;

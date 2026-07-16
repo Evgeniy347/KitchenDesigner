@@ -74,7 +74,6 @@ namespace KitchenDesigner.Core.MCP
         public float aabbMaxX, aabbMaxY, aabbMaxZ;
         public int effectiveDimX, effectiveDimY, effectiveDimZ;
         public List<AxisGapInfo>? faceGaps; // зазоры/пересечения с ближайшим соседом по каждой оси (всегда 3 оси)
-        public int radius; // легаси-зеркало cornerRadius (только для RadialShelfElement, иначе 0)
         public int cornerRadius; // радиус скругления угла радиусной полки, иначе 0
 
         // ── Фасадная валидация (только для FacadeElement / AssembledFacadeElement) ──

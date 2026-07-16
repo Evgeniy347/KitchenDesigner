@@ -592,7 +592,6 @@ public class RoundTripTests
 
         // радиусная полка
         Assert.IsTrue(json.Contains("\"isRadialShelf\""), "isRadialShelf field");
-        Assert.IsTrue(json.Contains("\"radius\""), "radius field (legacy)");
         Assert.IsTrue(json.Contains("\"cornerRadius\""), "cornerRadius field");
 
         // стена

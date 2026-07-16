@@ -469,24 +469,6 @@ public class McpCommandHandlerTests
     }
 
     [Test]
-    public void CreateRadialShelf_LegacyRadiusCall_MakesFullyRoundedSquare()
-    {
-        // Старый формат вызова: radius + depth-как-толщина, без width/height.
-        var resp = _handler!.Handle(MakeReq("create_element", new
-        {
-            template_name = "RS3", name = "RS3", x = 0f, y = 0f, z = 0f,
-            depth = 25, radius = 450, is_radial_shelf = true
-        }));
-
-        Assert.AreEqual("result", resp.type);
-        var el = FindBoard("RS3");
-        Assert.IsNotNull(el);
-        var shelf = el!.GetComponent<RadialShelfElement>();
-        Assert.AreEqual(new Vector3Int(450, 25, 450), shelf.DimensionsMM);
-        Assert.AreEqual(450, shelf.CornerRadius);
-    }
-
-    [Test]
     public void SetRadialShelfProperties_ChangesCornerRadius()
     {
         _handler!.Handle(MakeReq("create_element", new

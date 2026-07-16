@@ -148,10 +148,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Radial shelf only: corner rounding radius in MM (default 200, clamped to min(width, depth)).", Min = 1)]
         public int corner_radius = 200; // = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT (Contract не зависит от Unity-кода)
 
-        // Legacy wire field: старые клиенты создавали полку-сектор как radius +
-        // depth(=толщина). radius>0 без width/height трактуется по-старому.
-        [McpIgnore] public int radius;
-
         [McpParam("Create as a WALL (structural anchor). Default false.")] public bool is_wall;
         [McpParam("Create the FLOOR plate. Ignores size/position. Default false.")] public bool is_floor;
         [McpParam("Create as a FACADE (door/front with gaps). Default false.")] public bool is_facade;

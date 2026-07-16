@@ -29,10 +29,9 @@ namespace KitchenDesigner.Core
         public bool assembled = false;
         public int assembledFill = 0;
         public int grooveCount = AppConstants.ASSEMBLED_DEFAULT_GROOVES;
-        // radius — легаси-поле старых сохранений (полка была сектором r×r);
-        // cornerRadius = 0 означает «старый файл» → см. EffectiveCornerRadius.
-        public int radius = 300;
-        public int cornerRadius = 0;
+        // Радиус скругления угла радиусной полки; в файлах без этого поля
+        // JsonUtility оставит дефолт.
+        public int cornerRadius = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
         public bool isDrawer = false;
         public int drawerType = 0;
         public int drawerNominalLength = 350;
@@ -85,16 +84,7 @@ namespace KitchenDesigner.Core
                 d.legInsetMM = radiusTable.LegInsetMM;
             d.legsMaterialId = tableEl2 != null ? tableEl2.LegsMaterialId
                 : radiusTable != null ? radiusTable.LegsMaterialId : MaterialCatalog.DefaultId;
-            if (radialShelf != null)
-            {
-                d.cornerRadius = radialShelf.CornerRadius;
-                d.radius = radialShelf.CornerRadius; // легаси-зеркало для старых билдов
-            }
-            else
-            {
-                d.cornerRadius = 0;
-                d.radius = 0;
-            }
+            d.cornerRadius = radialShelf != null ? radialShelf.CornerRadius : 0;
 
             if (facade != null)
             {
@@ -164,14 +154,6 @@ namespace KitchenDesigner.Core
             position != null && position.Length >= 3
                 ? new Vector3(position[0], position[1], position[2])
                 : Vector3.zero;
-
-        /// <summary>Радиус угла с фолбэком для легаси-сохранений: старые файлы
-        /// (полка-сектор r×r, cornerRadius отсутствует) получают полностью
-        /// скруглённый угол radius, совсем старые/битые — дефолт.</summary>
-        public int EffectiveCornerRadius =>
-            cornerRadius > 0 ? cornerRadius
-                : radius > 0 ? Mathf.Min(radius, Mathf.Min(Dimensions.x, Dimensions.z))
-                : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
 
         public Quaternion Rotation =>
             rotation != null && rotation.Length >= 4
