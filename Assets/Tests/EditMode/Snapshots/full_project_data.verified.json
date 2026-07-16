@@ -49,7 +49,13 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         },
         {
             "name": "Facade_1",
@@ -99,13 +105,19 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": ""
         }
     ],
     "groups": [
         {
             "id": 1,
-            "name": "Группа",
+            "name": "пїЅпїЅпїЅпїЅпїЅпїЅ",
             "movable": true
         }
     ],
@@ -168,7 +180,13 @@
         "drawerIsUpper": false,
         "drawerPairedName": "",
         "drawerAttachedFacadeName": "",
-        "doubleDrawerState": 0
+        "doubleDrawerState": 0,
+        "isWindow": false,
+        "windowTint": 0,
+        "windowSillProtrusionMM": 50,
+        "windowDoorMode": 0,
+        "windowIsOpen": false,
+        "windowAttachedWallName": ""
     },
     "undoHistory": [],
     "redoHistory": [],

@@ -14,7 +14,10 @@ namespace KitchenDesigner.Core
         GameObject CreateRadialShelf(int widthMM, int depthMM, int thicknessMM, int cornerRadiusMM, string name, Vector3 position);
         GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position);
         GameObject CreateTable(Vector3Int dimensionsMM, string name, Vector3 position);
-        GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position);
+		GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position);
+		GameObject CreatePillar(int midHeightMM, string name, Vector3 position);
+		GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
+            GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50);
         GameObject Duplicate(KitchenElement source);
         void DestroyPart(GameObject go);
         void DestroyFacade(GameObject go);

@@ -92,7 +92,9 @@ namespace KitchenDesigner.Core.MCP
                     case "set_facade_mode": return HandleSetFacadeMode(request);
                     case "set_drawer_properties": return HandleSetDrawerProperties(request);
                     case "set_radial_shelf_properties": return HandleSetRadialShelfProperties(request);
-                    case "set_table_properties": return HandleSetTableProperties(request);
+					case "set_table_properties": return HandleSetTableProperties(request);
+					case "set_pillar_properties": return HandleSetPillarProperties(request);
+					case "set_window_properties": return HandleSetWindowProperties(request);
                     case "cycle_drawer_animation": return HandleCycleDrawerAnimation(request);
                     case "set_material": return HandleSetMaterial(request);
                     case "list_materials": return HandleListMaterials(request);
@@ -312,8 +314,10 @@ namespace KitchenDesigner.Core.MCP
             var gaps = allElements != null ? ComputeAxisGaps(el, allElements) : null;
             var radial = el as RadialShelfElement;
             var drawer = el as DrawerElement;
-            var table = el as TableElement;
-            var radiusTable = el as RadiusTableElement;
+			var table = el as TableElement;
+			var radiusTable = el as RadiusTableElement;
+			var window = el as WindowElement;
+			var pillar = el as PillarElement;
             FacadeValidationData? facadeValidation = includeFacadeValidation && el is FacadeElement fe && allElements != null
                 ? ComputeFacadeValidation(fe, allElements)
                 : (FacadeValidationData?)null;
@@ -364,12 +368,24 @@ namespace KitchenDesigner.Core.MCP
                     tabletopMaterialId = table.TabletopMaterialId,
                     legsMaterialId = table.LegsMaterialId
                 } : null,
-                radiusTable = radiusTable != null ? new RadiusTableInfo
+				radiusTable = radiusTable != null ? new RadiusTableInfo
+				{
+					legInsetMM = radiusTable.LegInsetMM,
+					shape = "capsule",
+					tabletopMaterialId = radiusTable.TabletopMaterialId,
+					legsMaterialId = radiusTable.LegsMaterialId
+				} : null,
+				pillar = pillar != null ? new PillarInfo
+				{
+					midHeightMM = pillar.MidHeightMM
+				} : null,
+				window = window != null ? new WindowInfo
                 {
-                    legInsetMM = radiusTable.LegInsetMM,
-                    shape = "capsule",
-                    tabletopMaterialId = radiusTable.TabletopMaterialId,
-                    legsMaterialId = radiusTable.LegsMaterialId
+                    tint = window.Tint.ToString(),
+                    sillProtrusionMM = window.SillProtrusionMM,
+                    mode = FacadeDoor.WireName(window.Mode),
+                    isOpen = window.IsOpen,
+                    attachedWallName = window.AttachedWallName
                 } : null
             };
         }
@@ -1305,22 +1321,52 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Result(req.id, BuildMutationResult(elT));
             }
 
-            if (p.is_radius_table)
+			if (p.is_radius_table)
+			{
+				var dimsRT = new Vector3Int(
+					p.width > 0 ? p.width : 2000,
+					p.height > 0 ? p.height : 750,
+					p.depth > 0 ? p.depth : 1000);
+				var posRT = new Vector3(p.x, p.y, p.z);
+				var goRT = ElementFactory.CreateRadiusTable(dimsRT, elementName, posRT);
+				var radiusTableEl = goRT.GetComponent<RadiusTableElement>();
+				if (radiusTableEl != null && p.leg_inset_mm > 0)
+					radiusTableEl.LegInsetMM = p.leg_inset_mm;
+				CommandStack.Execute(new CreateCommand(goRT));
+				RefreshElementHighlights();
+				var elRT = goRT.GetComponent<KitchenElement>();
+				Debug.Log($"[MCP] Created radius table '{elementName}' {dimsRT.x}x{dimsRT.y}x{dimsRT.z} legInset={p.leg_inset_mm}");
+				return McpResponse.Result(req.id, BuildMutationResult(elRT));
+			}
+
+			if (p.is_pillar)
+			{
+				int midH = p.height > 0 ? p.height : 75;
+				var posP = new Vector3(p.x, p.y, p.z);
+				var goP = ElementFactory.CreatePillar(midH, elementName, posP);
+				var pillarEl = goP.GetComponent<PillarElement>();
+				CommandStack.Execute(new CreateCommand(goP));
+				RefreshElementHighlights();
+				var elP = goP.GetComponent<KitchenElement>();
+				Debug.Log($"[MCP] Created pillar '{elementName}' midHeight={pillarEl != null ? pillarEl.MidHeightMM : midH}");
+				return McpResponse.Result(req.id, BuildMutationResult(elP));
+			}
+
+			if (p.is_window)
             {
-                var dimsRT = new Vector3Int(
-                    p.width > 0 ? p.width : 2000,
-                    p.height > 0 ? p.height : 750,
-                    p.depth > 0 ? p.depth : 1000);
-                var posRT = new Vector3(p.x, p.y, p.z);
-                var goRT = ElementFactory.CreateRadiusTable(dimsRT, elementName, posRT);
-                var radiusTableEl = goRT.GetComponent<RadiusTableElement>();
-                if (radiusTableEl != null && p.leg_inset_mm > 0)
-                    radiusTableEl.LegInsetMM = p.leg_inset_mm;
-                CommandStack.Execute(new CreateCommand(goRT));
+                var dimsW = new Vector3Int(
+                    p.width > 0 ? p.width : 900,
+                    p.height > 0 ? p.height : 1200,
+                    p.depth > 0 ? p.depth : 100);
+                var posW = new Vector3(p.x, p.y, p.z);
+                var tintValue = ParseGlassTint(p.window_tint);
+                int sill = p.window_sill_protrusion_mm >= 0 ? p.window_sill_protrusion_mm : 50;
+                var goW = ElementFactory.CreateWindow(dimsW, elementName, posW, tintValue, sill);
+                CommandStack.Execute(new CreateCommand(goW));
                 RefreshElementHighlights();
-                var elRT = goRT.GetComponent<KitchenElement>();
-                Debug.Log($"[MCP] Created radius table '{elementName}' {dimsRT.x}x{dimsRT.y}x{dimsRT.z} legInset={p.leg_inset_mm}");
-                return McpResponse.Result(req.id, BuildMutationResult(elRT));
+                var elW = goW.GetComponent<KitchenElement>();
+                Debug.Log($"[MCP] Created window '{elementName}' {dimsW.x}x{dimsW.y}x{dimsW.z} tint={tintValue} sill={sill}");
+                return McpResponse.Result(req.id, BuildMutationResult(elW));
             }
 
             var pos = new Vector3(p.x, p.y, p.z);
@@ -1395,6 +1441,16 @@ namespace KitchenDesigner.Core.MCP
                 case "white": case "белый": return DrawerColor.White;
                 case "black": case "чёрный": case "черный": return DrawerColor.Black;
                 default: return DrawerColor.Anthracite;
+            }
+        }
+
+        /// <summary>Строка → GlassTint. По умолчанию Clear.</summary>
+        private static GlassTint ParseGlassTint(string s)
+        {
+            switch ((s ?? "").Trim().ToLowerInvariant())
+            {
+                case "tinted": case "тонированное": return GlassTint.Tinted;
+                default: return GlassTint.Clear;
             }
         }
 
@@ -2409,48 +2465,102 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, BuildMutationResult(el));
         }
 
-        private McpResponse HandleSetTableProperties(McpRequest req)
+		private McpResponse HandleSetTableProperties(McpRequest req)
+		{
+			var p = req.Params?.ToObject<ParamsSetTableProperties>();
+			if (p == null || string.IsNullOrEmpty(p.name))
+				return McpResponse.Error(req.id, -32602, "name required");
+
+			var el = FindElementByName(p.name);
+			if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+			var table = el as TableElement;
+			var rt = el as RadiusTableElement;
+			if (table == null && rt == null)
+				return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a table");
+
+			if (p.leg_inset_mm.HasValue)
+			{
+				if (table != null) table.LegInsetMM = p.leg_inset_mm.Value;
+				else rt!.LegInsetMM = p.leg_inset_mm.Value;
+			}
+
+			if (p.tabletop_material_id != null)
+			{
+				var def = MaterialCatalog.Get(p.tabletop_material_id);
+				if (def != null)
+				{
+					if (table != null) MaterialManager.ApplyTabletop(table, def);
+					else MaterialManager.ApplyTabletop(rt!, def);
+				}
+			}
+
+			if (p.legs_material_id != null)
+			{
+				var def = MaterialCatalog.Get(p.legs_material_id);
+				if (def != null)
+				{
+					if (table != null) MaterialManager.ApplyLegs(table, def);
+					else MaterialManager.ApplyLegs(rt!, def);
+				}
+			}
+
+			Debug.Log($"[MCP] Table '{p.name}' properties updated");
+			return McpResponse.Result(req.id, BuildMutationResult(el));
+		}
+
+		private McpResponse HandleSetPillarProperties(McpRequest req)
+		{
+			var p = req.Params?.ToObject<ParamsSetPillarProperties>();
+			if (p == null || string.IsNullOrEmpty(p.name))
+				return McpResponse.Error(req.id, -32602, "name required");
+
+			var el = FindElementByName(p.name);
+			if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+			PillarElement pillar = el as PillarElement;
+			if (pillar == null)
+				return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a pillar");
+
+			if (p.mid_height_mm.HasValue)
+				pillar.MidHeightMM = p.mid_height_mm.Value;
+
+			Debug.Log($"[MCP] Pillar '{p.name}' midHeight={pillar.MidHeightMM}");
+			return McpResponse.Result(req.id, BuildMutationResult(el));
+		}
+
+		private McpResponse HandleSetWindowProperties(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsSetTableProperties>();
+            var p = req.Params?.ToObject<ParamsSetWindowProperties>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name required");
 
             var el = FindElementByName(p.name);
             if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
 
-            var table = el as TableElement;
-            var rt = el as RadiusTableElement;
-            if (table == null && rt == null)
-                return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a table");
+            var window = el as WindowElement;
+            if (window == null)
+                return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a window");
 
-            if (p.leg_inset_mm.HasValue)
+            if (!string.IsNullOrEmpty(p.tint))
+                window.Tint = ParseGlassTint(p.tint);
+            if (p.sill_protrusion_mm.HasValue)
+                window.SillProtrusionMM = p.sill_protrusion_mm.Value;
+            if (!string.IsNullOrEmpty(p.mode))
             {
-                if (table != null) table.LegInsetMM = p.leg_inset_mm.Value;
-                else rt!.LegInsetMM = p.leg_inset_mm.Value;
-            }
-
-            if (p.tabletop_material_id != null)
-            {
-                var def = MaterialCatalog.Get(p.tabletop_material_id);
-                if (def != null)
+                switch (p.mode.ToLowerInvariant())
                 {
-                    if (table != null) MaterialManager.ApplyTabletop(table, def);
-                    else MaterialManager.ApplyTabletop(rt!, def);
+                    case "front_left": window.Mode = DoorMode.HingeFrontLeft; break;
+                    case "front_right": window.Mode = DoorMode.HingeFrontRight; break;
+                    case "front_top": window.Mode = DoorMode.HingeFrontTop; break;
+                    case "front_bottom": window.Mode = DoorMode.HingeFrontBottom; break;
                 }
             }
+            if (p.is_open.HasValue)
+                window.SetOpen(p.is_open.Value);
 
-            if (p.legs_material_id != null)
-            {
-                var def = MaterialCatalog.Get(p.legs_material_id);
-                if (def != null)
-                {
-                    if (table != null) MaterialManager.ApplyLegs(table, def);
-                    else MaterialManager.ApplyLegs(rt!, def);
-                }
-            }
-
-            Debug.Log($"[MCP] Table '{p.name}' properties updated");
-            return McpResponse.Result(req.id, BuildMutationResult(el));
+            Debug.Log($"[MCP] Window '{p.name}' properties updated");
+            return McpResponse.Result(req.id, BuildMutationResult(window));
         }
 
         private McpResponse HandleCycleDrawerAnimation(McpRequest req)

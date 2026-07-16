@@ -14,13 +14,14 @@ namespace KitchenDesigner.Core.UI
         private KitchenElement? _target;
         private TMP_Text? _titleLabel;
 
-        private TMP_InputField? _name, _w, _h, _d, _radius,
-            _gapLeft, _gapRight, _gapTop, _gapBottom,
-            _x, _y, _z, _rx, _ry, _rz, _legInset;
+		private TMP_InputField? _name, _w, _h, _d, _radius,
+			_gapLeft, _gapRight, _gapTop, _gapBottom,
+			_x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight;
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
         private TMP_Text? _doorButtonLabel;
+        private TMP_Text? _winDoorButtonLabel;
         private TMP_Dropdown? _modeDropdown;
         private TMP_Dropdown? _fillDropdown;
         private TMP_Dropdown? _materialDropdown;
@@ -32,6 +33,8 @@ namespace KitchenDesigner.Core.UI
         private TMP_InputField? _drawerWidth;
         private TMP_Text? _drawerAnimLabel;
         private TMP_Dropdown? _drawerFacadeDropdown;
+        private TMP_Dropdown? _tintDropdown;
+        private TMP_InputField? _sillProtrusion;
 
         // ── Подсветка изменённых полей ──────────────────────────────────
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
@@ -54,7 +57,9 @@ namespace KitchenDesigner.Core.UI
             public bool drawerOnly;       // показывать только для ящиков
             public bool assembledOnly;    // показывать только для сборного фасада
             public bool radialOnly;       // показывать только для радиусной полки
-            public bool tableOnly;        // показывать только для столов
+			public bool tableOnly;        // показывать только для столов
+			public bool pillarOnly;       // показывать только для опор
+			public bool windowOnly;       // показывать только для окон
             public GameObject toggleGO;   // объект, который включать/выключать по режиму
             public System.Func<bool>? visibleWhen; // доп. условие видимости (состояние элемента)
         }
@@ -106,7 +111,7 @@ namespace KitchenDesigner.Core.UI
             AddRow(TitleH, TitleGap, _titleLabel.rectTransform);
 
             // Тип детали: конвертация между Part / Facade / AssembledFacade / RadialShelf.
-            var typeOptions = new List<string> { "Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV" };
+            var typeOptions = new List<string> { "Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно" };
             _typeDropdown = UIFactory.CreateDropdown("CtxType", panel.transform, typeOptions,
                 new Vector2(0, 0), new Vector2(332, 28), OnTypeSelected);
             AddRow(28f, RowGap, _typeDropdown.GetComponent<RectTransform>());
@@ -196,6 +201,31 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, 0), new Vector2(332, 28), OnDrawerFacadeSelected);
             AddDrawerRow(28f, ActionGap, _drawerFacadeDropdown.GetComponent<RectTransform>());
 
+            // Окно: тонировка стекла и выступ подоконника.
+            var tintOptions = new List<string> { "Прозрачное", "Тонированное" };
+            _tintDropdown = UIFactory.CreateDropdown("CtxTint", panel.transform, tintOptions,
+                new Vector2(0, 0), new Vector2(332, 28), OnTintSelected);
+            AddWindowRow(28f, ActionGap, _tintDropdown.GetComponent<RectTransform>());
+
+            _sillProtrusion = WindowFieldRow(panel.transform, "Подоконник, мм");
+
+            // Режим открывания окна и кнопка Открыть/Закрыть (как фасад).
+            var winModeOptions = new List<string>
+            {
+                FacadeDoor.Label(DoorMode.HingeFrontLeft),
+                FacadeDoor.Label(DoorMode.HingeFrontRight),
+                FacadeDoor.Label(DoorMode.HingeFrontTop),
+                FacadeDoor.Label(DoorMode.HingeFrontBottom),
+            };
+            var winModeDropdown = UIFactory.CreateDropdown("CtxWinMode", panel.transform, winModeOptions,
+                new Vector2(0, 0), new Vector2(332, 28), OnWindowModeSelected);
+            AddWindowRow(28f, ActionGap, winModeDropdown.GetComponent<RectTransform>());
+
+            var winDoorBtn = UIFactory.CreateButton("CtxWinDoor", panel.transform, "Открыть",
+                new Vector2(0, 0), new Vector2(332, BtnH), ToggleWindowDoor);
+            _winDoorButtonLabel = winDoorBtn.GetComponentInChildren<TMP_Text>();
+            AddWindowRow(BtnH, ActionGap, winDoorBtn.GetComponent<RectTransform>());
+
             // Текстура/декор (детали И фасады) — всегда видимая строка (кроме столов).
             var matLbl = UIFactory.CreateLabel("CtxMatLbl", panel.transform, "Текстура:", 15,
                 Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
@@ -227,8 +257,11 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, 0), new Vector2(332, 28), OnLegsMaterialSelected);
             AddTableRow(28f, ActionGap, _legsMaterialDropdown.GetComponent<RectTransform>());
 
-            // Сдвиг ножек внутрь стола (только для столов).
-            _legInset = TableFieldRow(panel.transform, "Сдвиг ножек, мм");
+			// Сдвиг ножек внутрь стола (только для столов).
+			_legInset = TableFieldRow(panel.transform, "Сдвиг ножек, мм");
+
+			// Высота средней секции опоры (только для опор).
+			_midHeight = PillarFieldRow(panel.transform, "Средняя секция, мм");
 
             // Позиция и поворот — компактная раскладка 3 колонки.
             _x = TriField(panel.transform, "X, м", TriCol1);
@@ -241,7 +274,7 @@ namespace KitchenDesigner.Core.UI
             _rz = TriField(panel.transform, "Z°", TriCol3);
             TriEndRow();
 
-            foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
+			foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.DecimalNumber;
 
@@ -297,7 +330,7 @@ namespace KitchenDesigner.Core.UI
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
             closeBtn.transform.SetAsLastSibling();
 
-            Layout(isFacade: false, isAssembled: false, isRadial: false, isDrawer: false, isTable: false);
+			Layout(isFacade: false, isAssembled: false, isRadial: false, isDrawer: false, isTable: false, isPillar: false, isWindow: false);
             _root!.SetActive(false);
 
             if (SelectionManager.Instance != null)
@@ -466,11 +499,25 @@ namespace KitchenDesigner.Core.UI
             });
         }
 
-        private void AddTableRow(float height, float gapAfter, params RectTransform[] rects)
+		private void AddTableRow(float height, float gapAfter, params RectTransform[] rects)
+		{
+			foreach (var rt in rects)
+				if (rt != null) AnchorTop(rt);
+			_layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, tableOnly = true });
+		}
+
+		private void AddPillarRow(float height, float gapAfter, params RectTransform[] rects)
+		{
+			foreach (var rt in rects)
+				if (rt != null) AnchorTop(rt);
+			_layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, pillarOnly = true });
+		}
+
+		private void AddWindowRow(float height, float gapAfter, params RectTransform[] rects)
         {
             foreach (var rt in rects)
                 if (rt != null) AnchorTop(rt);
-            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, tableOnly = true });
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, windowOnly = true });
         }
 
         // Строка «подпись + поле» только для ящика (обе части в одной drawer-строке —
@@ -485,13 +532,33 @@ namespace KitchenDesigner.Core.UI
             return field;
         }
 
-        private TMP_InputField TableFieldRow(Transform parent, string label)
+		private TMP_InputField TableFieldRow(Transform parent, string label)
+		{
+			var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
+				new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
+			var field = UIFactory.CreateInputField("F_" + label, parent, "",
+				new Vector2(FieldX, 0), new Vector2(120, FieldH));
+			AddTableRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
+			return field;
+		}
+
+		private TMP_InputField PillarFieldRow(Transform parent, string label)
+		{
+			var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
+				new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
+			var field = UIFactory.CreateInputField("F_" + label, parent, "",
+				new Vector2(FieldX, 0), new Vector2(120, FieldH));
+			AddPillarRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
+			return field;
+		}
+
+		private TMP_InputField WindowFieldRow(Transform parent, string label)
         {
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
             var field = UIFactory.CreateInputField("F_" + label, parent, "",
                 new Vector2(FieldX, 0), new Vector2(120, FieldH));
-            AddTableRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
+            AddWindowRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
 
@@ -524,22 +591,24 @@ namespace KitchenDesigner.Core.UI
 
         // ── Раскладка сверху вниз ───────────────────────────────────────
 
-        private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer, bool isTable)
-        {
-            float cursor = TopPad;
-            float contentBottom = TopPad;
-            foreach (var row in _layout)
-            {
-                bool visible = (!row.facadeOnly || isFacade)
-                    && (!row.assembledOnly || isAssembled)
-                    && (!row.radialOnly || isRadial)
-                    && (!row.drawerOnly || isDrawer)
-                    && (!row.tableOnly || isTable)
-                    && (row.visibleWhen == null || row.visibleWhen());
+		private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer, bool isTable, bool isPillar = false, bool isWindow = false)
+		{
+			float cursor = TopPad;
+			float contentBottom = TopPad;
+			foreach (var row in _layout)
+			{
+				bool visible = (!row.facadeOnly || isFacade)
+					&& (!row.assembledOnly || isAssembled)
+					&& (!row.radialOnly || isRadial)
+					&& (!row.drawerOnly || isDrawer)
+					&& (!row.tableOnly || isTable)
+					&& (!row.pillarOnly || isPillar)
+					&& (!row.windowOnly || isWindow)
+					&& (row.visibleWhen == null || row.visibleWhen());
 
-                if (row.toggleGO != null)
-                    row.toggleGO.SetActive(visible);
-                else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly)
+				if (row.toggleGO != null)
+					row.toggleGO.SetActive(visible);
+				else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly || row.pillarOnly || row.windowOnly)
                     foreach (var rt in row.rects)
                         if (rt != null) rt.gameObject.SetActive(visible);
 
@@ -571,7 +640,7 @@ namespace KitchenDesigner.Core.UI
 
         private bool IsAnyFieldFocused()
         {
-            foreach (var f in new[] { _name, _w, _h, _d, _radius, _drawerWidth, _legInset, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z, _rx, _ry, _rz })
+			foreach (var f in new[] { _name, _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z, _rx, _ry, _rz })
                 if (f != null && f.isFocused) return true;
             return false;
         }
@@ -580,6 +649,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target == null) return;
             if (_target is FacadeElement f && !f.IsDoorClosed) return;
+            if (_target is WindowElement w && !w.IsDoorClosed) return;
 
             var pos = _target.transform.position;
             MaybeRefresh(_x, pos.x.ToString("F3"));
@@ -615,9 +685,17 @@ namespace KitchenDesigner.Core.UI
             if (table != null && _legInset != null)
                 MaybeRefresh(_legInset, table.LegInsetMM.ToString());
 
-            var radiusTable = _target as RadiusTableElement;
-            if (radiusTable != null && _legInset != null)
-                MaybeRefresh(_legInset, radiusTable.LegInsetMM.ToString());
+			var radiusTable = _target as RadiusTableElement;
+			if (radiusTable != null && _legInset != null)
+				MaybeRefresh(_legInset, radiusTable.LegInsetMM.ToString());
+
+			var pillar = _target as PillarElement;
+			if (pillar != null && _midHeight != null)
+				MaybeRefresh(_midHeight, pillar.MidHeightMM.ToString());
+
+			var window = _target as WindowElement;
+            if (window != null && _sillProtrusion != null)
+                MaybeRefresh(_sillProtrusion, window.SillProtrusionMM.ToString());
         }
 
         /// <summary>Обновить поле, если оно не в фокусе (юзер не редактирует).
@@ -650,11 +728,13 @@ namespace KitchenDesigner.Core.UI
                 bool isFacade = element is FacadeElement;
                 bool isRadial = element is RadialShelfElement;
                 bool isDrawer = element is DrawerElement;
-                bool isTable = element is TableElement;
-                bool isRadiusTable = element is RadiusTableElement;
-                _currentIsTable = isTable || isRadiusTable;
-                if (_titleLabel != null)
-                    _titleLabel.text = isRadiusTable ? "Радиусный стол" : isTable ? "Стол" : isDrawer ? "Ящик GTV" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
+				bool isTable = element is TableElement;
+				bool isRadiusTable = element is RadiusTableElement;
+				bool isPillar = element is PillarElement;
+				bool isWindow = element is WindowElement;
+				_currentIsTable = isTable || isRadiusTable;
+				if (_titleLabel != null)
+					_titleLabel.text = isPillar ? "Опора" : isRadiusTable ? "Радиусный стол" : isTable ? "Стол" : isDrawer ? "Ящик GTV" : isWindow ? "Окно" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
                 if (_typeDropdown != null)
                 {
                     _typeDropdown.SetValueWithoutNotify((int)ElementConverter.GetElementType(element));
@@ -710,9 +790,24 @@ namespace KitchenDesigner.Core.UI
                 if (table != null && _legInset != null)
                     _legInset.text = table.LegInsetMM.ToString();
 
-                var radiusTable = element as RadiusTableElement;
-                if (radiusTable != null && _legInset != null)
-                    _legInset.text = radiusTable.LegInsetMM.ToString();
+				var radiusTable = element as RadiusTableElement;
+				if (radiusTable != null && _legInset != null)
+					_legInset.text = radiusTable.LegInsetMM.ToString();
+
+				var pillar = element as PillarElement;
+				if (pillar != null && _midHeight != null)
+					_midHeight.text = pillar.MidHeightMM.ToString();
+
+				var window = element as WindowElement;
+                if (window != null)
+                {
+                    if (_tintDropdown != null)
+                        _tintDropdown.SetValueWithoutNotify((int)window.Tint);
+                    if (_sillProtrusion != null)
+                        _sillProtrusion.text = window.SillProtrusionMM.ToString();
+                    if (_winDoorButtonLabel != null)
+                        _winDoorButtonLabel.text = window.IsOpen ? "Закрыть" : "Открыть";
+                }
 
                 // Габариты ящика (контурный бокс) вычисляются из типа/длины/ширины —
                 // прямое редактирование недоступно, поля затемняются.
@@ -744,7 +839,7 @@ namespace KitchenDesigner.Core.UI
 
                 // Пересчитываем раскладку под режим: секция зазоров показывается
                 // только для фасадов, радиус — только для радиусной полки, сдвиг ножек — только для столов (включая радиусные), панель сама подгоняется по высоте.
-                Layout(isFacade, assembled != null, isRadial, isDrawer, isTable || isRadiusTable);
+			Layout(isFacade, assembled != null, isRadial, isDrawer, isTable || isRadiusTable, isPillar, isWindow);
 
                 RefreshTransformFields();
                 _transparentToggle!.SetIsOnWithoutNotify(element.Transparent);
@@ -774,6 +869,7 @@ namespace KitchenDesigner.Core.UI
             // Правки размеров/позиции применяем к закрытой (логической) позе.
             if (target is FacadeElement fac) { fac.ForceClose(); UpdateDoorButton(fac); }
             if (target is DrawerElement dr) { dr.ForceClose(); UpdateDrawerAnimButton(dr); }
+            if (target is WindowElement win) { win.ForceClose(); if (_winDoorButtonLabel != null) _winDoorButtonLabel.text = "Открыть"; }
 
             var oldDims = target.DimensionsMM;
             var oldPos = target.transform.position;
@@ -783,11 +879,12 @@ namespace KitchenDesigner.Core.UI
             // (PairedDrawerName пары, AttachedFacadeName ящиков с этим фасадом).
             DrawerLinks.Rename(target, string.IsNullOrWhiteSpace(_name!.text) ? "Board" : _name!.text);
 
-            var radial = target as RadialShelfElement;
-            var drawer = target as DrawerElement;
-            var table = target as TableElement;
-            var radiusTable = target as RadiusTableElement;
-            if (radial != null)
+			var radial = target as RadialShelfElement;
+			var drawer = target as DrawerElement;
+			var pillar = target as PillarElement;
+			var table = target as TableElement;
+			var radiusTable = target as RadiusTableElement;
+			if (radial != null)
             {
                 target.DimensionsMM = new Vector3Int(
                     ParseInt(_w!.text, oldDims.x),
@@ -810,8 +907,15 @@ namespace KitchenDesigner.Core.UI
             if (table != null && _legInset != null)
                 table.LegInsetMM = ParseInt(_legInset.text, table.LegInsetMM);
 
-            if (radiusTable != null && _legInset != null)
-                radiusTable.LegInsetMM = ParseInt(_legInset.text, radiusTable.LegInsetMM);
+			if (radiusTable != null && _legInset != null)
+				radiusTable.LegInsetMM = ParseInt(_legInset.text, radiusTable.LegInsetMM);
+
+			if (pillar != null && _midHeight != null)
+				pillar.MidHeightMM = ParseInt(_midHeight.text, pillar.MidHeightMM);
+
+			var windowEl = target as WindowElement;
+            if (windowEl != null && _sillProtrusion != null)
+                windowEl.SillProtrusionMM = ParseInt(_sillProtrusion.text, windowEl.SillProtrusionMM);
 
             // Сохраняем материал ножек (материал столешницы применяется через дропдаун).
             if (_legsMaterialDropdown != null && _currentIsTable)
@@ -878,10 +982,13 @@ namespace KitchenDesigner.Core.UI
             if (table != null && _legInset != null)
                 _legInset.text = table.LegInsetMM.ToString();
 
-            if (radiusTable != null && _legInset != null)
-                _legInset.text = radiusTable.LegInsetMM.ToString();
+			if (radiusTable != null && _legInset != null)
+				_legInset.text = radiusTable.LegInsetMM.ToString();
 
-            if (facade != null)
+			if (pillar != null && _midHeight != null)
+				_midHeight.text = pillar.MidHeightMM.ToString();
+
+			if (facade != null)
             {
                 _gapLeft!.text = facade.GapLeft.ToString();
                 _gapRight!.text = facade.GapRight.ToString();
@@ -930,6 +1037,30 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target is FacadeElement f)
                 f.Mode = (DoorMode)index;
+        }
+
+        // ── Открывание окна ─────────────────────────────────────────
+
+        private void ToggleWindowDoor()
+        {
+            if (_target is WindowElement w)
+            {
+                w.ToggleOpen();
+                if (_winDoorButtonLabel != null)
+                    _winDoorButtonLabel.text = w.IsOpen ? "Закрыть" : "Открыть";
+            }
+        }
+
+        private void OnTintSelected(int index)
+        {
+            if (_target is WindowElement w)
+                w.Tint = (GlassTint)index;
+        }
+
+        private void OnWindowModeSelected(int index)
+        {
+            if (_target is WindowElement w)
+                w.Mode = (DoorMode)index;
         }
 
         // Порядок пунктов списка центра: 0=Глухой, 1=Витрина(пусто), 2=Стекло.
@@ -1305,6 +1436,8 @@ namespace KitchenDesigner.Core.UI
             TrackField(_gapBottom, facade != null ? facade.GapBottom.ToString() : "0");
             var drawerEl2 = _target as DrawerElement;
             TrackField(_drawerWidth, drawerEl2 != null ? drawerEl2.InternalWidth.ToString() : "400");
+            var windowEl2 = _target as WindowElement;
+            TrackField(_sillProtrusion, windowEl2 != null ? windowEl2.SillProtrusionMM.ToString() : "50");
             var pos = _target.transform.position;
             TrackField(_x, pos.x.ToString("F3"));
             TrackField(_y, pos.y.ToString("F3"));

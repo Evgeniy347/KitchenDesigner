@@ -393,29 +393,85 @@ namespace KitchenDesigner.Core
             UpdateDragTint();
         }
 
-        private void FinishDrag()
-        {
-            _showGhost = false;
+		private void FinishDrag()
+		{
+			_showGhost = false;
 
-            if (_wasMoved)
-            {
-                if (KitchenSettings.Instance.BlockOnViolation && MoveSetCausesViolation())
-                    RevertMoveSet();
-                else
-                    CommandStack.Execute(BuildMoveCommand());
-            }
-            else
-            {
-                RevertMoveSet();
-            }
+			if (_wasMoved)
+			{
+				AutoAdjustPillar();
+				if (KitchenSettings.Instance.BlockOnViolation && MoveSetCausesViolation())
+					RevertMoveSet();
+				else
+					CommandStack.Execute(BuildMoveCommand());
+			}
+			else
+			{
+				RevertMoveSet();
+			}
 
-            _axisLock = AxisLock.None;
-            RestoreDragMaterial();
-            IsDragging = false;
-            _wasShift = false;
-            _movingSet.Clear();
-            RefreshHighlights();
-        }
+			_axisLock = AxisLock.None;
+			RestoreDragMaterial();
+			IsDragging = false;
+			_wasShift = false;
+			_movingSet.Clear();
+			RefreshHighlights();
+		}
+
+		private void AutoAdjustPillar()
+		{
+			if (!(_target is PillarElement pillar)) return;
+			float toU = AppConstants.MM_TO_UNITS;
+			float pillarBottomY = _target.transform.position.y - pillar.TotalHeightMM * 0.5f * toU;
+			if (pillarBottomY > 0.02f) return;
+			float pillarTopY = _target.transform.position.y + pillar.TotalHeightMM * 0.5f * toU;
+			float minAbove = pillarTopY;
+			float maxAbove = pillarTopY + (130f + PillarElement.TopHeightMM + PillarElement.BottomHeightMM) * toU;
+			float midDiameterU = PillarElement.MidDiameterMM * 0.5f * toU;
+			Vector3 pillarCenter = _target.transform.position;
+			Vector3 up = Vector3.up;
+			KitchenElement bestAbove = null;
+			float bestAboveBottom = float.MaxValue;
+			foreach (var el in PartRegistry.GetAll())
+			{
+				if (el == null || el == _target) continue;
+				var aabb = ComputeElementAABB(el);
+				if (aabb.minY >= minAbove && aabb.minY <= maxAbove)
+				{
+					float dx = Mathf.Abs(aabb.minX + aabb.maxX * 0.5f - pillarCenter.x);
+					float dz = Mathf.Abs(aabb.minZ + aabb.maxZ * 0.5f - pillarCenter.z);
+					if (dx < midDiameterU + 0.05f && dz < midDiameterU + 0.05f)
+					{
+						if (aabb.minY < bestAboveBottom)
+						{
+							bestAboveBottom = aabb.minY;
+							bestAbove = el;
+						}
+					}
+				}
+			}
+			if (bestAbove == null) return;
+			float gapUnits = bestAboveBottom - pillarBottomY;
+			int gapMM = Mathf.RoundToInt(gapUnits / toU);
+			int neededMid = gapMM - PillarElement.TopHeightMM - PillarElement.BottomHeightMM;
+			neededMid = Mathf.Clamp(neededMid, PillarElement.MidHeightMM_Min, PillarElement.MidHeightMM_Max);
+			pillar.MidHeightMM = neededMid;
+		}
+
+		private static (float minX, float maxX, float minY, float maxY, float minZ, float maxZ) ComputeElementAABB(KitchenElement el)
+		{
+			var verts = el.GetVertices();
+			float minX = float.MaxValue, maxX = float.MinValue;
+			float minY = float.MaxValue, maxY = float.MinValue;
+			float minZ = float.MaxValue, maxZ = float.MinValue;
+			foreach (var v in verts)
+			{
+				if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x;
+				if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
+				if (v.z < minZ) minZ = v.z; if (v.z > maxZ) maxZ = v.z;
+			}
+			return (minX, maxX, minY, maxY, minZ, maxZ);
+		}
 
         // Проверяет, есть ли нарушения среди перемещаемой детали и её соседей
         // (в радиусе snapThreshold * 2). Это предотвращает ситуацию, когда

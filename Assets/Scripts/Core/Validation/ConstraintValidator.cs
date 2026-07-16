@@ -30,7 +30,7 @@ namespace KitchenDesigner.Core
 
         // Якорь графа связности — пол или стена (к ним заземляются детали).
         private static bool IsAnchor(KitchenElement e) =>
-            e != null && (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null);
+            e != null && (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null || e is WindowElement);
 
         // ── Статический скратч: контейнеры переиспользуются между вызовами Validate,
         //    чтобы в горячем пути (перетаскивание — Validate каждый кадр) не было

@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core.UI
             public bool isRadialShelf;
             public bool isFurniture;
             public bool isRadiusTable;
+            public bool isWindow;
             public string drawerType;
             public int drawerLength;
             public string drawerColor;
@@ -34,7 +35,7 @@ namespace KitchenDesigner.Core.UI
                 this.isFacade = isFacade; this.isAssembled = isAssembled;
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
-                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false;
+                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false;
                 drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400;
             }
@@ -63,6 +64,7 @@ namespace KitchenDesigner.Core.UI
                     {
                         new Item("Короб", new Vector3Int(600, 600, 600)),
                         new Item("Стена", new Vector3Int(2000, 2500, 100), true),
+                        WindowItem("Окно", new Vector3Int(900, 1200, 100)),
                         new Item("Размеры помещения", Vector3Int.zero),
                     }
                 },
@@ -120,6 +122,13 @@ namespace KitchenDesigner.Core.UI
             var radiusTable = new Item("Радиусный стол", new Vector3Int(2000, 750, 1000));
             radiusTable.isRadiusTable = true;
             return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable } };
+        }
+
+        private static Item WindowItem(string name, Vector3Int dims)
+        {
+            var item = new Item(name, dims);
+            item.isWindow = true;
+            return item;
         }
     }
 }

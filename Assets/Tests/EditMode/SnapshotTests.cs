@@ -220,10 +220,37 @@ public class SnapshotTests
         Snapshot.Match(json, "radial_custom");
     }
 
-    // ── Wall snapshots ───────────────────────────────────────────────────
+        // ── Window snapshots ──────────────────────────────────────────────────
 
-    [Test]
-    public void Snapshot_Wall_Default()
+        [Test]
+        public void Snapshot_Window_Default()
+        {
+            var go = ElementFactory.CreateWindow(
+                new Vector3Int(900, 1200, 100), "DefaultWindow", Vector3.zero);
+            Add(go);
+            var json = CaptureJson(new[] { go.GetComponent<KitchenElement>() });
+            Snapshot.Match(json, "window_default");
+        }
+
+        [Test]
+        public void Snapshot_Window_Tinted()
+        {
+            var go = ElementFactory.CreateWindow(
+                new Vector3Int(600, 800, 100), "TintedWindow",
+                new Vector3(0.5f, 0.4f, -1.0f), GlassTint.Tinted, 70);
+            var window = go.GetComponent<WindowElement>();
+            go.transform.rotation = Quaternion.Euler(0, 90, 0);
+            window.MaterialId = "oak";
+            Add(go);
+
+            var json = CaptureJson(new[] { window });
+            Snapshot.Match(json, "window_tinted");
+        }
+
+        // ── Wall snapshots ───────────────────────────────────────────────────
+
+        [Test]
+        public void Snapshot_Wall_Default()
     {
         var go = ElementFactory.CreateWall(
             new Vector3Int(100, 2700, 3000), "DefaultWall",
@@ -379,6 +406,7 @@ public class SnapshotTests
             "assembled_blind", "assembled_glass", "assembled_open",
             "radial_default", "radial_custom",
             "wall_default", "wall_custom",
+            "window_default", "window_tinted",
             "fullscene_all_types",
             "settings_default", "settings_custom",
             "full_project_data",

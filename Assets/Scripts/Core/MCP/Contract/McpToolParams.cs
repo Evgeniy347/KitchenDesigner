@@ -167,6 +167,8 @@ namespace KitchenDesigner.Core.MCP.Contract
         public bool is_table;
         [McpParam("Create as a RADIUS TABLE (capsule-shaped top + 4 legs). Default false. width/height/depth are table dimensions.")]
         public bool is_radius_table;
+        [McpParam("Create as a WINDOW. Default false.")]
+        public bool is_window;
 
         [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Default A.", Enum = new[] { "A", "B", "C", "D" })]
         public string drawer_type = string.Empty;
@@ -180,13 +182,21 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Assembled facade only: center fill — blind (panel), glass (vitrine with glass), open (empty vitrine). Default blind.", Enum = new[] { "blind", "glass", "open" })]
         public string fill = string.Empty;
 
-        [McpParam("Table only: inward offset of legs from corners along X and Z, in MM (default 100).", Min = 0)]
-        public int leg_inset_mm = 100;
+		[McpParam("Table only: inward offset of legs from corners along X and Z, in MM (default 100).", Min = 0)]
+		public int leg_inset_mm = 100;
+
+		[McpParam("Create as a PILLAR (table leg support — 3 stacked cylinders). Default false.")]
+		public bool is_pillar;
 
         [McpParam("Facade only: left gap in MM (default 2).", Name = "gap_left", Min = 0)] public int gapLeft = 2;
         [McpParam("Facade only: right gap in MM (default 2).", Name = "gap_right", Min = 0)] public int gapRight = 2;
         [McpParam("Facade only: top gap in MM (default 2).", Name = "gap_top", Min = 0)] public int gapTop = 2;
         [McpParam("Facade only: bottom gap in MM (default 2).", Name = "gap_bottom", Min = 0)] public int gapBottom = 2;
+
+        [McpParam("Window only: glass tint — clear (transparent) or tinted (slightly darkened). Default clear.", Enum = new[] { "clear", "tinted" })]
+        public string window_tint = string.Empty;
+        [McpParam("Window only: windowsill outward protrusion in MM (0..200). Default 50.", Min = 0, Max = 200)]
+        public int window_sill_protrusion_mm = 50;
     }
 
     [Serializable]
@@ -399,12 +409,33 @@ namespace KitchenDesigner.Core.MCP.Contract
         public int? corner_radius;
     }
 
-    [Serializable]
-    public class ParamsSetTableProperties
+	[Serializable]
+	public class ParamsSetTableProperties
+	{
+		[McpParam("Exact table element name.", Required = true)] public string name = string.Empty;
+		[McpParam("Inward offset of legs from corners along X and Z, in MM (min 0).", Min = 0)] public int? leg_inset_mm;
+		[McpParam("Material id for the tabletop (see list_materials).")] public string? tabletop_material_id;
+		[McpParam("Material id for the legs (see list_materials).")] public string? legs_material_id;
+	}
+
+	[Serializable]
+	public class ParamsSetPillarProperties
+	{
+		[McpParam("Exact pillar element name.", Required = true)] public string name = string.Empty;
+		[McpParam("Middle cylinder height in MM (clamped 50..100).", Min = 50, Max = 100)] public int? mid_height_mm;
+	}
+
+	[Serializable]
+	public class ParamsSetWindowProperties
     {
-        [McpParam("Exact table element name.", Required = true)] public string name = string.Empty;
-        [McpParam("Inward offset of legs from corners along X and Z, in MM (min 0).", Min = 0)] public int? leg_inset_mm;
-        [McpParam("Material id for the tabletop (see list_materials).")] public string? tabletop_material_id;
-        [McpParam("Material id for the legs (see list_materials).")] public string? legs_material_id;
+        [McpParam("Exact window element name.", Required = true)] public string name = string.Empty;
+        [McpParam("Glass tint: clear (transparent) or tinted (slightly darkened).", Enum = new[] { "clear", "tinted" })]
+        public string tint = string.Empty;
+        [McpParam("Windowsill outward protrusion in MM (0..200).", Min = 0, Max = 200)]
+        public int? sill_protrusion_mm;
+        [McpParam("Opening mode: front_left|front_right|front_top|front_bottom (like facade).",
+            Enum = new[] { "front_left", "front_right", "front_top", "front_bottom" })]
+        public string? mode;
+        [McpParam("true = open, false = close.")] public bool? is_open;
     }
 }

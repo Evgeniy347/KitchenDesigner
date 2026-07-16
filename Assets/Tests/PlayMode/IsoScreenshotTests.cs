@@ -344,10 +344,71 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
-    // ── Room screenshots (4 walls, raised + lowered) ─────────
+        // ── Window isometric screenshots ────────────────────────
 
-    [UnityTest]
-    public IEnumerator IsoRoom_Raised()
+        [UnityTest]
+        public IEnumerator IsoWindow_Default()
+        {
+            var dims = new Vector3Int(900, 1200, 100);
+            Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+            var go = ElementFactory.CreateWindow(dims, "IsoWindowDef", pos);
+            _spawned.Add(go);
+            var window = go.GetComponent<WindowElement>();
+            Assert.IsNotNull(window);
+
+            Vector3 size = MmToUnits(dims);
+            var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+            _spawned.Add(camGo);
+
+            yield return RenderToPng(cam, "iso_window_default.png");
+
+            Object.DestroyImmediate(camGo);
+        }
+
+        [UnityTest]
+        public IEnumerator IsoWindow_Open()
+        {
+            var dims = new Vector3Int(900, 1200, 100);
+            Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+            var go = ElementFactory.CreateWindow(dims, "IsoWindowOpen", pos);
+            _spawned.Add(go);
+            var window = go.GetComponent<WindowElement>();
+            Assert.IsNotNull(window);
+            window.SetOpen(true);
+            yield return null;
+
+            Vector3 size = MmToUnits(dims);
+            var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+            _spawned.Add(camGo);
+
+            yield return RenderToPng(cam, "iso_window_open.png");
+
+            Object.DestroyImmediate(camGo);
+        }
+
+        [UnityTest]
+        public IEnumerator IsoWindow_Tinted()
+        {
+            var dims = new Vector3Int(900, 1200, 100);
+            Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+            var go = ElementFactory.CreateWindow(dims, "IsoWindowTinted", pos, GlassTint.Tinted, 70);
+            _spawned.Add(go);
+            var window = go.GetComponent<WindowElement>();
+            Assert.IsNotNull(window);
+
+            Vector3 size = MmToUnits(dims);
+            var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+            _spawned.Add(camGo);
+
+            yield return RenderToPng(cam, "iso_window_tinted.png");
+
+            Object.DestroyImmediate(camGo);
+        }
+
+        // ── Room screenshots (4 walls, raised + lowered) ─────────
+
+        [UnityTest]
+        public IEnumerator IsoRoom_Raised()
     {
         KitchenSettings.Instance.WallsEnabled = true;
         KitchenSettings.Instance.LowerNearWalls = false;

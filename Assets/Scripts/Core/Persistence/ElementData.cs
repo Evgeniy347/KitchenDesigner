@@ -32,16 +32,24 @@ namespace KitchenDesigner.Core
         // Радиус скругления угла радиусной полки; в файлах без этого поля
         // JsonUtility оставит дефолт.
         public int cornerRadius = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
-        public bool isDrawer = false;
-        public int drawerType = 0;
-        public int drawerNominalLength = 350;
-        public int drawerColor = 0;
-        public int drawerInternalWidth = 400;
-        public bool drawerIsDouble = false;
-        public bool drawerIsUpper = false;
-        public string drawerPairedName = "";
-        public string drawerAttachedFacadeName = "";
-        public int doubleDrawerState = 0;
+		public bool isDrawer = false;
+		public int drawerType = 0;
+		public int drawerNominalLength = 350;
+		public int drawerColor = 0;
+		public int drawerInternalWidth = 400;
+		public bool drawerIsDouble = false;
+		public bool drawerIsUpper = false;
+		public string drawerPairedName = "";
+		public string drawerAttachedFacadeName = "";
+		public int doubleDrawerState = 0;
+		public bool isWindow = false;
+		public int windowTint = 0;
+		public int windowSillProtrusionMM = 50;
+		public int windowDoorMode = 0;
+		public bool windowIsOpen = false;
+		public string windowAttachedWallName = "";
+		public bool isPillar = false;
+		public int midHeightMM = 75;
 
         public ElementData() { }
 
@@ -51,12 +59,14 @@ namespace KitchenDesigner.Core
             var dims = element.DimensionsMM;
             d.dimensionsMM = new[] { dims.x, dims.y, dims.z };
 
-            var drawer = element as DrawerElement;
-            var wall = element.GetComponent<Wall>();
-            var facade = element as FacadeElement;
-            var radialShelf = element as RadialShelfElement;
-            var radiusTable = element as RadiusTableElement;
-            var tableEl2 = element as TableElement;
+			var drawer = element as DrawerElement;
+			var wall = element.GetComponent<Wall>();
+			var facade = element as FacadeElement;
+			var radialShelf = element as RadialShelfElement;
+			var radiusTable = element as RadiusTableElement;
+			var tableEl2 = element as TableElement;
+			var windowEl = element as WindowElement;
+			var pillar = element as PillarElement;
 
             // Позицию/поворот пишем как ЛОГИЧЕСКУЮ, а не текущую (смещённую) позу:
             //  • полускрытая стена временно опущена вниз → берём FullPosition,
@@ -64,12 +74,16 @@ namespace KitchenDesigner.Core
             //  • открытая дверца отведена от петли → берём ЗАКРЫТУЮ позу, иначе
             //    после загрузки она отводится ещё раз и «уезжает».
             var p = wall != null ? wall.FullPosition
+                  : windowEl != null ? windowEl.ClosedPosition
                   : facade != null ? facade.ClosedPosition
                   : drawer != null ? drawer.ClosedPosition
                   : element.transform.position;
             d.position = new[] { p.x, p.y, p.z };
 
-            var r = facade != null ? facade.ClosedRotation : drawer != null ? drawer.ClosedRotation : element.transform.rotation;
+            var r = windowEl != null ? windowEl.ClosedRotation
+                  : facade != null ? facade.ClosedRotation
+                  : drawer != null ? drawer.ClosedRotation
+                  : element.transform.rotation;
             d.rotation = new[] { r.x, r.y, r.z, r.w };
 
             d.movable = element.Movable;
@@ -137,7 +151,20 @@ namespace KitchenDesigner.Core
                 d.doorOpen = drawer.IsOpen;
             }
 
-            d.groupId = element.GroupId;
+			if (windowEl != null)
+			{
+				d.isWindow = true;
+				d.windowTint = (int)windowEl.Tint;
+				d.windowSillProtrusionMM = windowEl.SillProtrusionMM;
+				d.windowDoorMode = (int)windowEl.Mode;
+				d.windowIsOpen = windowEl.IsOpen;
+				d.windowAttachedWallName = windowEl.AttachedWallName ?? "";
+			}
+
+			d.isPillar = pillar != null;
+			d.midHeightMM = pillar != null ? pillar.MidHeightMM : 75;
+
+			d.groupId = element.GroupId;
             d.materialId = element.MaterialId;
             d.transparent = element.Transparent;
             return d;

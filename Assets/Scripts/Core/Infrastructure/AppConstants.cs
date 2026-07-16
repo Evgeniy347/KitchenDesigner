@@ -21,6 +21,12 @@ namespace KitchenDesigner.Core
         public const int ASSEMBLED_DEFAULT_GROOVES = 1;   // >0 = рисовать выемки (2 сверху, 2 снизу)
         public const int ASSEMBLED_GROOVE_MM = 5;         // выемка на перекладине: 5×5 мм
 
+        public const int WINDOW_FRAME_MM = 80;
+        public const int WINDOW_SLOPE_MM = 18;
+        public const int WINDOW_DRIP_DEFAULT_MM = 30;
+        public const int WINDOW_SILL_DEFAULT_MM = 50;
+        public const int WINDOW_GLASS_THICKNESS_MM = 4;
+
         public static readonly Vector3Int[] PRESET_DIMENSIONS_MM = new Vector3Int[]
         {
             new Vector3Int(800, 400, 18),
