@@ -461,6 +461,7 @@ namespace KitchenDesigner.Core
 			var pillar = go.AddComponent<PillarElement>();
 			pillar.PartName = go.name;
 			pillar.MidHeightMM = midHeightMM;
+			pillar.DimensionsMM = new Vector3Int(PillarElement.TopDiameterMM, pillar.TotalHeightMM, PillarElement.TopDiameterMM);
 
 			if (DefaultMaterial != null)
 				MaterialManager.ApplyById(pillar, MaterialCatalog.DefaultId);

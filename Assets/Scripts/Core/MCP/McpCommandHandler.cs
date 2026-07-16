@@ -1341,14 +1341,14 @@ namespace KitchenDesigner.Core.MCP
 
 			if (p.is_pillar)
 			{
-				int midH = p.height > 0 ? p.height : 75;
+				int midH = p.height > 0 ? p.height : PillarElement.MidHeightMM_Default;
 				var posP = new Vector3(p.x, p.y, p.z);
 				var goP = ElementFactory.CreatePillar(midH, elementName, posP);
 				var pillarEl = goP.GetComponent<PillarElement>();
 				CommandStack.Execute(new CreateCommand(goP));
 				RefreshElementHighlights();
 				var elP = goP.GetComponent<KitchenElement>();
-				Debug.Log($"[MCP] Created pillar '{elementName}' midHeight={pillarEl != null ? pillarEl.MidHeightMM : midH}");
+				Debug.Log($"[MCP] Created pillar '{elementName}' midHeight={(pillarEl != null ? pillarEl.MidHeightMM : midH)}");
 				return McpResponse.Result(req.id, BuildMutationResult(elP));
 			}
 
