@@ -428,7 +428,7 @@ namespace KitchenDesigner.Core
 			float maxAbove = pillarBottomY + 130f * toU;
 			float midDiameterU = PillarElement.MidDiameterMM * 0.5f * toU;
 			Vector3 pillarCenter = _target.transform.position;
-			KitchenElement bestAbove = null;
+			KitchenElement? bestAbove = null;
 			float bestAboveBottom = float.MaxValue;
 			foreach (var el in PartRegistry.GetAll())
 			{

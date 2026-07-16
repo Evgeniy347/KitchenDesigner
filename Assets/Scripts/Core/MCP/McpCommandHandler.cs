@@ -2518,7 +2518,7 @@ namespace KitchenDesigner.Core.MCP
 			var el = FindElementByName(p.name);
 			if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
 
-			PillarElement pillar = el as PillarElement;
+			PillarElement? pillar = el as PillarElement;
 			if (pillar == null)
 				return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a pillar");
 
