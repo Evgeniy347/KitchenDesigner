@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace KitchenDesigner.Core
@@ -10,72 +11,62 @@ namespace KitchenDesigner.Core
         public bool movable = true;
     }
 
-    /// <summary>Связывание объектов в группу. Элемент хранит GroupId; реестр —
-    /// сами группы (имя/подвижность). Состав группы выводится из PartRegistry.</summary>
+    /// <summary>Статический фасад над <see cref="IGroupService"/> (паттерн PartRegistry/
+    /// CommandStack): реализация — <see cref="GroupServiceInstance"/> из GameContext
+    /// либо fallback. Существующие вызовы GroupManager.* по проекту остаются валидными.</summary>
     public static class GroupManager
     {
-        private static readonly Dictionary<int, LinkGroup> _groups = new Dictionary<int, LinkGroup>();
-        private static int _nextId = 1;
-
-        public static LinkGroup? Link(IList<KitchenElement> members)
+        internal static IGroupService Instance
         {
-            if (members == null || members.Count < 2) return null;
-            var g = new LinkGroup { id = _nextId++ };
-            _groups[g.id] = g;
-            foreach (var m in members)
-                if (m != null) m.GroupId = g.id;
-            return g;
+            get
+            {
+                if (GameContext.Services != null && GameContext.Services.GroupService != null)
+                    return GameContext.Services.GroupService;
+                if (_fallback == null)
+                    _fallback = new GroupServiceInstance();
+                return _fallback!;
+            }
+            set => _fallback = value;
+        }
+        private static IGroupService? _fallback;
+
+        /// <summary>Любое изменение групп (создание/роспуск/состав/имя/подвижность).
+        /// Подписка идёт на ТЕКУЩИЙ Instance — подписывайтесь после инициализации
+        /// GameContext (в UI это Start(), безопасно).</summary>
+        public static event Action? Changed
+        {
+            add { Instance.Changed += value; }
+            remove { Instance.Changed -= value; }
         }
 
-        public static void Unlink(LinkGroup g)
-        {
-            if (g == null) return;
-            if (ModuleEditMode.Active == g) ModuleEditMode.Exit(); // роспуск редактируемого модуля
-            foreach (var m in MembersOf(g))
-                m.GroupId = 0;
-            _groups.Remove(g.id);
-        }
+        /// <summary>Создать ПУСТУЮ группу — элементы добавляются позже (AddTo/MoveTo).</summary>
+        public static LinkGroup Create(string name) => Instance.Create(name);
 
-        public static LinkGroup? GroupOf(KitchenElement e)
-        {
-            if (e == null || e.GroupId == 0) return null;
-            return _groups.TryGetValue(e.GroupId, out var g) ? g : null;
-        }
+        public static LinkGroup? Link(IList<KitchenElement> members) => Instance.Link(members);
 
-        public static List<KitchenElement> MembersOf(LinkGroup g)
-        {
-            var list = new List<KitchenElement>();
-            if (g == null) return list;
-            foreach (var e in PartRegistry.GetAll())
-                if (e != null && e.GroupId == g.id) list.Add(e);
-            return list;
-        }
+        public static void Unlink(LinkGroup g) => Instance.Unlink(g);
+
+        public static LinkGroup? GroupOf(KitchenElement e) => Instance.GroupOf(e);
+
+        public static List<KitchenElement> MembersOf(LinkGroup g) => Instance.MembersOf(g);
+
+        public static IEnumerable<LinkGroup> AllGroups() => Instance.AllGroups();
+
+        public static void AddTo(LinkGroup g, KitchenElement e) => Instance.AddTo(g, e);
+
+        public static void RemoveFrom(KitchenElement e) => Instance.RemoveFrom(e);
+
+        /// <summary>Переместить элемент в группу; null = «вне групп».</summary>
+        public static void MoveTo(KitchenElement e, LinkGroup? g) => Instance.MoveTo(e, g);
+
+        public static void Rename(LinkGroup g, string name) => Instance.Rename(g, name);
 
         /// <summary>Применить подвижность группы ко всем её элементам.</summary>
-        public static void SetMovable(LinkGroup g, bool movable)
-        {
-            if (g == null) return;
-            g.movable = movable;
-            foreach (var m in MembersOf(g))
-                m.Movable = movable;
-        }
+        public static void SetMovable(LinkGroup g, bool movable) => Instance.SetMovable(g, movable);
 
-        public static void Clear()
-        {
-            ModuleEditMode.Exit(); // сцена перезагружается — режим не переживает загрузку
-            _groups.Clear();
-            _nextId = 1;
-        }
-
-        public static IEnumerable<LinkGroup> AllGroups() => _groups.Values;
+        public static void Clear() => Instance.Clear();
 
         /// <summary>Восстановление группы из сохранения.</summary>
-        public static LinkGroup Register(int id, string name, bool movable)
-        {
-            var g = new LinkGroup { id = id, name = name, movable = movable };
-            _groups[id] = g;
-            if (id >= _nextId) _nextId = id + 1;
-            return g;
-        }
+        public static LinkGroup Register(int id, string name, bool movable) => Instance.Register(id, name, movable);
     }
 }

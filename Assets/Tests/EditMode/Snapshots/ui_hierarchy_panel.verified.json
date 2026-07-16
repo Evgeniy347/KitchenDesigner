@@ -1,0 +1,76 @@
+{
+  "root": "HierarchyPanel",
+  "children": [
+    {
+      "type": "Button",
+      "text": "Кухня",
+      "position": [4, 0]
+    },
+    {
+      "type": "Button",
+      "text": "v",
+      "position": [16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Модуль А3 (3)",
+      "position": [38, 0]
+    },
+    {
+      "type": "Button",
+      "text": "x",
+      "position": [-2, 0]
+    },
+    {
+      "type": "Button",
+      "text": "А3_боковина_L",
+      "position": [36, 0]
+    },
+    {
+      "type": "Button",
+      "text": "А3_боковина_R",
+      "position": [36, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Верхний ящик",
+      "position": [36, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Фасад ящика",
+      "position": [52, 0]
+    },
+    {
+      "type": "Button",
+      "text": "BasePlate",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Свободная полка",
+      "position": [20, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сцена",
+      "position": [14, -6]
+    },
+    {
+      "type": "Button",
+      "text": "+ Группа",
+      "position": [-38, -6]
+    },
+    {
+      "type": "Button",
+      "text": "x",
+      "position": [-6, -6]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Переместить в…", "— вне групп —", "Модуль А3", "+ Новая группа"],
+      "selected": 0,
+      "position": [0, -38]
+    }
+  ]
+}

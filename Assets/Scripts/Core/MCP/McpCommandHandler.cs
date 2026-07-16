@@ -858,7 +858,7 @@ namespace KitchenDesigner.Core.MCP
 
             var g = GroupManager.Link(resolved);
             if (g == null) return McpResponse.Error(req.id, -1, "Failed to create module");
-            if (!string.IsNullOrEmpty(p.name)) g.name = p.name;
+            if (!string.IsNullOrEmpty(p.name)) GroupManager.Rename(g, p.name);
 
             Debug.Log($"[MCP] Module '{g.name}' (id {g.id}) created from {resolved.Count} elements");
             return McpResponse.Result(req.id, BuildModuleInfo(g, PartRegistry.GetAll()));
@@ -886,7 +886,7 @@ namespace KitchenDesigner.Core.MCP
             var el = FindElementByName(p.name);
             if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
 
-            el.GroupId = g.id;
+            GroupManager.AddTo(g, el); // через сервис: событие Changed + подвижность группы
             return McpResponse.Result(req.id, BuildModuleInfo(g, PartRegistry.GetAll()));
         }
 
@@ -901,7 +901,7 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not in any module");
 
             var g = GroupManager.GroupOf(el);
-            el.GroupId = 0;
+            GroupManager.RemoveFrom(el); // через сервис: событие Changed
             return McpResponse.Result(req.id, g != null
                 ? (object)BuildModuleInfo(g, PartRegistry.GetAll())
                 : new { ok = true });

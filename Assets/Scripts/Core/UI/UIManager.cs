@@ -19,6 +19,7 @@ namespace KitchenDesigner.Core.UI
         private ContextMenuUI? _contextMenu;
         private FloorSettingsUI? _floorSettings;
         private GroupMenuUI? _groupMenu;
+        private HierarchyPanelUI? _hierarchyPanel;
         private HelpUI? _help;
         private Button? _undoButton;
         private Button? _redoButton;
@@ -55,6 +56,9 @@ namespace KitchenDesigner.Core.UI
             _groupMenu = gameObject.AddComponent<GroupMenuUI>();
             _groupMenu.Build(_canvas.transform);
 
+            _hierarchyPanel = gameObject.AddComponent<HierarchyPanelUI>();
+            _hierarchyPanel.Build(_canvas.transform);
+
             var toast = gameObject.AddComponent<ToastNotification>();
             toast.Build(_canvas.transform);
 
@@ -79,6 +83,7 @@ namespace KitchenDesigner.Core.UI
 
             // Кнопки добавления деталей переехали в левый сайдбар (SidebarUI).
             AddBarButton(bar.transform, "Spec", "Спецификация", ref x, y, h, 150, ToggleSpecification);
+            AddBarButton(bar.transform, "Hierarchy", "Сцена", ref x, y, h, 90, ToggleHierarchy);
             // Понятные значки вместо текста.
             AddIconButton(bar.transform, "Settings", IconFactory.Gear, ref x, y, h, ToggleSettings);
             AddIconButton(bar.transform, "Save", IconFactory.Floppy, ref x, y, h, SaveCurrent);
@@ -361,6 +366,12 @@ namespace KitchenDesigner.Core.UI
             if (_settingsPanel == null) return;
             _specPanel!.SetVisible(false);
             _settingsPanel.Toggle();
+        }
+
+        public void ToggleHierarchy()
+        {
+            if (_hierarchyPanel == null) return;
+            _hierarchyPanel.Toggle();
         }
 
         /// <summary>«Сохранить»: на WebGL отправляет на сервер; на остальных
