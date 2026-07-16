@@ -24,7 +24,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { connect } from "net";
-import { GEN_TOOLS } from "./tools.generated.js";
+import { GEN_TOOLS, GUIDE_TEXTS, GUIDE_DEFAULT_TOPIC } from "./tools.generated.js";
 
 // ── Wire protocol types ─────────────────────────────────────────────────────
 
@@ -277,94 +277,42 @@ UNITS — READ FIRST (the most common mistake):
 - 1 meter = 1000 mm. Never mix them.
 
 IDENTITY:
-- Every board has a unique text "name". Call get_all_elements first to learn the names.
-- dimZ (depth) is always the board THICKNESS (its smallest side, usually 18 mm).
+- Every board has a unique text "name". Use get_elements {filter/names} or
+  get_all_elements to learn the names.
+- dimZ (depth) is the board's LOCAL thickness; worldDimX/Y/Z are the world-axis
+  sizes (use those when a board is rotated).
 
-CORE EDITING LOOP (do this every time you change something):
-1. get_all_elements      - read the current state (names, sizes, positions, violations).
-2. simulate_move / simulate_resize - DRY-RUN; check "wouldHaveViolations" and "overlapsWith".
-3. move_element / resize_element / rotate_element - apply ONE change at a time.
-4. get_violations        - confirm nothing broke.
+HOW TO EDIT (batch-first):
+1. READ:  get_elements {filter:"B4_*", summary:true} — targeted and compact.
+2. WRITE: batch_edit {ops:[...], dry_run:true} to preview, then without dry_run.
+   One op = name + any of x/y/z (m), width/height/depth (mm), rot_* (deg),
+   locked, material. The whole batch is atomic and is ONE undo step.
+   Single tools (move_element / resize_element / rotate_element) also work.
+3. CHECK: every mutation response already contains "violations" for the changed
+   element ([] = clean) and sceneViolationCount for the whole scene. If the
+   counter grew, get_violations {names?} shows details.
 
-For normal editing you usually need only these tools:
-  get_all_elements, get_element_info, simulate_move, move_element,
-  simulate_resize, resize_element, rotate_element, get_violations, create_element.
-Everything else is advanced / for debugging.
+PLACEMENT WITHOUT MATH:
+- align_element — press a face flush against (or gap_mm away from) another board's face.
+- get_free_space — the empty box between two boards (size, bounds, blockers).
+- clone_element — N copies with a step offset; distribute_evenly — equal spacing.
 
 SAFETY:
-- A LOCKED element rejects move/resize/delete. Unlock with set_element_lock(locked:false)
-  ONLY when the user explicitly allowed it.
-- Prefer the *_element tools over the raw set_position / set_scale / delete_object tools.
-- delete_element is undoable with undo.
+- locked:true in element info means move/resize/delete are rejected. Unlock with
+  set_element_lock {locked:false} ONLY when the user explicitly allowed it.
+- Prefer the *_element tools over raw set_position / set_scale / delete_object.
+- delete_element, batch_edit and clone_element are undoable with undo.
 
 IF A CALL FAILS:
-- "Element not found" -> call get_all_elements to get the exact name, then retry.
+- "Element not found" -> get_elements {filter:...} to find the exact name, retry.
 - A connection error means the Kitchen Designer app is not running - ask the user to start it.
 
-Call the "guide" tool any time for a full cheat-sheet with examples.`;
+Call guide {topic:"workflow"|"elements"|"fields"|"drawers"|"violations"} any time.`;
 
 const server = new McpServer(
   { name: "unity-kitchen", version: "2.0.0" },
   { capabilities: { tools: {} }, instructions: INSTRUCTIONS }
 );
-
-// ── guide: self-contained cheat-sheet (no Unity call) ────────────────────────
-const GUIDE = `KITCHEN DESIGNER — MCP CHEAT-SHEET
-
-UNITS
-  position x/y/z  = METERS      (1.5 -> 1.5 m)
-  size w/h/d      = MILLIMETERS (600 -> 600 mm)
-  1 m = 1000 mm.  dimZ = board thickness (smallest side, usually 18 mm).
-
-STEP-BY-STEP: move a board 20 cm to the right (+X)
-  1. get_all_elements                          -> find the board name, read its posX
-  2. simulate_move {name, x: posX+0.20, y, z}  -> check wouldHaveViolations == false
-  3. move_element  {name, x: posX+0.20, y, z}  -> apply
-  4. get_violations                            -> expect count == 0
-
-STEP-BY-STEP: make a board 50 mm wider
-  1. get_all_elements                          -> read dimX/dimY/dimZ (mm)
-  2. simulate_resize {name, width: dimX+50, height: dimY, depth: dimZ}
-  3. resize_element  {name, width: dimX+50, height: dimY, depth: dimZ}
-  4. get_violations
-
-CREATE
-  create_element {name, x, y, z, width, height, depth}         -> a plain board
-  create_element {name, x, y, z, is_wall: true}                -> a wall (anchor)
-  create_element {name, x, y, z, is_facade: true, gap_left: 2} -> a facade with gaps
-  create_element {name, is_floor: true}                        -> the floor plate (ignores size/pos)
-  create_element {name, x, y, z, is_drawer: true, drawer_type: "B", drawer_length: 450}
-                                                               -> a GTV drawer (sliding box)
-
-DRAWERS (GTV)
-  A drawer's size comes from its parameters, NOT resize_element:
-  set_drawer_properties {name, drawer_type, drawer_length, internal_width, ...}
-  cycle_drawer_animation {name}  -> open/close (single) or cycle states (double)
-  Attach a facade front with set_drawer_properties {name, attached_facade_name} —
-  it then slides together with the drawer.
-
-VIOLATIONS
-  A "violation" = an element that overlaps another OR is not connected to the
-  wall/floor structure. Facades that float in their opening (gap > 0) are exempt.
-  After every change call get_violations and expect count 0.
-
-LOCKED ELEMENTS
-  move/resize/delete on a locked element fails on purpose. Only if the user allows:
-  set_element_lock {name, locked: false}  then retry, and optionally re-lock after.
-
-TOOL GROUPS
-  Read:   get_all_elements, get_element_info, get_specification, get_violations,
-          get_element_gaps, get_element_debug, get_floor_info, get_settings, get_modules,
-          list_materials
-  Edit:   create_element, move_element, resize_element, rotate_element, delete_element,
-          set_material, reload_textures, set_drawer_properties, cycle_drawer_animation
-  Check:  simulate_move, simulate_resize, snap_diagnose
-  Undo:   undo, redo, get_undo_stack_info
-  Groups: create_module, dissolve_module, add_to_module, remove_from_module,
-          enter_module_edit, exit_module_edit, module_info
-  Advanced (raw Unity objects, no undo/validation — avoid unless necessary):
-          set_position, set_rotation, set_scale, delete_object, set_object_active,
-          get_object_info, find_objects, get_scene_hierarchy`;
 
 // ── Register tools from the generated contract table ─────────────────────────
 // Every tool comes from Assets/Scripts/Core/MCP/Contract (McpToolRegistry) via
@@ -397,7 +345,12 @@ for (const tool of GEN_TOOLS) {
   if (tool.inputSchema) config.inputSchema = tool.inputSchema;
 
   server.registerTool(tool.name, config, async (args: Record<string, unknown> = {}) => {
-    if (tool.staticText) return textResult(GUIDE);
+    if (tool.staticText) {
+      const topic = typeof args.topic === "string" ? args.topic : GUIDE_DEFAULT_TOPIC;
+      const text = GUIDE_TEXTS[topic] ?? GUIDE_TEXTS[GUIDE_DEFAULT_TOPIC];
+      // Сырой текст, не JSON.stringify — шпаргалка должна читаться как есть.
+      return { content: [{ type: "text" as const, text }] };
+    }
     const params = tool.rename ? applyRename(args, tool.rename) : args;
     return tool.cached ? safeCached(tool.name, params) : safe(tool.name, params);
   });

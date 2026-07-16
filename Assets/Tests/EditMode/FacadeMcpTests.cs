@@ -119,7 +119,7 @@ public class FacadeMcpTests
     }
 
     [Test]
-    public void CreateElement_Facade_ReturnsFaceValidationFields()
+    public void CreateElement_Facade_ReturnsEnvelopeWithFacadeInfo()
     {
         var resp = _handler!.Handle(MakeReq("create_element", new
         {
@@ -127,39 +127,52 @@ public class FacadeMcpTests
             width = 400, height = 300, depth = 18, is_facade = true
         }));
 
+        // Единый конверт мутаций: element (полный ElementInfo) + violations.
         var json = JObject.FromObject(resp.data!);
-        Assert.IsTrue(json["is_facade"]!.Value<bool>());
-        Assert.IsNotNull(json["faceNormal"]);
-        Assert.IsNotNull(json["faceObstructions"]);
-        Assert.IsNotNull(json["openingViolations"]);
+        Assert.IsTrue(json["ok"]!.Value<bool>());
+        Assert.AreEqual("FacadeElement", json["element"]!["type"]!.Value<string>());
+        Assert.IsNotNull(json["element"]!["facadeMode"]);
+        Assert.IsNotNull(json["violations"]);
         var door = GameObject.Find("Door");
         if (door != null) _spawned.Add(door);
     }
 
     [Test]
-    public void RotateElement_Facade_ReturnsFaceValidationFields()
+    public void RotateElement_Facade_ReturnsEnvelope_AndInfoHasRotatedNormal()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         var resp = _handler!.Handle(MakeReq("rotate_element", new { name = "F", y = 90f }));
 
         var json = JObject.FromObject(resp.data!);
-        Assert.IsNotNull(json["faceNormal"]);
-        Assert.AreEqual(1f, json["faceNormal"]!["x"]!.Value<float>(), 1e-3f);
-        Assert.IsNotNull(json["faceObstructions"]);
-        Assert.IsNotNull(json["openingViolations"]);
+        Assert.IsTrue(json["ok"]!.Value<bool>());
+        Assert.AreEqual(90f, json["element"]!["rotY"]!.Value<float>(), 0.01f);
+
+        // Нормаль лицевой грани — в полном инфо элемента (get_element_info).
+        var info = _handler!.Handle(MakeReq("get_element_info", new { name = "F" }));
+        var infoJson = JObject.FromObject(info.data!);
+        Assert.AreEqual(1f, infoJson["faceNormalX"]!.Value<float>(), 1e-3f);
     }
 
     [Test]
-    public void SetFacadeMode_ReturnsOpeningViolations()
+    public void SetFacadeMode_ReportsOpeningCollision_InViolations()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         MakeElement("Obstacle", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, 0.3f));
 
         var resp = _handler!.Handle(MakeReq("set_facade_mode", new { name = "F", mode = "drawer_out" }));
         var json = JObject.FromObject(resp.data!);
-        Assert.AreEqual("drawer_out", json["mode"]!.Value<string>());
-        var viol = json["openingViolations"] as JArray;
-        Assert.AreEqual(1, viol!.Count);
-        Assert.AreEqual("Obstacle", viol[0]!["neighbor"]!.Value<string>());
+        Assert.AreEqual("drawer_out", json["element"]!["facadeMode"]!.Value<string>());
+
+        var viol = json["violations"] as JArray;
+        Assert.IsNotNull(viol);
+        bool found = false;
+        foreach (var v in viol!)
+        {
+            if (v["kind"]!.Value<string>() != "opening_collision") continue;
+            found = true;
+            Assert.AreEqual("Obstacle", v["neighbor"]!.Value<string>());
+            Assert.AreEqual("drawer_out", v["openingMode"]!.Value<string>());
+        }
+        Assert.IsTrue(found, "opening_collision must be reported in the envelope violations");
     }
 }

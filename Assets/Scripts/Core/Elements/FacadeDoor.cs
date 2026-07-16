@@ -87,6 +87,20 @@ namespace KitchenDesigner.Core
         /// <summary>Один символ, зависящий от режима (компактная подпись).</summary>
         public static string Symbol(DoorMode mode) => V[(int)mode].symbol;
 
+        // Проводные имена для MCP — тот же словарь, что у параметра mode
+        // инструмента set_facade_mode. Порядок строго совпадает с DoorMode.
+        private static readonly string[] WireNames =
+        {
+            "front_left", "front_right", "front_top", "front_bottom",
+            "back_left", "back_right", "back_top", "back_bottom",
+            "edge_top_left", "edge_top_right", "edge_bottom_left", "edge_bottom_right",
+            "drawer_out", "drawer_in", "drawer_right", "drawer_left", "drawer_up", "drawer_down"
+        };
+
+        /// <summary>Проводное имя режима для MCP-ответов: агент видит те же строки,
+        /// которые сам передаёт в set_facade_mode (а не ASCII-символы UI).</summary>
+        public static string WireName(DoorMode mode) => WireNames[(int)mode];
+
         /// <summary>Читаемая подпись для выпадающего списка: символ + название.</summary>
         public static string Label(DoorMode mode) => V[(int)mode].symbol + " " + V[(int)mode].name;
 

@@ -66,19 +66,25 @@ namespace KitchenDesigner.Core.MCP
         public float rotY;
         public float rotZ;
         public bool active;
+        public bool locked;       // true — move/resize/delete отклоняются (см. set_element_lock)
         public int moduleId;      // 0 — не в модуле
         public string? moduleName; // null — не в модуле
         public string materialId = string.Empty;  // id декора/текстуры (см. list_materials)
         public bool hasViolations; // true — элемент нарушает ограничения (пересечение/нет связи)
         public float aabbMinX, aabbMinY, aabbMinZ;
         public float aabbMaxX, aabbMaxY, aabbMaxZ;
+        // Габариты в МИРОВЫХ осях (мм, из AABB) — в отличие от dimX/dimY/dimZ,
+        // учитывают поворот элемента. Для повёрнутой на 90° стенки worldDimX=332.
+        public int worldDimX, worldDimY, worldDimZ;
         public int effectiveDimX, effectiveDimY, effectiveDimZ;
-        public List<AxisGapInfo>? faceGaps; // зазоры/пересечения с ближайшим соседом по каждой оси (всегда 3 оси)
+        public List<AxisGapInfo>? faceGaps; // зазоры/пересечения с ближайшим соседом «напротив» по осям (ось без соседа опускается)
         public int cornerRadius; // радиус скругления угла радиусной полки, иначе 0
 
-        // ── Фасадная валидация (только для FacadeElement / AssembledFacadeElement) ──
-        public float faceNormalX, faceNormalY, faceNormalZ; // мировая нормаль лицевой грани
-        public bool faceInward; // true, если фасад развёрнут лицом внутрь модуля
+        // ── Фасадная валидация (только для FacadeElement / AssembledFacadeElement;
+        //    null-поля опускаются сериализатором — обычные детали их не несут) ──
+        public string? facadeMode; // режим открывания ("front_left", "drawer_out", …), null для не-фасадов
+        public float? faceNormalX, faceNormalY, faceNormalZ; // мировая нормаль лицевой грани
+        public bool? faceInward; // true, если фасад развёрнут лицом внутрь модуля
         public List<FaceObstructionInfo>? faceObstructions; // детали вплотную перед лицевой гранью
         public List<OpeningViolationInfo>? openingViolations; // детали, пересекающие траекторию открывания
         public DrawerInfo? drawer; // свойства ящика, только для DrawerElement
@@ -232,8 +238,9 @@ namespace KitchenDesigner.Core.MCP
     {
         public string axis = string.Empty;
         public string neighbor = string.Empty;
-        public float gapMM;
-        public bool isOverlap;
+        public float gapMM;      // 0 при touching; > 0 — зазор; < 0 — глубина пересечения
+        public bool touching;    // |зазор| < 0.5 мм — детали вплотную (это НЕ нарушение)
+        public bool isOverlap;   // реальное пересечение глубже допуска
     }
 
     [Serializable]

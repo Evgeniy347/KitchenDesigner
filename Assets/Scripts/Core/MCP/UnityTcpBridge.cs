@@ -180,14 +180,14 @@ namespace KitchenDesigner.Core.MCP
             try { request = JsonConvert.DeserializeObject<McpRequest>(line); }
             catch (Exception ex)
             {
-                SendJson(client, JsonConvert.SerializeObject(
+                SendJson(client, McpJson.Serialize(
                     McpResponse.Error("unknown", -32700, $"Parse error: {ex.Message}")));
                 return;
             }
 
             if (request == null || string.IsNullOrEmpty(request.method))
             {
-                SendJson(client, JsonConvert.SerializeObject(
+                SendJson(client, McpJson.Serialize(
                     McpResponse.Error(request?.id ?? "unknown", -32600, "Invalid request")));
                 return;
             }
@@ -197,7 +197,7 @@ namespace KitchenDesigner.Core.MCP
             _mainThreadActions.Enqueue(() =>
             {
                 var result = _handler!.Handle(capturedRequest);
-                var json = JsonConvert.SerializeObject(result);
+                var json = McpJson.Serialize(result);
                 SendJson(capturedClient, json);
             });
         }

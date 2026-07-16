@@ -30,6 +30,11 @@ namespace KitchenDesigner.Core
         /// <summary>Число дискретных шагов траектории открывания.</summary>
         public const int DefaultOpeningTrajectorySteps = 12;
 
+        /// <summary>Минимальное перекрытие (мм), которое считается реальным
+        /// препятствием/столкновением. Всё меньше — погрешность float от деталей,
+        /// стоящих вплотную (в трассах встречались «коллизии» в 0.0002 мм).</summary>
+        public const float MinOverlapMm = 0.5f;
+
         /// <summary>
         /// Мировая нормаль лицевой грани фасада. Локально лицевая сторона фасада
         /// смотрит в +Z (Unity-конвенция forward), поэтому мировая нормаль =
@@ -94,6 +99,9 @@ namespace KitchenDesigner.Core
                 if (!ProjectedOverlap(face, otherAabb, out float overlapWidthUnits, out float overlapHeightUnits)) continue;
 
                 float toMm = 1f / AppConstants.MM_TO_UNITS;
+                // Слайверы тоньше MinOverlapMm — числовой шум, не препятствие.
+                if (overlapWidthUnits * toMm < MinOverlapMm || overlapHeightUnits * toMm < MinOverlapMm) continue;
+
                 result.Add(new FaceObstruction
                 {
                     neighbor = other.PartName,
@@ -146,7 +154,9 @@ namespace KitchenDesigner.Core
                     if (!AABBsOverlap(sweptAabb, otherAabb)) continue;
 
                     float overlap = AABBOverlapVolume(sweptAabb, otherAabb);
-                    if (overlap <= 0f) continue;
+                    // Перекрытие меньше MinOverlapMm — погрешность float у деталей,
+                    // стоящих вплотную к траектории, а не реальное столкновение.
+                    if (overlap * toMm < MinOverlapMm) continue;
 
                     result.Add(new OpeningViolation
                     {
@@ -374,7 +384,9 @@ namespace KitchenDesigner.Core
 
         private static string ModeSymbol(DoorMode mode)
         {
-            return FacadeDoor.Symbol(mode);
+            // Проводное имя ("front_left", "drawer_out", …) — тот же словарь, что у
+            // set_facade_mode; ASCII-символы UI ("<", ">") агенту непонятны.
+            return FacadeDoor.WireName(mode);
         }
     }
 }
