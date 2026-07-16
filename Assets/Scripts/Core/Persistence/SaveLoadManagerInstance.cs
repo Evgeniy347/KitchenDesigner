@@ -413,6 +413,8 @@ namespace KitchenDesigner.Core
         private static void DestroyElement(GameObject go)
         {
             if (go == null) return;
+            var el = go.GetComponent<KitchenElement>();
+            if (el != null) PartRegistry.Unregister(el);
             if (Application.isPlaying)
                 UnityEngine.Object.Destroy(go);
             else
