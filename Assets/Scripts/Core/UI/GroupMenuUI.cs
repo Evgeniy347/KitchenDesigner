@@ -41,7 +41,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(-100, 32), new Vector2(60, 24));
             _nameField = UIFactory.CreateInputField("GmName", _groupRoot.transform, "",
                 new Vector2(35, 32), new Vector2(160, 24));
-            _nameField.onEndEdit.AddListener(t => { if (_group != null) _group.name = t; });
+            _nameField.onEndEdit.AddListener(t => { if (_group != null) GroupManager.Rename(_group, t); });
             _lockMove = UIFactory.CreateToggle("GmLockMove", _groupRoot.transform, "Запретить перемещение", false,
                 new Vector2(0, -4), new Vector2(248, 26), v => { if (_group != null) GroupManager.SetMovable(_group, !v); });
             UIFactory.CreateButton("GmEdit", _groupRoot.transform, "Редактировать модуль",
