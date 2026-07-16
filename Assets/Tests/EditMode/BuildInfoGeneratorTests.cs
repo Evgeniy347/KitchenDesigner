@@ -146,6 +146,23 @@ public class BuildInfoGeneratorTests
     }
 
     [Test]
+    public void WriteFile_SkipsRewrite_WhenVersionUnchanged()
+    {
+        // Первый вызов фиксирует файл, повторный — не должен его трогать:
+        // перезапись меняет const и убивает инкрементальность сборки (см. WriteFile).
+        File.Delete(_originalGeneratedPath!);
+        BuildInfoGenerator.WriteFile();
+        var written = File.GetLastWriteTimeUtc(_originalGeneratedPath!);
+        string contentBefore = File.ReadAllText(_originalGeneratedPath!);
+
+        BuildInfoGenerator.WriteFile();
+
+        Assert.AreEqual(written, File.GetLastWriteTimeUtc(_originalGeneratedPath!),
+            "повторный WriteFile с той же версией не должен переписывать файл");
+        Assert.AreEqual(contentBefore, File.ReadAllText(_originalGeneratedPath!));
+    }
+
+    [Test]
     public void WriteFile_OverwritesExistingFile()
     {
         File.WriteAllText(_originalGeneratedPath!, "// old content");

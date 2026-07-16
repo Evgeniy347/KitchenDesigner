@@ -22,6 +22,17 @@ namespace KitchenDesigner.Editor
         public static void WriteFile()
         {
             string version = GetVersion();
+
+            // Повторная сборка без новых коммитов НЕ должна трогать файл.
+            // Любая перезапись (минутный BuildDate) меняет const в сборке
+            // KitchenDesigner.Runtime → Unity перекомпилирует весь рантайм, а
+            // WebGL заново гоняет IL2CPP и линковку wasm — «пустая» повторная
+            // сборка переставала быть инкрементальной и шла минутами.
+            // BuildDate теперь означает «дата первой сборки этой версии».
+            if (File.Exists(OutputPath) &&
+                File.ReadAllText(OutputPath).Contains($"Version = \"{version}\""))
+                return;
+
             string buildDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
 
             string content = $@"namespace KitchenDesigner.Core
