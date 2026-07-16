@@ -332,7 +332,13 @@ namespace KitchenDesigner.Core
             float interBottom = Mathf.Max(aRect.yMin, bRect.yMin);
             float interTop = Mathf.Min(aRect.yMax, bRect.yMax);
 
-            if (interLeft >= interRight || interBottom >= interTop)
+            // Epsilon-допуск (0.01 мм): без него грани, касающиеся ровно по кромке
+            // (interLeft == interRight или interBottom == interTop), дают
+            // недетерминированный результат из-за float-погрешности:
+            // иногда overlapRatio ≈ 100% (ошибка), иногда 0% (правильно).
+            // С допуском точное касание всегда считается нулевым перекрытием.
+            const float OverlapEpsilon = 1e-5f; // 0.01 мм
+            if (interLeft + OverlapEpsilon >= interRight || interBottom + OverlapEpsilon >= interTop)
             {
                 overlapRatio = 0;
                 return false;
