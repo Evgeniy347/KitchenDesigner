@@ -3,8 +3,8 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     /// <summary>Радиусная полка — прямоугольная доска с одним скруглённым углом.
-    /// Размеры: x = ширина, y = толщина, z = глубина; угол (x=W, z=D)
-    /// скруглён радиусом CornerRadius (1..min(ширина, глубина)).</summary>
+    /// Размеры: x = ширина, y = толщина, z = глубина; меш центрирован на pivot,
+    /// скруглён угол (+X, +Z) радиусом CornerRadius (1..min(ширина, глубина)).</summary>
     public class RadialShelfElement : KitchenElement
     {
         [SerializeField] private int _cornerRadius = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;

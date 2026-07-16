@@ -291,10 +291,9 @@ public class IsoScreenshotTests
         var shelf = go.GetComponent<RadialShelfElement>();
         Assert.IsNotNull(shelf);
 
-        // Меш строится от угла (0,0) → центр доски смещён на (W/2, 0, D/2).
+        // Меш центрирован на pivot — камера смотрит на позицию детали.
         Vector3 size = MmToUnits(new Vector3Int(width, thickness, depth));
-        Vector3 center = pos + new Vector3(size.x * 0.5f, 0f, size.z * 0.5f);
-        var (camGo, cam) = CreateIsoCamera(center, size, 2.5f);
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
         _spawned.Add(camGo);
 
         yield return RenderToPng(cam, "iso_radial_shelf_300.png");
@@ -305,10 +304,12 @@ public class IsoScreenshotTests
     // ─ Radial shelf top-down screenshot ───────────────────
     // Строго вид сверху: прямоугольник 600×400 с одним скруглённым
     // углом (правый-верхний, R=200), три угла прямые — как на референсе.
+    // Контур (чёрные рёбра AABB) включён: деталь должна лежать внутри него.
 
     [UnityTest]
     public IEnumerator TopDownRadialShelf_300()
     {
+        KitchenSettings.Instance.EdgeOutline = true;
         const int width = 600, depth = 400, thickness = 18, cornerRadius = 200;
         Vector3 pos = new Vector3(0f, thickness * 0.5f * AppConstants.MM_TO_UNITS, 0f);
         var go = ElementFactory.CreateRadialShelf(width, depth, thickness, cornerRadius, "TopDownRadialShelf", pos);
@@ -317,7 +318,7 @@ public class IsoScreenshotTests
         Assert.IsNotNull(shelf);
 
         Vector3 size = MmToUnits(new Vector3Int(width, thickness, depth));
-        Vector3 center = pos + new Vector3(size.x * 0.5f, 0f, size.z * 0.5f);
+        Vector3 center = pos;
 
         var camGo = new GameObject("TopDownCam");
         var cam = camGo.AddComponent<Camera>();
@@ -339,6 +340,7 @@ public class IsoScreenshotTests
 
         yield return RenderToPng(cam, "topdown_radial_shelf_300.png");
 
+        KitchenSettings.Instance.EdgeOutline = false;
         Object.DestroyImmediate(camGo);
     }
 

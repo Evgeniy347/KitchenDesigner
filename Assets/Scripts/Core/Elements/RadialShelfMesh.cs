@@ -4,10 +4,10 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     /// <summary>Построитель меша для радиусной полки — прямоугольная доска
-    /// в плоскости XZ с одним скруглённым углом. Локальные координаты:
-    /// x ∈ [0, width], z ∈ [0, depth], y ∈ [−thickness/2, +thickness/2].
-    /// Скруглён угол (x=width, z=depth): дуга радиуса cornerRadius с центром
-    /// в (width−R, depth−R), от точки (width, depth−R) до (width−R, depth).</summary>
+    /// в плоскости XZ с одним скруглённым углом. Меш центрирован относительно
+    /// pivot: x ∈ [−W/2, +W/2], z ∈ [−D/2, +D/2], y ∈ [−t/2, +t/2] — так AABB
+    /// (позиция ± габарит/2) точно охватывает деталь, и контур/прилипание
+    /// работают по реальному габариту. Скруглён угол (x=+W/2, z=+D/2).</summary>
     public static class RadialShelfMesh
     {
         private const int Segments = 16;
@@ -28,6 +28,12 @@ namespace KitchenDesigner.Core
             AddCap(vertices, normals, uvs, triangles, width, depth, cornerRadius, half, Vector3.up);
             AddCurvedSide(vertices, normals, uvs, triangles, width, depth, cornerRadius, half);
             AddFlatSides(vertices, normals, uvs, triangles, width, depth, cornerRadius, half);
+
+            // Геометрия строится в угловых координатах (0..W, 0..D) — сдвигаем
+            // к центру, чтобы pivot совпал с центром габарита.
+            var toCenter = new Vector3(width * 0.5f, 0f, depth * 0.5f);
+            for (int i = 0; i < vertices.Count; i++)
+                vertices[i] -= toCenter;
 
             mesh.vertices = vertices.ToArray();
             mesh.normals = normals.ToArray();

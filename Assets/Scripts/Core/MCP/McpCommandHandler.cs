@@ -324,7 +324,6 @@ namespace KitchenDesigner.Core.MCP
                 aabbMaxX = aabb.maxX, aabbMaxY = aabb.maxY, aabbMaxZ = aabb.maxZ,
                 effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z,
                 faceGaps = gaps,
-                radius = radial != null ? radial.CornerRadius : 0,
                 cornerRadius = radial != null ? radial.CornerRadius : 0,
                 faceNormalX = facadeValidation?.normal.x ?? 0f,
                 faceNormalY = facadeValidation?.normal.y ?? 0f,
@@ -772,16 +771,10 @@ namespace KitchenDesigner.Core.MCP
 
             if (p.is_radial_shelf)
             {
-                // Легаси-вызов (radius + depth-как-толщина, без width/height) даёт
-                // прежнюю форму: доска radius×radius с полностью скруглённым углом.
-                bool legacy = p.radius > 0 && p.width <= 0 && p.height <= 0;
-                int width = legacy ? p.radius : (p.width > 0 ? p.width : 600);
-                int depthZ = legacy ? p.radius : (p.depth > 0 ? p.depth : 400);
-                int thickness = legacy
-                    ? (p.depth > 0 ? p.depth : AppConstants.BOARD_THICKNESS_DEFAULT)
-                    : (p.height > 0 ? p.height : AppConstants.BOARD_THICKNESS_DEFAULT);
-                int cornerRadius = legacy ? p.radius
-                    : (p.corner_radius > 0 ? p.corner_radius : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT);
+                int width = p.width > 0 ? p.width : 600;
+                int depthZ = p.depth > 0 ? p.depth : 400;
+                int thickness = p.height > 0 ? p.height : AppConstants.BOARD_THICKNESS_DEFAULT;
+                int cornerRadius = p.corner_radius > 0 ? p.corner_radius : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
                 cornerRadius = Mathf.Clamp(cornerRadius, 1, Mathf.Min(width, depthZ));
 
                 var posR = new Vector3(p.x, p.y, p.z);
