@@ -1,0 +1,216 @@
+﻿{
+  "root": "UICanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Автосохранение вкл",
+      "position": [14, 12]
+    },
+    {
+      "type": "Button",
+      "text": "Wall_S",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Wall_N",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Wall_E",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "BasePlate",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Кухня",
+      "position": [4, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Wall_W",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "SbPin",
+      "position": [46, -4]
+    },
+    {
+      "type": "Button",
+      "text": "«",
+      "position": [4, -4]
+    },
+    {
+      "type": "Button",
+      "text": "x",
+      "position": [-6, -6]
+    },
+    {
+      "type": "Button",
+      "text": "+ Группа",
+      "position": [-38, -6]
+    },
+    {
+      "type": "Label",
+      "text": "Сцена",
+      "position": [14, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Спецификация",
+      "position": [8, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Сцена",
+      "position": [164, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Undo",
+      "position": [456, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Режим: [ ]",
+      "position": [740, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Load",
+      "position": [398, -6]
+    },
+    {
+      "type": "Button",
+      "text": "SaveAs",
+      "position": [352, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Save",
+      "position": [306, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Settings",
+      "position": [260, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Redo",
+      "position": [502, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Выравн.",
+      "position": [568, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Распред.",
+      "position": [654, -6]
+    },
+    {
+      "type": "Button",
+      "text": "детали",
+      "position": [8, -8]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Переместить в…", "— вне групп —", "+ Новая группа"],
+      "selected": 0,
+      "position": [0, -38]
+    },
+    {
+      "type": "Button",
+      "text": "600×400×16",
+      "position": [22, -42]
+    },
+    {
+      "type": "Button",
+      "text": "600×400×16 (радиусная)",
+      "position": [22, -71]
+    },
+    {
+      "type": "Button",
+      "text": "Фасады",
+      "position": [8, -100]
+    },
+    {
+      "type": "Button",
+      "text": "Фасад 800×400×18",
+      "position": [22, -134]
+    },
+    {
+      "type": "Button",
+      "text": "Фасад 600×400×18",
+      "position": [22, -163]
+    },
+    {
+      "type": "Button",
+      "text": "Сборный 450×700×18",
+      "position": [22, -192]
+    },
+    {
+      "type": "Button",
+      "text": "Сборный 600×716×18",
+      "position": [22, -221]
+    },
+    {
+      "type": "Button",
+      "text": "Ящики GTV",
+      "position": [8, -250]
+    },
+    {
+      "type": "Button",
+      "text": "Ящик GTV",
+      "position": [22, -284]
+    },
+    {
+      "type": "Button",
+      "text": "Мебель",
+      "position": [8, -313]
+    },
+    {
+      "type": "Button",
+      "text": "Прямоугольный стол",
+      "position": [22, -347]
+    },
+    {
+      "type": "Button",
+      "text": "Радиусный стол",
+      "position": [22, -376]
+    },
+    {
+      "type": "Button",
+      "text": "Помещение",
+      "position": [8, -405]
+    },
+    {
+      "type": "Button",
+      "text": "Короб",
+      "position": [22, -439]
+    },
+    {
+      "type": "Button",
+      "text": "Стена",
+      "position": [22, -468]
+    },
+    {
+      "type": "Button",
+      "text": "Окно",
+      "position": [22, -497]
+    },
+    {
+      "type": "Button",
+      "text": "Размеры помещения",
+      "position": [22, -526]
+    }
+  ]
+}

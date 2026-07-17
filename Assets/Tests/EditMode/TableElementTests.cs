@@ -70,11 +70,11 @@ public class TableElementTests
         Assert.IsNotNull(table);
 
         var center = AabbCenter(table);
-        Assert.AreEqual(0f, center.y, 0.001f, "центр bounding box на y=0 (пол)");
+        Assert.AreEqual(posY, center.y, 0.001f, "центр bounding box на posY (пол)");
 
         var extent = AabbExtent(table);
         var min = center - extent * 0.5f;
-        Assert.AreEqual(-0.375f, min.y, 0.001f, "низ bounding box на -0.375м (пол)");
+        Assert.AreEqual(0f, min.y, 0.001f, "низ bounding box на y=0 (пол)");
 
         Object.DestroyImmediate(go);
     }
@@ -89,11 +89,11 @@ public class TableElementTests
         Assert.IsNotNull(table);
 
         var center = AabbCenter(table);
-        Assert.AreEqual(0f, center.y, 0.001f, "центр bounding box на y=0 (пол)");
+        Assert.AreEqual(posY, center.y, 0.001f, "центр bounding box на posY (пол)");
 
         var extent = AabbExtent(table);
         var min = center - extent * 0.5f;
-        Assert.AreEqual(-0.375f, min.y, 0.001f, "низ bounding box на -0.375м (пол)");
+        Assert.AreEqual(0f, min.y, 0.001f, "низ bounding box на y=0 (пол)");
 
         Object.DestroyImmediate(go);
     }

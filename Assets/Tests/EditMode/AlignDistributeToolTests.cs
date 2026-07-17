@@ -6,6 +6,8 @@ using KitchenDesigner.Core;
 public class AlignDistributeToolTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
+    private bool _savedGridEnabled;
+    private int _savedGridStep;
 
     private KitchenElement Make(Vector3 pos)
     {
@@ -17,11 +19,21 @@ public class AlignDistributeToolTests
         return e;
     }
 
+    [SetUp]
+    public void Setup()
+    {
+        _savedGridEnabled = KitchenSettings.Instance.GridEnabled;
+        _savedGridStep = KitchenSettings.Instance.GridStep;
+        KitchenSettings.Instance.GridEnabled = false;
+    }
+
     [TearDown]
     public void Teardown()
     {
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
+        KitchenSettings.Instance.GridEnabled = _savedGridEnabled;
+        KitchenSettings.Instance.GridStep = _savedGridStep;
     }
 
     [Test]

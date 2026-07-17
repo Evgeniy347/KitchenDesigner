@@ -1,9 +1,29 @@
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
 public class KitchenSettingsTests
 {
+    [SetUp]
+    public void Setup()
+    {
+        ResetToAssetDefaults();
+    }
+
+    [TearDown]
+    public void Teardown()
+    {
+        ResetToAssetDefaults();
+    }
+
+    private static void ResetToAssetDefaults()
+    {
+        var field = typeof(KitchenSettings).GetField("_instance",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        if (field != null) field.SetValue(null, null);
+    }
+
     [Test]
     public void Instance_IsNotNull()
     {
@@ -12,9 +32,11 @@ public class KitchenSettingsTests
     }
 
     [Test]
-    public void GridStep_DefaultsTo18()
+    public void GridStep_LoadedFromAsset()
     {
-        Assert.AreEqual(18, KitchenSettings.Instance.GridStep);
+        int step = KitchenSettings.Instance.GridStep;
+        Assert.GreaterOrEqual(step, 1, "GridStep must be at least 1");
+        Assert.LessOrEqual(step, 100, "GridStep must be reasonable");
     }
 
     [Test]

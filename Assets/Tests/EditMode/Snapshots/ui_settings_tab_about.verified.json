@@ -1,0 +1,40 @@
+﻿{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Настройки",
+      "position": [0, 285]
+    },
+    {
+      "type": "Button",
+      "text": "Проект",
+      "position": [-160, 246]
+    },
+    {
+      "type": "Button",
+      "text": "Графика",
+      "position": [0, 246]
+    },
+    {
+      "type": "Button",
+      "text": "О программе",
+      "position": [160, 246]
+    },
+    {
+      "type": "Label",
+      "text": "Версия: 0.272",
+      "position": [0, 202]
+    },
+    {
+      "type": "Label",
+      "text": "Сборка: 2026-07-16 12:12",
+      "position": [0, 164]
+    },
+    {
+      "type": "Button",
+      "text": "Закрыть",
+      "position": [0, -254]
+    }
+  ]
+}
