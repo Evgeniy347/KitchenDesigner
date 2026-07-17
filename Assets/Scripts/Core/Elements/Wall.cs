@@ -57,11 +57,17 @@ namespace KitchenDesigner.Core
 
         public bool HasWindow(WindowElement window) => _attachedWindows.Contains(window);
 
+        public IReadOnlyList<WindowElement> AttachedWindows => _attachedWindows;
+
         public void RegisterWindow(WindowElement window)
         {
             if (!_attachedWindows.Contains(window))
                 _attachedWindows.Add(window);
             RebuildMesh();
+            // Перестраиваем геометрию всех окон — список соседей изменился,
+            // нужно скрыть frame на общих сторонах.
+            foreach (var w in _attachedWindows)
+                if (w != null) w.RefreshGeometry();
         }
 
         public void UnregisterWindow(WindowElement window)
