@@ -458,13 +458,18 @@ namespace KitchenDesigner.Core
                     wall = FindWallByName(door.AttachedWallName, all);
                 else continue;
 
+                // Элемент без стены или стена не найдена — проверка связности
+                // выполняется отдельно в CheckConnectivity.
                 if (wall == null) continue;
 
                 var wallEl = wall.GetComponent<KitchenElement>();
                 if (wallEl == null) continue;
 
+                int wallHeightMM = wallEl.DimensionsMM.y;
+                if (wallHeightMM <= 0) continue; // защита от нулевой/отрицательной стены
+
                 float toU = AppConstants.MM_TO_UNITS;
-                float wallHalfH = wallEl.DimensionsMM.y * toU * 0.5f;
+                float wallHalfH = wallHeightMM * toU * 0.5f;
                 float wallCenterY = wall.FullPosition.y;
                 float wallTop = wallCenterY + wallHalfH;
                 float wallBottom = wallCenterY - wallHalfH;

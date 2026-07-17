@@ -222,7 +222,8 @@ public class ConstraintValidatorTests
         var window = winGo.GetComponent<WindowElement>();
 
         window!.SnapToWall();
-        window.DimensionsMM = new Vector3Int(900, 3000, 100);
+        // Устанавливаем высоту больше стены — сохраняем z от снапа (толщина стены).
+        window.DimensionsMM = new Vector3Int(900, 3000, window.DimensionsMM.z);
 
         var result = ConstraintValidator.Validate(new List<KitchenElement> { wall, window! });
 
@@ -287,7 +288,7 @@ public class ConstraintValidatorTests
         var door = doorGo.GetComponent<DoorElement>();
 
         door!.SnapToWall();
-        door.DimensionsMM = new Vector3Int(900, 3000, 100);
+        door.DimensionsMM = new Vector3Int(900, 3000, door.DimensionsMM.z);
 
         var result = ConstraintValidator.Validate(new List<KitchenElement> { wall, door! });
 
