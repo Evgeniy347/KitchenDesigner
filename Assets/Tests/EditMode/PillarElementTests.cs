@@ -471,7 +471,7 @@ public class PillarElementTests
 	}
 
 	[Test]
-	public void Pillar_NotOnFloor_OverlapsBoard_AutoAdjustNeeded()
+	public void Pillar_NotOnFloor_FloorFoundByAABB()
 	{
 		var floor = MakeBoard(new Vector3(0, -0.009f, 0), new Vector3Int(3000, 18, 3000));
 		var boardGo = MakeBoard(new Vector3(0, 0.108f, 0), new Vector3Int(540, 16, 564));
@@ -482,13 +482,23 @@ public class PillarElementTests
 
 		float bottomBefore = AabbCenter(pillar).y - AabbExtent(pillar).y * 0.5f;
 		Assert.Greater(bottomBefore, 0.02f,
-			"pillar bottom >20mm above floor — AutoAdjustPillar early-return guard triggers");
+			"pillar bottom >20mm above floor — but AABB should still find floor");
 
 		var boardBottom = float.MaxValue;
 		foreach (var v in board.GetVertices()) if (v.y < boardBottom) boardBottom = v.y;
-		var pillarTop = bottomBefore + AabbExtent(pillar).y;
-		Assert.Greater(pillarTop, boardBottom,
-			"pillar top penetrates board — overlap/red tint but AutoAdjustPillar does nothing because bottom > 20mm");
+		float floorTop = floor.transform.position.y + 9f * AppConstants.MM_TO_UNITS;
+		Assert.Greater(floorTop, -0.5f, "floor top exists");
+
+		float gapM = boardBottom - floorTop;
+		int gapMM = Mathf.RoundToInt(gapM / AppConstants.MM_TO_UNITS);
+		int neededMid = Mathf.Clamp(
+			gapMM - PillarElement.TopHeightMM - PillarElement.BottomHeightMM,
+			PillarElement.MidHeightMM_Min, PillarElement.MidHeightMM_Max);
+
+		Assert.GreaterOrEqual(neededMid, PillarElement.MidHeightMM_Min,
+			"gap should be fillable by pillar (mid height in range)");
+		Assert.LessOrEqual(neededMid, PillarElement.MidHeightMM_Max,
+			"mid height within max range");
 	}
 
 	[Test]
@@ -520,6 +530,79 @@ public class PillarElementTests
 		var bottomAfter = AabbCenter(pillar).y - AabbExtent(pillar).y * 0.5f;
 		Assert.Less(Mathf.Abs(bottomAfter - floorTop), 0.001f,
 			"pillar bottom at floor after manual adjust");
+	}
+
+	[Test]
+	public void Pillar_SaveFilePos_FarFromFloorCenter_FloorFoundByAABB()
+	{
+		var floor = MakeBoard(new Vector3(0, -0.009f, 0), new Vector3Int(3170, 18, 7240));
+		var boardGo = MakeBoard(new Vector3(1.315f, 0.108f, -2.162f), new Vector3Int(540, 16, 564));
+		var board = boardGo.GetComponent<KitchenElement>();
+
+		var go = MakePillar(75, new Vector3(1.139f, 0.052f, -2.503f));
+		var pillar = go.GetComponent<PillarElement>();
+
+		Assert.AreEqual(105, pillar.TotalHeightMM);
+		Assert.AreEqual(105, pillar.DimensionsMM.y);
+
+		float pillarCx = pillar.transform.position.x;
+		float pillarCz = pillar.transform.position.z;
+
+		float floorMinX = floor.transform.position.x - 1585f * AppConstants.MM_TO_UNITS;
+		float floorMaxX = floor.transform.position.x + 1585f * AppConstants.MM_TO_UNITS;
+		float floorMinZ = floor.transform.position.z - 3620f * AppConstants.MM_TO_UNITS;
+		float floorMaxZ = floor.transform.position.z + 3620f * AppConstants.MM_TO_UNITS;
+
+		Assert.Greater(pillarCx, floorMinX - 0.001f, "pillar X inside floor AABB");
+		Assert.Less(pillarCx, floorMaxX + 0.001f, "pillar X inside floor AABB");
+		Assert.Greater(pillarCz, floorMinZ - 0.001f, "pillar Z inside floor AABB");
+		Assert.Less(pillarCz, floorMaxZ + 0.001f, "pillar Z inside floor AABB");
+
+		float floorTop = floor.transform.position.y + 9f * AppConstants.MM_TO_UNITS;
+		float pillarBottom = AabbCenter(pillar).y - AabbExtent(pillar).y * 0.5f;
+		Assert.Less(Mathf.Abs(pillarBottom - floorTop), 0.001f,
+			"pillar sits on floor — bottom at floor top level");
+	}
+
+	[Test]
+	public void Pillar_DraggedUnderBoard_OffFloor_AutoAdjustFillsGap()
+	{
+		var floor = MakeBoard(new Vector3(0, -0.009f, 0), new Vector3Int(3000, 18, 3000));
+		var boardGo = MakeBoard(new Vector3(0, 0.108f, 0), new Vector3Int(540, 16, 564));
+		var board = boardGo.GetComponent<KitchenElement>();
+
+		var go = MakePillar(75, new Vector3(0, 0.09f, 0));
+		var pillar = go.GetComponent<PillarElement>();
+
+		float bottomBefore = AabbCenter(pillar).y - AabbExtent(pillar).y * 0.5f;
+		Assert.Greater(bottomBefore, 0.02f, "pillar bottom >20mm above floor");
+
+		var boardBottom = float.MaxValue;
+		foreach (var v in board.GetVertices()) if (v.y < boardBottom) boardBottom = v.y;
+		float floorTop = floor.transform.position.y + 9f * AppConstants.MM_TO_UNITS;
+
+		pillar.transform.position = new Vector3(0,
+			floorTop + pillar.TotalHeightMM * 0.5f * AppConstants.MM_TO_UNITS, 0);
+
+		int gapMM = Mathf.RoundToInt((boardBottom - floorTop) / AppConstants.MM_TO_UNITS);
+		int neededMid = Mathf.Clamp(
+			gapMM - PillarElement.TopHeightMM - PillarElement.BottomHeightMM,
+			PillarElement.MidHeightMM_Min, PillarElement.MidHeightMM_Max);
+		Assert.GreaterOrEqual(neededMid, PillarElement.MidHeightMM_Min);
+		Assert.LessOrEqual(neededMid, PillarElement.MidHeightMM_Max);
+
+		pillar.MidHeightMM = neededMid;
+		pillar.transform.position = new Vector3(0,
+			floorTop + pillar.TotalHeightMM * 0.5f * AppConstants.MM_TO_UNITS, 0);
+
+		var topAfter = float.MinValue;
+		foreach (var v in pillar.GetVertices()) if (v.y > topAfter) topAfter = v.y;
+		Assert.Less(Mathf.Abs(topAfter - boardBottom), 0.001f,
+			"pillar top reaches board bottom after floor-snap + height-adjust");
+
+		var bottomAfter = AabbCenter(pillar).y - AabbExtent(pillar).y * 0.5f;
+		Assert.Less(Mathf.Abs(bottomAfter - floorTop), 0.001f,
+			"pillar bottom at floor");
 	}
 
 	private const float Tol = 0.001f;
