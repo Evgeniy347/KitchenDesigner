@@ -7,7 +7,6 @@ using KitchenDesigner.Core;
 /// позиция для смещённого окна и обеих ориентаций стены.</summary>
 public class WallCutoutTests : SnapTestBase
 {
-    private const float MinCellSize = 1e-5f;
     private static WallMeshBuilder.WindowCutout Cut(float cx, float cy, float hx, float hy) =>
         new WallMeshBuilder.WindowCutout
         {
@@ -139,12 +138,13 @@ public class WallCutoutTests : SnapTestBase
             new Vector3Int(3000, 2500, 100), "Wall2W", new Vector3(0f, 1.25f, -1.5f));
         _spawned.Add(wallGo);
 
-        // Два окна одно над другим с минимальным зазором.
+        // Два окна разносятся по высоте: нижнее (y=0.6, пролёт [0.1, 1.1]),
+        // верхнее (y=1.9, пролёт [1.4, 2.4]). Зазор 300 мм — без пересечений.
         var win1Go = ElementFactory.CreateWindow(
-            new Vector3Int(900, 1000, 100), "Win2W_1", new Vector3(0f, 1.70005f, -1.5f));
+            new Vector3Int(900, 1000, 100), "Win2W_1", new Vector3(0f, 1.9f, -1.5f));
         _spawned.Add(win1Go);
         var win2Go = ElementFactory.CreateWindow(
-            new Vector3Int(900, 1000, 100), "Win2W_2", new Vector3(0f, 0.79995f, -1.5f));
+            new Vector3Int(900, 1000, 100), "Win2W_2", new Vector3(0f, 0.6f, -1.5f));
         _spawned.Add(win2Go);
 
         win1Go.GetComponent<WindowElement>()!.SnapToWall();
@@ -163,9 +163,9 @@ public class WallCutoutTests : SnapTestBase
             float ab = (a - b).magnitude;
             float bc = (b - c).magnitude;
             float ca = (c - a).magnitude;
-            Assert.GreaterOrEqual(ab, MinCellSize, $"AB={ab} tri {t/3}");
-            Assert.GreaterOrEqual(bc, MinCellSize, $"BC={bc} tri {t/3}");
-            Assert.GreaterOrEqual(ca, MinCellSize, $"CA={ca} tri {t/3}");
+            Assert.GreaterOrEqual(ab, WallMeshBuilder.MinCellNorm, $"AB={ab} tri {t/3}");
+            Assert.GreaterOrEqual(bc, WallMeshBuilder.MinCellNorm, $"BC={bc} tri {t/3}");
+            Assert.GreaterOrEqual(ca, WallMeshBuilder.MinCellNorm, $"CA={ca} tri {t/3}");
         }
     }
 }
