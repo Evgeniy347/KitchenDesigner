@@ -89,6 +89,12 @@ public class SelectionContextMenuTests
         return root != null && root.activeSelf;
     }
 
+    private static bool IsContextMenuTitleVisible()
+    {
+        var titleGo = GameObject.Find("CtxTitle");
+        return titleGo != null && titleGo.activeInHierarchy;
+    }
+
     // ── Пункт 1: ЛКМ (Select) не открывает контекстное меню ─────────────
     [UnityTest]
     public IEnumerator Select_DoesNotOpen_ContextMenu()
@@ -153,6 +159,41 @@ public class SelectionContextMenuTests
 
         Assert.IsTrue(IsContextMenuVisible(),
             "меню должно остаться открытым и обновиться на board2");
+        Assert.AreEqual(board2, SelectionManager.Instance.Selected);
+        Assert.IsTrue(IsContextMenuTitleVisible(),
+            "заголовок меню должен быть виден после обновления");
+    }
+
+    // ── Пункт 3b: same-frame: Select() → DeselectAll() + Select() не закрывает меню ──
+    [UnityTest]
+    public IEnumerator ContextMenu_Select_SameFrame_KeepsMenu()
+    {
+        var board1 = SpawnAndGetBoard();
+        Assert.IsNotNull(board1);
+        yield return null;
+
+        var pos = board1!.transform.position + new Vector3(1f, 0f, 0f);
+        var go = ElementFactory.CreatePart(
+            AppConstants.PRESET_DIMENSIONS_MM[0], "TestBoard2", pos);
+        var board2 = go.GetComponent<KitchenElement>();
+        Assert.IsNotNull(board2);
+        yield return null;
+
+        UIManager.Instance!.OpenContextMenu(board1);
+        yield return null;
+        Assert.IsTrue(IsContextMenuVisible());
+
+        // Select() внутри вызывает DeselectAll() → OnSelectionChanged(null),
+        // затем OnSelectionChanged(board2) — всё в одном кадре.
+        // Меню НЕ должно закрыться.
+        SelectionManager.Instance!.Select(board2!);
+        // Без yield — проверяем в том же кадре, до отложенного закрытия.
+        Assert.IsTrue(IsContextMenuVisible(),
+            "меню должно быть видно в том же кадре после Select (отложенное закрытие)");
+
+        yield return null;
+        Assert.IsTrue(IsContextMenuVisible(),
+            "меню должно остаться открытым и в следующем кадре");
         Assert.AreEqual(board2, SelectionManager.Instance.Selected);
     }
 
