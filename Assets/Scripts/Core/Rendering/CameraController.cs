@@ -289,9 +289,10 @@ namespace KitchenDesigner.Core
             if (UI.UIManager.Instance == null) return;
 
             // В режиме редактирования модуля — настройка отдельных деталей.
-            if (ModuleEditMode.IsActive && ModuleEditMode.IsEditable(e))
+            if (ModuleEditMode.IsActive)
             {
-                UI.UIManager.Instance.OpenContextMenu(e);
+                if (ModuleEditMode.IsEditable(e))
+                    UI.UIManager.Instance.OpenContextMenu(e);
                 return;
             }
 
