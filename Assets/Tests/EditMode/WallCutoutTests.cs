@@ -175,32 +175,40 @@ public class WallCutoutTests : SnapTestBase
     [Test]
     public void Builder_OverlappingWindows_NoInternalRevealQuads()
     {
-        // Два окна пересекаются по Y: окно 1 [0.1, 0.7], окно 2 [0.5, 1.1].
-        // Overlap-регион: [0.5, 0.7]. Внешние границы: y = 0.1 и y = 1.1.
-        // Reveal-квады должны быть только на y = 0.1 и y = 1.1 (внешние),
-        // но НЕ на y = 0.5 и y = 0.7 (внутренние, внутри объединённого проёма).
+        // Оба окна помещаются в unit cube [-0.5, 0.5]. Пересекаются по Y.
+        // Окно 1: X ∈ [-0.40, -0.10], Y ∈ [-0.30, 0.10]
+        // Окно 2: X ∈ [-0.10,  0.20], Y ∈ [-0.10, 0.30]
+        // Overlap по Y: [-0.10, 0.10]. Внешние границы: y = -0.30 и y = 0.30.
         var cutouts = new List<WallMeshBuilder.WindowCutout>
         {
-            Cut(0f, 0.4f, 0.15f, 0.3f),  // Y ∈ [0.1, 0.7]
-            Cut(0f, 0.8f, 0.15f, 0.3f),  // Y ∈ [0.5, 1.1]
+            Cut(-0.25f, -0.10f, 0.15f, 0.20f),  // X ∈ [-0.40, -0.10], Y ∈ [-0.30, 0.10]
+            Cut( 0.05f,  0.10f, 0.15f, 0.20f),  // X ∈ [-0.10,  0.20], Y ∈ [-0.10, 0.30]
         };
         var mesh = WallMeshBuilder.Build(cutouts);
 
         var verts = mesh.vertices;
 
-        // Проверяем: нет вершин с |z| ≈ 0.5 (front/back face) и Y внутри
-        // overlap-региона (0.5..0.7), кроме внешних границ (0.1 и 1.1).
+        // Негативный assert: нет вершин на front/back face строго внутри
+        // overlap-региона (y ∈ (-0.10, 0.10)).
         foreach (var v in verts)
         {
-            // Только вершины на front/back face (|z| ≈ 0.5)
             if (Mathf.Abs(Mathf.Abs(v.z) - 0.5f) > 1e-3f) continue;
-
-            // Если Y строго внутри overlap (0.5 + eps < y < 0.7 - eps) —
-            // это внутренняя вершина, которой быть не должно.
             float eps = 1e-3f;
-            bool insideOverlap = v.y > 0.5f + eps && v.y < 0.7f - eps;
+            bool insideOverlap = v.y > -0.10f + eps && v.y < 0.10f - eps;
             Assert.IsFalse(insideOverlap,
-                $"вершина {v} на front/back face внутри overlap-региона — reveal-квад на внутреннем ребре");
+                $"вершина {v} на front/back face внутри overlap-региона — reveal на внутреннем ребре");
         }
+
+        // Позитивный assert: reveal-квады на внешних границах (y = -0.30 и y = 0.30)
+        // должны существовать.
+        bool hasBottomReveal = false, hasTopReveal = false;
+        foreach (var v in verts)
+        {
+            if (Mathf.Abs(Mathf.Abs(v.z) - 0.5f) > 1e-3f) continue;
+            if (Mathf.Abs(v.y - (-0.30f)) < 1e-3f) hasBottomReveal = true;
+            if (Mathf.Abs(v.y - 0.30f) < 1e-3f) hasTopReveal = true;
+        }
+        Assert.IsTrue(hasBottomReveal, "нет reveal-квада на нижней границе (y=-0.30)");
+        Assert.IsTrue(hasTopReveal, "нет reveal-квада на верхней границе (y=0.30)");
     }
 }

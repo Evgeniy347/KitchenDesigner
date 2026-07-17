@@ -93,6 +93,13 @@ namespace KitchenDesigner.Core
             if (wall != null) wall.RebuildMesh();
         }
 
+        /// <summary>Перестроить геометрию без изменения размеров (вызов при изменении
+        /// списка соседних окон на стене).</summary>
+        public void RefreshGeometry()
+        {
+            RebuildGeometry();
+        }
+
         public void SetOpen(bool open)
         {
             _isOpen = open;
@@ -272,6 +279,60 @@ namespace KitchenDesigner.Core
 
         // ── Геометрия ───────────────────────────────────────────────────
 
+        /// <summary>Проверяет соседние окна на той же стене и возвращает набор
+        /// скрытых сторон frame (битовая маска: 1=left, 2=right, 4=top, 8=bottom).
+        /// Сторона скрывается, если другое окно перекрывается с текущим в этой
+        /// области — иначе frame одного окна виден в проёме другого (полоса).</summary>
+        private int ComputeHiddenSides()
+        {
+            int hidden = 0;
+            var wall = FindAttachedWall();
+            if (wall == null) return hidden;
+
+            var wallEl = wall.GetComponent<KitchenElement>();
+            if (wallEl == null) return hidden;
+
+            var dims = DimensionsMM;
+            float toU = AppConstants.MM_TO_UNITS;
+            float halfW = dims.x * 0.5f * toU;
+            float halfH = dims.y * 0.5f * toU;
+
+            // Локальные координаты текущего окна относительно стены
+            var wallT = wall.transform;
+            Vector3 localPos = wallT.InverseTransformPoint(transform.position);
+            float lxMin = localPos.x - halfW, lxMax = localPos.x + halfW;
+            float lyMin = localPos.y - halfH, lyMax = localPos.y + halfH;
+
+            foreach (var other in wall.AttachedWindows)
+            {
+                if (other == null || other == this) continue;
+                var oDims = other.DimensionsMM;
+                var oLocalPos = wallT.InverseTransformPoint(other.transform.position);
+                float oHalfW = oDims.x * 0.5f * toU;
+                float oHalfH = oDims.y * 0.5f * toU;
+                float olxMin = oLocalPos.x - oHalfW, olxMax = oLocalPos.x + oHalfW;
+                float olyMin = oLocalPos.y - oHalfH, olyMax = oLocalPos.y + oHalfH;
+
+                // Перекрытие по локальным координатам
+                bool yOverlap = lyMax > olyMin && lyMin < olyMax;
+                bool xOverlap = lxMax > olxMin && lxMin < olxMax;
+
+                // Если окна перекрываются по Y (локальному), но не по X → скрыть left/right
+                if (yOverlap && !xOverlap)
+                {
+                    if (olxMax >= lxMin && olxMax <= lxMax) hidden |= 1; // left
+                    if (olxMin >= lxMin && olxMin <= lxMax) hidden |= 2; // right
+                }
+                // Если окна перекрываются по X (локальному), но не по Y → скрыть top/bottom
+                if (xOverlap && !yOverlap)
+                {
+                    if (olyMax >= lyMin && olyMax <= lyMax) hidden |= 4; // top
+                    if (olyMin >= lyMin && olyMin <= lyMax) hidden |= 8; // bottom
+                }
+            }
+            return hidden;
+        }
+
         private void UpdateCollider()
         {
             var existing = GetComponent<Collider>();
@@ -358,29 +419,32 @@ namespace KitchenDesigner.Core
             float innerW = totalW - 2f * frameU;
             float innerH = totalH - 2f * frameU;
 
+            // Определяем скрытые стороны frame из-за соседних окон
+            int hidden = ComputeHiddenSides();
+
             if (_frameLeft != null)
             {
                 _frameLeft.transform.localPosition = new Vector3(-halfW + frameU * 0.5f, 0f, 0f);
                 _frameLeft.transform.localScale = new Vector3(frameU, totalH, totalD);
-                _frameLeft.SetActive(true);
+                _frameLeft.SetActive((hidden & 1) == 0);
             }
             if (_frameRight != null)
             {
                 _frameRight.transform.localPosition = new Vector3(halfW - frameU * 0.5f, 0f, 0f);
                 _frameRight.transform.localScale = new Vector3(frameU, totalH, totalD);
-                _frameRight.SetActive(true);
+                _frameRight.SetActive((hidden & 2) == 0);
             }
             if (_frameTop != null)
             {
                 _frameTop.transform.localPosition = new Vector3(0f, halfH - frameU * 0.5f, 0f);
                 _frameTop.transform.localScale = new Vector3(innerW, frameU, totalD);
-                _frameTop.SetActive(true);
+                _frameTop.SetActive((hidden & 4) == 0);
             }
             if (_frameBottom != null)
             {
                 _frameBottom.transform.localPosition = new Vector3(0f, -halfH + frameU * 0.5f, 0f);
                 _frameBottom.transform.localScale = new Vector3(innerW, frameU, totalD);
-                _frameBottom.SetActive(true);
+                _frameBottom.SetActive((hidden & 8) == 0);
             }
 
             // Створка: коробчатая обвязка со стеклом у переднего края коробки.
@@ -444,28 +508,28 @@ namespace KitchenDesigner.Core
                 float slopeT = AppConstants.WINDOW_SLOPE_MM * toU;
                 _slopeTop.transform.localPosition = new Vector3(0f, halfH - frameU * 0.5f, -halfD + slopeT * 0.5f);
                 _slopeTop.transform.localScale = new Vector3(innerW, slopeT, slopeT);
-                _slopeTop.SetActive(true);
+                _slopeTop.SetActive((hidden & 4) == 0);
             }
             if (_slopeBottom != null)
             {
                 float slopeT = AppConstants.WINDOW_SLOPE_MM * toU;
                 _slopeBottom.transform.localPosition = new Vector3(0f, -halfH + frameU * 0.5f, -halfD + slopeT * 0.5f);
                 _slopeBottom.transform.localScale = new Vector3(innerW, slopeT, slopeT);
-                _slopeBottom.SetActive(true);
+                _slopeBottom.SetActive((hidden & 8) == 0);
             }
             if (_slopeLeft != null)
             {
                 float slopeT = AppConstants.WINDOW_SLOPE_MM * toU;
                 _slopeLeft.transform.localPosition = new Vector3(-halfW + frameU * 0.5f, 0f, -halfD + slopeT * 0.5f);
                 _slopeLeft.transform.localScale = new Vector3(slopeT, innerH, slopeT);
-                _slopeLeft.SetActive(true);
+                _slopeLeft.SetActive((hidden & 1) == 0);
             }
             if (_slopeRight != null)
             {
                 float slopeT = AppConstants.WINDOW_SLOPE_MM * toU;
                 _slopeRight.transform.localPosition = new Vector3(halfW - frameU * 0.5f, 0f, -halfD + slopeT * 0.5f);
                 _slopeRight.transform.localScale = new Vector3(slopeT, innerH, slopeT);
-                _slopeRight.SetActive(true);
+                _slopeRight.SetActive((hidden & 2) == 0);
             }
 
             ApplyDoorPose();
