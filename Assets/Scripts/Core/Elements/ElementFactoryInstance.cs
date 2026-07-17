@@ -485,10 +485,8 @@ namespace KitchenDesigner.Core
             rb.isKinematic = true;
             rb.useGravity = false;
 
-            var meshCollider = go.AddComponent<MeshCollider>();
-            meshCollider.convex = false;
-            meshCollider.sharedMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
-
+            // Коллайдер (BoxCollider по габаритам) создаёт сам WindowElement в
+            // ApplyDimensions — корневой масштаб окна единичный.
             var window = go.AddComponent<WindowElement>();
             window.PartName = name;
             window.DimensionsMM = dimensionsMM;

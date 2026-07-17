@@ -293,10 +293,14 @@ namespace KitchenDesigner.Core
             // У ящика GTV высота и глубина фиксированы типом и длиной —
             // растягивать можно только ширину (ось X, грани 0 и 1).
             bool widthOnly = Mode == HandleMode.Resize && _target is DrawerElement;
+            // У окна ось Z (глубина) бессмысленна: двигать поперёк стены нельзя
+            // (снап вернёт), а толщину диктует стена — ручки Z не создаём.
+            bool skipDepth = _target is WindowElement;
             var faces = _target!.GetFaces();
             for (int i = 0; i < faces.Length; i++)
             {
                 if (widthOnly && i / 2 != 0) continue;
+                if (skipDepth && i / 2 == 2) continue;
                 var go = new GameObject($"ResizeHandle_{i}");
                 var marker = go.AddComponent<ResizeHandle>();
                 marker.faceIndex = i;
@@ -384,13 +388,28 @@ namespace KitchenDesigner.Core
         {
             if (_target == null) return;
             var faces = _target.GetFaces();
+
+            // Окно заподлицо со стеной: центры граней X/Y лежат в толще стены и
+            // стрелки тонут в ней. Выдвигаем ручки к камере — чуть перед стеной
+            // (пересчитывается каждый кадр в LateUpdate, следит за камерой).
+            Vector3 outOfWall = Vector3.zero;
+            if (_target is WindowElement)
+            {
+                Vector3 fwd = _target.transform.forward;
+                float halfDepth = _target.DimensionsMM.z * AppConstants.MM_TO_UNITS * 0.5f;
+                var cam = Camera.main;
+                float side = cam != null &&
+                    Vector3.Dot(cam.transform.position - _target.transform.position, fwd) < 0f ? -1f : 1f;
+                outOfWall = fwd * (side * (halfDepth + 0.02f));
+            }
+
             foreach (var h in _handles)
             {
                 if (h == null || h.faceIndex >= faces.Length) continue;
                 var f = faces[h.faceIndex];
                 Vector3 n = f.normal.sqrMagnitude > Tolerance.EpsilonSqr ? f.normal.normalized : Vector3.forward;
                 Vector3 up = Mathf.Abs(Vector3.Dot(n, Vector3.up)) > Tolerance.UpDotThreshold ? Vector3.forward : Vector3.up;
-                h.transform.SetPositionAndRotation(f.center, Quaternion.LookRotation(n, up));
+                h.transform.SetPositionAndRotation(f.center + outOfWall, Quaternion.LookRotation(n, up));
             }
         }
 

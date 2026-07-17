@@ -345,19 +345,33 @@ public class IsoScreenshotTests
     }
 
         // ── Window isometric screenshots ────────────────────────
+        // Окно живёт только на стене: ставим стену, окно прилипает к ней
+        // (Start → SnapToWall), в стене появляется вырез. Подоконник разворачиваем
+        // к камере (окно создаётся с yaw=180°, снап сохраняет разворот).
+
+        private WindowElement SpawnWindowOnWall(string name, Vector3Int dims,
+            GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50)
+        {
+            SpawnWallAt(name + "_Wall", new Vector3Int(3000, 2500, 100), new Vector3(0f, 1.25f, 0f));
+            var go = ElementFactory.CreateWindow(dims, name, new Vector3(0f, 1.2f, 0f), tint, sillProtrusionMM);
+            go.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+            _spawned.Add(go);
+            var window = go.GetComponent<WindowElement>();
+            Assert.IsNotNull(window);
+            return window!;
+        }
 
         [UnityTest]
         public IEnumerator IsoWindow_Default()
         {
             var dims = new Vector3Int(900, 1200, 100);
-            Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
-            var go = ElementFactory.CreateWindow(dims, "IsoWindowDef", pos);
-            _spawned.Add(go);
-            var window = go.GetComponent<WindowElement>();
-            Assert.IsNotNull(window);
+            var window = SpawnWindowOnWall("IsoWindowDef", dims);
+            yield return null; // Start → прилипание к стене
+
+            Assert.IsNotEmpty(window.AttachedWallName, "окно должно прилипнуть к стене");
 
             Vector3 size = MmToUnits(dims);
-            var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+            var (camGo, cam) = CreateIsoCamera(window.transform.position, size, 2.5f);
             _spawned.Add(camGo);
 
             yield return RenderToPng(cam, "iso_window_default.png");
@@ -369,17 +383,15 @@ public class IsoScreenshotTests
         public IEnumerator IsoWindow_Open()
         {
             var dims = new Vector3Int(900, 1200, 100);
-            Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
-            var go = ElementFactory.CreateWindow(dims, "IsoWindowOpen", pos);
-            _spawned.Add(go);
-            var window = go.GetComponent<WindowElement>();
-            Assert.IsNotNull(window);
+            var window = SpawnWindowOnWall("IsoWindowOpen", dims);
+            yield return null;
+
             window.SetOpen(true);
             window.StepDoor(1f); // мгновенно довести анимацию до конца
             yield return null;
 
             Vector3 size = MmToUnits(dims);
-            var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+            var (camGo, cam) = CreateIsoCamera(window.transform.position, size, 2.5f);
             _spawned.Add(camGo);
 
             yield return RenderToPng(cam, "iso_window_open.png");
@@ -391,14 +403,11 @@ public class IsoScreenshotTests
         public IEnumerator IsoWindow_Tinted()
         {
             var dims = new Vector3Int(900, 1200, 100);
-            Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
-            var go = ElementFactory.CreateWindow(dims, "IsoWindowTinted", pos, GlassTint.Tinted, 70);
-            _spawned.Add(go);
-            var window = go.GetComponent<WindowElement>();
-            Assert.IsNotNull(window);
+            var window = SpawnWindowOnWall("IsoWindowTinted", dims, GlassTint.Tinted, 70);
+            yield return null;
 
             Vector3 size = MmToUnits(dims);
-            var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+            var (camGo, cam) = CreateIsoCamera(window.transform.position, size, 2.5f);
             _spawned.Add(camGo);
 
             yield return RenderToPng(cam, "iso_window_tinted.png");
