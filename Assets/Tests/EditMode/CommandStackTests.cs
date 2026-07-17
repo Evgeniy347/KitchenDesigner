@@ -158,6 +158,50 @@ public class CommandStackTests
         Assert.IsTrue(PartRegistry.GetAll().Contains(e));
     }
 
+    /// <summary>Регресс: удаление окна через DeleteCommand должно убирать
+    /// вырез из меша стены. Раньше окно только деактивировалось, но оставалось
+    /// в _attachedWindows стены — дырка в стене сохранялась до перезапуска.</summary>
+    [Test]
+    public void DeleteCommand_Window_RemovesWallCutout()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(3000, 2500, 100), "Wall_Del", new Vector3(0f, 1.25f, -1.5f));
+        _spawned.Add(wallGo);
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 1200, 100), "Win_Del", new Vector3(0f, 1.2f, -1.5f));
+        _spawned.Add(winGo);
+
+        var win = winGo.GetComponent<WindowElement>()!;
+        win.SnapToWall();
+
+        var wall = wallGo.GetComponent<Wall>()!;
+        Assert.IsTrue(wall.HasWindow(win), "окно зарегистрировано на стене");
+
+        var meshBefore = wallGo.GetComponent<MeshFilter>()!.sharedMesh;
+        Assert.IsNotNull(meshBefore);
+        int triCountBefore = meshBefore.triangles.Length;
+
+        var cmd = new DeleteCommand(winGo);
+        cmd.Execute();
+
+        Assert.IsFalse(winGo.activeSelf, "окно деактивировано");
+        Assert.IsFalse(PartRegistry.GetAll().Contains(win), "окно удалено из реестра");
+        Assert.IsFalse(wall.HasWindow(win), "окно дерегистрировано со стены");
+
+        var meshAfter = wallGo.GetComponent<MeshFilter>()!.sharedMesh;
+        Assert.IsNotNull(meshAfter);
+        // Меш без выреза = 12 треугольников (6 граней × 2); с вырезом — больше.
+        Assert.Less(meshAfter.triangles.Length, triCountBefore,
+            "после удаления окна меш стены должен стать проще (без выреза)");
+
+        // Undo: окно реактивируется и снова регистрируется на стене.
+        cmd.Undo();
+        Assert.IsTrue(winGo.activeSelf);
+        Assert.IsTrue(PartRegistry.GetAll().Contains(win));
+        win.SnapToWall(); // триггерим ре-регистрацию (в рантайме это делает Update)
+        Assert.IsTrue(wall.HasWindow(win), "после Undo окно снова на стене");
+    }
+
     [Test]
     public void ResizeCommand_ExecuteUndo_ChangesDimensions()
     {
