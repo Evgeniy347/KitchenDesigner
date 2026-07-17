@@ -3,23 +3,28 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
+    public enum DoorSashType { Glass = 0, Blind = 1 }
+
     /// <summary>
     /// Дверь: неподвижная коробка (рама на всю толщину стены) + поворотная
-    /// створка (обвязка со стеклом). Дверь живёт только на стене: каждый кадр
-    /// прилипает к ближайшей стене, встаёт в её срединную плоскость и наследует
-    /// её толщину (глубина двери не редактируется напрямую). Геометрия строится
-    /// в мировых единицах при единичном масштабе корня.
+    /// створка (обвязка со стеклом или глухой панелью). Дверь живёт только на
+    /// стене: каждый кадр прилипает к ближайшей стене, встаёт в её срединную
+    /// плоскость и наследует её толщину (глубина двери не редактируется
+    /// напрямую). Геометрия строится в мировых единицах при единичном масштабе
+    /// корня.
     /// </summary>
     public class DoorElement : KitchenElement
     {
         private const float OpenSeconds = 0.4f;
 
+        [SerializeField] private DoorSashType _sashType = DoorSashType.Glass;
         [SerializeField] private DoorMode _mode = DoorMode.HingeFrontLeft;
         [SerializeField] private bool _isOpen = false;
         [SerializeField] private string _attachedWallName = "";
 
         private static Shader? _cachedShader;
         private static Material? _glassMat;
+        private static Material? _blindMat;
 
         private readonly List<GameObject> _children = new List<GameObject>();
         private GameObject? _frameTop, _frameBottom, _frameLeft, _frameRight;
@@ -32,6 +37,12 @@ namespace KitchenDesigner.Core
         private Vector3 _sashClosedLocal;
         private Vector3 _sashHalfExtents;
         private Vector3 _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
+
+        public DoorSashType SashType
+        {
+            get => _sashType;
+            set { _sashType = value; ApplySashType(); }
+        }
 
         public DoorMode Mode
         {
@@ -458,12 +469,11 @@ namespace KitchenDesigner.Core
             if (_glassPane != null)
             {
                 _glassPane.transform.localPosition = Vector3.zero;
-                _glassPane.transform.localScale = new Vector3(innerW - 2f * sashU, innerH - 2f * sashU, glassThick);
                 _glassPane.SetActive(true);
             }
 
             ApplyDoorPose();
-            ApplyGlass();
+            ApplySashType(); // устанавливает и материал, и масштаб панели (толщина зависит от _sashType)
             ApplyMaterialFrame();
         }
 
@@ -474,15 +484,38 @@ namespace KitchenDesigner.Core
             return _cachedShader;
         }
 
-        private void ApplyGlass()
+        private void ApplySashType()
         {
             if (_glassPane == null) return;
             var mr = _glassPane.GetComponent<MeshRenderer>();
             if (mr == null) return;
 
-            if (_glassMat == null)
-                _glassMat = ElementHighlighter.MakeTransparent(GetShader(), new Color(0.6f, 0.75f, 0.85f, 0.35f));
-            mr.sharedMaterial = _glassMat;
+            if (_sashType == DoorSashType.Blind)
+            {
+                if (_blindMat == null)
+                    _blindMat = ElementHighlighter.MakeTransparent(GetShader(), new Color(0.55f, 0.52f, 0.48f, 0.92f));
+                mr.sharedMaterial = _blindMat;
+            }
+            else
+            {
+                if (_glassMat == null)
+                    _glassMat = ElementHighlighter.MakeTransparent(GetShader(), new Color(0.6f, 0.75f, 0.85f, 0.35f));
+                mr.sharedMaterial = _glassMat;
+            }
+
+            // Пересчитываем масштаб панели: при смене типа толщина меняется.
+            {
+                var dims = DimensionsMM;
+                float toU = AppConstants.MM_TO_UNITS;
+                float frameU = AppConstants.WINDOW_FRAME_MM * toU;
+                float sashU = AppConstants.WINDOW_SASH_MM * toU;
+                float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, dims.z * toU);
+                float glassThick = AppConstants.WINDOW_GLASS_THICKNESS_MM * toU;
+                float innerW = dims.x * toU - 2f * frameU;
+                float innerH = dims.y * toU - 2f * frameU;
+                float paneThick = _sashType == DoorSashType.Blind ? sashD : glassThick;
+                _glassPane.transform.localScale = new Vector3(innerW - 2f * sashU, innerH - 2f * sashU, paneThick);
+            }
         }
 
         private void ApplyMaterialFrame()

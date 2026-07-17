@@ -20,7 +20,8 @@ namespace KitchenDesigner.Core
 		GameObject CreateLightSource(string name, Vector3 position);
 		GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50);
-        GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position);
+        GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position,
+            DoorSashType sashType = DoorSashType.Glass);
         GameObject Duplicate(KitchenElement source);
         void DestroyPart(GameObject go);
         void DestroyFacade(GameObject go);
