@@ -295,7 +295,7 @@ namespace KitchenDesigner.Core
             bool widthOnly = Mode == HandleMode.Resize && _target is DrawerElement;
             // У окна ось Z (глубина) бессмысленна: двигать поперёк стены нельзя
             // (снап вернёт), а толщину диктует стена — ручки Z не создаём.
-            bool skipDepth = _target is WindowElement;
+            bool skipDepth = _target is WindowElement || _target is DoorElement;
             var faces = _target!.GetFaces();
             for (int i = 0; i < faces.Length; i++)
             {
@@ -393,7 +393,7 @@ namespace KitchenDesigner.Core
             // стрелки тонут в ней. Выдвигаем ручки к камере — чуть перед стеной
             // (пересчитывается каждый кадр в LateUpdate, следит за камерой).
             Vector3 outOfWall = Vector3.zero;
-            if (_target is WindowElement)
+            if (_target is WindowElement || _target is DoorElement)
             {
                 Vector3 fwd = _target.transform.forward;
                 float halfDepth = _target.DimensionsMM.z * AppConstants.MM_TO_UNITS * 0.5f;

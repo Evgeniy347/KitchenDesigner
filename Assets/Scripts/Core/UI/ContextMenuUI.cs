@@ -35,12 +35,15 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _drawerFacadeDropdown;
         private TMP_Dropdown? _tintDropdown;
         private TMP_InputField? _sillProtrusion;
+        private TMP_Dropdown? _winModeDropdown;
+        private TMP_Text? _winDoorButtonLabel;
 
         // ── Подсветка изменённых полей ──────────────────────────────────
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
         private int _applyFrame = -1;  // защита от двойного Apply
         private bool _opening;  // защита от OnSelectionChanged → Close() внутри Open()
         private bool _currentIsTable;  // true когда текущий элемент — стол
+        private bool _currentIsDoor;   // true когда текущий элемент — дверь
 
         // ── Раскладка ──────────────────────────────────────────────────
         // Меню собирается один раз (Build), а позиции пересчитываются в Layout
@@ -112,7 +115,7 @@ namespace KitchenDesigner.Core.UI
             AddRow(TitleH, TitleGap, _titleLabel.rectTransform);
 
             // Тип детали: конвертация между Part / Facade / AssembledFacade / RadialShelf.
-            var typeOptions = new List<string> { "Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно" };
+            var typeOptions = new List<string> { "Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно", "Дверь" };
             _typeDropdown = UIFactory.CreateDropdown("CtxType", panel.transform, typeOptions,
                 new Vector2(0, 0), new Vector2(332, 28), OnTypeSelected);
             AddRow(28f, RowGap, _typeDropdown.GetComponent<RectTransform>());
@@ -206,9 +209,9 @@ namespace KitchenDesigner.Core.UI
             var tintOptions = new List<string> { "Прозрачное", "Тонированное" };
             _tintDropdown = UIFactory.CreateDropdown("CtxTint", panel.transform, tintOptions,
                 new Vector2(0, 0), new Vector2(332, 28), OnTintSelected);
-            AddWindowRow(28f, ActionGap, _tintDropdown.GetComponent<RectTransform>());
+            AddWindowRow(28f, ActionGap, () => !_currentIsDoor, _tintDropdown.GetComponent<RectTransform>());
 
-            _sillProtrusion = WindowFieldRow(panel.transform, "Подоконник, мм");
+            _sillProtrusion = WindowFieldRow(panel.transform, "Подоконник, мм", () => !_currentIsDoor);
 
             // Режим открывания окна и кнопка Открыть/Закрыть (как фасад).
             var winModeOptions = new List<string>
@@ -220,6 +223,7 @@ namespace KitchenDesigner.Core.UI
             };
             var winModeDropdown = UIFactory.CreateDropdown("CtxWinMode", panel.transform, winModeOptions,
                 new Vector2(0, 0), new Vector2(332, 28), OnWindowModeSelected);
+            _winModeDropdown = winModeDropdown;
             AddWindowRow(28f, ActionGap, winModeDropdown.GetComponent<RectTransform>());
 
             var winDoorBtn = UIFactory.CreateButton("CtxWinDoor", panel.transform, "Открыть",
@@ -547,6 +551,13 @@ namespace KitchenDesigner.Core.UI
             _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, windowOnly = true });
         }
 
+        private void AddWindowRow(float height, float gapAfter, System.Func<bool> visibleWhen, params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, windowOnly = true, visibleWhen = visibleWhen });
+        }
+
         // Строка, скрываемая для окон (повороты: окно всегда стоит на стене).
         private void AddRowNoWindow(float height, float gapAfter, params RectTransform[] rects)
         {
@@ -587,13 +598,16 @@ namespace KitchenDesigner.Core.UI
 			return field;
 		}
 
-		private TMP_InputField WindowFieldRow(Transform parent, string label)
+		private TMP_InputField WindowFieldRow(Transform parent, string label, System.Func<bool>? visibleWhen = null)
         {
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
             var field = UIFactory.CreateInputField("F_" + label, parent, "",
                 new Vector2(FieldX, 0), new Vector2(120, FieldH));
-            AddWindowRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
+            if (visibleWhen != null)
+                AddWindowRow(RowH, RowGap, visibleWhen, lbl.rectTransform, field.GetComponent<RectTransform>());
+            else
+                AddWindowRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
 
@@ -696,6 +710,7 @@ namespace KitchenDesigner.Core.UI
             if (_target == null) return;
             if (_target is FacadeElement f && !f.IsDoorClosed) return;
             if (_target is WindowElement w && !w.IsDoorClosed) return;
+            if (_target is DoorElement d && !d.IsDoorClosed) return;
 
             var pos = _target.transform.position;
             MaybeRefresh(_x, pos.x.ToString("F3"));
@@ -778,9 +793,11 @@ namespace KitchenDesigner.Core.UI
 				bool isRadiusTable = element is RadiusTableElement;
 				bool isPillar = element is PillarElement;
 				bool isWindow = element is WindowElement;
-				_currentIsTable = isTable || isRadiusTable;
+				bool isDoor = element is DoorElement;
+			_currentIsTable = isTable || isRadiusTable;
+			_currentIsDoor = isDoor;
 				if (_titleLabel != null)
-					_titleLabel.text = isPillar ? "Опора" : isRadiusTable ? "Радиусный стол" : isTable ? "Стол" : isDrawer ? "Ящик GTV" : isWindow ? "Окно" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
+					_titleLabel.text = isPillar ? "Опора" : isRadiusTable ? "Радиусный стол" : isTable ? "Стол" : isDrawer ? "Ящик GTV" : isWindow ? "Окно" : isDoor ? "Дверь" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
                 if (_typeDropdown != null)
                 {
                     _typeDropdown.SetValueWithoutNotify((int)ElementConverter.GetElementType(element));
@@ -853,13 +870,24 @@ namespace KitchenDesigner.Core.UI
                         _sillProtrusion.text = window.SillProtrusionMM.ToString();
                     if (_winDoorButtonLabel != null)
                         _winDoorButtonLabel.text = window.IsOpen ? "Закрыть" : "Открыть";
+                    if (_winModeDropdown != null)
+                        _winModeDropdown.SetValueWithoutNotify((int)window.Mode);
+                }
+
+				var door = element as DoorElement;
+                if (door != null)
+                {
+                    if (_winDoorButtonLabel != null)
+                        _winDoorButtonLabel.text = door.IsOpen ? "Закрыть" : "Открыть";
+                    if (_winModeDropdown != null)
+                        _winModeDropdown.SetValueWithoutNotify((int)door.Mode);
                 }
 
                 // Габариты ящика (контурный бокс) вычисляются из типа/длины/ширины —
                 // прямое редактирование недоступно, поля затемняются.
                 SetDimensionFieldsEditable(!isDrawer);
                 // Глубину окна диктует толщина стены — поле только для чтения.
-                if (isWindow) SetDimensionFieldEditable(_d, false);
+                if (isWindow || isDoor) SetDimensionFieldEditable(_d, false);
                 // Ширина и глубина опоры фиксированы — только для чтения.
                 if (isPillar) { SetDimensionFieldEditable(_w, false); SetDimensionFieldEditable(_d, false); }
 
@@ -889,7 +917,7 @@ namespace KitchenDesigner.Core.UI
 
                 // Пересчитываем раскладку под режим: секция зазоров показывается
                 // только для фасадов, радиус — только для радиусной полки, сдвиг ножек — только для столов (включая радиусные), панель сама подгоняется по высоте.
-			Layout(isFacade, assembled != null, isRadial, isDrawer, isTable || isRadiusTable, isPillar, isWindow);
+			Layout(isFacade, assembled != null, isRadial, isDrawer, isTable || isRadiusTable, isPillar, isWindow || isDoor);
 
                 RefreshTransformFields();
                 _transparentToggle!.SetIsOnWithoutNotify(element.Transparent);
@@ -921,6 +949,7 @@ namespace KitchenDesigner.Core.UI
             if (target is FacadeElement fac) { fac.ForceClose(); UpdateDoorButton(fac); }
             if (target is DrawerElement dr) { dr.ForceClose(); UpdateDrawerAnimButton(dr); }
             if (target is WindowElement win) { win.ForceClose(); if (_winDoorButtonLabel != null) _winDoorButtonLabel.text = "Открыть"; }
+            if (target is DoorElement doorElApp) { doorElApp.ForceClose(); if (_winDoorButtonLabel != null) _winDoorButtonLabel.text = "Открыть"; }
 
             var oldDims = target.DimensionsMM;
             var oldPos = target.transform.position;
@@ -969,7 +998,7 @@ namespace KitchenDesigner.Core.UI
                 target.DimensionsMM = new Vector3Int(
                     ParseInt(_w!.text, oldDims.x),
                     ParseInt(_h!.text, oldDims.y),
-                    target is WindowElement ? oldDims.z : ParseInt(_d!.text, oldDims.z));
+                    target is WindowElement || target is DoorElement ? oldDims.z : ParseInt(_d!.text, oldDims.z));
             }
 
             if (table != null && _legInset != null)
@@ -1018,7 +1047,7 @@ namespace KitchenDesigner.Core.UI
                 ParseFloat(_z!.text, oldPos.z));
 
             // У окна поля поворота скрыты (ориентацию диктует стена) — не трогаем.
-            if (!(target is WindowElement))
+            if (!(target is WindowElement) && !(target is DoorElement))
             {
                 var euler = oldRot.eulerAngles;
                 target.transform.rotation = Quaternion.Euler(
@@ -1030,6 +1059,7 @@ namespace KitchenDesigner.Core.UI
             // Окно живёт только на стене — сразу возвращаем его на стену,
             // чтобы команда в стеке хранила уже «прилипшую» позу.
             if (target is WindowElement winSnap) winSnap.SnapToWall();
+            if (target is DoorElement doorSnap) doorSnap.SnapToWall();
 
             if (KitchenSettings.Instance.BlockOnViolation && WouldCauseViolation())
             {
@@ -1089,6 +1119,7 @@ namespace KitchenDesigner.Core.UI
             var oldRot = _target.transform.rotation;
             _target.RotateAroundAxis(axis, angle);
             if (_target is WindowElement win) win.SnapToWall();
+            if (_target is DoorElement doorRot) doorRot.SnapToWall();
             CommandStack.Execute(new MoveCommand(_target,
                 _target.transform.position, _target.transform.position,
                 oldRot, _target.transform.rotation));
@@ -1123,6 +1154,12 @@ namespace KitchenDesigner.Core.UI
                 if (_winDoorButtonLabel != null)
                     _winDoorButtonLabel.text = w.IsOpen ? "Закрыть" : "Открыть";
             }
+            else if (_target is DoorElement d)
+            {
+                d.ToggleOpen();
+                if (_winDoorButtonLabel != null)
+                    _winDoorButtonLabel.text = d.IsOpen ? "Закрыть" : "Открыть";
+            }
         }
 
         private void OnTintSelected(int index)
@@ -1135,6 +1172,8 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target is WindowElement w)
                 w.Mode = (DoorMode)index;
+            else if (_target is DoorElement d)
+                d.Mode = (DoorMode)index;
         }
 
         // Порядок пунктов списка центра: 0=Глухой, 1=Витрина(пусто), 2=Стекло.

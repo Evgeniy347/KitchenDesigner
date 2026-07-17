@@ -9,6 +9,7 @@ namespace KitchenDesigner.Core
         private float _fullScaleY;
         private float _fullPosY;
         private readonly List<WindowElement> _attachedWindows = new List<WindowElement>();
+        private readonly List<DoorElement> _attachedDoors = new List<DoorElement>();
         private MeshFilter? _meshFilter;
         private Mesh? _customMesh;
 
@@ -64,16 +65,45 @@ namespace KitchenDesigner.Core
             if (!_attachedWindows.Contains(window))
                 _attachedWindows.Add(window);
             RebuildMesh();
-            // Перестраиваем геометрию всех окон — список соседей изменился,
-            // нужно скрыть frame на общих сторонах.
             foreach (var w in _attachedWindows)
                 if (w != null) w.RefreshGeometry();
+            foreach (var d in _attachedDoors)
+                if (d != null) d.RefreshGeometry();
         }
 
         public void UnregisterWindow(WindowElement window)
         {
             _attachedWindows.Remove(window);
             RebuildMesh();
+            foreach (var w in _attachedWindows)
+                if (w != null) w.RefreshGeometry();
+            foreach (var d in _attachedDoors)
+                if (d != null) d.RefreshGeometry();
+        }
+
+        public bool HasDoor(DoorElement door) => _attachedDoors.Contains(door);
+
+        public IReadOnlyList<DoorElement> AttachedDoors => _attachedDoors;
+
+        public void RegisterDoor(DoorElement door)
+        {
+            if (!_attachedDoors.Contains(door))
+                _attachedDoors.Add(door);
+            RebuildMesh();
+            foreach (var w in _attachedWindows)
+                if (w != null) w.RefreshGeometry();
+            foreach (var d in _attachedDoors)
+                if (d != null) d.RefreshGeometry();
+        }
+
+        public void UnregisterDoor(DoorElement door)
+        {
+            _attachedDoors.Remove(door);
+            RebuildMesh();
+            foreach (var w in _attachedWindows)
+                if (w != null) w.RefreshGeometry();
+            foreach (var d in _attachedDoors)
+                if (d != null) d.RefreshGeometry();
         }
 
         public void RebuildMesh()
@@ -82,6 +112,7 @@ namespace KitchenDesigner.Core
             if (_meshFilter == null) return;
 
             _attachedWindows.RemoveAll(w => w == null);
+            _attachedDoors.RemoveAll(d => d == null);
 
             var el = GetComponent<KitchenElement>();
             var dims = el != null ? el.DimensionsMM : new Vector3Int(100, 2500, 2000);
@@ -92,24 +123,25 @@ namespace KitchenDesigner.Core
             float wallH = FullScaleY > 0.001f ? FullScaleY : dims.y * 0.001f;
 
             var cutouts = new List<WallMeshBuilder.WindowCutout>();
-            foreach (var w in _attachedWindows)
+
+            void AddCutout(KitchenElement opening)
             {
-                if (w == null) continue;
-                var wDims = w.DimensionsMM;
-                // Нормализованные координаты окна в ПОЛНОМ боксе стены (±0.5 на
-                // краях). Не через InverseTransformPoint: стена может быть
-                // временно опущена (WallCutaway), а меш строится для полной.
-                Vector3 lp = Quaternion.Inverse(transform.rotation) * (w.transform.position - FullPosition);
+                if (opening == null) return;
+                var oDims = opening.DimensionsMM;
+                Vector3 lp = Quaternion.Inverse(transform.rotation) * (opening.transform.position - FullPosition);
                 float u = (thickAlongX ? lp.z : lp.x) / Mathf.Max(0.001f, wallW);
                 float v = lp.y / Mathf.Max(0.001f, wallH);
                 cutouts.Add(new WallMeshBuilder.WindowCutout
                 {
                     centerNorm = new Vector2(u, v),
                     halfSizeNorm = new Vector2(
-                        wDims.x * 0.001f * 0.5f / Mathf.Max(0.001f, wallW),
-                        wDims.y * 0.001f * 0.5f / Mathf.Max(0.001f, wallH))
+                        oDims.x * 0.001f * 0.5f / Mathf.Max(0.001f, wallW),
+                        oDims.y * 0.001f * 0.5f / Mathf.Max(0.001f, wallH))
                 });
             }
+
+            foreach (var w in _attachedWindows) AddCutout(w);
+            foreach (var d in _attachedDoors) AddCutout(d);
 
             if (_customMesh != null)
             {

@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core
 		GameObject CreatePillar(int midHeightMM, string name, Vector3 position);
 		GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50);
+        GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position);
         GameObject Duplicate(KitchenElement source);
         void DestroyPart(GameObject go);
         void DestroyFacade(GameObject go);

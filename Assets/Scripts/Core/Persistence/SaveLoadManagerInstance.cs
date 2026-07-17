@@ -184,6 +184,8 @@ namespace KitchenDesigner.Core
 					: ed.isWindow
 						? ElementFactory.Instance.CreateWindow(ed.Dimensions, ed.name, ed.Position,
 							(GlassTint)ed.windowTint, ed.windowSillProtrusionMM)
+						: ed.isDoor
+						? ElementFactory.Instance.CreateDoor(ed.Dimensions, ed.name, ed.Position)
 						: ed.isWall
 						? ElementFactory.Instance.CreateWall(ed.Dimensions, ed.name, ed.Position)
 						: ed.isPillar
@@ -248,6 +250,13 @@ namespace KitchenDesigner.Core
                         winEl.Mode = (DoorMode)ed.windowDoorMode;
                         if (ed.windowIsOpen) winEl.SetOpen(true);
                         winEl.AttachedWallName = ed.windowAttachedWallName;
+                    }
+
+                    if (ed.isDoor && el is DoorElement doorEl)
+                    {
+                        doorEl.Mode = (DoorMode)ed.doorDoorMode;
+                        if (ed.doorIsOpen) doorEl.SetOpen(true);
+                        doorEl.AttachedWallName = ed.doorAttachedWallName;
                     }
                 }
                 created.Add(go);

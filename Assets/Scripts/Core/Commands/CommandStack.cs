@@ -155,6 +155,8 @@ namespace KitchenDesigner.Core
             // вызывается). Дерегистрируем явно до SetActive.
             if (_element is WindowElement win)
                 win.UnregisterFromWall();
+            if (_element is DoorElement door)
+                door.UnregisterFromWall();
             _deleted.SetActive(false);
             if (_element != null)
                 PartRegistry.Unregister(_element);
