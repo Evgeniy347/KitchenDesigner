@@ -24,7 +24,7 @@ namespace KitchenDesigner.Core
         private bool _pressed;
         private Vector2 _pressMouse;
         // Пока курсор не сместится дальше этого порога (в пикселях) — это клик
-        // (откроется контекстное меню), а не перетаскивание. Только после порога
+        // (выделение), а не перетаскивание. Только после порога
         // включается drag с зелёной/красной тонировкой.
         private const float DragStartPixels = 6f;
 
@@ -279,8 +279,6 @@ namespace KitchenDesigner.Core
             {
                 if (IsDragging)
                     FinishDrag();
-                else if (_pressed)
-                    OpenContextMenuForTarget(); // клик без перетаскивания → меню настроек
                 _pressed = false;
             }
         }
@@ -296,17 +294,6 @@ namespace KitchenDesigner.Core
             _pressed = false;
             _movingSet.Clear();
             RefreshHighlights();
-        }
-
-        private void OpenContextMenuForTarget()
-        {
-            if (_target == null) return;
-            // В режиме редактирования модуля детали настраиваются поштучно — меню
-            // открывается; вне режима у связанной группы своё меню (ПКМ).
-            bool editingInModule = ModuleEditMode.IsActive && ModuleEditMode.IsEditable(_target);
-            if (!editingInModule && GroupManager.GroupOf(_target) != null) return;
-            if (UI.UIManager.Instance != null)
-                UI.UIManager.Instance.OpenContextMenu(_target);
         }
 
         private void UpdateDrag()

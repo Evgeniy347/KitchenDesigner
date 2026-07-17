@@ -348,7 +348,7 @@ namespace KitchenDesigner.Core.UI
             return cam.transform.position + cam.transform.forward * 2f;
         }
 
-        /// <summary>Открыть контекстное меню детали (вызывается из ElementMover по клику ЛКМ).</summary>
+        /// <summary>Открыть контекстное меню детали (вызывается из CameraController по клику ПКМ).</summary>
         public void OpenContextMenu(KitchenElement element)
         {
             if (_contextMenu != null)

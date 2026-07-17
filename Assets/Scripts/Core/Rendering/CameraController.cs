@@ -67,7 +67,7 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
-            // Орбита: ПКМ по чему угодно (деталь или пустота). Контекстное меню теперь по ЛКМ.
+            // Орбита: ПКМ по чему угодно (деталь или пустота). ПКМ-клик по детали — контекстное меню.
             // Pan: ЛКМ по пустому месту или СКМ. ЛКМ по детали = перемещение детали.
             bool overUI = PointerOverUI();
             bool lmbDown = Input.GetMouseButtonDown(0);
@@ -287,6 +287,13 @@ namespace KitchenDesigner.Core
             var e = hit.collider.GetComponentInParent<KitchenElement>();
             if (e == null || e.GetComponent<BasePlate>() != null) return;
             if (UI.UIManager.Instance == null) return;
+
+            // В режиме редактирования модуля — настройка отдельных деталей.
+            if (ModuleEditMode.IsActive && ModuleEditMode.IsEditable(e))
+            {
+                UI.UIManager.Instance.OpenContextMenu(e);
+                return;
+            }
 
             var sel = SelectionManager.Instance;
             bool grouped = GroupManager.GroupOf(e) != null;
