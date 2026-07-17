@@ -24,7 +24,7 @@ namespace KitchenDesigner.Core
 
         // Якорь графа связности — пол или стена (к ним заземляются детали).
         private static bool IsAnchor(KitchenElement e) =>
-            e != null && (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null || e is WindowElement || e is DoorElement);
+            e != null && (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null || e is WindowElement || e is DoorElement || e is FloorElement);
 
         // ── Статический скратч: контейнеры переиспользуются между вызовами Validate,
         //    чтобы в горячем пути (перетаскивание — Validate каждый кадр) не было
@@ -178,6 +178,9 @@ namespace KitchenDesigner.Core
             var b = _elems[bIdx];
             var aabbA = _aabbs[aIdx];
             var aabbB = _aabbs[bIdx];
+
+            // Лампа — декор: не создаёт ни пересечений, ни несущих контактов.
+            if (a is LightSourceElement || b is LightSourceElement) return;
 
             if (AABBsIntersect(aabbA, aabbB))
             {
@@ -412,6 +415,9 @@ namespace KitchenDesigner.Core
                 if (e is FacadeElement fe && fe.GapMM > 0) continue;
                 // DrawerElements are internal cabinet components, not structural anchors.
                 if (e is DrawerElement) continue;
+                // Источник света висит в воздухе (лампа/люстра) — отсутствие
+                // опоры для него штатно.
+                if (e is LightSourceElement) continue;
                 if (!visited.Contains(e) || !hasContact.Contains(e))
                     result.violations.Add(e);
             }

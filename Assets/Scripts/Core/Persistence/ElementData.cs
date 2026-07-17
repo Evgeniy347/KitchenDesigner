@@ -54,6 +54,8 @@ namespace KitchenDesigner.Core
 		public string doorAttachedWallName = "";
 		public bool isPillar = false;
 		public int midHeightMM = 75;
+		public bool isFloor = false;
+		public bool isLightSource = false;
 
         public ElementData() { }
 
@@ -177,6 +179,8 @@ namespace KitchenDesigner.Core
 			}
 
 			d.isPillar = pillar != null;
+			d.isFloor = element is FloorElement;
+			d.isLightSource = element is LightSourceElement;
 			d.midHeightMM = pillar != null ? pillar.MidHeightMM : PillarElement.MidHeightMM_Default;
 
 			d.groupId = element.GroupId;
