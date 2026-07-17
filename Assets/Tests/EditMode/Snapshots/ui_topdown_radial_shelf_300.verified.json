@@ -1,10 +1,20 @@
-{
+﻿{
   "root": "UICanvas",
   "children": [
     {
       "type": "Label",
-      "text": "�������������� ����",
+      "text": "Автосохранение вкл",
       "position": [14, 12]
+    },
+    {
+      "type": "Button",
+      "text": "Кухня",
+      "position": [4, 0]
+    },
+    {
+      "type": "Button",
+      "text": "BasePlate",
+      "position": [20, 0]
     },
     {
       "type": "Button",
@@ -13,143 +23,174 @@
     },
     {
       "type": "Button",
-      "text": "�",
+      "text": "«",
       "position": [4, -4]
     },
     {
       "type": "Button",
-      "text": "�����: [ ]",
-      "position": [644, -6]
+      "text": "x",
+      "position": [-6, -6]
     },
     {
       "type": "Button",
-      "text": "�������.",
-      "position": [558, -6]
+      "text": "+ Группа",
+      "position": [-38, -6]
+    },
+    {
+      "type": "Label",
+      "text": "Сцена",
+      "position": [14, -6]
     },
     {
       "type": "Button",
-      "text": "������.",
-      "position": [472, -6]
+      "text": "Режим: [ ]",
+      "position": [740, -6]
     },
     {
       "type": "Button",
-      "text": "������������",
+      "text": "Спецификация",
       "position": [8, -6]
     },
     {
       "type": "Button",
-      "text": "Undo",
-      "position": [360, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Load",
-      "position": [302, -6]
-    },
-    {
-      "type": "Button",
-      "text": "SaveAs",
-      "position": [256, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Save",
-      "position": [210, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Settings",
-      "position": [164, -6]
+      "text": "Выравн.",
+      "position": [568, -6]
     },
     {
       "type": "Button",
       "text": "Redo",
-      "position": [406, -6]
+      "position": [502, -6]
     },
     {
       "type": "Button",
-      "text": "������",
+      "text": "Undo",
+      "position": [456, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Load",
+      "position": [398, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Сцена",
+      "position": [164, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Settings",
+      "position": [260, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Save",
+      "position": [306, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Распред.",
+      "position": [654, -6]
+    },
+    {
+      "type": "Button",
+      "text": "SaveAs",
+      "position": [352, -6]
+    },
+    {
+      "type": "Button",
+      "text": "детали",
       "position": [8, -8]
     },
     {
+      "type": "Dropdown",
+      "options": ["Переместить в…", "— вне групп —", "+ Новая группа"],
+      "selected": 0,
+      "position": [0, -38]
+    },
+    {
       "type": "Button",
-      "text": "600?400?16",
+      "text": "600×400×16",
       "position": [22, -42]
     },
     {
       "type": "Button",
-      "text": "600?400?16 (���������)",
+      "text": "600×400×16 (радиусная)",
       "position": [22, -71]
     },
     {
       "type": "Button",
-      "text": "������",
+      "text": "Фасады",
       "position": [8, -100]
     },
     {
       "type": "Button",
-      "text": "����� 800?400?18",
+      "text": "Фасад 800×400×18",
       "position": [22, -134]
     },
     {
       "type": "Button",
-      "text": "����� 600?400?18",
+      "text": "Фасад 600×400×18",
       "position": [22, -163]
     },
     {
       "type": "Button",
-      "text": "������� 450?700?18",
+      "text": "Сборный 450×700×18",
       "position": [22, -192]
     },
     {
       "type": "Button",
-      "text": "������� 600?716?18",
+      "text": "Сборный 600×716×18",
       "position": [22, -221]
     },
     {
       "type": "Button",
-      "text": "����� GTV",
+      "text": "Ящики GTV",
       "position": [8, -250]
     },
     {
       "type": "Button",
-      "text": "���� GTV",
+      "text": "Ящик GTV",
       "position": [22, -284]
     },
     {
       "type": "Button",
-      "text": "������",
+      "text": "Мебель",
       "position": [8, -313]
     },
     {
       "type": "Button",
-      "text": "������������� ����",
+      "text": "Прямоугольный стол",
       "position": [22, -347]
     },
     {
       "type": "Button",
-      "text": "��������� ����",
+      "text": "Радиусный стол",
       "position": [22, -376]
     },
     {
       "type": "Button",
-      "text": "���������",
+      "text": "Помещение",
       "position": [8, -405]
     },
     {
       "type": "Button",
-      "text": "�����",
+      "text": "Короб",
       "position": [22, -439]
     },
     {
       "type": "Button",
-      "text": "�����",
+      "text": "Стена",
       "position": [22, -468]
     },
     {
       "type": "Button",
-      "text": "������� ���������",
+      "text": "Окно",
       "position": [22, -497]
+    },
+    {
+      "type": "Button",
+      "text": "Размеры помещения",
+      "position": [22, -526]
     }
   ]
 }

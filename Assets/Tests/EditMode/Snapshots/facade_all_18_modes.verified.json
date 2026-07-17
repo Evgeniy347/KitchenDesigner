@@ -1,4 +1,4 @@
-{
+﻿{
     "version": 1,
     "elements": [
         {
@@ -55,7 +55,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_1",
@@ -111,7 +113,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_2",
@@ -167,7 +171,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_3",
@@ -223,7 +229,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_4",
@@ -279,7 +287,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_5",
@@ -335,7 +345,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_6",
@@ -391,7 +403,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_7",
@@ -447,7 +461,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_8",
@@ -503,7 +519,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_9",
@@ -559,7 +577,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_10",
@@ -615,7 +635,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_11",
@@ -671,7 +693,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_12",
@@ -727,7 +751,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_13",
@@ -783,7 +809,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_14",
@@ -839,7 +867,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_15",
@@ -895,7 +925,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_16",
@@ -951,7 +983,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         },
         {
             "name": "Mode_17",
@@ -1007,7 +1041,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         }
     ],
     "groups": [],
@@ -1076,22 +1112,24 @@
         "windowSillProtrusionMM": 50,
         "windowDoorMode": 0,
         "windowIsOpen": false,
-        "windowAttachedWallName": ""
+        "windowAttachedWallName": "",
+        "isPillar": false,
+        "midHeightMM": 75
     },
     "undoHistory": [],
     "redoHistory": [],
     "settings": {
-        "gridStep": 18,
+        "gridStep": 1,
         "gridEnabled": true,
         "snapEnabled": true,
         "snapThreshold": 50.0,
         "blockOnViolation": false,
-        "autoSave": true,
+        "autoSave": false,
         "autoSaveInterval": 60,
         "spatialGrid": false,
         "windowedMode": true,
-        "edgeOutline": true,
+        "edgeOutline": false,
         "wallsEnabled": true,
-        "lowerNearWalls": true
+        "lowerNearWalls": false
     }
 }

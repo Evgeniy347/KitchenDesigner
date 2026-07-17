@@ -1,4 +1,4 @@
-{
+﻿{
     "version": 1,
     "elements": [
         {
@@ -55,7 +55,9 @@
             "windowSillProtrusionMM": 50,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         }
     ],
     "groups": [],
@@ -124,22 +126,24 @@
         "windowSillProtrusionMM": 50,
         "windowDoorMode": 0,
         "windowIsOpen": false,
-        "windowAttachedWallName": ""
+        "windowAttachedWallName": "",
+        "isPillar": false,
+        "midHeightMM": 75
     },
     "undoHistory": [],
     "redoHistory": [],
     "settings": {
-        "gridStep": 18,
+        "gridStep": 1,
         "gridEnabled": true,
         "snapEnabled": true,
         "snapThreshold": 50.0,
         "blockOnViolation": false,
-        "autoSave": true,
+        "autoSave": false,
         "autoSaveInterval": 60,
         "spatialGrid": false,
         "windowedMode": true,
-        "edgeOutline": true,
+        "edgeOutline": false,
         "wallsEnabled": true,
-        "lowerNearWalls": true
+        "lowerNearWalls": false
     }
 }

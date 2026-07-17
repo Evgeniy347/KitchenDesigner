@@ -1,4 +1,4 @@
-{
+﻿{
   "root": "ContextMenu",
   "children": [
     {
@@ -18,202 +18,202 @@
     },
     {
       "type": "Label",
-      "text": "��������� �����",
+      "text": "Радиусная полка",
       "position": [0, -12]
     },
     {
       "type": "Dropdown",
-      "options": ["������", "�����", "������� �����", "��������� �����", "���� GTV"],
+      "options": ["Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно"],
       "selected": 3,
       "position": [0, -48]
     },
     {
       "type": "InputField",
-      "label": "��������",
-      "value": "���������_300",
+      "label": "Название",
+      "value": "Радиусная_300",
       "interactable": true,
       "position": [100, -83]
     },
     {
       "type": "Label",
-      "text": "��������",
+      "text": "Название",
       "position": [-80, -83]
     },
     {
       "type": "Label",
-      "text": "������, ��",
+      "text": "Ширина, мм",
       "position": [-80, -114]
     },
     {
       "type": "InputField",
-      "label": "������, ��",
+      "label": "Ширина, мм",
       "value": "600",
       "interactable": true,
       "position": [100, -114]
     },
     {
       "type": "Label",
-      "text": "������, ��",
+      "text": "Высота, мм",
       "position": [-80, -145]
     },
     {
       "type": "InputField",
-      "label": "������, ��",
+      "label": "Высота, мм",
       "value": "18",
       "interactable": true,
       "position": [100, -145]
     },
     {
       "type": "Label",
-      "text": "�������, ��",
+      "text": "Глубина, мм",
       "position": [-80, -176]
     },
     {
       "type": "InputField",
-      "label": "�������, ��",
+      "label": "Глубина, мм",
       "value": "400",
       "interactable": true,
       "position": [100, -176]
     },
     {
       "type": "Label",
-      "text": "������ ����, ��",
+      "text": "Радиус угла, мм",
       "position": [-80, -207]
     },
     {
       "type": "InputField",
-      "label": "������ ����, ��",
+      "label": "Радиус угла, мм",
       "value": "200",
       "interactable": true,
       "position": [100, -207]
     },
     {
       "type": "Label",
-      "text": "��������:",
+      "text": "Текстура:",
       "position": [0, -238]
     },
     {
       "type": "Dropdown",
-      "options": ["�����", "�����", "��� ������", "�����", "�����", "�������� (GTV)", "����� (GTV)", "׸���� (GTV)"],
+      "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)"],
       "selected": 0,
       "position": [0, -264]
     },
     {
       "type": "Label",
-      "text": "Z, �",
+      "text": "Z, м",
       "position": [110, -300]
     },
     {
       "type": "Label",
-      "text": "Y, �",
+      "text": "Y, м",
       "position": [0, -300]
     },
     {
       "type": "Label",
-      "text": "X, �",
+      "text": "X, м",
       "position": [-110, -300]
     },
     {
       "type": "InputField",
-      "label": "Z, �",
+      "label": "Z, м",
       "value": "0,000",
       "interactable": true,
       "position": [110, -320]
     },
     {
       "type": "InputField",
-      "label": "X, �",
+      "label": "X, м",
       "value": "4,000",
       "interactable": true,
       "position": [-110, -320]
     },
     {
       "type": "InputField",
-      "label": "Y, �",
+      "label": "Y, м",
       "value": "0,009",
       "interactable": true,
       "position": [0, -320]
     },
     {
       "type": "Label",
-      "text": "Z�",
+      "text": "Z°",
       "position": [110, -351]
     },
     {
       "type": "Label",
-      "text": "X�",
+      "text": "X°",
       "position": [-110, -351]
     },
     {
       "type": "Label",
-      "text": "Y�",
+      "text": "Y°",
       "position": [0, -351]
     },
     {
       "type": "InputField",
-      "label": "Z�",
+      "label": "Z°",
       "value": "0,0",
       "interactable": true,
       "position": [110, -371]
     },
     {
       "type": "InputField",
-      "label": "X�",
+      "label": "X°",
       "value": "0,0",
       "interactable": true,
       "position": [-110, -371]
     },
     {
       "type": "InputField",
-      "label": "Y�",
+      "label": "Y°",
       "value": "0,0",
       "interactable": true,
       "position": [0, -371]
     },
     {
       "type": "Label",
-      "text": "��������� �� 90�:",
+      "text": "Повернуть на 90°:",
       "position": [0, -402]
     },
     {
       "type": "Button",
-      "text": "Y 90�",
+      "text": "Y 90°",
       "position": [0, -428]
     },
     {
       "type": "Button",
-      "text": "Z 90�",
+      "text": "Z 90°",
       "position": [112, -428]
     },
     {
       "type": "Button",
-      "text": "X 90�",
+      "text": "X 90°",
       "position": [-112, -428]
     },
     {
       "type": "Button",
-      "text": "���������",
+      "text": "Применить",
       "position": [-85, -464]
     },
     {
       "type": "Button",
-      "text": "�����������",
+      "text": "Дублировать",
       "position": [85, -464]
     },
     {
       "type": "Button",
-      "text": "�������",
+      "text": "Удалить",
       "position": [0, -504]
     },
     {
       "type": "Toggle",
-      "label": "����������",
+      "label": "Прозрачный",
       "isOn": false,
       "position": [0, -544]
     },
     {
       "type": "Toggle",
-      "label": "��������� �����������",
+      "label": "Запретить перемещение",
       "isOn": false,
       "position": [0, -577]
     }

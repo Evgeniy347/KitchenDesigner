@@ -1,0 +1,260 @@
+﻿{
+  "root": "ContextMenu",
+  "children": [
+    {
+      "type": "Label",
+      "text": "X",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "X",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "X",
+      "position": [-4, -4]
+    },
+    {
+      "type": "Label",
+      "text": "Ящик GTV",
+      "position": [0, -12]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно"],
+      "selected": 4,
+      "position": [0, -48]
+    },
+    {
+      "type": "InputField",
+      "label": "Название",
+      "value": "Ящик_A_350",
+      "interactable": true,
+      "position": [100, -83]
+    },
+    {
+      "type": "Label",
+      "text": "Название",
+      "position": [-80, -83]
+    },
+    {
+      "type": "Label",
+      "text": "Ширина, мм",
+      "position": [-80, -114]
+    },
+    {
+      "type": "InputField",
+      "label": "Ширина, мм",
+      "value": "400",
+      "interactable": false,
+      "position": [100, -114]
+    },
+    {
+      "type": "Label",
+      "text": "Высота, мм",
+      "position": [-80, -145]
+    },
+    {
+      "type": "InputField",
+      "label": "Высота, мм",
+      "value": "115",
+      "interactable": false,
+      "position": [100, -145]
+    },
+    {
+      "type": "Label",
+      "text": "Глубина, мм",
+      "position": [-80, -176]
+    },
+    {
+      "type": "InputField",
+      "label": "Глубина, мм",
+      "value": "350",
+      "interactable": false,
+      "position": [100, -176]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["A (86 мм)", "B (120 мм)", "C (168 мм)", "D (200 мм)"],
+      "selected": 0,
+      "position": [0, -207]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["L=250 мм", "L=300 мм", "L=350 мм", "L=400 мм", "L=450 мм", "L=500 мм", "L=550 мм", "L=600 мм"],
+      "selected": 2,
+      "position": [0, -243]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Антрацит", "Белый", "Чёрный"],
+      "selected": 0,
+      "position": [0, -279]
+    },
+    {
+      "type": "Label",
+      "text": "Ширина короба, мм",
+      "position": [-80, -315]
+    },
+    {
+      "type": "InputField",
+      "label": "Ширина короба, мм",
+      "value": "400",
+      "interactable": true,
+      "position": [100, -315]
+    },
+    {
+      "type": "Button",
+      "text": "Двойной ящик",
+      "position": [0, -346]
+    },
+    {
+      "type": "Button",
+      "text": "Открыть ящик",
+      "position": [0, -382]
+    },
+    {
+      "type": "Label",
+      "text": "Фасад ящика:",
+      "position": [0, -418]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["(нет фасада)"],
+      "selected": 0,
+      "position": [0, -444]
+    },
+    {
+      "type": "Label",
+      "text": "Текстура:",
+      "position": [0, -480]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)"],
+      "selected": 5,
+      "position": [0, -506]
+    },
+    {
+      "type": "Label",
+      "text": "X, м",
+      "position": [-110, -542]
+    },
+    {
+      "type": "Label",
+      "text": "Y, м",
+      "position": [0, -542]
+    },
+    {
+      "type": "Label",
+      "text": "Z, м",
+      "position": [110, -542]
+    },
+    {
+      "type": "InputField",
+      "label": "Y, м",
+      "value": "0,043",
+      "interactable": true,
+      "position": [0, -562]
+    },
+    {
+      "type": "InputField",
+      "label": "X, м",
+      "value": "5,000",
+      "interactable": true,
+      "position": [-110, -562]
+    },
+    {
+      "type": "InputField",
+      "label": "Z, м",
+      "value": "0,000",
+      "interactable": true,
+      "position": [110, -562]
+    },
+    {
+      "type": "Label",
+      "text": "Y°",
+      "position": [0, -593]
+    },
+    {
+      "type": "Label",
+      "text": "Z°",
+      "position": [110, -593]
+    },
+    {
+      "type": "Label",
+      "text": "X°",
+      "position": [-110, -593]
+    },
+    {
+      "type": "InputField",
+      "label": "X°",
+      "value": "0,0",
+      "interactable": true,
+      "position": [-110, -613]
+    },
+    {
+      "type": "InputField",
+      "label": "Z°",
+      "value": "0,0",
+      "interactable": true,
+      "position": [110, -613]
+    },
+    {
+      "type": "InputField",
+      "label": "Y°",
+      "value": "0,0",
+      "interactable": true,
+      "position": [0, -613]
+    },
+    {
+      "type": "Label",
+      "text": "Повернуть на 90°:",
+      "position": [0, -644]
+    },
+    {
+      "type": "Button",
+      "text": "X 90°",
+      "position": [-112, -670]
+    },
+    {
+      "type": "Button",
+      "text": "Y 90°",
+      "position": [0, -670]
+    },
+    {
+      "type": "Button",
+      "text": "Z 90°",
+      "position": [112, -670]
+    },
+    {
+      "type": "Button",
+      "text": "Применить",
+      "position": [-85, -706]
+    },
+    {
+      "type": "Button",
+      "text": "Дублировать",
+      "position": [85, -706]
+    },
+    {
+      "type": "Button",
+      "text": "Удалить",
+      "position": [0, -746]
+    },
+    {
+      "type": "Toggle",
+      "label": "Прозрачный",
+      "isOn": false,
+      "position": [0, -786]
+    },
+    {
+      "type": "Toggle",
+      "label": "Запретить перемещение",
+      "isOn": false,
+      "position": [0, -819]
+    }
+  ]
+}

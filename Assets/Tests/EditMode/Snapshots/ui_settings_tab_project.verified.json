@@ -1,0 +1,194 @@
+﻿{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Настройки",
+      "position": [0, 285]
+    },
+    {
+      "type": "Button",
+      "text": "Проект",
+      "position": [-160, 246]
+    },
+    {
+      "type": "Button",
+      "text": "Графика",
+      "position": [0, 246]
+    },
+    {
+      "type": "Button",
+      "text": "О программе",
+      "position": [160, 246]
+    },
+    {
+      "type": "InputField",
+      "label": "Fld_Интервал автосейва, с",
+      "value": "60",
+      "interactable": true,
+      "position": [165, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Пространственная сетка",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Пространственная сетка",
+      "isOn": false,
+      "position": [227, 0]
+    },
+    {
+      "type": "Label",
+      "text": "X",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Контур (чёрные рёбра)",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Контур (чёрные рёбра)",
+      "isOn": false,
+      "position": [227, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Стены",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Интервал автосейва, с",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Стены",
+      "isOn": true,
+      "position": [227, 0]
+    },
+    {
+      "type": "Label",
+      "text": "X",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Опускать ближние стены",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Опускать ближние стены",
+      "isOn": false,
+      "position": [227, 0]
+    },
+    {
+      "type": "Label",
+      "text": "X",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "X",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Автосохранение",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "X",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "X",
+      "position": [0, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Блокировать ошибки",
+      "isOn": true,
+      "position": [227, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Блокировать ошибки",
+      "position": [-90, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Fld_Порог снэпа, мм",
+      "value": "50",
+      "interactable": true,
+      "position": [165, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Порог снэпа, мм",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "X",
+      "position": [0, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Снэппинг",
+      "isOn": true,
+      "position": [227, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Снэппинг",
+      "position": [-90, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Fld_Шаг сетки, мм",
+      "value": "18",
+      "interactable": true,
+      "position": [165, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Шаг сетки, мм",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "X",
+      "position": [0, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Сетка",
+      "isOn": true,
+      "position": [227, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сетка",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Автосохранение",
+      "isOn": true,
+      "position": [227, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Закрыть",
+      "position": [0, -254]
+    }
+  ]
+}
