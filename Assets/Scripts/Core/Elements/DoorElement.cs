@@ -199,25 +199,26 @@ namespace KitchenDesigner.Core
                 Quaternion.Angle(targetRot, transform.rotation) > 0.05f)
                 transform.SetPositionAndRotation(targetPos, targetRot);
 
+            if (wallDims.y <= 0) return;
             int targetY = Mathf.Min(DimensionsMM.y, wallDims.y);
             int targetZ = thicknessMM;
-            if (DimensionsMM.y != targetY || DimensionsMM.z != targetZ)
-            {
-                DimensionsMM = new Vector3Int(DimensionsMM.x, targetY, targetZ);
-                _lastCutoutPos = transform.position;
-            }
-
             float toU = AppConstants.MM_TO_UNITS;
             float wallHalfH = wallDims.y * toU * 0.5f;
             float wallCenterY = wall.FullPosition.y;
-            float doorHalfH = DimensionsMM.y * toU * 0.5f;
+            float targetHalfH = targetY * toU * 0.5f;
             float clampedY = Mathf.Clamp(transform.position.y,
-                wallCenterY - wallHalfH + doorHalfH,
-                wallCenterY + wallHalfH - doorHalfH);
+                wallCenterY - wallHalfH + targetHalfH,
+                wallCenterY + wallHalfH - targetHalfH);
             if (Mathf.Abs(clampedY - transform.position.y) > Tolerance.EpsilonUnits)
             {
                 transform.position = new Vector3(transform.position.x, clampedY, transform.position.z);
                 _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
+            }
+
+            if (DimensionsMM.y != targetY || DimensionsMM.z != targetZ)
+            {
+                DimensionsMM = new Vector3Int(DimensionsMM.x, targetY, targetZ);
+                _lastCutoutPos = transform.position;
             }
 
             if (float.IsNaN(_lastCutoutPos.x) ||
