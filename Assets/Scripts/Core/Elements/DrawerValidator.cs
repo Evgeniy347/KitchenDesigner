@@ -50,7 +50,7 @@ namespace KitchenDesigner.Core
                 var otherAabb = ComputeAABB(el.GetVertices());
                 float wallThicknessX = otherAabb.maxX - otherAabb.minX;
 
-                if (wallThicknessX < minWallThicknessUnits - 0.0001f) continue;
+                if (wallThicknessX < minWallThicknessUnits - Tolerance.EpsilonUnits) continue;
 
                 // Стенка обязана перекрывать ящик по высоте и глубине — иначе любой
                 // элемент слева/справа в другом конце сцены считался бы «стенкой».
@@ -84,7 +84,7 @@ namespace KitchenDesigner.Core
             else
             {
                 float clearanceMm = leftGap * toMm;
-                if (clearanceMm < MIN_CLEARANCE_PER_SIDE_MM - 0.1f || clearanceMm > MAX_CLEARANCE_PER_SIDE_MM + 0.1f)
+                if (clearanceMm < MIN_CLEARANCE_PER_SIDE_MM - Tolerance.ClearanceMm || clearanceMm > MAX_CLEARANCE_PER_SIDE_MM + Tolerance.ClearanceMm)
                     result.AddError($"Зазор слева {clearanceMm:F1} мм (допуск {MIN_CLEARANCE_PER_SIDE_MM}-{MAX_CLEARANCE_PER_SIDE_MM} мм)");
             }
 
@@ -95,7 +95,7 @@ namespace KitchenDesigner.Core
             else
             {
                 float clearanceMm = rightGap * toMm;
-                if (clearanceMm < MIN_CLEARANCE_PER_SIDE_MM - 0.1f || clearanceMm > MAX_CLEARANCE_PER_SIDE_MM + 0.1f)
+                if (clearanceMm < MIN_CLEARANCE_PER_SIDE_MM - Tolerance.ClearanceMm || clearanceMm > MAX_CLEARANCE_PER_SIDE_MM + Tolerance.ClearanceMm)
                     result.AddError($"Зазор справа {clearanceMm:F1} мм (допуск {MIN_CLEARANCE_PER_SIDE_MM}-{MAX_CLEARANCE_PER_SIDE_MM} мм)");
             }
 
@@ -148,10 +148,10 @@ namespace KitchenDesigner.Core
                 // Верх/дно корпуса обязаны перекрывать ящик в плане (X/Z).
                 if (!OverlapsXZ(aabb, groupAabb)) continue;
 
-                if (aabb.minY >= groupAabb.maxY - 0.0001f && aabb.minY < topY)
+                if (aabb.minY >= groupAabb.maxY - Tolerance.EpsilonUnits && aabb.minY < topY)
                     topY = aabb.minY;
 
-                if (aabb.maxY <= groupAabb.minY + 0.0001f && aabb.maxY > bottomY)
+                if (aabb.maxY <= groupAabb.minY + Tolerance.EpsilonUnits && aabb.maxY > bottomY)
                     bottomY = aabb.maxY;
             }
 
@@ -189,7 +189,7 @@ namespace KitchenDesigner.Core
 
                 var aabb = ComputeAABB(el.GetVertices());
                 if (!OverlapsXZ(aabb, drawerAabb)) continue;
-                if (aabb.minY >= drawerAabb.maxY - 0.0001f && aabb.minY < nearestY)
+                if (aabb.minY >= drawerAabb.maxY - Tolerance.EpsilonUnits && aabb.minY < nearestY)
                     nearestY = aabb.minY;
             }
 
