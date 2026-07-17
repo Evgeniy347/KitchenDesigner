@@ -9,6 +9,11 @@ namespace KitchenDesigner.Core
 
         public int RefreshCount { get; set; }
 
+        // Валидационная тонировка (светло-зелёный «всё в порядке»). Выключена —
+        // валидные детали показывают собственный материал/текстуру; нарушения
+        // по-прежнему подсвечиваются красным.
+        public static bool TintEnabled { get; set; } = true;
+
         private Material? _validMaterial;
         private Material? _invalidMaterial;
         private Material? _validTransparentMaterial;
@@ -123,6 +128,9 @@ namespace KitchenDesigner.Core
             if (renderer == null) return;
 
             if (element.GetComponent<BasePlate>() != null || element.GetComponent<Wall>() != null) return;
+            // Пол и источник света держат собственный материал (пол — как BasePlate,
+            // лампа — светящийся плафон), валидационная тонировка к ним не применяется.
+            if (element is FloorElement || element is LightSourceElement) return;
 
             // В режиме редактирования модуля всё вне модуля затемнено —
             // визуальный сигнал «заблокировано».
@@ -138,7 +146,7 @@ namespace KitchenDesigner.Core
                 renderer.material = isValid ? _validTransparentMaterial! : _invalidTransparentMaterial!;
                 ElementOutline.Ensure(element)?.Show(selected: false);
             }
-            else if (isValid && MaterialManager.HasCustomDecor(element))
+            else if (isValid && (!TintEnabled || MaterialManager.HasCustomDecor(element)))
             {
                 // Объекту назначена текстура/декор — показываем ЕЁ, а не плоский
                 // валидационный тон (нарушения всё равно видны красным ниже).

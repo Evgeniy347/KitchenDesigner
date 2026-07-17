@@ -188,6 +188,10 @@ namespace KitchenDesigner.Core
 						? ElementFactory.Instance.CreateDoor(ed.Dimensions, ed.name, ed.Position)
 						: ed.isWall
 						? ElementFactory.Instance.CreateWall(ed.Dimensions, ed.name, ed.Position)
+						: ed.isFloor
+						? ElementFactory.Instance.CreateFloor(ed.Dimensions, ed.name, ed.Position)
+						: ed.isLightSource
+						? ElementFactory.Instance.CreateLightSource(ed.name, ed.Position)
 						: ed.isPillar
 							? ElementFactory.Instance.CreatePillar(ed.midHeightMM, ed.name, ed.Position)
 							: ed.isTable
