@@ -149,9 +149,14 @@ namespace KitchenDesigner.Core.UI
         private void Spawn(SidebarCatalog.Item item)
         {
             if (UIManager.Instance == null) return;
-            if (item.name == "Размеры помещения")
+            if (item.isFloor)
             {
-                UIManager.Instance.OpenFloorSettings();
+                UIManager.Instance.SpawnFloor(item.dims, item.name);
+                return;
+            }
+            if (item.isLightSource)
+            {
+                UIManager.Instance.SpawnLightSource(item.name);
                 return;
             }
             if (item.isDrawer)

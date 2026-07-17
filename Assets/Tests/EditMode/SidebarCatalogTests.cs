@@ -115,11 +115,35 @@ public class SidebarCatalogTests
     }
 
     [Test]
-    public void Build_Room_ContainsRoomSettings()
+    public void Build_Room_DoesNotContainRoomSettings()
     {
         var groups = SidebarCatalog.Build();
         var room = groups[4];
-        var settings = room.items.Find(it => it.name == "Размеры помещения");
-        Assert.IsNotNull(settings);
+        Assert.IsFalse(room.items.Exists(it => it.name == "Размеры помещения"),
+            "пункт «Размеры помещения» удалён: пол теперь отдельный элемент");
+    }
+
+    [Test]
+    public void Room_ContainsFloor_MarkedAsFloor()
+    {
+        var groups = SidebarCatalog.Build();
+        var room = groups[4];
+        var floor = room.items.Find(it => it.name == "Пол");
+
+        Assert.IsTrue(floor.isFloor, "элемент «Пол» помечен как пол");
+        Assert.AreEqual(new Vector3Int(
+            FloorElement.DEFAULT_SIZE_MM,
+            FloorElement.DEFAULT_THICKNESS_MM,
+            FloorElement.DEFAULT_SIZE_MM), floor.dims);
+    }
+
+    [Test]
+    public void Room_ContainsLightSource_MarkedAsLightSource()
+    {
+        var groups = SidebarCatalog.Build();
+        var room = groups[4];
+        var lamp = room.items.Find(it => it.name == "Источник света");
+
+        Assert.IsTrue(lamp.isLightSource, "элемент «Источник света» помечен как источник света");
     }
 }
