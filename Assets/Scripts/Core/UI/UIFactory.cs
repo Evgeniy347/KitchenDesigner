@@ -242,6 +242,61 @@ namespace KitchenDesigner.Core.UI
                 outline.enabled = highlight;
         }
 
+        /// <summary>Горизонтальный слайдер, собранный из кода: фон, заполнение
+        /// и ручка в стиле остальных контролов.</summary>
+        public static Slider CreateSlider(string name, Transform parent, float min, float max,
+            float value, Vector2 anchoredPos, Vector2 size, System.Action<float> onChanged)
+        {
+            var rect = CreateRect(name, parent);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = anchoredPos;
+
+            var slider = rect.gameObject.AddComponent<Slider>();
+
+            var bg = CreateRect(name + "_Bg", rect);
+            bg.anchorMin = new Vector2(0, 0.35f);
+            bg.anchorMax = new Vector2(1, 0.65f);
+            bg.offsetMin = bg.offsetMax = Vector2.zero;
+            var bgImg = bg.gameObject.AddComponent<Image>();
+            bgImg.color = FieldColor;
+
+            var fillArea = CreateRect(name + "_FillArea", rect);
+            fillArea.anchorMin = new Vector2(0, 0.35f);
+            fillArea.anchorMax = new Vector2(1, 0.65f);
+            fillArea.offsetMin = new Vector2(4, 0);
+            fillArea.offsetMax = new Vector2(-4, 0);
+
+            var fill = CreateRect("Fill", fillArea);
+            fill.anchorMin = Vector2.zero;
+            fill.anchorMax = new Vector2(0, 1);
+            fill.sizeDelta = new Vector2(4, 0);
+            var fillImg = fill.gameObject.AddComponent<Image>();
+            fillImg.color = new Color(0.4f, 0.7f, 1f, 1f);
+
+            var handleArea = CreateRect(name + "_HandleArea", rect);
+            handleArea.anchorMin = Vector2.zero;
+            handleArea.anchorMax = Vector2.one;
+            handleArea.offsetMin = new Vector2(7, 0);
+            handleArea.offsetMax = new Vector2(-7, 0);
+
+            var handle = CreateRect("Handle", handleArea);
+            handle.sizeDelta = new Vector2(14, 0);
+            var handleImg = handle.gameObject.AddComponent<Image>();
+            handleImg.color = TextColor;
+
+            slider.fillRect = fill;
+            slider.handleRect = handle;
+            slider.targetGraphic = handleImg;
+            slider.direction = Slider.Direction.LeftToRight;
+            slider.minValue = min;
+            slider.maxValue = max;
+            slider.value = value;
+
+            if (onChanged != null)
+                slider.onValueChanged.AddListener(v => onChanged(v));
+            return slider;
+        }
+
         public static Toggle CreateToggle(string name, Transform parent, string label, bool value, Vector2 anchoredPos, Vector2 size, System.Action<bool> onChanged)
         {
             var rect = CreateRect(name, parent);
