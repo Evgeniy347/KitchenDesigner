@@ -5,6 +5,11 @@ namespace KitchenDesigner.Core
 {
     public static class WallMeshBuilder
     {
+        /// <summary>Минимальный размер ячейки в нормализованных координатах
+        /// (единичный куб). Ячейки тоньше этого порога порождают вырожденные
+        /// треугольники — визуальную полосу между близкими окнами.</summary>
+        public const float MinCellNorm = 0.001f;
+
         public struct WindowCutout
         {
             public Vector2 centerNorm;
@@ -98,11 +103,11 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < xSplits.Count - 1; i++)
             {
                 float xs = xSplits[i], xe = xSplits[i + 1];
-                if (Mathf.Approximately(xs, xe)) continue;
+                if (xe - xs < MinCellNorm) continue;
                 for (int j = 0; j < ySplits.Count - 1; j++)
                 {
                     float ys = ySplits[j], ye = ySplits[j + 1];
-                    if (Mathf.Approximately(ys, ye)) continue;
+                    if (ye - ys < MinCellNorm) continue;
 
                     float cx = (xs + xe) * 0.5f, cy = (ys + ye) * 0.5f;
                     bool insideWindow = false;

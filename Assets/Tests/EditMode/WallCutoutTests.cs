@@ -92,4 +92,79 @@ public class WallCutoutTests : SnapTestBase
         AssertFaceHasHole(mesh!, normalAxis: 2,
             cu: 0.2f, cv: -0.02f, hu: 0.45f / 3f, hv: 0.6f / 2.5f, uAxis: 0);
     }
+
+    // Зазор между окнами (= Tolerance.EpsilonUnits) меньше порога MinCellNorm —
+    // ячейка должна быть скипнута, иначе появится вырожденный квад (полоса).
+    private const float CloseGap = Tolerance.EpsilonUnits;
+
+    /// <summary>Два выреза с очень близкими границами по Y не должны порождать
+    /// вырожденные треугольники (регресс: тонкая полоса между окнами).</summary>
+    [Test]
+    public void Builder_TwoCloseWindows_NoDegenerateTriangles()
+    {
+        // Окно 1: Y ∈ [CloseGap, 0.4+CloseGap], окно 2: Y ∈ [−0.4−CloseGap, −CloseGap].
+        var cutouts = new List<WallMeshBuilder.WindowCutout>
+        {
+            Cut(0f,  0.2f + CloseGap * 0.5f, 0.1f, 0.2f),
+            Cut(0f, -0.2f - CloseGap * 0.5f, 0.1f, 0.2f),
+        };
+        var mesh = WallMeshBuilder.Build(cutouts);
+
+        var verts = mesh.vertices;
+        var tris = mesh.triangles;
+        for (int t = 0; t < tris.Length; t += 3)
+        {
+            var a = verts[tris[t]];
+            var b = verts[tris[t + 1]];
+            var c = verts[tris[t + 2]];
+            float ab = (a - b).magnitude;
+            float bc = (b - c).magnitude;
+            float ca = (c - a).magnitude;
+            Assert.GreaterOrEqual(ab, WallMeshBuilder.MinCellNorm,
+                $"вырожденное ребро AB={ab} в треугольнике {t/3}: {a}→{b}");
+            Assert.GreaterOrEqual(bc, WallMeshBuilder.MinCellNorm,
+                $"вырожденное ребро BC={bc} в треугольнике {t/3}: {b}→{c}");
+            Assert.GreaterOrEqual(ca, WallMeshBuilder.MinCellNorm,
+                $"вырожденное ребро CA={ca} в треугольнике {t/3}: {c}→{a}");
+        }
+    }
+
+    /// <summary>Стена с двумя окнами, зарегистрированными через SnapToWall:
+    /// меш не должен содержать вырожденных треугольников.</summary>
+    [Test]
+    public void Wall_TwoWindows_OnSameWall_NoDegenerateTriangles()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(3000, 2500, 100), "Wall2W", new Vector3(0f, 1.25f, -1.5f));
+        _spawned.Add(wallGo);
+
+        // Два окна одно над другим с минимальным зазором.
+        var win1Go = ElementFactory.CreateWindow(
+            new Vector3Int(900, 1000, 100), "Win2W_1", new Vector3(0f, 1.70005f, -1.5f));
+        _spawned.Add(win1Go);
+        var win2Go = ElementFactory.CreateWindow(
+            new Vector3Int(900, 1000, 100), "Win2W_2", new Vector3(0f, 0.79995f, -1.5f));
+        _spawned.Add(win2Go);
+
+        win1Go.GetComponent<WindowElement>()!.SnapToWall();
+        win2Go.GetComponent<WindowElement>()!.SnapToWall();
+
+        var mesh = wallGo.GetComponent<MeshFilter>()!.sharedMesh;
+        Assert.IsNotNull(mesh);
+
+        var verts = mesh.vertices;
+        var tris = mesh.triangles;
+        for (int t = 0; t < tris.Length; t += 3)
+        {
+            var a = verts[tris[t]];
+            var b = verts[tris[t + 1]];
+            var c = verts[tris[t + 2]];
+            float ab = (a - b).magnitude;
+            float bc = (b - c).magnitude;
+            float ca = (c - a).magnitude;
+            Assert.GreaterOrEqual(ab, MinCellSize, $"AB={ab} tri {t/3}");
+            Assert.GreaterOrEqual(bc, MinCellSize, $"BC={bc} tri {t/3}");
+            Assert.GreaterOrEqual(ca, MinCellSize, $"CA={ca} tri {t/3}");
+        }
+    }
 }

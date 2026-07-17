@@ -263,7 +263,7 @@ namespace KitchenDesigner.Core
             return null;
         }
 
-        private void UnregisterFromWall()
+        internal void UnregisterFromWall()
         {
             var wall = FindAttachedWall();
             _attachedWallName = "";

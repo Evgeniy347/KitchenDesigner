@@ -150,6 +150,11 @@ namespace KitchenDesigner.Core
         public void Execute()
         {
             if (_deleted == null) return;
+            // Окно прибито к стене списком _attachedWindows; если просто
+            // деактивировать — вырез в меше стены останется (OnDestroy не
+            // вызывается). Дерегистрируем явно до SetActive.
+            if (_element is WindowElement win)
+                win.UnregisterFromWall();
             _deleted.SetActive(false);
             if (_element != null)
                 PartRegistry.Unregister(_element);
