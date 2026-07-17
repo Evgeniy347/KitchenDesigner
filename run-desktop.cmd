@@ -19,6 +19,7 @@ if %errorlevel% neq 0 (
 )
 
 :launch
+if not exist "%root%\Builds\Win_Debug" mkdir "%root%\Builds\Win_Debug"
 set "exe=%root%\Builds\Win_Debug\KitchenDesigner.exe"
 if not exist "%exe%" (
     echo [FAIL] %exe% not found. Run without -NoBuild first.
