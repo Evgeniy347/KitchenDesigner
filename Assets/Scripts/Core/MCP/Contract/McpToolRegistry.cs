@@ -123,7 +123,7 @@ namespace KitchenDesigner.Core.MCP.Contract
                 "Change a window element's parameters: glass tint (clear/tinted), windowsill protrusion (0..200 mm), opening mode, and open/close state. Every field is optional — omit to keep current. Fails if the element is not a window.",
                 McpToolKind.Write, typeof(ParamsSetWindowProperties)),
             new McpToolDef("set_door_properties", "Set door properties",
-                "Change a door element's opening mode and open/close state. Every field is optional — omit to keep current. Fails if the element is not a door.",
+                "Change a door element's parameters: sash type (glass/blind), opening mode, and open/close state. Every field is optional — omit to keep current. Fails if the element is not a door.",
                 McpToolKind.Write, typeof(ParamsSetDoorProperties)),
 			new McpToolDef("cycle_drawer_animation", "Open / close drawer",
                 "Animate a GTV drawer: a single drawer toggles open/closed; a double drawer cycles Closed -> BothOpen -> LowerOnly -> Closed (its paired drawer and attached facades move in sync). Returns isOpen and doubleState.",
