@@ -450,13 +450,11 @@ namespace KitchenDesigner.Core
             if (_glassPane != null)
             {
                 _glassPane.transform.localPosition = Vector3.zero;
-                float paneThick = _sashType == DoorSashType.Blind ? sashD : glassThick;
-                _glassPane.transform.localScale = new Vector3(innerW - 2f * sashU, innerH - 2f * sashU, paneThick);
                 _glassPane.SetActive(true);
             }
 
             ApplyDoorPose();
-            ApplySashType();
+            ApplySashType(); // устанавливает и материал, и масштаб панели (толщина зависит от _sashType)
             ApplyMaterialFrame();
         }
 
