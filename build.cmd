@@ -101,13 +101,13 @@ exit /b 1
 :build_win_debug
 echo === Build Windows Debug (fast, incremental) ===
 REM No rmdir: keeping the output folder lets Unity reuse artifacts between runs.
-REM Output goes to Builds\Win_Debug\ so a running exe from Build\ never locks the build.
-if not exist "%root%\Builds\Win_Debug" mkdir "%root%\Builds\Win_Debug"
+REM Output goes to Build_Debug\ so a running exe from Build\ never locks the build.
+if not exist "%root%\Build_Debug" mkdir "%root%\Build_Debug"
 
 "%unity%" -quit -batchMode -projectPath "%root%" -executeMethod BuildProject.BuildWindowsDebug -logFile "%log%.winDebug.log"
 set "buildExit=!errorlevel!"
 
-set "buildPath=%root%\Builds\Win_Debug\KitchenDesigner.exe"
+set "buildPath=%root%\Build_Debug\KitchenDesigner.exe"
 if !buildExit! neq 0 goto :fail_win_debug
 if not exist "!buildPath!" goto :fail_win_debug
 echo.

@@ -7,6 +7,7 @@ using KitchenDesigner.Core;
 /// позиция для смещённого окна и обеих ориентаций стены.</summary>
 public class WallCutoutTests : SnapTestBase
 {
+    private const float MinCellSize = 1e-5f;
     private static WallMeshBuilder.WindowCutout Cut(float cx, float cy, float hx, float hy) =>
         new WallMeshBuilder.WindowCutout
         {
