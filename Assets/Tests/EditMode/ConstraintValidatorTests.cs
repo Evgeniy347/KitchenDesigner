@@ -341,4 +341,27 @@ public class ConstraintValidatorTests
         Object.DestroyImmediate(wallGo);
         Object.DestroyImmediate(doorGo);
     }
+
+    [Test]
+    public void Validate_WindowBelowWallBottom_Violation()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(100, 2500, 3000), "Wall_WinLow", new Vector3(0, 1.25f, 0));
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 500, 100), "Win_Below", new Vector3(0, 1.25f, 0));
+        var wall = wallGo.GetComponent<KitchenElement>();
+        var window = winGo.GetComponent<WindowElement>();
+
+        window!.SnapToWall();
+        // Центр окна ниже нижней границы стены.
+        winGo.transform.position = new Vector3(0, -0.1f, 0);
+
+        var result = ConstraintValidator.Validate(new List<KitchenElement> { wall, window! });
+
+        Assert.IsFalse(result.isValid);
+        Assert.Contains(window, result.violations);
+
+        Object.DestroyImmediate(wallGo);
+        Object.DestroyImmediate(winGo);
+    }
 }

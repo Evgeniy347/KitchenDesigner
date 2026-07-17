@@ -447,26 +447,37 @@ namespace KitchenDesigner.Core
 
         private static void CheckWallHeightConstraints(List<KitchenElement> all, ValidationResult result)
         {
+            // Строим словарь стена → Wall за O(n), чтобы не вызывать FindWallByName
+            // за O(n) для каждого окна/двери (итого O(n·k) → O(n)).
+            var wallByName = new System.Collections.Generic.Dictionary<string, Wall>();
+            foreach (var e in all)
+            {
+                if (e == null) continue;
+                var w = e.GetComponent<Wall>();
+                if (w != null) wallByName[e.gameObject.name] = w;
+            }
+
             foreach (var e in all)
             {
                 if (e == null) continue;
 
-                Wall? wall = null;
+                string? wallName = null;
                 if (e is WindowElement win)
-                    wall = FindWallByName(win.AttachedWallName, all);
+                    wallName = win.AttachedWallName;
                 else if (e is DoorElement door)
-                    wall = FindWallByName(door.AttachedWallName, all);
+                    wallName = door.AttachedWallName;
                 else continue;
 
                 // Элемент без стены или стена не найдена — проверка связности
                 // выполняется отдельно в CheckConnectivity.
-                if (wall == null) continue;
+                if (string.IsNullOrEmpty(wallName)) continue;
+                if (!wallByName.TryGetValue(wallName, out var wall)) continue;
 
                 var wallEl = wall.GetComponent<KitchenElement>();
                 if (wallEl == null) continue;
 
                 int wallHeightMM = wallEl.DimensionsMM.y;
-                if (wallHeightMM <= 0) continue; // защита от нулевой/отрицательной стены
+                if (wallHeightMM <= 0) continue;
 
                 float toU = AppConstants.MM_TO_UNITS;
                 float wallHalfH = wallHeightMM * toU * 0.5f;
@@ -485,18 +496,6 @@ namespace KitchenDesigner.Core
                         result.violations.Add(e);
                 }
             }
-        }
-
-        private static Wall? FindWallByName(string name, List<KitchenElement> all)
-        {
-            if (string.IsNullOrEmpty(name)) return null;
-            foreach (var e in all)
-            {
-                if (e == null) continue;
-                if (e.gameObject.name == name)
-                    return e.GetComponent<Wall>();
-            }
-            return null;
         }
     }
 }

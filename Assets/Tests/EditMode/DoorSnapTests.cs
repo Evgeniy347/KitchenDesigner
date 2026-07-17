@@ -178,4 +178,29 @@ public class DoorSnapTests : SnapTestBase
         Assert.AreEqual(1.0f, door.transform.position.y, Tol,
             "позиция двери, умещающейся в стену, не должна меняться");
     }
+
+    [Test]
+    public void Door_AtWallCorner_DoesNotFlipBetweenWalls()
+    {
+        var wallA = ElementFactory.CreateWall(
+            new Vector3Int(3000, 2500, 100), "DoorWall_A", new Vector3(0f, 1.25f, -1.5f));
+        _spawned.Add(wallA);
+        var wallB = ElementFactory.CreateWall(
+            new Vector3Int(100, 2500, 3000), "DoorWall_B", new Vector3(-1.5f, 1.25f, 0f));
+        _spawned.Add(wallB);
+
+        var doorGo = ElementFactory.CreateDoor(
+            new Vector3Int(900, 2000, 100), "Door_Corner", new Vector3(-1.44f, 1.0f, -1.5f));
+        _spawned.Add(doorGo);
+        var door = doorGo.GetComponent<DoorElement>();
+        Assert.IsNotNull(door);
+
+        door!.SnapToWall();
+        Assert.AreEqual("DoorWall_A", door.AttachedWallName,
+            "первая привязка — по ближайшему боксу");
+
+        for (int i = 0; i < 10; i++) door.SnapToWall();
+        Assert.AreEqual("DoorWall_A", door.AttachedWallName,
+            "гистерезис должен удерживать текущую стену");
+    }
 }
