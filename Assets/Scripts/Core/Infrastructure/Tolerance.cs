@@ -4,18 +4,32 @@ namespace KitchenDesigner.Core
 {
     public static class Tolerance
     {
+        /// <summary>Контакт деталей: |зазор| меньше — «касаются» (0.5 мм).
+        /// Тот же порог, что ContactDistMM / GapEpsilonMm / MinOverlapMm.</summary>
         public const float ContactMm = 0.5f;
 
+        /// <summary>Геометрический шум float в юнитах (= 0.1 мм). Меньше этого —
+        /// координаты считаются равными.</summary>
         public const float EpsilonUnits = 1e-4f;
 
+        /// <summary>Порог параллельности нормалей: |dot| >= этого — грани параллельны.</summary>
         public const float ParallelDot = 0.999f;
 
+        /// <summary>Инклюзивный порог снэпа (1e-5 = 0.01 мм). Был ThresholdEpsilon
+        /// в SnapSystem и ResizeSnap, OverlapEpsilon в FacesOverlap — чтобы снэп
+        /// срабатывал и ровно на границе порога, несмотря на float-погрешность.</summary>
         public const float SnapEpsilon = 1e-5f;
 
+        /// <summary>Квадрат минимальной значимой длины вектора. Был 1e-6f
+        /// в ResizeHandleManager для проверки sqrMagnitude перед normalize.</summary>
         public const float EpsilonSqr = 1e-6f;
 
+        /// <summary>Порог коллинеарности с Vector3.up: |dot| > этого → использовать
+        /// запасной up. Был 0.99f в ResizeHandleManager для Quaternion.LookRotation.</summary>
         public const float UpDotThreshold = 0.99f;
 
+        /// <summary>Допуск зазора в мм для допускового контроля (0.1 мм). Был
+        /// зашит в DrawerValidator как ±ε рядом с MIN/MAX_CLEARANCE_PER_SIDE_MM.</summary>
         public const float ClearanceMm = 0.1f;
 
         public static bool ApproxEqual(float a, float b) =>
