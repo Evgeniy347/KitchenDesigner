@@ -199,21 +199,26 @@ namespace KitchenDesigner.Core
                 Quaternion.Angle(targetRot, transform.rotation) > 0.05f)
                 transform.SetPositionAndRotation(targetPos, targetRot);
 
-            if (DimensionsMM.z != thicknessMM)
-                DimensionsMM = new Vector3Int(DimensionsMM.x, DimensionsMM.y, thicknessMM);
+            int targetY = Mathf.Min(DimensionsMM.y, wallDims.y);
+            int targetZ = thicknessMM;
+            if (DimensionsMM.y != targetY || DimensionsMM.z != targetZ)
+            {
+                DimensionsMM = new Vector3Int(DimensionsMM.x, targetY, targetZ);
+                _lastCutoutPos = transform.position;
+            }
 
-            int wallHeightMM = wallDims.y;
-            if (DimensionsMM.y > wallHeightMM)
-                DimensionsMM = new Vector3Int(DimensionsMM.x, wallHeightMM, DimensionsMM.z);
             float toU = AppConstants.MM_TO_UNITS;
-            float wallHalfH = wallHeightMM * toU * 0.5f;
+            float wallHalfH = wallDims.y * toU * 0.5f;
             float wallCenterY = wall.FullPosition.y;
-            float winHalfH = DimensionsMM.y * toU * 0.5f;
+            float doorHalfH = DimensionsMM.y * toU * 0.5f;
             float clampedY = Mathf.Clamp(transform.position.y,
-                wallCenterY - wallHalfH + winHalfH,
-                wallCenterY + wallHalfH - winHalfH);
+                wallCenterY - wallHalfH + doorHalfH,
+                wallCenterY + wallHalfH - doorHalfH);
             if (Mathf.Abs(clampedY - transform.position.y) > Tolerance.EpsilonUnits)
+            {
                 transform.position = new Vector3(transform.position.x, clampedY, transform.position.z);
+                _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
+            }
 
             if (float.IsNaN(_lastCutoutPos.x) ||
                 (transform.position - _lastCutoutPos).sqrMagnitude > Tolerance.EpsilonSqr)

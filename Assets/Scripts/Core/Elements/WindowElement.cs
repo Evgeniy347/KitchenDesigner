@@ -245,22 +245,30 @@ namespace KitchenDesigner.Core
                 Quaternion.Angle(targetRot, transform.rotation) > 0.05f)
                 transform.SetPositionAndRotation(targetPos, targetRot);
 
-            if (DimensionsMM.z != thicknessMM)
-                DimensionsMM = new Vector3Int(DimensionsMM.x, DimensionsMM.y, thicknessMM);
+            // Применяем толщину и высоту одним присваиванием — чтобы
+            // ApplyDimensions() → wall.RebuildMesh() не вызывался дважды.
+            int targetY = Mathf.Min(DimensionsMM.y, wallDims.y);
+            int targetZ = thicknessMM;
+            if (DimensionsMM.y != targetY || DimensionsMM.z != targetZ)
+            {
+                DimensionsMM = new Vector3Int(DimensionsMM.x, targetY, targetZ);
+                // Размеры изменились — ApplyDimensions уже перестроил стену.
+                _lastCutoutPos = transform.position;
+            }
 
-            // Ограничение по высоте: окно не должно выходить за пределы стены.
-            int wallHeightMM = wallDims.y;
-            if (DimensionsMM.y > wallHeightMM)
-                DimensionsMM = new Vector3Int(DimensionsMM.x, wallHeightMM, DimensionsMM.z);
+            // Обрезка позиции Y: окно не должно выходить за границы стены по высоте.
             float toU = AppConstants.MM_TO_UNITS;
-            float wallHalfH = wallHeightMM * toU * 0.5f;
+            float wallHalfH = wallDims.y * toU * 0.5f;
             float wallCenterY = wall.FullPosition.y;
             float winHalfH = DimensionsMM.y * toU * 0.5f;
             float clampedY = Mathf.Clamp(transform.position.y,
                 wallCenterY - wallHalfH + winHalfH,
                 wallCenterY + wallHalfH - winHalfH);
             if (Mathf.Abs(clampedY - transform.position.y) > Tolerance.EpsilonUnits)
+            {
                 transform.position = new Vector3(transform.position.x, clampedY, transform.position.z);
+                _lastCutoutPos = new Vector3(float.NaN, 0f, 0f); // принудительный пересчёт выреза
+            }
 
             // Вырез следует за окном при перемещении вдоль стены.
             if (float.IsNaN(_lastCutoutPos.x) ||
