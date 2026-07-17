@@ -374,11 +374,6 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        private void LateUpdate()
-        {
-            ProcessDeferredClose();
-        }
-
         // ── Построение элементов ───────────────────────────────────────
 
         private TMP_InputField Row(Transform parent, string label)
