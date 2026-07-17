@@ -110,26 +110,29 @@ namespace KitchenDesigner.Core
                     if (ye - ys < MinCellNorm) continue;
 
                     float cx = (xs + xe) * 0.5f, cy = (ys + ye) * 0.5f;
-                    bool insideWindow = false;
+                    int insideCount = 0;
                     foreach (var co in cutouts)
                     {
                         if (cx > co.centerNorm.x - co.halfSizeNorm.x &&
                             cx < co.centerNorm.x + co.halfSizeNorm.x &&
                             cy > co.centerNorm.y - co.halfSizeNorm.y &&
                             cy < co.centerNorm.y + co.halfSizeNorm.y)
-                        { insideWindow = true; break; }
+                        { insideCount++; }
                     }
 
-                    if (!insideWindow)
+                    if (insideCount == 0)
                     {
                         if (frontFace)
                             AddQuad(verts, tris, V(xs, ys, zFront), V(xe, ys, zFront), V(xe, ye, zFront), V(xs, ye, zFront));
                         else
                             AddQuad(verts, tris, V(xe, ys, zFront), V(xs, ys, zFront), V(xs, ye, zFront), V(xe, ye, zFront));
                     }
-                    else if (frontFace)
+                    else if (frontFace && insideCount == 1)
                     {
-                        float zMid = (zFront + zBack) * 0.5f;
+                        // Reveal-квады (внутренние стенки проёма) строим только для ячеек,
+                        // которые внутри ровно одного окна. В overlap-регионе (insideCount > 1)
+                        // reveal-квады оказываются внутри объединённого проёма и видны как
+                        // артефактная полоса — поэтому пропускаем их.
                         AddQuad(verts, tris, V(xs, ys, zBack), V(xe, ys, zBack), V(xe, ys, zFront), V(xs, ys, zFront));
                         AddQuad(verts, tris, V(xs, ye, zFront), V(xe, ye, zFront), V(xe, ye, zBack), V(xs, ye, zBack));
                         AddQuad(verts, tris, V(xs, ys, zFront), V(xs, ys, zBack), V(xs, ye, zBack), V(xs, ye, zFront));
