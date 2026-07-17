@@ -221,6 +221,22 @@ public class HierarchyPanelDiagramTests
     }
 
     [UnityTest]
+    public IEnumerator HierarchyPanel_Overflow_ShowsScrollbar_SavesPng()
+    {
+        // Список заведомо больше вьюпорта (~22 строки видимых) — скроллбар
+        // должен появиться (AutoHide) и быть узким. Голден-JSON не нужен:
+        // структура уже покрыта основным тестом, здесь чисто визуальный кейс.
+        SpawnShowcase();
+        for (int i = 1; i <= 24; i++)
+            ElementFactory.CreatePart(new Vector3Int(600, 18, 400), $"Полка_{i:D2}",
+                new Vector3(2f + i * 0.7f, 0.4f, 0f));
+        yield return null;
+
+        yield return Capture("HierarchyPanel", "hierarchy_panel_scrolled.png", 0, 0, recenter: true,
+            setup: () => HierarchyPanelUI.Instance!.SetVisible(true), goldenJson: false);
+    }
+
+    [UnityTest]
     public IEnumerator Toolbar_SceneButton_SavesPngAndJson()
     {
         // Тулбар целиком (1920x52): кнопка «Сцена» — вторая слева, после «Спецификация».
