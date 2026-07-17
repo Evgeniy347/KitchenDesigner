@@ -19,6 +19,8 @@ namespace KitchenDesigner.Core
         private bool _wasShift;
         private float _vOffset;
         private AxisLock _axisLock = AxisLock.None;
+        private Wall? _dragWall;
+        private bool _targetIsWindow;
 
         // ЛКМ нажата на детали, но ещё не решено клик это или drag.
         private bool _pressed;
@@ -109,8 +111,10 @@ namespace KitchenDesigner.Core
             _startRotation = element.transform.rotation;
             _wasMoved = false;
             _wasShift = false;
+            _targetIsWindow = element is WindowElement;
+            _dragWall = _targetIsWindow ? FindAttachedWall((WindowElement)element) : null;
 
-            Plane dragPlane = new Plane(Vector3.up, _startPosition);
+            Plane dragPlane = GetDragPlane(element);
             _offset = dragPlane.Raycast(ray, out float enter)
                 ? _startPosition - ray.GetPoint(enter)
                 : Vector3.zero;
@@ -140,7 +144,7 @@ namespace KitchenDesigner.Core
         {
             if (Camera.main == null) return;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            Plane dragPlane = new Plane(Vector3.up, _startPosition);
+            Plane dragPlane = _target != null ? GetDragPlane(_target) : new Plane(Vector3.up, _startPosition);
             _offset = dragPlane.Raycast(ray, out float enter)
                 ? _startPosition - ray.GetPoint(enter)
                 : Vector3.zero;
@@ -287,6 +291,8 @@ namespace KitchenDesigner.Core
         {
             _showGhost = false;
             _axisLock = AxisLock.None;
+            _dragWall = null;
+            _targetIsWindow = false;
             RevertMoveSet();
             RestoreDragMaterial();
             IsDragging = false;
@@ -332,11 +338,12 @@ namespace KitchenDesigner.Core
             else
             {
                 _wasShift = false;
-                var dragPlane = new Plane(Vector3.up, _target.transform.position);
+                var dragPlane = GetDragPlane(_target);
                 if (dragPlane.Raycast(ray, out float enter))
                 {
                     Vector3 point = ray.GetPoint(enter) + _offset;
-                    point.y = _target.transform.position.y;
+                    if (!_targetIsWindow)
+                        point.y = _target.transform.position.y;
                     newPos = GridManager.SnapToGrid(point);
                     computed = true;
                 }
@@ -348,8 +355,8 @@ namespace KitchenDesigner.Core
 
             if (Input.GetKeyDown(KeyCode.X)) _axisLock = _axisLock == AxisLock.X ? AxisLock.None : AxisLock.X;
             if (Input.GetKeyDown(KeyCode.Z)) _axisLock = _axisLock == AxisLock.Z ? AxisLock.None : AxisLock.Z;
-            if (_axisLock == AxisLock.X) { newPos.z = _startPosition.z; newPos.y = _startPosition.y; }
-            else if (_axisLock == AxisLock.Z) { newPos.x = _startPosition.x; newPos.y = _startPosition.y; }
+            if (_axisLock == AxisLock.X) { newPos.z = _startPosition.z; if (!_targetIsWindow) newPos.y = _startPosition.y; }
+            else if (_axisLock == AxisLock.Z) { newPos.x = _startPosition.x; if (!_targetIsWindow) newPos.y = _startPosition.y; }
 
             var others = PartRegistry.GetAll();
             if (_moveSet.Count > 1) others.RemoveAll(e => _moveSet.Contains(e));
@@ -357,6 +364,9 @@ namespace KitchenDesigner.Core
             _target.transform.position = snap.snapped ? snap.position : newPos;
 
             // Групповое перемещение: остальные следуют за схваченным на ту же дельту.
+            // При вертикальном перетаскивании окна по стене все элементы группы
+            // получат тот же сдвиг по Y — это намеренное поведение; мультивыделение
+            // движется как единое целое.
             if (_moveSet.Count > 1)
                 ApplyDelta(_moveSet, _moveStart, _target.transform.position - _startPosition);
 
@@ -409,6 +419,8 @@ namespace KitchenDesigner.Core
 			RestoreDragMaterial();
 			IsDragging = false;
 			_wasShift = false;
+			_dragWall = null;
+			_targetIsWindow = false;
 			_movingSet.Clear();
 			RefreshHighlights();
 		}
@@ -579,6 +591,55 @@ namespace KitchenDesigner.Core
                 _dragTintMaterial = null;
             }
             _dragOriginalMaterial = null;
+        }
+
+        private Plane GetDragPlane(KitchenElement target)
+        {
+            if (!_targetIsWindow)
+                return new Plane(Vector3.up, target.transform.position);
+
+            var window = (WindowElement)target;
+            if (_dragWall == null)
+                _dragWall = FindAttachedWall(window);
+
+            if (_dragWall != null)
+            {
+                var wallEl = _dragWall.GetComponent<KitchenElement>();
+                if (wallEl == null)
+                {
+                    Debug.LogWarning($"[ElementMover] Wall '{_dragWall.name}' is missing KitchenElement. " +
+                        $"Window '{window.name}' drags on horizontal plane.");
+                }
+                else
+                {
+                    var dims = wallEl.DimensionsMM;
+                    var wt = _dragWall.transform;
+                    Vector3 normal = (dims.x <= dims.z) ? wt.right : wt.forward;
+                    normal.y = 0f;
+                    if (normal.sqrMagnitude > 1e-8f)
+                        // Plane origin follows the window's current position:
+                        // the normal is the wall's face normal and stays constant;
+                        // shifting the origin along the normal does not affect
+                        // the ray intersection point within the plane.
+                        return new Plane(normal.normalized, target.transform.position);
+                }
+            }
+            return new Plane(Vector3.up, target.transform.position);
+        }
+
+        private static Wall? FindAttachedWall(WindowElement window)
+        {
+            if (window == null) return null;
+            var name = window.AttachedWallName;
+            if (string.IsNullOrEmpty(name)) return null;
+            foreach (var el in PartRegistry.GetAll())
+            {
+                if (el == null) continue;
+                var wall = el.GetComponent<Wall>();
+                if (wall != null && wall.gameObject.name == name)
+                    return wall;
+            }
+            return null;
         }
     }
 }
