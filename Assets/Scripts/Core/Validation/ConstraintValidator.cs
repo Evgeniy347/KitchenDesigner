@@ -13,13 +13,7 @@ namespace KitchenDesigner.Core
 
     public static class ConstraintValidator
     {
-        private const float ContactDistMM = 0.5f;
         private const float FaceToFaceOverlap = 0.5f;
-
-        // Должен совпадать с SnapSystem.ElementsIntersect: AABB-пересечение с этим
-        // допуском не считает пересечением детали, стоящие вплотную гранями (их AABB
-        // могут давать ничтожное ~1e-9 м перекрытие из-за погрешности float).
-        private const float IntersectEpsilon = 1e-4f;
 
         // Размер ячейки равномерной сетки broad-phase (метры). Деталь заносится во ВСЕ
         // ячейки, которых касается её AABB, расширенный на contactDist. Тогда любая пара,
@@ -91,7 +85,7 @@ namespace KitchenDesigner.Core
                 return result;
             }
 
-            float contactDist = ContactDistMM * AppConstants.MM_TO_UNITS;
+            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
 
             // 1) Кэш геометрии: для каждой валидной детали ОДИН раз считаем вершины,
             //    AABB и грани. Раньше GetVertices()/GetFaces() вызывались на каждую пару
@@ -224,7 +218,7 @@ namespace KitchenDesigner.Core
                 for (int fb = 0; fb < 6; fb++)
                 {
                     float dot = Vector3.Dot(facesA[fa].normal, facesB[fb].normal);
-                    if (Mathf.Abs(dot) < 0.999f) continue;
+                    if (!Tolerance.IsParallel(dot)) continue;
 
                     Vector3 offset = facesB[fb].center - facesA[fa].center;
                     float planeDist = Mathf.Abs(Vector3.Dot(offset, facesA[fa].normal));
@@ -241,7 +235,7 @@ namespace KitchenDesigner.Core
 
         public static bool AreInFaceToFaceContact(KitchenElement a, KitchenElement b)
         {
-            float contactDist = ContactDistMM * AppConstants.MM_TO_UNITS;
+            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
             var facesA = a.GetFaces();
             var facesB = b.GetFaces();
             for (int fa = 0; fa < 6; fa++)
@@ -249,7 +243,7 @@ namespace KitchenDesigner.Core
                 for (int fb = 0; fb < 6; fb++)
                 {
                     float dot = Vector3.Dot(facesA[fa].normal, facesB[fb].normal);
-                    if (Mathf.Abs(dot) < 0.999f) continue;
+                    if (!Tolerance.IsParallel(dot)) continue;
 
                     Vector3 offset = facesB[fb].center - facesA[fa].center;
                     float planeDist = Mathf.Abs(Vector3.Dot(offset, facesA[fa].normal));
@@ -337,9 +331,9 @@ namespace KitchenDesigner.Core
         // Та же проверка пересечения AABB с допуском, что в SnapSystem.ElementsIntersect:
         // строгое «<» с epsilon, чтобы плотный face-контакт не считался пересечением.
         private static bool AABBsIntersect(in AABB a, in AABB b) =>
-            a.minX < b.maxX - IntersectEpsilon && a.maxX > b.minX + IntersectEpsilon &&
-            a.minY < b.maxY - IntersectEpsilon && a.maxY > b.minY + IntersectEpsilon &&
-            a.minZ < b.maxZ - IntersectEpsilon && a.maxZ > b.minZ + IntersectEpsilon;
+            Tolerance.IntervalsOverlap(a.minX, a.maxX, b.minX, b.maxX) &&
+            Tolerance.IntervalsOverlap(a.minY, a.maxY, b.minY, b.maxY) &&
+            Tolerance.IntervalsOverlap(a.minZ, a.maxZ, b.minZ, b.maxZ);
 
         private readonly struct AABB
         {

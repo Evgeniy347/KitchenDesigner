@@ -33,7 +33,7 @@ namespace KitchenDesigner.Core
         /// <summary>Минимальное перекрытие (мм), которое считается реальным
         /// препятствием/столкновением. Всё меньше — погрешность float от деталей,
         /// стоящих вплотную (в трассах встречались «коллизии» в 0.0002 мм).</summary>
-        public const float MinOverlapMm = 0.5f;
+        public const float MinOverlapMm = Tolerance.ContactMm;
 
         /// <summary>
         /// Мировая нормаль лицевой грани фасада. Локально лицевая сторона фасада
