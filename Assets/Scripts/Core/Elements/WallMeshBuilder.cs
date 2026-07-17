@@ -110,15 +110,8 @@ namespace KitchenDesigner.Core
                     if (ye - ys < MinCellNorm) continue;
 
                     float cx = (xs + xe) * 0.5f, cy = (ys + ye) * 0.5f;
-                    int insideCount = 0;
-                    foreach (var co in cutouts)
-                    {
-                        if (cx > co.centerNorm.x - co.halfSizeNorm.x &&
-                            cx < co.centerNorm.x + co.halfSizeNorm.x &&
-                            cy > co.centerNorm.y - co.halfSizeNorm.y &&
-                            cy < co.centerNorm.y + co.halfSizeNorm.y)
-                        { insideCount++; }
-                    }
+                    int insideCount = CountInside(cutouts, cx, cy);
+                    if (insideCount > 1) continue; // overlap — без геометрии
 
                     if (insideCount == 0)
                     {
@@ -127,19 +120,48 @@ namespace KitchenDesigner.Core
                         else
                             AddQuad(verts, tris, V(xe, ys, zFront), V(xs, ys, zFront), V(xs, ye, zFront), V(xe, ye, zFront));
                     }
-                    else if (frontFace && insideCount == 1)
+                    else if (frontFace)
                     {
-                        // Reveal-квады (внутренние стенки проёма) строим только для ячеек,
-                        // которые внутри ровно одного окна. В overlap-регионе (insideCount > 1)
-                        // reveal-квады оказываются внутри объединённого проёма и видны как
-                        // артефактная полоса — поэтому пропускаем их.
-                        AddQuad(verts, tris, V(xs, ys, zBack), V(xe, ys, zBack), V(xe, ys, zFront), V(xs, ys, zFront));
-                        AddQuad(verts, tris, V(xs, ye, zFront), V(xe, ye, zFront), V(xe, ye, zBack), V(xs, ye, zBack));
-                        AddQuad(verts, tris, V(xs, ys, zFront), V(xs, ys, zBack), V(xs, ye, zBack), V(xs, ye, zFront));
-                        AddQuad(verts, tris, V(xe, ys, zBack), V(xe, ys, zFront), V(xe, ye, zFront), V(xe, ye, zBack));
+                        // Reveal-квады строим только на внешних рёбрах проёма.
+                        // Проверяем центр соседней ячейки по индексу. Если сосед — стена
+                        // (insideCount == 0) или за пределами сетки, ребро внешнее.
+                        int nxBot = j > 0 ? CountInside(cutouts, cx, (ySplits[j - 1] + ys) * 0.5f) : 0;
+                        int nxTop = j < ySplits.Count - 2 ? CountInside(cutouts, cx, (ye + ySplits[j + 2]) * 0.5f) : 0;
+                        int nxLft = i > 0 ? CountInside(cutouts, (xSplits[i - 1] + xs) * 0.5f, cy) : 0;
+                        int nxRgt = i < xSplits.Count - 2 ? CountInside(cutouts, (xe + xSplits[i + 2]) * 0.5f, cy) : 0;
+
+                        // Bottom ребро (y = ys)
+                        if (nxBot == 0)
+                            AddQuad(verts, tris, V(xs, ys, zBack), V(xe, ys, zBack), V(xe, ys, zFront), V(xs, ys, zFront));
+                        // Top ребро (y = ye)
+                        if (nxTop == 0)
+                            AddQuad(verts, tris, V(xs, ye, zFront), V(xe, ye, zFront), V(xe, ye, zBack), V(xs, ye, zBack));
+                        // Left ребро (x = xs)
+                        if (nxLft == 0)
+                            AddQuad(verts, tris, V(xs, ys, zFront), V(xs, ys, zBack), V(xs, ye, zBack), V(xs, ye, zFront));
+                        // Right ребро (x = xe)
+                        if (nxRgt == 0)
+                            AddQuad(verts, tris, V(xe, ys, zBack), V(xe, ys, zFront), V(xe, ye, zFront), V(xe, ye, zBack));
                     }
                 }
             }
+        }
+
+        private static int CountInside(List<WindowCutout> cutouts, float px, float py)
+        {
+            int count = 0;
+            foreach (var co in cutouts)
+            {
+                if (px > co.centerNorm.x - co.halfSizeNorm.x &&
+                    px < co.centerNorm.x + co.halfSizeNorm.x &&
+                    py > co.centerNorm.y - co.halfSizeNorm.y &&
+                    py < co.centerNorm.y + co.halfSizeNorm.y)
+                {
+                    count++;
+                    if (count > 1) break; // достаточно — overlap, дальше не интересно
+                }
+            }
+            return count;
         }
 
         private static Vector3 V(float x, float y, float z) => new Vector3(x, y, z);

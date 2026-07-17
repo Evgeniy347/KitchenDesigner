@@ -168,4 +168,39 @@ public class WallCutoutTests : SnapTestBase
             Assert.GreaterOrEqual(ca, WallMeshBuilder.MinCellNorm, $"CA={ca} tri {t/3}");
         }
     }
+
+    /// <summary>Два пересекающихся окна: reveal-квады должны быть только на
+    /// внешних границах объединённого проёма, а не внутри overlap-региона.
+    /// Регресс: артефактная полоса на границе overlap/single-window.</summary>
+    [Test]
+    public void Builder_OverlappingWindows_NoInternalRevealQuads()
+    {
+        // Два окна пересекаются по Y: окно 1 [0.1, 0.7], окно 2 [0.5, 1.1].
+        // Overlap-регион: [0.5, 0.7]. Внешние границы: y = 0.1 и y = 1.1.
+        // Reveal-квады должны быть только на y = 0.1 и y = 1.1 (внешние),
+        // но НЕ на y = 0.5 и y = 0.7 (внутренние, внутри объединённого проёма).
+        var cutouts = new List<WallMeshBuilder.WindowCutout>
+        {
+            Cut(0f, 0.4f, 0.15f, 0.3f),  // Y ∈ [0.1, 0.7]
+            Cut(0f, 0.8f, 0.15f, 0.3f),  // Y ∈ [0.5, 1.1]
+        };
+        var mesh = WallMeshBuilder.Build(cutouts);
+
+        var verts = mesh.vertices;
+
+        // Проверяем: нет вершин с |z| ≈ 0.5 (front/back face) и Y внутри
+        // overlap-региона (0.5..0.7), кроме внешних границ (0.1 и 1.1).
+        foreach (var v in verts)
+        {
+            // Только вершины на front/back face (|z| ≈ 0.5)
+            if (Mathf.Abs(Mathf.Abs(v.z) - 0.5f) > 1e-3f) continue;
+
+            // Если Y строго внутри overlap (0.5 + eps < y < 0.7 - eps) —
+            // это внутренняя вершина, которой быть не должно.
+            float eps = 1e-3f;
+            bool insideOverlap = v.y > 0.5f + eps && v.y < 0.7f - eps;
+            Assert.IsFalse(insideOverlap,
+                $"вершина {v} на front/back face внутри overlap-региона — reveal-квад на внутреннем ребре");
+        }
+    }
 }
