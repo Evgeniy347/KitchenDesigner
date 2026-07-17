@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core
     public static class ResizeSnap
     {
         // Инклюзивный порог: снэп срабатывает и ровно на границе (как в SnapSystem).
-        private const float ThresholdEpsilon = 1e-5f;
+        private const float ThresholdEpsilon = Tolerance.SnapEpsilon;
 
         /// <summary>Ищет ближайшую встречную грань (нормаль противоположна) в пределах
         /// порога вдоль нормали и с перекрытием в плоскости. Возвращает зазор
@@ -34,7 +34,7 @@ namespace KitchenDesigner.Core
                 for (int j = 0; j < faces.Length; j++)
                 {
                     var g = faces[j];
-                    if (Vector3.Dot(g.normal, normal) > -0.999f) continue; // только встречные
+                    if (Vector3.Dot(g.normal, normal) > -Tolerance.ParallelDot) continue; // только встречные
 
                     float d = Vector3.Dot(g.center - faceCenter, normal); // вдоль нормали до плоскости g
                     if (Mathf.Abs(d) > threshold + ThresholdEpsilon) continue;

@@ -278,7 +278,7 @@ namespace KitchenDesigner.Core
             Vector3 e = ray.direction.normalized; // направление луча
             float b = Vector3.Dot(d, e);
             float denom = 1f - b * b;
-            if (Mathf.Abs(denom) < 1e-4f) return float.NaN; // смотрим почти вдоль нормали
+            if (Mathf.Abs(denom) < Tolerance.EpsilonUnits) return float.NaN; // смотрим почти вдоль нормали
             Vector3 w0 = _faceCenter0 - ray.origin;
             float dW = Vector3.Dot(d, w0);
             float eW = Vector3.Dot(e, w0);
@@ -388,8 +388,8 @@ namespace KitchenDesigner.Core
             {
                 if (h == null || h.faceIndex >= faces.Length) continue;
                 var f = faces[h.faceIndex];
-                Vector3 n = f.normal.sqrMagnitude > 1e-6f ? f.normal.normalized : Vector3.forward;
-                Vector3 up = Mathf.Abs(Vector3.Dot(n, Vector3.up)) > 0.99f ? Vector3.forward : Vector3.up;
+                Vector3 n = f.normal.sqrMagnitude > Tolerance.EpsilonSqr ? f.normal.normalized : Vector3.forward;
+                Vector3 up = Mathf.Abs(Vector3.Dot(n, Vector3.up)) > Tolerance.UpDotThreshold ? Vector3.forward : Vector3.up;
                 h.transform.SetPositionAndRotation(f.center, Quaternion.LookRotation(n, up));
             }
         }
