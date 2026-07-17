@@ -19,6 +19,8 @@ namespace KitchenDesigner.Core.UI
             public bool isFurniture;
             public bool isRadiusTable;
             public bool isWindow;
+            public bool isPillar;
+            public int pillarMidHeightMM;
             public string drawerType;
             public int drawerLength;
             public string drawerColor;
@@ -36,6 +38,7 @@ namespace KitchenDesigner.Core.UI
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
                 isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false;
+                isPillar = false; pillarMidHeightMM = 75;
                 drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400;
             }
@@ -121,7 +124,17 @@ namespace KitchenDesigner.Core.UI
             table.isFurniture = true;
             var radiusTable = new Item("Радиусный стол", new Vector3Int(2000, 750, 1000));
             radiusTable.isRadiusTable = true;
-            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable } };
+            var pillar = PillarItem("Ножка", PillarElement.MidHeightMM_Default);
+            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, pillar } };
+        }
+
+        private static Item PillarItem(string name, int midHeightMM)
+        {
+            int totalH = PillarElement.TopHeightMM + midHeightMM + PillarElement.BottomHeightMM;
+            var item = new Item(name, new Vector3Int(PillarElement.TopDiameterMM, totalH, PillarElement.TopDiameterMM));
+            item.isPillar = true;
+            item.pillarMidHeightMM = midHeightMM;
+            return item;
         }
 
         private static Item WindowItem(string name, Vector3Int dims)

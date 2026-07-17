@@ -336,6 +336,23 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
+        public void SpawnPillar(int midHeightMM, string name)
+        {
+            int totalH = PillarElement.TopHeightMM + midHeightMM + PillarElement.BottomHeightMM;
+            Vector3 pos = GroundPointInFrontOfCamera();
+            pos.y = totalH * 0.5f * AppConstants.MM_TO_UNITS;
+            pos = GridManager.SnapToGrid(pos);
+
+            var go = ElementFactory.CreatePillar(midHeightMM, name, pos);
+            var element = go.GetComponent<KitchenElement>();
+            if (element != null)
+            {
+                CommandStack.Execute(new CreateCommand(go));
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.Select(element);
+            }
+        }
+
         private Vector3 GroundPointInFrontOfCamera()
         {
             var cam = Camera.main;

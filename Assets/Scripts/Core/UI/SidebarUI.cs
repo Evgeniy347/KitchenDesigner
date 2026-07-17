@@ -162,6 +162,8 @@ namespace KitchenDesigner.Core.UI
                 UIManager.Instance.SpawnRadiusTable(item.dims, item.name);
             else if (item.isFurniture)
                 UIManager.Instance.SpawnTable(item.dims, item.name);
+            else if (item.isPillar)
+                UIManager.Instance.SpawnPillar(item.pillarMidHeightMM, item.name);
             else if (item.isRadialShelf)
                 UIManager.Instance.SpawnRadialShelf(item.dims, item.name);
             else if (item.isAssembled)
