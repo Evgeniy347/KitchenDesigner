@@ -14,8 +14,9 @@ for %%I in (
     "%root%\Builds"
     "%root%\.vs"
     "%root%\UserSettings"
-    "%root%\TestResults.xml"
-    "%root%\TestResult.xml"
+    "%root%\test-results\tmp\TestResults.xml"
+    "%root%\test-results\tmp\TestResult.xml"
+    "%root%\test-results\tmp\TestResults-*.xml"
 ) do (
     if exist "%%~I" (
         dir /a:d "%%~I" >nul 2>nul

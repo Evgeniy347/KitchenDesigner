@@ -25,7 +25,7 @@ goto :parse_args
 for %%I in ("%~dp0.") do set "root=%%~fI"
 
 set "unity=C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Unity.exe"
-set "testResult=%root%\TestResults.xml"
+set "testResult=%root%\test-results\tmp\TestResults.xml"
 set "log=%TEMP%\build-kitchen.log"
 
 if not exist "%unity%" (
