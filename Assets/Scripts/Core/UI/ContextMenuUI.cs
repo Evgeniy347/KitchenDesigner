@@ -36,7 +36,6 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _tintDropdown;
         private TMP_InputField? _sillProtrusion;
         private TMP_Dropdown? _winModeDropdown;
-        private TMP_Text? _winDoorButtonLabel;
 
         // ── Подсветка изменённых полей ──────────────────────────────────
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();

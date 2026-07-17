@@ -260,4 +260,69 @@ public class WindowSnapTests : SnapTestBase
         var frame = winGo.transform.Find("_Static/FrameLeft");
         Assert.AreEqual(1.2f, frame!.lossyScale.y, 1e-5f);
     }
+
+    [Test]
+    public void Window_Height_ClampedToWallHeight()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(100, 2000, 3000), "Wall_H", new Vector3(0, 1.0f, 0));
+        _spawned.Add(wallGo);
+
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 3000, 100), "Win_H", new Vector3(0, 1.0f, 0));
+        _spawned.Add(winGo);
+        var window = winGo.GetComponent<WindowElement>();
+        Assert.IsNotNull(window);
+
+        window!.SnapToWall();
+
+        Assert.AreEqual("Wall_H", window.AttachedWallName);
+        Assert.AreEqual(2000, window.DimensionsMM.y,
+            "высота окна должна быть обрезана до высоты стены");
+    }
+
+    [Test]
+    public void Window_YPosition_ClampedToWallBounds()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(100, 2500, 3000), "Wall_Pos", new Vector3(0, 1.25f, 0));
+        _spawned.Add(wallGo);
+
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 500, 100), "Win_Pos", new Vector3(0, 2.5f, 0));
+        _spawned.Add(winGo);
+        var window = winGo.GetComponent<WindowElement>();
+        Assert.IsNotNull(window);
+
+        window!.SnapToWall();
+
+        float toU = AppConstants.MM_TO_UNITS;
+        float wallTop = 1.25f + 2500 * toU * 0.5f;
+        float winHalfH = window.DimensionsMM.y * toU * 0.5f;
+        float expectedMaxY = wallTop - winHalfH;
+
+        Assert.LessOrEqual(window.transform.position.y, expectedMaxY + 1e-5f,
+            "центр окна не должен быть выше верхней границы стены");
+    }
+
+    [Test]
+    public void Window_WithinWall_NotClamped()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(100, 2500, 3000), "Wall_OK", new Vector3(0, 1.25f, 0));
+        _spawned.Add(wallGo);
+
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 1200, 100), "Win_OK", new Vector3(0, 1.0f, 0));
+        _spawned.Add(winGo);
+        var window = winGo.GetComponent<WindowElement>();
+        Assert.IsNotNull(window);
+
+        window!.SnapToWall();
+
+        Assert.AreEqual(1200, window.DimensionsMM.y,
+            "высота окна, умещающегося в стену, не должна меняться");
+        Assert.AreEqual(1.0f, window.transform.position.y, Tol,
+            "позиция окна, умещающегося в стену, не должна меняться");
+    }
 }

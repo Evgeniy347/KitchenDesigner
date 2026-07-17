@@ -157,6 +157,7 @@ namespace KitchenDesigner.Core
             }
 
             CheckConnectivity(all, result);
+            CheckWallHeightConstraints(all, result);
 
             // Пересекающиеся детали добавляем к нарушениям поверх проверки связности
             // (BasePlate исключаем — он якорь, его «пересечения» с деталями — это контакт).
@@ -442,6 +443,59 @@ namespace KitchenDesigner.Core
             }
 
             result.isValid = result.violations.Count == 0;
+        }
+
+        private static void CheckWallHeightConstraints(List<KitchenElement> all, ValidationResult result)
+        {
+            // Строим словарь стена → Wall за O(n), чтобы не вызывать FindWallByName
+            // за O(n) для каждого окна/двери (итого O(n·k) → O(n)).
+            var wallByName = new System.Collections.Generic.Dictionary<string, Wall>();
+            foreach (var e in all)
+            {
+                if (e == null) continue;
+                var w = e.GetComponent<Wall>();
+                if (w != null) wallByName[e.gameObject.name] = w;
+            }
+
+            foreach (var e in all)
+            {
+                if (e == null) continue;
+
+                string? wallName = null;
+                if (e is WindowElement win)
+                    wallName = win.AttachedWallName;
+                else if (e is DoorElement door)
+                    wallName = door.AttachedWallName;
+                else continue;
+
+                // Элемент без стены или стена не найдена — проверка связности
+                // выполняется отдельно в CheckConnectivity.
+                if (string.IsNullOrEmpty(wallName)) continue;
+                if (!wallByName.TryGetValue(wallName, out var wall)) continue;
+
+                var wallEl = wall.GetComponent<KitchenElement>();
+                if (wallEl == null) continue;
+
+                int wallHeightMM = wallEl.DimensionsMM.y;
+                if (wallHeightMM <= 0) continue;
+
+                float toU = AppConstants.MM_TO_UNITS;
+                float wallHalfH = wallHeightMM * toU * 0.5f;
+                float wallCenterY = wall.FullPosition.y;
+                float wallTop = wallCenterY + wallHalfH;
+                float wallBottom = wallCenterY - wallHalfH;
+
+                float elemHalfH = e.DimensionsMM.y * toU * 0.5f;
+                float elemTop = e.transform.position.y + elemHalfH;
+                float elemBottom = e.transform.position.y - elemHalfH;
+
+                if (elemTop > wallTop + Tolerance.EpsilonUnits ||
+                    elemBottom < wallBottom - Tolerance.EpsilonUnits)
+                {
+                    if (!result.violations.Contains(e))
+                        result.violations.Add(e);
+                }
+            }
         }
     }
 }
