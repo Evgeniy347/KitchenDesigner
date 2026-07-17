@@ -52,9 +52,9 @@ crashlytics-build.properties
 # ===========================
 # Test Results
 # ===========================
-TestResults.xml
-TestResult.xml
-TestResults_*.xml
+test-results/tmp/TestResults.xml
+test-results/tmp/TestResult.xml
+test-results/tmp/TestResults-*.xml
 *.VisualState.xml
 nunit-*.xml
 
