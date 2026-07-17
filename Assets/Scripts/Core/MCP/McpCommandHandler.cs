@@ -391,6 +391,7 @@ namespace KitchenDesigner.Core.MCP
                 } : null,
                 door = door != null ? new DoorInfo
                 {
+                    sashType = door.SashType.ToString(),
                     mode = FacadeDoor.WireName(door.Mode),
                     isOpen = door.IsOpen,
                     attachedWallName = door.AttachedWallName
@@ -1383,11 +1384,12 @@ namespace KitchenDesigner.Core.MCP
                     p.height > 0 ? p.height : 2000,
                     p.depth > 0 ? p.depth : 100);
                 var posD = new Vector3(p.x, p.y, p.z);
-                var goD = ElementFactory.CreateDoor(dimsD, elementName, posD);
+                var sashType = ParseDoorSashType(p.door_sash_type);
+                var goD = ElementFactory.CreateDoor(dimsD, elementName, posD, sashType);
                 CommandStack.Execute(new CreateCommand(goD));
                 RefreshElementHighlights();
                 var elD = goD.GetComponent<KitchenElement>();
-                Debug.Log($"[MCP] Created door '{elementName}' {dimsD.x}x{dimsD.y}x{dimsD.z}");
+                Debug.Log($"[MCP] Created door '{elementName}' {dimsD.x}x{dimsD.y}x{dimsD.z} sashType={sashType}");
                 return McpResponse.Result(req.id, BuildMutationResult(elD));
             }
 
@@ -1473,6 +1475,16 @@ namespace KitchenDesigner.Core.MCP
             {
                 case "tinted": case "тонированное": return GlassTint.Tinted;
                 default: return GlassTint.Clear;
+            }
+        }
+
+        /// <summary>Строка → DoorSashType. По умолчанию Glass.</summary>
+        private static DoorSashType ParseDoorSashType(string s)
+        {
+            switch ((s ?? "").Trim().ToLowerInvariant())
+            {
+                case "blind": case "глухое": case "глухая": return DoorSashType.Blind;
+                default: return DoorSashType.Glass;
             }
         }
 
@@ -2593,6 +2605,8 @@ namespace KitchenDesigner.Core.MCP
             if (door == null)
                 return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a door");
 
+            if (!string.IsNullOrEmpty(p.sash_type))
+                door.SashType = ParseDoorSashType(p.sash_type);
             if (!string.IsNullOrEmpty(p.mode))
             {
                 switch (p.mode.ToLowerInvariant())
