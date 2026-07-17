@@ -343,14 +343,40 @@ namespace KitchenDesigner.Core.UI
                 SelectionManager.Instance.OnSelectionChanged -= OnSelectionChanged;
         }
 
+        // ── Отложенное закрытие меню ──────────────────────────────────
+        // Когда SelectionManager.Select() вызывает DeselectAll(),
+        // OnSelectionChanged(null) приходит ПЕРЕД OnSelectionChanged(newElement).
+        // Чтобы меню не закрылось и тут же не открылось заново — откладываем
+        // закрытие на конец кадра. Если в том же кадре пришёл новый элемент —
+        // отмена отложенного закрытия и обновление меню.
+        private int _deferCloseFrame = -1;
+
         private void OnSelectionChanged(KitchenElement? element)
         {
             if (_opening) return;
             if (_root == null || !_root.activeSelf) return;
             if (element == null)
-                Close();
-            else if (element != _target)
+            {
+                _deferCloseFrame = Time.frameCount;
+                return;
+            }
+            _deferCloseFrame = -1;
+            if (element != _target)
                 Open(element);
+        }
+
+        private void ProcessDeferredClose()
+        {
+            if (_deferCloseFrame >= 0 && _deferCloseFrame < Time.frameCount)
+            {
+                _deferCloseFrame = -1;
+                Close();
+            }
+        }
+
+        private void LateUpdate()
+        {
+            ProcessDeferredClose();
         }
 
         // ── Построение элементов ───────────────────────────────────────
@@ -627,6 +653,8 @@ namespace KitchenDesigner.Core.UI
 
         private void Update()
         {
+            ProcessDeferredClose();
+
             if (Input.GetKeyDown(KeyCode.Escape) && _root != null && _root.activeSelf)
                 Close();
 
@@ -846,7 +874,8 @@ namespace KitchenDesigner.Core.UI
                 ClearAllHighlights();
                 TrackAllFields();
 
-                _root!.SetActive(true);
+                _root!.transform.SetAsLastSibling();
+                _root.SetActive(true);
             }
             finally
             {
