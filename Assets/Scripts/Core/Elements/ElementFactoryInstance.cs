@@ -215,6 +215,21 @@ namespace KitchenDesigner.Core
                 return go;
             }
 
+			if (source is FloorElement)
+			{
+				var go = CreateFloor(dims, source.PartName + " (copy)", offset);
+				go.transform.rotation = source.transform.rotation;
+				MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
+				return go;
+			}
+
+			if (source is LightSourceElement)
+			{
+				var go = CreateLightSource(source.PartName + " (copy)", offset);
+				go.transform.rotation = source.transform.rotation;
+				return go;
+			}
+
 			if (source is PillarElement srcPillar)
 			{
 				var go = CreatePillar(srcPillar.MidHeightMM, source.PartName + " (copy)", offset);
@@ -479,6 +494,74 @@ namespace KitchenDesigner.Core
 				MaterialManager.ApplyById(pillar, MaterialCatalog.DefaultId);
 
 			PartRegistry.Register(pillar);
+
+			if (ElementHighlighter.Instance != null)
+				ElementHighlighter.Instance.RefreshHighlights();
+
+			return go;
+		}
+
+		public GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position)
+		{
+			var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			go.name = string.IsNullOrEmpty(name) ? "Пол" : name;
+			go.tag = "KitchenElement";
+			go.transform.position = position;
+
+			var rb = go.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
+
+			var floor = go.AddComponent<FloorElement>();
+			floor.PartName = go.name;
+			floor.DimensionsMM = dimensionsMM;
+			floor.Movable = true;
+
+			MaterialManager.ApplyById(floor, MaterialCatalog.DefaultId);
+
+			FloorElement.RefreshBasePlateVisibility();
+
+			PartRegistry.Register(floor);
+
+			if (ElementHighlighter.Instance != null)
+				ElementHighlighter.Instance.RefreshHighlights();
+
+			return go;
+		}
+
+		public GameObject CreateLightSource(string name, Vector3 position)
+		{
+			var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			go.name = string.IsNullOrEmpty(name) ? "Источник света" : name;
+			go.tag = "KitchenElement";
+			go.transform.position = position;
+
+			var rb = go.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
+
+			var lamp = go.AddComponent<LightSourceElement>();
+			lamp.PartName = go.name;
+			lamp.DimensionsMM = new Vector3Int(
+				LightSourceElement.DEFAULT_SIZE_MM,
+				LightSourceElement.DEFAULT_SIZE_MM,
+				LightSourceElement.DEFAULT_SIZE_MM);
+			lamp.Movable = true;
+			lamp.EnsureLight();
+			lamp.SyncLightState();
+
+			// Светящийся «плафон»: эмиссия видна и при выключенной тонировке.
+			var shader = Shader.Find("Universal Render Pipeline/Lit");
+			if (shader != null)
+			{
+				var mat = new Material(shader);
+				mat.EnableKeyword("_EMISSION");
+				mat.SetColor("_BaseColor", new Color(1f, 0.97f, 0.85f, 1f));
+				mat.SetColor("_EmissionColor", new Color(1f, 0.95f, 0.7f) * 1.2f);
+				go.GetComponent<MeshRenderer>().material = mat;
+			}
+
+			PartRegistry.Register(lamp);
 
 			if (ElementHighlighter.Instance != null)
 				ElementHighlighter.Instance.RefreshHighlights();

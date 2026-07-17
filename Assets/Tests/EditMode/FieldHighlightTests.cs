@@ -156,16 +156,16 @@ public class FieldHighlightTests
         ctx.Close();
     }
 
-    // ── FloorSettingsUI ─────────────────────────────────────────────────
+    // ── DayNightPanelUI ─────────────────────────────────────────────────
 
     [Test]
-    public void FloorSettingsUI_Build_DoesNotThrow()
+    public void DayNightPanelUI_Build_DoesNotThrow()
     {
-        var go = new GameObject("Flr");
+        var go = new GameObject("DayNight");
         go.transform.SetParent(_root!.transform);
-        var flr = go.AddComponent<FloorSettingsUI>();
+        var dn = go.AddComponent<DayNightPanelUI>();
 
-        Assert.DoesNotThrow(() => flr.Build(_root!.transform));
+        Assert.DoesNotThrow(() => dn.Build(_root!.transform));
     }
 
     // ── helpers ─────────────────────────────────────────────────────────

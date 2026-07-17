@@ -16,6 +16,8 @@ namespace KitchenDesigner.Core
         GameObject CreateTable(Vector3Int dimensionsMM, string name, Vector3 position);
 		GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position);
 		GameObject CreatePillar(int midHeightMM, string name, Vector3 position);
+		GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position);
+		GameObject CreateLightSource(string name, Vector3 position);
 		GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50);
         GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position);

@@ -21,6 +21,8 @@ namespace KitchenDesigner.Core.UI
             public bool isWindow;
             public bool isDoor;
             public bool isPillar;
+            public bool isFloor;
+            public bool isLightSource;
             public int pillarMidHeightMM;
             public string drawerType;
             public int drawerLength;
@@ -39,7 +41,7 @@ namespace KitchenDesigner.Core.UI
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
                 isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false; isDoor = false;
-                isPillar = false; pillarMidHeightMM = 75;
+                isPillar = false; isFloor = false; isLightSource = false; pillarMidHeightMM = 75;
                 drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400;
             }
@@ -70,7 +72,11 @@ namespace KitchenDesigner.Core.UI
                         new Item("Стена", new Vector3Int(2000, 2500, 100), true),
                         WindowItem("Окно", new Vector3Int(900, 1200, 100)),
                         DoorItem("Дверь", new Vector3Int(900, 2000, 100)),
-                        new Item("Размеры помещения", Vector3Int.zero),
+                        FloorItem("Пол", new Vector3Int(
+                            FloorElement.DEFAULT_SIZE_MM,
+                            FloorElement.DEFAULT_THICKNESS_MM,
+                            FloorElement.DEFAULT_SIZE_MM)),
+                        LightSourceItem("Источник света"),
                     }
                 },
             };
@@ -136,6 +142,23 @@ namespace KitchenDesigner.Core.UI
             var item = new Item(name, new Vector3Int(PillarElement.TopDiameterMM, totalH, PillarElement.TopDiameterMM));
             item.isPillar = true;
             item.pillarMidHeightMM = midHeightMM;
+            return item;
+        }
+
+        private static Item FloorItem(string name, Vector3Int dims)
+        {
+            var item = new Item(name, dims);
+            item.isFloor = true;
+            return item;
+        }
+
+        private static Item LightSourceItem(string name)
+        {
+            var item = new Item(name, new Vector3Int(
+                LightSourceElement.DEFAULT_SIZE_MM,
+                LightSourceElement.DEFAULT_SIZE_MM,
+                LightSourceElement.DEFAULT_SIZE_MM));
+            item.isLightSource = true;
             return item;
         }
 

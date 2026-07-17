@@ -260,13 +260,11 @@ public class ElementPropertyDiagramTests
     }
 
     [UnityTest]
-    public IEnumerator FloorSettings_SavesPng()
+    public IEnumerator DayNightPanel_SavesPng()
     {
-        var floor = GameObject.FindWithTag("Floor");
-        Assert.IsNotNull(floor, "Floor (BasePlate) should exist after Bootstrap");
-        yield return CapturePanel("FloorSettings", "floorsettings.png",
-            () => { FloorSettingsUI.Instance?.Open(); },
-            () => { FloorSettingsUI.Instance?.Close(); });
+        yield return CapturePanel("DayNightPanel", "daynightpanel.png",
+            () => { DayNightPanelUI.Instance?.SetVisible(true); },
+            () => { DayNightPanelUI.Instance?.SetVisible(false); });
     }
 
     [UnityTest]
