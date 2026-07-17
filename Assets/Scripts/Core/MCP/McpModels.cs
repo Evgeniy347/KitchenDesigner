@@ -92,6 +92,7 @@ namespace KitchenDesigner.Core.MCP
 		public RadiusTableInfo? radiusTable; // свойства радиусного стола, только для RadiusTableElement
 		public PillarInfo? pillar; // свойства опоры, только для PillarElement
 		public WindowInfo? window; // свойства окна, только для WindowElement
+		public DoorInfo? door; // свойства двери, только для DoorElement
     }
 
     [Serializable]
@@ -306,6 +307,14 @@ namespace KitchenDesigner.Core.MCP
     {
         public string tint = "Clear";
         public int sillProtrusionMM;
+        public string mode = string.Empty;
+        public bool isOpen;
+        public string attachedWallName = string.Empty;
+    }
+
+	[Serializable]
+	public class DoorInfo
+    {
         public string mode = string.Empty;
         public bool isOpen;
         public string attachedWallName = string.Empty;

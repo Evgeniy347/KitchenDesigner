@@ -54,6 +54,9 @@ namespace KitchenDesigner.Core
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50) =>
             Instance.CreateWindow(dimensionsMM, name, position, tint, sillProtrusionMM);
 
+        public static GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position) =>
+            Instance.CreateDoor(dimensionsMM, name, position);
+
         public static GameObject Duplicate(KitchenElement source) =>
             Instance.Duplicate(source);
 

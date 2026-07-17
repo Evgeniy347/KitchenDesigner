@@ -95,6 +95,7 @@ namespace KitchenDesigner.Core.MCP
 					case "set_table_properties": return HandleSetTableProperties(request);
 					case "set_pillar_properties": return HandleSetPillarProperties(request);
 					case "set_window_properties": return HandleSetWindowProperties(request);
+					case "set_door_properties": return HandleSetDoorProperties(request);
                     case "cycle_drawer_animation": return HandleCycleDrawerAnimation(request);
                     case "set_material": return HandleSetMaterial(request);
                     case "list_materials": return HandleListMaterials(request);
@@ -317,6 +318,7 @@ namespace KitchenDesigner.Core.MCP
 			var table = el as TableElement;
 			var radiusTable = el as RadiusTableElement;
 			var window = el as WindowElement;
+			var door = el as DoorElement;
 			var pillar = el as PillarElement;
             FacadeValidationData? facadeValidation = includeFacadeValidation && el is FacadeElement fe && allElements != null
                 ? ComputeFacadeValidation(fe, allElements)
@@ -386,6 +388,12 @@ namespace KitchenDesigner.Core.MCP
                     mode = FacadeDoor.WireName(window.Mode),
                     isOpen = window.IsOpen,
                     attachedWallName = window.AttachedWallName
+                } : null,
+                door = door != null ? new DoorInfo
+                {
+                    mode = FacadeDoor.WireName(door.Mode),
+                    isOpen = door.IsOpen,
+                    attachedWallName = door.AttachedWallName
                 } : null
             };
         }
@@ -1368,6 +1376,21 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Result(req.id, BuildMutationResult(elW));
             }
 
+			if (p.is_door)
+            {
+                var dimsD = new Vector3Int(
+                    p.width > 0 ? p.width : 900,
+                    p.height > 0 ? p.height : 2000,
+                    p.depth > 0 ? p.depth : 100);
+                var posD = new Vector3(p.x, p.y, p.z);
+                var goD = ElementFactory.CreateDoor(dimsD, elementName, posD);
+                CommandStack.Execute(new CreateCommand(goD));
+                RefreshElementHighlights();
+                var elD = goD.GetComponent<KitchenElement>();
+                Debug.Log($"[MCP] Created door '{elementName}' {dimsD.x}x{dimsD.y}x{dimsD.z}");
+                return McpResponse.Result(req.id, BuildMutationResult(elD));
+            }
+
             var pos = new Vector3(p.x, p.y, p.z);
             var dims = new Vector3Int(
                 p.width > 0 ? p.width : 800,
@@ -1460,7 +1483,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 case "part": case "board": case "деталь":
                     target = ElementConverter.TargetType.Part; return true;
-                case "facade": case "door": case "фасад": case "дверца":
+                case "facade": case "дверца": case "фасад":
                     target = ElementConverter.TargetType.Facade; return true;
                 case "assembled_facade": case "assembled": case "assembledfacade": case "сборный":
                     target = ElementConverter.TargetType.AssembledFacade; return true;
@@ -2555,6 +2578,36 @@ namespace KitchenDesigner.Core.MCP
 
             Debug.Log($"[MCP] Window '{p.name}' properties updated");
             return McpResponse.Result(req.id, BuildMutationResult(window));
+        }
+
+		private McpResponse HandleSetDoorProperties(McpRequest req)
+        {
+            var p = req.Params?.ToObject<ParamsSetDoorProperties>();
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            var door = el as DoorElement;
+            if (door == null)
+                return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a door");
+
+            if (!string.IsNullOrEmpty(p.mode))
+            {
+                switch (p.mode.ToLowerInvariant())
+                {
+                    case "front_left": door.Mode = DoorMode.HingeFrontLeft; break;
+                    case "front_right": door.Mode = DoorMode.HingeFrontRight; break;
+                    case "front_top": door.Mode = DoorMode.HingeFrontTop; break;
+                    case "front_bottom": door.Mode = DoorMode.HingeFrontBottom; break;
+                }
+            }
+            if (p.is_open.HasValue)
+                door.SetOpen(p.is_open.Value);
+
+            Debug.Log($"[MCP] Door '{p.name}' properties updated");
+            return McpResponse.Result(req.id, BuildMutationResult(door));
         }
 
         private McpResponse HandleCycleDrawerAnimation(McpRequest req)

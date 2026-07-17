@@ -48,6 +48,10 @@ namespace KitchenDesigner.Core
 		public int windowDoorMode = 0;
 		public bool windowIsOpen = false;
 		public string windowAttachedWallName = "";
+		public bool isDoor = false;
+		public int doorDoorMode = 0;
+		public bool doorIsOpen = false;
+		public string doorAttachedWallName = "";
 		public bool isPillar = false;
 		public int midHeightMM = 75;
 
@@ -66,6 +70,7 @@ namespace KitchenDesigner.Core
 			var radiusTable = element as RadiusTableElement;
 			var tableEl2 = element as TableElement;
 			var windowEl = element as WindowElement;
+			var doorEl = element as DoorElement;
 			var pillar = element as PillarElement;
 
             // Позицию/поворот пишем как ЛОГИЧЕСКУЮ, а не текущую (смещённую) позу:
@@ -75,12 +80,14 @@ namespace KitchenDesigner.Core
             //    после загрузки она отводится ещё раз и «уезжает».
             var p = wall != null ? wall.FullPosition
                   : windowEl != null ? windowEl.ClosedPosition
+                  : doorEl != null ? doorEl.ClosedPosition
                   : facade != null ? facade.ClosedPosition
                   : drawer != null ? drawer.ClosedPosition
                   : element.transform.position;
             d.position = new[] { p.x, p.y, p.z };
 
             var r = windowEl != null ? windowEl.ClosedRotation
+                  : doorEl != null ? doorEl.ClosedRotation
                   : facade != null ? facade.ClosedRotation
                   : drawer != null ? drawer.ClosedRotation
                   : element.transform.rotation;
@@ -159,6 +166,14 @@ namespace KitchenDesigner.Core
 				d.windowDoorMode = (int)windowEl.Mode;
 				d.windowIsOpen = windowEl.IsOpen;
 				d.windowAttachedWallName = windowEl.AttachedWallName ?? "";
+			}
+
+			if (doorEl != null)
+			{
+				d.isDoor = true;
+				d.doorDoorMode = (int)doorEl.Mode;
+				d.doorIsOpen = doorEl.IsOpen;
+				d.doorAttachedWallName = doorEl.AttachedWallName ?? "";
 			}
 
 			d.isPillar = pillar != null;

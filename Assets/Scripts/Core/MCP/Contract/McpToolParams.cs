@@ -170,6 +170,9 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Create as a WINDOW. Default false.")]
         public bool is_window;
 
+        [McpParam("Create as a DOOR. Default false.")]
+        public bool is_door;
+
         [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Default A.", Enum = new[] { "A", "B", "C", "D" })]
         public string drawer_type = string.Empty;
         [McpParam("Drawer only: nominal slide length in MM, one of 250/300/350/400/450/500/550/600. Default 350.")]
@@ -434,6 +437,16 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Windowsill outward protrusion in MM (0..200).", Min = 0, Max = 200)]
         public int? sill_protrusion_mm;
         [McpParam("Opening mode: front_left|front_right|front_top|front_bottom (like facade).",
+            Enum = new[] { "front_left", "front_right", "front_top", "front_bottom" })]
+        public string? mode;
+        [McpParam("true = open, false = close.")] public bool? is_open;
+    }
+
+	[Serializable]
+	public class ParamsSetDoorProperties
+    {
+        [McpParam("Exact door element name.", Required = true)] public string name = string.Empty;
+        [McpParam("Opening mode: front_left|front_right|front_top|front_bottom.",
             Enum = new[] { "front_left", "front_right", "front_top", "front_bottom" })]
         public string? mode;
         [McpParam("true = open, false = close.")] public bool? is_open;

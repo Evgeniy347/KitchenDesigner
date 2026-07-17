@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public static class ElementConverter
     {
-        public enum TargetType { Part, Facade, AssembledFacade, RadialShelf, Drawer, Window }
+        public enum TargetType { Part, Facade, AssembledFacade, RadialShelf, Drawer, Window, Door }
 
         public static KitchenElement Convert(KitchenElement source, TargetType targetType)
         {
@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core
             // в контекстном меню отражает «Ящик GTV» как индикатор, но конвертация — no-op.
             if (currentType == TargetType.Drawer || targetType == TargetType.Drawer) return source;
             if (currentType == TargetType.Window || targetType == TargetType.Window) return source;
+            if (currentType == TargetType.Door || targetType == TargetType.Door) return source;
 
             var go = source.gameObject;
 
@@ -121,6 +122,7 @@ namespace KitchenDesigner.Core
             if (element is RadialShelfElement) return TargetType.RadialShelf;
             if (element is DrawerElement) return TargetType.Drawer;
             if (element is WindowElement) return TargetType.Window;
+            if (element is DoorElement) return TargetType.Door;
             if (element is FacadeElement) return TargetType.Facade;
             return TargetType.Part;
         }

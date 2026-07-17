@@ -97,6 +97,8 @@ namespace KitchenDesigner.Core
             if (wall != null) Object.DestroyImmediate(wall);
             var window = go.GetComponent<WindowElement>();
             if (window != null) Object.DestroyImmediate(window);
+            var door = go.GetComponent<DoorElement>();
+            if (door != null) Object.DestroyImmediate(door);
         }
 
         private void ResetComponent(GameObject go)
@@ -250,6 +252,16 @@ namespace KitchenDesigner.Core
                 go.transform.rotation = source.transform.rotation;
                 var copy = go.GetComponent<WindowElement>();
                 if (copy != null) { copy.Mode = srcWin.Mode; }
+                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
+                return go;
+            }
+
+			if (source is DoorElement srcDoor)
+            {
+                var go = CreateDoor(dims, source.PartName + " (copy)", offset);
+                go.transform.rotation = source.transform.rotation;
+                var copy = go.GetComponent<DoorElement>();
+                if (copy != null) { copy.Mode = srcDoor.Mode; }
                 MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
                 return go;
             }
@@ -461,6 +473,7 @@ namespace KitchenDesigner.Core
 			var pillar = go.AddComponent<PillarElement>();
 			pillar.PartName = go.name;
 			pillar.MidHeightMM = midHeightMM;
+			pillar.DimensionsMM = new Vector3Int(PillarElement.TopDiameterMM, pillar.TotalHeightMM, PillarElement.TopDiameterMM);
 
 			if (DefaultMaterial != null)
 				MaterialManager.ApplyById(pillar, MaterialCatalog.DefaultId);
@@ -494,6 +507,27 @@ namespace KitchenDesigner.Core
             MaterialManager.ApplyById(window, MaterialCatalog.DefaultId);
 
             PartRegistry.Register(window);
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+            return go;
+        }
+
+        public GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position)
+        {
+            var go = new GameObject(name);
+            go.tag = "KitchenElement";
+            go.transform.position = position;
+
+            var rb = go.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+
+            var door = go.AddComponent<DoorElement>();
+            door.PartName = name;
+            door.DimensionsMM = dimensionsMM;
+            MaterialManager.ApplyById(door, MaterialCatalog.DefaultId);
+
+            PartRegistry.Register(door);
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
             return go;
@@ -551,6 +585,17 @@ namespace KitchenDesigner.Core
             {
                 window.DestroyChildren();
                 PartRegistry.Unregister(window);
+                if (Application.isPlaying)
+                    Object.Destroy(go);
+                else
+                    Object.DestroyImmediate(go);
+                return;
+            }
+			var door = go.GetComponent<DoorElement>();
+            if (door != null)
+            {
+                door.DestroyChildren();
+                PartRegistry.Unregister(door);
                 if (Application.isPlaying)
                     Object.Destroy(go);
                 else

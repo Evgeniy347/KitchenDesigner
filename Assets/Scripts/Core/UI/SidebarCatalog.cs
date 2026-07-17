@@ -19,6 +19,7 @@ namespace KitchenDesigner.Core.UI
             public bool isFurniture;
             public bool isRadiusTable;
             public bool isWindow;
+            public bool isDoor;
             public bool isPillar;
             public int pillarMidHeightMM;
             public string drawerType;
@@ -37,7 +38,7 @@ namespace KitchenDesigner.Core.UI
                 this.isFacade = isFacade; this.isAssembled = isAssembled;
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
-                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false;
+                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false; isDoor = false;
                 isPillar = false; pillarMidHeightMM = 75;
                 drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400;
@@ -68,6 +69,7 @@ namespace KitchenDesigner.Core.UI
                         new Item("Короб", new Vector3Int(600, 600, 600)),
                         new Item("Стена", new Vector3Int(2000, 2500, 100), true),
                         WindowItem("Окно", new Vector3Int(900, 1200, 100)),
+                        DoorItem("Дверь", new Vector3Int(900, 2000, 100)),
                         new Item("Размеры помещения", Vector3Int.zero),
                     }
                 },
@@ -141,6 +143,13 @@ namespace KitchenDesigner.Core.UI
         {
             var item = new Item(name, dims);
             item.isWindow = true;
+            return item;
+        }
+
+        private static Item DoorItem(string name, Vector3Int dims)
+        {
+            var item = new Item(name, dims);
+            item.isDoor = true;
             return item;
         }
     }

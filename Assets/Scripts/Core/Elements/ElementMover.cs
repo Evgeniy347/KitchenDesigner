@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core
         private float _vOffset;
         private AxisLock _axisLock = AxisLock.None;
         private Wall? _dragWall;
-        private bool _targetIsWindow;
+        private bool _targetIsWallOpening;
 
         // ЛКМ нажата на детали, но ещё не решено клик это или drag.
         private bool _pressed;
@@ -111,8 +111,8 @@ namespace KitchenDesigner.Core
             _startRotation = element.transform.rotation;
             _wasMoved = false;
             _wasShift = false;
-            _targetIsWindow = element is WindowElement;
-            _dragWall = _targetIsWindow ? FindAttachedWall((WindowElement)element) : null;
+            _targetIsWallOpening = element is WindowElement || element is DoorElement;
+            _dragWall = _targetIsWallOpening ? FindAttachedWall(element) : null;
 
             Plane dragPlane = GetDragPlane(element);
             _offset = dragPlane.Raycast(ray, out float enter)
@@ -292,7 +292,7 @@ namespace KitchenDesigner.Core
             _showGhost = false;
             _axisLock = AxisLock.None;
             _dragWall = null;
-            _targetIsWindow = false;
+            _targetIsWallOpening = false;
             RevertMoveSet();
             RestoreDragMaterial();
             IsDragging = false;
@@ -342,7 +342,7 @@ namespace KitchenDesigner.Core
                 if (dragPlane.Raycast(ray, out float enter))
                 {
                     Vector3 point = ray.GetPoint(enter) + _offset;
-                    if (!_targetIsWindow)
+                    if (!_targetIsWallOpening)
                         point.y = _target.transform.position.y;
                     newPos = GridManager.SnapToGrid(point);
                     computed = true;
@@ -355,8 +355,8 @@ namespace KitchenDesigner.Core
 
             if (Input.GetKeyDown(KeyCode.X)) _axisLock = _axisLock == AxisLock.X ? AxisLock.None : AxisLock.X;
             if (Input.GetKeyDown(KeyCode.Z)) _axisLock = _axisLock == AxisLock.Z ? AxisLock.None : AxisLock.Z;
-            if (_axisLock == AxisLock.X) { newPos.z = _startPosition.z; if (!_targetIsWindow) newPos.y = _startPosition.y; }
-            else if (_axisLock == AxisLock.Z) { newPos.x = _startPosition.x; if (!_targetIsWindow) newPos.y = _startPosition.y; }
+            if (_axisLock == AxisLock.X) { newPos.z = _startPosition.z; if (!_targetIsWallOpening) newPos.y = _startPosition.y; }
+            else if (_axisLock == AxisLock.Z) { newPos.x = _startPosition.x; if (!_targetIsWallOpening) newPos.y = _startPosition.y; }
 
             var others = PartRegistry.GetAll();
             if (_moveSet.Count > 1) others.RemoveAll(e => _moveSet.Contains(e));
@@ -420,7 +420,7 @@ namespace KitchenDesigner.Core
 			IsDragging = false;
 			_wasShift = false;
 			_dragWall = null;
-			_targetIsWindow = false;
+			_targetIsWallOpening = false;
 			_movingSet.Clear();
 			RefreshHighlights();
 		}
@@ -595,12 +595,11 @@ namespace KitchenDesigner.Core
 
         private Plane GetDragPlane(KitchenElement target)
         {
-            if (!_targetIsWindow)
+            if (!_targetIsWallOpening)
                 return new Plane(Vector3.up, target.transform.position);
 
-            var window = (WindowElement)target;
             if (_dragWall == null)
-                _dragWall = FindAttachedWall(window);
+                _dragWall = FindAttachedWall(target);
 
             if (_dragWall != null)
             {
@@ -608,7 +607,7 @@ namespace KitchenDesigner.Core
                 if (wallEl == null)
                 {
                     Debug.LogWarning($"[ElementMover] Wall '{_dragWall.name}' is missing KitchenElement. " +
-                        $"Window '{window.name}' drags on horizontal plane.");
+                        $"'{target.name}' drags on horizontal plane.");
                 }
                 else
                 {
@@ -617,20 +616,19 @@ namespace KitchenDesigner.Core
                     Vector3 normal = (dims.x <= dims.z) ? wt.right : wt.forward;
                     normal.y = 0f;
                     if (normal.sqrMagnitude > 1e-8f)
-                        // Plane origin follows the window's current position:
-                        // the normal is the wall's face normal and stays constant;
-                        // shifting the origin along the normal does not affect
-                        // the ray intersection point within the plane.
                         return new Plane(normal.normalized, target.transform.position);
                 }
             }
             return new Plane(Vector3.up, target.transform.position);
         }
 
-        private static Wall? FindAttachedWall(WindowElement window)
+        private static Wall? FindAttachedWall(KitchenElement element)
         {
-            if (window == null) return null;
-            var name = window.AttachedWallName;
+            if (element == null) return null;
+            var win = element as WindowElement;
+            var door = element as DoorElement;
+            var name = win != null ? win.AttachedWallName
+                     : door != null ? door.AttachedWallName : "";
             if (string.IsNullOrEmpty(name)) return null;
             foreach (var el in PartRegistry.GetAll())
             {
