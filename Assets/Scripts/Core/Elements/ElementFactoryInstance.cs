@@ -258,7 +258,7 @@ namespace KitchenDesigner.Core
 
 			if (source is DoorElement srcDoor)
             {
-                var go = CreateDoor(dims, source.PartName + " (copy)", offset);
+                var go = CreateDoor(dims, source.PartName + " (copy)", offset, srcDoor.SashType);
                 go.transform.rotation = source.transform.rotation;
                 var copy = go.GetComponent<DoorElement>();
                 if (copy != null) { copy.Mode = srcDoor.Mode; }
@@ -512,7 +512,8 @@ namespace KitchenDesigner.Core
             return go;
         }
 
-        public GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position)
+        public GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position,
+            DoorSashType sashType = DoorSashType.Glass)
         {
             var go = new GameObject(name);
             go.tag = "KitchenElement";
@@ -525,6 +526,7 @@ namespace KitchenDesigner.Core
             var door = go.AddComponent<DoorElement>();
             door.PartName = name;
             door.DimensionsMM = dimensionsMM;
+            door.SashType = sashType;
             MaterialManager.ApplyById(door, MaterialCatalog.DefaultId);
 
             PartRegistry.Register(door);

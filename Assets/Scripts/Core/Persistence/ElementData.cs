@@ -49,6 +49,7 @@ namespace KitchenDesigner.Core
 		public bool windowIsOpen = false;
 		public string windowAttachedWallName = "";
 		public bool isDoor = false;
+		public int doorSashType = 0;
 		public int doorDoorMode = 0;
 		public bool doorIsOpen = false;
 		public string doorAttachedWallName = "";
@@ -171,6 +172,7 @@ namespace KitchenDesigner.Core
 			if (doorEl != null)
 			{
 				d.isDoor = true;
+				d.doorSashType = (int)doorEl.SashType;
 				d.doorDoorMode = (int)doorEl.Mode;
 				d.doorIsOpen = doorEl.IsOpen;
 				d.doorAttachedWallName = doorEl.AttachedWallName ?? "";

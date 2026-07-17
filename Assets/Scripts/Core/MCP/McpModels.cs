@@ -315,6 +315,7 @@ namespace KitchenDesigner.Core.MCP
 	[Serializable]
 	public class DoorInfo
     {
+        public string sashType = "Glass";
         public string mode = string.Empty;
         public bool isOpen;
         public string attachedWallName = string.Empty;

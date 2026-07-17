@@ -200,6 +200,8 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string window_tint = string.Empty;
         [McpParam("Window only: windowsill outward protrusion in MM (0..200). Default 50.", Min = 0, Max = 200)]
         public int window_sill_protrusion_mm = 50;
+        [McpParam("Door only: sash type — glass (transparent) or blind (solid panel). Default glass.", Enum = new[] { "glass", "blind" })]
+        public string door_sash_type = string.Empty;
     }
 
     [Serializable]
@@ -446,6 +448,9 @@ namespace KitchenDesigner.Core.MCP.Contract
 	public class ParamsSetDoorProperties
     {
         [McpParam("Exact door element name.", Required = true)] public string name = string.Empty;
+        [McpParam("Sash type: glass (transparent) or blind (solid panel).",
+            Enum = new[] { "glass", "blind" })]
+        public string sash_type = string.Empty;
         [McpParam("Opening mode: front_left|front_right|front_top|front_bottom.",
             Enum = new[] { "front_left", "front_right", "front_top", "front_bottom" })]
         public string? mode;

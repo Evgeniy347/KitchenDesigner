@@ -185,7 +185,8 @@ namespace KitchenDesigner.Core
 						? ElementFactory.Instance.CreateWindow(ed.Dimensions, ed.name, ed.Position,
 							(GlassTint)ed.windowTint, ed.windowSillProtrusionMM)
 						: ed.isDoor
-						? ElementFactory.Instance.CreateDoor(ed.Dimensions, ed.name, ed.Position)
+						? ElementFactory.Instance.CreateDoor(ed.Dimensions, ed.name, ed.Position,
+                            (DoorSashType)ed.doorSashType)
 						: ed.isWall
 						? ElementFactory.Instance.CreateWall(ed.Dimensions, ed.name, ed.Position)
 						: ed.isPillar
