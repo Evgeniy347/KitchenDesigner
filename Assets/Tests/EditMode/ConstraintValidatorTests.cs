@@ -210,4 +210,134 @@ public class ConstraintValidatorTests
         Object.DestroyImmediate(a.gameObject);
         Object.DestroyImmediate(b.gameObject);
     }
+
+    [Test]
+    public void Validate_WindowTooTall_Violation()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(100, 2500, 3000), "Wall_WinH", new Vector3(0, 1.25f, 0));
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 1200, 100), "Win_Tall", new Vector3(0, 1.25f, 0));
+        var wall = wallGo.GetComponent<KitchenElement>();
+        var window = winGo.GetComponent<WindowElement>();
+
+        window!.SnapToWall();
+        window.DimensionsMM = new Vector3Int(900, 3000, 100);
+
+        var result = ConstraintValidator.Validate(new List<KitchenElement> { wall, window! });
+
+        Assert.IsFalse(result.isValid);
+        Assert.Contains(window, result.violations);
+
+        Object.DestroyImmediate(wallGo);
+        Object.DestroyImmediate(winGo);
+    }
+
+    [Test]
+    public void Validate_WindowAboveWallTop_Violation()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(100, 2500, 3000), "Wall_WinY", new Vector3(0, 1.25f, 0));
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 500, 100), "Win_Above", new Vector3(0, 1.25f, 0));
+        var wall = wallGo.GetComponent<KitchenElement>();
+        var window = winGo.GetComponent<WindowElement>();
+
+        window!.SnapToWall();
+        winGo.transform.position = new Vector3(0, 2.8f, 0);
+
+        var result = ConstraintValidator.Validate(new List<KitchenElement> { wall, window! });
+
+        Assert.IsFalse(result.isValid);
+        Assert.Contains(window, result.violations);
+
+        Object.DestroyImmediate(wallGo);
+        Object.DestroyImmediate(winGo);
+    }
+
+    [Test]
+    public void Validate_WindowWithinWall_NoHeightViolation()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(100, 2500, 3000), "Wall_WinOK", new Vector3(0, 1.25f, 0));
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 1200, 100), "Win_OK2", new Vector3(0, 1.0f, 0));
+        var wall = wallGo.GetComponent<KitchenElement>();
+        var window = winGo.GetComponent<WindowElement>();
+
+        window!.SnapToWall();
+
+        var result = ConstraintValidator.Validate(new List<KitchenElement> { wall, window! });
+
+        Assert.IsTrue(result.isValid,
+            "окно в пределах стены не должно давать нарушений по высоте");
+
+        Object.DestroyImmediate(wallGo);
+        Object.DestroyImmediate(winGo);
+    }
+
+    [Test]
+    public void Validate_DoorTooTall_Violation()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(100, 2500, 3000), "Wall_DoorH2", new Vector3(0, 1.25f, 0));
+        var doorGo = ElementFactory.CreateDoor(
+            new Vector3Int(900, 2000, 100), "Door_Tall", new Vector3(0, 1.25f, 0));
+        var wall = wallGo.GetComponent<KitchenElement>();
+        var door = doorGo.GetComponent<DoorElement>();
+
+        door!.SnapToWall();
+        door.DimensionsMM = new Vector3Int(900, 3000, 100);
+
+        var result = ConstraintValidator.Validate(new List<KitchenElement> { wall, door! });
+
+        Assert.IsFalse(result.isValid);
+        Assert.Contains(door, result.violations);
+
+        Object.DestroyImmediate(wallGo);
+        Object.DestroyImmediate(doorGo);
+    }
+
+    [Test]
+    public void Validate_DoorBelowWallBottom_Violation()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(100, 2500, 3000), "Wall_DoorY", new Vector3(0, 1.25f, 0));
+        var doorGo = ElementFactory.CreateDoor(
+            new Vector3Int(900, 500, 100), "Door_Below", new Vector3(0, 1.25f, 0));
+        var wall = wallGo.GetComponent<KitchenElement>();
+        var door = doorGo.GetComponent<DoorElement>();
+
+        door!.SnapToWall();
+        doorGo.transform.position = new Vector3(0, -0.1f, 0);
+
+        var result = ConstraintValidator.Validate(new List<KitchenElement> { wall, door! });
+
+        Assert.IsFalse(result.isValid);
+        Assert.Contains(door, result.violations);
+
+        Object.DestroyImmediate(wallGo);
+        Object.DestroyImmediate(doorGo);
+    }
+
+    [Test]
+    public void Validate_DoorWithinWall_NoHeightViolation()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(100, 2500, 3000), "Wall_DoorOK2", new Vector3(0, 1.25f, 0));
+        var doorGo = ElementFactory.CreateDoor(
+            new Vector3Int(900, 2000, 100), "Door_OK2", new Vector3(0, 1.0f, 0));
+        var wall = wallGo.GetComponent<KitchenElement>();
+        var door = doorGo.GetComponent<DoorElement>();
+
+        door!.SnapToWall();
+
+        var result = ConstraintValidator.Validate(new List<KitchenElement> { wall, door! });
+
+        Assert.IsTrue(result.isValid,
+            "дверь в пределах стены не должна давать нарушений по высоте");
+
+        Object.DestroyImmediate(wallGo);
+        Object.DestroyImmediate(doorGo);
+    }
 }

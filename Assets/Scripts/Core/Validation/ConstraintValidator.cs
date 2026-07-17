@@ -157,6 +157,7 @@ namespace KitchenDesigner.Core
             }
 
             CheckConnectivity(all, result);
+            CheckWallHeightConstraints(all, result);
 
             // Пересекающиеся детали добавляем к нарушениям поверх проверки связности
             // (BasePlate исключаем — он якорь, его «пересечения» с деталями — это контакт).
@@ -442,6 +443,55 @@ namespace KitchenDesigner.Core
             }
 
             result.isValid = result.violations.Count == 0;
+        }
+
+        private static void CheckWallHeightConstraints(List<KitchenElement> all, ValidationResult result)
+        {
+            foreach (var e in all)
+            {
+                if (e == null) continue;
+
+                Wall? wall = null;
+                if (e is WindowElement win)
+                    wall = FindWallByName(win.AttachedWallName, all);
+                else if (e is DoorElement door)
+                    wall = FindWallByName(door.AttachedWallName, all);
+                else continue;
+
+                if (wall == null) continue;
+
+                var wallEl = wall.GetComponent<KitchenElement>();
+                if (wallEl == null) continue;
+
+                float toU = AppConstants.MM_TO_UNITS;
+                float wallHalfH = wallEl.DimensionsMM.y * toU * 0.5f;
+                float wallCenterY = wall.FullPosition.y;
+                float wallTop = wallCenterY + wallHalfH;
+                float wallBottom = wallCenterY - wallHalfH;
+
+                float elemHalfH = e.DimensionsMM.y * toU * 0.5f;
+                float elemTop = e.transform.position.y + elemHalfH;
+                float elemBottom = e.transform.position.y - elemHalfH;
+
+                if (elemTop > wallTop + Tolerance.EpsilonUnits ||
+                    elemBottom < wallBottom - Tolerance.EpsilonUnits)
+                {
+                    if (!result.violations.Contains(e))
+                        result.violations.Add(e);
+                }
+            }
+        }
+
+        private static Wall? FindWallByName(string name, List<KitchenElement> all)
+        {
+            if (string.IsNullOrEmpty(name)) return null;
+            foreach (var e in all)
+            {
+                if (e == null) continue;
+                if (e.gameObject.name == name)
+                    return e.GetComponent<Wall>();
+            }
+            return null;
         }
     }
 }
