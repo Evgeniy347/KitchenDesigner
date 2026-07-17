@@ -248,6 +248,20 @@ namespace KitchenDesigner.Core
             if (DimensionsMM.z != thicknessMM)
                 DimensionsMM = new Vector3Int(DimensionsMM.x, DimensionsMM.y, thicknessMM);
 
+            // Ограничение по высоте: окно не должно выходить за пределы стены.
+            int wallHeightMM = wallDims.y;
+            if (DimensionsMM.y > wallHeightMM)
+                DimensionsMM = new Vector3Int(DimensionsMM.x, wallHeightMM, DimensionsMM.z);
+            float toU = AppConstants.MM_TO_UNITS;
+            float wallHalfH = wallHeightMM * toU * 0.5f;
+            float wallCenterY = wall.FullPosition.y;
+            float winHalfH = DimensionsMM.y * toU * 0.5f;
+            float clampedY = Mathf.Clamp(transform.position.y,
+                wallCenterY - wallHalfH + winHalfH,
+                wallCenterY + wallHalfH - winHalfH);
+            if (Mathf.Abs(clampedY - transform.position.y) > Tolerance.EpsilonUnits)
+                transform.position = new Vector3(transform.position.x, clampedY, transform.position.z);
+
             // Вырез следует за окном при перемещении вдоль стены.
             if (float.IsNaN(_lastCutoutPos.x) ||
                 (transform.position - _lastCutoutPos).sqrMagnitude > Tolerance.EpsilonSqr)
