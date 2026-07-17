@@ -1097,7 +1097,7 @@ namespace KitchenDesigner.Core.MCP
 
             // Ось разделения — наибольший положительный зазор между AABB.
             int sepAxis = -1;
-            float bestGap = GapEpsilonMm * AppConstants.MM_TO_UNITS;
+            float bestGap = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
             for (int axis = 0; axis < 3; axis++)
             {
                 float gap = Mathf.Max(bMin[axis] - aMax[axis], aMin[axis] - bMax[axis]);
@@ -1137,15 +1137,14 @@ namespace KitchenDesigner.Core.MCP
             // Кто уже занимает этот объём.
             var box = new AabbInfo { minX = lo[0], minY = lo[1], minZ = lo[2], maxX = hi[0], maxY = hi[1], maxZ = hi[2] };
             var blockers = new List<object>();
-            float eps = GapEpsilonMm * AppConstants.MM_TO_UNITS;
             foreach (var other in PartRegistry.GetAll())
             {
                 if (other == null || other == elA || other == elB) continue;
                 var o = ComputeAABB(other.GetVertices());
                 bool intersects =
-                    o.minX < box.maxX - eps && o.maxX > box.minX + eps &&
-                    o.minY < box.maxY - eps && o.maxY > box.minY + eps &&
-                    o.minZ < box.maxZ - eps && o.maxZ > box.minZ + eps;
+                    Tolerance.IntervalsOverlap(o.minX, o.maxX, box.minX, box.maxX) &&
+                    Tolerance.IntervalsOverlap(o.minY, o.maxY, box.minY, box.maxY) &&
+                    Tolerance.IntervalsOverlap(o.minZ, o.maxZ, box.minZ, box.maxZ);
                 if (intersects) blockers.Add(new { name = other.PartName, type = other.GetType().Name });
             }
 
@@ -1813,7 +1812,7 @@ namespace KitchenDesigner.Core.MCP
                 // Глубина проникновения = минимальная из трёх протяжённостей
                 // пересечения; по ней агент отличает «касание» от «вдавлено на 18 мм».
                 float depthMm = Mathf.Min(overlapX, Mathf.Min(overlapY, overlapZ)) * toMm;
-                if (depthMm < GapEpsilonMm) continue; // float-шум вплотную стоящих деталей
+                if (Tolerance.IsNoiseMm(depthMm)) continue; // float-шум вплотную стоящих деталей
 
                 results.Add(new {
                     kind = "overlap",
@@ -2164,24 +2163,20 @@ namespace KitchenDesigner.Core.MCP
             return el.DimensionsMM;
         }
 
-        /// <summary>Допуск контакта: |зазор| меньше этого — детали «касаются»
-        /// (touching), а не пересекаются/отстоят. Убирает float-шум вида -0.0002 мм.</summary>
-        private const float GapEpsilonMm = 0.5f;
-
         /// <summary>Глубина пересечения (мм) → категория серьёзности для агента.</summary>
         private static string ClassifyOverlapMm(float mm) =>
-            mm < GapEpsilonMm ? "touching"
+            Tolerance.IsNoiseMm(mm) ? "touching"
             : mm < 2f ? "minor_overlap"
             : mm < 10f ? "overlap"
             : "deep_penetration";
 
         /// <summary>Проекции AABB на две оси, КРОМЕ указанной, пересекаются (с допуском).
         /// Без этого «ближайшим по Y» может оказаться деталь из другого угла сцены.</summary>
-        private static bool ProjectionsOverlapExceptAxis(AabbInfo a, AabbInfo b, int axis, float eps)
+        private static bool ProjectionsOverlapExceptAxis(AabbInfo a, AabbInfo b, int axis)
         {
-            if (axis != 0 && !(a.minX < b.maxX - eps && a.maxX > b.minX + eps)) return false;
-            if (axis != 1 && !(a.minY < b.maxY - eps && a.maxY > b.minY + eps)) return false;
-            if (axis != 2 && !(a.minZ < b.maxZ - eps && a.maxZ > b.minZ + eps)) return false;
+            if (axis != 0 && !Tolerance.IntervalsOverlap(a.minX, a.maxX, b.minX, b.maxX)) return false;
+            if (axis != 1 && !Tolerance.IntervalsOverlap(a.minY, a.maxY, b.minY, b.maxY)) return false;
+            if (axis != 2 && !Tolerance.IntervalsOverlap(a.minZ, a.maxZ, b.minZ, b.maxZ)) return false;
             return true;
         }
 
@@ -2192,7 +2187,6 @@ namespace KitchenDesigner.Core.MCP
             string[] axisNames = { "x", "y", "z" };
             float[] aMin = { elAabb.minX, elAabb.minY, elAabb.minZ };
             float[] aMax = { elAabb.maxX, elAabb.maxY, elAabb.maxZ };
-            float eps = GapEpsilonMm * AppConstants.MM_TO_UNITS;
 
             // AABB соседей считаем один раз, а не по разу на каждую ось.
             var others = new List<(KitchenElement el, AabbInfo aabb)>(allElements.Count);
@@ -2210,7 +2204,7 @@ namespace KitchenDesigner.Core.MCP
                 {
                     // Сосед по оси осмыслен только при пересечении проекций
                     // на две другие оси (реально «напротив», а не где-то в сцене).
-                    if (!ProjectionsOverlapExceptAxis(elAabb, oAabb, axis, eps)) continue;
+                    if (!ProjectionsOverlapExceptAxis(elAabb, oAabb, axis)) continue;
 
                     float bMin = 0, bMax = 0;
                     if (axis == 0) { bMin = oAabb.minX; bMax = oAabb.maxX; }
@@ -2234,7 +2228,7 @@ namespace KitchenDesigner.Core.MCP
                 if (bestNeighbor == null) continue;
 
                 float gapMM = bestGapUnits / AppConstants.MM_TO_UNITS;
-                bool touching = Mathf.Abs(gapMM) < GapEpsilonMm;
+                bool touching = Tolerance.IsNoiseMm(gapMM);
                 gaps.Add(new AxisGapInfo
                 {
                     axis = axisNames[axis],

@@ -46,16 +46,16 @@ namespace KitchenDesigner.Core
 
     public static class SnapSystem
     {
-        // Допуск к порогу (0.01 мм): прилипание срабатывает и ровно на границе
-        // порога, несмотря на ошибку округления float при вычислении зазора.
-        private const float ThresholdEpsilon = 1e-5f;
+        // Допуск к порогу: прилипание срабатывает и ровно на границе порога,
+        // несмотря на ошибку округления float при вычислении зазора.
+        private const float ThresholdEpsilon = Tolerance.SnapEpsilon;
 
         // «Нулевое» смещение (0.1 мм): кандидат, чей сдвиг меньше, — это уже
         // существующий контакт (деталь и так заподлицо), а не новое прилипание.
         // Такой кандидат не должен побеждать содержательные снэпы — иначе деталь,
         // скользящая по грани соседа (или стоящая на полу), никогда не прилипнет
         // к стене: подтверждение текущего контакта (сдвиг 0) всегда «ближе».
-        private const float ZeroShiftEpsilon = 1e-4f;
+        private const float ZeroShiftEpsilon = Tolerance.EpsilonUnits;
 
         // Прилипание — чистая детерминированная функция от (moved, others, testPos).
         // Без скрытого статического состояния: одинаковый вход → одинаковый выход,
@@ -102,7 +102,7 @@ namespace KitchenDesigner.Core
                         // друг другу (нормали противоположны, dot≈-1). Со-направленные
                         // грани (dot≈+1) не образуют стык — иначе деталь липла бы «не с той стороны».
                         float dot = Vector3.Dot(movedFaces[i].normal, otherFaces[j].normal);
-                        if (dot > -0.999f) continue;
+                        if (!Tolerance.IsParallel(dot) || dot > 0) continue;
 
                         var mf = movedFaces[i];
                         var of = otherFaces[j];
@@ -238,7 +238,7 @@ namespace KitchenDesigner.Core
                     {
                         float dot = Vector3.Dot(movedFaces[i].normal, otherFaces[j].normal);
                         n.bestDot = Mathf.Min(n.bestDot, dot);
-                        if (dot > -0.999f) continue;
+                        if (!Tolerance.IsParallel(dot) || dot > 0) continue;
                         n.hasFacingFaces = true;
 
                         var mf = movedFaces[i];
@@ -332,13 +332,12 @@ namespace KitchenDesigner.Core
             float interBottom = Mathf.Max(aRect.yMin, bRect.yMin);
             float interTop = Mathf.Min(aRect.yMax, bRect.yMax);
 
-            // Epsilon-допуск (0.01 мм): без него грани, касающиеся ровно по кромке
+            // Epsilon-допуск: без него грани, касающиеся ровно по кромке
             // (interLeft == interRight или interBottom == interTop), дают
             // недетерминированный результат из-за float-погрешности:
             // иногда overlapRatio ≈ 100% (ошибка), иногда 0% (правильно).
             // С допуском точное касание всегда считается нулевым перекрытием.
-            const float OverlapEpsilon = 1e-5f; // 0.01 мм
-            if (interLeft + OverlapEpsilon >= interRight || interBottom + OverlapEpsilon >= interTop)
+            if (interLeft + Tolerance.SnapEpsilon >= interRight || interBottom + Tolerance.SnapEpsilon >= interTop)
             {
                 overlapRatio = 0;
                 return false;
@@ -376,12 +375,6 @@ namespace KitchenDesigner.Core
             return new Rect(center.x - halfU, center.y - halfV, halfU * 2, halfV * 2);
         }
 
-        // Допуск (0.1 мм) для AABB-пересечения: детали, стоящие вплотную гранями,
-        // из-за погрешности float могут давать ничтожное (~1e-9 м) перекрытие.
-        // Без допуска такой контакт ошибочно считался бы пересечением и
-        // пропускался валидатором/снэпом. 0.1 мм заметно меньше порога контакта 0.5 мм.
-        private const float IntersectEpsilon = 1e-4f;
-
         public static bool ElementsIntersect(KitchenElement a, KitchenElement b)
         {
             Vector3[] va = a.GetVertices();
@@ -407,9 +400,9 @@ namespace KitchenDesigner.Core
                 bMinZ = Mathf.Min(bMinZ, vb[i].z); bMaxZ = Mathf.Max(bMaxZ, vb[i].z);
             }
 
-            return aMinX < bMaxX - IntersectEpsilon && aMaxX > bMinX + IntersectEpsilon &&
-                   aMinY < bMaxY - IntersectEpsilon && aMaxY > bMinY + IntersectEpsilon &&
-                   aMinZ < bMaxZ - IntersectEpsilon && aMaxZ > bMinZ + IntersectEpsilon;
+            return Tolerance.IntervalsOverlap(aMinX, aMaxX, bMinX, bMaxX) &&
+                   Tolerance.IntervalsOverlap(aMinY, aMaxY, bMinY, bMaxY) &&
+                   Tolerance.IntervalsOverlap(aMinZ, aMaxZ, bMinZ, bMaxZ);
         }
     }
 }
