@@ -221,9 +221,6 @@ namespace KitchenDesigner.Core
 					if (el is RadiusTableElement rtEl)
 						rtEl.LegInsetMM = ed.legInsetMM;
 
-					if (el is PillarElement pillarEl)
-						pillarEl.MidHeightMM = ed.midHeightMM;
-
                     if (el is AssembledFacadeElement assembled)
                         assembled.GrooveCount = ed.grooveCount;
 

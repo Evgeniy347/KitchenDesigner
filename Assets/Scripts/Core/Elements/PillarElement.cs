@@ -18,14 +18,26 @@ namespace KitchenDesigner.Core
 		public int MidHeightMM
 		{
 			get => _midHeightMM;
-			set { _midHeightMM = Mathf.Clamp(value, MidHeightMM_Min, MidHeightMM_Max); ApplyDimensions(); }
+			set
+			{
+				var clamped = Mathf.Clamp(value, MidHeightMM_Min, MidHeightMM_Max);
+				if (clamped == _midHeightMM) return;
+				_midHeightMM = clamped;
+				Data.DimensionsMM = new Vector3Int(TopDiameterMM, TotalHeightMM, TopDiameterMM);
+				ApplyDimensions();
+			}
 		}
 
 		public int TotalHeightMM => TopHeightMM + _midHeightMM + BottomHeightMM;
 
 		public override void ApplyDimensions()
 		{
+			int desiredTotalH = Data.DimensionsMM.y;
+			_midHeightMM = Mathf.Clamp(desiredTotalH - TopHeightMM - BottomHeightMM,
+				MidHeightMM_Min, MidHeightMM_Max);
+
 			transform.localScale = Vector3.one;
+			Data.DimensionsMM = new Vector3Int(TopDiameterMM, TotalHeightMM, TopDiameterMM);
 
 			float toU = AppConstants.MM_TO_UNITS;
 			float topR = TopDiameterMM * 0.5f * toU;

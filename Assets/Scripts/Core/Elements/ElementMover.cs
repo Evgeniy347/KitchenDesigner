@@ -386,11 +386,19 @@ namespace KitchenDesigner.Core
 
 			if (_wasMoved)
 			{
+				Vector3Int? pillarDimsBefore = null;
+				Vector3 pillarPosBefore = Vector3.zero;
+				if (_target is PillarElement pillarBefore)
+				{
+					pillarDimsBefore = pillarBefore.DimensionsMM;
+					pillarPosBefore = pillarBefore.transform.position;
+				}
+
 				AutoAdjustPillar();
 				if (KitchenSettings.Instance.BlockOnViolation && MoveSetCausesViolation())
 					RevertMoveSet();
 				else
-					CommandStack.Execute(BuildMoveCommand());
+					CommandStack.Execute(BuildMoveCommand(pillarDimsBefore, pillarPosBefore));
 			}
 			else
 			{
@@ -502,7 +510,7 @@ namespace KitchenDesigner.Core
             return false;
         }
 
-        private IUndoCommand BuildMoveCommand()
+        private IUndoCommand BuildMoveCommand(Vector3Int? pillarDimsBefore = null, Vector3 pillarPosBefore = default)
         {
             var cmds = new List<IUndoCommand>();
             for (int i = 0; i < _moveSet.Count; i++)
@@ -512,6 +520,18 @@ namespace KitchenDesigner.Core
                 var rotBefore = m == _target ? _startRotation : m.transform.rotation;
                 cmds.Add(new MoveCommand(m, _moveStart[i], m.transform.position, rotBefore, m.transform.rotation));
             }
+
+            if (pillarDimsBefore.HasValue && _target is PillarElement pillar)
+            {
+                var dimsAfter = pillar.DimensionsMM;
+                if (pillarDimsBefore.Value != dimsAfter)
+                {
+                    cmds.Add(new ResizeCommand(pillar, pillarDimsBefore.Value, dimsAfter,
+                        pillarPosBefore, pillar.transform.position,
+                        pillar.transform.rotation, pillar.transform.rotation));
+                }
+            }
+
             return cmds.Count == 1 ? cmds[0] : new CompositeCommand("Move group", cmds);
         }
 
