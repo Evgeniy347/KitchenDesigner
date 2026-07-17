@@ -1,4 +1,4 @@
-{
+﻿{
     "version": 1,
     "elements": [
         {
@@ -10,14 +10,14 @@
             ],
             "position": [
                 0.5,
-                0.4,
+                0.4000000059604645,
                 -1.0
             ],
             "rotation": [
                 0.0,
-                0.7071068,
+                0.7071068286895752,
                 0.0,
-                0.7071068
+                0.7071068286895752
             ],
             "movable": true,
             "isWall": false,
@@ -55,7 +55,9 @@
             "windowSillProtrusionMM": 70,
             "windowDoorMode": 0,
             "windowIsOpen": false,
-            "windowAttachedWallName": ""
+            "windowAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75
         }
     ],
     "groups": [],
@@ -124,7 +126,9 @@
         "windowSillProtrusionMM": 50,
         "windowDoorMode": 0,
         "windowIsOpen": false,
-        "windowAttachedWallName": ""
+        "windowAttachedWallName": "",
+        "isPillar": false,
+        "midHeightMM": 75
     },
     "undoHistory": [],
     "redoHistory": [],
@@ -133,7 +137,7 @@
         "gridEnabled": true,
         "snapEnabled": true,
         "snapThreshold": 50.0,
-        "blockOnViolation": false,
+        "blockOnViolation": true,
         "autoSave": true,
         "autoSaveInterval": 60,
         "spatialGrid": false,

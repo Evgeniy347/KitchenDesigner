@@ -311,13 +311,13 @@ namespace KitchenDesigner.Core
             if (_tint == GlassTint.Tinted)
             {
                 if (_tintedGlassMat == null)
-                    _tintedGlassMat = ElementHighlighter.MakeTransparent(GetShader(), new Color(0.35f, 0.4f, 0.45f, 0.35f));
+                    _tintedGlassMat = ElementHighlighter.MakeTransparent(GetShader(), new Color(0.15f, 0.18f, 0.22f, 0.70f));
                 mr.sharedMaterial = _tintedGlassMat;
             }
             else
             {
                 if (_clearGlassMat == null)
-                    _clearGlassMat = ElementHighlighter.MakeTransparent(GetShader(), new Color(0.6f, 0.75f, 0.85f, 0.22f));
+                    _clearGlassMat = ElementHighlighter.MakeTransparent(GetShader(), new Color(0.6f, 0.75f, 0.85f, 0.35f));
                 mr.sharedMaterial = _clearGlassMat;
             }
         }
