@@ -934,7 +934,7 @@ namespace KitchenDesigner.Core.UI
 
                 // Пересчитываем раскладку под режим: секция зазоров показывается
                 // только для фасадов, радиус — только для радиусной полки, сдвиг ножек — только для столов (включая радиусные), панель сама подгоняется по высоте.
-			Layout(isFacade, assembled != null, isRadial, isDrawer, isTable || isRadiusTable, isPillar, isWindow, isDoor);
+			Layout(isFacade, assembled != null, isRadial, isDrawer, isTable || isRadiusTable, isPillar, isWindow || isDoor, isDoor);
 
                 RefreshTransformFields();
                 _transparentToggle!.SetIsOnWithoutNotify(element.Transparent);

@@ -486,8 +486,7 @@ namespace KitchenDesigner.Core
                 mr.sharedMaterial = _glassMat;
             }
 
-            // Глухая панель той же толщины что и створка — перестраиваем масштаб.
-            if (_sashType == DoorSashType.Blind || _sashType == DoorSashType.Glass)
+            // Пересчитываем масштаб панели: при смене типа толщина меняется.
             {
                 var dims = DimensionsMM;
                 float toU = AppConstants.MM_TO_UNITS;
