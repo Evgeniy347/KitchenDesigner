@@ -34,6 +34,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _drawerAnimLabel;
         private TMP_Dropdown? _drawerFacadeDropdown;
         private TMP_Dropdown? _tintDropdown;
+        private TMP_Dropdown? _sashTypeDropdown;
         private TMP_InputField? _sillProtrusion;
         private TMP_Dropdown? _winModeDropdown;
 
@@ -62,6 +63,7 @@ namespace KitchenDesigner.Core.UI
 			public bool tableOnly;        // показывать только для столов
 			public bool pillarOnly;       // показывать только для опор
 			public bool windowOnly;       // показывать только для окон
+			public bool doorOnly;         // показывать только для дверей
 			public bool hideForWindow;    // скрывать для окон (повороты — окно живёт на стене)
             public GameObject toggleGO;   // объект, который включать/выключать по режиму
             public System.Func<bool>? visibleWhen; // доп. условие видимости (состояние элемента)
@@ -212,6 +214,12 @@ namespace KitchenDesigner.Core.UI
 
             _sillProtrusion = WindowFieldRow(panel.transform, "Подоконник, мм", () => !_currentIsDoor);
 
+            // Дверь: тип створки (стекло/глухая).
+            var sashTypeOptions = new List<string> { "Стекло", "Глухая" };
+            _sashTypeDropdown = UIFactory.CreateDropdown("CtxSashType", panel.transform, sashTypeOptions,
+                new Vector2(0, 0), new Vector2(332, 28), OnSashTypeSelected);
+            AddDoorRow(28f, ActionGap, _sashTypeDropdown.GetComponent<RectTransform>());
+
             // Режим открывания окна и кнопка Открыть/Закрыть (как фасад).
             var winModeOptions = new List<string>
             {
@@ -341,7 +349,7 @@ namespace KitchenDesigner.Core.UI
             closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
             closeBtn.transform.SetAsLastSibling();
 
-			Layout(isFacade: false, isAssembled: false, isRadial: false, isDrawer: false, isTable: false, isPillar: false, isWindow: false);
+			Layout(isFacade: false, isAssembled: false, isRadial: false, isDrawer: false, isTable: false, isPillar: false, isWindow: false, isDoor: false);
             _root!.SetActive(false);
 
             if (SelectionManager.Instance != null)
@@ -557,6 +565,13 @@ namespace KitchenDesigner.Core.UI
             _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, windowOnly = true, visibleWhen = visibleWhen });
         }
 
+        private void AddDoorRow(float height, float gapAfter, params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, doorOnly = true });
+        }
+
         // Строка, скрываемая для окон (повороты: окно всегда стоит на стене).
         private void AddRowNoWindow(float height, float gapAfter, params RectTransform[] rects)
         {
@@ -647,7 +662,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Раскладка сверху вниз ───────────────────────────────────────
 
-		private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer, bool isTable, bool isPillar = false, bool isWindow = false)
+		private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer, bool isTable, bool isPillar = false, bool isWindow = false, bool isDoor = false)
 		{
 			float cursor = TopPad;
 			float contentBottom = TopPad;
@@ -660,12 +675,13 @@ namespace KitchenDesigner.Core.UI
 					&& (!row.tableOnly || isTable)
 					&& (!row.pillarOnly || isPillar)
 					&& (!row.windowOnly || isWindow)
+					&& (!row.doorOnly || isDoor)
 					&& !(row.hideForWindow && isWindow)
 					&& (row.visibleWhen == null || row.visibleWhen());
 
 				if (row.toggleGO != null)
 					row.toggleGO.SetActive(visible);
-				else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly || row.pillarOnly || row.windowOnly || row.hideForWindow)
+				else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly || row.pillarOnly || row.windowOnly || row.doorOnly || row.hideForWindow)
                     foreach (var rt in row.rects)
                         if (rt != null) rt.gameObject.SetActive(visible);
 
@@ -876,6 +892,8 @@ namespace KitchenDesigner.Core.UI
 				var door = element as DoorElement;
                 if (door != null)
                 {
+                    if (_sashTypeDropdown != null)
+                        _sashTypeDropdown.SetValueWithoutNotify((int)door.SashType);
                     if (_winDoorButtonLabel != null)
                         _winDoorButtonLabel.text = door.IsOpen ? "Закрыть" : "Открыть";
                     if (_winModeDropdown != null)
@@ -916,7 +934,7 @@ namespace KitchenDesigner.Core.UI
 
                 // Пересчитываем раскладку под режим: секция зазоров показывается
                 // только для фасадов, радиус — только для радиусной полки, сдвиг ножек — только для столов (включая радиусные), панель сама подгоняется по высоте.
-			Layout(isFacade, assembled != null, isRadial, isDrawer, isTable || isRadiusTable, isPillar, isWindow || isDoor);
+			Layout(isFacade, assembled != null, isRadial, isDrawer, isTable || isRadiusTable, isPillar, isWindow || isDoor, isDoor);
 
                 RefreshTransformFields();
                 _transparentToggle!.SetIsOnWithoutNotify(element.Transparent);
@@ -1166,6 +1184,12 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target is WindowElement w)
                 w.Tint = (GlassTint)index;
+        }
+
+        private void OnSashTypeSelected(int index)
+        {
+            if (_target is DoorElement d)
+                d.SashType = (DoorSashType)index;
         }
 
         private void OnWindowModeSelected(int index)
