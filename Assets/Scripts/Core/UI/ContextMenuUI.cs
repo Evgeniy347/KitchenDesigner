@@ -343,16 +343,14 @@ namespace KitchenDesigner.Core.UI
                 SelectionManager.Instance.OnSelectionChanged -= OnSelectionChanged;
         }
 
-        // Меню закрывается, когда выделение ушло с его детали (клик в пустоту,
-        // выбор другой детали, удаление). Не закрываем во время Open(), т.к.
-        // SelectionManager.Select → DeselectAll → OnSelectionChanged(null) иначе
-        // обнуляет _target и роняет RefreshTransformFields.
         private void OnSelectionChanged(KitchenElement? element)
         {
             if (_opening) return;
             if (_root == null || !_root.activeSelf) return;
-            if (element == null || element != _target)
+            if (element == null)
                 Close();
+            else if (element != _target)
+                Open(element);
         }
 
         // ── Построение элементов ───────────────────────────────────────
