@@ -49,16 +49,16 @@ public class UiAsciiSymbolsTests
     }
 
     [Test]
-    public void FloorSettingsUI_CloseButton_IsAsciiX()
+    public void DayNightPanelUI_CloseButton_IsAsciiX()
     {
-        var canvas = CreateCanvas("FloorSettingsAsciiCanvas");
-        var ui = canvas.gameObject.AddComponent<FloorSettingsUI>();
+        var canvas = CreateCanvas("DayNightAsciiCanvas");
+        var ui = canvas.gameObject.AddComponent<DayNightPanelUI>();
         ui.Build(canvas.transform);
 
-        var root = canvas.transform.Find("FloorSettings");
+        var root = canvas.transform.Find("DayNightPanel");
         Assert.IsNotNull(root, "panel root exists");
 
-        var closeBtn = root.Find("FlrClose");
+        var closeBtn = root.Find("DnClose");
         Assert.IsNotNull(closeBtn, "close button exists");
 
         var label = closeBtn.GetComponentInChildren<TMP_Text>(true);

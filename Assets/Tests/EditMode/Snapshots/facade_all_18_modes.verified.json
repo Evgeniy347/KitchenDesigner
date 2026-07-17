@@ -56,8 +56,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_1",
@@ -114,8 +120,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_2",
@@ -172,8 +184,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_3",
@@ -230,8 +248,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_4",
@@ -288,8 +312,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_5",
@@ -346,8 +376,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_6",
@@ -404,8 +440,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_7",
@@ -462,8 +504,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_8",
@@ -520,8 +568,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_9",
@@ -578,8 +632,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_10",
@@ -636,8 +696,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_11",
@@ -694,8 +760,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_12",
@@ -752,8 +824,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_13",
@@ -810,8 +888,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_14",
@@ -868,8 +952,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_15",
@@ -926,8 +1016,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_16",
@@ -984,8 +1080,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Mode_17",
@@ -1042,8 +1144,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         }
     ],
     "groups": [],
@@ -1113,8 +1221,14 @@
         "windowDoorMode": 0,
         "windowIsOpen": false,
         "windowAttachedWallName": "",
+        "isDoor": false,
+        "doorDoorMode": 0,
+        "doorIsOpen": false,
+        "doorAttachedWallName": "",
         "isPillar": false,
-        "midHeightMM": 75
+        "midHeightMM": 75,
+        "isFloor": false,
+        "isLightSource": false
     },
     "undoHistory": [],
     "redoHistory": [],

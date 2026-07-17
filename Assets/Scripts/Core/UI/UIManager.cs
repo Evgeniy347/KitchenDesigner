@@ -17,13 +17,15 @@ namespace KitchenDesigner.Core.UI
         private SpecificationPanelUI? _specPanel;
         private SettingsPanelUI? _settingsPanel;
         private ContextMenuUI? _contextMenu;
-        private FloorSettingsUI? _floorSettings;
+        private DayNightPanelUI? _dayNightPanel;
         private GroupMenuUI? _groupMenu;
         private HierarchyPanelUI? _hierarchyPanel;
         private HelpUI? _help;
         private Button? _undoButton;
         private Button? _redoButton;
         private TMP_Text? _modeButtonLabel;
+        private TMP_Text? _tintButtonLabel;
+        private TMP_Text? _lightsButtonLabel;
 
         public Canvas? Canvas => _canvas;
         public const string QuickSaveName = "quicksave";
@@ -47,8 +49,8 @@ namespace KitchenDesigner.Core.UI
             _contextMenu = gameObject.AddComponent<ContextMenuUI>();
             _contextMenu.Build(_canvas.transform);
 
-            _floorSettings = gameObject.AddComponent<FloorSettingsUI>();
-            _floorSettings.Build(_canvas.transform);
+            _dayNightPanel = gameObject.AddComponent<DayNightPanelUI>();
+            _dayNightPanel.Build(_canvas.transform);
 
             var sidebar = gameObject.AddComponent<SidebarUI>();
             sidebar.Build(_canvas.transform);
@@ -116,6 +118,51 @@ namespace KitchenDesigner.Core.UI
             modeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
             _modeButtonLabel = modeBtn.GetComponentInChildren<TMP_Text>();
             x += 156;
+
+            x += 12;
+            // Тонировка валидности (светло-зелёный): выкл — видны текстуры деталей.
+            var tintBtn = UIFactory.CreateButton("TintToggle", bar.transform, TintLabel(),
+                new Vector2(x, y), new Vector2(110, h), ToggleTint);
+            UIFactory.AnchorTopLeft(tintBtn.GetComponent<RectTransform>());
+            tintBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
+            _tintButtonLabel = tintBtn.GetComponentInChildren<TMP_Text>();
+            x += 116;
+
+            // Глобальный выключатель источников света.
+            var lightsBtn = UIFactory.CreateButton("LightsToggle", bar.transform, LightsLabel(),
+                new Vector2(x, y), new Vector2(110, h), ToggleLights);
+            UIFactory.AnchorTopLeft(lightsBtn.GetComponent<RectTransform>());
+            lightsBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
+            _lightsButtonLabel = lightsBtn.GetComponentInChildren<TMP_Text>();
+            x += 116;
+
+            // Панель «День/Ночь» — глобальное управление солнцем.
+            AddBarButton(bar.transform, "DayNight", "Солнце", ref x, y, h, 90, ToggleDayNight);
+        }
+
+        private static string TintLabel() =>
+            ElementHighlighter.TintEnabled ? "Тон: вкл" : "Тон: выкл";
+
+        private static string LightsLabel() =>
+            LightSourceElement.GlobalOn ? "Свет: вкл" : "Свет: выкл";
+
+        private void ToggleTint()
+        {
+            ElementHighlighter.TintEnabled = !ElementHighlighter.TintEnabled;
+            if (_tintButtonLabel != null) _tintButtonLabel.text = TintLabel();
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+        }
+
+        private void ToggleLights()
+        {
+            LightSourceElement.SetGlobalOn(!LightSourceElement.GlobalOn);
+            if (_lightsButtonLabel != null) _lightsButtonLabel.text = LightsLabel();
+        }
+
+        private void ToggleDayNight()
+        {
+            if (_dayNightPanel != null) _dayNightPanel.Toggle();
         }
 
         private static string ModeLabel() =>
@@ -388,12 +435,38 @@ namespace KitchenDesigner.Core.UI
                 _contextMenu.Open(element);
         }
 
-        public void OpenFloorSettings()
+        public void SpawnFloor(Vector3Int dims, string name)
         {
-            _specPanel!.SetVisible(false);
-            _settingsPanel!.SetVisible(false);
-            if (_contextMenu != null) _contextMenu.Close();
-            if (_floorSettings != null) _floorSettings.Open();
+            Vector3 pos = GroundPointInFrontOfCamera();
+            pos = GridManager.SnapToGrid(pos);
+            // Верхняя плоскость пола ровно на уровне земли (y = 0) — детали
+            // встают на него с face-контактом и заземляются.
+            pos.y = -dims.y * 0.5f * AppConstants.MM_TO_UNITS;
+
+            var go = ElementFactory.CreateFloor(dims, name, pos);
+            var element = go.GetComponent<KitchenElement>();
+            if (element != null)
+            {
+                CommandStack.Execute(new CreateCommand(go));
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.Select(element);
+            }
+        }
+
+        public void SpawnLightSource(string name)
+        {
+            Vector3 pos = GroundPointInFrontOfCamera();
+            pos = GridManager.SnapToGrid(pos);
+            pos.y = 2.2f; // подвес на высоте ~2200 мм, как люстра
+
+            var go = ElementFactory.CreateLightSource(name, pos);
+            var element = go.GetComponent<KitchenElement>();
+            if (element != null)
+            {
+                CommandStack.Execute(new CreateCommand(go));
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.Select(element);
+            }
         }
 
         /// <summary>Открыть меню группы (вызывается из CameraController по ПКМ-клику).</summary>

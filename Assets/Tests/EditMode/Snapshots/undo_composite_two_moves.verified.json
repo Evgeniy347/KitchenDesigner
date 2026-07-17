@@ -56,8 +56,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         },
         {
             "name": "Board_B",
@@ -114,8 +120,14 @@
             "windowDoorMode": 0,
             "windowIsOpen": false,
             "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
             "isPillar": false,
-            "midHeightMM": 75
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
         }
     ],
     "groups": [],
@@ -185,8 +197,14 @@
         "windowDoorMode": 0,
         "windowIsOpen": false,
         "windowAttachedWallName": "",
+        "isDoor": false,
+        "doorDoorMode": 0,
+        "doorIsOpen": false,
+        "doorAttachedWallName": "",
         "isPillar": false,
-        "midHeightMM": 75
+        "midHeightMM": 75,
+        "isFloor": false,
+        "isLightSource": false
     },
     "undoHistory": [
         {

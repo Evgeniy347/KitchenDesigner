@@ -50,6 +50,12 @@ namespace KitchenDesigner.Core
 		public static GameObject CreatePillar(int midHeightMM, string name, Vector3 position) =>
 			Instance.CreatePillar(midHeightMM, name, position);
 
+		public static GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position) =>
+			Instance.CreateFloor(dimensionsMM, name, position);
+
+		public static GameObject CreateLightSource(string name, Vector3 position) =>
+			Instance.CreateLightSource(name, position);
+
 		public static GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50) =>
             Instance.CreateWindow(dimensionsMM, name, position, tint, sillProtrusionMM);
