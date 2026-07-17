@@ -11,12 +11,26 @@ namespace KitchenDesigner.Core
             public Vector2 halfSizeNorm;
         }
 
-        public static Mesh Build(List<WindowCutout> cutouts)
+        /// <summary>Единичный куб стены с сквозными вырезами под окна.
+        /// Вырезы задаются в плоскости «ширина × высота»; по умолчанию ширина —
+        /// локальная X (толщина по Z). Для стен, повёрнутых длиной вдоль Z,
+        /// передайте thicknessAlongX = true — оси X и Z меняются местами.</summary>
+        public static Mesh Build(List<WindowCutout> cutouts, bool thicknessAlongX = false)
         {
             var verts = new List<Vector3>();
             var tris = new List<int>();
 
             AddBoxNorm(verts, tris, Vector3.zero, Vector3.one * 0.5f, cutouts);
+
+            if (thicknessAlongX)
+            {
+                // Свап X↔Z зеркалит меш — разворачиваем обход треугольников,
+                // чтобы нормали остались наружными.
+                for (int i = 0; i < verts.Count; i++)
+                    verts[i] = new Vector3(verts[i].z, verts[i].y, verts[i].x);
+                for (int t = 0; t < tris.Count; t += 3)
+                    (tris[t + 1], tris[t + 2]) = (tris[t + 2], tris[t + 1]);
+            }
 
             var mesh = new Mesh { name = "Wall" };
             mesh.SetVertices(verts);
@@ -48,7 +62,10 @@ namespace KitchenDesigner.Core
             }
 
             AddFaceWithCutoutsNorm(verts, tris, x0, x1, y0, y1, z1, z0, true, cutouts);
-            AddFaceWithCutoutsNorm(verts, tris, x1, x0, y0, y1, z0, z1, false, cutouts);
+            // Диапазон X обязан быть возрастающим (fx0 < fx1), иначе сплиты
+            // вырезов не попадают в грань и дыра растягивается на всю ширину;
+            // обратный обход задней грани обеспечивает флаг frontFace = false.
+            AddFaceWithCutoutsNorm(verts, tris, x0, x1, y0, y1, z0, z1, false, cutouts);
 
             AddQuad(verts, tris, V(x1, y0, z1), V(x1, y0, z0), V(x1, y1, z0), V(x1, y1, z1));
             AddQuad(verts, tris, V(x0, y0, z0), V(x0, y0, z1), V(x0, y1, z1), V(x0, y1, z0));

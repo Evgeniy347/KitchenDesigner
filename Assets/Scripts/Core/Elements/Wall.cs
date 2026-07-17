@@ -55,6 +55,8 @@ namespace KitchenDesigner.Core
             var p = transform.position; p.y = baseY + loweredHeightUnits * 0.5f; transform.position = p;
         }
 
+        public bool HasWindow(WindowElement window) => _attachedWindows.Contains(window);
+
         public void RegisterWindow(WindowElement window)
         {
             if (!_attachedWindows.Contains(window))
@@ -78,22 +80,28 @@ namespace KitchenDesigner.Core
             var el = GetComponent<KitchenElement>();
             var dims = el != null ? el.DimensionsMM : new Vector3Int(100, 2500, 2000);
 
+            // Толщина стены — меньший горизонтальный габарит; вырез идёт сквозь неё.
+            bool thickAlongX = dims.x <= dims.z;
+            float wallW = (thickAlongX ? dims.z : dims.x) * 0.001f;
+            float wallH = FullScaleY > 0.001f ? FullScaleY : dims.y * 0.001f;
+
             var cutouts = new List<WallMeshBuilder.WindowCutout>();
             foreach (var w in _attachedWindows)
             {
                 if (w == null) continue;
-                var localPos = transform.InverseTransformPoint(w.transform.position);
                 var wDims = w.DimensionsMM;
-                float halfWallW = dims.x * 0.001f * 0.5f;
-                float halfWallH = dims.y * 0.001f * 0.5f;
+                // Нормализованные координаты окна в ПОЛНОМ боксе стены (±0.5 на
+                // краях). Не через InverseTransformPoint: стена может быть
+                // временно опущена (WallCutaway), а меш строится для полной.
+                Vector3 lp = Quaternion.Inverse(transform.rotation) * (w.transform.position - FullPosition);
+                float u = (thickAlongX ? lp.z : lp.x) / Mathf.Max(0.001f, wallW);
+                float v = lp.y / Mathf.Max(0.001f, wallH);
                 cutouts.Add(new WallMeshBuilder.WindowCutout
                 {
-                    centerNorm = new Vector2(
-                        halfWallW > 0.001f ? localPos.x / halfWallW * 0.5f : 0f,
-                        halfWallH > 0.001f ? localPos.y / halfWallH * 0.5f : 0f),
+                    centerNorm = new Vector2(u, v),
                     halfSizeNorm = new Vector2(
-                        wDims.x * 0.001f * 0.5f / Mathf.Max(0.001f, halfWallW) * 0.5f,
-                        wDims.y * 0.001f * 0.5f / Mathf.Max(0.001f, halfWallH) * 0.5f)
+                        wDims.x * 0.001f * 0.5f / Mathf.Max(0.001f, wallW),
+                        wDims.y * 0.001f * 0.5f / Mathf.Max(0.001f, wallH))
                 });
             }
 
@@ -103,7 +111,7 @@ namespace KitchenDesigner.Core
                 else Object.DestroyImmediate(_customMesh);
             }
 
-            _customMesh = WallMeshBuilder.Build(cutouts);
+            _customMesh = WallMeshBuilder.Build(cutouts, thickAlongX);
             _meshFilter.sharedMesh = _customMesh;
 
             var collider = GetComponent<MeshCollider>();

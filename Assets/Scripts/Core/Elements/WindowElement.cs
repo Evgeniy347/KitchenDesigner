@@ -5,10 +5,17 @@ namespace KitchenDesigner.Core
 {
     public enum GlassTint { Clear = 0, Tinted = 1 }
 
+    /// <summary>
+    /// Окно: неподвижная коробка (рама на всю толщину стены, подоконник, отлив,
+    /// откосы) + поворотная створка (обвязка со стеклом). Окно живёт только на
+    /// стене: каждый кадр прилипает к ближайшей стене, встаёт в её срединную
+    /// плоскость и наследует её толщину (глубина окна не редактируется напрямую).
+    /// Геометрия строится в мировых единицах при единичном масштабе корня —
+    /// как у PillarElement/RadialShelfElement, иначе дети масштабируются дважды.
+    /// </summary>
     public class WindowElement : KitchenElement
     {
         private const float OpenSeconds = 0.4f;
-        private const float MaxAngleDeg = 90f;
 
         [SerializeField] private GlassTint _tint = GlassTint.Clear;
         [SerializeField] private int _sillProtrusionMM = AppConstants.WINDOW_SILL_DEFAULT_MM;
@@ -27,11 +34,15 @@ namespace KitchenDesigner.Core
         private GameObject? _sillObj;
         private GameObject? _dripObj;
         private GameObject? _slopeTop, _slopeBottom, _slopeLeft, _slopeRight;
-        private Transform? _pivotGroup;
+        private GameObject? _sashLeft, _sashRight, _sashTop, _sashBottom;
+        private Transform? _staticGroup; // коробка/подоконник/отлив/откосы — не двигаются
+        private Transform? _sashGroup;   // створка (обвязка + стекло) — поворачивается на петле
 
         private float _openT;
-        private Vector3 _closedPos;
-        private Quaternion _closedRot = Quaternion.identity;
+        private Vector3 _sashClosedLocal;
+        private Vector3 _sashHalfExtents;
+        // Позиция, для которой в последний раз перестраивался вырез в стене.
+        private Vector3 _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
 
         public GlassTint Tint
         {
@@ -48,31 +59,42 @@ namespace KitchenDesigner.Core
         public DoorMode Mode
         {
             get => _mode;
-            set { _mode = value; if (_openT > 0f) ApplyDoorPose(); }
+            set { _mode = value; ApplyDoorPose(); }
         }
 
         public bool IsOpen => _isOpen;
         public string AttachedWallName { get => _attachedWallName; set => _attachedWallName = value ?? ""; }
 
-        public Vector3 ClosedPosition => IsDoorClosed ? transform.position : _closedPos;
-        public Quaternion ClosedRotation => IsDoorClosed ? transform.rotation : _closedRot;
+        // Корень окна при открывании не двигается (поворачивается только створка),
+        // поэтому закрытая поза всегда совпадает с текущей.
+        public Vector3 ClosedPosition => transform.position;
+        public Quaternion ClosedRotation => transform.rotation;
         public bool IsDoorClosed => !_isOpen && _openT <= 0f;
 
         private void Start()
         {
-            RegisterWithNearestWall();
+            SnapToWall();
         }
+
+        protected override Vector3 EffectiveScale => new Vector3(
+            DimensionsMM.x * AppConstants.MM_TO_UNITS,
+            DimensionsMM.y * AppConstants.MM_TO_UNITS,
+            DimensionsMM.z * AppConstants.MM_TO_UNITS);
 
         public override void ApplyDimensions()
         {
-            base.ApplyDimensions();
+            transform.localScale = Vector3.one;
+            UpdateCollider();
             EnsureChildren();
             RebuildGeometry();
+
+            // Вырез в стене зависит от габаритов окна.
+            var wall = FindAttachedWall();
+            if (wall != null) wall.RebuildMesh();
         }
 
         public void SetOpen(bool open)
         {
-            if (open && _openT <= 0f) CaptureClosed();
             _isOpen = open;
             if (!Mathf.Approximately(_openT, open ? 1f : 0f))
                 FrameRateManager.KeepAwake(OpenSeconds + 0.2f);
@@ -85,90 +107,203 @@ namespace KitchenDesigner.Core
             if (_openT <= 0f && !_isOpen) return;
             _isOpen = false;
             _openT = 0f;
-            transform.SetPositionAndRotation(_closedPos, _closedRot);
             ApplyDoorPose();
-        }
-
-        private void CaptureClosed()
-        {
-            _closedPos = transform.position;
-            _closedRot = transform.rotation;
         }
 
         private void ApplyDoorPose()
         {
-            if (_pivotGroup == null) return;
-            var half = transform.localScale * 0.5f;
-            FacadeDoor.Pose(_closedPos, _closedRot, half, _mode, _openT, out var pos, out var rot);
-            transform.SetPositionAndRotation(pos, rot);
+            if (_sashGroup == null) return;
+            FacadeDoor.Pose(_sashClosedLocal, Quaternion.identity, _sashHalfExtents,
+                _mode, _openT, out var pos, out var rot);
+            _sashGroup.localPosition = pos;
+            _sashGroup.localRotation = rot;
         }
 
-        private void Update() => StepDoor(Time.deltaTime);
+        private void Update()
+        {
+            StepDoor(Time.deltaTime);
+            SnapToWall();
+        }
 
         public void StepDoor(float dt)
         {
             float target = _isOpen ? 1f : 0f;
-            if (Mathf.Approximately(_openT, target))
-            {
-                if (_openT <= 0f) CaptureClosed();
-                return;
-            }
+            if (Mathf.Approximately(_openT, target)) return;
             float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
             _openT = Mathf.MoveTowards(_openT, target, step);
             ApplyDoorPose();
         }
 
-        private void RegisterWithNearestWall()
+        // ── Привязка к стене ────────────────────────────────────────────
+
+        /// <summary>Прилипание к ближайшей стене: регистрация, поворот вдоль стены,
+        /// центрирование в срединной плоскости и наследование толщины стены.</summary>
+        public void SnapToWall()
+        {
+            var wall = RegisterWithNearestWall();
+            if (wall != null) AlignToWall(wall);
+        }
+
+        private Wall? RegisterWithNearestWall()
+        {
+            var best = FindNearestWall();
+            if (best == null) return null;
+            // Проверяем фактическое членство, а не только имя: после загрузки
+            // сцены имя уже восстановлено из сейва, но стена окно ещё не знает —
+            // без регистрации вырез в стене не строится.
+            if (best.gameObject.name != _attachedWallName || !best.HasWindow(this))
+            {
+                UnregisterFromWall();
+                _attachedWallName = best.gameObject.name;
+                best.RegisterWindow(this);
+                _lastCutoutPos = transform.position;
+            }
+            return best;
+        }
+
+        // Гистерезис смены стены: на стыке двух стен расстояния почти равны и
+        // дрожат (float, опускание стен камерой) — без запаса окно скачет.
+        private const float WallSwitchHysteresisU = 0.05f; // 50 мм
+
+        /// <summary>Ближайшая стена по расстоянию до её бокса (а не до центра —
+        /// иначе у длинных стен выигрывает не та, на которой стоит окно).
+        /// Текущая стена удерживается, пока другая не станет ближе на гистерезис.</summary>
+        private Wall? FindNearestWall()
         {
             float bestDist = float.MaxValue;
+            float attachedDist = float.MaxValue;
             Wall? bestWall = null;
+            Wall? attached = null;
             foreach (var el in PartRegistry.GetAll())
             {
                 if (el == null || el == this) continue;
                 var wall = el.GetComponent<Wall>();
                 if (wall == null) continue;
-                float dist = Vector3.Distance(transform.position, el.transform.position);
+                float dist = DistanceToWall(wall);
+                if (wall.gameObject.name == _attachedWallName) { attached = wall; attachedDist = dist; }
                 if (dist < bestDist) { bestDist = dist; bestWall = wall; }
             }
-            if (bestWall != null)
+            if (attached != null && bestWall != attached &&
+                attachedDist - bestDist < WallSwitchHysteresisU)
+                return attached;
+            return bestWall;
+        }
+
+        /// <summary>Расстояние от центра окна до бокса стены. Опущенная камерой
+        /// стена (WallCutaway) считается по ПОЛНОЙ высоте — иначе привязка
+        /// зависела бы от положения камеры.</summary>
+        private float DistanceToWall(Wall wall)
+        {
+            var t = wall.transform;
+            Vector3 center = wall.FullPosition;
+            Vector3 half = t.localScale;
+            half.y = wall.FullScaleY;
+            half = new Vector3(Mathf.Abs(half.x), Mathf.Abs(half.y), Mathf.Abs(half.z)) * 0.5f;
+
+            Vector3 local = Quaternion.Inverse(t.rotation) * (transform.position - center);
+            local.x = Mathf.Clamp(local.x, -half.x, half.x);
+            local.y = Mathf.Clamp(local.y, -half.y, half.y);
+            local.z = Mathf.Clamp(local.z, -half.z, half.z);
+            Vector3 closest = center + t.rotation * local;
+            return (closest - transform.position).magnitude;
+        }
+
+        private void AlignToWall(Wall wall)
+        {
+            var wallEl = wall.GetComponent<KitchenElement>();
+            if (wallEl == null) return;
+            var wt = wall.transform;
+            var wallDims = wallEl.DimensionsMM;
+
+            // Толщина стены — меньший из горизонтальных габаритов.
+            bool thickAlongX = wallDims.x <= wallDims.z;
+            int thicknessMM = Mathf.Min(wallDims.x, wallDims.z);
+
+            // Локальная Z окна (глубина) — вдоль оси толщины стены; знак — ближе
+            // к текущему развороту окна, чтобы не «перещёлкивало» на 180°.
+            Vector3 dir = thickAlongX ? wt.right : wt.forward;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 1e-8f) return;
+            dir.Normalize();
+            if (Vector3.Dot(transform.forward, dir) < 0f) dir = -dir;
+            Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
+
+            // Центр окна — в срединную плоскость стены (обнуляем компоненту
+            // вдоль толщины, остальные проходят без изменений).
+            Vector3 local = wt.InverseTransformPoint(transform.position);
+            if (thickAlongX) local.x = 0f; else local.z = 0f;
+            Vector3 targetPos = wt.TransformPoint(local);
+
+            if ((targetPos - transform.position).sqrMagnitude > Tolerance.EpsilonSqr ||
+                Quaternion.Angle(targetRot, transform.rotation) > 0.05f)
+                transform.SetPositionAndRotation(targetPos, targetRot);
+
+            if (DimensionsMM.z != thicknessMM)
+                DimensionsMM = new Vector3Int(DimensionsMM.x, DimensionsMM.y, thicknessMM);
+
+            // Вырез следует за окном при перемещении вдоль стены.
+            if (float.IsNaN(_lastCutoutPos.x) ||
+                (transform.position - _lastCutoutPos).sqrMagnitude > Tolerance.EpsilonSqr)
             {
-                _attachedWallName = bestWall.gameObject.name;
-                bestWall.RegisterWindow(this);
+                _lastCutoutPos = transform.position;
+                wall.RebuildMesh();
             }
         }
 
-        private void UnregisterFromWall()
+        private Wall? FindAttachedWall()
         {
-            if (string.IsNullOrEmpty(_attachedWallName)) return;
+            if (string.IsNullOrEmpty(_attachedWallName)) return null;
             foreach (var el in PartRegistry.GetAll())
             {
                 if (el == null) continue;
                 var wall = el.GetComponent<Wall>();
                 if (wall != null && wall.gameObject.name == _attachedWallName)
-                {
-                    wall.UnregisterWindow(this);
-                    return;
-                }
+                    return wall;
             }
+            return null;
+        }
+
+        private void UnregisterFromWall()
+        {
+            var wall = FindAttachedWall();
+            _attachedWallName = "";
+            if (wall != null) wall.UnregisterWindow(this);
+        }
+
+        // ── Геометрия ───────────────────────────────────────────────────
+
+        private void UpdateCollider()
+        {
+            var existing = GetComponent<Collider>();
+            if (existing != null && !(existing is BoxCollider))
+                Object.DestroyImmediate(existing);
+            var box = GetComponent<BoxCollider>();
+            if (box == null) box = gameObject.AddComponent<BoxCollider>();
+            box.size = EffectiveScale;
         }
 
         private void EnsureChildren()
         {
-            if (_pivotGroup == null)
+            if (_staticGroup == null)
             {
-                var pivotGo = new GameObject("_PivotGroup");
-                pivotGo.transform.SetParent(transform, false);
-                pivotGo.transform.localPosition = Vector3.zero;
-                pivotGo.transform.localRotation = Quaternion.identity;
-                _pivotGroup = pivotGo.transform;
+                var staticGo = new GameObject("_Static");
+                staticGo.transform.SetParent(transform, false);
+                _staticGroup = staticGo.transform;
+            }
+            if (_sashGroup == null)
+            {
+                var sashGo = new GameObject("_Sash");
+                sashGo.transform.SetParent(transform, false);
+                _sashGroup = sashGo.transform;
             }
 
-            int needed = 11;
+            const int needed = 15;
             while (_children.Count < needed)
             {
+                int idx = _children.Count;
                 var child = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                child.name = GetChildName(_children.Count);
-                child.transform.SetParent(_pivotGroup, false);
+                child.name = GetChildName(idx);
+                child.transform.SetParent(IsSashChild(idx) ? _sashGroup : _staticGroup, false);
                 var col = child.GetComponent<BoxCollider>();
                 if (col != null) Object.DestroyImmediate(col);
                 var mr = child.GetComponent<MeshRenderer>();
@@ -187,23 +322,30 @@ namespace KitchenDesigner.Core
             _slopeBottom = _children[8];
             _slopeLeft   = _children[9];
             _slopeRight  = _children[10];
+            _sashLeft    = _children[11];
+            _sashRight   = _children[12];
+            _sashTop     = _children[13];
+            _sashBottom  = _children[14];
         }
+
+        // Створка = стекло (4) + обвязка (11-14); остальное — неподвижная коробка.
+        private static bool IsSashChild(int idx) => idx == 4 || idx >= 11;
 
         private string GetChildName(int idx) => idx switch
         {
             0 => "FrameLeft", 1 => "FrameRight", 2 => "FrameTop", 3 => "FrameBottom",
             4 => "Glass", 5 => "Sill", 6 => "DripCap",
             7 => "SlopeTop", 8 => "SlopeBottom", 9 => "SlopeLeft", 10 => "SlopeRight",
+            11 => "SashLeft", 12 => "SashRight", 13 => "SashTop", 14 => "SashBottom",
             _ => "Child" + idx
         };
 
         private void RebuildGeometry()
         {
-            if (_pivotGroup == null) return;
+            if (_staticGroup == null || _sashGroup == null) return;
             var dims = DimensionsMM;
             float toU = AppConstants.MM_TO_UNITS;
-            float frameMM = AppConstants.WINDOW_FRAME_MM;
-            float frameU = frameMM * toU;
+            float frameU = AppConstants.WINDOW_FRAME_MM * toU;
             float glassThick = AppConstants.WINDOW_GLASS_THICKNESS_MM * toU;
 
             float totalW = dims.x * toU;
@@ -240,25 +382,60 @@ namespace KitchenDesigner.Core
                 _frameBottom.transform.localScale = new Vector3(innerW, frameU, totalD);
                 _frameBottom.SetActive(true);
             }
+
+            // Створка: коробчатая обвязка со стеклом у переднего края коробки.
+            float sashU = AppConstants.WINDOW_SASH_MM * toU;
+            float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, totalD);
+            _sashClosedLocal = new Vector3(0f, 0f, halfD - sashD * 0.5f);
+            _sashHalfExtents = new Vector3(innerW * 0.5f, innerH * 0.5f, sashD * 0.5f);
+
+            if (_sashLeft != null)
+            {
+                _sashLeft.transform.localPosition = new Vector3(-innerW * 0.5f + sashU * 0.5f, 0f, 0f);
+                _sashLeft.transform.localScale = new Vector3(sashU, innerH, sashD);
+                _sashLeft.SetActive(true);
+            }
+            if (_sashRight != null)
+            {
+                _sashRight.transform.localPosition = new Vector3(innerW * 0.5f - sashU * 0.5f, 0f, 0f);
+                _sashRight.transform.localScale = new Vector3(sashU, innerH, sashD);
+                _sashRight.SetActive(true);
+            }
+            if (_sashTop != null)
+            {
+                _sashTop.transform.localPosition = new Vector3(0f, innerH * 0.5f - sashU * 0.5f, 0f);
+                _sashTop.transform.localScale = new Vector3(innerW - 2f * sashU, sashU, sashD);
+                _sashTop.SetActive(true);
+            }
+            if (_sashBottom != null)
+            {
+                _sashBottom.transform.localPosition = new Vector3(0f, -innerH * 0.5f + sashU * 0.5f, 0f);
+                _sashBottom.transform.localScale = new Vector3(innerW - 2f * sashU, sashU, sashD);
+                _sashBottom.SetActive(true);
+            }
             if (_glassPane != null)
             {
-                _glassPane.transform.localPosition = new Vector3(0f, 0f, halfD);
-                _glassPane.transform.localScale = new Vector3(innerW, innerH, glassThick);
+                _glassPane.transform.localPosition = Vector3.zero;
+                _glassPane.transform.localScale = new Vector3(innerW - 2f * sashU, innerH - 2f * sashU, glassThick);
                 _glassPane.SetActive(true);
             }
+
+            // Подоконник: плита постоянной толщины, вылет — горизонтально от
+            // плоскости стены; верх плиты вровень с верхом нижнего бруса коробки.
             if (_sillObj != null)
             {
                 float sillProt = _sillProtrusionMM * toU;
-                float sillY = -halfH + frameU + sillProt * 0.5f;
-                _sillObj.transform.localPosition = new Vector3(0f, sillY, halfD + sillProt * 0.5f);
-                _sillObj.transform.localScale = new Vector3(totalW, sillProt, sillProt);
+                float sillThick = AppConstants.WINDOW_SILL_THICKNESS_MM * toU;
+                _sillObj.transform.localPosition = new Vector3(
+                    0f, -halfH + frameU - sillThick * 0.5f, halfD + sillProt * 0.5f);
+                _sillObj.transform.localScale = new Vector3(totalW, sillThick, sillProt);
                 _sillObj.SetActive(_sillProtrusionMM > 0);
             }
             if (_dripObj != null)
             {
                 float dripH = AppConstants.WINDOW_DRIP_DEFAULT_MM * toU;
                 float dripProtr = 30f * toU;
-                _dripObj.transform.localPosition = new Vector3(0f, -halfH + frameU * 0.5f, halfD + dripProtr * 0.5f);
+                _dripObj.transform.localPosition = new Vector3(0f, -halfH + frameU * 0.5f, -halfD - dripProtr * 0.5f);
                 _dripObj.transform.localScale = new Vector3(totalW, dripH, dripProtr);
                 _dripObj.SetActive(true);
             }
@@ -291,6 +468,7 @@ namespace KitchenDesigner.Core
                 _slopeRight.SetActive(true);
             }
 
+            ApplyDoorPose();
             ApplyTint();
             ApplyMaterialFrame();
         }
@@ -339,16 +517,16 @@ namespace KitchenDesigner.Core
             if (def == null) return;
             var mat = MaterialManager.GetSharedMaterial(def);
             if (mat == null) return;
-            for (int i = 0; i < _children.Count && i < 5; i++)
+            foreach (var go in new[] { _frameLeft, _frameRight, _frameTop, _frameBottom,
+                                       _sashLeft, _sashRight, _sashTop, _sashBottom })
             {
-                if (i == 4) continue;
-                var mr = _children[i].GetComponent<MeshRenderer>();
+                var mr = go != null ? go.GetComponent<MeshRenderer>() : null;
                 if (mr != null) mr.sharedMaterial = mat;
             }
             var slopeMat = SlopeMaterial();
-            for (int i = 5; i < _children.Count; i++)
+            foreach (var go in new[] { _sillObj, _dripObj, _slopeTop, _slopeBottom, _slopeLeft, _slopeRight })
             {
-                var mr = _children[i].GetComponent<MeshRenderer>();
+                var mr = go != null ? go.GetComponent<MeshRenderer>() : null;
                 if (mr != null) mr.sharedMaterial = slopeMat;
             }
         }
@@ -365,6 +543,7 @@ namespace KitchenDesigner.Core
             _frameLeft = _frameRight = _frameTop = _frameBottom = null;
             _glassPane = _sillObj = _dripObj = null;
             _slopeTop = _slopeBottom = _slopeLeft = _slopeRight = null;
+            _sashLeft = _sashRight = _sashTop = _sashBottom = null;
         }
 
         private void OnDestroy()
@@ -372,12 +551,16 @@ namespace KitchenDesigner.Core
             PartRegistry.Unregister(this);
             UnregisterFromWall();
             DestroyChildren();
-            if (_pivotGroup != null)
-            {
-                if (Application.isPlaying) Object.Destroy(_pivotGroup.gameObject);
-                else Object.DestroyImmediate(_pivotGroup.gameObject);
-                _pivotGroup = null;
-            }
+            DestroyGroup(ref _staticGroup);
+            DestroyGroup(ref _sashGroup);
+        }
+
+        private static void DestroyGroup(ref Transform? group)
+        {
+            if (group == null) return;
+            if (Application.isPlaying) Object.Destroy(group.gameObject);
+            else Object.DestroyImmediate(group.gameObject);
+            group = null;
         }
     }
 }

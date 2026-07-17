@@ -8,6 +8,11 @@
     },
     {
       "type": "Button",
+      "text": "IsoWindowDef",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
       "text": "BasePlate",
       "position": [20, 0]
     },
@@ -18,7 +23,7 @@
     },
     {
       "type": "Button",
-      "text": "IsoWindowDef",
+      "text": "IsoWindowDef_Wall",
       "position": [20, 0]
     },
     {
@@ -48,43 +53,8 @@
     },
     {
       "type": "Button",
-      "text": "Режим: [ ]",
-      "position": [740, -6]
-    },
-    {
-      "type": "Button",
       "text": "Спецификация",
       "position": [8, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Выравн.",
-      "position": [568, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Redo",
-      "position": [502, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Undo",
-      "position": [456, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Сцена",
-      "position": [164, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Settings",
-      "position": [260, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Save",
-      "position": [306, -6]
     },
     {
       "type": "Button",
@@ -93,13 +63,48 @@
     },
     {
       "type": "Button",
+      "text": "Режим: [ ]",
+      "position": [740, -6]
+    },
+    {
+      "type": "Button",
       "text": "SaveAs",
       "position": [352, -6]
     },
     {
       "type": "Button",
+      "text": "Save",
+      "position": [306, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Settings",
+      "position": [260, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Сцена",
+      "position": [164, -6]
+    },
+    {
+      "type": "Button",
       "text": "Load",
       "position": [398, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Redo",
+      "position": [502, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Выравн.",
+      "position": [568, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Undo",
+      "position": [456, -6]
     },
     {
       "type": "Button",

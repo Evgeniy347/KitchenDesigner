@@ -60,6 +60,7 @@ namespace KitchenDesigner.Core.UI
 			public bool tableOnly;        // показывать только для столов
 			public bool pillarOnly;       // показывать только для опор
 			public bool windowOnly;       // показывать только для окон
+			public bool hideForWindow;    // скрывать для окон (повороты — окно живёт на стене)
             public GameObject toggleGO;   // объект, который включать/выключать по режиму
             public System.Func<bool>? visibleWhen; // доп. условие видимости (состояние элемента)
         }
@@ -269,10 +270,11 @@ namespace KitchenDesigner.Core.UI
             _z = TriField(panel.transform, "Z, м", TriCol3);
             TriEndRow();
 
+            // Поля поворота у окна скрыты: ориентацию диктует стена.
             _rx = TriField(panel.transform, "X°", TriCol1);
             _ry = TriField(panel.transform, "Y°", TriCol2);
             _rz = TriField(panel.transform, "Z°", TriCol3);
-            TriEndRow();
+            TriEndRow(hideForWindow: true);
 
 			foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
@@ -280,9 +282,11 @@ namespace KitchenDesigner.Core.UI
 
             // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
             // ставить детали вертикально (поворот по X/Z), а не только крутить по Y.
+            // Для окна вся секция скрыта: окно стоит на стене, из поворотов
+            // осмыслен только разворот на 180° (подоконником в другую сторону).
             var rotLbl = UIFactory.CreateLabel("CtxRotLbl", panel.transform, "Повернуть на 90°:", 15,
                 Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
-            AddRow(RotLblH, RotLblGap, rotLbl.rectTransform);
+            AddRowNoWindow(RotLblH, RotLblGap, rotLbl.rectTransform);
 
             var rotX = UIFactory.CreateButton("CtxRotX", panel.transform, "X 90°",
                 new Vector2(-112, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.right));
@@ -290,10 +294,14 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.up));
             var rotZ = UIFactory.CreateButton("CtxRotZ", panel.transform, "Z 90°",
                 new Vector2(112, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.forward));
-            AddRow(BtnH, ActionGap,
+            AddRowNoWindow(BtnH, ActionGap,
                 rotX.GetComponent<RectTransform>(),
                 rotY.GetComponent<RectTransform>(),
                 rotZ.GetComponent<RectTransform>());
+
+            var rotY180 = UIFactory.CreateButton("CtxRotY180", panel.transform, "Y 180°",
+                new Vector2(0, 0), new Vector2(332, BtnH), () => RotateAxis(Vector3.up, 180f));
+            AddWindowRow(BtnH, ActionGap, rotY180.GetComponent<RectTransform>());
 
             var apply = UIFactory.CreateButton("CtxApply", panel.transform, "Применить",
                 new Vector2(-85, 0), new Vector2(156, 32), Apply);
@@ -539,6 +547,14 @@ namespace KitchenDesigner.Core.UI
             _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, windowOnly = true });
         }
 
+        // Строка, скрываемая для окон (повороты: окно всегда стоит на стене).
+        private void AddRowNoWindow(float height, float gapAfter, params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, hideForWindow = true });
+        }
+
         // Строка «подпись + поле» только для ящика (обе части в одной drawer-строке —
         // иначе подпись и поле раскладывались бы разными циклами и разъезжались).
         private TMP_InputField DrawerFieldRow(Transform parent, string label)
@@ -592,10 +608,18 @@ namespace KitchenDesigner.Core.UI
             return field;
         }
 
-        private void TriEndRow()
+        private void TriEndRow(bool hideForWindow = false)
         {
-            AddRow(TriLabelH, 2f, _triLabels.ToArray());
-            AddRow(FieldH, RowGap, _triFields.ToArray());
+            if (hideForWindow)
+            {
+                AddRowNoWindow(TriLabelH, 2f, _triLabels.ToArray());
+                AddRowNoWindow(FieldH, RowGap, _triFields.ToArray());
+            }
+            else
+            {
+                AddRow(TriLabelH, 2f, _triLabels.ToArray());
+                AddRow(FieldH, RowGap, _triFields.ToArray());
+            }
             _triLabels.Clear();
             _triFields.Clear();
         }
@@ -623,11 +647,12 @@ namespace KitchenDesigner.Core.UI
 					&& (!row.tableOnly || isTable)
 					&& (!row.pillarOnly || isPillar)
 					&& (!row.windowOnly || isWindow)
+					&& !(row.hideForWindow && isWindow)
 					&& (row.visibleWhen == null || row.visibleWhen());
 
 				if (row.toggleGO != null)
 					row.toggleGO.SetActive(visible);
-				else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly || row.pillarOnly || row.windowOnly)
+				else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly || row.pillarOnly || row.windowOnly || row.hideForWindow)
                     foreach (var rt in row.rects)
                         if (rt != null) rt.gameObject.SetActive(visible);
 
@@ -833,6 +858,8 @@ namespace KitchenDesigner.Core.UI
                 // Габариты ящика (контурный бокс) вычисляются из типа/длины/ширины —
                 // прямое редактирование недоступно, поля затемняются.
                 SetDimensionFieldsEditable(!isDrawer);
+                // Глубину окна диктует толщина стены — поле только для чтения.
+                if (isWindow) SetDimensionFieldEditable(_d, false);
 
                 if (_materialDropdown != null)
                 {
@@ -920,10 +947,11 @@ namespace KitchenDesigner.Core.UI
             }
             else
             {
+                // Глубину окна диктует стена — поле Г игнорируется.
                 target.DimensionsMM = new Vector3Int(
                     ParseInt(_w!.text, oldDims.x),
                     ParseInt(_h!.text, oldDims.y),
-                    ParseInt(_d!.text, oldDims.z));
+                    target is WindowElement ? oldDims.z : ParseInt(_d!.text, oldDims.z));
             }
 
             if (table != null && _legInset != null)
@@ -974,11 +1002,19 @@ namespace KitchenDesigner.Core.UI
                 ParseFloat(_y!.text, oldPos.y),
                 ParseFloat(_z!.text, oldPos.z));
 
-            var euler = oldRot.eulerAngles;
-            target.transform.rotation = Quaternion.Euler(
-                ParseFloat(_rx!.text, euler.x),
-                ParseFloat(_ry!.text, euler.y),
-                ParseFloat(_rz!.text, euler.z));
+            // У окна поля поворота скрыты (ориентацию диктует стена) — не трогаем.
+            if (!(target is WindowElement))
+            {
+                var euler = oldRot.eulerAngles;
+                target.transform.rotation = Quaternion.Euler(
+                    ParseFloat(_rx!.text, euler.x),
+                    ParseFloat(_ry!.text, euler.y),
+                    ParseFloat(_rz!.text, euler.z));
+            }
+
+            // Окно живёт только на стене — сразу возвращаем его на стену,
+            // чтобы команда в стеке хранила уже «прилипшую» позу.
+            if (target is WindowElement winSnap) winSnap.SnapToWall();
 
             if (KitchenSettings.Instance.BlockOnViolation && WouldCauseViolation())
             {
@@ -1032,11 +1068,12 @@ namespace KitchenDesigner.Core.UI
             return result.violations.Contains(_target);
         }
 
-        private void RotateAxis(Vector3 axis)
+        private void RotateAxis(Vector3 axis, float angle = 90f)
         {
             if (_target == null) return;
             var oldRot = _target.transform.rotation;
-            _target.RotateAroundAxis(axis, 90f);
+            _target.RotateAroundAxis(axis, angle);
+            if (_target is WindowElement win) win.SnapToWall();
             CommandStack.Execute(new MoveCommand(_target,
                 _target.transform.position, _target.transform.position,
                 oldRot, _target.transform.rotation));
@@ -1273,16 +1310,19 @@ namespace KitchenDesigner.Core.UI
 
         private void SetDimensionFieldsEditable(bool editable)
         {
-            var disabled = new Color(0.55f, 0.55f, 0.55f, 1f);
             foreach (var f in new[] { _w, _h, _d })
-            {
-                if (f == null) continue;
-                if (_dimsTextColor == Color.clear && f.textComponent != null)
-                    _dimsTextColor = f.textComponent.color;
-                f.interactable = editable;
-                if (f.textComponent != null)
-                    f.textComponent.color = editable ? _dimsTextColor : disabled;
-            }
+                SetDimensionFieldEditable(f, editable);
+        }
+
+        private void SetDimensionFieldEditable(TMP_InputField? f, bool editable)
+        {
+            if (f == null) return;
+            var disabled = new Color(0.55f, 0.55f, 0.55f, 1f);
+            if (_dimsTextColor == Color.clear && f.textComponent != null)
+                _dimsTextColor = f.textComponent.color;
+            f.interactable = editable;
+            if (f.textComponent != null)
+                f.textComponent.color = editable ? _dimsTextColor : disabled;
         }
 
         private void UpdateDrawerAnimButton(DrawerElement d)
