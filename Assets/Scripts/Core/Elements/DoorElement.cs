@@ -24,7 +24,6 @@ namespace KitchenDesigner.Core
 
         private static Shader? _cachedShader;
         private static Material? _glassMat;
-        private static Material? _blindMat;
 
         private readonly List<GameObject> _children = new List<GameObject>();
         private GameObject? _frameTop, _frameBottom, _frameLeft, _frameRight;
@@ -492,9 +491,12 @@ namespace KitchenDesigner.Core
 
             if (_sashType == DoorSashType.Blind)
             {
-                if (_blindMat == null)
-                    _blindMat = ElementHighlighter.MakeTransparent(GetShader(), new Color(0.55f, 0.52f, 0.48f, 0.92f));
-                mr.sharedMaterial = _blindMat;
+                var def = MaterialCatalog.Get(MaterialId);
+                if (def != null)
+                {
+                    var mat = MaterialManager.GetSharedMaterial(def);
+                    if (mat != null) mr.sharedMaterial = mat;
+                }
             }
             else
             {
