@@ -12,7 +12,16 @@ The server is intentionally built to be usable by a **small / weak model**:
 - Every tool has a short, plain-language description.
 - **Units are stated in every position/size parameter** — the single most common mistake.
 - Server `instructions` teach the core workflow once, up front (sent at `initialize`).
-- The `guide` tool returns a full cheat-sheet with worked examples on demand.
+- The `guide` tool is a topic-based mini-reference: `workflow` (default), `elements`,
+  `fields`, `drawers`, `violations`.
+- **Every mutation returns a uniform envelope** `{ok, element, violations,
+  sceneViolationCount}` — the model sees the result and its problems immediately,
+  no follow-up query needed.
+- **Batch-first**: `get_elements` (names/filter/summary), `batch_edit` (many ops,
+  atomic, one undo step, `dry_run`), `clone_element`, `align_element`,
+  `distribute_evenly`, `get_free_space` — one call instead of a series.
+- All floats are rounded server-side to 0.1 mm; sub-0.5 mm overlaps are filtered out
+  as float noise (flush contact reports `touching: true`, not a violation).
 - Domain errors from Unity are surfaced as real MCP errors (`isError: true`), not swallowed.
 
 ## Units (memorise)
@@ -26,12 +35,20 @@ The server is intentionally built to be usable by a **small / weak model**:
 `1 m = 1000 mm` (Unity `AppConstants.MM_TO_UNITS = 0.001`). `dimZ` is always the board
 thickness (smallest side, usually 18 mm).
 
-## Core editing loop
+## Core editing loop (batch-first)
 
-1. `get_all_elements` — read current state (names, sizes, positions, violations).
-2. `simulate_move` / `simulate_resize` — dry-run; check `wouldHaveViolations` / `overlapsWith`.
-3. `move_element` / `resize_element` / `rotate_element` — apply one change.
-4. `get_violations` — confirm nothing broke.
+1. **Read**: `get_elements {filter:"B4_*", summary:true}` — targeted and compact
+   (`get_all_elements` returns everything and is large).
+2. **Write**: `batch_edit {ops:[{name, x?, width?, rot_y?, locked?, material?}...]}`
+   — many changes in one transactional call, single undo step; `dry_run:true` to
+   preview. Single-element tools (`move_element` etc.) also work.
+3. **Check**: the mutation response already carries the changed element's
+   `violations` (`[]` = clean) and `sceneViolationCount`. If the counter grew,
+   `get_violations {names?}` shows details.
+
+Placement without coordinate math: `align_element` (face flush to face + gap),
+`get_free_space` (empty box between two boards), `clone_element`,
+`distribute_evenly`.
 
 ## Build & run
 
@@ -51,17 +68,17 @@ Start / Stop**. If the app is not running, tool calls return a clear connection 
 
 ## Keeping tools in sync — IMPORTANT
 
-The tool list here must stay **1:1** with the `switch` in
-`Assets/Scripts/Core/MCP/McpCommandHandler.cs`. When you add a method there, add a
-matching `server.registerTool(...)` here (with units in the description) and rebuild.
-Parameter field names must match the C# `Params*` classes in `McpModels.cs`
-(e.g. facade gaps are sent as `gapLeft/gapRight/gapTop/gapBottom`).
+The tool surface is **contract-first**. The single source of truth is
+`Assets/Scripts/Core/MCP/Contract/` (`McpToolRegistry` + `Params*` classes +
+`McpGuideTexts`). From it:
 
-This is enforced automatically: `scripts/check-parity.mjs` compares the tool names
-here against the C# dispatcher and **`npm run build` fails** (via the `prebuild` hook)
-if anything is missing or extra, naming exactly what to fix. So adding a method is
-still two edits (C# handler + this file), but you can never *silently* forget the
-second one. Intentional exceptions (`get_methods`, `guide`) are listed in that script.
-Full end-to-end code generation is deliberately avoided: the hand-written
-descriptions carry the units and wording a weak model needs, which a generator
-cannot invent.
+- `npm run gen:tools` regenerates `src/tools.generated.ts` (Zod tool table +
+  guide texts) via `server/tools/McpContractGen`;
+- the ASP.NET server builds its `tools/list` from the same contract at runtime.
+
+Adding a method = three steps: (1) params class + registry entry in the Contract,
+(2) a `case` + handler in `McpCommandHandler.cs`, (3) `npm run gen:tools`.
+`scripts/check-parity.mjs` compares the generated tool table against the C#
+dispatcher and **`npm run build` fails** (via the `prebuild` hook) if anything is
+missing or extra. Unity-side tests (`McpToolRegistryParityTests`) guard the same
+invariant from the C# side.
