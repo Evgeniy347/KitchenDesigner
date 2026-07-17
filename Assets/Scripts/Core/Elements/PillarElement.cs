@@ -99,5 +99,33 @@ namespace KitchenDesigner.Core
 				result[i] = pos + rot * localCorners[i];
 			return result;
 		}
+
+		public override Face[] GetFaces()
+		{
+			float toU = AppConstants.MM_TO_UNITS;
+			float w = TopDiameterMM * toU;
+			float h = TotalHeightMM * toU;
+			float hw = w * 0.5f;
+			float hh = h * 0.5f;
+			var pos = transform.position;
+			var rot = transform.rotation;
+
+			var axes = new Vector3[]
+			{
+				rot * Vector3.right,
+				rot * Vector3.up,
+				rot * Vector3.forward
+			};
+
+			return new Face[]
+			{
+				new Face(pos + axes[1] * hh,  axes[1], new Vector2(w, w), axes[0], axes[2]),
+				new Face(pos - axes[1] * hh, -axes[1], new Vector2(w, w), axes[0], axes[2]),
+				new Face(pos + axes[0] * hw,  axes[0], new Vector2(h, w), axes[1], axes[2]),
+				new Face(pos - axes[0] * hw, -axes[0], new Vector2(h, w), axes[1], axes[2]),
+				new Face(pos + axes[2] * hw,  axes[2], new Vector2(w, h), axes[0], axes[1]),
+				new Face(pos - axes[2] * hw, -axes[2], new Vector2(w, h), axes[0], axes[1]),
+			};
+		}
 	}
 }

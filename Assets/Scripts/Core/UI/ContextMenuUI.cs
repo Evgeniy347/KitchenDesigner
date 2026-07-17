@@ -989,6 +989,7 @@ namespace KitchenDesigner.Core.UI
                 else if (_midHeight != null)
                 {
                     pillar.MidHeightMM = ParseInt(_midHeight.text, pillar.MidHeightMM);
+                    _midHeight.text = pillar.MidHeightMM.ToString();
                 }
             }
             else

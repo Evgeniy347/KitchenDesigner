@@ -398,15 +398,21 @@ namespace KitchenDesigner.Core
 			{
 				Vector3Int? pillarDimsBefore = null;
 				Vector3 pillarPosBefore = Vector3.zero;
+				int? pillarMidBefore = null;
 				if (_target is PillarElement pillarBefore)
 				{
 					pillarDimsBefore = pillarBefore.DimensionsMM;
 					pillarPosBefore = pillarBefore.transform.position;
+					pillarMidBefore = pillarBefore.MidHeightMM;
 				}
 
 				AutoAdjustPillar();
 				if (KitchenSettings.Instance.BlockOnViolation && MoveSetCausesViolation())
+				{
+					if (pillarMidBefore.HasValue && _target is PillarElement p)
+						p.MidHeightMM = pillarMidBefore.Value;
 					RevertMoveSet();
+				}
 				else
 					CommandStack.Execute(BuildMoveCommand(pillarDimsBefore, pillarPosBefore));
 			}
@@ -429,12 +435,19 @@ namespace KitchenDesigner.Core
 		{
 			if (!(_target is PillarElement pillar)) return;
 			float toU = AppConstants.MM_TO_UNITS;
-			float pillarBottomY = _target.transform.position.y - pillar.TotalHeightMM * 0.5f * toU;
-			if (pillarBottomY > 0.02f) return;
+			Vector3 pillarCenter = _target.transform.position;
+
+			float floorY = FindFloorY(pillarCenter, toU);
+			if (floorY < -999f) return;
+
+			float pillarBottomY = floorY;
+			pillar.transform.position = new Vector3(pillarCenter.x,
+				pillarBottomY + pillar.TotalHeightMM * 0.5f * toU, pillarCenter.z);
+			pillarCenter = _target.transform.position;
+
 			float minAbove = pillarBottomY + 80f * toU;
 			float maxAbove = pillarBottomY + 130f * toU;
 			float midDiameterU = PillarElement.MidDiameterMM * 0.5f * toU;
-			Vector3 pillarCenter = _target.transform.position;
 			KitchenElement? bestAbove = null;
 			float bestAboveBottom = float.MaxValue;
 			foreach (var el in PartRegistry.GetAll())
@@ -464,6 +477,23 @@ namespace KitchenDesigner.Core
 			pillar.MidHeightMM = neededMid;
 			float newTotalHeight = pillar.TotalHeightMM * toU;
 			pillar.transform.position = new Vector3(pillar.transform.position.x, bottomY + newTotalHeight * 0.5f, pillar.transform.position.z);
+		}
+
+		private static float FindFloorY(Vector3 pillarCenter, float toU)
+		{
+			float bestY = float.MinValue;
+			foreach (var el in PartRegistry.GetAll())
+			{
+				if (el == null) continue;
+				var aabb = ComputeElementAABB(el);
+				if (aabb.maxY > pillarCenter.y - 0.01f) continue;
+				float dx = Mathf.Abs((aabb.minX + aabb.maxX) * 0.5f - pillarCenter.x);
+				float dz = Mathf.Abs((aabb.minZ + aabb.maxZ) * 0.5f - pillarCenter.z);
+				if (dx < 0.15f && dz < 0.15f && aabb.maxY > bestY)
+					bestY = aabb.maxY;
+			}
+			if (bestY >= pillarCenter.y - 1f) return bestY;
+			return -1000f;
 		}
 
 		private static (float minX, float maxX, float minY, float maxY, float minZ, float maxZ) ComputeElementAABB(KitchenElement el)
