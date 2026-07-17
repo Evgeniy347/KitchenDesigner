@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
+using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
 public class SidebarCatalogTests
@@ -63,7 +64,7 @@ public class SidebarCatalogTests
     public void FurnitureGroup_HasTable()
     {
         var groups = SidebarCatalog.Build();
-        Assert.AreEqual(2, groups[3].items.Count);
+        Assert.AreEqual(3, groups[3].items.Count);
         var it = groups[3].items.Find(i => i.name == "Прямоугольный стол");
         Assert.IsNotNull(it);
         Assert.IsTrue(it.isFurniture);
@@ -78,6 +79,16 @@ public class SidebarCatalogTests
         Assert.IsNotNull(it);
         Assert.IsTrue(it.isRadiusTable);
         Assert.AreEqual(new Vector3Int(2000, 750, 1000), it.dims);
+    }
+
+    [Test]
+    public void FurnitureGroup_HasPillar()
+    {
+        var groups = SidebarCatalog.Build();
+        var it = groups[3].items.Find(i => i.name == "Ножка");
+        Assert.IsNotNull(it);
+        Assert.IsTrue(it.isPillar);
+        Assert.AreEqual(PillarElement.MidHeightMM_Default, it.pillarMidHeightMM);
     }
 
     [Test]
