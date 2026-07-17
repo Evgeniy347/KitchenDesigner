@@ -101,7 +101,8 @@ exit /b 1
 :build_win_debug
 echo === Build Windows Debug (fast, incremental) ===
 REM No rmdir: keeping the output folder lets Unity reuse artifacts between runs.
-REM Output goes to Build_Debug\ so a running exe from Build\ never locks the build.
+REM Output goes to Builds\Win_Debug\ so a running exe from Build\ never locks the build.
+if not exist "%root%\Builds\Win_Debug" mkdir "%root%\Builds\Win_Debug"
 
 "%unity%" -quit -batchMode -projectPath "%root%" -executeMethod BuildProject.BuildWindowsDebug -logFile "%log%.winDebug.log"
 set "buildExit=!errorlevel!"
@@ -127,6 +128,7 @@ exit /b 1
 :build_webgl
 echo === Build WebGL Release ===
 if exist "%root%\Builds\WebGL" rmdir /s /q "%root%\Builds\WebGL"
+mkdir "%root%\Builds\WebGL"
 
 "%unity%" -quit -batchMode -projectPath "%root%" -executeMethod BuildProject.BuildWebGLRelease -logFile "%log%.webgl.log"
 set "buildExit=!errorlevel!"
@@ -151,6 +153,7 @@ exit /b 1
 :build_webgl_debug
 echo === Build WebGL Debug (fast) ===
 if exist "%root%\Builds\WebGL_Debug" rmdir /s /q "%root%\Builds\WebGL_Debug"
+mkdir "%root%\Builds\WebGL_Debug"
 
 "%unity%" -quit -batchMode -projectPath "%root%" -executeMethod BuildProject.BuildWebGLDebug -logFile "%log%.webglDebug.log"
 set "buildExit=!errorlevel!"

@@ -16,6 +16,7 @@ if %errorlevel% neq 0 (
 )
 
 :docker
+if not exist "%root%\Builds\WebGL_Debug" mkdir "%root%\Builds\WebGL_Debug"
 if not exist "%root%\Builds\WebGL_Debug\index.html" (
     echo [FAIL] Builds\WebGL_Debug not found. Run without -NoBuild first.
     exit /b 1
