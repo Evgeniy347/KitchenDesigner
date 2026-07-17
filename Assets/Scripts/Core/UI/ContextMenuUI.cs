@@ -860,6 +860,8 @@ namespace KitchenDesigner.Core.UI
                 SetDimensionFieldsEditable(!isDrawer);
                 // Глубину окна диктует толщина стены — поле только для чтения.
                 if (isWindow) SetDimensionFieldEditable(_d, false);
+                // Ширина и глубина опоры фиксированы — только для чтения.
+                if (isPillar) { SetDimensionFieldEditable(_w, false); SetDimensionFieldEditable(_d, false); }
 
                 if (_materialDropdown != null)
                 {
@@ -945,6 +947,22 @@ namespace KitchenDesigner.Core.UI
             {
                 if (_drawerWidth != null) drawer.InternalWidth = ParseInt(_drawerWidth.text, drawer.InternalWidth);
             }
+            else if (pillar != null)
+            {
+                int newTotalH = ParseInt(_h!.text, oldDims.y);
+                if (newTotalH != oldDims.y)
+                {
+                    int newMidH = Mathf.Clamp(
+                        newTotalH - PillarElement.TopHeightMM - PillarElement.BottomHeightMM,
+                        PillarElement.MidHeightMM_Min, PillarElement.MidHeightMM_Max);
+                    pillar.MidHeightMM = newMidH;
+                    if (_midHeight != null) _midHeight.text = newMidH.ToString();
+                }
+                else if (_midHeight != null)
+                {
+                    pillar.MidHeightMM = ParseInt(_midHeight.text, pillar.MidHeightMM);
+                }
+            }
             else
             {
                 // Глубину окна диктует стена — поле Г игнорируется.
@@ -959,9 +977,6 @@ namespace KitchenDesigner.Core.UI
 
 			if (radiusTable != null && _legInset != null)
 				radiusTable.LegInsetMM = ParseInt(_legInset.text, radiusTable.LegInsetMM);
-
-			if (pillar != null && _midHeight != null)
-				pillar.MidHeightMM = ParseInt(_midHeight.text, pillar.MidHeightMM);
 
 			var windowEl = target as WindowElement;
             if (windowEl != null && _sillProtrusion != null)
