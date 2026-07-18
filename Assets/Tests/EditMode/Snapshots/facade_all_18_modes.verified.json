@@ -1,4 +1,4 @@
-﻿{
+{
     "version": 1,
     "elements": [
         {
@@ -1263,6 +1263,7 @@
         "windowedMode": true,
         "edgeOutline": false,
         "wallsEnabled": true,
-        "lowerNearWalls": false
+        "lowerNearWalls": false,
+        "cameraPanFree": false
     }
 }

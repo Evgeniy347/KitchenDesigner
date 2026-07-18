@@ -135,6 +135,21 @@ public class KitchenSettingsTests
     }
 
     [Test]
+    public void CameraPanFree_SavesAndLoads()
+    {
+        var gs = KitchenSettings.Instance;
+        bool prev = gs.CameraPanFree;
+
+        gs.CameraPanFree = true;
+        var data = gs.ToData();
+        gs.CameraPanFree = false;
+        gs.ApplyFrom(data);
+        Assert.IsTrue(gs.CameraPanFree);
+
+        gs.CameraPanFree = prev;
+    }
+
+    [Test]
     public void SpatialGridAndWindowedMode_SaveAndLoad()
     {
         var gs = KitchenSettings.Instance;

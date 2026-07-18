@@ -28,6 +28,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _edgeOutline = true;
         [SerializeField] private bool _wallsEnabled = true;
         [SerializeField] private bool _lowerNearWalls = true;
+        [SerializeField] private bool _cameraPanFree = false;
 
         public int GridStep
         {
@@ -101,6 +102,12 @@ namespace KitchenDesigner.Core
             set => _lowerNearWalls = value;
         }
 
+        public bool CameraPanFree
+        {
+            get => _cameraPanFree;
+            set => _cameraPanFree = value;
+        }
+
         public KitchenSettingsData ToData()
         {
             return new KitchenSettingsData
@@ -116,7 +123,8 @@ namespace KitchenDesigner.Core
                 windowedMode = _windowedMode,
                 edgeOutline = _edgeOutline,
                 wallsEnabled = _wallsEnabled,
-                lowerNearWalls = _lowerNearWalls
+                lowerNearWalls = _lowerNearWalls,
+                cameraPanFree = _cameraPanFree
             };
         }
 
@@ -135,6 +143,7 @@ namespace KitchenDesigner.Core
             _edgeOutline = data.edgeOutline;
             _wallsEnabled = data.wallsEnabled;
             _lowerNearWalls = data.lowerNearWalls;
+            _cameraPanFree = data.cameraPanFree;
         }
 
         /// <summary>Возвращает текущий JSON настроек (для снапшот-тестов).</summary>
@@ -153,7 +162,8 @@ namespace KitchenDesigner.Core
                 windowedMode = _windowedMode,
                 edgeOutline = _edgeOutline,
                 wallsHidden = !_wallsEnabled,
-                lowerNearWalls = _lowerNearWalls
+                lowerNearWalls = _lowerNearWalls,
+                cameraPanFree = _cameraPanFree
             };
             return JsonUtility.ToJson(data, true);
         }
@@ -173,6 +183,7 @@ namespace KitchenDesigner.Core
             public bool edgeOutline;
             public bool wallsHidden;   // инверсия: старые сейвы (false) → стены включены
             public bool lowerNearWalls;
+            public bool cameraPanFree;
         }
     }
 }
