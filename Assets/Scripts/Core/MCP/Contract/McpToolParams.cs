@@ -106,6 +106,9 @@ namespace KitchenDesigner.Core.MCP.Contract
     {
         [McpParam("Exact element name.", Required = true)] public string name = string.Empty;
 
+        [McpParam("Rename the element to this new name. Must be unique among all elements. Omit to keep.")]
+        public string? new_name;
+
         // Geometry (any element; drawers reject width/height/depth).
         [McpParam("Target X in METERS. Omit to keep.")] public float? x;
         [McpParam("Target Y in METERS. Omit to keep.")] public float? y;
@@ -223,46 +226,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         public int? height;
         [McpParam("Thickness along Z in MM. Defaults: board 18, radial shelf 400 (its depth), table 1000, window/door 100.", Min = 1)]
         public int? depth;
-
-        [McpParam("Initial material decor id or display name (see list_materials). Omit for default.")]
-        public string? material;
-
-        [McpParam("Facade only: left gap in MM (default 2).", Min = 0)] public int? gap_left;
-        [McpParam("Facade only: right gap in MM (default 2).", Min = 0)] public int? gap_right;
-        [McpParam("Facade only: top gap in MM (default 2).", Min = 0)] public int? gap_top;
-        [McpParam("Facade only: bottom gap in MM (default 2).", Min = 0)] public int? gap_bottom;
-
-        [McpParam("Assembled facade only: center fill — blind (panel), glass (vitrine), open (empty). Default blind.",
-            Enum = new[] { "blind", "glass", "open" })]
-        public string? fill;
-
-        [McpParam("Radial shelf only: corner rounding radius in MM (default 200, clamped to min(width, depth)).", Min = 1)]
-        public int? corner_radius;
-
-        [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Default A.",
-            Enum = new[] { "A", "B", "C", "D" })]
-        public string? drawer_type;
-        [McpParam("Drawer only: nominal slide length in MM, one of 250/300/350/400/450/500/550/600. Default 350.")]
-        public int? drawer_length;
-        [McpParam("Drawer only: GTV color. Default anthracite.", Enum = new[] { "anthracite", "white", "black" })]
-        public string? drawer_color;
-        [McpParam("Drawer only: internal box width in MM (default 400, min 100).", Min = 100)]
-        public int? internal_width;
-
-        [McpParam("Table only: inward offset of legs from corners along X and Z, in MM (default 100).", Min = 0)]
-        public int? leg_inset_mm;
-
-        [McpParam("Pillar only: middle cylinder height in MM (clamped 50..100).", Min = 50, Max = 100)]
-        public int? mid_height_mm;
-
-        [McpParam("Window only: glass tint — clear or tinted. Default clear.", Enum = new[] { "clear", "tinted" })]
-        public string? tint;
-        [McpParam("Window only: windowsill outward protrusion in MM (0..200). Default 50.", Min = 0, Max = 200)]
-        public int? sill_protrusion_mm;
-
-        [McpParam("Door only: sash type — glass (transparent) or blind (solid panel). Default glass.",
-            Enum = new[] { "glass", "blind" })]
-        public string? sash_type;
     }
 
     [Serializable]

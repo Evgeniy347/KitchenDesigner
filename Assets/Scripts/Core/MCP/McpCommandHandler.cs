@@ -54,12 +54,9 @@ namespace KitchenDesigner.Core.MCP
                     case "create_elements": return HandleCreateElements(request);
                     case "convert_elements": return HandleConvertElements(request);
                     case "delete_elements": return HandleDeleteElements(request);
-                    case "undo": return HandleUndo(request);
-                    case "redo": return HandleRedo(request);
                     case "get_specification": return HandleGetSpecification(request);
                     case "export_specification_csv": return HandleExportCsv(request);
                     case "select_elements": return HandleSelectElements(request);
-                    case "get_undo_stack_info": return HandleUndoStackInfo(request);
                     case "get_console_logs": return HandleConsoleLogs(request);
                     case "get_settings": return HandleGetSettings(request);
                     case "set_snap_verbose": return HandleSetSnapVerbose(request);
@@ -76,14 +73,12 @@ namespace KitchenDesigner.Core.MCP
                     case "get_floor_info": return HandleGetFloorInfo(request);
                     case "get_violations": return HandleGetViolations(request);
                     case "resize_floor": return HandleResizeFloor(request);
-                    case "add_wall_component": return HandleAddWallComponent(request);
                     case "set_setting": return HandleSetSetting(request);
                     case "execute_menu_item": return HandleExecuteMenuItem(request);
                     case "enter_play_mode": return HandleEnterPlayMode(request);
                     case "exit_play_mode": return HandleExitPlayMode(request);
                     case "get_element_debug": return HandleGetElementDebug(request);
                     case "get_element_gaps": return HandleGetElementGaps(request);
-                    case "rename_elements": return HandleRenameElements(request);
                     case "cycle_drawer_animation": return HandleCycleDrawerAnimation(request);
                     case "list_materials": return HandleListMaterials(request);
                     case "reload_textures": return HandleReloadTextures(request);
@@ -677,6 +672,7 @@ namespace KitchenDesigner.Core.MCP
 
             var errors = new List<string>();
             var resolved = new List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)>();
+            var newNamesBatch = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var op in p.ops)
             {
                 if (string.IsNullOrEmpty(op.name)) { errors.Add("an op is missing 'name'"); continue; }
@@ -689,6 +685,13 @@ namespace KitchenDesigner.Core.MCP
                 { errors.Add($"Element '{op.name}' is LOCKED"); continue; }
                 foreach (var err in ValidateEditOpFields(op, el))
                     errors.Add($"Invalid field for '{op.name}': {err}");
+                // Validate new_name
+                if (op.new_name != null && op.new_name != op.name)
+                {
+                    var conflict = PartRegistry.All.FirstOrDefault(x => x != null && x != el && x.PartName == op.new_name);
+                    if (conflict != null) errors.Add($"new_name '{op.new_name}' already taken by another element (for '{op.name}')");
+                    else if (!newNamesBatch.Add(op.new_name)) errors.Add($"Duplicate new_name '{op.new_name}' in this batch (for '{op.name}')");
+                }
                 MaterialDef? mat = null;
                 if (!string.IsNullOrEmpty(op.material))
                 {
@@ -754,6 +757,7 @@ namespace KitchenDesigner.Core.MCP
                 if (el is PillarElement pillar) ApplyPillarEdits(op, pillar);
                 if (el is WindowElement window) ApplyWindowEdits(op, window);
                 if (el is DoorElement door) ApplyDoorEdits(op, door);
+                if (op.new_name != null && op.new_name != el.PartName) { el.PartName = op.new_name; el.gameObject.name = op.new_name; }
             }
         }
 
@@ -1374,7 +1378,6 @@ namespace KitchenDesigner.Core.MCP
                 var elementType = (item.type ?? "board").Trim().ToLowerInvariant();
                 var pos = new Vector3(item.x, item.y, item.z);
                 GameObject go = null!;
-                KitchenElement element = null!;
 
                 switch (elementType)
                 {
@@ -1385,56 +1388,45 @@ namespace KitchenDesigner.Core.MCP
                         created.Add(plate.Element);
                         break;
                     case "assembled_facade":
-                        go = ElementFactory.CreateAssembledFacade(new Vector3Int(item.width ?? 450, item.height ?? 700, item.depth ?? 18), item.name, pos, ParseFill(item.fill!));
+                        go = ElementFactory.CreateAssembledFacade(new Vector3Int(item.width ?? 450, item.height ?? 700, item.depth ?? 18), item.name, pos, AssembledFill.Blind);
                         break;
                     case "radial_shelf":
                         int rw = item.width ?? 600, rd = item.depth ?? 400;
                         go = ElementFactory.CreateRadialShelf(rw, rd, item.height ?? AppConstants.BOARD_THICKNESS_DEFAULT,
-                            Mathf.Clamp(item.corner_radius ?? AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, 1, Mathf.Min(rw, rd)), item.name, pos);
+                            AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, item.name, pos);
                         break;
                     case "drawer":
-                        go = ElementFactory.CreateDrawer(ParseDrawerType(item.drawer_type!), item.drawer_length ?? 350,
-                            ParseDrawerColor(item.drawer_color!), item.internal_width ?? 400, item.name, pos);
+                        go = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400, item.name, pos);
                         break;
                     case "table":
                         go = ElementFactory.CreateTable(new Vector3Int(item.width ?? 2000, item.height ?? 750, item.depth ?? 1000), item.name, pos);
-                        var tel = go.GetComponent<TableElement>();
-                        if (tel != null && item.leg_inset_mm > 0) tel.LegInsetMM = item.leg_inset_mm.Value;
                         break;
                     case "radius_table":
                         go = ElementFactory.CreateRadiusTable(new Vector3Int(item.width ?? 2000, item.height ?? 750, item.depth ?? 1000), item.name, pos);
-                        var rtel = go.GetComponent<RadiusTableElement>();
-                        if (rtel != null && item.leg_inset_mm > 0) rtel.LegInsetMM = item.leg_inset_mm.Value;
                         break;
                     case "pillar":
                         go = ElementFactory.CreatePillar(item.height ?? PillarElement.MidHeightMM_Default, item.name, pos);
                         break;
                     case "window":
                         go = ElementFactory.CreateWindow(new Vector3Int(item.width ?? 900, item.height ?? 1200, item.depth ?? 100),
-                            item.name, pos, ParseGlassTint(item.tint!), item.sill_protrusion_mm ?? 50);
+                            item.name, pos, GlassTint.Clear, 50);
                         break;
                     case "door":
                         go = ElementFactory.CreateDoor(new Vector3Int(item.width ?? 900, item.height ?? 2000, item.depth ?? 100),
-                            item.name, pos, ParseDoorSashType(item.sash_type!));
+                            item.name, pos, DoorSashType.Glass);
                         break;
                     default:
                     {
                         var dims = new Vector3Int(item.width ?? 800, item.height ?? 400, item.depth ?? 18);
                         go = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         go.name = item.name;
-                        bool isFacade = elementType == "facade";
-                        bool isWall = elementType == "wall";
-                        if (isFacade)
+                        if (elementType == "facade")
                         {
                             var facade = go.AddComponent<FacadeElement>();
                             facade.PartName = item.name; facade.DimensionsMM = dims;
-                            facade.GapLeft = item.gap_left ?? 2; facade.GapRight = item.gap_right ?? 2;
-                            facade.GapTop = item.gap_top ?? 2; facade.GapBottom = item.gap_bottom ?? 2;
-                            MaterialManager.ApplyById(facade, MaterialCatalog.DefaultId);
-                            element = facade;
                         }
-                        else { element = go.AddComponent<KitchenElement>(); element.PartName = item.name; element.DimensionsMM = dims; MaterialManager.ApplyById(element, MaterialCatalog.DefaultId); }
-                        if (isWall) go.AddComponent<Wall>();
+                        else { var el = go.AddComponent<KitchenElement>(); el.PartName = item.name; el.DimensionsMM = dims; }
+                        if (elementType == "wall") go.AddComponent<Wall>();
                         go.transform.position = pos;
                         break;
                     }
@@ -1596,27 +1588,6 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, deleted = deletedNames, sceneViolationCount = vrAfter != null ? vrAfter.violations.Count : 0 });
         }
 
-        private McpResponse HandleUndo(McpRequest req)
-        {
-            if (!CommandStack.CanUndo)
-                return McpResponse.Result(req.id, new { ok = false, reason = "Nothing to undo" });
-            var desc = CommandStack.PeekUndoDescription();
-            CommandStack.Undo();
-            RefreshElementHighlights();
-            Debug.Log($"[MCP] Undo: {desc}");
-            return McpResponse.Result(req.id, new { ok = true, action = "undo", description = desc });
-        }
-
-        private McpResponse HandleRedo(McpRequest req)
-        {
-            if (!CommandStack.CanRedo)
-                return McpResponse.Result(req.id, new { ok = false, reason = "Nothing to redo" });
-            CommandStack.Redo();
-            RefreshElementHighlights();
-            Debug.Log($"[MCP] Redo");
-            return McpResponse.Result(req.id, new { ok = true, action = "redo" });
-        }
-
         private McpResponse HandleGetSpecification(McpRequest req)
         {
             var spec = SpecificationManager.Build(PartRegistry.GetAll());
@@ -1664,16 +1635,6 @@ namespace KitchenDesigner.Core.MCP
                 selected.Add(name);
             }
             return McpResponse.Result(req.id, new { ok = true, selected, missing = missing.Count > 0 ? missing : null });
-        }
-
-        private McpResponse HandleUndoStackInfo(McpRequest req)
-        {
-            return McpResponse.Result(req.id, new UndoStackInfo
-            {
-                canUndo = CommandStack.CanUndo,
-                canRedo = CommandStack.CanRedo,
-                undoDescription = CommandStack.PeekUndoDescription()
-            });
         }
 
         private McpResponse HandleConsoleLogs(McpRequest req)
@@ -1968,34 +1929,6 @@ namespace KitchenDesigner.Core.MCP
 
             Debug.Log($"[MCP] Resized floor to ({w}, {h}, {d})mm");
             return McpResponse.Result(req.id, BuildMutationResult(el));
-        }
-
-        private McpResponse HandleAddWallComponent(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsNames>();
-            if (p == null || p.names == null || p.names.Length == 0)
-                return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
-
-            var results = new List<object>();
-            var errors = new List<string>();
-            foreach (var name in p.names)
-            {
-                var element = FindElementByName(name);
-                if (element == null) { errors.Add($"Element not found: {name}"); continue; }
-                if (element.GetComponent<Wall>() != null)
-                {
-                    results.Add(new { name, ok = true, was_already_wall = true });
-                    continue;
-                }
-                element.gameObject.AddComponent<Wall>();
-                results.Add(BuildMutationResult(element));
-            }
-            if (errors.Count > 0)
-                return McpResponse.Error(req.id, -1,
-                    "add_wall_component rejected: " + string.Join(" | ", errors));
-
-            Debug.Log($"[MCP] Added Wall component to {results.Count} elements");
-            return McpResponse.Result(req.id, new { ok = true, results });
         }
 
         private McpResponse HandleExecuteMenuItem(McpRequest req)
@@ -2527,47 +2460,6 @@ namespace KitchenDesigner.Core.MCP
                 if (child.name == parts[index])
                     return FindDescendant(child, parts, index + 1);
             return null;
-        }
-
-        // ── rename_elements ────────────────────────────────────────────
-        private McpResponse HandleRenameElements(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsRenameElements>();
-            if (p == null || p.ops == null || p.ops.Length == 0)
-                return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
-
-            var errors = new List<string>();
-            var ops = new List<(string oldName, string newName, KitchenElement el)>();
-            var newNamesSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var op in p.ops)
-            {
-                if (string.IsNullOrEmpty(op.name)) { errors.Add("op missing name"); continue; }
-                if (string.IsNullOrEmpty(op.new_name)) { errors.Add($"op with name '{op.name}' missing new_name"); continue; }
-                if (op.new_name == op.name) continue; // no-op
-
-                var el = FindElementByName(op.name);
-                if (el == null) { errors.Add($"Element not found: {op.name}"); continue; }
-
-                var conflict = PartRegistry.All.FirstOrDefault(x => x != null && x != el && x.PartName == op.new_name);
-                if (conflict != null) { errors.Add($"Name '{op.new_name}' already taken (for '{op.name}')"); continue; }
-                if (!newNamesSet.Add(op.new_name)) { errors.Add($"Duplicate new_name '{op.new_name}' in this batch"); continue; }
-
-                ops.Add((op.name, op.new_name, el));
-            }
-            if (errors.Count > 0)
-                return McpResponse.Error(req.id, -1,
-                    "rename_elements rejected, NOTHING was renamed: " + string.Join(" | ", errors));
-
-            var result = new List<object>();
-            foreach (var (oldName, newName, el) in ops)
-            {
-                el.PartName = newName;
-                el.gameObject.name = newName;
-                result.Add(new { old_name = oldName, new_name = newName });
-            }
-            Debug.Log($"[MCP] Renamed {result.Count} elements");
-            return McpResponse.Result(req.id, new { ok = true, results = result });
         }
 
         private static KitchenElement? FindElementByName(string name)
