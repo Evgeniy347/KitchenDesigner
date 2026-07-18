@@ -116,6 +116,16 @@ namespace KitchenDesigner.Core.MCP.Contract
     }
 
     [Serializable]
+    public class ParamsRenameElement
+    {
+        [McpParam("Exact board name (from get_all_elements).", Required = true)]
+        public string name = string.Empty;
+
+        [McpParam("New name for the element. Must be unique among all elements.", Required = true)]
+        public string new_name = string.Empty;
+    }
+
+    [Serializable]
     public class ParamsSetFacadeMode
     {
         [McpParam("Exact facade element name.", Required = true)] public string name = string.Empty;
