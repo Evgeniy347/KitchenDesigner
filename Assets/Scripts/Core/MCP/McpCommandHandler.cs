@@ -171,53 +171,85 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetObjectInfo(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsObjectPath>();
-            if (p == null || (string.IsNullOrEmpty(p.name) && string.IsNullOrEmpty(p.object_path)))
-                return McpResponse.Error(req.id, -32602, "name or object_path required");
+            var p = req.Params?.ToObject<ParamsObjectPaths>();
+            if (p == null || p.object_paths == null || p.object_paths.Length == 0)
+                return McpResponse.Error(req.id, -32602, "object_paths required (non-empty array)");
 
-            var target = FindGameObject(p.object_path ?? p.name);
-            if (target == null)
-                return McpResponse.Error(req.id, -1, $"Object not found: {p.object_path ?? p.name}");
-
-            var components = new List<string>();
-            foreach (var c in target.GetComponents<Component>())
-                if (c != null) components.Add(c.GetType().Name);
-
-            var children = new List<string>();
-            foreach (Transform child in target.transform)
-                children.Add(child.name);
-
-            return McpResponse.Result(req.id, new ObjectInfo
+            var results = new List<object>();
+            var missing = new List<string>();
+            foreach (var path in p.object_paths)
             {
-                name = target.name, path = GetGameObjectPath(target),
-                posX = target.transform.position.x, posY = target.transform.position.y, posZ = target.transform.position.z,
-                rotX = target.transform.eulerAngles.x, rotY = target.transform.eulerAngles.y, rotZ = target.transform.eulerAngles.z,
-                scaleX = target.transform.localScale.x, scaleY = target.transform.localScale.y, scaleZ = target.transform.localScale.z,
-                active = target.activeInHierarchy, components = components, children = children
-            });
+                var target = FindGameObject(path);
+                if (target == null) { missing.Add(path); continue; }
+
+                var components = new List<string>();
+                foreach (var c in target.GetComponents<Component>())
+                    if (c != null) components.Add(c.GetType().Name);
+
+                var children = new List<string>();
+                foreach (Transform child in target.transform)
+                    children.Add(child.name);
+
+                results.Add(new ObjectInfo
+                {
+                    name = target.name, path = GetGameObjectPath(target),
+                    posX = target.transform.position.x, posY = target.transform.position.y, posZ = target.transform.position.z,
+                    rotX = target.transform.eulerAngles.x, rotY = target.transform.eulerAngles.y, rotZ = target.transform.eulerAngles.z,
+                    scaleX = target.transform.localScale.x, scaleY = target.transform.localScale.y, scaleZ = target.transform.localScale.z,
+                    active = target.activeInHierarchy, components = components, children = children
+                });
+            }
+            return McpResponse.Result(req.id, new { count = results.Count, results, missing = missing.Count > 0 ? missing : null });
         }
 
         private McpResponse HandleSetActive(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsSetActive>();
-            if (p == null || string.IsNullOrEmpty(p.object_path))
-                return McpResponse.Error(req.id, -32602, "object_path required");
-            var go = FindGameObject(p.object_path);
-            if (go == null) return McpResponse.Error(req.id, -1, $"Object not found: {p.object_path}");
-            go.SetActive(p.active);
-            return McpResponse.Result(req.id, new { ok = true, active = p.active });
+            var p = req.Params?.ToObject<ParamsSetActiveOps>();
+            if (p == null || p.ops == null || p.ops.Length == 0)
+                return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
+
+            var results = new List<object>();
+            var errors = new List<string>();
+            foreach (var op in p.ops)
+            {
+                if (string.IsNullOrEmpty(op.object_path)) { errors.Add("op missing object_path"); continue; }
+                var go = FindGameObject(op.object_path);
+                if (go == null) { errors.Add($"Object not found: {op.object_path}"); continue; }
+                go.SetActive(op.active);
+                results.Add(new { object_path = op.object_path, ok = true, active = op.active });
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "set_active rejected: " + string.Join(" | ", errors));
+
+            return McpResponse.Result(req.id, new { ok = true, results });
         }
 
         private McpResponse HandleDeleteObject(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsObjectPath>();
-            var path = p?.object_path ?? p?.name;
-            if (string.IsNullOrEmpty(path))
-                return McpResponse.Error(req.id, -32602, "name or object_path required");
-            var go = FindGameObject(path);
-            if (go == null) return McpResponse.Error(req.id, -1, $"Object not found: {path}");
-            Object.Destroy(go);
-            return McpResponse.Result(req.id, new { ok = true, deleted = go.name });
+            var p = req.Params?.ToObject<ParamsObjectPaths>();
+            if (p == null || p.object_paths == null || p.object_paths.Length == 0)
+                return McpResponse.Error(req.id, -32602, "object_paths required (non-empty array)");
+
+            var resolved = new List<(string path, string name, GameObject go)>();
+            var errors = new List<string>();
+            foreach (var path in p.object_paths)
+            {
+                var go = FindGameObject(path);
+                if (go == null) { errors.Add($"Object not found: {path}"); continue; }
+                resolved.Add((path, go.name, go));
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "delete_object rejected, NOTHING was deleted: " + string.Join(" | ", errors));
+
+            var deleted = new List<object>();
+            foreach (var item in resolved)
+            {
+                Object.Destroy(item.go);
+                deleted.Add(new { object_path = item.path, name = item.name });
+            }
+            return McpResponse.Result(req.id, new { ok = true, deleted });
         }
 
         /// <summary>Собрать вектор из nullable-полей, беря текущее значение для
@@ -239,38 +271,74 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetPosition(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsSetTransform>();
-            if (p == null || string.IsNullOrEmpty(p.object_path))
-                return McpResponse.Error(req.id, -32602, "object_path required");
-            var go = FindGameObject(p.object_path);
-            if (go == null) return McpResponse.Error(req.id, -1, $"Object not found: {p.object_path}");
-            var v = ResolveVec(p.x, p.y, p.z, go.transform.position);
-            go.transform.position = v;
-            return McpResponse.Result(req.id, new { ok = true, position = new { x = v.x, y = v.y, z = v.z } });
+            var p = req.Params?.ToObject<ParamsTransformOps>();
+            if (p == null || p.ops == null || p.ops.Length == 0)
+                return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
+
+            var results = new List<object>();
+            var errors = new List<string>();
+            foreach (var op in p.ops)
+            {
+                if (string.IsNullOrEmpty(op.object_path)) { errors.Add("op missing object_path"); continue; }
+                var go = FindGameObject(op.object_path);
+                if (go == null) { errors.Add($"Object not found: {op.object_path}"); continue; }
+                var v = ResolveVec(op.x, op.y, op.z, go.transform.position);
+                go.transform.position = v;
+                results.Add(new { object_path = op.object_path, ok = true, position = new { x = v.x, y = v.y, z = v.z } });
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "set_position rejected: " + string.Join(" | ", errors));
+
+            return McpResponse.Result(req.id, new { ok = true, results });
         }
 
         private McpResponse HandleSetRotation(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsSetTransform>();
-            if (p == null || string.IsNullOrEmpty(p.object_path))
-                return McpResponse.Error(req.id, -32602, "object_path required");
-            var go = FindGameObject(p.object_path);
-            if (go == null) return McpResponse.Error(req.id, -1, $"Object not found: {p.object_path}");
-            var v = ResolveVec(p.x, p.y, p.z, go.transform.eulerAngles);
-            go.transform.eulerAngles = v;
-            return McpResponse.Result(req.id, new { ok = true, rotation = new { x = v.x, y = v.y, z = v.z } });
+            var p = req.Params?.ToObject<ParamsTransformOps>();
+            if (p == null || p.ops == null || p.ops.Length == 0)
+                return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
+
+            var results = new List<object>();
+            var errors = new List<string>();
+            foreach (var op in p.ops)
+            {
+                if (string.IsNullOrEmpty(op.object_path)) { errors.Add("op missing object_path"); continue; }
+                var go = FindGameObject(op.object_path);
+                if (go == null) { errors.Add($"Object not found: {op.object_path}"); continue; }
+                var v = ResolveVec(op.x, op.y, op.z, go.transform.eulerAngles);
+                go.transform.eulerAngles = v;
+                results.Add(new { object_path = op.object_path, ok = true, rotation = new { x = v.x, y = v.y, z = v.z } });
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "set_rotation rejected: " + string.Join(" | ", errors));
+
+            return McpResponse.Result(req.id, new { ok = true, results });
         }
 
         private McpResponse HandleSetScale(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsSetTransform>();
-            if (p == null || string.IsNullOrEmpty(p.object_path))
-                return McpResponse.Error(req.id, -32602, "object_path required");
-            var go = FindGameObject(p.object_path);
-            if (go == null) return McpResponse.Error(req.id, -1, $"Object not found: {p.object_path}");
-            var v = ResolveVec(p.x, p.y, p.z, go.transform.localScale);
-            go.transform.localScale = v;
-            return McpResponse.Result(req.id, new { ok = true, scale = new { x = v.x, y = v.y, z = v.z } });
+            var p = req.Params?.ToObject<ParamsTransformOps>();
+            if (p == null || p.ops == null || p.ops.Length == 0)
+                return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
+
+            var results = new List<object>();
+            var errors = new List<string>();
+            foreach (var op in p.ops)
+            {
+                if (string.IsNullOrEmpty(op.object_path)) { errors.Add("op missing object_path"); continue; }
+                var go = FindGameObject(op.object_path);
+                if (go == null) { errors.Add($"Object not found: {op.object_path}"); continue; }
+                var v = ResolveVec(op.x, op.y, op.z, go.transform.localScale);
+                go.transform.localScale = v;
+                results.Add(new { object_path = op.object_path, ok = true, scale = new { x = v.x, y = v.y, z = v.z } });
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "set_scale rejected: " + string.Join(" | ", errors));
+
+            return McpResponse.Result(req.id, new { ok = true, results });
         }
 
         /// <summary>Инфо об элементе, включая принадлежность модулю (группе) —
@@ -342,13 +410,13 @@ namespace KitchenDesigner.Core.MCP
                 {
                     drawerType = drawer.Type.ToString(),
                     drawerLength = drawer.NominalLength,
-                    drawerColor = drawer.Color.ToString(),
+                    drawerColor = WireName(drawer.Color),
                     internalWidth = drawer.InternalWidth,
                     isDouble = drawer.IsDouble,
                     isUpper = drawer.IsUpperDrawer,
                     pairedDrawerName = drawer.PairedDrawerName,
                     attachedFacadeName = drawer.AttachedFacadeName,
-                    doubleState = drawer.DoubleState.ToString(),
+                    doubleState = WireName(drawer.DoubleState),
                     isOpen = drawer.IsOpen
                 } : null,
                 table = table != null ? new TableInfo
@@ -370,7 +438,7 @@ namespace KitchenDesigner.Core.MCP
 				} : null,
 				window = window != null ? new WindowInfo
                 {
-                    tint = window.Tint.ToString(),
+                    tint = WireName(window.Tint),
                     sillProtrusionMM = window.SillProtrusionMM,
                     mode = FacadeDoor.WireName(window.Mode),
                     isOpen = window.IsOpen,
@@ -378,7 +446,7 @@ namespace KitchenDesigner.Core.MCP
                 } : null,
                 door = door != null ? new DoorInfo
                 {
-                    sashType = door.SashType.ToString(),
+                    sashType = WireName(door.SashType),
                     mode = FacadeDoor.WireName(door.Mode),
                     isOpen = door.IsOpen,
                     attachedWallName = door.AttachedWallName
@@ -491,16 +559,6 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
-        private McpResponse HandleGetElementInfo(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsName>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var element = FindElementByName(p.name);
-            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            return McpResponse.Result(req.id, BuildElementInfo(element, PartRegistry.GetAll(), true));
-        }
-
         /// <summary>Совпадение имени с фильтром: подстрока или wildcard '*', без учёта регистра.</summary>
         private static bool NameMatchesFilter(string name, string filter)
         {
@@ -584,7 +642,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Состояние элементов батча после (или в dry-run — «как если бы»)
         /// применения: позиция/размер/нарушения на каждый op + счётчик по сцене.</summary>
         private static (List<object> results, int sceneViolationCount) DescribeBatch(
-            List<(BatchOp op, KitchenElement el, MaterialDef? material)> resolved)
+            List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)> resolved)
         {
             var all = PartRegistry.GetAll();
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
@@ -609,169 +667,241 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Транзакционный батч изменений: либо применяются ВСЕ операции
         /// (одной CompositeCommand = один шаг undo), либо ни одна. dry_run —
         /// применить, посчитать нарушения по каждому op и откатить.</summary>
-        private McpResponse HandleBatchEdit(McpRequest req)
+        /// <summary>THE universal editor: change ANY user-editable properties of one or MANY
+        /// elements in ONE transactional call. dry_run simulates (apply → violations → revert).</summary>
+        private McpResponse HandleEditElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsBatchEdit>();
+            var p = req.Params?.ToObject<ParamsEditElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
-            // ── Фаза 1: резолв и проверка ВСЕХ операций до каких-либо изменений ──
             var errors = new List<string>();
-            var resolved = new List<(BatchOp op, KitchenElement el, MaterialDef? material)>();
+            var resolved = new List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)>();
             foreach (var op in p.ops)
             {
                 if (string.IsNullOrEmpty(op.name)) { errors.Add("an op is missing 'name'"); continue; }
                 var el = FindElementByName(op.name);
                 if (el == null) { errors.Add($"Element not found: {op.name}"); continue; }
-
                 bool geometry = op.x.HasValue || op.y.HasValue || op.z.HasValue
                     || op.width.HasValue || op.height.HasValue || op.depth.HasValue
                     || op.rot_x.HasValue || op.rot_y.HasValue || op.rot_z.HasValue;
-
                 if (geometry && !el.Movable && op.locked != false)
-                {
-                    errors.Add($"Element '{op.name}' is LOCKED (unlock requires the user's permission)");
-                    continue;
-                }
-                if (el is DrawerElement && (op.width.HasValue || op.height.HasValue || op.depth.HasValue))
-                {
-                    errors.Add($"'{op.name}' is a GTV drawer: use set_drawer_properties instead of resizing");
-                    continue;
-                }
-
+                { errors.Add($"Element '{op.name}' is LOCKED"); continue; }
+                foreach (var err in ValidateEditOpFields(op, el))
+                    errors.Add($"Invalid field for '{op.name}': {err}");
                 MaterialDef? mat = null;
                 if (!string.IsNullOrEmpty(op.material))
                 {
                     mat = ResolveMaterial(op.material!);
-                    if (mat == null)
-                    {
-                        errors.Add($"Unknown material '{op.material}' for '{op.name}' (see list_materials)");
-                        continue;
-                    }
+                    if (mat == null) errors.Add($"Unknown material '{op.material}' for '{op.name}' (see list_materials)");
                 }
-                resolved.Add((op, el, mat));
+                resolved.Add((op, el, mat, new List<string>()));
             }
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1,
-                    "batch_edit rejected, NOTHING was applied. Fix these ops and retry: " + string.Join(" | ", errors));
+                    "edit_elements rejected, NOTHING was applied: " + string.Join(" | ", errors));
 
-            // ── Фаза 2: собрать команды (before-значения — до любых изменений) ──
             var commands = new List<IUndoCommand>();
-            foreach (var (op, el, _) in resolved)
+            foreach (var (op, el, _, _) in resolved)
             {
                 bool hasPos = op.x.HasValue || op.y.HasValue || op.z.HasValue;
                 bool hasRot = op.rot_x.HasValue || op.rot_y.HasValue || op.rot_z.HasValue;
                 bool hasDims = op.width.HasValue || op.height.HasValue || op.depth.HasValue;
                 if (!hasPos && !hasRot && !hasDims) continue;
-
                 var posBefore = el.transform.position;
                 var rotBefore = el.transform.rotation;
                 var posAfter = ResolveVec(op.x, op.y, op.z, posBefore);
                 var rotAfter = hasRot
                     ? Quaternion.Euler(ResolveVec(op.rot_x, op.rot_y, op.rot_z, el.transform.eulerAngles))
                     : rotBefore;
-
                 if (hasDims)
                 {
                     var dimsAfter = ResolveDims(op.width, op.height, op.depth, null, null, null, el.DimensionsMM);
                     commands.Add(new ResizeCommand(el, el.DimensionsMM, dimsAfter, posBefore, posAfter, rotBefore, rotAfter));
                 }
-                else
-                {
-                    commands.Add(new MoveCommand(el, posBefore, posAfter, rotBefore, rotAfter));
-                }
+                else commands.Add(new MoveCommand(el, posBefore, posAfter, rotBefore, rotAfter));
             }
-
-            var composite = new CompositeCommand($"MCP batch edit ({resolved.Count} ops)", commands);
-
+            var composite = new CompositeCommand($"MCP edit_elements ({resolved.Count} ops)", commands);
             if (p.dry_run)
             {
                 composite.Execute();
+                ApplyNonGeometryEdits(resolved);
                 var (dryResults, drySceneCount) = DescribeBatch(resolved);
                 composite.Undo();
-                return McpResponse.Result(req.id, new
-                {
-                    ok = true, dryRun = true, applied = false,
-                    results = dryResults,
-                    sceneViolationCount = drySceneCount
-                });
+                return McpResponse.Result(req.id, new { ok = true, dryRun = true, applied = false, results = dryResults, sceneViolationCount = drySceneCount });
             }
+            if (commands.Count > 0) CommandStack.Execute(composite);
+            ApplyNonGeometryEdits(resolved);
+            RefreshElementHighlights();
+            var (results, sceneCount) = DescribeBatch(resolved);
+            Debug.Log($"[MCP] edit_elements: {resolved.Count} ops, {commands.Count} geometry");
+            return McpResponse.Result(req.id, new { ok = true, dryRun = false, applied = true, results, sceneViolationCount = sceneCount });
+        }
 
-            if (commands.Count > 0)
-                CommandStack.Execute(composite);
-
-            // Негеометрические изменения (вне undo-стека, как и set_element_lock/set_material).
-            foreach (var (op, el, mat) in resolved)
+        private void ApplyNonGeometryEdits(
+            List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)> resolved)
+        {
+            foreach (var (op, el, mat, _) in resolved)
             {
                 if (op.locked.HasValue) el.Movable = !op.locked.Value;
                 if (mat != null) MaterialManager.Apply(el, mat);
+                if (el is FacadeElement facade && !(el is AssembledFacadeElement)) ApplyFacadeEdits(op, facade);
+                if (el is AssembledFacadeElement asmFacade) ApplyAssembledEdits(op, asmFacade);
+                if (el is RadialShelfElement shelf) ApplyRadialShelfEdits(op, shelf);
+                if (el is DrawerElement drawer) ApplyDrawerEdits(op, drawer);
+                if (el is TableElement table) ApplyTableEdits(op, table);
+                if (el is RadiusTableElement rt) ApplyRadiusTableEdits(op, rt);
+                if (el is PillarElement pillar) ApplyPillarEdits(op, pillar);
+                if (el is WindowElement window) ApplyWindowEdits(op, window);
+                if (el is DoorElement door) ApplyDoorEdits(op, door);
             }
-            RefreshElementHighlights();
-
-            var (results, sceneCount) = DescribeBatch(resolved);
-            Debug.Log($"[MCP] Batch edit applied: {resolved.Count} ops, {commands.Count} geometry commands");
-            return McpResponse.Result(req.id, new
-            {
-                ok = true, dryRun = false, applied = true,
-                results,
-                sceneViolationCount = sceneCount
-            });
         }
 
-        /// <summary>Клонирование: count копий со сдвигом offset*N, имена name_2, name_3…
-        /// Всё клонирование — один шаг undo (CompositeCommand).</summary>
-        private McpResponse HandleCloneElement(McpRequest req)
+        private static List<string> ValidateEditOpFields(EditOp op, KitchenElement el)
         {
-            var p = req.Params?.ToObject<ParamsCloneElement>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var source = FindElementByName(p.name);
-            if (source == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            var e = new List<string>();
+            bool IsNot<T>() => !(el is T);
+            bool IsFacadeLike() => el is FacadeElement || el is WindowElement || el is DoorElement;
+            if (IsNot<FacadeElement>() && IsNot<AssembledFacadeElement>()) { if (op.gap_left.HasValue) e.Add("gap_left"); if (op.gap_right.HasValue) e.Add("gap_right"); if (op.gap_top.HasValue) e.Add("gap_top"); if (op.gap_bottom.HasValue) e.Add("gap_bottom"); if (op.fill != null) e.Add("fill"); }
+            if (!IsFacadeLike()) { if (op.mode != null) e.Add("mode"); }
+            if (IsNot<FacadeElement>() && IsNot<WindowElement>() && IsNot<DoorElement>()) { if (op.is_open.HasValue) e.Add("is_open"); }
+            if (IsNot<RadialShelfElement>()) { if (op.corner_radius.HasValue) e.Add("corner_radius"); }
+            if (IsNot<DrawerElement>()) { if (op.drawer_type != null) e.Add("drawer_type"); if (op.drawer_length.HasValue) e.Add("drawer_length"); if (op.drawer_color != null) e.Add("drawer_color"); if (op.internal_width.HasValue) e.Add("internal_width"); if (op.is_double.HasValue) e.Add("is_double"); if (op.is_upper.HasValue) e.Add("is_upper"); if (op.paired_drawer_name != null) e.Add("paired_drawer_name"); if (op.attached_facade_name != null) e.Add("attached_facade_name"); }
+            if (IsNot<TableElement>() && IsNot<RadiusTableElement>()) { if (op.leg_inset_mm.HasValue) e.Add("leg_inset_mm"); if (op.tabletop_material != null) e.Add("tabletop_material"); if (op.legs_material != null) e.Add("legs_material"); }
+            if (IsNot<PillarElement>()) { if (op.mid_height_mm.HasValue) e.Add("mid_height_mm"); }
+            if (IsNot<WindowElement>()) { if (op.tint != null) e.Add("tint"); if (op.sill_protrusion_mm.HasValue) e.Add("sill_protrusion_mm"); }
+            if (IsNot<DoorElement>()) { if (op.sash_type != null) e.Add("sash_type"); }
+            if (el is DrawerElement && (op.width.HasValue || op.height.HasValue || op.depth.HasValue)) e.Add("width/height/depth not settable on drawers (size is parametric)");
+            return e;
+        }
 
-            int count = Mathf.Clamp(p.count <= 0 ? 1 : p.count, 1, 50);
-            var offset = new Vector3(p.offset_x, p.offset_y, p.offset_z);
-            var basePos = source.transform.position;
+        private static void ApplyFacadeEdits(EditOp op, FacadeElement facade)
+        {
+            if (op.gap_left.HasValue) facade.GapLeft = op.gap_left.Value;
+            if (op.gap_right.HasValue) facade.GapRight = op.gap_right.Value;
+            if (op.gap_top.HasValue) facade.GapTop = op.gap_top.Value;
+            if (op.gap_bottom.HasValue) facade.GapBottom = op.gap_bottom.Value;
+            if (op.mode != null && TryParseDoorMode(op.mode, out var m)) facade.Mode = m;
+            if (op.is_open.HasValue) facade.SetOpen(op.is_open.Value);
+        }
+        private static void ApplyAssembledEdits(EditOp op, AssembledFacadeElement asm) { ApplyFacadeEdits(op, asm); if (op.fill != null) asm.Fill = ParseFill(op.fill); }
+        private static void ApplyRadialShelfEdits(EditOp op, RadialShelfElement shelf) { if (op.corner_radius.HasValue) shelf.CornerRadius = op.corner_radius.Value; }
+        private static void ApplyDrawerEdits(EditOp op, DrawerElement drawer)
+        {
+            if (op.drawer_type != null) drawer.Type = ParseDrawerType(op.drawer_type);
+            if (op.drawer_length.HasValue) drawer.NominalLength = op.drawer_length.Value;
+            if (op.drawer_color != null) drawer.Color = ParseDrawerColor(op.drawer_color);
+            if (op.internal_width.HasValue) drawer.InternalWidth = op.internal_width.Value;
+            if (op.is_double.HasValue) drawer.IsDouble = op.is_double.Value;
+            if (op.is_upper.HasValue) drawer.IsUpperDrawer = op.is_upper.Value;
+            if (op.paired_drawer_name != null) drawer.PairedDrawerName = op.paired_drawer_name == "" ? "" : op.paired_drawer_name;
+            if (op.attached_facade_name != null) drawer.AttachedFacadeName = op.attached_facade_name == "" ? "" : op.attached_facade_name;
+        }
+        private static void ApplyTableEdits(EditOp op, TableElement table)
+        {
+            if (op.leg_inset_mm.HasValue) table.LegInsetMM = op.leg_inset_mm.Value;
+            if (op.tabletop_material != null) { var d = ResolveMaterial(op.tabletop_material); if (d != null) MaterialManager.ApplyTabletop(table, d); }
+            if (op.legs_material != null) { var d = ResolveMaterial(op.legs_material); if (d != null) MaterialManager.ApplyLegs(table, d); }
+        }
+        private static void ApplyRadiusTableEdits(EditOp op, RadiusTableElement rt)
+        {
+            if (op.leg_inset_mm.HasValue) rt.LegInsetMM = op.leg_inset_mm.Value;
+            if (op.tabletop_material != null) { var d = ResolveMaterial(op.tabletop_material); if (d != null) MaterialManager.ApplyTabletop(rt, d); }
+            if (op.legs_material != null) { var d = ResolveMaterial(op.legs_material); if (d != null) MaterialManager.ApplyLegs(rt, d); }
+        }
+        private static void ApplyPillarEdits(EditOp op, PillarElement pillar) { if (op.mid_height_mm.HasValue) pillar.MidHeightMM = op.mid_height_mm.Value; }
+        private static void ApplyWindowEdits(EditOp op, WindowElement window)
+        {
+            if (op.tint != null) window.Tint = ParseGlassTint(op.tint);
+            if (op.sill_protrusion_mm.HasValue) window.SillProtrusionMM = op.sill_protrusion_mm.Value;
+            if (op.mode != null && TryParseDoorMode(op.mode, out var m)) window.Mode = m;
+            if (op.is_open.HasValue) window.SetOpen(op.is_open.Value);
+        }
+        private static void ApplyDoorEdits(EditOp op, DoorElement door)
+        {
+            if (op.sash_type != null) door.SashType = ParseDoorSashType(op.sash_type);
+            if (op.mode != null && TryParseDoorMode(op.mode, out var m)) door.Mode = m;
+            if (op.is_open.HasValue) door.SetOpen(op.is_open.Value);
+        }
+
+        private static bool TryParseDoorMode(string s, out DoorMode mode)
+        {
+            mode = DoorMode.HingeFrontLeft;
+            switch ((s ?? "").Trim().ToLowerInvariant())
+            {
+                case "front_left": mode = DoorMode.HingeFrontLeft; return true;
+                case "front_right": mode = DoorMode.HingeFrontRight; return true;
+                case "front_top": mode = DoorMode.HingeFrontTop; return true;
+                case "front_bottom": mode = DoorMode.HingeFrontBottom; return true;
+                case "back_left": mode = DoorMode.HingeBackLeft; return true;
+                case "back_right": mode = DoorMode.HingeBackRight; return true;
+                case "back_top": mode = DoorMode.HingeBackTop; return true;
+                case "back_bottom": mode = DoorMode.HingeBackBottom; return true;
+                case "edge_top_left": mode = DoorMode.HingeEdgeTopLeft; return true;
+                case "edge_top_right": mode = DoorMode.HingeEdgeTopRight; return true;
+                case "edge_bottom_left": mode = DoorMode.HingeEdgeBottomLeft; return true;
+                case "edge_bottom_right": mode = DoorMode.HingeEdgeBottomRight; return true;
+                case "drawer_out": mode = DoorMode.DrawerOut; return true;
+                case "drawer_in": mode = DoorMode.DrawerIn; return true;
+                case "drawer_right": mode = DoorMode.DrawerRight; return true;
+                case "drawer_left": mode = DoorMode.DrawerLeft; return true;
+                case "drawer_up": mode = DoorMode.DrawerUp; return true;
+                case "drawer_down": mode = DoorMode.DrawerDown; return true;
+                default: return false;
+            }
+        }
+
+        private static string WireName(DrawerColor c) => c switch { DrawerColor.Anthracite => "anthracite", DrawerColor.White => "white", DrawerColor.Black => "black", _ => "anthracite" };
+        private static string WireName(DoubleDrawerState s) => s switch { DoubleDrawerState.Closed => "closed", DoubleDrawerState.BothOpen => "bothopen", DoubleDrawerState.LowerOnly => "loweronly", _ => "closed" };
+        private static string WireName(GlassTint t) => t switch { GlassTint.Clear => "clear", GlassTint.Tinted => "tinted", _ => "clear" };
+        private static string WireName(DoorSashType t) => t switch { DoorSashType.Glass => "glass", DoorSashType.Blind => "blind", _ => "glass" };
+
+        /// <summary>Batch clone: atomically clone one or MANY elements. Whole batch is ONE undo step.</summary>
+        private McpResponse HandleCloneElements(McpRequest req)
+        {
+            var p = req.Params?.ToObject<ParamsCloneElements>();
+            if (p == null || p.ops == null || p.ops.Length == 0)
+                return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
             var commands = new List<IUndoCommand>();
-            var clones = new List<KitchenElement>();
-            int suffix = 2;
-            for (int i = 1; i <= count; i++)
+            var allClones = new List<KitchenElement>();
+            var errors = new List<string>();
+            int globalSuffix = 2;
+            foreach (var op in p.ops)
             {
-                var go = ElementFactory.Duplicate(source);
-                if (go == null) return McpResponse.Error(req.id, -1, $"Failed to duplicate '{p.name}'");
-                var el = go.GetComponent<KitchenElement>();
-
-                string cloneName;
-                do { cloneName = p.name + "_" + suffix; suffix++; }
-                while (FindElementByName(cloneName) != null);
-                el.PartName = cloneName;
-                go.name = cloneName;
-                go.transform.position = basePos + offset * i;
-
-                commands.Add(new CreateCommand(go));
-                clones.Add(el);
+                if (string.IsNullOrEmpty(op.name)) { errors.Add("an op is missing 'name'"); continue; }
+                var source = FindElementByName(op.name);
+                if (source == null) { errors.Add($"Element not found: {op.name}"); continue; }
+                int count = Mathf.Clamp(op.count <= 0 ? 1 : op.count, 1, 50);
+                var offset = new Vector3(op.offset_x, op.offset_y, op.offset_z);
+                var basePos = source.transform.position;
+                for (int i = 1; i <= count; i++)
+                {
+                    var go = ElementFactory.Duplicate(source);
+                    if (go == null) { errors.Add($"Failed to duplicate '{op.name}'"); break; }
+                    var el = go.GetComponent<KitchenElement>();
+                    string cloneName;
+                    do { cloneName = op.name + "_" + globalSuffix; globalSuffix++; }
+                    while (FindElementByName(cloneName) != null);
+                    el.PartName = cloneName;
+                    go.name = cloneName;
+                    go.transform.position = basePos + offset * i;
+                    commands.Add(new CreateCommand(go));
+                    allClones.Add(el);
+                }
             }
-            CommandStack.Execute(new CompositeCommand($"MCP clone {p.name} x{count}", commands));
-            RefreshElementHighlights();
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1, "clone_elements rejected: " + string.Join(" | ", errors));
 
+            CommandStack.Execute(new CompositeCommand($"MCP clone_elements x{allClones.Count}", commands));
+            RefreshElementHighlights();
             var all = PartRegistry.GetAll();
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
             var created = new List<string>();
             var elements = new List<ElementInfo>();
-            foreach (var el in clones)
-            {
-                created.Add(el.PartName);
-                elements.Add(BuildElementInfo(el, all, false, vr));
-            }
-
-            Debug.Log($"[MCP] Cloned '{p.name}' x{count}: {string.Join(", ", created)}");
-            return McpResponse.Result(req.id, new
-            {
-                ok = true,
-                created,
-                elements,
-                sceneViolationCount = vr != null ? vr.violations.Count : 0
-            });
+            foreach (var el in allClones) { created.Add(el.PartName); elements.Add(BuildElementInfo(el, all, false, vr)); }
+            Debug.Log($"[MCP] Clone batch: {p.ops.Length} sources → {allClones.Count} clones");
+            return McpResponse.Result(req.id, new { ok = true, created, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }
 
         // ── Модули (именованные группы деталей) ───────────────────────────
@@ -843,12 +973,20 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleModuleInfo(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsModule>();
-            if (p == null || string.IsNullOrEmpty(p.module))
-                return McpResponse.Error(req.id, -32602, "module (id or name) required");
-            var g = FindModule(p.module);
-            if (g == null) return McpResponse.Error(req.id, -1, $"Module not found: {p.module}");
-            return McpResponse.Result(req.id, BuildModuleInfo(g, PartRegistry.GetAll()));
+            var p = req.Params?.ToObject<ParamsModules>();
+            if (p == null || p.modules == null || p.modules.Length == 0)
+                return McpResponse.Error(req.id, -32602, "modules required (non-empty array)");
+
+            var allElements = PartRegistry.GetAll();
+            var results = new List<object>();
+            var missing = new List<string>();
+            foreach (var module in p.modules)
+            {
+                var g = FindModule(module);
+                if (g == null) { missing.Add(module); continue; }
+                results.Add(BuildModuleInfo(g, allElements));
+            }
+            return McpResponse.Result(req.id, new { count = results.Count, results, missing = missing.Count > 0 ? missing : null });
         }
 
         private McpResponse HandleCreateModule(McpRequest req)
@@ -878,45 +1016,85 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleDissolveModule(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsModule>();
-            if (p == null || string.IsNullOrEmpty(p.module))
-                return McpResponse.Error(req.id, -32602, "module required");
-            var g = FindModule(p.module);
-            if (g == null) return McpResponse.Error(req.id, -1, $"Module not found: {p.module}");
-            GroupManager.Unlink(g);
-            Debug.Log($"[MCP] Module '{g.name}' dissolved");
-            return McpResponse.Result(req.id, new { ok = true, name = g.name });
+            var p = req.Params?.ToObject<ParamsModules>();
+            if (p == null || p.modules == null || p.modules.Length == 0)
+                return McpResponse.Error(req.id, -32602, "modules required (non-empty array)");
+
+            var resolved = new List<LinkGroup>();
+            var errors = new List<string>();
+            foreach (var module in p.modules)
+            {
+                var g = FindModule(module);
+                if (g == null) { errors.Add($"Module not found: {module}"); continue; }
+                resolved.Add(g);
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "dissolve_module rejected: " + string.Join(" | ", errors));
+
+            var names = new List<string>();
+            foreach (var g in resolved)
+            {
+                GroupManager.Unlink(g);
+                names.Add(g.name);
+                Debug.Log($"[MCP] Module '{g.name}' dissolved");
+            }
+            return McpResponse.Result(req.id, new { ok = true, names, count = resolved.Count });
         }
 
         private McpResponse HandleAddToModule(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsModuleElement>();
-            if (p == null || string.IsNullOrEmpty(p.module) || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "module and name required");
+            var p = req.Params?.ToObject<ParamsModuleElements>();
+            if (p == null || string.IsNullOrEmpty(p.module) || p.names == null || p.names.Length == 0)
+                return McpResponse.Error(req.id, -32602, "module and names (non-empty array) required");
             var g = FindModule(p.module);
             if (g == null) return McpResponse.Error(req.id, -1, $"Module not found: {p.module}");
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
 
-            GroupManager.AddTo(g, el); // через сервис: событие Changed + подвижность группы
+            var resolved = new List<KitchenElement>();
+            var missing = new List<string>();
+            foreach (var name in p.names)
+            {
+                var el = FindElementByName(name);
+                if (el == null) { missing.Add(name); continue; }
+                resolved.Add(el);
+            }
+            if (missing.Count > 0)
+                return McpResponse.Error(req.id, -1, $"Elements not found: {string.Join(", ", missing)}");
+
+            foreach (var el in resolved)
+                GroupManager.AddTo(g, el);
+
+            Debug.Log($"[MCP] Added {resolved.Count} elements to module '{g.name}'");
             return McpResponse.Result(req.id, BuildModuleInfo(g, PartRegistry.GetAll()));
         }
 
         private McpResponse HandleRemoveFromModule(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsName>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            if (el.GroupId == 0)
-                return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not in any module");
+            var p = req.Params?.ToObject<ParamsNames>();
+            if (p == null || p.names == null || p.names.Length == 0)
+                return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
-            var g = GroupManager.GroupOf(el);
-            GroupManager.RemoveFrom(el); // через сервис: событие Changed
-            return McpResponse.Result(req.id, g != null
-                ? (object)BuildModuleInfo(g, PartRegistry.GetAll())
-                : new { ok = true });
+            var resolved = new List<KitchenElement>();
+            var errors = new List<string>();
+            foreach (var name in p.names)
+            {
+                var el = FindElementByName(name);
+                if (el == null) { errors.Add($"Element not found: {name}"); continue; }
+                if (el.GroupId == 0) { errors.Add($"Element '{name}' is not in any module"); continue; }
+                resolved.Add(el);
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "remove_from_module rejected: " + string.Join(" | ", errors));
+
+            var removedNames = new List<string>();
+            foreach (var el in resolved)
+            {
+                GroupManager.RemoveFrom(el);
+                removedNames.Add(el.PartName);
+            }
+            Debug.Log($"[MCP] Removed {resolved.Count} elements from modules");
+            return McpResponse.Result(req.id, new { ok = true, removed = removedNames, count = resolved.Count });
         }
 
         private McpResponse HandleEnterModuleEdit(McpRequest req)
@@ -962,50 +1140,62 @@ namespace KitchenDesigner.Core.MCP
             return maxSide ? aabb.maxZ : aabb.minZ;
         }
 
-        /// <summary>Придвинуть грань элемента к грани цели (с зазором gap_mm) —
-        /// вся арифметика координат на стороне сервера.</summary>
-        private McpResponse HandleAlignElement(McpRequest req)
+        /// <summary>Batch align: move boards face-to-face against targets. Applied IN ORDER. Whole batch is ONE undo step.</summary>
+        private McpResponse HandleAlignElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsAlignElement>();
-            if (p == null || string.IsNullOrEmpty(p.name) || string.IsNullOrEmpty(p.target))
-                return McpResponse.Error(req.id, -32602, "name and target required");
+            var p = req.Params?.ToObject<ParamsAlignElements>();
+            if (p == null || p.ops == null || p.ops.Length == 0)
+                return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
-            if (!TryParseFace(p.face, out int axis, out bool maxSide))
-                return McpResponse.Error(req.id, -32602,
-                    $"Unknown face '{p.face}'. Valid: left | right | bottom | top | back | front");
-            if (!TryParseFace(p.target_face, out int tAxis, out bool tMaxSide))
-                return McpResponse.Error(req.id, -32602,
-                    $"Unknown target_face '{p.target_face}'. Valid: left | right | bottom | top | back | front");
-            if (axis != tAxis)
-                return McpResponse.Error(req.id, -32602,
-                    $"face '{p.face}' and target_face '{p.target_face}' are on different axes; both must be left/right (X), bottom/top (Y) or back/front (Z)");
+            var commands = new List<IUndoCommand>();
+            var errors = new List<string>();
+            foreach (var op in p.ops)
+            {
+                if (string.IsNullOrEmpty(op.name) || string.IsNullOrEmpty(op.target))
+                { errors.Add("op missing name or target"); continue; }
+                if (!TryParseFace(op.face, out int axis, out bool maxSide))
+                { errors.Add($"Unknown face '{op.face}' for '{op.name}'"); continue; }
+                if (!TryParseFace(op.target_face, out int tAxis, out bool tMaxSide))
+                { errors.Add($"Unknown target_face '{op.target_face}' for '{op.target}'"); continue; }
+                if (axis != tAxis)
+                { errors.Add($"face '{op.face}' and target_face '{op.target_face}' on different axes"); continue; }
+                var element = FindElementByName(op.name);
+                if (element == null) { errors.Add($"Element not found: {op.name}"); continue; }
+                var target = FindElementByName(op.target);
+                if (target == null) { errors.Add($"Target not found: {op.target}"); continue; }
+                if (element == target) { errors.Add($"'{op.name}' and '{op.target}' must differ"); continue; }
+                var lockErr = RequireMovable(element, op.name, req.id);
+                if (lockErr != null) { errors.Add($"'{op.name}' is LOCKED"); continue; }
 
-            var element = FindElementByName(p.name);
-            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            var target = FindElementByName(p.target);
-            if (target == null) return McpResponse.Error(req.id, -1, $"Target element not found: {p.target}");
-            if (element == target) return McpResponse.Error(req.id, -32602, "name and target must differ");
-            var lockErr = RequireMovable(element, p.name, req.id);
-            if (lockErr != null) return lockErr;
+                var elAabb = ComputeAABB(element.GetVertices());
+                var tAabb = ComputeAABB(target.GetVertices());
+                float myCoord = AabbSide(elAabb, axis, maxSide);
+                float targetCoord = AabbSide(tAabb, axis, tMaxSide);
+                float gapUnits = op.gap_mm * AppConstants.MM_TO_UNITS;
+                float desired = maxSide ? targetCoord - gapUnits : targetCoord + gapUnits;
+                float delta = desired - myCoord;
+                var before = element.transform.position;
+                var after = before;
+                after[axis] += delta;
+                commands.Add(new MoveCommand(element, before, after, element.transform.rotation, element.transform.rotation));
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1, "align_elements rejected: " + string.Join(" | ", errors));
 
-            var elAabb = ComputeAABB(element.GetVertices());
-            var tAabb = ComputeAABB(target.GetVertices());
-            float myCoord = AabbSide(elAabb, axis, maxSide);
-            float targetCoord = AabbSide(tAabb, axis, tMaxSide);
-            float gapUnits = p.gap_mm * AppConstants.MM_TO_UNITS;
-            // Наша min-грань встаёт НА gap правее целевой координаты, max-грань — левее:
-            // left→right = примыкание справа от цели, right→left = слева, и т.д.
-            float desired = maxSide ? targetCoord - gapUnits : targetCoord + gapUnits;
-            float delta = desired - myCoord;
-
-            var before = element.transform.position;
-            var after = before;
-            after[axis] += delta;
-            var rot = element.transform.rotation;
-            CommandStack.Execute(new MoveCommand(element, before, after, rot, rot));
+            CommandStack.Execute(new CompositeCommand($"MCP align_elements ({commands.Count} moves)", commands));
             RefreshElementHighlights();
-            Debug.Log($"[MCP] Aligned {p.name}.{p.face} to {p.target}.{p.target_face} gap={p.gap_mm}mm (delta {delta:F4} on axis {axis})");
-            return McpResponse.Result(req.id, BuildMutationResult(element));
+            var all = PartRegistry.GetAll();
+            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var results = new List<object>();
+            foreach (var op in p.ops)
+            {
+                var el = FindElementByName(op.name);
+                if (el == null) continue;
+                var pos = el.transform.position;
+                results.Add(new { name = el.PartName, posX = pos.x, posY = pos.y, posZ = pos.z, violations = BuildElementViolations(el, all, vr) });
+            }
+            Debug.Log($"[MCP] Aligned {commands.Count} elements");
+            return McpResponse.Result(req.id, new { ok = true, aligned = results.Count, results, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }
 
         /// <summary>Равномерно распределить 3+ детали по оси: крайние стоят,
@@ -1161,263 +1351,111 @@ namespace KitchenDesigner.Core.MCP
             });
         }
 
-        private McpResponse HandleMoveElement(McpRequest req)
+        /// <summary>Batch create: atomically create one or MANY elements. Whole batch is ONE undo step.</summary>
+        private McpResponse HandleCreateElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsMoveElement>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var element = FindElementByName(p.name);
-            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            var lockErr = RequireMovable(element, p.name, req.id);
-            if (lockErr != null) return lockErr;
+            var p = req.Params?.ToObject<ParamsCreateElements>();
+            if (p == null || p.items == null || p.items.Length == 0)
+                return McpResponse.Error(req.id, -32602, "items required (non-empty array)");
 
-            var before = element.transform.position;
-            var rotBefore = element.transform.rotation;
-            var after = ResolveVec(p.x, p.y, p.z, before);
-            CommandStack.Execute(new MoveCommand(element, before, after, rotBefore, element.transform.rotation));
+            var commands = new List<IUndoCommand>();
+            var created = new List<KitchenElement>();
+            var errors = new List<string>();
+            var namesSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var item in p.items)
+            {
+                if (string.IsNullOrEmpty(item.name)) { errors.Add("an item is missing 'name'"); continue; }
+                if (namesSeen.Contains(item.name)) { errors.Add($"duplicate name '{item.name}' in this batch"); continue; }
+                namesSeen.Add(item.name);
+                var existing = FindElementByName(item.name);
+                if (existing != null) { errors.Add($"Element '{item.name}' already exists"); continue; }
+
+                var elementType = (item.type ?? "board").Trim().ToLowerInvariant();
+                var pos = new Vector3(item.x, item.y, item.z);
+                GameObject go = null!;
+                KitchenElement element = null!;
+
+                switch (elementType)
+                {
+                    case "floor":
+                        var plate = BasePlate.Create();
+                        plate.Element.PartName = item.name;
+                        commands.Add(new CreateCommand(plate.gameObject));
+                        created.Add(plate.Element);
+                        break;
+                    case "assembled_facade":
+                        go = ElementFactory.CreateAssembledFacade(new Vector3Int(item.width ?? 450, item.height ?? 700, item.depth ?? 18), item.name, pos, ParseFill(item.fill!));
+                        break;
+                    case "radial_shelf":
+                        int rw = item.width ?? 600, rd = item.depth ?? 400;
+                        go = ElementFactory.CreateRadialShelf(rw, rd, item.height ?? AppConstants.BOARD_THICKNESS_DEFAULT,
+                            Mathf.Clamp(item.corner_radius ?? AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, 1, Mathf.Min(rw, rd)), item.name, pos);
+                        break;
+                    case "drawer":
+                        go = ElementFactory.CreateDrawer(ParseDrawerType(item.drawer_type!), item.drawer_length ?? 350,
+                            ParseDrawerColor(item.drawer_color!), item.internal_width ?? 400, item.name, pos);
+                        break;
+                    case "table":
+                        go = ElementFactory.CreateTable(new Vector3Int(item.width ?? 2000, item.height ?? 750, item.depth ?? 1000), item.name, pos);
+                        var tel = go.GetComponent<TableElement>();
+                        if (tel != null && item.leg_inset_mm > 0) tel.LegInsetMM = item.leg_inset_mm.Value;
+                        break;
+                    case "radius_table":
+                        go = ElementFactory.CreateRadiusTable(new Vector3Int(item.width ?? 2000, item.height ?? 750, item.depth ?? 1000), item.name, pos);
+                        var rtel = go.GetComponent<RadiusTableElement>();
+                        if (rtel != null && item.leg_inset_mm > 0) rtel.LegInsetMM = item.leg_inset_mm.Value;
+                        break;
+                    case "pillar":
+                        go = ElementFactory.CreatePillar(item.height ?? PillarElement.MidHeightMM_Default, item.name, pos);
+                        break;
+                    case "window":
+                        go = ElementFactory.CreateWindow(new Vector3Int(item.width ?? 900, item.height ?? 1200, item.depth ?? 100),
+                            item.name, pos, ParseGlassTint(item.tint!), item.sill_protrusion_mm ?? 50);
+                        break;
+                    case "door":
+                        go = ElementFactory.CreateDoor(new Vector3Int(item.width ?? 900, item.height ?? 2000, item.depth ?? 100),
+                            item.name, pos, ParseDoorSashType(item.sash_type!));
+                        break;
+                    default:
+                    {
+                        var dims = new Vector3Int(item.width ?? 800, item.height ?? 400, item.depth ?? 18);
+                        go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        go.name = item.name;
+                        bool isFacade = elementType == "facade";
+                        bool isWall = elementType == "wall";
+                        if (isFacade)
+                        {
+                            var facade = go.AddComponent<FacadeElement>();
+                            facade.PartName = item.name; facade.DimensionsMM = dims;
+                            facade.GapLeft = item.gap_left ?? 2; facade.GapRight = item.gap_right ?? 2;
+                            facade.GapTop = item.gap_top ?? 2; facade.GapBottom = item.gap_bottom ?? 2;
+                            MaterialManager.ApplyById(facade, MaterialCatalog.DefaultId);
+                            element = facade;
+                        }
+                        else { element = go.AddComponent<KitchenElement>(); element.PartName = item.name; element.DimensionsMM = dims; MaterialManager.ApplyById(element, MaterialCatalog.DefaultId); }
+                        if (isWall) go.AddComponent<Wall>();
+                        go.transform.position = pos;
+                        break;
+                    }
+                }
+                if (go == null) { errors.Add($"Failed to create '{item.name}'"); continue; }
+                commands.Add(new CreateCommand(go));
+                created.Add(go.GetComponent<KitchenElement>());
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1, "create_elements rejected: " + string.Join(" | ", errors));
+
+            if (commands.Count > 0)
+                CommandStack.Execute(new CompositeCommand($"MCP create_elements x{commands.Count}", commands));
             RefreshElementHighlights();
-            Debug.Log($"[MCP] Moved {element.PartName} to ({after.x}, {after.y}, {after.z})");
-            return McpResponse.Result(req.id, BuildMutationResult(element));
-        }
-
-        private McpResponse HandleResizeElement(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsResizeElement>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var element = FindElementByName(p.name);
-            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            var lockErr = RequireMovable(element, p.name, req.id);
-            if (lockErr != null) return lockErr;
-
-            // Размеры ящика — производные от его параметров (тип/длина/ширина);
-            // прямой resize молча откатился бы в ApplyDimensions.
-            if (element is DrawerElement)
-                return McpResponse.Error(req.id, -1,
-                    $"'{p.name}' is a GTV drawer: use set_drawer_properties (drawer_type/drawer_length/internal_width) instead of resize_element");
-
-            var dimsBefore = element.DimensionsMM;
-            var dimsAfter = ResolveDims(p.width, p.height, p.depth, p.dimX, p.dimY, p.dimZ, dimsBefore);
-            int w = dimsAfter.x, h = dimsAfter.y, d = dimsAfter.z;
-
-            var posBefore = element.transform.position;
-            var rotBefore = element.transform.rotation;
-
-            CommandStack.Execute(new ResizeCommand(element, dimsBefore, dimsAfter,
-                posBefore, posBefore, rotBefore, rotBefore));
-            RefreshElementHighlights();
-            Debug.Log($"[MCP] Resized {element.PartName} to ({w}, {h}, {d})mm");
-            return McpResponse.Result(req.id, BuildMutationResult(element));
-        }
-
-        private McpResponse HandleRotateElement(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsRotateElement>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var element = FindElementByName(p.name);
-            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            var lockErr = RequireMovable(element, p.name, req.id);
-            if (lockErr != null) return lockErr;
-
-            var before = element.transform.position;
-            var rotBefore = element.transform.rotation;
-            var euler = ResolveVec(p.x, p.y, p.z, element.transform.eulerAngles);
-            var rotAfter = Quaternion.Euler(euler.x, euler.y, euler.z);
-            CommandStack.Execute(new MoveCommand(element, before, before, rotBefore, rotAfter));
-            RefreshElementHighlights();
-            Debug.Log($"[MCP] Rotated {element.PartName} to ({euler.x}, {euler.y}, {euler.z})");
-            return McpResponse.Result(req.id, BuildMutationResult(element));
-        }
-
-        private McpResponse HandleCreateElement(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsCreateElement>();
-            if (p == null || (string.IsNullOrEmpty(p.name) && string.IsNullOrEmpty(p.template_name)))
-                return McpResponse.Error(req.id, -32602, "name required");
-
-            string elementName = string.IsNullOrEmpty(p.name) ? p.template_name : p.name;
-
-            if (p.is_floor)
-            {
-                var plate = BasePlate.Create();
-                plate.Element.PartName = elementName;
-                CommandStack.Execute(new CreateCommand(plate.gameObject));
-                RefreshElementHighlights();
-                Debug.Log($"[MCP] Created floor '{elementName}'");
-                return McpResponse.Result(req.id, BuildMutationResult(plate.Element));
-            }
-
-            if (p.is_assembled)
-            {
-                // Сборный (рамочный) фасад строится процедурно через фабрику
-                // (тот же путь, что save/load и сайдбар), а не из примитива-куба.
-                var dimsA = new Vector3Int(
-                    p.width > 0 ? p.width : 450,
-                    p.height > 0 ? p.height : 700,
-                    p.depth > 0 ? p.depth : 18);
-                var posA = new Vector3(p.x, p.y, p.z);
-                var fillA = ParseFill(p.fill);
-                var goA = ElementFactory.CreateAssembledFacade(dimsA, elementName, posA, fillA);
-                CommandStack.Execute(new CreateCommand(goA));
-                RefreshElementHighlights();
-                var elA = goA.GetComponent<KitchenElement>();
-                Debug.Log($"[MCP] Created assembled facade '{elementName}' fill={fillA}");
-                return McpResponse.Result(req.id, BuildMutationResult(elA));
-            }
-
-            if (p.is_radial_shelf)
-            {
-                int width = p.width > 0 ? p.width : 600;
-                int depthZ = p.depth > 0 ? p.depth : 400;
-                int thickness = p.height > 0 ? p.height : AppConstants.BOARD_THICKNESS_DEFAULT;
-                int cornerRadius = p.corner_radius > 0 ? p.corner_radius : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
-                cornerRadius = Mathf.Clamp(cornerRadius, 1, Mathf.Min(width, depthZ));
-
-                var posR = new Vector3(p.x, p.y, p.z);
-                var goR = ElementFactory.CreateRadialShelf(width, depthZ, thickness, cornerRadius, elementName, posR);
-                CommandStack.Execute(new CreateCommand(goR));
-                RefreshElementHighlights();
-                var elR = goR.GetComponent<KitchenElement>();
-                Debug.Log($"[MCP] Created radial shelf '{elementName}' {width}x{thickness}x{depthZ} cornerRadius={cornerRadius}");
-                return McpResponse.Result(req.id, BuildMutationResult(elR));
-            }
-
-            if (p.is_drawer)
-            {
-                var drawerType = ParseDrawerType(p.drawer_type);
-                var drawerColor = ParseDrawerColor(p.drawer_color);
-                int length = p.drawer_length > 0 ? p.drawer_length : 350;
-                int intWidth = p.drawer_internal_width > 0 ? p.drawer_internal_width : 400;
-                var posD = new Vector3(p.x, p.y, p.z);
-                var goD = ElementFactory.CreateDrawer(drawerType, length, drawerColor, intWidth, elementName, posD);
-                CommandStack.Execute(new CreateCommand(goD));
-                RefreshElementHighlights();
-                var elD = goD.GetComponent<KitchenElement>();
-                Debug.Log($"[MCP] Created drawer '{elementName}' type={drawerType} length={length} color={drawerColor}");
-                return McpResponse.Result(req.id, BuildMutationResult(elD));
-            }
-
-            if (p.is_table)
-            {
-                var dimsT = new Vector3Int(
-                    p.width > 0 ? p.width : 2000,
-                    p.height > 0 ? p.height : 750,
-                    p.depth > 0 ? p.depth : 1000);
-                var posT = new Vector3(p.x, p.y, p.z);
-                var goT = ElementFactory.CreateTable(dimsT, elementName, posT);
-                var tableEl = goT.GetComponent<TableElement>();
-                if (tableEl != null && p.leg_inset_mm > 0)
-                    tableEl.LegInsetMM = p.leg_inset_mm;
-                CommandStack.Execute(new CreateCommand(goT));
-                RefreshElementHighlights();
-                var elT = goT.GetComponent<KitchenElement>();
-                Debug.Log($"[MCP] Created table '{elementName}' {dimsT.x}x{dimsT.y}x{dimsT.z} legInset={p.leg_inset_mm}");
-                return McpResponse.Result(req.id, BuildMutationResult(elT));
-            }
-
-			if (p.is_radius_table)
-			{
-				var dimsRT = new Vector3Int(
-					p.width > 0 ? p.width : 2000,
-					p.height > 0 ? p.height : 750,
-					p.depth > 0 ? p.depth : 1000);
-				var posRT = new Vector3(p.x, p.y, p.z);
-				var goRT = ElementFactory.CreateRadiusTable(dimsRT, elementName, posRT);
-				var radiusTableEl = goRT.GetComponent<RadiusTableElement>();
-				if (radiusTableEl != null && p.leg_inset_mm > 0)
-					radiusTableEl.LegInsetMM = p.leg_inset_mm;
-				CommandStack.Execute(new CreateCommand(goRT));
-				RefreshElementHighlights();
-				var elRT = goRT.GetComponent<KitchenElement>();
-				Debug.Log($"[MCP] Created radius table '{elementName}' {dimsRT.x}x{dimsRT.y}x{dimsRT.z} legInset={p.leg_inset_mm}");
-				return McpResponse.Result(req.id, BuildMutationResult(elRT));
-			}
-
-			if (p.is_pillar)
-			{
-				int midH = p.height > 0 ? p.height : PillarElement.MidHeightMM_Default;
-				var posP = new Vector3(p.x, p.y, p.z);
-				var goP = ElementFactory.CreatePillar(midH, elementName, posP);
-				var pillarEl = goP.GetComponent<PillarElement>();
-				CommandStack.Execute(new CreateCommand(goP));
-				RefreshElementHighlights();
-				var elP = goP.GetComponent<KitchenElement>();
-				Debug.Log($"[MCP] Created pillar '{elementName}' midHeight={(pillarEl != null ? pillarEl.MidHeightMM : midH)}");
-				return McpResponse.Result(req.id, BuildMutationResult(elP));
-			}
-
-			if (p.is_window)
-            {
-                var dimsW = new Vector3Int(
-                    p.width > 0 ? p.width : 900,
-                    p.height > 0 ? p.height : 1200,
-                    p.depth > 0 ? p.depth : 100);
-                var posW = new Vector3(p.x, p.y, p.z);
-                var tintValue = ParseGlassTint(p.window_tint);
-                int sill = p.window_sill_protrusion_mm >= 0 ? p.window_sill_protrusion_mm : 50;
-                var goW = ElementFactory.CreateWindow(dimsW, elementName, posW, tintValue, sill);
-                CommandStack.Execute(new CreateCommand(goW));
-                RefreshElementHighlights();
-                var elW = goW.GetComponent<KitchenElement>();
-                Debug.Log($"[MCP] Created window '{elementName}' {dimsW.x}x{dimsW.y}x{dimsW.z} tint={tintValue} sill={sill}");
-                return McpResponse.Result(req.id, BuildMutationResult(elW));
-            }
-
-			if (p.is_door)
-            {
-                var dimsD = new Vector3Int(
-                    p.width > 0 ? p.width : 900,
-                    p.height > 0 ? p.height : 2000,
-                    p.depth > 0 ? p.depth : 100);
-                var posD = new Vector3(p.x, p.y, p.z);
-                var sashType = ParseDoorSashType(p.door_sash_type);
-                var goD = ElementFactory.CreateDoor(dimsD, elementName, posD, sashType);
-                CommandStack.Execute(new CreateCommand(goD));
-                RefreshElementHighlights();
-                var elD = goD.GetComponent<KitchenElement>();
-                Debug.Log($"[MCP] Created door '{elementName}' {dimsD.x}x{dimsD.y}x{dimsD.z} sashType={sashType}");
-                return McpResponse.Result(req.id, BuildMutationResult(elD));
-            }
-
-            var pos = new Vector3(p.x, p.y, p.z);
-            var dims = new Vector3Int(
-                p.width > 0 ? p.width : 800,
-                p.height > 0 ? p.height : 400,
-                p.depth > 0 ? p.depth : 18);
-
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = elementName;
-            KitchenElement element;
-
-            if (p.is_facade)
-            {
-                var facade = go.AddComponent<FacadeElement>();
-                facade.PartName = elementName;
-                facade.DimensionsMM = dims;
-                facade.GapLeft = p.gapLeft;
-                facade.GapRight = p.gapRight;
-                facade.GapTop = p.gapTop;
-                facade.GapBottom = p.gapBottom;
-                MaterialManager.ApplyById(facade, MaterialCatalog.DefaultId);
-                element = facade;
-            }
-            else
-            {
-                element = go.AddComponent<KitchenElement>();
-                element.PartName = elementName;
-                element.DimensionsMM = dims;
-                MaterialManager.ApplyById(element, MaterialCatalog.DefaultId);
-            }
-
-            if (p.is_wall)
-                go.AddComponent<Wall>();
-
-            go.transform.position = pos;
-            CommandStack.Execute(new CreateCommand(go));
-            RefreshElementHighlights();
-            Debug.Log($"[MCP] Created {go.name} at ({p.x}, {p.y}, {p.z})");
-            return McpResponse.Result(req.id, BuildMutationResult(element));
+            var all = PartRegistry.GetAll();
+            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var elements = new List<ElementInfo>();
+            var createdNames = new List<string>();
+            foreach (var el in created) { createdNames.Add(el.PartName); elements.Add(BuildElementInfo(el, all, false, vr)); }
+            Debug.Log($"[MCP] Created {created.Count} elements: {string.Join(", ", createdNames)}");
+            return McpResponse.Result(req.id, new { ok = true, created = createdNames, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }
 
         /// <summary>Строка → тип заполнения сборного фасада. По умолчанию Blind.</summary>
@@ -1493,52 +1531,69 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
-        /// <summary>Сменить ТИП существующего элемента: деталь ↔ фасад ↔ сборный
-        /// фасад, сохранив имя/размеры/позицию/материал (см. <see cref="ElementConverter"/>).
-        /// Для target=assembled_facade опциональный fill (blind|glass|open).</summary>
-        private McpResponse HandleConvertElement(McpRequest req)
+        /// <summary>Batch convert: change type of one or MANY elements. Atomic. NOT undoable.</summary>
+        private McpResponse HandleConvertElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsConvertElement>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            if (!TryParseTarget(p.target, out var target))
-                return McpResponse.Error(req.id, -32602,
-                    $"Unknown target '{p.target}'. Valid: part | facade | assembled_facade | radial_shelf");
+            var p = req.Params?.ToObject<ParamsConvertElements>();
+            if (p == null || p.ops == null || p.ops.Length == 0)
+                return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
-            var element = FindElementByName(p.name);
-            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            var lockErr = RequireMovable(element, p.name, req.id);
-            if (lockErr != null) return lockErr;
+            var errors = new List<string>();
+            var results = new List<KitchenElement>();
+            foreach (var op in p.ops)
+            {
+                if (string.IsNullOrEmpty(op.name)) { errors.Add("op missing name"); continue; }
+                if (!TryParseTarget(op.target, out var target))
+                { errors.Add($"Unknown target '{op.target}' for '{op.name}'"); continue; }
+                var element = FindElementByName(op.name);
+                if (element == null) { errors.Add($"Element not found: {op.name}"); continue; }
+                var lockErr = RequireMovable(element, op.name, req.id);
+                if (lockErr != null) { errors.Add($"'{op.name}' is LOCKED"); continue; }
+                var converted = ElementConverter.Convert(element, target);
+                if (converted is AssembledFacadeElement assembled && !string.IsNullOrEmpty(op.fill))
+                    assembled.Fill = ParseFill(op.fill);
+                results.Add(converted);
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1, "convert_elements rejected: " + string.Join(" | ", errors));
 
-            var converted = ElementConverter.Convert(element, target);
-            if (converted is AssembledFacadeElement assembled && !string.IsNullOrEmpty(p.fill))
-                assembled.Fill = ParseFill(p.fill);
             RefreshElementHighlights();
-            Debug.Log($"[MCP] Converted '{p.name}' → {target}");
-            return McpResponse.Result(req.id, BuildMutationResult(converted));
+            var all = PartRegistry.GetAll();
+            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var elements = new List<ElementInfo>();
+            var names = new List<string>();
+            foreach (var el in results) { names.Add(el.PartName); elements.Add(BuildElementInfo(el, all, false, vr)); }
+            Debug.Log($"[MCP] Converted {results.Count} elements");
+            return McpResponse.Result(req.id, new { ok = true, converted = names, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }
 
-        private McpResponse HandleDeleteElement(McpRequest req)
+        /// <summary>Batch delete: atomically delete one or MANY elements. Whole batch is ONE undo step.</summary>
+        private McpResponse HandleDeleteElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsName>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var element = FindElementByName(p.name);
-            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            var lockErr = RequireMovable(element, p.name, req.id);
-            if (lockErr != null) return lockErr;
-            CommandStack.Execute(new DeleteCommand(element.gameObject));
-            RefreshElementHighlights();
-            Debug.Log($"[MCP] Deleted {p.name}");
-            var allAfterDelete = PartRegistry.GetAll();
-            var vrAfterDelete = allAfterDelete != null && allAfterDelete.Count > 0
-                ? ConstraintValidator.Validate(allAfterDelete) : null;
-            return McpResponse.Result(req.id, new
+            var p = req.Params?.ToObject<ParamsNames>();
+            if (p == null || p.names == null || p.names.Length == 0)
+                return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
+
+            var commands = new List<IUndoCommand>();
+            var errors = new List<string>();
+            foreach (var name in p.names)
             {
-                ok = true,
-                name = p.name,
-                sceneViolationCount = vrAfterDelete != null ? vrAfterDelete.violations.Count : 0
-            });
+                var el = FindElementByName(name);
+                if (el == null) { errors.Add($"Element not found: {name}"); continue; }
+                var lockErr = RequireMovable(el, name, req.id);
+                if (lockErr != null) { errors.Add($"'{name}' is LOCKED"); continue; }
+                commands.Add(new DeleteCommand(el.gameObject));
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1, "delete_elements rejected: " + string.Join(" | ", errors));
+
+            var deletedNames = p.names.ToList();
+            CommandStack.Execute(new CompositeCommand($"MCP delete_elements x{commands.Count}", commands));
+            RefreshElementHighlights();
+            var allAfter = PartRegistry.GetAll();
+            var vrAfter = allAfter != null && allAfter.Count > 0 ? ConstraintValidator.Validate(allAfter) : null;
+            Debug.Log($"[MCP] Deleted {commands.Count} elements");
+            return McpResponse.Result(req.id, new { ok = true, deleted = deletedNames, sceneViolationCount = vrAfter != null ? vrAfter.violations.Count : 0 });
         }
 
         private McpResponse HandleUndo(McpRequest req)
@@ -1588,20 +1643,27 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, path = p.path });
         }
 
-        private McpResponse HandleSelectElement(McpRequest req)
+        /// <summary>Batch select: highlight one or MANY elements (visual only).</summary>
+        private McpResponse HandleSelectElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsName>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var element = FindElementByName(p.name);
-            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            var p = req.Params?.ToObject<ParamsNames>();
+            if (p == null || p.names == null || p.names.Length == 0)
+                return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
+            var selected = new List<string>();
+            var missing = new List<string>();
+            foreach (var name in p.names)
+            {
+                var el = FindElementByName(name);
+                if (el == null) { missing.Add(name); continue; }
 #if UNITY_EDITOR
-            Selection.activeGameObject = element.gameObject;
+                if (selected.Count == 0) Selection.activeGameObject = el.gameObject;
 #endif
-            var sel = Object.FindAnyObjectByType<SelectionManager>();
-            if (sel != null) sel.Select(element);
-            return McpResponse.Result(req.id, new { ok = true, name = p.name });
+                var sel = Object.FindAnyObjectByType<SelectionManager>();
+                if (sel != null) sel.Select(el);
+                selected.Add(name);
+            }
+            return McpResponse.Result(req.id, new { ok = true, selected, missing = missing.Count > 0 ? missing : null });
         }
 
         private McpResponse HandleUndoStackInfo(McpRequest req)
@@ -1673,23 +1735,27 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, enabled = p.enabled });
         }
 
-        /// <summary>Разбор прилипания: почему деталь (не) прилипает из текущей или
-        /// заданной позиции — по каждому соседу лучшая пара граней и причина.</summary>
+        /// <summary>Batch snap diagnose: for EACH given board explain why it does or does not snap.</summary>
         private McpResponse HandleSnapDiagnose(McpRequest req)
         {
             var p = req.Params?.ToObject<ParamsSnapDiagnose>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var element = FindElementByName(p.name);
-            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            if (p == null || p.ops == null || p.ops.Length == 0)
+                return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
-            var pos = element.transform.position;
-            if (p.x.HasValue) pos.x = p.x.Value;
-            if (p.y.HasValue) pos.y = p.y.Value;
-            if (p.z.HasValue) pos.z = p.z.Value;
-
-            var diagnosis = SnapSystem.Diagnose(element, PartRegistry.GetAll(), pos);
-            return McpResponse.Result(req.id, diagnosis);
+            var results = new List<object>();
+            var missing = new List<string>();
+            foreach (var op in p.ops)
+            {
+                var element = FindElementByName(op.name);
+                if (element == null) { missing.Add(op.name); continue; }
+                var pos = element.transform.position;
+                if (op.x.HasValue) pos.x = op.x.Value;
+                if (op.y.HasValue) pos.y = op.y.Value;
+                if (op.z.HasValue) pos.z = op.z.Value;
+                var diagnosis = SnapSystem.Diagnose(element, PartRegistry.GetAll(), pos);
+                results.Add(diagnosis);
+            }
+            return McpResponse.Result(req.id, new { results, missing = missing.Count > 0 ? missing : null });
         }
 
         private McpResponse HandleTakeScreenshot(McpRequest req)
@@ -1906,19 +1972,30 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleAddWallComponent(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsName>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var element = FindElementByName(p.name);
-            if (element == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-            if (element.GetComponent<Wall>() != null)
-                return McpResponse.Result(req.id, new { ok = true, name = p.name, was_already_wall = true });
+            var p = req.Params?.ToObject<ParamsNames>();
+            if (p == null || p.names == null || p.names.Length == 0)
+                return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
-            element.gameObject.AddComponent<Wall>();
-            Debug.Log($"[MCP] Added Wall component to {p.name}");
-            // Стена — якорь связности: превращение может «вылечить» соседей,
-            // поэтому возвращаем полный конверт с пересчитанными нарушениями.
-            return McpResponse.Result(req.id, BuildMutationResult(element));
+            var results = new List<object>();
+            var errors = new List<string>();
+            foreach (var name in p.names)
+            {
+                var element = FindElementByName(name);
+                if (element == null) { errors.Add($"Element not found: {name}"); continue; }
+                if (element.GetComponent<Wall>() != null)
+                {
+                    results.Add(new { name, ok = true, was_already_wall = true });
+                    continue;
+                }
+                element.gameObject.AddComponent<Wall>();
+                results.Add(BuildMutationResult(element));
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "add_wall_component rejected: " + string.Join(" | ", errors));
+
+            Debug.Log($"[MCP] Added Wall component to {results.Count} elements");
+            return McpResponse.Result(req.id, new { ok = true, results });
         }
 
         private McpResponse HandleExecuteMenuItem(McpRequest req)
@@ -1957,15 +2034,25 @@ namespace KitchenDesigner.Core.MCP
         // ── get_element_debug ───────────────────────────────────────────
         private McpResponse HandleGetElementDebug(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsName>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            var p = req.Params?.ToObject<ParamsNames>();
+            if (p == null || p.names == null || p.names.Length == 0)
+                return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
+            var results = new List<object>();
+            var missing = new List<string>();
+            foreach (var name in p.names)
+            {
+                var el = FindElementByName(name);
+                if (el == null) { missing.Add(name); continue; }
+                results.Add(BuildElementDebugInfo(el));
+            }
+            return McpResponse.Result(req.id, new { count = results.Count, results, missing = missing.Count > 0 ? missing : null });
+        }
+
+        private static ElementDebugInfo BuildElementDebugInfo(KitchenElement el)
+        {
             var verts = el.GetVertices();
             var aabb = ComputeAABB(verts);
-
             var srcFaces = el.GetFaces();
             var faces = new FaceInfo[srcFaces.Length];
             for (int i = 0; i < srcFaces.Length; i++)
@@ -1977,74 +2064,37 @@ namespace KitchenDesigner.Core.MCP
                     sizeX = srcFaces[i].size.x, sizeY = srcFaces[i].size.y
                 };
             }
-
             var vertices = new VertexInfo[verts.Length];
             for (int i = 0; i < verts.Length; i++)
                 vertices[i] = new VertexInfo { x = verts[i].x, y = verts[i].y, z = verts[i].z };
-
             var effDim = GetEffectiveDimMM(el);
-            return McpResponse.Result(req.id, new ElementDebugInfo
+            return new ElementDebugInfo
             {
                 name = el.PartName, type = el.GetType().Name,
                 aabb = aabb, faces = faces, vertices = vertices,
                 dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
                 effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z
-            });
+            };
         }
 
         // ── get_element_gaps ─────────────────────────────────────────────
         private McpResponse HandleGetElementGaps(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsName>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            var p = req.Params?.ToObject<ParamsNames>();
+            if (p == null || p.names == null || p.names.Length == 0)
+                return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
             var all = PartRegistry.GetAll();
-            var gaps = all != null ? ComputeAxisGaps(el, all) : new List<AxisGapInfo>();
-            return McpResponse.Result(req.id, new ElementGapsResult { name = el.PartName, gaps = gaps });
-        }
-
-        // ── simulate_move ───────────────────────────────────────────────
-        /// <summary>
-        /// Dry-run move: не меняет позицию, возвращает simulatedAABB,
-        /// overlapsWith, faceGaps и wouldHaveViolations.
-        /// Вызывай ПЕРЕД move_element для проверки.
-        /// </summary>
-        private McpResponse HandleSimulateMove(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsSimulateMove>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-
-            var all = PartRegistry.GetAll();
-            var target = ResolveVec(p.x, p.y, p.z, el.transform.position);
-            var result = SimulateMoveAt(el, target, all);
-            return McpResponse.Result(req.id, result);
-        }
-
-        // ── simulate_resize ──────────────────────────────────────────────
-        /// <summary>
-        /// Dry-run resize: не меняет размеры, возвращает simulatedAABB,
-        /// overlapsWith, faceGaps и wouldHaveViolations.
-        /// Вызывай ПЕРЕД resize_element для проверки.
-        /// </summary>
-        private McpResponse HandleSimulateResize(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsSimulateResize>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-
-            var dims = ResolveDims(p.width, p.height, p.depth, p.dimX, p.dimY, p.dimZ, el.DimensionsMM);
-
-            var all = PartRegistry.GetAll();
-            var result = SimulateResizeTo(el, dims, all);
-            return McpResponse.Result(req.id, result);
+            var results = new List<object>();
+            var missing = new List<string>();
+            foreach (var name in p.names)
+            {
+                var el = FindElementByName(name);
+                if (el == null) { missing.Add(name); continue; }
+                var gaps = all != null ? ComputeAxisGaps(el, all) : new List<AxisGapInfo>();
+                results.Add(new ElementGapsResult { name = el.PartName, gaps = gaps });
+            }
+            return McpResponse.Result(req.id, new { count = results.Count, results, missing = missing.Count > 0 ? missing : null });
         }
 
         // ── Helpers ──────────────────────────────────────────────────────
@@ -2363,279 +2413,33 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
-        // ── set_element_lock ────────────────────────────────────────────
-        private McpResponse HandleSetElementLock(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsElementLock>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-
-            el.Movable = !p.locked;
-            Debug.Log($"[MCP] Element '{p.name}' lock set to {p.locked} (Movable={!p.locked})");
-            return McpResponse.Result(req.id, BuildMutationResult(el));
-        }
-
-        private McpResponse HandleSetFacadeMode(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsSetFacadeMode>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            if (string.IsNullOrEmpty(p.mode))
-                return McpResponse.Error(req.id, -32602, "mode required");
-
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-
-            var facade = el as FacadeElement;
-            if (facade == null) return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a facade");
-
-            switch (p.mode.ToLowerInvariant())
-            {
-                case "front_left":     facade.Mode = DoorMode.HingeFrontLeft; break;
-                case "front_right":    facade.Mode = DoorMode.HingeFrontRight; break;
-                case "front_top":      facade.Mode = DoorMode.HingeFrontTop; break;
-                case "front_bottom":   facade.Mode = DoorMode.HingeFrontBottom; break;
-                case "back_left":      facade.Mode = DoorMode.HingeBackLeft; break;
-                case "back_right":     facade.Mode = DoorMode.HingeBackRight; break;
-                case "back_top":       facade.Mode = DoorMode.HingeBackTop; break;
-                case "back_bottom":    facade.Mode = DoorMode.HingeBackBottom; break;
-                case "edge_top_left":  facade.Mode = DoorMode.HingeEdgeTopLeft; break;
-                case "edge_top_right": facade.Mode = DoorMode.HingeEdgeTopRight; break;
-                case "edge_bottom_left":  facade.Mode = DoorMode.HingeEdgeBottomLeft; break;
-                case "edge_bottom_right": facade.Mode = DoorMode.HingeEdgeBottomRight; break;
-                case "drawer_out":     facade.Mode = DoorMode.DrawerOut; break;
-                case "drawer_in":      facade.Mode = DoorMode.DrawerIn; break;
-                case "drawer_right":   facade.Mode = DoorMode.DrawerRight; break;
-                case "drawer_left":    facade.Mode = DoorMode.DrawerLeft; break;
-                case "drawer_up":      facade.Mode = DoorMode.DrawerUp; break;
-                case "drawer_down":    facade.Mode = DoorMode.DrawerDown; break;
-                default:
-                    return McpResponse.Error(req.id, -32602, $"Unknown mode: '{p.mode}'. Valid: front_left, front_right, front_top, front_bottom, back_left, back_right, back_top, back_bottom, edge_top_left, edge_top_right, edge_bottom_left, edge_bottom_right, drawer_out, drawer_in, drawer_right, drawer_left, drawer_up, drawer_down");
-            }
-
-            Debug.Log($"[MCP] Facade '{p.name}' mode set to {p.mode}");
-            return McpResponse.Result(req.id, BuildMutationResult(facade));
-        }
-
-        // ── Drawer operations ─────────────────────────────────────────────
-
-        private McpResponse HandleSetDrawerProperties(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsSetDrawerProperties>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-
-            var drawer = el as DrawerElement;
-            if (drawer == null) return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a drawer");
-
-            if (!string.IsNullOrEmpty(p.drawer_type))
-                drawer.Type = ParseDrawerType(p.drawer_type);
-            if (p.drawer_length.HasValue)
-                drawer.NominalLength = p.drawer_length.Value;
-            if (!string.IsNullOrEmpty(p.drawer_color))
-                drawer.Color = ParseDrawerColor(p.drawer_color);
-            if (p.internal_width.HasValue)
-                drawer.InternalWidth = p.internal_width.Value;
-            if (p.is_double.HasValue)
-                drawer.IsDouble = p.is_double.Value;
-            if (p.is_upper.HasValue)
-                drawer.IsUpperDrawer = p.is_upper.Value;
-            if (p.paired_drawer_name != null)
-            {
-                // Пустая строка отвязывает; непустая обязана указывать на живой ящик.
-                if (p.paired_drawer_name != "" && !(FindElementByName(p.paired_drawer_name) is DrawerElement))
-                    return McpResponse.Error(req.id, -1, $"Paired drawer not found: {p.paired_drawer_name}");
-                drawer.PairedDrawerName = p.paired_drawer_name;
-            }
-            if (p.attached_facade_name != null)
-            {
-                if (p.attached_facade_name != "" && !(FindElementByName(p.attached_facade_name) is FacadeElement))
-                    return McpResponse.Error(req.id, -1, $"Facade not found: {p.attached_facade_name}");
-                drawer.AttachedFacadeName = p.attached_facade_name;
-            }
-
-            Debug.Log($"[MCP] Drawer '{p.name}' properties updated");
-            return McpResponse.Result(req.id, BuildMutationResult(drawer));
-        }
-
-        private McpResponse HandleSetRadialShelfProperties(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsSetRadialShelfProperties>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-
-            var shelf = el as RadialShelfElement;
-            if (shelf == null)
-                return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a radial shelf");
-
-            if (p.corner_radius.HasValue)
-                shelf.CornerRadius = p.corner_radius.Value;
-
-            Debug.Log($"[MCP] Radial shelf '{p.name}' cornerRadius={shelf.CornerRadius}");
-            return McpResponse.Result(req.id, BuildMutationResult(el));
-        }
-
-		private McpResponse HandleSetTableProperties(McpRequest req)
-		{
-			var p = req.Params?.ToObject<ParamsSetTableProperties>();
-			if (p == null || string.IsNullOrEmpty(p.name))
-				return McpResponse.Error(req.id, -32602, "name required");
-
-			var el = FindElementByName(p.name);
-			if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-
-			var table = el as TableElement;
-			var rt = el as RadiusTableElement;
-			if (table == null && rt == null)
-				return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a table");
-
-			if (p.leg_inset_mm.HasValue)
-			{
-				if (table != null) table.LegInsetMM = p.leg_inset_mm.Value;
-				else rt!.LegInsetMM = p.leg_inset_mm.Value;
-			}
-
-			if (p.tabletop_material_id != null)
-			{
-				var def = MaterialCatalog.Get(p.tabletop_material_id);
-				if (def != null)
-				{
-					if (table != null) MaterialManager.ApplyTabletop(table, def);
-					else MaterialManager.ApplyTabletop(rt!, def);
-				}
-			}
-
-			if (p.legs_material_id != null)
-			{
-				var def = MaterialCatalog.Get(p.legs_material_id);
-				if (def != null)
-				{
-					if (table != null) MaterialManager.ApplyLegs(table, def);
-					else MaterialManager.ApplyLegs(rt!, def);
-				}
-			}
-
-			Debug.Log($"[MCP] Table '{p.name}' properties updated");
-			return McpResponse.Result(req.id, BuildMutationResult(el));
-		}
-
-		private McpResponse HandleSetPillarProperties(McpRequest req)
-		{
-			var p = req.Params?.ToObject<ParamsSetPillarProperties>();
-			if (p == null || string.IsNullOrEmpty(p.name))
-				return McpResponse.Error(req.id, -32602, "name required");
-
-			var el = FindElementByName(p.name);
-			if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-
-			PillarElement? pillar = el as PillarElement;
-			if (pillar == null)
-				return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a pillar");
-
-			if (p.mid_height_mm.HasValue)
-				pillar.MidHeightMM = p.mid_height_mm.Value;
-
-			Debug.Log($"[MCP] Pillar '{p.name}' midHeight={pillar.MidHeightMM}");
-			return McpResponse.Result(req.id, BuildMutationResult(el));
-		}
-
-		private McpResponse HandleSetWindowProperties(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsSetWindowProperties>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-
-            var window = el as WindowElement;
-            if (window == null)
-                return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a window");
-
-            if (!string.IsNullOrEmpty(p.tint))
-                window.Tint = ParseGlassTint(p.tint);
-            if (p.sill_protrusion_mm.HasValue)
-                window.SillProtrusionMM = p.sill_protrusion_mm.Value;
-            if (!string.IsNullOrEmpty(p.mode))
-            {
-                switch (p.mode.ToLowerInvariant())
-                {
-                    case "front_left": window.Mode = DoorMode.HingeFrontLeft; break;
-                    case "front_right": window.Mode = DoorMode.HingeFrontRight; break;
-                    case "front_top": window.Mode = DoorMode.HingeFrontTop; break;
-                    case "front_bottom": window.Mode = DoorMode.HingeFrontBottom; break;
-                }
-            }
-            if (p.is_open.HasValue)
-                window.SetOpen(p.is_open.Value);
-
-            Debug.Log($"[MCP] Window '{p.name}' properties updated");
-            return McpResponse.Result(req.id, BuildMutationResult(window));
-        }
-
-		private McpResponse HandleSetDoorProperties(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsSetDoorProperties>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-
-            var door = el as DoorElement;
-            if (door == null)
-                return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a door");
-
-            if (!string.IsNullOrEmpty(p.sash_type))
-                door.SashType = ParseDoorSashType(p.sash_type);
-            if (!string.IsNullOrEmpty(p.mode))
-            {
-                switch (p.mode.ToLowerInvariant())
-                {
-                    case "front_left": door.Mode = DoorMode.HingeFrontLeft; break;
-                    case "front_right": door.Mode = DoorMode.HingeFrontRight; break;
-                    case "front_top": door.Mode = DoorMode.HingeFrontTop; break;
-                    case "front_bottom": door.Mode = DoorMode.HingeFrontBottom; break;
-                }
-            }
-            if (p.is_open.HasValue)
-                door.SetOpen(p.is_open.Value);
-
-            Debug.Log($"[MCP] Door '{p.name}' properties updated");
-            return McpResponse.Result(req.id, BuildMutationResult(door));
-        }
-
         private McpResponse HandleCycleDrawerAnimation(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsName>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
+            var p = req.Params?.ToObject<ParamsNames>();
+            if (p == null || p.names == null || p.names.Length == 0)
+                return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            var results = new List<object>();
+            var errors = new List<string>();
+            foreach (var name in p.names)
+            {
+                var el = FindElementByName(name);
+                if (el == null) { errors.Add($"Element not found: {name}"); continue; }
+                var drawer = el as DrawerElement;
+                if (drawer == null) { errors.Add($"Element '{name}' is not a drawer"); continue; }
 
-            var drawer = el as DrawerElement;
-            if (drawer == null) return McpResponse.Error(req.id, -1, $"Element '{p.name}' is not a drawer");
+                if (drawer.IsDouble)
+                    drawer.CycleDoubleState();
+                else
+                    drawer.ToggleOpen();
+                results.Add(new { name, isDouble = drawer.IsDouble, isOpen = drawer.IsOpen, doubleState = drawer.DoubleState.ToString() });
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "cycle_drawer_animation rejected, NOTHING was cycled: " + string.Join(" | ", errors));
 
-            // Одиночный ящик — обычный toggle; трёхфазный цикл имеет смысл
-            // только для двойного (Closed → BothOpen → LowerOnly → Closed).
-            if (drawer.IsDouble)
-                drawer.CycleDoubleState();
-            else
-                drawer.ToggleOpen();
-            Debug.Log($"[MCP] Drawer '{p.name}' cycled: isOpen={drawer.IsOpen} doubleState={drawer.DoubleState}");
-            // Анимация не меняет геометрию сцены — конверт мутаций не нужен,
-            // текущее состояние (isOpen/doubleState) есть в element.drawer.
-            return McpResponse.Result(req.id, new { ok = true, name = p.name, isDouble = drawer.IsDouble,
-                isOpen = drawer.IsOpen, doubleState = drawer.DoubleState.ToString() });
+            Debug.Log($"[MCP] Cycled {results.Count} drawers");
+            return McpResponse.Result(req.id, new { ok = true, results, errors = errors.Count > 0 ? errors : null });
         }
 
         // ── Материалы / текстуры ────────────────────────────────────────
@@ -2651,38 +2455,6 @@ namespace KitchenDesigner.Core.MCP
             foreach (var d in MaterialCatalog.All)
                 if (string.Equals(d.displayName, key, StringComparison.OrdinalIgnoreCase)) return d;
             return null;
-        }
-
-        private McpResponse HandleSetMaterial(McpRequest req)
-        {
-            var p = req.Params?.ToObject<ParamsSetMaterial>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            if (string.IsNullOrEmpty(p.material))
-                return McpResponse.Error(req.id, -32602, "material required (id or display name from list_materials)");
-
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
-
-            var def = ResolveMaterial(p.material);
-            if (def == null)
-                return McpResponse.Error(req.id, -1,
-                    $"Unknown material '{p.material}'. Call list_materials for the valid ids/names.");
-
-            MaterialManager.Apply(el, def);
-            RefreshElementHighlights();
-            // Если элемент выделен — обновить подсветку выделения поверх нового декора.
-            var sel = Object.FindAnyObjectByType<SelectionManager>();
-            if (sel != null) sel.RefreshHighlight(el);
-
-            Debug.Log($"[MCP] Material of '{p.name}' set to {def.id} ({def.displayName})");
-            // Материал не меняет геометрию — лёгкий ответ вместо полного конверта.
-            return McpResponse.Result(req.id, new
-            {
-                ok = true, element = p.name,
-                materialId = def.id, material = def.displayName,
-                hasTexture = !string.IsNullOrEmpty(def.baseMapResource)
-            });
         }
 
         private McpResponse HandleListMaterials(McpRequest req)
@@ -2757,31 +2529,45 @@ namespace KitchenDesigner.Core.MCP
             return null;
         }
 
-        // ── rename_element ────────────────────────────────────────────
-        private McpResponse HandleRenameElement(McpRequest req)
+        // ── rename_elements ────────────────────────────────────────────
+        private McpResponse HandleRenameElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsRenameElement>();
-            if (p == null || string.IsNullOrEmpty(p.name))
-                return McpResponse.Error(req.id, -32602, "name required");
-            if (string.IsNullOrEmpty(p.new_name))
-                return McpResponse.Error(req.id, -32602, "new_name required");
+            var p = req.Params?.ToObject<ParamsRenameElements>();
+            if (p == null || p.ops == null || p.ops.Length == 0)
+                return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
-            var el = FindElementByName(p.name);
-            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+            var errors = new List<string>();
+            var ops = new List<(string oldName, string newName, KitchenElement el)>();
+            var newNamesSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            if (p.new_name == p.name)
-                return McpResponse.Result(req.id, new { ok = true, name = p.name, message = "Name unchanged (same as current)" });
+            foreach (var op in p.ops)
+            {
+                if (string.IsNullOrEmpty(op.name)) { errors.Add("op missing name"); continue; }
+                if (string.IsNullOrEmpty(op.new_name)) { errors.Add($"op with name '{op.name}' missing new_name"); continue; }
+                if (op.new_name == op.name) continue; // no-op
 
-            var conflict = PartRegistry.All.FirstOrDefault(x => x != null && x != el && x.PartName == p.new_name);
-            if (conflict != null)
-                return McpResponse.Error(req.id, -1, $"Name '{p.new_name}' is already taken by another element");
+                var el = FindElementByName(op.name);
+                if (el == null) { errors.Add($"Element not found: {op.name}"); continue; }
 
-            var oldName = el.PartName;
-            el.PartName = p.new_name;
-            el.gameObject.name = p.new_name;
+                var conflict = PartRegistry.All.FirstOrDefault(x => x != null && x != el && x.PartName == op.new_name);
+                if (conflict != null) { errors.Add($"Name '{op.new_name}' already taken (for '{op.name}')"); continue; }
+                if (!newNamesSet.Add(op.new_name)) { errors.Add($"Duplicate new_name '{op.new_name}' in this batch"); continue; }
 
-            Debug.Log($"[MCP] Element renamed: '{oldName}' -> '{p.new_name}'");
-            return McpResponse.Result(req.id, new { ok = true, old_name = oldName, new_name = p.new_name });
+                ops.Add((op.name, op.new_name, el));
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "rename_elements rejected, NOTHING was renamed: " + string.Join(" | ", errors));
+
+            var result = new List<object>();
+            foreach (var (oldName, newName, el) in ops)
+            {
+                el.PartName = newName;
+                el.gameObject.name = newName;
+                result.Add(new { old_name = oldName, new_name = newName });
+            }
+            Debug.Log($"[MCP] Renamed {result.Count} elements");
+            return McpResponse.Result(req.id, new { ok = true, results = result });
         }
 
         private static KitchenElement? FindElementByName(string name)
