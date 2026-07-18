@@ -103,6 +103,33 @@ public class ElementFactoryTests
     }
 
     [Test]
+    public void Duplicate_AssembledFacade_PreservesGaps()
+    {
+        // Регрессия: фабрика CreateAssembledFacade не принимает зазоры, и дубль
+        // сборного фасада терял их (обычный фасад получает зазоры в CreateFacade).
+        var original = ElementFactory.CreateAssembledFacade(
+            new Vector3Int(600, 716, 18), "Assembled", Vector3.zero, AssembledFill.Blind);
+        var src = original.GetComponent<AssembledFacadeElement>();
+        src.GapLeft = 3;
+        src.GapRight = 5;
+        src.GapTop = 1;
+        src.GapBottom = 4;
+
+        var copy = ElementFactory.Duplicate(src);
+        var copyFacade = copy.GetComponent<AssembledFacadeElement>();
+
+        Assert.IsNotNull(copyFacade);
+        Assert.AreEqual(3, copyFacade!.GapLeft, "gapLeft");
+        Assert.AreEqual(5, copyFacade!.GapRight, "gapRight");
+        Assert.AreEqual(1, copyFacade!.GapTop, "gapTop");
+        Assert.AreEqual(4, copyFacade!.GapBottom, "gapBottom");
+        Assert.AreEqual(AssembledFill.Blind, copyFacade!.Fill, "fill");
+
+        ElementFactory.DestroyPart(original);
+        ElementFactory.DestroyPart(copy);
+    }
+
+    [Test]
     public void CreateRadialShelf_CreatesMeshAndCollider()
     {
         var go = ElementFactory.CreateRadialShelf(600, 400, 18, 200, "Radial", Vector3.zero);
