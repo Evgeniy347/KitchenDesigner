@@ -27,8 +27,8 @@ namespace KitchenDesigner.Core
         public const int WINDOW_SILL_DEFAULT_MM = 50;
         public const int WINDOW_SILL_THICKNESS_MM = 40;   // толщина плиты подоконника (не зависит от вылета)
         public const int WINDOW_GLASS_THICKNESS_MM = 4;
-        public const int WINDOW_SASH_MM = 60;             // ширина обвязки открывающейся створки
-        public const int WINDOW_SASH_DEPTH_MM = 60;       // глубина створки (вдоль толщины стены)
+        public const int WINDOW_SASH_MM = 50;             // ширина обвязки открывающейся створки
+        public const int WINDOW_SASH_DEPTH_MM = 40;       // глубина створки (вдоль толщины стены)
 
         public static readonly Vector3Int[] PRESET_DIMENSIONS_MM = new Vector3Int[]
         {

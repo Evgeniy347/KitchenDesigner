@@ -438,7 +438,7 @@ namespace KitchenDesigner.Core
 
             float sashU = AppConstants.WINDOW_SASH_MM * toU;
             float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, totalD);
-            _sashClosedLocal = new Vector3(0f, 0f, halfD - sashD * 0.5f);
+            _sashClosedLocal = new Vector3(0f, 0f, 0f);
             _sashHalfExtents = new Vector3(innerW * 0.5f, innerH * 0.5f, sashD * 0.5f);
 
             if (_sashLeft != null)
