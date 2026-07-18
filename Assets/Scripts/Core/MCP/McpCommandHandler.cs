@@ -19,9 +19,10 @@ namespace KitchenDesigner.Core.MCP
         /// Диспетчер MCP-команд. Каждый метод обрабатывается в отдельном handler'е.
         ///
         /// Протокольные соглашения:
-        /// - get_all_elements — единственный источник истины (snapshot) перед изменениями.
-        /// - simulate_move / simulate_resize — dry-run; проверяй wouldHaveViolations до apply.
-        /// - После каждой мутации вызывай get_violations для проверки регрессий.
+        /// - ВСЕ адресные операции — батчи (names[]/ops[]/items[]); одноэлементных нет.
+        /// - Батчи атомарны: любая невалидная операция отклоняет весь батч.
+        /// - edit_elements — единственный редактор свойств; dry_run:true — симуляция.
+        /// - После каждой мутации смотри violations/sceneViolationCount в ответе.
         /// - dimZ всегда толщина детали (Board convention в AGENTS.md).
         /// </summary>
         public McpResponse Handle(McpRequest request)
@@ -44,24 +45,20 @@ namespace KitchenDesigner.Core.MCP
                     case "set_rotation": return HandleSetRotation(request);
                     case "set_scale": return HandleSetScale(request);
                     case "get_all_elements": return HandleGetAllElements(request);
-                    case "get_element_info": return HandleGetElementInfo(request);
                     case "get_elements": return HandleGetElements(request);
-                    case "batch_edit": return HandleBatchEdit(request);
-                    case "clone_element": return HandleCloneElement(request);
-                    case "align_element": return HandleAlignElement(request);
+                    case "edit_elements": return HandleEditElements(request);
+                    case "clone_elements": return HandleCloneElements(request);
+                    case "align_elements": return HandleAlignElements(request);
                     case "distribute_evenly": return HandleDistributeEvenly(request);
                     case "get_free_space": return HandleGetFreeSpace(request);
-                    case "move_element": return HandleMoveElement(request);
-                    case "resize_element": return HandleResizeElement(request);
-                    case "rotate_element": return HandleRotateElement(request);
-                    case "create_element": return HandleCreateElement(request);
-                    case "convert_element": return HandleConvertElement(request);
-                    case "delete_element": return HandleDeleteElement(request);
+                    case "create_elements": return HandleCreateElements(request);
+                    case "convert_elements": return HandleConvertElements(request);
+                    case "delete_elements": return HandleDeleteElements(request);
                     case "undo": return HandleUndo(request);
                     case "redo": return HandleRedo(request);
                     case "get_specification": return HandleGetSpecification(request);
                     case "export_specification_csv": return HandleExportCsv(request);
-                    case "select_element": return HandleSelectElement(request);
+                    case "select_elements": return HandleSelectElements(request);
                     case "get_undo_stack_info": return HandleUndoStackInfo(request);
                     case "get_console_logs": return HandleConsoleLogs(request);
                     case "get_settings": return HandleGetSettings(request);
@@ -86,19 +83,8 @@ namespace KitchenDesigner.Core.MCP
                     case "exit_play_mode": return HandleExitPlayMode(request);
                     case "get_element_debug": return HandleGetElementDebug(request);
                     case "get_element_gaps": return HandleGetElementGaps(request);
-                    case "simulate_move": return HandleSimulateMove(request);
-                    case "simulate_resize": return HandleSimulateResize(request);
-                    case "set_element_lock": return HandleSetElementLock(request);
-                    case "rename_element": return HandleRenameElement(request);
-                    case "set_facade_mode": return HandleSetFacadeMode(request);
-                    case "set_drawer_properties": return HandleSetDrawerProperties(request);
-                    case "set_radial_shelf_properties": return HandleSetRadialShelfProperties(request);
-					case "set_table_properties": return HandleSetTableProperties(request);
-					case "set_pillar_properties": return HandleSetPillarProperties(request);
-					case "set_window_properties": return HandleSetWindowProperties(request);
-					case "set_door_properties": return HandleSetDoorProperties(request);
+                    case "rename_elements": return HandleRenameElements(request);
                     case "cycle_drawer_animation": return HandleCycleDrawerAnimation(request);
-                    case "set_material": return HandleSetMaterial(request);
                     case "list_materials": return HandleListMaterials(request);
                     case "reload_textures": return HandleReloadTextures(request);
                     default:

@@ -977,71 +977,6 @@
             "isLightSource": false
         },
         {
-            "name": "B4_drawer",
-            "dimensionsMM": [
-                596,
-                121,
-                18
-            ],
-            "position": [
-                1.0360000133514405,
-                0.16300000250339509,
-                -1.562000036239624
-            ],
-            "rotation": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "movable": true,
-            "isWall": false,
-            "isFacade": true,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
-            "groupId": 0,
-            "materialId": "default",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 12,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": false,
-            "drawerType": 0,
-            "drawerNominalLength": 350,
-            "drawerColor": 0,
-            "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "isLightSource": false
-        },
-        {
             "name": "B5_side_R",
             "dimensionsMM": [
                 540,
@@ -1895,7 +1830,7 @@
             ],
             "position": [
                 1.315000057220459,
-                0.10999999940395355,
+                0.10800004005432129,
                 -1.562000036239624
             ],
             "rotation": [
@@ -3382,71 +3317,6 @@
             "isLightSource": false
         },
         {
-            "name": "B3_fake_bottom",
-            "dimensionsMM": [
-                564,
-                540,
-                16
-            ],
-            "position": [
-                0.12700000405311585,
-                0.1080000028014183,
-                -3.3499999046325685
-            ],
-            "rotation": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                -0.7071068286895752
-            ],
-            "movable": false,
-            "isWall": false,
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "groupId": 0,
-            "materialId": "default",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": false,
-            "drawerType": 0,
-            "drawerNominalLength": 350,
-            "drawerColor": 0,
-            "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "isLightSource": false
-        },
-        {
             "name": "B5_upper_back",
             "dimensionsMM": [
                 18,
@@ -3536,10 +3406,10 @@
             "isTable": false,
             "isRadiusTable": false,
             "legInsetMM": 100,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
             "materialId": "default",
             "legsMaterialId": "default",
@@ -3601,10 +3471,10 @@
             "isTable": false,
             "isRadiusTable": false,
             "legInsetMM": 100,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
             "materialId": "default",
             "legsMaterialId": "default",
@@ -3649,7 +3519,7 @@
                 18
             ],
             "position": [
-                0.2015000730752945,
+                0.19650006294250489,
                 1.809999942779541,
                 -3.2790000438690187
             ],
@@ -3666,10 +3536,10 @@
             "isTable": false,
             "isRadiusTable": false,
             "legInsetMM": 100,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
             "materialId": "default",
             "legsMaterialId": "default",
@@ -3731,10 +3601,10 @@
             "isTable": false,
             "isRadiusTable": false,
             "legInsetMM": 100,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
             "materialId": "default",
             "legsMaterialId": "default",
@@ -3796,10 +3666,10 @@
             "isTable": false,
             "isRadiusTable": false,
             "legInsetMM": 100,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
             "materialId": "default",
             "legsMaterialId": "default",
@@ -3902,7 +3772,7 @@
             "isLightSource": false
         },
         {
-            "name": "A4_drawer_upper",
+            "name": "B4_drawer_upper",
             "dimensionsMM": [
                 596,
                 356,
@@ -3967,7 +3837,7 @@
             "isLightSource": false
         },
         {
-            "name": "A4_drawer_lower",
+            "name": "B4_drawer_lower",
             "dimensionsMM": [
                 596,
                 356,
@@ -4235,7 +4105,7 @@
             ],
             "position": [
                 1.0360000133514405,
-                0.6399999856948853,
+                0.64000004529953,
                 -2.1619999408721926
             ],
             "rotation": [
@@ -4446,10 +4316,10 @@
             "isTable": false,
             "isRadiusTable": false,
             "legInsetMM": 100,
-            "gapLeft": 2,
-            "gapRight": 2,
-            "gapTop": 2,
-            "gapBottom": 2,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
             "groupId": 0,
             "materialId": "default",
             "legsMaterialId": "default",
@@ -5657,80 +5527,15 @@
             "isLightSource": false
         },
         {
-            "name": "B5_gtv_double_upper_A",
-            "dimensionsMM": [
-                564,
-                115,
-                500
-            ],
-            "position": [
-                -1.0729999542236329,
-                0.6349999904632568,
-                -3.3299999237060549
-            ],
-            "rotation": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "movable": true,
-            "isWall": false,
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "groupId": 0,
-            "materialId": "gtv_anthracite",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": true,
-            "drawerType": 86,
-            "drawerNominalLength": 500,
-            "drawerColor": 0,
-            "drawerInternalWidth": 564,
-            "drawerIsDouble": true,
-            "drawerIsUpper": true,
-            "drawerPairedName": "B5_gtv_double_lower_A",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "isLightSource": false
-        },
-        {
             "name": "B5_gtv_double_lower_A",
             "dimensionsMM": [
                 564,
-                115,
+                198,
                 500
             ],
             "position": [
                 -1.0729999542236329,
-                0.5199999809265137,
+                0.5609999895095825,
                 -3.3299999237060549
             ],
             "rotation": [
@@ -5761,13 +5566,13 @@
             "grooveCount": 0,
             "cornerRadius": 0,
             "isDrawer": true,
-            "drawerType": 86,
+            "drawerType": 168,
             "drawerNominalLength": 500,
             "drawerColor": 0,
             "drawerInternalWidth": 564,
-            "drawerIsDouble": true,
+            "drawerIsDouble": false,
             "drawerIsUpper": false,
-            "drawerPairedName": "B5_gtv_double_upper_A",
+            "drawerPairedName": "",
             "drawerAttachedFacadeName": "B5_drawer_upper",
             "doubleDrawerState": 0,
             "isWindow": false,
@@ -5854,14 +5659,14 @@
         {
             "name": "A3_gtv_double_lower_A",
             "dimensionsMM": [
-                564,
+                563,
                 115,
                 500
             ],
             "position": [
-                1.315000057220459,
-                0.5199999809265137,
-                -2.162099838256836
+                1.2950001955032349,
+                0.5226864218711853,
+                -2.1624999046325685
             ],
             "rotation": [
                 0.0,
@@ -5894,7 +5699,7 @@
             "drawerType": 86,
             "drawerNominalLength": 500,
             "drawerColor": 0,
-            "drawerInternalWidth": 564,
+            "drawerInternalWidth": 563,
             "drawerIsDouble": true,
             "drawerIsUpper": false,
             "drawerPairedName": "A3_gtv_double_upper_A",
@@ -5919,14 +5724,79 @@
         {
             "name": "A3_gtv_double_upper_A",
             "dimensionsMM": [
+                563,
+                115,
+                500
+            ],
+            "position": [
+                1.2950001955032349,
+                0.6376864314079285,
+                -2.1624999046325685
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "gtv_anthracite",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": true,
+            "drawerType": 86,
+            "drawerNominalLength": 500,
+            "drawerColor": 0,
+            "drawerInternalWidth": 563,
+            "drawerIsDouble": true,
+            "drawerIsUpper": true,
+            "drawerPairedName": "A3_gtv_double_lower_A",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
+        },
+        {
+            "name": "B4_gtv_drawer",
+            "dimensionsMM": [
                 564,
                 115,
                 500
             ],
             "position": [
-                1.315000057220459,
-                0.6349999904632568,
-                -2.162099838256836
+                1.2949999570846558,
+                0.17350004613399507,
+                -1.562000036239624
             ],
             "rotation": [
                 0.0,
@@ -5960,10 +5830,205 @@
             "drawerNominalLength": 500,
             "drawerColor": 0,
             "drawerInternalWidth": 564,
-            "drawerIsDouble": true,
-            "drawerIsUpper": true,
-            "drawerPairedName": "A3_gtv_double_lower_A",
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "B4_drawer",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
+        },
+        {
+            "name": "B3_fake_bottom",
+            "dimensionsMM": [
+                600,
+                540,
+                16
+            ],
+            "position": [
+                0.12700000405311585,
+                0.1080000028014183,
+                -3.3499999046325685
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
+        },
+        {
+            "name": "B4_gtv_single_C",
+            "dimensionsMM": [
+                564,
+                198,
+                500
+            ],
+            "position": [
+                -0.4729999899864197,
+                0.2150000035762787,
+                -3.3299999237060549
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "gtv_anthracite",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": true,
+            "drawerType": 168,
+            "drawerNominalLength": 500,
+            "drawerColor": 0,
+            "drawerInternalWidth": 564,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "B4_drawer_lower",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false
+        },
+        {
+            "name": "B4_gtv_double_lower_A",
+            "dimensionsMM": [
+                564,
+                198,
+                500
+            ],
+            "position": [
+                -0.4729999899864197,
+                0.5609999895095825,
+                -3.330000162124634
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "gtv_anthracite",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": true,
+            "drawerType": 168,
+            "drawerNominalLength": 500,
+            "drawerColor": 0,
+            "drawerInternalWidth": 564,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "B4_drawer_upper",
             "doubleDrawerState": 0,
             "isWindow": false,
             "windowTint": 0,
@@ -5985,12 +6050,12 @@
     "groups": [],
     "camera": {
         "valid": true,
-        "targetX": 1.1165056228637696,
-        "targetY": 0.4348709285259247,
-        "targetZ": -2.2654383182525636,
-        "angleX": 47.60005187988281,
-        "angleY": -1347.701416015625,
-        "distance": 1.6000005006790162
+        "targetX": 0.5255873799324036,
+        "targetY": 0.05509759113192558,
+        "targetZ": -2.4903676509857179,
+        "angleX": 46.20005798339844,
+        "angleY": -2397.498046875,
+        "distance": 3.1999998092651369
     },
     "handleMode": "Move",
     "basePlateValid": true,
@@ -6063,7 +6128,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_door",
-            "elementIndex": 54,
+            "elementIndex": 52,
             "posBefore": [
                 1.24399995803833,
                 1.812000036239624,
@@ -6093,7 +6158,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -6131,7 +6196,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -6169,7 +6234,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -6207,14 +6272,204 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
+            "elementIndex": 53,
+            "posBefore": [
+                0.8399999737739563,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.8399999737739563,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B23_upper_door_R",
+            "elementIndex": 54,
+            "posBefore": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B23_upper_door_R",
+            "elementIndex": 54,
+            "posBefore": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B23_upper_door_R",
+            "elementIndex": 54,
+            "posBefore": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B23_upper_door_R",
+            "elementIndex": 54,
+            "posBefore": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.16500000655651093,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                671,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                671,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_upper_door",
             "elementIndex": 55,
             "posBefore": [
-                0.8399999737739563,
+                -0.4729999899864197,
                 1.809999942779541,
                 -3.2790000438690187
             ],
             "posAfter": [
-                0.8399999737739563,
+                -0.4729999899864197,
                 1.809999942779541,
                 -3.2790000438690187
             ],
@@ -6231,164 +6486,12 @@
                 1.0
             ],
             "dimsBefore": [
-                671,
+                596,
                 896,
                 18
             ],
             "dimsAfter": [
-                671,
-                896,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
-            "posBefore": [
-                0.16500000655651093,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "posAfter": [
-                0.16500000655651093,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                671,
-                896,
-                18
-            ],
-            "dimsAfter": [
-                671,
-                896,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
-            "posBefore": [
-                0.16500000655651093,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "posAfter": [
-                0.16500000655651093,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                671,
-                896,
-                18
-            ],
-            "dimsAfter": [
-                671,
-                896,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
-            "posBefore": [
-                0.16500000655651093,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "posAfter": [
-                0.16500000655651093,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                671,
-                896,
-                18
-            ],
-            "dimsAfter": [
-                671,
-                896,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
-            "posBefore": [
-                0.16500000655651093,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "posAfter": [
-                0.16500000655651093,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                671,
-                896,
-                18
-            ],
-            "dimsAfter": [
-                671,
+                596,
                 896,
                 18
             ],
@@ -6397,7 +6500,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -6435,7 +6538,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -6473,45 +6576,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
-            "posBefore": [
-                -0.4729999899864197,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "posAfter": [
-                -0.4729999899864197,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                596,
-                896,
-                18
-            ],
-            "dimsAfter": [
-                596,
-                896,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -6549,7 +6614,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -6579,7 +6644,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 0.531000018119812,
                 2.250999927520752,
@@ -6617,7 +6682,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 0.531000018119812,
                 2.250999927520752,
@@ -6655,7 +6720,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -6685,7 +6750,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_top",
-            "elementIndex": 42,
+            "elementIndex": 41,
             "posBefore": [
                 -0.4729999899864197,
                 2.250999927520752,
@@ -6723,7 +6788,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4725000262260437,
                 1.809999942779541,
@@ -6753,7 +6818,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -6783,7 +6848,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_side_L",
-            "elementIndex": 43,
+            "elementIndex": 42,
             "posBefore": [
                 -0.7639999985694885,
                 1.809999942779541,
@@ -6821,7 +6886,7 @@
         {
             "type": "resize",
             "description": "Resize B5_upper_back",
-            "elementIndex": 53,
+            "elementIndex": 51,
             "posBefore": [
                 -0.9390000104904175,
                 1.809999942779541,
@@ -6857,69 +6922,9 @@
             "children": []
         },
         {
-            "type": "move",
-            "description": "Move B4_drawer",
-            "elementIndex": 15,
-            "posBefore": [
-                -0.4729999899864197,
-                0.16249999403953553,
-                -3.071000099182129
-            ],
-            "posAfter": [
-                -0.4729999899864197,
-                0.16249999403953553,
-                -3.071000099182129
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071067094802856,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B4_drawer",
-            "elementIndex": 15,
-            "posBefore": [
-                -0.4729999899864197,
-                0.16249999403953553,
-                -3.071000099182129
-            ],
-            "posAfter": [
-                -0.4729999899864197,
-                0.16249999403953553,
-                -3.071000099182129
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071067094802856,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                -5.960465188081798e-8,
-                0.0,
-                -1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
             "type": "resize",
             "description": "Resize radial_shelf_upper_1",
-            "elementIndex": 69,
+            "elementIndex": 67,
             "posBefore": [
                 -0.9210000038146973,
                 1.5199999809265137,
@@ -6957,7 +6962,7 @@
         {
             "type": "resize",
             "description": "Resize radial_shelf_upper_2",
-            "elementIndex": 70,
+            "elementIndex": 68,
             "posBefore": [
                 -0.9210000038146973,
                 1.8200000524520875,
@@ -6995,7 +7000,7 @@
         {
             "type": "resize",
             "description": "Resize radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9210000038146973,
                 2.119999885559082,
@@ -7033,7 +7038,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_1",
-            "elementIndex": 69,
+            "elementIndex": 67,
             "posBefore": [
                 -0.9210000038146973,
                 1.5199999809265137,
@@ -7063,7 +7068,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_2",
-            "elementIndex": 70,
+            "elementIndex": 68,
             "posBefore": [
                 -0.9210000038146973,
                 1.8200000524520875,
@@ -7093,7 +7098,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9210000038146973,
                 2.119999885559082,
@@ -7123,7 +7128,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9210000038146973,
                 2.119999885559082,
@@ -7153,7 +7158,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9210000038146973,
                 2.119999885559082,
@@ -7183,7 +7188,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9210000038146973,
                 2.119999885559082,
@@ -7213,7 +7218,7 @@
         {
             "type": "resize",
             "description": "Resize radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9210000038146973,
                 2.119999885559082,
@@ -7251,7 +7256,7 @@
         {
             "type": "resize",
             "description": "Resize B5_upper_back",
-            "elementIndex": 53,
+            "elementIndex": 51,
             "posBefore": [
                 -0.9390000104904175,
                 1.809999942779541,
@@ -7289,7 +7294,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_side_L",
-            "elementIndex": 43,
+            "elementIndex": 42,
             "posBefore": [
                 -0.7639999985694885,
                 1.809999942779541,
@@ -7327,7 +7332,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_1",
-            "elementIndex": 69,
+            "elementIndex": 67,
             "posBefore": [
                 -0.9210000038146973,
                 1.5199999809265137,
@@ -7357,7 +7362,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_2",
-            "elementIndex": 70,
+            "elementIndex": 68,
             "posBefore": [
                 -0.9210000038146973,
                 1.8200000524520875,
@@ -7387,7 +7392,7 @@
         {
             "type": "resize",
             "description": "Resize radial_shelf_upper_1",
-            "elementIndex": 69,
+            "elementIndex": 67,
             "posBefore": [
                 -0.9210000038146973,
                 1.5199999809265137,
@@ -7425,7 +7430,7 @@
         {
             "type": "resize",
             "description": "Resize radial_shelf_upper_2",
-            "elementIndex": 70,
+            "elementIndex": 68,
             "posBefore": [
                 -0.9210000038146973,
                 1.8200000524520875,
@@ -7463,7 +7468,7 @@
         {
             "type": "resize",
             "description": "Resize radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9210000038146973,
                 2.119999885559082,
@@ -7501,7 +7506,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_1",
-            "elementIndex": 69,
+            "elementIndex": 67,
             "posBefore": [
                 -0.9210000038146973,
                 1.5199999809265137,
@@ -7531,7 +7536,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_2",
-            "elementIndex": 70,
+            "elementIndex": 68,
             "posBefore": [
                 -0.9210000038146973,
                 1.8200000524520875,
@@ -7561,7 +7566,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9210000038146973,
                 2.119999885559082,
@@ -7591,7 +7596,7 @@
         {
             "type": "resize",
             "description": "Resize B5_upper_back",
-            "elementIndex": 53,
+            "elementIndex": 51,
             "posBefore": [
                 -0.9390000104904175,
                 1.809999942779541,
@@ -7629,7 +7634,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_1",
-            "elementIndex": 69,
+            "elementIndex": 67,
             "posBefore": [
                 -0.9210000038146973,
                 1.3869999647140504,
@@ -7659,7 +7664,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_2",
-            "elementIndex": 70,
+            "elementIndex": 68,
             "posBefore": [
                 -0.9210000038146973,
                 1.809999942779541,
@@ -7689,7 +7694,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9210000038146973,
                 2.2330000400543215,
@@ -7719,7 +7724,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_side_L",
-            "elementIndex": 43,
+            "elementIndex": 42,
             "posBefore": [
                 -0.7639999985694885,
                 1.809999942779541,
@@ -7757,7 +7762,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_1",
-            "elementIndex": 69,
+            "elementIndex": 67,
             "posBefore": [
                 -0.9390000104904175,
                 1.3869999647140504,
@@ -7787,7 +7792,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9390000104904175,
                 2.2330000400543215,
@@ -7817,7 +7822,7 @@
         {
             "type": "resize",
             "description": "Resize radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9390000104904175,
                 2.250999927520752,
@@ -7855,7 +7860,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9390000104904175,
                 2.250999927520752,
@@ -7885,7 +7890,7 @@
         {
             "type": "move",
             "description": "Move radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9300000071525574,
                 2.250999927520752,
@@ -7915,7 +7920,7 @@
         {
             "type": "resize",
             "description": "Resize radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9390000104904175,
                 2.250999927520752,
@@ -7953,7 +7958,7 @@
         {
             "type": "resize",
             "description": "Resize radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9390000104904175,
                 2.250999927520752,
@@ -7991,7 +7996,7 @@
         {
             "type": "resize",
             "description": "Resize radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9390000104904175,
                 2.250999927520752,
@@ -8029,7 +8034,7 @@
         {
             "type": "resize",
             "description": "Resize radial_shelf_upper_3",
-            "elementIndex": 71,
+            "elementIndex": 69,
             "posBefore": [
                 -0.9390000104904175,
                 2.250999927520752,
@@ -8067,7 +8072,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Bottom",
-            "elementIndex": 75,
+            "elementIndex": 73,
             "posBefore": [
                 1.2649999856948853,
                 0.019999999552965165,
@@ -8097,7 +8102,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Top",
-            "elementIndex": 76,
+            "elementIndex": 74,
             "posBefore": [
                 1.2649999856948853,
                 1.9800000190734864,
@@ -8127,68 +8132,68 @@
         {
             "type": "move",
             "description": "Move Fridge_Shelf",
+            "elementIndex": 75,
+            "posBefore": [
+                1.2649999856948853,
+                1.0,
+                -0.75
+            ],
+            "posAfter": [
+                1.2649999856948853,
+                1.0,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Upper",
+            "elementIndex": 76,
+            "posBefore": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "posAfter": [
+                0.9599999785423279,
+                1.4900000095367432,
+                -0.75
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071067690849304,
+                0.0,
+                0.7071067690849304
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fridge_Door_Lower",
             "elementIndex": 77,
             "posBefore": [
-                1.2649999856948853,
-                1.0,
-                -0.75
-            ],
-            "posAfter": [
-                1.2649999856948853,
-                1.0,
-                -0.75
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.7071067690849304,
-                0.0,
-                0.0,
-                0.7071067690849304
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Fridge_Door_Upper",
-            "elementIndex": 78,
-            "posBefore": [
-                0.9599999785423279,
-                1.4900000095367432,
-                -0.75
-            ],
-            "posAfter": [
-                0.9599999785423279,
-                1.4900000095367432,
-                -0.75
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071067690849304,
-                0.0,
-                0.7071067690849304
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
-            "posBefore": [
                 0.9599999785423279,
                 0.5099999904632568,
                 -0.75
@@ -8217,7 +8222,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 0.9599999785423279,
                 1.4900000095367432,
@@ -8247,7 +8252,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.9599999785423279,
                 0.5099999904632568,
@@ -8277,7 +8282,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 0.9599999785423279,
                 1.4900000095367432,
@@ -8315,7 +8320,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 0.9599999785423279,
                 1.5180000066757203,
@@ -8353,7 +8358,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 0.9599999785423279,
                 1.4900000095367432,
@@ -8391,7 +8396,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 0.9599999785423279,
                 1.4900000095367432,
@@ -8429,7 +8434,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 0.9599999785423279,
                 1.4900000095367432,
@@ -8467,7 +8472,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 0.9599999785423279,
                 1.4900000095367432,
@@ -8497,7 +8502,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 0.9599999785423279,
                 1.5,
@@ -8535,7 +8540,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.9599999785423279,
                 0.5099999904632568,
@@ -8565,7 +8570,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.9599999785423279,
                 0.4699999988079071,
@@ -8595,7 +8600,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.2770000100135803,
                 0.4700000286102295,
@@ -8625,7 +8630,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.2770000100135803,
                 0.7595930695533752,
@@ -8663,7 +8668,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.2770000100135803,
                 0.7599999904632568,
@@ -8701,7 +8706,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.2770000100135803,
                 0.7599999904632568,
@@ -8731,7 +8736,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.2770000100135803,
                 0.7600000500679016,
@@ -8761,7 +8766,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.6780000329017639,
                 0.7600000500679016,
@@ -8791,7 +8796,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.6780000329017639,
                 0.5,
@@ -8821,7 +8826,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.9599999785423279,
                 0.5,
@@ -8851,7 +8856,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 0.9599999785423279,
                 1.5,
@@ -8889,7 +8894,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.9599999785423279,
                 0.5,
@@ -8927,7 +8932,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.9599999785423279,
                 0.5,
@@ -8957,7 +8962,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Left",
-            "elementIndex": 72,
+            "elementIndex": 70,
             "posBefore": [
                 1.284999966621399,
                 1.0,
@@ -8995,7 +9000,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Right",
-            "elementIndex": 73,
+            "elementIndex": 71,
             "posBefore": [
                 1.284999966621399,
                 1.0,
@@ -9033,7 +9038,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Bottom",
-            "elementIndex": 75,
+            "elementIndex": 73,
             "posBefore": [
                 1.2649999856948853,
                 0.019999999552965165,
@@ -9071,7 +9076,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Top",
-            "elementIndex": 76,
+            "elementIndex": 74,
             "posBefore": [
                 1.2649999856948853,
                 1.9800000190734864,
@@ -9109,7 +9114,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Shelf",
-            "elementIndex": 77,
+            "elementIndex": 75,
             "posBefore": [
                 1.2649999856948853,
                 1.0,
@@ -9147,7 +9152,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Left",
-            "elementIndex": 72,
+            "elementIndex": 70,
             "posBefore": [
                 1.284999966621399,
                 1.0,
@@ -9177,7 +9182,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Right",
-            "elementIndex": 73,
+            "elementIndex": 71,
             "posBefore": [
                 1.284999966621399,
                 1.0,
@@ -9207,7 +9212,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Bottom",
-            "elementIndex": 75,
+            "elementIndex": 73,
             "posBefore": [
                 1.2649999856948853,
                 0.019999999552965165,
@@ -9237,7 +9242,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Top",
-            "elementIndex": 76,
+            "elementIndex": 74,
             "posBefore": [
                 1.2649999856948853,
                 1.9800000190734864,
@@ -9267,7 +9272,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Shelf",
-            "elementIndex": 77,
+            "elementIndex": 75,
             "posBefore": [
                 1.2649999856948853,
                 1.0,
@@ -9297,7 +9302,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 0.9599999785423279,
                 1.5,
@@ -9327,7 +9332,7 @@
         {
             "type": "move",
             "description": "Move Fridge_Door_Lower",
-            "elementIndex": 79,
+            "elementIndex": 77,
             "posBefore": [
                 0.9599999785423279,
                 0.5,
@@ -9433,7 +9438,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.2440000772476197,
                 1.8100000619888306,
@@ -9471,7 +9476,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.2060000896453858,
                 1.809999942779541,
@@ -9509,7 +9514,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.2059999704360963,
                 1.809999942779541,
@@ -9547,7 +9552,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -9585,7 +9590,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -9615,7 +9620,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_planck",
-            "elementIndex": 80,
+            "elementIndex": 78,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -9645,7 +9650,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.2059999704360963,
                 1.809999942779541,
@@ -9683,7 +9688,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.2059999704360963,
                 1.809999942779541,
@@ -9713,7 +9718,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.215000033378601,
                 1.809999942779541,
@@ -9743,7 +9748,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_planck",
-            "elementIndex": 80,
+            "elementIndex": 78,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -9773,7 +9778,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -9803,7 +9808,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -9833,7 +9838,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -9863,7 +9868,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -9893,7 +9898,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -9931,7 +9936,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -9961,7 +9966,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -9991,7 +9996,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.3907140493392945,
@@ -10021,7 +10026,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.350000023841858,
@@ -10051,7 +10056,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9114809036254883,
@@ -10081,7 +10086,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9114809036254883,
@@ -10111,7 +10116,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349997520446778,
                 1.9114809036254883,
@@ -10141,7 +10146,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349995136260987,
                 1.9114809036254883,
@@ -10171,7 +10176,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -0.3615288734436035,
                 1.9114809036254883,
@@ -10201,7 +10206,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -0.10048609972000122,
                 1.9114809036254883,
@@ -10231,7 +10236,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 0.3240000009536743,
                 1.9110002517700196,
@@ -10261,7 +10266,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 0.3240000009536743,
                 1.7423303127288819,
@@ -10291,7 +10296,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -0.29058796167373659,
                 1.7423303127288819,
@@ -10321,7 +10326,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.7420001029968262,
@@ -10351,7 +10356,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.7420001029968262,
@@ -10381,7 +10386,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.7420001029968262,
@@ -10411,7 +10416,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.8545129299163819,
@@ -10441,7 +10446,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.8550002574920655,
@@ -10471,7 +10476,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.8550002574920655,
@@ -10501,7 +10506,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9781043529510499,
@@ -10531,7 +10536,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9781043529510499,
@@ -10561,7 +10566,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9781043529510499,
@@ -10591,7 +10596,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9781043529510499,
@@ -10621,7 +10626,7 @@
         {
             "type": "resize",
             "description": "Resize Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9781043529510499,
@@ -10659,7 +10664,7 @@
         {
             "type": "resize",
             "description": "Resize Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9780000448226929,
@@ -10697,7 +10702,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9780000448226929,
@@ -10727,7 +10732,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9780000448226929,
@@ -10757,7 +10762,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9780000448226929,
@@ -10787,7 +10792,7 @@
         {
             "type": "resize",
             "description": "Resize Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9780000448226929,
@@ -10825,7 +10830,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9780000448226929,
@@ -10855,7 +10860,7 @@
         {
             "type": "move",
             "description": "Move Окно (copy)",
-            "elementIndex": 81,
+            "elementIndex": 79,
             "posBefore": [
                 -1.6349999904632569,
                 1.9780001640319825,
@@ -10885,7 +10890,7 @@
         {
             "type": "move",
             "description": "Move Дверь",
-            "elementIndex": 82,
+            "elementIndex": 80,
             "posBefore": [
                 -1.6349999904632569,
                 1.0,
@@ -10915,7 +10920,7 @@
         {
             "type": "move",
             "description": "Move Окно",
-            "elementIndex": 83,
+            "elementIndex": 81,
             "posBefore": [
                 -1.6349999904632569,
                 0.5999999642372131,
@@ -10945,7 +10950,7 @@
         {
             "type": "move",
             "description": "Move Окно",
-            "elementIndex": 83,
+            "elementIndex": 81,
             "posBefore": [
                 -1.6350001096725464,
                 1.5870001316070557,
@@ -10975,7 +10980,7 @@
         {
             "type": "move",
             "description": "Move Окно",
-            "elementIndex": 83,
+            "elementIndex": 81,
             "posBefore": [
                 -1.6350001096725464,
                 2.556000232696533,
@@ -11005,7 +11010,7 @@
         {
             "type": "move",
             "description": "Move Дверь",
-            "elementIndex": 82,
+            "elementIndex": 80,
             "posBefore": [
                 -1.6350001096725464,
                 1.1910001039505005,
@@ -11035,7 +11040,7 @@
         {
             "type": "move",
             "description": "Move Дверь",
-            "elementIndex": 82,
+            "elementIndex": 80,
             "posBefore": [
                 -1.6350001096725464,
                 1.5750000476837159,
@@ -11065,7 +11070,7 @@
         {
             "type": "move",
             "description": "Move Дверь",
-            "elementIndex": 82,
+            "elementIndex": 80,
             "posBefore": [
                 -0.09800000488758087,
                 1.5940001010894776,
@@ -11095,7 +11100,7 @@
         {
             "type": "move",
             "description": "Move Дверь",
-            "elementIndex": 82,
+            "elementIndex": 80,
             "posBefore": [
                 1.6349999904632569,
                 1.2440000772476197,
@@ -11125,7 +11130,7 @@
         {
             "type": "move",
             "description": "Move Дверь",
-            "elementIndex": 82,
+            "elementIndex": 80,
             "posBefore": [
                 1.6350001096725464,
                 1.5490000247955323,
@@ -11155,7 +11160,7 @@
         {
             "type": "resize",
             "description": "Resize Дверь",
-            "elementIndex": 82,
+            "elementIndex": 80,
             "posBefore": [
                 1.6349999904632569,
                 0.9819999933242798,
@@ -11193,7 +11198,7 @@
         {
             "type": "move",
             "description": "Move Дверь",
-            "elementIndex": 82,
+            "elementIndex": 80,
             "posBefore": [
                 1.6349999904632569,
                 0.9819999933242798,
@@ -11223,7 +11228,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 0.018000001087784768,
                 0.052000001072883609,
@@ -11253,7 +11258,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 0.018000001087784768,
                 0.2135871797800064,
@@ -11283,7 +11288,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 0.48500001430511477,
                 0.21400001645088197,
@@ -11313,7 +11318,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 0.48500001430511477,
                 0.23034612834453584,
@@ -11343,7 +11348,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 1.002000093460083,
                 0.2800000309944153,
@@ -11373,7 +11378,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 1.002000093460083,
                 0.052500009536743167,
@@ -11403,7 +11408,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 -0.2580033540725708,
                 0.05250000208616257,
@@ -11433,7 +11438,7 @@
         {
             "type": "move",
             "description": "Move Дверь",
-            "elementIndex": 82,
+            "elementIndex": 80,
             "posBefore": [
                 1.6349999904632569,
                 1.0,
@@ -11463,7 +11468,7 @@
         {
             "type": "move",
             "description": "Move Дверь",
-            "elementIndex": 82,
+            "elementIndex": 80,
             "posBefore": [
                 1.6349999904632569,
                 1.0,
@@ -11493,7 +11498,7 @@
         {
             "type": "move",
             "description": "Move Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.7300000190734863,
                 2.200000047683716,
@@ -11523,7 +11528,7 @@
         {
             "type": "resize",
             "description": "Resize Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.3370000123977661,
                 2.1670000553131105,
@@ -11561,7 +11566,7 @@
         {
             "type": "resize",
             "description": "Resize Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.3370000123977661,
                 2.1670000553131105,
@@ -11599,7 +11604,7 @@
         {
             "type": "resize",
             "description": "Resize Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.3370000123977661,
                 2.1670000553131105,
@@ -11637,7 +11642,7 @@
         {
             "type": "resize",
             "description": "Resize Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.3370000123977661,
                 2.1670000553131105,
@@ -11675,7 +11680,7 @@
         {
             "type": "resize",
             "description": "Resize Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.3370000123977661,
                 2.1670000553131105,
@@ -11713,7 +11718,7 @@
         {
             "type": "resize",
             "description": "Resize Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.3370000123977661,
                 2.1670000553131105,
@@ -11751,7 +11756,7 @@
         {
             "type": "resize",
             "description": "Resize Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.3370000123977661,
                 2.1670000553131105,
@@ -11789,7 +11794,7 @@
         {
             "type": "move",
             "description": "Move Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.3370000123977661,
                 2.1670000553131105,
@@ -11819,7 +11824,7 @@
         {
             "type": "move",
             "description": "Move Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.17900000512599946,
                 2.183000087738037,
@@ -11849,7 +11854,7 @@
         {
             "type": "move",
             "description": "Move Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.3150000274181366,
                 2.183000087738037,
@@ -11879,7 +11884,7 @@
         {
             "type": "move",
             "description": "Move Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 1.5099999904632569,
                 2.183000087738037,
@@ -11909,7 +11914,7 @@
         {
             "type": "move",
             "description": "Move Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 1.5099999904632569,
                 2.625,
@@ -11939,7 +11944,7 @@
         {
             "type": "move",
             "description": "Move Источник света",
-            "elementIndex": 85,
+            "elementIndex": 83,
             "posBefore": [
                 -0.05114316940307617,
                 2.625,
@@ -11969,7 +11974,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 0.8840000629425049,
                 0.05250000208616257,
@@ -11999,7 +12004,7 @@
         {
             "type": "move",
             "description": "Move Дверь",
-            "elementIndex": 82,
+            "elementIndex": 80,
             "posBefore": [
                 1.6349999904632569,
                 1.0,
@@ -12040,7 +12045,7 @@
                 {
                     "type": "move",
                     "description": "Move Ножка",
-                    "elementIndex": 84,
+                    "elementIndex": 82,
                     "posBefore": [
                         0.3150000274181366,
                         0.05250000208616257,
@@ -12070,7 +12075,7 @@
                 {
                     "type": "resize",
                     "description": "Resize Ножка",
-                    "elementIndex": 84,
+                    "elementIndex": 82,
                     "posBefore": [
                         1.0860000848770142,
                         0.05250000208616257,
@@ -12110,7 +12115,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 1.0860000848770142,
                 0.05000000074505806,
@@ -12140,7 +12145,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 0.5890000462532044,
                 0.05000000074505806,
@@ -12170,7 +12175,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 1.0700000524520875,
                 0.05000000074505806,
@@ -12200,7 +12205,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 1.1700000762939454,
                 0.05000000074505806,
@@ -12230,7 +12235,7 @@
         {
             "type": "move",
             "description": "Move Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 1.0700000524520875,
                 0.05000000074505806,
@@ -12260,7 +12265,7 @@
         {
             "type": "resize",
             "description": "Resize Ножка",
-            "elementIndex": 84,
+            "elementIndex": 82,
             "posBefore": [
                 1.1776471138000489,
                 0.05000000074505806,
@@ -12298,7 +12303,7 @@
         {
             "type": "move",
             "description": "Move Окно",
-            "elementIndex": 83,
+            "elementIndex": 81,
             "posBefore": [
                 -1.6350001096725464,
                 1.5910000801086426,
@@ -12328,7 +12333,7 @@
         {
             "type": "move",
             "description": "Move Окно",
-            "elementIndex": 83,
+            "elementIndex": 81,
             "posBefore": [
                 -1.6350001096725464,
                 1.953663945198059,
@@ -12358,7 +12363,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 1.0099999904632569,
                 1.5,
@@ -12396,7 +12401,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 1.0099999904632569,
                 1.5,
@@ -12434,7 +12439,7 @@
         {
             "type": "resize",
             "description": "Resize Fridge_Door_Upper",
-            "elementIndex": 78,
+            "elementIndex": 76,
             "posBefore": [
                 1.0099999904632569,
                 1.5,
@@ -12472,7 +12477,7 @@
         {
             "type": "resize",
             "description": "Resize B5_drawer_upper",
-            "elementIndex": 67,
+            "elementIndex": 65,
             "posBefore": [
                 -1.0729999542236329,
                 0.6399999856948853,
@@ -12616,7 +12621,7 @@
         {
             "type": "resize",
             "description": "Resize A2_door",
-            "elementIndex": 59,
+            "elementIndex": 57,
             "posBefore": [
                 1.0360000133514405,
                 0.46000000834465029,
@@ -12654,7 +12659,7 @@
         {
             "type": "resize",
             "description": "Resize B2_door",
-            "elementIndex": 62,
+            "elementIndex": 60,
             "posBefore": [
                 0.6974999904632568,
                 0.46000000834465029,
@@ -12692,7 +12697,7 @@
         {
             "type": "move",
             "description": "Move K1_door",
-            "elementIndex": 33,
+            "elementIndex": 32,
             "posBefore": [
                 1.0360000133514405,
                 0.46000000834465029,
@@ -12722,7 +12727,7 @@
         {
             "type": "move",
             "description": "Move K1_door",
-            "elementIndex": 33,
+            "elementIndex": 32,
             "posBefore": [
                 1.0360000133514405,
                 0.46000000834465029,
@@ -12752,7 +12757,7 @@
         {
             "type": "move",
             "description": "Move K2_door",
-            "elementIndex": 22,
+            "elementIndex": 21,
             "posBefore": [
                 -1.4639999866485596,
                 0.46000000834465029,
@@ -12782,7 +12787,7 @@
         {
             "type": "move",
             "description": "Move K2_door",
-            "elementIndex": 22,
+            "elementIndex": 21,
             "posBefore": [
                 -1.4639999866485596,
                 0.46000000834465029,
@@ -12811,46 +12816,8 @@
         },
         {
             "type": "resize",
-            "description": "Resize B4_drawer",
-            "elementIndex": 15,
-            "posBefore": [
-                -0.4729999899864197,
-                0.16249999403953553,
-                -3.071000099182129
-            ],
-            "posAfter": [
-                -0.4729999899864197,
-                0.16300000250339509,
-                -3.071000099182129
-            ],
-            "rotBefore": [
-                0.0,
-                -5.960465188081798e-8,
-                0.0,
-                -1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                596,
-                121,
-                18
-            ],
-            "dimsAfter": [
-                596,
-                121,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A4_drawer_upper",
-            "elementIndex": 60,
+            "description": "Resize B4_drawer_upper",
+            "elementIndex": 58,
             "posBefore": [
                 1.0360000133514405,
                 0.6399999856948853,
@@ -12888,7 +12855,7 @@
         {
             "type": "resize",
             "description": "Resize A4_bottom",
-            "elementIndex": 29,
+            "elementIndex": 28,
             "posBefore": [
                 1.315000057220459,
                 0.10799999535083771,
@@ -12926,7 +12893,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom",
-            "elementIndex": 45,
+            "elementIndex": 44,
             "posBefore": [
                 1.4190000295639039,
                 1.36899995803833,
@@ -12964,7 +12931,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom",
-            "elementIndex": 45,
+            "elementIndex": 44,
             "posBefore": [
                 1.4190000295639039,
                 1.36899995803833,
@@ -12994,7 +12961,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -13032,7 +12999,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -13070,7 +13037,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -13189,38 +13156,8 @@
         },
         {
             "type": "move",
-            "description": "Move B4_drawer",
-            "elementIndex": 15,
-            "posBefore": [
-                -0.4729999899864197,
-                0.16300000250339509,
-                -3.071000099182129
-            ],
-            "posAfter": [
-                1.0360000133514405,
-                4.0,
-                -1.562000036239624
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
             "description": "Move A12_upper_B_side_L",
-            "elementIndex": 51,
+            "elementIndex": 50,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -13339,8 +13276,8 @@
         },
         {
             "type": "move",
-            "description": "Move A4_drawer_lower",
-            "elementIndex": 61,
+            "description": "Move B4_drawer_lower",
+            "elementIndex": 59,
             "posBefore": [
                 1.0360000133514405,
                 0.2800000011920929,
@@ -13362,36 +13299,6 @@
                 0.7071068286895752,
                 0.0,
                 -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B4_drawer",
-            "elementIndex": 15,
-            "posBefore": [
-                1.0360000133514405,
-                4.0,
-                -1.562000036239624
-            ],
-            "posAfter": [
-                -0.4729999899864197,
-                0.16300000250339509,
-                -3.071000099182129
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
             ],
             "dimsBefore": [],
             "dimsAfter": [],
@@ -13400,7 +13307,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_L",
-            "elementIndex": 47,
+            "elementIndex": 46,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -13430,7 +13337,7 @@
         {
             "type": "move",
             "description": "Move A4_bottom",
-            "elementIndex": 29,
+            "elementIndex": 28,
             "posBefore": [
                 1.315000057220459,
                 0.1080000028014183,
@@ -13460,7 +13367,7 @@
         {
             "type": "move",
             "description": "Move A4_bottom",
-            "elementIndex": 29,
+            "elementIndex": 28,
             "posBefore": [
                 1.315000057220459,
                 0.37310758233070376,
@@ -13489,38 +13396,8 @@
         },
         {
             "type": "move",
-            "description": "Move B4_drawer",
-            "elementIndex": 15,
-            "posBefore": [
-                -0.4729999899864197,
-                0.16300000250339509,
-                -3.071000099182129
-            ],
-            "posAfter": [
-                -0.4729999899864197,
-                3.0,
-                -3.071000099182129
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_drawer_lower",
-            "elementIndex": 61,
+            "description": "Move B4_drawer_lower",
+            "elementIndex": 59,
             "posBefore": [
                 1.0360000133514405,
                 0.2800000011920929,
@@ -13549,8 +13426,8 @@
         },
         {
             "type": "move",
-            "description": "Move A4_drawer_upper",
-            "elementIndex": 60,
+            "description": "Move B4_drawer_upper",
+            "elementIndex": 58,
             "posBefore": [
                 1.0360000133514405,
                 0.6399999856948853,
@@ -13579,8 +13456,8 @@
         },
         {
             "type": "move",
-            "description": "Move A4_drawer_lower",
-            "elementIndex": 61,
+            "description": "Move B4_drawer_lower",
+            "elementIndex": 59,
             "posBefore": [
                 1.0360000133514405,
                 0.2800000011920929,
@@ -13609,8 +13486,8 @@
         },
         {
             "type": "move",
-            "description": "Move A4_drawer_upper",
-            "elementIndex": 60,
+            "description": "Move B4_drawer_upper",
+            "elementIndex": 58,
             "posBefore": [
                 1.0360000133514405,
                 0.6399999856948853,
@@ -13632,66 +13509,6 @@
                 0.0,
                 0.0,
                 1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B4_drawer",
-            "elementIndex": 15,
-            "posBefore": [
-                -0.4729999899864197,
-                3.0,
-                -3.071000099182129
-            ],
-            "posAfter": [
-                -0.4729999899864197,
-                3.0,
-                -3.071000099182129
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071067690849304,
-                0.0,
-                -0.7071067690849304
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B4_drawer",
-            "elementIndex": 15,
-            "posBefore": [
-                -0.4729999899864197,
-                3.0,
-                -3.071000099182129
-            ],
-            "posAfter": [
-                1.0360000133514405,
-                0.16300000250339509,
-                -1.562000036239624
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
             ],
             "dimsBefore": [],
             "dimsAfter": [],
@@ -13700,7 +13517,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_bottom",
-            "elementIndex": 36,
+            "elementIndex": 35,
             "posBefore": [
                 1.4190000295639039,
                 1.36899995803833,
@@ -13730,7 +13547,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_bottom",
-            "elementIndex": 36,
+            "elementIndex": 35,
             "posBefore": [
                 1.4190000295639039,
                 1.3689998388290406,
@@ -13760,7 +13577,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_top",
-            "elementIndex": 37,
+            "elementIndex": 36,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -13790,7 +13607,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.215000033378601,
                 1.809999942779541,
@@ -13828,7 +13645,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -13858,7 +13675,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -13888,7 +13705,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -13918,7 +13735,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -13948,7 +13765,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.3869999647140504,
                 1.8100000619888306,
@@ -13978,7 +13795,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.4190000295639039,
                 1.8100000619888306,
@@ -14016,7 +13833,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.402999997138977,
                 1.8100000619888306,
@@ -14054,7 +13871,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.1990000009536744,
                 1.809999942779541,
@@ -14092,7 +13909,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.1990000009536744,
                 1.809999942779541,
@@ -14130,7 +13947,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.1990000009536744,
                 1.809999942779541,
@@ -14168,7 +13985,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.1990000009536744,
                 1.809999942779541,
@@ -14198,7 +14015,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.4355000257492066,
                 1.8100000619888306,
@@ -14236,7 +14053,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_bottom",
-            "elementIndex": 36,
+            "elementIndex": 35,
             "posBefore": [
                 1.4190000295639039,
                 1.3689998388290406,
@@ -14274,7 +14091,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_top",
-            "elementIndex": 37,
+            "elementIndex": 36,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -14312,7 +14129,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_bottom",
-            "elementIndex": 49,
+            "elementIndex": 48,
             "posBefore": [
                 0.531000018119812,
                 1.36899995803833,
@@ -14350,7 +14167,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 0.531000018119812,
                 2.250999927520752,
@@ -14388,7 +14205,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14418,7 +14235,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14456,7 +14273,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14494,7 +14311,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14532,7 +14349,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14570,7 +14387,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14608,7 +14425,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14646,7 +14463,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14684,7 +14501,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14722,7 +14539,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14760,7 +14577,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14798,7 +14615,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14836,7 +14653,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14874,7 +14691,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14912,7 +14729,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14950,7 +14767,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -14988,7 +14805,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -15026,7 +14843,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -15056,7 +14873,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.242195963859558,
@@ -15094,7 +14911,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.2419999837875367,
@@ -15132,7 +14949,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.2419999837875367,
@@ -15170,7 +14987,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.2419999837875367,
@@ -15208,7 +15025,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.2419999837875367,
@@ -15246,7 +15063,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.2419999837875367,
@@ -15276,7 +15093,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.7809797525405884,
@@ -15306,7 +15123,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -15344,7 +15161,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom",
-            "elementIndex": 45,
+            "elementIndex": 44,
             "posBefore": [
                 1.4190000295639039,
                 1.36899995803833,
@@ -15374,7 +15191,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom",
-            "elementIndex": 45,
+            "elementIndex": 44,
             "posBefore": [
                 1.4190000295639039,
                 1.3669025897979737,
@@ -15412,7 +15229,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_R",
-            "elementIndex": 48,
+            "elementIndex": 47,
             "posBefore": [
                 1.4190000295639039,
                 1.8079023361206055,
@@ -15442,7 +15259,7 @@
         {
             "type": "resize",
             "description": "Resize A4_bottom",
-            "elementIndex": 29,
+            "elementIndex": 28,
             "posBefore": [
                 1.315000057220459,
                 0.10999992489814758,
@@ -15480,7 +15297,7 @@
         {
             "type": "resize",
             "description": "Resize K1_bottom",
-            "elementIndex": 32,
+            "elementIndex": 31,
             "posBefore": [
                 1.315000057220459,
                 0.10799999535083771,
@@ -15518,7 +15335,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -15556,7 +15373,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -15594,7 +15411,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -15624,7 +15441,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom",
-            "elementIndex": 45,
+            "elementIndex": 44,
             "posBefore": [
                 1.4190000295639039,
                 1.3669025897979737,
@@ -15662,7 +15479,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom",
-            "elementIndex": 45,
+            "elementIndex": 44,
             "posBefore": [
                 1.4190000295639039,
                 1.3669999837875367,
@@ -15700,7 +15517,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom",
-            "elementIndex": 45,
+            "elementIndex": 44,
             "posBefore": [
                 1.4190000295639039,
                 1.3669999837875367,
@@ -15730,7 +15547,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_B_side_L",
-            "elementIndex": 51,
+            "elementIndex": 50,
             "posBefore": [
                 1.4190001487731934,
                 1.809999942779541,
@@ -15760,7 +15577,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_L",
-            "elementIndex": 47,
+            "elementIndex": 46,
             "posBefore": [
                 1.4190000295639039,
                 1.809999942779541,
@@ -15790,7 +15607,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_bottom",
-            "elementIndex": 36,
+            "elementIndex": 35,
             "posBefore": [
                 1.4190000295639039,
                 1.3689998388290406,
@@ -15828,7 +15645,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_top",
-            "elementIndex": 37,
+            "elementIndex": 36,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -15866,7 +15683,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_L",
-            "elementIndex": 68,
+            "elementIndex": 66,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -15904,7 +15721,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_door_R",
-            "elementIndex": 58,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -15934,7 +15751,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_R",
-            "elementIndex": 58,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -15972,7 +15789,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_R",
-            "elementIndex": 58,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16010,7 +15827,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_R",
-            "elementIndex": 58,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16048,7 +15865,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_R",
-            "elementIndex": 58,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16086,7 +15903,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_R",
-            "elementIndex": 58,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16124,7 +15941,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_door_R",
-            "elementIndex": 58,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.809999704360962,
@@ -16154,7 +15971,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_R",
-            "elementIndex": 58,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.809999704360962,
@@ -16192,7 +16009,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -16230,7 +16047,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_door",
-            "elementIndex": 54,
+            "elementIndex": 52,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16268,7 +16085,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_door",
-            "elementIndex": 54,
+            "elementIndex": 52,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16306,7 +16123,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_door",
-            "elementIndex": 54,
+            "elementIndex": 52,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16344,7 +16161,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_door",
-            "elementIndex": 54,
+            "elementIndex": 52,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16382,7 +16199,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_door",
-            "elementIndex": 54,
+            "elementIndex": 52,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16420,7 +16237,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_L",
-            "elementIndex": 68,
+            "elementIndex": 66,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16458,7 +16275,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_L",
-            "elementIndex": 68,
+            "elementIndex": 66,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16496,7 +16313,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_L",
-            "elementIndex": 68,
+            "elementIndex": 66,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16534,7 +16351,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_L",
-            "elementIndex": 68,
+            "elementIndex": 66,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16572,7 +16389,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_L",
-            "elementIndex": 68,
+            "elementIndex": 66,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16610,7 +16427,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_top",
-            "elementIndex": 37,
+            "elementIndex": 36,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -16648,7 +16465,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_planck",
-            "elementIndex": 80,
+            "elementIndex": 78,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16686,7 +16503,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom",
-            "elementIndex": 45,
+            "elementIndex": 44,
             "posBefore": [
                 1.4190000295639039,
                 1.3669999837875367,
@@ -16716,7 +16533,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -16746,7 +16563,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_planck",
-            "elementIndex": 80,
+            "elementIndex": 78,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16784,7 +16601,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_planck",
-            "elementIndex": 80,
+            "elementIndex": 78,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16814,7 +16631,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_top",
-            "elementIndex": 37,
+            "elementIndex": 36,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -16852,7 +16669,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_door",
-            "elementIndex": 54,
+            "elementIndex": 52,
             "posBefore": [
                 1.24399995803833,
                 1.8099998235702515,
@@ -16890,7 +16707,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_L",
-            "elementIndex": 68,
+            "elementIndex": 66,
             "posBefore": [
                 1.24399995803833,
                 1.8099998235702515,
@@ -16928,7 +16745,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_door_L",
-            "elementIndex": 68,
+            "elementIndex": 66,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16958,7 +16775,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_door",
-            "elementIndex": 54,
+            "elementIndex": 52,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -16988,7 +16805,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_door_L",
-            "elementIndex": 68,
+            "elementIndex": 66,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -17018,7 +16835,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190001487731934,
                 2.250999927520752,
@@ -17056,7 +16873,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -17094,7 +16911,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -17132,7 +16949,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_door_R",
-            "elementIndex": 58,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.809999704360962,
@@ -17170,7 +16987,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_door_R",
-            "elementIndex": 58,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -17200,7 +17017,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_door",
-            "elementIndex": 54,
+            "elementIndex": 52,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -17230,7 +17047,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_door_R",
-            "elementIndex": 58,
+            "elementIndex": 56,
             "posBefore": [
                 1.24399995803833,
                 1.809999942779541,
@@ -17260,7 +17077,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_top",
-            "elementIndex": 46,
+            "elementIndex": 45,
             "posBefore": [
                 1.4190000295639039,
                 2.250999927520752,
@@ -17290,7 +17107,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8395000696182251,
                 1.809999942779541,
@@ -17328,7 +17145,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -17366,7 +17183,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -17404,7 +17221,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -17442,7 +17259,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -17480,7 +17297,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -17518,7 +17335,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -17556,7 +17373,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -17594,7 +17411,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -17632,7 +17449,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8399999737739563,
                 1.809999942779541,
@@ -17662,7 +17479,7 @@
         {
             "type": "move",
             "description": "Move K1_bottom",
-            "elementIndex": 32,
+            "elementIndex": 31,
             "posBefore": [
                 1.315000057220459,
                 0.1080000028014183,
@@ -17692,7 +17509,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.2055000066757203,
                 1.809999942779541,
@@ -17730,7 +17547,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.2059999704360963,
                 1.809999942779541,
@@ -17760,7 +17577,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8384999632835388,
                 1.809999942779541,
@@ -17790,7 +17607,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8374999761581421,
                 1.809999942779541,
@@ -17820,7 +17637,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 0.7150000333786011,
                 2.250999927520752,
@@ -17858,7 +17675,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_side",
-            "elementIndex": 39,
+            "elementIndex": 38,
             "posBefore": [
                 1.4100000858306885,
                 1.8100000619888306,
@@ -17896,7 +17713,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_B_planck",
-            "elementIndex": 38,
+            "elementIndex": 37,
             "posBefore": [
                 1.2050001621246338,
                 1.809999942779541,
@@ -17934,7 +17751,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_top",
-            "elementIndex": 42,
+            "elementIndex": 41,
             "posBefore": [
                 -0.4729999899864197,
                 2.250999927520752,
@@ -17972,7 +17789,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -18010,7 +17827,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -18048,7 +17865,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.16449999809265138,
                 1.809999942779541,
@@ -18086,7 +17903,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -18124,7 +17941,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.6943506598472595,
                 1.809999942779541,
@@ -18162,7 +17979,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.6940000057220459,
                 1.809999942779541,
@@ -18200,7 +18017,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.6940000057220459,
                 1.809999942779541,
@@ -18230,7 +18047,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.818000078201294,
                 1.809999942779541,
@@ -18260,7 +18077,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -18298,7 +18115,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -18336,7 +18153,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -18374,7 +18191,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -18412,7 +18229,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -18450,7 +18267,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.16500000655651093,
                 1.809999942779541,
@@ -18480,7 +18297,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.4729999899864197,
                 1.809999942779541,
@@ -18510,7 +18327,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8475000262260437,
                 1.809999942779541,
@@ -18548,7 +18365,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8479999899864197,
                 1.809999942779541,
@@ -18586,7 +18403,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.19249996542930604,
                 1.809999942779541,
@@ -18624,7 +18441,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.19300000369548798,
                 1.809999942779541,
@@ -18662,7 +18479,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.46250006556510928,
                 1.809999942779541,
@@ -18700,7 +18517,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.46299999952316286,
                 1.809999942779541,
@@ -18738,7 +18555,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8479999899864197,
                 1.809999942779541,
@@ -18768,7 +18585,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_R",
-            "elementIndex": 56,
+            "elementIndex": 54,
             "posBefore": [
                 0.19300000369548798,
                 1.809999942779541,
@@ -18798,7 +18615,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_door",
-            "elementIndex": 57,
+            "elementIndex": 55,
             "posBefore": [
                 -0.46299999952316286,
                 1.809999942779541,
@@ -18828,7 +18645,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 0.7149999737739563,
                 2.250999927520752,
@@ -18866,7 +18683,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_bottom",
-            "elementIndex": 49,
+            "elementIndex": 48,
             "posBefore": [
                 0.7150000333786011,
                 1.36899995803833,
@@ -18904,7 +18721,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_bottom",
-            "elementIndex": 49,
+            "elementIndex": 48,
             "posBefore": [
                 1.1710000038146973,
                 1.36899995803833,
@@ -18942,7 +18759,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0805000066757203,
                 2.250999927520752,
@@ -18980,7 +18797,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0575000047683716,
                 2.250999927520752,
@@ -19018,7 +18835,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0579999685287476,
                 2.250999927520752,
@@ -19056,7 +18873,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0964999198913575,
                 2.250999927520752,
@@ -19094,7 +18911,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8505001068115234,
                 1.809999942779541,
@@ -19132,7 +18949,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0689998865127564,
                 2.250999927520752,
@@ -19170,7 +18987,7 @@
         {
             "type": "move",
             "description": "Move B3_upper_side_L",
-            "elementIndex": 40,
+            "elementIndex": 39,
             "posBefore": [
                 -0.164000004529953,
                 1.809999942779541,
@@ -19200,7 +19017,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0594998598098755,
                 2.250999927520752,
@@ -19238,7 +19055,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_bottom",
-            "elementIndex": 49,
+            "elementIndex": 48,
             "posBefore": [
                 1.0555000305175782,
                 1.36899995803833,
@@ -19276,7 +19093,7 @@
         {
             "type": "move",
             "description": "Move B3_upper_side_L",
-            "elementIndex": 40,
+            "elementIndex": 39,
             "posBefore": [
                 0.5169999599456787,
                 1.809999942779541,
@@ -19306,7 +19123,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_door_L",
-            "elementIndex": 55,
+            "elementIndex": 53,
             "posBefore": [
                 0.8510000109672546,
                 1.809999942779541,
@@ -19336,7 +19153,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_bottom",
-            "elementIndex": 49,
+            "elementIndex": 48,
             "posBefore": [
                 1.1670000553131104,
                 1.36899995803833,
@@ -19374,7 +19191,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_bottom",
-            "elementIndex": 49,
+            "elementIndex": 48,
             "posBefore": [
                 1.064500093460083,
                 1.36899995803833,
@@ -19412,7 +19229,7 @@
         {
             "type": "resize",
             "description": "Resize B3_upper_side_L",
-            "elementIndex": 40,
+            "elementIndex": 39,
             "posBefore": [
                 0.5354999899864197,
                 1.809999942779541,
@@ -19450,7 +19267,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_bottom",
-            "elementIndex": 49,
+            "elementIndex": 48,
             "posBefore": [
                 1.065000057220459,
                 1.36899995803833,
@@ -19488,7 +19305,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.15149986743927,
                 2.250999927520752,
@@ -19526,7 +19343,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0654999017715455,
                 2.250999927520752,
@@ -19564,7 +19381,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.1144999265670777,
                 2.250999927520752,
@@ -19602,7 +19419,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0654999017715455,
                 2.250999927520752,
@@ -19640,7 +19457,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.065999984741211,
                 2.250999927520752,
@@ -19678,7 +19495,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.065500020980835,
                 2.250999927520752,
@@ -19708,7 +19525,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.1503440141677857,
                 2.250999927520752,
@@ -19746,7 +19563,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0688440799713135,
                 2.250999927520752,
@@ -19784,7 +19601,7 @@
         {
             "type": "resize",
             "description": "Resize B3_upper_side_L",
-            "elementIndex": 40,
+            "elementIndex": 39,
             "posBefore": [
                 0.5360000133514404,
                 1.809999942779541,
@@ -19822,7 +19639,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0263440608978272,
                 2.250999927520752,
@@ -19860,7 +19677,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0260000228881837,
                 2.250999927520752,
@@ -19898,7 +19715,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0264999866485596,
                 2.250999927520752,
@@ -19936,7 +19753,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.1540000438690186,
                 2.250999927520752,
@@ -19974,7 +19791,7 @@
         {
             "type": "move",
             "description": "Move B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0264999866485596,
                 2.250999927520752,
@@ -20004,7 +19821,7 @@
         {
             "type": "resize",
             "description": "Resize B23_upper_top",
-            "elementIndex": 50,
+            "elementIndex": 49,
             "posBefore": [
                 1.0260000228881837,
                 2.251000165939331,
@@ -20042,7 +19859,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_side_R",
-            "elementIndex": 44,
+            "elementIndex": 43,
             "posBefore": [
                 -0.18199999630451203,
                 1.809999942779541,
@@ -20072,7 +19889,7 @@
         {
             "type": "move",
             "description": "Move B4_upper_side_R",
-            "elementIndex": 44,
+            "elementIndex": 43,
             "posBefore": [
                 0.5360000133514404,
                 1.809999942779541,
@@ -20102,7 +19919,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_top",
-            "elementIndex": 42,
+            "elementIndex": 41,
             "posBefore": [
                 -0.4729999899864197,
                 2.250999927520752,
@@ -20140,7 +19957,7 @@
         {
             "type": "resize",
             "description": "Resize B4_upper_bottom",
-            "elementIndex": 41,
+            "elementIndex": 40,
             "posBefore": [
                 -0.4729999899864197,
                 1.36899995803833,
@@ -20178,7 +19995,7 @@
         {
             "type": "resize",
             "description": "Resize B5_drawer_upper",
-            "elementIndex": 67,
+            "elementIndex": 65,
             "posBefore": [
                 -1.0729999542236329,
                 0.6399999856948853,
@@ -20216,7 +20033,7 @@
         {
             "type": "resize",
             "description": "Resize A3_drawer_upper",
-            "elementIndex": 65,
+            "elementIndex": 63,
             "posBefore": [
                 1.0360000133514405,
                 0.6399999856948853,
@@ -20254,7 +20071,7 @@
         {
             "type": "move",
             "description": "Move A3_gtv_single_C",
-            "elementIndex": 89,
+            "elementIndex": 86,
             "posBefore": [
                 1.315000057220459,
                 0.2150000035762787,
@@ -20284,7 +20101,7 @@
         {
             "type": "move",
             "description": "Move A3_gtv_double_lower_A",
-            "elementIndex": 90,
+            "elementIndex": 87,
             "posBefore": [
                 1.315000057220459,
                 0.5199999809265137,
@@ -20314,7 +20131,7 @@
         {
             "type": "move",
             "description": "Move A3_gtv_double_upper_A",
-            "elementIndex": 91,
+            "elementIndex": 88,
             "posBefore": [
                 1.315000057220459,
                 0.6349999904632568,
@@ -20344,7 +20161,7 @@
         {
             "type": "move",
             "description": "Move A3_gtv_single_C",
-            "elementIndex": 89,
+            "elementIndex": 86,
             "posBefore": [
                 1.315000057220459,
                 0.2150000035762787,
@@ -20374,7 +20191,7 @@
         {
             "type": "move",
             "description": "Move A3_gtv_double_lower_A",
-            "elementIndex": 90,
+            "elementIndex": 87,
             "posBefore": [
                 1.315000057220459,
                 0.5199999809265137,
@@ -20404,7 +20221,7 @@
         {
             "type": "move",
             "description": "Move A3_gtv_double_upper_A",
-            "elementIndex": 91,
+            "elementIndex": 88,
             "posBefore": [
                 1.315000057220459,
                 0.6349999904632568,
@@ -20434,7 +20251,7 @@
         {
             "type": "move",
             "description": "Move A3_gtv_single_C",
-            "elementIndex": 89,
+            "elementIndex": 86,
             "posBefore": [
                 1.315000057220459,
                 0.2150000035762787,
@@ -20464,7 +20281,7 @@
         {
             "type": "move",
             "description": "Move A3_gtv_double_lower_A",
-            "elementIndex": 90,
+            "elementIndex": 87,
             "posBefore": [
                 1.315000057220459,
                 0.5199999809265137,
@@ -20494,7 +20311,7 @@
         {
             "type": "move",
             "description": "Move A3_gtv_double_upper_A",
-            "elementIndex": 91,
+            "elementIndex": 88,
             "posBefore": [
                 1.315000057220459,
                 0.6349999904632568,
@@ -20524,7 +20341,7 @@
         {
             "type": "resize",
             "description": "Resize A3_gtv_double_lower_A",
-            "elementIndex": 90,
+            "elementIndex": 87,
             "posBefore": [
                 1.315000057220459,
                 0.5199999809265137,
@@ -20562,7 +20379,7 @@
         {
             "type": "resize",
             "description": "Resize A3_gtv_single_C",
-            "elementIndex": 89,
+            "elementIndex": 86,
             "posBefore": [
                 1.315000057220459,
                 0.2150000035762787,
@@ -20600,7 +20417,7 @@
         {
             "type": "resize",
             "description": "Resize A3_gtv_single_C",
-            "elementIndex": 89,
+            "elementIndex": 86,
             "posBefore": [
                 1.315000057220459,
                 0.2150000035762787,
@@ -20638,7 +20455,7 @@
         {
             "type": "resize",
             "description": "Resize A3_gtv_single_C",
-            "elementIndex": 89,
+            "elementIndex": 86,
             "posBefore": [
                 1.315000057220459,
                 0.2150000035762787,
@@ -20672,20 +20489,56 @@
                 500
             ],
             "children": []
-        }
-    ],
-    "redoHistory": [
+        },
+        {
+            "type": "resize",
+            "description": "Resize A3_drawer_upper",
+            "elementIndex": 63,
+            "posBefore": [
+                1.0360000133514405,
+                0.6399999856948853,
+                -2.1619999408721926
+            ],
+            "posAfter": [
+                1.0360000133514405,
+                0.6399999856948853,
+                -2.1619999408721926
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                596,
+                356,
+                18
+            ],
+            "dimsAfter": [
+                596,
+                356,
+                18
+            ],
+            "children": []
+        },
         {
             "type": "resize",
             "description": "Resize A3_gtv_double_lower_A",
-            "elementIndex": 90,
+            "elementIndex": 87,
             "posBefore": [
                 1.315000057220459,
                 0.5199999809265137,
                 -2.162099838256836
             ],
             "posAfter": [
-                0.9150000214576721,
+                1.315000057220459,
                 0.5199999809265137,
                 -2.1619999408721926
             ],
@@ -20712,8 +20565,989 @@
                 500
             ],
             "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_drawer_upper",
+            "elementIndex": 58,
+            "posBefore": [
+                -0.4729999899864197,
+                0.6399999856948853,
+                -3.071000099182129
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.6399999856948853,
+                -3.071000099182129
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                596,
+                356,
+                18
+            ],
+            "dimsAfter": [
+                596,
+                356,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B23_upper_door_R",
+            "elementIndex": 54,
+            "posBefore": [
+                0.2015000730752945,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "posAfter": [
+                0.19650006294250489,
+                1.809999942779541,
+                -3.2790000438690187
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A3_gtv_double_lower_A",
+            "elementIndex": 87,
+            "posBefore": [
+                1.2950031757354737,
+                0.5199999809265137,
+                -2.1619999408721926
+            ],
+            "posAfter": [
+                1.2950031757354737,
+                0.5199999809265137,
+                -2.1619999408721926
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_drawer",
+            "elementIndex": 89,
+            "posBefore": [
+                1.2949999570846558,
+                0.16300000250339509,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.2949999570846558,
+                0.16300000250339509,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_drawer",
+            "elementIndex": 89,
+            "posBefore": [
+                1.2949999570846558,
+                0.16300000250339509,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.2949999570846558,
+                0.16300000250339509,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_drawer",
+            "elementIndex": 89,
+            "posBefore": [
+                1.2949999570846558,
+                0.16300000250339509,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.2949999570846558,
+                0.16300000250339509,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_drawer",
+            "elementIndex": 89,
+            "posBefore": [
+                1.2949999570846558,
+                0.16300000250339509,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.2949999570846558,
+                0.17550000548362733,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_bottom",
+            "elementIndex": 28,
+            "posBefore": [
+                1.315000057220459,
+                0.10999999940395355,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.315000057220459,
+                0.10800004005432129,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_drawer",
+            "elementIndex": 89,
+            "posBefore": [
+                1.2949999570846558,
+                0.17550000548362733,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.2949999570846558,
+                0.15800000727176667,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_drawer",
+            "elementIndex": 89,
+            "posBefore": [
+                1.2949999570846558,
+                0.15800000727176667,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.2949999570846558,
+                0.17350004613399507,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A3_gtv_double_lower_A",
+            "elementIndex": 87,
+            "posBefore": [
+                1.315000057220459,
+                0.5199999809265137,
+                -2.1619999408721926
+            ],
+            "posAfter": [
+                1.315000057220459,
+                0.5199999809265137,
+                -2.2059998512268068
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                564,
+                115,
+                500
+            ],
+            "dimsAfter": [
+                476,
+                115,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A3_gtv_double_upper_A",
+            "elementIndex": 88,
+            "posBefore": [
+                1.315000057220459,
+                0.6349999904632568,
+                -2.2059998512268068
+            ],
+            "posAfter": [
+                1.315000057220459,
+                0.6349999904632568,
+                -2.2059998512268068
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                476,
+                115,
+                500
+            ],
+            "dimsAfter": [
+                428,
+                115,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A3_gtv_double_lower_A",
+            "elementIndex": 87,
+            "posBefore": [
+                1.315000057220459,
+                0.5199999809265137,
+                -2.2059998512268068
+            ],
+            "posAfter": [
+                1.315000057220459,
+                0.5199999809265137,
+                -2.1624999046325685
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                476,
+                115,
+                500
+            ],
+            "dimsAfter": [
+                563,
+                115,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_drawer_lower",
+            "elementIndex": 59,
+            "posBefore": [
+                -0.4729999899864197,
+                0.2800000011920929,
+                -3.071000099182129
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.2800000011920929,
+                -3.071000099182129
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                596,
+                356,
+                18
+            ],
+            "dimsAfter": [
+                596,
+                356,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B5_gtv_single_C",
+            "elementIndex": 84,
+            "posBefore": [
+                -1.0729999542236329,
+                0.2150000035762787,
+                -3.3299999237060549
+            ],
+            "posAfter": [
+                -1.0729999542236329,
+                0.2150000035762787,
+                -3.3299999237060549
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                564,
+                198,
+                500
+            ],
+            "dimsAfter": [
+                564,
+                198,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_drawer_lower",
+            "elementIndex": 59,
+            "posBefore": [
+                -0.4729999899864197,
+                0.2800000011920929,
+                -3.071000099182129
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.2800000011920929,
+                -3.071000099182129
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                596,
+                356,
+                18
+            ],
+            "dimsAfter": [
+                596,
+                356,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B4_drawer_upper",
+            "elementIndex": 58,
+            "posBefore": [
+                -0.4729999899864197,
+                0.6399999856948853,
+                -3.071000099182129
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.6399999856948853,
+                -3.071000099182129
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                596,
+                356,
+                18
+            ],
+            "dimsAfter": [
+                596,
+                356,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B3_fake_bottom",
+            "elementIndex": 90,
+            "posBefore": [
+                0.12700000405311585,
+                0.1080000028014183,
+                -3.3499999046325685
+            ],
+            "posAfter": [
+                0.11799999326467514,
+                0.1080000028014183,
+                -3.3499999046325685
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                564,
+                540,
+                16
+            ],
+            "dimsAfter": [
+                582,
+                540,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B3_fake_bottom",
+            "elementIndex": 90,
+            "posBefore": [
+                0.11799999326467514,
+                0.1080000028014183,
+                -3.3499999046325685
+            ],
+            "posAfter": [
+                0.12700000405311585,
+                0.1080000028014183,
+                -3.3499999046325685
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                582,
+                540,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                540,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_double_lower_A",
+            "elementIndex": 92,
+            "posBefore": [
+                -0.4729999899864197,
+                0.5199999809265137,
+                -3.3299999237060549
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.5199999809265137,
+                -3.370000123977661
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_double_lower_A",
+            "elementIndex": 92,
+            "posBefore": [
+                -0.4729999899864197,
+                0.5199999809265137,
+                -3.370000123977661
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.5199999809265137,
+                -3.4746594429016115
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_double_lower_A",
+            "elementIndex": 92,
+            "posBefore": [
+                -0.4729999899864197,
+                0.5199999809265137,
+                -3.4746594429016115
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.5199999809265137,
+                -3.369999885559082
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_double_lower_A",
+            "elementIndex": 92,
+            "posBefore": [
+                -0.4729999899864197,
+                0.5199999809265137,
+                -3.369999885559082
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.5734493732452393,
+                -3.369999885559082
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_double_lower_A",
+            "elementIndex": 92,
+            "posBefore": [
+                -0.4729999899864197,
+                0.5734493732452393,
+                -3.369999885559082
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.5734493732452393,
+                -3.330000162124634
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B4_gtv_double_lower_A",
+            "elementIndex": 92,
+            "posBefore": [
+                -0.4729999899864197,
+                0.5734493732452393,
+                -3.330000162124634
+            ],
+            "posAfter": [
+                -0.4729999899864197,
+                0.5609999895095825,
+                -3.330000162124634
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B5_gtv_double_lower_A",
+            "elementIndex": 85,
+            "posBefore": [
+                -1.0729999542236329,
+                0.5199999809265137,
+                -3.3299999237060549
+            ],
+            "posAfter": [
+                -1.0729999542236329,
+                0.6399999856948853,
+                -3.3299999237060549
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B5_gtv_double_lower_A",
+            "elementIndex": 85,
+            "posBefore": [
+                -1.0729999542236329,
+                0.6399999856948853,
+                -3.3299999237060549
+            ],
+            "posAfter": [
+                -1.0729999542236329,
+                0.5609999895095825,
+                -3.3299999237060549
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A3_gtv_double_lower_A",
+            "elementIndex": 87,
+            "posBefore": [
+                1.315000057220459,
+                0.5199999809265137,
+                -2.1624999046325685
+            ],
+            "posAfter": [
+                1.315000057220459,
+                0.5226864218711853,
+                -2.1624999046325685
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A3_gtv_double_upper_A",
+            "elementIndex": 88,
+            "posBefore": [
+                1.315000057220459,
+                0.6376864314079285,
+                -2.1624999046325685
+            ],
+            "posAfter": [
+                1.315000057220459,
+                0.6376864314079285,
+                -2.1624999046325685
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A3_gtv_double_lower_A",
+            "elementIndex": 87,
+            "posBefore": [
+                1.315000057220459,
+                0.5226864218711853,
+                -2.1624999046325685
+            ],
+            "posAfter": [
+                1.2950001955032349,
+                0.5226864218711853,
+                -2.1624999046325685
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
         }
     ],
+    "redoHistory": [],
     "settings": {
         "gridStep": 1,
         "gridEnabled": true,

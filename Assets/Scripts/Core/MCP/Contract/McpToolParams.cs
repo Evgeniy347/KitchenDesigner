@@ -1,8 +1,16 @@
 using System;
 
 // Parameter POCOs for every MCP tool. One class per tool shape. Each agent-facing
-// field carries [McpParam] with its description + units; wire-only fields (legacy
-// aliases, template_name) carry [McpIgnore]. See McpToolAttributes.cs for rules.
+// field carries [McpParam] with its description + units; wire-only fields carry
+// [McpIgnore]. See McpToolAttributes.cs for rules.
+//
+// SURFACE CONVENTION (2026-07 redesign): every element-addressing tool takes an
+// ARRAY (names[] / ops[] / items[]) — there are NO single-element tools. Batches
+// are atomic: if ANY entry is invalid, NOTHING is applied.
+//
+// Nested op/item classes are consumed by the codegen (Zod) and the server JSON
+// schema, which do NOT support nested renames — nested field names MUST already
+// be the agent-facing snake_case names.
 //
 // Coordinates x/y/z are nullable where "omit an axis = keep current" applies; a
 // missing axis is NOT treated as 0 (see ResolveVec / ResolveDims in the handler).
@@ -17,23 +25,20 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string? topic;
     }
 
-    // ── name-only / path-only ────────────────────────────────────────────────
+    // ── names[] / object_paths[] ─────────────────────────────────────────────
 
     [Serializable]
-    public class ParamsName
+    public class ParamsNames
     {
-        [McpParam("Exact board name (from get_all_elements).", Required = true)]
-        public string name = string.Empty;
+        [McpParam("Exact board names (from get_all_elements). At least 1.", Required = true, Min = 1)]
+        public string[] names = Array.Empty<string>();
     }
 
     [Serializable]
-    public class ParamsObjectPath
+    public class ParamsObjectPaths
     {
-        [McpParam("Object name or hierarchy path (Parent/Child).", Required = true)]
-        public string object_path = string.Empty;
-
-        // Legacy fallback: some callers still send `name`; handler accepts either.
-        [McpIgnore] public string name = string.Empty;
+        [McpParam("Object names or hierarchy paths (Parent/Child). At least 1.", Required = true, Min = 1)]
+        public string[] object_paths = Array.Empty<string>();
     }
 
     [Serializable]
@@ -44,7 +49,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     }
 
     [Serializable]
-    public class ParamsSetActive
+    public class SetActiveOp
     {
         [McpParam("Object name or path.", Required = true)]
         public string object_path = string.Empty;
@@ -53,10 +58,17 @@ namespace KitchenDesigner.Core.MCP.Contract
         public bool active;
     }
 
+    [Serializable]
+    public class ParamsSetActiveOps
+    {
+        [McpParam("Objects to enable/disable. At least 1.", Required = true, Min = 1)]
+        public SetActiveOp[] ops = Array.Empty<SetActiveOp>();
+    }
+
     // Shared by advanced set_position / set_rotation / set_scale. The meters-vs-
     // degrees nuance lives in each tool's description.
     [Serializable]
-    public class ParamsSetTransform
+    public class TransformOp
     {
         [McpParam("Object name or path.", Required = true)]
         public string object_path = string.Empty;
@@ -66,30 +78,14 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Value for Z. Omit to keep current.")] public float? z;
     }
 
-    // ── move / resize / rotate ───────────────────────────────────────────────
-
     [Serializable]
-    public class ParamsMoveElement
+    public class ParamsTransformOps
     {
-        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
-        [McpParam("Target X in METERS. Omit to keep current X.")] public float? x;
-        [McpParam("Target Y in METERS. Omit to keep current Y.")] public float? y;
-        [McpParam("Target Z in METERS. Omit to keep current Z.")] public float? z;
+        [McpParam("Objects to transform. At least 1.", Required = true, Min = 1)]
+        public TransformOp[] ops = Array.Empty<TransformOp>();
     }
 
-    [Serializable]
-    public class ParamsResizeElement
-    {
-        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
-        [McpParam("New width (X) in MM. Omit to keep current width.", Min = 1)] public int? width;
-        [McpParam("New height (Y) in MM. Omit to keep current height.", Min = 1)] public int? height;
-        [McpParam("New depth/thickness (Z) in MM. Omit to keep current depth.", Min = 1)] public int? depth;
-
-        // Legacy dimension aliases — accepted on the wire, not exposed to the agent.
-        [McpIgnore] public int? dimX;
-        [McpIgnore] public int? dimY;
-        [McpIgnore] public int? dimZ;
-    }
+    // ── Floor (scene singleton — no element addressing) ──────────────────────
 
     [Serializable]
     public class ParamsResizeFloor
@@ -99,130 +95,274 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Floor thickness (Z) in MM.", Required = true, Min = 1)] public int depth;
     }
 
-    [Serializable]
-    public class ParamsRotateElement
-    {
-        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
-        [McpParam("Rotation around X in DEGREES. Omit to keep current.")] public float? x;
-        [McpParam("Rotation around Y in DEGREES. Omit to keep current.")] public float? y;
-        [McpParam("Rotation around Z in DEGREES. Omit to keep current.")] public float? z;
-    }
+    // ── edit_elements: THE universal property editor ─────────────────────────
 
+    /// <summary>Одна операция edit_elements. Все указанные поля применяются к
+    /// элементу разом. Типо-специфичные поля (зазоры, режимы, параметры ящика и
+    /// т.д.) валидируются по фактическому типу элемента — чужое поле = ошибка
+    /// всего батча.</summary>
     [Serializable]
-    public class ParamsElementLock
+    public class EditOp
     {
-        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
-        [McpParam("true = lock (protect), false = unlock (allow editing).", Required = true)] public bool locked;
-    }
+        [McpParam("Exact element name.", Required = true)] public string name = string.Empty;
 
-    [Serializable]
-    public class ParamsRenameElement
-    {
-        [McpParam("Exact board name (from get_all_elements).", Required = true)]
-        public string name = string.Empty;
+        // Geometry (any element; drawers reject width/height/depth).
+        [McpParam("Target X in METERS. Omit to keep.")] public float? x;
+        [McpParam("Target Y in METERS. Omit to keep.")] public float? y;
+        [McpParam("Target Z in METERS. Omit to keep.")] public float? z;
+        [McpParam("New width (X) in MM. Omit to keep. Rejected for drawers (their size is parametric).", Min = 1)] public int? width;
+        [McpParam("New height (Y) in MM. Omit to keep. Rejected for drawers.", Min = 1)] public int? height;
+        [McpParam("New depth/thickness (Z) in MM. Omit to keep. Rejected for drawers.", Min = 1)] public int? depth;
+        [McpParam("Rotation around X in DEGREES. Omit to keep.")] public float? rot_x;
+        [McpParam("Rotation around Y in DEGREES. Omit to keep.")] public float? rot_y;
+        [McpParam("Rotation around Z in DEGREES. Omit to keep.")] public float? rot_z;
 
-        [McpParam("New name for the element. Must be unique among all elements.", Required = true)]
-        public string new_name = string.Empty;
-    }
+        // Any element.
+        [McpParam("Lock (true) / unlock (false). Unlock ONLY with the user's explicit permission. Omit to keep.")]
+        public bool? locked;
+        [McpParam("Material decor id or display name (see list_materials). Omit to keep.")]
+        public string? material;
 
-    [Serializable]
-    public class ParamsSetFacadeMode
-    {
-        [McpParam("Exact facade element name.", Required = true)] public string name = string.Empty;
-        [McpParam("Opening mode: front_*/back_* (hinged on a face edge), edge_* (hinged on the thickness edge), drawer_* (sliding along an axis).",
-            Required = true, Enum = new[] {
+        // Facades (FacadeElement / AssembledFacadeElement).
+        [McpParam("Facade only: left gap in MM. Omit to keep.", Min = 0)] public int? gap_left;
+        [McpParam("Facade only: right gap in MM. Omit to keep.", Min = 0)] public int? gap_right;
+        [McpParam("Facade only: top gap in MM. Omit to keep.", Min = 0)] public int? gap_top;
+        [McpParam("Facade only: bottom gap in MM. Omit to keep.", Min = 0)] public int? gap_bottom;
+        [McpParam("Facade/window/door: opening mode. Facades accept all 18 modes; windows and doors accept front_* only. Omit to keep.",
+            Enum = new[] {
                 "front_left", "front_right", "front_top", "front_bottom",
                 "back_left", "back_right", "back_top", "back_bottom",
                 "edge_top_left", "edge_top_right", "edge_bottom_left", "edge_bottom_right",
                 "drawer_out", "drawer_in", "drawer_right", "drawer_left", "drawer_up", "drawer_down" })]
-        public string mode = string.Empty;
+        public string? mode;
+        [McpParam("Assembled facade only: center fill — blind (panel), glass (vitrine), open (empty). Omit to keep.",
+            Enum = new[] { "blind", "glass", "open" })]
+        public string? fill;
+        [McpParam("Facade/window/door: true = open, false = close. Omit to keep. For drawers use cycle_drawer_animation.")]
+        public bool? is_open;
+
+        // Radial shelf.
+        [McpParam("Radial shelf only: corner rounding radius in MM (clamped to 1..min(width, depth)). Omit to keep.", Min = 1)]
+        public int? corner_radius;
+
+        // GTV drawer.
+        [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Omit to keep.",
+            Enum = new[] { "A", "B", "C", "D" })]
+        public string? drawer_type;
+        [McpParam("Drawer only: nominal slide length in MM, one of 250/300/350/400/450/500/550/600. Omit to keep.")]
+        public int? drawer_length;
+        [McpParam("Drawer only: GTV color. Omit to keep.", Enum = new[] { "anthracite", "white", "black" })]
+        public string? drawer_color;
+        [McpParam("Drawer only: internal box width in MM (min 100). Omit to keep.", Min = 100)]
+        public int? internal_width;
+        [McpParam("Drawer only: mark as part of a DOUBLE drawer (two stacked boxes). Omit to keep.")]
+        public bool? is_double;
+        [McpParam("Double drawer only: this box is the UPPER one. Omit to keep.")]
+        public bool? is_upper;
+        [McpParam("Double drawer only: exact name of the paired drawer element (link both ways). Empty string detaches. Omit to keep.")]
+        public string? paired_drawer_name;
+        [McpParam("Drawer only: exact name of the facade acting as this drawer's front. Empty string detaches. Omit to keep.")]
+        public string? attached_facade_name;
+
+        // Tables (TableElement / RadiusTableElement).
+        [McpParam("Table only: inward offset of legs from corners along X and Z, in MM. Omit to keep.", Min = 0)]
+        public int? leg_inset_mm;
+        [McpParam("Table only: material id or display name for the tabletop (see list_materials). Omit to keep.")]
+        public string? tabletop_material;
+        [McpParam("Table only: material id or display name for the legs (see list_materials). Omit to keep.")]
+        public string? legs_material;
+
+        // Pillar.
+        [McpParam("Pillar only: middle cylinder height in MM (clamped 50..100). Omit to keep.", Min = 50, Max = 100)]
+        public int? mid_height_mm;
+
+        // Window.
+        [McpParam("Window only: glass tint — clear (transparent) or tinted (slightly darkened). Omit to keep.",
+            Enum = new[] { "clear", "tinted" })]
+        public string? tint;
+        [McpParam("Window only: windowsill outward protrusion in MM (0..200). Omit to keep.", Min = 0, Max = 200)]
+        public int? sill_protrusion_mm;
+
+        // Door.
+        [McpParam("Door only: sash type — glass (transparent) or blind (solid panel). Omit to keep.",
+            Enum = new[] { "glass", "blind" })]
+        public string? sash_type;
     }
 
     [Serializable]
-    public class ParamsSetMaterial
+    public class ParamsEditElements
     {
-        [McpParam("Exact board/facade name.", Required = true)] public string name = string.Empty;
-        [McpParam("Material id (e.g. 'oak') or its display name (e.g. 'Дуб сонома'). See list_materials.", Required = true)]
-        public string material = string.Empty; // id ИЛИ отображаемое имя
+        [McpParam("Operations to apply — one per element. Each op: exact name + ANY editable properties (geometry, lock, material, facade gaps/mode/fill, drawer params, table/pillar/window/door params).",
+            Required = true, Min = 1)]
+        public EditOp[] ops = Array.Empty<EditOp>();
+
+        [McpParam("true = DRY-RUN: apply everything, report per-op state and violations, then revert. Use this INSTEAD of a separate simulate call. Default false.")]
+        public bool dry_run;
     }
 
+    // ── create_elements ──────────────────────────────────────────────────────
+
+    /// <summary>Один создаваемый элемент. Тип задаётся полем type (не флагами).</summary>
     [Serializable]
-    public class ParamsCreateElement
+    public class CreateItem
     {
-        [McpParam("Name for the new element (becomes its board name).", Required = true)]
+        [McpParam("Unique name for the new element.", Required = true)]
         public string name = string.Empty;
 
-        // template_name is a legacy wire field: the handler uses `name` when it is
-        // absent. Kept for backward compatibility, hidden from the agent.
-        [McpIgnore] public string template_name = string.Empty;
+        [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position.",
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "drawer", "table", "radius_table", "pillar", "window", "door" })]
+        public string? type;
 
         [McpParam("Position X in METERS.")] public float x;
         [McpParam("Position Y in METERS.")] public float y;
         [McpParam("Position Z in METERS.")] public float z;
 
-        [McpParam("Size along X in MM (default 800).", Min = 1)] public int width;
-        [McpParam("Size along Y in MM (default 400).", Min = 1)] public int height;
-        [McpParam("Thickness along Z in MM (default 18).", Min = 1)] public int depth;
+        [McpParam("Size along X in MM. Defaults: board 800, assembled facade 450, radial shelf 600, table 2000, window 900, door 900.", Min = 1)]
+        public int? width;
+        [McpParam("Size along Y in MM. Defaults: board 400, assembled facade 700, table 750, window 1200, door 2000.", Min = 1)]
+        public int? height;
+        [McpParam("Thickness along Z in MM. Defaults: board 18, radial shelf 400 (its depth), table 1000, window/door 100.", Min = 1)]
+        public int? depth;
+
+        [McpParam("Initial material decor id or display name (see list_materials). Omit for default.")]
+        public string? material;
+
+        [McpParam("Facade only: left gap in MM (default 2).", Min = 0)] public int? gap_left;
+        [McpParam("Facade only: right gap in MM (default 2).", Min = 0)] public int? gap_right;
+        [McpParam("Facade only: top gap in MM (default 2).", Min = 0)] public int? gap_top;
+        [McpParam("Facade only: bottom gap in MM (default 2).", Min = 0)] public int? gap_bottom;
+
+        [McpParam("Assembled facade only: center fill — blind (panel), glass (vitrine), open (empty). Default blind.",
+            Enum = new[] { "blind", "glass", "open" })]
+        public string? fill;
+
         [McpParam("Radial shelf only: corner rounding radius in MM (default 200, clamped to min(width, depth)).", Min = 1)]
-        public int corner_radius = 200; // = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT (Contract не зависит от Unity-кода)
+        public int? corner_radius;
 
-        [McpParam("Create as a WALL (structural anchor). Default false.")] public bool is_wall;
-        [McpParam("Create the FLOOR plate. Ignores size/position. Default false.")] public bool is_floor;
-        [McpParam("Create as a FACADE (door/front with gaps). Default false.")] public bool is_facade;
-        [McpParam("Create as an ASSEMBLED (framed) facade — real frame geometry. Default false. Pair with fill.")] public bool is_assembled;
-        [McpParam("Create as a RADIAL shelf — a rectangular board with ONE rounded corner (default 600x400x18, corner_radius 200). Default false. Pair with corner_radius.")] public bool is_radial_shelf;
-        [McpParam("Create as a GTV DRAWER (sliding box). Default false. Pair with drawer_type/drawer_length/drawer_color/drawer_internal_width; width/height/depth are ignored.")]
-        public bool is_drawer;
-        [McpParam("Create as a TABLE (legs + tabletop). Default false. width/height/depth are table dimensions. Pair with leg_inset_mm.")]
-        public bool is_table;
-        [McpParam("Create as a RADIUS TABLE (capsule-shaped top + 4 legs). Default false. width/height/depth are table dimensions.")]
-        public bool is_radius_table;
-        [McpParam("Create as a WINDOW. Default false.")]
-        public bool is_window;
-
-        [McpParam("Create as a DOOR. Default false.")]
-        public bool is_door;
-
-        [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Default A.", Enum = new[] { "A", "B", "C", "D" })]
-        public string drawer_type = string.Empty;
+        [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Default A.",
+            Enum = new[] { "A", "B", "C", "D" })]
+        public string? drawer_type;
         [McpParam("Drawer only: nominal slide length in MM, one of 250/300/350/400/450/500/550/600. Default 350.")]
-        public int drawer_length = 350;
+        public int? drawer_length;
         [McpParam("Drawer only: GTV color. Default anthracite.", Enum = new[] { "anthracite", "white", "black" })]
-        public string drawer_color = string.Empty;
+        public string? drawer_color;
         [McpParam("Drawer only: internal box width in MM (default 400, min 100).", Min = 100)]
-        public int drawer_internal_width = 400;
+        public int? internal_width;
 
-        [McpParam("Assembled facade only: center fill — blind (panel), glass (vitrine with glass), open (empty vitrine). Default blind.", Enum = new[] { "blind", "glass", "open" })]
-        public string fill = string.Empty;
+        [McpParam("Table only: inward offset of legs from corners along X and Z, in MM (default 100).", Min = 0)]
+        public int? leg_inset_mm;
 
-		[McpParam("Table only: inward offset of legs from corners along X and Z, in MM (default 100).", Min = 0)]
-		public int leg_inset_mm = 100;
+        [McpParam("Pillar only: middle cylinder height in MM (clamped 50..100).", Min = 50, Max = 100)]
+        public int? mid_height_mm;
 
-		[McpParam("Create as a PILLAR (table leg support — 3 stacked cylinders). Default false.")]
-		public bool is_pillar;
-
-        [McpParam("Facade only: left gap in MM (default 2).", Name = "gap_left", Min = 0)] public int gapLeft = 2;
-        [McpParam("Facade only: right gap in MM (default 2).", Name = "gap_right", Min = 0)] public int gapRight = 2;
-        [McpParam("Facade only: top gap in MM (default 2).", Name = "gap_top", Min = 0)] public int gapTop = 2;
-        [McpParam("Facade only: bottom gap in MM (default 2).", Name = "gap_bottom", Min = 0)] public int gapBottom = 2;
-
-        [McpParam("Window only: glass tint — clear (transparent) or tinted (slightly darkened). Default clear.", Enum = new[] { "clear", "tinted" })]
-        public string window_tint = string.Empty;
+        [McpParam("Window only: glass tint — clear or tinted. Default clear.", Enum = new[] { "clear", "tinted" })]
+        public string? tint;
         [McpParam("Window only: windowsill outward protrusion in MM (0..200). Default 50.", Min = 0, Max = 200)]
-        public int window_sill_protrusion_mm = 50;
-        [McpParam("Door only: sash type — glass (transparent) or blind (solid panel). Default glass.", Enum = new[] { "glass", "blind" })]
-        public string door_sash_type = string.Empty;
+        public int? sill_protrusion_mm;
+
+        [McpParam("Door only: sash type — glass (transparent) or blind (solid panel). Default glass.",
+            Enum = new[] { "glass", "blind" })]
+        public string? sash_type;
     }
 
     [Serializable]
-    public class ParamsConvertElement
+    public class ParamsCreateElements
+    {
+        [McpParam("Elements to create. At least 1. Whole batch is ONE undo step.", Required = true, Min = 1)]
+        public CreateItem[] items = Array.Empty<CreateItem>();
+    }
+
+    // ── convert / clone / align / rename ─────────────────────────────────────
+
+    [Serializable]
+    public class ConvertOp
     {
         [McpParam("Exact element name to convert.", Required = true)] public string name = string.Empty;
         [McpParam("Target type: part (plain board), facade (door/front), assembled_facade (framed facade), radial_shelf (corner shelf).",
             Required = true, Enum = new[] { "part", "facade", "assembled_facade", "radial_shelf" })]
         public string target = string.Empty;
-        [McpParam("When target=assembled_facade: center fill — blind (panel), glass, open (empty). Default keeps/blind.", Enum = new[] { "blind", "glass", "open" })]
-        public string fill = string.Empty;
+        [McpParam("When target=assembled_facade: center fill — blind (panel), glass, open (empty). Default keeps/blind.",
+            Enum = new[] { "blind", "glass", "open" })]
+        public string? fill;
+    }
+
+    [Serializable]
+    public class ParamsConvertElements
+    {
+        [McpParam("Conversions to apply. At least 1.", Required = true, Min = 1)]
+        public ConvertOp[] ops = Array.Empty<ConvertOp>();
+    }
+
+    [Serializable]
+    public class CloneOp
+    {
+        [McpParam("Exact board name to clone.", Required = true)] public string name = string.Empty;
+        [McpParam("How many copies (default 1, max 50).", Min = 1, Max = 50)] public int count = 1;
+        [McpParam("X shift between copies in METERS (default 0).")] public float offset_x;
+        [McpParam("Y shift between copies in METERS (default 0).")] public float offset_y;
+        [McpParam("Z shift between copies in METERS (default 0).")] public float offset_z;
+    }
+
+    [Serializable]
+    public class ParamsCloneElements
+    {
+        [McpParam("Clone operations. At least 1. Whole batch is ONE undo step.", Required = true, Min = 1)]
+        public CloneOp[] ops = Array.Empty<CloneOp>();
+    }
+
+    [Serializable]
+    public class AlignOp
+    {
+        [McpParam("Board to MOVE.", Required = true)] public string name = string.Empty;
+        [McpParam("Which face of THIS board to align: left/right = X axis, bottom/top = Y axis, back/front = Z axis.",
+            Required = true, Enum = new[] { "left", "right", "bottom", "top", "back", "front" })]
+        public string face = string.Empty;
+        [McpParam("Board to align AGAINST (it does not move).", Required = true)] public string target = string.Empty;
+        [McpParam("Which face of the TARGET to align to. Must be on the same axis as 'face'.",
+            Required = true, Enum = new[] { "left", "right", "bottom", "top", "back", "front" })]
+        public string target_face = string.Empty;
+        [McpParam("Gap between the two faces in MM (default 0 = flush contact).", Min = 0)]
+        public float gap_mm;
+    }
+
+    [Serializable]
+    public class ParamsAlignElements
+    {
+        [McpParam("Align operations, applied IN ORDER (later ops see earlier moves). At least 1. Whole batch is ONE undo step.",
+            Required = true, Min = 1)]
+        public AlignOp[] ops = Array.Empty<AlignOp>();
+    }
+
+    [Serializable]
+    public class RenameOp
+    {
+        [McpParam("Current exact element name.", Required = true)] public string name = string.Empty;
+        [McpParam("New name. Must be unique among all elements.", Required = true)] public string new_name = string.Empty;
+    }
+
+    [Serializable]
+    public class ParamsRenameElements
+    {
+        [McpParam("Renames to apply, in order. At least 1.", Required = true, Min = 1)]
+        public RenameOp[] ops = Array.Empty<RenameOp>();
+    }
+
+    // ── Diagnostics ──────────────────────────────────────────────────────────
+
+    [Serializable]
+    public class SnapDiagnoseOp
+    {
+        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
+        [McpParam("Test X in METERS (default: current).")] public float? x;
+        [McpParam("Test Y in METERS (default: current).")] public float? y;
+        [McpParam("Test Z in METERS (default: current).")] public float? z;
+    }
+
+    [Serializable]
+    public class ParamsSnapDiagnose
+    {
+        [McpParam("Boards (and optional test positions) to diagnose. At least 1.", Required = true, Min = 1)]
+        public SnapDiagnoseOp[] ops = Array.Empty<SnapDiagnoseOp>();
     }
 
     [Serializable]
@@ -257,71 +397,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("New on/off value.", Required = true)] public bool value;
     }
 
-    [Serializable]
-    public class ParamsSnapDiagnose
-    {
-        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
-        [McpParam("Test X in METERS (default: current).")] public float? x;
-        [McpParam("Test Y in METERS (default: current).")] public float? y;
-        [McpParam("Test Z in METERS (default: current).")] public float? z;
-    }
-
-    [Serializable]
-    public class ParamsSimulateMove
-    {
-        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
-        [McpParam("Target X in METERS. Omit to keep current X.")] public float? x;
-        [McpParam("Target Y in METERS. Omit to keep current Y.")] public float? y;
-        [McpParam("Target Z in METERS. Omit to keep current Z.")] public float? z;
-    }
-
-    [Serializable]
-    public class ParamsSimulateResize
-    {
-        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
-        [McpParam("Target width (X) in MM. Omit to keep current width.", Min = 1)] public int? width;
-        [McpParam("Target height (Y) in MM. Omit to keep current height.", Min = 1)] public int? height;
-        [McpParam("Target depth/thickness (Z) in MM. Omit to keep current depth.", Min = 1)] public int? depth;
-        [McpIgnore] public int? dimX;
-        [McpIgnore] public int? dimY;
-        [McpIgnore] public int? dimZ;
-    }
-
-    [Serializable]
-    public class ParamsCreateModule
-    {
-        [McpParam("Module name, e.g. 'Тумба с ящиками'.", Required = true)] public string name = string.Empty;
-        [McpParam("Board names (at least 2).", Required = true, Min = 2)] public string[] members = Array.Empty<string>();
-    }
-
-    [Serializable]
-    public class ParamsModule
-    {
-        [McpParam("Module id (number) or name.", Required = true)] public string module = string.Empty;
-    }
-
-    [Serializable]
-    public class ParamsModuleElement
-    {
-        [McpParam("Module id or name.", Required = true)] public string module = string.Empty;
-        [McpParam("Board name to add.", Required = true)] public string name = string.Empty;
-    }
-
-    [Serializable]
-    public class ParamsSetDrawerProperties
-    {
-        [McpParam("Exact drawer element name.", Required = true)] public string name = string.Empty;
-        [McpParam("Side height type: A=86, B=120, C=168, D=200 mm.", Enum = new[] { "A", "B", "C", "D" })] public string drawer_type = string.Empty;
-        [McpParam("Nominal slide length in MM, one of 250/300/350/400/450/500/550/600. Invalid values are ignored.")] public int? drawer_length;
-        [McpParam("GTV color.", Enum = new[] { "anthracite", "white", "black" })] public string drawer_color = string.Empty;
-        [McpParam("Internal box width in MM (min 100).", Min = 100)] public int? internal_width;
-        [McpParam("Mark as part of a DOUBLE drawer (two stacked boxes).")] public bool? is_double;
-        [McpParam("Double drawer only: this box is the UPPER one.")] public bool? is_upper;
-        [McpParam("Double drawer only: exact name of the paired drawer element (link both ways for sync).")] public string paired_drawer_name = string.Empty;
-        [McpParam("Exact name of the facade element acting as this drawer's front — it opens/closes together with the drawer. Empty string detaches.")] public string attached_facade_name = string.Empty;
-    }
-
-    // ── Батч-инструменты ─────────────────────────────────────────────────────
+    // ── Батч-чтения ──────────────────────────────────────────────────────────
 
     [Serializable]
     public class ParamsGetElements
@@ -334,6 +410,9 @@ namespace KitchenDesigner.Core.MCP.Contract
 
         [McpParam("true = compact one-line info per element (name, type, position, size, locked, hasViolations). Default false = full info.")]
         public bool summary;
+
+        [McpParam("true = include facade validation fields (faceNormal, faceInward, faceObstructions, openingViolations) for facade elements. Default false.")]
+        public bool facade_validation;
     }
 
     [Serializable]
@@ -343,62 +422,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string[]? names;
     }
 
-    /// <summary>Одна операция batch_edit. Все указанные поля применяются к
-    /// элементу разом (можно одновременно двигать, вращать и менять размер).</summary>
-    [Serializable]
-    public class BatchOp
-    {
-        [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
-        [McpParam("Target X in METERS. Omit to keep.")] public float? x;
-        [McpParam("Target Y in METERS. Omit to keep.")] public float? y;
-        [McpParam("Target Z in METERS. Omit to keep.")] public float? z;
-        [McpParam("New width (X) in MM. Omit to keep.", Min = 1)] public int? width;
-        [McpParam("New height (Y) in MM. Omit to keep.", Min = 1)] public int? height;
-        [McpParam("New depth/thickness (Z) in MM. Omit to keep.", Min = 1)] public int? depth;
-        [McpParam("Rotation around X in DEGREES. Omit to keep.")] public float? rot_x;
-        [McpParam("Rotation around Y in DEGREES. Omit to keep.")] public float? rot_y;
-        [McpParam("Rotation around Z in DEGREES. Omit to keep.")] public float? rot_z;
-        [McpParam("Lock (true) / unlock (false). Omit to keep.")] public bool? locked;
-        [McpParam("Material id or display name (see list_materials). Omit to keep.")] public string? material;
-    }
-
-    [Serializable]
-    public class ParamsBatchEdit
-    {
-        [McpParam("Operations to apply. Each op: exact name + any of x/y/z (METERS), width/height/depth (MM), rot_x/rot_y/rot_z (DEGREES), locked, material.",
-            Required = true, Min = 1)]
-        public BatchOp[] ops = Array.Empty<BatchOp>();
-
-        [McpParam("true = DRY-RUN: apply, report per-op violations, then revert everything. Default false.")]
-        public bool dry_run;
-    }
-
-    [Serializable]
-    public class ParamsCloneElement
-    {
-        [McpParam("Exact board name to clone.", Required = true)] public string name = string.Empty;
-        [McpParam("How many copies (default 1, max 50).", Min = 1, Max = 50)] public int count = 1;
-        [McpParam("X shift between copies in METERS (default 0).")] public float offset_x;
-        [McpParam("Y shift between copies in METERS (default 0).")] public float offset_y;
-        [McpParam("Z shift between copies in METERS (default 0).")] public float offset_z;
-    }
-
     // ── Высокоуровневое размещение ───────────────────────────────────────────
-
-    [Serializable]
-    public class ParamsAlignElement
-    {
-        [McpParam("Board to MOVE.", Required = true)] public string name = string.Empty;
-        [McpParam("Which face of THIS board to align: left/right = X axis, bottom/top = Y axis, back/front = Z axis.",
-            Required = true, Enum = new[] { "left", "right", "bottom", "top", "back", "front" })]
-        public string face = string.Empty;
-        [McpParam("Board to align AGAINST (it does not move).", Required = true)] public string target = string.Empty;
-        [McpParam("Which face of the TARGET to align to. Must be on the same axis as 'face'.",
-            Required = true, Enum = new[] { "left", "right", "bottom", "top", "back", "front" })]
-        public string target_face = string.Empty;
-        [McpParam("Gap between the two faces in MM (default 0 = flush contact).", Min = 0)]
-        public float gap_mm;
-    }
 
     [Serializable]
     public class ParamsGetFreeSpace
@@ -416,54 +440,33 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string axis = string.Empty;
     }
 
+    // ── Модули ───────────────────────────────────────────────────────────────
+
     [Serializable]
-    public class ParamsSetRadialShelfProperties
+    public class ParamsCreateModule
     {
-        [McpParam("Exact radial shelf element name.", Required = true)] public string name = string.Empty;
-        [McpParam("Corner rounding radius in MM (clamped to 1..min(width, depth)). Omit to keep current.", Min = 1)]
-        public int? corner_radius;
+        [McpParam("Module name, e.g. 'Тумба с ящиками'.", Required = true)] public string name = string.Empty;
+        [McpParam("Board names (at least 2).", Required = true, Min = 2)] public string[] members = Array.Empty<string>();
     }
 
-	[Serializable]
-	public class ParamsSetTableProperties
-	{
-		[McpParam("Exact table element name.", Required = true)] public string name = string.Empty;
-		[McpParam("Inward offset of legs from corners along X and Z, in MM (min 0).", Min = 0)] public int? leg_inset_mm;
-		[McpParam("Material id for the tabletop (see list_materials).")] public string? tabletop_material_id;
-		[McpParam("Material id for the legs (see list_materials).")] public string? legs_material_id;
-	}
-
-	[Serializable]
-	public class ParamsSetPillarProperties
-	{
-		[McpParam("Exact pillar element name.", Required = true)] public string name = string.Empty;
-		[McpParam("Middle cylinder height in MM (clamped 50..100).", Min = 50, Max = 100)] public int? mid_height_mm;
-	}
-
-	[Serializable]
-	public class ParamsSetWindowProperties
+    [Serializable]
+    public class ParamsModule
     {
-        [McpParam("Exact window element name.", Required = true)] public string name = string.Empty;
-        [McpParam("Glass tint: clear (transparent) or tinted (slightly darkened).", Enum = new[] { "clear", "tinted" })]
-        public string tint = string.Empty;
-        [McpParam("Windowsill outward protrusion in MM (0..200).", Min = 0, Max = 200)]
-        public int? sill_protrusion_mm;
-        [McpParam("Opening mode: front_left|front_right|front_top|front_bottom (like facade).",
-            Enum = new[] { "front_left", "front_right", "front_top", "front_bottom" })]
-        public string? mode;
-        [McpParam("true = open, false = close.")] public bool? is_open;
+        [McpParam("Module id (number) or name.", Required = true)] public string module = string.Empty;
     }
 
-	[Serializable]
-	public class ParamsSetDoorProperties
+    [Serializable]
+    public class ParamsModules
     {
-        [McpParam("Exact door element name.", Required = true)] public string name = string.Empty;
-        [McpParam("Sash type: glass (transparent) or blind (solid panel).",
-            Enum = new[] { "glass", "blind" })]
-        public string sash_type = string.Empty;
-        [McpParam("Opening mode: front_left|front_right|front_top|front_bottom.",
-            Enum = new[] { "front_left", "front_right", "front_top", "front_bottom" })]
-        public string? mode;
-        [McpParam("true = open, false = close.")] public bool? is_open;
+        [McpParam("Module ids (numbers) or names. At least 1.", Required = true, Min = 1)]
+        public string[] modules = Array.Empty<string>();
+    }
+
+    [Serializable]
+    public class ParamsModuleElements
+    {
+        [McpParam("Module id or name.", Required = true)] public string module = string.Empty;
+        [McpParam("Board names to add. At least 1.", Required = true, Min = 1)]
+        public string[] names = Array.Empty<string>();
     }
 }
