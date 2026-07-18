@@ -138,9 +138,15 @@ public static class BuildProject
             ? WebGLCompressionFormat.Disabled
             : WebGLCompressionFormat.Gzip;
 
-        PlayerSettings.WebGL.debugSymbols = isDebug;
+        // Wasm-символы удлиняют линковку wasm (однопоточная фаза); включать
+        // точечно, только когда нужен нативный стектрейс.
+        PlayerSettings.WebGL.debugSymbols = false;
+
+        // FullWithStacktrace инструментирует каждый метод — C++ разбухает и clang
+        // работает в разы дольше. ExplicitlyThrown сохраняет managed-исключения
+        // с сообщениями и managed-стектрейсами в development-билде.
         PlayerSettings.WebGL.exceptionSupport = isDebug
-            ? WebGLExceptionSupport.FullWithStacktrace
+            ? WebGLExceptionSupport.ExplicitlyThrownExceptionsOnly
             : WebGLExceptionSupport.None;
 
         PlayerSettings.SetManagedStrippingLevel(
@@ -151,6 +157,14 @@ public static class BuildProject
         PlayerSettings.SetIl2CppCompilerConfiguration(
             UnityEditor.Build.NamedBuildTarget.WebGL,
             isDebug ? Il2CppCompilerConfiguration.Debug : Il2CppCompilerConfiguration.Release);
+
+        // Debug: shared-дженерики (OptimizeSize = «Faster (smaller) builds») —
+        // IL2CPP генерирует заметно меньше C++, clang компилирует быстрее.
+        PlayerSettings.SetIl2CppCodeGeneration(
+            UnityEditor.Build.NamedBuildTarget.WebGL,
+            isDebug
+                ? UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize
+                : UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed);
 
         PlayerSettings.WebGL.dataCaching = false;
         PlayerSettings.WebGL.memorySize = isDebug ? 512 : 256;
@@ -167,7 +181,7 @@ public static class BuildProject
         EditorUserBuildSettings.connectProfiler = false;
         EditorUserBuildSettings.buildWithDeepProfilingSupport = false;
 
-        Debug.Log($"[BuildProject] WebGL configured: debug={isDebug}, stripping={(isDebug ? "low" : "high")}, exceptions={(isDebug ? "full" : "none")}");
+        Debug.Log($"[BuildProject] WebGL configured: debug={isDebug}, stripping={(isDebug ? "low" : "high")}, exceptions={(isDebug ? "explicit" : "none")}, codegen={(isDebug ? "size" : "speed")}");
     }
 
     // ── Windows ────────────────────────────────────────────
