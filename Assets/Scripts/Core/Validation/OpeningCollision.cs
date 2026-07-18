@@ -28,15 +28,15 @@ namespace KitchenDesigner.Core
             }
             if (others.Count == 0) return 1f;
 
-            // Фильтр: исключаем элементы, с которыми уже есть пересечение
-            // в закрытом состоянии (контейнеры — корпуса, стены). Иначе
-            // ящик не откроется из корпуса, а окно/дверь — из стены.
+            // Фильтр: исключаем элементы, с которыми уже есть касание/пересечение
+            // в закрытом состоянии (контейнеры — корпуса, стены, панели холодильника).
+            // Иначе ящик не откроется из корпуса, а окно/дверь/дверца — из рамы.
             var closedBounds = getBounds(0f);
             var relevant = new List<(Vector3 min, Vector3 max)>();
             foreach (var el in others)
             {
                 var aabb = MinMax(el.GetVertices());
-                if (!OverlapsPair(closedBounds, aabb))
+                if (!AabbsTouch(closedBounds, aabb))
                     relevant.Add(aabb);
             }
             if (relevant.Count == 0) return 1f;
@@ -72,11 +72,20 @@ namespace KitchenDesigner.Core
         /// мельче самого тонкого препятствия (панель 16–18 мм), проскок исключён.</summary>
         private const int ScanSteps = 128;
 
-        private static bool OverlapsPair((Vector3 min, Vector3 max) a, (Vector3 min, Vector3 max) b)
+        /// <summary>Считаются ли AABB касающимися или пересекающимися — зазор ≤ ContactMm.</summary>
+        private static bool AabbsTouch((Vector3 min, Vector3 max) a, (Vector3 min, Vector3 max) b)
         {
-            return Tolerance.IntervalsOverlap(a.min.x, a.max.x, b.min.x, b.max.x) &&
-                   Tolerance.IntervalsOverlap(a.min.y, a.max.y, b.min.y, b.max.y) &&
-                   Tolerance.IntervalsOverlap(a.min.z, a.max.z, b.min.z, b.max.z);
+            float contactU = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            return IntervalsTouch(a.min.x, a.max.x, b.min.x, b.max.x, contactU) &&
+                   IntervalsTouch(a.min.y, a.max.y, b.min.y, b.max.y, contactU) &&
+                   IntervalsTouch(a.min.z, a.max.z, b.min.z, b.max.z, contactU);
+        }
+
+        private static bool IntervalsTouch(float min1, float max1, float min2, float max2, float contactU)
+        {
+            // Зазор (отрицательный = пересечение) ≤ contactU → касаются
+            float gap = Mathf.Max(min1 - max2, min2 - max1, 0f);
+            return gap <= contactU;
         }
 
         private static bool Overlaps((Vector3 min, Vector3 max) a, List<(Vector3 min, Vector3 max)> others)
