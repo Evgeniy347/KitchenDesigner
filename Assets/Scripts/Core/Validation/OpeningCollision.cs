@@ -72,10 +72,12 @@ namespace KitchenDesigner.Core
         /// мельче самого тонкого препятствия (панель 16–18 мм), проскок исключён.</summary>
         private const int ScanSteps = 128;
 
-        /// <summary>Считаются ли AABB касающимися или пересекающимися — зазор ≤ ContactMm.</summary>
+        /// <summary>Считаются ли AABB касающимися или пересекающимися — зазор ≤ 2 мм.
+        /// Порог больше ContactMm (0.5 мм), чтобы вращающиеся дверцы не блокировались
+        /// планками корпуса, стоящими на расстоянии 1–2 мм (AABB бокса консервативен).</summary>
         private static bool AabbsTouch((Vector3 min, Vector3 max) a, (Vector3 min, Vector3 max) b)
         {
-            float contactU = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            float contactU = 2f * AppConstants.MM_TO_UNITS;
             return IntervalsTouch(a.min.x, a.max.x, b.min.x, b.max.x, contactU) &&
                    IntervalsTouch(a.min.y, a.max.y, b.min.y, b.max.y, contactU) &&
                    IntervalsTouch(a.min.z, a.max.z, b.min.z, b.max.z, contactU);
