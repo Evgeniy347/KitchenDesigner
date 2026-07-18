@@ -415,6 +415,40 @@ public class IsoScreenshotTests
             Object.DestroyImmediate(camGo);
         }
 
+        // ── Door isometric screenshot ────────────────────────────
+
+        [UnityTest]
+        public IEnumerator IsoDoor_Standard()
+        {
+            // Пол: плита 3000×3000×100 мм, верхняя плоскость на y=0.
+            var floorGo = ElementFactory.CreateFloor(
+                new Vector3Int(3000, 100, 3000), "IsoDoorFloor", new Vector3(0f, -0.05f, 0f));
+            _spawned.Add(floorGo);
+
+            // Стена: 3000×2500×100 мм.
+            SpawnWallAt("IsoDoorWall", new Vector3Int(3000, 2500, 100), new Vector3(0f, 1.25f, 0f));
+
+            // Дверь: 800×2000 мм, стекло. Разворот 180° — фасад к камере.
+            var dims = new Vector3Int(800, 2000, 100);
+            var doorGo = ElementFactory.CreateDoor(dims, "IsoDoor", new Vector3(0f, 1.0f, 0f));
+            doorGo.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+            _spawned.Add(doorGo);
+            var door = doorGo.GetComponent<DoorElement>();
+            Assert.IsNotNull(door);
+
+            yield return null; // Start → SnapToWall
+
+            Assert.IsNotEmpty(door!.AttachedWallName, "дверь должна прилипнуть к стене");
+
+            Vector3 size = MmToUnits(dims);
+            var (camGo, cam) = CreateIsoCamera(door.transform.position, size, 2.5f);
+            _spawned.Add(camGo);
+
+            yield return RenderToPng(cam, "iso_door_default.png");
+
+            Object.DestroyImmediate(camGo);
+        }
+
         // ── Room screenshots (4 walls, raised + lowered) ─────────
 
         [UnityTest]
