@@ -437,7 +437,7 @@ namespace KitchenDesigner.Core
 			float toU = AppConstants.MM_TO_UNITS;
 			Vector3 pillarCenter = _target.transform.position;
 
-			float floorY = FindFloorY(pillarCenter, toU);
+			float floorY = FindFloorY(pillarCenter);
 			if (floorY < -999f) return;
 
 			float pillarBottomY = floorY;
@@ -447,7 +447,6 @@ namespace KitchenDesigner.Core
 
 			float minAbove = pillarBottomY + 80f * toU;
 			float maxAbove = pillarBottomY + 130f * toU;
-			float midDiameterU = PillarElement.MidDiameterMM * 0.5f * toU;
 			KitchenElement? bestAbove = null;
 			float bestAboveBottom = float.MaxValue;
 			foreach (var el in PartRegistry.GetAll())
@@ -456,9 +455,7 @@ namespace KitchenDesigner.Core
 				var aabb = ComputeElementAABB(el);
 				if (aabb.minY >= minAbove && aabb.minY <= maxAbove)
 				{
-					float dx = Mathf.Abs((aabb.minX + aabb.maxX) * 0.5f - pillarCenter.x);
-					float dz = Mathf.Abs((aabb.minZ + aabb.maxZ) * 0.5f - pillarCenter.z);
-					if (dx < midDiameterU + 0.05f && dz < midDiameterU + 0.05f)
+					if (IsOverlappingXZ(pillarCenter, aabb, 0.05f))
 					{
 						if (aabb.minY < bestAboveBottom)
 						{
@@ -479,7 +476,7 @@ namespace KitchenDesigner.Core
 			pillar.transform.position = new Vector3(pillar.transform.position.x, bottomY + newTotalHeight * 0.5f, pillar.transform.position.z);
 		}
 
-		private static float FindFloorY(Vector3 pillarCenter, float toU)
+		private static float FindFloorY(Vector3 pillarCenter)
 		{
 			float bestY = float.MinValue;
 			foreach (var el in PartRegistry.GetAll())
@@ -487,13 +484,17 @@ namespace KitchenDesigner.Core
 				if (el == null) continue;
 				var aabb = ComputeElementAABB(el);
 				if (aabb.maxY > pillarCenter.y - 0.01f) continue;
-				float dx = Mathf.Abs((aabb.minX + aabb.maxX) * 0.5f - pillarCenter.x);
-				float dz = Mathf.Abs((aabb.minZ + aabb.maxZ) * 0.5f - pillarCenter.z);
-				if (dx < 0.15f && dz < 0.15f && aabb.maxY > bestY)
+				if (IsOverlappingXZ(pillarCenter, aabb, 0.05f) && aabb.maxY > bestY)
 					bestY = aabb.maxY;
 			}
 			if (bestY >= pillarCenter.y - 1f) return bestY;
 			return -1000f;
+		}
+
+		private static bool IsOverlappingXZ(Vector3 point, (float minX, float maxX, float minY, float maxY, float minZ, float maxZ) aabb, float margin)
+		{
+			return point.x >= aabb.minX - margin && point.x <= aabb.maxX + margin
+				&& point.z >= aabb.minZ - margin && point.z <= aabb.maxZ + margin;
 		}
 
 		private static (float minX, float maxX, float minY, float maxY, float minZ, float maxZ) ComputeElementAABB(KitchenElement el)
