@@ -270,17 +270,20 @@ namespace KitchenDesigner.Core
                 var exclude = new System.Collections.Generic.List<KitchenElement> { this };
                 var f = FindAttachedFacade();
                 if (f != null) exclude.Add(f);
+                var pair = FindPairedDrawer();
+                if (pair != null)
+                {
+                    exclude.Add(pair);
+                    var pairFacade = pair.FindAttachedFacade();
+                    if (pairFacade != null) exclude.Add(pairFacade);
+                }
                 float safe = OpeningCollision.FindMaxProgress(this, GetOpenBounds, exclude);
                 if (safe < _t)
                 {
                     _t = Mathf.Max(_t - step, safe);
                     // Синхронизируем верхний ящик пары
-                    if (!_isUpperDrawer)
-                    {
-                        var pair = FindPairedDrawer();
-                        if (pair != null && pair._isUpperDrawer && pair._t > _t)
-                            pair._t = _t;
-                    }
+                    if (!_isUpperDrawer && pair != null && pair._isUpperDrawer && pair._t > _t)
+                        pair._t = _t;
                 }
             }
 
