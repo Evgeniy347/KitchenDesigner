@@ -50,6 +50,7 @@ namespace KitchenDesigner.Core
         }
 
         public bool IsOpen => _isOpen;
+        public float DoorProgress => _openT;
         public string AttachedWallName { get => _attachedWallName; set => _attachedWallName = value ?? ""; }
 
         public Vector3 ClosedPosition => transform.position;
@@ -120,7 +121,40 @@ namespace KitchenDesigner.Core
             if (Mathf.Approximately(_openT, target)) return;
             float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
             _openT = Mathf.MoveTowards(_openT, target, step);
+
+            if (_isOpen && _openT > 0f)
+            {
+                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBounds);
+                if (safe < _openT) _openT = Mathf.Max(_openT - step, safe);
+            }
+
             ApplyDoorPose();
+        }
+
+        /// <summary>Мировые границы створки (AABB) при заданном прогрессе открывания [0..1].</summary>
+        public (Vector3 min, Vector3 max) GetOpenBounds(float progress)
+        {
+            if (_sashGroup == null || _sashHalfExtents.sqrMagnitude < 1e-12f)
+                return OpeningCollision.MinMax(GetVertices());
+
+            FacadeDoor.Pose(_sashClosedLocal, Quaternion.identity, _sashHalfExtents,
+                _mode, progress, out var localPos, out var localRot);
+
+            var worldPos = transform.TransformPoint(localPos);
+            var worldRot = transform.rotation * localRot;
+
+            var half = _sashHalfExtents;
+            var localCorners = new Vector3[]
+            {
+                new Vector3(-half.x, -half.y, -half.z), new Vector3( half.x, -half.y, -half.z),
+                new Vector3( half.x, -half.y,  half.z), new Vector3(-half.x, -half.y,  half.z),
+                new Vector3(-half.x,  half.y, -half.z), new Vector3( half.x,  half.y, -half.z),
+                new Vector3( half.x,  half.y,  half.z), new Vector3(-half.x,  half.y,  half.z),
+            };
+            var world = new Vector3[8];
+            for (int i = 0; i < 8; i++)
+                world[i] = worldPos + worldRot * localCorners[i];
+            return OpeningCollision.MinMax(world);
         }
 
         // ── Привязка к стене ────────────────────────────────────────────

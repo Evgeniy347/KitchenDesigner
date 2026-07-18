@@ -139,6 +139,30 @@ namespace KitchenDesigner.Core
             maxZ =  phys.z * 0.5f;
         }
 
+        /// <summary>Мировые границы фасада (AABB) при заданном прогрессе открывания [0..1].</summary>
+        public (Vector3 min, Vector3 max) GetOpenBounds(float progress)
+        {
+            var cp = IsDoorClosed ? transform.position : _closedPos;
+            var cr = IsDoorClosed ? transform.rotation : _closedRot;
+            var halfExtents = transform.localScale * 0.5f;
+
+            FacadeDoor.Pose(cp, cr, halfExtents, _mode, progress, out var pos, out var rot);
+
+            CornerUnits(out var minX, out var maxX, out var minY, out var maxY, out var minZ, out var maxZ);
+            var localCorners = new Vector3[]
+            {
+                new Vector3(minX, minY, minZ), new Vector3(maxX, minY, minZ),
+                new Vector3(maxX, minY, maxZ), new Vector3(minX, minY, maxZ),
+                new Vector3(minX, maxY, minZ), new Vector3(maxX, maxY, minZ),
+                new Vector3(maxX, maxY, maxZ), new Vector3(minX, maxY, maxZ),
+            };
+
+            var world = new Vector3[8];
+            for (int i = 0; i < 8; i++)
+                world[i] = pos + rot * localCorners[i];
+            return OpeningCollision.MinMax(world);
+        }
+
         // ── Открывание (дверца) ─────────────────────────────────────────
         // Дверца поворачивается вокруг выбранного ребра на 90° и обратно, с
         // плавностью по синусу (см. FacadeDoor). Позиция/поворот трансформа
@@ -210,13 +234,30 @@ namespace KitchenDesigner.Core
             float target = _open ? 1f : 0f;
             if (Mathf.Approximately(_t, target))
             {
-                // Закрыта и в покое → база следует за реальным трансформом
-                // (чтобы перетаскивание/поворот закрытой дверцы обновляли базу).
                 if (_t <= 0f) CaptureClosed();
                 return;
             }
             float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
             _t = Mathf.MoveTowards(_t, target, step);
+
+            // При открытии проверяем, не упирается ли фасад в другие объекты.
+            // Исключаем ящик, к которому прикреплён фасад, — иначе фасад
+            // видит уже открытый ящик как препятствие и блокирует себя.
+            if (_open && _t > 0f)
+            {
+                var exclude = new System.Collections.Generic.List<KitchenElement>();
+                foreach (var el in PartRegistry.GetAll())
+                {
+                    if (el is DrawerElement d && d.AttachedFacadeName == PartName)
+                    {
+                        exclude.Add(d);
+                        break;
+                    }
+                }
+                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBounds, exclude);
+                if (safe < _t) _t = Mathf.Max(_t - step, safe);
+            }
+
             ApplyDoor();
         }
 
