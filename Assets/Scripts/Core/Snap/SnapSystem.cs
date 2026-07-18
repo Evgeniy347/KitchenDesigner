@@ -57,6 +57,22 @@ namespace KitchenDesigner.Core
         // к стене: подтверждение текущего контакта (сдвиг 0) всегда «ближе».
         private const float ZeroShiftEpsilon = Tolerance.EpsilonUnits;
 
+        // Кандидат прилипания с разложением сдвига на компоненты: planeShift —
+        // заподлицо вдоль нормали грани (суть снэпа), du/dv — необязательное
+        // выравнивание по кромке/центру в плоскости грани. Разложение нужно,
+        // чтобы при конфликте с существующим контактом обнулять только
+        // мешающую компоненту, а не отбрасывать кандидат целиком.
+        private struct Candidate
+        {
+            public float dist;
+            public SnapResult result;
+            public Vector3 normal;   // нормаль движимой грани (направление planeShift)
+            public float planeShift;
+            public Vector3 u, v;
+            public float du, dv;
+            public string? log;
+        }
+
         // Прилипание — чистая детерминированная функция от (moved, others, testPos).
         // Без скрытого статического состояния: одинаковый вход → одинаковый выход,
         // что критично для предсказуемости в рантайме и для повторяемости тестов.
@@ -69,8 +85,6 @@ namespace KitchenDesigner.Core
             float threshold = KitchenSettings.Instance.SnapThreshold * AppConstants.MM_TO_UNITS;
             float maxDist = threshold + ThresholdEpsilon;
             Vector3 prevPos = moved.transform.position;
-            moved.transform.position = testPosition;
-            KitchenElement.Face[] movedFaces = moved.GetFaces();
 
             // Кандидаты делятся на два сорта:
             //  - «нулевые» (сдвиг ≈ 0) — деталь УЖЕ заподлицо с этой гранью; это
@@ -81,7 +95,71 @@ namespace KitchenDesigner.Core
             SnapResult bestZero = default;
             string? bestZeroLog = null;
             var zeroNormals = new List<Vector3>();
-            var candidates = new List<(float dist, SnapResult result, string? log)>();
+            var candidates = new List<Candidate>();
+
+            Collect(moved, others, testPosition, maxDist, candidates, zeroNormals,
+                ref bestZero, ref bestZeroLog);
+
+            // Применяем лучший непротиворечивый кандидат, затем ДОБИРАЕМ ортогональные:
+            // в углу (бок соседа + стена) один кандидат чинит только одну ось, вторая
+            // оставалась с зазором или проникновением — деталь «прилипла», но красная.
+            // Каждый следующий проход обязан быть ⊥ уже применённым нормалям (locked):
+            // это не даёт откатывать сделанное и гарантирует сходимость (осей три).
+            Vector3 pos = testPosition;
+            SnapResult primary = default;
+            string? primaryLog = null;
+            var locked = new List<Vector3>(zeroNormals);
+
+            for (int pass = 0; pass < 3; pass++)
+            {
+                if (pass > 0)
+                {
+                    candidates.Clear();
+                    zeroNormals.Clear();
+                    SnapResult ignoredZero = default;
+                    string? ignoredLog = null;
+                    Collect(moved, others, pos, maxDist, candidates, zeroNormals,
+                        ref ignoredZero, ref ignoredLog);
+                    foreach (var n in zeroNormals) locked.Add(n);
+                }
+
+                if (!TryPickCandidate(candidates, locked, pos, out Candidate picked, out Vector3 pickedPos))
+                    break;
+
+                pos = pickedPos;
+                if (!primary.snapped)
+                {
+                    primary = picked.result;
+                    primaryLog = picked.log;
+                }
+                primary.position = pos;
+                locked.Add(picked.normal);
+            }
+
+            moved.transform.position = prevPos;
+
+            if (primary.snapped)
+            {
+                if (VerboseLog && primaryLog != null) Debug.Log(primaryLog);
+                return primary;
+            }
+
+            // Содержательных нет (или все рвут контакты) — подтверждаем текущий
+            // контакт (прежнее поведение: снэп «на месте»).
+            if (VerboseLog && bestZeroLog != null) Debug.Log(bestZeroLog);
+            return bestZero;
+        }
+
+        /// <summary>Сбор кандидатов прилипания из позиции basePos: нормали
+        /// «нулевых» пар (деталь уже заподлицо) идут в zeroNormals, содержательные
+        /// кандидаты — в candidates. Оставляет moved в позиции basePos —
+        /// вызывающий обязан восстановить исходную позицию.</summary>
+        private static void Collect(KitchenElement moved, List<KitchenElement> others, Vector3 basePos,
+            float maxDist, List<Candidate> candidates, List<Vector3> zeroNormals,
+            ref SnapResult bestZero, ref string? bestZeroLog)
+        {
+            moved.transform.position = basePos;
+            KitchenElement.Face[] movedFaces = moved.GetFaces();
 
             foreach (var other in others)
             {
@@ -113,7 +191,7 @@ namespace KitchenDesigner.Core
 
                         if (!FacesOverlap(mf, of, out float overlapRatio))
                             continue;
-                        if (overlapRatio < 0.3f) continue;
+                        if (overlapRatio < Tolerance.MinSupportOverlap) continue;
 
                         // Сдвиг вдоль нормали: плоскости становятся заподлицо.
                         float planeShift = Vector3.Dot(offset, mf.normal);
@@ -129,9 +207,9 @@ namespace KitchenDesigner.Core
 
                         // Точное выравнивание заподлицо. Сетку НЕ применяем: при крупном
                         // шаге она сдвинула бы деталь с плоскости контакта и разорвала стык.
-                        Vector3 snapPos = testPosition + planeShift * mf.normal + du * u + dv * v;
+                        Vector3 snapPos = basePos + planeShift * mf.normal + du * u + dv * v;
 
-                        float dist = Vector3.Distance(snapPos, testPosition);
+                        float dist = Vector3.Distance(snapPos, basePos);
                         var result = new SnapResult
                         {
                             snapped = true,
@@ -154,35 +232,67 @@ namespace KitchenDesigner.Core
                         }
                         else
                         {
-                            candidates.Add((dist, result, log));
+                            candidates.Add(new Candidate
+                            {
+                                dist = dist,
+                                result = result,
+                                normal = mf.normal,
+                                planeShift = planeShift,
+                                u = u,
+                                v = v,
+                                du = du,
+                                dv = dv,
+                                log = log
+                            });
                         }
                     }
                 }
             }
+        }
 
-            moved.transform.position = prevPos;
+        /// <summary>Лучший кандидат, не рвущий зафиксированные контакты/оси (locked):
+        ///  - сдвиг заподлицо (planeShift) вдоль locked-нормали — кандидат отбрасывается;
+        ///  - выравнивание по кромке (du/dv) вдоль locked-нормали — обнуляется
+        ///    ТОЛЬКО эта компонента. Раньше кандидат отбрасывался целиком, и деталь
+        ///    на полу отказывалась липнуть к соседу лишь потому, что заодно хотела
+        ///    подровнять кромку по вертикали (что оторвало бы её от пола).</summary>
+        private static bool TryPickCandidate(List<Candidate> candidates, List<Vector3> locked,
+            Vector3 basePos, out Candidate picked, out Vector3 pickedPos)
+        {
+            picked = default;
+            pickedPos = basePos;
+            float bestDist = float.MaxValue;
+            bool found = false;
 
-            // Лучший содержательный кандидат, не отрывающий деталь от существующих
-            // контактов (сдвиг перпендикулярен их нормалям).
-            candidates.Sort((a, b) => a.dist.CompareTo(b.dist));
             foreach (var c in candidates)
             {
-                Vector3 shift = c.result.position - testPosition;
-                bool breaksContact = false;
-                foreach (var n in zeroNormals)
+                float du = c.du, dv = c.dv;
+                bool breaks = false;
+                foreach (var n in locked)
                 {
-                    if (Mathf.Abs(Vector3.Dot(shift, n)) > ZeroShiftEpsilon) { breaksContact = true; break; }
+                    if (Mathf.Abs(c.planeShift * Vector3.Dot(c.normal, n)) > ZeroShiftEpsilon) { breaks = true; break; }
+                    if (Mathf.Abs(du * Vector3.Dot(c.u, n)) > ZeroShiftEpsilon) du = 0f;
+                    if (Mathf.Abs(dv * Vector3.Dot(c.v, n)) > ZeroShiftEpsilon) dv = 0f;
                 }
-                if (breaksContact) continue;
+                if (breaks) continue;
 
-                if (VerboseLog && c.log != null) Debug.Log(c.log);
-                return c.result;
+                Vector3 pos = basePos + c.planeShift * c.normal + du * c.u + dv * c.v;
+                float dist = Vector3.Distance(pos, basePos);
+                // Выродился в подтверждение текущего контакта — не содержательный.
+                if (dist <= ZeroShiftEpsilon) continue;
+
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    picked = c;
+                    picked.du = du;
+                    picked.dv = dv;
+                    picked.result.position = pos;
+                    pickedPos = pos;
+                    found = true;
+                }
             }
-
-            // Содержательных нет (или все рвут контакты) — подтверждаем текущий
-            // контакт (прежнее поведение: снэп «на месте»).
-            if (VerboseLog && bestZeroLog != null) Debug.Log(bestZeroLog);
-            return bestZero;
+            return found;
         }
 
         /// <summary>Логировать выбор снэпа (для отладки прилипания). По умолчанию выкл.</summary>
@@ -257,7 +367,7 @@ namespace KitchenDesigner.Core
                             n.gapMM = gap / AppConstants.MM_TO_UNITS;
                             n.overlapRatio = hasOverlap ? ratio : 0f;
                             n.withinThreshold = gap <= maxDist;
-                            n.overlapEnough = hasOverlap && ratio >= 0.3f;
+                            n.overlapEnough = hasOverlap && ratio >= Tolerance.MinSupportOverlap;
                         }
                     }
                 }

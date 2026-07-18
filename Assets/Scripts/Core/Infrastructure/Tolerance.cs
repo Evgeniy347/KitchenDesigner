@@ -32,6 +32,13 @@ namespace KitchenDesigner.Core
         /// зашит в DrawerValidator как ±ε рядом с MIN/MAX_CLEARANCE_PER_SIDE_MM.</summary>
         public const float ClearanceMm = 0.1f;
 
+        /// <summary>Минимальная доля перекрытия граней, при которой контакт несёт
+        /// (face-to-face) И при которой срабатывает прилипание. Порог ЕДИНЫЙ:
+        /// раньше снэп требовал 30%, а связность — 50%, и в полосе 30–50% деталь
+        /// прилипала, но по связности «висела в воздухе» — красная подсветка
+        /// сразу после сработавшего снэпа.</summary>
+        public const float MinSupportOverlap = 0.3f;
+
         public static bool ApproxEqual(float a, float b) =>
             Mathf.Abs(a - b) < EpsilonUnits;
 

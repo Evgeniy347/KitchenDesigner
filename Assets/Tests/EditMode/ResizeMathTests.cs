@@ -105,6 +105,30 @@ public class ResizeMathTests
     }
 
     [Test]
+    public void Resize_SnapToOffMmNeighbour_NeverOvershootsIntoIt()
+    {
+        var a = Make(new Vector3(0, 0.2f, 0), new Vector3Int(800, 400, 18));
+        // B: -X-грань на x=0.44963 — НЕ на целом мм от противоположной грани A.
+        // Заподлицо требует ширины 849.63 мм; Round дал бы 850, и грань A зашла
+        // бы на 0.37 мм ВНУТРЬ B — невидимое глазу пересечение (красная
+        // подсветка сразу после сработавшего снэпа).
+        var b = Make(new Vector3(0.84963f, 0.2f, 0), new Vector3Int(800, 400, 18));
+
+        Resize(a, 0, 0.03f, new List<KitchenElement> { b }, 0.05f,
+            out var dims, out var center, out bool snapped);
+
+        Assert.IsTrue(snapped);
+        Assert.AreEqual(849, dims.x, "округление не должно перехлёстывать за грань соседа");
+        float face = center.x + dims.x * AppConstants.MM_TO_UNITS * 0.5f;
+        Assert.LessOrEqual(face, 0.44963f + 1e-4f, "грань не заходит за снэп-плоскость");
+
+        a.DimensionsMM = dims;
+        a.transform.position = center;
+        Assert.IsFalse(SnapSystem.ElementsIntersect(a, b),
+            "после снэп-ресайза детали не должны пересекаться");
+    }
+
+    [Test]
     public void ToggleMode_FlipsResizeAndMove()
     {
         var start = ResizeHandleManager.Mode;
