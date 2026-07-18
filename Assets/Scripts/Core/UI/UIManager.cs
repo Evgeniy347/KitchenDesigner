@@ -26,6 +26,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _modeButtonLabel;
         private TMP_Text? _tintButtonLabel;
         private TMP_Text? _lightsButtonLabel;
+        private TMP_Text? _vertexLabel;
 
         public Canvas? Canvas => _canvas;
         public const string QuickSaveName = "quicksave";
@@ -145,6 +146,13 @@ namespace KitchenDesigner.Core.UI
 
             // Панель «День/Ночь» — глобальное управление солнцем.
             AddBarButton(bar.transform, "DayNight", "Солнце", ref x, y, h, 90, ToggleDayNight);
+
+            // Показ буквенных меток вершин A-H у выделенного элемента.
+            var vertexBtn = UIFactory.CreateButton("VertexLabels", bar.transform, VertexLabel(),
+                new Vector2(x, y), new Vector2(150, h), ToggleVertexLabels);
+            UIFactory.AnchorTopLeft(vertexBtn.GetComponent<RectTransform>());
+            vertexBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
+            _vertexLabel = vertexBtn.GetComponentInChildren<TMP_Text>();
         }
 
         private static string TintLabel() =>
@@ -170,6 +178,15 @@ namespace KitchenDesigner.Core.UI
         private void ToggleDayNight()
         {
             if (_dayNightPanel != null) _dayNightPanel.Toggle();
+        }
+
+        private static string VertexLabel() =>
+            VertexLabelManager.Enabled ? "Вершины: A-H" : "Вершины: выкл";
+
+        private void ToggleVertexLabels()
+        {
+            VertexLabelManager.Toggle();
+            if (_vertexLabel != null) _vertexLabel.text = VertexLabel();
         }
 
         private static string ModeLabel() =>

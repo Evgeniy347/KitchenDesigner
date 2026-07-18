@@ -33,6 +33,7 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<EdgeOutlineRenderer>() == null) gameObject.AddComponent<EdgeOutlineRenderer>();
             if (FindAnyObjectByType<WallManager>() == null) gameObject.AddComponent<WallManager>();
             if (FindAnyObjectByType<ResizeHandleManager>() == null) gameObject.AddComponent<ResizeHandleManager>();
+            if (FindAnyObjectByType<VertexLabelManager>() == null) gameObject.AddComponent<VertexLabelManager>();
             if (FindAnyObjectByType<UI.ConsoleOverlay>() == null) gameObject.AddComponent<UI.ConsoleOverlay>();
             if (FindAnyObjectByType<UndoHandler>() == null) gameObject.AddComponent<UndoHandler>();
 
