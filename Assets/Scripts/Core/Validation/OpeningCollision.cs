@@ -28,12 +28,18 @@ namespace KitchenDesigner.Core
             }
             if (others.Count == 0) return 1f;
 
-            var otherAabbs = new List<(Vector3 min, Vector3 max)>();
+            // Фильтр: исключаем элементы, с которыми уже есть пересечение
+            // в закрытом состоянии (контейнеры — корпуса, стены). Иначе
+            // ящик не откроется из корпуса, а окно/дверь — из стены.
+            var closedBounds = getBounds(0f);
+            var relevant = new List<(Vector3 min, Vector3 max)>();
             foreach (var el in others)
             {
-                var verts = el.GetVertices();
-                otherAabbs.Add(MinMax(verts));
+                var aabb = MinMax(el.GetVertices());
+                if (!OverlapsPair(closedBounds, aabb))
+                    relevant.Add(aabb);
             }
+            if (relevant.Count == 0) return 1f;
 
             // Пересечение немонотонно по прогрессу: тонкое препятствие можно
             // «пролететь насквозь» (конечная поза уже за ним), а поворотный фасад
@@ -44,7 +50,7 @@ namespace KitchenDesigner.Core
             for (int i = 1; i <= ScanSteps; i++)
             {
                 float t = i / (float)ScanSteps;
-                if (Overlaps(getBounds(t), otherAabbs)) { hit = t; break; }
+                if (Overlaps(getBounds(t), relevant)) { hit = t; break; }
                 prevFree = t;
             }
             if (hit < 0f) return 1f;
@@ -54,7 +60,7 @@ namespace KitchenDesigner.Core
             for (int iter = 0; iter < steps; iter++)
             {
                 float mid = (lo + hi) * 0.5f;
-                if (Overlaps(getBounds(mid), otherAabbs))
+                if (Overlaps(getBounds(mid), relevant))
                     hi = mid;
                 else
                     lo = mid;
@@ -65,6 +71,13 @@ namespace KitchenDesigner.Core
         /// <summary>Шаг сканирования пути 1/128: для ящика с ходом 0,5 м это ~4 мм —
         /// мельче самого тонкого препятствия (панель 16–18 мм), проскок исключён.</summary>
         private const int ScanSteps = 128;
+
+        private static bool OverlapsPair((Vector3 min, Vector3 max) a, (Vector3 min, Vector3 max) b)
+        {
+            return Tolerance.IntervalsOverlap(a.min.x, a.max.x, b.min.x, b.max.x) &&
+                   Tolerance.IntervalsOverlap(a.min.y, a.max.y, b.min.y, b.max.y) &&
+                   Tolerance.IntervalsOverlap(a.min.z, a.max.z, b.min.z, b.max.z);
+        }
 
         private static bool Overlaps((Vector3 min, Vector3 max) a, List<(Vector3 min, Vector3 max)> others)
         {
