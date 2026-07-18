@@ -296,20 +296,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         public AlignOp[] ops = Array.Empty<AlignOp>();
     }
 
-    [Serializable]
-    public class RenameOp
-    {
-        [McpParam("Current exact element name.", Required = true)] public string name = string.Empty;
-        [McpParam("New name. Must be unique among all elements.", Required = true)] public string new_name = string.Empty;
-    }
-
-    [Serializable]
-    public class ParamsRenameElements
-    {
-        [McpParam("Renames to apply, in order. At least 1.", Required = true, Min = 1)]
-        public RenameOp[] ops = Array.Empty<RenameOp>();
-    }
-
     // ── Diagnostics ──────────────────────────────────────────────────────────
 
     [Serializable]

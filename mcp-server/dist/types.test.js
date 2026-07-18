@@ -69,4 +69,40 @@ const _snapDiagNegative = { name: "Board1", z: -3.62 };
 // Modules
 const _createMod = { name: "М1", members: ["A", "B"] };
 const _addToMod = { module: "М1", name: "A" };
+// get_elements: всё опционально — пустой объект валиден
+const _getAll = {};
+const _getByNames = { names: ["A", "B"], summary: true };
+const _getByFilter = { filter: "B4_*" };
+// get_violations: опциональный фильтр по именам
+const _violAll = {};
+const _violNamed = { names: ["Shelf1"] };
+// batch_edit: один op может совмещать перемещение, поворот и размер
+const _batch = {
+    ops: [
+        { name: "A", x: 1.2, rot_y: 90 },
+        { name: "B", width: 600, locked: false, material: "oak" },
+    ],
+    dry_run: true,
+};
+// clone / align / distribute / free space
+const _clone = { name: "Shelf", count: 2, offset_y: 0.3 };
+const _align = { name: "Shelf", face: "left", target: "Side_L", target_face: "right", gap_mm: 0 };
+const _free = { between: ["Side_L", "Side_R"] };
+const _dist = { names: ["A", "B", "C"], axis: "y" };
+// Единый конверт мутаций: violations всегда массив, element всегда есть
+const _envelope = {
+    ok: true,
+    element: {
+        name: "A", type: "KitchenElement",
+        dimX: 600, dimY: 400, dimZ: 18,
+        posX: 0, posY: 0, posZ: 0,
+        rotX: 0, rotY: 0, rotZ: 0,
+        active: true, locked: false, moduleId: 0, hasViolations: false,
+        aabbMinX: 0, aabbMinY: 0, aabbMinZ: 0, aabbMaxX: 1, aabbMaxY: 1, aabbMaxZ: 1,
+        worldDimX: 600, worldDimY: 400, worldDimZ: 18,
+        effectiveDimX: 600, effectiveDimY: 400, effectiveDimZ: 18,
+    },
+    violations: [{ kind: "overlap", neighbor: "B", severity: "deep_penetration", penetrationMm: 18 }],
+    sceneViolationCount: 1,
+};
 export {};

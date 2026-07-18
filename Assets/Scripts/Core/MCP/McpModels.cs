@@ -149,14 +149,6 @@ namespace KitchenDesigner.Core.MCP
     }
 
     [Serializable]
-    public class UndoStackInfo
-    {
-        public bool canUndo;
-        public bool canRedo;
-        public string undoDescription = string.Empty;
-    }
-
-    [Serializable]
     public class ConsoleLogEntry
     {
         public string type = string.Empty;
