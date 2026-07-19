@@ -46,7 +46,14 @@ namespace KitchenDesigner.Core
             Mathf.Abs(mm) < ContactMm;
 
         public static bool IntervalsOverlap(float min1, float max1, float min2, float max2) =>
-            min1 < max2 - EpsilonUnits && max1 > min2 + EpsilonUnits;
+            IntervalsOverlap(min1, max1, min2, max2, EpsilonUnits);
+
+        /// <summary>Пересечение интервалов с явным запасом (в юнитах). Для проверки
+        /// пересечения ТВЁРДЫХ ТЕЛ передавайте ContactMm-в-юнитах: перекрытие мельче
+        /// порога контакта — детали стоят вплотную (касание), а не сталкиваются.
+        /// Версия без margin (EpsilonUnits) ловит только float-шум footprint-гейтов.</summary>
+        public static bool IntervalsOverlap(float min1, float max1, float min2, float max2, float margin) =>
+            min1 < max2 - margin && max1 > min2 + margin;
 
         public static bool IsParallel(float dot) =>
             Mathf.Abs(dot) >= ParallelDot;

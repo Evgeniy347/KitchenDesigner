@@ -182,7 +182,7 @@ namespace KitchenDesigner.Core
             // Лампа — декор: не создаёт ни пересечений, ни несущих контактов.
             if (a is LightSourceElement || b is LightSourceElement) return;
 
-            if (AABBsIntersect(aabbA, aabbB))
+            if (AABBsIntersect(aabbA, aabbB, contactDist))
             {
                 bool aDrawer = a is DrawerElement;
                 bool bDrawer = b is DrawerElement;
@@ -355,12 +355,15 @@ namespace KitchenDesigner.Core
             return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
         }
 
-        // Та же проверка пересечения AABB с допуском, что в SnapSystem.ElementsIntersect:
-        // строгое «<» с epsilon, чтобы плотный face-контакт не считался пересечением.
-        private static bool AABBsIntersect(in AABB a, in AABB b) =>
-            Tolerance.IntervalsOverlap(a.minX, a.maxX, b.minX, b.maxX) &&
-            Tolerance.IntervalsOverlap(a.minY, a.maxY, b.minY, b.maxY) &&
-            Tolerance.IntervalsOverlap(a.minZ, a.maxZ, b.minZ, b.maxZ);
+        // Пересечение AABB твёрдых тел. Порог перекрытия = contactDist (ContactMm,
+        // 0.5 мм) — тот же «касание vs столкновение», что у face-контактов и MCP
+        // (IsNoiseMm). Иначе деталь, стоящая вплотную с суб-0.5-мм наездом (округление
+        // снэпа/резайза), давала «невидимое» AABB-перекрытие и подсвечивалась красной,
+        // хотя вся остальная система считает её касающейся.
+        private static bool AABBsIntersect(in AABB a, in AABB b, float margin) =>
+            Tolerance.IntervalsOverlap(a.minX, a.maxX, b.minX, b.maxX, margin) &&
+            Tolerance.IntervalsOverlap(a.minY, a.maxY, b.minY, b.maxY, margin) &&
+            Tolerance.IntervalsOverlap(a.minZ, a.maxZ, b.minZ, b.maxZ, margin);
 
         private readonly struct AABB
         {
