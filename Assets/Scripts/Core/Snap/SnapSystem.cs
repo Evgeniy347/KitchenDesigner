@@ -70,6 +70,7 @@ namespace KitchenDesigner.Core
             public float planeShift;
             public Vector3 u, v;
             public float du, dv;
+            public bool hasLineContact; // касание по кромке на одной оси (приоритет ниже)
             public string? log;
         }
 
@@ -94,11 +95,12 @@ namespace KitchenDesigner.Core
             // существующие контакты: его сдвиг обязан быть ⊥ нормалям нулевых пар.
             SnapResult bestZero = default;
             string? bestZeroLog = null;
+            bool anyFullAreaZero = false;
             var zeroNormals = new List<Vector3>();
             var candidates = new List<Candidate>();
 
             Collect(moved, others, testPosition, maxDist, candidates, zeroNormals,
-                ref bestZero, ref bestZeroLog);
+                ref bestZero, ref bestZeroLog, ref anyFullAreaZero);
 
             // Применяем лучший непротиворечивый кандидат, затем ДОБИРАЕМ ортогональные:
             // в углу (бок соседа + стена) один кандидат чинит только одну ось, вторая
@@ -108,6 +110,7 @@ namespace KitchenDesigner.Core
             Vector3 pos = testPosition;
             SnapResult primary = default;
             string? primaryLog = null;
+            bool primaryIsLineContact = false;
             var locked = new List<Vector3>(zeroNormals);
 
             for (int pass = 0; pass < 3; pass++)
@@ -118,12 +121,13 @@ namespace KitchenDesigner.Core
                     zeroNormals.Clear();
                     SnapResult ignoredZero = default;
                     string? ignoredLog = null;
+                    bool ignoredFullArea = false;
                     Collect(moved, others, pos, maxDist, candidates, zeroNormals,
-                        ref ignoredZero, ref ignoredLog);
+                        ref ignoredZero, ref ignoredLog, ref ignoredFullArea);
                     foreach (var n in zeroNormals) locked.Add(n);
                 }
 
-                if (!TryPickCandidate(candidates, locked, pos, out Candidate picked, out Vector3 pickedPos))
+                if (!TryPickCandidate(candidates, locked, pos, pass == 0, out Candidate picked, out Vector3 pickedPos))
                     break;
 
                 pos = pickedPos;
@@ -131,6 +135,7 @@ namespace KitchenDesigner.Core
                 {
                     primary = picked.result;
                     primaryLog = picked.log;
+                    primaryIsLineContact = picked.hasLineContact;
                 }
                 primary.position = pos;
                 locked.Add(picked.normal);
@@ -138,7 +143,12 @@ namespace KitchenDesigner.Core
 
             moved.transform.position = prevPos;
 
-            if (primary.snapped)
+            // Кромочный (line contact) снэп не должен утаскивать деталь с уже
+            // существующего полноплощадного контакта: полка, стоящая заподлицо к
+            // боковине по Z-грани (1.369), иначе отскакивала бы на грань-контакт
+            // с низом боковины (1.351). Полноплощадная опора важнее слабого кромочного
+            // притяжения — подтверждаем текущий контакт (bestZero).
+            if (primary.snapped && !(primaryIsLineContact && anyFullAreaZero))
             {
                 if (VerboseLog && primaryLog != null) Debug.Log(primaryLog);
                 return primary;
@@ -156,7 +166,7 @@ namespace KitchenDesigner.Core
         /// вызывающий обязан восстановить исходную позицию.</summary>
         private static void Collect(KitchenElement moved, List<KitchenElement> others, Vector3 basePos,
             float maxDist, List<Candidate> candidates, List<Vector3> zeroNormals,
-            ref SnapResult bestZero, ref string? bestZeroLog)
+            ref SnapResult bestZero, ref string? bestZeroLog, ref bool anyFullAreaZero)
         {
             moved.transform.position = basePos;
             KitchenElement.Face[] movedFaces = moved.GetFaces();
@@ -189,7 +199,7 @@ namespace KitchenDesigner.Core
                         float planeDist = Mathf.Abs(Vector3.Dot(offset, mf.normal));
                         if (planeDist > maxDist) continue;
 
-                        if (!FacesOverlap(mf, of, out float overlapRatio))
+                        if (!FacesOverlap(mf, of, out float overlapRatio, out bool hasLineContact))
                             continue;
                         if (overlapRatio < Tolerance.MinSupportOverlap) continue;
 
@@ -229,6 +239,11 @@ namespace KitchenDesigner.Core
                         {
                             zeroNormals.Add(mf.normal);
                             if (!bestZero.snapped) { bestZero = result; bestZeroLog = log; }
+                            // Полноплощадной контакт (не кромочный), уже стоящий заподлицо, —
+                            // это реальная опора: слабый кромочный (line contact) снэп не
+                            // должен утаскивать деталь с него (иначе полка на боковой Z-грани
+                            // на 1.369 отскакивала бы на грань-контакт 1.351).
+                            if (!hasLineContact) anyFullAreaZero = true;
                         }
                         else
                         {
@@ -242,6 +257,7 @@ namespace KitchenDesigner.Core
                                 v = v,
                                 du = du,
                                 dv = dv,
+                                hasLineContact = hasLineContact,
                                 log = log
                             });
                         }
@@ -257,16 +273,32 @@ namespace KitchenDesigner.Core
         ///    на полу отказывалась липнуть к соседу лишь потому, что заодно хотела
         ///    подровнять кромку по вертикали (что оторвало бы её от пола).</summary>
         private static bool TryPickCandidate(List<Candidate> candidates, List<Vector3> locked,
-            Vector3 basePos, out Candidate picked, out Vector3 pickedPos)
+            Vector3 basePos, bool allowLineContact, out Candidate picked, out Vector3 pickedPos)
         {
             picked = default;
             pickedPos = basePos;
             float bestDist = float.MaxValue;
+            bool bestIsLineContact = false;
             bool found = false;
 
             foreach (var c in candidates)
             {
+                // В проходах добора (allowLineContact=false) кромочный контакт не
+                // применяем: добор нужен для реальной опоры по ортогональной оси, а
+                // слабое кромочное притяжение способно лишь утащить деталь с уже
+                // найденного полноплощадного контакта (полка на боковой Z-грани 1.369
+                // иначе откатывалась бы на грань-контакт 1.351 вторым проходом).
+                if (!allowLineContact && c.hasLineContact) continue;
+
                 float du = c.du, dv = c.dv;
+
+                // В доборе (pass>0) применяем ТОЛЬКО заподлицо вдоль нормали (planeShift):
+                // выравнивание по кромке/центру (du/dv) — прерогатива основного контакта
+                // (pass 0). Иначе крупный сосед (стена) во втором проходе «центрирует»
+                // деталь по своей грани и утаскивает её с уже найденного контакта: полка,
+                // подтянутая к боковине на 1.369, уезжала к центру стены на 1.350.
+                if (!allowLineContact) { du = 0f; dv = 0f; }
+
                 bool breaks = false;
                 foreach (var n in locked)
                 {
@@ -281,9 +313,15 @@ namespace KitchenDesigner.Core
                 // Выродился в подтверждение текущего контакта — не содержательный.
                 if (dist <= ZeroShiftEpsilon) continue;
 
-                if (dist < bestDist)
+                // Tie-breaker: при равном dist предпочтение — кандидату с реальным
+                // перекрытием (без line contact). Иначе тонкая боковина (line contact
+                // по одной оси) могла бы побить кандидата с полным face-to-face.
+                bool better = dist < bestDist - ZeroShiftEpsilon ||
+                    (Mathf.Abs(dist - bestDist) <= ZeroShiftEpsilon && bestIsLineContact && !c.hasLineContact);
+                if (better)
                 {
                     bestDist = dist;
+                    bestIsLineContact = c.hasLineContact;
                     picked = c;
                     picked.du = du;
                     picked.dv = dv;
@@ -354,7 +392,7 @@ namespace KitchenDesigner.Core
                         var mf = movedFaces[i];
                         var of = otherFaces[j];
                         float gap = Mathf.Abs(Vector3.Dot(of.center - mf.center, mf.normal));
-                        bool hasOverlap = FacesOverlap(mf, of, out float ratio);
+                        bool hasOverlap = FacesOverlap(mf, of, out float ratio, out _);
 
                         // Лучшая пара — с перекрытием и минимальным зазором;
                         // пары без перекрытия штрафуются, но остаются кандидатами.
@@ -429,8 +467,10 @@ namespace KitchenDesigner.Core
             return best;
         }
 
-        private static bool FacesOverlap(KitchenElement.Face a, KitchenElement.Face b, out float overlapRatio)
+        private static bool FacesOverlap(KitchenElement.Face a, KitchenElement.Face b, out float overlapRatio, out bool hasLineContact)
         {
+            overlapRatio = 0;
+            hasLineContact = false;
             Vector3 u = a.rightAxis;
             Vector3 v = a.upAxis;
 
@@ -442,19 +482,25 @@ namespace KitchenDesigner.Core
             float interBottom = Mathf.Max(aRect.yMin, bRect.yMin);
             float interTop = Mathf.Min(aRect.yMax, bRect.yMax);
 
-            // Epsilon-допуск: без него грани, касающиеся ровно по кромке
-            // (interLeft == interRight или interBottom == interTop), дают
-            // недетерминированный результат из-за float-погрешности:
-            // иногда overlapRatio ≈ 100% (ошибка), иногда 0% (правильно).
-            // С допуском точное касание всегда считается нулевым перекрытием.
-            if (interLeft + Tolerance.SnapEpsilon >= interRight || interBottom + Tolerance.SnapEpsilon >= interTop)
+            // Полное разнесение по оси (зазор между гранями, а не касание) —
+            // перекрытия нет. Касание ровно по кромке (line contact) НЕ отбрасываем:
+            // грани выровнены по этой оси, и если по другой оси перекрытие достаточно,
+            // снэп должен сработать. Пример: тонкая боковина 18 мм по Z, полка под
+            // ней — Y-грани делят кромку Z (line contact), но по X полное перекрытие.
+            // Раньше line contact считался нулевым перекрытием и отбрасывал Y-снэп.
+            bool noContactU = interLeft > interRight + Tolerance.SnapEpsilon;
+            bool noContactV = interBottom > interTop + Tolerance.SnapEpsilon;
+            if (noContactU || noContactV)
             {
                 overlapRatio = 0;
                 return false;
             }
 
-            float overlapU = interRight - interLeft;
-            float overlapV = interTop - interBottom;
+            float overlapU = Mathf.Max(0, interRight - interLeft);
+            float overlapV = Mathf.Max(0, interTop - interBottom);
+
+            float minW = Mathf.Min(aRect.width, bRect.width);
+            float minH = Mathf.Min(aRect.height, bRect.height);
 
             // Перекрытие по каждой оси относительно меньшего размера грани по этой оси.
             // В отличие от отношения площадей, произведение полуосевых отношений
@@ -462,10 +508,21 @@ namespace KitchenDesigner.Core
             // площадь перекрытия 18×18 = 4.5% площади min-грани (7200), но по каждой
             // оси перекрытие составляет 100% от меньшего размера (18), и произведение
             // даёт 1.0 — снэп срабатывает.
-            float ratioU = Mathf.Min(aRect.width, bRect.width) > 0
-                ? overlapU / Mathf.Min(aRect.width, bRect.width) : 0;
-            float ratioV = Mathf.Min(aRect.height, bRect.height) > 0
-                ? overlapV / Mathf.Min(aRect.height, bRect.height) : 0;
+            float ratioU = minW > 0 ? overlapU / minW : 0;
+            float ratioV = minH > 0 ? overlapV / minH : 0;
+
+            // Касание по кромке (line contact) на оси — считаем полным выравниванием
+            // (ratio = 1.0) по этой оси: грани соприкасаются, просто не перекрываются
+            // площадью. Это позволяет тонкой боковине (18 мм по Z) прилипнуть к полке
+            // по Y: их Y-грани делят кромку Z, но по X перекрытие полное.
+            // Точечное касание (line contact по обеим осям) тоже проходит — грани
+            // выровнены по обеим осям, просто касаются в углу.
+            bool lineU = overlapU <= Tolerance.SnapEpsilon && minW > 0;
+            bool lineV = overlapV <= Tolerance.SnapEpsilon && minH > 0;
+            if (lineU) ratioU = 1.0f;
+            if (lineV) ratioV = 1.0f;
+            hasLineContact = lineU || lineV;
+
             overlapRatio = ratioU * ratioV;
             return true;
         }
