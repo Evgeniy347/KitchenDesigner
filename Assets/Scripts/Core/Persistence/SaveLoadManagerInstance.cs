@@ -233,6 +233,14 @@ namespace KitchenDesigner.Core
 
                     if (ed.isFacade && el is FacadeElement facade)
                     {
+                        // Зазоры проставляем ЯВНО для любого фасада: обычный получает их
+                        // через параметры CreateFacade, но сборный создаётся фабрикой
+                        // CreateAssembledFacade БЕЗ параметров зазоров — без этой строки
+                        // сохранённые зазоры сборного фасада терялись при загрузке (0/0/0/0).
+                        facade.GapLeft = ed.gapLeft;
+                        facade.GapRight = ed.gapRight;
+                        facade.GapTop = ed.gapTop;
+                        facade.GapBottom = ed.gapBottom;
                         facade.Mode = (DoorMode)ed.doorMode;
                         if (ed.doorOpen)
                             facade.SetOpen(true);

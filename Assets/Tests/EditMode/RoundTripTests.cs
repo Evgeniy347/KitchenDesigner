@@ -334,6 +334,29 @@ public class RoundTripTests
     }
 
     [Test]
+    public void AssembledFacade_Gaps_RoundTrip()
+    {
+        // Регрессия: зазоры сборного фасада сохранялись в JSON, но при загрузке
+        // терялись (CreateAssembledFacade не принимает зазоры, а restore-блок
+        // их не проставлял) — после загрузки было 0/0/0/0.
+        var assembled = MakeAssembled("Gaps", new Vector3Int(600, 700, 18), new Vector3(0.3f, 0.35f, -2.0f),
+            AssembledFill.Blind);
+        assembled.GapLeft = 3;
+        assembled.GapRight = 5;
+        assembled.GapTop = 1;
+        assembled.GapBottom = 4;
+
+        FullRoundTrip();
+
+        var r = Object.FindObjectsByType<KitchenElement>()[0] as AssembledFacadeElement;
+        Assert.IsNotNull(r, "restored should be AssembledFacadeElement");
+        Assert.AreEqual(3, r!.GapLeft, "gapLeft");
+        Assert.AreEqual(5, r!.GapRight, "gapRight");
+        Assert.AreEqual(1, r!.GapTop, "gapTop");
+        Assert.AreEqual(4, r!.GapBottom, "gapBottom");
+    }
+
+    [Test]
     public void AssembledFacade_Glass_RoundTrip()
     {
         var assembled = MakeAssembled("Glass", new Vector3Int(450, 600, 18), new Vector3(0.1f, 0.3f, -1.5f),

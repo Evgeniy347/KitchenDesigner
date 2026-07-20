@@ -202,7 +202,17 @@ namespace KitchenDesigner.Core
                 var go = CreateAssembledFacade(dims, source.PartName + " (copy)", offset, assembled.Fill);
                 go.transform.rotation = source.transform.rotation;
                 var copy = go.GetComponent<AssembledFacadeElement>();
-                if (copy != null) { copy.Mode = assembled.Mode; copy.GrooveCount = assembled.GrooveCount; }
+                if (copy != null)
+                {
+                    copy.Mode = assembled.Mode;
+                    copy.GrooveCount = assembled.GrooveCount;
+                    // Фабрика сборного фасада не принимает зазоры — копируем явно,
+                    // иначе дубль терял их (обычный фасад получает зазоры в CreateFacade).
+                    copy.GapLeft = assembled.GapLeft;
+                    copy.GapRight = assembled.GapRight;
+                    copy.GapTop = assembled.GapTop;
+                    copy.GapBottom = assembled.GapBottom;
+                }
                 MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
                 return go;
             }
