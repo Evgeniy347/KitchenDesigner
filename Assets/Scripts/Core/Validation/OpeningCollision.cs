@@ -35,12 +35,22 @@ namespace KitchenDesigner.Core
                 otherAabbs.Add(MinMax(verts));
             }
 
-            var fullOpen = getBounds(1f);
-            if (!Overlaps(fullOpen, otherAabbs))
-                return 1f;
+            // Пересечение немонотонно по прогрессу: тонкое препятствие можно
+            // «пролететь насквозь» (конечная поза уже за ним), а поворотный фасад
+            // на промежуточных углах выступает дальше крайних поз. Поэтому ищем
+            // ПЕРВОЕ пересечение сканированием пути, затем уточняем двоичным
+            // поиском на последнем свободном интервале.
+            float prevFree = 0f, hit = -1f;
+            for (int i = 1; i <= ScanSteps; i++)
+            {
+                float t = i / (float)ScanSteps;
+                if (Overlaps(getBounds(t), otherAabbs)) { hit = t; break; }
+                prevFree = t;
+            }
+            if (hit < 0f) return 1f;
 
-            float lo = 0f, hi = 1f;
-            int steps = Mathf.CeilToInt(Mathf.Log(1f / precision, 2f));
+            float lo = prevFree, hi = hit;
+            int steps = Mathf.CeilToInt(Mathf.Log((hi - lo) / precision, 2f));
             for (int iter = 0; iter < steps; iter++)
             {
                 float mid = (lo + hi) * 0.5f;
@@ -51,6 +61,10 @@ namespace KitchenDesigner.Core
             }
             return lo;
         }
+
+        /// <summary>Шаг сканирования пути 1/128: для ящика с ходом 0,5 м это ~4 мм —
+        /// мельче самого тонкого препятствия (панель 16–18 мм), проскок исключён.</summary>
+        private const int ScanSteps = 128;
 
         private static bool Overlaps((Vector3 min, Vector3 max) a, List<(Vector3 min, Vector3 max)> others)
         {
