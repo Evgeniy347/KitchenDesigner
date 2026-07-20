@@ -69,6 +69,7 @@ namespace KitchenDesigner.Core.UI
 			public bool windowOnly;       // показывать только для окон
 			public bool doorOnly;         // показывать только для дверей
 			public bool partOnly;         // показывать только для базовой «детали» (пазы)
+			public bool gapsRow;          // секция зазоров: фасад ИЛИ ДВП/ХДФ
 			public bool hideForWindow;    // скрывать для окон (повороты — окно живёт на стене)
             public GameObject toggleGO;   // объект, который включать/выключать по режиму
             public System.Func<bool>? visibleWhen; // доп. условие видимости (состояние элемента)
@@ -175,7 +176,7 @@ namespace KitchenDesigner.Core.UI
 
             // Зазоры (только для фасадов) — блок скрывается в режиме «деталь».
             var gapSection = CreateGapSection(panel.transform, out float gapSectionH);
-            AddFacadeRow(gapSection, gapSection.GetComponent<RectTransform>(), gapSectionH, RowGap);
+            AddGapsRow(gapSection, gapSection.GetComponent<RectTransform>(), gapSectionH, RowGap);
 
             // Открывание фасада (только фасад): выпадающий список режима (12 рёбер +
             // 6 ящиков) и кнопка Открыть/Закрыть — отдельными строками.
@@ -532,7 +533,9 @@ namespace KitchenDesigner.Core.UI
             _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, radialOnly = true });
         }
 
-        private void AddFacadeRow(GameObject toggleGO, RectTransform rt, float height, float gapAfter)
+        // Секция зазоров: у фасада это отступ от проёма, у ДВП/ХДФ —
+        // технологический зазор в пазу. Механика одна (см. GappedBox).
+        private void AddGapsRow(GameObject toggleGO, RectTransform rt, float height, float gapAfter)
         {
             AnchorTop(rt);
             _layout.Add(new LayoutRow
@@ -540,7 +543,7 @@ namespace KitchenDesigner.Core.UI
                 rects = new[] { rt },
                 height = height,
                 gapAfter = gapAfter,
-                facadeOnly = true,
+                gapsRow = true,
                 toggleGO = toggleGO
             });
         }
@@ -728,7 +731,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Раскладка сверху вниз ───────────────────────────────────────
 
-		private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer, bool isTable, bool isPillar = false, bool isWindow = false, bool isDoor = false, bool isPart = false)
+		private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer, bool isTable, bool isPillar = false, bool isWindow = false, bool isDoor = false, bool isPart = false, bool isPanel = false)
 		{
 			float cursor = TopPad;
 			float contentBottom = TopPad;
@@ -743,6 +746,7 @@ namespace KitchenDesigner.Core.UI
 					&& (!row.windowOnly || isWindow)
 					&& (!row.doorOnly || isDoor)
 					&& (!row.partOnly || isPart)
+					&& (!row.gapsRow || isFacade || isPanel)
 					&& !(row.hideForWindow && isWindow)
 					&& (row.visibleWhen == null || row.visibleWhen());
 
@@ -750,7 +754,7 @@ namespace KitchenDesigner.Core.UI
 				// оставалась бы на экране в позиции от прошлой раскладки.
 				if (row.toggleGO != null)
 					row.toggleGO.SetActive(visible);
-				else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly || row.pillarOnly || row.windowOnly || row.doorOnly || row.partOnly || row.hideForWindow || row.visibleWhen != null)
+				else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly || row.pillarOnly || row.windowOnly || row.doorOnly || row.partOnly || row.gapsRow || row.hideForWindow || row.visibleWhen != null)
                     foreach (var rt in row.rects)
                         if (rt != null) rt.gameObject.SetActive(visible);
 
@@ -825,6 +829,13 @@ namespace KitchenDesigner.Core.UI
                 MaybeRefresh(_gapTop, facade.GapTop.ToString());
                 MaybeRefresh(_gapBottom, facade.GapBottom.ToString());
             }
+            else if (_target is PanelElement panelRefresh)
+            {
+                MaybeRefresh(_gapLeft, panelRefresh.GapLeft.ToString());
+                MaybeRefresh(_gapRight, panelRefresh.GapRight.ToString());
+                MaybeRefresh(_gapTop, panelRefresh.GapTop.ToString());
+                MaybeRefresh(_gapBottom, panelRefresh.GapBottom.ToString());
+            }
 
             var table = _target as TableElement;
             if (table != null && _legInset != null)
@@ -882,7 +893,7 @@ namespace KitchenDesigner.Core.UI
 			_currentIsTable = isTable || isRadiusTable;
 			_currentIsDoor = isDoor;
 				if (_titleLabel != null)
-					_titleLabel.text = isPillar ? "Опора" : isRadiusTable ? "Радиусный стол" : isTable ? "Стол" : isDrawer ? "Ящик GTV" : isWindow ? "Окно" : isDoor ? "Дверь" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь"));
+					_titleLabel.text = isPillar ? "Опора" : isRadiusTable ? "Радиусный стол" : isTable ? "Стол" : isDrawer ? "Ящик GTV" : isWindow ? "Окно" : isDoor ? "Дверь" : (element is PanelElement ? "ДВП/ХДФ" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь")));
                 if (_typeDropdown != null)
                 {
                     _typeDropdown.SetValueWithoutNotify((int)ElementConverter.GetElementType(element));
@@ -906,6 +917,13 @@ namespace KitchenDesigner.Core.UI
                     _gapRight!.text = facade.GapRight.ToString();
                     _gapTop!.text = facade.GapTop.ToString();
                     _gapBottom!.text = facade.GapBottom.ToString();
+                }
+                else if (element is PanelElement panelEl)
+                {
+                    _gapLeft!.text = panelEl.GapLeft.ToString();
+                    _gapRight!.text = panelEl.GapRight.ToString();
+                    _gapTop!.text = panelEl.GapTop.ToString();
+                    _gapBottom!.text = panelEl.GapBottom.ToString();
                 }
                 UpdateDoorButton(facade);
                 UpdateModeDropdown(facade);
@@ -1129,6 +1147,13 @@ namespace KitchenDesigner.Core.UI
                 facade.GapRight = ParseInt(_gapRight!.text, facade.GapRight);
                 facade.GapTop = ParseInt(_gapTop!.text, facade.GapTop);
                 facade.GapBottom = ParseInt(_gapBottom!.text, facade.GapBottom);
+            }
+            else if (target is PanelElement panelApply)
+            {
+                panelApply.GapLeft = ParseInt(_gapLeft!.text, panelApply.GapLeft);
+                panelApply.GapRight = ParseInt(_gapRight!.text, panelApply.GapRight);
+                panelApply.GapTop = ParseInt(_gapTop!.text, panelApply.GapTop);
+                panelApply.GapBottom = ParseInt(_gapBottom!.text, panelApply.GapBottom);
             }
 
             target.transform.position = new Vector3(
@@ -1363,7 +1388,8 @@ namespace KitchenDesigner.Core.UI
             Layout(_target is FacadeElement, _target is AssembledFacadeElement,
                 _target is RadialShelfElement, _target is DrawerElement,
                 isTable, _target is PillarElement,
-                isWindow || isDoor, isDoor, _target.SupportsGrooves);
+                isWindow || isDoor, isDoor, _target.SupportsGrooves,
+                _target is PanelElement);
         }
 
         // ── Текстура/декор (детали и фасады) ────────────────────────────
@@ -1735,10 +1761,11 @@ namespace KitchenDesigner.Core.UI
                 ? radial.CornerRadius.ToString()
                 : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT.ToString());
             var facade = _target as FacadeElement;
-            TrackField(_gapLeft, facade != null ? facade.GapLeft.ToString() : "0");
-            TrackField(_gapRight, facade != null ? facade.GapRight.ToString() : "0");
-            TrackField(_gapTop, facade != null ? facade.GapTop.ToString() : "0");
-            TrackField(_gapBottom, facade != null ? facade.GapBottom.ToString() : "0");
+            var panelTrack = _target as PanelElement;
+            TrackField(_gapLeft, facade != null ? facade.GapLeft.ToString() : panelTrack != null ? panelTrack.GapLeft.ToString() : "0");
+            TrackField(_gapRight, facade != null ? facade.GapRight.ToString() : panelTrack != null ? panelTrack.GapRight.ToString() : "0");
+            TrackField(_gapTop, facade != null ? facade.GapTop.ToString() : panelTrack != null ? panelTrack.GapTop.ToString() : "0");
+            TrackField(_gapBottom, facade != null ? facade.GapBottom.ToString() : panelTrack != null ? panelTrack.GapBottom.ToString() : "0");
             var drawerEl2 = _target as DrawerElement;
             TrackField(_drawerWidth, drawerEl2 != null ? drawerEl2.InternalWidth.ToString() : "400");
 			var windowEl2 = _target as WindowElement;

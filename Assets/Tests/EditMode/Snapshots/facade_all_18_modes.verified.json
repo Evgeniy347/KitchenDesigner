@@ -65,6 +65,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -131,6 +132,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -197,6 +199,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -263,6 +266,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -329,6 +333,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -395,6 +400,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -461,6 +467,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -527,6 +534,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -593,6 +601,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -659,6 +668,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -725,6 +735,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -791,6 +802,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -857,6 +869,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -923,6 +936,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -989,6 +1003,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -1055,6 +1070,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -1121,6 +1137,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         },
         {
@@ -1187,6 +1204,7 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "isPanel": false,
             "grooves": []
         }
     ],
@@ -1266,6 +1284,7 @@
         "midHeightMM": 75,
         "isFloor": false,
         "isLightSource": false,
+        "isPanel": false,
         "grooves": []
     },
     "undoHistory": [],

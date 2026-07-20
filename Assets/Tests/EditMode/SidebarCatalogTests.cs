@@ -19,20 +19,37 @@ public class SidebarCatalogTests
     }
 
     [Test]
-    public void BoardGroup_HasTwoItems()
+    public void BoardGroup_HasShelfRadialShelfAndPanel()
     {
         var groups = SidebarCatalog.Build();
 
-        Assert.AreEqual(2, groups[0].items.Count);
+        Assert.AreEqual(3, groups[0].items.Count);
         var regular = groups[0].items[0];
-        Assert.AreEqual("600×400×16", regular.name);
+        Assert.AreEqual("Полка", regular.name);
         Assert.AreEqual(new Vector3Int(600, 400, 16), regular.dims);
         Assert.IsFalse(regular.isRadialShelf);
+        Assert.IsFalse(regular.isPanel);
 
         var radial = groups[0].items[1];
-        Assert.AreEqual("600×400×16 (радиусная)", radial.name);
+        Assert.AreEqual("Радиусная полка", radial.name);
         Assert.AreEqual(new Vector3Int(600, 400, 16), radial.dims);
         Assert.IsTrue(radial.isRadialShelf);
+    }
+
+    [Test]
+    public void BoardGroup_PanelItem_IsThinWithOneMillimetreGaps()
+    {
+        var panel = SidebarCatalog.Build()[0].items[2];
+
+        Assert.AreEqual("ДВП/ХДФ", panel.name);
+        Assert.IsTrue(panel.isPanel);
+        Assert.IsFalse(panel.isFacade, "ДВП не фасад — она не открывается");
+        Assert.AreEqual(3, panel.dims.z, "тонкая панель");
+        // Технологический зазор: в паз заходит номинал, зазор остаётся в детали.
+        Assert.AreEqual(PanelElement.DEFAULT_GAP_MM, panel.gapLeft);
+        Assert.AreEqual(PanelElement.DEFAULT_GAP_MM, panel.gapRight);
+        Assert.AreEqual(PanelElement.DEFAULT_GAP_MM, panel.gapTop);
+        Assert.AreEqual(PanelElement.DEFAULT_GAP_MM, panel.gapBottom);
     }
 
     [Test]
