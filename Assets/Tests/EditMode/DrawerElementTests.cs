@@ -523,4 +523,94 @@ public class DrawerElementTests
             d.SetOpen(true);
         });
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // DOUBLE DRAWER + SHARED FACADE — COLLISION REGRESSION
+    // ═══════════════════════════════════════════════════════════════
+
+    /// <summary>Двойной ящик с общим фасадом должен открываться полностью в BothOpen,
+    /// без блокировки верхнего ящика фасадом (коллизия закрытой позы vs открытой).</summary>
+    [Test]
+    public void DoubleDrawer_WithSharedFacade_BothOpen_BothDrawersFullyOpen()
+    {
+        var rot = Quaternion.Euler(0f, 270f, 0f);
+
+        // Нижний ящик
+        var goL = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _spawned.Add(goL);
+        goL.transform.SetPositionAndRotation(new Vector3(1.315f, 0.52f, -2.162f), rot);
+        var lower = goL.AddComponent<DrawerElement>();
+        lower.PartName = "A3_DD_Lower";
+        lower.Type = DrawerType.A;
+        lower.NominalLength = 500;
+        lower.InternalWidth = 564;
+        lower.Color = DrawerColor.Anthracite;
+
+        // Верхний ящик
+        var goU = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _spawned.Add(goU);
+        goU.transform.SetPositionAndRotation(new Vector3(1.315f, 0.635f, -2.162f), rot);
+        var upper = goU.AddComponent<DrawerElement>();
+        upper.PartName = "A3_DD_Upper";
+        upper.Type = DrawerType.A;
+        upper.NominalLength = 500;
+        upper.InternalWidth = 564;
+        upper.Color = DrawerColor.Anthracite;
+
+        // Фасад
+        var goF = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _spawned.Add(goF);
+        goF.transform.SetPositionAndRotation(new Vector3(1.036f, 0.64f, -2.162f), rot);
+        var facade = goF.AddComponent<FacadeElement>();
+        facade.PartName = "A3_Facade";
+        facade.DimensionsMM = new Vector3Int(596, 356, 18);
+        facade.GapLeft = 2;
+        facade.GapRight = 2;
+        facade.GapTop = 2;
+        facade.GapBottom = 2;
+        facade.Mode = DoorMode.DrawerOut;
+
+        // Регистрация (Awake уже зарегистрировал, но PartRegistry.Register идемпотентен)
+        PartRegistry.Register(lower);
+        PartRegistry.Register(upper);
+        PartRegistry.Register(facade);
+
+        lower.IsDouble = true;
+        upper.IsDouble = true;
+        upper.IsUpperDrawer = true;
+
+        lower.PairedDrawerName = upper.PartName;
+        upper.PairedDrawerName = lower.PartName;
+
+        lower.AttachedFacadeName = facade.PartName;
+
+        float closedLowerX = lower.transform.position.x;
+        float closedUpperX = upper.transform.position.x;
+        float closedFacadeX = facade.transform.position.x;
+
+        lower.CycleDoubleState(); // → BothOpen (syncs both)
+        Assert.AreEqual(DoubleDrawerState.BothOpen, lower.DoubleState);
+
+        lower.StepAnimation(1f);
+        upper.StepAnimation(1f);
+        facade.StepDoor(1f);
+
+        Assert.IsTrue(lower.IsOpen, "нижний открыт");
+        Assert.IsTrue(upper.IsOpen, "верхний открыт");
+        Assert.IsTrue(facade.IsOpen, "фасад открыт");
+
+        float expectedSlide = DrawerConstants.DRAWER_SLIDE_METERS;
+
+        Assert.AreEqual(1f, lower.AnimProgress, 0.01f, "нижний ящик открылся полностью");
+        Assert.AreEqual(1f, upper.AnimProgress, 0.01f, "верхний ящик открылся полностью");
+        Assert.AreEqual(1f, facade.DoorProgress, 0.01f, "фасад открылся полностью");
+
+        Assert.AreEqual(closedLowerX - expectedSlide, lower.transform.position.x, 0.01f,
+            "нижний ящик сместился на полный ход");
+        Assert.AreEqual(closedUpperX - expectedSlide, upper.transform.position.x, 0.01f,
+            "верхний ящик сместился на полный ход");
+        Assert.AreEqual(closedFacadeX - expectedSlide, facade.transform.position.x, 0.01f,
+            "фасад сместился на полный ход");
+    }
+}
 }
