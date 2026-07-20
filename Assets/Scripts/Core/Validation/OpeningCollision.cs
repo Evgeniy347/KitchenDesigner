@@ -72,12 +72,10 @@ namespace KitchenDesigner.Core
         /// мельче самого тонкого препятствия (панель 16–18 мм), проскок исключён.</summary>
         private const int ScanSteps = 128;
 
-        /// <summary>Считаются ли AABB касающимися или пересекающимися — зазор ≤ 2 мм.
-        /// Порог больше ContactMm (0.5 мм), чтобы вращающиеся дверцы не блокировались
-        /// планками корпуса, стоящими на расстоянии 1–2 мм (AABB бокса консервативен).</summary>
+        /// <summary>Считаются ли AABB касающимися или пересекающимися — |зазор| ≤ 5 мм.</summary>
         private static bool AabbsTouch((Vector3 min, Vector3 max) a, (Vector3 min, Vector3 max) b)
         {
-            float contactU = 2f * AppConstants.MM_TO_UNITS;
+            float contactU = 5f * AppConstants.MM_TO_UNITS;
             return IntervalsTouch(a.min.x, a.max.x, b.min.x, b.max.x, contactU) &&
                    IntervalsTouch(a.min.y, a.max.y, b.min.y, b.max.y, contactU) &&
                    IntervalsTouch(a.min.z, a.max.z, b.min.z, b.max.z, contactU);
@@ -85,9 +83,9 @@ namespace KitchenDesigner.Core
 
         private static bool IntervalsTouch(float min1, float max1, float min2, float max2, float contactU)
         {
-            // Зазор (отрицательный = пересечение) ≤ contactU → касаются
-            float gap = Mathf.Max(min1 - max2, min2 - max1, 0f);
-            return gap <= contactU;
+            // |зазор| ≤ contactU: и касание (gap ≥ 0), и небольшое пересечение (gap < 0)
+            float gap = Mathf.Max(min1 - max2, min2 - max1);
+            return Mathf.Abs(gap) <= contactU;
         }
 
         private static bool Overlaps((Vector3 min, Vector3 max) a, List<(Vector3 min, Vector3 max)> others)
