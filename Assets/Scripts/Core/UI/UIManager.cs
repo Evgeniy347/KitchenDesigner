@@ -374,6 +374,24 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
+        public void SpawnPanel(Vector3Int dims, string name,
+            int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
+            int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM)
+        {
+            Vector3 pos = GroundPointInFrontOfCamera();
+            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
+            pos = GridManager.SnapToGrid(pos);
+
+            var go = ElementFactory.Instance.CreatePanel(dims, name, pos, gapLeft, gapRight, gapTop, gapBottom);
+            var element = go.GetComponent<KitchenElement>();
+            if (element != null)
+            {
+                CommandStack.Execute(new CreateCommand(go));
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.Select(element);
+            }
+        }
+
         public void SpawnRadialShelf(Vector3Int dims, string name)
         {
             Vector3 pos = GroundPointInFrontOfCamera();

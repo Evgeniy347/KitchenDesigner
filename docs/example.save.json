@@ -7224,12 +7224,12 @@
     "groups": [],
     "camera": {
         "valid": true,
-        "targetX": 3.77229380607605,
-        "targetY": 0.3878323435783386,
-        "targetZ": 1.3632367849349976,
-        "angleX": 1.4000041484832764,
-        "angleY": -5089.70654296875,
-        "distance": 0.5
+        "targetX": 2.0163347721099855,
+        "targetY": 1.6589982509613038,
+        "targetZ": -1.5252853631973267,
+        "angleX": 37.79997634887695,
+        "angleY": -5487.51318359375,
+        "distance": 1.2000001668930054
     },
     "handleMode": "Move",
     "basePlateValid": true,

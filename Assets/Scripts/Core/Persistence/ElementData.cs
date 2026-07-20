@@ -78,6 +78,7 @@ namespace KitchenDesigner.Core
 		public int midHeightMM = 75;
 		public bool isFloor = false;
 		public bool isLightSource = false;
+		public bool isPanel = false;
 		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
 
@@ -108,6 +109,7 @@ namespace KitchenDesigner.Core
 			var windowEl = element as WindowElement;
 			var doorEl = element as DoorElement;
 			var pillar = element as PillarElement;
+			var panel = element as PanelElement;
 
             // Позицию/поворот пишем как ЛОГИЧЕСКУЮ, а не текущую (смещённую) позу:
             //  • полускрытая стена временно опущена вниз → берём FullPosition,
@@ -164,6 +166,19 @@ namespace KitchenDesigner.Core
                     d.grooveCount = 0;
                 }
             }
+            else if (panel != null)
+            {
+                // У ДВП/ХДФ зазоры значимы (входят в габарит), но дверцей она не является.
+                d.gapLeft = panel.GapLeft;
+                d.gapRight = panel.GapRight;
+                d.gapTop = panel.GapTop;
+                d.gapBottom = panel.GapBottom;
+                d.doorMode = 0;
+                d.doorOpen = false;
+                d.assembled = false;
+                d.assembledFill = 0;
+                d.grooveCount = 0;
+            }
             else
             {
                 d.gapLeft = 0;
@@ -214,6 +229,7 @@ namespace KitchenDesigner.Core
 			}
 
 			d.isPillar = pillar != null;
+			d.isPanel = panel != null;
 			d.isFloor = element is FloorElement;
 			d.isLightSource = element is LightSourceElement;
 			d.midHeightMM = pillar != null ? pillar.MidHeightMM : PillarElement.MidHeightMM_Default;

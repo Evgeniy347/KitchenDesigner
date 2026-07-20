@@ -374,6 +374,39 @@ namespace KitchenDesigner.Core
             return go;
         }
 
+        /// <summary>ДВП/ХДФ — вкладная панель с технологическим зазором. Пул не
+        /// используем: панель отличается от доски компонентом, а пул деталей
+        /// раздаёт KitchenElement.</summary>
+        public GameObject CreatePanel(Vector3Int dimensionsMM, string name, Vector3 position,
+            int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
+            int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = string.IsNullOrEmpty(name) ? "ДВП/ХДФ" : name;
+            go.tag = "KitchenElement";
+            go.transform.position = position;
+
+            var rb = go.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+
+            var panel = go.AddComponent<PanelElement>();
+            panel.PartName = go.name;
+            panel.DimensionsMM = dimensionsMM;
+            panel.GapLeft = gapLeft;
+            panel.GapRight = gapRight;
+            panel.GapTop = gapTop;
+            panel.GapBottom = gapBottom;
+
+            MaterialManager.ApplyById(panel, MaterialCatalog.DefaultId);
+            PartRegistry.Register(panel);
+
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
+
+            return go;
+        }
+
         public GameObject CreateAssembledFacade(Vector3Int dimensionsMM, string name, Vector3 position,
             AssembledFill fill = AssembledFill.Blind)
         {

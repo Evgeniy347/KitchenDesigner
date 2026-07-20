@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.UI
             public bool isPillar;
             public bool isFloor;
             public bool isLightSource;
+            public bool isPanel;          // ДВП/ХДФ — вкладная панель с зазорами
             public int pillarMidHeightMM;
             public string drawerType;
             public int drawerLength;
@@ -41,7 +42,7 @@ namespace KitchenDesigner.Core.UI
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
                 isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false; isDoor = false;
-                isPillar = false; isFloor = false; isLightSource = false; pillarMidHeightMM = 75;
+                isPillar = false; isFloor = false; isLightSource = false; isPanel = false; pillarMidHeightMM = 75;
                 drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400;
             }
@@ -84,10 +85,16 @@ namespace KitchenDesigner.Core.UI
 
         private static Group BoardGroup()
         {
-            var regular = new Item("600×400×16", new Vector3Int(600, 400, 16));
-            var radial = new Item("600×400×16 (радиусная)", new Vector3Int(600, 400, 16));
+            var regular = new Item("Полка", new Vector3Int(600, 400, 16));
+            var radial = new Item("Радиусная полка", new Vector3Int(600, 400, 16));
             radial.isRadialShelf = true;
-            return new Group { title = "детали", shortLabel = "Д", items = new List<Item> { regular, radial } };
+            // ДВП/ХДФ — вкладная панель: зазоры входят в габарит, поэтому в паз
+            // заходит номинал, а 1 мм остаётся технологическим зазором.
+            var panel = new Item("ДВП/ХДФ", new Vector3Int(600, 400, 3),
+                gapLeft: PanelElement.DEFAULT_GAP_MM, gapRight: PanelElement.DEFAULT_GAP_MM,
+                gapTop: PanelElement.DEFAULT_GAP_MM, gapBottom: PanelElement.DEFAULT_GAP_MM);
+            panel.isPanel = true;
+            return new Group { title = "детали", shortLabel = "Д", items = new List<Item> { regular, radial, panel } };
         }
 
         private static Group FacadeGroup()

@@ -187,6 +187,9 @@ namespace KitchenDesigner.Core
 						: ed.isDoor
 						? ElementFactory.Instance.CreateDoor(ed.Dimensions, ed.name, ed.Position,
                             (DoorSashType)ed.doorSashType)
+						: ed.isPanel
+						? ElementFactory.Instance.CreatePanel(ed.Dimensions, ed.name, ed.Position,
+							ed.gapLeft, ed.gapRight, ed.gapTop, ed.gapBottom)
 						: ed.isWall
 						? ElementFactory.Instance.CreateWall(ed.Dimensions, ed.name, ed.Position)
 						: ed.isFloor
