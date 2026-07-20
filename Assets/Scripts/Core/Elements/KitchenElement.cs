@@ -196,6 +196,58 @@ namespace KitchenDesigner.Core
             return seats.ToArray();
         }
 
+        /// <summary>Стенки пазов — разметочные плоскости для ВЫРАВНИВАНИЯ кромки
+        /// любой детали, а не поверхности контакта: деталь обычно прилегает к
+        /// пласти снаружи и в сам паз не заходит. Снэп берёт отсюда координаты
+        /// и добавляет детенты «начало паза» / «конец паза» рядом с кромкой
+        /// детали (16 и 20 мм от неё).</summary>
+        public Face[] GetGrooveWallFaces()
+        {
+            int count = _data.Grooves.Count;
+            if (count == 0) return System.Array.Empty<Face>();
+
+            var scale = transform.localScale;
+            var rot = transform.rotation;
+            var pos = transform.position;
+            float depthFrac = GrooveMesh.DepthFraction(_data.DimensionsMM);
+            // Стенка тянется от дна паза до пласти.
+            float wallCenterZ = 0.5f - depthFrac * 0.5f;
+
+            var walls = new List<Face>(count * 4);
+            foreach (var groove in _data.Grooves)
+            {
+                var rect = GrooveMesh.ComputeRect(_data.DimensionsMM, groove);
+                if (!rect.IsValid) continue;
+
+                bool horizontal = groove.side == GrooveSide.Top || groove.side == GrooveSide.Bottom;
+                if (horizontal)
+                {
+                    // Паз идёт вдоль X — стенки перпендикулярны Y.
+                    var axis = rot * Vector3.up;
+                    var size = new Vector2((rect.xMax - rect.xMin) * scale.x, depthFrac * scale.z);
+                    float cx = (rect.xMin + rect.xMax) * 0.5f * scale.x;
+                    foreach (float y in new[] { rect.yMin, rect.yMax })
+                    {
+                        var c = pos + rot * new Vector3(cx, y * scale.y, wallCenterZ * scale.z);
+                        walls.Add(new Face(c, axis, size, rot * Vector3.right, rot * Vector3.forward));
+                    }
+                }
+                else
+                {
+                    // Паз идёт вдоль Y — стенки перпендикулярны X.
+                    var axis = rot * Vector3.right;
+                    var size = new Vector2((rect.yMax - rect.yMin) * scale.y, depthFrac * scale.z);
+                    float cy = (rect.yMin + rect.yMax) * 0.5f * scale.y;
+                    foreach (float x in new[] { rect.xMin, rect.xMax })
+                    {
+                        var c = pos + rot * new Vector3(x * scale.x, cy, wallCenterZ * scale.z);
+                        walls.Add(new Face(c, axis, size, rot * Vector3.up, rot * Vector3.forward));
+                    }
+                }
+            }
+            return walls.ToArray();
+        }
+
         public struct Face
         {
             public Vector3 center;

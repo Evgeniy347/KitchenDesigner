@@ -139,6 +139,14 @@ namespace KitchenDesigner.Core
                 }
                 primary.position = pos;
                 locked.Add(picked.normal);
+
+                // Фиксируем и оси выравнивания В ПЛОСКОСТИ грани, если по ним был
+                // сдвиг. Раньше запирался только planeShift-normal, поэтому проход
+                // добора мог заново двигать деталь по той же оси, по которой её уже
+                // выровняли: дощечка, поставленная по стенке паза (сдвиг по X через
+                // du), тут же утягивалась на стену заподлицо — тоже по X.
+                if (Mathf.Abs(picked.du) > ZeroShiftEpsilon) locked.Add(picked.u);
+                if (Mathf.Abs(picked.dv) > ZeroShiftEpsilon) locked.Add(picked.v);
             }
 
             moved.transform.position = prevPos;
@@ -198,13 +206,17 @@ namespace KitchenDesigner.Core
 
                 KitchenElement.Face[] otherFaces = other.GetFaces();
 
-                // Пазы соседа как посадочные места — только для вкладной панели:
-                // толстая деталь в паз не садится, и предлагать ей дно паза значит
-                // ловить ложные притяжения внутрь короба. Дно паза участвует в том
-                // же попарном сопоставлении граней, что и обычный габарит.
+                // Дно паза — посадочное место, и только для вкладной панели:
+                // толстая деталь в паз не садится, и предлагать ей дно значит
+                // ловить ложные притяжения внутрь короба.
                 KitchenElement.Face[] seatFaces = moved is PanelElement
                     ? other.GetGrooveSeatFaces()
                     : System.Array.Empty<KitchenElement.Face>();
+
+                // Стенки паза — разметочный ориентир, доступный ЛЮБОЙ детали:
+                // «поставь полку по краю паза». Даёт детенты на 16 и 20 мм от
+                // кромки в дополнение к самой кромке.
+                KitchenElement.Face[] wallFaces = other.GetGrooveWallFaces();
 
                 // Габарит соседа — для проверки «кандидат не загоняет центр внутрь соседа».
                 Vector3[] oVerts = other.GetVertices();
@@ -220,17 +232,17 @@ namespace KitchenDesigner.Core
 
                 for (int i = 0; i < 6; i++)
                 {
-                    // Грани соседа: сначала шесть габаритных, затем дно каждого паза.
+                    // Грани соседа: шесть габаритных, затем дно каждого паза.
                     for (int j = 0; j < 6 + seatFaces.Length; j++)
                     {
-                        bool isSeat = j >= 6;
-                        var of = isSeat ? seatFaces[j - 6] : otherFaces[j];
+                        bool isGroove = j >= 6;
+                        var of = isGroove ? seatFaces[j - 6] : otherFaces[j];
 
                         // Над пазом материала НЕТ: пласть там не поверхность контакта.
                         // Без этого панель никогда бы не села в паз — подходя снаружи,
                         // она всегда ближе к пласти (9 мм), чем к дну паза (2 мм),
                         // и снэп возвращал бы её обратно на поверхность детали.
-                        if (!isSeat && SeatSupersedesFace(movedFaces[i], of, seatFaces)) continue;
+                        if (!isGroove && SeatSupersedesFace(movedFaces[i], of, seatFaces)) continue;
 
                         // Контакт возможен только между гранями, смотрящими навстречу
                         // друг другу (нормали противоположны, dot≈-1). Со-направленные
@@ -257,8 +269,10 @@ namespace KitchenDesigner.Core
                         Vector3 v = mf.upAxis;
                         Rect mRect = GetFaceRect(mf, u, v);
                         Rect oRect = GetFaceRect(of, u, v);
-                        float du = BestEdgeDelta(mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax, maxDist, out string labelU);
-                        float dv = BestEdgeDelta(mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax, maxDist, out string labelV);
+                        float du = BestEdgeDelta(mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax, maxDist,
+                            GrooveEdgeCoords(wallFaces, u), out string labelU);
+                        float dv = BestEdgeDelta(mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax, maxDist,
+                            GrooveEdgeCoords(wallFaces, v), out string labelV);
 
                         // Точное выравнивание заподлицо. Сетку НЕ применяем: при крупном
                         // шаге она сдвинула бы деталь с плоскости контакта и разорвала стык.
@@ -271,10 +285,10 @@ namespace KitchenDesigner.Core
                         // Критерий — центр детали внутри габарита соседа: у контактов заподлицо
                         // центр всегда снаружи, а AABB-пересечение здесь не годится (у деталей,
                         // повёрнутых на 45°, AABB заведомо больше тела и даёт ложный отказ).
-                        // Для посадки в паз проверку не применяем: дно паза лежит
-                        // ВНУТРИ габарита детали, и «зайти внутрь» здесь — это ровно
-                        // то, что должно произойти.
-                        if (!isSeat &&
+                        // Для граней паза проверку не применяем: они лежат ВНУТРИ
+                        // габарита детали, и «зайти внутрь» здесь — это ровно то,
+                        // что должно произойти.
+                        if (!isGroove &&
                             snapPos.x > oMinX && snapPos.x < oMaxX &&
                             snapPos.y > oMinY && snapPos.y < oMaxY &&
                             snapPos.z > oMinZ && snapPos.z < oMaxZ)
@@ -518,17 +532,44 @@ namespace KitchenDesigner.Core
         /// кандидаты — совпадение минимумов, максимумов, центров. Возвращает
         /// наименьший по модулю сдвиг в пределах порога, иначе 0 (ось не снэпится).
         /// </summary>
-        private static float BestEdgeDelta(float aMin, float aMax, float bMin, float bMax, float threshold, out string label)
+        /// <summary>Координаты стенок пазов вдоль оси axis — только для стенок,
+        /// плоскость которых этой оси перпендикулярна. Это разметочные линии для
+        /// выравнивания кромки: паз даёт детенты на 16 и 20 мм от кромки детали.</summary>
+        private static List<float> GrooveEdgeCoords(KitchenElement.Face[] wallFaces, Vector3 axis)
+        {
+            var coords = new List<float>();
+            foreach (var w in wallFaces)
+            {
+                if (Mathf.Abs(Vector3.Dot(w.normal, axis)) < Tolerance.ParallelDot) continue;
+                float c = Vector3.Dot(w.center, axis);
+                if (!coords.Contains(c)) coords.Add(c);
+            }
+            return coords;
+        }
+
+        private static float BestEdgeDelta(float aMin, float aMax, float bMin, float bMax, float threshold,
+            List<float>? grooveCoords, out string label)
         {
             float aCenter = (aMin + aMax) * 0.5f;
             float bCenter = (bMin + bMax) * 0.5f;
 
-            var candidates = new (float d, string name)[]
+            var candidates = new List<(float d, string name)>
             {
                 (bMin - aMin, "кромка-"),
                 (bMax - aMax, "кромка+"),
                 (bCenter - aCenter, "центр"),
             };
+
+            // Кромка детали может встать по любой стенке паза — отсюда детенты
+            // «начало паза» и «конец паза» рядом с обычной кромкой соседа.
+            if (grooveCoords != null)
+            {
+                foreach (float g in grooveCoords)
+                {
+                    candidates.Add((g - aMin, "паз-"));
+                    candidates.Add((g - aMax, "паз+"));
+                }
+            }
 
             float best = 0f;
             float bestAbs = float.MaxValue;

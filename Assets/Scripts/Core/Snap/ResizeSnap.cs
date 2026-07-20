@@ -52,8 +52,43 @@ namespace KitchenDesigner.Core
                         found = true;
                     }
                 }
+
+                // Стенки пазов — разметочные плоскости, а не поверхности материала:
+                // растягиваемая деталь прилегает к пласти СНАРУЖИ и в паз не заходит.
+                // Отсюда два послабления против обычной грани:
+                //  • нормаль не обязана быть встречной — плоскость двусторонняя;
+                //  • перекрытие проверяем только ВДОЛЬ ДЛИНЫ паза, по глубине его нет.
+                foreach (var wall in o.GetGrooveWallFaces())
+                {
+                    if (Mathf.Abs(Vector3.Dot(wall.normal, normal)) < Tolerance.ParallelDot) continue;
+
+                    float d = Vector3.Dot(wall.center - faceCenter, normal);
+                    if (Mathf.Abs(d) > threshold + ThresholdEpsilon) continue;
+                    if (!OverlapsAlongGroove(faceCenter, uAxis, vAxis, faceSize, wall)) continue;
+
+                    if (Mathf.Abs(d) < bestAbs)
+                    {
+                        bestAbs = Mathf.Abs(d);
+                        gap = d;
+                        found = true;
+                    }
+                }
             }
             return found;
+        }
+
+        /// <summary>Пересекается ли растягиваемая грань со стенкой паза ВДОЛЬ ДЛИНЫ
+        /// паза. Только по длине: по глубине деталь с пазом не перекрывается, она
+        /// стоит у пласти снаружи.</summary>
+        private static bool OverlapsAlongGroove(Vector3 faceCenter, Vector3 uAxis, Vector3 vAxis,
+            Vector2 faceSize, KitchenElement.Face wall)
+        {
+            Vector3 lengthAxis = wall.rightAxis; // у стенки паза rightAxis — вдоль длины
+            float faceHalf = Mathf.Abs(Vector3.Dot(uAxis, lengthAxis)) * faceSize.x * 0.5f
+                           + Mathf.Abs(Vector3.Dot(vAxis, lengthAxis)) * faceSize.y * 0.5f;
+            float wallHalf = wall.size.x * 0.5f;
+            float centreGap = Mathf.Abs(Vector3.Dot(wall.center - faceCenter, lengthAxis));
+            return centreGap < faceHalf + wallHalf;
         }
 
         // Прямоугольник грани в координатах (u,v). Полуразмеры — проекции собственных
