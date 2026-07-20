@@ -79,7 +79,8 @@ public class DrawerFactoryTests
         var go = ElementFactory.CreateDrawer(DrawerType.A, 250, DrawerColor.Anthracite, 300, "", Vector3.zero);
         _spawned.Add(go);
 
-        Assert.AreEqual("\u042F\u0449\u0438\u043A GTV", go.name);
+        // \u0418\u043C\u044F \u043F\u043E \u0443\u043C\u043E\u043B\u0447\u0430\u043D\u0438\u044E \u043F\u0440\u043E\u0445\u043E\u0434\u0438\u0442 \u0447\u0435\u0440\u0435\u0437 ElementNaming: \u00AB\u042F\u0449\u0438\u043A GTV\u00BB \u2192 \u00ABYaschik_GTV\u00BB.
+        Assert.AreEqual("Yaschik_GTV", go.name);
     }
 
     [Test]
@@ -88,7 +89,8 @@ public class DrawerFactoryTests
         var go = ElementFactory.CreateDrawer(DrawerType.B, 500, DrawerColor.White, 450, null!, Vector3.zero);
         _spawned.Add(go);
 
-        Assert.AreEqual("\u042F\u0449\u0438\u043A GTV", go.name);
+        // \u0418\u043C\u044F \u043F\u043E \u0443\u043C\u043E\u043B\u0447\u0430\u043D\u0438\u044E \u043F\u0440\u043E\u0445\u043E\u0434\u0438\u0442 \u0447\u0435\u0440\u0435\u0437 ElementNaming: \u00AB\u042F\u0449\u0438\u043A GTV\u00BB \u2192 \u00ABYaschik_GTV\u00BB.
+        Assert.AreEqual("Yaschik_GTV", go.name);
     }
 
     [Test]
@@ -156,7 +158,8 @@ public class DrawerFactoryTests
         _spawned.Add(dupGo);
 
         var dup = dupGo.GetComponent<DrawerElement>();
-        StringAssert.EndsWith("(copy)", dup.PartName);
+        // Копия берёт имя оригинала, а занятость разрешает ElementNaming суффиксом «_N».
+        Assert.AreEqual("UniqueDrawer_1", dup.PartName);
         Assert.AreNotEqual(src.PartName, dup.PartName);
     }
 

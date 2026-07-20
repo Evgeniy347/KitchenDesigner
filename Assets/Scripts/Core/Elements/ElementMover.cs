@@ -210,8 +210,14 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
-            HandleDuplicate();
-            HandleDelete();
+            // Набор текста в поле ввода не должен работать как горячие клавиши
+            // сцены: Delete стирал символ И удалял выделенный элемент, Ctrl+D
+            // посреди имени плодил дубль.
+            if (!CameraController.IsTypingInInputField())
+            {
+                HandleDuplicate();
+                HandleDelete();
+            }
             HandleDragInput();
         }
 

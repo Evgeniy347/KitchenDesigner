@@ -82,6 +82,14 @@ namespace KitchenDesigner.Core.UI
         private const float LabelW = 140f;     // ширина колонки подписей (вмещает «Ширина короба, мм» почти без переноса)
         private const float LabelX = -80f;     // центр подписи (панель 364px → края ±182)
         private const float FieldX = 100f;     // центр поля ввода
+        // Строка «Название» — своя геометрия во всю ширину панели (364px → края
+        // ±182, поля по 10px → рабочая зона -172..172). Подпись занимает ровно
+        // свою ширину, поле начинается сразу за ней и идёт до правого края.
+        private const float NameLabelW = 76f;    // «Название» при 15px
+        private const float NameLabelX = -134f;  // -172 + 76/2
+        private const float NameFieldW = 264f;   // от -92 до 172
+        private const float NameFieldX = 40f;    // (-92 + 172) / 2
+
         private const float LabelH = 24f;
         private const float FieldH = 24f;
         private const float RowH = 24f;      // высота строки «подпись + поле»
@@ -129,7 +137,7 @@ namespace KitchenDesigner.Core.UI
             AddRow(28f, RowGap, _typeDropdown.GetComponent<RectTransform>());
 
             // Размеры.
-            _name = Row(panel.transform, "Название");
+            _name = NameRow(panel.transform);
             _w = Row(panel.transform, "Ширина, мм");
             _h = Row(panel.transform, "Высота, мм");
             _d = Row(panel.transform, "Глубина, мм");
@@ -337,6 +345,11 @@ namespace KitchenDesigner.Core.UI
             foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.DecimalNumber;
 
+            // Имя: недопустимые символы не даём набрать вовсе — иначе поле
+            // показывало бы одно, а применилось бы очищенное другое.
+            // Алфавит — ^[A-Za-z0-9_-]+$, см. ElementNaming.
+            _name!.onValidateInput = (text, charIndex, ch) => ElementNaming.IsValid(ch.ToString()) ? ch : '\0';
+
             // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
             // ставить детали вертикально (поворот по X/Z), а не только крутить по Y.
             // Для окна вся секция скрыта: окно стоит на стене, из поворотов
@@ -440,6 +453,20 @@ namespace KitchenDesigner.Core.UI
         }
 
         // ── Построение элементов ───────────────────────────────────────
+
+        /// <summary>Строка «Название»: в отличие от Row подпись занимает не всю
+        /// колонку под самую длинную надпись («Ширина короба, мм»), а ровно свою
+        /// ширину — поле начинается сразу за ней и тянется до правого края панели.
+        /// Имена длинные (Fasad_600x400_1), и в общие 120px они не влезали.</summary>
+        private TMP_InputField NameRow(Transform parent)
+        {
+            var lbl = UIFactory.CreateLabel("L_Название", parent, "Название", 15,
+                new Vector2(NameLabelX, 0), new Vector2(NameLabelW, LabelH));
+            var field = UIFactory.CreateInputField("F_Название", parent, "",
+                new Vector2(NameFieldX, 0), new Vector2(NameFieldW, FieldH));
+            AddRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
+            return field;
+        }
 
         private TMP_InputField Row(Transform parent, string label)
         {
@@ -1062,8 +1089,10 @@ namespace KitchenDesigner.Core.UI
             var oldRot = target.transform.rotation;
 
             // Через DrawerLinks: переименование обновляет обратные ссылки
-            // (PairedDrawerName пары, AttachedFacadeName ящиков с этим фасадом).
+            // (PairedDrawerName пары, AttachedFacadeName ящиков с этим фасадом)
+            // и само чистит имя/разрешает коллизию суффиксом «_N».
             DrawerLinks.Rename(target, string.IsNullOrWhiteSpace(_name!.text) ? "Board" : _name!.text);
+            target.gameObject.name = target.PartName;
 
 			var radial = target as RadialShelfElement;
 			var drawer = target as DrawerElement;

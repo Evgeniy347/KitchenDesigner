@@ -185,10 +185,10 @@ public class DrawerLinksTests
         var upper = DrawerLinks.CreatePair(lower);
         _spawned.Add(upper!.gameObject);
 
-        DrawerLinks.Rename(lower, "Нижний короб");
+        DrawerLinks.Rename(lower, "Nizhniy_korob");
 
-        Assert.AreEqual("Нижний короб", lower.PartName);
-        Assert.AreEqual("Нижний короб", upper.PairedDrawerName, "ссылка пары обновлена");
+        Assert.AreEqual("Nizhniy_korob", lower.PartName);
+        Assert.AreEqual("Nizhniy_korob", upper.PairedDrawerName, "ссылка пары обновлена");
     }
 
     [Test]
@@ -198,18 +198,33 @@ public class DrawerLinksTests
         var facade = MakeFacade("F1", new Vector3(0f, 0f, 0.2f));
         drawer.AttachedFacadeName = "F1";
 
-        DrawerLinks.Rename(facade, "Фронт");
+        DrawerLinks.Rename(facade, "Front");
 
-        Assert.AreEqual("Фронт", facade.PartName);
-        Assert.AreEqual("Фронт", drawer.AttachedFacadeName, "ссылка ящика на фасад обновлена");
+        Assert.AreEqual("Front", facade.PartName);
+        Assert.AreEqual("Front", drawer.AttachedFacadeName, "ссылка ящика на фасад обновлена");
+    }
+
+    /// <summary>Переименование в кириллицу транслитерируется (ElementNaming),
+    /// и обратные ссылки обязаны уехать на РЕАЛЬНОЕ имя, а не на запрошенное.</summary>
+    [Test]
+    public void Rename_SanitizesAndUpdatesBackReference()
+    {
+        var drawer = MakeDrawer("D1", Vector3.zero);
+        var facade = MakeFacade("F1", new Vector3(0f, 0f, 0.2f));
+        drawer.AttachedFacadeName = "F1";
+
+        DrawerLinks.Rename(facade, "Фасад 600");
+
+        Assert.AreEqual("Fasad_600", facade.PartName);
+        Assert.AreEqual("Fasad_600", drawer.AttachedFacadeName);
     }
 
     [Test]
     public void UniqueName_AddsSuffixOnCollision()
     {
-        MakeDrawer("Ящик GTV", Vector3.zero);
-        Assert.AreEqual("Ящик GTV 2", DrawerLinks.UniqueName("Ящик GTV"));
-        Assert.AreEqual("Свободное имя", DrawerLinks.UniqueName("Свободное имя"));
+        MakeDrawer("Yashik_GTV", Vector3.zero);
+        Assert.AreEqual("Yashik_GTV_1", DrawerLinks.UniqueName("Yashik_GTV"));
+        Assert.AreEqual("Svobodnoe_imya", DrawerLinks.UniqueName("Свободное имя"));
     }
 
     // ── Фасад следует за ящиком ─────────────────────────────────────────

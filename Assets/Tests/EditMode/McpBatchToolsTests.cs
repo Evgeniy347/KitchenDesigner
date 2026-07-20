@@ -245,8 +245,9 @@ public class McpBatchToolsTests
         var d = Data(resp);
         Assert.AreEqual(2, (d["created"] as JArray)!.Count);
 
-        var c2 = PartRegistry.GetAll().Find(e => e.PartName == "Shelf_2");
-        var c3 = PartRegistry.GetAll().Find(e => e.PartName == "Shelf_3");
+        // Суффикс уникальности идёт с «_1» (ElementNaming), а не с «_2».
+        var c2 = PartRegistry.GetAll().Find(e => e.PartName == "Shelf_1");
+        var c3 = PartRegistry.GetAll().Find(e => e.PartName == "Shelf_2");
         Assert.IsNotNull(c2);
         Assert.IsNotNull(c3);
         Assert.AreEqual(1.3f, c2!.transform.position.y, 1e-4f);

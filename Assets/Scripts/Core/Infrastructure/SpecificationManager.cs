@@ -91,7 +91,8 @@ namespace KitchenDesigner.Core
             return 2f * (w * h + w * d + h * d);
         }
 
-        /// <summary>Группирует детали по (размер, название). BasePlate исключается.</summary>
+        /// <summary>Группирует детали по (размер, материал, пазы) — имя в ключ не
+        /// входит, см. Accumulate. BasePlate исключается.</summary>
         public static SpecResult Build(IEnumerable<KitchenElement> elements)
         {
             var order = new List<string>();
@@ -144,12 +145,18 @@ namespace KitchenDesigner.Core
             return sb.ToString();
         }
 
-        /// <summary>Добавить одну деталь в группировку по (название, размер, материал,
-        /// пазы). Пазы в ключе: детали с разной врезкой — разные позиции раскроя.</summary>
+        /// <summary>Добавить одну деталь в группировку по (размер, материал, пазы).
+        /// Пазы в ключе: детали с разной врезкой — разные позиции раскроя.
+        ///
+        /// Название в ключ НЕ входит: имена элементов уникальны в рамках проекта
+        /// (ElementNaming добавляет суффикс «_N»), поэтому две одинаковые боковины
+        /// зовутся «Bokovina» и «Bokovina_1» — по имени они бы никогда не сошлись,
+        /// и ведомость раскроя выродилась бы в список строк по одной штуке.
+        /// В строке показывается имя ПЕРВОЙ детали группы.</summary>
         private static void Accumulate(Dictionary<string, SpecLine> groups, List<string> order,
             string name, Vector3Int dims, string material, string grooves)
         {
-            string key = $"{name}|{dims.x}x{dims.y}x{dims.z}|{material}|{grooves}";
+            string key = $"{dims.x}x{dims.y}x{dims.z}|{material}|{grooves}";
             if (!groups.TryGetValue(key, out var line))
             {
                 line = new SpecLine
