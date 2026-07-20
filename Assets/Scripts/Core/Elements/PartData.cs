@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -5,6 +6,7 @@ namespace KitchenDesigner.Core
     [System.Serializable]
     public class PartData
     {
+        [SerializeField] private List<GrooveSpec> _grooves = new List<GrooveSpec>();
         [SerializeField] private string _partName = "Board";
         [SerializeField] private Vector3Int _dimensionsMM = new Vector3Int(800, 400, 18);
         [SerializeField] private bool _movable = true;
@@ -75,6 +77,10 @@ namespace KitchenDesigner.Core
             get => _transparent;
             set => _transparent = value;
         }
+
+        /// <summary>Пазы детали. Список живой — правится через KitchenElement,
+        /// который пересобирает меш.</summary>
+        public List<GrooveSpec> Grooves => _grooves ??= new List<GrooveSpec>();
 
         public int GapMM => _gapLeft + _gapRight + _gapTop + _gapBottom;
 

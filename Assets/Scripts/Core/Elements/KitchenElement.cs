@@ -50,6 +50,112 @@ namespace KitchenDesigner.Core
             set => _data.Transparent = value;
         }
 
+        // ── Пазы ───────────────────────────────────────────────────────
+        // Пазы поддерживает только базовая «Деталь»: у фасадов/ящиков/столов и
+        // прочих подтипов геометрия своя процедурная, и врезка в неё пласти не
+        // определена. Стена и подложка — тоже KitchenElement, но деталями не
+        // являются, поэтому исключены явно.
+        private static Mesh? _builtinCubeMesh;
+        private Mesh? _ownedMesh;
+
+        public bool SupportsGrooves =>
+            GetType() == typeof(KitchenElement)
+            && GetComponent<Wall>() == null
+            && GetComponent<BasePlate>() == null;
+
+        public IReadOnlyList<GrooveSpec> Grooves => _data.Grooves;
+
+        /// <summary>Добавить паз. Дубль (та же сторона + тип) игнорируется:
+        /// смещение фиксировано, второй такой паз лёг бы ровно на первый.</summary>
+        public bool AddGroove(GrooveSpec spec)
+        {
+            if (!SupportsGrooves) return false;
+            if (_data.Grooves.Count >= AppConstants.GROOVE_MAX_PER_PART) return false;
+            if (_data.Grooves.Contains(spec)) return false;
+            _data.Grooves.Add(spec);
+            RebuildGrooveMesh();
+            return true;
+        }
+
+        public bool RemoveGrooveAt(int index)
+        {
+            if (index < 0 || index >= _data.Grooves.Count) return false;
+            _data.Grooves.RemoveAt(index);
+            RebuildGrooveMesh();
+            return true;
+        }
+
+        public void ClearGrooves()
+        {
+            if (_data.Grooves.Count == 0) return;
+            _data.Grooves.Clear();
+            RebuildGrooveMesh();
+        }
+
+        /// <summary>Заменить весь набор пазов (загрузка проекта, дублирование).</summary>
+        public void SetGrooves(IEnumerable<GrooveSpec>? grooves)
+        {
+            if (!SupportsGrooves) return;
+            _data.Grooves.Clear();
+            if (grooves != null)
+                foreach (var g in grooves)
+                    if (_data.Grooves.Count < AppConstants.GROOVE_MAX_PER_PART
+                        && !_data.Grooves.Contains(g))
+                        _data.Grooves.Add(g);
+            RebuildGrooveMesh();
+        }
+
+        /// <summary>Пересобрать меш под текущие пазы. Без пазов возвращается
+        /// встроенный куб — деталь не тащит собственный меш без нужды.</summary>
+        public void RebuildGrooveMesh()
+        {
+            if (!SupportsGrooves) return;
+            var filter = GetComponent<MeshFilter>();
+            var meshRenderer = GetComponent<MeshRenderer>();
+            if (filter == null || meshRenderer == null) return;
+
+            // Первое касание пуловой детали: запоминаем встроенный куб, иначе
+            // после удаления пазов вернуть исходный меш было бы нечем. Проверка
+            // имени обязательна — деталь могла получиться конвертацией и нести
+            // чужой меш, который нельзя раздавать всем деталям через статик.
+            if (_ownedMesh == null && _builtinCubeMesh == null
+                && filter.sharedMesh != null && filter.sharedMesh.name == "Cube")
+                _builtinCubeMesh = filter.sharedMesh;
+
+            var mats = meshRenderer.sharedMaterials;
+            var decor = mats != null && mats.Length > 0 && mats[0] != null
+                ? mats[0] : meshRenderer.sharedMaterial;
+
+            if (_data.Grooves.Count == 0)
+            {
+                if (_ownedMesh == null) return; // меш и так стандартный
+                // Куба под рукой нет (деталь пришла не из пула) — собираем
+                // собственную коробку без пазов.
+                var restored = _builtinCubeMesh != null
+                    ? _builtinCubeMesh
+                    : GrooveMesh.Build(_data.DimensionsMM, null);
+                DestroyOwnedMesh();
+                if (restored != _builtinCubeMesh) _ownedMesh = restored;
+                filter.sharedMesh = restored;
+                if (decor != null) meshRenderer.sharedMaterials = new[] { decor };
+                return;
+            }
+
+            var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves);
+            DestroyOwnedMesh();
+            _ownedMesh = mesh;
+            filter.sharedMesh = mesh;
+            // Сабмеш 0 — декор (им управляет MaterialManager), 1 — пазы.
+            meshRenderer.sharedMaterials = new[] { decor!, GrooveMesh.GrooveMaterial() };
+        }
+
+        private void DestroyOwnedMesh()
+        {
+            if (_ownedMesh == null) return;
+            DestroyImmediate(_ownedMesh);
+            _ownedMesh = null;
+        }
+
         public struct Face
         {
             public Vector3 center;
@@ -77,6 +183,7 @@ namespace KitchenDesigner.Core
         private void OnDestroy()
         {
             PartRegistry.Unregister(this);
+            DestroyOwnedMesh();
         }
 
         protected virtual Vector3 EffectiveScale => transform.localScale;
@@ -88,6 +195,10 @@ namespace KitchenDesigner.Core
                 _data.DimensionsMM.y * AppConstants.MM_TO_UNITS,
                 _data.DimensionsMM.z * AppConstants.MM_TO_UNITS
             );
+
+            // Доли паза считаются от размеров детали — при ресайзе меш надо
+            // пересобрать, иначе паз растянется вместе с localScale.
+            if (_data.Grooves.Count > 0) RebuildGrooveMesh();
         }
 
         public virtual Vector3[] GetVertices()

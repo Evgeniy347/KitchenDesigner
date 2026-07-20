@@ -59,6 +59,12 @@ namespace KitchenDesigner.Core
             if (source is RadialShelfElement radial)
                 cornerRadius = radial.CornerRadius;
 
+            // Пазы снимаем ДО удаления компонента: ClearGrooves возвращает
+            // встроенный куб и один материал. Иначе новый тип унаследовал бы от
+            // детали меш с пазами — причём уже уничтоженный в OnDestroy.
+            var grooves = new System.Collections.Generic.List<GrooveSpec>(source.Grooves);
+            source.ClearGrooves();
+
             PartRegistry.Unregister(source);
             UnityEngine.Object.DestroyImmediate(source);
 
@@ -96,6 +102,11 @@ namespace KitchenDesigner.Core
             result.DimensionsMM = dims;
             if (result is RadialShelfElement newRadial)
                 newRadial.CornerRadius = cornerRadius;
+
+            // Пазы переносятся только между типами, которые их поддерживают
+            // (сейчас — базовая «деталь»); в фасад/полку они не уезжают.
+            if (result.SupportsGrooves)
+                result.SetGrooves(grooves);
 
             if (result is FacadeElement newFacade)
             {

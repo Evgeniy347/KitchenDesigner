@@ -64,7 +64,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "LeftWall",
@@ -129,7 +130,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A",
@@ -194,7 +196,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B",
@@ -259,7 +262,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A2_side_A3",
@@ -324,7 +328,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A12_bottom",
@@ -389,7 +394,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A2_A_planck",
@@ -454,7 +460,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B1_B2_planck",
@@ -519,7 +526,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B1_side_L",
@@ -584,7 +592,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B2_side_R",
@@ -649,7 +658,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B2_side_L",
@@ -714,7 +724,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B2_bottom",
@@ -779,7 +790,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_side_R",
@@ -844,7 +856,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_side_L",
@@ -909,7 +922,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_bottom",
@@ -974,7 +988,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B5_side_R",
@@ -1039,7 +1054,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B5_side_L",
@@ -1104,7 +1120,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B5_bottom",
@@ -1169,7 +1186,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "K2_side_R",
@@ -1234,7 +1252,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "K2_side_L",
@@ -1299,7 +1318,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "K2_bottom",
@@ -1364,7 +1384,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "K2_door",
@@ -1429,7 +1450,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "K2_planck",
@@ -1494,7 +1516,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A3_side_L",
@@ -1559,7 +1582,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A3_side_R",
@@ -1624,7 +1648,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A3_bottom",
@@ -1689,7 +1714,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A4_side_L",
@@ -1754,7 +1780,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A4_side_R",
@@ -1819,7 +1846,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A4_bottom",
@@ -1884,7 +1912,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "K1_side_L",
@@ -1949,7 +1978,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "K1_side_R",
@@ -2014,7 +2044,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "K1_bottom",
@@ -2079,7 +2110,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "K1_door",
@@ -2144,7 +2176,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Countertop_A",
@@ -2209,7 +2242,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Countertop_B",
@@ -2274,7 +2308,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A12_upper_A_bottom",
@@ -2339,7 +2374,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A12_upper_A_top",
@@ -2404,7 +2440,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A12_upper_B_planck",
@@ -2469,7 +2506,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A12_upper_A_side",
@@ -2534,7 +2572,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B3_upper_side_L",
@@ -2599,7 +2638,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_upper_bottom",
@@ -2664,7 +2704,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_upper_top",
@@ -2729,7 +2770,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_upper_side_L",
@@ -2794,7 +2836,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_upper_side_R",
@@ -2859,19 +2902,20 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A34K1_upper_bottom",
             "dimensionsMM": [
                 332,
-                126,
+                181,
                 18
             ],
             "position": [
                 1.4190000295639039,
                 1.36899995803833,
-                -1.1464999914169312
+                -1.1740000247955323
             ],
             "rotation": [
                 0.7071068286895752,
@@ -2924,7 +2968,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A34K1_upper_top",
@@ -2989,7 +3034,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A34K1_upper_side_L",
@@ -3054,7 +3100,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A34K1_upper_side_R",
@@ -3119,7 +3166,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B23_upper_bottom",
@@ -3184,7 +3232,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B23_upper_top",
@@ -3249,7 +3298,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A12_upper_B_side_L",
@@ -3314,7 +3364,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B5_upper_back",
@@ -3379,7 +3430,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "radial_shelf_upper_1",
@@ -3444,7 +3496,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "radial_shelf_upper_2",
@@ -3509,7 +3562,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "radial_shelf_upper_3",
@@ -3574,7 +3628,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Fridge_Left",
@@ -3639,7 +3694,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Fridge_Right",
@@ -3704,7 +3760,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Fridge_Back",
@@ -3769,7 +3826,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Fridge_Bottom",
@@ -3834,7 +3892,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Fridge_Top",
@@ -3899,7 +3958,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Fridge_Shelf",
@@ -3964,7 +4024,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Fridge_Door_Upper",
@@ -4029,7 +4090,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Fridge_Door_Lower",
@@ -4094,7 +4156,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A12_upper_A_planck",
@@ -4159,7 +4222,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Окно (copy)",
@@ -4224,7 +4288,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Дверь",
@@ -4289,7 +4354,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Окно",
@@ -4354,7 +4420,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Ножка",
@@ -4419,7 +4486,8 @@
             "isPillar": true,
             "midHeightMM": 70,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Источник света",
@@ -4484,7 +4552,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": true
+            "isLightSource": true,
+            "grooves": []
         },
         {
             "name": "B5_gtv_single_C",
@@ -4549,7 +4618,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B5_gtv_double_lower_A",
@@ -4614,7 +4684,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A3_gtv_single_C",
@@ -4679,7 +4750,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A3_gtv_double_lower_A",
@@ -4744,7 +4816,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A3_gtv_double_upper_A",
@@ -4809,7 +4882,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A4_gtv_drawer",
@@ -4874,7 +4948,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B3_fake_bottom",
@@ -4939,7 +5014,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_gtv_single_C",
@@ -5004,7 +5080,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_gtv_double_lower_A",
@@ -5069,7 +5146,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B23_upper_door_L",
@@ -5134,7 +5212,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A12_upper_door",
@@ -5199,7 +5278,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B23_upper_door_R",
@@ -5264,7 +5344,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_upper_door",
@@ -5329,7 +5410,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A34K1_upper_door_L",
@@ -5394,7 +5476,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A34K1_upper_door_R",
@@ -5406,7 +5489,7 @@
             "position": [
                 1.24399995803833,
                 1.809999942779541,
-                -1.4635000228881837
+                -1.463499903678894
             ],
             "rotation": [
                 0.0,
@@ -5430,7 +5513,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
-            "doorOpen": false,
+            "doorOpen": true,
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
@@ -5459,7 +5542,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A2_door",
@@ -5524,7 +5608,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B2_door",
@@ -5589,7 +5674,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B3_door",
@@ -5654,7 +5740,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_drawer_upper",
@@ -5719,7 +5806,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B4_drawer_lower",
@@ -5784,7 +5872,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A3_drawer_lower",
@@ -5849,7 +5938,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A3_drawer_upper",
@@ -5914,7 +6004,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B5_drawer_lower",
@@ -5979,7 +6070,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "B5_drawer_upper",
@@ -6044,7 +6136,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A4_drawer_facade",
@@ -6109,72 +6202,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
-        },
-        {
-            "name": "A34K1_upper_bottom_tmp",
-            "dimensionsMM": [
-                260,
-                561,
-                18
-            ],
-            "position": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5635000467300416
-            ],
-            "rotation": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "movable": true,
-            "isWall": false,
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "groupId": 0,
-            "materialId": "default",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": false,
-            "drawerType": 0,
-            "drawerNominalLength": 350,
-            "drawerColor": 0,
-            "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A34K1_upper_bottom (copy) (copy)",
@@ -6239,7 +6268,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A34K1_upper_bottom (copy) (copy) (copy)",
@@ -6304,7 +6334,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A34K1_upper_bottom (copy) (copy) (copy) (copy)",
@@ -6369,7 +6400,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A4_bottom (copy)",
@@ -6434,7 +6466,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A12_upper_A_side (copy)",
@@ -6499,7 +6532,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A34K1_upper_side_inner",
@@ -6510,7 +6544,7 @@
             ],
             "position": [
                 1.4190000295639039,
-                1.3869999647140504,
+                1.4229998588562012,
                 -1.2740000486373902
             ],
             "rotation": [
@@ -6564,19 +6598,20 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "A34K1_upper_test",
             "dimensionsMM": [
-                332,
+                561,
                 126,
                 18
             ],
             "position": [
-                1.3160001039505005,
-                1.3869999647140504,
-                -1.4490000009536744
+                1.2619999647140504,
+                1.4229998588562012,
+                -1.5635000467300416
             ],
             "rotation": [
                 0.0,
@@ -6629,18 +6664,572 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
+        },
+        {
+            "name": "A34K1_upper_test (copy)",
+            "dimensionsMM": [
+                561,
+                54,
+                18
+            ],
+            "position": [
+                1.557999849319458,
+                1.3689998388290406,
+                -1.5635000467300416
+            ],
+            "rotation": [
+                -0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "grooves": []
+        },
+        {
+            "name": "A34K1_upper_bottom_tmp",
+            "dimensionsMM": [
+                260,
+                561,
+                1
+            ],
+            "position": [
+                1.4010000228881837,
+                1.36899995803833,
+                -1.5635000467300416
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "grooves": []
+        },
+        {
+            "name": "box_2",
+            "dimensionsMM": [
+                600,
+                400,
+                18
+            ],
+            "position": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "grooves": [
+                {
+                    "kind": 1,
+                    "side": 3
+                }
+            ]
+        },
+        {
+            "name": "box_3",
+            "dimensionsMM": [
+                600,
+                400,
+                18
+            ],
+            "position": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.3849999904632569
+            ],
+            "rotation": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "grooves": [
+                {
+                    "kind": 1,
+                    "side": 3
+                }
+            ]
+        },
+        {
+            "name": "box_4",
+            "dimensionsMM": [
+                600,
+                370,
+                18
+            ],
+            "position": [
+                3.4809999465942385,
+                0.008999999612569809,
+                1.190000057220459
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "grooves": [
+                {
+                    "kind": 0,
+                    "side": 3
+                }
+            ]
+        },
+        {
+            "name": "box_1",
+            "dimensionsMM": [
+                600,
+                370,
+                18
+            ],
+            "position": [
+                3.4809999465942385,
+                0.39100000262260439,
+                1.190000057220459
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "grooves": [
+                {
+                    "kind": 0,
+                    "side": 3
+                }
+            ]
+        },
+        {
+            "name": "box_двп",
+            "dimensionsMM": [
+                383,
+                377,
+                3
+            ],
+            "position": [
+                3.763000011444092,
+                0.20000000298023225,
+                1.190000057220459
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "grooves": []
+        },
+        {
+            "name": "box_3 (copy)",
+            "dimensionsMM": [
+                600,
+                400,
+                18
+            ],
+            "position": [
+                3.528978109359741,
+                0.20000001788139344,
+                1.3849999904632569
+            ],
+            "rotation": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "grooves": [
+                {
+                    "kind": 1,
+                    "side": 3
+                }
+            ]
         }
     ],
     "groups": [],
     "camera": {
         "valid": true,
-        "targetX": 0.7463229894638062,
-        "targetY": 0.9782739877700806,
-        "targetZ": -2.092223882675171,
-        "angleX": 26.799856185913087,
-        "angleY": -4184.32373046875,
-        "distance": 3.7999982833862306
+        "targetX": 3.77229380607605,
+        "targetY": 0.3878323435783386,
+        "targetZ": 1.3632367849349976,
+        "angleX": 1.4000041484832764,
+        "angleY": -5089.70654296875,
+        "distance": 0.5
     },
     "handleMode": "Move",
     "basePlateValid": true,
@@ -6707,7 +7296,8 @@
         "isPillar": false,
         "midHeightMM": 75,
         "isFloor": false,
-        "isLightSource": false
+        "isLightSource": false,
+        "grooves": []
     },
     "undoHistory": [
         {
@@ -18777,7 +19367,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.5190000534057618,
                 1.36899995803833,
@@ -18807,7 +19397,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4190000295639039,
                 1.3510000705718995,
@@ -18845,7 +19435,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4190000295639039,
                 1.3509999513626099,
@@ -18883,7 +19473,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4190000295639039,
                 1.3509999513626099,
@@ -18951,7 +19541,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.3830000162124634,
                 1.3510000705718995,
@@ -18981,7 +19571,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3509999513626099,
@@ -19011,7 +19601,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.350000262260437,
@@ -19041,7 +19631,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.441638708114624,
@@ -19071,7 +19661,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.441638708114624,
@@ -19101,7 +19691,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.4288007020950318,
@@ -19131,7 +19721,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.4424779415130616,
@@ -19161,7 +19751,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.4424779415130616,
@@ -19191,7 +19781,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3509999513626099,
@@ -19221,7 +19811,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.4372313022613526,
@@ -19251,7 +19841,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.4372313022613526,
@@ -19281,7 +19871,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3500001430511475,
@@ -19311,7 +19901,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.5821330547332764,
@@ -19341,7 +19931,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.5821330547332764,
@@ -19371,7 +19961,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3500001430511475,
@@ -19409,7 +19999,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.350000023841858,
@@ -19439,7 +20029,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.4314353466033936,
@@ -19469,7 +20059,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.4314353466033936,
@@ -19499,7 +20089,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.4474334716796876,
@@ -19567,7 +20157,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom (copy) (copy)",
-            "elementIndex": 95,
+            "elementIndex": 94,
             "posBefore": [
                 1.5550000667572022,
                 1.3500001430511475,
@@ -19597,7 +20187,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom (copy) (copy)",
-            "elementIndex": 95,
+            "elementIndex": 94,
             "posBefore": [
                 1.5550000667572022,
                 1.6554899215698243,
@@ -19627,7 +20217,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom (copy) (copy)",
-            "elementIndex": 95,
+            "elementIndex": 94,
             "posBefore": [
                 0.2716878652572632,
                 1.6554899215698243,
@@ -19657,7 +20247,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom (copy) (copy)",
-            "elementIndex": 95,
+            "elementIndex": 94,
             "posBefore": [
                 1.3830000162124634,
                 1.6554899215698243,
@@ -19687,7 +20277,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom (copy) (copy)",
-            "elementIndex": 95,
+            "elementIndex": 94,
             "posBefore": [
                 1.3830000162124634,
                 1.809999942779541,
@@ -19717,7 +20307,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom (copy) (copy)",
-            "elementIndex": 95,
+            "elementIndex": 94,
             "posBefore": [
                 1.3830000162124634,
                 1.8100000619888306,
@@ -19755,7 +20345,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom (copy) (copy)",
-            "elementIndex": 95,
+            "elementIndex": 94,
             "posBefore": [
                 1.3830000162124634,
                 1.8100000619888306,
@@ -19793,7 +20383,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom (copy) (copy) (copy)",
-            "elementIndex": 96,
+            "elementIndex": 95,
             "posBefore": [
                 1.5190000534057618,
                 1.8100000619888306,
@@ -19823,7 +20413,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom (copy) (copy) (copy)",
-            "elementIndex": 96,
+            "elementIndex": 95,
             "posBefore": [
                 1.4190000295639039,
                 1.8279999494552613,
@@ -19861,7 +20451,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom (copy) (copy) (copy)",
-            "elementIndex": 96,
+            "elementIndex": 95,
             "posBefore": [
                 1.4190000295639039,
                 1.8280000686645508,
@@ -19899,7 +20489,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom (copy) (copy) (copy)",
-            "elementIndex": 96,
+            "elementIndex": 95,
             "posBefore": [
                 1.4190000295639039,
                 1.8280000686645508,
@@ -19937,7 +20527,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom (copy) (copy) (copy)",
-            "elementIndex": 96,
+            "elementIndex": 95,
             "posBefore": [
                 1.4190000295639039,
                 1.8280000686645508,
@@ -19975,7 +20565,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom (copy) (copy) (copy) (copy)",
-            "elementIndex": 97,
+            "elementIndex": 96,
             "posBefore": [
                 1.165000081062317,
                 1.8280000686645508,
@@ -20005,7 +20595,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom (copy) (copy) (copy) (copy)",
-            "elementIndex": 97,
+            "elementIndex": 96,
             "posBefore": [
                 -0.01100003719329834,
                 1.809999942779541,
@@ -20035,7 +20625,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom (copy) (copy) (copy) (copy)",
-            "elementIndex": 97,
+            "elementIndex": 96,
             "posBefore": [
                 -0.01100003719329834,
                 1.606987714767456,
@@ -20065,7 +20655,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom (copy) (copy) (copy)",
-            "elementIndex": 96,
+            "elementIndex": 95,
             "posBefore": [
                 1.065000057220459,
                 1.8280000686645508,
@@ -20095,7 +20685,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom (copy) (copy) (copy) (copy)",
-            "elementIndex": 97,
+            "elementIndex": 96,
             "posBefore": [
                 -0.01100003719329834,
                 1.8100001811981202,
@@ -20171,7 +20761,7 @@
         {
             "type": "move",
             "description": "Move A4_bottom (copy)",
-            "elementIndex": 98,
+            "elementIndex": 97,
             "posBefore": [
                 1.415000081062317,
                 0.10800004005432129,
@@ -20201,7 +20791,7 @@
         {
             "type": "move",
             "description": "Move A4_bottom (copy)",
-            "elementIndex": 98,
+            "elementIndex": 97,
             "posBefore": [
                 1.415000081062317,
                 0.2395000159740448,
@@ -20557,7 +21147,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3500001430511475,
@@ -20595,7 +21185,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3600000143051148,
@@ -20625,7 +21215,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3600000143051148,
@@ -20655,7 +21245,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3500001430511475,
@@ -20693,7 +21283,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3600000143051148,
@@ -20723,7 +21313,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3600000143051148,
@@ -20753,7 +21343,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3500001430511475,
@@ -20791,7 +21381,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.350000023841858,
@@ -21201,7 +21791,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom (copy) (copy)",
-            "elementIndex": 95,
+            "elementIndex": 94,
             "posBefore": [
                 1.4190000295639039,
                 1.8100000619888306,
@@ -21239,7 +21829,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_side (copy)",
-            "elementIndex": 99,
+            "elementIndex": 98,
             "posBefore": [
                 1.5099999904632569,
                 1.809999942779541,
@@ -21269,7 +21859,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_A_side (copy)",
-            "elementIndex": 99,
+            "elementIndex": 98,
             "posBefore": [
                 1.4100000858306885,
                 1.809999942779541,
@@ -21299,7 +21889,7 @@
         {
             "type": "resize",
             "description": "Resize A12_upper_A_side (copy)",
-            "elementIndex": 99,
+            "elementIndex": 98,
             "posBefore": [
                 1.4100000858306885,
                 1.809999942779541,
@@ -21337,7 +21927,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom (copy) (copy)",
-            "elementIndex": 95,
+            "elementIndex": 94,
             "posBefore": [
                 1.4190000295639039,
                 1.8100000619888306,
@@ -21481,7 +22071,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.350000262260437,
@@ -21511,7 +22101,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -21541,7 +22131,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -21571,7 +22161,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3500001430511475,
@@ -21601,7 +22191,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.3500001430511475,
@@ -21631,7 +22221,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -21661,7 +22251,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.5190000534057618,
                 1.36899995803833,
@@ -21691,7 +22281,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869998455047608,
@@ -21721,7 +22311,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869998455047608,
@@ -21751,7 +22341,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869998455047608,
@@ -21781,7 +22371,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869998455047608,
@@ -21811,7 +22401,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869998455047608,
@@ -21841,7 +22431,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869998455047608,
@@ -21871,7 +22461,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.5190000534057618,
                 1.3869998455047608,
@@ -21901,7 +22491,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.5190000534057618,
                 1.3869998455047608,
@@ -21931,7 +22521,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.3160001039505005,
                 1.3869998455047608,
@@ -21961,7 +22551,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.2260000705718995,
                 1.3869998455047608,
@@ -21991,7 +22581,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.3160001039505005,
                 1.3869998455047608,
@@ -22021,7 +22611,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.2260000705718995,
                 1.3869998455047608,
@@ -22059,7 +22649,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.2259999513626099,
                 1.3869999647140504,
@@ -22089,7 +22679,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.3160001039505005,
                 1.3869999647140504,
@@ -22127,7 +22717,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.315999984741211,
                 1.3869999647140504,
@@ -22165,7 +22755,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.315999984741211,
                 1.3869999647140504,
@@ -22195,7 +22785,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.2440000772476197,
                 1.3869999647140504,
@@ -22225,7 +22815,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.2260000705718995,
                 1.3869999647140504,
@@ -22263,7 +22853,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.2259999513626099,
                 1.3869999647140504,
@@ -22293,7 +22883,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.4190000295639039,
                 1.3869999647140504,
@@ -22331,7 +22921,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.4190000295639039,
                 1.3869999647140504,
@@ -22361,7 +22951,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.3160001039505005,
                 1.3869999647140504,
@@ -22391,7 +22981,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.593999981880188,
                 1.3869999647140504,
@@ -22429,7 +23019,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -22467,7 +23057,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869998455047608,
@@ -22505,7 +23095,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.593999981880188,
                 1.3869999647140504,
@@ -22535,7 +23125,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.4189999103546143,
                 1.3869999647140504,
@@ -22573,7 +23163,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.4190000295639039,
                 1.3869999647140504,
@@ -22603,7 +23193,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.593999981880188,
                 1.3869999647140504,
@@ -22641,7 +23231,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.6119999885559083,
                 1.3869999647140504,
@@ -22679,7 +23269,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.6119999885559083,
                 1.3869999647140504,
@@ -22717,7 +23307,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.5759999752044678,
                 1.3869999647140504,
@@ -22755,7 +23345,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.5759999752044678,
                 1.3869999647140504,
@@ -22785,7 +23375,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.3160001039505005,
                 1.3869999647140504,
@@ -22815,7 +23405,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -22853,7 +23443,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.4189999103546143,
                 1.3869999647140504,
@@ -22883,7 +23473,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -22921,7 +23511,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869999647140504,
@@ -22959,7 +23549,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -22997,7 +23587,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869999647140504,
@@ -23035,7 +23625,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869999647140504,
@@ -23073,7 +23663,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -23111,7 +23701,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -23149,7 +23739,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.3160001039505005,
                 1.3869999647140504,
@@ -23187,7 +23777,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.315999984741211,
                 1.3869999647140504,
@@ -23225,7 +23815,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.315999984741211,
                 1.3869999647140504,
@@ -23263,7 +23853,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.315999984741211,
                 1.3869999647140504,
@@ -23293,7 +23883,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -23331,7 +23921,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869999647140504,
@@ -23369,7 +23959,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.593999981880188,
                 1.3869999647140504,
@@ -23399,7 +23989,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.4189999103546143,
                 1.3869999647140504,
@@ -23429,7 +24019,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -23467,7 +24057,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.3160001039505005,
                 1.3869999647140504,
@@ -23497,7 +24087,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.2260000705718995,
                 1.3869999647140504,
@@ -23535,7 +24125,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.2259999513626099,
                 1.3869999647140504,
@@ -23565,7 +24155,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.2440000772476197,
                 1.3869999647140504,
@@ -23603,7 +24193,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.24399995803833,
                 1.3869999647140504,
@@ -23633,7 +24223,7 @@
         {
             "type": "resize",
             "description": "Resize A34K1_upper_side_inner",
-            "elementIndex": 100,
+            "elementIndex": 99,
             "posBefore": [
                 1.4190000295639039,
                 1.3869999647140504,
@@ -23671,7 +24261,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_test",
-            "elementIndex": 101,
+            "elementIndex": 100,
             "posBefore": [
                 1.2260000705718995,
                 1.3869999647140504,
@@ -23701,7 +24291,7 @@
         {
             "type": "move",
             "description": "Move A34K1_upper_bottom_tmp",
-            "elementIndex": 94,
+            "elementIndex": 102,
             "posBefore": [
                 1.4550000429153443,
                 1.36899995803833,
@@ -23727,9 +24317,3655 @@
             "dimsBefore": [],
             "dimsAfter": [],
             "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test",
+            "elementIndex": 100,
+            "posBefore": [
+                1.3160001039505005,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "posAfter": [
+                1.2260000705718995,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test",
+            "elementIndex": 100,
+            "posBefore": [
+                1.2260000705718995,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "posAfter": [
+                1.2440000772476197,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test",
+            "elementIndex": 100,
+            "posBefore": [
+                1.2440000772476197,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "posAfter": [
+                1.2260000705718995,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test",
+            "elementIndex": 100,
+            "posBefore": [
+                1.2260000705718995,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "posAfter": [
+                1.593999981880188,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test",
+            "elementIndex": 100,
+            "posBefore": [
+                1.593999981880188,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "posAfter": [
+                1.5759999752044678,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test",
+            "elementIndex": 100,
+            "posBefore": [
+                1.5759999752044678,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "posAfter": [
+                1.2619999647140504,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A34K1_upper_door_R",
+            "elementIndex": 83,
+            "posBefore": [
+                1.24399995803833,
+                1.809999942779541,
+                -1.4635000228881837
+            ],
+            "posAfter": [
+                1.24399995803833,
+                1.809999942779541,
+                -1.4639999866485596
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                793,
+                896,
+                18
+            ],
+            "dimsAfter": [
+                793,
+                896,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_door_R",
+            "elementIndex": 83,
+            "posBefore": [
+                1.24399995803833,
+                1.809999942779541,
+                -1.4639999866485596
+            ],
+            "posAfter": [
+                1.24399995803833,
+                1.809999942779541,
+                -1.4814999103546143
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_door_R",
+            "elementIndex": 83,
+            "posBefore": [
+                1.24399995803833,
+                1.809999942779541,
+                -1.4814999103546143
+            ],
+            "posAfter": [
+                1.24399995803833,
+                1.809999942779541,
+                -1.463499903678894
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A34K1_upper_test",
+            "elementIndex": 100,
+            "posBefore": [
+                1.2619999647140504,
+                1.3869999647140504,
+                -1.4490000009536744
+            ],
+            "posAfter": [
+                1.2619999647140504,
+                1.3869999647140504,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                332,
+                126,
+                18
+            ],
+            "dimsAfter": [
+                561,
+                126,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test",
+            "elementIndex": 100,
+            "posBefore": [
+                1.2619999647140504,
+                1.3869999647140504,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.2619999647140504,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_side_inner",
+            "elementIndex": 99,
+            "posBefore": [
+                1.4190000295639039,
+                1.3869999647140504,
+                -1.2740000486373902
+            ],
+            "posAfter": [
+                1.4190000295639039,
+                1.4229998588562012,
+                -1.2740000486373902
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_bottom_tmp",
+            "elementIndex": 102,
+            "posBefore": [
+                1.4550000429153443,
+                1.36899995803833,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.400999903678894,
+                1.36899995803833,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A34K1_upper_bottom",
+            "elementIndex": 44,
+            "posBefore": [
+                1.4190000295639039,
+                1.36899995803833,
+                -1.1464999914169312
+            ],
+            "posAfter": [
+                1.4190000295639039,
+                1.36899995803833,
+                -1.1740000247955323
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                332,
+                126,
+                18
+            ],
+            "dimsAfter": [
+                332,
+                181,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.3619999885559083,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5450000762939454
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5450000762939454
+            ],
+            "posAfter": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                -1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                -1.0
+            ],
+            "rotAfter": [
+                0.0,
+                -0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                0.0,
+                -0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                -0.5,
+                -0.5,
+                -0.5,
+                -0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                -0.5,
+                -0.5,
+                -0.5,
+                -0.5
+            ],
+            "rotAfter": [
+                -0.7071068286895752,
+                0.0,
+                -0.7071068286895752,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                -0.7071068286895752,
+                0.0,
+                -0.7071068286895752,
+                0.0
+            ],
+            "rotAfter": [
+                -0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.5759998559951783,
+                1.4229998588562012,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.5759998559951783,
+                1.3689998388290406,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                -0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "rotAfter": [
+                -0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.5759998559951783,
+                1.3689998388290406,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.5939998626708985,
+                1.3689998388290406,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                -0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "rotAfter": [
+                -0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A34K1_upper_test (copy)",
+            "elementIndex": 101,
+            "posBefore": [
+                1.5939998626708985,
+                1.3689998388290406,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.557999849319458,
+                1.3689998388290406,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                -0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "rotAfter": [
+                -0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "dimsBefore": [
+                561,
+                126,
+                18
+            ],
+            "dimsAfter": [
+                561,
+                54,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A34K1_upper_bottom_tmp",
+            "elementIndex": 102,
+            "posBefore": [
+                1.400999903678894,
+                1.36899995803833,
+                -1.5635000467300416
+            ],
+            "posAfter": [
+                1.4010000228881837,
+                1.36899995803833,
+                -1.5640000104904175
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                260,
+                561,
+                18
+            ],
+            "dimsAfter": [
+                260,
+                561,
+                1
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_bottom_tmp",
+            "elementIndex": 102,
+            "posBefore": [
+                1.4010000228881837,
+                1.36899995803833,
+                -1.5640000104904175
+            ],
+            "posAfter": [
+                1.4010000228881837,
+                1.36899995803833,
+                -1.5635000467300416
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_2",
+            "elementIndex": 103,
+            "posBefore": [
+                2.8620002269744875,
+                0.20000000298023225,
+                0.909000039100647
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                0.20000000298023225,
+                0.9960000514984131
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_2",
+            "elementIndex": 103,
+            "posBefore": [
+                3.4810001850128176,
+                0.20000000298023225,
+                0.9960000514984131
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                400,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_2",
+            "elementIndex": 103,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                400,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.5809998512268068,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "posAfter": [
+                3.5320000648498537,
+                0.20000000298023225,
+                1.2780001163482667
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.5320000648498537,
+                0.20000000298023225,
+                1.2780001163482667
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                0.20000000298023225,
+                1.0139999389648438
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4810001850128176,
+                0.20000000298023225,
+                1.0139999389648438
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.0140000581741334
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                400,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.0140000581741334
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                -1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                -1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                -0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                -0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                -1.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                -1.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                -0.7071068286895752,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                -0.7071068286895752,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.2139592170715333
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.5809998512268068,
+                0.20000000298023225,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.5810000896453859,
+                0.20000000298023225,
+                1.3849999904632569
+            ],
+            "rotBefore": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                400,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.5810000896453859,
+                0.20000000298023225,
+                1.3849999904632569
+            ],
+            "posAfter": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "rotBefore": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "rotAfter": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "posAfter": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "rotBefore": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071067094802856,
+                -3.0908616110991718e-8,
+                3.0908619663705397e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "posAfter": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071067094802856,
+                -3.0908616110991718e-8,
+                3.0908619663705397e-8
+            ],
+            "rotAfter": [
+                8.429370268459025e-8,
+                1.0,
+                2.5121481026586964e-15,
+                4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "posAfter": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "rotBefore": [
+                8.429370268459025e-8,
+                1.0,
+                2.5121481026586964e-15,
+                4.371138828673793e-8
+            ],
+            "rotAfter": [
+                -0.7071067094802856,
+                0.7071068286895752,
+                3.0908619663705397e-8,
+                3.0908616110991718e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "posAfter": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "rotBefore": [
+                -0.7071067094802856,
+                0.7071068286895752,
+                3.0908619663705397e-8,
+                3.0908616110991718e-8
+            ],
+            "rotAfter": [
+                -1.0,
+                8.429370268459025e-8,
+                4.371138828673793e-8,
+                -2.5121481026586964e-15
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "posAfter": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "rotBefore": [
+                -1.0,
+                8.429370268459025e-8,
+                4.371138828673793e-8,
+                -2.5121481026586964e-15
+            ],
+            "rotAfter": [
+                -0.7071067094802856,
+                5.960464477539063e-8,
+                0.7071068286895752,
+                -5.960465188081798e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "posAfter": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "rotBefore": [
+                -0.7071067094802856,
+                5.960464477539063e-8,
+                0.7071068286895752,
+                -5.960465188081798e-8
+            ],
+            "rotAfter": [
+                8.429370268459025e-8,
+                -5.0242962053173929e-15,
+                1.0,
+                -8.42937097900176e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "posAfter": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "rotBefore": [
+                8.429370268459025e-8,
+                -5.0242962053173929e-15,
+                1.0,
+                -8.42937097900176e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                -5.960465898624534e-8,
+                0.7071067094802856,
+                -5.960465188081798e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "posAfter": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                -5.960465898624534e-8,
+                0.7071067094802856,
+                -5.960465188081798e-8
+            ],
+            "rotAfter": [
+                1.0,
+                -8.429371689544496e-8,
+                -8.429370268459025e-8,
+                5.0242962053173929e-15
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "posAfter": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "rotBefore": [
+                1.0,
+                -8.429371689544496e-8,
+                -8.429370268459025e-8,
+                5.0242962053173929e-15
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.7290000915527345,
+                0.20000000298023225,
+                1.2390000820159913
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                0.20000001788139344,
+                1.2050000429153443
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.4810001850128176,
+                0.20000001788139344,
+                1.2050000429153443
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                0.20000001788139344,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                370,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.4810001850128176,
+                0.20000001788139344,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                0.00899997353553772,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.5810000896453859,
+                0.00899997353553772,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.5810000896453859,
+                -0.009000016376376152,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.5810000896453859,
+                -0.009000016376376152,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.42423152923584,
+                -0.009000042453408242,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.42423152923584,
+                -0.009000042453408242,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.4999999403953552,
+                -0.5,
+                -0.5000001192092896,
+                -0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.4999999403953552,
+                -0.5,
+                -0.5000001192092896,
+                -0.5
+            ],
+            "rotAfter": [
+                -1.2644053981603066e-7,
+                -0.7071067690849304,
+                -0.7071068286895752,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                -1.2644053981603066e-7,
+                -0.7071067690849304,
+                -0.7071068286895752,
+                0.0
+            ],
+            "rotAfter": [
+                -0.5000001192092896,
+                -0.4999999701976776,
+                -0.4999999403953552,
+                0.4999999701976776
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                -0.5000001192092896,
+                -0.4999999701976776,
+                -0.4999999403953552,
+                0.4999999701976776
+            ],
+            "rotAfter": [
+                -0.7071068286895752,
+                0.0,
+                1.2644053981603066e-7,
+                0.7071067094802856
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                -0.7071068286895752,
+                0.0,
+                1.2644053981603066e-7,
+                0.7071067094802856
+            ],
+            "rotAfter": [
+                -8.429370268459025e-8,
+                -8.940696716308594e-8,
+                8.940696716308594e-8,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                -8.429370268459025e-8,
+                -8.940696716308594e-8,
+                8.940696716308594e-8,
+                1.0
+            ],
+            "rotAfter": [
+                0.7071067094802856,
+                -1.2644053981603066e-7,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.4810001850128176,
+                -0.009000033140182495,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4810001850128176,
+                0.39100009202957156,
+                1.1899999380111695
+            ],
+            "rotBefore": [
+                0.7071067094802856,
+                -1.2644053981603066e-7,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071067094802856,
+                -1.2644053981603066e-7,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.5810000896453859,
+                0.39100009202957156,
+                1.1899999380111695
+            ],
+            "posAfter": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                0.7071067094802856,
+                -1.2644053981603066e-7,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071067094802856,
+                -1.2644053981603066e-7,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                0.7071067094802856,
+                -1.2644053981603066e-7,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.4999999701976776,
+                0.4999999701976776,
+                -0.4999999701976776,
+                0.5000001788139343
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                0.4999999701976776,
+                0.4999999701976776,
+                -0.4999999701976776,
+                0.5000001788139343
+            ],
+            "rotAfter": [
+                0.70710688829422,
+                0.7071067094802856,
+                0.0,
+                1.4751397259260558e-7
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                0.70710688829422,
+                0.7071067094802856,
+                0.0,
+                1.4751397259260558e-7
+            ],
+            "rotAfter": [
+                1.2644053981603066e-7,
+                1.0,
+                1.043081283569336e-7,
+                1.043081283569336e-7
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                1.2644053981603066e-7,
+                1.0,
+                1.043081283569336e-7,
+                1.043081283569336e-7
+            ],
+            "rotAfter": [
+                -0.7071067094802856,
+                0.7071068286895752,
+                1.4751397259260558e-7,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                -0.7071067094802856,
+                0.7071068286895752,
+                1.4751397259260558e-7,
+                0.0
+            ],
+            "rotAfter": [
+                -0.4999999701976776,
+                0.4999999403953552,
+                0.5000001788139343,
+                0.4999999701976776
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                -0.4999999701976776,
+                0.4999999403953552,
+                0.5000001788139343,
+                0.4999999701976776
+            ],
+            "rotAfter": [
+                1.4751397259260558e-7,
+                0.7071067094802856,
+                0.70710688829422,
+                2.107342389479072e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                1.4751397259260558e-7,
+                0.7071067094802856,
+                0.70710688829422,
+                2.107342389479072e-8
+            ],
+            "rotAfter": [
+                0.5000001788139343,
+                0.4999999701976776,
+                0.4999999701976776,
+                -0.4999999403953552
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                0.5000001788139343,
+                0.4999999701976776,
+                0.4999999701976776,
+                -0.4999999403953552
+            ],
+            "rotAfter": [
+                1.6858739115832578e-7,
+                0.0,
+                0.7071067094802856,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                1.6858739115832578e-7,
+                0.0,
+                0.7071067094802856,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                -0.4999999403953552,
+                -0.4999999701976776,
+                0.4999999701976776,
+                -0.5000001788139343
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "rotBefore": [
+                -0.4999999403953552,
+                -0.4999999701976776,
+                0.4999999701976776,
+                -0.5000001788139343
+            ],
+            "rotAfter": [
+                2.107342389479072e-8,
+                -0.7071067094802856,
+                -1.4751397259260558e-7,
+                -0.70710688829422
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.750000238418579,
+                0.4089999496936798,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.75,
+                0.4090000092983246,
+                1.3849999904632569
+            ],
+            "rotBefore": [
+                2.107342389479072e-8,
+                -0.7071067094802856,
+                -1.4751397259260558e-7,
+                -0.70710688829422
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                370,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                370,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.75,
+                0.4090000092983246,
+                1.3849999904632569
+            ],
+            "posAfter": [
+                3.75,
+                0.4090000092983246,
+                1.3849999904632569
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                370,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                370,
+                4
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.75,
+                0.4090000092983246,
+                1.3849999904632569
+            ],
+            "posAfter": [
+                3.75,
+                0.4090000092983246,
+                1.3849999904632569
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                370,
+                4
+            ],
+            "dimsAfter": [
+                600,
+                370,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.75,
+                0.4090000092983246,
+                1.3849999904632569
+            ],
+            "posAfter": [
+                3.75,
+                0.2150000035762787,
+                1.3849999904632569
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.75,
+                0.2150000035762787,
+                1.3849999904632569
+            ],
+            "posAfter": [
+                3.7824997901916506,
+                0.2150000035762787,
+                1.3849999904632569
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.7824997901916506,
+                0.2150000035762787,
+                1.3849999904632569
+            ],
+            "posAfter": [
+                3.7824997901916506,
+                0.2150000035762787,
+                1.2300000190734864
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                370,
+                3
+            ],
+            "dimsAfter": [
+                290,
+                370,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.7824997901916506,
+                0.2150000035762787,
+                1.2300000190734864
+            ],
+            "posAfter": [
+                3.7824997901916506,
+                0.2150000035762787,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                290,
+                370,
+                3
+            ],
+            "dimsAfter": [
+                370,
+                370,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.7824997901916506,
+                0.2150000035762787,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.7824997901916506,
+                0.20600001513957978,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                370,
+                370,
+                3
+            ],
+            "dimsAfter": [
+                370,
+                352,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.7824997901916506,
+                0.20600001513957978,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.7824997901916506,
+                0.20000001788139344,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                370,
+                352,
+                3
+            ],
+            "dimsAfter": [
+                370,
+                364,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.4810001850128176,
+                0.39100009202957156,
+                1.1899999380111695
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.39100000262260439,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071067094802856,
+                -1.2644053981603066e-7,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                370,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                370,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.4809999465942385,
+                0.39100000262260439,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.39100000262260439,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                370,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                370,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_2",
+            "elementIndex": 103,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                400,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_2",
+            "elementIndex": 103,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                400,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.4809999465942385,
+                0.39100000262260439,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.39100000262260439,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                370,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                370,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_2",
+            "elementIndex": 103,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                400,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.3845953941345215
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.3849999904632569
+            ],
+            "rotBefore": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                400,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.4810001850128176,
+                0.00899997353553772,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.008999999612569809,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                -1.0048592410634785e-14,
+                -1.1920931797249069e-7,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                370,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                370,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.7824997901916506,
+                0.20000001788139344,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.9395017623901369,
+                0.20000001788139344,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.9395017623901369,
+                0.20000001788139344,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.940000057220459,
+                0.20000000298023225,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                370,
+                364,
+                3
+            ],
+            "dimsAfter": [
+                370,
+                364,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_1",
+            "elementIndex": 106,
+            "posBefore": [
+                3.4809999465942385,
+                0.39100000262260439,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.39100000262260439,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                370,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                370,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_2",
+            "elementIndex": 103,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                0.9959999918937683
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                400,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_3",
+            "elementIndex": 104,
+            "posBefore": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.3849999904632569
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.20000000298023225,
+                1.3849999904632569
+            ],
+            "rotBefore": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "rotAfter": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                400,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_4",
+            "elementIndex": 105,
+            "posBefore": [
+                3.4809999465942385,
+                0.008999999612569809,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.4809999465942385,
+                0.008999999612569809,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                370,
+                18
+            ],
+            "dimsAfter": [
+                600,
+                370,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.940000057220459,
+                0.20000000298023225,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.940000057220459,
+                0.20000000298023225,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                370,
+                364,
+                3
+            ],
+            "dimsAfter": [
+                370,
+                364,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.940000057220459,
+                0.20000000298023225,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.940000057220459,
+                0.20000000298023225,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                370,
+                364,
+                3
+            ],
+            "dimsAfter": [
+                383,
+                364,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.940000057220459,
+                0.20000000298023225,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.940000057220459,
+                0.20000000298023225,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                383,
+                364,
+                3
+            ],
+            "dimsAfter": [
+                383,
+                377,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "composite",
+            "description": "MCP edit_elements (1 ops)",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "move",
+                    "description": "Move box_двп",
+                    "elementIndex": 107,
+                    "posBefore": [
+                        3.940000057220459,
+                        0.20000000298023225,
+                        1.190000057220459
+                    ],
+                    "posAfter": [
+                        3.763000011444092,
+                        0.20000000298023225,
+                        1.190000057220459
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [],
+                    "dimsAfter": [],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "resize",
+            "description": "Resize box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.763000011444092,
+                0.20000000298023225,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.763000011444092,
+                0.20000000298023225,
+                1.190000057220459
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                383,
+                377,
+                3
+            ],
+            "dimsAfter": [
+                383,
+                377,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3 (copy)",
+            "elementIndex": 108,
+            "posBefore": [
+                3.5809998512268068,
+                0.20000000298023225,
+                1.3849999904632569
+            ],
+            "posAfter": [
+                3.651763677597046,
+                0.20000000298023225,
+                1.3849999904632569
+            ],
+            "rotBefore": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "rotAfter": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move box_3 (copy)",
+            "elementIndex": 108,
+            "posBefore": [
+                3.651763677597046,
+                0.20000000298023225,
+                1.3849999904632569
+            ],
+            "posAfter": [
+                3.528978109359741,
+                0.20000001788139344,
+                1.3849999904632569
+            ],
+            "rotBefore": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "rotAfter": [
+                1.0,
+                -4.371138828673793e-8,
+                -4.371138828673793e-8,
+                1.910685465164705e-15
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
         }
     ],
-    "redoHistory": [],
+    "redoHistory": [
+        {
+            "type": "move",
+            "description": "Move box_двп",
+            "elementIndex": 107,
+            "posBefore": [
+                3.763000011444092,
+                0.20000000298023225,
+                1.190000057220459
+            ],
+            "posAfter": [
+                3.763000011444092,
+                0.20000000298023225,
+                1.0231709480285645
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        }
+    ],
     "settings": {
         "gridStep": 1,
         "gridEnabled": true,

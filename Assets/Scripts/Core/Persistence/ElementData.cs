@@ -1,7 +1,28 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
+    /// <summary>Паз в файле проекта. Отдельный сериализуемый класс (а не сам
+    /// GrooveSpec): формат файла не должен зависеть от того, что enum'ы —
+    /// перечисления, а поля хранятся как int.</summary>
+    [System.Serializable]
+    public class GrooveEntry
+    {
+        public int kind;
+        public int side;
+
+        public GrooveEntry() { }
+
+        public GrooveEntry(GrooveSpec spec)
+        {
+            kind = (int)spec.kind;
+            side = (int)spec.side;
+        }
+
+        public GrooveSpec ToSpec() => new GrooveSpec((GrooveKind)kind, (GrooveSide)side);
+    }
+
     [System.Serializable]
     public class ElementData
     {
@@ -57,8 +78,20 @@ namespace KitchenDesigner.Core
 		public int midHeightMM = 75;
 		public bool isFloor = false;
 		public bool isLightSource = false;
+		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
+		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
 
         public ElementData() { }
+
+        /// <summary>Пазы из файла в виде спецификаций (устойчиво к null/мусору).</summary>
+        public List<GrooveSpec> GrooveSpecs()
+        {
+            var result = new List<GrooveSpec>();
+            if (grooves == null) return result;
+            foreach (var g in grooves)
+                if (g != null) result.Add(g.ToSpec());
+            return result;
+        }
 
         public static ElementData FromElement(KitchenElement element)
         {
@@ -184,6 +217,12 @@ namespace KitchenDesigner.Core
 			d.isFloor = element is FloorElement;
 			d.isLightSource = element is LightSourceElement;
 			d.midHeightMM = pillar != null ? pillar.MidHeightMM : PillarElement.MidHeightMM_Default;
+
+			// Пазы есть только у базовой «Детали» — у остальных типов список пуст.
+			var grooveSpecs = element.Grooves;
+			d.grooves = new GrooveEntry[grooveSpecs.Count];
+			for (int i = 0; i < grooveSpecs.Count; i++)
+				d.grooves[i] = new GrooveEntry(grooveSpecs[i]);
 
 			d.groupId = element.GroupId;
             d.materialId = element.MaterialId;

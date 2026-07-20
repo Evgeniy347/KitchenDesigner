@@ -182,6 +182,18 @@ namespace KitchenDesigner.Core
 
                 KitchenElement.Face[] otherFaces = other.GetFaces();
 
+                // Габарит соседа — для проверки «кандидат не загоняет центр внутрь соседа».
+                Vector3[] oVerts = other.GetVertices();
+                float oMinX = oVerts[0].x, oMaxX = oVerts[0].x;
+                float oMinY = oVerts[0].y, oMaxY = oVerts[0].y;
+                float oMinZ = oVerts[0].z, oMaxZ = oVerts[0].z;
+                for (int k = 1; k < 8; k++)
+                {
+                    if (oVerts[k].x < oMinX) oMinX = oVerts[k].x; else if (oVerts[k].x > oMaxX) oMaxX = oVerts[k].x;
+                    if (oVerts[k].y < oMinY) oMinY = oVerts[k].y; else if (oVerts[k].y > oMaxY) oMaxY = oVerts[k].y;
+                    if (oVerts[k].z < oMinZ) oMinZ = oVerts[k].z; else if (oVerts[k].z > oMaxZ) oMaxZ = oVerts[k].z;
+                }
+
                 for (int i = 0; i < 6; i++)
                 {
                     for (int j = 0; j < 6; j++)
@@ -219,6 +231,18 @@ namespace KitchenDesigner.Core
                         // шаге она сдвинула бы деталь с плоскости контакта и разорвала стык.
                         Vector3 snapPos = basePos + planeShift * mf.normal + du * u + dv * v;
 
+                        // Кандидат не имеет права загонять деталь ВНУТРЬ соседа. Выравнивание
+                        // по центру особенно охотно это делает: у тонкой панели центр совпадает
+                        // с центром такой же панели-соседа, и «снэп» давал полное наложение
+                        // (полка с заподлицо-позиции 1.226 прыгала в центр двери 1.244).
+                        // Критерий — центр детали внутри габарита соседа: у контактов заподлицо
+                        // центр всегда снаружи, а AABB-пересечение здесь не годится (у деталей,
+                        // повёрнутых на 45°, AABB заведомо больше тела и даёт ложный отказ).
+                        if (snapPos.x > oMinX && snapPos.x < oMaxX &&
+                            snapPos.y > oMinY && snapPos.y < oMaxY &&
+                            snapPos.z > oMinZ && snapPos.z < oMaxZ)
+                            continue;
+
                         float dist = Vector3.Distance(snapPos, basePos);
                         var result = new SnapResult
                         {
@@ -235,17 +259,35 @@ namespace KitchenDesigner.Core
                               $"оси[u:{labelU} v:{labelV}] → поз {snapPos.x:F3},{snapPos.y:F3},{snapPos.z:F3}"
                             : null;
 
-                        if (dist <= ZeroShiftEpsilon)
+                        // Заподлицо вдоль нормали — ось УЖЕ зафиксирована, независимо от того,
+                        // нужно ли ещё выравнивание в плоскости грани (du/dv). Раньше ось
+                        // фиксировалась только при полностью нулевом сдвиге, и деталь, стоящая
+                        // заподлицо, но не выровненная по кромке, считалась «свободной»:
+                        // снэп перекидывал её на соседний детент через всю деталь
+                        // (1.244 ⇄ 1.226 у двери/боковины).
+                        if (Mathf.Abs(planeShift) <= ZeroShiftEpsilon)
                         {
                             zeroNormals.Add(mf.normal);
-                            if (!bestZero.snapped) { bestZero = result; bestZeroLog = log; }
                             // Полноплощадной контакт (не кромочный), уже стоящий заподлицо, —
                             // это реальная опора: слабый кромочный (line contact) снэп не
                             // должен утаскивать деталь с него (иначе полка на боковой Z-грани
                             // на 1.369 отскакивала бы на грань-контакт 1.351).
                             if (!hasLineContact) anyFullAreaZero = true;
+
+                            // Подтверждение текущего положения: деталь уже заподлицо вдоль этой
+                            // нормали. Позиция — basePos (выравнивание в плоскости грани сюда не
+                            // включаем), иначе при зафиксированной оси и неприменимых кандидатах
+                            // TrySnap возвращал «не прилипло» прямо на валидном детенте.
+                            if (!bestZero.snapped)
+                            {
+                                var confirm = result;
+                                confirm.position = basePos;
+                                bestZero = confirm;
+                                bestZeroLog = log;
+                            }
                         }
-                        else
+
+                        if (dist > ZeroShiftEpsilon)
                         {
                             candidates.Add(new Candidate
                             {

@@ -231,6 +231,11 @@ namespace KitchenDesigner.Core
                     if (el is AssembledFacadeElement assembled)
                         assembled.GrooveCount = ed.grooveCount;
 
+                    // Пазы принимает только базовая «Деталь»; SetGrooves сам
+                    // отсеет лишнее и пересоберёт меш.
+                    if (el.SupportsGrooves)
+                        el.SetGrooves(ed.GrooveSpecs());
+
                     if (ed.isFacade && el is FacadeElement facade)
                     {
                         // Зазоры проставляем ЯВНО для любого фасада: обычный получает их

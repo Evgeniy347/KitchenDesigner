@@ -1,4 +1,4 @@
-{
+﻿{
     "version": 1,
     "elements": [
         {
@@ -64,7 +64,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Board_B",
@@ -129,7 +130,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         }
     ],
     "groups": [],
@@ -207,7 +209,8 @@
         "isPillar": false,
         "midHeightMM": 75,
         "isFloor": false,
-        "isLightSource": false
+        "isLightSource": false,
+        "grooves": []
     },
     "undoHistory": [
         {

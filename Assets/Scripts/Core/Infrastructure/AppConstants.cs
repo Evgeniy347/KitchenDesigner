@@ -21,6 +21,17 @@ namespace KitchenDesigner.Core
         public const int ASSEMBLED_DEFAULT_GROOVES = 1;   // >0 = рисовать выемки (2 сверху, 2 снизу)
         public const int ASSEMBLED_GROOVE_MM = 5;         // выемка на перекладине: 5×5 мм
 
+        // Пазы детали в пласти, обозначение Bazis «Паз (16*4*7)»: смещение от
+        // кромки × ширина прорези × глубина. Сквозной идёт во всю длину стороны;
+        // глухой не доходит до торцов на GROOVE_BLIND_END_MM с каждой стороны
+        // (длина = сторона − 2×7 мм).
+        public const int GROOVE_OFFSET_MM = 16;
+        public const int GROOVE_WIDTH_MM = 4;
+        public const int GROOVE_DEPTH_MM = 7;
+        public const int GROOVE_BLIND_END_MM = 7;
+        // 4 стороны × 2 типа: дубли (сторона+тип) не имеют смысла, смещение фиксировано.
+        public const int GROOVE_MAX_PER_PART = 8;
+
         public const int WINDOW_FRAME_MM = 80;
         public const int WINDOW_SLOPE_MM = 18;
         public const int WINDOW_DRIP_DEFAULT_MM = 30;
