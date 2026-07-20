@@ -108,6 +108,7 @@ namespace KitchenDesigner.Core.UI
             panel.rectTransform.anchoredPosition = new Vector2(-10, -60);
             _root = panel.gameObject;
             _panelRt = panel.rectTransform;
+            WindowDrag.Attach(panel.rectTransform, TopPad + TitleH + TitleGap);
             _layout.Clear();
 
             // Заголовок — первая строка потока (стоит вплотную под верхом панели).
