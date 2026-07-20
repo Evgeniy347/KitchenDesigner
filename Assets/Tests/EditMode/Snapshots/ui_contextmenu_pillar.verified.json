@@ -30,14 +30,14 @@
     {
       "type": "Label",
       "text": "Название",
-      "position": [-80, -83]
+      "position": [-134, -83]
     },
     {
       "type": "InputField",
       "label": "Название",
-      "value": "Опора",
+      "value": "Opora",
       "interactable": true,
-      "position": [100, -83]
+      "position": [40, -83]
     },
     {
       "type": "Label",

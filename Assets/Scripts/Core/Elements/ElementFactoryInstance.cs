@@ -118,7 +118,7 @@ namespace KitchenDesigner.Core
         public GameObject CreatePart(Vector3Int dimensionsMM, string name, Vector3 position)
         {
             var go = _partPool.Get();
-            go.name = string.IsNullOrEmpty(name) ? "Board" : name;
+            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Board" : name);
             go.transform.position = position;
 
             var element = go.GetComponent<KitchenElement>();
@@ -152,7 +152,7 @@ namespace KitchenDesigner.Core
             thicknessMM = Mathf.Max(1, thicknessMM);
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = string.IsNullOrEmpty(name) ? "Радиусная полка" : name;
+            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Радиусная полка" : name);
             go.tag = "KitchenElement";
             go.transform.position = position;
 
@@ -178,6 +178,10 @@ namespace KitchenDesigner.Core
             return go;
         }
 
+        /// <summary>Дубль элемента. Имя копии — имя оригинала: занятость его
+        /// разрешит ElementNaming внутри фабрики, добавив суффикс «_1», «_2», …
+        /// Явный суффикс здесь не нужен и вреден — « (copy)» после чистки стал бы
+        /// «_copy», и копия копии росла бы в «X_copy_copy».</summary>
         public GameObject Duplicate(KitchenElement source)
         {
             if (source == null) return null!;
@@ -187,7 +191,7 @@ namespace KitchenDesigner.Core
 
             if (source is DrawerElement srcDrawer)
             {
-                var go = CreateDrawer(srcDrawer.Type, srcDrawer.NominalLength, srcDrawer.Color, srcDrawer.InternalWidth, source.PartName + " (copy)", offset);
+                var go = CreateDrawer(srcDrawer.Type, srcDrawer.NominalLength, srcDrawer.Color, srcDrawer.InternalWidth, source.PartName, offset);
                 go.transform.rotation = source.transform.rotation;
                 var copy = go.GetComponent<DrawerElement>();
                 if (copy != null)
@@ -202,7 +206,7 @@ namespace KitchenDesigner.Core
 
             if (source is AssembledFacadeElement assembled)
             {
-                var go = CreateAssembledFacade(dims, source.PartName + " (copy)", offset, assembled.Fill);
+                var go = CreateAssembledFacade(dims, source.PartName, offset, assembled.Fill);
                 go.transform.rotation = source.transform.rotation;
                 var copy = go.GetComponent<AssembledFacadeElement>();
                 if (copy != null)
@@ -222,7 +226,7 @@ namespace KitchenDesigner.Core
 
             if (source is RadialShelfElement radial)
             {
-                var go = CreateRadialShelf(dims.x, dims.z, dims.y, radial.CornerRadius, source.PartName + " (copy)", offset);
+                var go = CreateRadialShelf(dims.x, dims.z, dims.y, radial.CornerRadius, source.PartName, offset);
                 go.transform.rotation = source.transform.rotation;
                 MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
                 return go;
@@ -230,7 +234,7 @@ namespace KitchenDesigner.Core
 
 			if (source is FloorElement)
 			{
-				var go = CreateFloor(dims, source.PartName + " (copy)", offset);
+				var go = CreateFloor(dims, source.PartName, offset);
 				go.transform.rotation = source.transform.rotation;
 				MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
 				return go;
@@ -238,14 +242,14 @@ namespace KitchenDesigner.Core
 
 			if (source is LightSourceElement)
 			{
-				var go = CreateLightSource(source.PartName + " (copy)", offset);
+				var go = CreateLightSource(source.PartName, offset);
 				go.transform.rotation = source.transform.rotation;
 				return go;
 			}
 
 			if (source is PillarElement srcPillar)
 			{
-				var go = CreatePillar(srcPillar.MidHeightMM, source.PartName + " (copy)", offset);
+				var go = CreatePillar(srcPillar.MidHeightMM, source.PartName, offset);
 				go.transform.rotation = source.transform.rotation;
 				MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
 				return go;
@@ -253,7 +257,7 @@ namespace KitchenDesigner.Core
 
 			if (source is TableElement tbl)
 			{
-				var go = CreateTable(dims, source.PartName + " (copy)", offset);
+				var go = CreateTable(dims, source.PartName, offset);
 				go.transform.rotation = source.transform.rotation;
 				MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
 				return go;
@@ -261,7 +265,7 @@ namespace KitchenDesigner.Core
 
 			if (source is RadiusTableElement rtSrc)
 			{
-				var go = CreateRadiusTable(dims, source.PartName + " (copy)", offset);
+				var go = CreateRadiusTable(dims, source.PartName, offset);
 				go.transform.rotation = source.transform.rotation;
 				var copy = go.GetComponent<RadiusTableElement>();
 				if (copy != null)
@@ -276,7 +280,7 @@ namespace KitchenDesigner.Core
 
 			if (source is WindowElement srcWin)
             {
-                var go = CreateWindow(dims, source.PartName + " (copy)", offset, srcWin.Tint, srcWin.SillProtrusionMM);
+                var go = CreateWindow(dims, source.PartName, offset, srcWin.Tint, srcWin.SillProtrusionMM);
                 go.transform.rotation = source.transform.rotation;
                 var copy = go.GetComponent<WindowElement>();
                 if (copy != null) { copy.Mode = srcWin.Mode; }
@@ -286,7 +290,7 @@ namespace KitchenDesigner.Core
 
 			if (source is DoorElement srcDoor)
             {
-                var go = CreateDoor(dims, source.PartName + " (copy)", offset, srcDoor.SashType);
+                var go = CreateDoor(dims, source.PartName, offset, srcDoor.SashType);
                 go.transform.rotation = source.transform.rotation;
                 var copy = go.GetComponent<DoorElement>();
                 if (copy != null) { copy.Mode = srcDoor.Mode; }
@@ -297,7 +301,7 @@ namespace KitchenDesigner.Core
             var facade = source as FacadeElement;
             if (facade != null)
             {
-                var go = CreateFacade(dims, source.PartName + " (copy)", offset,
+                var go = CreateFacade(dims, source.PartName, offset,
                     facade.GapLeft, facade.GapRight, facade.GapTop, facade.GapBottom);
                 go.transform.rotation = source.transform.rotation;
                 var copyFacade = go.GetComponent<FacadeElement>();
@@ -306,7 +310,7 @@ namespace KitchenDesigner.Core
                 return go;
             }
 
-            var go2 = CreatePart(dims, source.PartName + " (copy)", offset);
+            var go2 = CreatePart(dims, source.PartName, offset);
             go2.transform.rotation = source.transform.rotation;
 
             if (source.GetComponent<Wall>() != null)
@@ -321,6 +325,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateWall(Vector3Int dimensionsMM, string name, Vector3 position)
         {
+            name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Wall" : name);
             var go = new GameObject(name);
             go.tag = "KitchenElement";
             go.transform.position = position;
@@ -354,7 +359,7 @@ namespace KitchenDesigner.Core
             int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2)
         {
             var go = _facadePool.Get();
-            go.name = string.IsNullOrEmpty(name) ? "Facade" : name;
+            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Facade" : name);
             go.transform.position = position;
 
             var facade = go.GetComponent<FacadeElement>();
@@ -382,7 +387,7 @@ namespace KitchenDesigner.Core
             int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = string.IsNullOrEmpty(name) ? "ДВП/ХДФ" : name;
+            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "ДВП/ХДФ" : name);
             go.tag = "KitchenElement";
             go.transform.position = position;
 
@@ -413,7 +418,7 @@ namespace KitchenDesigner.Core
             // Сборный фасад НЕ пулим: процедурный меш + дочерние объекты не переживают
             // сброс пула. Создаём свежий GameObject по образцу пула деталей.
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = string.IsNullOrEmpty(name) ? "Сборный фасад" : name;
+            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Сборный фасад" : name);
             go.tag = "KitchenElement";
             go.transform.position = position;
 
@@ -437,7 +442,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = string.IsNullOrEmpty(name) ? "Ящик GTV" : name;
+            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Ящик GTV" : name);
             go.tag = "KitchenElement";
             go.transform.position = position;
 
@@ -464,7 +469,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateTable(Vector3Int dimensionsMM, string name, Vector3 position)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = string.IsNullOrEmpty(name) ? "Прямоугольный стол" : name;
+            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Прямоугольный стол" : name);
             go.tag = "KitchenElement";
             go.transform.position = position;
 
@@ -495,7 +500,7 @@ namespace KitchenDesigner.Core
 
 		public GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position)
 		{
-			var go = new GameObject(string.IsNullOrEmpty(name) ? "Радиусный стол" : name);
+			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Радиусный стол" : name));
 			go.tag = "KitchenElement";
 			go.transform.position = position;
 
@@ -521,7 +526,7 @@ namespace KitchenDesigner.Core
 		public GameObject CreatePillar(int midHeightMM, string name, Vector3 position)
 		{
 			var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			go.name = string.IsNullOrEmpty(name) ? "Опора" : name;
+			go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Опора" : name);
 			go.tag = "KitchenElement";
 			go.transform.position = position;
 
@@ -554,7 +559,7 @@ namespace KitchenDesigner.Core
 		public GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position)
 		{
 			var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			go.name = string.IsNullOrEmpty(name) ? "Пол" : name;
+			go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Пол" : name);
 			go.tag = "KitchenElement";
 			go.transform.position = position;
 
@@ -586,7 +591,7 @@ namespace KitchenDesigner.Core
 			// CreatePrimitive падает («class 'SphereCollider' doesn't exist»).
 			// Собираем плафон вручную: явный AddComponent<SphereCollider>()
 			// заставляет линкер сохранить класс.
-			var go = new GameObject(string.IsNullOrEmpty(name) ? "Источник света" : name);
+			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Источник света" : name));
 			go.tag = "KitchenElement";
 			go.transform.position = position;
 
@@ -631,6 +636,7 @@ namespace KitchenDesigner.Core
 		public GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50)
         {
+            name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Window" : name);
             var go = new GameObject(name);
             go.tag = "KitchenElement";
             go.transform.position = position;
@@ -657,6 +663,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position,
             DoorSashType sashType = DoorSashType.Glass)
         {
+            name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Door" : name);
             var go = new GameObject(name);
             go.tag = "KitchenElement";
             go.transform.position = position;

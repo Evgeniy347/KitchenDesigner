@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core
                         + DrawerConstants.GetMinOpeningHeight(upperType)) * 0.5f * AppConstants.MM_TO_UNITS;
             var pos = source.ClosedPosition + source.ClosedRotation * Vector3.up * step;
 
-            string pairName = UniqueName(source.PartName + " (верх)");
+            string pairName = UniqueName(source.PartName + "_top");
             var go = ElementFactory.CreateDrawer(upperType, source.NominalLength,
                 source.Color, source.InternalWidth, pairName, pos);
             if (go == null) return null;
@@ -68,10 +68,14 @@ namespace KitchenDesigner.Core
         /// <summary>
         /// Переименовать элемент, обновив все ссылающиеся на старое имя связи:
         /// у пары ящика — PairedDrawerName, у ящиков с этим фасадом — AttachedFacadeName.
+        /// Имя приводится к допустимому алфавиту и делается уникальным (ElementNaming),
+        /// поэтому фактическое имя может отличаться от запрошенного — обратные ссылки
+        /// проставляются уже по нему.
         /// </summary>
         public static void Rename(KitchenElement element, string newName)
         {
             if (element == null || string.IsNullOrEmpty(newName)) return;
+            newName = ElementNaming.Normalize(newName, element);
             string oldName = element.PartName;
             if (oldName == newName) return;
 
@@ -91,23 +95,9 @@ namespace KitchenDesigner.Core
             element.PartName = newName;
         }
 
-        /// <summary>Имя, свободное в PartRegistry (при коллизии — суффикс " 2", " 3"…).</summary>
-        public static string UniqueName(string baseName)
-        {
-            if (!NameTaken(baseName)) return baseName;
-            for (int i = 2; ; i++)
-            {
-                var candidate = baseName + " " + i;
-                if (!NameTaken(candidate)) return candidate;
-            }
-        }
-
-        private static bool NameTaken(string name)
-        {
-            foreach (var e in PartRegistry.GetAll())
-                if (e != null && e.PartName == name) return true;
-            return false;
-        }
+        /// <summary>Имя, свободное в PartRegistry и приведённое к допустимому
+        /// алфавиту (при коллизии — суффикс «_1», «_2»…). См. ElementNaming.</summary>
+        public static string UniqueName(string baseName) => ElementNaming.Normalize(baseName);
 
         public static bool IsFacadeInContact(DrawerElement drawer, FacadeElement facade)
         {

@@ -91,7 +91,9 @@ namespace KitchenDesigner.Core
             go.transform.localScale = scale;
             go.name = goName;
 
-            result.PartName = partName;
+            // Старый компонент уже снят с учёта в PartRegistry, поэтому его имя
+            // свободно и элемент сохраняет его при конвертации типа.
+            result.PartName = ElementNaming.Normalize(partName, result);
             result.Movable = movable;
             result.GroupId = groupId;
             result.MaterialId = materialId;

@@ -303,7 +303,10 @@ namespace KitchenDesigner.Core.MCP
                 if (el is PillarElement pillar) ApplyPillarEdits(op, pillar);
                 if (el is WindowElement window) ApplyWindowEdits(op, window);
                 if (el is DoorElement door) ApplyDoorEdits(op, door);
-                if (op.new_name != null && op.new_name != el.PartName) { el.PartName = op.new_name; el.gameObject.name = op.new_name; }
+                // Через DrawerLinks: переименование обязано увести за собой связи
+                // по имени (пара ящика, фасад ящика), иначе они станут битыми.
+                if (op.new_name != null && op.new_name != el.PartName)
+                { DrawerLinks.Rename(el, op.new_name); el.gameObject.name = el.PartName; }
             }
         }
 
@@ -360,6 +363,8 @@ namespace KitchenDesigner.Core.MCP
                     errors.Add($"Invalid field for '{op.name}': {err}");
                 if (op.new_name != null && op.new_name != op.name)
                 {
+                    if (!ElementNaming.IsValid(op.new_name))
+                    { errors.Add($"Invalid new_name '{op.new_name}' (for '{op.name}'): {ElementNaming.Rule}"); continue; }
                     var conflict = PartRegistry.All?.FirstOrDefault(x => x != null && x != el && string.Equals(x.PartName, op.new_name, StringComparison.OrdinalIgnoreCase));
                     if (conflict != null) errors.Add($"new_name '{op.new_name}' already taken by another element (for '{op.name}')");
                     else if (!newNamesBatch.Add(op.new_name)) errors.Add($"Duplicate new_name '{op.new_name}' in this batch (for '{op.name}')");
@@ -422,7 +427,6 @@ namespace KitchenDesigner.Core.MCP
             var commands = new List<IUndoCommand>();
             var allClones = new List<KitchenElement>();
             var errors = new List<string>();
-            int globalSuffix = 2;
             foreach (var op in p.ops)
             {
                 if (string.IsNullOrEmpty(op.name)) { errors.Add("an op is missing 'name'"); continue; }
@@ -436,11 +440,10 @@ namespace KitchenDesigner.Core.MCP
                     var go = ElementFactory.Duplicate(source);
                     if (go == null) { errors.Add($"Failed to duplicate '{op.name}'"); break; }
                     var el = go.GetComponent<KitchenElement>();
-                    string cloneName;
-                    do { cloneName = op.name + "_" + globalSuffix; globalSuffix++; }
-                    while (FindElementByName(cloneName) != null);
-                    el.PartName = cloneName;
-                    go.name = cloneName;
+                    // Имя клона выдаёт ElementNaming (суффикс «_1», «_2», …) — оно
+                    // уже проставлено фабрикой в Duplicate, здесь только синхронизируем
+                    // имя GameObject.
+                    go.name = el.PartName;
                     go.transform.position = basePos + offset * i;
                     commands.Add(new CreateCommand(go));
                     allClones.Add(el);
@@ -599,6 +602,8 @@ namespace KitchenDesigner.Core.MCP
             foreach (var item in p.items)
             {
                 if (string.IsNullOrEmpty(item.name)) { errors.Add("an item is missing 'name'"); continue; }
+                if (!ElementNaming.IsValid(item.name))
+                { errors.Add($"Invalid name '{item.name}': {ElementNaming.Rule}"); continue; }
                 if (namesSeen.Contains(item.name)) { errors.Add($"duplicate name '{item.name}' in this batch"); continue; }
                 namesSeen.Add(item.name);
                 var existing = FindElementByName(item.name);

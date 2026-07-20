@@ -232,6 +232,9 @@ namespace KitchenDesigner.Core
 
         private void HandlePlusMinusZoom()
         {
+            // Дефис — допустимый символ имени: без этой проверки набор «B4-upper»
+            // отъезжал бы камерой на каждом «-».
+            if (IsTypingInInputField()) return;
             float delta = 0f;
             if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus))
                 delta = -1f;

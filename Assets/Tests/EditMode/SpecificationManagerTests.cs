@@ -40,6 +40,25 @@ public class SpecificationManagerTests
         Object.DestroyImmediate(c.gameObject);
     }
 
+    /// <summary>Имена элементов уникальны в рамках проекта (ElementNaming даёт
+    /// «Bokovina», «Bokovina_1»), поэтому в ключ группировки имя не входит —
+    /// иначе ведомость раскроя выродилась бы в строки по одной штуке.</summary>
+    [Test]
+    public void Build_DifferentNamesSameGeometry_OneGroup()
+    {
+        var a = CreateElement("Bokovina", new Vector3Int(600, 720, 18));
+        var b = CreateElement("Bokovina_1", new Vector3Int(600, 720, 18));
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
+
+        Assert.AreEqual(1, result.lines.Count, "уникальные имена не должны дробить группу");
+        Assert.AreEqual(2, result.lines[0].count);
+        Assert.AreEqual("Bokovina", result.lines[0].name, "имя берётся от первой детали группы");
+
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
+    }
+
     [Test]
     public void Build_EmptyList_ZeroBoardsZeroArea()
     {

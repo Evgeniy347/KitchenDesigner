@@ -106,7 +106,9 @@ namespace KitchenDesigner.Core.MCP.Contract
     {
         [McpParam("Exact element name.", Required = true)] public string name = string.Empty;
 
-        [McpParam("Rename the element to this new name. Must be unique among all elements. Omit to keep.")]
+        // Допустимый алфавит имени: ^[A-Za-z0-9_-]+$ (см. ElementNaming).
+        [McpParam("Rename the element to this new name. Must be unique among all elements (case-insensitive) "
+            + "and match ^[A-Za-z0-9_-]+$ — latin letters, digits, '-' and '_' only; no spaces, no cyrillic. Omit to keep.")]
         public string? new_name;
 
         // Geometry (any element; drawers reject width/height/depth).
@@ -217,7 +219,10 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class CreateItem
     {
-        [McpParam("Unique name for the new element.", Required = true)]
+        // Допустимый алфавит имени: ^[A-Za-z0-9_-]+$ (см. ElementNaming).
+        [McpParam("Unique name for the new element (case-insensitive across the whole project). "
+            + "Must match ^[A-Za-z0-9_-]+$ — latin letters, digits, '-' and '_' only; no spaces, no cyrillic.",
+            Required = true)]
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position.",

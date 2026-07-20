@@ -169,6 +169,11 @@ namespace KitchenDesigner.Core
             var created = new List<GameObject>();
             if (data == null || data.elements == null) return created;
 
+            // Старые проекты содержат кириллические имена, пробелы и прямые дубли.
+            // Чиним ДО создания элементов и одним проходом, чтобы связи по именам
+            // (пара ящика, фасад ящика, стена окна/двери) уехали на новые имена.
+            NormalizeElementNames(data.elements);
+
             GroupManager.Clear();
             if (data.groups != null)
                 foreach (var gd in data.groups)
@@ -304,6 +309,65 @@ namespace KitchenDesigner.Core
                 ElementHighlighter.Instance.RefreshHighlights();
 
             return created;
+        }
+
+        /// <summary>
+        /// Привести имена элементов проекта к допустимому алфавиту и сделать их
+        /// уникальными, перенеся на новые имена все связи-по-имени.
+        ///
+        /// Порядок важен: сначала полностью строится карта старое→новое (по ВСЕМ
+        /// элементам), и только потом переписываются ссылки. Если переименовывать
+        /// и чинить ссылки по ходу, ссылка на ещё не обработанный элемент указала
+        /// бы на его старое имя и осталась битой.
+        ///
+        /// Карта ключуется без учёта регистра: два элемента «Facade»/«facade» —
+        /// это коллизия, второй получит «facade_1», и ссылки на них должны
+        /// разойтись так же, как разошлись сами имена.
+        /// </summary>
+        private static void NormalizeElementNames(ElementData[] elements)
+        {
+            // Занятыми считаем и то, что уже стоит в сцене (подложка переживает
+            // очистку) — иначе загруженный элемент мог бы забрать её имя.
+            var used = ElementNaming.ReservedFromScene();
+            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var ed in elements)
+            {
+                if (ed == null) continue;
+                var oldName = ed.name ?? string.Empty;
+
+                // Одинаковые исходные имена — это РАЗНЫЕ элементы (коллизия в файле),
+                // каждый обязан получить своё имя. В карту попадает только первый:
+                // ссылки на неоднозначное имя всё равно неразрешимы, и первый —
+                // единственный разумный кандидат.
+                var newName = ElementNaming.Normalize(oldName, null, used);
+                used.Add(newName);
+                ed.name = newName;
+
+                if (!string.IsNullOrEmpty(oldName) && !map.ContainsKey(oldName))
+                    map[oldName] = newName;
+            }
+
+            foreach (var ed in elements)
+            {
+                if (ed == null) continue;
+                ed.drawerPairedName = Remap(map, ed.drawerPairedName);
+                ed.drawerAttachedFacadeName = Remap(map, ed.drawerAttachedFacadeName);
+                ed.windowAttachedWallName = Remap(map, ed.windowAttachedWallName);
+                ed.doorAttachedWallName = Remap(map, ed.doorAttachedWallName);
+            }
+        }
+
+        /// <summary>Ссылка на элемент по имени → новое имя. Ссылку, для которой в
+        /// файле нет элемента, оставляем КАК ЕСТЬ: RestoreScene вызывают и на
+        /// неполном наборе (частичное восстановление, тесты), и обнуление такой
+        /// ссылки потеряло бы связь с элементом, которого просто нет в этой
+        /// пачке. Несопоставленное имя всё равно ни к чему не приведёт — связи
+        /// ищутся точным совпадением.</summary>
+        private static string Remap(Dictionary<string, string> map, string? link)
+        {
+            if (string.IsNullOrEmpty(link)) return "";
+            return map.TryGetValue(link!, out var renamed) ? renamed : link!;
         }
 
         private void RestoreBasePlate(ElementData data)

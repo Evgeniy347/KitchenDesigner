@@ -23,33 +23,33 @@
     },
     {
       "type": "Button",
-      "text": "Свободная полка",
+      "text": "Fasad_yaschika",
       "position": [20, 0]
     },
     {
       "type": "Button",
-      "text": "А3_боковина_L",
+      "text": "Svobodnaya_polka",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "A3_bokovina_L",
       "position": [36, 0]
     },
     {
       "type": "Button",
-      "text": "А3_боковина_R",
+      "text": "A3_bokovina_R",
       "position": [36, 0]
     },
     {
       "type": "Button",
-      "text": "Верхний ящик",
+      "text": "Verhniy_yaschik",
       "position": [36, 0]
     },
     {
       "type": "Button",
       "text": "Модуль А3 (3)",
       "position": [38, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Фасад ящика",
-      "position": [52, 0]
     },
     {
       "type": "Button",

@@ -4305,7 +4305,7 @@
             "grooves": []
         },
         {
-            "name": "Окно_над_B5",
+            "name": "Okno_nad_B5",
             "dimensionsMM": [
                 900,
                 1200,
@@ -4372,7 +4372,7 @@
             "grooves": []
         },
         {
-            "name": "Дверь",
+            "name": "Dver",
             "dimensionsMM": [
                 1308,
                 2000,
@@ -4439,7 +4439,7 @@
             "grooves": []
         },
         {
-            "name": "Окно",
+            "name": "Okno",
             "dimensionsMM": [
                 900,
                 1200,
@@ -4506,7 +4506,7 @@
             "grooves": []
         },
         {
-            "name": "Ножка",
+            "name": "Nozhka",
             "dimensionsMM": [
                 50,
                 100,
@@ -4573,7 +4573,7 @@
             "grooves": []
         },
         {
-            "name": "Источник света",
+            "name": "Istochnik_sveta",
             "dimensionsMM": [
                 150,
                 150,
@@ -6993,12 +6993,12 @@
     "groups": [],
     "camera": {
         "valid": true,
-        "targetX": 1.6843527555465699,
-        "targetY": 1.6613539457321168,
-        "targetZ": -2.061645269393921,
-        "angleX": 28.000213623046876,
-        "angleY": -5165.87158203125,
-        "distance": 2.200000047683716
+        "targetX": -0.6306912899017334,
+        "targetY": 1.3967678546905518,
+        "targetZ": -0.3039611577987671,
+        "angleX": 27.400230407714845,
+        "angleY": -5219.67236328125,
+        "distance": 2.8999996185302736
     },
     "handleMode": "Move",
     "basePlateValid": true,
@@ -10116,7 +10116,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10146,7 +10146,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10176,7 +10176,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10206,7 +10206,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10236,7 +10236,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349997520446778,
@@ -10266,7 +10266,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349995136260987,
@@ -10296,7 +10296,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -0.3615288734436035,
@@ -10326,7 +10326,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -0.10048609972000122,
@@ -10356,7 +10356,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 0.3240000009536743,
@@ -10386,7 +10386,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 0.3240000009536743,
@@ -10416,7 +10416,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -0.29058796167373659,
@@ -10446,7 +10446,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10476,7 +10476,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10506,7 +10506,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10536,7 +10536,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10566,7 +10566,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10596,7 +10596,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10626,7 +10626,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10656,7 +10656,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10686,7 +10686,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10716,7 +10716,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10746,7 +10746,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Окно_над_B5",
+            "description": "Resize Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10784,7 +10784,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Окно_над_B5",
+            "description": "Resize Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10822,7 +10822,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10852,7 +10852,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10882,7 +10882,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10912,7 +10912,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Окно_над_B5",
+            "description": "Resize Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10950,7 +10950,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -10980,7 +10980,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно_над_B5",
+            "description": "Move Okno_nad_B5",
             "elementIndex": 64,
             "posBefore": [
                 -1.6349999904632569,
@@ -11010,7 +11010,7 @@
         },
         {
             "type": "move",
-            "description": "Move Дверь",
+            "description": "Move Dver",
             "elementIndex": 65,
             "posBefore": [
                 -1.6349999904632569,
@@ -11040,7 +11040,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно",
+            "description": "Move Okno",
             "elementIndex": 66,
             "posBefore": [
                 -1.6349999904632569,
@@ -11070,7 +11070,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно",
+            "description": "Move Okno",
             "elementIndex": 66,
             "posBefore": [
                 -1.6350001096725464,
@@ -11100,7 +11100,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно",
+            "description": "Move Okno",
             "elementIndex": 66,
             "posBefore": [
                 -1.6350001096725464,
@@ -11130,7 +11130,7 @@
         },
         {
             "type": "move",
-            "description": "Move Дверь",
+            "description": "Move Dver",
             "elementIndex": 65,
             "posBefore": [
                 -1.6350001096725464,
@@ -11160,7 +11160,7 @@
         },
         {
             "type": "move",
-            "description": "Move Дверь",
+            "description": "Move Dver",
             "elementIndex": 65,
             "posBefore": [
                 -1.6350001096725464,
@@ -11190,7 +11190,7 @@
         },
         {
             "type": "move",
-            "description": "Move Дверь",
+            "description": "Move Dver",
             "elementIndex": 65,
             "posBefore": [
                 -0.09800000488758087,
@@ -11220,7 +11220,7 @@
         },
         {
             "type": "move",
-            "description": "Move Дверь",
+            "description": "Move Dver",
             "elementIndex": 65,
             "posBefore": [
                 1.6349999904632569,
@@ -11250,7 +11250,7 @@
         },
         {
             "type": "move",
-            "description": "Move Дверь",
+            "description": "Move Dver",
             "elementIndex": 65,
             "posBefore": [
                 1.6350001096725464,
@@ -11280,7 +11280,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Дверь",
+            "description": "Resize Dver",
             "elementIndex": 65,
             "posBefore": [
                 1.6349999904632569,
@@ -11318,7 +11318,7 @@
         },
         {
             "type": "move",
-            "description": "Move Дверь",
+            "description": "Move Dver",
             "elementIndex": 65,
             "posBefore": [
                 1.6349999904632569,
@@ -11348,7 +11348,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 0.018000001087784768,
@@ -11378,7 +11378,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 0.018000001087784768,
@@ -11408,7 +11408,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 0.48500001430511477,
@@ -11438,7 +11438,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 0.48500001430511477,
@@ -11468,7 +11468,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 1.002000093460083,
@@ -11498,7 +11498,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 1.002000093460083,
@@ -11528,7 +11528,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 -0.2580033540725708,
@@ -11558,7 +11558,7 @@
         },
         {
             "type": "move",
-            "description": "Move Дверь",
+            "description": "Move Dver",
             "elementIndex": 65,
             "posBefore": [
                 1.6349999904632569,
@@ -11588,7 +11588,7 @@
         },
         {
             "type": "move",
-            "description": "Move Дверь",
+            "description": "Move Dver",
             "elementIndex": 65,
             "posBefore": [
                 1.6349999904632569,
@@ -11618,7 +11618,7 @@
         },
         {
             "type": "move",
-            "description": "Move Источник света",
+            "description": "Move Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.7300000190734863,
@@ -11648,7 +11648,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Источник света",
+            "description": "Resize Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.3370000123977661,
@@ -11686,7 +11686,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Источник света",
+            "description": "Resize Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.3370000123977661,
@@ -11724,7 +11724,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Источник света",
+            "description": "Resize Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.3370000123977661,
@@ -11762,7 +11762,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Источник света",
+            "description": "Resize Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.3370000123977661,
@@ -11800,7 +11800,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Источник света",
+            "description": "Resize Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.3370000123977661,
@@ -11838,7 +11838,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Источник света",
+            "description": "Resize Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.3370000123977661,
@@ -11876,7 +11876,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Источник света",
+            "description": "Resize Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.3370000123977661,
@@ -11914,7 +11914,7 @@
         },
         {
             "type": "move",
-            "description": "Move Источник света",
+            "description": "Move Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.3370000123977661,
@@ -11944,7 +11944,7 @@
         },
         {
             "type": "move",
-            "description": "Move Источник света",
+            "description": "Move Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.17900000512599946,
@@ -11974,7 +11974,7 @@
         },
         {
             "type": "move",
-            "description": "Move Источник света",
+            "description": "Move Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.3150000274181366,
@@ -12004,7 +12004,7 @@
         },
         {
             "type": "move",
-            "description": "Move Источник света",
+            "description": "Move Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 1.5099999904632569,
@@ -12034,7 +12034,7 @@
         },
         {
             "type": "move",
-            "description": "Move Источник света",
+            "description": "Move Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 1.5099999904632569,
@@ -12064,7 +12064,7 @@
         },
         {
             "type": "move",
-            "description": "Move Источник света",
+            "description": "Move Istochnik_sveta",
             "elementIndex": 68,
             "posBefore": [
                 -0.05114316940307617,
@@ -12094,7 +12094,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 0.8840000629425049,
@@ -12124,7 +12124,7 @@
         },
         {
             "type": "move",
-            "description": "Move Дверь",
+            "description": "Move Dver",
             "elementIndex": 65,
             "posBefore": [
                 1.6349999904632569,
@@ -12165,7 +12165,7 @@
             "children": [
                 {
                     "type": "move",
-                    "description": "Move Ножка",
+                    "description": "Move Nozhka",
                     "elementIndex": 67,
                     "posBefore": [
                         0.3150000274181366,
@@ -12195,7 +12195,7 @@
                 },
                 {
                     "type": "resize",
-                    "description": "Resize Ножка",
+                    "description": "Resize Nozhka",
                     "elementIndex": 67,
                     "posBefore": [
                         1.0860000848770142,
@@ -12235,7 +12235,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 1.0860000848770142,
@@ -12265,7 +12265,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 0.5890000462532044,
@@ -12295,7 +12295,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 1.0700000524520875,
@@ -12325,7 +12325,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 1.1700000762939454,
@@ -12355,7 +12355,7 @@
         },
         {
             "type": "move",
-            "description": "Move Ножка",
+            "description": "Move Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 1.0700000524520875,
@@ -12385,7 +12385,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize Ножка",
+            "description": "Resize Nozhka",
             "elementIndex": 67,
             "posBefore": [
                 1.1776471138000489,
@@ -12423,7 +12423,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно",
+            "description": "Move Okno",
             "elementIndex": 66,
             "posBefore": [
                 -1.6350001096725464,
@@ -12453,7 +12453,7 @@
         },
         {
             "type": "move",
-            "description": "Move Окно",
+            "description": "Move Okno",
             "elementIndex": 66,
             "posBefore": [
                 -1.6350001096725464,

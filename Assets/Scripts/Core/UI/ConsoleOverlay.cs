@@ -70,7 +70,7 @@ namespace KitchenDesigner.Core.UI
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.BackQuote))
+            if (Input.GetKeyDown(KeyCode.BackQuote) && !CameraController.IsTypingInInputField())
             {
                 _root!.SetActive(!_root.activeSelf);
                 _dirty = true;

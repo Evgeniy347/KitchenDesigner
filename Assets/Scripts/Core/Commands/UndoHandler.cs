@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
         private void Update()
         {
             if (ElementMover.IsDragging) return;
+            // Ctrl+Z в поле ввода — это отмена НАБОРА, а не отмена действия сцены.
+            if (CameraController.IsTypingInInputField()) return;
             bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 
             if (ctrl && Input.GetKeyDown(KeyCode.Z))
