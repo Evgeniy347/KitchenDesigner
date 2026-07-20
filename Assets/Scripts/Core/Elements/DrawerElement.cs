@@ -264,7 +264,60 @@ namespace KitchenDesigner.Core
             }
             float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
             _t = Mathf.MoveTowards(_t, target, step);
+
+            if (_open && _t > 0f)
+            {
+                var exclude = new System.Collections.Generic.List<KitchenElement> { this };
+                var f = FindAttachedFacade();
+                if (f != null) exclude.Add(f);
+                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBounds, exclude);
+                if (safe < _t)
+                {
+                    _t = Mathf.Max(_t - step, safe);
+                    // Синхронизируем верхний ящик пары
+                    if (!_isUpperDrawer)
+                    {
+                        var pair = FindPairedDrawer();
+                        if (pair != null && pair._isUpperDrawer && pair._t > _t)
+                            pair._t = _t;
+                    }
+                }
+            }
+
             ApplyAnimPose();
+        }
+
+        /// <summary>Мировые границы ящика (AABB) при заданном прогрессе открывания [0..1],
+        /// включая прикреплённый фасад.</summary>
+        public (Vector3 min, Vector3 max) GetOpenBounds(float progress)
+        {
+            float eased = 0.5f * (1f - Mathf.Cos(Mathf.PI * progress));
+            Vector3 pos = _closedPos + _closedRot * Vector3.forward * (DrawerSlideMeters * eased);
+            Quaternion rot = _closedRot;
+
+            var scale = transform.localScale;
+            var half = scale * 0.5f;
+            var localCorners = new Vector3[]
+            {
+                new Vector3(-half.x, -half.y, -half.z), new Vector3( half.x, -half.y, -half.z),
+                new Vector3( half.x, -half.y,  half.z), new Vector3(-half.x, -half.y,  half.z),
+                new Vector3(-half.x,  half.y, -half.z), new Vector3( half.x,  half.y, -half.z),
+                new Vector3( half.x,  half.y,  half.z), new Vector3(-half.x,  half.y,  half.z),
+            };
+            var world = new Vector3[8];
+            for (int i = 0; i < 8; i++)
+                world[i] = pos + rot * localCorners[i];
+            var (min, max) = OpeningCollision.MinMax(world);
+
+            var f = FindAttachedFacade();
+            if (f != null)
+            {
+                var (fMin, fMax) = f.GetOpenBounds(progress);
+                min = Vector3.Min(min, fMin);
+                max = Vector3.Max(max, fMax);
+            }
+
+            return (min, max);
         }
 
         public void SetOpen(bool open)
