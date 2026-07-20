@@ -89,6 +89,7 @@ namespace KitchenDesigner.Core.MCP
                     case "simulate_move": return HandleSimulateMove(request);
                     case "simulate_resize": return HandleSimulateResize(request);
                     case "set_element_lock": return HandleSetElementLock(request);
+                    case "rename_element": return HandleRenameElement(request);
                     case "set_facade_mode": return HandleSetFacadeMode(request);
                     case "set_drawer_properties": return HandleSetDrawerProperties(request);
                     case "set_radial_shelf_properties": return HandleSetRadialShelfProperties(request);
@@ -2768,6 +2769,33 @@ namespace KitchenDesigner.Core.MCP
                 if (child.name == parts[index])
                     return FindDescendant(child, parts, index + 1);
             return null;
+        }
+
+        // ── rename_element ────────────────────────────────────────────
+        private McpResponse HandleRenameElement(McpRequest req)
+        {
+            var p = req.Params?.ToObject<ParamsRenameElement>();
+            if (p == null || string.IsNullOrEmpty(p.name))
+                return McpResponse.Error(req.id, -32602, "name required");
+            if (string.IsNullOrEmpty(p.new_name))
+                return McpResponse.Error(req.id, -32602, "new_name required");
+
+            var el = FindElementByName(p.name);
+            if (el == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.name}");
+
+            if (p.new_name == p.name)
+                return McpResponse.Result(req.id, new { ok = true, name = p.name, message = "Name unchanged (same as current)" });
+
+            var conflict = PartRegistry.All.FirstOrDefault(x => x != null && x != el && x.PartName == p.new_name);
+            if (conflict != null)
+                return McpResponse.Error(req.id, -1, $"Name '{p.new_name}' is already taken by another element");
+
+            var oldName = el.PartName;
+            el.PartName = p.new_name;
+            el.gameObject.name = p.new_name;
+
+            Debug.Log($"[MCP] Element renamed: '{oldName}' -> '{p.new_name}'");
+            return McpResponse.Result(req.id, new { ok = true, old_name = oldName, new_name = p.new_name });
         }
 
         private static KitchenElement? FindElementByName(string name)
