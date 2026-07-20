@@ -46,20 +46,27 @@ namespace KitchenDesigner.Core.UI
             _settingsPanel = gameObject.AddComponent<SettingsPanelUI>();
             _settingsPanel.Build(_canvas.transform);
 
-            _contextMenu = gameObject.AddComponent<ContextMenuUI>();
-            _contextMenu.Build(_canvas.transform);
-
-            _dayNightPanel = gameObject.AddComponent<DayNightPanelUI>();
-            _dayNightPanel.Build(_canvas.transform);
-
             var sidebar = gameObject.AddComponent<SidebarUI>();
             sidebar.Build(_canvas.transform);
 
+            // Слой перетаскиваемых окон: BringToFront поднимает окно в пределах
+            // слоя, поэтому тосты/баннеры/help, созданные после, всегда сверху.
+            var windowLayer = UIFactory.CreateRect("WindowLayer", _canvas.transform);
+            windowLayer.anchorMin = Vector2.zero;
+            windowLayer.anchorMax = Vector2.one;
+            windowLayer.offsetMin = windowLayer.offsetMax = Vector2.zero;
+
+            _contextMenu = gameObject.AddComponent<ContextMenuUI>();
+            _contextMenu.Build(windowLayer);
+
+            _dayNightPanel = gameObject.AddComponent<DayNightPanelUI>();
+            _dayNightPanel.Build(windowLayer);
+
             _groupMenu = gameObject.AddComponent<GroupMenuUI>();
-            _groupMenu.Build(_canvas.transform);
+            _groupMenu.Build(windowLayer);
 
             _hierarchyPanel = gameObject.AddComponent<HierarchyPanelUI>();
-            _hierarchyPanel.Build(_canvas.transform);
+            _hierarchyPanel.Build(windowLayer);
 
             var toast = gameObject.AddComponent<ToastNotification>();
             toast.Build(_canvas.transform);

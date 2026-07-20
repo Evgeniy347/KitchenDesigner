@@ -26,6 +26,7 @@ namespace KitchenDesigner.Core.UI
 
         private const float PanelW = 300f;
         private const float PanelH = 660f;
+        private const float MinPanelH = 160f;  // шапка + дропдаун + пара строк
         private const float TopOffset = 60f;   // под тулбаром
         private const float RowH = 24f;
         private const float RowStep = 26f;
@@ -79,6 +80,10 @@ namespace KitchenDesigner.Core.UI
             ddRt.anchoredPosition = new Vector2(0, -38);
 
             BuildScrollArea(panel.transform);
+
+            // После скролл-зоны — хэндл последним, чтобы нижние 10px панели
+            // ловили ресайз, а не клики по строкам списка.
+            WindowDrag.AttachResizeBottom(panel.rectTransform, MinPanelH);
 
             GroupManager.Changed += OnGroupsChanged;
             if (SelectionManager.Instance != null)
