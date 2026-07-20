@@ -183,7 +183,7 @@ namespace KitchenDesigner.Core.MCP.Contract
 
             // ── Settings / diagnostics / export ───────────────────────────────────
             new McpToolDef("set_setting", "Change a setting",
-                "Toggle one boolean project setting. name is one of: lower_near_walls | snap_enabled | grid_enabled | walls_enabled.",
+                "Toggle one boolean project setting. name is one of: lower_near_walls | snap_enabled | grid_enabled | walls_enabled | camera_pan_free.",
                 McpToolKind.Write, typeof(ParamsSetSetting)),
             new McpToolDef("set_snap_verbose", "Verbose snap log",
                 "Turn detailed snap logging in the Unity console on or off (debugging).",

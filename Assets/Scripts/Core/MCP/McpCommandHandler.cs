@@ -1648,7 +1648,8 @@ namespace KitchenDesigner.Core.MCP
                 blockOnViolation = s.BlockOnViolation,
                 autoSave = s.AutoSave,
                 autoSaveIntervalSec = s.AutoSaveInterval,
-                snapVerboseLog = SnapSystem.VerboseLog
+                snapVerboseLog = SnapSystem.VerboseLog,
+                cameraPanFree = s.CameraPanFree
             });
         }
 
@@ -1667,6 +1668,7 @@ namespace KitchenDesigner.Core.MCP
                 case "snap_enabled": s.SnapEnabled = p.value; break;
                 case "grid_enabled": s.GridEnabled = p.value; break;
                 case "walls_enabled": s.WallsEnabled = p.value; break;
+                case "camera_pan_free": s.CameraPanFree = p.value; break;
                 default:
                     return McpResponse.Error(req.id, -32602, $"Unknown setting: {p.name}");
             }

@@ -70,5 +70,6 @@ namespace KitchenDesigner.Core
         public bool edgeOutline;
         public bool wallsEnabled;
         public bool lowerNearWalls;
+        public bool cameraPanFree;
     }
 }

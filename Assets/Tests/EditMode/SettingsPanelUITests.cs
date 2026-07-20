@@ -225,7 +225,7 @@ public class SettingsPanelUITests
         {
             "Сетка", "Снэппинг", "Блокировать ошибки", "Автосохранение",
             "Пространственная сетка", "Контур (чёрные рёбра)",
-            "Стены", "Опускать ближние стены"
+            "Стены", "Опускать ближние стены", "Свободное панорамирование"
         };
 
         var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
@@ -259,6 +259,7 @@ public class SettingsPanelUITests
         AssertToggleValue(project, "Контур (чёрные рёбра)", s.EdgeOutline);
         AssertToggleValue(project, "Стены", s.WallsEnabled);
         AssertToggleValue(project, "Опускать ближние стены", s.LowerNearWalls);
+        AssertToggleValue(project, "Свободное панорамирование", s.CameraPanFree);
     }
 
     [Test]

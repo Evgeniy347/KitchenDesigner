@@ -122,10 +122,19 @@ namespace KitchenDesigner.Core
             if (_isPanning)
             {
                 Vector3 delta = Input.mousePosition - _lastMouse;
-                Vector3 forward = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.forward;
-                Vector3 right = Quaternion.Euler(0, _angleY, 0) * Vector3.right;
-                forward.y = 0; forward.Normalize();
-                _target -= (right * delta.x + forward * delta.y) * _panSpeed * (_distance * 0.1f);
+                if (KitchenSettings.Instance.CameraPanFree)
+                {
+                    Vector3 right = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.right;
+                    Vector3 up = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.up;
+                    _target -= (right * delta.x + up * delta.y) * _panSpeed * (_distance * 0.1f);
+                }
+                else
+                {
+                    Vector3 forward = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.forward;
+                    Vector3 right = Quaternion.Euler(0, _angleY, 0) * Vector3.right;
+                    forward.y = 0; forward.Normalize();
+                    _target -= (right * delta.x + forward * delta.y) * _panSpeed * (_distance * 0.1f);
+                }
                 _lastMouse = Input.mousePosition;
             }
 

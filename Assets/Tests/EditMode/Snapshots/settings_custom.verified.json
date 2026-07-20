@@ -10,5 +10,6 @@
     "windowedMode": false,
     "edgeOutline": true,
     "wallsHidden": true,
-    "lowerNearWalls": true
+    "lowerNearWalls": true,
+    "cameraPanFree": false
 }
