@@ -55,6 +55,7 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorTopRight(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(0, -TopOffset);
             _root = panel.gameObject;
+            WindowDrag.Attach(panel.rectTransform, 40f);
 
             UIFactory.CreateLabel("HierTitle", panel.transform, "Сцена", 20,
                 new Vector2(14, -6), new Vector2(120, 28), TextAnchor.MiddleLeft)

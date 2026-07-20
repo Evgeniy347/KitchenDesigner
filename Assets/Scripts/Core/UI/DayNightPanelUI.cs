@@ -30,6 +30,7 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorTopRight(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(-10, -60);
             _root = panel.gameObject;
+            WindowDrag.Attach(panel.rectTransform, 40f);
 
             UIFactory.CreateLabel("DnTitle", panel.transform, "День / Ночь", 20,
                 new Vector2(0, 104), new Vector2(280, 28), TextAnchor.MiddleCenter);
