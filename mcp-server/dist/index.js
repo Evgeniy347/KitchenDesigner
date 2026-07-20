@@ -284,24 +284,25 @@ IDENTITY:
 
 HOW TO EDIT (batch-first):
 1. READ:  get_elements {filter:"B4_*", summary:true} — targeted and compact.
-2. WRITE: batch_edit {ops:[...], dry_run:true} to preview, then without dry_run.
+2. WRITE: edit_elements {ops:[...], dry_run:true} to preview, then without dry_run.
    One op = name + any of x/y/z (m), width/height/depth (mm), rot_* (deg),
-   locked, material. The whole batch is atomic and is ONE undo step.
-   Single tools (move_element / resize_element / rotate_element) also work.
-3. CHECK: every mutation response already contains "violations" for the changed
-   element ([] = clean) and sceneViolationCount for the whole scene. If the
-   counter grew, get_violations {names?} shows details.
+   locked, material, facade gaps, mode, fill, drawer/table/pillar/window/door params.
+   The whole batch is atomic and is ONE undo step.
+3. CREATE: create_elements {items:[...]} — only sets name, type, position, size.
+   Use edit_elements to set all other properties afterwards.
+4. CHECK: every mutation response already contains "violations" for the changed
+   element ([] = clean) and sceneViolationCount for the whole scene.
 
 PLACEMENT WITHOUT MATH:
-- align_element — press a face flush against (or gap_mm away from) another board's face.
+- align_elements — press a face flush against (or gap_mm away from) another board's face.
 - get_free_space — the empty box between two boards (size, bounds, blockers).
-- clone_element — N copies with a step offset; distribute_evenly — equal spacing.
+- clone_elements — N copies with a step offset; distribute_evenly — equal spacing.
 
 SAFETY:
 - locked:true in element info means move/resize/delete are rejected. Unlock with
-  set_element_lock {locked:false} ONLY when the user explicitly allowed it.
-- Prefer the *_element tools over raw set_position / set_scale / delete_object.
-- delete_element, batch_edit and clone_element are undoable with undo.
+  edit_elements {locked:false} ONLY when the user explicitly allowed it.
+- Prefer edit_elements over raw set_position / set_scale / delete_object.
+- delete_elements, edit_elements and clone_elements are undoable.
 
 IF A CALL FAILS:
 - "Element not found" -> get_elements {filter:...} to find the exact name, retry.
