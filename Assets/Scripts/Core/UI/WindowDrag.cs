@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -20,6 +21,35 @@ namespace KitchenDesigner.Core.UI
             if (window.GetComponent<WindowScreenGuard>() == null)
                 window.gameObject.AddComponent<WindowScreenGuard>();
         }
+
+        /// <summary>Ресайз окна по высоте за нижний край: невидимая полоса-хэндл
+        /// плюс небольшой видимый грип по центру. Ширина окна не меняется,
+        /// содержимое пересчитывается якорями (stretch-зоны растягиваются).</summary>
+        public static void AttachResizeBottom(RectTransform window, float minHeight)
+        {
+            var handle = UIFactory.CreateRect("ResizeHandle", window);
+            handle.anchorMin = new Vector2(0, 0);
+            handle.anchorMax = new Vector2(1, 0);
+            handle.pivot = new Vector2(0.5f, 0);
+            handle.sizeDelta = new Vector2(0, 10f);
+            handle.anchoredPosition = Vector2.zero;
+
+            var img = handle.gameObject.AddComponent<Image>();
+            img.color = new Color(0, 0, 0, 0); // невидимая, но ловит raycast
+
+            // Видимый грип-полоска — подсказка, что за край можно тянуть.
+            var grip = UIFactory.CreatePanel("Grip", handle, new Vector2(0, 3f),
+                new Vector2(36f, 4f), UIFactory.ButtonColor);
+            grip.raycastTarget = false;
+            var gripRt = grip.rectTransform;
+            gripRt.anchorMin = gripRt.anchorMax = new Vector2(0.5f, 0);
+            gripRt.pivot = new Vector2(0.5f, 0);
+
+            handle.gameObject.AddComponent<WindowResizeHandle>().Init(window, minHeight);
+        }
+
+        /// <summary>Поднять окно поверх остальных окон своего слоя.</summary>
+        public static void BringToFront(RectTransform window) => window.SetAsLastSibling();
 
         /// <summary>Сдвинуть окно так, чтобы оно целиком помещалось в границы
         /// родителя (канваса). Если окно больше родителя, приоритет — левый
@@ -47,11 +77,33 @@ namespace KitchenDesigner.Core.UI
     /// экрана. Вешается на панель окна через WindowDrag.Attach.</summary>
     public class WindowDragHandle : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
+        private static readonly List<RaycastResult> RaycastBuffer = new List<RaycastResult>();
+
         private float _handleHeight;
         private Vector2 _grabOffset;
         private bool _dragging;
 
         public void Init(float handleHeight) => _handleHeight = handleHeight;
+
+        // Открытое окно — сразу на передний план.
+        private void OnEnable() => WindowDrag.BringToFront((RectTransform)transform);
+
+        // Любой клик по окну (включая кнопки/поля, съедающие события) поднимает
+        // его: raycast от курсора вручную, т.к. PointerDown до панели не всплывает,
+        // если его обработал дочерний контрол.
+        private void Update()
+        {
+            if (!Input.GetMouseButtonDown(0)) return;
+            var es = EventSystem.current;
+            if (es == null) return;
+
+            var ped = new PointerEventData(es) { position = Input.mousePosition };
+            RaycastBuffer.Clear();
+            es.RaycastAll(ped, RaycastBuffer);
+            if (RaycastBuffer.Count > 0 && RaycastBuffer[0].gameObject != null &&
+                RaycastBuffer[0].gameObject.transform.IsChildOf(transform))
+                WindowDrag.BringToFront((RectTransform)transform);
+        }
 
         public void OnBeginDrag(PointerEventData e)
         {
@@ -98,6 +150,68 @@ namespace KitchenDesigner.Core.UI
             if (_dragging)
                 WindowDrag.ClampToParent((RectTransform)transform);
             _dragging = false;
+        }
+    }
+
+    /// <summary>Хэндл нижнего края: тянет высоту окна (верх на месте — pivot
+    /// сверху), в пределах от minHeight до низа канваса. Вешается через
+    /// WindowDrag.AttachResizeBottom.</summary>
+    public class WindowResizeHandle : MonoBehaviour, IBeginDragHandler, IDragHandler
+    {
+        private RectTransform? _window;
+        private float _minHeight;
+        private float _startHeight;
+        private float _startPointerY;
+        private bool _dragging;
+
+        public void Init(RectTransform window, float minHeight)
+        {
+            _window = window;
+            _minHeight = minHeight;
+        }
+
+        /// <summary>Установить высоту окна с клампом [minHeight; до низа родителя].
+        /// Выделено в метод ради тестируемости и переиспользования.</summary>
+        public void ResizeTo(float height)
+        {
+            if (_window == null) return;
+            var parent = _window.parent as RectTransform;
+            float maxH = float.MaxValue;
+            if (parent != null)
+            {
+                // От текущего верха окна до нижней границы родителя.
+                var corners = new Vector3[4];
+                _window.GetWorldCorners(corners);
+                float top = ((Vector2)parent.InverseTransformPoint(corners[1])).y;
+                maxH = top - parent.rect.yMin;
+            }
+            float h = Mathf.Clamp(height, _minHeight, Mathf.Max(_minHeight, maxH));
+            _window.sizeDelta = new Vector2(_window.sizeDelta.x, h);
+        }
+
+        public void OnBeginDrag(PointerEventData e)
+        {
+            _dragging = false;
+            if (_window == null || e.button != PointerEventData.InputButton.Left) return;
+            var parent = _window.parent as RectTransform;
+            if (parent == null) return;
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    parent, e.position, e.pressEventCamera, out var p))
+            {
+                _startHeight = _window.sizeDelta.y;
+                _startPointerY = p.y;
+                _dragging = true;
+            }
+        }
+
+        public void OnDrag(PointerEventData e)
+        {
+            if (!_dragging || _window == null) return;
+            var parent = _window.parent as RectTransform;
+            if (parent == null) return;
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    parent, e.position, e.pressEventCamera, out var p))
+                ResizeTo(_startHeight + (_startPointerY - p.y)); // вниз = выше окно
         }
     }
 
