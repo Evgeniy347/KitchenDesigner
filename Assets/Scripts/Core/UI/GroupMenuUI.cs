@@ -27,6 +27,9 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(0, 40);
             _root = panel.gameObject;
+            // Полоса до низа заголовка «Группа»/«Связать выделенные?»; контролы,
+            // созданные позже, перекрывают её в raycast и остаются кликабельными.
+            WindowDrag.Attach(panel.rectTransform, 96f);
 
             _linkRoot = NewRoot(panel.transform);
             UIFactory.CreateLabel("GmLinkTitle", _linkRoot.transform, "Связать выделенные?", 18,
