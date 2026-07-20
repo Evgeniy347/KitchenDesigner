@@ -37,7 +37,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Батч-чтение: несколько элементов по именам и/или фильтру одним вызовом.</summary>
         private McpResponse HandleGetElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsGetElements>() ?? new ParamsGetElements();
+            var p = req.Params?.ToObjectStrict<ParamsGetElements>() ?? new ParamsGetElements();
             var all = PartRegistry.GetAll();
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
 
@@ -105,7 +105,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetElementDebug(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsNames>();
+            var p = req.Params?.ToObjectStrict<ParamsNames>();
             if (p == null || p.names == null || p.names.Length == 0)
                 return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
@@ -122,7 +122,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetElementGaps(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsNames>();
+            var p = req.Params?.ToObjectStrict<ParamsNames>();
             if (p == null || p.names == null || p.names.Length == 0)
                 return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
@@ -141,7 +141,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetViolations(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsGetViolations>();
+            var p = req.Params?.ToObjectStrict<ParamsGetViolations>();
             HashSet<string>? nameFilter = null;
             if (p?.names != null && p.names.Length > 0)
                 nameFilter = new HashSet<string>(p.names, StringComparer.OrdinalIgnoreCase);
@@ -237,7 +237,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Batch snap diagnose: for EACH given board explain why it does or does not snap.</summary>
         private McpResponse HandleSnapDiagnose(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsSnapDiagnose>();
+            var p = req.Params?.ToObjectStrict<ParamsSnapDiagnose>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -260,7 +260,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Свободный параллелепипед между двумя деталями + кто в него уже влез.</summary>
         private McpResponse HandleGetFreeSpace(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsGetFreeSpace>();
+            var p = req.Params?.ToObjectStrict<ParamsGetFreeSpace>();
             if (p == null || p.between == null || p.between.Length != 2)
                 return McpResponse.Error(req.id, -32602, "between: exactly 2 board names required");
 

@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleExportCsv(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsExportCsv>();
+            var p = req.Params?.ToObjectStrict<ParamsExportCsv>();
             if (p == null || string.IsNullOrEmpty(p.path))
                 return McpResponse.Error(req.id, -32602, "path required");
             var spec = SpecificationManager.Build(PartRegistry.GetAll());
@@ -38,7 +38,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleConsoleLogs(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsLogCount>();
+            var p = req.Params?.ToObjectStrict<ParamsLogCount>();
             int count = (p != null && p.count > 0) ? Mathf.Min(p.count, 200) : 50;
             var entries = ConsoleLogCapture.GetRecent(count);
             return McpResponse.Result(req.id, entries);
@@ -64,7 +64,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetSetting(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsSetSetting>();
+            var p = req.Params?.ToObjectStrict<ParamsSetSetting>();
             if (p == null || string.IsNullOrEmpty(p.name))
                 return McpResponse.Error(req.id, -32602, "name and value required");
 
@@ -88,7 +88,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetSnapVerbose(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsSetEnabled>();
+            var p = req.Params?.ToObjectStrict<ParamsSetEnabled>();
             if (p == null) return McpResponse.Error(req.id, -32602, "enabled required");
             SnapSystem.VerboseLog = p.enabled;
             Debug.Log($"[MCP] Snap verbose log: {p.enabled}");
@@ -109,7 +109,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleCycleDrawerAnimation(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsNames>();
+            var p = req.Params?.ToObjectStrict<ParamsNames>();
             if (p == null || p.names == null || p.names.Length == 0)
                 return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
