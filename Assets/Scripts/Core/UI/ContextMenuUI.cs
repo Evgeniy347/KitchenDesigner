@@ -1010,6 +1010,7 @@ namespace KitchenDesigner.Core.UI
                     pillar.MidHeightMM = ParseInt(_midHeight.text, pillar.MidHeightMM);
                     _midHeight.text = pillar.MidHeightMM.ToString();
                 }
+                _h!.text = pillar.TotalHeightMM.ToString();
             }
             else
             {
@@ -1096,7 +1097,7 @@ namespace KitchenDesigner.Core.UI
 
             var newDims = target.DimensionsMM;
             _w!.text = newDims.x.ToString();
-            _h!.text = newDims.y.ToString();
+            if (pillar == null) _h!.text = newDims.y.ToString();
             _d!.text = newDims.z.ToString();
             if (radial != null)
                 _radius!.text = radial.CornerRadius.ToString();
@@ -1152,7 +1153,16 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target is FacadeElement f)
             {
-                f.ToggleDoor();
+                var drawer = FindDrawerForFacade(f);
+                if (drawer != null)
+                {
+                    if (drawer.FindPaired() != null) drawer.CycleDoubleState();
+                    else drawer.ToggleOpen();
+                }
+                else
+                {
+                    f.ToggleDoor();
+                }
                 UpdateDoorButton(f);
             }
         }
@@ -1459,8 +1469,28 @@ namespace KitchenDesigner.Core.UI
 
         private void UpdateDoorButton(FacadeElement? facade)
         {
-            if (_doorButtonLabel != null)
-                _doorButtonLabel.text = (facade != null && facade.IsOpen) ? "Закрыть" : "Открыть";
+            if (_doorButtonLabel == null) return;
+            if (facade == null) { _doorButtonLabel.text = "Открыть"; return; }
+            var drawer = FindDrawerForFacade(facade);
+            if (drawer != null)
+            {
+                if (drawer.FindPaired() != null)
+                    _doorButtonLabel.text = DrawerConstants.GetCycleButtonLabel(drawer.DoubleState);
+                else
+                    _doorButtonLabel.text = drawer.IsOpen ? "Закрыть ящик" : "Открыть ящик";
+            }
+            else
+            {
+                _doorButtonLabel.text = facade.IsOpen ? "Закрыть" : "Открыть";
+            }
+        }
+
+        private static DrawerElement? FindDrawerForFacade(FacadeElement facade)
+        {
+            if (string.IsNullOrEmpty(facade.PartName)) return null;
+            foreach (var e in PartRegistry.GetAll())
+                if (e is DrawerElement d && d.AttachedFacadeName == facade.PartName) return d;
+            return null;
         }
 
         private void UpdateModeDropdown(FacadeElement? facade)
