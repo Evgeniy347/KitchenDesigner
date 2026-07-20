@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleModuleInfo(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsModules>();
+            var p = req.Params?.ToObjectStrict<ParamsModules>();
             if (p == null || p.modules == null || p.modules.Length == 0)
                 return McpResponse.Error(req.id, -32602, "modules required (non-empty array)");
 
@@ -38,7 +38,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleCreateModule(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsCreateModule>();
+            var p = req.Params?.ToObjectStrict<ParamsCreateModule>();
             if (p == null || p.members == null || p.members.Length < 2)
                 return McpResponse.Error(req.id, -32602, "members: at least 2 board names required");
 
@@ -63,7 +63,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleDissolveModule(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsModules>();
+            var p = req.Params?.ToObjectStrict<ParamsModules>();
             if (p == null || p.modules == null || p.modules.Length == 0)
                 return McpResponse.Error(req.id, -32602, "modules required (non-empty array)");
 
@@ -91,7 +91,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleAddToModule(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsModuleElements>();
+            var p = req.Params?.ToObjectStrict<ParamsModuleElements>();
             if (p == null || string.IsNullOrEmpty(p.module) || p.names == null || p.names.Length == 0)
                 return McpResponse.Error(req.id, -32602, "module and names (non-empty array) required");
             var g = FindModule(p.module);
@@ -117,7 +117,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleRemoveFromModule(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsNames>();
+            var p = req.Params?.ToObjectStrict<ParamsNames>();
             if (p == null || p.names == null || p.names.Length == 0)
                 return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
@@ -146,7 +146,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleEnterModuleEdit(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsModule>();
+            var p = req.Params?.ToObjectStrict<ParamsModule>();
             if (p == null || string.IsNullOrEmpty(p.module))
                 return McpResponse.Error(req.id, -32602, "module required");
             var g = FindModule(p.module);

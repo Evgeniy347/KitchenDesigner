@@ -153,7 +153,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": true,
             "isFacade": false,
             "isRadialShelf": false,
@@ -555,7 +555,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -823,7 +823,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -890,7 +890,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -957,7 +957,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1761,7 +1761,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1828,7 +1828,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -1895,7 +1895,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2096,7 +2096,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2163,7 +2163,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -2355,8 +2355,8 @@
             ],
             "position": [
                 1.4190000295639039,
-                1.3690000772476197,
-                -2.56600022315979
+                1.36899995803833,
+                -2.565999984741211
             ],
             "rotation": [
                 0.7071068286895752,
@@ -2364,7 +2364,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2436,7 +2436,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2508,7 +2508,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2575,7 +2575,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2642,7 +2642,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2766,7 +2766,7 @@
                 18
             ],
             "position": [
-                -0.12299996614456177,
+                -0.12300000339746475,
                 2.250999927520752,
                 -3.4539999961853029
             ],
@@ -2977,7 +2977,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -3044,7 +3044,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -3111,7 +3111,7 @@
                 0.0,
                 -4.371138828673793e-8
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -3183,7 +3183,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -3250,7 +3250,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -3317,7 +3317,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -3384,7 +3384,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -3568,7 +3568,7 @@
             "grooves": []
         },
         {
-            "name": "radial_shelf_upper_2",
+            "name": "radial_shelf_upper_3",
             "dimensionsMM": [
                 314,
                 18,
@@ -3576,7 +3576,7 @@
             ],
             "position": [
                 -0.9390000104904175,
-                1.809999942779541,
+                1.9570000171661378,
                 -3.444999933242798
             ],
             "rotation": [
@@ -3635,7 +3635,7 @@
             "grooves": []
         },
         {
-            "name": "radial_shelf_upper_3",
+            "name": "radial_shelf_upper_4",
             "dimensionsMM": [
                 314,
                 18,
@@ -4121,7 +4121,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -4255,7 +4255,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -4389,7 +4389,7 @@
                 0.0,
                 0.7071070075035095
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -4456,7 +4456,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -4523,7 +4523,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -4590,7 +4590,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -4657,7 +4657,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -4724,7 +4724,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -4791,7 +4791,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -4858,7 +4858,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -4925,7 +4925,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -4992,7 +4992,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -5059,7 +5059,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -5126,7 +5126,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -5193,7 +5193,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -5260,7 +5260,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -5327,7 +5327,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -5394,7 +5394,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -5528,7 +5528,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -5595,7 +5595,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -5662,7 +5662,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -5729,7 +5729,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -5796,7 +5796,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -5863,7 +5863,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -5930,7 +5930,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -5997,7 +5997,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -6064,7 +6064,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -6131,7 +6131,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -6198,7 +6198,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -6265,7 +6265,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": true,
             "isRadialShelf": false,
@@ -6323,7 +6323,7 @@
             ],
             "position": [
                 1.409000039100647,
-                2.010999917984009,
+                1.9570000171661378,
                 -2.565999984741211
             ],
             "rotation": [
@@ -6332,7 +6332,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -6382,7 +6382,7 @@
             "grooves": []
         },
         {
-            "name": "B12_upper_shelf",
+            "name": "B12_upper_shelf_2",
             "dimensionsMM": [
                 1040,
                 332,
@@ -6390,8 +6390,8 @@
             ],
             "position": [
                 1.065000057220459,
-                1.8100000619888306,
-                -3.454000473022461
+                1.6629999876022339,
+                -3.4539999961853029
             ],
             "rotation": [
                 0.7071068286895752,
@@ -6399,7 +6399,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -6449,15 +6449,15 @@
             "grooves": []
         },
         {
-            "name": "B34_upper_shelf",
+            "name": "B34_upper_shelf_1",
             "dimensionsMM": [
                 1264,
                 332,
                 18
             ],
             "position": [
-                -0.12300002574920654,
-                1.8100001811981202,
+                -0.12300000339746475,
+                1.9570000171661378,
                 -3.4539999961853029
             ],
             "rotation": [
@@ -6533,7 +6533,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -6600,7 +6600,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -6672,7 +6672,7 @@
                 0.0,
                 1.0
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -6739,7 +6739,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -6806,74 +6806,7 @@
                 -0.5,
                 0.5
             ],
-            "movable": true,
-            "isWall": false,
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "groupId": 0,
-            "materialId": "default",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": false,
-            "drawerType": 0,
-            "drawerNominalLength": 350,
-            "drawerColor": 0,
-            "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "isLightSource": false,
-            "isPanel": false,
-            "grooves": []
-        },
-        {
-            "name": "A34K1_upper_bottom_shelf",
-            "dimensionsMM": [
-                260,
-                561,
-                1
-            ],
-            "position": [
-                1.4010000228881837,
-                1.36899995803833,
-                -1.5635000467300416
-            ],
-            "rotation": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "movable": true,
+            "movable": false,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -6930,8 +6863,8 @@
                 18
             ],
             "position": [
-                1.4290000200271607,
-                1.6691317558288575,
+                1.409000039100647,
+                1.6629999876022339,
                 -2.565999984741211
             ],
             "rotation": [
@@ -6988,19 +6921,287 @@
             "isLightSource": false,
             "isPanel": false,
             "grooves": []
+        },
+        {
+            "name": "B12_upper_shelf_1",
+            "dimensionsMM": [
+                1040,
+                332,
+                18
+            ],
+            "position": [
+                1.065000057220459,
+                1.9570000171661378,
+                -3.4539999961853029
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "B34_upper_shelf_2",
+            "dimensionsMM": [
+                1264,
+                332,
+                18
+            ],
+            "position": [
+                -0.12300000339746475,
+                1.6629999876022339,
+                -3.4539999961853029
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "radial_shelf_upper_2",
+            "dimensionsMM": [
+                314,
+                18,
+                332
+            ],
+            "position": [
+                -0.9390000104904175,
+                1.6629999876022339,
+                -3.444999933242798
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": false,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": true,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 150,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "A12_upper_shelf_2_1",
+            "dimensionsMM": [
+                77,
+                1372,
+                16
+            ],
+            "position": [
+                1.5770000219345093,
+                1.5460000038146973,
+                -2.565999984741211
+            ],
+            "rotation": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "isPanel": false,
+            "grooves": []
         }
     ],
     "groups": [],
     "camera": {
         "valid": true,
-        "targetX": -0.6306912899017334,
-        "targetY": 1.3967678546905518,
-        "targetZ": -0.3039611577987671,
-        "angleX": 27.400230407714845,
-        "angleY": -5219.67236328125,
-        "distance": 2.8999996185302736
+        "targetX": 0.1238333135843277,
+        "targetY": -1.0231977701187134,
+        "targetZ": -5.553706645965576,
+        "angleX": 38.800323486328128,
+        "angleY": -4904.287109375,
+        "distance": 8.599994659423829
     },
-    "handleMode": "Move",
+    "handleMode": "Resize",
     "basePlateValid": true,
     "basePlate": {
         "name": "BasePlate",
@@ -7300,7 +7501,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize radial_shelf_upper_2",
+            "description": "Resize radial_shelf_upper_3",
             "elementIndex": 53,
             "posBefore": [
                 -0.9210000038146973,
@@ -7338,7 +7539,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize radial_shelf_upper_3",
+            "description": "Resize radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9210000038146973,
@@ -7406,7 +7607,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_2",
+            "description": "Move radial_shelf_upper_3",
             "elementIndex": 53,
             "posBefore": [
                 -0.9210000038146973,
@@ -7436,7 +7637,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_3",
+            "description": "Move radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9210000038146973,
@@ -7466,7 +7667,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_3",
+            "description": "Move radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9210000038146973,
@@ -7496,7 +7697,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_3",
+            "description": "Move radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9210000038146973,
@@ -7526,7 +7727,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_3",
+            "description": "Move radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9210000038146973,
@@ -7556,7 +7757,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize radial_shelf_upper_3",
+            "description": "Resize radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9210000038146973,
@@ -7700,7 +7901,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_2",
+            "description": "Move radial_shelf_upper_3",
             "elementIndex": 53,
             "posBefore": [
                 -0.9210000038146973,
@@ -7768,7 +7969,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize radial_shelf_upper_2",
+            "description": "Resize radial_shelf_upper_3",
             "elementIndex": 53,
             "posBefore": [
                 -0.9210000038146973,
@@ -7806,7 +8007,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize radial_shelf_upper_3",
+            "description": "Resize radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9210000038146973,
@@ -7874,7 +8075,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_2",
+            "description": "Move radial_shelf_upper_3",
             "elementIndex": 53,
             "posBefore": [
                 -0.9210000038146973,
@@ -7904,7 +8105,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_3",
+            "description": "Move radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9210000038146973,
@@ -8002,7 +8203,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_2",
+            "description": "Move radial_shelf_upper_3",
             "elementIndex": 53,
             "posBefore": [
                 -0.9210000038146973,
@@ -8032,7 +8233,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_3",
+            "description": "Move radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9210000038146973,
@@ -8130,7 +8331,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_3",
+            "description": "Move radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9390000104904175,
@@ -8160,7 +8361,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize radial_shelf_upper_3",
+            "description": "Resize radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9390000104904175,
@@ -8198,7 +8399,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_3",
+            "description": "Move radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9390000104904175,
@@ -8228,7 +8429,7 @@
         },
         {
             "type": "move",
-            "description": "Move radial_shelf_upper_3",
+            "description": "Move radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9300000071525574,
@@ -8258,7 +8459,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize radial_shelf_upper_3",
+            "description": "Resize radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9390000104904175,
@@ -8296,7 +8497,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize radial_shelf_upper_3",
+            "description": "Resize radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9390000104904175,
@@ -8334,7 +8535,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize radial_shelf_upper_3",
+            "description": "Resize radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9390000104904175,
@@ -8372,7 +8573,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize radial_shelf_upper_3",
+            "description": "Resize radial_shelf_upper_4",
             "elementIndex": 54,
             "posBefore": [
                 -0.9390000104904175,
@@ -19135,142 +19336,6 @@
             "children": []
         },
         {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.5190000534057618,
-                1.36899995803833,
-                -1.3014999628067017
-            ],
-            "posAfter": [
-                1.4190000295639039,
-                1.3510000705718995,
-                -1.561000108718872
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4190000295639039,
-                1.3510000705718995,
-                -1.561000108718872
-            ],
-            "posAfter": [
-                1.4190000295639039,
-                1.3509999513626099,
-                -1.5609999895095826
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                332,
-                436,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                436,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4190000295639039,
-                1.3509999513626099,
-                -1.5609999895095826
-            ],
-            "posAfter": [
-                1.4190000295639039,
-                1.3509999513626099,
-                -1.5609999895095826
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                436,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4190000295639039,
-                1.3509999513626099,
-                -1.5609999895095826
-            ],
-            "posAfter": [
-                1.3830000162124634,
-                1.3510000705718995,
-                -1.568000078201294
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
             "type": "resize",
             "description": "Resize A34K1_upper_bottom",
             "elementIndex": 44,
@@ -19306,584 +19371,6 @@
                 126,
                 18
             ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.3830000162124634,
-                1.3510000705718995,
-                -1.568000078201294
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3509999513626099,
-                -1.5815000534057618
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3509999513626099,
-                -1.5815000534057618
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.350000262260437,
-                -1.5470000505447388
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.350000262260437,
-                -1.5470000505447388
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.441638708114624,
-                -1.5470000505447388
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.441638708114624,
-                -1.5470000505447388
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.441638708114624,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.441638708114624,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.4288007020950318,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.4288007020950318,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.4424779415130616,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.4424779415130616,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.4424779415130616,
-                -1.5814999341964722
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.4424779415130616,
-                -1.5814999341964722
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3509999513626099,
-                -1.5814999341964722
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3509999513626099,
-                -1.5815000534057618
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.4372313022613526,
-                -1.5815000534057618
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.4372313022613526,
-                -1.5815000534057618
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.4372313022613526,
-                -1.5079998970031739
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.4372313022613526,
-                -1.5079998970031739
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5079998970031739
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5079998970031739
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.5821330547332764,
-                -1.5079998970031739
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.5821330547332764,
-                -1.5079998970031739
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.5821330547332764,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.5821330547332764,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.350000023841858,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.350000023841858,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.4314353466033936,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.4314353466033936,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.4314353466033936,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.4314353466033936,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.4474334716796876,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.4474334716796876,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
             "children": []
         },
         {
@@ -20152,7 +19639,7 @@
         },
         {
             "type": "move",
-            "description": "Move B12_upper_shelf",
+            "description": "Move B12_upper_shelf_2",
             "elementIndex": 95,
             "posBefore": [
                 1.5190000534057618,
@@ -20182,7 +19669,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize B12_upper_shelf",
+            "description": "Resize B12_upper_shelf_2",
             "elementIndex": 95,
             "posBefore": [
                 1.4190000295639039,
@@ -20220,7 +19707,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize B12_upper_shelf",
+            "description": "Resize B12_upper_shelf_2",
             "elementIndex": 95,
             "posBefore": [
                 1.4190000295639039,
@@ -20258,7 +19745,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize B12_upper_shelf",
+            "description": "Resize B12_upper_shelf_2",
             "elementIndex": 95,
             "posBefore": [
                 1.4190000295639039,
@@ -20296,7 +19783,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize B12_upper_shelf",
+            "description": "Resize B12_upper_shelf_2",
             "elementIndex": 95,
             "posBefore": [
                 1.4190000295639039,
@@ -20334,7 +19821,7 @@
         },
         {
             "type": "move",
-            "description": "Move B34_upper_shelf",
+            "description": "Move B34_upper_shelf_1",
             "elementIndex": 96,
             "posBefore": [
                 1.165000081062317,
@@ -20364,7 +19851,7 @@
         },
         {
             "type": "move",
-            "description": "Move B34_upper_shelf",
+            "description": "Move B34_upper_shelf_1",
             "elementIndex": 96,
             "posBefore": [
                 -0.01100003719329834,
@@ -20394,7 +19881,7 @@
         },
         {
             "type": "move",
-            "description": "Move B34_upper_shelf",
+            "description": "Move B34_upper_shelf_1",
             "elementIndex": 96,
             "posBefore": [
                 -0.01100003719329834,
@@ -20424,7 +19911,7 @@
         },
         {
             "type": "move",
-            "description": "Move B12_upper_shelf",
+            "description": "Move B12_upper_shelf_2",
             "elementIndex": 95,
             "posBefore": [
                 1.065000057220459,
@@ -20454,7 +19941,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize B34_upper_shelf",
+            "description": "Resize B34_upper_shelf_1",
             "elementIndex": 96,
             "posBefore": [
                 -0.01100003719329834,
@@ -20912,278 +20399,6 @@
             ],
             "dimsBefore": [],
             "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3600000143051148,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3600000143051148,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3600000143051148,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3600000143051148,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3600000143051148,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3600000143051148,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3600000143051148,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3600000143051148,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.350000023841858,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.350000023841858,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.350000023841858,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
             "children": []
         },
         {
@@ -21840,186 +21055,6 @@
         },
         {
             "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.350000262260437,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.564744234085083
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.3500001430511475,
-                -1.564744234085083
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.564744234085083
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.564744234085083
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
             "description": "Move A34K1_upper_side_inner",
             "elementIndex": 99,
             "posBefore": [
@@ -22788,44 +21823,6 @@
         },
         {
             "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
             "description": "Resize A34K1_upper_side_inner",
             "elementIndex": 99,
             "posBefore": [
@@ -23173,44 +22170,6 @@
             "children": []
         },
         {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
-            "children": []
-        },
-        {
             "type": "move",
             "description": "Move A34K1_upper_divider",
             "elementIndex": 100,
@@ -23242,120 +22201,6 @@
         },
         {
             "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_side_inner",
-            "elementIndex": 99,
-            "posBefore": [
-                1.4190000295639039,
-                1.3869999647140504,
-                -1.2740000486373902
-            ],
-            "posAfter": [
-                1.4190000295639039,
-                1.3869999647140504,
-                -1.2740000486373902
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                332,
-                126,
-                18
-            ],
-            "dimsAfter": [
-                332,
-                126,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
             "description": "Resize A34K1_upper_side_inner",
             "elementIndex": 99,
             "posBefore": [
@@ -23432,76 +22277,38 @@
         },
         {
             "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
+            "description": "Resize A34K1_upper_side_inner",
+            "elementIndex": 99,
             "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
+                1.4190000295639039,
+                1.3869999647140504,
+                -1.2740000486373902
             ],
             "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
+                1.4190000295639039,
+                1.3869999647140504,
+                -1.2740000486373902
             ],
             "rotBefore": [
-                0.7071068286895752,
                 0.0,
                 0.0,
-                0.7071068286895752
+                0.0,
+                1.0
             ],
             "rotAfter": [
-                0.7071068286895752,
                 0.0,
                 0.0,
-                0.7071068286895752
+                0.0,
+                1.0
             ],
             "dimsBefore": [
-                260,
-                561,
+                332,
+                126,
                 18
             ],
             "dimsAfter": [
-                260,
-                561,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
+                332,
+                126,
                 18
             ],
             "children": []
@@ -23652,44 +22459,6 @@
         },
         {
             "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
             "description": "Resize A34K1_upper_side_inner",
             "elementIndex": 99,
             "posBefore": [
@@ -23784,44 +22553,6 @@
             ],
             "dimsBefore": [],
             "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                18
-            ],
             "children": []
         },
         {
@@ -24051,36 +22782,6 @@
             "rotAfter": [
                 0.0,
                 0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
                 0.0,
                 0.7071068286895752
             ],
@@ -24459,36 +23160,6 @@
                 0.0,
                 0.0,
                 1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4550000429153443,
-                1.36899995803833,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.400999903678894,
-                1.36899995803833,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
             ],
             "dimsBefore": [],
             "dimsAfter": [],
@@ -24898,74 +23569,6 @@
                 54,
                 18
             ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.400999903678894,
-                1.36899995803833,
-                -1.5635000467300416
-            ],
-            "posAfter": [
-                1.4010000228881837,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                260,
-                561,
-                18
-            ],
-            "dimsAfter": [
-                260,
-                561,
-                1
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A34K1_upper_bottom_shelf",
-            "elementIndex": 102,
-            "posBefore": [
-                1.4010000228881837,
-                1.36899995803833,
-                -1.5640000104904175
-            ],
-            "posAfter": [
-                1.4010000228881837,
-                1.36899995803833,
-                -1.5635000467300416
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
             "children": []
         },
         {
@@ -26197,7 +24800,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_shelf_2",
-            "elementIndex": 103,
+            "elementIndex": 102,
             "posBefore": [
                 1.5090000629425049,
                 1.809999942779541,
@@ -26227,7 +24830,7 @@
         {
             "type": "move",
             "description": "Move A12_upper_shelf_2",
-            "elementIndex": 103,
+            "elementIndex": 102,
             "posBefore": [
                 1.4290000200271607,
                 1.809999942779541,
@@ -26434,6 +25037,985 @@
                 900,
                 332
             ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_shelf_2",
+            "elementIndex": 102,
+            "posBefore": [
+                1.4290000200271607,
+                1.6691317558288575,
+                -2.565999984741211
+            ],
+            "posAfter": [
+                1.4290000200271607,
+                1.6690000295639039,
+                -2.565999984741211
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                312,
+                1372,
+                18
+            ],
+            "dimsAfter": [
+                312,
+                1372,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_A_top",
+            "elementIndex": 36,
+            "posBefore": [
+                1.4190000295639039,
+                2.250999927520752,
+                -2.565999984741211
+            ],
+            "posAfter": [
+                1.4190000295639039,
+                2.250999927520752,
+                -2.565999984741211
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                332,
+                1372,
+                18
+            ],
+            "dimsAfter": [
+                332,
+                1372,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_A_bottom",
+            "elementIndex": 35,
+            "posBefore": [
+                1.4190000295639039,
+                1.3690000772476197,
+                -2.56600022315979
+            ],
+            "posAfter": [
+                1.4190000295639039,
+                1.36899995803833,
+                -2.565999984741211
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                332,
+                1372,
+                18
+            ],
+            "dimsAfter": [
+                332,
+                1372,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B12_upper_shelf_2",
+            "elementIndex": 95,
+            "posBefore": [
+                1.065000057220459,
+                1.8100000619888306,
+                -3.454000473022461
+            ],
+            "posAfter": [
+                1.065000057220459,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1040,
+                332,
+                18
+            ],
+            "dimsAfter": [
+                1040,
+                332,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "composite",
+            "description": "MCP distribute 4 elements",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "move",
+                    "description": "Move A12_upper_shelf_2",
+                    "elementIndex": 102,
+                    "posBefore": [
+                        1.4290000200271607,
+                        1.6690000295639039,
+                        -2.565999984741211
+                    ],
+                    "posAfter": [
+                        1.4290000200271607,
+                        1.6629999876022339,
+                        -2.565999984741211
+                    ],
+                    "rotBefore": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [],
+                    "dimsAfter": [],
+                    "children": []
+                },
+                {
+                    "type": "move",
+                    "description": "Move A12_upper_shelf_1",
+                    "elementIndex": 94,
+                    "posBefore": [
+                        1.409000039100647,
+                        2.010999917984009,
+                        -2.565999984741211
+                    ],
+                    "posAfter": [
+                        1.409000039100647,
+                        1.9570000171661378,
+                        -2.565999984741211
+                    ],
+                    "rotBefore": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [],
+                    "dimsAfter": [],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "composite",
+            "description": "MCP distribute 4 elements",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "move",
+                    "description": "Move B12_upper_shelf_2",
+                    "elementIndex": 95,
+                    "posBefore": [
+                        1.065000057220459,
+                        1.809999942779541,
+                        -3.4539999961853029
+                    ],
+                    "posAfter": [
+                        1.065000057220459,
+                        1.6629999876022339,
+                        -3.4539999961853029
+                    ],
+                    "rotBefore": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [],
+                    "dimsAfter": [],
+                    "children": []
+                },
+                {
+                    "type": "move",
+                    "description": "Move B12_upper_shelf_1",
+                    "elementIndex": 103,
+                    "posBefore": [
+                        1.065000057220459,
+                        1.809999942779541,
+                        -3.4539999961853029
+                    ],
+                    "posAfter": [
+                        1.065000057220459,
+                        1.9570000171661378,
+                        -3.4539999961853029
+                    ],
+                    "rotBefore": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [],
+                    "dimsAfter": [],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "resize",
+            "description": "Resize B34_upper_shelf_1",
+            "elementIndex": 96,
+            "posBefore": [
+                -0.12300002574920654,
+                1.8100001811981202,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.12300000339746475,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1264,
+                332,
+                18
+            ],
+            "dimsAfter": [
+                1264,
+                332,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B12_upper_shelf_2",
+            "elementIndex": 95,
+            "posBefore": [
+                1.065000057220459,
+                1.6629999876022339,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                1.065000057220459,
+                1.6629999876022339,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1040,
+                332,
+                18
+            ],
+            "dimsAfter": [
+                1040,
+                332,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B34_upper_shelf_1",
+            "elementIndex": 96,
+            "posBefore": [
+                -0.12300000339746475,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.12300000339746475,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1264,
+                332,
+                18
+            ],
+            "dimsAfter": [
+                1264,
+                332,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "composite",
+            "description": "MCP distribute 4 elements",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "move",
+                    "description": "Move B34_upper_shelf_2",
+                    "elementIndex": 104,
+                    "posBefore": [
+                        -0.12300000339746475,
+                        1.809999942779541,
+                        -3.4539999961853029
+                    ],
+                    "posAfter": [
+                        -0.12300000339746475,
+                        1.6629999876022339,
+                        -3.4539999961853029
+                    ],
+                    "rotBefore": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [],
+                    "dimsAfter": [],
+                    "children": []
+                },
+                {
+                    "type": "move",
+                    "description": "Move B34_upper_shelf_1",
+                    "elementIndex": 96,
+                    "posBefore": [
+                        -0.12300000339746475,
+                        1.809999942779541,
+                        -3.4539999961853029
+                    ],
+                    "posAfter": [
+                        -0.12300000339746475,
+                        1.9570000171661378,
+                        -3.4539999961853029
+                    ],
+                    "rotBefore": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.7071068286895752,
+                        0.0,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [],
+                    "dimsAfter": [],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "resize",
+            "description": "Resize radial_shelf_upper_3",
+            "elementIndex": 53,
+            "posBefore": [
+                -0.9390000104904175,
+                1.809999942779541,
+                -3.444999933242798
+            ],
+            "posAfter": [
+                -0.9390000104904175,
+                1.809999942779541,
+                -3.444999933242798
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                314,
+                18,
+                332
+            ],
+            "dimsAfter": [
+                314,
+                18,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "composite",
+            "description": "MCP distribute 4 elements",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "move",
+                    "description": "Move radial_shelf_upper_2",
+                    "elementIndex": 105,
+                    "posBefore": [
+                        -0.9390000104904175,
+                        1.809999942779541,
+                        -3.444999933242798
+                    ],
+                    "posAfter": [
+                        -0.9390000104904175,
+                        1.6629999876022339,
+                        -3.444999933242798
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        -0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        -0.7071068286895752
+                    ],
+                    "dimsBefore": [],
+                    "dimsAfter": [],
+                    "children": []
+                },
+                {
+                    "type": "move",
+                    "description": "Move radial_shelf_upper_3",
+                    "elementIndex": 53,
+                    "posBefore": [
+                        -0.9390000104904175,
+                        1.809999942779541,
+                        -3.444999933242798
+                    ],
+                    "posAfter": [
+                        -0.9390000104904175,
+                        1.9570000171661378,
+                        -3.444999933242798
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        -0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        -0.7071068286895752
+                    ],
+                    "dimsBefore": [],
+                    "dimsAfter": [],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "resize",
+            "description": "Resize B34_upper_top",
+            "elementIndex": 41,
+            "posBefore": [
+                -0.12299996614456177,
+                2.250999927520752,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.12300000339746475,
+                2.250999927520752,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1264,
+                332,
+                18
+            ],
+            "dimsAfter": [
+                1264,
+                332,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B34_upper_side_L",
+            "elementIndex": 42,
+            "posBefore": [
+                -0.7639999985694885,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                -0.7639999985694885,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                18,
+                900,
+                332
+            ],
+            "dimsAfter": [
+                18,
+                900,
+                332
+            ],
+            "children": []
+        },
+        {
+            "type": "composite",
+            "description": "MCP edit_elements (1 ops)",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize B34_upper_side_L",
+                    "elementIndex": 42,
+                    "posBefore": [
+                        -0.7639999985694885,
+                        1.809999942779541,
+                        -3.4539999961853029
+                    ],
+                    "posAfter": [
+                        -0.7639999985694885,
+                        1.809999942779541,
+                        -3.4539999961853029
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        18,
+                        900,
+                        332
+                    ],
+                    "dimsAfter": [
+                        18,
+                        900,
+                        332
+                    ],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2",
+            "elementIndex": 102,
+            "posBefore": [
+                1.4290000200271607,
+                1.6629999876022339,
+                -2.565999984741211
+            ],
+            "posAfter": [
+                1.409000039100647,
+                1.6629999876022339,
+                -2.565999984741211
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2_1",
+            "elementIndex": 106,
+            "posBefore": [
+                1.5090000629425049,
+                1.6629999876022339,
+                -2.565999984741211
+            ],
+            "posAfter": [
+                1.5090000629425049,
+                1.6629999876022339,
+                -2.565999984741211
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2_1",
+            "elementIndex": 106,
+            "posBefore": [
+                1.5090000629425049,
+                1.6629999876022339,
+                -2.565999984741211
+            ],
+            "posAfter": [
+                1.5779999494552613,
+                1.6629999876022339,
+                -2.565999984741211
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_shelf_2_1",
+            "elementIndex": 106,
+            "posBefore": [
+                1.5779999494552613,
+                1.6629999876022339,
+                -2.565999984741211
+            ],
+            "posAfter": [
+                1.5779999494552613,
+                1.5455000400543213,
+                -2.565999984741211
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "dimsBefore": [
+                312,
+                1372,
+                18
+            ],
+            "dimsAfter": [
+                77,
+                1372,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2_1",
+            "elementIndex": 106,
+            "posBefore": [
+                1.5779999494552613,
+                1.5455000400543213,
+                -2.565999984741211
+            ],
+            "posAfter": [
+                1.5740000009536744,
+                1.5455000400543213,
+                -2.565999984741211
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2_1",
+            "elementIndex": 106,
+            "posBefore": [
+                1.5740000009536744,
+                1.5455000400543213,
+                -2.565999984741211
+            ],
+            "posAfter": [
+                1.5760000944137574,
+                1.5455000400543213,
+                -2.565999984741211
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_shelf_2_1",
+            "elementIndex": 106,
+            "posBefore": [
+                1.5760000944137574,
+                1.5455000400543213,
+                -2.565999984741211
+            ],
+            "posAfter": [
+                1.5759999752044678,
+                1.5460000038146973,
+                -2.565999984741211
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "dimsBefore": [
+                77,
+                1372,
+                18
+            ],
+            "dimsAfter": [
+                77,
+                1372,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2_1",
+            "elementIndex": 106,
+            "posBefore": [
+                1.5759999752044678,
+                1.5460000038146973,
+                -2.565999984741211
+            ],
+            "posAfter": [
+                1.5770000219345093,
+                1.5460000038146973,
+                -2.565999984741211
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
             "children": []
         }
     ],

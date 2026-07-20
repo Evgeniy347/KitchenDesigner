@@ -5,10 +5,6 @@ using KitchenServer.Web.Services;
 
 namespace KitchenServer.Tests;
 
-/// <summary>
-/// The server's real-MCP surface: tools/list built from the shared contract, the
-/// JSON-schema/rename derivation, and the auth-first gate wording.
-/// </summary>
 public class ServerMcpToolsTests
 {
     [Fact]
@@ -23,7 +19,6 @@ public class ServerMcpToolsTests
         foreach (var name in expected)
             Assert.Contains(name, names);
 
-        // Static-only tools (guide) are NOT exposed on the server.
         Assert.DoesNotContain("guide", names);
     }
 
@@ -48,9 +43,9 @@ public class ServerMcpToolsTests
     }
 
     [Fact]
-    public void Schema_MoveElement_HasCoordsAndRequiresName()
+    public void Schema_EditOp_HasCoordsAndRequiresName()
     {
-        var schema = McpJsonSchema.BuildInputSchema(typeof(ParamsMoveElement));
+        var schema = McpJsonSchema.BuildInputSchema(typeof(EditOp));
         var props = schema.GetProperty("properties");
 
         Assert.Equal("string", props.GetProperty("name").GetProperty("type").GetString());
@@ -58,30 +53,32 @@ public class ServerMcpToolsTests
 
         var required = schema.GetProperty("required").EnumerateArray().Select(e => e.GetString()).ToList();
         Assert.Contains("name", required);
-        Assert.DoesNotContain("x", required); // optional axis
+        Assert.DoesNotContain("x", required);
     }
 
     [Fact]
-    public void Schema_CreateElement_RenamesGapsAndHidesTemplateName()
+    public void Schema_CreateItem_HasRequiredNameAndOptionalGeometry()
     {
-        var schema = McpJsonSchema.BuildInputSchema(typeof(ParamsCreateElement));
+        var schema = McpJsonSchema.BuildInputSchema(typeof(CreateItem));
         var props = schema.GetProperty("properties");
 
-        // Agent sees snake_case gap_* names, never the wire fields or template_name.
-        Assert.True(props.TryGetProperty("gap_left", out _));
-        Assert.False(props.TryGetProperty("gapLeft", out _));
-        Assert.False(props.TryGetProperty("template_name", out _));
+        Assert.True(props.TryGetProperty("name", out _));
+        Assert.Equal("string", props.GetProperty("name").GetProperty("type").GetString());
 
-        var rename = McpJsonSchema.BuildRenameMap(typeof(ParamsCreateElement));
-        Assert.NotNull(rename);
-        Assert.Equal("gapLeft", rename!["gap_left"]);
-        Assert.Equal("gapBottom", rename["gap_bottom"]);
+        Assert.True(props.TryGetProperty("type", out _));
+        Assert.True(props.TryGetProperty("x", out _));
+        Assert.True(props.TryGetProperty("width", out _));
+
+        // name is required, geometry is optional
+        var required = schema.GetProperty("required").EnumerateArray().Select(e => e.GetString()).ToList();
+        Assert.Contains("name", required);
+        Assert.DoesNotContain("x", required);
     }
 
     [Fact]
-    public void Schema_SetFacadeMode_ExposesModeEnum()
+    public void Schema_EditOp_ExposesModeEnum()
     {
-        var schema = McpJsonSchema.BuildInputSchema(typeof(ParamsSetFacadeMode));
+        var schema = McpJsonSchema.BuildInputSchema(typeof(EditOp));
         var mode = schema.GetProperty("properties").GetProperty("mode");
         var values = mode.GetProperty("enum").EnumerateArray().Select(e => e.GetString()).ToList();
 
@@ -97,7 +94,6 @@ public class ServerMcpToolsTests
         Assert.Equal(tools.Count, tools.Select(t => t.Name).Distinct().Count());
         Assert.All(tools, t => Assert.False(string.IsNullOrWhiteSpace(t.Description)));
 
-        // Every non-static tool's schema builds without throwing.
         foreach (var t in tools.Where(t => !t.StaticText))
             _ = McpJsonSchema.BuildInputSchema(t.ParamsType);
     }

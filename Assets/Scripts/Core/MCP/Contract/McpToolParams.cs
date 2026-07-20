@@ -116,8 +116,11 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Target Y in METERS. Omit to keep.")] public float? y;
         [McpParam("Target Z in METERS. Omit to keep.")] public float? z;
         [McpParam("New width (X) in MM. Omit to keep. Rejected for drawers (their size is parametric).", Min = 1)] public int? width;
+        [McpIgnore] public int? dimX;
         [McpParam("New height (Y) in MM. Omit to keep. Rejected for drawers.", Min = 1)] public int? height;
+        [McpIgnore] public int? dimY;
         [McpParam("New depth/thickness (Z) in MM. Omit to keep. Rejected for drawers.", Min = 1)] public int? depth;
+        [McpIgnore] public int? dimZ;
         [McpParam("Rotation around X in DEGREES. Omit to keep.")] public float? rot_x;
         [McpParam("Rotation around Y in DEGREES. Omit to keep.")] public float? rot_y;
         [McpParam("Rotation around Z in DEGREES. Omit to keep.")] public float? rot_z;

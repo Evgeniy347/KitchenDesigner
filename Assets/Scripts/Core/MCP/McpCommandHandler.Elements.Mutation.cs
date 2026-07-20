@@ -342,7 +342,7 @@ namespace KitchenDesigner.Core.MCP
         /// применить, посчитать нарушения по каждому op и откатить.</summary>
         private McpResponse HandleEditElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsEditElements>();
+            var p = req.Params?.ToObjectStrict<ParamsEditElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -396,7 +396,7 @@ namespace KitchenDesigner.Core.MCP
                     : rotBefore;
                 if (hasDims)
                 {
-                    var dimsAfter = ResolveDims(op.width, op.height, op.depth, null, null, null, el.DimensionsMM);
+                    var dimsAfter = ResolveDims(op.width, op.height, op.depth, op.dimX, op.dimY, op.dimZ, el.DimensionsMM);
                     commands.Add(new ResizeCommand(el, el.DimensionsMM, dimsAfter, posBefore, posAfter, rotBefore, rotAfter));
                 }
                 else commands.Add(new MoveCommand(el, posBefore, posAfter, rotBefore, rotAfter));
@@ -420,7 +420,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Batch clone: atomically clone one or MANY elements. Whole batch is ONE undo step.</summary>
         private McpResponse HandleCloneElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsCloneElements>();
+            var p = req.Params?.ToObjectStrict<ParamsCloneElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -466,7 +466,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Batch align: move boards face-to-face against targets. Applied IN ORDER. Whole batch is ONE undo step.</summary>
         private McpResponse HandleAlignElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsAlignElements>();
+            var p = req.Params?.ToObjectStrict<ParamsAlignElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -525,7 +525,7 @@ namespace KitchenDesigner.Core.MCP
         /// середина двигается. Один шаг undo.</summary>
         private McpResponse HandleDistributeEvenly(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsDistributeEvenly>();
+            var p = req.Params?.ToObjectStrict<ParamsDistributeEvenly>();
             if (p == null || p.names == null || p.names.Length < 3)
                 return McpResponse.Error(req.id, -32602, "names: at least 3 board names required");
             int axis = p.axis == "x" ? 0 : p.axis == "y" ? 1 : p.axis == "z" ? 2 : -1;
@@ -590,7 +590,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Batch create: atomically create one or MANY elements. Whole batch is ONE undo step.</summary>
         private McpResponse HandleCreateElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsCreateElements>();
+            var p = req.Params?.ToObjectStrict<ParamsCreateElements>();
             if (p == null || p.items == null || p.items.Length == 0)
                 return McpResponse.Error(req.id, -32602, "items required (non-empty array)");
 
@@ -693,7 +693,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Batch convert: change type of one or MANY elements. Atomic. NOT undoable.</summary>
         private McpResponse HandleConvertElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsConvertElements>();
+            var p = req.Params?.ToObjectStrict<ParamsConvertElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -729,7 +729,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Batch delete: atomically delete one or MANY elements. Whole batch is ONE undo step.</summary>
         private McpResponse HandleDeleteElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsNames>();
+            var p = req.Params?.ToObjectStrict<ParamsNames>();
             if (p == null || p.names == null || p.names.Length == 0)
                 return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
@@ -758,7 +758,7 @@ namespace KitchenDesigner.Core.MCP
         /// <summary>Batch select: highlight one or MANY elements (visual only).</summary>
         private McpResponse HandleSelectElements(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsNames>();
+            var p = req.Params?.ToObjectStrict<ParamsNames>();
             if (p == null || p.names == null || p.names.Length == 0)
                 return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
@@ -784,7 +784,7 @@ namespace KitchenDesigner.Core.MCP
             if (plate == null || plate.Element == null)
                 return McpResponse.Error(req.id, -1, "Floor not found");
 
-            var p = req.Params?.ToObject<ParamsResizeFloor>();
+            var p = req.Params?.ToObjectStrict<ParamsResizeFloor>();
             if (p == null)
                 return McpResponse.Error(req.id, -32602, "invalid parameters");
 

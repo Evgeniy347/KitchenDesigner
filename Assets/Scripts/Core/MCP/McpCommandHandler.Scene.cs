@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleFindObjects(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsFindObjects>();
+            var p = req.Params?.ToObjectStrict<ParamsFindObjects>();
             if (p == null || string.IsNullOrEmpty(p.name_filter))
                 return McpResponse.Error(req.id, -32602, "name_filter required");
 
@@ -58,7 +58,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleGetObjectInfo(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsObjectPaths>();
+            var p = req.Params?.ToObjectStrict<ParamsObjectPaths>();
             if (p == null || p.object_paths == null || p.object_paths.Length == 0)
                 return McpResponse.Error(req.id, -32602, "object_paths required (non-empty array)");
 
@@ -91,7 +91,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetActive(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsSetActiveOps>();
+            var p = req.Params?.ToObjectStrict<ParamsSetActiveOps>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -114,7 +114,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleDeleteObject(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsObjectPaths>();
+            var p = req.Params?.ToObjectStrict<ParamsObjectPaths>();
             if (p == null || p.object_paths == null || p.object_paths.Length == 0)
                 return McpResponse.Error(req.id, -32602, "object_paths required (non-empty array)");
 
@@ -141,7 +141,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetPosition(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsTransformOps>();
+            var p = req.Params?.ToObjectStrict<ParamsTransformOps>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -165,7 +165,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetRotation(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsTransformOps>();
+            var p = req.Params?.ToObjectStrict<ParamsTransformOps>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -189,7 +189,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetScale(McpRequest req)
         {
-            var p = req.Params?.ToObject<ParamsTransformOps>();
+            var p = req.Params?.ToObjectStrict<ParamsTransformOps>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -214,7 +214,7 @@ namespace KitchenDesigner.Core.MCP
         private McpResponse HandleExecuteMenuItem(McpRequest req)
         {
 #if UNITY_EDITOR
-            var p = req.Params?.ToObject<ParamsMenuPath>();
+            var p = req.Params?.ToObjectStrict<ParamsMenuPath>();
             if (p == null || string.IsNullOrEmpty(p.menu_path))
                 return McpResponse.Error(req.id, -32602, "menu_path required");
             var result = EditorApplication.ExecuteMenuItem(p.menu_path);
