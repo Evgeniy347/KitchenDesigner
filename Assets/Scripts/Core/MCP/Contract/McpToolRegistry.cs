@@ -85,9 +85,6 @@ namespace KitchenDesigner.Core.MCP.Contract
             new McpToolDef("select_elements", "Select elements (batch)",
                 "Select and highlight one or MANY boards in the app (visual only, no geometry change).",
                 McpToolKind.Write, typeof(ParamsNames)),
-            new McpToolDef("rename_elements", "Rename elements (batch)",
-                "Rename one or MANY elements. Ops apply in order; every new name must be unique among all elements. Corresponding GameObjects are renamed too. Atomic.",
-                McpToolKind.Write, typeof(ParamsRenameElements)),
             new McpToolDef("cycle_drawer_animation", "Open / close drawers (batch)",
                 "Animate GTV drawers: a single drawer toggles open/closed; a double drawer cycles Closed -> BothOpen -> LowerOnly -> Closed (its paired drawer and attached facades move in sync). Returns isOpen and doubleState per drawer.",
                 McpToolKind.Write, typeof(ParamsNames)),
@@ -97,23 +94,9 @@ namespace KitchenDesigner.Core.MCP.Contract
             new McpToolDef("reload_textures", "Reload external textures",
                 "Re-scan the external textures folder (<app>/Resources/Textures) and refresh the decor catalog WITHOUT restarting the app. Drop new image files there (named '<name>_<widthMM>_<heightMM>.jpg' to set tile size), then call this. Returns how many were loaded and the folder path.",
                 McpToolKind.Write, null),
-            new McpToolDef("add_wall_component", "Make elements walls (batch)",
-                "Turn one or MANY existing boards into walls (structural anchors). No-op for boards that already are walls.",
-                McpToolKind.Write, typeof(ParamsNames)),
             new McpToolDef("resize_floor", "Resize floor",
                 "Set the floor plate size in MILLIMETERS (the floor is a scene singleton). Undoable.",
                 McpToolKind.Write, typeof(ParamsResizeFloor)),
-
-            // ── Undo / redo ───────────────────────────────────────────────────────
-            new McpToolDef("undo", "Undo",
-                "Undo the last edit (a whole batch reverts as one step). Returns ok:false if there is nothing to undo.",
-                McpToolKind.Write, null),
-            new McpToolDef("redo", "Redo",
-                "Redo the last undone edit.",
-                McpToolKind.Write, null),
-            new McpToolDef("get_undo_stack_info", "Undo stack info",
-                "Whether undo/redo are available and a description of the next undo.",
-                McpToolKind.Read, null),
 
             // ── Modules (named groups of boards) ──────────────────────────────────
             new McpToolDef("get_modules", "List modules",
