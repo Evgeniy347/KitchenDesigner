@@ -18,6 +18,11 @@ namespace KitchenDesigner.Core
         private bool _wasMoved;
         private bool _wasShift;
         private float _vOffset;
+        // Текущая «удерживаемая» высота при горизонтальном перетаскивании.
+        // Берётся из старта (и из Shift-подъёма), а НЕ из позиции прошлого кадра:
+        // иначе Y прошлого снэпа заново округлялся сеткой каждый кадр (шаг 18 мм),
+        // контакт с полом рвался, и снэп чинил вертикаль вместо прилипания к соседу.
+        private float _dragY;
         private AxisLock _axisLock = AxisLock.None;
         private Wall? _dragWall;
         private bool _targetIsWallOpening;
@@ -136,6 +141,7 @@ namespace KitchenDesigner.Core
             // Стартовая точка и offset пересчитываются на ПОЛНОЙ геометрии (BuildMoveSet
             // мог вернуть опущенную стену на полную высоту → позиция изменилась).
             _startPosition = _target.transform.position;
+            _dragY = _startPosition.y;
             RecomputeOffset();
             SaveDragMaterial(); // зелёная/красная тонировка появляется только здесь
         }
@@ -332,6 +338,7 @@ namespace KitchenDesigner.Core
                     float y = ray.GetPoint(enter).y + _vOffset;
                     Vector3 t = new Vector3(_target.transform.position.x, y, _target.transform.position.z);
                     newPos = new Vector3(t.x, GridManager.SnapToGrid(t).y, t.z);
+                    _dragY = newPos.y; // после Shift-подъёма горизонтальный drag держит новую высоту
                     computed = true;
                 }
             }
@@ -343,8 +350,17 @@ namespace KitchenDesigner.Core
                 {
                     Vector3 point = ray.GetPoint(enter) + _offset;
                     if (!_targetIsWallOpening)
-                        point.y = _target.transform.position.y;
-                    newPos = GridManager.SnapToGrid(point);
+                    {
+                        // Горизонтальный drag: высота фиксирована (_dragY), сетка
+                        // применяется только к X/Z. Округление Y здесь ломало бы
+                        // контакт с полом каждый кадр (см. комментарий у _dragY).
+                        point.y = _dragY;
+                        newPos = GridManager.SnapToGridXZ(point);
+                    }
+                    else
+                    {
+                        newPos = GridManager.SnapToGrid(point);
+                    }
                     computed = true;
                 }
             }
@@ -355,8 +371,8 @@ namespace KitchenDesigner.Core
 
             if (Input.GetKeyDown(KeyCode.X)) _axisLock = _axisLock == AxisLock.X ? AxisLock.None : AxisLock.X;
             if (Input.GetKeyDown(KeyCode.Z)) _axisLock = _axisLock == AxisLock.Z ? AxisLock.None : AxisLock.Z;
-            if (_axisLock == AxisLock.X) { newPos.z = _startPosition.z; if (!_targetIsWallOpening) newPos.y = _startPosition.y; }
-            else if (_axisLock == AxisLock.Z) { newPos.x = _startPosition.x; if (!_targetIsWallOpening) newPos.y = _startPosition.y; }
+            if (_axisLock == AxisLock.X) { newPos.z = _startPosition.z; if (!_targetIsWallOpening) newPos.y = _dragY; }
+            else if (_axisLock == AxisLock.Z) { newPos.x = _startPosition.x; if (!_targetIsWallOpening) newPos.y = _dragY; }
 
             var others = PartRegistry.GetAll();
             if (_moveSet.Count > 1) others.RemoveAll(e => _moveSet.Contains(e));
@@ -370,11 +386,15 @@ namespace KitchenDesigner.Core
             if (_moveSet.Count > 1)
                 ApplyDelta(_moveSet, _moveStart, _target.transform.position - _startPosition);
 
-            // Ghost-preview: полупрозрачная деталь в позиции снэпа.
-            if (snap.snapped && snap.position != _target.transform.position)
+            // Ghost-preview: деталь стоит в позиции снэпа, а полупрозрачный призрак
+            // показывает «свободную» позицию под курсором — видно, что и куда
+            // притянуло. Сравнивать надо именно snap.position с newPos: старое
+            // сравнение с transform.position всегда было ложным (позиция уже
+            // установлена в snap.position строкой выше) — призрак не появлялся никогда.
+            if (snap.snapped && (snap.position - newPos).sqrMagnitude > Tolerance.EpsilonSqr)
             {
                 _showGhost = true;
-                _ghostPosition = snap.position;
+                _ghostPosition = newPos;
                 _ghostRotation = _target.transform.rotation;
                 if (_ghostMesh == null)
                 {
@@ -467,7 +487,10 @@ namespace KitchenDesigner.Core
 			}
 			if (bestAbove == null) return;
 			float gapUnits = bestAboveBottom - pillarBottomY;
-			int gapMM = Mathf.RoundToInt(gapUnits / toU);
+			// Округление ВНИЗ (с допуском на float-шум): RoundToInt мог удлинить
+			// пилон на ≤0.5 мм СКВОЗЬ деталь сверху — невидимое пересечение,
+			// красная подсветка и откат всего перемещения при BlockOnViolation.
+			int gapMM = Mathf.FloorToInt(gapUnits / toU + Tolerance.ClearanceMm);
 			int neededMid = gapMM - PillarElement.TopHeightMM - PillarElement.BottomHeightMM;
 			neededMid = Mathf.Clamp(neededMid, PillarElement.MidHeightMM_Min, PillarElement.MidHeightMM_Max);
 			float bottomY = pillar.transform.position.y - pillar.TotalHeightMM * 0.5f * toU;
@@ -512,43 +535,25 @@ namespace KitchenDesigner.Core
 			return (minX, maxX, minY, maxY, minZ, maxZ);
 		}
 
-        // Проверяет, есть ли нарушения среди перемещаемой детали и её соседей
-        // (в радиусе snapThreshold * 2). Это предотвращает ситуацию, когда
+        // Проверяет, есть ли нарушения среди перемещаемого набора и его соседей
+        // (AABB в радиусе snapThreshold * 2). Это предотвращает ситуацию, когда
         // движение детали B разрывает связь детали A с полом — и это остаётся
         // незамеченным. При этом чужая ошибка вдали не блокирует перемещение.
-        private bool MovedCausesViolation()
-        {
-            var list = PartRegistry.GetAll();
-            var result = ConstraintValidator.Validate(list);
-            if (!result.isValid)
-            {
-                float radius = KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;
-                foreach (var v in result.violations)
-                {
-                    if (v == _target) return true;
-                    float dist = Vector3.Distance(v.transform.position, _target!.transform.position);
-                    if (dist <= radius) return true;
-                }
-            }
-            return false;
-        }
-
-        // Как MovedCausesViolation, но для всего перемещаемого набора.
+        // Близость меряется по ГАБАРИТАМ (HasViolationNear), а не по центрам:
+        // у крупных деталей центры соседей всегда дальше радиуса, и проверка
+        // по центрам пропускала нарушения вплотную к перемещаемой детали.
         private bool MoveSetCausesViolation()
         {
-            var list = PartRegistry.GetAll();
-            var result = ConstraintValidator.Validate(list);
+            var result = ConstraintValidator.Validate(PartRegistry.GetAll());
             if (result.isValid) return false;
 
             float radius = KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;
-            foreach (var v in result.violations)
+            if (_moveSet.Count == 0)
+                return _target != null && ConstraintValidator.HasViolationNear(result, _target, radius);
+            foreach (var m in _moveSet)
             {
-                foreach (var m in _moveSet)
-                {
-                    if (v == m) return true;
-                    if (m != null && Vector3.Distance(v.transform.position, m.transform.position) <= radius)
-                        return true;
-                }
+                if (m != null && ConstraintValidator.HasViolationNear(result, m, radius))
+                    return true;
             }
             return false;
         }

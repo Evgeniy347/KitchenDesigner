@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core
 
     public static class ConstraintValidator
     {
-        private const float FaceToFaceOverlap = 0.5f;
+        private const float FaceToFaceOverlap = Tolerance.MinSupportOverlap;
 
         // Размер ячейки равномерной сетки broad-phase (метры). Деталь заносится во ВСЕ
         // ячейки, которых касается её AABB, расширенный на contactDist. Тогда любая пара,
@@ -235,6 +235,29 @@ namespace KitchenDesigner.Core
                     result.contacts.Add(new FaceContact(a, b, fa, fb, overlapArea, faceToFace));
                 }
             }
+        }
+
+        /// <summary>Есть ли среди нарушений результата деталь рядом с element:
+        /// сам element или нарушение, чей AABB в пределах radiusUnits от AABB
+        /// element. Близость меряется ПО ГАБАРИТАМ, а не по центрам: у крупных
+        /// деталей центры соседей дальше любого разумного радиуса, и проверка
+        /// по центрам молча пропускала нарушения, стоящие вплотную.</summary>
+        public static bool HasViolationNear(ValidationResult result, KitchenElement element, float radiusUnits)
+        {
+            if (result == null || element == null || result.violations.Count == 0) return false;
+
+            var ea = ComputeAABB(element.GetVertices());
+            foreach (var v in result.violations)
+            {
+                if (v == element) return true;
+                if (v == null) continue;
+                var va = ComputeAABB(v.GetVertices());
+                if (va.minX <= ea.maxX + radiusUnits && va.maxX >= ea.minX - radiusUnits &&
+                    va.minY <= ea.maxY + radiusUnits && va.maxY >= ea.minY - radiusUnits &&
+                    va.minZ <= ea.maxZ + radiusUnits && va.maxZ >= ea.minZ - radiusUnits)
+                    return true;
+            }
+            return false;
         }
 
         public static bool AreInFaceToFaceContact(KitchenElement a, KitchenElement b)

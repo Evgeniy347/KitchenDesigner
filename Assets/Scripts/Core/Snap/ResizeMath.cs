@@ -39,6 +39,18 @@ namespace KitchenDesigner.Core
             // Реальная (округлённая до мм) дельта — чтобы размер и центр не разъезжались.
             float actualDelta = newDimMM * AppConstants.MM_TO_UNITS - sizeStartUnits;
 
+            // Снэп ставит грань заподлицо в НЕцелых мм, а RoundToInt мог удлинить
+            // деталь на ≤0.5 мм СКВОЗЬ плоскость соседа: перекрытие больше допуска
+            // (0.1 мм) валидатор считает пересечением — деталь краснела сразу после
+            // «сработавшего» снэпа, а глазом сдвиг не виден. Правило: округлённая
+            // грань не заходит за снэп-плоскость; при перехлёсте укорачиваем на 1 мм
+            // (микрозазор < 1 мм вместо невидимого пересечения).
+            if (snapped && actualDelta - finalDelta > Tolerance.EpsilonUnits * 0.5f)
+            {
+                newDimMM = Mathf.Max(1, newDimMM - 1);
+                actualDelta = newDimMM * AppConstants.MM_TO_UNITS - sizeStartUnits;
+            }
+
             newDims = dimsBefore;
             if (axisIndex == 0) newDims.x = newDimMM;
             else if (axisIndex == 1) newDims.y = newDimMM;

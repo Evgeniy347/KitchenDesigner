@@ -253,19 +253,44 @@ namespace KitchenDesigner.Core
 
             var afterDims = _target!.DimensionsMM;
             var afterPos = _target.transform.position;
+            bool changed = _dragMode == HandleMode.Resize
+                ? afterDims != _dimsBefore || afterPos != _posBefore
+                : afterPos != _posBefore;
 
-            if (_dragMode == HandleMode.Resize)
+            // Как у перемещения (ElementMover.FinishDrag): нарушение при включённой
+            // блокировке откатывает операцию. Раньше ресайз коммитился без проверки,
+            // и красное состояние (например, пересечение с соседом) фиксировалось
+            // в сцене и в undo-стеке.
+            var settings = KitchenSettings.Instance;
+            if (changed && settings != null && settings.BlockOnViolation && CausesViolation())
             {
-                if (afterDims != _dimsBefore || afterPos != _posBefore)
+                _target.DimensionsMM = _dimsBefore;
+                _target.transform.position = _posBefore;
+                changed = false;
+            }
+
+            if (changed)
+            {
+                if (_dragMode == HandleMode.Resize)
                     CommandStack.Execute(new ResizeCommand(_target,
                         _dimsBefore, afterDims, _posBefore, afterPos, _rotBefore, _rotBefore));
+                else
+                    CommandStack.Execute(new MoveCommand(_target,
+                        _posBefore, afterPos, _rotBefore, _rotBefore));
             }
-            else if (afterPos != _posBefore)
-            {
-                CommandStack.Execute(new MoveCommand(_target,
-                    _posBefore, afterPos, _rotBefore, _rotBefore));
-            }
+
+            if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
             PositionHandles();
+        }
+
+        // Нарушение на самой детали или вплотную к ней (AABB в радиусе
+        // snapThreshold * 2) — тот же критерий, что при перемещении.
+        private bool CausesViolation()
+        {
+            var result = ConstraintValidator.Validate(PartRegistry.GetAll());
+            if (result.isValid) return false;
+            float radius = KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;
+            return ConstraintValidator.HasViolationNear(result, _target!, radius);
         }
 
         // Параметр (в метрах) ближайшей точки луча мыши к прямой грань-нормаль.
