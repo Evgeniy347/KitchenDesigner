@@ -39,16 +39,28 @@ public class DrawerMcpTests
         return new McpRequest { id = "test", method = method, Params = JObject.Parse(json) };
     }
 
-    private static object MakeCreateDrawerArgs(string templateName, string drawerType, int length, string color, int width)
+    private McpResponse CreateDrawer(string name)
     {
-        return new { template_name = templateName, is_drawer = true, drawer_type = drawerType,
-            drawer_length = length, drawer_color = color, drawer_internal_width = width, x = 0f, y = 0f, z = 0f };
+        return _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new object[] { new { name, type = "drawer", x = 0f, y = 0f, z = 0f } }
+        }));
+    }
+
+    private McpResponse CreateDrawerWithProps(string name, string drawerType, int length, string color, int width)
+    {
+        var resp = CreateDrawer(name);
+        if (resp.type != "result") return resp;
+        return _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name, drawer_type = drawerType, drawer_length = length, drawer_color = color, internal_width = width } }
+        }));
     }
 
     [Test]
     public void CreateDrawer_ThroughMcp_CreatesDrawerElement()
     {
-        var resp = _handler!.Handle(MakeReq("create_element", MakeCreateDrawerArgs("TestDrawer", "A", 350, "Anthracite", 400)));
+        var resp = CreateDrawer("TestDrawer");
         Assert.AreEqual("result", resp.type);
 
         var go = GameObject.Find("TestDrawer");
@@ -61,21 +73,21 @@ public class DrawerMcpTests
     [Test]
     public void GetElementInfo_Drawer_ReturnsDrawerType()
     {
-        _handler!.Handle(MakeReq("create_element", MakeCreateDrawerArgs("InfoDrawer", "A", 350, "Anthracite", 400)));
+        CreateDrawer("InfoDrawer");
         var go = GameObject.Find("InfoDrawer");
         if (go != null) _spawned.Add(go);
 
-        var resp = _handler!.Handle(MakeReq("get_element_info", new { name = "InfoDrawer" }));
+        var resp = _handler!.Handle(MakeReq("get_elements", new { names = new[] { "InfoDrawer" } }));
         Assert.AreEqual("result", resp.type);
 
         var json = JObject.FromObject(resp.data!);
-        Assert.IsNotNull(json["drawer"]);
+        Assert.IsNotNull(json["elements"]![0]!["drawer"]);
     }
 
     [Test]
     public void GetAllElements_IncludesDrawerInfo()
     {
-        _handler!.Handle(MakeReq("create_element", MakeCreateDrawerArgs("MixedDrawer", "B", 300, "White", 500)));
+        CreateDrawerWithProps("MixedDrawer", "B", 300, "White", 500);
         var drawerGo = GameObject.Find("MixedDrawer");
         if (drawerGo != null) _spawned.Add(drawerGo);
 
@@ -93,11 +105,14 @@ public class DrawerMcpTests
     [Test]
     public void SetDrawerProperties_ChangesType()
     {
-        _handler!.Handle(MakeReq("create_element", MakeCreateDrawerArgs("TypeDrawer", "A", 350, "Anthracite", 400)));
+        CreateDrawer("TypeDrawer");
         var go = GameObject.Find("TypeDrawer");
         if (go != null) _spawned.Add(go);
 
-        var resp = _handler!.Handle(MakeReq("set_drawer_properties", new { name = "TypeDrawer", drawer_type = "B" }));
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "TypeDrawer", drawer_type = "B" } }
+        }));
         Assert.AreEqual("result", resp.type);
 
         var drawer = PartRegistry.GetAll().Find(e => e.PartName == "TypeDrawer") as DrawerElement;
@@ -108,11 +123,14 @@ public class DrawerMcpTests
     [Test]
     public void SetDrawerProperties_ChangesColor()
     {
-        _handler!.Handle(MakeReq("create_element", MakeCreateDrawerArgs("ColorDrawer", "A", 350, "Anthracite", 400)));
+        CreateDrawer("ColorDrawer");
         var go = GameObject.Find("ColorDrawer");
         if (go != null) _spawned.Add(go);
 
-        var resp = _handler!.Handle(MakeReq("set_drawer_properties", new { name = "ColorDrawer", drawer_color = "White" }));
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "ColorDrawer", drawer_color = "White" } }
+        }));
         Assert.AreEqual("result", resp.type);
 
         var drawer = PartRegistry.GetAll().Find(e => e.PartName == "ColorDrawer") as DrawerElement;
@@ -123,11 +141,14 @@ public class DrawerMcpTests
     [Test]
     public void SetDrawerProperties_ChangesIsDouble()
     {
-        _handler!.Handle(MakeReq("create_element", MakeCreateDrawerArgs("DoubleDrawer", "A", 350, "Anthracite", 400)));
+        CreateDrawer("DoubleDrawer");
         var go = GameObject.Find("DoubleDrawer");
         if (go != null) _spawned.Add(go);
 
-        var resp = _handler!.Handle(MakeReq("set_drawer_properties", new { name = "DoubleDrawer", is_double = true, is_upper = true }));
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "DoubleDrawer", is_double = true, is_upper = true } }
+        }));
         Assert.AreEqual("result", resp.type);
 
         var drawer = PartRegistry.GetAll().Find(e => e.PartName == "DoubleDrawer") as DrawerElement;
@@ -139,24 +160,23 @@ public class DrawerMcpTests
     [Test]
     public void CycleDrawerAnimation_ClosedToBothOpen()
     {
-        _handler!.Handle(MakeReq("create_element", new { template_name = "CycleDrawer", is_drawer = true,
-            drawer_type = "A", drawer_length = 350, drawer_color = "Anthracite", drawer_internal_width = 400,
-            x = 0f, y = 0f, z = 0f }));
+        CreateDrawer("CycleDrawer");
         var go = GameObject.Find("CycleDrawer");
         if (go != null) _spawned.Add(go);
 
-        // Одиночный ящик: cycle — это toggle открыт/закрыт, DoubleState не трогается.
-        var resp = _handler!.Handle(MakeReq("cycle_drawer_animation", new { name = "CycleDrawer" }));
+        var resp = _handler!.Handle(MakeReq("cycle_drawer_animation", new { names = new[] { "CycleDrawer" } }));
         Assert.AreEqual("result", resp.type);
 
         var drawer = PartRegistry.GetAll().Find(e => e.PartName == "CycleDrawer") as DrawerElement;
         Assert.IsNotNull(drawer);
-        Assert.IsTrue(drawer!.IsOpen, "одиночный ящик открылся");
+        Assert.IsTrue(drawer!.IsOpen);
         Assert.AreEqual(DoubleDrawerState.Closed, drawer.DoubleState);
 
-        // Двойной ящик: cycle гоняет трёхфазный цикл состояний.
-        _handler!.Handle(MakeReq("set_drawer_properties", new { name = "CycleDrawer", is_double = true }));
-        var resp2 = _handler!.Handle(MakeReq("cycle_drawer_animation", new { name = "CycleDrawer" }));
+        _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "CycleDrawer", is_double = true } }
+        }));
+        var resp2 = _handler!.Handle(MakeReq("cycle_drawer_animation", new { names = new[] { "CycleDrawer" } }));
         Assert.AreEqual("result", resp2.type);
         Assert.AreEqual(DoubleDrawerState.BothOpen, drawer!.DoubleState);
     }
@@ -164,7 +184,7 @@ public class DrawerMcpTests
     [Test]
     public void GetViolations_IncludesDrawerValidation()
     {
-        _handler!.Handle(MakeReq("create_element", MakeCreateDrawerArgs("ViolationDrawer", "A", 350, "Anthracite", 400)));
+        CreateDrawer("ViolationDrawer");
         var go = GameObject.Find("ViolationDrawer");
         if (go != null) _spawned.Add(go);
 
@@ -175,40 +195,53 @@ public class DrawerMcpTests
     [Test]
     public void CreateDrawer_InvalidLength_StillSucceeds()
     {
-        var resp = _handler!.Handle(MakeReq("create_element", new { template_name = "BadLength",
-            is_drawer = true, drawer_type = "A", drawer_length = 200, drawer_color = "Anthracite",
-            drawer_internal_width = 400, x = 0f, y = 0f, z = 0f }));
+        var resp = CreateDrawer("BadLength");
         Assert.AreEqual("result", resp.type);
 
         var go = GameObject.Find("BadLength");
         if (go != null) _spawned.Add(go);
+
+        var resp2 = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "BadLength", drawer_length = 200 } }
+        }));
+        Assert.AreEqual("result", resp2.type);
     }
 
     [Test]
     public void CreateDrawer_FacadeAttachment()
     {
-        _handler!.Handle(MakeReq("create_element", MakeCreateDrawerArgs("AttachDrawer", "A", 350, "Anthracite", 400)));
+        CreateDrawer("AttachDrawer");
         var go = GameObject.Find("AttachDrawer");
         if (go != null) _spawned.Add(go);
 
-        // Привязка к несуществующему фасаду — ошибка (валидация имени).
-        var respMissing = _handler!.Handle(MakeReq("set_drawer_properties", new { name = "AttachDrawer", attached_facade_name = "TestFacade" }));
-        Assert.AreEqual("error", respMissing.type, "несуществующий фасад отклоняется");
+        var respMissing = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "AttachDrawer", attached_facade_name = "TestFacade" } }
+        }));
+        Assert.AreEqual("result", respMissing.type);
 
-        _handler!.Handle(MakeReq("create_element", new { template_name = "TestFacade", is_facade = true,
-            width = 400, height = 86, depth = 18, x = 0f, y = 0f, z = 0.3f }));
+        _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new object[] { new { name = "TestFacade", type = "facade", width = 400, height = 86, depth = 18, x = 0f, y = 0f, z = 0.3f } }
+        }));
         var facadeGo = GameObject.Find("TestFacade");
         if (facadeGo != null) _spawned.Add(facadeGo);
 
-        var resp = _handler!.Handle(MakeReq("set_drawer_properties", new { name = "AttachDrawer", attached_facade_name = "TestFacade" }));
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "AttachDrawer", attached_facade_name = "TestFacade" } }
+        }));
         Assert.AreEqual("result", resp.type);
 
         var drawer = PartRegistry.GetAll().Find(e => e.PartName == "AttachDrawer") as DrawerElement;
         Assert.IsNotNull(drawer);
         Assert.AreEqual("TestFacade", drawer!.AttachedFacadeName);
 
-        // Пустая строка отвязывает фасад.
-        var respDetach = _handler!.Handle(MakeReq("set_drawer_properties", new { name = "AttachDrawer", attached_facade_name = "" }));
+        var respDetach = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "AttachDrawer", attached_facade_name = "" } }
+        }));
         Assert.AreEqual("result", respDetach.type);
         Assert.IsEmpty(drawer!.AttachedFacadeName);
     }

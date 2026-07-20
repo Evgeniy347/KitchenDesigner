@@ -144,8 +144,9 @@ public class ModuleSystemTests
         Assert.AreEqual(3, created.elementCount);
 
         // Конфигурация видна: модуль и его состав.
-        var info = _handler!.Handle(Req("module_info", new { module = "Тумба с ящиками" }));
-        var m = (ModuleInfo)info.data!;
+        var info = _handler!.Handle(Req("module_info", new { modules = new[] { "Тумба с ящиками" } }));
+        var infoObj = Newtonsoft.Json.Linq.JObject.FromObject(info.data!);
+        var m = infoObj["results"]![0]!.ToObject<ModuleInfo>()!;
         Assert.AreEqual(3, m.elements.Count, "состав модуля виден через MCP");
         CollectionAssert.AreEquivalent(
             new[] { "Бок левый", "Бок правый", "Дно" },
@@ -154,8 +155,9 @@ public class ModuleSystemTests
         Assert.AreEqual(1082, m!.boundsSizeMM![0], 2, "ширина: 582мм смещение + 500мм деталь");
 
         // Принадлежность видна и на самом элементе.
-        var elInfo = _handler!.Handle(Req("get_element_info", new { name = "Дно" }));
-        var el = (ElementInfo)elInfo.data!;
+        var elInfo = _handler!.Handle(Req("get_elements", new { names = new[] { "Дно" } }));
+        var elInfoObj = Newtonsoft.Json.Linq.JObject.FromObject(elInfo.data!);
+        var el = elInfoObj["elements"]![0]!.ToObject<ElementInfo>()!;
         Assert.AreEqual("Тумба с ящиками", el.moduleName);
         Assert.AreEqual(m.id, el.moduleId);
     }
@@ -187,7 +189,9 @@ public class ModuleSystemTests
         Assert.IsFalse(ModuleEditMode.IsEditable(outsider), "остальная сцена заблокирована");
 
         // Статус редактирования виден в конфигурации.
-        var m = (ModuleInfo)_handler!.Handle(Req("module_info", new { module = "М1" })).data!;
+        var mInfoResp = _handler!.Handle(Req("module_info", new { modules = new[] { "М1" } }));
+        var mInfoObj = Newtonsoft.Json.Linq.JObject.FromObject(mInfoResp.data!);
+        var m = mInfoObj["results"]![0]!.ToObject<ModuleInfo>()!;
         Assert.IsTrue(m.editing);
 
         _handler!.Handle(Req("exit_module_edit"));
@@ -202,12 +206,12 @@ public class ModuleSystemTests
         var extra = Make("Полка", new Vector3Int(564, 18, 450), new Vector3(0f, 1f, 0f));
         _handler!.Handle(Req("create_module", new { name = "М1", members = new[] { "A", "B" } }));
 
-        var add = _handler!.Handle(Req("add_to_module", new { module = "М1", name = "Полка" }));
+        var add = _handler!.Handle(Req("add_to_module", new { module = "М1", names = new[] { "Полка" } }));
         Assert.AreEqual("result", add.type);
         Assert.AreEqual(3, ((ModuleInfo)add.data!).elementCount, "полка добавлена в модуль");
         Assert.AreNotEqual(0, extra.GroupId);
 
-        var rem = _handler!.Handle(Req("remove_from_module", new { name = "Полка" }));
+        var rem = _handler!.Handle(Req("remove_from_module", new { names = new[] { "Полка" } }));
         Assert.AreEqual("result", rem.type);
         Assert.AreEqual(0, extra.GroupId, "полка исключена из модуля");
     }

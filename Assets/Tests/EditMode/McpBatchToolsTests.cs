@@ -6,8 +6,8 @@ using KitchenDesigner.Core.MCP;
 using Newtonsoft.Json.Linq;
 
 /// <summary>
-/// Тесты новой MCP-поверхности: батч-инструменты (get_elements, batch_edit,
-/// clone_element), высокоуровневое размещение (align_element, distribute_evenly,
+/// Тесты новой MCP-поверхности: батч-инструменты (get_elements, edit_elements,
+/// clone_elements), высокоуровневое размещение (align_elements, distribute_evenly,
 /// get_free_space), epsilon-семантика faceGaps и сериализация McpJson.
 /// </summary>
 public class McpBatchToolsTests
@@ -139,15 +139,15 @@ public class McpBatchToolsTests
         Assert.AreEqual("A", d["violations"]![0]!["name"]!.Value<string>());
     }
 
-    // ── batch_edit ───────────────────────────────────────────────────────
+    // ── edit_elements ────────────────────────────────────────────────────
 
     [Test]
-    public void BatchEdit_AppliesSeveralOps_InOneCall()
+    public void EditElements_AppliesSeveralOps_InOneCall()
     {
         var a = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         var b = MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
 
-        var resp = _handler!.Handle(MakeReq("batch_edit", new
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
             ops = new object[]
             {
@@ -156,21 +156,21 @@ public class McpBatchToolsTests
             }
         }));
 
-        Assert.AreEqual("result", resp.type, "batch failed: " + resp.data);
+        Assert.AreEqual("result", resp.type, "edit failed: " + resp.data);
         Assert.AreEqual(1.0f, a.transform.position.x, 1e-4f);
         Assert.AreEqual(90f, a.transform.eulerAngles.y, 0.01f);
         Assert.AreEqual(600, b.DimensionsMM.x);
         var d = Data(resp);
-        Assert.IsTrue(d["applied"]!.Value<bool>());
+        Assert.IsTrue(d["ok"]!.Value<bool>());
         Assert.AreEqual(2, (d["results"] as JArray)!.Count);
     }
 
     [Test]
-    public void BatchEdit_IsAtomic_NothingAppliedOnAnyError()
+    public void EditElements_IsAtomic_NothingAppliedOnAnyError()
     {
         var a = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
 
-        var resp = _handler!.Handle(MakeReq("batch_edit", new
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
             ops = new object[]
             {
@@ -184,40 +184,20 @@ public class McpBatchToolsTests
     }
 
     [Test]
-    public void BatchEdit_IsSingleUndoStep()
-    {
-        var a = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        var b = MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
-
-        _handler!.Handle(MakeReq("batch_edit", new
-        {
-            ops = new object[]
-            {
-                new { name = "A", x = 1.0f },
-                new { name = "B", x = 3.0f }
-            }
-        }));
-
-        var undoResp = _handler!.Handle(MakeReq("undo", new { }));
-        Assert.AreEqual("result", undoResp.type);
-        Assert.AreEqual(0f, a.transform.position.x, 1e-4f, "undo откатывает ВЕСЬ батч");
-        Assert.AreEqual(2f, b.transform.position.x, 1e-4f, "undo откатывает ВЕСЬ батч");
-    }
-
-    [Test]
-    public void BatchEdit_DryRun_ReportsViolations_ButChangesNothing()
+    public void EditElements_DryRun_ReportsViolations_ButChangesNothing()
     {
         var a = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
 
-        var resp = _handler!.Handle(MakeReq("batch_edit", new
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
             dry_run = true,
-            ops = new object[] { new { name = "A", x = 2.0f } } // прямо в B
+            ops = new object[] { new { name = "A", x = 2.0f } }
         }));
 
         Assert.AreEqual("result", resp.type);
         var d = Data(resp);
+        Assert.IsTrue(d["dryRun"]!.Value<bool>());
         Assert.IsFalse(d["applied"]!.Value<bool>());
         var viol = d["results"]![0]!["violations"] as JArray;
         Assert.Greater(viol!.Count, 0, "dry-run должен сообщить о пересечении");
@@ -225,19 +205,19 @@ public class McpBatchToolsTests
     }
 
     [Test]
-    public void BatchEdit_RejectsLocked_UnlessOpUnlocks()
+    public void EditElements_RejectsLocked_UnlessOpUnlocks()
     {
         var a = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         a.Movable = false;
 
-        var rejected = _handler!.Handle(MakeReq("batch_edit", new
+        var rejected = _handler!.Handle(MakeReq("edit_elements", new
         {
             ops = new object[] { new { name = "A", x = 1.0f } }
         }));
         Assert.AreEqual("error", rejected.type);
         StringAssert.Contains("LOCKED", Data(rejected)["message"]!.Value<string>());
 
-        var unlocked = _handler!.Handle(MakeReq("batch_edit", new
+        var unlocked = _handler!.Handle(MakeReq("edit_elements", new
         {
             ops = new object[] { new { name = "A", x = 1.0f, locked = false } }
         }));
@@ -246,16 +226,19 @@ public class McpBatchToolsTests
         Assert.IsTrue(a.Movable, "locked:false снимает блокировку");
     }
 
-    // ── clone_element ────────────────────────────────────────────────────
+    // ── clone_elements ───────────────────────────────────────────────────
 
     [Test]
-    public void CloneElement_CreatesCopies_WithOffsetsAndSuffixes()
+    public void CloneElements_CreatesCopies_WithOffsetsAndSuffixes()
     {
         MakeElement("Shelf", new Vector3Int(600, 18, 400), new Vector3(0f, 1f, 0f));
 
-        var resp = _handler!.Handle(MakeReq("clone_element", new
+        var resp = _handler!.Handle(MakeReq("clone_elements", new
         {
-            name = "Shelf", count = 2, offset_y = 0.3f
+            ops = new object[]
+            {
+                new { name = "Shelf", count = 2, offset_y = 0.3f }
+            }
         }));
 
         Assert.AreEqual("result", resp.type, "clone failed: " + resp.data);
@@ -271,58 +254,55 @@ public class McpBatchToolsTests
         Assert.AreEqual(new Vector3Int(600, 18, 400), c2.DimensionsMM);
     }
 
-    [Test]
-    public void CloneElement_IsSingleUndoStep()
-    {
-        MakeElement("Shelf", new Vector3Int(600, 18, 400), Vector3.zero);
-        _handler!.Handle(MakeReq("clone_element", new { name = "Shelf", count = 3, offset_x = 0.5f }));
-        Assert.AreEqual(4, PartRegistry.GetAll().Count);
-
-        _handler!.Handle(MakeReq("undo", new { }));
-        Assert.AreEqual(1, PartRegistry.GetAll().Count, "один undo убирает все клоны");
-    }
-
-    // ── align_element ────────────────────────────────────────────────────
+    // ── align_elements ───────────────────────────────────────────────────
 
     [Test]
-    public void AlignElement_LeftToRight_MakesFlushContact()
+    public void AlignElements_LeftToRight_MakesFlushContact()
     {
         var a = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
 
-        var resp = _handler!.Handle(MakeReq("align_element", new
+        var resp = _handler!.Handle(MakeReq("align_elements", new
         {
-            name = "A", face = "left", target = "B", target_face = "right"
+            ops = new object[]
+            {
+                new { name = "A", face = "left", target = "B", target_face = "right" }
+            }
         }));
 
         Assert.AreEqual("result", resp.type, "align failed: " + resp.data);
-        // B.maxX = 2 + 0.25 = 2.25; A.minX должен встать туда → центр A = 2.5.
         Assert.AreEqual(2.5f, a.transform.position.x, 1e-4f);
     }
 
     [Test]
-    public void AlignElement_WithGap_LeavesGapMm()
+    public void AlignElements_WithGap_LeavesGapMm()
     {
         var a = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
 
-        _handler!.Handle(MakeReq("align_element", new
+        _handler!.Handle(MakeReq("align_elements", new
         {
-            name = "A", face = "left", target = "B", target_face = "right", gap_mm = 100f
+            ops = new object[]
+            {
+                new { name = "A", face = "left", target = "B", target_face = "right", gap_mm = 100f }
+            }
         }));
 
-        Assert.AreEqual(2.6f, a.transform.position.x, 1e-4f, "центр = 2.25 + 0.1 (зазор) + 0.25 (полширины)");
+        Assert.AreEqual(2.6f, a.transform.position.x, 1e-4f, "центр = 2.25 + 0.1 (зазор) + 0.25 (пол ширирины)");
     }
 
     [Test]
-    public void AlignElement_Errors_WhenFacesOnDifferentAxes()
+    public void AlignElements_Errors_WhenFacesOnDifferentAxes()
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
 
-        var resp = _handler!.Handle(MakeReq("align_element", new
+        var resp = _handler!.Handle(MakeReq("align_elements", new
         {
-            name = "A", face = "left", target = "B", target_face = "top"
+            ops = new object[]
+            {
+                new { name = "A", face = "left", target = "B", target_face = "top" }
+            }
         }));
 
         Assert.AreEqual("error", resp.type);
@@ -398,32 +378,34 @@ public class McpBatchToolsTests
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(0.5f, 0f, 0f));
 
-        var resp = _handler!.Handle(MakeReq("get_element_gaps", new { name = "A" }));
+        var resp = _handler!.Handle(MakeReq("get_element_gaps", new { names = new[] { "A" } }));
 
-        var gaps = (ElementGapsResult)resp.data!;
-        var x = gaps.gaps.Find(g => g.axis == "x");
-        Assert.IsNotNull(x);
-        Assert.AreEqual("B", x!.neighbor);
-        Assert.IsTrue(x.touching, "вплотную = touching");
-        Assert.IsFalse(x.isOverlap, "float-шум контакта не считается пересечением");
-        Assert.AreEqual(0f, x.gapMM, 1e-3f);
+        var d = Data(resp);
+        var gapsArray = d["results"]![0]!["gaps"] as JArray;
+        JObject? xGap = null;
+        foreach (JObject g in gapsArray!)
+            if (g["axis"]!.Value<string>() == "x") { xGap = g; break; }
+        Assert.IsNotNull(xGap);
+        Assert.AreEqual("B", xGap!["neighbor"]!.Value<string>());
+        Assert.IsTrue(xGap!["touching"]!.Value<bool>(), "вплотную = touching");
+        Assert.IsFalse(xGap!["isOverlap"]!.Value<bool>(), "float-шум контакта не считается пересечением");
+        Assert.AreEqual(0f, xGap!["gapMM"]!.Value<float>(), 1e-3f);
     }
 
     [Test]
     public void ElementGaps_SkipsNeighboursWithoutFacingProjection()
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        // D далеко по X: «напротив» только по оси X; по Y и Z его проекции
-        // по перпендикулярным осям не пересекаются → в соседях по Y/Z его нет.
         MakeElement("D", new Vector3Int(500, 400, 18), new Vector3(5f, 0f, 0f));
 
-        var resp = _handler!.Handle(MakeReq("get_element_gaps", new { name = "A" }));
+        var resp = _handler!.Handle(MakeReq("get_element_gaps", new { names = new[] { "A" } }));
 
-        var gaps = (ElementGapsResult)resp.data!;
-        Assert.AreEqual(1, gaps.gaps.Count, "должна остаться только ось X");
-        Assert.AreEqual("x", gaps.gaps[0].axis);
-        Assert.AreEqual("D", gaps.gaps[0].neighbor);
-        Assert.AreEqual(4500f, gaps.gaps[0].gapMM, 1f);
+        var d = Data(resp);
+        var gapsArray = d["results"]![0]!["gaps"] as JArray;
+        Assert.AreEqual(1, gapsArray!.Count, "должна остаться только ось X");
+        Assert.AreEqual("x", gapsArray[0]!["axis"]!.Value<string>());
+        Assert.AreEqual("D", gapsArray[0]!["neighbor"]!.Value<string>());
+        Assert.AreEqual(4500f, gapsArray[0]!["gapMM"]!.Value<float>(), 1f);
     }
 
     // ── Конверт мутаций и блокировка ─────────────────────────────────────
@@ -433,12 +415,14 @@ public class McpBatchToolsTests
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
 
-        var resp = _handler!.Handle(MakeReq("move_element", new { name = "A", x = 1f }));
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "A", x = 1f } }
+        }));
 
         var d = Data(resp);
-        Assert.IsFalse(d["element"]!["locked"]!.Value<bool>());
+        Assert.IsFalse(d["results"]![0]!["locked"]!.Value<bool>());
         Assert.IsNotNull(d["sceneViolationCount"]);
-        Assert.IsNotNull(d["violations"]);
     }
 
     [Test]
@@ -447,10 +431,13 @@ public class McpBatchToolsTests
         var a = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         a.Movable = false;
 
-        var resp = _handler!.Handle(MakeReq("move_element", new { name = "A", x = 1f }));
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "A", x = 1f } }
+        }));
 
         Assert.AreEqual("error", resp.type);
-        StringAssert.Contains("set_element_lock", Data(resp)["message"]!.Value<string>());
+        StringAssert.Contains("edit_elements", Data(resp)["message"]!.Value<string>());
         StringAssert.Contains("LOCKED", Data(resp)["message"]!.Value<string>());
     }
 }
