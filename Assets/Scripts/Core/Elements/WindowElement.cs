@@ -493,10 +493,10 @@ namespace KitchenDesigner.Core
                 _frameBottom.SetActive((hidden & 8) == 0);
             }
 
-            // Створка: коробчатая обвязка со стеклом у переднего края коробки.
+            // Створка: коробчатая обвязка по центру коробки по глубине.
             float sashU = AppConstants.WINDOW_SASH_MM * toU;
             float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, totalD);
-            _sashClosedLocal = new Vector3(0f, 0f, halfD - sashD * 0.5f);
+            _sashClosedLocal = new Vector3(0f, 0f, 0f);
             _sashHalfExtents = new Vector3(innerW * 0.5f, innerH * 0.5f, sashD * 0.5f);
 
             if (_sashLeft != null)
@@ -628,13 +628,14 @@ namespace KitchenDesigner.Core
             var mat = MaterialManager.GetSharedMaterial(def);
             if (mat == null) return;
             foreach (var go in new[] { _frameLeft, _frameRight, _frameTop, _frameBottom,
-                                       _sashLeft, _sashRight, _sashTop, _sashBottom })
+                                       _sashLeft, _sashRight, _sashTop, _sashBottom,
+                                       _slopeTop, _slopeBottom, _slopeLeft, _slopeRight })
             {
                 var mr = go != null ? go.GetComponent<MeshRenderer>() : null;
                 if (mr != null) mr.sharedMaterial = mat;
             }
             var slopeMat = SlopeMaterial();
-            foreach (var go in new[] { _sillObj, _dripObj, _slopeTop, _slopeBottom, _slopeLeft, _slopeRight })
+            foreach (var go in new[] { _sillObj, _dripObj })
             {
                 var mr = go != null ? go.GetComponent<MeshRenderer>() : null;
                 if (mr != null) mr.sharedMaterial = slopeMat;
