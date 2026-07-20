@@ -169,4 +169,83 @@ public class WindowDragTests
         go.AddComponent<GroupMenuUI>().Build(canvas.transform);
         AssertDraggable(canvas.transform, "GroupMenu");
     }
+
+    // ── Передний план ───────────────────────────────────────────────────
+
+    [Test]
+    public void BringToFront_MovesWindowAboveSiblings()
+    {
+        var parent = MakeRect("Parent", null, new Vector2(1920, 1080));
+        var winA = MakeRect("WinA", parent, new Vector2(300, 200));
+        var winB = MakeRect("WinB", parent, new Vector2(300, 200));
+        Assert.Less(winA.GetSiblingIndex(), winB.GetSiblingIndex());
+
+        WindowDrag.BringToFront(winA);
+
+        Assert.Greater(winA.GetSiblingIndex(), winB.GetSiblingIndex(),
+            "после BringToFront окно должно рисоваться поверх соседей");
+    }
+
+    // ── Ресайз окна «Сцена» ─────────────────────────────────────────────
+
+    private WindowResizeHandle BuildHierarchyWithResize(out RectTransform panel)
+    {
+        var canvas = MakeCanvas();
+        var go = new GameObject("Hierarchy");
+        _spawned.Add(go);
+        go.AddComponent<HierarchyPanelUI>().Build(canvas.transform);
+        panel = (RectTransform)canvas.transform.Find("HierarchyPanel");
+        var handle = panel.GetComponentInChildren<WindowResizeHandle>();
+        Assert.NotNull(handle, "у окна «Сцена» должен быть хэндл ресайза");
+
+        // В batchmode rect канваса непредсказуем — переносим панель в родителя
+        // фиксированного размера, чтобы кламп по низу экрана был детерминирован.
+        var parent = MakeRect("FixedParent", null, new Vector2(1920, 1080));
+        panel.SetParent(parent, false);
+        return handle;
+    }
+
+    [Test]
+    public void HierarchyResize_ChangesHeight_AndStretchesViewport()
+    {
+        var handle = BuildHierarchyWithResize(out var panel);
+        float w = panel.sizeDelta.x;
+        var viewport = (RectTransform)panel.Find("HierViewport");
+        float insets = panel.sizeDelta.y - viewport.rect.height; // шапка + отступы
+
+        handle.ResizeTo(400f);
+
+        Assert.AreEqual(400f, panel.sizeDelta.y, 0.01f);
+        Assert.AreEqual(w, panel.sizeDelta.x, 0.01f, "ширина не должна меняться");
+        Assert.AreEqual(400f - insets, viewport.rect.height, 0.01f,
+            "скролл-зона должна растянуться вместе с окном");
+    }
+
+    [Test]
+    public void HierarchyResize_ClampsToMinHeight()
+    {
+        var handle = BuildHierarchyWithResize(out var panel);
+
+        handle.ResizeTo(10f);
+
+        Assert.AreEqual(160f, panel.sizeDelta.y, 0.01f,
+            "высота не должна опускаться ниже минимума");
+    }
+
+    [Test]
+    public void HierarchyResize_ClampsToParentBottom()
+    {
+        var handle = BuildHierarchyWithResize(out var panel);
+        var parent = (RectTransform)panel.parent;
+        // Верх окна в координатах родителя: до низа родителя и есть максимум.
+        var corners = new Vector3[4];
+        panel.GetWorldCorners(corners);
+        float top = ((Vector2)parent.InverseTransformPoint(corners[1])).y;
+        float maxH = top - parent.rect.yMin;
+
+        handle.ResizeTo(99999f);
+
+        Assert.AreEqual(maxH, panel.sizeDelta.y, 0.5f,
+            "низ окна не должен уходить за нижний край экрана");
+    }
 }
