@@ -531,10 +531,19 @@ namespace KitchenDesigner.Core
 
 		public GameObject CreateLightSource(string name, Vector3 position)
 		{
-			var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			go.name = string.IsNullOrEmpty(name) ? "Источник света" : name;
+			// НЕ CreatePrimitive(Sphere): SphereCollider больше нигде не
+			// используется, и в WebGL-сборке линкер вырезает его стриппингом —
+			// CreatePrimitive падает («class 'SphereCollider' doesn't exist»).
+			// Собираем плафон вручную: явный AddComponent<SphereCollider>()
+			// заставляет линкер сохранить класс.
+			var go = new GameObject(string.IsNullOrEmpty(name) ? "Источник света" : name);
 			go.tag = "KitchenElement";
 			go.transform.position = position;
+
+			var mf = go.AddComponent<MeshFilter>();
+			mf.sharedMesh = Resources.GetBuiltinResource<Mesh>("New-Sphere.fbx");
+			go.AddComponent<MeshRenderer>();
+			go.AddComponent<SphereCollider>();
 
 			var rb = go.AddComponent<Rigidbody>();
 			rb.isKinematic = true;
