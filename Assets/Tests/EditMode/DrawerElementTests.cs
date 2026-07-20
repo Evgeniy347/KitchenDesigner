@@ -613,4 +613,3 @@ public class DrawerElementTests
             "фасад сместился на полный ход");
     }
 }
-}

@@ -260,7 +260,7 @@ namespace KitchenDesigner.Core
                     if (el is DrawerElement d && d.AttachedFacadeName == PartName)
                     {
                         exclude.Add(d);
-                        var pair = d.FindPairedDrawer();
+                        var pair = d.FindPaired();
                         if (pair != null) exclude.Add(pair);
                         break;
                     }
