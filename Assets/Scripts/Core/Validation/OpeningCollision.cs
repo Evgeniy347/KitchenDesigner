@@ -83,9 +83,10 @@ namespace KitchenDesigner.Core
 
         private static bool IntervalsTouch(float min1, float max1, float min2, float max2, float contactU)
         {
-            // |зазор| ≤ contactU: и касание (gap ≥ 0), и небольшое пересечение (gap < 0)
+            // Пересечение (gap ≤ 0) — всегда касание (контейнер).
+            // Зазор (gap > 0) — касание, если ≤ порога (соседние панели/дверцы).
             float gap = Mathf.Max(min1 - max2, min2 - max1);
-            return Mathf.Abs(gap) <= contactU;
+            return gap <= 0f || gap <= contactU;
         }
 
         private static bool Overlaps((Vector3 min, Vector3 max) a, List<(Vector3 min, Vector3 max)> others)
