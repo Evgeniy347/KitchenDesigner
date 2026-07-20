@@ -217,6 +217,15 @@ namespace KitchenDesigner.Core
             _open = false;
             _t = 0f;
             transform.SetPositionAndRotation(_closedPos, _closedRot);
+
+            // Если фасад прикреплён к ящику — закрываем и ящик тоже,
+            // чтобы состояния никогда не расходились (не то ящик открыт, не то закрыт).
+            foreach (var el in PartRegistry.GetAll())
+                if (el is DrawerElement d && d.AttachedFacadeName == PartName)
+                {
+                    d.ForceClose();
+                    break;
+                }
         }
 
         private void CaptureClosed()
@@ -266,6 +275,15 @@ namespace KitchenDesigner.Core
             var half = transform.localScale * 0.5f;
             FacadeDoor.Pose(_closedPos, _closedRot, half, _mode, _t, out var pos, out var rot);
             transform.SetPositionAndRotation(pos, rot);
+        }
+
+        /// <summary>Сдвинуть закрытую позу в мировых координатах.
+        /// Используется, когда ящик двигает прикреплённый фасад вместе с собой
+        /// (например, верхний ящик пары следует за нижним в LateUpdate).</summary>
+        internal void ShiftClosedPose(Vector3 worldDelta)
+        {
+            _closedPos += worldDelta;
+            ApplyDoor();
         }
     }
 }

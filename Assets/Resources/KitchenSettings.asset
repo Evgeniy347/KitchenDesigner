@@ -24,3 +24,4 @@ MonoBehaviour:
   _edgeOutline: 1
   _wallsEnabled: 1
   _lowerNearWalls: 1
+  _cameraPanFree: 0
