@@ -1,4 +1,4 @@
-{
+﻿{
   "root": "ContextMenu",
   "children": [
     {
@@ -27,11 +27,9 @@
       "position": [0, -12]
     },
     {
-      "type": "InputField",
-      "label": "gapRight",
-      "value": "2",
-      "interactable": true,
-      "position": [122, -26]
+      "type": "Label",
+      "text": "Ширина X, мм",
+      "position": [-80, -26]
     },
     {
       "type": "InputField",
@@ -41,22 +39,17 @@
       "position": [73, -26]
     },
     {
-      "type": "Label",
-      "text": "Ширина X, мм",
-      "position": [-80, -26]
+      "type": "InputField",
+      "label": "gapRight",
+      "value": "2",
+      "interactable": true,
+      "position": [122, -26]
     },
     {
       "type": "Dropdown",
-      "options": ["Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно"],
+      "options": ["Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно", "Дверь"],
       "selected": 1,
       "position": [0, -48]
-    },
-    {
-      "type": "InputField",
-      "label": "gapBottom",
-      "value": "2",
-      "interactable": true,
-      "position": [122, -52]
     },
     {
       "type": "Label",
@@ -69,6 +62,13 @@
       "value": "2",
       "interactable": true,
       "position": [73, -52]
+    },
+    {
+      "type": "InputField",
+      "label": "gapBottom",
+      "value": "2",
+      "interactable": true,
+      "position": [122, -52]
     },
     {
       "type": "Label",
@@ -95,6 +95,11 @@
       "position": [100, -114]
     },
     {
+      "type": "Label",
+      "text": "Высота, мм",
+      "position": [-80, -145]
+    },
+    {
       "type": "InputField",
       "label": "Высота, мм",
       "value": "400",
@@ -103,8 +108,8 @@
     },
     {
       "type": "Label",
-      "text": "Высота, мм",
-      "position": [-80, -145]
+      "text": "Глубина, мм",
+      "position": [-80, -176]
     },
     {
       "type": "InputField",
@@ -112,11 +117,6 @@
       "value": "18",
       "interactable": true,
       "position": [100, -176]
-    },
-    {
-      "type": "Label",
-      "text": "Глубина, мм",
-      "position": [-80, -176]
     },
     {
       "type": "Dropdown",
@@ -142,11 +142,6 @@
     },
     {
       "type": "Label",
-      "text": "Z, м",
-      "position": [110, -423]
-    },
-    {
-      "type": "Label",
       "text": "X, м",
       "position": [-110, -423]
     },
@@ -156,11 +151,9 @@
       "position": [0, -423]
     },
     {
-      "type": "InputField",
-      "label": "Y, м",
-      "value": "0,200",
-      "interactable": true,
-      "position": [0, -443]
+      "type": "Label",
+      "text": "Z, м",
+      "position": [110, -423]
     },
     {
       "type": "InputField",
@@ -171,10 +164,22 @@
     },
     {
       "type": "InputField",
+      "label": "Y, м",
+      "value": "0,200",
+      "interactable": true,
+      "position": [0, -443]
+    },
+    {
+      "type": "InputField",
       "label": "Z, м",
       "value": "0,000",
       "interactable": true,
       "position": [110, -443]
+    },
+    {
+      "type": "Label",
+      "text": "X°",
+      "position": [-110, -474]
     },
     {
       "type": "Label",
@@ -187,11 +192,6 @@
       "position": [110, -474]
     },
     {
-      "type": "Label",
-      "text": "X°",
-      "position": [-110, -474]
-    },
-    {
       "type": "InputField",
       "label": "X°",
       "value": "0,0",
@@ -200,17 +200,17 @@
     },
     {
       "type": "InputField",
-      "label": "Z°",
-      "value": "0,0",
-      "interactable": true,
-      "position": [110, -494]
-    },
-    {
-      "type": "InputField",
       "label": "Y°",
       "value": "0,0",
       "interactable": true,
       "position": [0, -494]
+    },
+    {
+      "type": "InputField",
+      "label": "Z°",
+      "value": "0,0",
+      "interactable": true,
+      "position": [110, -494]
     },
     {
       "type": "Label",

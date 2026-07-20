@@ -1,4 +1,4 @@
-{
+﻿{
   "root": "ContextMenu",
   "children": [
     {
@@ -23,9 +23,14 @@
     },
     {
       "type": "Dropdown",
-      "options": ["Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно"],
+      "options": ["Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно", "Дверь"],
       "selected": 4,
       "position": [0, -48]
+    },
+    {
+      "type": "Label",
+      "text": "Название",
+      "position": [-80, -83]
     },
     {
       "type": "InputField",
@@ -33,11 +38,6 @@
       "value": "Ящик_A_350",
       "interactable": true,
       "position": [100, -83]
-    },
-    {
-      "type": "Label",
-      "text": "Название",
-      "position": [-80, -83]
     },
     {
       "type": "Label",
@@ -154,13 +154,6 @@
     },
     {
       "type": "InputField",
-      "label": "Y, м",
-      "value": "0,043",
-      "interactable": true,
-      "position": [0, -562]
-    },
-    {
-      "type": "InputField",
       "label": "X, м",
       "value": "5,000",
       "interactable": true,
@@ -168,10 +161,22 @@
     },
     {
       "type": "InputField",
+      "label": "Y, м",
+      "value": "0,043",
+      "interactable": true,
+      "position": [0, -562]
+    },
+    {
+      "type": "InputField",
       "label": "Z, м",
       "value": "0,000",
       "interactable": true,
       "position": [110, -562]
+    },
+    {
+      "type": "Label",
+      "text": "X°",
+      "position": [-110, -593]
     },
     {
       "type": "Label",
@@ -184,11 +189,6 @@
       "position": [110, -593]
     },
     {
-      "type": "Label",
-      "text": "X°",
-      "position": [-110, -593]
-    },
-    {
       "type": "InputField",
       "label": "X°",
       "value": "0,0",
@@ -197,17 +197,17 @@
     },
     {
       "type": "InputField",
-      "label": "Z°",
-      "value": "0,0",
-      "interactable": true,
-      "position": [110, -613]
-    },
-    {
-      "type": "InputField",
       "label": "Y°",
       "value": "0,0",
       "interactable": true,
       "position": [0, -613]
+    },
+    {
+      "type": "InputField",
+      "label": "Z°",
+      "value": "0,0",
+      "interactable": true,
+      "position": [110, -613]
     },
     {
       "type": "Label",

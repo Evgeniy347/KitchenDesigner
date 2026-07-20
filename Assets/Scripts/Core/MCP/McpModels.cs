@@ -79,6 +79,7 @@ namespace KitchenDesigner.Core.MCP
         public int effectiveDimX, effectiveDimY, effectiveDimZ;
         public List<AxisGapInfo>? faceGaps; // зазоры/пересечения с ближайшим соседом «напротив» по осям (ось без соседа опускается)
         public int cornerRadius; // радиус скругления угла радиусной полки, иначе 0
+        public string? grooves;  // пазы детали "through:top, blind:left"; null, если пазов нет
 
         // ── Фасадная валидация (только для FacadeElement / AssembledFacadeElement;
         //    null-поля опускаются сериализатором — обычные детали их не несут) ──

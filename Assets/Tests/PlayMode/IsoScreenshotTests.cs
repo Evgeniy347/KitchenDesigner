@@ -95,6 +95,19 @@ public class IsoScreenshotTests
 
     private IEnumerator RenderToPng(Camera cam, string fileName)
     {
+        // Окно «Сцена» наполняется не по событию создания элемента, а дешёвым
+        // поллингом раз в 0.5 с (HierarchyPanelUI.Update). В батч-прогоне кадры
+        // идут быстрее интервала, поэтому строки дерева (BasePlate, Кухня,
+        // IsoBoard…) то успевали попасть в снапшот канваса, то нет — снапшот
+        // флакал. Форсируем перестройку (SetVisible(true) вызывает Refresh)
+        // и ждём кадр, чтобы Destroy старых строк успел отработать.
+        var hierarchy = HierarchyPanelUI.Instance;
+        if (hierarchy != null)
+        {
+            hierarchy.SetVisible(true);
+            yield return null;
+        }
+
         var rt = new RenderTexture(RenderW, RenderH, 24, RenderTextureFormat.ARGB32);
         cam.targetTexture = rt;
         yield return null;

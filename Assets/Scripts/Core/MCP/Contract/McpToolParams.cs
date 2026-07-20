@@ -148,6 +148,14 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Radial shelf only: corner rounding radius in MM (clamped to 1..min(width, depth)). Omit to keep.", Min = 1)]
         public int? corner_radius;
 
+        // Grooves (plain board only).
+        [McpParam("Plain board only: REPLACES the whole set of grooves. Comma-separated \"kind:side\" pairs, " +
+                  "kind = through|blind, side = top|bottom|left|right (side names the edge the groove runs along, " +
+                  "in the part's own frame). Example: \"through:top, blind:left\". Empty string removes all grooves. " +
+                  "Groove size is fixed at 16*4*7 mm (offset*width*depth) by the CNC and cannot be changed. " +
+                  "Duplicates of the same kind+side are rejected. Omit to keep.")]
+        public string? grooves;
+
         // GTV drawer.
         [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Omit to keep.",
             Enum = new[] { "A", "B", "C", "D" })]
@@ -213,7 +221,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "drawer", "table", "radius_table", "pillar", "window", "door" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "table", "radius_table", "pillar", "window", "door" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;

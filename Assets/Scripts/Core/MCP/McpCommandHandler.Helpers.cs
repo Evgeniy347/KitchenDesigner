@@ -257,6 +257,7 @@ namespace KitchenDesigner.Core.MCP
                 effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z,
                 faceGaps = gaps,
                 cornerRadius = radial != null ? radial.CornerRadius : 0,
+                grooves = el.Grooves.Count > 0 ? FormatGrooves(el) : null,
                 facadeMode = el is FacadeElement feMode ? FacadeDoor.WireName(feMode.Mode) : null,
                 faceNormalX = facadeValidation?.normal.x,
                 faceNormalY = facadeValidation?.normal.y,

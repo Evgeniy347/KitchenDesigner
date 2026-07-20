@@ -156,6 +156,46 @@ namespace KitchenDesigner.Core
             _ownedMesh = null;
         }
 
+        /// <summary>Посадочные грани пазов — ДНО каждого паза как обычная Face.
+        /// Благодаря этому прилипание не требует отдельной ветки: вкладная панель
+        /// ловится тем же попарным сопоставлением встречных граней, что и всё
+        /// остальное, и встаёт номиналом на дно паза (см. GappedBox).
+        ///
+        /// Габаритные грани (GetFaces) паз НЕ меняет: короб остаётся коробом,
+        /// иначе поехали бы ручки, выделение и прилипание соседних деталей.</summary>
+        public Face[] GetGrooveSeatFaces()
+        {
+            int count = _data.Grooves.Count;
+            if (count == 0) return System.Array.Empty<Face>();
+
+            var scale = transform.localScale;
+            var rot = transform.rotation;
+            var pos = transform.position;
+            // Пласть, в которой режется паз, — локальная грань +Z.
+            var normal = rot * Vector3.forward;
+            var right = rot * Vector3.right;
+            var up = rot * Vector3.up;
+            float floorZ = 0.5f - GrooveMesh.DepthFraction(_data.DimensionsMM);
+
+            var seats = new List<Face>(count);
+            foreach (var groove in _data.Grooves)
+            {
+                var rect = GrooveMesh.ComputeRect(_data.DimensionsMM, groove);
+                if (!rect.IsValid) continue;
+
+                var localCenter = new Vector3(
+                    (rect.xMin + rect.xMax) * 0.5f * scale.x,
+                    (rect.yMin + rect.yMax) * 0.5f * scale.y,
+                    floorZ * scale.z);
+                var size = new Vector2(
+                    (rect.xMax - rect.xMin) * scale.x,
+                    (rect.yMax - rect.yMin) * scale.y);
+
+                seats.Add(new Face(pos + rot * localCenter, normal, size, right, up));
+            }
+            return seats.ToArray();
+        }
+
         public struct Face
         {
             public Vector3 center;

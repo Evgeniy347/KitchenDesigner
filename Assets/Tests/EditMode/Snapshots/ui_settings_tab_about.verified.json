@@ -1,4 +1,4 @@
-{
+﻿{
   "root": "TestCanvas",
   "children": [
     {
@@ -23,18 +23,18 @@
     },
     {
       "type": "Label",
-      "text": "Версия: 0.272",
+      "text": "Версия: <masked>",
       "position": [0, 202]
     },
     {
       "type": "Label",
-      "text": "Сборка: 2026-07-16 12:12",
+      "text": "Сборка: <masked>",
       "position": [0, 164]
     },
     {
       "type": "Button",
       "text": "Закрыть",
-      "position": [0, -254]
+      "position": [0, -298]
     }
   ]
 }

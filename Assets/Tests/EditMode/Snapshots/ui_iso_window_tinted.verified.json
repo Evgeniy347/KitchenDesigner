@@ -18,8 +18,13 @@
     },
     {
       "type": "Button",
-      "text": "SbPin",
-      "position": [46, -4]
+      "text": "IsoWindowTinted",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "IsoWindowTinted_Wall",
+      "position": [20, 0]
     },
     {
       "type": "Button",
@@ -28,13 +33,23 @@
     },
     {
       "type": "Button",
-      "text": "x",
-      "position": [-6, -6]
+      "text": "SbPin",
+      "position": [46, -4]
     },
     {
       "type": "Button",
       "text": "+ Группа",
       "position": [-38, -6]
+    },
+    {
+      "type": "Button",
+      "text": "x",
+      "position": [-6, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Спецификация",
+      "position": [8, -6]
     },
     {
       "type": "Label",
@@ -43,33 +58,8 @@
     },
     {
       "type": "Button",
-      "text": "Вершины: выкл",
-      "position": [1236, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Солнце",
-      "position": [1140, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Свет: вкл",
-      "position": [1024, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Спецификация",
-      "position": [8, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Режим: [ ]",
-      "position": [740, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Save",
-      "position": [306, -6]
+      "text": "Сцена",
+      "position": [164, -6]
     },
     {
       "type": "Button",
@@ -78,13 +68,8 @@
     },
     {
       "type": "Button",
-      "text": "Сцена",
-      "position": [164, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Load",
-      "position": [398, -6]
+      "text": "Save",
+      "position": [306, -6]
     },
     {
       "type": "Button",
@@ -93,8 +78,8 @@
     },
     {
       "type": "Button",
-      "text": "Тон: вкл",
-      "position": [908, -6]
+      "text": "Load",
+      "position": [398, -6]
     },
     {
       "type": "Button",
@@ -115,6 +100,31 @@
       "type": "Button",
       "text": "Распред.",
       "position": [654, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Режим: [ ]",
+      "position": [740, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Тон: вкл",
+      "position": [908, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Свет: вкл",
+      "position": [1024, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Солнце",
+      "position": [1140, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Вершины: выкл",
+      "position": [1236, -6]
     },
     {
       "type": "Button",

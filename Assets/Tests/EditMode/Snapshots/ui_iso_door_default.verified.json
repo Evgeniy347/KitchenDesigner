@@ -18,7 +18,17 @@
     },
     {
       "type": "Button",
-      "text": "IsoRadialShelf",
+      "text": "IsoDoor",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "IsoDoorFloor",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "IsoDoorWall",
       "position": [20, 0]
     },
     {

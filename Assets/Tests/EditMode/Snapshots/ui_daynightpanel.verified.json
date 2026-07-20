@@ -1,0 +1,35 @@
+﻿{
+  "root": "DayNightPanel",
+  "children": [
+    {
+      "type": "Label",
+      "text": "День / Ночь",
+      "position": [0, 104]
+    },
+    {
+      "type": "Label",
+      "text": "Время: 12:00 (день)",
+      "position": [0, 66]
+    },
+    {
+      "type": "Label",
+      "text": "Направление: 135°",
+      "position": [0, 8]
+    },
+    {
+      "type": "Button",
+      "text": "X",
+      "position": [-4, -4]
+    },
+    {
+      "type": "Label",
+      "text": "Яркость: 1,00",
+      "position": [0, -50]
+    },
+    {
+      "type": "Button",
+      "text": "Сброс (полдень)",
+      "position": [0, -112]
+    }
+  ]
+}
