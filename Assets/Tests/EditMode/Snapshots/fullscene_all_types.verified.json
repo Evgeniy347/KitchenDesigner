@@ -1,4 +1,4 @@
-{
+﻿{
     "version": 1,
     "elements": [
         {
@@ -64,7 +64,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Facade_A",
@@ -129,7 +130,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Assembled_A",
@@ -194,7 +196,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Radial_A",
@@ -259,7 +262,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Wall_A",
@@ -324,7 +328,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         }
     ],
     "groups": [],
@@ -402,7 +407,8 @@
         "isPillar": false,
         "midHeightMM": 75,
         "isFloor": false,
-        "isLightSource": false
+        "isLightSource": false,
+        "grooves": []
     },
     "undoHistory": [],
     "redoHistory": [],

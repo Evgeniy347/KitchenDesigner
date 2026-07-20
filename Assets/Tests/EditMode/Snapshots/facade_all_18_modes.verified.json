@@ -1,4 +1,4 @@
-{
+﻿{
     "version": 1,
     "elements": [
         {
@@ -64,7 +64,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_1",
@@ -129,7 +130,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_2",
@@ -194,7 +196,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_3",
@@ -259,7 +262,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_4",
@@ -324,7 +328,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_5",
@@ -389,7 +394,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_6",
@@ -454,7 +460,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_7",
@@ -519,7 +526,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_8",
@@ -584,7 +592,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_9",
@@ -649,7 +658,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_10",
@@ -714,7 +724,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_11",
@@ -779,7 +790,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_12",
@@ -844,7 +856,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_13",
@@ -909,7 +922,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_14",
@@ -974,7 +988,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_15",
@@ -1039,7 +1054,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_16",
@@ -1104,7 +1120,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         },
         {
             "name": "Mode_17",
@@ -1169,7 +1186,8 @@
             "isPillar": false,
             "midHeightMM": 75,
             "isFloor": false,
-            "isLightSource": false
+            "isLightSource": false,
+            "grooves": []
         }
     ],
     "groups": [],
@@ -1247,7 +1265,8 @@
         "isPillar": false,
         "midHeightMM": 75,
         "isFloor": false,
-        "isLightSource": false
+        "isLightSource": false,
+        "grooves": []
     },
     "undoHistory": [],
     "redoHistory": [],

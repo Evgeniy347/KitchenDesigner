@@ -109,6 +109,9 @@ namespace KitchenDesigner.Core
             el.DimensionsMM = new Vector3Int(800, 400, 18);
             el.Movable = true;
             el.GroupId = 0;
+            // Вернуть встроенный куб и один материал: иначе следующая деталь из
+            // пула досталась бы с чужими пазами.
+            el.ClearGrooves();
             PartRegistry.Unregister(el);
         }
 
@@ -308,6 +311,10 @@ namespace KitchenDesigner.Core
 
             if (source.GetComponent<Wall>() != null)
                 go2.AddComponent<Wall>();
+
+            var copyPart = go2.GetComponent<KitchenElement>();
+            if (copyPart != null && copyPart.SupportsGrooves)
+                copyPart.SetGrooves(source.Grooves);
 
             return go2;
         }

@@ -54,6 +54,135 @@ public class ContextMenuLayoutTests
         return el;
     }
 
+    // ── Секция пазов ──────────────────────────────────────────────────
+
+    private Transform Panel()
+    {
+        var panel = _canvas!.transform.Find("ContextMenu");
+        Assert.NotNull(panel, "панель контекстного меню должна существовать");
+        return panel!;
+    }
+
+    private void ClickGroovesHeader() =>
+        Panel().Find("CtxGrooves").GetComponent<Button>().onClick.Invoke();
+
+    [Test]
+    public void Board_GrooveSection_VisibleAndCollapsedByDefault()
+    {
+        _menu!.Open(MakeBoard("B1"));
+        var panel = Panel();
+
+        Assert.IsTrue(panel.Find("CtxGrooves").gameObject.activeSelf,
+            "кнопка «Пазы» видна у детали");
+        Assert.AreEqual("0  v", panel.Find("CtxGrooveCount").GetComponent<TMP_Text>().text,
+            "без пазов счётчик показывает 0 и стрелку «свёрнуто»");
+        Assert.IsFalse(panel.Find("CtxGrooveAdd").gameObject.activeSelf,
+            "строка добавления скрыта, пока секция свёрнута");
+        Assert.IsFalse(panel.Find("CtxGrooveItem0").gameObject.activeSelf);
+    }
+
+    [Test]
+    public void Facade_GrooveSection_Hidden()
+    {
+        _menu!.Open(MakeFacade("F1"));
+        var panel = Panel();
+
+        Assert.IsFalse(panel.Find("CtxGrooves").gameObject.activeSelf,
+            "фасад пазов не поддерживает — секции нет");
+        Assert.IsFalse(panel.Find("CtxGrooveAdd").gameObject.activeSelf);
+    }
+
+    [Test]
+    public void Board_ExpandGrooves_ShowsAddRowAndFlipsArrow()
+    {
+        _menu!.Open(MakeBoard("B1"));
+        ClickGroovesHeader();
+        var panel = Panel();
+
+        Assert.IsTrue(panel.Find("CtxGrooveAdd").gameObject.activeSelf);
+        Assert.IsTrue(panel.Find("CtxGrooveSide").gameObject.activeSelf);
+        Assert.AreEqual("0  ^", panel.Find("CtxGrooveCount").GetComponent<TMP_Text>().text);
+    }
+
+    [Test]
+    public void Board_AddGroove_ShowsItemRowAndUpdatesCount()
+    {
+        var board = MakeBoard("B1");
+        _menu!.Open(board);
+        ClickGroovesHeader();
+
+        var panel = Panel();
+        panel.Find("CtxGrooveSide").GetComponent<TMP_Dropdown>().value = (int)GrooveSide.Left;
+        panel.Find("CtxGrooveKind").GetComponent<TMP_Dropdown>().value = (int)GrooveKind.Blind;
+        panel.Find("CtxGrooveAdd").GetComponent<Button>().onClick.Invoke();
+
+        Assert.AreEqual(1, board.Grooves.Count);
+        Assert.AreEqual("1  ^", panel.Find("CtxGrooveCount").GetComponent<TMP_Text>().text);
+        Assert.IsTrue(panel.Find("CtxGrooveItem0").gameObject.activeSelf);
+        Assert.AreEqual("Глухой 16*4*7 — Лево",
+            panel.Find("CtxGrooveItem0").GetComponent<TMP_Text>().text);
+        Assert.IsFalse(panel.Find("CtxGrooveItem1").gameObject.activeSelf,
+            "слот под второй паз остаётся скрытым");
+    }
+
+    [Test]
+    public void Board_RemoveGroove_HidesItemRow()
+    {
+        var board = MakeBoard("B1");
+        board.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Top));
+        _menu!.Open(board);
+        ClickGroovesHeader();
+
+        var panel = Panel();
+        Assert.IsTrue(panel.Find("CtxGrooveItem0").gameObject.activeSelf);
+
+        panel.Find("CtxGrooveDel0").GetComponent<Button>().onClick.Invoke();
+
+        Assert.AreEqual(0, board.Grooves.Count);
+        Assert.IsFalse(panel.Find("CtxGrooveItem0").gameObject.activeSelf);
+        Assert.AreEqual("0  ^", panel.Find("CtxGrooveCount").GetComponent<TMP_Text>().text);
+    }
+
+    [Test]
+    public void Board_ExpandedGrooveRows_DoNotOverlapPositionRow()
+    {
+        var board = MakeBoard("B1");
+        board.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Top));
+        board.AddGroove(new GrooveSpec(GrooveKind.Blind, GrooveSide.Left));
+        _menu!.Open(board);
+        ClickGroovesHeader();
+
+        var panel = Panel();
+        var addRow = panel.Find("CtxGrooveAdd").GetComponent<RectTransform>();
+        var xField = panel.Find("F_X, м").GetComponent<RectTransform>();
+
+        // Всё заякорено к верху панели: низ = anchoredPosition.y − высота.
+        float addBottom = addRow.anchoredPosition.y - addRow.sizeDelta.y;
+        Assert.GreaterOrEqual(addBottom, xField.anchoredPosition.y,
+            "строка добавления паза должна быть выше блока позиции");
+
+        // Строки пазов идут сверху вниз и не накладываются друг на друга.
+        var item0 = panel.Find("CtxGrooveItem0").GetComponent<RectTransform>();
+        var item1 = panel.Find("CtxGrooveItem1").GetComponent<RectTransform>();
+        Assert.IsTrue(item1.gameObject.activeSelf, "второй паз показывается своей строкой");
+        Assert.GreaterOrEqual(item0.anchoredPosition.y - item0.sizeDelta.y,
+            item1.anchoredPosition.y, "строки пазов не перекрываются");
+    }
+
+    [Test]
+    public void Board_ReopenMenu_CollapsesGrooveSection()
+    {
+        var board = MakeBoard("B1");
+        _menu!.Open(board);
+        ClickGroovesHeader();
+        Assert.IsTrue(Panel().Find("CtxGrooveAdd").gameObject.activeSelf);
+
+        _menu!.Open(MakeBoard("B2"));
+
+        Assert.IsFalse(Panel().Find("CtxGrooveAdd").gameObject.activeSelf,
+            "меню открывается со свёрнутым списком пазов");
+    }
+
     [Test]
     public void Facade_GapSectionBottomAboveNextRow()
     {

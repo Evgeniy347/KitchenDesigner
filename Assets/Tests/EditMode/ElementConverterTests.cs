@@ -441,6 +441,31 @@ public class ElementConverterTests
         Assert.AreEqual("Src", go.name);
     }
 
+    // ── Пазы ──────────────────────────────────────────────────────────
+
+    [Test]
+    public void Convert_PartWithGrooves_ToFacade_DropsGrooves()
+    {
+        var src = Make<KitchenElement>("Grooved", new Vector3Int(600, 400, 18), Vector3.zero);
+        src.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Top));
+        Assert.AreEqual(1, src.Grooves.Count);
+
+        var result = ElementConverter.Convert(src, ElementConverter.TargetType.Facade);
+
+        Assert.IsFalse(result.SupportsGrooves, "фасад пазов не поддерживает");
+        Assert.AreEqual(0, result.Grooves.Count);
+    }
+
+    [Test]
+    public void Convert_FacadeToPart_LeavesPartWithoutGrooves()
+    {
+        var src = Make<FacadeElement>("Facade", new Vector3Int(600, 400, 18), Vector3.zero);
+        var result = ElementConverter.Convert(src, ElementConverter.TargetType.Part);
+
+        Assert.IsTrue(result.SupportsGrooves);
+        Assert.AreEqual(0, result.Grooves.Count);
+    }
+
     // ── Reflection: every public property is covered ──────────────────
 
     private static readonly HashSet<string> CommonProperties = new HashSet<string>
@@ -463,6 +488,7 @@ public class ElementConverterTests
     {
         // KitchenElement
         "PartName", "DimensionsMM", "Movable", "GroupId", "MaterialId", "Transparent", "Data",
+        "SupportsGrooves", "Grooves",
         // FacadeElement
         "GapLeft", "GapRight", "GapTop", "GapBottom", "GapMM", "Mode",
         "IsOpen", "DoorProgress", "IsDoorClosed", "ClosedPosition", "ClosedRotation",

@@ -37,6 +37,10 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _sashTypeDropdown;
         private TMP_InputField? _sillProtrusion;
         private TMP_Dropdown? _winModeDropdown;
+        private TMP_Text? _grooveCountLabel;
+        private TMP_Dropdown? _grooveSideDropdown, _grooveKindDropdown;
+        private readonly TMP_Text?[] _grooveItemLabels = new TMP_Text?[AppConstants.GROOVE_MAX_PER_PART];
+        private bool _groovesExpanded;  // раскрыт ли список пазов
 
         // ── Подсветка изменённых полей ──────────────────────────────────
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
@@ -64,6 +68,7 @@ namespace KitchenDesigner.Core.UI
 			public bool pillarOnly;       // показывать только для опор
 			public bool windowOnly;       // показывать только для окон
 			public bool doorOnly;         // показывать только для дверей
+			public bool partOnly;         // показывать только для базовой «детали» (пазы)
 			public bool hideForWindow;    // скрывать для окон (повороты — окно живёт на стене)
             public GameObject toggleGO;   // объект, который включать/выключать по режиму
             public System.Func<bool>? visibleWhen; // доп. условие видимости (состояние элемента)
@@ -128,6 +133,45 @@ namespace KitchenDesigner.Core.UI
             _h = Row(panel.transform, "Высота, мм");
             _d = Row(panel.transform, "Глубина, мм");
             _radius = RadialRow(panel.transform, "Радиус угла, мм");
+
+            // ── Пазы (только «деталь») ──────────────────────────────────
+            // Кнопка-раскрывашка «Пазы» + количество и стрелка. В раскрытом виде
+            // идут строки текущих пазов (по строке-слоту на каждый возможный паз;
+            // лишние слоты скрыты), а в конце — выбор стороны/типа и кнопка «+».
+            // Стрелки рисуем как ^/v: рантайм-атлас TMP собирается из LiberationSans,
+            // и наличие символов ▲/▼ в нём не гарантировано.
+            var grooveBtn = UIFactory.CreateButton("CtxGrooves", panel.transform, "Пазы",
+                new Vector2(-80, 0), new Vector2(200, BtnH), ToggleGrooves);
+            _grooveCountLabel = UIFactory.CreateLabel("CtxGrooveCount", panel.transform, "0  v", 15,
+                new Vector2(95, 0), new Vector2(120, BtnH), TextAnchor.MiddleLeft);
+            AddPartRow(BtnH, RowGap,
+                grooveBtn.GetComponent<RectTransform>(), _grooveCountLabel.rectTransform);
+
+            for (int i = 0; i < AppConstants.GROOVE_MAX_PER_PART; i++)
+            {
+                int index = i; // копия для замыкания: иначе все кнопки удаляли бы последний
+                var itemLbl = UIFactory.CreateLabel($"CtxGrooveItem{i}", panel.transform, "", 14,
+                    new Vector2(-40, 0), new Vector2(260, RowH), TextAnchor.MiddleLeft);
+                var delBtn = UIFactory.CreateButton($"CtxGrooveDel{i}", panel.transform, "X",
+                    new Vector2(145, 0), new Vector2(36, RowH), () => RemoveGroove(index));
+                _grooveItemLabels[i] = itemLbl;
+                AddPartRowWhen(() => _groovesExpanded && GrooveCount() > index, RowH, 4f,
+                    itemLbl.rectTransform, delBtn.GetComponent<RectTransform>());
+            }
+
+            // Порядок пунктов совпадает с порядком значений GrooveSide/GrooveKind.
+            var grooveSideOptions = new List<string> { "Верх", "Низ", "Лево", "Право" };
+            _grooveSideDropdown = UIFactory.CreateDropdown("CtxGrooveSide", panel.transform,
+                grooveSideOptions, new Vector2(-108, 0), new Vector2(112, 28), _ => { });
+            var grooveKindOptions = new List<string> { "Сквозной", "Глухой" };
+            _grooveKindDropdown = UIFactory.CreateDropdown("CtxGrooveKind", panel.transform,
+                grooveKindOptions, new Vector2(14, 0), new Vector2(112, 28), _ => { });
+            var grooveAddBtn = UIFactory.CreateButton("CtxGrooveAdd", panel.transform, "+",
+                new Vector2(132, 0), new Vector2(60, 28), AddGrooveFromUI);
+            AddPartRowWhen(() => _groovesExpanded, 28f, ActionGap,
+                _grooveSideDropdown.GetComponent<RectTransform>(),
+                _grooveKindDropdown.GetComponent<RectTransform>(),
+                grooveAddBtn.GetComponent<RectTransform>());
 
             // Зазоры (только для фасадов) — блок скрывается в режиме «деталь».
             var gapSection = CreateGapSection(panel.transform, out float gapSectionH);
@@ -573,6 +617,27 @@ namespace KitchenDesigner.Core.UI
             _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, doorOnly = true });
         }
 
+        // Строки секции пазов: видны только у базовой «детали».
+        private void AddPartRow(float height, float gapAfter, params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, partOnly = true });
+        }
+
+        // Part-строка с доп. условием (раскрыт ли список, есть ли паз с таким номером).
+        private void AddPartRowWhen(System.Func<bool> visibleWhen, float height, float gapAfter,
+            params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow
+            {
+                rects = rects, height = height, gapAfter = gapAfter,
+                partOnly = true, visibleWhen = visibleWhen,
+            });
+        }
+
         // Строка, скрываемая для окон (повороты: окно всегда стоит на стене).
         private void AddRowNoWindow(float height, float gapAfter, params RectTransform[] rects)
         {
@@ -663,7 +728,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Раскладка сверху вниз ───────────────────────────────────────
 
-		private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer, bool isTable, bool isPillar = false, bool isWindow = false, bool isDoor = false)
+		private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer, bool isTable, bool isPillar = false, bool isWindow = false, bool isDoor = false, bool isPart = false)
 		{
 			float cursor = TopPad;
 			float contentBottom = TopPad;
@@ -677,12 +742,15 @@ namespace KitchenDesigner.Core.UI
 					&& (!row.pillarOnly || isPillar)
 					&& (!row.windowOnly || isWindow)
 					&& (!row.doorOnly || isDoor)
+					&& (!row.partOnly || isPart)
 					&& !(row.hideForWindow && isWindow)
 					&& (row.visibleWhen == null || row.visibleWhen());
 
+				// Строку с visibleWhen тоже надо гасить: иначе скрытая строка
+				// оставалась бы на экране в позиции от прошлой раскладки.
 				if (row.toggleGO != null)
 					row.toggleGO.SetActive(visible);
-				else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly || row.pillarOnly || row.windowOnly || row.doorOnly || row.hideForWindow)
+				else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly || row.pillarOnly || row.windowOnly || row.doorOnly || row.partOnly || row.hideForWindow || row.visibleWhen != null)
                     foreach (var rt in row.rects)
                         if (rt != null) rt.gameObject.SetActive(visible);
 
@@ -799,6 +867,7 @@ namespace KitchenDesigner.Core.UI
             try
             {
                 _target = element;
+                _groovesExpanded = false; // список пазов открывается свёрнутым
                 if (SelectionManager.Instance != null)
                     SelectionManager.Instance.Select(element);
 
@@ -934,8 +1003,9 @@ namespace KitchenDesigner.Core.UI
                 }
 
                 // Пересчитываем раскладку под режим: секция зазоров показывается
-                // только для фасадов, радиус — только для радиусной полки, сдвиг ножек — только для столов (включая радиусные), панель сама подгоняется по высоте.
-			Layout(isFacade, assembled != null, isRadial, isDrawer, isTable || isRadiusTable, isPillar, isWindow || isDoor, isDoor);
+                // только для фасадов, радиус — только для радиусной полки, сдвиг ножек — только для столов (включая радиусные), пазы — только для базовой детали, панель сама подгоняется по высоте.
+			RefreshGrooveUI();
+			RelayoutForTarget();
 
                 RefreshTransformFields();
                 _transparentToggle!.SetIsOnWithoutNotify(element.Transparent);
@@ -1230,6 +1300,70 @@ namespace KitchenDesigner.Core.UI
                 if (SelectionManager.Instance != null)
                     SelectionManager.Instance.RefreshHighlight(a);
             }
+        }
+
+        // ── Пазы детали ───────────────────────────────────────────────
+        // Пазы правятся сразу (как режим/заполнение фасада) и в стек команд не
+        // попадают: отдельной команды отмены для них нет.
+
+        private int GrooveCount() => _target != null ? _target.Grooves.Count : 0;
+
+        private void ToggleGrooves()
+        {
+            _groovesExpanded = !_groovesExpanded;
+            RefreshGrooveUI();
+            RelayoutForTarget();
+        }
+
+        private void AddGrooveFromUI()
+        {
+            if (_target == null || _grooveSideDropdown == null || _grooveKindDropdown == null) return;
+            var spec = new GrooveSpec((GrooveKind)_grooveKindDropdown.value,
+                (GrooveSide)_grooveSideDropdown.value);
+            if (!_target.AddGroove(spec)) return; // дубль или достигнут предел
+            _groovesExpanded = true;
+            RefreshGrooveUI();
+            RelayoutForTarget();
+            RefreshHighlights();
+        }
+
+        private void RemoveGroove(int index)
+        {
+            if (_target == null || !_target.RemoveGrooveAt(index)) return;
+            RefreshGrooveUI();
+            RelayoutForTarget();
+            RefreshHighlights();
+        }
+
+        /// <summary>Обновить счётчик со стрелкой и подписи строк пазов.</summary>
+        private void RefreshGrooveUI()
+        {
+            if (_grooveCountLabel != null)
+                _grooveCountLabel.text = $"{GrooveCount()}  {(_groovesExpanded ? "^" : "v")}";
+
+            IReadOnlyList<GrooveSpec>? grooves = _target != null ? _target.Grooves : null;
+            for (int i = 0; i < _grooveItemLabels.Length; i++)
+            {
+                var lbl = _grooveItemLabels[i];
+                if (lbl == null) continue;
+                lbl.text = grooves != null && i < grooves.Count
+                    ? $"{GrooveSpec.Designation(grooves[i].kind)} — {GrooveSpec.SideLabel(grooves[i].side)}"
+                    : "";
+            }
+        }
+
+        /// <summary>Пересчитать раскладку под текущий элемент. Нужна там, где
+        /// меняется состав видимых строк без переоткрытия меню (пазы).</summary>
+        private void RelayoutForTarget()
+        {
+            if (_target == null) return;
+            bool isTable = _target is TableElement || _target is RadiusTableElement;
+            bool isWindow = _target is WindowElement;
+            bool isDoor = _target is DoorElement;
+            Layout(_target is FacadeElement, _target is AssembledFacadeElement,
+                _target is RadialShelfElement, _target is DrawerElement,
+                isTable, _target is PillarElement,
+                isWindow || isDoor, isDoor, _target.SupportsGrooves);
         }
 
         // ── Текстура/декор (детали и фасады) ────────────────────────────
