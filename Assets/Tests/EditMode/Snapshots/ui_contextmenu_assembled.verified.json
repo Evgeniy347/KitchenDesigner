@@ -1,4 +1,4 @@
-{
+﻿{
   "root": "ContextMenu",
   "children": [
     {
@@ -47,9 +47,14 @@
     },
     {
       "type": "Dropdown",
-      "options": ["Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно"],
+      "options": ["Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно", "Дверь"],
       "selected": 2,
       "position": [0, -48]
+    },
+    {
+      "type": "Label",
+      "text": "Высота Y, мм",
+      "position": [-80, -52]
     },
     {
       "type": "InputField",
@@ -67,11 +72,6 @@
     },
     {
       "type": "Label",
-      "text": "Высота Y, мм",
-      "position": [-80, -52]
-    },
-    {
-      "type": "Label",
       "text": "Название",
       "position": [-80, -83]
     },
@@ -83,6 +83,11 @@
       "position": [100, -83]
     },
     {
+      "type": "Label",
+      "text": "Ширина, мм",
+      "position": [-80, -114]
+    },
+    {
       "type": "InputField",
       "label": "Ширина, мм",
       "value": "450",
@@ -91,8 +96,8 @@
     },
     {
       "type": "Label",
-      "text": "Ширина, мм",
-      "position": [-80, -114]
+      "text": "Высота, мм",
+      "position": [-80, -145]
     },
     {
       "type": "InputField",
@@ -100,11 +105,6 @@
       "value": "700",
       "interactable": true,
       "position": [100, -145]
-    },
-    {
-      "type": "Label",
-      "text": "Высота, мм",
-      "position": [-80, -145]
     },
     {
       "type": "Label",
@@ -148,11 +148,6 @@
     },
     {
       "type": "Label",
-      "text": "Z, м",
-      "position": [110, -459]
-    },
-    {
-      "type": "Label",
       "text": "X, м",
       "position": [-110, -459]
     },
@@ -160,6 +155,11 @@
       "type": "Label",
       "text": "Y, м",
       "position": [0, -459]
+    },
+    {
+      "type": "Label",
+      "text": "Z, м",
+      "position": [110, -459]
     },
     {
       "type": "InputField",
@@ -170,22 +170,17 @@
     },
     {
       "type": "InputField",
-      "label": "Z, м",
-      "value": "0,000",
-      "interactable": true,
-      "position": [110, -479]
-    },
-    {
-      "type": "InputField",
       "label": "Y, м",
       "value": "0,350",
       "interactable": true,
       "position": [0, -479]
     },
     {
-      "type": "Label",
-      "text": "Z°",
-      "position": [110, -510]
+      "type": "InputField",
+      "label": "Z, м",
+      "value": "0,000",
+      "interactable": true,
+      "position": [110, -479]
     },
     {
       "type": "Label",
@@ -196,6 +191,18 @@
       "type": "Label",
       "text": "Y°",
       "position": [0, -510]
+    },
+    {
+      "type": "Label",
+      "text": "Z°",
+      "position": [110, -510]
+    },
+    {
+      "type": "InputField",
+      "label": "X°",
+      "value": "0,0",
+      "interactable": true,
+      "position": [-110, -530]
     },
     {
       "type": "InputField",
@@ -212,13 +219,6 @@
       "position": [110, -530]
     },
     {
-      "type": "InputField",
-      "label": "X°",
-      "value": "0,0",
-      "interactable": true,
-      "position": [-110, -530]
-    },
-    {
       "type": "Label",
       "text": "Повернуть на 90°:",
       "position": [0, -561]
@@ -230,13 +230,13 @@
     },
     {
       "type": "Button",
-      "text": "Z 90°",
-      "position": [112, -587]
+      "text": "Y 90°",
+      "position": [0, -587]
     },
     {
       "type": "Button",
-      "text": "Y 90°",
-      "position": [0, -587]
+      "text": "Z 90°",
+      "position": [112, -587]
     },
     {
       "type": "Button",

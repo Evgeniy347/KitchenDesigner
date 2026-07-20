@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -83,9 +84,35 @@ namespace KitchenDesigner.Tests
             var seen = new HashSet<GameObject>();
             Walk(root, nodes, seen);
 
-            nodes.Sort((a, b) => b.Position.y.CompareTo(a.Position.y));
+            nodes.Sort(CompareNodes);
 
             return new UiSnapshotZero { Root = root.name, Children = nodes };
+        }
+
+        /// <summary>
+        /// Полный (тотальный) порядок сортировки узлов: сверху вниз, затем слева
+        /// направо, затем по типу/имени/тексту.
+        ///
+        /// Раньше сравнение шло ТОЛЬКО по Position.y, а List.Sort (интросорт)
+        /// нестабилен: у десятка узлов тулбара y одинаковый (-6), поэтому их
+        /// взаимный порядок зависел от общего числа узлов в списке. Стоило
+        /// добавить одну кнопку — и весь файл эталона перетасовывался, а дифф
+        /// становился нечитаемым. Тотальный порядок делает вывод независимым от
+        /// порядка обхода и от количества узлов.
+        /// </summary>
+        private static int CompareNodes(UiNode a, UiNode b)
+        {
+            int c = b.Position.y.CompareTo(a.Position.y);
+            if (c != 0) return c;
+            c = a.Position.x.CompareTo(b.Position.x);
+            if (c != 0) return c;
+            c = string.CompareOrdinal(a.Type, b.Type);
+            if (c != 0) return c;
+            c = string.CompareOrdinal(a.Name, b.Name);
+            if (c != 0) return c;
+            c = string.CompareOrdinal(a.Text, b.Text);
+            if (c != 0) return c;
+            return string.CompareOrdinal(a.Label, b.Label);
         }
 
         private sealed class UiSnapshotZero
@@ -308,13 +335,41 @@ namespace KitchenDesigner.Tests
             sb.Append($"{ind}}}");
         }
 
+        // ── Маскирование волатильных значений ───────────────────────────
+
+        /// <summary>
+        /// Тексты, которые меняются сами по себе (номер версии, дата сборки) и
+        /// протухают в эталоне при каждом бампе. Значение вырезается, признак
+        /// «поле на месте и подписано так-то» остаётся.
+        /// </summary>
+        private static readonly (Regex Pattern, string Replacement)[] VolatileMasks =
+        {
+            (new Regex(@"^(Версия:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
+            (new Regex(@"^(Сборка:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
+            (new Regex(@"^(Version:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
+            (new Regex(@"^(Build:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
+        };
+
+        private static string Mask(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+            foreach (var (pattern, replacement) in VolatileMasks)
+            {
+                if (pattern.IsMatch(s))
+                    return pattern.Replace(s, replacement);
+            }
+            return s;
+        }
+
         private static string BoolStr(bool v) => v ? "true" : "false";
 
         private static string F(float f) => f.ToString("F0", CultureInfo.InvariantCulture);
 
+        /// <summary>Экранирование + маскирование волатильных значений.</summary>
         private static string Esc(string s)
         {
             if (string.IsNullOrEmpty(s)) return "";
+            s = Mask(s);
             return s.Replace("\\", "\\\\").Replace("\"", "\\\"")
                     .Replace("\n", "\\n").Replace("\r", "\\r").Replace("\t", "\\t");
         }

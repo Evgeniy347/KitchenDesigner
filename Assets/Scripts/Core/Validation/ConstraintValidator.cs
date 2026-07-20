@@ -172,6 +172,77 @@ namespace KitchenDesigner.Core
             return result;
         }
 
+        /// <summary>Панель <paramref name="panel"/> штатно сидит в пазу детали
+        /// <paramref name="board"/>: её номинал доходит до дна паза, но не пробивает
+        /// его насквозь. Проверяется по посадочным граням (дну пазов) — если панель
+        /// загнали глубже дна, это уже настоящее пересечение и оно останется красным.</summary>
+        private static bool IsSeatedInGroove(KitchenElement panel, KitchenElement board,
+            out KitchenElement.Face seatFace)
+        {
+            seatFace = default;
+            if (!(panel is PanelElement) || board == null) return false;
+
+            var seats = board.GetGrooveSeatFaces();
+            if (seats.Length == 0) return false;
+
+            var verts = panel.GetVertices();
+            foreach (var seat in seats)
+            {
+                float minAlong = float.MaxValue;
+                foreach (var v in verts)
+                    minAlong = Mathf.Min(minAlong, Vector3.Dot(v - seat.center, seat.normal));
+
+                // Все вершины панели — на внешней стороне дна паза (с допуском).
+                if (minAlong >= -Tolerance.SnapEpsilon) { seatFace = seat; return true; }
+            }
+            return false;
+        }
+
+        /// <summary>Панель в пазу: пересечение габаритов законно, но связность
+        /// должна видеть их СОЕДИНЁННЫМИ — иначе панель, освобождённая от overlap,
+        /// тут же становится нарушением как «висящая в воздухе». Паз конструктивно
+        /// и есть соединение, поэтому регистрируем полноценный контакт.</summary>
+        private static bool TrySeatedGrooveContact(KitchenElement a, KitchenElement b,
+            int aIdx, int bIdx, ValidationResult result)
+        {
+            if (IsSeatedInGroove(a, b, out var seat))
+            {
+                AddSeatContact(a, b, aIdx, bIdx, seat, panelIsA: true, result);
+                return true;
+            }
+            if (IsSeatedInGroove(b, a, out seat))
+            {
+                AddSeatContact(a, b, aIdx, bIdx, seat, panelIsA: false, result);
+                return true;
+            }
+            return false;
+        }
+
+        private static void AddSeatContact(KitchenElement a, KitchenElement b,
+            int aIdx, int bIdx, KitchenElement.Face seat, bool panelIsA, ValidationResult result)
+        {
+            // Грань панели смотрит НА дно паза, грань детали — вдоль его нормали.
+            int panelFace = FaceIndexByNormal(panelIsA ? _faces[aIdx] : _faces[bIdx], -seat.normal);
+            int boardFace = FaceIndexByNormal(panelIsA ? _faces[bIdx] : _faces[aIdx], seat.normal);
+            float area = Mathf.Abs(seat.size.x * seat.size.y);
+
+            result.contacts.Add(panelIsA
+                ? new FaceContact(a, b, panelFace, boardFace, area, true)
+                : new FaceContact(a, b, boardFace, panelFace, area, true));
+        }
+
+        private static int FaceIndexByNormal(KitchenElement.Face[] faces, Vector3 normal)
+        {
+            int best = 0;
+            float bestDot = float.MinValue;
+            for (int i = 0; i < faces.Length; i++)
+            {
+                float d = Vector3.Dot(faces[i].normal, normal);
+                if (d > bestDot) { bestDot = d; best = i; }
+            }
+            return best;
+        }
+
         private static void ProcessPair(int aIdx, int bIdx, float contactDist, ValidationResult result)
         {
             var a = _elems[aIdx];
@@ -201,6 +272,11 @@ namespace KitchenDesigner.Core
                     // Два разных ящика в одном модуле сюда не попадают (см. ветку выше).
                     if (a.GroupId != 0 && a.GroupId == b.GroupId) return;
                 }
+
+                // Вкладная панель, сидящая в пазу, ЗАКОННО заходит внутрь габарита
+                // детали — это конструкция, а не ошибка. Без этой ветки правильно
+                // посаженная ДВП подсвечивалась бы красным по всем четырём деталям.
+                if (TrySeatedGrooveContact(a, b, aIdx, bIdx, result)) return;
 
                 // Пересечение объёмов физически недопустимо: две детали не могут
                 // занимать одно место. Помечаем обе как нарушение (даже если по

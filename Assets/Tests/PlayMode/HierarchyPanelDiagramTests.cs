@@ -96,20 +96,16 @@ public class HierarchyPanelDiagramTests
     {
         var hidden = new List<GameObject>();
         RectTransform? panelRt = null;
+        Transform? panelT = null;
         Vector2 origAnchorMin = default, origAnchorMax = default, origPivot = default, origPos = default;
 
         if (panelName != null)
         {
-            foreach (Transform child in _uiCanvas!.transform)
-            {
-                if (child.name != panelName && child.gameObject.activeSelf)
-                {
-                    child.gameObject.SetActive(false);
-                    hidden.Add(child.gameObject);
-                }
-            }
-            var panelT = _uiCanvas!.transform.Find(panelName);
+            // HierarchyPanel лежит внутри WindowLayer, а не в корне канвы —
+            // рекурсивный поиск + послойное гашение соседей (см. UiTestTree).
+            panelT = UiTestTree.FindDeep(_uiCanvas!.transform, panelName);
             Assert.IsNotNull(panelT, $"Panel '{panelName}' not found under canvas");
+            hidden = UiTestTree.HideAllExcept(_uiCanvas!.transform, panelT!);
             panelRt = panelT!.GetComponent<RectTransform>();
             origAnchorMin = panelRt.anchorMin;
             origAnchorMax = panelRt.anchorMax;
@@ -172,9 +168,7 @@ public class HierarchyPanelDiagramTests
         Debug.Log($"[SCREENSHOT] Saved: {path} ({w}x{h})");
 
         // JSON-снапшот структуры: для панели — её поддерево, для полного кадра — канвас.
-        var jsonRoot = panelName != null
-            ? _uiCanvas!.transform.Find(panelName)!.gameObject
-            : _uiCanvas!.gameObject;
+        var jsonRoot = panelT != null ? panelT.gameObject : _uiCanvas!.gameObject;
         var jsonPath = Path.ChangeExtension(path, ".json");
         if (goldenJson)
             UiSnapshotEngine.CaptureVerified(jsonRoot, jsonPath); // + голден-матч
@@ -192,8 +186,7 @@ public class HierarchyPanelDiagramTests
             panelRt.pivot = origPivot;
             panelRt.anchoredPosition = origPos;
         }
-        foreach (var go in hidden)
-            go.SetActive(true);
+        UiTestTree.Restore(hidden);
 
         RenderTexture.active = null;
         cam.targetTexture = null;

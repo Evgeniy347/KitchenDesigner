@@ -160,6 +160,22 @@ namespace KitchenDesigner.Core
             return bestZero;
         }
 
+        /// <summary>Грань детали «съедена» пазом на участке, куда метит панель:
+        /// у грани та же нормаль, что у дна паза, и панель попадает в контур паза.
+        /// Тогда контактом служит дно, а не поверхность детали.</summary>
+        private static bool SeatSupersedesFace(KitchenElement.Face movedFace,
+            KitchenElement.Face otherFace, KitchenElement.Face[] seatFaces)
+        {
+            foreach (var seat in seatFaces)
+            {
+                // Пласть, в которой прорезан паз, — грань с той же нормалью.
+                if (Vector3.Dot(seat.normal, otherFace.normal) < Tolerance.ParallelDot) continue;
+                if (FacesOverlap(movedFace, seat, out float ratio, out _) && ratio > 0f)
+                    return true;
+            }
+            return false;
+        }
+
         /// <summary>Сбор кандидатов прилипания из позиции basePos: нормали
         /// «нулевых» пар (деталь уже заподлицо) идут в zeroNormals, содержательные
         /// кандидаты — в candidates. Оставляет moved в позиции basePos —
@@ -182,6 +198,14 @@ namespace KitchenDesigner.Core
 
                 KitchenElement.Face[] otherFaces = other.GetFaces();
 
+                // Пазы соседа как посадочные места — только для вкладной панели:
+                // толстая деталь в паз не садится, и предлагать ей дно паза значит
+                // ловить ложные притяжения внутрь короба. Дно паза участвует в том
+                // же попарном сопоставлении граней, что и обычный габарит.
+                KitchenElement.Face[] seatFaces = moved is PanelElement
+                    ? other.GetGrooveSeatFaces()
+                    : System.Array.Empty<KitchenElement.Face>();
+
                 // Габарит соседа — для проверки «кандидат не загоняет центр внутрь соседа».
                 Vector3[] oVerts = other.GetVertices();
                 float oMinX = oVerts[0].x, oMaxX = oVerts[0].x;
@@ -196,16 +220,25 @@ namespace KitchenDesigner.Core
 
                 for (int i = 0; i < 6; i++)
                 {
-                    for (int j = 0; j < 6; j++)
+                    // Грани соседа: сначала шесть габаритных, затем дно каждого паза.
+                    for (int j = 0; j < 6 + seatFaces.Length; j++)
                     {
+                        bool isSeat = j >= 6;
+                        var of = isSeat ? seatFaces[j - 6] : otherFaces[j];
+
+                        // Над пазом материала НЕТ: пласть там не поверхность контакта.
+                        // Без этого панель никогда бы не села в паз — подходя снаружи,
+                        // она всегда ближе к пласти (9 мм), чем к дну паза (2 мм),
+                        // и снэп возвращал бы её обратно на поверхность детали.
+                        if (!isSeat && SeatSupersedesFace(movedFaces[i], of, seatFaces)) continue;
+
                         // Контакт возможен только между гранями, смотрящими навстречу
                         // друг другу (нормали противоположны, dot≈-1). Со-направленные
                         // грани (dot≈+1) не образуют стык — иначе деталь липла бы «не с той стороны».
-                        float dot = Vector3.Dot(movedFaces[i].normal, otherFaces[j].normal);
+                        float dot = Vector3.Dot(movedFaces[i].normal, of.normal);
                         if (!Tolerance.IsParallel(dot) || dot > 0) continue;
 
                         var mf = movedFaces[i];
-                        var of = otherFaces[j];
 
                         Vector3 offset = of.center - mf.center;
                         float planeDist = Mathf.Abs(Vector3.Dot(offset, mf.normal));
@@ -238,7 +271,11 @@ namespace KitchenDesigner.Core
                         // Критерий — центр детали внутри габарита соседа: у контактов заподлицо
                         // центр всегда снаружи, а AABB-пересечение здесь не годится (у деталей,
                         // повёрнутых на 45°, AABB заведомо больше тела и даёт ложный отказ).
-                        if (snapPos.x > oMinX && snapPos.x < oMaxX &&
+                        // Для посадки в паз проверку не применяем: дно паза лежит
+                        // ВНУТРИ габарита детали, и «зайти внутрь» здесь — это ровно
+                        // то, что должно произойти.
+                        if (!isSeat &&
+                            snapPos.x > oMinX && snapPos.x < oMaxX &&
                             snapPos.y > oMinY && snapPos.y < oMaxY &&
                             snapPos.z > oMinZ && snapPos.z < oMaxZ)
                             continue;

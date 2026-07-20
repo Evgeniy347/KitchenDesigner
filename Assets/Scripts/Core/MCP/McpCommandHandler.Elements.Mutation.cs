@@ -40,7 +40,99 @@ namespace KitchenDesigner.Core.MCP
             if (IsNot<WindowElement>()) { if (op.tint != null) e.Add("tint"); if (op.sill_protrusion_mm.HasValue) e.Add("sill_protrusion_mm"); }
             if (IsNot<DoorElement>()) { if (op.sash_type != null) e.Add("sash_type"); }
             if (el is DrawerElement && (op.width.HasValue || op.height.HasValue || op.depth.HasValue)) e.Add("width/height/depth not settable on drawers (size is parametric)");
+
+            // Пазы принимает только базовая «деталь»: у фасада/полки/ящика своя
+            // процедурная геометрия, врезка в неё не определена.
+            if (op.grooves != null)
+            {
+                if (!el.SupportsGrooves)
+                    e.Add("grooves (plain boards only)");
+                else if (!TryParseGrooves(op.grooves, out _, out string grooveError))
+                    e.Add($"grooves: {grooveError}");
+            }
             return e;
+        }
+
+        /// <summary>Разбор списка пазов вида "through:top, blind:left". Пустая
+        /// строка — пустой набор (снять все пазы). Ошибки описательные: инструмент
+        /// вызывается вслепую, и «invalid» без деталей бесполезно.</summary>
+        public static bool TryParseGrooves(string spec, out List<GrooveSpec> result, out string error)
+        {
+            result = new List<GrooveSpec>();
+            error = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(spec)) return true;
+
+            foreach (var rawItem in spec.Split(','))
+            {
+                var item = rawItem.Trim();
+                if (item.Length == 0) continue;
+
+                var parts = item.Split(':');
+                if (parts.Length != 2)
+                {
+                    error = $"'{item}' is not \"kind:side\" (e.g. \"through:top\")";
+                    return false;
+                }
+
+                GrooveKind kind;
+                switch (parts[0].Trim().ToLowerInvariant())
+                {
+                    case "through": kind = GrooveKind.Through; break;
+                    case "blind": kind = GrooveKind.Blind; break;
+                    default:
+                        error = $"unknown kind '{parts[0].Trim()}' in '{item}' (expected through|blind)";
+                        return false;
+                }
+
+                GrooveSide side;
+                switch (parts[1].Trim().ToLowerInvariant())
+                {
+                    case "top": side = GrooveSide.Top; break;
+                    case "bottom": side = GrooveSide.Bottom; break;
+                    case "left": side = GrooveSide.Left; break;
+                    case "right": side = GrooveSide.Right; break;
+                    default:
+                        error = $"unknown side '{parts[1].Trim()}' in '{item}' (expected top|bottom|left|right)";
+                        return false;
+                }
+
+                var groove = new GrooveSpec(kind, side);
+                if (result.Contains(groove))
+                {
+                    error = $"duplicate groove '{item}' — offset is fixed, a second one would land on the first";
+                    return false;
+                }
+                if (result.Count >= AppConstants.GROOVE_MAX_PER_PART)
+                {
+                    error = $"too many grooves (max {AppConstants.GROOVE_MAX_PER_PART})";
+                    return false;
+                }
+                result.Add(groove);
+            }
+            return true;
+        }
+
+        /// <summary>Обратное представление для get_elements: "through:top, blind:left".</summary>
+        public static string FormatGrooves(KitchenElement el)
+        {
+            var grooves = el.Grooves;
+            if (grooves.Count == 0) return string.Empty;
+
+            var parts = new List<string>(grooves.Count);
+            foreach (var g in grooves)
+            {
+                string kind = g.kind == GrooveKind.Blind ? "blind" : "through";
+                string side = g.side switch
+                {
+                    GrooveSide.Top => "top",
+                    GrooveSide.Bottom => "bottom",
+                    GrooveSide.Left => "left",
+                    _ => "right",
+                };
+                parts.Add($"{kind}:{side}");
+            }
+            return string.Join(", ", parts);
         }
 
         private static bool TryParseDoorMode(string s, out DoorMode mode)
@@ -201,6 +293,10 @@ namespace KitchenDesigner.Core.MCP
                 if (el is FacadeElement facade && !(el is AssembledFacadeElement)) ApplyFacadeEdits(op, facade);
                 if (el is AssembledFacadeElement asmFacade) ApplyAssembledEdits(op, asmFacade);
                 if (el is RadialShelfElement shelf) ApplyRadialShelfEdits(op, shelf);
+                // Набор пазов задаётся целиком; строка уже проверена в ValidateEditOpFields.
+                if (op.grooves != null && el.SupportsGrooves
+                    && TryParseGrooves(op.grooves, out var parsedGrooves, out _))
+                    el.SetGrooves(parsedGrooves);
                 if (el is DrawerElement drawer) ApplyDrawerEdits(op, drawer);
                 if (el is TableElement table) ApplyTableEdits(op, table);
                 if (el is RadiusTableElement rt) ApplyRadiusTableEdits(op, rt);
@@ -527,6 +623,12 @@ namespace KitchenDesigner.Core.MCP
                         int rw = item.width ?? 600, rd = item.depth ?? 400;
                         go = ElementFactory.CreateRadialShelf(rw, rd, item.height ?? AppConstants.BOARD_THICKNESS_DEFAULT,
                             AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, item.name, pos);
+                        break;
+                    case "panel":
+                        // ДВП/ХДФ: тонкая вкладная панель, зазоры входят в габарит.
+                        go = ElementFactory.Instance.CreatePanel(
+                            new Vector3Int(item.width ?? 600, item.height ?? 400, item.depth ?? 3),
+                            item.name, pos);
                         break;
                     case "drawer":
                         go = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400, item.name, pos);

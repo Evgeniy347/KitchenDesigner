@@ -1,4 +1,4 @@
-{
+﻿{
   "root": "UICanvas",
   "children": [
     {
@@ -8,13 +8,13 @@
     },
     {
       "type": "Button",
-      "text": "BasePlate",
-      "position": [20, 0]
+      "text": "Кухня",
+      "position": [4, 0]
     },
     {
       "type": "Button",
-      "text": "Кухня",
-      "position": [4, 0]
+      "text": "BasePlate",
+      "position": [20, 0]
     },
     {
       "type": "Button",
@@ -23,13 +23,18 @@
     },
     {
       "type": "Button",
+      "text": "«",
+      "position": [4, -4]
+    },
+    {
+      "type": "Button",
       "text": "SbPin",
       "position": [46, -4]
     },
     {
       "type": "Button",
-      "text": "«",
-      "position": [4, -4]
+      "text": "+ Группа",
+      "position": [-38, -6]
     },
     {
       "type": "Button",
@@ -38,38 +43,13 @@
     },
     {
       "type": "Button",
-      "text": "+ Группа",
-      "position": [-38, -6]
+      "text": "Спецификация",
+      "position": [8, -6]
     },
     {
       "type": "Label",
       "text": "Сцена",
       "position": [14, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Режим: [ ]",
-      "position": [740, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Спецификация",
-      "position": [8, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Выравн.",
-      "position": [568, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Redo",
-      "position": [502, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Undo",
-      "position": [456, -6]
     },
     {
       "type": "Button",
@@ -88,11 +68,6 @@
     },
     {
       "type": "Button",
-      "text": "Распред.",
-      "position": [654, -6]
-    },
-    {
-      "type": "Button",
       "text": "SaveAs",
       "position": [352, -6]
     },
@@ -100,6 +75,51 @@
       "type": "Button",
       "text": "Load",
       "position": [398, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Undo",
+      "position": [456, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Redo",
+      "position": [502, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Выравн.",
+      "position": [568, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Распред.",
+      "position": [654, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Режим: [ ]",
+      "position": [740, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Тон: вкл",
+      "position": [908, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Свет: вкл",
+      "position": [1024, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Солнце",
+      "position": [1140, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Вершины: выкл",
+      "position": [1236, -6]
     },
     {
       "type": "Button",
@@ -114,88 +134,108 @@
     },
     {
       "type": "Button",
-      "text": "600×400×16",
+      "text": "Полка",
       "position": [22, -42]
     },
     {
       "type": "Button",
-      "text": "600×400×16 (радиусная)",
+      "text": "Радиусная полка",
       "position": [22, -71]
     },
     {
       "type": "Button",
+      "text": "ДВП/ХДФ",
+      "position": [22, -100]
+    },
+    {
+      "type": "Button",
       "text": "Фасады",
-      "position": [8, -100]
+      "position": [8, -129]
     },
     {
       "type": "Button",
       "text": "Фасад 800×400×18",
-      "position": [22, -134]
-    },
-    {
-      "type": "Button",
-      "text": "Фасад 600×400×18",
       "position": [22, -163]
     },
     {
       "type": "Button",
-      "text": "Сборный 450×700×18",
+      "text": "Фасад 600×400×18",
       "position": [22, -192]
     },
     {
       "type": "Button",
-      "text": "Сборный 600×716×18",
+      "text": "Сборный 450×700×18",
       "position": [22, -221]
     },
     {
       "type": "Button",
+      "text": "Сборный 600×716×18",
+      "position": [22, -250]
+    },
+    {
+      "type": "Button",
       "text": "Ящики GTV",
-      "position": [8, -250]
+      "position": [8, -279]
     },
     {
       "type": "Button",
       "text": "Ящик GTV",
-      "position": [22, -284]
+      "position": [22, -313]
     },
     {
       "type": "Button",
       "text": "Мебель",
-      "position": [8, -313]
+      "position": [8, -342]
     },
     {
       "type": "Button",
       "text": "Прямоугольный стол",
-      "position": [22, -347]
-    },
-    {
-      "type": "Button",
-      "text": "Радиусный стол",
       "position": [22, -376]
     },
     {
       "type": "Button",
+      "text": "Радиусный стол",
+      "position": [22, -405]
+    },
+    {
+      "type": "Button",
+      "text": "Ножка",
+      "position": [22, -434]
+    },
+    {
+      "type": "Button",
       "text": "Помещение",
-      "position": [8, -405]
+      "position": [8, -463]
     },
     {
       "type": "Button",
       "text": "Короб",
-      "position": [22, -439]
-    },
-    {
-      "type": "Button",
-      "text": "Стена",
-      "position": [22, -468]
-    },
-    {
-      "type": "Button",
-      "text": "Окно",
       "position": [22, -497]
     },
     {
       "type": "Button",
-      "text": "Размеры помещения",
+      "text": "Стена",
       "position": [22, -526]
+    },
+    {
+      "type": "Button",
+      "text": "Окно",
+      "position": [22, -555]
+    },
+    {
+      "type": "Button",
+      "text": "Дверь",
+      "position": [22, -584]
+    },
+    {
+      "type": "Button",
+      "text": "Пол",
+      "position": [22, -613]
+    },
+    {
+      "type": "Button",
+      "text": "Источник света",
+      "position": [22, -642]
     }
   ]
 }

@@ -64,19 +64,13 @@ public class ElementPropertyDiagramTests
     private IEnumerator CapturePanel(string panelName, string fileName,
         System.Action setupPanel, System.Action? teardownPanel = null)
     {
-        var hidden = new List<GameObject>();
-        foreach (Transform child in _uiCanvas!.transform)
-        {
-            if (child.name != panelName)
-            {
-                child.gameObject.SetActive(false);
-                hidden.Add(child.gameObject);
-            }
-        }
-
-        var panelT = _uiCanvas!.transform.Find(panelName);
+        // Панели-окна лежат внутри WindowLayer, а не в корне канвы — ищем рекурсивно
+        // и гасим соседей на каждом уровне вложенности (см. UiTestTree).
+        var panelT = UiTestTree.FindDeep(_uiCanvas!.transform, panelName);
         Assert.IsNotNull(panelT, $"Panel '{panelName}' not found under canvas");
-        var panelRt = panelT.GetComponent<RectTransform>();
+        var hidden = UiTestTree.HideAllExcept(_uiCanvas!.transform, panelT!);
+
+        var panelRt = panelT!.GetComponent<RectTransform>();
         var origAnchorMin = panelRt.anchorMin;
         var origAnchorMax = panelRt.anchorMax;
         var origPivot = panelRt.pivot;
@@ -139,7 +133,7 @@ public class ElementPropertyDiagramTests
         Debug.Log($"[SCREENSHOT] Saved: {path} ({panelW}x{panelH})");
 
         var jsonPath = Path.ChangeExtension(path, ".json");
-        UiSnapshotEngine.CaptureVerified(panelT.gameObject, jsonPath);
+        UiSnapshotEngine.CaptureVerified(panelT!.gameObject, jsonPath);
 
         teardownPanel?.Invoke();
 
@@ -153,8 +147,7 @@ public class ElementPropertyDiagramTests
         panelRt.anchoredPosition = origPos;
         panelRt.sizeDelta = origSize;
 
-        foreach (var go in hidden)
-            go.SetActive(true);
+        UiTestTree.Restore(hidden);
 
         RenderTexture.active = null;
         cam.targetTexture = null;
