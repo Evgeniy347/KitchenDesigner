@@ -40,7 +40,18 @@ namespace KitchenDesigner.Core
         public DrawerSystem System
         {
             get => _system;
-            set { if (_system == value) return; _system = value; RebuildMesh(); }
+            set
+            {
+                if (_system == value) return;
+                _system = value;
+                RebuildMesh();
+                // Обе коробки двойного ящика — одна система. Ведём от нижнего (как цвет).
+                if (!_isUpperDrawer)
+                {
+                    var pair = FindPairedDrawer();
+                    if (pair != null && pair._system != value) pair.System = value;
+                }
+            }
         }
 
         public DrawerType Type
