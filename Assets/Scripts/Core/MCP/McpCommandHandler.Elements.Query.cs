@@ -213,7 +213,34 @@ namespace KitchenDesigner.Core.MCP
                 });
             }
 
-            return McpResponse.Result(req.id, new { violations = list, count = list.Count });
+            // Полный анализ сцены (коллизии + предупреждения) с кодами — тот же
+            // источник, что и окно «Ошибки». Warnings НЕ подсвечиваются на сцене,
+            // но должны быть видны агенту через MCP.
+            var issues = new List<object>();
+            foreach (var iss in KitchenDesigner.Core.Analysis.SceneAnalyzer.Analyze())
+            {
+                if (nameFilter != null)
+                {
+                    bool match = (iss.Target != null && nameFilter.Contains(iss.Target.PartName))
+                              || (iss.Secondary != null && nameFilter.Contains(iss.Secondary.PartName));
+                    if (!match) continue;
+                }
+                issues.Add(new
+                {
+                    level = iss.Level.ToString().ToLowerInvariant(),
+                    code = iss.Code,
+                    detail = iss.Detail,
+                    message = iss.Message,
+                    target = iss.Target != null ? iss.Target.PartName : null,
+                    secondary = iss.Secondary != null ? iss.Secondary.PartName : null,
+                });
+            }
+
+            return McpResponse.Result(req.id, new
+            {
+                violations = list, count = list.Count,
+                issues, issueCount = issues.Count
+            });
         }
 
         private McpResponse HandleGetFloorInfo(McpRequest req)

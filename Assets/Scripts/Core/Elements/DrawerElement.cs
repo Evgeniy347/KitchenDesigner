@@ -172,6 +172,11 @@ namespace KitchenDesigner.Core
 
         public Quaternion ClosedRotation => (!_open && _t <= 0f) ? transform.rotation : _closedRot;
 
+        // Коллизии/связность считаются по ЗАКРЫТОЙ позе (как у фасада): выдвинутый
+        // ящик не должен «пересекать» свой фасад/корпус — открывание транзитно.
+        protected override Vector3 ValidationPosition => ClosedPosition;
+        protected override Quaternion ValidationRotation => ClosedRotation;
+
         public float AnimProgress => _t;
 
         public bool IsOpen => _open;

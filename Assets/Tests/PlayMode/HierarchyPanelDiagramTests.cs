@@ -248,4 +248,40 @@ public class HierarchyPanelDiagramTests
         yield return Capture(null, "ui_full_interface.png", 1920, 1080, recenter: false,
             setup: () => HierarchyPanelUI.Instance!.SetVisible(true), goldenJson: false);
     }
+
+    /// <summary>Наполнить сцену деталями, дающими смесь ошибок и предупреждений:
+    /// ящик без фасада (DRW-01), фасад с нулевым зазором (FAC-01), две полки почти
+    /// вплотную (GAP-01). Для окна «Ошибки».</summary>
+    private static void SpawnIssueShowcase()
+    {
+        // Ящик без прикреплённого фасада → DRW-01.
+        ElementFactory.CreateDrawer(DrawerType.B, 450, DrawerColor.Anthracite, 400,
+            "Ящик без фасада", new Vector3(0f, 0.55f, 0f));
+
+        // Фасад с нулевым зазором слева → FAC-01.
+        ElementFactory.CreateFacade(new Vector3Int(560, 720, 18), "Фасад без зазора",
+            new Vector3(1.2f, 0.55f, 0f), 0, 2, 2, 2);
+
+        // Две полки почти вплотную (зазор ~5 мм по Z) → GAP-01.
+        ElementFactory.CreatePart(new Vector3Int(600, 400, 18), "Полка A",
+            new Vector3(2.4f, 0.8f, 0f));
+        ElementFactory.CreatePart(new Vector3Int(600, 400, 18), "Полка B",
+            new Vector3(2.4f, 0.8f, 0.023f));
+    }
+
+    [UnityTest]
+    public IEnumerator ErrorPanel_ShowsIssues_SavesPng()
+    {
+        SpawnIssueShowcase();
+        yield return null;
+
+        // Голден-JSON волатилен (набор строк зависит от геометрии) — только PNG.
+        yield return Capture("ErrorPanel", "error_panel.png", 0, 0, recenter: true,
+            setup: () =>
+            {
+                var panel = Object.FindAnyObjectByType<ErrorPanelUI>();
+                Assert.IsNotNull(panel, "ErrorPanelUI not found");
+                panel!.SetVisible(true);
+            }, goldenJson: false);
+    }
 }

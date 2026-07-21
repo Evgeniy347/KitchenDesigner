@@ -1,0 +1,156 @@
+using System.Collections.Generic;
+
+namespace KitchenDesigner.Core.Analysis
+{
+    /// <summary>
+    /// Сборщик проблем сцены для окна анализа ошибок и MCP. Errors — коллизии
+    /// (<see cref="ConstraintValidator"/>). Warnings — потенциальные дефекты
+    /// сборки: почти-касания (недожатый снэп), зазоры фасада, ящик без фасада.
+    /// Новый источник = новый Collect-метод + коды в <see cref="IssueCatalog"/>.
+    /// Предупреждения НЕ подсвечиваются на сцене — только этот список.
+    /// </summary>
+    public static class SceneAnalyzer
+    {
+        /// <summary>Порог «почти касания», мм: зазор ≤ этого визуально трудно
+        /// заметить и вероятно означает недожатый снэп.</summary>
+        public const float NearContactMaxGapMm = 8f;
+
+        /// <summary>Минимальный технологический зазор фасада с каждой стороны, мм.</summary>
+        public const int FacadeMinGapMm = 1;
+
+        public static List<AnalysisIssue> Analyze()
+        {
+            var issues = new List<AnalysisIssue>();
+            var all = PartRegistry.GetAll();
+            if (all == null || all.Count == 0) return issues;
+
+            CollectCollisions(all, issues);
+            CollectNearContacts(all, issues);
+            CollectPanelSeating(all, issues);
+            CollectFacadeGaps(all, issues);
+            CollectDrawerFacadeLinks(all, issues);
+            return issues;
+        }
+
+        // ── Errors: коллизии ─────────────────────────────────────────────
+        private static void CollectCollisions(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            var result = ConstraintValidator.Validate(all);
+            if (result.diagnostics == null) return;
+            foreach (var diag in result.diagnostics)
+                issues.Add(IssueCatalog.FromViolation(diag));
+        }
+
+        // ── Warning: почти касание (зазор ≤ порога) ──────────────────────
+        private static void CollectNearContacts(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var nc in ConstraintValidator.FindNearContacts(all, NearContactMaxGapMm))
+                issues.Add(IssueCatalog.NearContact(nc.a, nc.b, nc.gapMm));
+        }
+
+        // ── Warning: вкладная панель (ДВП) не дошла до дна паза ──────────
+        private static void CollectPanelSeating(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var u in ConstraintValidator.FindUnseatedPanels(all))
+                issues.Add(IssueCatalog.PanelNotSeated(u.panel, u.board, u.insertionMm, u.depthMm));
+        }
+
+        // ── Warning: зазоры фасада < минимума ────────────────────────────
+        private static void CollectFacadeGaps(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var e in all)
+            {
+                if (!(e is FacadeElement f)) continue;
+                var bad = new List<string>();
+                if (f.GapLeft < FacadeMinGapMm) bad.Add($"слева {f.GapLeft}");
+                if (f.GapRight < FacadeMinGapMm) bad.Add($"справа {f.GapRight}");
+                if (f.GapTop < FacadeMinGapMm) bad.Add($"сверху {f.GapTop}");
+                if (f.GapBottom < FacadeMinGapMm) bad.Add($"снизу {f.GapBottom}");
+                if (bad.Count > 0)
+                    issues.Add(IssueCatalog.FacadeGap(f, string.Join(", ", bad)));
+            }
+        }
+
+        // ── Warning: ящик без ссылки на фасад ────────────────────────────
+        private static void CollectDrawerFacadeLinks(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var e in all)
+            {
+                if (!(e is DrawerElement d)) continue;
+                if (!string.IsNullOrEmpty(d.AttachedFacadeName)) continue;
+                // Верхний ящик двойной пары штатно без своего фасада — фасад у нижнего.
+                if (d.IsUpperDrawer && d.IsDouble) continue;
+                issues.Add(IssueCatalog.DrawerNoFacade(d));
+            }
+        }
+    }
+
+    /// <summary>Каталог кодов: единственный источник «причина → код + уровень +
+    /// текст». Коды стабильны (на них завязан фильтр по кодам) — только добавляются.
+    /// Errors: COL-xx (коллизии). Warnings: GAP-xx (зазор), FAC-xx (фасад),
+    /// DRW-xx (ящик).</summary>
+    public static class IssueCatalog
+    {
+        // Коллизии геометрии (ConstraintValidator).
+        public const string CodeOverlap = "COL-01";
+        public const string CodeUnsupported = "COL-02";
+        public const string CodeOutOfWallBounds = "COL-03";
+        // Предупреждения.
+        public const string CodeNearContact = "GAP-01";
+        public const string CodePanelNotSeated = "SEAT-01";
+        public const string CodeFacadeGap = "FAC-01";
+        public const string CodeDrawerNoFacade = "DRW-01";
+
+        public static AnalysisIssue FromViolation(ContactViolation v)
+        {
+            switch (v.kind)
+            {
+                case ViolationKind.Overlap:
+                    return new AnalysisIssue(IssueLevel.Error, CodeOverlap,
+                        PairDetail(v.element, v.other), "Детали пересекаются в объёме",
+                        v.element, v.other);
+
+                case ViolationKind.Unsupported:
+                    return new AnalysisIssue(IssueLevel.Error, CodeUnsupported,
+                        Name(v.element), "Деталь не имеет опоры — висит в воздухе",
+                        v.element);
+
+                case ViolationKind.OutOfWallBounds:
+                    return new AnalysisIssue(IssueLevel.Error, CodeOutOfWallBounds,
+                        Name(v.element), "Элемент выходит за габарит стены",
+                        v.element);
+
+                default:
+                    return new AnalysisIssue(IssueLevel.Error, "COL-00",
+                        Name(v.element), "Нарушение геометрии", v.element);
+            }
+        }
+
+        public static AnalysisIssue NearContact(KitchenElement a, KitchenElement b, float gapMm) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeNearContact,
+                PairDetail(a, b), $"Почти касается, зазор {gapMm:F1} мм (нет прямого контакта)",
+                a, b);
+
+        public static AnalysisIssue PanelNotSeated(KitchenElement panel, KitchenElement board,
+            float insertionMm, float depthMm) =>
+            new AnalysisIssue(IssueLevel.Warning, CodePanelNotSeated,
+                $"{Name(panel)} ↔ {Name(board)}",
+                $"Панель вошла в паз не до дна: {insertionMm:F1} из {depthMm:F1} мм",
+                panel, board);
+
+        public static AnalysisIssue FacadeGap(KitchenElement facade, string sides) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeFacadeGap,
+                Name(facade), $"Зазор фасада меньше {SceneAnalyzer.FacadeMinGapMm} мм: {sides}",
+                facade);
+
+        public static AnalysisIssue DrawerNoFacade(KitchenElement drawer) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeDrawerNoFacade,
+                Name(drawer), "Ящик без ссылки на фасад", drawer);
+
+        private static string Name(KitchenElement? e) =>
+            e != null && !string.IsNullOrEmpty(e.PartName) ? e.PartName : "—";
+
+        private static string PairDetail(KitchenElement? a, KitchenElement? b) =>
+            b != null ? $"{Name(a)} ↔ {Name(b)}" : Name(a);
+    }
+}

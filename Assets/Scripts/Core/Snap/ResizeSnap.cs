@@ -53,6 +53,31 @@ namespace KitchenDesigner.Core
                     }
                 }
 
+                // Дно паза как поверхность посадки — только для вкладной панели:
+                // растягивая ДВП, её грань доводят до дна паза (номиналом), а не до
+                // пласти детали. Дно встречное грани панели, проверяется как обычная
+                // грань. Толстой детали дно паза не предлагаем.
+                if (self is PanelElement)
+                {
+                    foreach (var seat in o.GetGrooveSeatFaces())
+                    {
+                        if (Vector3.Dot(seat.normal, normal) > -Tolerance.ParallelDot) continue;
+                        float d = Vector3.Dot(seat.center - faceCenter, normal);
+                        if (Mathf.Abs(d) > threshold + ThresholdEpsilon) continue;
+
+                        Rect sRect = RectFor(seat.center, uAxis, vAxis, seat.rightAxis, seat.upAxis,
+                            seat.size.x, seat.size.y);
+                        if (!Overlap(mRect, sRect)) continue;
+
+                        if (Mathf.Abs(d) < bestAbs)
+                        {
+                            bestAbs = Mathf.Abs(d);
+                            gap = d;
+                            found = true;
+                        }
+                    }
+                }
+
                 // Стенки пазов — разметочные плоскости, а не поверхности материала:
                 // растягиваемая деталь прилегает к пласти СНАРУЖИ и в паз не заходит.
                 // Отсюда два послабления против обычной грани:
