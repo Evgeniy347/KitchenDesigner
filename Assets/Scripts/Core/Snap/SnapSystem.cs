@@ -258,7 +258,11 @@ namespace KitchenDesigner.Core
 
                         if (!FacesOverlap(mf, of, out float overlapRatio, out bool hasLineContact))
                             continue;
-                        if (overlapRatio < Tolerance.MinSupportOverlap) continue;
+                        // При контакте по кромке (hasLineContact) грани выровнены
+                        // как минимум по одной оси — снэп должен срабатывать,
+                        // даже если overlapRatio по произведению ниже порога.
+                        if (overlapRatio < Tolerance.MinSnapOverlap && !hasLineContact)
+                            continue;
 
                         // Сдвиг вдоль нормали: плоскости становятся заподлицо.
                         float planeShift = Vector3.Dot(offset, mf.normal);
@@ -485,7 +489,7 @@ namespace KitchenDesigner.Core
                         var mf = movedFaces[i];
                         var of = otherFaces[j];
                         float gap = Mathf.Abs(Vector3.Dot(of.center - mf.center, mf.normal));
-                        bool hasOverlap = FacesOverlap(mf, of, out float ratio, out _);
+                        bool hasOverlap = FacesOverlap(mf, of, out float ratio, out bool hasLineContact);
 
                         // Лучшая пара — с перекрытием и минимальным зазором;
                         // пары без перекрытия штрафуются, но остаются кандидатами.
@@ -498,7 +502,7 @@ namespace KitchenDesigner.Core
                             n.gapMM = gap / AppConstants.MM_TO_UNITS;
                             n.overlapRatio = hasOverlap ? ratio : 0f;
                             n.withinThreshold = gap <= maxDist;
-                            n.overlapEnough = hasOverlap && ratio >= Tolerance.MinSupportOverlap;
+                            n.overlapEnough = hasOverlap && (ratio >= Tolerance.MinSnapOverlap || hasLineContact);
                         }
                     }
                 }
@@ -507,7 +511,7 @@ namespace KitchenDesigner.Core
                 n.verdict =
                     !n.hasFacingFaces ? $"нет встречных параллельных граней (лучший dot={n.bestDot:F3}) — деталь повёрнута?"
                     : !n.withinThreshold ? $"зазор {n.gapMM:F1} мм больше порога {report.thresholdMM:F0} мм"
-                    : !n.overlapEnough ? $"перекрытие граней {n.overlapRatio:P0} меньше минимума 30%"
+                    : !n.overlapEnough ? $"перекрытие граней {n.overlapRatio:P0} меньше минимума {Tolerance.MinSnapOverlap:P0}"
                     : n.intersects ? "AABB пересекаются из-за поворота, но снэп сработает (разведёт детали заподлицо)"
                     : "OK — прилипнет";
 
@@ -603,13 +607,12 @@ namespace KitchenDesigner.Core
             float interTop = Mathf.Min(aRect.yMax, bRect.yMax);
 
             // Полное разнесение по оси (зазор между гранями, а не касание) —
-            // перекрытия нет. Касание ровно по кромке (line contact) НЕ отбрасываем:
-            // грани выровнены по этой оси, и если по другой оси перекрытие достаточно,
-            // снэп должен сработать. Пример: тонкая боковина 18 мм по Z, полка под
-            // ней — Y-грани делят кромку Z (line contact), но по X полное перекрытие.
-            // Раньше line contact считался нулевым перекрытием и отбрасывал Y-снэп.
-            bool noContactU = interLeft > interRight + Tolerance.SnapEpsilon;
-            bool noContactV = interBottom > interTop + Tolerance.SnapEpsilon;
+            // перекрытия нет. Допуск ContactMm (0.5 мм) вместо SnapEpsilon (0.01 мм):
+            // микро-зазор до 0.5 мм считаем касанием — иначе из-за float-погрешности
+            // проекции граней на чужие оси могут дать ложный разрыв.
+            float contactMargin = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            bool noContactU = interLeft > interRight + contactMargin;
+            bool noContactV = interBottom > interTop + contactMargin;
             if (noContactU || noContactV)
             {
                 overlapRatio = 0;
@@ -643,7 +646,12 @@ namespace KitchenDesigner.Core
             if (lineV) ratioV = 1.0f;
             hasLineContact = lineU || lineV;
 
-            overlapRatio = ratioU * ratioV;
+            // При контакте по кромке хоть на одной оси грани гарантированно
+            // выровнены — произведение ratioU*ratioV избыточно штрафует за узкое
+            // перекрытие по второй оси. Достаточно нехудшей из осей.
+            overlapRatio = hasLineContact
+                ? Mathf.Max(ratioU, ratioV)
+                : ratioU * ratioV;
             return true;
         }
 
