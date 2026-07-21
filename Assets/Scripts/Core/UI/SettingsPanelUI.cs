@@ -112,7 +112,8 @@ namespace KitchenDesigner.Core.UI
                 TMP_InputField.ContentType.IntegerNumber,
                 (TMP_InputField f) =>
                 {
-                    if (int.TryParse(f.text, out int v)) { s.GridStep = v; f.text = s.GridStep.ToString(); }
+                    var val = ExpressionParser.EvaluateInt(f.text) ?? (int.TryParse(f.text, out int parsed) ? parsed : s.GridStep);
+                    s.GridStep = val; f.text = s.GridStep.ToString();
                 }, s.GridStep.ToString(), unit: "мм", indent: true);
 
             y -= 6;
@@ -123,7 +124,8 @@ namespace KitchenDesigner.Core.UI
                 TMP_InputField.ContentType.DecimalNumber,
                 (TMP_InputField f) =>
                 {
-                    if (float.TryParse(f.text, out float v)) { s.SnapThreshold = v; f.text = s.SnapThreshold.ToString("F0"); }
+                    var val = ExpressionParser.EvaluateFloat(f.text) ?? (float.TryParse(f.text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float parsed) ? parsed : s.SnapThreshold);
+                    s.SnapThreshold = val; f.text = s.SnapThreshold.ToString("F0");
                 }, s.SnapThreshold.ToString("F0"), unit: "мм", indent: true);
 
             y -= 6;
@@ -137,7 +139,8 @@ namespace KitchenDesigner.Core.UI
                 TMP_InputField.ContentType.IntegerNumber,
                 (TMP_InputField f) =>
                 {
-                    if (int.TryParse(f.text, out int v)) { s.AutoSaveInterval = v; f.text = s.AutoSaveInterval.ToString(); }
+                    var val = ExpressionParser.EvaluateInt(f.text) ?? (int.TryParse(f.text, out int parsed) ? parsed : s.AutoSaveInterval);
+                    s.AutoSaveInterval = val; f.text = s.AutoSaveInterval.ToString();
                 }, s.AutoSaveInterval.ToString(), unit: "с", indent: true);
 
             UpdateDependentStates();
@@ -230,7 +233,10 @@ namespace KitchenDesigner.Core.UI
                     new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0), new Vector2(ControlW, RowH), unit)
                 : UIFactory.CreateInputField("Fld_" + label, rowRect, initial,
                     new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0), new Vector2(ControlW, RowH));
-            field.contentType = contentType;
+            field.contentType = TMP_InputField.ContentType.Custom;
+            bool isDecimal = contentType == TMP_InputField.ContentType.DecimalNumber;
+            field.onValidateInput = (text, idx, ch) =>
+                char.IsDigit(ch) || ch == '+' || ch == '-' || ch == ' ' || (isDecimal && ch == '.') ? ch : '\0';
             TrackField(field, cleanValue);
             field.onEndEdit.AddListener(t =>
             {

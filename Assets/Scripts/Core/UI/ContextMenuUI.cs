@@ -325,11 +325,17 @@ namespace KitchenDesigner.Core.UI
             _rz = TriField(panel.transform, "Z, °", TriCol3);
             TriEndRow(hideForWindow: true);
 
-			foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
-            foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
+			foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion }) f!.contentType = TMP_InputField.ContentType.Custom;
+            foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.Custom;
             // Позиция — целые мм; углы — десятичные градусы.
-            foreach (var f in new[] { _x, _y, _z }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
-            foreach (var f in new[] { _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.DecimalNumber;
+            foreach (var f in new[] { _x, _y, _z }) f!.contentType = TMP_InputField.ContentType.Custom;
+            foreach (var f in new[] { _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.Custom;
+
+            // Арифметика: разрешаем + и - (пробелы допускаются, удаляются при вычислении).
+            foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z })
+                if (f != null) f.onValidateInput = (text, idx, ch) => char.IsDigit(ch) || ch == '+' || ch == '-' || ch == ' ' ? ch : '\0';
+            foreach (var f in new[] { _rx, _ry, _rz })
+                if (f != null) f.onValidateInput = (text, idx, ch) => char.IsDigit(ch) || ch == '+' || ch == '-' || ch == '.' || ch == ' ' ? ch : '\0';
 
             // Имя: недопустимые символы не даём набрать вовсе — иначе поле
             // показывало бы одно, а применилось бы очищенное другое.
@@ -1870,7 +1876,17 @@ namespace KitchenDesigner.Core.UI
         private int ParseIntField(TMP_InputField? f, int fallback)
         {
             if (f == null) return fallback;
-            if (int.TryParse(f.text, out int v)) return v;
+            var expr = f.text;
+            if (expr.Contains('+') || expr.Contains('-'))
+            {
+                var result = ExpressionParser.EvaluateInt(expr);
+                if (result.HasValue)
+                {
+                    f.text = result.Value.ToString();
+                    return result.Value;
+                }
+            }
+            if (int.TryParse(expr, out int v)) return v;
             MarkError(f);
             return fallback;
         }
@@ -1878,7 +1894,17 @@ namespace KitchenDesigner.Core.UI
         private float ParseAngle(TMP_InputField? f, float fallback)
         {
             if (f == null) return fallback;
-            if (float.TryParse(f.text, out float v)) return v;
+            var expr = f.text;
+            if (expr.Contains('+') || expr.Contains('-'))
+            {
+                var result = ExpressionParser.EvaluateFloat(expr);
+                if (result.HasValue)
+                {
+                    f.text = result.Value.ToString("F1");
+                    return result.Value;
+                }
+            }
+            if (float.TryParse(expr, out float v)) return v;
             MarkError(f);
             return fallback;
         }
@@ -1887,7 +1913,17 @@ namespace KitchenDesigner.Core.UI
         private float ParseMM(TMP_InputField? f, float fallbackMeters)
         {
             if (f == null) return fallbackMeters;
-            if (int.TryParse(f.text, out int mm)) return mm * AppConstants.MM_TO_UNITS;
+            var expr = f.text;
+            if (expr.Contains('+') || expr.Contains('-'))
+            {
+                var result = ExpressionParser.EvaluateInt(expr);
+                if (result.HasValue)
+                {
+                    f.text = result.Value.ToString();
+                    return result.Value * AppConstants.MM_TO_UNITS;
+                }
+            }
+            if (int.TryParse(expr, out int mm)) return mm * AppConstants.MM_TO_UNITS;
             MarkError(f);
             return fallbackMeters;
         }
