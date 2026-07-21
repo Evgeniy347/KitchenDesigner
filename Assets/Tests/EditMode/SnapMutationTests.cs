@@ -160,8 +160,12 @@ public class SnapMutationTests
                     }
                     else
                     {
-                        // ── Edge-contact: facing faces within threshold but overlapRatio<30% ──
-                        // Verify by moving toward the target — snap should work for edge contact
+                        // ── Edge-contact: facing faces within threshold, overlap < 30% ──
+                        // Only flag when faces have meaningful overlap (≥10%) but snap fails.
+                        // Below 10% is a valid no-snap case (MinSnapOverlap).
+                        if (r.overlapRatio < Tolerance.MinSnapOverlap) continue;
+
+                        // Verify by moving toward the target
                         float testOffsetMm = Mathf.Max(2f, r.gapMM * 0.5f);
                         testOffsetMm = Mathf.Min(testOffsetMm, snapThreshold - r.gapMM);
                         Vector3 towardPos = savedPos + normal * (testOffsetMm * 0.001f);
@@ -289,6 +293,8 @@ public class SnapMutationTests
                     }
                     else if (r.withinThreshold && r.hasFacingFaces)
                     {
+                        if (r.overlapRatio < Tolerance.MinSnapOverlap) continue;
+
                         float testOffMm = Mathf.Max(2f, r.gapMM * 0.5f);
                         testOffMm = Mathf.Min(testOffMm, snapThreshold - r.gapMM);
                         var faces3 = moved.GetFaces();
