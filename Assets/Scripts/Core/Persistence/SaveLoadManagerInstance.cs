@@ -290,6 +290,7 @@ namespace KitchenDesigner.Core
                         lightEl.TemperatureK = ed.lightTemperatureK;
                         lightEl.PowerW = ed.lightPowerW;
                         lightEl.DiffusionPct = ed.lightDiffusionPct;
+                        lightEl.UpLightPct = ed.lightUpPct;
                     }
                 }
                 created.Add(go);
