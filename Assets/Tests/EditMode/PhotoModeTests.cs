@@ -213,6 +213,41 @@ public class PhotoModeTests
     }
 
     [Test]
+    public void LightSource_MainFlux_PointsDown()
+    {
+        var go = new GameObject("Light");
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.EnsureLight();
+
+        Assert.AreEqual(LightType.Spot, ls.PointLight!.type, "главный поток — направленный прожектор");
+        Assert.Less(ls.PointLight!.transform.forward.y, -0.9f, "основной свет направлен вниз");
+        Assert.Greater(ls.PointLight!.spotAngle, 120f, "широкий конус — вниз и на стены");
+
+        // Вверх — направленный вверх и заметно слабее (глухой купол отражает вниз).
+        Assert.Greater(ls.UpLight!.transform.forward.y, 0.9f, "подсветка потолка направлена вверх");
+        Assert.Less(ls.UpLight!.intensity, ls.PointLight!.intensity * 0.5f, "вверх совсем немного");
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void LightSource_UpLightPct_ScalesUpFlux()
+    {
+        var go = new GameObject("Light");
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.EnsureLight();
+
+        ls.UpLightPct = 0;
+        Assert.AreEqual(0f, ls.UpLight!.intensity, 1e-4f, "0% — весь свет вниз");
+        ls.UpLightPct = 30;
+        Assert.Greater(ls.UpLight!.intensity, 0f, "больше % — заметнее подсветка вверх");
+        ls.UpLightPct = 999;
+        Assert.AreEqual(LightSourceElement.MAX_UP_PCT, ls.UpLightPct, "верхняя граница");
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
     public void LightSource_HasEmissivePlafond()
     {
         var go = new GameObject("Light");
