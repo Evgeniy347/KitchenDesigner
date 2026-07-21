@@ -136,7 +136,11 @@ namespace KitchenDesigner.Core
             float right = Mathf.Min(a.xMax, b.xMax);
             float bottom = Mathf.Max(a.yMin, b.yMin);
             float top = Mathf.Min(a.yMax, b.yMax);
-            return left < right && bottom < top; // строго положительная площадь
+            // Допускаем контакт по кромке (line contact): left==right или bottom==top
+            // означают касание ребром, а не зазор — снэп должен сработать.
+            // Допуск SnapEpsilon защищает от float-погрешности.
+            return left <= right + Tolerance.SnapEpsilon
+                && bottom <= top + Tolerance.SnapEpsilon;
         }
     }
 }
