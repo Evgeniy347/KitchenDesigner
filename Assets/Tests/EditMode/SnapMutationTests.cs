@@ -252,17 +252,14 @@ public class SnapMutationTests
                 // Diagnose snap after resize
                 var diagR = SnapSystem.Diagnose(moved, others, savedPos, maxNeighbors: 50);
 
-                // Verify ResizeSnap.SnapDelta agrees with Diagnose
-                int origDimVal = dimIdx switch { 0 => savedDims.x, 1 => savedDims.y, _ => savedDims.z };
-                float resizeShift = (newVal - origDimVal) * 0.5f * 0.001f;
+                // Verify ResizeSnap.SnapDelta agrees with Diagnose (face already at resized position)
                 var facesForRS = moved.GetFaces();
                 foreach (var r in diagR.neighbors)
                 {
                     if (!r.wouldSnap || !r.withinThreshold) continue;
                     if (r.movedFaceIndex < 0 || r.movedFaceIndex >= facesForRS.Length) continue;
                     var mf = facesForRS[r.movedFaceIndex];
-                    Vector3 cand = mf.center + mf.normal * resizeShift;
-                    if (!ResizeSnap.SnapDelta(cand, mf.normal, mf.rightAxis, mf.upAxis,
+                    if (!ResizeSnap.SnapDelta(mf.center, mf.normal, mf.rightAxis, mf.upAxis,
                         new Vector2(mf.size.x, mf.size.y), others, moved,
                         snapThreshold * 0.001f, out float rsGap))
                     {
