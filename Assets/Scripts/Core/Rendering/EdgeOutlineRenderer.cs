@@ -28,7 +28,9 @@ namespace KitchenDesigner.Core
         private void OnRenderObject()
         {
             var s = KitchenSettings.Instance;
-            if (s == null || !s.EdgeOutline || _lineMaterial == null) return;
+            // В фоторежиме контур (чёрные рёбра) выключен всегда — это техническая
+            // подсветка редактора, не нужная для «фото». Саму настройку не трогаем.
+            if (s == null || !s.EdgeOutline || _lineMaterial == null || PhotoMode.Active) return;
 
             _lineMaterial.SetPass(0);
             GL.PushMatrix();
