@@ -18,21 +18,53 @@ public class SnapMutationTests
     private string _json = "";
     private readonly List<string> _errors = new();
     private readonly List<string> _warnings = new();
+    private bool _prevAutoSave;
+    private bool _prevSpatialGrid;
+    private bool _prevEdgeOutline;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
+        var fullPath = Path.Combine(Application.dataPath, "../docs", SaveFileName);
+        Assert.IsTrue(File.Exists(fullPath), $"Save file not found: {fullPath}");
+        _json = File.ReadAllText(fullPath);
+        Assert.IsNotEmpty(_json);
+    }
+
+    [SetUp]
+    public void SetUp()
+    {
         var s = KitchenSettings.Instance;
+        Assert.IsNotNull(s);
+
+        // Save settings that we'll modify
+        _prevAutoSave = s.AutoSave;
+        _prevSpatialGrid = s.SpatialGrid;
+        _prevEdgeOutline = s.EdgeOutline;
+
+        s.AutoSave = false;
+        s.SpatialGrid = false;
+        s.EdgeOutline = false;
         s.SnapEnabled = true;
         s.SnapThreshold = 50f;
         s.BlockOnViolation = false;
         SnapSystem.VerboseLog = false;
+    }
 
-        var fullPath = Path.Combine(Application.dataPath, "../docs", SaveFileName);
-        Assert.IsTrue(File.Exists(fullPath),
-            $"Save file not found: {fullPath}");
-        _json = File.ReadAllText(fullPath);
-        Assert.IsNotEmpty(_json);
+    [TearDown]
+    public void TearDown()
+    {
+        ClearScene();
+        // Restore settings to avoid poisoning other tests
+        var s = KitchenSettings.Instance;
+        if (s != null)
+        {
+            s.AutoSave = _prevAutoSave;
+            s.SpatialGrid = _prevSpatialGrid;
+            s.EdgeOutline = _prevEdgeOutline;
+        }
+        _errors.Clear();
+        _warnings.Clear();
     }
 
     private void ClearScene()
