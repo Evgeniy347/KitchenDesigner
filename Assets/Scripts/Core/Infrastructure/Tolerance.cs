@@ -39,12 +39,6 @@ namespace KitchenDesigner.Core
         /// сразу после сработавшего снэпа.</summary>
         public const float MinSupportOverlap = 0.3f;
 
-        /// <summary>Минимальная доля перекрытия, при которой снэп срабатывает.
-        /// Ниже чем MinSupportOverlap: снэп может притянуть деталь даже при узком
-        /// перекрытии (10%), но связность потом подсветит недостаточную опору.
-        /// Избегает ситуации «грани вплотную, зазор 0, перекрытие 28% — снэпа нет».</summary>
-        public const float MinSnapOverlap = 0.1f;
-
         public static bool ApproxEqual(float a, float b) =>
             Mathf.Abs(a - b) < EpsilonUnits;
 

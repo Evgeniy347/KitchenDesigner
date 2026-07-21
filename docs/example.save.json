@@ -7622,12 +7622,12 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 1.6733397245407105,
+        "targetX": 1.6830534934997559,
         "targetY": 2.2069098949432375,
-        "targetZ": -3.2658936977386476,
-        "angleX": 7.199867248535156,
-        "angleY": -346.4003601074219,
-        "distance": 0.5
+        "targetZ": -3.2168350219726564,
+        "angleX": 6.799865245819092,
+        "angleY": -357.6003723144531,
+        "distance": 1.0000001192092896
     },
     "handleMode": "Resize",
     "basePlateValid": true,
