@@ -73,13 +73,14 @@ public class CameraControllerTests
     }
 
     [Test]
-    public void UpdateFloorVisibility_DisablesRenderer_WhenCameraBelowFloorTop()
+    public void UpdateFloorVisibility_DisablesRenderer_WhenCameraBelowFloorTop_AndLookingUp()
     {
         _cameraGo!.transform.position = new Vector3(0, -1f, 0);
+        _cameraGo!.transform.forward = new Vector3(0, 0.5f, 0.866f).normalized;
         _controller!.UpdateFloorVisibility();
 
         var renderer = _floorGo!.GetComponent<MeshRenderer>();
-        Assert.IsFalse(renderer.enabled, "floor should be invisible when camera is below it");
+        Assert.IsFalse(renderer.enabled, "floor should be invisible when camera is below it and looking up");
     }
 
     [Test]
@@ -93,13 +94,14 @@ public class CameraControllerTests
     }
 
     [Test]
-    public void UpdateFloorVisibility_DisablesCollider_WhenCameraBelowFloorTop()
+    public void UpdateFloorVisibility_DisablesCollider_WhenCameraBelowFloorTop_AndLookingUp()
     {
         _cameraGo!.transform.position = new Vector3(0, -1f, 0);
+        _cameraGo!.transform.forward = new Vector3(0, 0.5f, 0.866f).normalized;
         _controller!.UpdateFloorVisibility();
 
         var collider = _floorGo!.GetComponent<Collider>();
-        Assert.IsFalse(collider.enabled, "floor collider should be disabled when camera is below it");
+        Assert.IsFalse(collider.enabled, "floor collider should be disabled when camera is below it and looking up");
     }
 
     [Test]
@@ -110,6 +112,28 @@ public class CameraControllerTests
 
         var collider = _floorGo!.GetComponent<Collider>();
         Assert.IsTrue(collider.enabled, "floor collider should be enabled when camera is above it");
+    }
+
+    [Test]
+    public void UpdateFloorVisibility_KeepsFloorVisible_WhenCameraBelowFloorButLookingDown()
+    {
+        _cameraGo!.transform.position = new Vector3(0, -1f, 0);
+        _cameraGo!.transform.forward = new Vector3(0, -0.5f, 0.866f).normalized;
+        _controller!.UpdateFloorVisibility();
+
+        var renderer = _floorGo!.GetComponent<MeshRenderer>();
+        Assert.IsTrue(renderer.enabled, "floor should stay visible when camera is below but looking down");
+    }
+
+    [Test]
+    public void UpdateFloorVisibility_KeepsFloorVisible_WhenCameraAboveAndLookingUp()
+    {
+        _cameraGo!.transform.position = new Vector3(0, 10f, 0);
+        _cameraGo!.transform.forward = new Vector3(0, 0.5f, 0.866f).normalized;
+        _controller!.UpdateFloorVisibility();
+
+        var renderer = _floorGo!.GetComponent<MeshRenderer>();
+        Assert.IsTrue(renderer.enabled, "floor should stay visible when camera is above floor regardless of look direction");
     }
 
     [Test]
