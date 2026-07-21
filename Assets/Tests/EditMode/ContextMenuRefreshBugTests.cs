@@ -88,13 +88,13 @@ public class ContextMenuRefreshBugTests
         _element!.transform.position = new Vector3(1.5f, 2.5f, 3.5f);
         CallRefreshTransformFields();
 
-        // Сравниваем численно — локаль ОС может давать запятую вместо точки
-        Assert.AreEqual(1.5f, float.Parse(FieldText("_x")), 0.001f,
-            $"x field: expected 1.5, got '{FieldText("_x")}'");
-        Assert.AreEqual(2.5f, float.Parse(FieldText("_y")), 0.001f,
-            $"y field: expected 2.5, got '{FieldText("_y")}'");
-        Assert.AreEqual(3.5f, float.Parse(FieldText("_z")), 0.001f,
-            $"z field: expected 3.5, got '{FieldText("_z")}'");
+        // Позиция показывается в мм (правило 1 UI-GUIDELINES): 1,5 м = 1500 мм.
+        Assert.AreEqual(1500, int.Parse(FieldText("_x")),
+            $"x field: expected 1500 мм, got '{FieldText("_x")}'");
+        Assert.AreEqual(2500, int.Parse(FieldText("_y")),
+            $"y field: expected 2500 мм, got '{FieldText("_y")}'");
+        Assert.AreEqual(3500, int.Parse(FieldText("_z")),
+            $"z field: expected 3500 мм, got '{FieldText("_z")}'");
     }
 
     [Test]

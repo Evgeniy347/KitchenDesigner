@@ -48,7 +48,6 @@ namespace KitchenDesigner.Core.UI
 
             BuildTabs(panel.transform);
             BuildProjectTab(panel.transform, s);
-            BuildGraphicsTab(panel.transform);
             BuildAboutTab(panel.transform);
 
             SwitchTab(0);
@@ -58,6 +57,9 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, closeY), new Vector2(160, 40),
                 () => SetVisible(false));
 
+            // Крестик — как у всех окон (правило 7 UI-GUIDELINES).
+            UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
+
             _root!.SetActive(false);
         }
 
@@ -65,7 +67,9 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildTabs(Transform parent)
         {
-            string[] labels = { "Проект", "Графика", "О программе" };
+            // Вкладка «Графика» скрыта до появления содержимого: пустая вкладка
+            // в релизе — витрина недоделанности.
+            string[] labels = { "Проект", "О программе" };
             float tabW = (PanelW - 40) / labels.Length;
 
             for (int i = 0; i < labels.Length; i++)
@@ -101,39 +105,42 @@ namespace KitchenDesigner.Core.UI
             float y = ContentTopY;
 
             AddToggleRow(t, ref y, "Сетка", s.GridEnabled,
-                v => { s.GridEnabled = v; });
+                v => { s.GridEnabled = v; UpdateDependentStates(); });
 
-            AddInputRow(t, ref y, "Шаг сетки, мм", s.GridStep.ToString(),
+            // Зависимое поле: с отступом и неактивно при выключенном родителе.
+            _gridStepField = AddInputRow(t, ref y, "Шаг сетки", s.GridStep.ToString(),
                 TMP_InputField.ContentType.IntegerNumber,
                 (TMP_InputField f) =>
                 {
                     if (int.TryParse(f.text, out int v)) { s.GridStep = v; f.text = s.GridStep.ToString(); }
-                }, s.GridStep.ToString());
+                }, s.GridStep.ToString(), unit: "мм", indent: true);
 
             y -= 6;
-            AddToggleRow(t, ref y, "Снэппинг", s.SnapEnabled,
-                v => { s.SnapEnabled = v; });
+            AddToggleRow(t, ref y, "Привязка к деталям", s.SnapEnabled,
+                v => { s.SnapEnabled = v; UpdateDependentStates(); });
 
-            AddInputRow(t, ref y, "Порог снэпа, мм", s.SnapThreshold.ToString("F0"),
+            _snapThresholdField = AddInputRow(t, ref y, "Порог привязки", s.SnapThreshold.ToString("F0"),
                 TMP_InputField.ContentType.DecimalNumber,
                 (TMP_InputField f) =>
                 {
                     if (float.TryParse(f.text, out float v)) { s.SnapThreshold = v; f.text = s.SnapThreshold.ToString("F0"); }
-                }, s.SnapThreshold.ToString("F0"));
+                }, s.SnapThreshold.ToString("F0"), unit: "мм", indent: true);
 
             y -= 6;
-            AddToggleRow(t, ref y, "Блокировать ошибки", s.BlockOnViolation,
+            AddToggleRow(t, ref y, "Блокировать недопустимые изменения", s.BlockOnViolation,
                 v => { s.BlockOnViolation = v; });
 
             AddToggleRow(t, ref y, "Автосохранение", s.AutoSave,
-                v => { s.AutoSave = v; });
+                v => { s.AutoSave = v; UpdateDependentStates(); });
 
-            AddInputRow(t, ref y, "Интервал автосейва, с", s.AutoSaveInterval.ToString(),
+            _autoSaveIntervalField = AddInputRow(t, ref y, "Интервал автосохранения", s.AutoSaveInterval.ToString(),
                 TMP_InputField.ContentType.IntegerNumber,
                 (TMP_InputField f) =>
                 {
                     if (int.TryParse(f.text, out int v)) { s.AutoSaveInterval = v; f.text = s.AutoSaveInterval.ToString(); }
-                }, s.AutoSaveInterval.ToString());
+                }, s.AutoSaveInterval.ToString(), unit: "с", indent: true);
+
+            UpdateDependentStates();
 
             y -= 6;
             AddToggleRow(t, ref y, "Пространственная сетка", s.SpatialGrid,
@@ -151,15 +158,6 @@ namespace KitchenDesigner.Core.UI
             y -= 6;
             AddToggleRow(t, ref y, "Свободное панорамирование", s.CameraPanFree,
                 v => { s.CameraPanFree = v; });
-        }
-
-        // ── Tab: Графика ────────────────────────────────────
-
-        private void BuildGraphicsTab(Transform panel)
-        {
-            var page = new GameObject("Tab_Graphics");
-            page.transform.SetParent(panel, false);
-            _tabPages.Add(page);
         }
 
         // ── Tab: О программе ────────────────────────────────
@@ -196,17 +194,16 @@ namespace KitchenDesigner.Core.UI
 
         private void CreateRightToggle(string name, Transform parent, bool value, Action<bool> onChanged)
         {
+            // Хит-таргет — вся строка не нужна, но сам тоггл ≥32px (правило 8).
             var rect = UIFactory.CreateRect(name, parent);
-            rect.sizeDelta = new Vector2(26, RowH);
-            rect.anchoredPosition = new Vector2(ContentW * 0.5f - 13, 0);
+            rect.sizeDelta = new Vector2(32, RowH);
+            rect.anchoredPosition = new Vector2(ContentW * 0.5f - 16, 0);
 
             var toggle = rect.gameObject.AddComponent<Toggle>();
 
             var box = UIFactory.CreatePanel(name + "_Box", rect,
                 Vector2.zero, new Vector2(22, 22), UIFactory.FieldColor);
-            var check = UIFactory.CreateLabel(name + "_Check", box.transform, "X", 16,
-                Vector2.zero, new Vector2(22, 22), TextAnchor.MiddleCenter);
-            toggle.graphic = check;
+            toggle.graphic = UIFactory.CreateCheckmark(name + "_Check", box.transform);
             toggle.targetGraphic = box;
 
             toggle.isOn = value;
@@ -216,17 +213,23 @@ namespace KitchenDesigner.Core.UI
 
         private TMP_InputField AddInputRow(Transform parent, ref float y, string label,
             string initial, TMP_InputField.ContentType contentType,
-            Action<TMP_InputField> onEndEdit, string cleanValue)
+            Action<TMP_InputField> onEndEdit, string cleanValue,
+            string? unit = null, bool indent = false)
         {
             var rowRect = UIFactory.CreateRect("RowFld_" + label, parent);
             rowRect.sizeDelta = new Vector2(ContentW, RowH);
             rowRect.anchoredPosition = new Vector2(0, y);
 
-            UIFactory.CreateLabel("Lbl_" + label, rowRect, label, 16,
-                new Vector2(-(ContentW - LabelW) * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
+            float indentPx = indent ? 20f : 0f;
+            var lbl = UIFactory.CreateLabel("Lbl_" + label, rowRect, label, 16,
+                new Vector2(-(ContentW - LabelW) * 0.5f + indentPx, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
+            _rowLabels[label] = lbl;
 
-            var field = UIFactory.CreateInputField("Fld_" + label, rowRect, initial,
-                new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0), new Vector2(ControlW, RowH));
+            var field = unit != null
+                ? UIFactory.CreateNumberField("Fld_" + label, rowRect, initial,
+                    new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0), new Vector2(ControlW, RowH), unit)
+                : UIFactory.CreateInputField("Fld_" + label, rowRect, initial,
+                    new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0), new Vector2(ControlW, RowH));
             field.contentType = contentType;
             TrackField(field, cleanValue);
             field.onEndEdit.AddListener(t =>
@@ -239,7 +242,37 @@ namespace KitchenDesigner.Core.UI
             return field;
         }
 
+        // ── Зависимые поля ──────────────────────────────────
+        // Поле без родителя-тумблера бессмысленно — гасим его, а не оставляем
+        // редактируемым «в никуда».
+
+        private TMP_InputField? _gridStepField;
+        private TMP_InputField? _snapThresholdField;
+        private TMP_InputField? _autoSaveIntervalField;
+        private readonly Dictionary<string, TMPro.TextMeshProUGUI> _rowLabels = new();
+
+        private void UpdateDependentStates()
+        {
+            var s = KitchenSettings.Instance;
+            if (s == null) return;
+            SetFieldEnabled(_gridStepField, "Шаг сетки", s.GridEnabled);
+            SetFieldEnabled(_snapThresholdField, "Порог привязки", s.SnapEnabled);
+            SetFieldEnabled(_autoSaveIntervalField, "Интервал автосохранения", s.AutoSave);
+        }
+
+        private void SetFieldEnabled(TMP_InputField? field, string labelKey, bool enabled)
+        {
+            if (field == null) return;
+            field.interactable = enabled;
+            if (field.textComponent != null)
+                field.textComponent.color = enabled ? UIStyle.Text : UIStyle.TextDisabled;
+            if (_rowLabels.TryGetValue(labelKey, out var lbl))
+                lbl.color = enabled ? UIStyle.Text : UIStyle.TextDisabled;
+        }
+
         // ── Public API ──────────────────────────────────────
+
+        public bool IsVisible => _root != null && _root.activeSelf;
 
         public void Toggle() => SetVisible(_root != null && !_root.activeSelf);
 

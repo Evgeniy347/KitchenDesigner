@@ -54,11 +54,25 @@ namespace KitchenDesigner.Core.UI
             _ => TextAlignmentOptions.Left
         };
 
-        public static readonly Color PanelColor = new Color(0.12f, 0.12f, 0.14f, 0.92f);
-        public static readonly Color ButtonColor = new Color(0.22f, 0.24f, 0.30f, 1f);
-        public static readonly Color FieldColor = new Color(0.08f, 0.08f, 0.10f, 1f);
-        public static readonly Color HighlightColor = new Color(1f, 0.84f, 0.0f, 1f);
-        public static readonly Color TextColor = new Color(0.92f, 0.92f, 0.92f, 1f);
+        // Алиасы токенов UIStyle: существующие вызовы не требуют правок.
+        public static Color PanelColor => UIStyle.Panel;
+        public static Color ButtonColor => UIStyle.Surface;
+        public static Color FieldColor => UIStyle.Field;
+        public static Color HighlightColor => UIStyle.HighlightChanged;
+        public static Color TextColor => UIStyle.Text;
+
+        /// <summary>Единые состояния кнопок/тогглов: заметный hover, вдавленный
+        /// pressed, затемнённый disabled (правило 9 UI-GUIDELINES).</summary>
+        private static ColorBlock InteractiveColors()
+        {
+            var c = ColorBlock.defaultColorBlock;
+            c.normalColor = Color.white;
+            c.highlightedColor = new Color(1.22f, 1.22f, 1.22f, 1f);
+            c.selectedColor = Color.white;
+            c.pressedColor = new Color(0.78f, 0.78f, 0.78f, 1f);
+            c.disabledColor = new Color(0.55f, 0.55f, 0.55f, 0.7f);
+            return c;
+        }
 
         public static void AnchorTopLeft(RectTransform rt)
         {
@@ -158,6 +172,7 @@ namespace KitchenDesigner.Core.UI
             img.color = ButtonColor;
 
             var button = rect.gameObject.AddComponent<Button>();
+            button.colors = InteractiveColors();
             if (onClick != null)
                 button.onClick.AddListener(() => onClick());
 
@@ -168,6 +183,59 @@ namespace KitchenDesigner.Core.UI
             label.rectTransform.offsetMax = Vector2.zero;
 
             return button;
+        }
+
+        /// <summary>Кнопка деструктивного действия: красная (UIStyle.Danger),
+        /// по правилу 3 — не на всю ширину и отделена от прочих контролов.</summary>
+        public static Button CreateDangerButton(string name, Transform parent, string text, Vector2 anchoredPos, Vector2 size, System.Action? onClick)
+        {
+            var button = CreateButton(name, parent, text, anchoredPos, size, onClick);
+            button.GetComponent<Image>().color = UIStyle.Danger;
+            return button;
+        }
+
+        /// <summary>Стандартная кнопка закрытия окна: «×» 32×32 в правом верхнем
+        /// углу с отступом 8 px (правило 7 UI-GUIDELINES).</summary>
+        public static Button CreateCloseButton(Transform windowPanel, System.Action onClose)
+        {
+            var btn = CreateButton("CloseBtn", windowPanel, UIStyle.GlyphClose,
+                Vector2.zero, new Vector2(UIStyle.CloseBtnSize, UIStyle.CloseBtnSize), onClose);
+            var rt = btn.GetComponent<RectTransform>();
+            AnchorTopRight(rt);
+            rt.anchoredPosition = new Vector2(-UIStyle.CloseBtnInset, -UIStyle.CloseBtnInset);
+            var lbl = btn.GetComponentInChildren<TMP_Text>();
+            if (lbl != null) lbl.fontSize = 20;
+            btn.transform.SetAsLastSibling();
+            return btn;
+        }
+
+        /// <summary>Заголовок секции формы: подпись вторичным цветом + тонкая
+        /// линия до правого края (правило 6 UI-GUIDELINES).</summary>
+        public static RectTransform CreateSectionHeader(string name, Transform parent, string title, float width)
+        {
+            var rect = CreateRect(name, parent);
+            rect.sizeDelta = new Vector2(width, 18f);
+
+            var label = CreateLabel(name + "_Label", rect, title, UIStyle.FontSection,
+                Vector2.zero, new Vector2(width, 18f), TextAnchor.MiddleLeft);
+            label.color = UIStyle.TextSecondary;
+            var lRt = label.rectTransform;
+            lRt.anchorMin = Vector2.zero; lRt.anchorMax = Vector2.one;
+            lRt.offsetMin = Vector2.zero; lRt.offsetMax = Vector2.zero;
+            label.ForceMeshUpdate();
+            float textW = label.GetPreferredValues(title, width, 18f).x;
+
+            var line = CreateRect(name + "_Line", rect);
+            line.anchorMin = new Vector2(0, 0.5f);
+            line.anchorMax = new Vector2(1, 0.5f);
+            line.pivot = new Vector2(0, 0.5f);
+            line.offsetMin = new Vector2(textW + 8f, -0.5f);
+            line.offsetMax = new Vector2(0, 0.5f);
+            var lineImg = line.gameObject.AddComponent<Image>();
+            lineImg.color = UIStyle.Separator;
+            lineImg.raycastTarget = false;
+
+            return rect;
         }
 
         /// <summary>Кнопка с иконкой-спрайтом по центру вместо текста.</summary>
@@ -181,6 +249,7 @@ namespace KitchenDesigner.Core.UI
             bg.color = ButtonColor;
 
             var button = rect.gameObject.AddComponent<Button>();
+            button.colors = InteractiveColors();
             if (onClick != null)
                 button.onClick.AddListener(() => onClick());
 
@@ -233,13 +302,49 @@ namespace KitchenDesigner.Core.UI
             return input;
         }
 
+        /// <summary>Числовое поле с единицей измерения серым суффиксом внутри
+        /// поля («800 мм») — правило 1 UI-GUIDELINES: единица в поле, не в подписи.</summary>
+        public static TMP_InputField CreateNumberField(string name, Transform parent, string initial,
+            Vector2 anchoredPos, Vector2 size, string unit)
+        {
+            var input = CreateInputField(name, parent, initial, anchoredPos, size);
+
+            var rect = (RectTransform)input.transform;
+            var unitLbl = CreateLabel(name + "_Unit", rect, unit, 13,
+                Vector2.zero, new Vector2(34, size.y), TextAnchor.MiddleRight);
+            unitLbl.color = UIStyle.TextSecondary;
+            unitLbl.raycastTarget = false;
+            var uRt = unitLbl.rectTransform;
+            uRt.anchorMin = uRt.anchorMax = uRt.pivot = new Vector2(1, 0.5f);
+            uRt.anchoredPosition = new Vector2(-6, 0);
+
+            // Текст не должен заезжать под суффикс.
+            var viewport = input.textViewport;
+            if (viewport != null)
+                viewport.offsetMax = new Vector2(-(10f + unitLbl.GetPreferredValues(unit).x), viewport.offsetMax.y);
+
+            return input;
+        }
+
         /// <summary>Подсветить/снять подсветку изменённого поля (жёлтая рамка).</summary>
         public static void SetHighlight(TMP_InputField field, bool highlight)
         {
             if (field == null) return;
             var outline = field.GetComponent<Outline>();
-            if (outline != null)
-                outline.enabled = highlight;
+            if (outline == null) return;
+            outline.effectColor = UIStyle.HighlightChanged;
+            outline.enabled = highlight;
+        }
+
+        /// <summary>Красная рамка «значение не принято» (правило 2: невалидный
+        /// ввод не откатывается молча). Снимается любым следующим SetHighlight.</summary>
+        public static void SetErrorHighlight(TMP_InputField field)
+        {
+            if (field == null) return;
+            var outline = field.GetComponent<Outline>();
+            if (outline == null) return;
+            outline.effectColor = UIStyle.HighlightError;
+            outline.enabled = true;
         }
 
         /// <summary>Горизонтальный слайдер, собранный из кода: фон, заполнение
@@ -304,10 +409,10 @@ namespace KitchenDesigner.Core.UI
             rect.anchoredPosition = anchoredPos;
 
             var toggle = rect.gameObject.AddComponent<Toggle>();
+            toggle.colors = InteractiveColors();
 
             var box = CreatePanel(name + "_Box", rect, new Vector2(-size.x * 0.5f + 14, 0), new Vector2(22, 22), FieldColor);
-            var check = CreateLabel(name + "_Check", box.transform, "X", 16, Vector2.zero, new Vector2(22, 22), TextAnchor.MiddleCenter);
-            toggle.graphic = check;
+            toggle.graphic = CreateCheckmark(name + "_Check", box.transform);
             toggle.targetGraphic = box;
 
             const float textInset = 36f;
@@ -318,6 +423,21 @@ namespace KitchenDesigner.Core.UI
             if (onChanged != null)
                 toggle.onValueChanged.AddListener(v => onChanged(v));
             return toggle;
+        }
+
+        /// <summary>Галочка чекбокса: акцентный квадрат-заливка внутри бокса.
+        /// Image, а не текстовый глиф — ✓ отсутствует в атласе LiberationSans,
+        /// а буква «X» читается как «закрыть/удалить» (правило 4).</summary>
+        public static Image CreateCheckmark(string name, Transform box)
+        {
+            var rt = CreateRect(name, box);
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(12, 12);
+            rt.anchoredPosition = Vector2.zero;
+            var img = rt.gameObject.AddComponent<Image>();
+            img.color = UIStyle.Accent;
+            img.raycastTarget = false;
+            return img;
         }
 
         /// <summary>Выпадающий список (TMPro Dropdown), собранный из кода —
@@ -334,13 +454,16 @@ namespace KitchenDesigner.Core.UI
             bg.color = ButtonColor;
 
             var dropdown = rect.gameObject.AddComponent<TMP_Dropdown>();
+            dropdown.colors = InteractiveColors();
 
             var caption = CreateLabel(name + "_Label", rect, "", 15, Vector2.zero, size, TextAnchor.MiddleLeft);
             var capRt = caption.rectTransform;
             capRt.anchorMin = Vector2.zero; capRt.anchorMax = Vector2.one;
             capRt.offsetMin = new Vector2(8, 2); capRt.offsetMax = new Vector2(-18, -2);
 
-            var arrow = CreateLabel(name + "_Arrow", rect, "v", 14, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
+            var arrow = CreateLabel(name + "_Arrow", rect, UIStyle.GlyphDropdown, 10, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
+            arrow.color = UIStyle.TextSecondary;
+            arrow.raycastTarget = false;
             var arRt = arrow.rectTransform;
             arRt.anchorMin = arRt.anchorMax = arRt.pivot = new Vector2(1, 0.5f);
             arRt.sizeDelta = new Vector2(16, 16); arRt.anchoredPosition = new Vector2(-4, 0);

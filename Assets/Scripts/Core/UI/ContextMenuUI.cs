@@ -39,15 +39,22 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _winModeDropdown;
         private TMP_Text? _grooveCountLabel;
         private TMP_Dropdown? _grooveSideDropdown, _grooveKindDropdown;
-        private readonly TMP_Text?[] _grooveItemLabels = new TMP_Text?[AppConstants.GROOVE_MAX_PER_PART];
+        // Строки-слоты пазов: сторона и тип редактируются на месте (правка =
+        // прямое действие, отдельного режима «редактирования» нет).
+        private readonly TMP_Dropdown?[] _grooveRowSide = new TMP_Dropdown?[AppConstants.GROOVE_MAX_PER_PART];
+        private readonly TMP_Dropdown?[] _grooveRowKind = new TMP_Dropdown?[AppConstants.GROOVE_MAX_PER_PART];
         private bool _groovesExpanded;  // раскрыт ли список пазов
+        private int _grooveFingerprint; // отлов изменений пазов извне (undo/MCP)
 
         // ── Подсветка изменённых полей ──────────────────────────────────
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
+        // Поля, чей последний ввод не был принят (красная рамка до следующей правки).
+        private readonly List<TMP_InputField> _errorFields = new();
         private int _applyFrame = -1;  // защита от двойного Apply
         private bool _opening;  // защита от OnSelectionChanged → Close() внутри Open()
         private bool _currentIsTable;  // true когда текущий элемент — стол
         private bool _currentIsDoor;   // true когда текущий элемент — дверь
+        private string _currentTypeName = "Деталь"; // для заголовка «Тип — Имя»
 
         // ── Раскладка ──────────────────────────────────────────────────
         // Меню собирается один раз (Build), а позиции пересчитываются в Layout
@@ -126,57 +133,73 @@ namespace KitchenDesigner.Core.UI
             _layout.Clear();
 
             // Заголовок — первая строка потока (стоит вплотную под верхом панели).
-            _titleLabel = UIFactory.CreateLabel("CtxTitle", panel.transform, "деталь", 20,
-                Vector2.zero, new Vector2(340, TitleH), TextAnchor.MiddleCenter);
+            // Показывает «Тип — Имя», чтобы окна разных элементов были различимы.
+            _titleLabel = UIFactory.CreateLabel("CtxTitle", panel.transform, "Деталь", 20,
+                Vector2.zero, new Vector2(300, TitleH), TextAnchor.MiddleCenter);
+            _titleLabel.overflowMode = TextOverflowModes.Ellipsis;
+            _titleLabel.enableWordWrapping = false;
             AddRow(TitleH, TitleGap, _titleLabel.rectTransform);
 
             // Тип детали: конвертация между Part / Facade / AssembledFacade / RadialShelf.
+            // Смена типа пересоздаёт элемент, поэтому контрол обязан быть подписан.
             var typeOptions = new List<string> { "Деталь", "Фасад", "Сборный фасад", "Радиусная полка", "Ящик GTV", "Окно", "Дверь" };
-            _typeDropdown = UIFactory.CreateDropdown("CtxType", panel.transform, typeOptions,
-                new Vector2(0, 0), new Vector2(332, 28), OnTypeSelected);
-            AddRow(28f, RowGap, _typeDropdown.GetComponent<RectTransform>());
+            _typeDropdown = LabeledDropdownRow(panel.transform, "Тип", typeOptions, OnTypeSelected, AddRow, "CtxType");
 
             // Размеры.
             _name = NameRow(panel.transform);
-            _w = Row(panel.transform, "Ширина, мм");
-            _h = Row(panel.transform, "Высота, мм");
-            _d = Row(panel.transform, "Глубина, мм");
-            _radius = RadialRow(panel.transform, "Радиус угла, мм");
+            AddRow(18f, RowGap, UIFactory.CreateSectionHeader("CtxSecDims", panel.transform, "Размеры", 332f));
+            _w = Row(panel.transform, "Ширина");
+            _h = Row(panel.transform, "Высота");
+            _d = Row(panel.transform, "Глубина");
+            _radius = RadialRow(panel.transform, "Радиус угла");
 
             // ── Пазы (только «деталь») ──────────────────────────────────
-            // Кнопка-раскрывашка «Пазы» + количество и стрелка. В раскрытом виде
-            // идут строки текущих пазов (по строке-слоту на каждый возможный паз;
-            // лишние слоты скрыты), а в конце — выбор стороны/типа и кнопка «+».
-            // Стрелки рисуем как ^/v: рантайм-атлас TMP собирается из LiberationSans,
-            // и наличие символов ▲/▼ в нём не гарантировано.
-            var grooveBtn = UIFactory.CreateButton("CtxGrooves", panel.transform, "Пазы",
-                new Vector2(-80, 0), new Vector2(200, BtnH), ToggleGrooves);
-            _grooveCountLabel = UIFactory.CreateLabel("CtxGrooveCount", panel.transform, "0  v", 15,
-                new Vector2(95, 0), new Vector2(120, BtnH), TextAnchor.MiddleLeft);
-            AddPartRow(BtnH, RowGap,
-                grooveBtn.GetComponent<RectTransform>(), _grooveCountLabel.rectTransform);
+            // Кнопка-раскрывашка «Пазы (N) ▼» на всю ширину. В раскрытом виде —
+            // строка-подсказка с размерами паза, строки текущих пазов (сторона и
+            // тип редактируются на месте, справа — удаление), в конце — выбор
+            // параметров нового паза и кнопка «Добавить».
+            var grooveBtn = UIFactory.CreateButton("CtxGrooves", panel.transform, "Пазы (0)",
+                new Vector2(0, 0), new Vector2(332, BtnH), ToggleGrooves);
+            _grooveCountLabel = grooveBtn.GetComponentInChildren<TMP_Text>();
+            AddPartRow(BtnH, RowGap, grooveBtn.GetComponent<RectTransform>());
 
-            for (int i = 0; i < AppConstants.GROOVE_MAX_PER_PART; i++)
-            {
-                int index = i; // копия для замыкания: иначе все кнопки удаляли бы последний
-                var itemLbl = UIFactory.CreateLabel($"CtxGrooveItem{i}", panel.transform, "", 14,
-                    new Vector2(-40, 0), new Vector2(260, RowH), TextAnchor.MiddleLeft);
-                var delBtn = UIFactory.CreateButton($"CtxGrooveDel{i}", panel.transform, "X",
-                    new Vector2(145, 0), new Vector2(36, RowH), () => RemoveGroove(index));
-                _grooveItemLabels[i] = itemLbl;
-                AddPartRowWhen(() => _groovesExpanded && GrooveCount() > index, RowH, 4f,
-                    itemLbl.rectTransform, delBtn.GetComponent<RectTransform>());
-            }
+            // Размеры паза фиксированы технологией — показываем их с единицами,
+            // а не шифром «16*4*7».
+            var grooveHint = UIFactory.CreateLabel("CtxGrooveHint", panel.transform,
+                $"Паз: ширина {AppConstants.GROOVE_WIDTH_MM} мм, глубина {AppConstants.GROOVE_DEPTH_MM} мм, отступ от кромки {AppConstants.GROOVE_OFFSET_MM} мм",
+                12, new Vector2(0, 0), new Vector2(332, 16), TextAnchor.MiddleLeft);
+            grooveHint.color = UIStyle.TextSecondary;
+            AddPartRowWhen(() => _groovesExpanded, 16f, 4f, grooveHint.rectTransform);
 
             // Порядок пунктов совпадает с порядком значений GrooveSide/GrooveKind.
             var grooveSideOptions = new List<string> { "Верх", "Низ", "Лево", "Право" };
-            _grooveSideDropdown = UIFactory.CreateDropdown("CtxGrooveSide", panel.transform,
-                grooveSideOptions, new Vector2(-108, 0), new Vector2(112, 28), _ => { });
             var grooveKindOptions = new List<string> { "Сквозной", "Глухой" };
+
+            for (int i = 0; i < AppConstants.GROOVE_MAX_PER_PART; i++)
+            {
+                int index = i; // копия для замыкания: иначе все кнопки правили бы последний
+                var sideDd = UIFactory.CreateDropdown($"CtxGrooveSide{i}", panel.transform,
+                    new List<string>(grooveSideOptions), new Vector2(-114, 0), new Vector2(104, 28),
+                    _ => EditGroove(index));
+                var kindDd = UIFactory.CreateDropdown($"CtxGrooveKind{i}", panel.transform,
+                    new List<string>(grooveKindOptions), new Vector2(26, 0), new Vector2(168, 28),
+                    _ => EditGroove(index));
+                var delBtn = UIFactory.CreateDangerButton($"CtxGrooveDel{i}", panel.transform, "×",
+                    new Vector2(148, 0), new Vector2(28, 28), () => RemoveGroove(index));
+                _grooveRowSide[i] = sideDd;
+                _grooveRowKind[i] = kindDd;
+                AddPartRowWhen(() => _groovesExpanded && GrooveCount() > index, 28f, 4f,
+                    sideDd.GetComponent<RectTransform>(),
+                    kindDd.GetComponent<RectTransform>(),
+                    delBtn.GetComponent<RectTransform>());
+            }
+
+            _grooveSideDropdown = UIFactory.CreateDropdown("CtxGrooveSide", panel.transform,
+                new List<string>(grooveSideOptions), new Vector2(-114, 0), new Vector2(104, 28), _ => { });
             _grooveKindDropdown = UIFactory.CreateDropdown("CtxGrooveKind", panel.transform,
-                grooveKindOptions, new Vector2(14, 0), new Vector2(112, 28), _ => { });
-            var grooveAddBtn = UIFactory.CreateButton("CtxGrooveAdd", panel.transform, "+",
-                new Vector2(132, 0), new Vector2(60, 28), AddGrooveFromUI);
+                new List<string>(grooveKindOptions), new Vector2(0, 0), new Vector2(116, 28), _ => { });
+            var grooveAddBtn = UIFactory.CreateButton("CtxGrooveAdd", panel.transform, "Добавить",
+                new Vector2(116, 0), new Vector2(100, 28), AddGrooveFromUI);
             AddPartRowWhen(() => _groovesExpanded, 28f, ActionGap,
                 _grooveSideDropdown.GetComponent<RectTransform>(),
                 _grooveKindDropdown.GetComponent<RectTransform>(),
@@ -191,9 +214,8 @@ namespace KitchenDesigner.Core.UI
             var modeOptions = new List<string>();
             for (int i = 0; i < FacadeDoor.Count; i++)
                 modeOptions.Add(FacadeDoor.Label((DoorMode)i));
-            _modeDropdown = UIFactory.CreateDropdown("CtxMode", panel.transform, modeOptions,
-                new Vector2(0, 0), new Vector2(332, 28), OnModeSelected);
-            AddFacadeRow(28f, RowGap, _modeDropdown.GetComponent<RectTransform>());
+            _modeDropdown = LabeledDropdownRow(panel.transform, "Дверца", modeOptions,
+                OnModeSelected, AddFacadeRow, "CtxMode");
 
             var doorButton = UIFactory.CreateButton("CtxDoor", panel.transform, "Открыть",
                 new Vector2(0, 0), new Vector2(332, BtnH), ToggleDoor);
@@ -202,28 +224,24 @@ namespace KitchenDesigner.Core.UI
 
             // Центр сборного фасада (только для сборного): Глухой / Витрина / Стекло.
             var fillOptions = new List<string> { "Глухой (панель)", "Витрина (пусто)", "Стекло" };
-            _fillDropdown = UIFactory.CreateDropdown("CtxFill", panel.transform, fillOptions,
-                new Vector2(0, 0), new Vector2(332, 28), OnFillSelected);
-            AddAssembledRow(28f, ActionGap, _fillDropdown.GetComponent<RectTransform>());
+            _fillDropdown = LabeledDropdownRow(panel.transform, "Заполнение", fillOptions,
+                OnFillSelected, AddAssembledRow, "CtxFill");
 
             // Ящик GTV: тип, длина, цвет, ширина, двойной ящик, анимация.
-            var drawerTypeNames = new List<string> { "A (86 мм)", "B (120 мм)", "C (168 мм)", "D (200 мм)" };
-            _drawerTypeDropdown = UIFactory.CreateDropdown("CtxDrawerType", panel.transform, drawerTypeNames,
-                new Vector2(0, 0), new Vector2(332, 28), OnDrawerTypeChanged);
-            AddDrawerRow(28f, ActionGap, _drawerTypeDropdown.GetComponent<RectTransform>());
+            var drawerTypeNames = new List<string> { "A — борт 86 мм", "B — борт 120 мм", "C — борт 168 мм", "D — борт 200 мм" };
+            _drawerTypeDropdown = LabeledDropdownRow(panel.transform, "Тип ящика", drawerTypeNames,
+                OnDrawerTypeChanged, AddDrawerRow, "CtxDrawerType");
 
             var drawerLenNames = new List<string>();
-            foreach (var l in DrawerConstants.ValidLengths) drawerLenNames.Add($"L={l} мм");
-            _drawerLengthDropdown = UIFactory.CreateDropdown("CtxDrawerLen", panel.transform, drawerLenNames,
-                new Vector2(0, 0), new Vector2(332, 28), OnDrawerLengthChanged);
-            AddDrawerRow(28f, ActionGap, _drawerLengthDropdown.GetComponent<RectTransform>());
+            foreach (var l in DrawerConstants.ValidLengths) drawerLenNames.Add($"{l} мм");
+            _drawerLengthDropdown = LabeledDropdownRow(panel.transform, "Длина", drawerLenNames,
+                OnDrawerLengthChanged, AddDrawerRow, "CtxDrawerLen");
 
             var drawerColorNames = new List<string> { "Антрацит", "Белый", "Чёрный" };
-            _drawerColorDropdown = UIFactory.CreateDropdown("CtxDrawerColor", panel.transform, drawerColorNames,
-                new Vector2(0, 0), new Vector2(332, 28), OnDrawerColorChanged);
-            AddDrawerRow(28f, ActionGap, _drawerColorDropdown.GetComponent<RectTransform>());
+            _drawerColorDropdown = LabeledDropdownRow(panel.transform, "Цвет", drawerColorNames,
+                OnDrawerColorChanged, AddDrawerRow, "CtxDrawerColor");
 
-            _drawerWidth = DrawerFieldRow(panel.transform, "Ширина короба, мм");
+            _drawerWidth = DrawerFieldRow(panel.transform, "Ширина короба");
 
             // «Двойной ящик» — только для одиночного нижнего, когда над контуром
             // есть место под верхний внутренний ящик (мин. проём типа A).
@@ -234,10 +252,13 @@ namespace KitchenDesigner.Core.UI
 
             // Опции пары (виден только у двойного): длина верхнего ящика + удаление.
             var upperLenNames = new List<string>();
-            foreach (var l in DrawerConstants.ValidLengths) upperLenNames.Add($"Верхний: L={l} мм");
+            foreach (var l in DrawerConstants.ValidLengths) upperLenNames.Add($"{l} мм");
+            var upperLenLbl = UIFactory.CreateLabel("L_Верхний ящик", panel.transform, "Верхний ящик", 15,
+                new Vector2(-103, 0), new Vector2(126, LabelH));
             _drawerUpperLenDropdown = UIFactory.CreateDropdown("CtxDrawerUpperLen", panel.transform, upperLenNames,
-                new Vector2(0, 0), new Vector2(332, 28), OnDrawerUpperLengthChanged);
+                new Vector2(65, 0), new Vector2(202, 28), OnDrawerUpperLengthChanged);
             AddDrawerRowWhen(HasUpperDrawer, 28f, ActionGap,
+                upperLenLbl.rectTransform,
                 _drawerUpperLenDropdown.GetComponent<RectTransform>());
 
             var drawerRemoveUpperBtn = UIFactory.CreateButton("CtxDrawerRemoveUpper", panel.transform,
@@ -251,28 +272,20 @@ namespace KitchenDesigner.Core.UI
             AddDrawerRow(BtnH, ActionGap, drawerAnimBtn.GetComponent<RectTransform>());
 
             // Фасад ящика: выбор из существующих (создание/настройка — через сам фасад).
-            var drawerFacadeLbl = UIFactory.CreateLabel("CtxDrawerFacadeLbl", panel.transform, "Фасад ящика:", 15,
-                Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
-            AddDrawerRow(RotLblH, RotLblGap, drawerFacadeLbl.rectTransform);
-
-            _drawerFacadeDropdown = UIFactory.CreateDropdown("CtxDrawerFacade", panel.transform,
-                new List<string> { "(нет фасада)" },
-                new Vector2(0, 0), new Vector2(332, 28), OnDrawerFacadeSelected);
-            AddDrawerRow(28f, ActionGap, _drawerFacadeDropdown.GetComponent<RectTransform>());
+            _drawerFacadeDropdown = LabeledDropdownRow(panel.transform, "Фасад ящика",
+                new List<string> { "(нет фасада)" }, OnDrawerFacadeSelected, AddDrawerRow, "CtxDrawerFacade");
 
             // Окно: тонировка стекла и выступ подоконника.
             var tintOptions = new List<string> { "Прозрачное", "Тонированное" };
-            _tintDropdown = UIFactory.CreateDropdown("CtxTint", panel.transform, tintOptions,
-                new Vector2(0, 0), new Vector2(332, 28), OnTintSelected);
-            AddWindowRow(28f, ActionGap, () => !_currentIsDoor, _tintDropdown.GetComponent<RectTransform>());
+            _tintDropdown = LabeledDropdownRow(panel.transform, "Стекло", tintOptions,
+                OnTintSelected, (h, g, rects) => AddWindowRow(h, g, () => !_currentIsDoor, rects), "CtxTint");
 
-            _sillProtrusion = WindowFieldRow(panel.transform, "Подоконник, мм", () => !_currentIsDoor);
+            _sillProtrusion = WindowFieldRow(panel.transform, "Подоконник", () => !_currentIsDoor);
 
             // Дверь: тип створки (стекло/глухая).
             var sashTypeOptions = new List<string> { "Стекло", "Глухая" };
-            _sashTypeDropdown = UIFactory.CreateDropdown("CtxSashType", panel.transform, sashTypeOptions,
-                new Vector2(0, 0), new Vector2(332, 28), OnSashTypeSelected);
-            AddDoorRow(28f, ActionGap, _sashTypeDropdown.GetComponent<RectTransform>());
+            _sashTypeDropdown = LabeledDropdownRow(panel.transform, "Створка", sashTypeOptions,
+                OnSashTypeSelected, AddDoorRow, "CtxSashType");
 
             // Режим открывания окна и кнопка Открыть/Закрыть (как фасад).
             var winModeOptions = new List<string>
@@ -282,68 +295,41 @@ namespace KitchenDesigner.Core.UI
                 FacadeDoor.Label(DoorMode.HingeFrontTop),
                 FacadeDoor.Label(DoorMode.HingeFrontBottom),
             };
-            var winModeDropdown = UIFactory.CreateDropdown("CtxWinMode", panel.transform, winModeOptions,
-                new Vector2(0, 0), new Vector2(332, 28), OnWindowModeSelected);
-            _winModeDropdown = winModeDropdown;
-            AddWindowRow(28f, ActionGap, winModeDropdown.GetComponent<RectTransform>());
+            _winModeDropdown = LabeledDropdownRow(panel.transform, "Открывание", winModeOptions,
+                OnWindowModeSelected, AddWindowRow, "CtxWinMode");
 
             var winDoorBtn = UIFactory.CreateButton("CtxWinDoor", panel.transform, "Открыть",
                 new Vector2(0, 0), new Vector2(332, BtnH), ToggleWindowDoor);
             _winDoorButtonLabel = winDoorBtn.GetComponentInChildren<TMP_Text>();
             AddWindowRow(BtnH, ActionGap, winDoorBtn.GetComponent<RectTransform>());
 
-            // Текстура/декор (детали И фасады) — всегда видимая строка (кроме столов).
-            var matLbl = UIFactory.CreateLabel("CtxMatLbl", panel.transform, "Текстура:", 15,
-                Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
-            AddRow(RotLblH, RotLblGap, () => !_currentIsTable, matLbl.rectTransform);
-
-            var matOptions = new List<string>();
-            foreach (var m in MaterialCatalog.All) matOptions.Add(m.displayName);
-            _materialDropdown = UIFactory.CreateDropdown("CtxMaterial", panel.transform, matOptions,
-                new Vector2(0, 0), new Vector2(332, 28), OnMaterialSelected);
-            AddRow(28f, ActionGap, () => !_currentIsTable, _materialDropdown.GetComponent<RectTransform>());
-
-            // Текстура столешницы (только для столов).
-            var tableTopLbl = UIFactory.CreateLabel("CtxTableTopLbl", panel.transform, "Текстура столешницы:", 15,
-                Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
-            AddTableRow(RotLblH, RotLblGap, tableTopLbl.rectTransform);
-
-            _tabletopMaterialDropdown = UIFactory.CreateDropdown("CtxTableTop", panel.transform, matOptions,
-                new Vector2(0, 0), new Vector2(332, 28), OnMaterialSelected);
-            AddTableRow(28f, ActionGap, _tabletopMaterialDropdown.GetComponent<RectTransform>());
-
-            // Текстура ножек (только для столов).
-            var tableLegsLbl = UIFactory.CreateLabel("CtxTableLegsLbl", panel.transform, "Текстура ножек:", 15,
-                Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
-            AddTableRow(RotLblH, RotLblGap, tableLegsLbl.rectTransform);
-
-            var legsOptions = new List<string>();
-            foreach (var m in MaterialCatalog.All) legsOptions.Add(m.displayName);
-            _legsMaterialDropdown = UIFactory.CreateDropdown("CtxTableLegs", panel.transform, legsOptions,
-                new Vector2(0, 0), new Vector2(332, 28), OnLegsMaterialSelected);
-            AddTableRow(28f, ActionGap, _legsMaterialDropdown.GetComponent<RectTransform>());
-
 			// Сдвиг ножек внутрь стола (только для столов).
-			_legInset = TableFieldRow(panel.transform, "Сдвиг ножек, мм");
+			_legInset = TableFieldRow(panel.transform, "Сдвиг ножек");
 
 			// Высота средней секции опоры (только для опор).
-			_midHeight = PillarFieldRow(panel.transform, "Средняя секция, мм");
+			_midHeight = PillarFieldRow(panel.transform, "Средняя секция");
 
-            // Позиция и поворот — компактная раскладка 3 колонки.
-            _x = TriField(panel.transform, "X, м", TriCol1);
-            _y = TriField(panel.transform, "Y, м", TriCol2);
-            _z = TriField(panel.transform, "Z, м", TriCol3);
+            // ── Положение ───────────────────────────────────────────────
+            AddRow(18f, RowGap, UIFactory.CreateSectionHeader("CtxSecPos", panel.transform, "Положение", 332f));
+
+            // Позиция и поворот — компактная раскладка 3 колонки. Всё в мм
+            // (правило 1 UI-GUIDELINES: никаких метров в UI).
+            _x = TriField(panel.transform, "X, мм", TriCol1);
+            _y = TriField(panel.transform, "Y, мм", TriCol2);
+            _z = TriField(panel.transform, "Z, мм", TriCol3);
             TriEndRow();
 
             // Поля поворота у окна скрыты: ориентацию диктует стена.
-            _rx = TriField(panel.transform, "X°", TriCol1);
-            _ry = TriField(panel.transform, "Y°", TriCol2);
-            _rz = TriField(panel.transform, "Z°", TriCol3);
+            _rx = TriField(panel.transform, "X, °", TriCol1);
+            _ry = TriField(panel.transform, "Y, °", TriCol2);
+            _rz = TriField(panel.transform, "Z, °", TriCol3);
             TriEndRow(hideForWindow: true);
 
 			foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
             foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
-            foreach (var f in new[] { _x, _y, _z, _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.DecimalNumber;
+            // Позиция — целые мм; углы — десятичные градусы.
+            foreach (var f in new[] { _x, _y, _z }) f!.contentType = TMP_InputField.ContentType.IntegerNumber;
+            foreach (var f in new[] { _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.DecimalNumber;
 
             // Имя: недопустимые символы не даём набрать вовсе — иначе поле
             // показывало бы одно, а применилось бы очищенное другое.
@@ -373,18 +359,21 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, 0), new Vector2(332, BtnH), () => RotateAxis(Vector3.up, 180f));
             AddWindowRow(BtnH, ActionGap, rotY180.GetComponent<RectTransform>());
 
-            var apply = UIFactory.CreateButton("CtxApply", panel.transform, "Применить",
-                new Vector2(-85, 0), new Vector2(156, 32), Apply);
-            var dup = UIFactory.CreateButton("CtxDup", panel.transform, "Дублировать",
-                new Vector2(85, 0), new Vector2(156, 32), Duplicate);
-            AddRow(32f, ActionGap,
-                apply.GetComponent<RectTransform>(),
-                dup.GetComponent<RectTransform>());
+            // ── Материал (после положения — порядок секций по правилу 6) ──
+            AddRow(18f, RowGap, UIFactory.CreateSectionHeader("CtxSecMat", panel.transform, "Материал", 332f));
 
-            var del = UIFactory.CreateButton("CtxDel", panel.transform, "Удалить",
-                new Vector2(0, 0), new Vector2(332, 32), Delete);
-            AddRow(32f, ActionGap, del.GetComponent<RectTransform>());
+            var matOptions = new List<string>();
+            foreach (var m in MaterialCatalog.All) matOptions.Add(m.displayName);
+            _materialDropdown = LabeledDropdownRow(panel.transform, "Текстура", matOptions,
+                OnMaterialSelected, (h, g, rects) => AddRow(h, g, () => !_currentIsTable, rects), "CtxMaterial");
 
+            // Текстуры столешницы и ножек (только для столов).
+            _tabletopMaterialDropdown = LabeledDropdownRow(panel.transform, "Столешница",
+                new List<string>(matOptions), OnMaterialSelected, AddTableRow, "CtxTableTop");
+            _legsMaterialDropdown = LabeledDropdownRow(panel.transform, "Ножки",
+                new List<string>(matOptions), OnLegsMaterialSelected, AddTableRow, "CtxTableLegs");
+
+            // ── Свойства ────────────────────────────────────────────────
             _transparentToggle = UIFactory.CreateToggle("CtxTransparent", panel.transform, "Прозрачный", false,
                 new Vector2(0, 0), new Vector2(332, 26), v =>
                 {
@@ -397,16 +386,26 @@ namespace KitchenDesigner.Core.UI
                 });
             AddRow(26f, 7f, _transparentToggle.GetComponent<RectTransform>());
 
-            _lockToggle = UIFactory.CreateToggle("CtxLock", panel.transform, "Запретить перемещение", false,
+            // «Закрепить», а не «Запретить перемещение»: позитивная формулировка
+            // без двойного отрицания (правило 5 UI-GUIDELINES).
+            _lockToggle = UIFactory.CreateToggle("CtxLock", panel.transform, "Закрепить", false,
                 new Vector2(0, 0), new Vector2(332, 26), v => { if (_target != null) _target.Movable = !v; });
-            AddRow(26f, 0f, _lockToggle.GetComponent<RectTransform>());
+            AddRow(26f, UIStyle.GapSection, _lockToggle.GetComponent<RectTransform>());
+
+            // ── Действия ────────────────────────────────────────────────
+            // «Удалить» — danger: красная, не на всю ширину, отделена отступом
+            // (правило 3). Кнопки «Применить» нет: поля применяются по
+            // Enter/потере фокуса, единственная модель применения (правило 2).
+            var dup = UIFactory.CreateButton("CtxDup", panel.transform, "Дублировать",
+                new Vector2(-91, 0), new Vector2(150, 32), Duplicate);
+            var del = UIFactory.CreateDangerButton("CtxDel", panel.transform, "Удалить",
+                new Vector2(91, 0), new Vector2(150, 32), Delete);
+            AddRow(32f, 0f,
+                dup.GetComponent<RectTransform>(),
+                del.GetComponent<RectTransform>());
 
             // Кнопка закрытия живёт в углу панели, вне потока раскладки.
-            var closeBtn = UIFactory.CreateButton("CtxClose", panel.transform, "X",
-                Vector2.zero, new Vector2(24, 24), Close);
-            UIFactory.AnchorTopRight(closeBtn.GetComponent<RectTransform>());
-            closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
-            closeBtn.transform.SetAsLastSibling();
+            UIFactory.CreateCloseButton(panel.transform, Close);
 
 			Layout(isFacade: false, isAssembled: false, isRadial: false, isDrawer: false, isTable: false, isPillar: false, isWindow: false, isDoor: false);
             _root!.SetActive(false);
@@ -454,6 +453,23 @@ namespace KitchenDesigner.Core.UI
 
         // ── Построение элементов ───────────────────────────────────────
 
+        private delegate void RowAdder(float height, float gapAfter, params RectTransform[] rects);
+
+        /// <summary>Строка «подпись + выпадающий список»: правило 5 UI-GUIDELINES —
+        /// дропдаун без подписи запрещён. Раскладку строки задаёт addRow
+        /// (обычная, фасадная, ящичная и т.д.).</summary>
+        private TMP_Dropdown LabeledDropdownRow(Transform parent, string label,
+            List<string> options, System.Action<int> onChanged, RowAdder addRow,
+            string? nodeName = null)
+        {
+            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
+                new Vector2(-103, 0), new Vector2(126, LabelH));
+            var dd = UIFactory.CreateDropdown(nodeName ?? ("Dd_" + label), parent, options,
+                new Vector2(65, 0), new Vector2(202, 28), onChanged);
+            addRow(28f, RowGap, lbl.rectTransform, dd.GetComponent<RectTransform>());
+            return dd;
+        }
+
         /// <summary>Строка «Название»: в отличие от Row подпись занимает не всю
         /// колонку под самую длинную надпись («Ширина короба, мм»), а ровно свою
         /// ширину — поле начинается сразу за ней и тянется до правого края панели.
@@ -468,22 +484,24 @@ namespace KitchenDesigner.Core.UI
             return field;
         }
 
-        private TMP_InputField Row(Transform parent, string label)
+        // Единица измерения — серым суффиксом в поле («800 мм»), подпись без
+        // неё (правило 1 UI-GUIDELINES).
+        private TMP_InputField Row(Transform parent, string label, string unit = "мм")
         {
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-            var field = UIFactory.CreateInputField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(120, FieldH));
+            var field = UIFactory.CreateNumberField("F_" + label, parent, "",
+                new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
             AddRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
 
-        private TMP_InputField RadialRow(Transform parent, string label)
+        private TMP_InputField RadialRow(Transform parent, string label, string unit = "мм")
         {
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-            var field = UIFactory.CreateInputField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(120, FieldH));
+            var field = UIFactory.CreateNumberField("F_" + label, parent, "",
+                new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
             AddRadialRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
@@ -507,9 +525,9 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(LabelX, -top), new Vector2(130, headerH), TextAnchor.MiddleLeft).rectTransform);
             top += headerH + innerGap;
 
-            // Ширина X, мм — левый и правый зазор
-            AddTopAnchoredChild(UIFactory.CreateLabel("Gap_Ширина X, мм", root.transform, "Ширина X, мм", 13,
-                new Vector2(LabelX, -top), new Vector2(130, 20), TextAnchor.MiddleLeft).rectTransform);
+            // Левый и правый зазор — стороны названы явно, а не «Ширина X».
+            AddTopAnchoredChild(UIFactory.CreateLabel("Gap_LR", root.transform, "Слева / справа, мм", 13,
+                new Vector2(LabelX, -top), new Vector2(140, 20), TextAnchor.MiddleLeft).rectTransform);
             _gapLeft = UIFactory.CreateInputField("F_gapLeft", root.transform, "0",
                 new Vector2(gapFieldX, -top), new Vector2(smallFieldW, 22));
             AddTopAnchoredChild(_gapLeft.GetComponent<RectTransform>());
@@ -518,9 +536,9 @@ namespace KitchenDesigner.Core.UI
             AddTopAnchoredChild(_gapRight.GetComponent<RectTransform>());
             top += fieldH + innerGap;
 
-            // Высота Y, мм — верхний и нижний зазор
-            AddTopAnchoredChild(UIFactory.CreateLabel("Gap_Высота Y, мм", root.transform, "Высота Y, мм", 13,
-                new Vector2(LabelX, -top), new Vector2(130, 20), TextAnchor.MiddleLeft).rectTransform);
+            // Верхний и нижний зазор.
+            AddTopAnchoredChild(UIFactory.CreateLabel("Gap_TB", root.transform, "Сверху / снизу, мм", 13,
+                new Vector2(LabelX, -top), new Vector2(140, 20), TextAnchor.MiddleLeft).rectTransform);
             _gapTop = UIFactory.CreateInputField("F_gapTop", root.transform, "0",
                 new Vector2(gapFieldX, -top), new Vector2(smallFieldW, 22));
             AddTopAnchoredChild(_gapTop.GetComponent<RectTransform>());
@@ -682,8 +700,8 @@ namespace KitchenDesigner.Core.UI
         {
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-            var field = UIFactory.CreateInputField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(120, FieldH));
+            var field = UIFactory.CreateNumberField("F_" + label, parent, "",
+                new Vector2(FieldX, 0), new Vector2(120, FieldH), "мм");
             AddDrawerRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
@@ -692,8 +710,8 @@ namespace KitchenDesigner.Core.UI
 		{
 			var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
 				new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-			var field = UIFactory.CreateInputField("F_" + label, parent, "",
-				new Vector2(FieldX, 0), new Vector2(120, FieldH));
+			var field = UIFactory.CreateNumberField("F_" + label, parent, "",
+				new Vector2(FieldX, 0), new Vector2(120, FieldH), "мм");
 			AddTableRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
 			return field;
 		}
@@ -702,8 +720,8 @@ namespace KitchenDesigner.Core.UI
 		{
 			var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
 				new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-			var field = UIFactory.CreateInputField("F_" + label, parent, "",
-				new Vector2(FieldX, 0), new Vector2(120, FieldH));
+			var field = UIFactory.CreateNumberField("F_" + label, parent, "",
+				new Vector2(FieldX, 0), new Vector2(120, FieldH), "мм");
 			AddPillarRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
 			return field;
 		}
@@ -712,8 +730,8 @@ namespace KitchenDesigner.Core.UI
         {
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-            var field = UIFactory.CreateInputField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(120, FieldH));
+            var field = UIFactory.CreateNumberField("F_" + label, parent, "",
+                new Vector2(FieldX, 0), new Vector2(120, FieldH), "мм");
             if (visibleWhen != null)
                 AddWindowRow(RowH, RowGap, visibleWhen, lbl.rectTransform, field.GetComponent<RectTransform>());
             else
@@ -810,6 +828,14 @@ namespace KitchenDesigner.Core.UI
             if (_root != null && _root.activeSelf && _target != null)
             {
                 RefreshTransformFields();
+
+                // Пазы могли измениться мимо меню (undo/redo, MCP-команды).
+                if (_target.SupportsGrooves
+                    && GrooveFingerprint(_target.Grooves) != _grooveFingerprint)
+                {
+                    RefreshGrooveUI();
+                    RelayoutForTarget();
+                }
             }
         }
 
@@ -828,9 +854,9 @@ namespace KitchenDesigner.Core.UI
             if (_target is DoorElement d && !d.IsDoorClosed) return;
 
             var pos = _target.transform.position;
-            MaybeRefresh(_x, pos.x.ToString("F3"));
-            MaybeRefresh(_y, pos.y.ToString("F3"));
-            MaybeRefresh(_z, pos.z.ToString("F3"));
+            MaybeRefresh(_x, ToMM(pos.x));
+            MaybeRefresh(_y, ToMM(pos.y));
+            MaybeRefresh(_z, ToMM(pos.z));
 
             var eu = _target.transform.eulerAngles;
             MaybeRefresh(_rx, eu.x.ToString("F1"));
@@ -847,6 +873,7 @@ namespace KitchenDesigner.Core.UI
                 MaybeRefresh(_radius, radial.CornerRadius.ToString());
 
             MaybeRefresh(_name, _target.PartName);
+            RefreshTitle();
 
             var facade = _target as FacadeElement;
             if (facade != null)
@@ -879,6 +906,17 @@ namespace KitchenDesigner.Core.UI
 			var window = _target as WindowElement;
             if (window != null && _sillProtrusion != null)
                 MaybeRefresh(_sillProtrusion, window.SillProtrusionMM.ToString());
+        }
+
+        /// <summary>Позиция в мм: единый формат чисел UI (правило 1).</summary>
+        private static string ToMM(float meters) =>
+            Mathf.RoundToInt(meters / AppConstants.MM_TO_UNITS).ToString();
+
+        /// <summary>Заголовок «Тип — Имя» (обновляется при открытии и переименовании).</summary>
+        private void RefreshTitle()
+        {
+            if (_titleLabel == null || _target == null) return;
+            _titleLabel.text = $"{_currentTypeName} — {_target.PartName}";
         }
 
         /// <summary>Обновить поле, если оно не в фокусе (юзер не редактирует).
@@ -919,8 +957,20 @@ namespace KitchenDesigner.Core.UI
 				bool isDoor = element is DoorElement;
 			_currentIsTable = isTable || isRadiusTable;
 			_currentIsDoor = isDoor;
-				if (_titleLabel != null)
-					_titleLabel.text = isPillar ? "Опора" : isRadiusTable ? "Радиусный стол" : isTable ? "Стол" : isDrawer ? "Ящик GTV" : isWindow ? "Окно" : isDoor ? "Дверь" : (element is PanelElement ? "ДВП/ХДФ" : (isRadial ? "Радиусная полка" : (isFacade ? "Фасад" : "деталь")));
+				// Заголовок различает и подтипы («Сборный фасад» ≠ «Фасад») и
+				// конкретный элемент (имя после тире).
+				_currentTypeName = isPillar ? "Опора"
+					: isRadiusTable ? "Радиусный стол"
+					: isTable ? "Стол"
+					: isDrawer ? "Ящик GTV"
+					: isWindow ? "Окно"
+					: isDoor ? "Дверь"
+					: element is PanelElement ? "ДВП/ХДФ"
+					: isRadial ? "Радиусная полка"
+					: element is AssembledFacadeElement ? "Сборный фасад"
+					: isFacade ? "Фасад"
+					: "Деталь";
+				RefreshTitle();
                 if (_typeDropdown != null)
                 {
                     _typeDropdown.SetValueWithoutNotify((int)ElementConverter.GetElementType(element));
@@ -1078,6 +1128,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target == null) return;
             var target = _target;
+            _errorFields.Clear(); // ошибки прошлого применения сняты новым вводом
             // Правки размеров/позиции применяем к закрытой (логической) позе.
             if (target is FacadeElement fac) { fac.ForceClose(); UpdateDoorButton(fac); }
             if (target is DrawerElement dr) { dr.ForceClose(); UpdateDrawerAnimButton(dr); }
@@ -1102,18 +1153,18 @@ namespace KitchenDesigner.Core.UI
 			if (radial != null)
             {
                 target.DimensionsMM = new Vector3Int(
-                    ParseInt(_w!.text, oldDims.x),
-                    ParseInt(_h!.text, oldDims.y),
-                    ParseInt(_d!.text, oldDims.z));
-                radial.CornerRadius = ParseInt(_radius!.text, radial.CornerRadius);
+                    ParseIntField(_w, oldDims.x),
+                    ParseIntField(_h, oldDims.y),
+                    ParseIntField(_d, oldDims.z));
+                radial.CornerRadius = ParseIntField(_radius, radial.CornerRadius);
             }
             else if (drawer != null)
             {
-                if (_drawerWidth != null) drawer.InternalWidth = ParseInt(_drawerWidth.text, drawer.InternalWidth);
+                if (_drawerWidth != null) drawer.InternalWidth = ParseIntField(_drawerWidth, drawer.InternalWidth);
             }
             else if (pillar != null)
             {
-                int newTotalH = ParseInt(_h!.text, oldDims.y);
+                int newTotalH = ParseIntField(_h, oldDims.y);
                 if (newTotalH != oldDims.y)
                 {
                     int newMidH = Mathf.Clamp(
@@ -1124,7 +1175,7 @@ namespace KitchenDesigner.Core.UI
                 }
                 else if (_midHeight != null)
                 {
-                    pillar.MidHeightMM = ParseInt(_midHeight.text, pillar.MidHeightMM);
+                    pillar.MidHeightMM = ParseIntField(_midHeight, pillar.MidHeightMM);
                     _midHeight.text = pillar.MidHeightMM.ToString();
                 }
                 _h!.text = pillar.TotalHeightMM.ToString();
@@ -1133,20 +1184,20 @@ namespace KitchenDesigner.Core.UI
             {
                 // Глубину окна диктует стена — поле Г игнорируется.
                 target.DimensionsMM = new Vector3Int(
-                    ParseInt(_w!.text, oldDims.x),
-                    ParseInt(_h!.text, oldDims.y),
-                    target is WindowElement || target is DoorElement ? oldDims.z : ParseInt(_d!.text, oldDims.z));
+                    ParseIntField(_w, oldDims.x),
+                    ParseIntField(_h, oldDims.y),
+                    target is WindowElement || target is DoorElement ? oldDims.z : ParseIntField(_d, oldDims.z));
             }
 
             if (table != null && _legInset != null)
-                table.LegInsetMM = ParseInt(_legInset.text, table.LegInsetMM);
+                table.LegInsetMM = ParseIntField(_legInset, table.LegInsetMM);
 
 			if (radiusTable != null && _legInset != null)
-				radiusTable.LegInsetMM = ParseInt(_legInset.text, radiusTable.LegInsetMM);
+				radiusTable.LegInsetMM = ParseIntField(_legInset, radiusTable.LegInsetMM);
 
 			var windowEl = target as WindowElement;
             if (windowEl != null && _sillProtrusion != null)
-                windowEl.SillProtrusionMM = ParseInt(_sillProtrusion.text, windowEl.SillProtrusionMM);
+                windowEl.SillProtrusionMM = ParseIntField(_sillProtrusion, windowEl.SillProtrusionMM);
 
             // Сохраняем материал ножек (материал столешницы применяется через дропдаун).
             if (_legsMaterialDropdown != null && _currentIsTable)
@@ -1172,32 +1223,33 @@ namespace KitchenDesigner.Core.UI
             var facade = target as FacadeElement;
             if (facade != null)
             {
-                facade.GapLeft = ParseInt(_gapLeft!.text, facade.GapLeft);
-                facade.GapRight = ParseInt(_gapRight!.text, facade.GapRight);
-                facade.GapTop = ParseInt(_gapTop!.text, facade.GapTop);
-                facade.GapBottom = ParseInt(_gapBottom!.text, facade.GapBottom);
+                facade.GapLeft = ParseIntField(_gapLeft, facade.GapLeft);
+                facade.GapRight = ParseIntField(_gapRight, facade.GapRight);
+                facade.GapTop = ParseIntField(_gapTop, facade.GapTop);
+                facade.GapBottom = ParseIntField(_gapBottom, facade.GapBottom);
             }
             else if (target is PanelElement panelApply)
             {
-                panelApply.GapLeft = ParseInt(_gapLeft!.text, panelApply.GapLeft);
-                panelApply.GapRight = ParseInt(_gapRight!.text, panelApply.GapRight);
-                panelApply.GapTop = ParseInt(_gapTop!.text, panelApply.GapTop);
-                panelApply.GapBottom = ParseInt(_gapBottom!.text, panelApply.GapBottom);
+                panelApply.GapLeft = ParseIntField(_gapLeft, panelApply.GapLeft);
+                panelApply.GapRight = ParseIntField(_gapRight, panelApply.GapRight);
+                panelApply.GapTop = ParseIntField(_gapTop, panelApply.GapTop);
+                panelApply.GapBottom = ParseIntField(_gapBottom, panelApply.GapBottom);
             }
 
+            // Поля позиции — целые мм; внутренняя модель остаётся в метрах.
             target.transform.position = new Vector3(
-                ParseFloat(_x!.text, oldPos.x),
-                ParseFloat(_y!.text, oldPos.y),
-                ParseFloat(_z!.text, oldPos.z));
+                ParseMM(_x, oldPos.x),
+                ParseMM(_y, oldPos.y),
+                ParseMM(_z, oldPos.z));
 
             // У окна поля поворота скрыты (ориентацию диктует стена) — не трогаем.
             if (!(target is WindowElement) && !(target is DoorElement))
             {
                 var euler = oldRot.eulerAngles;
                 target.transform.rotation = Quaternion.Euler(
-                    ParseFloat(_rx!.text, euler.x),
-                    ParseFloat(_ry!.text, euler.y),
-                    ParseFloat(_rz!.text, euler.z));
+                    ParseAngle(_rx, euler.x),
+                    ParseAngle(_ry, euler.y),
+                    ParseAngle(_rz, euler.z));
             }
 
             // Окно живёт только на стене — сразу возвращаем его на стену,
@@ -1243,10 +1295,16 @@ namespace KitchenDesigner.Core.UI
                 _gapBottom!.text = facade.GapBottom.ToString();
             }
 
+            RefreshTitle();
             RefreshHighlights();
 
             ClearAllHighlights();
             TrackAllFields();
+
+            // Красные рамки непринятых значений — после сброса жёлтых подсветок,
+            // чтобы пользователь видел, какое именно поле не применилось.
+            foreach (var f in _errorFields)
+                UIFactory.SetErrorHighlight(f);
         }
 
         private bool WouldCauseViolation()
@@ -1357,8 +1415,8 @@ namespace KitchenDesigner.Core.UI
         }
 
         // ── Пазы детали ───────────────────────────────────────────────
-        // Пазы правятся сразу (как режим/заполнение фасада) и в стек команд не
-        // попадают: отдельной команды отмены для них нет.
+        // Все правки набора пазов идут через SetGroovesCommand: Ctrl+Z обязан
+        // работать для любой мутации (правило 2 UI-GUIDELINES).
 
         private int GrooveCount() => _target != null ? _target.Grooves.Count : 0;
 
@@ -1374,35 +1432,98 @@ namespace KitchenDesigner.Core.UI
             if (_target == null || _grooveSideDropdown == null || _grooveKindDropdown == null) return;
             var spec = new GrooveSpec((GrooveKind)_grooveKindDropdown.value,
                 (GrooveSide)_grooveSideDropdown.value);
-            if (!_target.AddGroove(spec)) return; // дубль или достигнут предел
+
+            var after = new List<GrooveSpec>(_target.Grooves);
+            if (after.Contains(spec))
+            {
+                ToastNotification.Instance?.Show("Такой паз уже есть");
+                return;
+            }
+            if (after.Count >= AppConstants.GROOVE_MAX_PER_PART)
+            {
+                ToastNotification.Instance?.Show($"Не больше {AppConstants.GROOVE_MAX_PER_PART} пазов на деталь");
+                return;
+            }
+            after.Add(spec);
+            ApplyGrooves(after);
             _groovesExpanded = true;
-            RefreshGrooveUI();
-            RelayoutForTarget();
-            RefreshHighlights();
+            AfterGroovesChanged();
         }
 
         private void RemoveGroove(int index)
         {
-            if (_target == null || !_target.RemoveGrooveAt(index)) return;
+            if (_target == null || index < 0 || index >= _target.Grooves.Count) return;
+            var after = new List<GrooveSpec>(_target.Grooves);
+            after.RemoveAt(index);
+            ApplyGrooves(after);
+            AfterGroovesChanged();
+        }
+
+        /// <summary>Правка паза на месте: сторона/тип берутся из дропдаунов строки.</summary>
+        private void EditGroove(int index)
+        {
+            if (_target == null || index < 0 || index >= _target.Grooves.Count) return;
+            var sideDd = _grooveRowSide[index];
+            var kindDd = _grooveRowKind[index];
+            if (sideDd == null || kindDd == null) return;
+
+            var spec = new GrooveSpec((GrooveKind)kindDd.value, (GrooveSide)sideDd.value);
+            var after = new List<GrooveSpec>(_target.Grooves);
+            if (after[index].Equals(spec)) return;
+            for (int i = 0; i < after.Count; i++)
+                if (i != index && after[i].Equals(spec))
+                {
+                    ToastNotification.Instance?.Show("Такой паз уже есть");
+                    RefreshGrooveUI(); // вернуть дропдауны к фактическому набору
+                    return;
+                }
+            after[index] = spec;
+            ApplyGrooves(after);
+            AfterGroovesChanged();
+        }
+
+        private void ApplyGrooves(List<GrooveSpec> after)
+        {
+            if (_target == null) return;
+            CommandStack.Execute(new SetGroovesCommand(_target, _target.Grooves, after));
+        }
+
+        private void AfterGroovesChanged()
+        {
             RefreshGrooveUI();
             RelayoutForTarget();
             RefreshHighlights();
         }
 
-        /// <summary>Обновить счётчик со стрелкой и подписи строк пазов.</summary>
+        /// <summary>Обновить кнопку-раскрывашку и строки пазов.</summary>
         private void RefreshGrooveUI()
         {
             if (_grooveCountLabel != null)
-                _grooveCountLabel.text = $"{GrooveCount()}  {(_groovesExpanded ? "^" : "v")}";
+                _grooveCountLabel.text =
+                    $"Пазы ({GrooveCount()})  {(_groovesExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
 
             IReadOnlyList<GrooveSpec>? grooves = _target != null ? _target.Grooves : null;
-            for (int i = 0; i < _grooveItemLabels.Length; i++)
+            _grooveFingerprint = GrooveFingerprint(grooves);
+            for (int i = 0; i < _grooveRowSide.Length; i++)
             {
-                var lbl = _grooveItemLabels[i];
-                if (lbl == null) continue;
-                lbl.text = grooves != null && i < grooves.Count
-                    ? $"{GrooveSpec.Designation(grooves[i].kind)} — {GrooveSpec.SideLabel(grooves[i].side)}"
-                    : "";
+                if (grooves == null || i >= grooves.Count) continue;
+                _grooveRowSide[i]?.SetValueWithoutNotify((int)grooves[i].side);
+                _grooveRowSide[i]?.RefreshShownValue();
+                _grooveRowKind[i]?.SetValueWithoutNotify((int)grooves[i].kind);
+                _grooveRowKind[i]?.RefreshShownValue();
+            }
+        }
+
+        /// <summary>Дешёвый отпечаток набора пазов: ловим изменения мимо меню
+        /// (undo/redo, MCP), чтобы строки не показывали устаревший набор.</summary>
+        private static int GrooveFingerprint(IReadOnlyList<GrooveSpec>? grooves)
+        {
+            if (grooves == null) return 0;
+            unchecked
+            {
+                int h = 17;
+                foreach (var g in grooves) h = h * 31 + g.GetHashCode();
+                return h;
             }
         }
 
@@ -1706,6 +1827,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target == null) return;
             var go = _target.gameObject;
+            string deletedName = _target.PartName;
 
             // Верхний ящик пары жёстко привязан — удаляется вместе с нижним.
             if (_target is DrawerElement d && !d.IsUpperDrawer)
@@ -1719,6 +1841,20 @@ namespace KitchenDesigner.Core.UI
             Close();
             CommandStack.Execute(new DeleteCommand(go));
             RefreshHighlights();
+
+            // Подтверждения нет намеренно: удаление обратимо на месте — тост
+            // с «Отменить» (правило 3 UI-GUIDELINES).
+            string expected = $"Delete {deletedName}";
+            ToastNotification.Instance?.Show($"Удалено: {deletedName}", 5f, "Отменить", () =>
+            {
+                // Отменяем только если удаление всё ещё наверху стека — иначе
+                // Ctrl+Z-семантика тоста откатила бы чужое действие.
+                if (CommandStack.CanUndo && CommandStack.PeekUndoDescription() == expected)
+                {
+                    CommandStack.Undo();
+                    RefreshHighlights();
+                }
+            });
         }
 
         private static void RefreshHighlights()
@@ -1727,11 +1863,39 @@ namespace KitchenDesigner.Core.UI
                 ElementHighlighter.Instance.RefreshHighlights();
         }
 
-        private static int ParseInt(string s, int fallback) =>
-            int.TryParse(s, out int v) ? v : fallback;
+        // ── Парсинг полей ───────────────────────────────────────────────
+        // Невалидный ввод не откатывается молча: поле помечается красной
+        // рамкой (правило 2 UI-GUIDELINES), значение остаётся прежним.
 
-        private static float ParseFloat(string s, float fallback) =>
-            float.TryParse(s, out float v) ? v : fallback;
+        private int ParseIntField(TMP_InputField? f, int fallback)
+        {
+            if (f == null) return fallback;
+            if (int.TryParse(f.text, out int v)) return v;
+            MarkError(f);
+            return fallback;
+        }
+
+        private float ParseAngle(TMP_InputField? f, float fallback)
+        {
+            if (f == null) return fallback;
+            if (float.TryParse(f.text, out float v)) return v;
+            MarkError(f);
+            return fallback;
+        }
+
+        /// <summary>Поле в мм → метры внутренней модели.</summary>
+        private float ParseMM(TMP_InputField? f, float fallbackMeters)
+        {
+            if (f == null) return fallbackMeters;
+            if (int.TryParse(f.text, out int mm)) return mm * AppConstants.MM_TO_UNITS;
+            MarkError(f);
+            return fallbackMeters;
+        }
+
+        private void MarkError(TMP_InputField f)
+        {
+            if (!_errorFields.Contains(f)) _errorFields.Add(f);
+        }
 
         // ── Подсветка изменённых полей ──────────────────────────────────
 
@@ -1805,9 +1969,9 @@ namespace KitchenDesigner.Core.UI
 			var pillarEl = _target as PillarElement;
 			TrackField(_midHeight, pillarEl != null ? pillarEl.MidHeightMM.ToString() : PillarElement.MidHeightMM_Default.ToString());
             var pos = _target.transform.position;
-            TrackField(_x, pos.x.ToString("F3"));
-            TrackField(_y, pos.y.ToString("F3"));
-            TrackField(_z, pos.z.ToString("F3"));
+            TrackField(_x, ToMM(pos.x));
+            TrackField(_y, ToMM(pos.y));
+            TrackField(_z, ToMM(pos.z));
             var e = _target.transform.eulerAngles;
             TrackField(_rx, e.x.ToString("F1"));
             TrackField(_ry, e.y.ToString("F1"));

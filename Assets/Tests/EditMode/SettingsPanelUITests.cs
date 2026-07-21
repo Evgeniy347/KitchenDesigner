@@ -71,9 +71,9 @@ public class SettingsPanelUITests
     // ── Tabs ────────────────────────────────────────────────
 
     [Test]
-    public void ThreeTabButtons_Exist()
+    public void TwoTabButtons_Exist()
     {
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 2; i++)
         {
             var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
             Assert.IsNotNull(tab, $"Tab_{i} should exist");
@@ -83,7 +83,8 @@ public class SettingsPanelUITests
     [Test]
     public void TabButtons_HaveCorrectLabels()
     {
-        string[] expected = { "Проект", "Графика", "О программе" };
+        // Пустая вкладка «Графика» скрыта до появления содержимого.
+        string[] expected = { "Проект", "О программе" };
         for (int i = 0; i < expected.Length; i++)
         {
             var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
@@ -94,10 +95,10 @@ public class SettingsPanelUITests
     }
 
     [Test]
-    public void ThreeTabPages_Exist()
+    public void TabPages_Exist_NoEmptyGraphicsTab()
     {
         Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Project"), "Tab_Project page should exist");
-        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Graphics"), "Tab_Graphics page should exist");
+        Assert.IsNull(_canvas!.transform.Find("SettingsPanel/Tab_Graphics"), "empty Graphics tab must not exist");
         Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_About"), "Tab_About page should exist");
     }
 
@@ -105,23 +106,14 @@ public class SettingsPanelUITests
     public void SwitchTab_OnlyActivePageVisible()
     {
         var project = _canvas!.transform.Find("SettingsPanel/Tab_Project").gameObject;
-        var graphics = _canvas!.transform.Find("SettingsPanel/Tab_Graphics").gameObject;
         var about = _canvas!.transform.Find("SettingsPanel/Tab_About").gameObject;
 
         Assert.IsTrue(project.activeSelf, "Project tab should be active by default");
-        Assert.IsFalse(graphics.activeSelf, "Graphics tab should be hidden by default");
         Assert.IsFalse(about.activeSelf, "About tab should be hidden by default");
 
         var tab2Btn = _canvas!.transform.Find("SettingsPanel/Tab_1").GetComponent<Button>();
         tab2Btn.onClick.Invoke();
-        Assert.IsFalse(project.activeSelf, "Project should hide after switching to Graphics");
-        Assert.IsTrue(graphics.activeSelf, "Graphics should show after click");
-        Assert.IsFalse(about.activeSelf);
-
-        var tab3Btn = _canvas!.transform.Find("SettingsPanel/Tab_2").GetComponent<Button>();
-        tab3Btn.onClick.Invoke();
-        Assert.IsFalse(project.activeSelf);
-        Assert.IsFalse(graphics.activeSelf);
+        Assert.IsFalse(project.activeSelf, "Project should hide after switching to About");
         Assert.IsTrue(about.activeSelf, "About should show after click");
     }
 
@@ -223,7 +215,7 @@ public class SettingsPanelUITests
     {
         string[] expectedToggles =
         {
-            "Сетка", "Снэппинг", "Блокировать ошибки", "Автосохранение",
+            "Сетка", "Привязка к деталям", "Блокировать недопустимые изменения", "Автосохранение",
             "Пространственная сетка", "Контур (чёрные рёбра)",
             "Стены", "Опускать ближние стены", "Свободное панорамирование"
         };
@@ -252,8 +244,8 @@ public class SettingsPanelUITests
         var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
 
         AssertToggleValue(project, "Сетка", s.GridEnabled);
-        AssertToggleValue(project, "Снэппинг", s.SnapEnabled);
-        AssertToggleValue(project, "Блокировать ошибки", s.BlockOnViolation);
+        AssertToggleValue(project, "Привязка к деталям", s.SnapEnabled);
+        AssertToggleValue(project, "Блокировать недопустимые изменения", s.BlockOnViolation);
         AssertToggleValue(project, "Автосохранение", s.AutoSave);
         AssertToggleValue(project, "Пространственная сетка", s.SpatialGrid);
         AssertToggleValue(project, "Контур (чёрные рёбра)", s.EdgeOutline);
@@ -297,7 +289,7 @@ public class SettingsPanelUITests
     {
         string[] expectedInputs =
         {
-            "Шаг сетки, мм", "Порог снэпа, мм", "Интервал автосейва, с"
+            "Шаг сетки", "Порог привязки", "Интервал автосохранения"
         };
 
         var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
@@ -321,9 +313,9 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
 
-        AssertFieldValue(project, "Шаг сетки, мм", s.GridStep.ToString());
-        AssertFieldValue(project, "Порог снэпа, мм", s.SnapThreshold.ToString("F0"));
-        AssertFieldValue(project, "Интервал автосейва, с", s.AutoSaveInterval.ToString());
+        AssertFieldValue(project, "Шаг сетки", s.GridStep.ToString());
+        AssertFieldValue(project, "Порог привязки", s.SnapThreshold.ToString("F0"));
+        AssertFieldValue(project, "Интервал автосохранения", s.AutoSaveInterval.ToString());
     }
 
     [Test]
@@ -333,7 +325,7 @@ public class SettingsPanelUITests
         int prev = s.GridStep;
 
         var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
-        var field = project.Find("RowFld_Шаг сетки, мм/Fld_Шаг сетки, мм").GetComponent<TMP_InputField>();
+        var field = project.Find("RowFld_Шаг сетки/Fld_Шаг сетки").GetComponent<TMP_InputField>();
         field.text = "42";
         field.onEndEdit.Invoke("42");
 
@@ -349,7 +341,7 @@ public class SettingsPanelUITests
         int prev = s.GridStep;
 
         var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
-        var field = project.Find("RowFld_Шаг сетки, мм/Fld_Шаг сетки, мм").GetComponent<TMP_InputField>();
+        var field = project.Find("RowFld_Шаг сетки/Fld_Шаг сетки").GetComponent<TMP_InputField>();
         field.text = "abc";
         field.onEndEdit.Invoke("abc");
 
@@ -360,7 +352,7 @@ public class SettingsPanelUITests
     public void InputField_HasOutlineComponent()
     {
         var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
-        var field = project.Find("RowFld_Шаг сетки, мм/Fld_Шаг сетки, мм").GetComponent<TMP_InputField>();
+        var field = project.Find("RowFld_Шаг сетки/Fld_Шаг сетки").GetComponent<TMP_InputField>();
         var outline = field.GetComponent<Outline>();
         Assert.IsNotNull(outline, "InputField should have Outline component");
     }
@@ -382,16 +374,6 @@ public class SettingsPanelUITests
         Assert.IsNotNull(dateLabel);
         var dateText = dateLabel.GetComponent<TextMeshProUGUI>().text;
         Assert.IsTrue(dateText.StartsWith("Сборка:"));
-    }
-
-    // ── Graphics tab ────────────────────────────────────────
-
-    [Test]
-    public void GraphicsTab_Exists_WithNoContent()
-    {
-        var graphics = _canvas!.transform.Find("SettingsPanel/Tab_Graphics");
-        Assert.IsNotNull(graphics);
-        Assert.AreEqual(0, graphics.childCount, "Graphics tab should have no child rows");
     }
 
     // ── Row ordering ────────────────────────────────────────

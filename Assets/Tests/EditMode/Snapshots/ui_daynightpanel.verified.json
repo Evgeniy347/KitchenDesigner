@@ -13,13 +13,13 @@
     },
     {
       "type": "Label",
-      "text": "Направление: 135°",
+      "text": "Азимут солнца: 135°",
       "position": [0, 8]
     },
     {
       "type": "Button",
-      "text": "X",
-      "position": [-4, -4]
+      "text": "×",
+      "position": [-8, -8]
     },
     {
       "type": "Label",

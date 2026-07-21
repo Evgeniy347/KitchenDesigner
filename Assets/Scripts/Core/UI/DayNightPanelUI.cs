@@ -26,7 +26,9 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("DayNightPanel", canvas, Vector2.zero, new Vector2(300, 250));
+            // Высота с запасом: кнопка «Сброс» не должна прилипать к нижнему
+            // краю (правило 7 — паддинг контента со всех сторон).
+            var panel = UIFactory.CreatePanel("DayNightPanel", canvas, Vector2.zero, new Vector2(300, 272));
             UIFactory.AnchorTopRight(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(-10, -60);
             _root = panel.gameObject;
@@ -59,11 +61,7 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateButton("DnReset", panel.transform, "Сброс (полдень)",
                 new Vector2(0, y - 62), new Vector2(264, 30), ResetSun);
 
-            var closeBtn = UIFactory.CreateButton("DnClose", panel.transform, "X",
-                Vector2.zero, new Vector2(24, 24), () => SetVisible(false));
-            UIFactory.AnchorTopRight(closeBtn.GetComponent<RectTransform>());
-            closeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4, -4);
-            closeBtn.transform.SetAsLastSibling();
+            UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
 
             RefreshLabels();
             _root.SetActive(false);
@@ -88,10 +86,12 @@ namespace KitchenDesigner.Core.UI
                 _timeLabel.text = $"Время: {h:00}:{m:00} ({phase})";
             }
             if (_azimuthLabel != null)
-                _azimuthLabel.text = $"Направление: {SunController.Azimuth:0}°";
+                _azimuthLabel.text = $"Азимут солнца: {SunController.Azimuth:0}°";
             if (_intensityLabel != null)
                 _intensityLabel.text = $"Яркость: {SunController.Intensity:0.00}";
         }
+
+        public bool IsVisible => _root != null && _root.activeSelf;
 
         public void SetVisible(bool visible)
         {
