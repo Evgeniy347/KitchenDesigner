@@ -20,11 +20,13 @@ namespace KitchenDesigner.Core.UI
         private DayNightPanelUI? _dayNightPanel;
         private GroupMenuUI? _groupMenu;
         private HierarchyPanelUI? _hierarchyPanel;
+        private ErrorPanelUI? _errorPanel;
         private HelpUI? _help;
         private Button? _undoButton;
         private Button? _redoButton;
         private Button? _specButton;
         private Button? _hierarchyButton;
+        private Button? _errorButton;
         private Button? _settingsButton;
         private Button? _tintButton;
         private Button? _lightsButton;
@@ -73,6 +75,9 @@ namespace KitchenDesigner.Core.UI
             _hierarchyPanel = gameObject.AddComponent<HierarchyPanelUI>();
             _hierarchyPanel.Build(windowLayer);
 
+            _errorPanel = gameObject.AddComponent<ErrorPanelUI>();
+            _errorPanel.Build(windowLayer);
+
             var toast = gameObject.AddComponent<ToastNotification>();
             toast.Build(_canvas.transform);
 
@@ -100,6 +105,7 @@ namespace KitchenDesigner.Core.UI
             // Кнопки добавления деталей переехали в левый сайдбар (SidebarUI).
             _specButton = AddBarButton(bar.transform, "Spec", "Спецификация", ref x, y, h, 150, ToggleSpecification);
             _hierarchyButton = AddBarButton(bar.transform, "Hierarchy", "Сцена", ref x, y, h, 90, ToggleHierarchy);
+            _errorButton = AddBarButton(bar.transform, "Errors", "Ошибки", ref x, y, h, 90, ToggleErrors);
             AddSeparator(bar.transform, ref x, y, h);
 
             // Понятные значки вместо текста.
@@ -221,6 +227,7 @@ namespace KitchenDesigner.Core.UI
             SetToggled(_vertexButton, VertexLabelManager.Enabled);
             SetToggled(_specButton, _specPanel != null && _specPanel.IsVisible);
             SetToggled(_hierarchyButton, _hierarchyPanel != null && _hierarchyPanel.IsVisible);
+            SetToggled(_errorButton, _errorPanel != null && _errorPanel.IsVisible);
             SetToggled(_settingsButton, _settingsPanel != null && _settingsPanel.IsVisible);
             SetToggled(_dayNightButton, _dayNightPanel != null && _dayNightPanel.IsVisible);
         }
@@ -537,6 +544,12 @@ namespace KitchenDesigner.Core.UI
         {
             if (_hierarchyPanel == null) return;
             _hierarchyPanel.Toggle();
+        }
+
+        public void ToggleErrors()
+        {
+            if (_errorPanel == null) return;
+            _errorPanel.Toggle();
         }
 
         /// <summary>«Сохранить»: на WebGL отправляет на сервер; на остальных

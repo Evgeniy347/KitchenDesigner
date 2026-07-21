@@ -63,68 +63,73 @@
     },
     {
       "type": "Button",
+      "text": "Ошибки",
+      "position": [260, -6]
+    },
+    {
+      "type": "Button",
       "text": "Settings",
-      "position": [276, -6]
+      "position": [372, -6]
     },
     {
       "type": "Button",
       "text": "Save",
-      "position": [322, -6]
+      "position": [418, -6]
     },
     {
       "type": "Button",
       "text": "SaveAs",
-      "position": [368, -6]
+      "position": [464, -6]
     },
     {
       "type": "Button",
       "text": "Load",
-      "position": [414, -6]
+      "position": [510, -6]
     },
     {
       "type": "Button",
       "text": "Undo",
-      "position": [476, -6]
+      "position": [572, -6]
     },
     {
       "type": "Button",
       "text": "Redo",
-      "position": [522, -6]
+      "position": [618, -6]
     },
     {
       "type": "Button",
       "text": "Выравнивание",
-      "position": [584, -6]
+      "position": [680, -6]
     },
     {
       "type": "Button",
       "text": "Распределить",
-      "position": [726, -6]
+      "position": [822, -6]
     },
     {
       "type": "Button",
       "text": "Ручки: растяжение",
-      "position": [862, -6]
+      "position": [958, -6]
     },
     {
       "type": "Button",
       "text": "Тонировка",
-      "position": [1060, -6]
+      "position": [1156, -6]
     },
     {
       "type": "Button",
       "text": "Свет",
-      "position": [1176, -6]
+      "position": [1272, -6]
     },
     {
       "type": "Button",
       "text": "Солнце",
-      "position": [1252, -6]
+      "position": [1348, -6]
     },
     {
       "type": "Button",
       "text": "Вершины",
-      "position": [1348, -6]
+      "position": [1444, -6]
     },
     {
       "type": "Button",

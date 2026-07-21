@@ -39,7 +39,7 @@ namespace KitchenDesigner.Core.MCP.Contract
                 "Cut list: every distinct board size with count and area (m2), plus totals.",
                 McpToolKind.Read, null),
             new McpToolDef("get_violations", "List violations",
-                "List elements that overlap another (with severity and penetration depth in mm) or are disconnected from the wall/floor structure. Optional names[] limits the report to those boards. Note: every mutation already returns its own violations — call this to check the WHOLE scene.",
+                "List elements that overlap another (with severity and penetration depth in mm) or are disconnected from the wall/floor structure. Also returns issues[]: coded scene analysis (level=error|warning, code, detail, message, target, secondary). Errors COL-xx = collisions; warnings GAP-01 near-contact (<=8mm, not touching), SEAT-01 panel not fully seated in groove, FAC-01 facade gap <1mm, DRW-01 drawer without facade. Warnings are analysis-only (no scene highlight). Optional names[] limits the report to those boards. Note: every mutation already returns its own violations — call this to check the WHOLE scene.",
                 McpToolKind.Read, typeof(ParamsGetViolations)),
             new McpToolDef("get_element_gaps", "Element gaps (batch)",
                 "For EACH given board: gap or overlap (in mm) to the nearest neighbour on each axis X/Y/Z. Negative gapMM = overlap.",

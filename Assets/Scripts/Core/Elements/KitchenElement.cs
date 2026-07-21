@@ -280,6 +280,14 @@ namespace KitchenDesigner.Core
 
         protected virtual Vector3 EffectiveScale => transform.localScale;
 
+        /// <summary>Поза, в которой деталь проверяется на коллизии/связность.
+        /// По умолчанию — текущий трансформ. Ящик/фасад переопределяют на
+        /// ЗАКРЫТУЮ позу: открывание — транзитная анимация, её коллизии гасит
+        /// OpeningCollision, и она не должна порождать нарушения в статической
+        /// проверке (иначе открытый ящик «пересекает» свой же фасад).</summary>
+        protected virtual Vector3 ValidationPosition => transform.position;
+        protected virtual Quaternion ValidationRotation => transform.rotation;
+
         public virtual void ApplyDimensions()
         {
             transform.localScale = new Vector3(
@@ -296,8 +304,8 @@ namespace KitchenDesigner.Core
         public virtual Vector3[] GetVertices()
         {
             var size = EffectiveScale;
-            var pos = transform.position;
-            var rot = transform.rotation;
+            var pos = ValidationPosition;
+            var rot = ValidationRotation;
 
             // Стена может быть опущена (режим обзора WallCutaway) — используем
             // ПОЛНУЮ геометрию, чтобы валидация связности не зависела от камеры.
@@ -331,8 +339,8 @@ namespace KitchenDesigner.Core
         public virtual Face[] GetFaces()
         {
             var size = EffectiveScale;
-            var pos = transform.position;
-            var rot = transform.rotation;
+            var pos = ValidationPosition;
+            var rot = ValidationRotation;
 
             var wall = GetComponent<Wall>();
             if (wall != null && wall.IsLowered)

@@ -3,12 +3,51 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
+    /// <summary>Причина нарушения — для окна анализа ошибок. Список
+    /// <see cref="ValidationResult.violations"/> сваливает все причины в одну
+    /// кучу; диагностики разделяют их и сохраняют вторую деталь для пересечений.</summary>
+    public enum ViolationKind
+    {
+        /// <summary>Две детали занимают одно место (объёмное пересечение).</summary>
+        Overlap,
+        /// <summary>Деталь не заземлена — висит в воздухе без опоры.</summary>
+        Unsupported,
+        /// <summary>Окно/дверь выходит за габарит своей стены.</summary>
+        OutOfWallBounds,
+    }
+
+    /// <summary>Одно структурированное нарушение с указанием причины и (для
+    /// пересечений) второй детали.</summary>
+    public readonly struct ContactViolation
+    {
+        public readonly KitchenElement element;
+        public readonly KitchenElement? other; // партнёр для Overlap; null для остальных
+        public readonly ViolationKind kind;
+
+        public ContactViolation(KitchenElement element, KitchenElement? other, ViolationKind kind)
+        {
+            this.element = element;
+            this.other = other;
+            this.kind = kind;
+        }
+    }
+
     public class ValidationResult
     {
         public List<FaceContact> contacts = new List<FaceContact>();
         public List<KitchenElement> violations = new List<KitchenElement>();
         public List<List<KitchenElement>> isolatedGroups = new List<List<KitchenElement>>();
         public bool isValid;
+
+        /// <summary>Структурированные нарушения с причинами. Инициализируется
+        /// лениво: на валидных сценах (горячий путь перетаскивания — Validate
+        /// каждый кадр) остаётся null и не даёт лишних аллокаций GC.</summary>
+        public List<ContactViolation>? diagnostics;
+
+        public void AddDiagnostic(KitchenElement element, KitchenElement? other, ViolationKind kind)
+        {
+            (diagnostics ??= new List<ContactViolation>()).Add(new ContactViolation(element, other, kind));
+        }
     }
 
     public static class ConstraintValidator
@@ -283,6 +322,10 @@ namespace KitchenDesigner.Core
                 // связности они валидны) — это и есть «красный» при перетаскивании.
                 _overlapping.Add(a);
                 _overlapping.Add(b);
+                // Диагностика для окна анализа: пара «якорь+якорь» (пол/стена) —
+                // не действие пользователя, её не регистрируем.
+                if (!(IsAnchor(a) && IsAnchor(b)))
+                    result.AddDiagnostic(a, b, ViolationKind.Overlap);
                 return;
             }
 
@@ -360,6 +403,193 @@ namespace KitchenDesigner.Core
                 }
             }
             return false;
+        }
+
+        /// <summary>Пара деталей, которые ПОЧТИ касаются: их грани параллельны и
+        /// хорошо перекрыты в плоскости, но между ними зазор чуть больше допуска
+        /// касания.</summary>
+        public readonly struct NearContact
+        {
+            public readonly KitchenElement a;
+            public readonly KitchenElement b;
+            public readonly float gapMm;
+            public NearContact(KitchenElement a, KitchenElement b, float gapMm)
+            {
+                this.a = a; this.b = b; this.gapMm = gapMm;
+            }
+        }
+
+        /// <summary>Найти пары деталей с зазором в (ContactMm, maxGapMm]: грани
+        /// параллельны, перекрыты в плоскости не хуже face-to-face, а между ними
+        /// щель, которую пользователю визуально трудно заметить (недожатый снэп).
+        /// НЕ горячий путь: O(n²), вызывается окном анализа/MCP по требованию.
+        /// Пары, уже стоящие face-to-face (реально соприкасаются), пропускаются.</summary>
+        public static List<NearContact> FindNearContacts(List<KitchenElement> all, float maxGapMm)
+        {
+            var result = new List<NearContact>();
+            if (all == null || all.Count < 2) return result;
+
+            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            float maxGap = maxGapMm * AppConstants.MM_TO_UNITS;
+            float toMm = 1f / AppConstants.MM_TO_UNITS;
+
+            int n = all.Count;
+            var faces = new KitchenElement.Face[n][];
+            var boxes = new AABB[n];
+            var ok = new bool[n];
+            for (int i = 0; i < n; i++)
+            {
+                var e = all[i];
+                if (e == null || IsAnchor(e) || e is LightSourceElement) continue;
+                ok[i] = true;
+                faces[i] = e.GetFaces();
+                boxes[i] = ComputeAABB(e.GetVertices());
+            }
+
+            for (int i = 0; i < n; i++)
+            {
+                if (!ok[i]) continue;
+                for (int j = i + 1; j < n; j++)
+                {
+                    if (!ok[j]) continue;
+                    // Broad-phase: коробки в пределах maxGap друг от друга. margin в
+                    // AABBsIntersect СУЖАЕТ перекрытие, поэтому расширяем отрицательным
+                    // (−maxGap) — так в кандидаты попадают и не пересекающиеся, но
+                    // близкие пары.
+                    if (!AABBsIntersect(boxes[i], boxes[j], -maxGap)) continue;
+                    // Реально касаются гранями — это не «почти», а контакт.
+                    if (AreInFaceToFaceContact(all[i], all[j])) continue;
+
+                    float gap = MinParallelGap(faces[i], faces[j], contactDist, maxGap);
+                    if (gap > 0f)
+                        result.Add(new NearContact(all[i], all[j], gap * toMm));
+                }
+            }
+            return result;
+        }
+
+        /// <summary>Минимальный зазор между параллельными хорошо перекрытыми
+        /// гранями в диапазоне (contactDist, maxGap]; 0 — подходящей пары нет.</summary>
+        private static float MinParallelGap(KitchenElement.Face[] fa, KitchenElement.Face[] fb,
+            float contactDist, float maxGap)
+        {
+            float best = 0f;
+            for (int a = 0; a < 6; a++)
+            {
+                for (int b = 0; b < 6; b++)
+                {
+                    float dot = Vector3.Dot(fa[a].normal, fb[b].normal);
+                    if (!Tolerance.IsParallel(dot)) continue;
+
+                    Vector3 offset = fb[b].center - fa[a].center;
+                    float planeDist = Mathf.Abs(Vector3.Dot(offset, fa[a].normal));
+                    if (planeDist <= contactDist || planeDist > maxGap) continue;
+
+                    if (!FacesOverlap(fa[a], fb[b], out _, out float ratio)) continue;
+                    if (ratio < FaceToFaceOverlap) continue;
+
+                    if (best == 0f || planeDist < best) best = planeDist;
+                }
+            }
+            return best;
+        }
+
+        /// <summary>Вкладная панель (ДВП), которая зашла в паз детали не до дна —
+        /// «приклеилась снаружи паза». insertionMm — реальная глубина захода,
+        /// depthMm — глубина паза.</summary>
+        public readonly struct UnseatedPanel
+        {
+            public readonly KitchenElement panel;
+            public readonly KitchenElement board;
+            public readonly float insertionMm;
+            public readonly float depthMm;
+            public UnseatedPanel(KitchenElement panel, KitchenElement board, float insertionMm, float depthMm)
+            {
+                this.panel = panel; this.board = board;
+                this.insertionMm = insertionMm; this.depthMm = depthMm;
+            }
+        }
+
+        /// <summary>Запас по нормали паза, в пределах которого панель считается
+        /// «относящейся» к этому пазу (снаружи устья, мм).</summary>
+        private const float PanelEngageMarginMm = 6f;
+
+        /// <summary>Найти вкладные панели, которые НЕ дошли до дна паза (зашли менее
+        /// чем на половину его глубины). Пользователь такую щель между кромкой и дном
+        /// не видит, а конструктивно панель держится плохо. НЕ горячий путь.</summary>
+        public static List<UnseatedPanel> FindUnseatedPanels(List<KitchenElement> all)
+        {
+            var result = new List<UnseatedPanel>();
+            if (all == null || all.Count < 2) return result;
+
+            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            float engageMargin = PanelEngageMarginMm * AppConstants.MM_TO_UNITS;
+            float toMm = 1f / AppConstants.MM_TO_UNITS;
+
+            foreach (var p in all)
+            {
+                if (!(p is PanelElement)) continue;
+                var pverts = p.GetVertices();
+
+                foreach (var b in all)
+                {
+                    if (b == null || b == p || b.Grooves.Count == 0) continue;
+                    var seats = b.GetGrooveSeatFaces();
+                    if (seats.Length == 0) continue;
+
+                    float depthUnits = GrooveMesh.DepthFraction(b.DimensionsMM) * b.transform.localScale.z;
+                    if (depthUnits <= 0f) continue;
+
+                    foreach (var seat in seats)
+                    {
+                        if (!PanelEngagesSeat(pverts, seat, depthUnits, engageMargin, contactDist, out float minAlong))
+                            continue;
+
+                        // Глубина захода = глубина паза − отступ ближайшей кромки от дна.
+                        float insertion = depthUnits - minAlong;
+                        if (insertion < depthUnits * 0.5f)
+                            result.Add(new UnseatedPanel(p, b, Mathf.Max(0f, insertion) * toMm, depthUnits * toMm));
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>Панель «относится» к пазу: её ближайшая кромка стоит у устья/внутри
+        /// паза (по нормали) и панель перекрывает прямоугольник паза в плоскости.
+        /// out minAlong — отступ ближайшей вершины панели от ДНА паза вдоль нормали.</summary>
+        private static bool PanelEngagesSeat(Vector3[] pverts, in KitchenElement.Face seat,
+            float depthUnits, float engageMargin, float contactDist, out float minAlong)
+        {
+            minAlong = float.MaxValue;
+            float uMin = float.MaxValue, uMax = float.MinValue;
+            float vMin = float.MaxValue, vMax = float.MinValue;
+
+            foreach (var v in pverts)
+            {
+                Vector3 d = v - seat.center;
+                float along = Vector3.Dot(d, seat.normal);
+                if (along < minAlong) minAlong = along;
+
+                float u = Vector3.Dot(d, seat.rightAxis);
+                float w = Vector3.Dot(d, seat.upAxis);
+                if (u < uMin) uMin = u; if (u > uMax) uMax = u;
+                if (w < vMin) vMin = w; if (w > vMax) vMax = w;
+            }
+
+            // Ближайшая кромка должна стоять в диапазоне (дно … устье+запас): иначе
+            // панель к этому пазу не относится (стоит где-то ещё).
+            if (minAlong < -contactDist || minAlong > depthUnits + engageMargin) return false;
+
+            // Панель должна перекрывать прямоугольник паза в плоскости пласти.
+            float hu = seat.size.x * 0.5f, hv = seat.size.y * 0.5f;
+            float interU = Mathf.Min(uMax, hu) - Mathf.Max(uMin, -hu);
+            float interV = Mathf.Min(vMax, hv) - Mathf.Max(vMin, -hv);
+            if (interU <= 0f || interV <= 0f) return false;
+
+            float seatArea = seat.size.x * seat.size.y;
+            if (seatArea <= 0f) return false;
+            return (interU * interV) / seatArea >= 0.5f;
         }
 
         private static bool FacesOverlap(
@@ -521,7 +751,10 @@ namespace KitchenDesigner.Core
                 // опоры для него штатно.
                 if (e is LightSourceElement) continue;
                 if (!visited.Contains(e) || !hasContact.Contains(e))
+                {
                     result.violations.Add(e);
+                    result.AddDiagnostic(e, null, ViolationKind.Unsupported);
+                }
             }
 
             var unvisited = new List<KitchenElement>(result.violations);
@@ -602,6 +835,7 @@ namespace KitchenDesigner.Core
                 {
                     if (!result.violations.Contains(e))
                         result.violations.Add(e);
+                    result.AddDiagnostic(e, null, ViolationKind.OutOfWallBounds);
                 }
             }
         }
