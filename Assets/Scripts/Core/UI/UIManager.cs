@@ -23,10 +23,14 @@ namespace KitchenDesigner.Core.UI
         private HelpUI? _help;
         private Button? _undoButton;
         private Button? _redoButton;
+        private Button? _specButton;
+        private Button? _hierarchyButton;
+        private Button? _settingsButton;
+        private Button? _tintButton;
+        private Button? _lightsButton;
+        private Button? _dayNightButton;
+        private Button? _vertexButton;
         private TMP_Text? _modeButtonLabel;
-        private TMP_Text? _tintButtonLabel;
-        private TMP_Text? _lightsButtonLabel;
-        private TMP_Text? _vertexLabel;
 
         public Canvas? Canvas => _canvas;
         public const string QuickSaveName = "quicksave";
@@ -91,80 +95,51 @@ namespace KitchenDesigner.Core.UI
             const float y = -6f;
             const float h = 40f;
 
+            // Группы разделены вертикальными линиями:
+            // панели | файл | undo | инструменты | вид.
             // Кнопки добавления деталей переехали в левый сайдбар (SidebarUI).
-            AddBarButton(bar.transform, "Spec", "Спецификация", ref x, y, h, 150, ToggleSpecification);
-            AddBarButton(bar.transform, "Hierarchy", "Сцена", ref x, y, h, 90, ToggleHierarchy);
+            _specButton = AddBarButton(bar.transform, "Spec", "Спецификация", ref x, y, h, 150, ToggleSpecification);
+            _hierarchyButton = AddBarButton(bar.transform, "Hierarchy", "Сцена", ref x, y, h, 90, ToggleHierarchy);
+            AddSeparator(bar.transform, ref x, y, h);
+
             // Понятные значки вместо текста.
-            AddIconButton(bar.transform, "Settings", IconFactory.Gear, ref x, y, h, ToggleSettings);
+            _settingsButton = AddIconButton(bar.transform, "Settings", IconFactory.Gear, ref x, y, h, ToggleSettings);
             AddIconButton(bar.transform, "Save", IconFactory.Floppy, ref x, y, h, SaveCurrent);
             // «Сохранить как» и «Загрузить» доступны на всех платформах:
             //   • WebGL — браузерные окна сохранения/выбора файла;
             //   • desktop/редактор — системные диалоги Windows.
             AddIconButton(bar.transform, "SaveAs", IconFactory.FloppyPlus, ref x, y, h, SaveAs);
             AddIconButton(bar.transform, "Load", IconFactory.Folder, ref x, y, h, LoadDialog);
+            AddSeparator(bar.transform, ref x, y, h);
 
-            x += 12;
             _undoButton = AddIconButton(bar.transform, "Undo", IconFactory.Undo, ref x, y, h, DoUndo);
             _redoButton = AddIconButton(bar.transform, "Redo", IconFactory.Redo, ref x, y, h, DoRedo);
+            AddSeparator(bar.transform, ref x, y, h);
 
-            x += 20;
-            var alignBtn = UIFactory.CreateButton("Align", bar.transform, "Выравн.",
-                new Vector2(x, y), new Vector2(80, h), ShowAlignMenu);
-            UIFactory.AnchorTopLeft(alignBtn.GetComponent<RectTransform>());
-            alignBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
-            x += 86;
-            var distBtn = UIFactory.CreateButton("Distribute", bar.transform, "Распред.",
-                new Vector2(x, y), new Vector2(80, h), DistributeX);
-            UIFactory.AnchorTopLeft(distBtn.GetComponent<RectTransform>());
-            distBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
-            x += 86;
+            // Полные слова, без обрубков «Выравн.»/«Распред.» (правило 5).
+            AddBarButton(bar.transform, "Align", "Выравнивание", ref x, y, h, 136, ShowAlignMenu);
+            AddBarButton(bar.transform, "Distribute", "Распределить", ref x, y, h, 130, DistributeX);
 
             // Переключатель режима ручек на гранях: растяжение ↔ перемещение по оси.
-            var modeBtn = UIFactory.CreateButton("HandleMode", bar.transform, ModeLabel(),
-                new Vector2(x, y), new Vector2(150, h), ToggleHandleMode);
-            UIFactory.AnchorTopLeft(modeBtn.GetComponent<RectTransform>());
-            modeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
+            var modeBtn = AddBarButton(bar.transform, "HandleMode", ModeLabel(), ref x, y, h, 176, ToggleHandleMode);
             _modeButtonLabel = modeBtn.GetComponentInChildren<TMP_Text>();
-            x += 156;
+            AddSeparator(bar.transform, ref x, y, h);
 
-            x += 12;
+            // Тогглы вида: состояние показывает фон кнопки (нажат = включено),
+            // а не слово «вкл/выкл» в подписи (правило 9).
             // Тонировка валидности (светло-зелёный): выкл — видны текстуры деталей.
-            var tintBtn = UIFactory.CreateButton("TintToggle", bar.transform, TintLabel(),
-                new Vector2(x, y), new Vector2(110, h), ToggleTint);
-            UIFactory.AnchorTopLeft(tintBtn.GetComponent<RectTransform>());
-            tintBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
-            _tintButtonLabel = tintBtn.GetComponentInChildren<TMP_Text>();
-            x += 116;
-
+            _tintButton = AddBarButton(bar.transform, "TintToggle", "Тонировка", ref x, y, h, 110, ToggleTint);
             // Глобальный выключатель источников света.
-            var lightsBtn = UIFactory.CreateButton("LightsToggle", bar.transform, LightsLabel(),
-                new Vector2(x, y), new Vector2(110, h), ToggleLights);
-            UIFactory.AnchorTopLeft(lightsBtn.GetComponent<RectTransform>());
-            lightsBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
-            _lightsButtonLabel = lightsBtn.GetComponentInChildren<TMP_Text>();
-            x += 116;
-
+            _lightsButton = AddBarButton(bar.transform, "LightsToggle", "Свет", ref x, y, h, 70, ToggleLights);
             // Панель «День/Ночь» — глобальное управление солнцем.
-            AddBarButton(bar.transform, "DayNight", "Солнце", ref x, y, h, 90, ToggleDayNight);
-
+            _dayNightButton = AddBarButton(bar.transform, "DayNight", "Солнце", ref x, y, h, 90, ToggleDayNight);
             // Показ буквенных меток вершин A-H у выделенного элемента.
-            var vertexBtn = UIFactory.CreateButton("VertexLabels", bar.transform, VertexLabel(),
-                new Vector2(x, y), new Vector2(150, h), ToggleVertexLabels);
-            UIFactory.AnchorTopLeft(vertexBtn.GetComponent<RectTransform>());
-            vertexBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
-            _vertexLabel = vertexBtn.GetComponentInChildren<TMP_Text>();
+            _vertexButton = AddBarButton(bar.transform, "VertexLabels", "Вершины", ref x, y, h, 100, ToggleVertexLabels);
         }
-
-        private static string TintLabel() =>
-            ElementHighlighter.TintEnabled ? "Тон: вкл" : "Тон: выкл";
-
-        private static string LightsLabel() =>
-            LightSourceElement.GlobalOn ? "Свет: вкл" : "Свет: выкл";
 
         private void ToggleTint()
         {
             ElementHighlighter.TintEnabled = !ElementHighlighter.TintEnabled;
-            if (_tintButtonLabel != null) _tintButtonLabel.text = TintLabel();
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
         }
@@ -172,7 +147,6 @@ namespace KitchenDesigner.Core.UI
         private void ToggleLights()
         {
             LightSourceElement.SetGlobalOn(!LightSourceElement.GlobalOn);
-            if (_lightsButtonLabel != null) _lightsButtonLabel.text = LightsLabel();
         }
 
         private void ToggleDayNight()
@@ -180,19 +154,17 @@ namespace KitchenDesigner.Core.UI
             if (_dayNightPanel != null) _dayNightPanel.Toggle();
         }
 
-        private static string VertexLabel() =>
-            VertexLabelManager.Enabled ? "Вершины: A-H" : "Вершины: выкл";
-
         private void ToggleVertexLabels()
         {
             VertexLabelManager.Toggle();
-            if (_vertexLabel != null) _vertexLabel.text = VertexLabel();
         }
 
+        // Два именованных состояния — это не «вкл/выкл», подпись честно
+        // называет текущий режим.
         private static string ModeLabel() =>
             ResizeHandleManager.Mode == ResizeHandleManager.HandleMode.Resize
-                ? "Режим: [ ]"
-                : "Режим: ->";
+                ? "Ручки: растяжение"
+                : "Ручки: перенос";
 
         private void ToggleHandleMode()
         {
@@ -200,12 +172,32 @@ namespace KitchenDesigner.Core.UI
             if (_modeButtonLabel != null) _modeButtonLabel.text = ModeLabel();
         }
 
-        private void AddBarButton(Transform parent, string name, string label, ref float x, float y, float h, float w, System.Action onClick)
+        private Button AddBarButton(Transform parent, string name, string label, ref float x, float y, float h, float w, System.Action onClick)
         {
             var btn = UIFactory.CreateButton(name, parent, label, new Vector2(x, y), new Vector2(w, h), onClick);
             UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
             btn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
             x += w + 6;
+            return btn;
+        }
+
+        private static void AddSeparator(Transform parent, ref float x, float y, float h)
+        {
+            x += 4;
+            var sep = UIFactory.CreatePanel("Separator", parent, Vector2.zero,
+                new Vector2(2, h - 8), UIStyle.Separator);
+            UIFactory.AnchorTopLeft(sep.rectTransform);
+            sep.rectTransform.anchoredPosition = new Vector2(x, y - 4);
+            sep.raycastTarget = false;
+            x += 12;
+        }
+
+        /// <summary>Нажатое состояние тоггла тулбара.</summary>
+        private static void SetToggled(Button? btn, bool on)
+        {
+            if (btn == null) return;
+            var img = btn.GetComponent<Image>();
+            if (img != null) img.color = on ? UIStyle.SurfaceActive : UIStyle.Surface;
         }
 
         private Button AddIconButton(Transform parent, string name, Sprite icon, ref float x, float y, float h, System.Action onClick)
@@ -217,11 +209,20 @@ namespace KitchenDesigner.Core.UI
             return btn;
         }
 
-        // Кнопки отмены/повтора активны только когда есть что отменять/повторять.
+        // Кнопки отмены/повтора активны только когда есть что отменять/повторять;
+        // тогглы вида и панелей показывают своё состояние нажатым фоном.
         private void Update()
         {
             if (_undoButton != null) _undoButton.interactable = CommandStack.CanUndo;
             if (_redoButton != null) _redoButton.interactable = CommandStack.CanRedo;
+
+            SetToggled(_tintButton, ElementHighlighter.TintEnabled);
+            SetToggled(_lightsButton, LightSourceElement.GlobalOn);
+            SetToggled(_vertexButton, VertexLabelManager.Enabled);
+            SetToggled(_specButton, _specPanel != null && _specPanel.IsVisible);
+            SetToggled(_hierarchyButton, _hierarchyPanel != null && _hierarchyPanel.IsVisible);
+            SetToggled(_settingsButton, _settingsPanel != null && _settingsPanel.IsVisible);
+            SetToggled(_dayNightButton, _dayNightPanel != null && _dayNightPanel.IsVisible);
         }
 
         private void DoUndo()

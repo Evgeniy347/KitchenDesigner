@@ -42,6 +42,8 @@ namespace KitchenDesigner.Core.UI
         private GameObject? _root;
         private RectTransform? _content;
         private TMP_Dropdown? _moveDropdown;
+        private TMP_InputField? _searchField;
+        private TMP_Text? _searchHint;
         private readonly HashSet<int> _collapsed = new HashSet<int>();
         private readonly List<LinkGroup> _dropdownGroups = new List<LinkGroup>();
         private float _nextPoll;
@@ -62,13 +64,13 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(14, -6), new Vector2(120, 28), TextAnchor.MiddleLeft)
                 .rectTransform.SetAnchor(new Vector2(0, 1), new Vector2(14, -6));
 
+            // «+ Группа» отодвинута от кнопки закрытия: создание и закрытие
+            // не должны соседствовать (правило 3 UI-GUIDELINES о misclick).
             var addBtn = UIFactory.CreateButton("HierAddGroup", panel.transform, "+ Группа",
                 Vector2.zero, new Vector2(92, 26), CreateEmptyGroup);
-            SetTopRight(addBtn.GetComponent<RectTransform>(), new Vector2(-38, -6));
+            SetTopRight(addBtn.GetComponent<RectTransform>(), new Vector2(-64, -6));
 
-            var closeBtn = UIFactory.CreateButton("HierClose", panel.transform, "x",
-                Vector2.zero, new Vector2(26, 26), () => SetVisible(false));
-            SetTopRight(closeBtn.GetComponent<RectTransform>(), new Vector2(-6, -6));
+            UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
 
             // «Переместить в…» — применяется к текущему выделению.
             _moveDropdown = UIFactory.CreateDropdown("HierMoveTo", panel.transform,
@@ -78,6 +80,23 @@ namespace KitchenDesigner.Core.UI
             ddRt.anchorMin = ddRt.anchorMax = new Vector2(0.5f, 1);
             ddRt.pivot = new Vector2(0.5f, 1);
             ddRt.anchoredPosition = new Vector2(0, -38);
+
+            // Поиск по имени: без фильтра список из десятков полок неуправляем.
+            _searchField = UIFactory.CreateInputField("HierSearch", panel.transform, "",
+                Vector2.zero, new Vector2(PanelW - 20, 26));
+            var sfRt = _searchField.GetComponent<RectTransform>();
+            sfRt.anchorMin = sfRt.anchorMax = new Vector2(0.5f, 1);
+            sfRt.pivot = new Vector2(0.5f, 1);
+            sfRt.anchoredPosition = new Vector2(0, -68);
+            _searchField.onValueChanged.AddListener(_ => Refresh());
+            var searchHint = UIFactory.CreateLabel("HierSearchHint", _searchField.transform, "Поиск…", 14,
+                Vector2.zero, new Vector2(PanelW - 36, 26), TextAnchor.MiddleLeft);
+            searchHint.color = UIStyle.TextSecondary;
+            searchHint.raycastTarget = false;
+            var shRt = searchHint.rectTransform;
+            shRt.anchorMin = Vector2.zero; shRt.anchorMax = Vector2.one;
+            shRt.offsetMin = new Vector2(8, 0); shRt.offsetMax = Vector2.zero;
+            _searchHint = searchHint;
 
             BuildScrollArea(panel.transform);
 
@@ -105,7 +124,7 @@ namespace KitchenDesigner.Core.UI
             viewport.anchorMax = new Vector2(1, 1);
             viewport.pivot = new Vector2(0.5f, 1f);
             viewport.offsetMin = new Vector2(6, 8);          // отступ снизу
-            viewport.offsetMax = new Vector2(-16, -70);      // под шапкой и дропдауном
+            viewport.offsetMax = new Vector2(-16, -100);     // шапка, дропдаун, поиск
             var vpImg = viewport.gameObject.AddComponent<Image>();
             vpImg.color = new Color(0, 0, 0, 0.01f);
             var mask = viewport.gameObject.AddComponent<Mask>();
@@ -131,7 +150,7 @@ namespace KitchenDesigner.Core.UI
             sbRect.anchorMax = new Vector2(1, 1);
             sbRect.pivot = new Vector2(1, 0.5f);
             sbRect.offsetMin = new Vector2(-12, 8);
-            sbRect.offsetMax = new Vector2(-4, -70);
+            sbRect.offsetMax = new Vector2(-4, -100);
             var sbImg = sbRect.gameObject.AddComponent<Image>();
             sbImg.color = new Color(0.10f, 0.10f, 0.13f, 0.6f);
             var scrollbar = sbRect.gameObject.AddComponent<Scrollbar>();
@@ -201,6 +220,8 @@ namespace KitchenDesigner.Core.UI
             Refresh();
         }
 
+        public bool IsVisible => _root != null && _root.activeSelf;
+
         public void Toggle() => SetVisible(_root != null && !_root.activeSelf);
 
         public void SetVisible(bool visible)
@@ -220,18 +241,39 @@ namespace KitchenDesigner.Core.UI
             for (int i = _content.childCount - 1; i >= 0; i--)
                 Destroy(_content.GetChild(i).gameObject);
 
-            var nodes = SceneTree.Build(PartRegistry.GetAll(), GroupManager.AllGroups(), _collapsed);
+            string filter = _searchField != null ? _searchField.text.Trim() : "";
+            if (_searchHint != null) _searchHint.gameObject.SetActive(filter.Length == 0);
+
+            // При активном фильтре сворачивание игнорируется: совпадение внутри
+            // свёрнутой группы обязано быть видно.
+            var collapsed = filter.Length == 0 ? _collapsed : new HashSet<int>();
+            var nodes = SceneTree.Build(PartRegistry.GetAll(), GroupManager.AllGroups(), collapsed);
             var sel = SelectionManager.Instance;
 
             float y = 0f;
             foreach (var node in nodes)
             {
+                if (filter.Length > 0 && !MatchesFilter(node, filter)) continue;
                 BuildRow(node, y, sel);
                 y -= RowStep;
             }
             _content.sizeDelta = new Vector2(0, -y + 4);
 
             RefreshMoveDropdown();
+        }
+
+        private static bool MatchesFilter(SceneTree.Node node, string filter)
+        {
+            if (node.isRoot) return true;
+            string name = node.group != null ? node.group.name : node.element!.PartName;
+            if (name.IndexOf(filter, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            // Группа остаётся видимой, если совпал кто-то из её членов.
+            if (node.group != null)
+                foreach (var m in GroupManager.MembersOf(node.group))
+                    if (m != null && m.PartName.IndexOf(filter, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                        return true;
+            return false;
         }
 
         private void BuildRow(SceneTree.Node node, float y, SelectionManager? sel)
@@ -249,12 +291,15 @@ namespace KitchenDesigner.Core.UI
             if (node.group != null && node.hasChildren)
             {
                 int gid = node.group.id;
-                var arrow = UIFactory.CreateButton("Fold", row, node.collapsed ? ">" : "v",
+                var arrow = UIFactory.CreateButton("Fold", row,
+                    node.collapsed ? UIStyle.GlyphCollapsed : UIStyle.GlyphExpanded,
                     Vector2.zero, new Vector2(20, RowH), () => ToggleCollapse(gid));
                 var aRt = arrow.GetComponent<RectTransform>();
                 aRt.anchorMin = aRt.anchorMax = aRt.pivot = new Vector2(0, 0.5f);
                 aRt.anchoredPosition = new Vector2(indent, 0);
                 arrow.GetComponent<Image>().color = new Color(0, 0, 0, 0f);
+                var aLbl = arrow.GetComponentInChildren<TMP_Text>();
+                if (aLbl != null) { aLbl.fontSize = 10; aLbl.color = UIStyle.TextSecondary; }
             }
 
             float mainX = indent + (node.group != null ? 22f : 4f);
@@ -300,13 +345,16 @@ namespace KitchenDesigner.Core.UI
                 text.margin = new Vector4(6, 0, 0, 0);
             }
 
-            // Роспуск группы.
+            // Меню группы «…»: имя, закрепление, редактирование, роспуск —
+            // операции с полными подписями вместо безымянного «x»
+            // (роспуск в один клик без подтверждения — прямой путь к потере
+            // структуры сцены).
             if (node.group != null)
             {
                 var g = node.group;
-                var delBtn = UIFactory.CreateButton("Dissolve", row, "x",
-                    Vector2.zero, new Vector2(20, RowH - 4), () => GroupManager.Unlink(g));
-                var dRt = delBtn.GetComponent<RectTransform>();
+                var menuBtn = UIFactory.CreateButton("GroupMenu", row, "…",
+                    Vector2.zero, new Vector2(24, RowH - 4), () => OpenGroupMenu(g));
+                var dRt = menuBtn.GetComponent<RectTransform>();
                 dRt.anchorMin = dRt.anchorMax = dRt.pivot = new Vector2(1, 0.5f);
                 dRt.anchoredPosition = new Vector2(-2, 0);
             }
@@ -317,6 +365,22 @@ namespace KitchenDesigner.Core.UI
             foreach (var m in GroupManager.MembersOf(g))
                 if (!sel.IsSelected(m)) return false;
             return true;
+        }
+
+        /// <summary>Открыть меню группы (то же, что по ПКМ на её элементе):
+        /// роспуск и прочие операции — только через явные подписанные кнопки.</summary>
+        private void OpenGroupMenu(LinkGroup g)
+        {
+            var members = GroupManager.MembersOf(g);
+            if (members.Count == 0)
+            {
+                // Пустая группа: терять нечего, распускаем сразу.
+                GroupManager.Unlink(g);
+                return;
+            }
+            var sel = SelectionManager.Instance;
+            if (sel != null) sel.SelectOnly(members);
+            if (GroupMenuUI.Instance != null) GroupMenuUI.Instance.Open(members[0]);
         }
 
         private void ToggleCollapse(int groupId)

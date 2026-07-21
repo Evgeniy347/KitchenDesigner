@@ -66,6 +66,9 @@ public class ContextMenuLayoutTests
     private void ClickGroovesHeader() =>
         Panel().Find("CtxGrooves").GetComponent<Button>().onClick.Invoke();
 
+    private static string GroovesButtonText(Transform panel) =>
+        panel.Find("CtxGrooves").GetComponentInChildren<TMP_Text>(true).text;
+
     [Test]
     public void Board_GrooveSection_VisibleAndCollapsedByDefault()
     {
@@ -74,11 +77,11 @@ public class ContextMenuLayoutTests
 
         Assert.IsTrue(panel.Find("CtxGrooves").gameObject.activeSelf,
             "кнопка «Пазы» видна у детали");
-        Assert.AreEqual("0  v", panel.Find("CtxGrooveCount").GetComponent<TMP_Text>().text,
+        Assert.AreEqual("Пазы (0)  ►", GroovesButtonText(panel),
             "без пазов счётчик показывает 0 и стрелку «свёрнуто»");
         Assert.IsFalse(panel.Find("CtxGrooveAdd").gameObject.activeSelf,
             "строка добавления скрыта, пока секция свёрнута");
-        Assert.IsFalse(panel.Find("CtxGrooveItem0").gameObject.activeSelf);
+        Assert.IsFalse(panel.Find("CtxGrooveSide0").gameObject.activeSelf);
     }
 
     [Test]
@@ -101,7 +104,9 @@ public class ContextMenuLayoutTests
 
         Assert.IsTrue(panel.Find("CtxGrooveAdd").gameObject.activeSelf);
         Assert.IsTrue(panel.Find("CtxGrooveSide").gameObject.activeSelf);
-        Assert.AreEqual("0  ^", panel.Find("CtxGrooveCount").GetComponent<TMP_Text>().text);
+        Assert.IsTrue(panel.Find("CtxGrooveHint").gameObject.activeSelf,
+            "в раскрытом виде видна подсказка с размерами паза в мм");
+        Assert.AreEqual("Пазы (0)  ▼", GroovesButtonText(panel));
     }
 
     [Test]
@@ -117,11 +122,14 @@ public class ContextMenuLayoutTests
         panel.Find("CtxGrooveAdd").GetComponent<Button>().onClick.Invoke();
 
         Assert.AreEqual(1, board.Grooves.Count);
-        Assert.AreEqual("1  ^", panel.Find("CtxGrooveCount").GetComponent<TMP_Text>().text);
-        Assert.IsTrue(panel.Find("CtxGrooveItem0").gameObject.activeSelf);
-        Assert.AreEqual("Глухой 16*4*7 — Лево",
-            panel.Find("CtxGrooveItem0").GetComponent<TMP_Text>().text);
-        Assert.IsFalse(panel.Find("CtxGrooveItem1").gameObject.activeSelf,
+        Assert.AreEqual("Пазы (1)  ▼", GroovesButtonText(panel));
+        // Строка паза — редактируемые на месте дропдауны со значениями паза.
+        Assert.IsTrue(panel.Find("CtxGrooveSide0").gameObject.activeSelf);
+        Assert.AreEqual((int)GrooveSide.Left,
+            panel.Find("CtxGrooveSide0").GetComponent<TMP_Dropdown>().value);
+        Assert.AreEqual((int)GrooveKind.Blind,
+            panel.Find("CtxGrooveKind0").GetComponent<TMP_Dropdown>().value);
+        Assert.IsFalse(panel.Find("CtxGrooveSide1").gameObject.activeSelf,
             "слот под второй паз остаётся скрытым");
     }
 
@@ -134,13 +142,50 @@ public class ContextMenuLayoutTests
         ClickGroovesHeader();
 
         var panel = Panel();
-        Assert.IsTrue(panel.Find("CtxGrooveItem0").gameObject.activeSelf);
+        Assert.IsTrue(panel.Find("CtxGrooveSide0").gameObject.activeSelf);
 
         panel.Find("CtxGrooveDel0").GetComponent<Button>().onClick.Invoke();
 
         Assert.AreEqual(0, board.Grooves.Count);
-        Assert.IsFalse(panel.Find("CtxGrooveItem0").gameObject.activeSelf);
-        Assert.AreEqual("0  ^", panel.Find("CtxGrooveCount").GetComponent<TMP_Text>().text);
+        Assert.IsFalse(panel.Find("CtxGrooveSide0").gameObject.activeSelf);
+        Assert.AreEqual("Пазы (0)  ▼", GroovesButtonText(panel));
+    }
+
+    [Test]
+    public void Board_EditGrooveInRow_ChangesSpec_WithUndo()
+    {
+        var board = MakeBoard("B1");
+        board.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Top));
+        _menu!.Open(board);
+        ClickGroovesHeader();
+
+        var panel = Panel();
+        panel.Find("CtxGrooveSide0").GetComponent<TMP_Dropdown>().value = (int)GrooveSide.Bottom;
+
+        Assert.AreEqual(GrooveSide.Bottom, board.Grooves[0].side,
+            "правка дропдауна строки меняет паз на месте");
+
+        CommandStack.Undo();
+        Assert.AreEqual(GrooveSide.Top, board.Grooves[0].side,
+            "правка паза обязана быть отменяемой (правило 2 UI-GUIDELINES)");
+    }
+
+    [Test]
+    public void Board_GrooveAddRemove_AreUndoable()
+    {
+        var board = MakeBoard("B1");
+        _menu!.Open(board);
+        ClickGroovesHeader();
+
+        var panel = Panel();
+        panel.Find("CtxGrooveAdd").GetComponent<Button>().onClick.Invoke();
+        Assert.AreEqual(1, board.Grooves.Count);
+
+        CommandStack.Undo();
+        Assert.AreEqual(0, board.Grooves.Count, "добавление паза отменяемо");
+
+        CommandStack.Redo();
+        Assert.AreEqual(1, board.Grooves.Count, "и повторяемо");
     }
 
     [Test]
@@ -154,7 +199,7 @@ public class ContextMenuLayoutTests
 
         var panel = Panel();
         var addRow = panel.Find("CtxGrooveAdd").GetComponent<RectTransform>();
-        var xField = panel.Find("F_X, м").GetComponent<RectTransform>();
+        var xField = panel.Find("F_X, мм").GetComponent<RectTransform>();
 
         // Всё заякорено к верху панели: низ = anchoredPosition.y − высота.
         float addBottom = addRow.anchoredPosition.y - addRow.sizeDelta.y;
@@ -162,8 +207,8 @@ public class ContextMenuLayoutTests
             "строка добавления паза должна быть выше блока позиции");
 
         // Строки пазов идут сверху вниз и не накладываются друг на друга.
-        var item0 = panel.Find("CtxGrooveItem0").GetComponent<RectTransform>();
-        var item1 = panel.Find("CtxGrooveItem1").GetComponent<RectTransform>();
+        var item0 = panel.Find("CtxGrooveSide0").GetComponent<RectTransform>();
+        var item1 = panel.Find("CtxGrooveSide1").GetComponent<RectTransform>();
         Assert.IsTrue(item1.gameObject.activeSelf, "второй паз показывается своей строкой");
         Assert.GreaterOrEqual(item0.anchoredPosition.y - item0.sizeDelta.y,
             item1.anchoredPosition.y, "строки пазов не перекрываются");
@@ -192,7 +237,7 @@ public class ContextMenuLayoutTests
         Assert.NotNull(panel);
 
         var gapSection = panel.Find("_GapSection");
-        var xField = panel.Find("F_X, м");
+        var xField = panel.Find("F_X, мм");
         Assert.NotNull(gapSection, "gap section must exist for facade");
         Assert.NotNull(xField, "X position field must exist");
 
@@ -231,7 +276,7 @@ public class ContextMenuLayoutTests
         var panel = _canvas!.transform.Find("ContextMenu");
 
         var gapSection = panel.Find("_GapSection");
-        var xInput = panel.Find("F_X, м");
+        var xInput = panel.Find("F_X, мм");
         Assert.NotNull(gapSection);
         Assert.NotNull(xInput);
 
@@ -244,8 +289,8 @@ public class ContextMenuLayoutTests
         Assert.GreaterOrEqual(gapSectionBottom, xTop,
             "gap section bottom must be above the first position row");
 
-        foreach (var childName in new[] { "Gap_Ширина X, мм", "F_gapLeft", "F_gapRight",
-                                          "Gap_Высота Y, мм", "F_gapTop", "F_gapBottom" })
+        foreach (var childName in new[] { "Gap_LR", "F_gapLeft", "F_gapRight",
+                                          "Gap_TB", "F_gapTop", "F_gapBottom" })
         {
             var child = gapSection.Find(childName);
             Assert.NotNull(child, $"missing {childName}");
@@ -283,7 +328,7 @@ public class ContextMenuLayoutTests
         //.Position labels все на одной Y
         float? posLabelY = null;
         float? posFieldY = null;
-        foreach (var name in new[] { "X, м", "Y, м", "Z, м" })
+        foreach (var name in new[] { "X, мм", "Y, мм", "Z, мм" })
         {
             var lbl = panel.Find("L_" + name).GetComponent<RectTransform>();
             var fld = panel.Find("F_" + name).GetComponent<RectTransform>();
@@ -300,7 +345,7 @@ public class ContextMenuLayoutTests
         // Rotation labels все на одной Y
         float? rotLabelY = null;
         float? rotFieldY = null;
-        foreach (var name in new[] { "X°", "Y°", "Z°" })
+        foreach (var name in new[] { "X, °", "Y, °", "Z, °" })
         {
             var lbl = panel.Find("L_" + name).GetComponent<RectTransform>();
             var fld = panel.Find("F_" + name).GetComponent<RectTransform>();
@@ -324,7 +369,7 @@ public class ContextMenuLayoutTests
         var panel = _canvas!.transform.Find("ContextMenu");
 
         var rotLbl = panel.Find("CtxRotLbl").GetComponent<RectTransform>();
-        var rzFld = panel.Find("F_Z°").GetComponent<RectTransform>();
+        var rzFld = panel.Find("F_Z, °").GetComponent<RectTransform>();
 
         float rotLblTop = rotLbl.anchoredPosition.y;
         float rzBottom = rzFld.anchoredPosition.y - rzFld.sizeDelta.y;
@@ -364,8 +409,8 @@ public class ContextMenuLayoutTests
         // Дети с верхним pivot, заякорены к верху секции: верх = anchoredPosition.y
         // (0 — верхняя кромка секции), низ = верх − высота, дно секции = −sectionH.
         float sectionH = gapRt.sizeDelta.y;
-        foreach (var childName in new[] { "CtxGapHdr", "Gap_Ширина X, мм", "F_gapLeft", "F_gapRight",
-                                          "Gap_Высота Y, мм", "F_gapTop", "F_gapBottom" })
+        foreach (var childName in new[] { "CtxGapHdr", "Gap_LR", "F_gapLeft", "F_gapRight",
+                                          "Gap_TB", "F_gapTop", "F_gapBottom" })
         {
             var child = gapSection.Find(childName).GetComponent<RectTransform>();
             float top = child.anchoredPosition.y;

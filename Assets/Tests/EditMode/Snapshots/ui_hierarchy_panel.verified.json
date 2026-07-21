@@ -3,7 +3,7 @@
   "children": [
     {
       "type": "Button",
-      "text": "x",
+      "text": "…",
       "position": [-2, 0]
     },
     {
@@ -13,7 +13,7 @@
     },
     {
       "type": "Button",
-      "text": "v",
+      "text": "▼",
       "position": [16, 0]
     },
     {
@@ -54,12 +54,7 @@
     {
       "type": "Button",
       "text": "+ Группа",
-      "position": [-38, -6]
-    },
-    {
-      "type": "Button",
-      "text": "x",
-      "position": [-6, -6]
+      "position": [-64, -6]
     },
     {
       "type": "Label",
@@ -67,10 +62,22 @@
       "position": [14, -6]
     },
     {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
       "type": "Dropdown",
       "options": ["Переместить в…", "— вне групп —", "Модуль А3", "+ Новая группа"],
       "selected": 0,
       "position": [0, -38]
+    },
+    {
+      "type": "InputField",
+      "label": "HierSearch",
+      "value": "",
+      "interactable": true,
+      "position": [0, -68]
     }
   ]
 }

@@ -8,7 +8,11 @@ namespace KitchenDesigner.Core.UI
     public class SpecificationPanelUI : MonoBehaviour
     {
         private const float ColName = 40f;
-        private const float ColDims = 260f;
+        // Ш/В/Г — отдельные колонки: цифры выравниваются друг под другом,
+        // а не сливаются в строку «600×720×18».
+        private const float ColW = 250f;
+        private const float ColH = 305f;
+        private const float ColD = 360f;
         private const float ColCount = 420f;
         private const float ColArea = 490f;
         private const float ContentWidth = 540f;
@@ -47,13 +51,15 @@ namespace KitchenDesigner.Core.UI
             var headerText = headerRect.gameObject.AddComponent<TextMeshProUGUI>();
             headerText.font = UIFactory.FontAsset;
             headerText.fontSize = 16;
-            headerText.color = UIFactory.HighlightColor;
+            // Вторичный цвет текста, а не жёлтый: жёлтая рамка в проекте значит
+            // «значение изменено» (правило 10 — один цвет, один смысл).
+            headerText.color = UIStyle.TextSecondary;
             headerText.alignment = TextAlignmentOptions.TopLeft;
             headerText.enableWordWrapping = false;
             headerText.overflowMode = TextOverflowModes.Overflow;
             headerText.text =
                 $"№<pos={ColName}>Название" +
-                $"<pos={ColDims}>Ш×В×Г (мм)" +
+                $"<pos={ColW}>Ш<pos={ColH}>В<pos={ColD}>Г, мм" +
                 $"<pos={ColCount}>Кол-во" +
                 $"<pos={ColArea}>S, м²";
         }
@@ -128,11 +134,16 @@ namespace KitchenDesigner.Core.UI
             float closeX = totalW * 0.5f - closeW * 0.5f;
             const float btnY = -296f;
 
-            UIFactory.CreateButton("SpecExport", parent, "Экспорт CSV",
+            // Главное действие окна — экспорт: выделено акцентным цветом.
+            var export = UIFactory.CreateButton("SpecExport", parent, "Экспорт CSV",
                 new Vector2(exportX, btnY), new Vector2(exportW, 40), ExportCsv);
+            export.GetComponent<Image>().color = UIStyle.Accent;
             UIFactory.CreateButton("SpecClose", parent, "Закрыть",
                 new Vector2(closeX, btnY), new Vector2(closeW, 40), () => SetVisible(false));
+            UIFactory.CreateCloseButton(parent, () => SetVisible(false));
         }
+
+        public bool IsVisible => _root != null && _root.activeSelf;
 
         public void Toggle() => SetVisible(_root != null && !_root.activeSelf);
 
@@ -151,9 +162,10 @@ namespace KitchenDesigner.Core.UI
             int n = 1;
             foreach (var line in result.lines)
             {
-                string dims = $"{line.dimensionsMM.x}×{line.dimensionsMM.y}×{line.dimensionsMM.z}";
                 sb.Append($"{n}<pos={ColName}>{Trim(line.name, MaxNameChars)}" +
-                          $"<pos={ColDims}>{dims}" +
+                          $"<pos={ColW}>{line.dimensionsMM.x}" +
+                          $"<pos={ColH}>{line.dimensionsMM.y}" +
+                          $"<pos={ColD}>{line.dimensionsMM.z}" +
                           $"<pos={ColCount}>{line.count}" +
                           $"<pos={ColArea}>{line.totalAreaM2:F2}");
                 sb.AppendLine();
@@ -189,7 +201,7 @@ namespace KitchenDesigner.Core.UI
             if (SpecificationExport.SaveToFile(result, path))
             {
                 if (ToastNotification.Instance != null)
-                    ToastNotification.Instance.Show("CSV saved to Desktop", 2f);
+                    ToastNotification.Instance.Show("CSV сохранён на рабочий стол", 2f);
             }
             else
             {

@@ -110,20 +110,13 @@ public class SettingsPanelTabDiagramTests
         yield return CaptureAndSave("settings_tab_project.png");
     }
 
-    [UnityTest]
-    public IEnumerator TabGraphics_SavesPng()
-    {
-        BuildPanel();
-        SwitchToTab(1);
-        yield return null;
-        yield return CaptureAndSave("settings_tab_graphics.png");
-    }
-
+    // Вкладка «Графика» скрыта до появления содержимого, поэтому теперь только
+    // две вкладки: «Проект» (0) и «О программе» (1).
     [UnityTest]
     public IEnumerator TabAbout_SavesPng()
     {
         BuildPanel();
-        SwitchToTab(2);
+        SwitchToTab(1);
         yield return null;
         yield return CaptureAndSave("settings_tab_about.png");
     }

@@ -9,17 +9,12 @@
     {
       "type": "Button",
       "text": "Проект",
-      "position": [-160, 246]
-    },
-    {
-      "type": "Button",
-      "text": "Графика",
-      "position": [0, 246]
+      "position": [-120, 246]
     },
     {
       "type": "Button",
       "text": "О программе",
-      "position": [160, 246]
+      "position": [120, 246]
     },
     {
       "type": "Label",
@@ -30,6 +25,11 @@
       "type": "Label",
       "text": "Сборка: <masked>",
       "position": [0, 164]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
     },
     {
       "type": "Button",

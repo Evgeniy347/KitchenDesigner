@@ -11,6 +11,9 @@ namespace KitchenDesigner.Core.UI
 
         private CanvasGroup? _group;
         private TMP_Text? _label;
+        private Button? _actionButton;
+        private TMP_Text? _actionLabel;
+        private System.Action? _action;
         private Coroutine? _activeRoutine;
 
         private void Awake()
@@ -35,14 +38,58 @@ namespace KitchenDesigner.Core.UI
             _label.rectTransform.offsetMin = Vector2.zero;
             _label.rectTransform.offsetMax = Vector2.zero;
 
+            // Кнопка действия («Отменить» после удаления): прижата к правому
+            // краю, видна только когда у тоста есть действие.
+            _actionButton = UIFactory.CreateButton("ToastAction", panel.transform, "",
+                Vector2.zero, new Vector2(110, 36), () =>
+                {
+                    var a = _action;
+                    Hide();
+                    a?.Invoke();
+                });
+            var abRt = _actionButton.GetComponent<RectTransform>();
+            abRt.anchorMin = abRt.anchorMax = abRt.pivot = new Vector2(1, 0.5f);
+            abRt.anchoredPosition = new Vector2(-6, 0);
+            _actionLabel = _actionButton.GetComponentInChildren<TMP_Text>();
+            _actionButton.gameObject.SetActive(false);
+
             panel.gameObject.SetActive(false);
         }
 
-        public void Show(string message, float duration = 2f)
+        public void Show(string message, float duration = 2f,
+            string? actionLabel = null, System.Action? action = null)
         {
             if (_activeRoutine != null)
                 StopCoroutine(_activeRoutine);
+
+            _action = action;
+            bool hasAction = action != null && !string.IsNullOrEmpty(actionLabel);
+            if (_actionButton != null) _actionButton.gameObject.SetActive(hasAction);
+            if (_actionLabel != null) _actionLabel.text = actionLabel ?? "";
+            if (_label != null)
+            {
+                // С кнопкой текст уступает ей правую часть панели.
+                _label.rectTransform.offsetMax = new Vector2(hasAction ? -120f : 0f, 0f);
+                _label.alignment = hasAction ? TextAlignmentOptions.Left : TextAlignmentOptions.Center;
+                _label.margin = hasAction ? new Vector4(12, 0, 0, 0) : Vector4.zero;
+            }
+
             _activeRoutine = StartCoroutine(ShowRoutine(message, duration));
+        }
+
+        private void Hide()
+        {
+            if (_activeRoutine != null)
+            {
+                StopCoroutine(_activeRoutine);
+                _activeRoutine = null;
+            }
+            _action = null;
+            if (_group != null)
+            {
+                _group.alpha = 0f;
+                _group.gameObject.SetActive(false);
+            }
         }
 
         private IEnumerator ShowRoutine(string message, float duration)

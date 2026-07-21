@@ -2,14 +2,14 @@
   "root": "UICanvas",
   "children": [
     {
-      "type": "Label",
-      "text": "Автосохранение вкл",
-      "position": [14, 12]
-    },
-    {
       "type": "Button",
       "text": "Кухня",
       "position": [4, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Автосохранение вкл",
+      "position": [5, 0]
     },
     {
       "type": "Button",
@@ -44,12 +44,7 @@
     {
       "type": "Button",
       "text": "+ Группа",
-      "position": [-38, -6]
-    },
-    {
-      "type": "Button",
-      "text": "x",
-      "position": [-6, -6]
+      "position": [-64, -6]
     },
     {
       "type": "Button",
@@ -69,67 +64,72 @@
     {
       "type": "Button",
       "text": "Settings",
-      "position": [260, -6]
+      "position": [276, -6]
     },
     {
       "type": "Button",
       "text": "Save",
-      "position": [306, -6]
+      "position": [322, -6]
     },
     {
       "type": "Button",
       "text": "SaveAs",
-      "position": [352, -6]
+      "position": [368, -6]
     },
     {
       "type": "Button",
       "text": "Load",
-      "position": [398, -6]
+      "position": [414, -6]
     },
     {
       "type": "Button",
       "text": "Undo",
-      "position": [456, -6]
+      "position": [476, -6]
     },
     {
       "type": "Button",
       "text": "Redo",
-      "position": [502, -6]
+      "position": [522, -6]
     },
     {
       "type": "Button",
-      "text": "Выравн.",
-      "position": [568, -6]
+      "text": "Выравнивание",
+      "position": [584, -6]
     },
     {
       "type": "Button",
-      "text": "Распред.",
-      "position": [654, -6]
+      "text": "Распределить",
+      "position": [726, -6]
     },
     {
       "type": "Button",
-      "text": "Режим: [ ]",
-      "position": [740, -6]
+      "text": "Ручки: растяжение",
+      "position": [862, -6]
     },
     {
       "type": "Button",
-      "text": "Тон: вкл",
-      "position": [908, -6]
+      "text": "Тонировка",
+      "position": [1060, -6]
     },
     {
       "type": "Button",
-      "text": "Свет: вкл",
-      "position": [1024, -6]
+      "text": "Свет",
+      "position": [1176, -6]
     },
     {
       "type": "Button",
       "text": "Солнце",
-      "position": [1140, -6]
+      "position": [1252, -6]
     },
     {
       "type": "Button",
-      "text": "Вершины: выкл",
-      "position": [1236, -6]
+      "text": "Вершины",
+      "position": [1348, -6]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
     },
     {
       "type": "Button",
@@ -146,6 +146,13 @@
       "type": "Button",
       "text": "Полка",
       "position": [22, -42]
+    },
+    {
+      "type": "InputField",
+      "label": "HierSearch",
+      "value": "",
+      "interactable": true,
+      "position": [0, -68]
     },
     {
       "type": "Button",

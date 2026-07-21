@@ -21,10 +21,19 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            _label = UIFactory.CreateLabel("AutoSaveIndicator", canvas, "Автосохранение", 15,
-                new Vector2(14, 12), new Vector2(260, 24), TextAnchor.MiddleLeft);
-            UIFactory.AnchorBottomLeft(_label.rectTransform);
-            _label.rectTransform.anchoredPosition = new Vector2(14, 12);
+            // Плашка статус-бара, а не «голый» текст поверх вьюпорта.
+            var chip = UIFactory.CreatePanel("AutoSaveIndicator", canvas,
+                Vector2.zero, new Vector2(230, 26), UIStyle.Panel);
+            UIFactory.AnchorBottomLeft(chip.rectTransform);
+            chip.rectTransform.anchoredPosition = new Vector2(8, 8);
+            chip.raycastTarget = false;
+
+            _label = UIFactory.CreateLabel("AutoSaveLabel", chip.transform, "Автосохранение", 14,
+                Vector2.zero, new Vector2(230, 26), TextAnchor.MiddleLeft);
+            _label.raycastTarget = false;
+            var lRt = _label.rectTransform;
+            lRt.anchorMin = Vector2.zero; lRt.anchorMax = Vector2.one;
+            lRt.offsetMin = new Vector2(10, 0); lRt.offsetMax = Vector2.zero;
         }
 
         /// <summary>Вызывается AutoSaveManager при успешном автосохранении.</summary>
