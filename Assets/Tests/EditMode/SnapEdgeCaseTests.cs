@@ -106,23 +106,12 @@ public class SnapEdgeCaseTests : SnapTestBase
     }
 
     [Test]
-    public void Overlap_Above10Percent_Snaps()
+    public void Overlap_Below30Percent_NoSnap()
     {
-        // Сдвиг по Y на 310 мм: перекрытие = (400-310)/400 = 22.5% > 10%.
-        // С новым MinSnapOverlap=10% — должен прилипнуть.
+        // Сдвиг по Y на 310 мм: перекрытие = (400-310)/400 = 22.5% < 30%.
         var a = MakeStd("A", Vector3.zero);
         var b = MakeStd("B", Vector3.zero);
-        AssertSnappedAt(b, a, new Vector3(0.83f, 0.31f, 0f), new Vector3(0.80f, 0.31f, 0f),
-            "перекрытие 22.5% > 10% — должен прилипнуть");
-    }
-
-    [Test]
-    public void Overlap_Below10Percent_NoSnap()
-    {
-        // Сдвиг по Y на 370 мм: перекрытие = (400-370)/400 = 7.5% < 10%.
-        var a = MakeStd("A", Vector3.zero);
-        var b = MakeStd("B", Vector3.zero);
-        AssertNotSnapped(b, a, new Vector3(0.83f, 0.37f, 0f), "перекрытие 7.5% < 10%");
+        AssertNotSnapped(b, a, new Vector3(0.83f, 0.31f, 0f), "перекрытие 22.5% < 30%");
     }
 
     [Test]
