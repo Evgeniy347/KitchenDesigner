@@ -63,6 +63,7 @@ nunit-*.xml
 # ===========================
 **/Snapshots/*.candidate.json
 **/Snapshots/*.candidate.json.meta
+**/*.verified.json.meta
 
 # ===========================
 # Code Coverage
