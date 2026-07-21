@@ -606,11 +606,10 @@ namespace KitchenDesigner.Core
             float interBottom = Mathf.Max(aRect.yMin, bRect.yMin);
             float interTop = Mathf.Min(aRect.yMax, bRect.yMax);
 
-            // Полное разнесение по оси (зазор между гранями, а не касание) —
-            // перекрытия нет. Допуск ContactMm (0.5 мм) вместо SnapEpsilon (0.01 мм):
-            // микро-зазор до 0.5 мм считаем касанием — иначе из-за float-погрешности
-            // проекции граней на чужие оси могут дать ложный разрыв.
-            float contactMargin = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            // Полное разнесение по оси — перекрытия нет. Допуск 5 мм покрывает
+            // микро-зазоры и float-погрешность проекции граней на чужие оси.
+            // BestEdgeDelta обработает выравнивание кромок в пределах порога.
+            const float contactMargin = 0.005f;
             bool noContactU = interLeft > interRight + contactMargin;
             bool noContactV = interBottom > interTop + contactMargin;
             if (noContactU || noContactV)
