@@ -43,7 +43,7 @@ namespace KitchenDesigner.Core
                     // ресайзе грань часто стыкуется с соседом в углу (буква «Г»),
                     // где перекрытие частичное — жёсткий порог его бы отбросил.
                     Rect oRect = RectFor(g.center, uAxis, vAxis, g.rightAxis, g.upAxis, g.size.x, g.size.y);
-                    if (!Overlap(mRect, oRect)) continue;
+                    if (!Overlap(mRect, oRect, threshold)) continue;
 
                     if (Mathf.Abs(d) < bestAbs)
                     {
@@ -67,7 +67,7 @@ namespace KitchenDesigner.Core
 
                         Rect sRect = RectFor(seat.center, uAxis, vAxis, seat.rightAxis, seat.upAxis,
                             seat.size.x, seat.size.y);
-                        if (!Overlap(mRect, sRect)) continue;
+                        if (!Overlap(mRect, sRect, threshold)) continue;
 
                         if (Mathf.Abs(d) < bestAbs)
                         {
@@ -130,17 +130,17 @@ namespace KitchenDesigner.Core
             return new Rect(cu - halfU, cv - halfV, halfU * 2f, halfV * 2f);
         }
 
-        private static bool Overlap(Rect a, Rect b)
+        private static bool Overlap(Rect a, Rect b, float margin = 0f)
         {
             float left = Mathf.Max(a.xMin, b.xMin);
             float right = Mathf.Min(a.xMax, b.xMax);
             float bottom = Mathf.Max(a.yMin, b.yMin);
             float top = Mathf.Min(a.yMax, b.yMax);
-            // Допускаем контакт по кромке (line contact): left==right или bottom==top
-            // означают касание ребром, а не зазор — снэп должен сработать.
-            // Допуск SnapEpsilon защищает от float-погрешности.
-            return left <= right + Tolerance.SnapEpsilon
-                && bottom <= top + Tolerance.SnapEpsilon;
+            // Допускаем контакт по кромке (line contact) и зазор в пределах margin:
+            // если margin > 0 — грани могут быть разнесены на margin метров и всё
+            // равно считаться перекрывающимися (BestEdgeDelta выровняет их).
+            float m = margin > 0f ? margin : Tolerance.SnapEpsilon;
+            return left <= right + m && bottom <= top + m;
         }
     }
 }
