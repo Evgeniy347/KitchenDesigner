@@ -30,7 +30,7 @@ namespace KitchenDesigner.Core
                 if (o == null || o == self) continue;
                 if (!o.gameObject.activeInHierarchy) continue;
 
-                var faces = o.GetFaces();
+                var faces = FaceCache.GetFaces(o);
                 for (int j = 0; j < faces.Length; j++)
                 {
                     var g = faces[j];

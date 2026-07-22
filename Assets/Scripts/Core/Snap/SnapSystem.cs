@@ -193,7 +193,7 @@ namespace KitchenDesigner.Core
             ref SnapResult bestZero, ref string? bestZeroLog, ref bool anyFullAreaZero)
         {
             moved.transform.position = basePos;
-            KitchenElement.Face[] movedFaces = moved.GetFaces();
+            KitchenElement.Face[] movedFaces = FaceCache.GetFaces(moved);
 
             foreach (var other in others)
             {
@@ -204,7 +204,7 @@ namespace KitchenDesigner.Core
                 // кромок. Face-pair loop ниже сам отфильтрует глубокие пересечения
                 // по planeDist > maxDist.
 
-                KitchenElement.Face[] otherFaces = other.GetFaces();
+                KitchenElement.Face[] otherFaces = FaceCache.GetFaces(other);
 
                 // Дно паза — посадочное место, и только для вкладной панели:
                 // толстая деталь в паз не садится, и предлагать ей дно значит
@@ -454,8 +454,8 @@ namespace KitchenDesigner.Core
             float maxDist = report.thresholdMM * AppConstants.MM_TO_UNITS + ThresholdEpsilon;
 
             Vector3 prevPos = moved.transform.position;
-            moved.transform.position = testPosition;
-            KitchenElement.Face[] movedFaces = moved.GetFaces();
+        moved.transform.position = testPosition;
+        KitchenElement.Face[] movedFaces = FaceCache.GetFaces(moved);
 
             foreach (var other in others)
             {
@@ -470,7 +470,7 @@ namespace KitchenDesigner.Core
                     bestDot = 1f,
                 };
 
-                KitchenElement.Face[] otherFaces = other.GetFaces();
+                KitchenElement.Face[] otherFaces = FaceCache.GetFaces(other);
                 float bestScore = float.MaxValue;
 
                 for (int i = 0; i < 6; i++)
