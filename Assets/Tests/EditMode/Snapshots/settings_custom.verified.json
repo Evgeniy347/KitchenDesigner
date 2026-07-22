@@ -1,4 +1,4 @@
-{
+﻿{
     "gridStep": 32,
     "gridEnabled": false,
     "snapEnabled": false,
@@ -11,5 +11,5 @@
     "edgeOutline": true,
     "wallsHidden": true,
     "lowerNearWalls": true,
-    "cameraPanFree": false
+    "cameraPanFree": true
 }

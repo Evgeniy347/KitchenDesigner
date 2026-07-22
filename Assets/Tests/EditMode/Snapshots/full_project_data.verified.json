@@ -235,7 +235,7 @@
         "windowedMode": true,
         "edgeOutline": false,
         "wallsEnabled": true,
-        "lowerNearWalls": false,
-        "cameraPanFree": false
+        "lowerNearWalls": true,
+        "cameraPanFree": true
     }
 }
