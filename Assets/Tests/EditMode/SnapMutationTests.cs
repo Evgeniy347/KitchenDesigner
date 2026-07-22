@@ -90,6 +90,7 @@ public class SnapMutationTests
         }
         _errors.Clear();
         _warnings.Clear();
+        FaceCache.Clear();
     }
 
     private void ClearScene()
@@ -147,7 +148,20 @@ public class SnapMutationTests
             var savedDims = moved.DimensionsMM;
             var savedRot = moved.transform.rotation;
             float threshold = KitchenSettings.Instance.SnapThreshold;
-            var others = allElements.Where(e => e != moved && e != null && e.gameObject.activeInHierarchy).ToList();
+            var allOthers = allElements.Where(e => e != moved && e != null && e.gameObject.activeInHierarchy).ToList();
+
+            // Предфильтр по расстоянию: в sweep/move участвуют только соседи в радиусе
+            // 200 мм ресайза/переноса + 50 мм порог + запас. Это уменьшает
+            // количество пар граней на порядок.
+            float nearbyRadiusMm = SweepMaxMm + threshold + 100f;
+            var others = GetNeighborsWithin(moved, allOthers, nearbyRadiusMm);
+
+            // Хитрый кэш: грани всех НЕподвижных соседей считаем один раз за итерацию.
+            // Подвижный элемент в кэш не попадает — его геометрия меняется.
+            var staticCache = new Dictionary<KitchenElement, KitchenElement.Face[]>();
+            foreach (var o in others)
+                staticCache[o] = GetFacesCached(o);
+            FaceCache.Set(staticCache);
 
             // ── Phase 0: диагностика существующих пар граней ─────────────────
             foreach (var target in others)
@@ -183,6 +197,7 @@ public class SnapMutationTests
             // Возвращаем только движимый элемент в исходное состояние.
             // Полный сброс сцены не нужен — остальные элементы не менялись.
             RestoreElementState(moved, savedPos, savedDims, savedRot);
+            FaceCache.Clear();
         }
 
         swTotal.Stop();
@@ -476,9 +491,10 @@ public class SnapMutationTests
 
     private static bool IsPanel(KitchenElement e) => e is PanelElement;
 
-    /// <summary>Есть ли хотя бы один активный сосед в пределах distanceMm от
-    /// габарита moved. Используется для пропуска sweep у изолированных деталей.</summary>
-    private static bool HasNeighborWithin(KitchenElement moved, List<KitchenElement> others, float distanceMm)
+    /// <summary>Возвращает соседей, габарит которых находится в пределах distanceMm
+    /// от габарита moved. Используем вместо полного списка others — так сокращаем
+    /// количество пар граней на порядок.</summary>
+    private static List<KitchenElement> GetNeighborsWithin(KitchenElement moved, List<KitchenElement> others, float distanceMm)
     {
         float d = distanceMm * AppConstants.MM_TO_UNITS;
         var mv = moved.GetVertices();
@@ -492,6 +508,7 @@ public class SnapMutationTests
             mMinZ = Mathf.Min(mMinZ, mv[i].z); mMaxZ = Mathf.Max(mMaxZ, mv[i].z);
         }
 
+        var result = new List<KitchenElement>();
         foreach (var o in others)
         {
             if (!o.gameObject.activeInHierarchy) continue;
@@ -510,9 +527,14 @@ public class SnapMutationTests
             float gapY = Mathf.Max(0, Mathf.Max(mMinY - oMaxY, oMinY - mMaxY));
             float gapZ = Mathf.Max(0, Mathf.Max(mMinZ - oMaxZ, oMinZ - mMaxZ));
             float dist = Mathf.Sqrt(gapX * gapX + gapY * gapY + gapZ * gapZ);
-            if (dist <= d) return true;
+            if (dist <= d) result.Add(o);
         }
-        return false;
+        return result;
+    }
+
+    private static bool HasNeighborWithin(KitchenElement moved, List<KitchenElement> others, float distanceMm)
+    {
+        return GetNeighborsWithin(moved, others, distanceMm).Count > 0;
     }
 
     private void AddError(string message)
