@@ -93,7 +93,7 @@
     {
       "type": "InputField",
       "label": "Fld_Шаг сетки",
-      "value": "18",
+      "value": "1",
       "interactable": true,
       "position": [165, 0]
     },
@@ -106,19 +106,19 @@
     {
       "type": "Toggle",
       "label": "Tgl_Блокировать недопустимые изменения",
-      "isOn": true,
+      "isOn": false,
       "position": [224, 0]
     },
     {
       "type": "Toggle",
       "label": "Tgl_Контур (чёрные рёбра)",
-      "isOn": false,
+      "isOn": true,
       "position": [224, 0]
     },
     {
       "type": "Toggle",
       "label": "Tgl_Опускать ближние стены",
-      "isOn": false,
+      "isOn": true,
       "position": [224, 0]
     },
     {
@@ -130,13 +130,13 @@
     {
       "type": "Toggle",
       "label": "Tgl_Пространственная сетка",
-      "isOn": false,
+      "isOn": true,
       "position": [224, 0]
     },
     {
       "type": "Toggle",
       "label": "Tgl_Свободное панорамирование",
-      "isOn": false,
+      "isOn": true,
       "position": [224, 0]
     },
     {
