@@ -15,7 +15,7 @@ public class DrawerAnimationGifTests
 {
     private const int RenderW = 640;
     private const int RenderH = 480;
-    private const int FrameDelayMs = 67; // ~15 fps
+    private const int FrameDelayMs = 50; // 20 fps → 3 phases × 20 = 60 frames
 
     private GameObject? _bootstrap;
     private GameObject? _testCamera;
@@ -54,6 +54,7 @@ public class DrawerAnimationGifTests
     [UnityTearDown]
     public IEnumerator TearDown()
     {
+        Time.captureFramerate = 0;
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
             if (e != null) Object.Destroy(e.gameObject);
         foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
@@ -127,8 +128,12 @@ public class DrawerAnimationGifTests
         yield return null;
 
         // ── 5. Запись кадров ──────────────────────────────────────────────
+        // Зафиксировать fps, чтобы Time.deltaTime был предсказуемым в batch-mode
+        int targetFps = Mathf.RoundToInt(1000f / FrameDelayMs);
+        Time.captureFramerate = targetFps;
+
         var frames = new List<Texture2D>();
-        int animSteps = Mathf.CeilToInt(DrawerConstants.DRAWER_ANIM_DURATION / (FrameDelayMs / 1000f)) + 2;
+        int animSteps = 20; // 1 секунда на фазу при 20 fps
 
         // Кадр 0: ящик закрыт.
         frames.Add(CaptureFrame(cam));
@@ -163,6 +168,8 @@ public class DrawerAnimationGifTests
         }
         frames.Add(CaptureFrame(cam));
         frames.Add(CaptureFrame(cam));
+
+        Time.captureFramerate = 0;
 
         // ── 6. Сохранить PNG-кадры ─────────────────────────────────────────
         string outDir = Path.Combine(Application.dataPath, "..", "docs");
