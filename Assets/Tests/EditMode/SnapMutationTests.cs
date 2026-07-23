@@ -660,7 +660,9 @@ public class SnapMutationTests
             if (!o.gameObject.activeInHierarchy) continue;
             foreach (var of in GetFacesCached(o))
             {
-                if (Vector3.Dot(of.normal, movedFace.normal) > -Tolerance.ParallelDot) continue;
+                // Двусторонняя плоскость: встык к ближней грани ИЛИ заподлицо с
+                // дальней — оба детента обязаны работать при ресайзе.
+                if (Mathf.Abs(Vector3.Dot(of.normal, movedFace.normal)) < Tolerance.ParallelDot) continue;
 
                 float gap = Vector3.Dot(of.center - center, movedFace.normal);
                 if (Mathf.Abs(gap) > threshold + Tolerance.SnapEpsilon) continue;
@@ -772,9 +774,11 @@ public class SnapMutationTests
         }
     }
 
-    /// <summary>Ближайшая встречная грань к movedFace в пределах порога.
-    /// Проверяет только встречность нормалей и зазор; перекрытие не требуем —
-    /// это именно «конкуренция по расстоянию», а не полноценный снэп.</summary>
+    /// <summary>Ближайшая параллельная грань к movedFace в пределах порога.
+    /// Плоскость двусторонняя: годится и встречная (встык), и со-направленная
+    /// (заподлицо с дальней кромкой) — ресайз использует обе. Проверяем только
+    /// параллельность нормалей и зазор; перекрытие не требуем — это «конкуренция
+    /// по расстоянию», а не полноценный снэп.</summary>
     private FaceCandidate FindClosestOpposingFace(KitchenElement.Face movedFace,
         List<KitchenElement> others, float thresholdMm)
     {
@@ -788,7 +792,7 @@ public class SnapMutationTests
             var faces = GetFacesCached(o);
             foreach (var of in faces)
             {
-                if (Vector3.Dot(movedFace.normal, of.normal) > -Tolerance.ParallelDot) continue;
+                if (Mathf.Abs(Vector3.Dot(movedFace.normal, of.normal)) < Tolerance.ParallelDot) continue;
                 float gap = Mathf.Abs(Vector3.Dot(of.center - movedFace.center, movedFace.normal));
                 if (gap > threshold + Tolerance.SnapEpsilon) continue;
                 if (gap < bestGap)
@@ -815,7 +819,7 @@ public class SnapMutationTests
             var faces = GetFacesCached(o);
             foreach (var of in faces)
             {
-                if (Vector3.Dot(movedFace.normal, of.normal) > -Tolerance.ParallelDot) continue;
+                if (Mathf.Abs(Vector3.Dot(movedFace.normal, of.normal)) < Tolerance.ParallelDot) continue;
                 float gap = Mathf.Abs(Vector3.Dot(of.center - movedFace.center, movedFace.normal));
                 if (gap > threshold + Tolerance.SnapEpsilon) continue;
                 list.Add(new FaceCandidate(o.PartName, gap / AppConstants.MM_TO_UNITS, true));

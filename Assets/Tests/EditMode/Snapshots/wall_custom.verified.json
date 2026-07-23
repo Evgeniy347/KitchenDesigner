@@ -163,6 +163,6 @@
         "edgeOutline": true,
         "wallsEnabled": true,
         "lowerNearWalls": true,
-        "cameraPanFree": true
+        "cameraPanFree": false
     }
 }
