@@ -9,12 +9,17 @@
     {
       "type": "Button",
       "text": "Проект",
-      "position": [-120, 246]
+      "position": [-160, 246]
+    },
+    {
+      "type": "Button",
+      "text": "Фото режим",
+      "position": [0, 246]
     },
     {
       "type": "Button",
       "text": "О программе",
-      "position": [120, 246]
+      "position": [160, 246]
     },
     {
       "type": "Label",
@@ -93,7 +98,7 @@
     {
       "type": "InputField",
       "label": "Fld_Шаг сетки",
-      "value": "1",
+      "value": "18",
       "interactable": true,
       "position": [165, 0]
     },
@@ -106,7 +111,7 @@
     {
       "type": "Toggle",
       "label": "Tgl_Блокировать недопустимые изменения",
-      "isOn": false,
+      "isOn": true,
       "position": [224, 0]
     },
     {
@@ -130,13 +135,13 @@
     {
       "type": "Toggle",
       "label": "Tgl_Пространственная сетка",
-      "isOn": true,
+      "isOn": false,
       "position": [224, 0]
     },
     {
       "type": "Toggle",
       "label": "Tgl_Свободное панорамирование",
-      "isOn": true,
+      "isOn": false,
       "position": [224, 0]
     },
     {

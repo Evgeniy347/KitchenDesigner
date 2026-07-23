@@ -2,6 +2,16 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
+    /// <summary>Пресет качества фоторежима. Определяет тяжесть эффектов
+    /// (тени, MSAA, render scale) — от «Низкое» для слабого железа до
+    /// «Высокое» для дискретных карт уровня GTX 1060.</summary>
+    public enum PhotoQualityPreset
+    {
+        Low = 0,
+        Medium = 1,
+        High = 2
+    }
+
     [CreateAssetMenu(fileName = "KitchenSettings", menuName = "KitchenDesigner/KitchenSettings")]
     public class KitchenSettings : ScriptableObject
     {
@@ -29,6 +39,17 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _wallsEnabled = true;
         [SerializeField] private bool _lowerNearWalls = true;
         [SerializeField] private bool _cameraPanFree = false;
+
+        // ── Фоторежим ──────────────────────────────────────
+        // Активность фоторежима — рантайм-состояние (PhotoMode.Active), НЕ хранится:
+        // проект открывается в обычном рабочем режиме. Здесь только настройки качества.
+        [SerializeField] private PhotoQualityPreset _photoQuality = PhotoQualityPreset.High;
+        [SerializeField] private bool _photoShadows = true;
+        [SerializeField] private bool _photoAntiAliasing = true;
+        [SerializeField] private bool _photoAmbientOcclusion = true;
+        [SerializeField] private bool _photoBloom = true;
+        [SerializeField] private bool _photoVignette = true;
+        [SerializeField] private bool _photoCeiling = true;
 
         public int GridStep
         {
@@ -108,6 +129,48 @@ namespace KitchenDesigner.Core
             set => _cameraPanFree = value;
         }
 
+        public PhotoQualityPreset PhotoQuality
+        {
+            get => _photoQuality;
+            set => _photoQuality = value;
+        }
+
+        public bool PhotoShadows
+        {
+            get => _photoShadows;
+            set => _photoShadows = value;
+        }
+
+        public bool PhotoAntiAliasing
+        {
+            get => _photoAntiAliasing;
+            set => _photoAntiAliasing = value;
+        }
+
+        public bool PhotoAmbientOcclusion
+        {
+            get => _photoAmbientOcclusion;
+            set => _photoAmbientOcclusion = value;
+        }
+
+        public bool PhotoBloom
+        {
+            get => _photoBloom;
+            set => _photoBloom = value;
+        }
+
+        public bool PhotoVignette
+        {
+            get => _photoVignette;
+            set => _photoVignette = value;
+        }
+
+        public bool PhotoCeiling
+        {
+            get => _photoCeiling;
+            set => _photoCeiling = value;
+        }
+
         /// <summary>Значения «из коробки» — те же, что в инициализаторах полей.
         /// Инициализаторы срабатывают только при СОЗДАНИИ ассета, а Instance
         /// грузится из Resources с уже сохранённым состоянием, поэтому сброс
@@ -128,6 +191,13 @@ namespace KitchenDesigner.Core
             _wallsEnabled = true;
             _lowerNearWalls = true;
             _cameraPanFree = false;
+            _photoQuality = PhotoQualityPreset.High;
+            _photoShadows = true;
+            _photoAntiAliasing = true;
+            _photoAmbientOcclusion = true;
+            _photoBloom = true;
+            _photoVignette = true;
+            _photoCeiling = true;
         }
 
         public KitchenSettingsData ToData()
@@ -146,7 +216,14 @@ namespace KitchenDesigner.Core
                 edgeOutline = _edgeOutline,
                 wallsEnabled = _wallsEnabled,
                 lowerNearWalls = _lowerNearWalls,
-                cameraPanFree = _cameraPanFree
+                cameraPanFree = _cameraPanFree,
+                photoQuality = (int)_photoQuality,
+                photoShadows = _photoShadows,
+                photoAntiAliasing = _photoAntiAliasing,
+                photoAmbientOcclusion = _photoAmbientOcclusion,
+                photoBloom = _photoBloom,
+                photoVignette = _photoVignette,
+                photoCeiling = _photoCeiling
             };
         }
 
@@ -166,6 +243,13 @@ namespace KitchenDesigner.Core
             _wallsEnabled = data.wallsEnabled;
             _lowerNearWalls = data.lowerNearWalls;
             _cameraPanFree = data.cameraPanFree;
+            _photoQuality = (PhotoQualityPreset)Mathf.Clamp(data.photoQuality, 0, 2);
+            _photoShadows = data.photoShadows;
+            _photoAntiAliasing = data.photoAntiAliasing;
+            _photoAmbientOcclusion = data.photoAmbientOcclusion;
+            _photoBloom = data.photoBloom;
+            _photoVignette = data.photoVignette;
+            _photoCeiling = data.photoCeiling;
         }
 
         /// <summary>Возвращает текущий JSON настроек (для снапшот-тестов).</summary>
@@ -185,7 +269,14 @@ namespace KitchenDesigner.Core
                 edgeOutline = _edgeOutline,
                 wallsHidden = !_wallsEnabled,
                 lowerNearWalls = _lowerNearWalls,
-                cameraPanFree = _cameraPanFree
+                cameraPanFree = _cameraPanFree,
+                photoQuality = (int)_photoQuality,
+                photoShadows = _photoShadows,
+                photoAntiAliasing = _photoAntiAliasing,
+                photoAmbientOcclusion = _photoAmbientOcclusion,
+                photoBloom = _photoBloom,
+                photoVignette = _photoVignette,
+                photoCeiling = _photoCeiling
             };
             return JsonUtility.ToJson(data, true);
         }
@@ -206,6 +297,13 @@ namespace KitchenDesigner.Core
             public bool wallsHidden;   // инверсия: старые сейвы (false) → стены включены
             public bool lowerNearWalls;
             public bool cameraPanFree;
+            public int photoQuality;
+            public bool photoShadows;
+            public bool photoAntiAliasing;
+            public bool photoAmbientOcclusion;
+            public bool photoBloom;
+            public bool photoVignette;
+            public bool photoCeiling;
         }
     }
 }

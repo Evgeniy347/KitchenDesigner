@@ -11,5 +11,12 @@
     "edgeOutline": true,
     "wallsHidden": true,
     "lowerNearWalls": true,
-    "cameraPanFree": false
+    "cameraPanFree": false,
+    "photoQuality": 2,
+    "photoShadows": true,
+    "photoAntiAliasing": true,
+    "photoAmbientOcclusion": true,
+    "photoBloom": true,
+    "photoVignette": true,
+    "photoCeiling": true
 }

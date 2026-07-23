@@ -21,8 +21,9 @@ namespace KitchenDesigner.Core
         public void LateUpdate()
         {
             var s = KitchenSettings.Instance;
-            bool show = s == null || s.WallsEnabled;
-            bool lowerMode = s != null && s.LowerNearWalls;
+            // В фоторежиме стены всегда видимы и не опускаются — комната цельная.
+            bool show = PhotoMode.Active || s == null || s.WallsEnabled;
+            bool lowerMode = !PhotoMode.Active && s != null && s.LowerNearWalls;
 
             Vector3 camF = _cachedCamera != null ? _cachedCamera.transform.forward : Vector3.forward;
             Vector3 sceneCenter = Vector3.zero; // центр пола

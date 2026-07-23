@@ -71,5 +71,16 @@ namespace KitchenDesigner.Core
         public bool wallsEnabled;
         public bool lowerNearWalls;
         public bool cameraPanFree;
+
+        // Фоторежим. Инициализаторы задают дефолты для старых проектов, где этих
+        // полей нет в JSON: JsonUtility.FromJson создаёт объект (инициализаторы
+        // срабатывают), затем перезаписывает только присутствующие поля.
+        public int photoQuality = (int)PhotoQualityPreset.High;
+        public bool photoShadows = true;
+        public bool photoAntiAliasing = true;
+        public bool photoAmbientOcclusion = true;
+        public bool photoBloom = true;
+        public bool photoVignette = true;
+        public bool photoCeiling = true;
     }
 }

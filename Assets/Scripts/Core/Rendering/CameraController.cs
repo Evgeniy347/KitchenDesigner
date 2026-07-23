@@ -156,6 +156,9 @@ namespace KitchenDesigner.Core
                 if (Input.GetKeyDown(KeyCode.F1) && UI.UIManager.Instance != null)
                     UI.UIManager.Instance.ToggleHelp();
 
+                if (Input.GetKeyDown(KeyCode.F10))
+                    PhotoMode.Toggle();
+
                 HandleWASD();
                 HandleArrowOrbit();
                 HandlePlusMinusZoom();
@@ -176,7 +179,8 @@ namespace KitchenDesigner.Core
             float floorTopY = _floor.transform.position.y + _floor.transform.localScale.y * 0.5f;
             bool cameraBelow = _cachedCamera.transform.position.y < floorTopY;
             bool lookingUp = _cachedCamera.transform.forward.y > 0f;
-            bool hideFloor = cameraBelow && lookingUp;
+            // В фоторежиме пол не прячем — сцена должна оставаться цельной.
+            bool hideFloor = !PhotoMode.Active && cameraBelow && lookingUp;
             renderer.enabled = !hideFloor;
 
             var collider = _floor.GetComponent<Collider>();

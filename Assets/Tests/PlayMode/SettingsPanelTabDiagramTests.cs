@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
+using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 using KitchenDesigner.Tests;
 
@@ -16,6 +17,7 @@ public class SettingsPanelTabDiagramTests
     private GameObject? _canvasGo;
     private GameObject? _camGo;
     private GameObject? _eventSystem;
+    private KitchenSettingsData? _settingsBackup;
 
     [UnityTearDown]
     public IEnumerator TearDown()
@@ -23,11 +25,20 @@ public class SettingsPanelTabDiagramTests
         if (_canvasGo != null) Object.Destroy(_canvasGo);
         if (_camGo != null) Object.Destroy(_camGo);
         if (_eventSystem != null) Object.Destroy(_eventSystem);
+
+        var s = KitchenSettings.Instance;
+        if (s != null && _settingsBackup != null) s.ApplyFrom(_settingsBackup);
+        _settingsBackup = null;
         yield return null;
     }
 
     private (Canvas canvas, Camera cam, SettingsPanelUI ui) BuildPanel()
     {
+        // Детерминизм снапшота: дефолтные настройки независимо от прочих тестов.
+        var settings = KitchenSettings.Instance;
+        _settingsBackup = settings != null ? settings.ToData() : null;
+        if (settings != null) settings.ResetToDefaults();
+
         _canvasGo = new GameObject("TestCanvas");
         var canvas = _canvasGo!.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceCamera;
@@ -110,13 +121,21 @@ public class SettingsPanelTabDiagramTests
         yield return CaptureAndSave("settings_tab_project.png");
     }
 
-    // Вкладка «Графика» скрыта до появления содержимого, поэтому теперь только
-    // две вкладки: «Проект» (0) и «О программе» (1).
+    // Три вкладки: «Проект» (0), «Фото режим» (1), «О программе» (2).
+    [UnityTest]
+    public IEnumerator TabPhoto_SavesPng()
+    {
+        BuildPanel();
+        SwitchToTab(1);
+        yield return null;
+        yield return CaptureAndSave("settings_tab_photo.png");
+    }
+
     [UnityTest]
     public IEnumerator TabAbout_SavesPng()
     {
         BuildPanel();
-        SwitchToTab(1);
+        SwitchToTab(2);
         yield return null;
         yield return CaptureAndSave("settings_tab_about.png");
     }

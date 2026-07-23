@@ -141,7 +141,7 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            if (element.Transparent)
+            if (PhotoMode.ResolveTransparent(element.Transparent))
             {
                 renderer.material = isValid ? _validTransparentMaterial! : _invalidTransparentMaterial!;
                 ElementOutline.Ensure(element)?.Show(selected: false);

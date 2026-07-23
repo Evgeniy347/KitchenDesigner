@@ -1,0 +1,122 @@
+﻿{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Настройки",
+      "position": [0, 285]
+    },
+    {
+      "type": "Button",
+      "text": "Проект",
+      "position": [-160, 246]
+    },
+    {
+      "type": "Button",
+      "text": "Фото режим",
+      "position": [0, 246]
+    },
+    {
+      "type": "Button",
+      "text": "О программе",
+      "position": [160, 246]
+    },
+    {
+      "type": "Label",
+      "text": "Ambient occlusion",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Качество",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Виньетка",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Потолок по стенам",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Свечение (bloom)",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сглаживание",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Тени",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Фоторежим",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Высокое",
+      "position": [165, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Ambient occlusion",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Виньетка",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Потолок по стенам",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Свечение (bloom)",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Сглаживание",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Тени",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Фоторежим",
+      "isOn": false,
+      "position": [224, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Button",
+      "text": "Закрыть",
+      "position": [0, -298]
+    }
+  ]
+}
