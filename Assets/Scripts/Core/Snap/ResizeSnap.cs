@@ -130,13 +130,22 @@ namespace KitchenDesigner.Core
             return new Rect(cu - halfU, cv - halfV, halfU * 2f, halfV * 2f);
         }
 
+        /// <summary>Соприкасаются ли грани в плоскости. Касание РОВНО ПО РЕБРУ
+        /// (нулевая площадь пересечения) — тоже контакт: у вертикальной стойки,
+        /// приставленной торцом к кромке горизонтальной панели, footprint'ы делят
+        /// ровно ребро. Перемещение такой контакт принимает давно
+        /// (SnapSystem.FacesOverlap, hasLineContact), а ресайз требовал строго
+        /// положительной площади — и растягиваемая деталь проезжала мимо кромки
+        /// соседа, не прилипая ни на одном миллиметре. Порог и знак сравнения
+        /// те же, что в FacesOverlap, чтобы обе системы видели контакт одинаково.</summary>
         private static bool Overlap(Rect a, Rect b)
         {
             float left = Mathf.Max(a.xMin, b.xMin);
             float right = Mathf.Min(a.xMax, b.xMax);
             float bottom = Mathf.Max(a.yMin, b.yMin);
             float top = Mathf.Min(a.yMax, b.yMax);
-            return left < right && bottom < top; // строго положительная площадь
+            return left <= right + Tolerance.SnapEpsilon
+                && bottom <= top + Tolerance.SnapEpsilon;
         }
     }
 }

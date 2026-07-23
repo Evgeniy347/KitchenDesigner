@@ -382,10 +382,24 @@ public class SnapMutationTests
             float rawDelta = mm * AppConstants.MM_TO_UNITS;
             float sizeStartUnits = origDim * AppConstants.MM_TO_UNITS;
 
+            // Чего МЫ ждём от прилипания — считается независимо от ResizeSnap по
+            // сырому (не прилипшему) положению грани. Без этого тест видит только
+            // состоявшиеся снэпы, а пропущенное прилипание для него невидимо —
+            // именно поэтому он молчал на стойке, касающейся панели по ребру.
+            var expected = FindResizeTargets(f, rawDelta, others, thresholdMm);
+
             ResizeMath.Compute(savedDims, axis, f.normal, f.center, f.rightAxis, f.upAxis, f.size,
                 savedPos, sizeStartUnits, rawDelta, others, moved,
                 snapEnabled: true, thresholdMm * AppConstants.MM_TO_UNITS,
                 out Vector3Int newDims, out Vector3 _, out bool snapped);
+
+            if (!snapped && expected.Count > 0)
+            {
+                var nearest = expected.OrderBy(t => Mathf.Abs(t.gapMm)).First();
+                AddError($"RESIZE-NOSNAP: {moved.PartName} {FaceLabels[faceIndex]} @ {mm}мм " +
+                    $"грань в {Mathf.Abs(nearest.gapMm):F1}мм от {nearest.targetName} " +
+                    $"({(nearest.edgeOnly ? "по ребру" : "по площади")}), но прилипание не сработало");
+            }
 
             moved.DimensionsMM = newDims;
             var appliedDims = moved.DimensionsMM;
@@ -457,7 +471,21 @@ public class SnapMutationTests
             Vector3 testPos = savedPos + d * (mm * AppConstants.MM_TO_UNITS);
 
             var snap = SnapSystem.TrySnap(moved, others, testPos);
-            if (!snap.snapped) continue;
+            if (!snap.snapped)
+            {
+                // Пропущенное прилипание: есть встречная грань в пределах порога с
+                // достаточным перекрытием, а снэпа нет. Без этой проверки тест
+                // видел только СОСТОЯВШИЕСЯ снэпы и не мог поймать «не прилипает».
+                var missed = FindMoveTargets(moved, others, testPos, thresholdMm);
+                if (missed.Count > 0)
+                {
+                    var nearest = missed.OrderBy(t => Mathf.Abs(t.gapMm)).First();
+                    AddError($"MOVE-NOSNAP: {moved.PartName} {dirLabel} @ {mm}мм " +
+                        $"грань в {Mathf.Abs(nearest.gapMm):F1}мм от {nearest.targetName} " +
+                        $"({(nearest.edgeOnly ? "по ребру" : "по площади")}), но прилипание не сработало");
+                }
+                continue;
+            }
 
             snapEvents++;
             moved.transform.position = snap.position;
@@ -591,6 +619,144 @@ public class SnapMutationTests
     {
         if (_errors.Count < MaxErrors)
             _errors.Add(message);
+    }
+
+    private readonly struct ResizeTarget
+    {
+        public readonly string targetName;
+        public readonly float gapMm;      // со знаком, вдоль нормали растягиваемой грани
+        public readonly bool edgeOnly;    // соприкосновение ровно по ребру/углу
+        public ResizeTarget(string name, float gap, bool edgeOnly)
+        {
+            targetName = name;
+            gapMm = gap;
+            this.edgeOnly = edgeOnly;
+        }
+    }
+
+    /// <summary>Грани, к которым растягиваемая грань ОБЯЗАНА прилипнуть: нормали
+    /// противоположны, плоскость в пределах порога вдоль нормали, а footprint'ы
+    /// в плоскости грани соприкасаются — включая касание ровно по ребру (нулевая
+    /// площадь пересечения) и по углу.
+    ///
+    /// Считается по СЫРОМУ положению грани (faceCenter + normal*rawDelta), то есть
+    /// ровно там, куда её тянет пользователь до вмешательства снэпа. Реализацию
+    /// ResizeSnap намеренно не повторяет: это независимая формулировка требования,
+    /// иначе тест не смог бы поймать ошибку в самой реализации.
+    ///
+    /// Грани пазов не учитываются — они дают ДОПОЛНИТЕЛЬНЫЕ детенты, от их
+    /// отсутствия здесь возможен только пропуск ошибки, но не ложная.</summary>
+    private List<ResizeTarget> FindResizeTargets(KitchenElement.Face movedFace, float rawDelta,
+        List<KitchenElement> others, float thresholdMm)
+    {
+        var result = new List<ResizeTarget>();
+        float threshold = thresholdMm * AppConstants.MM_TO_UNITS;
+        Vector3 center = movedFace.center + movedFace.normal * rawDelta;
+        Vector3 u = movedFace.rightAxis, v = movedFace.upAxis;
+        Rect mRect = FaceRect(center, u, v, u, v, movedFace.size.x, movedFace.size.y);
+
+        foreach (var o in others)
+        {
+            if (!o.gameObject.activeInHierarchy) continue;
+            foreach (var of in GetFacesCached(o))
+            {
+                if (Vector3.Dot(of.normal, movedFace.normal) > -Tolerance.ParallelDot) continue;
+
+                float gap = Vector3.Dot(of.center - center, movedFace.normal);
+                if (Mathf.Abs(gap) > threshold + Tolerance.SnapEpsilon) continue;
+
+                Rect oRect = FaceRect(of.center, u, v, of.rightAxis, of.upAxis, of.size.x, of.size.y);
+                float left = Mathf.Max(mRect.xMin, oRect.xMin);
+                float right = Mathf.Min(mRect.xMax, oRect.xMax);
+                float bottom = Mathf.Max(mRect.yMin, oRect.yMin);
+                float top = Mathf.Min(mRect.yMax, oRect.yMax);
+                if (left > right + Tolerance.SnapEpsilon || bottom > top + Tolerance.SnapEpsilon) continue;
+
+                bool edgeOnly = right - left <= Tolerance.SnapEpsilon || top - bottom <= Tolerance.SnapEpsilon;
+                result.Add(new ResizeTarget(o.PartName, gap / AppConstants.MM_TO_UNITS, edgeOnly));
+            }
+        }
+        return result;
+    }
+
+    /// <summary>Грани, к которым деталь в позиции testPos ОБЯЗАНА прилипнуть при
+    /// перемещении: нормали противоположны, зазор в пределах порога, перекрытие
+    /// граней не меньше минимума (касание по ребру считается полным выравниванием
+    /// по этой оси — как в SnapSystem.FacesOverlap).
+    ///
+    /// Исключаются два случая, где отказ от снэпа законен:
+    ///  • деталь глубоко внутри соседа — снэп не имеет права загонять центр внутрь
+    ///    габарита (та же проверка, что в Collect);
+    ///  • контакт с нулевым зазором — тогда TrySnap возвращает подтверждение
+    ///    контакта и snapped уже true, сюда мы просто не попадаем.</summary>
+    private List<ResizeTarget> FindMoveTargets(KitchenElement moved, List<KitchenElement> others,
+        Vector3 testPos, float thresholdMm)
+    {
+        var result = new List<ResizeTarget>();
+        float threshold = thresholdMm * AppConstants.MM_TO_UNITS;
+
+        var prevPos = moved.transform.position;
+        moved.transform.position = testPos;
+        var movedFaces = moved.GetFaces();
+
+        foreach (var o in others)
+        {
+            if (!o.gameObject.activeInHierarchy) continue;
+
+            var ov = o.GetVertices();
+            Vector3 oMin = ov[0], oMax = ov[0];
+            for (int k = 1; k < 8; k++) { oMin = Vector3.Min(oMin, ov[k]); oMax = Vector3.Max(oMax, ov[k]); }
+
+            foreach (var of in GetFacesCached(o))
+                foreach (var mf in movedFaces)
+                {
+                    if (Vector3.Dot(of.normal, mf.normal) > -Tolerance.ParallelDot) continue;
+
+                    float gap = Vector3.Dot(of.center - mf.center, mf.normal);
+                    if (Mathf.Abs(gap) > threshold + Tolerance.SnapEpsilon) continue;
+                    if (Mathf.Abs(gap) <= Tolerance.EpsilonUnits) continue; // контакт — TrySnap его подтвердит
+
+                    Vector3 u = mf.rightAxis, v = mf.upAxis;
+                    Rect mRect = FaceRect(mf.center, u, v, u, v, mf.size.x, mf.size.y);
+                    Rect oRect = FaceRect(of.center, u, v, of.rightAxis, of.upAxis, of.size.x, of.size.y);
+
+                    float left = Mathf.Max(mRect.xMin, oRect.xMin), right = Mathf.Min(mRect.xMax, oRect.xMax);
+                    float bottom = Mathf.Max(mRect.yMin, oRect.yMin), top = Mathf.Min(mRect.yMax, oRect.yMax);
+                    if (left > right + Tolerance.SnapEpsilon || bottom > top + Tolerance.SnapEpsilon) continue;
+
+                    float overlapU = Mathf.Max(0, right - left), overlapV = Mathf.Max(0, top - bottom);
+                    float minW = Mathf.Min(mRect.width, oRect.width), minH = Mathf.Min(mRect.height, oRect.height);
+                    float ratioU = overlapU <= Tolerance.SnapEpsilon ? 1f : (minW > 0 ? overlapU / minW : 0f);
+                    float ratioV = overlapV <= Tolerance.SnapEpsilon ? 1f : (minH > 0 ? overlapV / minH : 0f);
+                    if (ratioU * ratioV < Tolerance.MinSupportOverlap) continue;
+
+                    // Снэп сдвинул бы центр внутрь габарита соседа — законный отказ.
+                    Vector3 snapPos = testPos + gap * mf.normal;
+                    if (snapPos.x > oMin.x && snapPos.x < oMax.x &&
+                        snapPos.y > oMin.y && snapPos.y < oMax.y &&
+                        snapPos.z > oMin.z && snapPos.z < oMax.z) continue;
+
+                    bool edgeOnly = overlapU <= Tolerance.SnapEpsilon || overlapV <= Tolerance.SnapEpsilon;
+                    result.Add(new ResizeTarget(o.PartName, gap / AppConstants.MM_TO_UNITS, edgeOnly));
+                }
+        }
+
+        moved.transform.position = prevPos;
+        return result;
+    }
+
+    /// <summary>Прямоугольник грани в осях (u,v) — та же проекция, что в
+    /// SnapSystem.GetFaceRect и ResizeSnap.RectFor.</summary>
+    private static Rect FaceRect(Vector3 center, Vector3 u, Vector3 v,
+        Vector3 rightAxis, Vector3 upAxis, float sizeX, float sizeY)
+    {
+        float cu = Vector3.Dot(center, u);
+        float cv = Vector3.Dot(center, v);
+        float halfU = Mathf.Abs(Vector3.Dot(rightAxis, u)) * sizeX * 0.5f
+                    + Mathf.Abs(Vector3.Dot(upAxis, u)) * sizeY * 0.5f;
+        float halfV = Mathf.Abs(Vector3.Dot(rightAxis, v)) * sizeX * 0.5f
+                    + Mathf.Abs(Vector3.Dot(upAxis, v)) * sizeY * 0.5f;
+        return new Rect(cu - halfU, cv - halfV, halfU * 2f, halfV * 2f);
     }
 
     private readonly struct FaceCandidate
