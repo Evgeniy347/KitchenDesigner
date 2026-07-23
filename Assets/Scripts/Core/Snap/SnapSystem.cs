@@ -99,8 +99,9 @@ namespace KitchenDesigner.Core
             var zeroNormals = new List<Vector3>();
             var candidates = new List<Candidate>();
 
+            var alignedNormals = new List<Vector3>();
             Collect(moved, others, testPosition, maxDist, candidates, zeroNormals,
-                ref bestZero, ref bestZeroLog, ref anyFullAreaZero);
+                ref bestZero, ref bestZeroLog, ref anyFullAreaZero, alignedNormals);
 
             // Применяем лучший непротиворечивый кандидат, затем ДОБИРАЕМ ортогональные:
             // в углу (бок соседа + стена) один кандидат чинит только одну ось, вторая
@@ -112,6 +113,16 @@ namespace KitchenDesigner.Core
             string? primaryLog = null;
             bool primaryIsLineContact = false;
             var locked = new List<Vector3>(zeroNormals);
+
+            // Кромочные контакты, существующие В ИСХОДНОЙ позиции. Только они имеют
+            // право участвовать в доборе. Кромочный контакт, ПОЯВИВШИЙСЯ как следствие
+            // основного снэпа, — артефакт: приложив деталь к боку соседа, мы делаем
+            // соприкасающимися и остальные его грани, и добор по ним уводит деталь на
+            // толщину плиты вбок. Изначальное же касание по ребру — реальная геометрия
+            // сборки (стойка у кромки полки), и его доборо́м терять нельзя.
+            var initialLineContacts = new HashSet<string>();
+            foreach (var c in candidates)
+                if (c.hasLineContact) initialLineContacts.Add(LineContactKey(c));
 
             for (int pass = 0; pass < 3; pass++)
             {
@@ -127,7 +138,8 @@ namespace KitchenDesigner.Core
                     foreach (var n in zeroNormals) locked.Add(n);
                 }
 
-                if (!TryPickCandidate(candidates, locked, pos, pass == 0, out Candidate picked, out Vector3 pickedPos))
+                if (!TryPickCandidate(candidates, locked, pos, pass == 0, initialLineContacts,
+                        alignedNormals, out Candidate picked, out Vector3 pickedPos))
                     break;
 
                 pos = pickedPos;
@@ -155,7 +167,8 @@ namespace KitchenDesigner.Core
             // существующего полноплощадного контакта: полка, стоящая заподлицо к
             // боковине по Z-грани (1.369), иначе отскакивала бы на грань-контакт
             // с низом боковины (1.351). Полноплощадная опора важнее слабого кромочного
-            // притяжения — подтверждаем текущий контакт (bestZero).
+            // притяжения — подтверждаем текущий контакт (bestZero). Правило про
+            // ОСНОВНОЙ контакт; кромочный ДОБОР по свободной оси им не ограничен.
             if (primary.snapped && !(primaryIsLineContact && anyFullAreaZero))
             {
                 if (VerboseLog && primaryLog != null) Debug.Log(primaryLog);
@@ -190,7 +203,8 @@ namespace KitchenDesigner.Core
         /// вызывающий обязан восстановить исходную позицию.</summary>
         private static void Collect(KitchenElement moved, List<KitchenElement> others, Vector3 basePos,
             float maxDist, List<Candidate> candidates, List<Vector3> zeroNormals,
-            ref SnapResult bestZero, ref string? bestZeroLog, ref bool anyFullAreaZero)
+            ref SnapResult bestZero, ref string? bestZeroLog, ref bool anyFullAreaZero,
+            List<Vector3>? alignedNormals = null)
         {
             moved.transform.position = basePos;
             KitchenElement.Face[] movedFaces = FaceCache.GetFaces(moved);
@@ -248,7 +262,22 @@ namespace KitchenDesigner.Core
                         // друг другу (нормали противоположны, dot≈-1). Со-направленные
                         // грани (dot≈+1) не образуют стык — иначе деталь липла бы «не с той стороны».
                         float dot = Vector3.Dot(movedFaces[i].normal, of.normal);
-                        if (!Tolerance.IsParallel(dot) || dot > 0) continue;
+                        if (!Tolerance.IsParallel(dot)) continue;
+
+                        // Со-направленные грани стыка не образуют, но если они
+                        // КОМПЛАНАРНЫ — деталь уже выровнена с соседом по этой оси
+                        // (например, низ лежащей доски вровень с низом стоящей).
+                        // Такую выровненность добор рвать не вправе: иначе снэп к
+                        // стене по Z «заодно» ронял бы деталь на толщину плиты по Y.
+                        if (dot > 0)
+                        {
+                            if (alignedNormals != null &&
+                                Mathf.Abs(Vector3.Dot(of.center - movedFaces[i].center, movedFaces[i].normal))
+                                    <= ZeroShiftEpsilon &&
+                                FacesOverlap(movedFaces[i], of, out _, out _))
+                                alignedNormals.Add(movedFaces[i].normal);
+                            continue;
+                        }
 
                         var mf = movedFaces[i];
 
@@ -365,8 +394,14 @@ namespace KitchenDesigner.Core
         ///    ТОЛЬКО эта компонента. Раньше кандидат отбрасывался целиком, и деталь
         ///    на полу отказывалась липнуть к соседу лишь потому, что заодно хотела
         ///    подровнять кромку по вертикали (что оторвало бы её от пола).</summary>
+        /// <summary>Опознание пары «деталь ↔ грань соседа» между проходами: позиция
+        /// детали меняется, а цель и индекс её грани — нет.</summary>
+        private static string LineContactKey(Candidate c) =>
+            c.result.targetName + "#" + c.result.faceIndex;
+
         private static bool TryPickCandidate(List<Candidate> candidates, List<Vector3> locked,
-            Vector3 basePos, bool allowLineContact, out Candidate picked, out Vector3 pickedPos)
+            Vector3 basePos, bool primaryPass, HashSet<string> initialLineContacts,
+            List<Vector3> alignedNormals, out Candidate picked, out Vector3 pickedPos)
         {
             picked = default;
             pickedPos = basePos;
@@ -377,12 +412,25 @@ namespace KitchenDesigner.Core
 
             foreach (var c in candidates)
             {
-                // В проходах добора (allowLineContact=false) кромочный контакт не
-                // применяем: добор нужен для реальной опоры по ортогональной оси, а
-                // слабое кромочное притяжение способно лишь утащить деталь с уже
-                // найденного полноплощадного контакта (полка на боковой Z-грани 1.369
-                // иначе откатывалась бы на грань-контакт 1.351 вторым проходом).
-                if (!allowLineContact && c.hasLineContact) continue;
+                // В доборе кромочный контакт участвует, но только ИЗНАЧАЛЬНЫЙ. Раньше
+                // он отбрасывался целиком, и снэп по такой оси срабатывал ТОЛЬКО если
+                // выигрывал первый проход — то есть если его зазор меньше вообще всех
+                // прочих. Стойка у стены (контакт 0.5 мм по Z) из-за этого не ловила
+                // по вертикали ни одной полки: Z-кандидат всегда забирал pass 0, а в
+                // доборе Y-кандидат, кромочный по своей природе, выбрасывался. При
+                // ресайзе та же пара прилипала — отсюда расхождение «тянется, но не
+                // перетаскивается».
+                if (!primaryPass && c.hasLineContact)
+                {
+                    if (!initialLineContacts.Contains(LineContactKey(c))) continue;
+
+                    // ...и не по оси, где деталь уже выровнена с соседом заподлицо.
+                    bool breaksAlignment = false;
+                    foreach (var n in alignedNormals)
+                        if (Mathf.Abs(c.planeShift * Vector3.Dot(c.normal, n)) > ZeroShiftEpsilon)
+                        { breaksAlignment = true; break; }
+                    if (breaksAlignment) continue;
+                }
 
                 float du = c.du, dv = c.dv;
 
@@ -391,7 +439,7 @@ namespace KitchenDesigner.Core
                 // (pass 0). Иначе крупный сосед (стена) во втором проходе «центрирует»
                 // деталь по своей грани и утаскивает её с уже найденного контакта: полка,
                 // подтянутая к боковине на 1.369, уезжала к центру стены на 1.350.
-                if (!allowLineContact) { du = 0f; dv = 0f; }
+                if (!primaryPass) { du = 0f; dv = 0f; }
 
                 bool breaks = false;
                 foreach (var n in locked)
