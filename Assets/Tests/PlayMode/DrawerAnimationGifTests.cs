@@ -13,9 +13,9 @@ using SimpleGif.Enums;
 /// верхний → закрыть все. Сохраняет в docs/drawer_animation.gif.</summary>
 public class DrawerAnimationGifTests
 {
-    private const int RenderW = 640;
-    private const int RenderH = 480;
-    private const int FrameDelayMs = 50; // 20 fps → 3 phases × 20 = 60 frames
+    private const int RenderW = 480;
+    private const int RenderH = 360;
+    private const int FrameDelayMs = 100; // 10 fps
 
     private GameObject? _bootstrap;
     private GameObject? _testCamera;
@@ -133,7 +133,7 @@ public class DrawerAnimationGifTests
         Time.captureFramerate = targetFps;
 
         var frames = new List<Texture2D>();
-        int animSteps = 20; // 1 секунда на фазу при 20 fps
+        int animSteps = 10; // 1 секунда на фазу при 10 fps
 
         // Кадр 0: ящик закрыт.
         frames.Add(CaptureFrame(cam));
@@ -217,29 +217,121 @@ public class DrawerAnimationGifTests
         var gifFrames = new List<SimpleGif.Data.GifFrame>();
         float delaySec = FrameDelayMs / 1000f;
 
-        foreach (var uTex in unityFrames)
+        // 1. Собрать все пиксели всех кадров для построения общей палитры
+        var allPixels = new List<SimpleGif.Data.Color32>();
+        var framePixels = new SimpleGif.Data.Color32[unityFrames.Length][];
+        for (int i = 0; i < unityFrames.Length; i++)
         {
-            var uPixels = uTex.GetPixels32();
-            var sgTex = new SimpleGif.Data.Texture2D(uTex.width, uTex.height);
+            var uPixels = unityFrames[i].GetPixels32();
             var sgPixels = new SimpleGif.Data.Color32[uPixels.Length];
-            for (int i = 0; i < uPixels.Length; i++)
-                sgPixels[i] = new SimpleGif.Data.Color32(uPixels[i].r, uPixels[i].g, uPixels[i].b, uPixels[i].a);
-            sgTex.SetPixels32(sgPixels);
+            for (int j = 0; j < uPixels.Length; j++)
+                sgPixels[j] = new SimpleGif.Data.Color32(uPixels[j].r, uPixels[j].g, uPixels[j].b, uPixels[j].a);
+            framePixels[i] = sgPixels;
+            allPixels.AddRange(sgPixels);
+        }
+
+        // 2. Median-cut квантизация до 256 цветов
+        var palette = BuildPalette256(allPixels);
+
+        // 3. Применить палитру к каждому кадру
+        for (int i = 0; i < framePixels.Length; i++)
+        {
+            QuantizeToPalette(framePixels[i], palette);
+            var sgTex = new SimpleGif.Data.Texture2D(unityFrames[i].width, unityFrames[i].height);
+            sgTex.SetPixels32(framePixels[i]);
             sgTex.Apply();
 
             gifFrames.Add(new SimpleGif.Data.GifFrame
             {
                 Texture = sgTex,
                 Delay = delaySec,
-                DisposalMethod = DisposalMethod.DoNotDispose
+                DisposalMethod = SimpleGif.Enums.DisposalMethod.DoNotDispose
             });
 
-            Object.DestroyImmediate(uTex);
+            Object.DestroyImmediate(unityFrames[i]);
         }
 
-        var gif = new Gif(gifFrames);
+        var gif = new SimpleGif.Gif(gifFrames);
         byte[] gifBytes = gif.Encode();
 
         File.WriteAllBytes(outPath, gifBytes);
+    }
+
+    private struct RGB { public byte r, g, b; }
+
+    private static List<SimpleGif.Data.Color32> BuildPalette256(List<SimpleGif.Data.Color32> pixels)
+    {
+        var buckets = new List<List<SimpleGif.Data.Color32>> { new List<SimpleGif.Data.Color32>(pixels) };
+
+        while (buckets.Count < 256)
+        {
+            int bestIdx = -1;
+            int bestRange = -1;
+            for (int i = 0; i < buckets.Count; i++)
+            {
+                if (buckets[i].Count < 2) continue;
+                GetChannelRange(buckets[i], out int r, out int g, out int b);
+                int range = Mathf.Max(r, Mathf.Max(g, b));
+                if (range > bestRange) { bestRange = range; bestIdx = i; }
+            }
+            if (bestIdx < 0) break;
+
+            var bucket = buckets[bestIdx];
+            GetChannelRange(bucket, out int rr, out int gg, out int bb);
+            int ch = rr >= gg ? (rr >= bb ? 0 : 2) : (gg >= bb ? 1 : 2);
+            bucket.Sort((a, b2) =>
+                ch == 0 ? a.r.CompareTo(b2.r) :
+                ch == 1 ? a.g.CompareTo(b2.g) :
+                a.b.CompareTo(b2.b));
+
+            int mid = bucket.Count / 2;
+            var left = bucket.GetRange(0, mid);
+            var right = bucket.GetRange(mid, bucket.Count - mid);
+            buckets.RemoveAt(bestIdx);
+            buckets.Add(left);
+            buckets.Add(right);
+        }
+
+        var palette = new List<SimpleGif.Data.Color32>(256);
+        foreach (var bucket in buckets)
+        {
+            long r = 0, g = 0, b = 0;
+            foreach (var p in bucket) { r += p.r; g += p.g; b += p.b; }
+            int cnt = bucket.Count;
+            palette.Add(new SimpleGif.Data.Color32((byte)(r / cnt), (byte)(g / cnt), (byte)(b / cnt), 255));
+        }
+        return palette;
+    }
+
+    private static void GetChannelRange(List<SimpleGif.Data.Color32> pixels, out int r, out int g, out int b)
+    {
+        int rMin = 255, rMax = 0, gMin = 255, gMax = 0, bMin = 255, bMax = 0;
+        foreach (var p in pixels)
+        {
+            if (p.r < rMin) rMin = p.r; if (p.r > rMax) rMax = p.r;
+            if (p.g < gMin) gMin = p.g; if (p.g > gMax) gMax = p.g;
+            if (p.b < bMin) bMin = p.b; if (p.b > bMax) bMax = p.b;
+        }
+        r = rMax - rMin; g = gMax - gMin; b = bMax - bMin;
+    }
+
+    private static void QuantizeToPalette(SimpleGif.Data.Color32[] pixels, List<SimpleGif.Data.Color32> palette)
+    {
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            var px = pixels[i];
+            if (px.a < 128) { pixels[i] = new SimpleGif.Data.Color32(0, 0, 0, 0); continue; }
+            int best = 0, bestDist = int.MaxValue;
+            for (int j = 0; j < palette.Count; j++)
+            {
+                int dr = px.r - palette[j].r;
+                int dg = px.g - palette[j].g;
+                int db = px.b - palette[j].b;
+                int dist = dr * dr + dg * dg + db * db;
+                if (dist < bestDist) { bestDist = dist; best = j; }
+            }
+            var c = palette[best];
+            pixels[i] = new SimpleGif.Data.Color32(c.r, c.g, c.b, px.a);
+        }
     }
 }
