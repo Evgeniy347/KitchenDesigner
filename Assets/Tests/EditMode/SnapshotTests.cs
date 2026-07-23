@@ -17,9 +17,42 @@ using KitchenDesigner.Core;
 public class SnapshotTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
+    private KitchenSettingsData? _settingsBefore;
+    private ResizeHandleManager.HandleMode _modeBefore;
+
+    /// <summary>Снапшот содержит не только элементы, но и ГЛОБАЛЬНОЕ состояние
+    /// приложения: блок настроек (KitchenSettings — синглтон-ассет из Resources)
+    /// и режим ручек (ResizeHandleManager.Mode — статик, который переключает даже
+    /// загрузка сейва). Оба правятся другими EditMode-тестами и не всегда
+    /// восстанавливаются, поэтому результат зависел от порядка выполнения: в
+    /// полном прогоне тесты проходили, а с -testFilter SnapshotTests падали 19 из
+    /// 21. Полный сброс перед КАЖДЫМ тестом делает эталоны воспроизводимыми в
+    /// любом окружении; TearDown возвращает застигнутое состояние, чтобы сами
+    /// снапшоты не ломали соседние наборы.</summary>
+    [SetUp]
+    public void Setup()
+    {
+        var s = KitchenSettings.Instance;
+        _settingsBefore = s != null ? s.ToData() : null;
+        _modeBefore = ResizeHandleManager.Mode;
+
+        if (s != null) s.ResetToDefaults();
+        ResizeHandleManager.SetMode(ResizeHandleManager.HandleMode.Resize);
+        ResetScene();
+    }
 
     [TearDown]
     public void Teardown()
+    {
+        ResetScene();
+
+        var s = KitchenSettings.Instance;
+        if (s != null && _settingsBefore != null) s.ApplyFrom(_settingsBefore);
+        _settingsBefore = null;
+        ResizeHandleManager.SetMode(_modeBefore);
+    }
+
+    private void ResetScene()
     {
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);

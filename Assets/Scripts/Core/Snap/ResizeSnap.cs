@@ -34,7 +34,14 @@ namespace KitchenDesigner.Core
                 for (int j = 0; j < faces.Length; j++)
                 {
                     var g = faces[j];
-                    if (Vector3.Dot(g.normal, normal) > -Tolerance.ParallelDot) continue; // только встречные
+                    // Для РЕСАЙЗА плоскость соседа двусторонняя: растягиваемая грань
+                    // встаёт либо встык к ближней грани (нормали противоположны),
+                    // либо ЗАПОДЛИЦО с дальней (нормали со-направлены). У панели
+                    // толщиной 18 мм это два детента подряд, и второй был недоступен:
+                    // стойка, доведённая под низ панели, дальше тянулась вверх без
+                    // единого прилипания, хотя верх панели — очевидная кромка.
+                    // Тот же принцип уже применён к стенкам пазов ниже.
+                    if (Mathf.Abs(Vector3.Dot(g.normal, normal)) < Tolerance.ParallelDot) continue;
 
                     float d = Vector3.Dot(g.center - faceCenter, normal); // вдоль нормали до плоскости g
                     if (Mathf.Abs(d) > threshold + ThresholdEpsilon) continue;

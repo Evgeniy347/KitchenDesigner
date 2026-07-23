@@ -285,18 +285,18 @@
     "undoHistory": [],
     "redoHistory": [],
     "settings": {
-        "gridStep": 1,
+        "gridStep": 18,
         "gridEnabled": true,
         "snapEnabled": true,
         "snapThreshold": 50.0,
-        "blockOnViolation": false,
-        "autoSave": false,
+        "blockOnViolation": true,
+        "autoSave": true,
         "autoSaveInterval": 60,
         "spatialGrid": false,
         "windowedMode": true,
-        "edgeOutline": false,
+        "edgeOutline": true,
         "wallsEnabled": true,
         "lowerNearWalls": true,
-        "cameraPanFree": true
+        "cameraPanFree": false
     }
 }

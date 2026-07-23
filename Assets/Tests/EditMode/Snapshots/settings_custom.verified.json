@@ -11,5 +11,5 @@
     "edgeOutline": true,
     "wallsHidden": true,
     "lowerNearWalls": true,
-    "cameraPanFree": true
+    "cameraPanFree": false
 }

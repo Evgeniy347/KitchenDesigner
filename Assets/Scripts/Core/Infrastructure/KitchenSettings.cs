@@ -108,6 +108,28 @@ namespace KitchenDesigner.Core
             set => _cameraPanFree = value;
         }
 
+        /// <summary>Значения «из коробки» — те же, что в инициализаторах полей.
+        /// Инициализаторы срабатывают только при СОЗДАНИИ ассета, а Instance
+        /// грузится из Resources с уже сохранённым состоянием, поэтому сброс
+        /// нужен явный. Настройки — глобальный синглтон, и тест, который их
+        /// правит, обязан начинать с известного состояния и возвращать прежнее.</summary>
+        public void ResetToDefaults()
+        {
+            _gridStep = 18;
+            _gridEnabled = true;
+            _snapEnabled = true;
+            _snapThreshold = 50f;
+            _blockOnViolation = true;
+            _autoSave = true;
+            _autoSaveInterval = 60;
+            _spatialGrid = false;
+            _windowedMode = true;
+            _edgeOutline = true;
+            _wallsEnabled = true;
+            _lowerNearWalls = true;
+            _cameraPanFree = false;
+        }
+
         public KitchenSettingsData ToData()
         {
             return new KitchenSettingsData
