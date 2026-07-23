@@ -48,6 +48,7 @@ namespace KitchenDesigner.Core.UI
 
             BuildTabs(panel.transform);
             BuildProjectTab(panel.transform, s);
+            BuildPhotoTab(panel.transform, s);
             BuildAboutTab(panel.transform);
 
             SwitchTab(0);
@@ -67,9 +68,7 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildTabs(Transform parent)
         {
-            // Вкладка «Графика» скрыта до появления содержимого: пустая вкладка
-            // в релизе — витрина недоделанности.
-            string[] labels = { "Проект", "О программе" };
+            string[] labels = { "Проект", "Фото режим", "О программе" };
             float tabW = (PanelW - 40) / labels.Length;
 
             for (int i = 0; i < labels.Length; i++)
@@ -163,6 +162,92 @@ namespace KitchenDesigner.Core.UI
                 v => { s.CameraPanFree = v; });
         }
 
+        // ── Tab: Фото режим ─────────────────────────────────
+
+        private Button? _presetButton;
+        private Toggle? _photoActiveToggle;
+
+        private void SyncPhotoActiveToggle()
+        {
+            if (_photoActiveToggle != null)
+                _photoActiveToggle.SetIsOnWithoutNotify(PhotoMode.Active);
+        }
+
+        private void OnDestroy()
+        {
+            PhotoMode.Changed -= SyncPhotoActiveToggle;
+        }
+
+        private void BuildPhotoTab(Transform panel, KitchenSettings s)
+        {
+            var page = new GameObject("Tab_Photo");
+            page.transform.SetParent(panel, false);
+            _tabPages.Add(page);
+            var t = page.transform;
+
+            float y = ContentTopY;
+
+            _photoActiveToggle = AddToggleRow(t, ref y, "Фоторежим", PhotoMode.Active,
+                v => PhotoMode.SetActive(v));
+            PhotoMode.Changed -= SyncPhotoActiveToggle;
+            PhotoMode.Changed += SyncPhotoActiveToggle;
+
+            y -= 6;
+            BuildPresetRow(t, ref y, s);
+
+            y -= 6;
+            AddToggleRow(t, ref y, "Тени", s.PhotoShadows,
+                v => { s.PhotoShadows = v; PhotoMode.RefreshIfActive(); });
+
+            AddToggleRow(t, ref y, "Сглаживание", s.PhotoAntiAliasing,
+                v => { s.PhotoAntiAliasing = v; PhotoMode.RefreshIfActive(); });
+
+            AddToggleRow(t, ref y, "Ambient occlusion", s.PhotoAmbientOcclusion,
+                v => { s.PhotoAmbientOcclusion = v; PhotoMode.RefreshIfActive(); });
+
+            AddToggleRow(t, ref y, "Свечение (bloom)", s.PhotoBloom,
+                v => { s.PhotoBloom = v; PhotoMode.RefreshIfActive(); });
+
+            AddToggleRow(t, ref y, "Виньетка", s.PhotoVignette,
+                v => { s.PhotoVignette = v; PhotoMode.RefreshIfActive(); });
+
+            AddToggleRow(t, ref y, "Потолок по стенам", s.PhotoCeiling,
+                v => { s.PhotoCeiling = v; PhotoMode.RefreshIfActive(); });
+        }
+
+        // Пресет качества — компактная кнопка-циклер (Низкое → Среднее → Высокое),
+        // чтобы уложиться в ту же колонку контролов, что и остальные строки.
+        private void BuildPresetRow(Transform parent, ref float y, KitchenSettings s)
+        {
+            var rowRect = UIFactory.CreateRect("RowPreset", parent);
+            rowRect.sizeDelta = new Vector2(ContentW, RowH);
+            rowRect.anchoredPosition = new Vector2(0, y);
+
+            UIFactory.CreateLabel("Lbl_Quality", rowRect, "Качество", 16,
+                new Vector2(-(ContentW - LabelW) * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
+
+            _presetButton = UIFactory.CreateButton("Btn_Quality", rowRect, PresetName(s.PhotoQuality),
+                new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0), new Vector2(ControlW, RowH),
+                () => CyclePreset(s));
+
+            y -= RowStep;
+        }
+
+        private void CyclePreset(KitchenSettings s)
+        {
+            s.PhotoQuality = (PhotoQualityPreset)(((int)s.PhotoQuality + 1) % 3);
+            var label = _presetButton != null ? _presetButton.GetComponentInChildren<TMPro.TextMeshProUGUI>() : null;
+            if (label != null) label.text = PresetName(s.PhotoQuality);
+            PhotoMode.RefreshIfActive();
+        }
+
+        private static string PresetName(PhotoQualityPreset preset) => preset switch
+        {
+            PhotoQualityPreset.Low => "Низкое",
+            PhotoQualityPreset.Medium => "Среднее",
+            _ => "Высокое"
+        };
+
         // ── Tab: О программе ────────────────────────────────
 
         private void BuildAboutTab(Transform panel)
@@ -181,7 +266,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Row helpers ─────────────────────────────────────
 
-        private void AddToggleRow(Transform parent, ref float y, string label, bool value, Action<bool> onChanged)
+        private Toggle AddToggleRow(Transform parent, ref float y, string label, bool value, Action<bool> onChanged)
         {
             var rowRect = UIFactory.CreateRect("RowTgl_" + label, parent);
             rowRect.sizeDelta = new Vector2(ContentW, RowH);
@@ -190,12 +275,13 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateLabel("Lbl_" + label, rowRect, label, 16,
                 new Vector2(-(ContentW - LabelW) * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
 
-            CreateRightToggle("Tgl_" + label, rowRect, value, onChanged);
+            var toggle = CreateRightToggle("Tgl_" + label, rowRect, value, onChanged);
 
             y -= RowStep;
+            return toggle;
         }
 
-        private void CreateRightToggle(string name, Transform parent, bool value, Action<bool> onChanged)
+        private Toggle CreateRightToggle(string name, Transform parent, bool value, Action<bool> onChanged)
         {
             // Хит-таргет — вся строка не нужна, но сам тоггл ≥32px (правило 8).
             var rect = UIFactory.CreateRect(name, parent);
@@ -212,6 +298,7 @@ namespace KitchenDesigner.Core.UI
             toggle.isOn = value;
             if (onChanged != null)
                 toggle.onValueChanged.AddListener(v => onChanged(v));
+            return toggle;
         }
 
         private TMP_InputField AddInputRow(Transform parent, ref float y, string label,
@@ -285,6 +372,7 @@ namespace KitchenDesigner.Core.UI
         public void SetVisible(bool visible)
         {
             if (_root != null) _root.SetActive(visible);
+            if (visible) SyncPhotoActiveToggle();
         }
 
         // ── Подсветка изменённых полей ──────────────────────

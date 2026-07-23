@@ -5441,11 +5441,11 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "gtv_white",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
-            "doorOpen": true,
+            "doorOpen": false,
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
@@ -6958,15 +6958,15 @@
             "grooves": []
         },
         {
-            "name": "DVP_HDF",
+            "name": "A12_DVP_HDF",
             "dimensionsMM": [
                 1383,
                 875,
-                3
+                4
             ],
             "position": [
-                1.5665000677108765,
-                1.8100001811981202,
+                1.567000150680542,
+                1.8100000619888306,
                 -2.56600022315979
             ],
             "rotation": [
@@ -7094,13 +7094,13 @@
         {
             "name": "A12_upper_shelf_2_1_2",
             "dimensionsMM": [
-                623,
+                900,
                 331,
                 18
             ],
             "position": [
                 1.5760000944137574,
-                1.9820902347564698,
+                1.8100001811981202,
                 -3.454000234603882
             ],
             "rotation": [
@@ -7499,73 +7499,6 @@
             "grooves": []
         },
         {
-            "name": "DVP_HDF_1",
-            "dimensionsMM": [
-                783,
-                863,
-                3
-            ],
-            "position": [
-                0.9872632026672363,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotation": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "movable": true,
-            "isWall": false,
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "groupId": 0,
-            "materialId": "default",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": false,
-            "drawerType": 0,
-            "drawerNominalLength": 350,
-            "drawerColor": 0,
-            "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "isLightSource": false,
-            "isPanel": false,
-            "grooves": []
-        },
-        {
             "name": "A3_gtv_double_lower_A_top",
             "dimensionsMM": [
                 564,
@@ -7612,73 +7545,6 @@
             "drawerIsDouble": true,
             "drawerIsUpper": true,
             "drawerPairedName": "A3_gtv_double_lower_A",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "isLightSource": false,
-            "isPanel": false,
-            "grooves": []
-        },
-        {
-            "name": "DVP_HDF_1_1",
-            "dimensionsMM": [
-                783,
-                863,
-                3
-            ],
-            "position": [
-                -0.05840182304382324,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotation": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "movable": true,
-            "isWall": false,
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "groupId": 0,
-            "materialId": "default",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": false,
-            "drawerType": 0,
-            "drawerNominalLength": 350,
-            "drawerColor": 0,
-            "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
             "doubleDrawerState": 0,
             "isWindow": false,
@@ -8368,6 +8234,73 @@
             "isLightSource": false,
             "isPanel": false,
             "grooves": []
+        },
+        {
+            "name": "B12_DVP_HDF",
+            "dimensionsMM": [
+                1034,
+                876,
+                3
+            ],
+            "position": [
+                1.055999994277954,
+                1.8100000619888306,
+                -3.6020002365112306
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 1,
+            "gapRight": 1,
+            "gapTop": 1,
+            "gapBottom": 1,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "isPanel": true,
+            "grooves": []
         }
     ],
     "groups": [
@@ -8379,14 +8312,14 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 1.5906637907028199,
-        "targetY": 2.001006841659546,
-        "targetZ": -3.5486109256744386,
-        "angleX": 20.599870681762697,
-        "angleY": -1058.593505859375,
-        "distance": 1.0000001192092896
+        "targetX": 0.02921721525490284,
+        "targetY": 1.8562086820602418,
+        "targetZ": -1.0060721635818482,
+        "angleX": 10.799962997436524,
+        "angleY": -1623.591064453125,
+        "distance": 0.5
     },
-    "handleMode": "Move",
+    "handleMode": "Resize",
     "basePlateValid": true,
     "basePlate": {
         "name": "BasePlate",
@@ -27123,7 +27056,7 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF",
+            "description": "Move A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 -0.17000000178813935,
@@ -27153,7 +27086,7 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF",
+            "description": "Move A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.4930000305175782,
@@ -27183,7 +27116,7 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF",
+            "description": "Move A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.4930000305175782,
@@ -27213,7 +27146,7 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF",
+            "description": "Move A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.4930000305175782,
@@ -27243,7 +27176,7 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF",
+            "description": "Move A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5635000467300416,
@@ -27273,7 +27206,7 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF",
+            "description": "Move A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -27303,7 +27236,7 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF",
+            "description": "Move A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -27333,7 +27266,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -27371,7 +27304,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -27409,7 +27342,7 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF",
+            "description": "Move A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -27439,7 +27372,7 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF",
+            "description": "Move A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5865000486373902,
@@ -27469,7 +27402,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.567500114440918,
@@ -27507,7 +27440,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.567500114440918,
@@ -27635,7 +27568,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.567500114440918,
@@ -27733,7 +27666,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.567500114440918,
@@ -27861,7 +27794,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.567500114440918,
@@ -28049,7 +27982,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.567500114440918,
@@ -28125,7 +28058,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.568000078201294,
@@ -28163,7 +28096,7 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF",
+            "description": "Move A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.568000078201294,
@@ -28193,7 +28126,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -28231,7 +28164,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -28269,7 +28202,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -28549,7 +28482,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -28587,7 +28520,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5660001039505005,
@@ -28625,7 +28558,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5660001039505005,
@@ -28663,7 +28596,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5660001039505005,
@@ -28701,7 +28634,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5660001039505005,
@@ -28739,7 +28672,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5660001039505005,
@@ -28777,7 +28710,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5660001039505005,
@@ -28815,7 +28748,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5660001039505005,
@@ -28853,7 +28786,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5660001039505005,
@@ -28891,7 +28824,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5660001039505005,
@@ -28929,7 +28862,7 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF",
+            "description": "Move A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5660001039505005,
@@ -28959,7 +28892,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -28997,7 +28930,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -29035,7 +28968,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -29073,7 +29006,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -29111,7 +29044,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -29149,7 +29082,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -29187,7 +29120,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -29225,7 +29158,7 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF",
+            "description": "Resize A12_DVP_HDF",
             "elementIndex": 103,
             "posBefore": [
                 1.5665000677108765,
@@ -34060,66 +33993,6 @@
         },
         {
             "type": "move",
-            "description": "Move DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.6665000915527344,
-                1.8100001811981202,
-                -2.56600022315979
-            ],
-            "posAfter": [
-                1.9100000858306885,
-                1.8100001811981202,
-                -3.5180001258850099
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.9100000858306885,
-                1.8100001811981202,
-                -3.5180001258850099
-            ],
-            "posAfter": [
-                1.9100000858306885,
-                1.8100001811981202,
-                -3.5180001258850099
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
             "description": "Move A12_upper_shelf_2_1_1",
             "elementIndex": 104,
             "posBefore": [
@@ -34221,256 +34094,6 @@
                 1020,
                 228,
                 18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.9100000858306885,
-                1.8100001811981202,
-                -3.5180001258850099
-            ],
-            "posAfter": [
-                1.2365000247955323,
-                1.8100001811981202,
-                -3.5180001258850099
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.2365000247955323,
-                1.8100001811981202,
-                -3.5180001258850099
-            ],
-            "posAfter": [
-                1.2365000247955323,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.2365000247955323,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                1.2274999618530274,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [
-                1383,
-                875,
-                3
-            ],
-            "dimsAfter": [
-                1401,
-                875,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.2274999618530274,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                1.0460000038146973,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [
-                1401,
-                875,
-                3
-            ],
-            "dimsAfter": [
-                1038,
-                875,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.0460000038146973,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                1.0460000038146973,
-                1.8070001602172852,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [
-                1038,
-                875,
-                3
-            ],
-            "dimsAfter": [
-                1038,
-                869,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.0460000038146973,
-                1.8070001602172852,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                1.0460000038146973,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [
-                1038,
-                869,
-                3
-            ],
-            "dimsAfter": [
-                1038,
-                863,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.0460000038146973,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                1.0550000667572022,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [
-                1038,
-                863,
-                3
-            ],
-            "dimsAfter": [
-                1020,
-                863,
-                3
             ],
             "children": []
         },
@@ -34764,44 +34387,6 @@
         },
         {
             "type": "resize",
-            "description": "Resize DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.0550000667572022,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                1.055999994277954,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [
-                1020,
-                863,
-                3
-            ],
-            "dimsAfter": [
-                1022,
-                863,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
             "description": "Resize A12_upper_shelf_2_1_2",
             "elementIndex": 105,
             "posBefore": [
@@ -34873,82 +34458,6 @@
                 1129,
                 331,
                 18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.055999994277954,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                1.056999921798706,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [
-                1022,
-                863,
-                3
-            ],
-            "dimsAfter": [
-                1024,
-                863,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.056999921798706,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                1.0559998750686646,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [
-                1024,
-                863,
-                3
-            ],
-            "dimsAfter": [
-                1022,
-                863,
-                3
             ],
             "children": []
         },
@@ -35709,44 +35218,6 @@
                 1022,
                 332,
                 18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.0559998750686646,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                0.936499834060669,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [
-                1022,
-                863,
-                3
-            ],
-            "dimsAfter": [
-                783,
-                863,
-                3
             ],
             "children": []
         },
@@ -39299,36 +38770,6 @@
             "children": []
         },
         {
-            "type": "move",
-            "description": "Move DVP_HDF_1_1",
-            "elementIndex": 113,
-            "posBefore": [
-                1.0364998579025269,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                -0.05840182304382324,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
             "type": "resize",
             "description": "Resize Leg_A3_A4",
             "elementIndex": 65,
@@ -39412,7 +38853,7 @@
         {
             "type": "move",
             "description": "Move Leg_A12_back",
-            "elementIndex": 114,
+            "elementIndex": 112,
             "posBefore": [
                 1.315000057220459,
                 0.05000000074505806,
@@ -39442,7 +38883,7 @@
         {
             "type": "resize",
             "description": "Resize Leg_A12_back",
-            "elementIndex": 114,
+            "elementIndex": 112,
             "posBefore": [
                 1.315000057220459,
                 0.05000000074505806,
@@ -39480,7 +38921,7 @@
         {
             "type": "resize",
             "description": "Resize Leg_A12_back",
-            "elementIndex": 114,
+            "elementIndex": 112,
             "posBefore": [
                 1.315000057220459,
                 0.05000000074505806,
@@ -39518,7 +38959,7 @@
         {
             "type": "resize",
             "description": "Resize Leg_A12_back",
-            "elementIndex": 114,
+            "elementIndex": 112,
             "posBefore": [
                 1.315000057220459,
                 0.05000000074505806,
@@ -39556,7 +38997,7 @@
         {
             "type": "move",
             "description": "Move Leg_B3_B4",
-            "elementIndex": 120,
+            "elementIndex": 118,
             "posBefore": [
                 -0.17299999296665193,
                 0.05000000074505806,
@@ -39586,7 +39027,7 @@
         {
             "type": "move",
             "description": "Move Leg_B3_B4",
-            "elementIndex": 120,
+            "elementIndex": 118,
             "posBefore": [
                 -0.21599997580051423,
                 0.05000000074505806,
@@ -39616,7 +39057,7 @@
         {
             "type": "move",
             "description": "Move Leg_B2_B3",
-            "elementIndex": 119,
+            "elementIndex": 117,
             "posBefore": [
                 0.4359999895095825,
                 0.05000000074505806,
@@ -39646,7 +39087,7 @@
         {
             "type": "move",
             "description": "Move Leg_B4_B5",
-            "elementIndex": 121,
+            "elementIndex": 119,
             "posBefore": [
                 -0.7549999952316284,
                 0.05000000074505806,
@@ -39676,7 +39117,7 @@
         {
             "type": "move",
             "description": "Move Leg_B2_center",
-            "elementIndex": 118,
+            "elementIndex": 116,
             "posBefore": [
                 0.7269999980926514,
                 0.05000000074505806,
@@ -39706,7 +39147,7 @@
         {
             "type": "move",
             "description": "Move Leg_A4_front",
-            "elementIndex": 116,
+            "elementIndex": 114,
             "posBefore": [
                 1.315000057220459,
                 0.05000000074505806,
@@ -39728,96 +39169,6 @@
                 0.0,
                 0.0,
                 1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                0.936500072479248,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                1.0550000667572022,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.0550000667572022,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                0.9960740804672241,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                0.9960740804672241,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                1.0550000667572022,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
             ],
             "dimsBefore": [],
             "dimsAfter": [],
@@ -39878,66 +39229,6 @@
                 0.7071068286895752,
                 -3.090862321641907e-8,
                 -3.090862321641907e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                1.0550000667572022,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                0.9902268648147583,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF_1",
-            "elementIndex": 111,
-            "posBefore": [
-                0.9902268648147583,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "posAfter": [
-                0.9872632026672363,
-                1.8100001811981202,
-                -3.6024999618530275
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
             ],
             "dimsBefore": [],
             "dimsAfter": [],
@@ -41806,6 +41097,852 @@
             "dimsBefore": [],
             "dimsAfter": [],
             "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2_1_2",
+            "elementIndex": 105,
+            "posBefore": [
+                1.5760000944137574,
+                1.9820903539657593,
+                -3.454000234603882
+            ],
+            "posAfter": [
+                1.5760000944137574,
+                1.6715002059936524,
+                -3.454000234603882
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_shelf_2_1_2",
+            "elementIndex": 105,
+            "posBefore": [
+                1.5760000944137574,
+                1.6715002059936524,
+                -3.454000234603882
+            ],
+            "posAfter": [
+                1.5760000944137574,
+                1.8100001811981202,
+                -3.454000234603882
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "dimsBefore": [
+                623,
+                331,
+                18
+            ],
+            "dimsAfter": [
+                900,
+                331,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B12_upper_top",
+            "elementIndex": 49,
+            "posBefore": [
+                1.055999994277954,
+                2.251000165939331,
+                -3.454000234603882
+            ],
+            "posAfter": [
+                1.055999994277954,
+                2.251000165939331,
+                -3.454000234603882
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1022,
+                332,
+                18
+            ],
+            "dimsAfter": [
+                1022,
+                332,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                2.63700008392334,
+                0.20000000298023225,
+                -2.9900002479553224
+            ],
+            "posAfter": [
+                0.999000072479248,
+                0.20000000298023225,
+                -3.8980002403259279
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.999000072479248,
+                0.20000000298023225,
+                -3.8980002403259279
+            ],
+            "posAfter": [
+                0.999000072479248,
+                1.865538239479065,
+                -3.8980002403259279
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.999000072479248,
+                1.865538239479065,
+                -3.8980002403259279
+            ],
+            "posAfter": [
+                0.999000072479248,
+                1.865538239479065,
+                -3.7214999198913576
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.999000072479248,
+                1.865538239479065,
+                -3.7214999198913576
+            ],
+            "posAfter": [
+                0.999000072479248,
+                1.8660000562667847,
+                -3.7210001945495607
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                3
+            ],
+            "dimsAfter": [
+                600,
+                400,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.999000072479248,
+                1.8660000562667847,
+                -3.7210001945495607
+            ],
+            "posAfter": [
+                0.999000072479248,
+                1.9139503240585328,
+                -3.7210001945495607
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.999000072479248,
+                1.9139503240585328,
+                -3.7210001945495607
+            ],
+            "posAfter": [
+                0.999000072479248,
+                1.9139503240585328,
+                -3.4597597122192385
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.999000072479248,
+                1.9139503240585328,
+                -3.4597597122192385
+            ],
+            "posAfter": [
+                0.999000072479248,
+                1.9139503240585328,
+                -3.517500162124634
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.999000072479248,
+                1.9139503240585328,
+                -3.517500162124634
+            ],
+            "posAfter": [
+                0.999000072479248,
+                1.9774503707885743,
+                -3.517500162124634
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                400,
+                3
+            ],
+            "dimsAfter": [
+                600,
+                527,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.999000072479248,
+                1.9774503707885743,
+                -3.517500162124634
+            ],
+            "posAfter": [
+                0.9225000739097595,
+                1.9774503707885743,
+                -3.517500162124634
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                600,
+                527,
+                3
+            ],
+            "dimsAfter": [
+                753,
+                527,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.9225000739097595,
+                1.9774503707885743,
+                -3.517500162124634
+            ],
+            "posAfter": [
+                0.9225000739097595,
+                1.9774503707885743,
+                -3.6015005111694338
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.9225000739097595,
+                1.9774503707885743,
+                -3.6015005111694338
+            ],
+            "posAfter": [
+                0.9225000739097595,
+                1.9845000505447388,
+                -3.6015005111694338
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.9225000739097595,
+                1.9845000505447388,
+                -3.6015005111694338
+            ],
+            "posAfter": [
+                0.9154999852180481,
+                1.9845000505447388,
+                -3.6015005111694338
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B3_upper_side_L",
+            "elementIndex": 39,
+            "posBefore": [
+                0.5360000133514404,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "posAfter": [
+                0.5360000133514404,
+                1.809999942779541,
+                -3.3808822631835939
+            ],
+            "rotBefore": [
+                0.0,
+                -0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                -0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B3_upper_side_L",
+            "elementIndex": 39,
+            "posBefore": [
+                0.5360000133514404,
+                1.809999942779541,
+                -3.3808822631835939
+            ],
+            "posAfter": [
+                0.5360000133514404,
+                1.809999942779541,
+                -3.4539999961853029
+            ],
+            "rotBefore": [
+                0.0,
+                -0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                -0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                0.9154999852180481,
+                1.9845000505447388,
+                -3.6015005111694338
+            ],
+            "posAfter": [
+                1.055999994277954,
+                1.9845000505447388,
+                -3.6015005111694338
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                753,
+                527,
+                3
+            ],
+            "dimsAfter": [
+                1034,
+                527,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                1.055999994277954,
+                1.9845000505447388,
+                -3.6015005111694338
+            ],
+            "posAfter": [
+                1.055999994277954,
+                1.8100000619888306,
+                -3.6015005111694338
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                1034,
+                527,
+                3
+            ],
+            "dimsAfter": [
+                1034,
+                876,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B12_upper_top",
+            "elementIndex": 49,
+            "posBefore": [
+                1.055999994277954,
+                2.251000165939331,
+                -3.454000234603882
+            ],
+            "posAfter": [
+                1.055999994277954,
+                2.251000165939331,
+                -3.454000234603882
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1022,
+                332,
+                18
+            ],
+            "dimsAfter": [
+                1022,
+                332,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B12_DVP_HDF",
+            "elementIndex": 122,
+            "posBefore": [
+                1.055999994277954,
+                1.8100000619888306,
+                -3.6015005111694338
+            ],
+            "posAfter": [
+                1.055999994277954,
+                1.8100000619888306,
+                -3.6020002365112306
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                1034,
+                876,
+                3
+            ],
+            "dimsAfter": [
+                1034,
+                876,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_A_top",
+            "elementIndex": 36,
+            "posBefore": [
+                1.4190000295639039,
+                2.251000165939331,
+                -2.56600022315979
+            ],
+            "posAfter": [
+                1.4190000295639039,
+                2.251000165939331,
+                -2.56600022315979
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                332,
+                1372,
+                18
+            ],
+            "dimsAfter": [
+                332,
+                1372,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_DVP_HDF",
+            "elementIndex": 103,
+            "posBefore": [
+                1.5665000677108765,
+                1.8100001811981202,
+                -2.56600022315979
+            ],
+            "posAfter": [
+                1.5660001039505005,
+                1.8100000619888306,
+                -2.56600022315979
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1383,
+                875,
+                3
+            ],
+            "dimsAfter": [
+                1383,
+                875,
+                3
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_DVP_HDF",
+            "elementIndex": 103,
+            "posBefore": [
+                1.5660001039505005,
+                1.8100000619888306,
+                -2.56600022315979
+            ],
+            "posAfter": [
+                1.5665000677108765,
+                1.8100000619888306,
+                -2.56600022315979
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1383,
+                875,
+                3
+            ],
+            "dimsAfter": [
+                1383,
+                875,
+                4
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_DVP_HDF",
+            "elementIndex": 103,
+            "posBefore": [
+                1.5665000677108765,
+                1.8100000619888306,
+                -2.56600022315979
+            ],
+            "posAfter": [
+                1.567000150680542,
+                1.8100000619888306,
+                -2.56600022315979
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
         }
     ],
     "redoHistory": [],
@@ -41817,11 +41954,18 @@
         "blockOnViolation": false,
         "autoSave": true,
         "autoSaveInterval": 60,
-        "spatialGrid": true,
+        "spatialGrid": false,
         "windowedMode": true,
         "edgeOutline": true,
         "wallsEnabled": true,
         "lowerNearWalls": true,
-        "cameraPanFree": true
+        "cameraPanFree": true,
+        "photoQuality": 2,
+        "photoShadows": true,
+        "photoAntiAliasing": true,
+        "photoAmbientOcclusion": true,
+        "photoBloom": true,
+        "photoVignette": true,
+        "photoCeiling": true
     }
 }

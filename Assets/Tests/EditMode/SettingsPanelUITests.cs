@@ -71,9 +71,9 @@ public class SettingsPanelUITests
     // ── Tabs ────────────────────────────────────────────────
 
     [Test]
-    public void TwoTabButtons_Exist()
+    public void ThreeTabButtons_Exist()
     {
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 3; i++)
         {
             var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
             Assert.IsNotNull(tab, $"Tab_{i} should exist");
@@ -83,8 +83,7 @@ public class SettingsPanelUITests
     [Test]
     public void TabButtons_HaveCorrectLabels()
     {
-        // Пустая вкладка «Графика» скрыта до появления содержимого.
-        string[] expected = { "Проект", "О программе" };
+        string[] expected = { "Проект", "Фото режим", "О программе" };
         for (int i = 0; i < expected.Length; i++)
         {
             var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
@@ -95,10 +94,10 @@ public class SettingsPanelUITests
     }
 
     [Test]
-    public void TabPages_Exist_NoEmptyGraphicsTab()
+    public void TabPages_Exist()
     {
         Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Project"), "Tab_Project page should exist");
-        Assert.IsNull(_canvas!.transform.Find("SettingsPanel/Tab_Graphics"), "empty Graphics tab must not exist");
+        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Photo"), "Tab_Photo page should exist");
         Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_About"), "Tab_About page should exist");
     }
 
@@ -106,15 +105,18 @@ public class SettingsPanelUITests
     public void SwitchTab_OnlyActivePageVisible()
     {
         var project = _canvas!.transform.Find("SettingsPanel/Tab_Project").gameObject;
+        var photo = _canvas!.transform.Find("SettingsPanel/Tab_Photo").gameObject;
         var about = _canvas!.transform.Find("SettingsPanel/Tab_About").gameObject;
 
         Assert.IsTrue(project.activeSelf, "Project tab should be active by default");
+        Assert.IsFalse(photo.activeSelf, "Photo tab should be hidden by default");
         Assert.IsFalse(about.activeSelf, "About tab should be hidden by default");
 
-        var tab2Btn = _canvas!.transform.Find("SettingsPanel/Tab_1").GetComponent<Button>();
-        tab2Btn.onClick.Invoke();
+        // Tab_1 → «Фото режим», Tab_2 → «О программе».
+        _canvas!.transform.Find("SettingsPanel/Tab_2").GetComponent<Button>().onClick.Invoke();
         Assert.IsFalse(project.activeSelf, "Project should hide after switching to About");
         Assert.IsTrue(about.activeSelf, "About should show after click");
+        Assert.IsFalse(photo.activeSelf, "Photo should stay hidden");
     }
 
     [Test]

@@ -9,12 +9,17 @@
     {
       "type": "Button",
       "text": "Проект",
-      "position": [-120, 246]
+      "position": [-160, 246]
+    },
+    {
+      "type": "Button",
+      "text": "Фото режим",
+      "position": [0, 246]
     },
     {
       "type": "Button",
       "text": "О программе",
-      "position": [120, 246]
+      "position": [160, 246]
     },
     {
       "type": "Label",

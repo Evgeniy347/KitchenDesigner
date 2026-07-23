@@ -363,6 +363,7 @@ public class SnapshotTests
         gs.AutoSave = true; gs.AutoSaveInterval = 60;
         gs.SpatialGrid = false; gs.WindowedMode = true;
         gs.EdgeOutline = true; gs.WallsEnabled = true; gs.LowerNearWalls = true;
+        SetPhotoDefaults(gs);
 
         var json = gs.GetSettingsJson();
         Snapshot.Match(json, "settings_default");
@@ -377,9 +378,21 @@ public class SnapshotTests
         gs.AutoSave = true; gs.AutoSaveInterval = 120;
         gs.SpatialGrid = true; gs.WindowedMode = false;
         gs.EdgeOutline = true; gs.WallsEnabled = false; gs.LowerNearWalls = true;
+        SetPhotoDefaults(gs);
 
         var json = gs.GetSettingsJson();
         Snapshot.Match(json, "settings_custom");
+    }
+
+    private static void SetPhotoDefaults(KitchenSettings gs)
+    {
+        gs.PhotoQuality = PhotoQualityPreset.High;
+        gs.PhotoShadows = true;
+        gs.PhotoAntiAliasing = true;
+        gs.PhotoAmbientOcclusion = true;
+        gs.PhotoBloom = true;
+        gs.PhotoVignette = true;
+        gs.PhotoCeiling = true;
     }
 
     // ── Full ProjectData snapshot (elements + groups + camera + baseplate) ─

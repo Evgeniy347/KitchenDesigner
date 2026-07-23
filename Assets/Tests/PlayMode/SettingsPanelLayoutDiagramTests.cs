@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
+using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 using KitchenDesigner.Tests;
 
@@ -21,6 +22,7 @@ public class SettingsPanelLayoutDiagramTests
     private GameObject? _canvasGo;
     private GameObject? _camGo;
     private GameObject? _eventSystem;
+    private KitchenSettingsData? _settingsBackup;
 
     [UnityTearDown]
     public IEnumerator TearDown()
@@ -28,12 +30,24 @@ public class SettingsPanelLayoutDiagramTests
         if (_canvasGo != null) Object.Destroy(_canvasGo);
         if (_camGo != null) Object.Destroy(_camGo);
         if (_eventSystem != null) Object.Destroy(_eventSystem);
+
+        // Снапшот сериализует ГЛОБАЛЬНЫЕ настройки — возвращаем прежнее состояние,
+        // чтобы тест не зависел от порядка и не заражал соседей.
+        var s = KitchenSettings.Instance;
+        if (s != null && _settingsBackup != null) s.ApplyFrom(_settingsBackup);
+        _settingsBackup = null;
         yield return null;
     }
 
     [UnityTest]
     public IEnumerator GenerateLayoutDiagram_SavesPng()
     {
+        // Детерминизм: строим панель на дефолтных настройках независимо от того,
+        // что оставили предыдущие тесты.
+        var settings = KitchenSettings.Instance;
+        _settingsBackup = settings != null ? settings.ToData() : null;
+        if (settings != null) settings.ResetToDefaults();
+
         // Canvas в ScreenSpaceCamera — рендерится в RenderTexture даже в batchMode.
         _canvasGo = new GameObject("TestCanvas");
         var canvas = _canvasGo.AddComponent<Canvas>();
