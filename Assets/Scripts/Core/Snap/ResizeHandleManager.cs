@@ -216,10 +216,14 @@ namespace KitchenDesigner.Core
 
             ResizeMath.Compute(_dimsBefore, _axisIndex, _normal, _faceCenter0, _uAxis, _vAxis, _faceSize,
                 _centerStart, _sizeStartUnits, rawDelta, PartRegistry.GetAll(), _target!,
-                snapEnabled, threshold, out Vector3Int newDims, out Vector3 newCenter, out _);
+                snapEnabled, threshold, out Vector3Int newDims, out Vector3 _, out _);
 
             _target!.DimensionsMM = newDims;
-            _target.transform.position = newCenter;
+            // Центр — от ПРИНЯТОГО размера: деталь могла зажать запрошенный
+            // (нога держит высоту в 80..130 мм и сечение 50×50), и центр под
+            // невозможный размер отрывал её от опоры.
+            _target.transform.position = ResizeMath.CenterForAppliedDims(
+                _centerStart, _normal, _sizeStartUnits, _target.DimensionsMM, _axisIndex);
 
             PositionHandles();
             if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
@@ -318,6 +322,10 @@ namespace KitchenDesigner.Core
             // У ящика GTV высота и глубина фиксированы типом и длиной —
             // растягивать можно только ширину (ось X, грани 0 и 1).
             bool widthOnly = Mode == HandleMode.Resize && _target is DrawerElement;
+            // У опоры сечение фиксировано (50×50) — тянуть можно только высоту
+            // (ось Y, грани 2 и 3). Ручки X/Z ничего не меняли: DimensionsMM
+            // возвращал прежний размер, и деталь просто не реагировала на драг.
+            bool heightOnly = Mode == HandleMode.Resize && _target is PillarElement;
             // У окна ось Z (глубина) бессмысленна: двигать поперёк стены нельзя
             // (снап вернёт), а толщину диктует стена — ручки Z не создаём.
             bool skipDepth = _target is WindowElement || _target is DoorElement;
@@ -325,6 +333,7 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < faces.Length; i++)
             {
                 if (widthOnly && i / 2 != 0) continue;
+                if (heightOnly && i / 2 != 1) continue;
                 if (skipDepth && i / 2 == 2) continue;
                 var go = new GameObject($"ResizeHandle_{i}");
                 var marker = go.AddComponent<ResizeHandle>();

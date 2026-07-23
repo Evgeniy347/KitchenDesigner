@@ -211,7 +211,15 @@ public class SnapMutationTests
         if (_warnings.Count > 0)
         {
             report.AppendLine($"Warnings ({_warnings.Count}):");
-            foreach (var w in _warnings.Take(20)) report.AppendLine($"  {w}");
+            foreach (var g in _warnings
+                         .GroupBy(w => w.Split(':')[0])
+                         .OrderByDescending(g => g.Count()))
+                report.AppendLine($"  {g.Key}: {g.Count()}");
+            report.AppendLine("Sample:");
+            foreach (var g in _warnings.GroupBy(w => w.Split(':')[0]))
+                foreach (var w in g.Take(3)) report.AppendLine($"  {w}");
+
+            DumpWarnings();
         }
 
         TestContext.WriteLine(report.ToString());
@@ -301,7 +309,7 @@ public class SnapMutationTests
         ResizeMath.Compute(savedDims, axis, f.normal, f.center, f.rightAxis, f.upAxis, f.size,
             savedPos, sizeStartUnits, rawDelta, others, moved,
             snapEnabled: true, thresholdMm * AppConstants.MM_TO_UNITS,
-            out Vector3Int newDims, out Vector3 newCenter, out bool snapped);
+            out Vector3Int newDims, out Vector3 _, out bool snapped);
 
         moved.DimensionsMM = newDims;
         var actualDims = moved.DimensionsMM;
@@ -312,7 +320,10 @@ public class SnapMutationTests
             return;
         }
 
-        moved.transform.position = newCenter;
+        // Деталь вправе зажать размер (нога держит высоту 80..130 мм) — центр
+        // считаем от ПРИНЯТОГО размера, как это делает ResizeHandleManager.
+        moved.transform.position = ResizeMath.CenterForAppliedDims(
+            savedPos, f.normal, sizeStartUnits, actualDims, axis);
 
         var label = $"{moved.PartName} {phase} {FaceLabels[faceIndex]} δ={deltaMm}мм";
         foreach (var other in others)
@@ -374,11 +385,21 @@ public class SnapMutationTests
             ResizeMath.Compute(savedDims, axis, f.normal, f.center, f.rightAxis, f.upAxis, f.size,
                 savedPos, sizeStartUnits, rawDelta, others, moved,
                 snapEnabled: true, thresholdMm * AppConstants.MM_TO_UNITS,
-                out Vector3Int newDims, out Vector3 newCenter, out bool snapped);
+                out Vector3Int newDims, out Vector3 _, out bool snapped);
 
             moved.DimensionsMM = newDims;
-            if (moved.DimensionsMM == savedDims) continue; // деталь отказалась менять размер
-            moved.transform.position = newCenter;
+            var appliedDims = moved.DimensionsMM;
+            if (appliedDims == savedDims) continue; // деталь отказалась менять размер
+
+            // Центр — от ПРИНЯТОГО размера (как в ResizeHandleManager).
+            moved.transform.position = ResizeMath.CenterForAppliedDims(
+                savedPos, f.normal, sizeStartUnits, appliedDims, axis);
+
+            // Размер зажат самой деталью (нога: высота 80..130 мм, сечение 50×50) —
+            // грань встала не туда, куда метил снэп. Проверять прилипание здесь
+            // нечего: это ограничение типа детали, а не работа SnapSystem.
+            if (ResizeMath.DimAlong(appliedDims, axis) != ResizeMath.DimAlong(newDims, axis))
+                continue;
 
             if (snapped)
             {
@@ -444,24 +465,28 @@ public class SnapMutationTests
             if (snapTarget != null && !IsPanel(moved) && SnapSystem.ElementsIntersect(moved, snapTarget))
                 AddError($"INTERSECT-AFTER-SNAP: {moved.PartName} SWEEP-MOVE {dirLabel} @ {mm}мм → {snap.targetName}");
 
-            // Конкуренция: сравниваем только с кандидатами, которые не являются
-            // уже существующим контактом (gap ≈ 0). TrySnap правильно сохраняет
-            // текущие контакты и ищет НОВОЕ прилипание.
+            // Снэп «на месте» — это подтверждение уже существующего контакта, а не
+            // выбор между кандидатами: конкурировать не за что. Раньше такие шаги
+            // давали десятки тысяч ложных MOVE-SNAP-OUTSIDE-DIAG (Diagnose не
+            // показывает контакты с нулевым зазором среди активных кандидатов).
+            if (Vector3.Distance(snap.position, testPos) <= Tolerance.EpsilonUnits) continue;
+
+            // Конкуренция — это спор ЗА ОДНУ ОСЬ: какой из встречных граней вдоль
+            // нормали отдать деталь. Кандидаты с других осей не конкуренты, а
+            // дополнение — TrySnap добирает их отдельными проходами.
             var diag = SnapSystem.Diagnose(moved, others, testPos, maxNeighbors: 50);
-            var activeCandidates = diag.neighbors.Where(n => n.wouldSnap && n.gapMM > 0.5f).ToList();
-            if (activeCandidates.Count > 1)
+            var chosen = diag.neighbors.FirstOrDefault(n => n.name == snap.targetName && n.wouldSnap);
+            if (chosen == null) continue;
+
+            int axis = chosen.movedFaceIndex / 2;
+            var rivals = diag.neighbors
+                .Where(n => n.wouldSnap && n.gapMM > 0.5f && n.movedFaceIndex / 2 == axis)
+                .ToList();
+            if (rivals.Count > 1)
             {
-                var bestByGap = activeCandidates.OrderBy(n => n.gapMM).First();
-                var chosen = activeCandidates.FirstOrDefault(n => n.name == snap.targetName);
-                if (chosen == null)
+                var bestByGap = rivals.OrderBy(n => n.gapMM).First();
+                if (chosen.gapMM > bestByGap.gapMM + 5.0f)
                 {
-                    _warnings.Add($"MOVE-SNAP-OUTSIDE-DIAG: {moved.PartName} {dirLabel} @ {mm}мм " +
-                        $"TrySnap выбрал {snap.targetName}, не среди wouldSnap кандидатов Diagnose");
-                }
-                else if (chosen.gapMM > bestByGap.gapMM + 5.0f)
-                {
-                    // Грубая ошибка конкуренции: выбран кандидат заметно дальше
-                    // ближайшего. Фиксируем, но не падаем сразу.
                     _warnings.Add($"MOVE-COMPETITION: {moved.PartName} {dirLabel} @ {mm}мм " +
                         $"выбран {snap.targetName} gap={chosen.gapMM:F1}мм, " +
                         $"но ближе {bestByGap.name} gap={bestByGap.gapMM:F1}мм");
@@ -535,6 +560,15 @@ public class SnapMutationTests
     private static bool HasNeighborWithin(KitchenElement moved, List<KitchenElement> others, float distanceMm)
     {
         return GetNeighborsWithin(moved, others, distanceMm).Count > 0;
+    }
+
+    /// <summary>Полный список предупреждений — в файл рядом с результатами тестов.
+    /// В консоль печатать бессмысленно: их десятки тысяч.</summary>
+    private void DumpWarnings()
+    {
+        var dir = Path.Combine(Application.dataPath, "../test-results");
+        Directory.CreateDirectory(dir);
+        File.WriteAllLines(Path.Combine(dir, "snap-warnings.log"), _warnings);
     }
 
     private void AddError(string message)

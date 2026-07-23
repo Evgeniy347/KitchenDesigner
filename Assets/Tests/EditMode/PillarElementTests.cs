@@ -605,5 +605,71 @@ public class PillarElementTests
 			"pillar bottom at floor");
 	}
 
+	/// <summary>Порядок граней — общий контракт: индекс/2 = ось (0=X,1=Y,2=Z),
+	/// чётный индекс = «плюс». На этом стоит вся ресайз-ручка (_axisIndex =
+	/// faceIndex/2). Опора отдавала грани в порядке Y,X,Z — и ручка верхней
+	/// грани растягивала ногу по ширине вместо высоты.</summary>
+	[Test]
+	public void Pillar_GetFaces_AxisOrderMatchesBaseContract()
+	{
+		var go = MakePillar(PillarElement.MidHeightMM_Default, Vector3.zero);
+		var pillar = go.GetComponent<PillarElement>();
+		Assert.IsNotNull(pillar);
+
+		var faces = pillar.GetFaces();
+		Assert.AreEqual(6, faces.Length);
+
+		var expected = new[]
+		{
+			Vector3.right, Vector3.left,
+			Vector3.up, Vector3.down,
+			Vector3.forward, Vector3.back,
+		};
+		for (int i = 0; i < 6; i++)
+			Assert.AreEqual(1f, Vector3.Dot(faces[i].normal.normalized, expected[i]), Tol,
+				$"грань {i} должна смотреть в {expected[i]}");
+
+		// Та же деталь, но обычная коробка — грани обязаны идти в том же порядке.
+		var board = MakeBoard(Vector3.zero, new Vector3Int(50, 105, 50)).GetComponent<KitchenElement>();
+		var boardFaces = board.GetFaces();
+		for (int i = 0; i < 6; i++)
+			Assert.AreEqual(1f, Vector3.Dot(faces[i].normal.normalized, boardFaces[i].normal.normalized), Tol,
+				$"порядок грани {i} расходится с базовым KitchenElement");
+	}
+
+	/// <summary>Ресайз ноги за верхнюю грань: высота зажимается типом детали
+	/// (80..130 мм), и центр обязан считаться от ПРИНЯТОГО размера — иначе низ
+	/// ноги отрывается от пола на половину отброшенной дельты.</summary>
+	[Test]
+	public void Pillar_ResizeBeyondMaxHeight_BottomStaysOnFloor()
+	{
+		int midH = 75;
+		int totalH = PillarElement.TopHeightMM + midH + PillarElement.BottomHeightMM; // 105
+		float halfH = totalH * 0.5f * AppConstants.MM_TO_UNITS;
+		var go = MakePillar(midH, new Vector3(0, halfH, 0));
+		var pillar = go.GetComponent<PillarElement>();
+
+		float bottomBefore = AabbCenter(pillar).y - AabbExtent(pillar).y * 0.5f;
+		Assert.AreEqual(0f, bottomBefore, Tol, "низ ноги на полу");
+
+		// Тянем верхнюю грань (+Y) вверх на 200 мм — деталь примет только 130 мм.
+		int axis = 1;
+		float sizeStart = totalH * AppConstants.MM_TO_UNITS;
+		var topFace = pillar.GetFaces()[2];
+		ResizeMath.Compute(pillar.DimensionsMM, axis, topFace.normal, topFace.center,
+			topFace.rightAxis, topFace.upAxis, topFace.size,
+			pillar.transform.position, sizeStart, 200f * AppConstants.MM_TO_UNITS,
+			new List<KitchenElement>(), pillar, snapEnabled: false, 0f,
+			out var newDims, out _, out _);
+
+		pillar.DimensionsMM = newDims;
+		pillar.transform.position = ResizeMath.CenterForAppliedDims(
+			new Vector3(0, halfH, 0), topFace.normal, sizeStart, pillar.DimensionsMM, axis);
+
+		Assert.AreEqual(130, pillar.DimensionsMM.y, "высота зажата максимумом");
+		float bottomAfter = AabbCenter(pillar).y - AabbExtent(pillar).y * 0.5f;
+		Assert.AreEqual(0f, bottomAfter, Tol, "низ ноги остался на полу после зажатого ресайза");
+	}
+
 	private const float Tol = 0.001f;
 }
