@@ -171,17 +171,9 @@ public class DrawerAnimationGifTests
 
         Time.captureFramerate = 0;
 
-        // ── 6. Сохранить PNG-кадры ─────────────────────────────────────────
-        string outDir = Path.Combine(Application.dataPath, "..", "docs");
-        string pngDir = Path.Combine(outDir, "drawer_animation-png");
-        Directory.CreateDirectory(pngDir);
-        for (int i = 0; i < frames.Count; i++)
-        {
-            File.WriteAllBytes(Path.Combine(pngDir, $"frame_{i:D3}.png"), frames[i].EncodeToPNG());
-        }
-        Debug.Log($"[GIF] Saved {frames.Count} PNG frames to {pngDir}");
+        string outDir = Path.Combine(Application.dataPath, "..", "docs"); 
 
-        // ── 7. Сохранить GIF ──────────────────────────────────────────────
+        // ── 6. Сохранить GIF ──────────────────────────────────────────────
         Directory.CreateDirectory(outDir);
         string outPath = Path.Combine(outDir, "drawer_animation.gif");
 
