@@ -58,18 +58,51 @@ public class SnapPostEdgeDetentTests : SnapTestBase
             "верх стойки встаёт заподлицо с низом панели");
     }
 
-    /// <summary>Тот же детент ловится и издалека, и с другой стороны — снэп по
-    /// вертикали работает во всём диапазоне порога, а не только вплотную.</summary>
+    /// <summary>Y центра стойки, при котором её верх заподлицо с ВЕРХОМ панели
+    /// (дальняя кромка, 2260 мм). Второй детент той же панели.</summary>
+    private const float FlushWithPanelTop = 1.8105f;
+
+    /// <summary>Детент ловится издалека, а не только вплотную. Смещения взяты в
+    /// пределах, где ближайшая плоскость — именно низ панели (середина между
+    /// детентами — +9 мм).</summary>
     [Test]
     public void Post_SnapsToSameDetent_FromBothSidesAcrossThreshold()
     {
-        foreach (float offsetMm in new[] { -30f, -20f, -5f, 5f, 20f, 30f })
+        foreach (float offsetMm in new[] { -30f, -20f, -5f, 5f, 8f })
         {
             var r = SnapAt(FlushUnderPanel + offsetMm * MM);
             Assert.IsTrue(r.snapped, $"смещение {offsetMm} мм: снэп обязан сработать");
             Assert.AreEqual(FlushUnderPanel, r.position.y, Tol,
                 $"смещение {offsetMm} мм: тот же детент");
         }
+    }
+
+    /// <summary>У панели ДВЕ кромки, и обе — детенты: низ (2242) и верх (2260).
+    /// Пропуск верхней кромки и был «скачет между рёбрами»: стойка, ползущая
+    /// вверх, перепрыгивала с низа панели сразу на следующую полку. Перемещение
+    /// обязано видеть обе плоскости — как их давно видит ресайз.</summary>
+    [Test]
+    public void Post_DraggedHigher_CatchesFarEdgeOfPanel()
+    {
+        var r = SnapAt(FlushWithPanelTop - 6f * MM);
+
+        Assert.IsTrue(r.snapped, "верхняя кромка панели — тоже детент");
+        Assert.AreEqual(FlushWithPanelTop, r.position.y, Tol,
+            "верх стойки встаёт заподлицо с верхом панели");
+    }
+
+    /// <summary>Между детентами деталь выбирает ближайший, а не перескакивает
+    /// через один: это и делает протягивание предсказуемым.</summary>
+    [Test]
+    public void Post_BetweenDetents_PicksNearestNotFarther()
+    {
+        // Чуть выше середины (+9 мм) — ближе верхняя кромка.
+        var high = SnapAt(FlushUnderPanel + 12f * MM);
+        Assert.AreEqual(FlushWithPanelTop, high.position.y, Tol, "выше середины — верхняя кромка");
+
+        // Чуть ниже середины — ближе нижняя.
+        var low = SnapAt(FlushUnderPanel + 6f * MM);
+        Assert.AreEqual(FlushUnderPanel, low.position.y, Tol, "ниже середины — нижняя кромка");
     }
 
     /// <summary>Контакт со стеной по Z при этом не теряется — добор по вертикали
