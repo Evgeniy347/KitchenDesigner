@@ -209,6 +209,16 @@ namespace KitchenDesigner.Core
             moved.transform.position = basePos;
             KitchenElement.Face[] movedFaces = FaceCache.GetFaces(moved);
 
+            // Габарит движимой детали в basePos — чтобы проверять, не загонит ли
+            // выравнивание по дальней кромке деталь В ТЕЛО соседа (см. ниже).
+            Vector3[] mVerts = moved.GetVertices();
+            Vector3 mMin = mVerts[0], mMax = mVerts[0];
+            for (int k = 1; k < 8; k++)
+            {
+                mMin = Vector3.Min(mMin, mVerts[k]);
+                mMax = Vector3.Max(mMax, mVerts[k]);
+            }
+
             foreach (var other in others)
             {
                 if (other == moved || other == null) continue;
@@ -258,26 +268,24 @@ namespace KitchenDesigner.Core
                         // и снэп возвращал бы её обратно на поверхность детали.
                         if (!isGroove && SeatSupersedesFace(movedFaces[i], of, seatFaces)) continue;
 
-                        // Контакт возможен только между гранями, смотрящими навстречу
-                        // друг другу (нормали противоположны, dot≈-1). Со-направленные
-                        // грани (dot≈+1) не образуют стык — иначе деталь липла бы «не с той стороны».
+                        // Работают только параллельные грани. Встречные (dot≈-1) дают
+                        // стык, со-направленные (dot≈+1) — выравнивание по дальней
+                        // кромке; разбор ниже.
                         float dot = Vector3.Dot(movedFaces[i].normal, of.normal);
                         if (!Tolerance.IsParallel(dot)) continue;
 
-                        // Со-направленные грани стыка не образуют, но если они
-                        // КОМПЛАНАРНЫ — деталь уже выровнена с соседом по этой оси
-                        // (например, низ лежащей доски вровень с низом стоящей).
-                        // Такую выровненность добор рвать не вправе: иначе снэп к
-                        // стене по Z «заодно» ронял бы деталь на толщину плиты по Y.
-                        if (dot > 0)
-                        {
-                            if (alignedNormals != null &&
-                                Mathf.Abs(Vector3.Dot(of.center - movedFaces[i].center, movedFaces[i].normal))
-                                    <= ZeroShiftEpsilon &&
-                                FacesOverlap(movedFaces[i], of, out _, out _))
-                                alignedNormals.Add(movedFaces[i].normal);
-                            continue;
-                        }
+                        // Со-направленная грань стыка не образует, но остаётся
+                        // ВЫРАВНИВАЮЩЕЙ плоскостью: деталь можно поставить заподлицо
+                        // с ДАЛЬНЕЙ кромкой соседа. У панели толщиной 18 мм это второй
+                        // детент рядом с первым, и без него стойка, ползущая вверх мимо
+                        // панели, перескакивала с «низ панели» сразу на следующую полку,
+                        // пропуская «верх панели». Ресайз обе плоскости видит давно
+                        // (ResizeSnap), перемещение — только встречные; расхождение и
+                        // ощущалось как «скачет между рёбрами».
+                        bool coDirectional = dot > 0;
+
+                        // Дно паза — посадочное место, оно только встречное.
+                        if (isGroove && coDirectional) continue;
 
                         var mf = movedFaces[i];
 
@@ -291,6 +299,60 @@ namespace KitchenDesigner.Core
 
                         // Сдвиг вдоль нормали: плоскости становятся заподлицо.
                         float planeShift = Vector3.Dot(offset, mf.normal);
+
+                        if (coDirectional)
+                        {
+                            // Уже компланарны — деталь выровнена по этой оси. Добор такую
+                            // выровненность рвать не вправе (низ лежащей доски вровень с
+                            // низом стоящей): помечаем ось и кандидата не создаём.
+                            if (Mathf.Abs(planeShift) <= ZeroShiftEpsilon)
+                            {
+                                alignedNormals?.Add(mf.normal);
+                                continue;
+                            }
+
+                            // Выравнивание по дальней кромке — чистый сдвиг вдоль нормали,
+                            // без довеска du/dv: контакта тут нет, «подровнять заодно
+                            // кромку» не к чему.
+                            Vector3 alignShift = planeShift * mf.normal;
+
+                            // ...но только если деталь при этом не влезает В СОСЕДА.
+                            // Заподлицо с дальней гранью встают детали РЯДОМ с соседом
+                            // (стойка у кромки полки). Если же деталь перекрывает соседа
+                            // по остальным осям, «выравнивание» загонит её внутрь: низ
+                            // короба так уезжал в стену.
+                            if (Tolerance.IntervalsOverlap(mMin.x + alignShift.x, mMax.x + alignShift.x, oMinX, oMaxX) &&
+                                Tolerance.IntervalsOverlap(mMin.y + alignShift.y, mMax.y + alignShift.y, oMinY, oMaxY) &&
+                                Tolerance.IntervalsOverlap(mMin.z + alignShift.z, mMax.z + alignShift.z, oMinZ, oMaxZ))
+                                continue;
+
+                            Vector3 alignPos = basePos + alignShift;
+                            candidates.Add(new Candidate
+                            {
+                                dist = Mathf.Abs(planeShift),
+                                result = new SnapResult
+                                {
+                                    snapped = true,
+                                    position = alignPos,
+                                    targetName = other.PartName,
+                                    faceIndex = j,
+                                    snapPoint = mf.center,
+                                    targetPoint = of.center
+                                },
+                                normal = mf.normal,
+                                planeShift = planeShift,
+                                u = mf.rightAxis,
+                                v = mf.upAxis,
+                                du = 0f,
+                                dv = 0f,
+                                hasLineContact = hasLineContact,
+                                log = VerboseLog
+                                    ? $"[Snap] {moved.Describe()} → {other.Describe()} | выравнивание " +
+                                      $"по дальней кромке m{i}/o{j} сдвиг={planeShift * 1000f:F2}мм"
+                                    : null
+                            });
+                            continue;
+                        }
 
                         // Сдвиг в плоскости грани: выравнивание по ближайшей кромке/центру
                         // (а не принудительно по центру — иначе мелкая деталь центрируется).
