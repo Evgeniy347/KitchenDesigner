@@ -94,4 +94,43 @@ public class ResizeSnapTests
         var fa = PlusXFace(a);
         Assert.IsFalse(ResizeSnap.SnapDelta(fa.c, fa.n, fa.u, fa.v, fa.s, null!, a, 0.05f, out _));
     }
+
+    /// <summary>Репро из сцены: вертикальная стойка (A12_upper_shelf_2_1_2) стоит
+    /// торцом ровно у кромки горизонтальной панели (B12_upper_top) — их footprint'ы
+    /// делят РОВНО РЕБРО по X. Растягивание стойки вверх обязано ловить плоскость
+    /// панели, но перекрытие с нулевой площадью отбрасывалось, и деталь проезжала
+    /// весь диапазон без единого прилипания.</summary>
+    [Test]
+    public void SnapDelta_EdgeOnlyContact_Snaps()
+    {
+        // Панель: X[545..1567], Y[2242..2260], Z[-3620..-3288].
+        var top = Make(new Vector3(1.056f, 2.251f, -3.454f), new Vector3Int(1022, 18, 332));
+        // Стойка: X[1567..1585] — примыкает к панели ровно по x=1567.
+        var post = Make(new Vector3(1.576f, 1.818f, -3.454f), new Vector3Int(18, 883, 331));
+
+        var f = post.GetFaces()[2]; // +Y — верхняя грань стойки (y=2.2595)
+        Assert.AreEqual(1f, Vector3.Dot(f.normal, Vector3.up), 0.001f, "грань смотрит вверх");
+
+        bool snapped = ResizeSnap.SnapDelta(f.center, f.normal, f.rightAxis, f.upAxis, f.size,
+            new List<KitchenElement> { top }, post, 0.05f, out float gap);
+
+        Assert.IsTrue(snapped, "касание ровно по ребру — это контакт, прилипание обязано сработать");
+        Assert.AreEqual(-0.0175f, gap, 0.0005f, "заподлицо с низом панели (2242 мм)");
+    }
+
+    /// <summary>Контраст к предыдущему: если между footprint'ами есть настоящий
+    /// зазор в плоскости грани (детали разнесены по X), контакта нет и снэпа быть
+    /// не должно — послабление на касание не превращается в «липнет ко всему».</summary>
+    [Test]
+    public void SnapDelta_FootprintsApartInPlane_NoSnap()
+    {
+        var top = Make(new Vector3(1.056f, 2.251f, -3.454f), new Vector3Int(1022, 18, 332));
+        // Стойка отодвинута ещё на 20 мм вправо: X[1587..1605], между ними 20 мм.
+        var post = Make(new Vector3(1.596f, 1.818f, -3.454f), new Vector3Int(18, 883, 331));
+
+        var f = post.GetFaces()[2];
+        Assert.IsFalse(ResizeSnap.SnapDelta(f.center, f.normal, f.rightAxis, f.upAxis, f.size,
+            new List<KitchenElement> { top }, post, 0.05f, out _),
+            "footprint'ы разнесены — контакта нет");
+    }
 }
