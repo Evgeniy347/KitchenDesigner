@@ -478,7 +478,21 @@ public class SnapMutationTests
             var chosen = diag.neighbors.FirstOrDefault(n => n.name == snap.targetName && n.wouldSnap);
             if (chosen == null) continue;
 
+            // Деталь загнана ВНУТРЬ цели — снэп здесь разводит тела, а не выбирает
+            // между кандидатами. Коллизии по условию задачи не рассматриваем.
+            if (chosen.intersects) continue;
+
             int axis = chosen.movedFaceIndex / 2;
+
+            // По оси, где деталь УЖЕ стоит заподлицо, конкуренции нет: любой сдвиг
+            // вдоль неё разорвал бы существующий контакт, и TrySnap законно ищет
+            // прилипание по другой оси. Полка, зажатая между стеной (0 мм) и ДВП
+            // (1 мм), обязана остаться у стены — это не проигрыш конкуренции.
+            bool axisAlreadyInContact = diag.neighbors.Any(
+                n => n.movedFaceIndex >= 0 && n.gapMM >= 0f && n.gapMM <= 0.5f
+                     && n.movedFaceIndex / 2 == axis);
+            if (axisAlreadyInContact) continue;
+
             var rivals = diag.neighbors
                 .Where(n => n.wouldSnap && n.gapMM > 0.5f && n.movedFaceIndex / 2 == axis)
                 .ToList();
@@ -487,7 +501,9 @@ public class SnapMutationTests
                 var bestByGap = rivals.OrderBy(n => n.gapMM).First();
                 if (chosen.gapMM > bestByGap.gapMM + 5.0f)
                 {
-                    _warnings.Add($"MOVE-COMPETITION: {moved.PartName} {dirLabel} @ {mm}мм " +
+                    // Конкуренция за одну ось при свободной оси и без коллизии —
+                    // это уже ошибка выбора, а не допущение модели.
+                    AddError($"MOVE-COMPETITION: {moved.PartName} {dirLabel} @ {mm}мм " +
                         $"выбран {snap.targetName} gap={chosen.gapMM:F1}мм, " +
                         $"но ближе {bestByGap.name} gap={bestByGap.gapMM:F1}мм");
                     competitionErrors++;
