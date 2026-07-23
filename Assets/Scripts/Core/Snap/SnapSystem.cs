@@ -370,6 +370,7 @@ namespace KitchenDesigner.Core
         {
             picked = default;
             pickedPos = basePos;
+            float bestScore = float.MaxValue;
             float bestDist = float.MaxValue;
             bool bestIsLineContact = false;
             bool found = false;
@@ -406,13 +407,35 @@ namespace KitchenDesigner.Core
                 // Выродился в подтверждение текущего контакта — не содержательный.
                 if (dist <= ZeroShiftEpsilon) continue;
 
-                // Tie-breaker: при равном dist предпочтение — кандидату с реальным
-                // перекрытием (без line contact). Иначе тонкая боковина (line contact
-                // по одной оси) могла бы побить кандидата с полным face-to-face.
-                bool better = dist < bestDist - ZeroShiftEpsilon ||
-                    (Mathf.Abs(dist - bestDist) <= ZeroShiftEpsilon && bestIsLineContact && !c.hasLineContact);
+                // Конкуренцию выигрывает кандидат с МЕНЬШИМ ЗАЗОРОМ (planeShift), а не
+                // с меньшим суммарным сдвигом. Выравнивание по кромке/центру (du/dv) —
+                // бесплатный довесок к контакту, и оно не вправе этот контакт
+                // проигрывать: дно короба в 2 мм над ногой уступало стене в 7 мм лишь
+                // потому, что заодно центровалось по ноге (7 мм по X) и суммарный
+                // сдвиг выходил 7.3 мм. У чисто выравнивающего кандидата (деталь уже
+                // заподлицо, planeShift≈0) зазора нет — его цена и есть сдвиг.
+                float shift = Mathf.Abs(c.planeShift);
+                float score = shift > ZeroShiftEpsilon ? shift : dist;
+
+                // Порядок сравнения (лексикографический):
+                //  1) зазор — см. выше;
+                //  2) при равном зазоре полноплощадный контакт важнее кромочного:
+                //     тонкая боковина (line contact по одной оси) не должна побить
+                //     кандидата с полным face-to-face;
+                //  3) при прочих равных — меньший суммарный сдвиг, то есть меньше
+                //     «лишнего» выравнивания в плоскости. Иначе в углу побеждал бы
+                //     кандидат, тащащий за собой кромочный сдвиг по второй оси: он
+                //     запирал эту ось, и добор до стены (тот же зазор 30 мм) уже не
+                //     проходил — деталь вставала к боку, но не к стене.
+                bool better;
+                if (score < bestScore - ZeroShiftEpsilon) better = true;
+                else if (score > bestScore + ZeroShiftEpsilon) better = false;
+                else if (bestIsLineContact != c.hasLineContact) better = bestIsLineContact;
+                else better = dist < bestDist - ZeroShiftEpsilon;
+
                 if (better)
                 {
+                    bestScore = score;
                     bestDist = dist;
                     bestIsLineContact = c.hasLineContact;
                     picked = c;
@@ -471,34 +494,54 @@ namespace KitchenDesigner.Core
                 };
 
                 KitchenElement.Face[] otherFaces = FaceCache.GetFaces(other);
-                float bestScore = float.MaxValue;
+
+                // Те же грани, что видит TrySnap: шесть габаритных плюс дно каждого
+                // паза (только для вкладной панели). Без дна паза диагностика
+                // сообщала «не прилипнет» там, где TrySnap сажает панель в паз.
+                KitchenElement.Face[] seatFaces = moved is PanelElement
+                    ? other.GetGrooveSeatFaces()
+                    : System.Array.Empty<KitchenElement.Face>();
+
+                int bestRank = int.MaxValue;
+                float bestGap = float.MaxValue;
 
                 for (int i = 0; i < 6; i++)
                 {
-                    for (int j = 0; j < 6; j++)
+                    for (int j = 0; j < 6 + seatFaces.Length; j++)
                     {
-                        float dot = Vector3.Dot(movedFaces[i].normal, otherFaces[j].normal);
+                        bool isGroove = j >= 6;
+                        var of = isGroove ? seatFaces[j - 6] : otherFaces[j];
+
+                        float dot = Vector3.Dot(movedFaces[i].normal, of.normal);
                         n.bestDot = Mathf.Min(n.bestDot, dot);
                         if (!Tolerance.IsParallel(dot) || dot > 0) continue;
-                        n.hasFacingFaces = true;
 
                         var mf = movedFaces[i];
-                        var of = otherFaces[j];
+                        // Над пазом материала нет — как и в Collect.
+                        if (!isGroove && SeatSupersedesFace(mf, of, seatFaces)) continue;
+                        n.hasFacingFaces = true;
+
                         float gap = Mathf.Abs(Vector3.Dot(of.center - mf.center, mf.normal));
                         bool hasOverlap = FacesOverlap(mf, of, out float ratio, out _);
+                        bool within = gap <= maxDist;
+                        bool enough = hasOverlap && ratio >= Tolerance.MinSupportOverlap;
 
-                        // Лучшая пара — с перекрытием и минимальным зазором;
-                        // пары без перекрытия штрафуются, но остаются кандидатами.
-                        float score = gap + (hasOverlap ? 0f : 1000f);
-                        if (score < bestScore)
+                        // Ранг важнее зазора: пара, по которой снэп РЕАЛЬНО возможен,
+                        // всегда лучше более близкой, но негодной. Раньше отбор шёл по
+                        // одному зазору, и вердикт писался по случайной ближней паре с
+                        // перекрытием 10% — Diagnose говорил «не прилипнет», а TrySnap
+                        // прилипал по другой, полноценной паре того же соседа.
+                        int rank = (within && enough) ? 0 : (hasOverlap ? 1 : 2);
+                        if (rank < bestRank || (rank == bestRank && gap < bestGap))
                         {
-                            bestScore = score;
+                            bestRank = rank;
+                            bestGap = gap;
                             n.movedFaceIndex = i;
                             n.otherFaceIndex = j;
                             n.gapMM = gap / AppConstants.MM_TO_UNITS;
                             n.overlapRatio = hasOverlap ? ratio : 0f;
-                            n.withinThreshold = gap <= maxDist;
-                            n.overlapEnough = hasOverlap && ratio >= Tolerance.MinSupportOverlap;
+                            n.withinThreshold = within;
+                            n.overlapEnough = enough;
                         }
                     }
                 }

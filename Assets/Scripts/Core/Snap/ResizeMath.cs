@@ -59,5 +59,21 @@ namespace KitchenDesigner.Core
             // Противоположная грань стоит на месте → центр смещается на половину дельты.
             newCenter = centerStart + normal * (actualDelta * 0.5f);
         }
+
+        /// <summary>Размер вдоль оси (0=X,1=Y,2=Z) из вектора габаритов в мм.</summary>
+        public static int DimAlong(Vector3Int dims, int axisIndex) =>
+            axisIndex == 0 ? dims.x : (axisIndex == 1 ? dims.y : dims.z);
+
+        /// <summary>Центр детали по ФАКТИЧЕСКИ принятому размеру. Деталь вправе
+        /// зажать запрошенный размер (у ноги высота ограничена 80..130 мм, сечение
+        /// фиксировано), и тогда newCenter из <see cref="Compute"/> посчитан для
+        /// размера, которого нет: противоположная грань уезжает, деталь висит в
+        /// воздухе. Пересчёт от принятого размера оставляет её на месте.</summary>
+        public static Vector3 CenterForAppliedDims(Vector3 centerStart, Vector3 normal,
+            float sizeStartUnits, Vector3Int appliedDims, int axisIndex)
+        {
+            float appliedDelta = DimAlong(appliedDims, axisIndex) * AppConstants.MM_TO_UNITS - sizeStartUnits;
+            return centerStart + normal * (appliedDelta * 0.5f);
+        }
     }
 }
