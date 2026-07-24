@@ -98,4 +98,25 @@ public class PanelSeatingTests
         var unseated = ConstraintValidator.FindUnseatedPanels(PartRegistry.GetAll());
         Assert.IsNotEmpty(unseated, "Непосаженная ДВП должна дать предупреждение");
     }
+
+    // Пара «ДВП ↔ доска с пазом», в которую панель зашла: между их ГАБАРИТАМИ зазор
+    // равен глубине захода в паз. Это обслуживает логика посадки (SEAT-01), поэтому
+    // near-contact (GAP-01) для таких пар выдаваться НЕ должен.
+    private static bool DvpInAnyNearContact(PanelElement dvp)
+    {
+        foreach (var nc in ConstraintValidator.FindNearContacts(PartRegistry.GetAll(), 8f))
+            if (nc.a == dvp || nc.b == dvp) return true;
+        return false;
+    }
+
+    [Test]
+    public void SeatedDvp_NoNearContactWarning()
+    {
+        var (dvp, _) = BuildFrameWithDvp();
+        // Полностью посаженная ДВП: box-зазор до боковин/дна корпуса = глубине паза,
+        // но это конструкция, а не «почти касание». Ни одна из четырёх пар
+        // «ДВП ↔ доска с пазом» не должна давать ложный GAP-01.
+        Assert.IsFalse(DvpInAnyNearContact(dvp),
+            "Посаженная в паз ДВП не должна давать ложный GAP-01");
+    }
 }

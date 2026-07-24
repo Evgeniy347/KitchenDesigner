@@ -459,6 +459,12 @@ namespace KitchenDesigner.Core
                     if (!AABBsIntersect(boxes[i], boxes[j], -maxGap)) continue;
                     // Реально касаются гранями — это не «почти», а контакт.
                     if (AreInFaceToFaceContact(all[i], all[j])) continue;
+                    // Вкладная ДВП, зашедшая в паз соседней детали: зазор между
+                    // ГАБАРИТАМИ равен глубине захода в паз и НЕ является «почти
+                    // касанием» — эту пару обслуживает логика посадки в паз (SEAT-01),
+                    // а не GAP-01. Иначе полностью посаженная панель ложно краснела бы
+                    // как «почти касается, зазор = глубине паза».
+                    if (PanelEngagesGroove(all[i], all[j]) || PanelEngagesGroove(all[j], all[i])) continue;
 
                     float gap = MinParallelGap(faces[i], faces[j], contactDist, maxGap);
                     if (gap > 0f)
@@ -590,6 +596,31 @@ namespace KitchenDesigner.Core
             float seatArea = seat.size.x * seat.size.y;
             if (seatArea <= 0f) return false;
             return (interU * interV) / seatArea >= 0.5f;
+        }
+
+        /// <summary>Панель-ДВП <paramref name="panel"/> зашла (хотя бы устьем) в один
+        /// из пазов детали <paramref name="board"/>. Это тот же критерий «относится к
+        /// пазу», что и у SEAT-01 (<see cref="PanelEngagesSeat"/>): такую пару нельзя
+        /// выдавать как near-contact/GAP-01 — зазор между их габаритами равен глубине
+        /// захода в паз, а недосадку до дна отдельно ловит SEAT-01.</summary>
+        private static bool PanelEngagesGroove(KitchenElement panel, KitchenElement board)
+        {
+            if (!(panel is PanelElement) || board == null || board.Grooves.Count == 0) return false;
+
+            var seats = board.GetGrooveSeatFaces();
+            if (seats.Length == 0) return false;
+
+            float depthUnits = GrooveMesh.DepthFraction(board.DimensionsMM) * board.transform.localScale.z;
+            if (depthUnits <= 0f) return false;
+
+            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            float engageMargin = PanelEngageMarginMm * AppConstants.MM_TO_UNITS;
+
+            var pverts = panel.GetVertices();
+            foreach (var seat in seats)
+                if (PanelEngagesSeat(pverts, seat, depthUnits, engageMargin, contactDist, out _))
+                    return true;
+            return false;
         }
 
         private static bool FacesOverlap(
