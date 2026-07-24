@@ -67,6 +67,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -136,6 +137,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -205,6 +207,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -274,6 +277,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -343,6 +347,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -355,7 +360,7 @@
             ],
             "position": [
                 1.315000057220459,
-                0.10999999940395355,
+                0.10799995064735413,
                 -3.049999952316284
             ],
             "rotation": [
@@ -412,6 +417,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -481,6 +487,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -550,6 +557,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -619,6 +627,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -688,6 +697,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -757,6 +767,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -826,6 +837,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -895,6 +907,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -964,6 +977,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1033,6 +1047,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1102,6 +1117,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1171,6 +1187,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1240,6 +1257,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1309,6 +1327,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1378,6 +1397,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1447,6 +1467,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1516,6 +1537,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1585,6 +1607,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1654,6 +1677,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1723,6 +1747,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1792,6 +1817,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1861,6 +1887,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1930,6 +1957,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -1999,6 +2027,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -2068,6 +2097,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -2137,6 +2167,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -2206,6 +2237,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -2275,6 +2307,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -2344,6 +2377,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -2413,6 +2447,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -2482,6 +2517,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -2556,6 +2592,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -2630,6 +2667,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -2643,7 +2681,7 @@
             "position": [
                 1.4100000858306885,
                 1.8100000619888306,
-                -3.2790000438690187
+                -3.2790002822875978
             ],
             "rotation": [
                 0.0,
@@ -2651,7 +2689,7 @@
                 0.0,
                 1.0
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -2699,6 +2737,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -2768,6 +2807,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -2842,6 +2882,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -2916,6 +2957,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -2990,6 +3032,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -3064,6 +3107,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -3076,13 +3120,13 @@
             "name": "A34K1_upper_bottom",
             "dimensionsMM": [
                 332,
-                181,
+                182,
                 18
             ],
             "position": [
                 1.4190000295639039,
                 1.36899995803833,
-                -1.1740000247955323
+                -1.1739999055862427
             ],
             "rotation": [
                 0.7071068286895752,
@@ -3090,7 +3134,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -3138,6 +3182,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -3207,6 +3252,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -3276,6 +3322,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -3350,6 +3397,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -3419,6 +3467,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -3493,6 +3542,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -3567,6 +3617,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -3636,6 +3687,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -3705,6 +3757,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -3774,6 +3827,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -3843,6 +3897,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -3912,6 +3967,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -3981,6 +4037,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4050,6 +4107,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4119,6 +4177,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4188,6 +4247,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4257,6 +4317,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4326,6 +4387,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4395,6 +4457,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4464,6 +4527,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4533,6 +4597,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4602,6 +4667,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4671,6 +4737,7 @@
             "isLightSource": true,
             "lightTemperatureK": 5000,
             "lightPowerW": 12,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4740,6 +4807,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4809,6 +4877,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4878,6 +4947,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -4947,6 +5017,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5016,6 +5087,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5085,6 +5157,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5154,6 +5227,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5223,6 +5297,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5292,6 +5367,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5361,6 +5437,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5430,6 +5507,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5499,6 +5577,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5568,6 +5647,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5637,6 +5717,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5706,6 +5787,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5775,6 +5857,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5844,6 +5927,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5913,6 +5997,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -5982,6 +6067,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6051,6 +6137,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6120,6 +6207,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6189,6 +6277,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6258,6 +6347,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6327,6 +6417,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6396,6 +6487,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6465,6 +6557,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6534,6 +6627,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6603,6 +6697,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6672,6 +6767,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -6698,7 +6794,7 @@
                 0.0,
                 1.0
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -6746,6 +6842,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6767,7 +6864,7 @@
                 0.0,
                 0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -6815,6 +6912,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6836,7 +6934,7 @@
                 -0.5,
                 0.5
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "isFacade": false,
             "isRadialShelf": false,
@@ -6884,6 +6982,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -6953,6 +7052,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7022,6 +7122,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7091,6 +7192,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7160,6 +7262,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7229,6 +7332,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": true,
             "grooves": []
         },
@@ -7241,7 +7345,7 @@
             ],
             "position": [
                 1.055999994277954,
-                1.6320903301239014,
+                1.8099998235702515,
                 -3.6120002269744875
             ],
             "rotation": [
@@ -7298,6 +7402,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7305,7 +7410,7 @@
             "name": "A12_upper_shelf_2_1_2",
             "dimensionsMM": [
                 900,
-                331,
+                332,
                 18
             ],
             "position": [
@@ -7367,6 +7472,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": [
                 {
@@ -7383,15 +7489,15 @@
                 16
             ],
             "position": [
-                -0.1229998841881752,
-                1.6305603981018067,
+                -0.12300002574920654,
+                1.809999942779541,
                 -3.6120002269744875
             ],
             "rotation": [
-                -0.7071068286895752,
-                -0.7071068286895752,
-                0.0,
-                0.0
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
             ],
             "movable": true,
             "isWall": false,
@@ -7441,6 +7547,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7510,6 +7617,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7579,6 +7687,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7648,6 +7757,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7717,6 +7827,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7786,6 +7897,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7855,6 +7967,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7924,6 +8037,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -7993,6 +8107,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -8062,6 +8177,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -8131,6 +8247,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -8200,6 +8317,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -8269,6 +8387,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -8277,7 +8396,7 @@
             "dimensionsMM": [
                 1034,
                 876,
-                3
+                4
             ],
             "position": [
                 1.055999994277954,
@@ -8338,6 +8457,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": true,
             "grooves": []
         },
@@ -8346,12 +8466,12 @@
             "dimensionsMM": [
                 1276,
                 876,
-                3
+                4
             ],
             "position": [
-                -0.12299999594688416,
-                1.809999942779541,
-                -3.6014997959136965
+                -0.12300000339746475,
+                1.8100000619888306,
+                -3.6019999980926515
             ],
             "rotation": [
                 0.0,
@@ -8407,6 +8527,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": true,
             "grooves": []
         },
@@ -8476,6 +8597,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -8545,6 +8667,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -8614,6 +8737,7 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -8683,6 +8807,77 @@
             "isLightSource": false,
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "B3_bottom_1",
+            "dimensionsMM": [
+                539,
+                1139,
+                16
+            ],
+            "position": [
+                1.3151371479034424,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         }
@@ -8696,14 +8891,14 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 0.3331809937953949,
-        "targetY": 0.22999605536460877,
-        "targetZ": -4.852717399597168,
-        "angleX": 34.19981384277344,
-        "angleY": -922.1834716796875,
-        "distance": 4.399998188018799
+        "targetX": -0.3058127164840698,
+        "targetY": 1.9543062448501588,
+        "targetZ": -3.216317892074585,
+        "angleX": 3.5999550819396974,
+        "angleY": -178.78318786621095,
+        "distance": 2.799999713897705
     },
-    "handleMode": "Move",
+    "handleMode": "Resize",
     "basePlateValid": true,
     "basePlate": {
         "name": "BasePlate",
@@ -8771,932 +8966,11 @@
         "isLightSource": false,
         "lightTemperatureK": 3000,
         "lightPowerW": 9,
+        "lightDiffusionPct": 50,
         "isPanel": false,
         "grooves": []
     },
     "undoHistory": [
-        {
-            "type": "move",
-            "description": "Move Fridge_Door_Lower",
-            "elementIndex": 60,
-            "posBefore": [
-                0.9599999785423279,
-                0.5,
-                -0.7500001192092896
-            ],
-            "posAfter": [
-                0.9599999785423279,
-                0.5,
-                -0.7100000381469727
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Fridge_Door_Upper",
-            "elementIndex": 59,
-            "posBefore": [
-                0.9599999785423279,
-                1.5,
-                -0.75
-            ],
-            "posAfter": [
-                0.9599999785423279,
-                1.5,
-                -0.75
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [
-                596,
-                996,
-                50
-            ],
-            "dimsAfter": [
-                596,
-                996,
-                50
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Fridge_Door_Lower",
-            "elementIndex": 60,
-            "posBefore": [
-                0.9599999785423279,
-                0.5,
-                -0.7100000381469727
-            ],
-            "posAfter": [
-                0.9599999785423279,
-                0.5,
-                -0.7099999785423279
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [
-                516,
-                996,
-                50
-            ],
-            "dimsAfter": [
-                596,
-                996,
-                50
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Fridge_Door_Lower",
-            "elementIndex": 60,
-            "posBefore": [
-                0.9599999785423279,
-                0.5,
-                -0.7099999785423279
-            ],
-            "posAfter": [
-                0.9599999785423279,
-                0.5,
-                -0.75
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Fridge_Left",
-            "elementIndex": 53,
-            "posBefore": [
-                1.284999966621399,
-                1.0,
-                -1.0299999713897706
-            ],
-            "posAfter": [
-                1.284999966621399,
-                1.0,
-                -1.0299999713897706
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                600,
-                2000,
-                40
-            ],
-            "dimsAfter": [
-                550,
-                2000,
-                40
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Fridge_Right",
-            "elementIndex": 54,
-            "posBefore": [
-                1.284999966621399,
-                1.0,
-                -0.4699999988079071
-            ],
-            "posAfter": [
-                1.284999966621399,
-                1.0,
-                -0.4699999988079071
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                600,
-                2000,
-                40
-            ],
-            "dimsAfter": [
-                550,
-                2000,
-                40
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Fridge_Bottom",
-            "elementIndex": 56,
-            "posBefore": [
-                1.2649999856948853,
-                0.019999999552965165,
-                -0.75
-            ],
-            "posAfter": [
-                1.2649999856948853,
-                0.019999999552965165,
-                -0.75
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                560,
-                520,
-                40
-            ],
-            "dimsAfter": [
-                510,
-                520,
-                40
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Fridge_Top",
-            "elementIndex": 57,
-            "posBefore": [
-                1.2649999856948853,
-                1.9800000190734864,
-                -0.75
-            ],
-            "posAfter": [
-                1.2649999856948853,
-                1.9800000190734864,
-                -0.75
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                560,
-                520,
-                40
-            ],
-            "dimsAfter": [
-                510,
-                520,
-                40
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Fridge_Shelf",
-            "elementIndex": 58,
-            "posBefore": [
-                1.2649999856948853,
-                1.0,
-                -0.75
-            ],
-            "posAfter": [
-                1.2649999856948853,
-                1.0,
-                -0.75
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                560,
-                520,
-                40
-            ],
-            "dimsAfter": [
-                510,
-                520,
-                40
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Fridge_Left",
-            "elementIndex": 53,
-            "posBefore": [
-                1.284999966621399,
-                1.0,
-                -1.0299999713897706
-            ],
-            "posAfter": [
-                1.309999942779541,
-                1.0,
-                -1.0299999713897706
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Fridge_Right",
-            "elementIndex": 54,
-            "posBefore": [
-                1.284999966621399,
-                1.0,
-                -0.4699999988079071
-            ],
-            "posAfter": [
-                1.309999942779541,
-                1.0,
-                -0.4699999988079071
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Fridge_Bottom",
-            "elementIndex": 56,
-            "posBefore": [
-                1.2649999856948853,
-                0.019999999552965165,
-                -0.75
-            ],
-            "posAfter": [
-                1.2899999618530274,
-                0.019999999552965165,
-                -0.75
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Fridge_Top",
-            "elementIndex": 57,
-            "posBefore": [
-                1.2649999856948853,
-                1.9800000190734864,
-                -0.75
-            ],
-            "posAfter": [
-                1.2899999618530274,
-                1.9800000190734864,
-                -0.75
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Fridge_Shelf",
-            "elementIndex": 58,
-            "posBefore": [
-                1.2649999856948853,
-                1.0,
-                -0.75
-            ],
-            "posAfter": [
-                1.2899999618530274,
-                1.0,
-                -0.75
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Fridge_Door_Upper",
-            "elementIndex": 59,
-            "posBefore": [
-                0.9599999785423279,
-                1.5,
-                -0.75
-            ],
-            "posAfter": [
-                1.0099999904632569,
-                1.5,
-                -0.75
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Fridge_Door_Lower",
-            "elementIndex": 60,
-            "posBefore": [
-                0.9599999785423279,
-                0.5,
-                -0.75
-            ],
-            "posAfter": [
-                1.0099999904632569,
-                0.5,
-                -0.75
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B1_side_L",
-            "elementIndex": 8,
-            "posBefore": [
-                1.0360000133514405,
-                0.46000000834465029,
-                -3.3499999046325685
-            ],
-            "posAfter": [
-                1.0360000133514405,
-                0.46000000834465029,
-                -3.3499999046325685
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                540,
-                720,
-                18
-            ],
-            "dimsAfter": [
-                540,
-                720,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B1_side_L",
-            "elementIndex": 8,
-            "posBefore": [
-                1.0360000133514405,
-                0.46000000834465029,
-                -3.3499999046325685
-            ],
-            "posAfter": [
-                1.0360000133514405,
-                0.46000000834465029,
-                -3.3499999046325685
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                540,
-                720,
-                18
-            ],
-            "dimsAfter": [
-                540,
-                720,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_A_side",
-            "elementIndex": 38,
-            "posBefore": [
-                1.2440000772476197,
-                1.8100000619888306,
-                -3.4160003662109377
-            ],
-            "posAfter": [
-                1.24399995803833,
-                1.809999942779541,
-                -3.4159998893737795
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                408,
-                900,
-                18
-            ],
-            "dimsAfter": [
-                408,
-                900,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_B_planck",
-            "elementIndex": 37,
-            "posBefore": [
-                1.2060000896453858,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "posAfter": [
-                1.2059999704360963,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                58,
-                900,
-                18
-            ],
-            "dimsAfter": [
-                58,
-                900,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_B_planck",
-            "elementIndex": 37,
-            "posBefore": [
-                1.2059999704360963,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "posAfter": [
-                1.2059999704360963,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                58,
-                900,
-                18
-            ],
-            "dimsAfter": [
-                58,
-                900,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_A_side",
-            "elementIndex": 38,
-            "posBefore": [
-                1.24399995803833,
-                1.809999942779541,
-                -3.4159998893737795
-            ],
-            "posAfter": [
-                1.24399995803833,
-                1.809999942779541,
-                -3.4159998893737795
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                408,
-                900,
-                18
-            ],
-            "dimsAfter": [
-                332,
-                900,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_A_side",
-            "elementIndex": 38,
-            "posBefore": [
-                1.24399995803833,
-                1.809999942779541,
-                -3.4159998893737795
-            ],
-            "posAfter": [
-                1.24399995803833,
-                1.809999942779541,
-                -3.4539999961853029
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_A_planck",
-            "elementIndex": 61,
-            "posBefore": [
-                1.24399995803833,
-                1.809999942779541,
-                -3.258500099182129
-            ],
-            "posAfter": [
-                1.24399995803833,
-                1.809999942779541,
-                -3.258500099182129
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071067690849304,
-                0.0,
-                0.7071067690849304
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_B_planck",
-            "elementIndex": 37,
-            "posBefore": [
-                1.2059999704360963,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "posAfter": [
-                1.2059999704360963,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                58,
-                900,
-                18
-            ],
-            "dimsAfter": [
-                76,
-                900,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_B_planck",
-            "elementIndex": 37,
-            "posBefore": [
-                1.2059999704360963,
-                1.809999942779541,
-                -3.2790000438690187
-            ],
-            "posAfter": [
-                1.215000033378601,
-                1.809999942779541,
-                -3.2200000286102297
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_B_planck",
-            "elementIndex": 37,
-            "posBefore": [
-                1.215000033378601,
-                1.809999942779541,
-                -3.2200000286102297
-            ],
-            "posAfter": [
-                1.215000033378601,
-                1.809999942779541,
-                -3.2789998054504396
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
         {
             "type": "move",
             "description": "Move A12_upper_A_planck",
@@ -43216,18 +42490,236 @@
             "children": []
         },
         {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 66,
+            "type": "move",
+            "description": "Move A12_bottom",
+            "elementIndex": 5,
             "posBefore": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
+                1.315000057220459,
+                0.10999999940395355,
+                -3.049999952316284
             ],
             "posAfter": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
+                1.315000057220459,
+                0.10799995064735413,
+                -3.049999952316284
+            ],
+            "rotBefore": [
+                -0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                -0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2_1_2",
+            "elementIndex": 105,
+            "posBefore": [
+                1.5760000944137574,
+                1.8100001811981202,
+                -3.454000234603882
+            ],
+            "posAfter": [
+                1.5760000944137574,
+                1.8100001811981202,
+                -3.6120004653930666
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2_1_2",
+            "elementIndex": 105,
+            "posBefore": [
+                1.5760000944137574,
+                1.8100001811981202,
+                -3.6120004653930666
+            ],
+            "posAfter": [
+                1.5760000944137574,
+                1.8100001811981202,
+                -3.454500198364258
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2_1_2",
+            "elementIndex": 105,
+            "posBefore": [
+                1.5760000944137574,
+                1.8100001811981202,
+                -3.454500198364258
+            ],
+            "posAfter": [
+                1.5760000944137574,
+                1.8100001811981202,
+                -3.453500270843506
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_shelf_2_1_2",
+            "elementIndex": 105,
+            "posBefore": [
+                1.5760000944137574,
+                1.8100001811981202,
+                -3.453500270843506
+            ],
+            "posAfter": [
+                1.5760000944137574,
+                1.8100001811981202,
+                -3.454000234603882
+            ],
+            "rotBefore": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "rotAfter": [
+                0.5,
+                0.5,
+                -0.5,
+                -0.5
+            ],
+            "dimsBefore": [
+                900,
+                331,
+                18
+            ],
+            "dimsAfter": [
+                900,
+                332,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move DVP_HDF",
+            "elementIndex": 120,
+            "posBefore": [
+                -0.12299999594688416,
+                1.809999942779541,
+                -3.6014997959136965
+            ],
+            "posAfter": [
+                -0.12299999594688416,
+                1.809999942779541,
+                -3.6025002002716066
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move DVP_HDF",
+            "elementIndex": 120,
+            "posBefore": [
+                -0.12299999594688416,
+                1.809999942779541,
+                -3.6025002002716066
+            ],
+            "posAfter": [
+                -0.12299999594688416,
+                1.809999942779541,
+                -3.6015000343322756
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize DVP_HDF",
+            "elementIndex": 120,
+            "posBefore": [
+                -0.12299999594688416,
+                1.809999942779541,
+                -3.6015000343322756
+            ],
+            "posAfter": [
+                -0.12300000339746475,
+                1.8100000619888306,
+                -3.6010000705718996
             ],
             "rotBefore": [
                 0.0,
@@ -43242,20 +42734,862 @@
                 1.0
             ],
             "dimsBefore": [
-                150,
-                150,
-                150
+                1276,
+                876,
+                3
             ],
             "dimsAfter": [
-                150,
-                150,
-                150
+                1276,
+                876,
+                4
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move DVP_HDF",
+            "elementIndex": 120,
+            "posBefore": [
+                -0.12300000339746475,
+                1.8100000619888306,
+                -3.6010000705718996
+            ],
+            "posAfter": [
+                -0.12300000339746475,
+                1.8100000619888306,
+                -3.6019999980926515
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B12_DVP_HDF",
+            "elementIndex": 119,
+            "posBefore": [
+                1.055999994277954,
+                1.8100000619888306,
+                -3.6020002365112306
+            ],
+            "posAfter": [
+                1.055999994277954,
+                1.8100000619888306,
+                -3.6020002365112306
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                1034,
+                876,
+                3
+            ],
+            "dimsAfter": [
+                1034,
+                876,
+                4
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_side_inner",
+            "elementIndex": 96,
+            "posBefore": [
+                1.4190000295639039,
+                1.4229998588562012,
+                -1.2740000486373902
+            ],
+            "posAfter": [
+                1.4190000295639039,
+                1.4229998588562012,
+                -1.2734999656677247
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_side_inner",
+            "elementIndex": 96,
+            "posBefore": [
+                1.4190000295639039,
+                1.4229998588562012,
+                -1.2734999656677247
+            ],
+            "posAfter": [
+                1.4190000295639039,
+                1.4229998588562012,
+                -1.2740000486373902
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_bottom",
+            "elementIndex": 44,
+            "posBefore": [
+                1.4190000295639039,
+                1.36899995803833,
+                -1.1740000247955323
+            ],
+            "posAfter": [
+                1.4190000295639039,
+                1.36899995803833,
+                -1.1745001077651978
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A34K1_upper_bottom",
+            "elementIndex": 44,
+            "posBefore": [
+                1.4190000295639039,
+                1.36899995803833,
+                -1.1745001077651978
+            ],
+            "posAfter": [
+                1.4190000295639039,
+                1.36899995803833,
+                -1.1734999418258668
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A34K1_upper_bottom",
+            "elementIndex": 44,
+            "posBefore": [
+                1.4190000295639039,
+                1.36899995803833,
+                -1.1734999418258668
+            ],
+            "posAfter": [
+                1.4190000295639039,
+                1.36899995803833,
+                -1.1739999055862427
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                332,
+                181,
+                18
+            ],
+            "dimsAfter": [
+                332,
+                182,
+                18
             ],
             "children": []
         },
         {
             "type": "resize",
-            "description": "Resize Istochnik_sveta",
+            "description": "Resize A12_upper_shelf_2_1_1",
+            "elementIndex": 104,
+            "posBefore": [
+                1.055999994277954,
+                1.6320903301239014,
+                -3.6120002269744875
+            ],
+            "posAfter": [
+                1.055999994277954,
+                1.6320000886917115,
+                -3.6120002269744875
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [
+                77,
+                1022,
+                16
+            ],
+            "dimsAfter": [
+                77,
+                1022,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_shelf_2_1_1_1",
+            "elementIndex": 106,
+            "posBefore": [
+                -0.1229998841881752,
+                1.6305603981018067,
+                -3.6120002269744875
+            ],
+            "posAfter": [
+                -0.12300000339746475,
+                1.6320000886917115,
+                -3.6120002269744875
+            ],
+            "rotBefore": [
+                -0.7071068286895752,
+                -0.7071068286895752,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [
+                77,
+                1264,
+                16
+            ],
+            "dimsAfter": [
+                77,
+                1264,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_shelf_2_1_1_1",
+            "elementIndex": 106,
+            "posBefore": [
+                -0.12300000339746475,
+                1.6320000886917115,
+                -3.6120002269744875
+            ],
+            "posAfter": [
+                -0.12300000339746475,
+                1.6370000839233399,
+                -3.6120002269744875
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [
+                77,
+                1264,
+                16
+            ],
+            "dimsAfter": [
+                77,
+                1264,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A12_upper_shelf_2_1_1_1",
+            "elementIndex": 106,
+            "posBefore": [
+                -0.12300000339746475,
+                1.6370000839233399,
+                -3.6120002269744875
+            ],
+            "posAfter": [
+                -0.12300000339746475,
+                1.6420000791549683,
+                -3.6120002269744875
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [
+                77,
+                1264,
+                16
+            ],
+            "dimsAfter": [
+                77,
+                1264,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2_1_1_1",
+            "elementIndex": 106,
+            "posBefore": [
+                -0.12300000339746475,
+                1.6420000791549683,
+                -3.6120002269744875
+            ],
+            "posAfter": [
+                -0.12300002574920654,
+                1.809999942779541,
+                -3.6120002269744875
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A12_upper_shelf_2_1_1",
+            "elementIndex": 104,
+            "posBefore": [
+                1.055999994277954,
+                1.6320000886917115,
+                -3.6120002269744875
+            ],
+            "posAfter": [
+                1.055999994277954,
+                1.8099998235702515,
+                -3.6120002269744875
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B3_bottom_1",
+            "elementIndex": 125,
+            "posBefore": [
+                0.22699999809265138,
+                0.1080000028014183,
+                -3.3499999046325685
+            ],
+            "posAfter": [
+                0.22699999809265138,
+                0.4599999785423279,
+                -3.3499999046325685
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B3_bottom_1",
+            "elementIndex": 125,
+            "posBefore": [
+                0.22699999809265138,
+                0.4599999785423279,
+                -3.3499999046325685
+            ],
+            "posAfter": [
+                0.12699997425079347,
+                0.4599999785423279,
+                -3.3499999046325685
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B3_bottom_1",
+            "elementIndex": 125,
+            "posBefore": [
+                0.12699997425079347,
+                0.4599999785423279,
+                -3.3499999046325685
+            ],
+            "posAfter": [
+                1.284999966621399,
+                0.4599999785423279,
+                -3.3499999046325685
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B3_bottom_1",
+            "elementIndex": 125,
+            "posBefore": [
+                1.284999966621399,
+                0.4599999785423279,
+                -3.3499999046325685
+            ],
+            "posAfter": [
+                1.284999966621399,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                540,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                1139,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B3_bottom_1",
+            "elementIndex": 125,
+            "posBefore": [
+                1.284999966621399,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "posAfter": [
+                1.2024999856948853,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                1139,
+                16
+            ],
+            "dimsAfter": [
+                435,
+                1139,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B3_bottom_1",
+            "elementIndex": 125,
+            "posBefore": [
+                1.2024999856948853,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "posAfter": [
+                1.3675000667572022,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move B3_bottom_1",
+            "elementIndex": 125,
+            "posBefore": [
+                1.3675000667572022,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "posAfter": [
+                1.4671372175216675,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B3_bottom_1",
+            "elementIndex": 125,
+            "posBefore": [
+                1.4671372175216675,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "posAfter": [
+                1.3651372194290162,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                435,
+                1139,
+                16
+            ],
+            "dimsAfter": [
+                639,
+                1139,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize B3_bottom_1",
+            "elementIndex": 125,
+            "posBefore": [
+                1.3651372194290162,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "posAfter": [
+                1.3151371479034424,
+                0.46000000834465029,
+                -3.05049991607666
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [
+                639,
+                1139,
+                16
+            ],
+            "dimsAfter": [
+                539,
+                1139,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "composite",
+            "description": "MCP edit_elements (1 ops)",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize DVP_HDF",
+                    "elementIndex": 120,
+                    "posBefore": [
+                        -0.12300000339746475,
+                        1.8100000619888306,
+                        -3.6019999980926515
+                    ],
+                    "posAfter": [
+                        -0.12300000339746475,
+                        1.8100000619888306,
+                        -3.6019999980926515
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        1276,
+                        876,
+                        4
+                    ],
+                    "dimsAfter": [
+                        1262,
+                        862,
+                        4
+                    ],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "composite",
+            "description": "MCP edit_elements (1 ops)",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize DVP_HDF",
+                    "elementIndex": 120,
+                    "posBefore": [
+                        -0.12300000339746475,
+                        1.8100000619888306,
+                        -3.6019999980926515
+                    ],
+                    "posAfter": [
+                        -0.12300000339746475,
+                        1.8100000619888306,
+                        -3.6019999980926515
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        1262,
+                        862,
+                        4
+                    ],
+                    "dimsAfter": [
+                        1276,
+                        876,
+                        4
+                    ],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "move",
+            "description": "Move Istochnik_sveta",
             "elementIndex": 66,
             "posBefore": [
                 -0.05100000277161598,
@@ -43276,26 +43610,228 @@
             "rotAfter": [
                 0.0,
                 0.0,
+                0.7071068286895752,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Istochnik_sveta",
+            "elementIndex": 66,
+            "posBefore": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "posAfter": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                1.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Istochnik_sveta",
+            "elementIndex": 66,
+            "posBefore": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "posAfter": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                1.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Istochnik_sveta",
+            "elementIndex": 66,
+            "posBefore": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "posAfter": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                -1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Istochnik_sveta",
+            "elementIndex": 66,
+            "posBefore": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "posAfter": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                -1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                -0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Istochnik_sveta",
+            "elementIndex": 66,
+            "posBefore": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "posAfter": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                -0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                -1.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Istochnik_sveta",
+            "elementIndex": 66,
+            "posBefore": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "posAfter": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                -1.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                -0.7071068286895752,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Istochnik_sveta",
+            "elementIndex": 66,
+            "posBefore": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "posAfter": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                -0.7071068286895752,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
                 0.0,
                 1.0
             ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
             "children": []
         }
     ],
     "redoHistory": [],
     "settings": {
         "gridStep": 1,
-        "gridEnabled": true,
+        "gridEnabled": false,
         "snapEnabled": true,
         "snapThreshold": 50.0,
         "blockOnViolation": false,
