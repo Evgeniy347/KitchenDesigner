@@ -55,6 +55,10 @@ public class DrawerAnimationGifTests
     public IEnumerator TearDown()
     {
         Time.captureFramerate = 0;
+        // example.save.json несёт handleMode="Move" → RestoreScene выставил
+        // глобальный статик. Возвращаем дефолт, иначе тулбар «Ручки: перенос»
+        // течёт в снапшоты последующих фикстур (Iso*, тулбар).
+        ResizeHandleManager.SetMode(ResizeHandleManager.HandleMode.Resize);
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
             if (e != null) Object.Destroy(e.gameObject);
         foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))

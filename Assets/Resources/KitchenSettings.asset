@@ -27,7 +27,9 @@ MonoBehaviour:
   _cameraPanFree: 0
   _photoQuality: 2
   _photoShadows: 1
+  _photoSoftShadows: 1
   _photoAntiAliasing: 1
+  _photoSupersampling: 1
   _photoAmbientOcclusion: 1
   _photoBloom: 1
   _photoVignette: 1

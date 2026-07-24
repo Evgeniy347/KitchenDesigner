@@ -32,15 +32,34 @@ namespace KitchenDesigner.Core
             if (on == Active) return;
             Active = on;
 
-            if (on) Enter();
-            else Exit();
-
-            // Пересчитать материалы: снять/вернуть прозрачность и валидационную
-            // тонировку у всех деталей.
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
+            if (on)
+            {
+                // 1) материалы: снять прозрачность и валидационный тон,
+                // 2) пересчитать рендереры (форс-непрозрачность применяется здесь),
+                // 3) сцена: потолок, тени-кастеры, качество — уже по «финальным» материалам.
+                _prevTintEnabled = ElementHighlighter.TintEnabled;
+                ElementHighlighter.TintEnabled = false;
+                RefreshHighlights();
+                RebuildCeiling();
+                PhotoShadowCasters.Enable();
+                PhotoQualityController.Apply();
+            }
+            else
+            {
+                PhotoQualityController.Restore();
+                PhotoShadowCasters.Restore();
+                CeilingBuilder.Clear();
+                ElementHighlighter.TintEnabled = _prevTintEnabled;
+                RefreshHighlights();
+            }
 
             Changed?.Invoke();
+        }
+
+        private static void RefreshHighlights()
+        {
+            if (ElementHighlighter.Instance != null)
+                ElementHighlighter.Instance.RefreshHighlights();
         }
 
         /// <summary>Пере-применить качество и потолок, если режим активен
@@ -49,24 +68,8 @@ namespace KitchenDesigner.Core
         {
             if (!Active) return;
             RebuildCeiling();
+            PhotoShadowCasters.Enable();
             PhotoQualityController.Apply();
-        }
-
-        private static void Enter()
-        {
-            // Показать реальные материалы вместо валидационного тона.
-            _prevTintEnabled = ElementHighlighter.TintEnabled;
-            ElementHighlighter.TintEnabled = false;
-
-            RebuildCeiling();
-            PhotoQualityController.Apply();
-        }
-
-        private static void Exit()
-        {
-            ElementHighlighter.TintEnabled = _prevTintEnabled;
-            CeilingBuilder.Clear();
-            PhotoQualityController.Restore();
         }
 
         private static void RebuildCeiling()

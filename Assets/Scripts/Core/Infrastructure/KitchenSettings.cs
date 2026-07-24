@@ -9,7 +9,10 @@ namespace KitchenDesigner.Core
     {
         Low = 0,
         Medium = 1,
-        High = 2
+        High = 2,
+        // «Свои настройки»: комбинация тумблеров не совпадает ни с одним пресетом.
+        // Встаёт автоматически, когда пользователь меняет опцию вручную.
+        Custom = 3
     }
 
     [CreateAssetMenu(fileName = "KitchenSettings", menuName = "KitchenDesigner/KitchenSettings")]
@@ -45,7 +48,9 @@ namespace KitchenDesigner.Core
         // проект открывается в обычном рабочем режиме. Здесь только настройки качества.
         [SerializeField] private PhotoQualityPreset _photoQuality = PhotoQualityPreset.High;
         [SerializeField] private bool _photoShadows = true;
+        [SerializeField] private bool _photoSoftShadows = true;
         [SerializeField] private bool _photoAntiAliasing = true;
+        [SerializeField] private bool _photoSupersampling = true;
         [SerializeField] private bool _photoAmbientOcclusion = true;
         [SerializeField] private bool _photoBloom = true;
         [SerializeField] private bool _photoVignette = true;
@@ -141,10 +146,22 @@ namespace KitchenDesigner.Core
             set => _photoShadows = value;
         }
 
+        public bool PhotoSoftShadows
+        {
+            get => _photoSoftShadows;
+            set => _photoSoftShadows = value;
+        }
+
         public bool PhotoAntiAliasing
         {
             get => _photoAntiAliasing;
             set => _photoAntiAliasing = value;
+        }
+
+        public bool PhotoSupersampling
+        {
+            get => _photoSupersampling;
+            set => _photoSupersampling = value;
         }
 
         public bool PhotoAmbientOcclusion
@@ -193,7 +210,9 @@ namespace KitchenDesigner.Core
             _cameraPanFree = false;
             _photoQuality = PhotoQualityPreset.High;
             _photoShadows = true;
+            _photoSoftShadows = true;
             _photoAntiAliasing = true;
+            _photoSupersampling = true;
             _photoAmbientOcclusion = true;
             _photoBloom = true;
             _photoVignette = true;
@@ -219,7 +238,9 @@ namespace KitchenDesigner.Core
                 cameraPanFree = _cameraPanFree,
                 photoQuality = (int)_photoQuality,
                 photoShadows = _photoShadows,
+                photoSoftShadows = _photoSoftShadows,
                 photoAntiAliasing = _photoAntiAliasing,
+                photoSupersampling = _photoSupersampling,
                 photoAmbientOcclusion = _photoAmbientOcclusion,
                 photoBloom = _photoBloom,
                 photoVignette = _photoVignette,
@@ -243,9 +264,11 @@ namespace KitchenDesigner.Core
             _wallsEnabled = data.wallsEnabled;
             _lowerNearWalls = data.lowerNearWalls;
             _cameraPanFree = data.cameraPanFree;
-            _photoQuality = (PhotoQualityPreset)Mathf.Clamp(data.photoQuality, 0, 2);
+            _photoQuality = (PhotoQualityPreset)Mathf.Clamp(data.photoQuality, 0, 3);
             _photoShadows = data.photoShadows;
+            _photoSoftShadows = data.photoSoftShadows;
             _photoAntiAliasing = data.photoAntiAliasing;
+            _photoSupersampling = data.photoSupersampling;
             _photoAmbientOcclusion = data.photoAmbientOcclusion;
             _photoBloom = data.photoBloom;
             _photoVignette = data.photoVignette;
@@ -272,7 +295,9 @@ namespace KitchenDesigner.Core
                 cameraPanFree = _cameraPanFree,
                 photoQuality = (int)_photoQuality,
                 photoShadows = _photoShadows,
+                photoSoftShadows = _photoSoftShadows,
                 photoAntiAliasing = _photoAntiAliasing,
+                photoSupersampling = _photoSupersampling,
                 photoAmbientOcclusion = _photoAmbientOcclusion,
                 photoBloom = _photoBloom,
                 photoVignette = _photoVignette,
@@ -299,7 +324,9 @@ namespace KitchenDesigner.Core
             public bool cameraPanFree;
             public int photoQuality;
             public bool photoShadows;
+            public bool photoSoftShadows;
             public bool photoAntiAliasing;
+            public bool photoSupersampling;
             public bool photoAmbientOcclusion;
             public bool photoBloom;
             public bool photoVignette;

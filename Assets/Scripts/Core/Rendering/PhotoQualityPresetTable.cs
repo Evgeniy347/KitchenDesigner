@@ -1,55 +1,106 @@
 namespace KitchenDesigner.Core
 {
-    /// <summary>Числовые параметры рендера для одного пресета фоторежима.
-    /// Значения подобраны так, чтобы «Высокое» комфортно работало на GTX 1060.</summary>
-    public readonly struct PhotoQualityParams
+    /// <summary>Набор тумблеров качества, задаваемый одним пресетом фоторежима.
+    /// Пресет ничего не «прячет» — он просто выставляет эти же переключатели,
+    /// которые пользователь видит и может крутить вручную.</summary>
+    public readonly struct PhotoQualityToggles
     {
-        /// <summary>Кол-во сэмплов MSAA: 1 (выкл), 2, 4, 8.</summary>
-        public readonly int MsaaSamples;
-        /// <summary>Масштаб рендера (супер-/суб-сэмплинг). 1 = нативный.</summary>
-        public readonly float RenderScale;
-        /// <summary>Дальность теней, юниты.</summary>
-        public readonly float ShadowDistance;
-        /// <summary>Число каскадов теней directional-света: 1..4.</summary>
-        public readonly int ShadowCascades;
-        /// <summary>Мягкие тени (PCF/склон) вместо жёстких.</summary>
+        public readonly bool Shadows;
         public readonly bool SoftShadows;
+        public readonly bool AntiAliasing;
+        public readonly bool Supersampling;
+        public readonly bool AmbientOcclusion;
+        public readonly bool Bloom;
+        public readonly bool Vignette;
 
-        public PhotoQualityParams(int msaa, float renderScale, float shadowDistance,
-            int shadowCascades, bool softShadows)
+        public PhotoQualityToggles(bool shadows, bool softShadows, bool antiAliasing,
+            bool supersampling, bool ambientOcclusion, bool bloom, bool vignette)
         {
-            MsaaSamples = msaa;
-            RenderScale = renderScale;
-            ShadowDistance = shadowDistance;
-            ShadowCascades = shadowCascades;
+            Shadows = shadows;
             SoftShadows = softShadows;
+            AntiAliasing = antiAliasing;
+            Supersampling = supersampling;
+            AmbientOcclusion = ambientOcclusion;
+            Bloom = bloom;
+            Vignette = vignette;
         }
     }
 
-    /// <summary>Таблица пресетов фоторежима. Чистая функция preset → параметры,
-    /// покрывается юнит-тестами.</summary>
+    /// <summary>Пресеты фоторежима как комбинации тумблеров + определение
+    /// «Свои настройки». Чистые функции, покрываются юнит-тестами.</summary>
     public static class PhotoQualityPresetTable
     {
-        public static PhotoQualityParams Resolve(PhotoQualityPreset preset)
+        /// <summary>Тумблеры именованного пресета. Для Custom возвращает High
+        /// (как база), но применять Custom не следует — это состояние-метка.</summary>
+        public static PhotoQualityToggles Resolve(PhotoQualityPreset preset)
         {
             switch (preset)
             {
                 case PhotoQualityPreset.Low:
-                    // Слабое железо / WebGL: без супер-сэмплинга, короткие жёсткие тени.
-                    return new PhotoQualityParams(
-                        msaa: 2, renderScale: 1.0f, shadowDistance: 15f,
-                        shadowCascades: 2, softShadows: false);
+                    // Слабое железо / WebGL: жёсткие тени, без супер-сэмплинга и эффектов.
+                    return new PhotoQualityToggles(
+                        shadows: true, softShadows: false, antiAliasing: true,
+                        supersampling: false, ambientOcclusion: false, bloom: false, vignette: false);
                 case PhotoQualityPreset.Medium:
-                    return new PhotoQualityParams(
-                        msaa: 4, renderScale: 1.0f, shadowDistance: 25f,
-                        shadowCascades: 3, softShadows: true);
+                    return new PhotoQualityToggles(
+                        shadows: true, softShadows: true, antiAliasing: true,
+                        supersampling: false, ambientOcclusion: true, bloom: true, vignette: true);
                 case PhotoQualityPreset.High:
+                case PhotoQualityPreset.Custom:
                 default:
-                    // GTX 1060: 4x MSAA + 1.5x супер-сэмплинг + мягкие тени с запасом.
-                    return new PhotoQualityParams(
-                        msaa: 4, renderScale: 1.5f, shadowDistance: 40f,
-                        shadowCascades: 4, softShadows: true);
+                    // GTX 1060: всё включено + супер-сэмплинг.
+                    return new PhotoQualityToggles(
+                        shadows: true, softShadows: true, antiAliasing: true,
+                        supersampling: true, ambientOcclusion: true, bloom: true, vignette: true);
             }
         }
+
+        /// <summary>Записать тумблеры пресета в настройки. Для Custom — no-op
+        /// (оставляем то, что накрутил пользователь).</summary>
+        public static void Apply(PhotoQualityPreset preset, KitchenSettings s)
+        {
+            if (s == null || preset == PhotoQualityPreset.Custom) return;
+            var t = Resolve(preset);
+            s.PhotoShadows = t.Shadows;
+            s.PhotoSoftShadows = t.SoftShadows;
+            s.PhotoAntiAliasing = t.AntiAliasing;
+            s.PhotoSupersampling = t.Supersampling;
+            s.PhotoAmbientOcclusion = t.AmbientOcclusion;
+            s.PhotoBloom = t.Bloom;
+            s.PhotoVignette = t.Vignette;
+            s.PhotoQuality = preset;
+        }
+
+        /// <summary>Какому пресету соответствует текущая комбинация тумблеров.
+        /// Если ни одному — Custom.</summary>
+        public static PhotoQualityPreset Detect(KitchenSettings s)
+        {
+            if (s == null) return PhotoQualityPreset.Custom;
+            var cur = new PhotoQualityToggles(
+                s.PhotoShadows, s.PhotoSoftShadows, s.PhotoAntiAliasing,
+                s.PhotoSupersampling, s.PhotoAmbientOcclusion, s.PhotoBloom, s.PhotoVignette);
+
+            foreach (var p in new[] { PhotoQualityPreset.Low, PhotoQualityPreset.Medium, PhotoQualityPreset.High })
+                if (Equal(cur, Resolve(p))) return p;
+            return PhotoQualityPreset.Custom;
+        }
+
+        private static bool Equal(PhotoQualityToggles a, PhotoQualityToggles b) =>
+            a.Shadows == b.Shadows &&
+            a.SoftShadows == b.SoftShadows &&
+            a.AntiAliasing == b.AntiAliasing &&
+            a.Supersampling == b.Supersampling &&
+            a.AmbientOcclusion == b.AmbientOcclusion &&
+            a.Bloom == b.Bloom &&
+            a.Vignette == b.Vignette;
+
+        /// <summary>Следующий именованный пресет по кругу (Low→Medium→High→Low).
+        /// Из Custom переходим к Low.</summary>
+        public static PhotoQualityPreset Next(PhotoQualityPreset current) => current switch
+        {
+            PhotoQualityPreset.Low => PhotoQualityPreset.Medium,
+            PhotoQualityPreset.Medium => PhotoQualityPreset.High,
+            _ => PhotoQualityPreset.Low
+        };
     }
 }

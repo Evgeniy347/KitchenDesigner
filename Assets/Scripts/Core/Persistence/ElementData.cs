@@ -78,6 +78,10 @@ namespace KitchenDesigner.Core
 		public int midHeightMM = 75;
 		public bool isFloor = false;
 		public bool isLightSource = false;
+		// Параметры лампы. Инициализаторы = дефолты для старых сейвов без этих полей.
+		public int lightTemperatureK = LightSourceElement.DEFAULT_TEMPERATURE_K;
+		public int lightPowerW = LightSourceElement.DEFAULT_POWER_W;
+		public int lightDiffusionPct = LightSourceElement.DEFAULT_DIFFUSION_PCT;
 		public bool isPanel = false;
 		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
@@ -232,6 +236,12 @@ namespace KitchenDesigner.Core
 			d.isPanel = panel != null;
 			d.isFloor = element is FloorElement;
 			d.isLightSource = element is LightSourceElement;
+			if (element is LightSourceElement lightEl)
+			{
+				d.lightTemperatureK = lightEl.TemperatureK;
+				d.lightPowerW = lightEl.PowerW;
+				d.lightDiffusionPct = lightEl.DiffusionPct;
+			}
 			d.midHeightMM = pillar != null ? pillar.MidHeightMM : PillarElement.MidHeightMM_Default;
 
 			// Пазы есть только у базовой «Детали» — у остальных типов список пуст.

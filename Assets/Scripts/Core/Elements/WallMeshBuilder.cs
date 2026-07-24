@@ -6,8 +6,10 @@ namespace KitchenDesigner.Core
     public static class WallMeshBuilder
     {
         /// <summary>Минимальный размер ячейки в нормализованных координатах
-        /// (единичный куб). Ячейки тоньше этого порога порождают вырожденные
-        /// треугольники — визуальную полосу между близкими окнами.</summary>
+        /// (единичный куб). Разделители ближе этого порога схлопываются в одну
+        /// границу (см. CollapseNearDuplicates): иначе между ними остаётся
+        /// ячейка-волосок, которую отбрасывали целиком — вместе с гранями и
+        /// откосом, — оставляя сквозную щель со светом у краёв проёма.</summary>
         public const float MinCellNorm = 0.001f;
 
         public struct WindowCutout
@@ -100,6 +102,13 @@ namespace KitchenDesigner.Core
             xSplits.Sort();
             ySplits.Sort();
 
+            // Сливаем почти совпадающие края окон в одну границу до нарезки
+            // ячеек. Без этого пара окон «на одной высоте» (Y отличается на
+            // доли мм) даёт ячейку тоньше порога, которую отбрасывали вместе
+            // с откосом — сквозная полоса света у верха и низа проёма.
+            CollapseNearDuplicates(xSplits);
+            CollapseNearDuplicates(ySplits);
+
             for (int i = 0; i < xSplits.Count - 1; i++)
             {
                 float xs = xSplits[i], xe = xSplits[i + 1];
@@ -145,6 +154,24 @@ namespace KitchenDesigner.Core
                     }
                 }
             }
+        }
+
+        /// <summary>Схлопывает отсортированные разделители, отстоящие менее чем
+        /// на MinCellNorm, в одну границу. Крайние значения (границы самой грани)
+        /// сохраняются всегда, поэтому на выходе не меньше двух точек и ни один
+        /// промежуток не тоньше порога — ячеек-волосков не возникает.</summary>
+        private static void CollapseNearDuplicates(List<float> splits)
+        {
+            float hi = splits[splits.Count - 1];
+            int w = 1; // splits[0] (ближний край грани) всегда остаётся
+            for (int r = 1; r < splits.Count; r++)
+            {
+                // Не поглощаем дальний край и не оставляем промежуток тоньше порога.
+                if (splits[r] - splits[w - 1] >= MinCellNorm && hi - splits[r] >= MinCellNorm)
+                    splits[w++] = splits[r];
+            }
+            splits[w++] = hi; // дальний край грани обязан уцелеть
+            splits.RemoveRange(w, splits.Count - w);
         }
 
         private static int CountInside(List<WindowCutout> cutouts, float px, float py)

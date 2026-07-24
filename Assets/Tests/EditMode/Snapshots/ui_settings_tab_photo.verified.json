@@ -38,6 +38,11 @@
     },
     {
       "type": "Label",
+      "text": "Мягкие тени",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
       "text": "Потолок по стенам",
       "position": [-90, 0]
     },
@@ -49,6 +54,11 @@
     {
       "type": "Label",
       "text": "Сглаживание",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Суперсэмплинг",
       "position": [-90, 0]
     },
     {
@@ -80,6 +90,12 @@
     },
     {
       "type": "Toggle",
+      "label": "Tgl_Мягкие тени",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
       "label": "Tgl_Потолок по стенам",
       "isOn": true,
       "position": [224, 0]
@@ -93,6 +109,12 @@
     {
       "type": "Toggle",
       "label": "Tgl_Сглаживание",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Суперсэмплинг",
       "isOn": true,
       "position": [224, 0]
     },

@@ -16,7 +16,8 @@ namespace KitchenDesigner.Core.UI
 
 		private TMP_InputField? _name, _w, _h, _d, _radius,
 			_gapLeft, _gapRight, _gapTop, _gapBottom,
-			_x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight;
+			_x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight,
+			_lightTemp, _lightPower, _lightDiffusion;
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
@@ -75,6 +76,7 @@ namespace KitchenDesigner.Core.UI
 			public bool pillarOnly;       // показывать только для опор
 			public bool windowOnly;       // показывать только для окон
 			public bool doorOnly;         // показывать только для дверей
+			public bool lightOnly;        // показывать только для источников света
 			public bool partOnly;         // показывать только для базовой «детали» (пазы)
 			public bool gapsRow;          // секция зазоров: фасад ИЛИ ДВП/ХДФ
 			public bool hideForWindow;    // скрывать для окон (повороты — окно живёт на стене)
@@ -309,6 +311,11 @@ namespace KitchenDesigner.Core.UI
 			// Высота средней секции опоры (только для опор).
 			_midHeight = PillarFieldRow(panel.transform, "Средняя секция");
 
+			// Параметры лампы (только для источников света).
+			_lightTemp = LightFieldRow(panel.transform, "Температура", "K");
+			_lightPower = LightFieldRow(panel.transform, "Мощность", "Вт");
+			_lightDiffusion = LightFieldRow(panel.transform, "Рассеивание", "%");
+
             // ── Положение ───────────────────────────────────────────────
             AddRow(18f, RowGap, UIFactory.CreateSectionHeader("CtxSecPos", panel.transform, "Положение", 332f));
 
@@ -325,14 +332,14 @@ namespace KitchenDesigner.Core.UI
             _rz = TriField(panel.transform, "Z, °", TriCol3);
             TriEndRow(hideForWindow: true);
 
-			foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion }) f!.contentType = TMP_InputField.ContentType.Custom;
+			foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion }) f!.contentType = TMP_InputField.ContentType.Custom;
             foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.Custom;
             // Позиция — целые мм; углы — десятичные градусы.
             foreach (var f in new[] { _x, _y, _z }) f!.contentType = TMP_InputField.ContentType.Custom;
             foreach (var f in new[] { _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.Custom;
 
             // Арифметика: разрешаем + и - (пробелы допускаются, удаляются при вычислении).
-            foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z })
+            foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z })
                 if (f != null) f.onValidateInput = (text, idx, ch) => char.IsDigit(ch) || ch == '+' || ch == '-' || ch == ' ' ? ch : '\0';
             foreach (var f in new[] { _rx, _ry, _rz })
                 if (f != null) f.onValidateInput = (text, idx, ch) => char.IsDigit(ch) || ch == '+' || ch == '-' || ch == '.' || ch == ' ' ? ch : '\0';
@@ -732,6 +739,23 @@ namespace KitchenDesigner.Core.UI
 			return field;
 		}
 
+		private void AddLightRow(float height, float gapAfter, params RectTransform[] rects)
+		{
+			foreach (var rt in rects)
+				if (rt != null) AnchorTop(rt);
+			_layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, lightOnly = true });
+		}
+
+		private TMP_InputField LightFieldRow(Transform parent, string label, string unit)
+		{
+			var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
+				new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
+			var field = UIFactory.CreateNumberField("F_" + label, parent, "",
+				new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
+			AddLightRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
+			return field;
+		}
+
 		private TMP_InputField WindowFieldRow(Transform parent, string label, System.Func<bool>? visibleWhen = null)
         {
             var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
@@ -782,7 +806,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Раскладка сверху вниз ───────────────────────────────────────
 
-		private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer, bool isTable, bool isPillar = false, bool isWindow = false, bool isDoor = false, bool isPart = false, bool isPanel = false)
+		private void Layout(bool isFacade, bool isAssembled, bool isRadial, bool isDrawer, bool isTable, bool isPillar = false, bool isWindow = false, bool isDoor = false, bool isPart = false, bool isPanel = false, bool isLight = false)
 		{
 			float cursor = TopPad;
 			float contentBottom = TopPad;
@@ -796,6 +820,7 @@ namespace KitchenDesigner.Core.UI
 					&& (!row.pillarOnly || isPillar)
 					&& (!row.windowOnly || isWindow)
 					&& (!row.doorOnly || isDoor)
+					&& (!row.lightOnly || isLight)
 					&& (!row.partOnly || isPart)
 					&& (!row.gapsRow || isFacade || isPanel)
 					&& !(row.hideForWindow && isWindow)
@@ -805,7 +830,7 @@ namespace KitchenDesigner.Core.UI
 				// оставалась бы на экране в позиции от прошлой раскладки.
 				if (row.toggleGO != null)
 					row.toggleGO.SetActive(visible);
-				else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly || row.pillarOnly || row.windowOnly || row.doorOnly || row.partOnly || row.gapsRow || row.hideForWindow || row.visibleWhen != null)
+				else if (row.facadeOnly || row.assembledOnly || row.radialOnly || row.drawerOnly || row.tableOnly || row.pillarOnly || row.windowOnly || row.doorOnly || row.lightOnly || row.partOnly || row.gapsRow || row.hideForWindow || row.visibleWhen != null)
                     foreach (var rt in row.rects)
                         if (rt != null) rt.gameObject.SetActive(visible);
 
@@ -909,6 +934,14 @@ namespace KitchenDesigner.Core.UI
 			if (pillar != null && _midHeight != null)
 				MaybeRefresh(_midHeight, pillar.MidHeightMM.ToString());
 
+			var lightRt = _target as LightSourceElement;
+			if (lightRt != null)
+			{
+				if (_lightTemp != null) MaybeRefresh(_lightTemp, lightRt.TemperatureK.ToString());
+				if (_lightPower != null) MaybeRefresh(_lightPower, lightRt.PowerW.ToString());
+				if (_lightDiffusion != null) MaybeRefresh(_lightDiffusion, lightRt.DiffusionPct.ToString());
+			}
+
 			var window = _target as WindowElement;
             if (window != null && _sillProtrusion != null)
                 MaybeRefresh(_sillProtrusion, window.SillProtrusionMM.ToString());
@@ -965,7 +998,8 @@ namespace KitchenDesigner.Core.UI
 			_currentIsDoor = isDoor;
 				// Заголовок различает и подтипы («Сборный фасад» ≠ «Фасад») и
 				// конкретный элемент (имя после тире).
-				_currentTypeName = isPillar ? "Опора"
+				_currentTypeName = element is LightSourceElement ? "Источник света"
+					: isPillar ? "Опора"
 					: isRadiusTable ? "Радиусный стол"
 					: isTable ? "Стол"
 					: isDrawer ? "Ящик GTV"
@@ -1046,6 +1080,14 @@ namespace KitchenDesigner.Core.UI
 				var pillar = element as PillarElement;
 				if (pillar != null && _midHeight != null)
 					_midHeight.text = pillar.MidHeightMM.ToString();
+
+				var lightEl = element as LightSourceElement;
+				if (lightEl != null)
+				{
+					if (_lightTemp != null) _lightTemp.text = lightEl.TemperatureK.ToString();
+					if (_lightPower != null) _lightPower.text = lightEl.PowerW.ToString();
+					if (_lightDiffusion != null) _lightDiffusion.text = lightEl.DiffusionPct.ToString();
+				}
 
 				var window = element as WindowElement;
                 if (window != null)
@@ -1204,6 +1246,26 @@ namespace KitchenDesigner.Core.UI
 			var windowEl = target as WindowElement;
             if (windowEl != null && _sillProtrusion != null)
                 windowEl.SillProtrusionMM = ParseIntField(_sillProtrusion, windowEl.SillProtrusionMM);
+
+			var lightApp = target as LightSourceElement;
+			if (lightApp != null)
+			{
+				if (_lightTemp != null)
+				{
+					lightApp.TemperatureK = ParseIntField(_lightTemp, lightApp.TemperatureK);
+					_lightTemp.text = lightApp.TemperatureK.ToString();
+				}
+				if (_lightPower != null)
+				{
+					lightApp.PowerW = ParseIntField(_lightPower, lightApp.PowerW);
+					_lightPower.text = lightApp.PowerW.ToString();
+				}
+				if (_lightDiffusion != null)
+				{
+					lightApp.DiffusionPct = ParseIntField(_lightDiffusion, lightApp.DiffusionPct);
+					_lightDiffusion.text = lightApp.DiffusionPct.ToString();
+				}
+			}
 
             // Сохраняем материал ножек (материал столешницы применяется через дропдаун).
             if (_legsMaterialDropdown != null && _currentIsTable)
@@ -1545,7 +1607,7 @@ namespace KitchenDesigner.Core.UI
                 _target is RadialShelfElement, _target is DrawerElement,
                 isTable, _target is PillarElement,
                 isWindow || isDoor, isDoor, _target.SupportsGrooves,
-                _target is PanelElement);
+                _target is PanelElement, _target is LightSourceElement);
         }
 
         // ── Текстура/декор (детали и фасады) ────────────────────────────
@@ -2004,6 +2066,10 @@ namespace KitchenDesigner.Core.UI
 			TrackField(_legInset, tableEl2 != null ? tableEl2.LegInsetMM.ToString() : (radiusTableEl2 != null ? radiusTableEl2.LegInsetMM.ToString() : "100"));
 			var pillarEl = _target as PillarElement;
 			TrackField(_midHeight, pillarEl != null ? pillarEl.MidHeightMM.ToString() : PillarElement.MidHeightMM_Default.ToString());
+			var lightTrack = _target as LightSourceElement;
+			TrackField(_lightTemp, lightTrack != null ? lightTrack.TemperatureK.ToString() : LightSourceElement.DEFAULT_TEMPERATURE_K.ToString());
+			TrackField(_lightPower, lightTrack != null ? lightTrack.PowerW.ToString() : LightSourceElement.DEFAULT_POWER_W.ToString());
+			TrackField(_lightDiffusion, lightTrack != null ? lightTrack.DiffusionPct.ToString() : LightSourceElement.DEFAULT_DIFFUSION_PCT.ToString());
             var pos = _target.transform.position;
             TrackField(_x, ToMM(pos.x));
             TrackField(_y, ToMM(pos.y));

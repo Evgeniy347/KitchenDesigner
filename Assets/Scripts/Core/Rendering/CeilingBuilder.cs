@@ -4,9 +4,9 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     /// <summary>Строит и убирает временную плиту потолка в фоторежиме. Потолок —
-    /// чистая декорация: не регистрируется в PartRegistry, без коллайдера (не ловит
-    /// клики/рейкасты) и не отбрасывает тень (иначе перекрыл бы солнце и затемнил
-    /// комнату), но принимает тени от предметов.</summary>
+    /// чистая декорация: не регистрируется в PartRegistry и без коллайдера (не ловит
+    /// клики/рейкасты). Отбрасывает тень — перекрывает солнце сверху, поэтому комната
+    /// освещается только через окна, открытые двери и собственные светильники.</summary>
     public static class CeilingBuilder
     {
         private const string CeilingName = "PhotoCeiling";
@@ -45,7 +45,7 @@ namespace KitchenDesigner.Core
                 mat.SetColor("_BaseColor", new Color(0.93f, 0.93f, 0.95f));
                 renderer.sharedMaterial = mat;
             }
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             renderer.receiveShadows = true;
 
             _ceiling = go;
