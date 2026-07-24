@@ -611,19 +611,8 @@ namespace KitchenDesigner.Core
 				LightSourceElement.DEFAULT_SIZE_MM,
 				LightSourceElement.DEFAULT_SIZE_MM);
 			lamp.Movable = true;
-			lamp.EnsureLight();
+			lamp.EnsureLight();   // создаёт свет и назначает собственный эмиссивный плафон
 			lamp.SyncLightState();
-
-			// Светящийся «плафон»: эмиссия видна и при выключенной тонировке.
-			var shader = Shader.Find("Universal Render Pipeline/Lit");
-			if (shader != null)
-			{
-				var mat = new Material(shader);
-				mat.EnableKeyword("_EMISSION");
-				mat.SetColor("_BaseColor", new Color(1f, 0.97f, 0.85f, 1f));
-				mat.SetColor("_EmissionColor", new Color(1f, 0.95f, 0.7f) * 1.2f);
-				go.GetComponent<MeshRenderer>().material = mat;
-			}
 
 			PartRegistry.Register(lamp);
 

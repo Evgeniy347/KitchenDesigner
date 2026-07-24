@@ -169,6 +169,38 @@ public class WallCutoutTests : SnapTestBase
         }
     }
 
+    /// <summary>Два окна бок о бок «почти на одной высоте» (края по Y отличаются
+    /// меньше чем на MinCellNorm). Регресс: волосковая ячейка у края проёма
+    /// отбрасывалась вместе с гранями и откосом — сквозная щель со светом
+    /// сверху и снизу окна. После схлопывания близких краёв все Y-координаты
+    /// меша либо совпадают, либо отстоят не меньше чем на MinCellNorm.</summary>
+    [Test]
+    public void Builder_TwoWindowsNearSameHeight_NoThinUncappedBand()
+    {
+        float delta = WallMeshBuilder.MinCellNorm * 0.3f; // заведомо ниже порога
+        var cutouts = new List<WallMeshBuilder.WindowCutout>
+        {
+            Cut(-0.25f, 0f,    0.1f, 0.2f),  // X ∈ [-0.35,-0.15], Y ∈ [-0.2, 0.2]
+            Cut( 0.25f, delta, 0.1f, 0.2f),  // X ∈ [ 0.15, 0.35], Y ∈ [-0.2+δ, 0.2+δ]
+        };
+        var mesh = WallMeshBuilder.Build(cutouts);
+
+        var ys = new List<float>();
+        foreach (var v in mesh.vertices) ys.Add(v.y);
+        ys.Sort();
+
+        // Соседние РАЗЛИЧНЫЕ Y не должны отстоять меньше чем на MinCellNorm:
+        // близкие края окон обязаны слиться, иначе между ними остаётся
+        // незакрытая полоска (буг: -0.2 и -0.2+δ существуют одновременно).
+        const float same = 1e-6f;
+        for (int i = 1; i < ys.Count; i++)
+        {
+            float gap = ys[i] - ys[i - 1];
+            Assert.IsTrue(gap < same || gap >= WallMeshBuilder.MinCellNorm - same,
+                $"почти-дубль Y: {ys[i - 1]} и {ys[i]} (зазор {gap}) — волосковая ячейка у края проёма");
+        }
+    }
+
     /// <summary>Два пересекающихся окна: reveal-квады должны быть только на
     /// внешних границах объединённого проёма, а не внутри overlap-региона.
     /// Регресс: артефактная полоса на границе overlap/single-window.</summary>

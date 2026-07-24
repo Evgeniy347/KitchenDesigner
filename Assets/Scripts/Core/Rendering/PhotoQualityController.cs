@@ -1,18 +1,24 @@
 using System;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Применяет параметры качества фоторежима к URP: MSAA, render scale,
-    /// дальность/мягкость теней, сглаживание камеры и пост-обработку (tonemapping,
-    /// bloom, vignette, AO). Все изменения снимаются при входе и откатываются при
-    /// выходе, чтобы рабочий режим оставался лёгким. Всё защищено от отсутствия URP
-    /// (EditMode-тесты, batch) — в этом случае методы просто ничего не делают.</summary>
+    /// <summary>Применяет качество фоторежима к URP по отдельным тумблерам настроек
+    /// (тени/мягкие тени, сглаживание, супер-сэмплинг, AO, bloom, vignette). Кроме
+    /// вкл/выкл поднимает разрешение карты теней и правит смещения — чтобы тени были
+    /// мягкими и без «лесенки». Также приглушает ambient: в фоторежиме комната должна
+    /// быть тёмной, а свет идти от солнца через окна/двери и от светильников. Всё
+    /// снимается при входе и откатывается при выходе; при отсутствии URP — no-op.</summary>
     public static class PhotoQualityController
     {
         private const string VolumeName = "PhotoModeVolume";
+
+        // Плотная карта теней для чёткого мягкого края в пределах комнаты.
+        private const int ShadowMapResolution = 4096;
+        private const float ShadowDistanceUnits = 22f;
 
         private static bool _applied;
         private static GameObject? _volumeGo;
@@ -21,10 +27,19 @@ namespace KitchenDesigner.Core
         private static int _prevMsaa;
         private static float _prevRenderScale;
         private static float _prevShadowDistance;
+        private static int _prevShadowRes = -1;
         private static AntialiasingMode _prevCamAA;
         private static AntialiasingQuality _prevCamAAQuality;
         private static bool _prevPostProcessing;
         private static LightShadows _prevSunShadows;
+        private static float _prevSunShadowStrength;
+        private static float _prevSunShadowBias;
+        private static float _prevSunNormalBias;
+        private static float _prevAmbientIntensity;
+        private static AmbientMode _prevAmbientMode;
+        private static Color _prevAmbientLight;
+        private static Color _prevAmbientSky, _prevAmbientEquator, _prevAmbientGround;
+        private static bool _ambientSnapped;
 
         public static bool IsApplied => _applied;
 
@@ -34,11 +49,11 @@ namespace KitchenDesigner.Core
 
             var s = KitchenSettings.Instance;
             if (s == null) return;
-            var p = PhotoQualityPresetTable.Resolve(s.PhotoQuality);
 
-            ApplyPipeline(p);
-            ApplyShadows(s, p);
-            ApplyCamera(s, p);
+            ApplyPipeline(s);
+            ApplyShadows(s);
+            ApplyCamera(s);
+            ApplyAmbient();
             ApplyPostProcessing(s);
             ApplyAmbientOcclusion(s.PhotoAmbientOcclusion);
 
@@ -55,6 +70,7 @@ namespace KitchenDesigner.Core
                 asset.msaaSampleCount = _prevMsaa;
                 asset.renderScale = _prevRenderScale;
                 asset.shadowDistance = _prevShadowDistance;
+                if (_prevShadowRes > 0) SetIntField(asset, "m_MainLightShadowmapResolution", _prevShadowRes);
             }
 
             var cam = Camera.main;
@@ -70,7 +86,24 @@ namespace KitchenDesigner.Core
             }
 
             var sun = SunController.Sun;
-            if (sun != null) sun.shadows = _prevSunShadows;
+            if (sun != null)
+            {
+                sun.shadows = _prevSunShadows;
+                sun.shadowStrength = _prevSunShadowStrength;
+                sun.shadowBias = _prevSunShadowBias;
+                sun.shadowNormalBias = _prevSunNormalBias;
+            }
+
+            if (_ambientSnapped)
+            {
+                RenderSettings.ambientMode = _prevAmbientMode;
+                RenderSettings.ambientLight = _prevAmbientLight;
+                RenderSettings.ambientSkyColor = _prevAmbientSky;
+                RenderSettings.ambientEquatorColor = _prevAmbientEquator;
+                RenderSettings.ambientGroundColor = _prevAmbientGround;
+                RenderSettings.ambientIntensity = _prevAmbientIntensity;
+                _ambientSnapped = false;
+            }
 
             ApplyAmbientOcclusion(false);
 
@@ -86,7 +119,7 @@ namespace KitchenDesigner.Core
 
         // ── Pipeline (URP asset) ────────────────────────────
 
-        private static void ApplyPipeline(PhotoQualityParams p)
+        private static void ApplyPipeline(KitchenSettings s)
         {
             var asset = GetUrpAsset();
             if (asset == null) return;
@@ -95,22 +128,34 @@ namespace KitchenDesigner.Core
             _prevRenderScale = asset.renderScale;
             _prevShadowDistance = asset.shadowDistance;
 
-            asset.msaaSampleCount = Mathf.Max(1, p.MsaaSamples);
-            asset.renderScale = Mathf.Clamp(p.RenderScale, 0.5f, 2f);
-            asset.shadowDistance = Mathf.Max(1f, p.ShadowDistance);
+            asset.msaaSampleCount = s.PhotoAntiAliasing ? 4 : 1;
+            asset.renderScale = s.PhotoSupersampling ? 1.5f : 1f;
+            asset.shadowDistance = ShadowDistanceUnits;
+
+            // Разрешение карты теней — рантайм-сеттера нет, ставим полем через рефлексию.
+            _prevShadowRes = GetIntField(asset, "m_MainLightShadowmapResolution");
+            if (s.PhotoShadows) SetIntField(asset, "m_MainLightShadowmapResolution", ShadowMapResolution);
         }
 
-        private static void ApplyShadows(KitchenSettings s, PhotoQualityParams p)
+        private static void ApplyShadows(KitchenSettings s)
         {
             var sun = SunController.Sun;
             if (sun == null) return;
             _prevSunShadows = sun.shadows;
+            _prevSunShadowStrength = sun.shadowStrength;
+            _prevSunShadowBias = sun.shadowBias;
+            _prevSunNormalBias = sun.shadowNormalBias;
+
             sun.shadows = !s.PhotoShadows
                 ? LightShadows.None
-                : (p.SoftShadows ? LightShadows.Soft : LightShadows.Hard);
+                : (s.PhotoSoftShadows ? LightShadows.Soft : LightShadows.Hard);
+            sun.shadowStrength = 1f;
+            // Малые смещения при плотной карте — убирает и «лесенку», и acne.
+            sun.shadowBias = 0.05f;
+            sun.shadowNormalBias = 0.35f;
         }
 
-        private static void ApplyCamera(KitchenSettings s, PhotoQualityParams p)
+        private static void ApplyCamera(KitchenSettings s)
         {
             var cam = Camera.main;
             if (cam == null) return;
@@ -126,6 +171,54 @@ namespace KitchenDesigner.Core
                 : AntialiasingMode.None;
             data.antialiasingQuality = AntialiasingQuality.High;
             data.renderPostProcessing = true;
+        }
+
+        private static void ApplyAmbient()
+        {
+            _prevAmbientMode = RenderSettings.ambientMode;
+            _prevAmbientLight = RenderSettings.ambientLight;
+            _prevAmbientSky = RenderSettings.ambientSkyColor;
+            _prevAmbientEquator = RenderSettings.ambientEquatorColor;
+            _prevAmbientGround = RenderSettings.ambientGroundColor;
+            _prevAmbientIntensity = RenderSettings.ambientIntensity;
+            _ambientSnapped = true;
+
+            // Дешёвая аппроксимация отскока света без запечки: градиентный ambient.
+            // Грани, смотрящие ВНИЗ (низ полки/столешницы), берут «ground»-цвет —
+            // тёплый отскок от пола/дерева, поэтому под полкой не чёрный провал.
+            // Верхние грани — слабый холодный «sky». Уровень низкий: «темно значит
+            // темно» сохраняется, лечится именно чёрный провал в тени.
+            Color bounce = SampleFloorBounce();
+            RenderSettings.ambientMode = AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.20f, 0.21f, 0.24f);
+            RenderSettings.ambientEquatorColor = new Color(0.17f, 0.16f, 0.15f);
+            RenderSettings.ambientGroundColor = bounce;
+        }
+
+        /// <summary>Цвет «отскока» снизу — тёплый оттенок пола, приглушённый.
+        /// При отсутствии пола — нейтрально-тёплый дефолт.</summary>
+        private static Color SampleFloorBounce()
+        {
+            var fallback = new Color(0.28f, 0.23f, 0.17f);
+            var floor = GameObject.FindWithTag("Floor");
+            var mr = floor != null ? floor.GetComponent<MeshRenderer>() : null;
+            var mat = mr != null ? mr.sharedMaterial : null;
+            if (mat == null) return fallback;
+            try
+            {
+                Color c = mat.HasProperty("_BaseColor") ? mat.GetColor("_BaseColor")
+                        : mat.HasProperty("_Color") ? mat.GetColor("_Color")
+                        : fallback;
+                // Отскок = часть альбедо пола; не ярче разумного, иначе зальёт сцену.
+                return new Color(
+                    Mathf.Clamp(c.r * 0.5f, 0f, 0.35f),
+                    Mathf.Clamp(c.g * 0.5f, 0f, 0.32f),
+                    Mathf.Clamp(c.b * 0.5f, 0f, 0.30f));
+            }
+            catch (Exception)
+            {
+                return fallback;
+            }
         }
 
         // ── Post-processing volume ──────────────────────────
@@ -164,9 +257,6 @@ namespace KitchenDesigner.Core
         }
 
         // ── SSAO (renderer feature, best-effort) ────────────
-        // SSAO — это ScriptableRendererFeature на рендерере. Публичного рантайм-API
-        // для его переключения нет, поэтому включаем/выключаем существующую фичу
-        // через рефлексию. Если она не добавлена в рендерер — тихий no-op.
 
         private static void ApplyAmbientOcclusion(bool enabled)
         {
@@ -177,8 +267,7 @@ namespace KitchenDesigner.Core
 
                 var listField = typeof(UniversalRenderPipelineAsset)
                     .GetField("m_RendererDataList",
-                        System.Reflection.BindingFlags.Instance |
-                        System.Reflection.BindingFlags.NonPublic);
+                        BindingFlags.Instance | BindingFlags.NonPublic);
                 if (listField?.GetValue(asset) is not ScriptableRendererData[] datas) return;
 
                 foreach (var data in datas)
@@ -196,6 +285,29 @@ namespace KitchenDesigner.Core
             {
                 // Рендерер без SSAO — переключение неприменимо, это не ошибка.
             }
+        }
+
+        // ── Reflection helpers ──────────────────────────────
+
+        private static int GetIntField(object obj, string field)
+        {
+            try
+            {
+                var f = obj.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
+                if (f != null && f.GetValue(obj) is int v) return v;
+            }
+            catch (Exception) { }
+            return -1;
+        }
+
+        private static void SetIntField(object obj, string field, int value)
+        {
+            try
+            {
+                var f = obj.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
+                f?.SetValue(obj, value);
+            }
+            catch (Exception) { }
         }
 
         private static UniversalRenderPipelineAsset? GetUrpAsset()

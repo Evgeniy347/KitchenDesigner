@@ -284,6 +284,13 @@ namespace KitchenDesigner.Core
                         if (ed.doorIsOpen) doorEl.SetOpen(true);
                         doorEl.AttachedWallName = ed.doorAttachedWallName;
                     }
+
+                    if (ed.isLightSource && el is LightSourceElement lightEl)
+                    {
+                        lightEl.TemperatureK = ed.lightTemperatureK;
+                        lightEl.PowerW = ed.lightPowerW;
+                        lightEl.DiffusionPct = ed.lightDiffusionPct;
+                    }
                 }
                 created.Add(go);
                 resolved.Add(el);

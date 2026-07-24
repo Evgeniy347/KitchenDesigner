@@ -77,7 +77,9 @@ namespace KitchenDesigner.Core
         // срабатывают), затем перезаписывает только присутствующие поля.
         public int photoQuality = (int)PhotoQualityPreset.High;
         public bool photoShadows = true;
+        public bool photoSoftShadows = true;
         public bool photoAntiAliasing = true;
+        public bool photoSupersampling = true;
         public bool photoAmbientOcclusion = true;
         public bool photoBloom = true;
         public bool photoVignette = true;

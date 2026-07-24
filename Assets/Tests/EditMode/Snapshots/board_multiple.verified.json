@@ -65,6 +65,9 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -132,6 +135,9 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         },
@@ -199,6 +205,9 @@
             "midHeightMM": 75,
             "isFloor": false,
             "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
             "isPanel": false,
             "grooves": []
         }
@@ -279,6 +288,9 @@
         "midHeightMM": 75,
         "isFloor": false,
         "isLightSource": false,
+        "lightTemperatureK": 3000,
+        "lightPowerW": 9,
+        "lightDiffusionPct": 50,
         "isPanel": false,
         "grooves": []
     },
@@ -300,7 +312,9 @@
         "cameraPanFree": false,
         "photoQuality": 2,
         "photoShadows": true,
+        "photoSoftShadows": true,
         "photoAntiAliasing": true,
+        "photoSupersampling": true,
         "photoAmbientOcclusion": true,
         "photoBloom": true,
         "photoVignette": true,

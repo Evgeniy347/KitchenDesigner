@@ -195,24 +195,61 @@ namespace KitchenDesigner.Core.UI
             y -= 6;
             BuildPresetRow(t, ref y, s);
 
+            // Тумблеры, привязанные к пресету: ручное изменение любого переводит
+            // пресет в «Свои настройки» (или в совпавший именованный).
             y -= 6;
-            AddToggleRow(t, ref y, "Тени", s.PhotoShadows,
-                v => { s.PhotoShadows = v; PhotoMode.RefreshIfActive(); });
+            AddLinkedToggle(t, ref y, "Тени", s.PhotoShadows, v => s.PhotoShadows = v);
+            AddLinkedToggle(t, ref y, "Мягкие тени", s.PhotoSoftShadows, v => s.PhotoSoftShadows = v);
+            AddLinkedToggle(t, ref y, "Сглаживание", s.PhotoAntiAliasing, v => s.PhotoAntiAliasing = v);
+            AddLinkedToggle(t, ref y, "Суперсэмплинг", s.PhotoSupersampling, v => s.PhotoSupersampling = v);
+            AddLinkedToggle(t, ref y, "Ambient occlusion", s.PhotoAmbientOcclusion, v => s.PhotoAmbientOcclusion = v);
+            AddLinkedToggle(t, ref y, "Свечение (bloom)", s.PhotoBloom, v => s.PhotoBloom = v);
+            AddLinkedToggle(t, ref y, "Виньетка", s.PhotoVignette, v => s.PhotoVignette = v);
 
-            AddToggleRow(t, ref y, "Сглаживание", s.PhotoAntiAliasing,
-                v => { s.PhotoAntiAliasing = v; PhotoMode.RefreshIfActive(); });
-
-            AddToggleRow(t, ref y, "Ambient occlusion", s.PhotoAmbientOcclusion,
-                v => { s.PhotoAmbientOcclusion = v; PhotoMode.RefreshIfActive(); });
-
-            AddToggleRow(t, ref y, "Свечение (bloom)", s.PhotoBloom,
-                v => { s.PhotoBloom = v; PhotoMode.RefreshIfActive(); });
-
-            AddToggleRow(t, ref y, "Виньетка", s.PhotoVignette,
-                v => { s.PhotoVignette = v; PhotoMode.RefreshIfActive(); });
-
+            // Потолок — не про качество, а про сцену: к пресету не привязан.
+            y -= 6;
             AddToggleRow(t, ref y, "Потолок по стенам", s.PhotoCeiling,
                 v => { s.PhotoCeiling = v; PhotoMode.RefreshIfActive(); });
+        }
+
+        // ── Пресет + привязанные тумблеры ───────────────────
+
+        private readonly Dictionary<string, Toggle> _photoLinkedToggles = new();
+
+        private void AddLinkedToggle(Transform t, ref float y, string label, bool value, Action<bool> setter)
+        {
+            var toggle = AddToggleRow(t, ref y, label, value, v => { setter(v); OnLinkedToggleChanged(); });
+            _photoLinkedToggles[label] = toggle;
+        }
+
+        private void OnLinkedToggleChanged()
+        {
+            var s = KitchenSettings.Instance;
+            if (s != null) s.PhotoQuality = PhotoQualityPresetTable.Detect(s);
+            UpdatePresetLabel();
+            PhotoMode.RefreshIfActive();
+        }
+
+        private void SyncLinkedTogglesFromSettings(KitchenSettings s)
+        {
+            void Set(string key, bool v)
+            {
+                if (_photoLinkedToggles.TryGetValue(key, out var tg)) tg.SetIsOnWithoutNotify(v);
+            }
+            Set("Тени", s.PhotoShadows);
+            Set("Мягкие тени", s.PhotoSoftShadows);
+            Set("Сглаживание", s.PhotoAntiAliasing);
+            Set("Суперсэмплинг", s.PhotoSupersampling);
+            Set("Ambient occlusion", s.PhotoAmbientOcclusion);
+            Set("Свечение (bloom)", s.PhotoBloom);
+            Set("Виньетка", s.PhotoVignette);
+        }
+
+        private void UpdatePresetLabel()
+        {
+            var s = KitchenSettings.Instance;
+            var label = _presetButton != null ? _presetButton.GetComponentInChildren<TMPro.TextMeshProUGUI>() : null;
+            if (label != null && s != null) label.text = PresetName(PhotoQualityPresetTable.Detect(s));
         }
 
         // Пресет качества — компактная кнопка-циклер (Низкое → Среднее → Высокое),
@@ -226,7 +263,8 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateLabel("Lbl_Quality", rowRect, "Качество", 16,
                 new Vector2(-(ContentW - LabelW) * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
 
-            _presetButton = UIFactory.CreateButton("Btn_Quality", rowRect, PresetName(s.PhotoQuality),
+            _presetButton = UIFactory.CreateButton("Btn_Quality", rowRect,
+                PresetName(PhotoQualityPresetTable.Detect(s)),
                 new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0), new Vector2(ControlW, RowH),
                 () => CyclePreset(s));
 
@@ -235,9 +273,10 @@ namespace KitchenDesigner.Core.UI
 
         private void CyclePreset(KitchenSettings s)
         {
-            s.PhotoQuality = (PhotoQualityPreset)(((int)s.PhotoQuality + 1) % 3);
-            var label = _presetButton != null ? _presetButton.GetComponentInChildren<TMPro.TextMeshProUGUI>() : null;
-            if (label != null) label.text = PresetName(s.PhotoQuality);
+            var next = PhotoQualityPresetTable.Next(PhotoQualityPresetTable.Detect(s));
+            PhotoQualityPresetTable.Apply(next, s);      // двигает реальные тумблеры
+            SyncLinkedTogglesFromSettings(s);
+            UpdatePresetLabel();
             PhotoMode.RefreshIfActive();
         }
 
@@ -245,7 +284,8 @@ namespace KitchenDesigner.Core.UI
         {
             PhotoQualityPreset.Low => "Низкое",
             PhotoQualityPreset.Medium => "Среднее",
-            _ => "Высокое"
+            PhotoQualityPreset.High => "Высокое",
+            _ => "Свои настройки"
         };
 
         // ── Tab: О программе ────────────────────────────────

@@ -69,35 +69,75 @@ public class PhotoModeTests
         Assert.AreEqual(2.5f, ceil.min.y, 1e-4f);
     }
 
-    // ── PhotoQualityPresetTable.Resolve ─────────────────────
+    // ── PhotoQualityPresetTable (пресет = набор тумблеров) ───
 
     [Test]
     public void Preset_High_HasSupersamplingAndSoftShadows()
     {
         var p = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.High);
-        Assert.Greater(p.RenderScale, 1f, "High использует супер-сэмплинг");
+        Assert.IsTrue(p.Supersampling, "High использует супер-сэмплинг");
         Assert.IsTrue(p.SoftShadows);
-        Assert.GreaterOrEqual(p.MsaaSamples, 4);
+        Assert.IsTrue(p.AntiAliasing);
     }
 
     [Test]
     public void Preset_Low_IsLightest()
     {
         var low = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.Low);
-        var high = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.High);
-        Assert.LessOrEqual(low.RenderScale, high.RenderScale);
-        Assert.LessOrEqual(low.ShadowDistance, high.ShadowDistance);
+        Assert.IsFalse(low.Supersampling);
         Assert.IsFalse(low.SoftShadows);
+        Assert.IsFalse(low.Bloom);
+        Assert.IsTrue(low.Shadows, "тени есть даже в низком пресете");
     }
 
     [Test]
-    public void Preset_Monotonic_ShadowDistance()
+    public void Preset_Apply_ThenDetect_Roundtrips()
     {
-        var low = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.Low);
-        var med = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.Medium);
-        var high = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.High);
-        Assert.Less(low.ShadowDistance, med.ShadowDistance);
-        Assert.Less(med.ShadowDistance, high.ShadowDistance);
+        var gs = KitchenSettings.Instance;
+        var before = gs.ToData();
+
+        foreach (var preset in new[] { PhotoQualityPreset.Low, PhotoQualityPreset.Medium, PhotoQualityPreset.High })
+        {
+            PhotoQualityPresetTable.Apply(preset, gs);
+            Assert.AreEqual(preset, PhotoQualityPresetTable.Detect(gs), $"после Apply({preset}) должен определяться он же");
+        }
+
+        gs.ApplyFrom(before);
+    }
+
+    [Test]
+    public void Preset_ManualChange_BecomesCustom()
+    {
+        var gs = KitchenSettings.Instance;
+        var before = gs.ToData();
+
+        PhotoQualityPresetTable.Apply(PhotoQualityPreset.High, gs);
+        gs.PhotoBloom = false; // ручное изменение любого привязанного тумблера
+        Assert.AreEqual(PhotoQualityPreset.Custom, PhotoQualityPresetTable.Detect(gs));
+
+        gs.ApplyFrom(before);
+    }
+
+    [Test]
+    public void Preset_Apply_Custom_IsNoOp()
+    {
+        var gs = KitchenSettings.Instance;
+        var before = gs.ToData();
+
+        PhotoQualityPresetTable.Apply(PhotoQualityPreset.Low, gs);
+        PhotoQualityPresetTable.Apply(PhotoQualityPreset.Custom, gs); // не должен ничего менять
+        Assert.AreEqual(PhotoQualityPreset.Low, PhotoQualityPresetTable.Detect(gs));
+
+        gs.ApplyFrom(before);
+    }
+
+    [Test]
+    public void Preset_Next_CyclesNamedPresets()
+    {
+        Assert.AreEqual(PhotoQualityPreset.Medium, PhotoQualityPresetTable.Next(PhotoQualityPreset.Low));
+        Assert.AreEqual(PhotoQualityPreset.High, PhotoQualityPresetTable.Next(PhotoQualityPreset.Medium));
+        Assert.AreEqual(PhotoQualityPreset.Low, PhotoQualityPresetTable.Next(PhotoQualityPreset.High));
+        Assert.AreEqual(PhotoQualityPreset.Low, PhotoQualityPresetTable.Next(PhotoQualityPreset.Custom));
     }
 
     // ── KitchenSettings: photo fields persistence ───────────
@@ -108,9 +148,11 @@ public class PhotoModeTests
         var gs = KitchenSettings.Instance;
         var before = gs.ToData();
 
-        gs.PhotoQuality = PhotoQualityPreset.Low;
+        gs.PhotoQuality = PhotoQualityPreset.Custom;
         gs.PhotoShadows = false;
+        gs.PhotoSoftShadows = false;
         gs.PhotoAntiAliasing = false;
+        gs.PhotoSupersampling = false;
         gs.PhotoAmbientOcclusion = false;
         gs.PhotoBloom = false;
         gs.PhotoVignette = false;
@@ -120,7 +162,9 @@ public class PhotoModeTests
 
         gs.PhotoQuality = PhotoQualityPreset.High;
         gs.PhotoShadows = true;
+        gs.PhotoSoftShadows = true;
         gs.PhotoAntiAliasing = true;
+        gs.PhotoSupersampling = true;
         gs.PhotoAmbientOcclusion = true;
         gs.PhotoBloom = true;
         gs.PhotoVignette = true;
@@ -128,15 +172,73 @@ public class PhotoModeTests
 
         gs.ApplyFrom(data);
 
-        Assert.AreEqual(PhotoQualityPreset.Low, gs.PhotoQuality);
+        Assert.AreEqual(PhotoQualityPreset.Custom, gs.PhotoQuality);
         Assert.IsFalse(gs.PhotoShadows);
+        Assert.IsFalse(gs.PhotoSoftShadows);
         Assert.IsFalse(gs.PhotoAntiAliasing);
+        Assert.IsFalse(gs.PhotoSupersampling);
         Assert.IsFalse(gs.PhotoAmbientOcclusion);
         Assert.IsFalse(gs.PhotoBloom);
         Assert.IsFalse(gs.PhotoVignette);
         Assert.IsFalse(gs.PhotoCeiling);
 
         gs.ApplyFrom(before);
+    }
+
+    // ── Источник света: температура и мощность ──────────────
+
+    [Test]
+    public void LightSource_Temperature_SetsColor_Power_SetsIntensity()
+    {
+        var go = new GameObject("Light");
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.EnsureLight();
+
+        ls.TemperatureK = 6500;
+        var expected = Mathf.CorrelatedColorTemperatureToRGB(6500);
+        Assert.AreEqual(expected.r, ls.PointLight!.color.r, 0.01f);
+        Assert.AreEqual(expected.g, ls.PointLight!.color.g, 0.01f);
+        Assert.AreEqual(expected.b, ls.PointLight!.color.b, 0.01f);
+
+        float i9 = ls.PointLight!.intensity;
+        ls.PowerW = 18;
+        Assert.Greater(ls.PointLight!.intensity, i9, "больше ватт → ярче");
+
+        ls.DiffusionPct = 10;
+        float rNarrow = ls.PointLight!.range;
+        ls.DiffusionPct = 90;
+        Assert.Greater(ls.PointLight!.range, rNarrow, "больше рассеивание → шире радиус");
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void LightSource_HasEmissivePlafond()
+    {
+        var go = new GameObject("Light");
+        go.AddComponent<MeshFilter>();
+        go.AddComponent<MeshRenderer>();
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.EnsureLight();
+
+        var mr = go.GetComponent<MeshRenderer>();
+        Assert.IsTrue(mr.sharedMaterial.IsKeywordEnabled("_EMISSION"), "плафон должен светиться, а не быть чёрным");
+        var emission = mr.sharedMaterial.GetColor("_EmissionColor");
+        Assert.Greater(emission.maxColorComponent, 0f, "эмиссия не нулевая");
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void LightSource_Temperature_Clamped()
+    {
+        var go = new GameObject("Light");
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.TemperatureK = 999999;
+        Assert.AreEqual(LightSourceElement.MAX_TEMPERATURE_K, ls.TemperatureK);
+        ls.TemperatureK = 0;
+        Assert.AreEqual(LightSourceElement.MIN_TEMPERATURE_K, ls.TemperatureK);
+        Object.DestroyImmediate(go);
     }
 
     [Test]

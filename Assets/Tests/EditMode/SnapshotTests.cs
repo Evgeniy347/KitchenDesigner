@@ -388,7 +388,9 @@ public class SnapshotTests
     {
         gs.PhotoQuality = PhotoQualityPreset.High;
         gs.PhotoShadows = true;
+        gs.PhotoSoftShadows = true;
         gs.PhotoAntiAliasing = true;
+        gs.PhotoSupersampling = true;
         gs.PhotoAmbientOcclusion = true;
         gs.PhotoBloom = true;
         gs.PhotoVignette = true;
