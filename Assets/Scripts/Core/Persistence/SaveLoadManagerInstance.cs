@@ -185,7 +185,7 @@ namespace KitchenDesigner.Core
                 if (ed == null) { resolved.Add(null); continue; }
 				var go = ed.isDrawer
 					? ElementFactory.Instance.CreateDrawer((DrawerType)ed.drawerType, ed.drawerNominalLength,
-						(DrawerColor)ed.drawerColor, ed.drawerInternalWidth, ed.name, ed.Position)
+						(DrawerColor)ed.drawerColor, ed.drawerInternalWidth, ed.name, ed.Position, (DrawerSystem)ed.drawerSystem)
 					: ed.isWindow
 						? ElementFactory.Instance.CreateWindow(ed.Dimensions, ed.name, ed.Position,
 							(GlassTint)ed.windowTint, ed.windowSillProtrusionMM)

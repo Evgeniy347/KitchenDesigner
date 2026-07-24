@@ -267,6 +267,7 @@ namespace KitchenDesigner.Core.MCP
                 openingViolations = facadeValidation?.openingViolations,
                 drawer = drawer != null ? new DrawerInfo
                 {
+                    system = drawer.System == DrawerSystem.Movento ? "movento" : "gtv",
                     drawerType = drawer.Type.ToString(),
                     drawerLength = drawer.NominalLength,
                     drawerColor = WireName(drawer.Color),

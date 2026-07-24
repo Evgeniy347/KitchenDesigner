@@ -134,6 +134,11 @@ PARAMETERS
 CREATE:  create_element {name, x, y, z, is_drawer:true, drawer_type:""B"",
                          drawer_length:450, drawer_internal_width:400}
 
+SYSTEMS (element.drawer.system): ""gtv"" (default, bought metal box - one spec
+line) or ""movento"" (wooden box - explodes into separate spec parts: sides,
+front, back, bottom; parts are automatic, not selectable). Create a Movento
+drawer with create_elements type:""movento_drawer"".
+
 FRONTS:  attach a facade with set_drawer_properties {attached_facade_name:""F1""} -
          the facade then slides together with the drawer. Empty string detaches.
 

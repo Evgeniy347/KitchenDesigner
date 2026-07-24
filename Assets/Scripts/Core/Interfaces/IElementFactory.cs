@@ -15,7 +15,8 @@ namespace KitchenDesigner.Core
             int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
             int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM);
         GameObject CreateRadialShelf(int widthMM, int depthMM, int thicknessMM, int cornerRadiusMM, string name, Vector3 position);
-        GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position);
+        GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position,
+            DrawerSystem system = DrawerSystem.Gtv);
         GameObject CreateTable(Vector3Int dimensionsMM, string name, Vector3 position);
 		GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position);
 		GameObject CreatePillar(int midHeightMM, string name, Vector3 position);

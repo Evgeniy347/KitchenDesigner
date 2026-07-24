@@ -160,7 +160,8 @@ namespace KitchenDesigner.Core.UI
                 return;
             }
             if (item.isDrawer)
-                UIManager.Instance.SpawnDrawer(item.drawerType, item.drawerLength, item.drawerColor, item.drawerWidth, item.name);
+                UIManager.Instance.SpawnDrawer(item.drawerType, item.drawerLength, item.drawerColor, item.drawerWidth, item.name,
+                    item.drawerSystem == "movento" ? DrawerSystem.Movento : DrawerSystem.Gtv);
             else if (item.isWindow)
                 UIManager.Instance.SpawnWindow(item.dims, item.name);
             else if (item.isDoor)

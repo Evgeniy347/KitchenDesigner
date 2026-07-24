@@ -1,9 +1,14 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Ящик GTV AXIS PRO. Видимый короб — 4 панели (2 боковины, дно,
-    /// задник, см. DrawerMesh); фасад — отдельный элемент. Габариты элемента
+    /// <summary>Ящик с выдвижным коробом. Система выдвижения (DrawerSystem):
+    /// GTV AXIS PRO — покупной металлический короб (4 панели DrawerMesh, в
+    /// спецификации одной строкой); Movento — деревянный короб из 5 плитных
+    /// деталей (MoventoDrawerMesh), каждая из которых уходит в спецификацию
+    /// отдельной позицией, но самостоятельным элементом не является (раскрой
+    /// автоматический). Фасад — отдельный элемент. Габариты элемента
     /// (DimensionsMM/localScale/коллайдер) — КОНТУРНЫЙ бокс проёма корпуса
     /// LW × минПроём × NL: по нему рисуются чёрные рёбра и работает снэп.</summary>
     public class DrawerElement : KitchenElement
@@ -14,6 +19,7 @@ namespace KitchenDesigner.Core
         private MeshFilter? _filter;
         private Mesh? _ownedMesh;
 
+        [SerializeField] private DrawerSystem _system = DrawerSystem.Gtv;
         [SerializeField] private DrawerType _type = DrawerType.A;
         [SerializeField] private int _nominalLength = 350;
         [SerializeField] private DrawerColor _color = DrawerColor.Anthracite;
@@ -28,6 +34,14 @@ namespace KitchenDesigner.Core
         private float _t;
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
+
+        /// <summary>Система выдвижения. Меняет раскрой видимого короба и способ
+        /// попадания в спецификацию (GTV — строкой, Movento — деталями).</summary>
+        public DrawerSystem System
+        {
+            get => _system;
+            set { if (_system == value) return; _system = value; RebuildMesh(); }
+        }
 
         public DrawerType Type
         {
@@ -214,16 +228,28 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Пересобрать процедурный меш короба (боковины + дно + задник).</summary>
+        /// <summary>Пересобрать процедурный меш короба. Раскрой зависит от системы:
+        /// GTV — 4 металлические панели, Movento — 5 плитных деталей.</summary>
         public void RebuildMesh()
         {
             if (_filter == null) _filter = GetComponent<MeshFilter>();
             if (_filter == null) return;
 
-            var mesh = DrawerMesh.Build(_internalWidth, _type, _nominalLength);
+            var mesh = _system == DrawerSystem.Movento
+                ? MoventoDrawerMesh.Build(_internalWidth, _type, _nominalLength)
+                : DrawerMesh.Build(_internalWidth, _type, _nominalLength);
             if (_ownedMesh != null) DestroyImmediate(_ownedMesh);
             _ownedMesh = mesh;
             _filter.sharedMesh = mesh;
+        }
+
+        /// <summary>Детали короба Movento для спецификации (боковины, перед, задник,
+        /// дно). Только для системы Movento; у GTV короб покупной — деталей нет.</summary>
+        public IEnumerable<AssembledFacadeMesh.Part> GetSpecParts()
+        {
+            if (_system != DrawerSystem.Movento)
+                return new AssembledFacadeMesh.Part[0];
+            return MoventoDrawerMesh.ComputeParts(_internalWidth, _type, _nominalLength);
         }
 
         private void OnDestroy()

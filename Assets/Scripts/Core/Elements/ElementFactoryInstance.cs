@@ -191,7 +191,7 @@ namespace KitchenDesigner.Core
 
             if (source is DrawerElement srcDrawer)
             {
-                var go = CreateDrawer(srcDrawer.Type, srcDrawer.NominalLength, srcDrawer.Color, srcDrawer.InternalWidth, source.PartName, offset);
+                var go = CreateDrawer(srcDrawer.Type, srcDrawer.NominalLength, srcDrawer.Color, srcDrawer.InternalWidth, source.PartName, offset, srcDrawer.System);
                 go.transform.rotation = source.transform.rotation;
                 var copy = go.GetComponent<DrawerElement>();
                 if (copy != null)
@@ -439,10 +439,11 @@ namespace KitchenDesigner.Core
             return go;
         }
 
-        public GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position)
+        public GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position,
+            DrawerSystem system = DrawerSystem.Gtv)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Ящик GTV" : name);
+            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? DrawerConstants.GetDefaultName(system) : name);
             go.tag = "KitchenElement";
             go.transform.position = position;
 
@@ -452,6 +453,9 @@ namespace KitchenDesigner.Core
 
             var drawer = go.AddComponent<DrawerElement>();
             drawer.PartName = go.name;
+            // Систему ставим ДО Type: ApplyDimensions/RebuildMesh должны сразу
+            // собрать короб нужного раскроя (GTV или Movento).
+            drawer.System = system;
             drawer.Type = type;
             drawer.NominalLength = nominalLength;
             drawer.InternalWidth = internalWidth;
