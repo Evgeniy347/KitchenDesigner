@@ -69,6 +69,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -140,6 +141,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -211,6 +213,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -282,6 +285,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -353,6 +357,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -424,6 +429,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -495,6 +501,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -566,6 +573,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -637,6 +645,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -708,6 +717,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -779,6 +789,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -850,6 +861,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -921,6 +933,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -992,6 +1005,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -1063,6 +1077,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -1134,6 +1149,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -1205,6 +1221,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         },
@@ -1276,6 +1293,7 @@
             "lightTemperatureK": 3000,
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
+            "lightUpPct": 8,
             "isPanel": false,
             "grooves": []
         }
@@ -1360,6 +1378,7 @@
         "lightTemperatureK": 3000,
         "lightPowerW": 9,
         "lightDiffusionPct": 50,
+        "lightUpPct": 8,
         "isPanel": false,
         "grooves": []
     },
