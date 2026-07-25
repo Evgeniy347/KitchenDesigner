@@ -83,6 +83,7 @@ namespace KitchenDesigner.Core
 		public int lightTemperatureK = LightSourceElement.DEFAULT_TEMPERATURE_K;
 		public int lightPowerW = LightSourceElement.DEFAULT_POWER_W;
 		public int lightDiffusionPct = LightSourceElement.DEFAULT_DIFFUSION_PCT;
+		public int lightUpPct = LightSourceElement.DEFAULT_UP_PCT;
 		public bool isPanel = false;
 		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
@@ -243,6 +244,7 @@ namespace KitchenDesigner.Core
 				d.lightTemperatureK = lightEl.TemperatureK;
 				d.lightPowerW = lightEl.PowerW;
 				d.lightDiffusionPct = lightEl.DiffusionPct;
+				d.lightUpPct = lightEl.UpLightPct;
 			}
 			d.midHeightMM = pillar != null ? pillar.MidHeightMM : PillarElement.MidHeightMM_Default;
 

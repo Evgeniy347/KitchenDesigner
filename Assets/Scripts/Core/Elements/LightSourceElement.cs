@@ -23,9 +23,24 @@ namespace KitchenDesigner.Core
         private const float MaxRangeUnits = 16f;
 
         // На сколько опустить источник от центра плафона (мир, м): вплотную к
-        // потолку точечный свет по 1/r² даёт пересвет — небольшой отступ убирает
+        // потолку свет по 1/r² даёт пересвет — небольшой отступ убирает
         // «выжженное» пятно на потолке.
         private const float LightDropWorld = 0.12f;
+
+        // Распределение потока плафона: глухой купол сверху → основной свет в
+        // нижнюю полусферу (широкий прожектор вниз). Купол свет НЕ теряет, а
+        // отражает вниз — поэтому весь поток мощности идёт в нижний прожектор, а
+        // вверх уходит лишь малая утечка (узкий тусклый прожектор вверх) для
+        // лёгкой подсветки потолка. Доля утечки — настраиваемый параметр лампы.
+        private const float DownConeAngle = 150f;   // почти вся нижняя полусфера + стены
+        private const float DownInnerAngle = 105f;
+        private const float UpConeAngle = 100f;
+        private const float UpRangeFraction = 0.5f;
+
+        // Утечка вверх, % от нижнего потока: 0 = весь свет вниз (полностью
+        // отражающий глухой купол), больше — заметнее подсветка потолка.
+        public const int DEFAULT_UP_PCT = 8;
+        public const int MAX_UP_PCT = 50;
 
         // LED ~110 лм/Вт; делитель подобран так, чтобы 9 Вт ≈ прежняя яркость 1.4.
         private const float LumensPerWatt = 110f;
@@ -38,10 +53,13 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _temperatureK = DEFAULT_TEMPERATURE_K;
         [SerializeField] private int _powerW = DEFAULT_POWER_W;
         [SerializeField] private int _diffusionPct = DEFAULT_DIFFUSION_PCT;
+        [SerializeField] private int _upLightPct = DEFAULT_UP_PCT;
 
-        private Light? _light;
+        private Light? _light;    // главный прожектор вниз
+        private Light? _upLight;  // слабая подсветка потолка вверх
         private Material? _plafondMat; // собственный эмиссивный материал плафона
         public Light? PointLight => _light;
+        public Light? UpLight => _upLight;
 
         /// <summary>Цветовая температура, K (тёплый ↔ холодный).</summary>
         public int TemperatureK
@@ -64,6 +82,14 @@ namespace KitchenDesigner.Core
             set { _diffusionPct = Mathf.Clamp(value, 0, 100); ApplyLightParams(); }
         }
 
+        /// <summary>Свет вверх, % — доля потока, уходящая на подсветку потолка
+        /// (утечка сквозь глухой купол). 0 = весь свет вниз.</summary>
+        public int UpLightPct
+        {
+            get => _upLightPct;
+            set { _upLightPct = Mathf.Clamp(value, 0, MAX_UP_PCT); ApplyLightParams(); }
+        }
+
         public static void SetGlobalOn(bool on)
         {
             _globalOn = on;
@@ -83,31 +109,54 @@ namespace KitchenDesigner.Core
         {
             if (_light != null) return;
 
-            var holder = new GameObject("PointLight");
-            holder.transform.SetParent(transform, false);
-            _light = holder.AddComponent<Light>();
-            _light.type = LightType.Point;
-            _light.shadows = LightShadows.None;         // тени от ламп дороги; свет отражаем через GI
+            _light = CreateChildLight("SpotDown", LightType.Spot);
+            _upLight = CreateChildLight("SpotUp", LightType.Spot);
             ApplyLightParams();
         }
 
+        private Light CreateChildLight(string name, LightType type)
+        {
+            var holder = new GameObject(name);
+            holder.transform.SetParent(transform, false);
+            var light = holder.AddComponent<Light>();
+            light.type = type;
+            light.shadows = LightShadows.None; // тени от ламп дороги; свет отражаем через GI
+            return light;
+        }
+
         /// <summary>Пересчитать цвет (по температуре), яркость (по мощности),
-        /// радиус (по рассеиванию), опустить источник от потолка и обновить
-        /// свечение плафона. Плафон — собственный материал лампы, поэтому
-        /// переживает сброс материала при загрузке/валидации.</summary>
+        /// радиус (по рассеиванию), направление потока (в основном вниз, чуть
+        /// вверх), опустить источник от потолка и обновить свечение плафона.
+        /// Плафон — собственный материал лампы, переживает сброс при загрузке.</summary>
         public void ApplyLightParams()
         {
             Color rgb = Mathf.CorrelatedColorTemperatureToRGB(_temperatureK);
+            float intensity = _powerW * LumensPerWatt / LumensPerIntensityUnit;
+            float range = Mathf.Lerp(MinRangeUnits, MaxRangeUnits, _diffusionPct / 100f);
+            // Отступ от потолка задаём в мире, компенсируя масштаб корня.
+            float sy = Mathf.Max(Mathf.Abs(transform.lossyScale.y), 1e-3f);
+            var drop = new Vector3(0f, -LightDropWorld / sy, 0f);
 
             if (_light != null)
             {
                 _light.color = rgb;
-                _light.intensity = _powerW * LumensPerWatt / LumensPerIntensityUnit;
-                _light.range = Mathf.Lerp(MinRangeUnits, MaxRangeUnits, _diffusionPct / 100f);
+                _light.intensity = intensity;
+                _light.range = range;
+                _light.spotAngle = DownConeAngle;
+                _light.innerSpotAngle = DownInnerAngle;
+                _light.transform.localPosition = drop;
+                _light.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);  // поток вниз
+            }
 
-                // Отступ от потолка задаём в мире, компенсируя масштаб корня.
-                float sy = Mathf.Max(Mathf.Abs(transform.lossyScale.y), 1e-3f);
-                _light.transform.localPosition = new Vector3(0f, -LightDropWorld / sy, 0f);
+            if (_upLight != null)
+            {
+                _upLight.color = rgb;
+                _upLight.intensity = intensity * (_upLightPct / 100f);  // утечка сквозь купол
+                _upLight.range = range * UpRangeFraction;
+                _upLight.spotAngle = UpConeAngle;
+                _upLight.innerSpotAngle = UpConeAngle * 0.7f;
+                _upLight.transform.localPosition = drop;
+                _upLight.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f); // поток вверх
             }
 
             ApplyPlafondEmission(rgb);
@@ -146,11 +195,11 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Привести Light к текущему глобальному состоянию.</summary>
+        /// <summary>Привести оба источника к текущему глобальному состоянию.</summary>
         public void SyncLightState()
         {
-            if (_light != null)
-                _light.enabled = _globalOn;
+            if (_light != null) _light.enabled = _globalOn;
+            if (_upLight != null) _upLight.enabled = _globalOn;
         }
     }
 }
