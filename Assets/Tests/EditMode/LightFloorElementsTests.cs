@@ -69,11 +69,12 @@ public class LightFloorElementsTests
     }
 
     [Test]
-    public void LightSource_HasPointLightChild()
+    public void LightSource_HasDownwardSpotLight()
     {
         var lamp = CreateLamp();
         Assert.IsNotNull(lamp.PointLight, "у лампы есть Light");
-        Assert.AreEqual(LightType.Point, lamp.PointLight!.type);
+        // Плафон светит направленно вниз (главный поток), а не во все стороны.
+        Assert.AreEqual(LightType.Spot, lamp.PointLight!.type);
     }
 
     [Test]
