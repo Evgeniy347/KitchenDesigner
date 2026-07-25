@@ -199,6 +199,15 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
+        private static DrawerSystem ParseDrawerSystem(string s)
+        {
+            switch ((s ?? "").Trim().ToLowerInvariant())
+            {
+                case "movento": return DrawerSystem.Movento;
+                default: return DrawerSystem.Gtv;
+            }
+        }
+
         private static GlassTint ParseGlassTint(string s)
         {
             switch ((s ?? "").Trim().ToLowerInvariant())
@@ -247,6 +256,7 @@ namespace KitchenDesigner.Core.MCP
         private static void ApplyRadialShelfEdits(EditOp op, RadialShelfElement shelf) { if (op.corner_radius.HasValue) shelf.CornerRadius = op.corner_radius.Value; }
         private static void ApplyDrawerEdits(EditOp op, DrawerElement drawer)
         {
+            if (op.drawer_system != null) drawer.System = ParseDrawerSystem(op.drawer_system);
             if (op.drawer_type != null) drawer.Type = ParseDrawerType(op.drawer_type);
             if (op.drawer_length.HasValue) drawer.NominalLength = op.drawer_length.Value;
             if (op.drawer_color != null) drawer.Color = ParseDrawerColor(op.drawer_color);
