@@ -34,3 +34,4 @@ MonoBehaviour:
   _photoBloom: 1
   _photoVignette: 1
   _photoCeiling: 1
+  _photoSSGI: 1

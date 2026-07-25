@@ -55,7 +55,8 @@ namespace KitchenDesigner.Core
             ApplyCamera(s);
             ApplyAmbient();
             ApplyPostProcessing(s);
-            ApplyAmbientOcclusion(s.PhotoAmbientOcclusion);
+            SetRendererFeatureActive("ScreenSpaceAmbientOcclusion", s.PhotoAmbientOcclusion);
+            SetRendererFeatureActive("ScreenSpaceGIFeature", s.PhotoSSGI);
 
             _applied = true;
         }
@@ -105,7 +106,8 @@ namespace KitchenDesigner.Core
                 _ambientSnapped = false;
             }
 
-            ApplyAmbientOcclusion(false);
+            SetRendererFeatureActive("ScreenSpaceAmbientOcclusion", false);
+            SetRendererFeatureActive("ScreenSpaceGIFeature", false);
 
             if (_volumeGo != null)
             {
@@ -256,9 +258,11 @@ namespace KitchenDesigner.Core
             volume.profile = profile;
         }
 
-        // ── SSAO (renderer feature, best-effort) ────────────
+        // ── Renderer features (SSAO / SSGI, best-effort) ────
 
-        private static void ApplyAmbientOcclusion(bool enabled)
+        /// <summary>Включает/выключает фичу рендерера по имени типа. Если фичи нет
+        /// (например, SSGI не установлен) — тихо ничего не делает.</summary>
+        private static void SetRendererFeatureActive(string typeNameContains, bool enabled)
         {
             try
             {
@@ -276,14 +280,14 @@ namespace KitchenDesigner.Core
                     foreach (var feature in data.rendererFeatures)
                     {
                         if (feature == null) continue;
-                        if (feature.GetType().Name.Contains("ScreenSpaceAmbientOcclusion"))
+                        if (feature.GetType().Name.Contains(typeNameContains))
                             feature.SetActive(enabled);
                     }
                 }
             }
             catch (Exception)
             {
-                // Рендерер без SSAO — переключение неприменимо, это не ошибка.
+                // Рендерер без такой фичи — переключение неприменимо, не ошибка.
             }
         }
 

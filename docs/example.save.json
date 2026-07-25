@@ -4869,7 +4869,7 @@
             "isFloor": false,
             "isLightSource": true,
             "lightTemperatureK": 5000,
-            "lightPowerW": 12,
+            "lightPowerW": 36,
             "lightDiffusionPct": 50,
             "lightUpPct": 2,
             "isPanel": false,
@@ -5059,7 +5059,7 @@
             "grooveCount": 0,
             "cornerRadius": 0,
             "isDrawer": true,
-            "drawerSystem": 0,
+            "drawerSystem": 1,
             "drawerType": 200,
             "drawerNominalLength": 500,
             "drawerColor": 0,
@@ -5131,7 +5131,7 @@
             "grooveCount": 0,
             "cornerRadius": 0,
             "isDrawer": true,
-            "drawerSystem": 0,
+            "drawerSystem": 1,
             "drawerType": 86,
             "drawerNominalLength": 500,
             "drawerColor": 0,
@@ -7877,7 +7877,7 @@
             "grooveCount": 0,
             "cornerRadius": 0,
             "isDrawer": true,
-            "drawerSystem": 0,
+            "drawerSystem": 1,
             "drawerType": 86,
             "drawerNominalLength": 500,
             "drawerColor": 0,
@@ -9215,12 +9215,12 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 0.5613933801651001,
-        "targetY": 1.4683033227920533,
-        "targetZ": -1.220474123954773,
-        "angleX": 20.799955368041993,
-        "angleY": 82.61658477783203,
-        "distance": 1.800000786781311
+        "targetX": -0.4023987054824829,
+        "targetY": 0.11025863140821457,
+        "targetZ": -2.5447702407836916,
+        "angleX": 34.199981689453128,
+        "angleY": 156.61634826660157,
+        "distance": 3.599998712539673
     },
     "handleMode": "Move",
     "basePlateValid": true,
@@ -9297,36 +9297,6 @@
         "grooves": []
     },
     "undoHistory": [
-        {
-            "type": "move",
-            "description": "Move Leg_A3_A4",
-            "elementIndex": 65,
-            "posBefore": [
-                0.48500001430511477,
-                0.23034612834453584,
-                -0.4490000307559967
-            ],
-            "posAfter": [
-                1.002000093460083,
-                0.2800000309944153,
-                -1.3600000143051148
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
         {
             "type": "move",
             "description": "Move Leg_A3_A4",
@@ -43562,6 +43532,44 @@
                 540,
                 720,
                 18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Istochnik_sveta",
+            "elementIndex": 66,
+            "posBefore": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "posAfter": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                150,
+                150,
+                150
+            ],
+            "dimsAfter": [
+                150,
+                150,
+                150
             ],
             "children": []
         },

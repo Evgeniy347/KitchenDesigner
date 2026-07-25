@@ -57,6 +57,20 @@ public class CameraControllerTests
     }
 
     [Test]
+    public void PhotoDistance_RoundTrips_Independently()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 10f, angleY = 20f, distance = 4f, photoDistance = 12f
+        });
+        var s = _controller!.GetState();
+        Assert.AreEqual(4f, s.distance, 0.001f, "обычный зум сохранён");
+        Assert.AreEqual(12f, s.photoDistance, 0.001f, "зум фоторежима сохранён отдельно");
+    }
+
+    [Test]
     public void UpdateCameraPosition_OrbitsAroundTarget()
     {
         _controller!.SetState(new CameraState

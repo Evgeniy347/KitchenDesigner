@@ -157,6 +157,7 @@ public class PhotoModeTests
         gs.PhotoBloom = false;
         gs.PhotoVignette = false;
         gs.PhotoCeiling = false;
+        gs.PhotoSSGI = false;
 
         var data = gs.ToData();
 
@@ -181,6 +182,7 @@ public class PhotoModeTests
         Assert.IsFalse(gs.PhotoBloom);
         Assert.IsFalse(gs.PhotoVignette);
         Assert.IsFalse(gs.PhotoCeiling);
+        Assert.IsFalse(gs.PhotoSSGI);
 
         gs.ApplyFrom(before);
     }
@@ -226,6 +228,28 @@ public class PhotoModeTests
         // Вверх — направленный вверх и заметно слабее (глухой купол отражает вниз).
         Assert.Greater(ls.UpLight!.transform.forward.y, 0.9f, "подсветка потолка направлена вверх");
         Assert.Less(ls.UpLight!.intensity, ls.PointLight!.intensity * 0.5f, "вверх совсем немного");
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void LightSource_BeamAngle_DrivesBothCones()
+    {
+        var go = new GameObject("Light");
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.EnsureLight();
+
+        ls.BeamAngleDeg = 120;
+        Assert.AreEqual(120f, ls.PointLight!.spotAngle, 0.5f, "нижний конус = углу пучка");
+        Assert.Less(ls.UpLight!.spotAngle, ls.PointLight!.spotAngle, "верхний конус уже нижнего");
+
+        float upNarrow = ls.UpLight!.spotAngle;
+        ls.BeamAngleDeg = 160;
+        Assert.Greater(ls.PointLight!.spotAngle, 120f, "шире угол → шире нижний конус");
+        Assert.Greater(ls.UpLight!.spotAngle, upNarrow, "верхний конус тоже расширился");
+
+        ls.BeamAngleDeg = 9999;
+        Assert.AreEqual(LightSourceElement.MAX_BEAM_DEG, ls.BeamAngleDeg, "верхняя граница");
 
         Object.DestroyImmediate(go);
     }

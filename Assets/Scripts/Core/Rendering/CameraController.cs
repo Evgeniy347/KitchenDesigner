@@ -8,6 +8,9 @@ namespace KitchenDesigner.Core
         public static CameraController? Instance { get; private set; }
 
         [SerializeField] private float _distance = 5f;
+        // Фоторежим держит собственную дистанцию зума (сохраняется в проект),
+        // независимую от обычного режима.
+        [SerializeField] private float _photoDistance = 8f;
         [SerializeField] private float _minDistance = 0.5f;
         [SerializeField] private float _maxDistance = 20f;
         [SerializeField] private float _zoomSpeed = 1f;
@@ -35,6 +38,18 @@ namespace KitchenDesigner.Core
         public void AssignTestCamera(Camera camera) => _cachedCamera = camera;
         public void AssignTestFloor(GameObject floor) => _floor = floor;
 
+        /// <summary>Активная дистанция зума: в фоторежиме — своя (_photoDistance),
+        /// иначе обычная (_distance). Оба значения храним и сохраняем независимо.</summary>
+        private float Dist
+        {
+            get => PhotoMode.Active ? _photoDistance : _distance;
+            set
+            {
+                float c = Mathf.Clamp(value, _minDistance, _maxDistance);
+                if (PhotoMode.Active) _photoDistance = c; else _distance = c;
+            }
+        }
+
         private void Awake()
         {
             Instance = this;
@@ -52,7 +67,8 @@ namespace KitchenDesigner.Core
         {
             valid = true,
             targetX = _target.x, targetY = _target.y, targetZ = _target.z,
-            angleX = _angleX, angleY = _angleY, distance = _distance
+            angleX = _angleX, angleY = _angleY, distance = _distance,
+            photoDistance = _photoDistance
         };
 
         /// <summary>Восстановить состояние камеры из проекта.</summary>
@@ -62,6 +78,9 @@ namespace KitchenDesigner.Core
             _angleX = s.angleX;
             _angleY = s.angleY;
             _distance = Mathf.Clamp(s.distance, _minDistance, _maxDistance);
+            // Старые проекты без photoDistance (0) → оставляем текущее значение.
+            if (s.photoDistance > 0f)
+                _photoDistance = Mathf.Clamp(s.photoDistance, _minDistance, _maxDistance);
             UpdateCameraPosition();
         }
 
@@ -126,23 +145,20 @@ namespace KitchenDesigner.Core
                 {
                     Vector3 right = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.right;
                     Vector3 up = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.up;
-                    _target -= (right * delta.x + up * delta.y) * _panSpeed * (_distance * 0.1f);
+                    _target -= (right * delta.x + up * delta.y) * _panSpeed * (Dist * 0.1f);
                 }
                 else
                 {
                     Vector3 forward = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.forward;
                     Vector3 right = Quaternion.Euler(0, _angleY, 0) * Vector3.right;
                     forward.y = 0; forward.Normalize();
-                    _target -= (right * delta.x + forward * delta.y) * _panSpeed * (_distance * 0.1f);
+                    _target -= (right * delta.x + forward * delta.y) * _panSpeed * (Dist * 0.1f);
                 }
                 _lastMouse = Input.mousePosition;
             }
 
             if (Mathf.Abs(scroll) > 0.01f && !overUI)
-            {
-                _distance -= scroll * _zoomSpeed;
-                _distance = Mathf.Clamp(_distance, _minDistance, _maxDistance);
-            }
+                Dist -= scroll * _zoomSpeed;   // сеттер сам ограничивает диапазон
 
             if (!IsTypingInInputField())
             {
@@ -204,7 +220,7 @@ namespace KitchenDesigner.Core
         public void ApplyWASDMovement(Vector2 input, float dt)
         {
             if (dt < 1e-6f) return;
-            float speed = _moveSpeed * _distance * 0.25f * dt;
+            float speed = _moveSpeed * Dist * 0.25f * dt;
 
             Vector3 fwd = Quaternion.Euler(0, _angleY, 0) * Vector3.forward;
             Vector3 right = Quaternion.Euler(0, _angleY, 0) * Vector3.right;
@@ -255,8 +271,7 @@ namespace KitchenDesigner.Core
         public void ApplyZoomDelta(float delta)
         {
             if (Mathf.Abs(delta) < 0.01f) return;
-            _distance += delta * _zoomSpeed * _distance * 0.1f;
-            _distance = Mathf.Clamp(_distance, _minDistance, _maxDistance);
+            Dist += delta * _zoomSpeed * Dist * 0.1f;   // сеттер ограничивает диапазон
         }
 
         /// <summary>
@@ -343,7 +358,7 @@ namespace KitchenDesigner.Core
         public void UpdateCameraPosition()
         {
             Quaternion rotation = Quaternion.Euler(_angleX, _angleY, 0);
-            Vector3 offset = rotation * (Vector3.back * _distance);
+            Vector3 offset = rotation * (Vector3.back * Dist);
             if (_cachedCamera != null)
             {
                 _cachedCamera.transform.position = _target + offset;

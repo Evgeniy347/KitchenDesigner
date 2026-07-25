@@ -52,6 +52,7 @@ namespace KitchenDesigner.Core
         public bool valid;
         public float targetX, targetY, targetZ;
         public float angleX, angleY, distance;
+        public float photoDistance; // отдельный зум фоторежима (0 у старых сейвов)
     }
 
     /// <summary>Сериализуемые настройки кухни (сетка, снап, автосейв, графика…).</summary>
@@ -84,5 +85,6 @@ namespace KitchenDesigner.Core
         public bool photoBloom = true;
         public bool photoVignette = true;
         public bool photoCeiling = true;
+        public bool photoSSGI = true;
     }
 }

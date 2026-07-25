@@ -55,6 +55,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _photoBloom = true;
         [SerializeField] private bool _photoVignette = true;
         [SerializeField] private bool _photoCeiling = true;
+        [SerializeField] private bool _photoSSGI = true;
 
         public int GridStep
         {
@@ -188,6 +189,13 @@ namespace KitchenDesigner.Core
             set => _photoCeiling = value;
         }
 
+        /// <summary>Экранное непрямое освещение (SSGI) в фоторежиме.</summary>
+        public bool PhotoSSGI
+        {
+            get => _photoSSGI;
+            set => _photoSSGI = value;
+        }
+
         /// <summary>Значения «из коробки» — те же, что в инициализаторах полей.
         /// Инициализаторы срабатывают только при СОЗДАНИИ ассета, а Instance
         /// грузится из Resources с уже сохранённым состоянием, поэтому сброс
@@ -217,6 +225,7 @@ namespace KitchenDesigner.Core
             _photoBloom = true;
             _photoVignette = true;
             _photoCeiling = true;
+            _photoSSGI = true;
         }
 
         public KitchenSettingsData ToData()
@@ -244,7 +253,8 @@ namespace KitchenDesigner.Core
                 photoAmbientOcclusion = _photoAmbientOcclusion,
                 photoBloom = _photoBloom,
                 photoVignette = _photoVignette,
-                photoCeiling = _photoCeiling
+                photoCeiling = _photoCeiling,
+                photoSSGI = _photoSSGI
             };
         }
 
@@ -273,6 +283,7 @@ namespace KitchenDesigner.Core
             _photoBloom = data.photoBloom;
             _photoVignette = data.photoVignette;
             _photoCeiling = data.photoCeiling;
+            _photoSSGI = data.photoSSGI;
         }
 
         /// <summary>Возвращает текущий JSON настроек (для снапшот-тестов).</summary>
@@ -301,7 +312,8 @@ namespace KitchenDesigner.Core
                 photoAmbientOcclusion = _photoAmbientOcclusion,
                 photoBloom = _photoBloom,
                 photoVignette = _photoVignette,
-                photoCeiling = _photoCeiling
+                photoCeiling = _photoCeiling,
+                photoSSGI = _photoSSGI
             };
             return JsonUtility.ToJson(data, true);
         }
@@ -331,6 +343,7 @@ namespace KitchenDesigner.Core
             public bool photoBloom;
             public bool photoVignette;
             public bool photoCeiling;
+            public bool photoSSGI;
         }
     }
 }
