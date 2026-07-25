@@ -31,6 +31,16 @@ namespace KitchenDesigner.Core.UI
         }
         private readonly List<GroupUI> _groups = new List<GroupUI>();
 
+        // Пункты, которые режим редактора делает серыми и некликабельными.
+        private class ItemStyle
+        {
+            public Button button = null!;
+            public TMP_Text? label;
+            public Color baseColor;
+            public EditModeManager.Category cat;
+        }
+        private readonly List<ItemStyle> _itemStyles = new List<ItemStyle>();
+
         public void Build(Transform canvas)
         {
             var panel = UIFactory.CreatePanel("Sidebar", canvas, new Vector2(0, -TopOffset),
@@ -58,6 +68,14 @@ namespace KitchenDesigner.Core.UI
             BuildMini();
 
             ApplyState();
+
+            EditModeManager.Changed += ApplyModeStyling;
+            ApplyModeStyling();
+        }
+
+        private void OnDestroy()
+        {
+            EditModeManager.Changed -= ApplyModeStyling;
         }
 
         private GameObject CreateRoot(string name, Vector2 pos, Vector2 size)
@@ -87,10 +105,37 @@ namespace KitchenDesigner.Core.UI
                         it.name, Vector2.zero, new Vector2(ExpandedW - 2 * pad - 14, 26f), () => Spawn(item));
                     UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
                     gu.items.Add(btn.GetComponent<RectTransform>());
+
+                    var style = new ItemStyle { button = btn, cat = ItemCategory(item) };
+                    style.label = btn.GetComponentInChildren<TMP_Text>();
+                    if (style.label != null) style.baseColor = style.label.color;
+                    _itemStyles.Add(style);
                 }
                 _groups.Add(gu);
             }
             RelayoutFull();
+        }
+
+        /// <summary>Категория пункта каталога для режима редактора: стена/пол —
+        /// «помещение»; короб/окно/дверь — всегда доступны; остальное — обычные.</summary>
+        private static EditModeManager.Category ItemCategory(SidebarCatalog.Item it)
+        {
+            if (it.isWindow || it.isDoor) return EditModeManager.Category.Always;
+            if (it.name == EditModeManager.KorobName) return EditModeManager.Category.Always;
+            if (it.isWall || it.isFloor) return EditModeManager.Category.Room;
+            return EditModeManager.Category.Regular;
+        }
+
+        // Серые + некликабельные пункты для объектов, недоступных в текущем режиме.
+        private void ApplyModeStyling()
+        {
+            foreach (var s in _itemStyles)
+            {
+                bool active = EditModeManager.IsCategoryActive(s.cat);
+                s.button.interactable = active;
+                if (s.label != null)
+                    s.label.color = active ? s.baseColor : UIStyle.TextSecondary;
+            }
         }
 
         private void RelayoutFull()

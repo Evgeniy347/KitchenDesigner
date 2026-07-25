@@ -1,7 +1,7 @@
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using KitchenDesigner.Core.Analysis;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -22,6 +22,7 @@ namespace KitchenDesigner.Core.UI
         private HierarchyPanelUI? _hierarchyPanel;
         private ErrorPanelUI? _errorPanel;
         private HelpUI? _help;
+        private PlacementController? _placement;
         private Button? _undoButton;
         private Button? _redoButton;
         private Button? _specButton;
@@ -33,6 +34,13 @@ namespace KitchenDesigner.Core.UI
         private Button? _dayNightButton;
         private Button? _vertexButton;
         private TMP_Text? _modeButtonLabel;
+        private TMP_Text? _editModeButtonLabel;
+        private TMP_Text? _errorButtonLabel;
+
+        // Счётчик проблем на кнопке «Ошибки» пересчитывается не каждый кадр
+        // (анализ сцены — тяжёлый O(n²) по коллизиям), а раз в интервал.
+        private const float ErrorBadgeIntervalSec = 1f;
+        private float _errorBadgeTimer;
 
         public Canvas? Canvas => _canvas;
         public const string QuickSaveName = "quicksave";
@@ -46,6 +54,7 @@ namespace KitchenDesigner.Core.UI
         {
             _canvas = UIFactory.CreateCanvas("UICanvas");
             BuildToolbar();
+            EditModeManager.Changed += RefreshEditModeLabel;
 
             _specPanel = gameObject.AddComponent<SpecificationPanelUI>();
             _specPanel.Build(_canvas!.transform);
@@ -89,6 +98,29 @@ namespace KitchenDesigner.Core.UI
 
             _help = gameObject.AddComponent<HelpUI>();
             _help.Build(_canvas.transform);
+
+            _placement = gameObject.AddComponent<PlacementController>();
+        }
+
+        // Новый объект не ставим сразу — отдаём в режим размещения: он висит на
+        // курсоре, ЛКМ ставит, ПКМ/клик по UI отменяют (PlacementController).
+        private void BeginPlacement(GameObject go)
+        {
+            var element = go.GetComponent<KitchenElement>();
+            if (element == null) return;
+            if (_placement != null)
+                _placement.Begin(element);
+            else
+                CommitImmediate(go);
+        }
+
+        // Немедленно зафиксировать создание объекта (в стек отмены) и выделить.
+        private static void CommitImmediate(GameObject go)
+        {
+            var element = go.GetComponent<KitchenElement>();
+            if (element == null) return;
+            CommandStack.Execute(new CreateCommand(go));
+            SelectionManager.Instance?.Select(element);
         }
 
         private void BuildToolbar()
@@ -105,7 +137,8 @@ namespace KitchenDesigner.Core.UI
             // Кнопки добавления деталей переехали в левый сайдбар (SidebarUI).
             _specButton = AddBarButton(bar.transform, "Spec", "Спецификация", ref x, y, h, 150, ToggleSpecification);
             _hierarchyButton = AddBarButton(bar.transform, "Hierarchy", "Сцена", ref x, y, h, 90, ToggleHierarchy);
-            _errorButton = AddBarButton(bar.transform, "Errors", "Ошибки", ref x, y, h, 90, ToggleErrors);
+            _errorButton = AddBarButton(bar.transform, "Errors", "Ошибки", ref x, y, h, 110, ToggleErrors);
+            _errorButtonLabel = _errorButton.GetComponentInChildren<TMP_Text>();
             AddSeparator(bar.transform, ref x, y, h);
 
             // Понятные значки вместо текста.
@@ -122,13 +155,14 @@ namespace KitchenDesigner.Core.UI
             _redoButton = AddIconButton(bar.transform, "Redo", IconFactory.Redo, ref x, y, h, DoRedo);
             AddSeparator(bar.transform, ref x, y, h);
 
-            // Полные слова, без обрубков «Выравн.»/«Распред.» (правило 5).
-            AddBarButton(bar.transform, "Align", "Выравнивание", ref x, y, h, 136, ShowAlignMenu);
-            AddBarButton(bar.transform, "Distribute", "Распределить", ref x, y, h, 130, DistributeX);
-
             // Переключатель режима ручек на гранях: растяжение ↔ перемещение по оси.
             var modeBtn = AddBarButton(bar.transform, "HandleMode", ModeLabel(), ref x, y, h, 176, ToggleHandleMode);
             _modeButtonLabel = modeBtn.GetComponentInChildren<TMP_Text>();
+
+            // Переключатель режима редактора: фоторежим → помещение → обычный.
+            var editModeBtn = AddBarButton(bar.transform, "EditMode",
+                EditModeManager.Label(EditModeManager.Mode), ref x, y, h, 190, CycleEditMode);
+            _editModeButtonLabel = editModeBtn.GetComponentInChildren<TMP_Text>();
             AddSeparator(bar.transform, ref x, y, h);
 
             // Тогглы вида: состояние показывает фон кнопки (нажат = включено),
@@ -176,6 +210,21 @@ namespace KitchenDesigner.Core.UI
         {
             ResizeHandleManager.ToggleMode();
             if (_modeButtonLabel != null) _modeButtonLabel.text = ModeLabel();
+        }
+
+        private void CycleEditMode() => EditModeManager.Cycle();
+
+        // Подпись обновляем по событию, а не только по клику: режим меняют ещё
+        // тумблер «Фоторежим» в настройках и F10 (через PhotoMode → EditModeManager).
+        private void RefreshEditModeLabel()
+        {
+            if (_editModeButtonLabel != null)
+                _editModeButtonLabel.text = EditModeManager.Label(EditModeManager.Mode);
+        }
+
+        private void OnDestroy()
+        {
+            EditModeManager.Changed -= RefreshEditModeLabel;
         }
 
         private Button AddBarButton(Transform parent, string name, string label, ref float x, float y, float h, float w, System.Action onClick)
@@ -230,7 +279,43 @@ namespace KitchenDesigner.Core.UI
             SetToggled(_errorButton, _errorPanel != null && _errorPanel.IsVisible);
             SetToggled(_settingsButton, _settingsPanel != null && _settingsPanel.IsVisible);
             SetToggled(_dayNightButton, _dayNightPanel != null && _dayNightPanel.IsVisible);
+
+            _errorBadgeTimer -= Time.unscaledDeltaTime;
+            if (_errorBadgeTimer <= 0f)
+            {
+                _errorBadgeTimer = ErrorBadgeIntervalSec;
+                UpdateErrorBadge();
+            }
         }
+
+        // «(N)» на кнопке «Ошибки»: N = ошибки + предупреждения. Число красное,
+        // если есть хоть одна ошибка; оранжевое — если только предупреждения;
+        // без скобок — если проблем нет. Красит рич-текстом только «(N)».
+        private void UpdateErrorBadge()
+        {
+            if (_errorButtonLabel == null) return;
+
+            int errors = 0, warnings = 0;
+            foreach (var iss in SceneAnalyzer.Analyze())
+            {
+                if (iss.Level == IssueLevel.Error) errors++;
+                else if (iss.Level == IssueLevel.Warning) warnings++;
+            }
+
+            int total = errors + warnings;
+            if (total == 0)
+            {
+                _errorButtonLabel.text = "Ошибки";
+                return;
+            }
+
+            Color color = errors > 0 ? UIStyle.HighlightError : ErrorBadgeWarnColor;
+            string hex = ColorUtility.ToHtmlStringRGB(color);
+            _errorButtonLabel.text = $"Ошибки <color=#{hex}>({total})</color>";
+        }
+
+        /// <summary>Оранжевый для бейджа «только предупреждения».</summary>
+        private static readonly Color ErrorBadgeWarnColor = new Color(1f, 0.55f, 0.1f, 1f);
 
         private void DoUndo()
         {
@@ -257,29 +342,27 @@ namespace KitchenDesigner.Core.UI
                 ElementHighlighter.Instance.RefreshHighlights();
         }
 
+        // Быстрый пресет — немедленное добавление (без режима размещения):
+        // деталь сразу встаёт перед камерой и выделяется.
         public void SpawnPreset(int index)
         {
             if (index < 0 || index >= AppConstants.PRESET_DIMENSIONS_MM.Length) return;
-            SpawnBoard(AppConstants.PRESET_DIMENSIONS_MM[index]);
+            var dims = AppConstants.PRESET_DIMENSIONS_MM[index];
+            CommitImmediate(CreateBoardGo(dims, $"Board {dims.x}x{dims.y}x{dims.z}"));
         }
 
         public void SpawnBoard(Vector3Int dims) =>
             SpawnBoard(dims, $"Board {dims.x}x{dims.y}x{dims.z}");
 
-        public void SpawnBoard(Vector3Int dims, string name)
+        public void SpawnBoard(Vector3Int dims, string name) =>
+            BeginPlacement(CreateBoardGo(dims, name));
+
+        private GameObject CreateBoardGo(Vector3Int dims, string name)
         {
             Vector3 pos = GroundPointInFrontOfCamera();
             pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS; // на полу
             pos = GridManager.SnapToGrid(pos);
-
-            var go = ElementFactory.CreatePart(dims, name, pos);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            return ElementFactory.CreatePart(dims, name, pos);
         }
 
         public void SpawnFacade(Vector3Int dims, string name,
@@ -290,13 +373,7 @@ namespace KitchenDesigner.Core.UI
             pos = GridManager.SnapToGrid(pos);
 
             var go = ElementFactory.CreateFacade(dims, name, pos, gapLeft, gapRight, gapTop, gapBottom);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         public void SpawnAssembledFacade(Vector3Int dims, string name,
@@ -307,13 +384,7 @@ namespace KitchenDesigner.Core.UI
             pos = GridManager.SnapToGrid(pos);
 
             var go = ElementFactory.CreateAssembledFacade(dims, name, pos, fill);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         public void SpawnWall(Vector3Int dims, string name)
@@ -323,13 +394,7 @@ namespace KitchenDesigner.Core.UI
             pos = GridManager.SnapToGrid(pos);
 
             var go = ElementFactory.CreateWall(dims, name, pos);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         public void SpawnDrawer(string drawerType, int length, string colorName, int width, string name,
@@ -342,13 +407,7 @@ namespace KitchenDesigner.Core.UI
             pos = GridManager.SnapToGrid(pos);
 
             var go = ElementFactory.CreateDrawer(type, length, color, width, DrawerLinks.UniqueName(name), pos, system);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         public void SpawnTable(Vector3Int dims, string name)
@@ -358,13 +417,7 @@ namespace KitchenDesigner.Core.UI
             pos = GridManager.SnapToGrid(pos);
 
             var go = ElementFactory.CreateTable(dims, name, pos);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         public void SpawnRadiusTable(Vector3Int dims, string name)
@@ -374,13 +427,7 @@ namespace KitchenDesigner.Core.UI
             pos = GridManager.SnapToGrid(pos);
 
             var go = ElementFactory.CreateRadiusTable(dims, name, pos);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         public void SpawnPanel(Vector3Int dims, string name,
@@ -392,13 +439,7 @@ namespace KitchenDesigner.Core.UI
             pos = GridManager.SnapToGrid(pos);
 
             var go = ElementFactory.Instance.CreatePanel(dims, name, pos, gapLeft, gapRight, gapTop, gapBottom);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         public void SpawnRadialShelf(Vector3Int dims, string name)
@@ -409,13 +450,7 @@ namespace KitchenDesigner.Core.UI
 
             var go = ElementFactory.CreateRadialShelf(dims.x, dims.z, dims.y,
                 AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, name, pos);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         public void SpawnWindow(Vector3Int dims, string name)
@@ -425,13 +460,7 @@ namespace KitchenDesigner.Core.UI
             pos = GridManager.SnapToGrid(pos);
 
             var go = ElementFactory.CreateWindow(dims, name, pos);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         public void SpawnDoor(Vector3Int dims, string name)
@@ -441,13 +470,7 @@ namespace KitchenDesigner.Core.UI
             pos = GridManager.SnapToGrid(pos);
 
             var go = ElementFactory.CreateDoor(dims, name, pos);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         public void SpawnPillar(int midHeightMM, string name)
@@ -458,13 +481,7 @@ namespace KitchenDesigner.Core.UI
             pos = GridManager.SnapToGrid(pos);
 
             var go = ElementFactory.CreatePillar(midHeightMM, name, pos);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         private Vector3 GroundPointInFrontOfCamera()
@@ -495,13 +512,7 @@ namespace KitchenDesigner.Core.UI
             pos.y = -dims.y * 0.5f * AppConstants.MM_TO_UNITS;
 
             var go = ElementFactory.CreateFloor(dims, name, pos);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         public void SpawnLightSource(string name)
@@ -511,13 +522,7 @@ namespace KitchenDesigner.Core.UI
             pos.y = 2.2f; // подвес на высоте ~2200 мм, как люстра
 
             var go = ElementFactory.CreateLightSource(name, pos);
-            var element = go.GetComponent<KitchenElement>();
-            if (element != null)
-            {
-                CommandStack.Execute(new CreateCommand(go));
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.Select(element);
-            }
+            BeginPlacement(go);
         }
 
         /// <summary>Открыть меню группы (вызывается из CameraController по ПКМ-клику).</summary>
@@ -625,28 +630,6 @@ namespace KitchenDesigner.Core.UI
         {
             if (ToastNotification.Instance != null)
                 ToastNotification.Instance.Show(msg);
-        }
-
-        private void ShowAlignMenu()
-        {
-            var sel = SelectionManager.Instance;
-            if (sel == null || sel.SelectedElements.Count < 2)
-                return;
-
-            var list = new List<KitchenElement>(sel.SelectedElements);
-            AlignDistributeTool.Align(list, Axis.X, AlignmentMode.Min);
-            AlignDistributeTool.RefreshHighlights();
-        }
-
-        private void DistributeX()
-        {
-            var sel = SelectionManager.Instance;
-            if (sel == null || sel.SelectedElements.Count < 3)
-                return;
-
-            var list = new List<KitchenElement>(sel.SelectedElements);
-            AlignDistributeTool.Distribute(list, Axis.X);
-            AlignDistributeTool.RefreshHighlights();
         }
 
         public void ToggleHelp()

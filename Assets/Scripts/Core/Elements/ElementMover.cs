@@ -108,6 +108,7 @@ namespace KitchenDesigner.Core
             if (element == null) return;
             if (element.GetComponent<BasePlate>() != null) return; // пол не таскаем
             if (!ModuleEditMode.IsEditable(element)) return; // вне активного модуля — заблокировано
+            if (!EditModeManager.IsInteractable(element)) return; // режим редактора блокирует
 
             _target = element;
             _pressed = true;
@@ -210,6 +211,10 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
+            // Идёт размещение нового объекта — мышь принадлежит PlacementController.
+            if (PlacementController.IsActive)
+                return;
+
             // Набор текста в поле ввода не должен работать как горячие клавиши
             // сцены: Delete стирал символ И удалял выделенный элемент, Ctrl+D
             // посреди имени плодил дубль.
@@ -383,7 +388,7 @@ namespace KitchenDesigner.Core
             var others = PartRegistry.GetAll();
             if (_moveSet.Count > 1) others.RemoveAll(e => _moveSet.Contains(e));
             var snap = SnapSystem.TrySnap(_target, others, newPos);
-            _target.transform.position = snap.snapped ? snap.position : newPos;
+            _target.transform.position = WorldBounds.Clamp(snap.snapped ? snap.position : newPos);
 
             // Групповое перемещение: остальные следуют за схваченным на ту же дельту.
             // При вертикальном перетаскивании окна по стене все элементы группы

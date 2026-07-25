@@ -95,29 +95,34 @@ namespace KitchenDesigner.Core
             bool mmbDown = Input.GetMouseButtonDown(2);
             float scroll = Input.GetAxis("Mouse ScrollWheel");
 
-            // ПКМ-нажатие — пока не решено: клик (меню) или перетаскивание (орбита).
-            if (rmbDown && !overUI)
+            // Во время размещения объекта мышь принадлежит PlacementController:
+            // ПКМ отменяет установку, поэтому камера ПКМ/орбиту не обрабатывает.
+            if (!PlacementController.IsActive)
             {
-                _rmbPressed = true;
-                _rmbMoved = false;
-                _rmbDownPos = Input.mousePosition;
-                _lastMouse = Input.mousePosition;
-            }
-            // Курсор сдвинулся — это орбита, а не клик.
-            if (_rmbPressed && !_rmbMoved && Input.GetMouseButton(1) &&
-                ((Vector2)Input.mousePosition - _rmbDownPos).magnitude > RmbDragPixels)
-            {
-                _rmbMoved = true;
-                _isOrbiting = true;
-                _lastMouse = Input.mousePosition;
-            }
-            // ПКМ отпущена без сдвига — открыть меню группы по объекту.
-            if (rmbUp)
-            {
-                if (_rmbPressed && !_rmbMoved)
-                    HandleRmbClick();
-                _rmbPressed = false;
-                _isOrbiting = false;
+                // ПКМ-нажатие — пока не решено: клик (меню) или перетаскивание (орбита).
+                if (rmbDown && !overUI)
+                {
+                    _rmbPressed = true;
+                    _rmbMoved = false;
+                    _rmbDownPos = Input.mousePosition;
+                    _lastMouse = Input.mousePosition;
+                }
+                // Курсор сдвинулся — это орбита, а не клик.
+                if (_rmbPressed && !_rmbMoved && Input.GetMouseButton(1) &&
+                    ((Vector2)Input.mousePosition - _rmbDownPos).magnitude > RmbDragPixels)
+                {
+                    _rmbMoved = true;
+                    _isOrbiting = true;
+                    _lastMouse = Input.mousePosition;
+                }
+                // ПКМ отпущена без сдвига — открыть меню группы по объекту.
+                if (rmbUp)
+                {
+                    if (_rmbPressed && !_rmbMoved)
+                        HandleRmbClick();
+                    _rmbPressed = false;
+                    _isOrbiting = false;
+                }
             }
 
             if (mmbDown || (lmbDown && !overUI && !PointerHitsBoard() && !ResizeHandleManager.PointerOverHandle()))
@@ -187,21 +192,39 @@ namespace KitchenDesigner.Core
         public void UpdateFloorVisibility()
         {
             if (_cachedCamera == null) return;
-            if (_floor == null) return;
 
-            var renderer = _floor.GetComponent<MeshRenderer>();
+            var floors = FloorElement.Active;
+
+            // Опорная плита (BasePlate) видна только когда нет пользовательских
+            // полов — иначе их совпадающие верхние плоскости (y=0) мерцают.
+            // Коллайдер плиты остаётся якорем заземления/валидации.
+            if (_floor != null) ApplyFloorCameraHide(_floor, rendererVisible: floors.Count == 0);
+
+            for (int i = 0; i < floors.Count; i++)
+            {
+                var f = floors[i];
+                if (f != null) ApplyFloorCameraHide(f.gameObject, rendererVisible: true);
+            }
+        }
+
+        // Пол скрывается, когда камера ниже его верхней плоскости и смотрит вверх —
+        // иначе он закрывает вид снизу. В фоторежиме не прячем: сцена цельная.
+        // rendererVisible — базовая видимость рендера (для BasePlate зависит от
+        // наличия пользовательских полов); коллайдер завязан только на камеру.
+        private void ApplyFloorCameraHide(GameObject floor, bool rendererVisible)
+        {
+            var renderer = floor.GetComponent<MeshRenderer>();
             if (renderer == null) return;
 
-            float floorTopY = _floor.transform.position.y + _floor.transform.localScale.y * 0.5f;
-            bool cameraBelow = _cachedCamera.transform.position.y < floorTopY;
+            float topY = floor.transform.position.y + floor.transform.localScale.y * 0.5f;
+            bool cameraBelow = _cachedCamera!.transform.position.y < topY;
             bool lookingUp = _cachedCamera.transform.forward.y > 0f;
-            // В фоторежиме пол не прячем — сцена должна оставаться цельной.
-            bool hideFloor = !PhotoMode.Active && cameraBelow && lookingUp;
-            renderer.enabled = !hideFloor;
+            bool hide = !PhotoMode.Active && cameraBelow && lookingUp;
 
-            var collider = _floor.GetComponent<Collider>();
+            renderer.enabled = rendererVisible && !hide;
+            var collider = floor.GetComponent<Collider>();
             if (collider != null)
-                collider.enabled = !hideFloor;
+                collider.enabled = !hide;
         }
 
         private void HandleWASD()
@@ -319,6 +342,7 @@ namespace KitchenDesigner.Core
             if (!Physics.Raycast(ray, out RaycastHit hit)) return;
             var e = hit.collider.GetComponentInParent<KitchenElement>();
             if (e == null || e.GetComponent<BasePlate>() != null) return;
+            if (!EditModeManager.IsInteractable(e)) return; // режим редактора блокирует
             if (UI.UIManager.Instance == null) return;
 
             // В режиме редактирования модуля — настройка отдельных деталей.

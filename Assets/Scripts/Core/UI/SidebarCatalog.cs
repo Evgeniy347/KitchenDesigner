@@ -106,11 +106,8 @@ namespace KitchenDesigner.Core.UI
                 shortLabel = "Ф",
                 items = new List<Item>
                 {
-                    new Item("Фасад 800×400×18", new Vector3Int(800, 400, 18), false, true, 2, 2, 2, 2),
-                    new Item("Фасад 600×400×18", new Vector3Int(600, 400, 18), false, true, 2, 2, 2, 2),
-                    new Item("Сборный 450×700×18", new Vector3Int(450, 700, 18), false, true,
-                        0, 0, 0, 0, isAssembled: true),
-                    new Item("Сборный 600×716×18", new Vector3Int(600, 716, 18), false, true,
+                    new Item("Фасад щитовой", new Vector3Int(600, 716, 18), false, true, 2, 2, 2, 2),
+                    new Item("Фасад сборный", new Vector3Int(600, 716, 18), false, true,
                         0, 0, 0, 0, isAssembled: true),
                 }
             };
