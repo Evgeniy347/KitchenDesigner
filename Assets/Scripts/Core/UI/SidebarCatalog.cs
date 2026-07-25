@@ -29,6 +29,7 @@ namespace KitchenDesigner.Core.UI
             public int drawerLength;
             public string drawerColor;
             public int drawerWidth;
+            public string drawerSystem;   // "gtv" | "movento"
             public int gapLeft;
             public int gapRight;
             public int gapTop;
@@ -44,7 +45,7 @@ namespace KitchenDesigner.Core.UI
                 isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false; isDoor = false;
                 isPillar = false; isFloor = false; isLightSource = false; isPanel = false; pillarMidHeightMM = 75;
                 drawerType = "A"; drawerLength = 350;
-                drawerColor = "Anthracite"; drawerWidth = 400;
+                drawerColor = "Anthracite"; drawerWidth = 400; drawerSystem = "gtv";
             }
         }
 
@@ -117,11 +118,12 @@ namespace KitchenDesigner.Core.UI
 
         private static Group DrawerGroup()
         {
-            var item = DrawerItem("Ящик GTV", "A", 350);
-            return new Group { title = "Ящики GTV", shortLabel = "Я", items = new List<Item> { item } };
+            var gtv = DrawerItem("Ящик GTV", "A", 350, "gtv");
+            var movento = DrawerItem("Ящик Movento", "A", 500, "movento");
+            return new Group { title = "Ящики", shortLabel = "Я", items = new List<Item> { gtv, movento } };
         }
 
-        private static Item DrawerItem(string name, string drawerType, int length)
+        private static Item DrawerItem(string name, string drawerType, int length, string system = "gtv")
         {
             int height = drawerType switch { "A" => 86, "B" => 120, "C" => 168, _ => 200 };
             var item = new Item(name, new Vector3Int(400, height, length));
@@ -130,6 +132,7 @@ namespace KitchenDesigner.Core.UI
             item.drawerLength = length;
             item.drawerColor = "Anthracite";
             item.drawerWidth = 400;
+            item.drawerSystem = system;
             return item;
         }
 

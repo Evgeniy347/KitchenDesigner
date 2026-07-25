@@ -13,7 +13,7 @@ public class SidebarCatalogTests
         Assert.AreEqual(5, groups.Count);
         Assert.AreEqual("детали", groups[0].title);
         Assert.AreEqual("Фасады", groups[1].title);
-        Assert.AreEqual("Ящики GTV", groups[2].title);
+        Assert.AreEqual("Ящики", groups[2].title);
         Assert.AreEqual("Мебель", groups[3].title);
         Assert.AreEqual("Помещение", groups[4].title);
     }
@@ -67,14 +67,21 @@ public class SidebarCatalogTests
     }
 
     [Test]
-    public void DrawerGroup_HasOneDefaultItem()
+    public void DrawerGroup_HasGtvAndMoventoItems()
     {
         var groups = SidebarCatalog.Build();
-        Assert.AreEqual(1, groups[2].items.Count);
-        var it = groups[2].items[0];
-        Assert.IsTrue(it.isDrawer);
-        Assert.AreEqual("A", it.drawerType);
-        Assert.AreEqual(350, it.drawerLength);
+        Assert.AreEqual(2, groups[2].items.Count, "два ящика: GTV и Movento");
+
+        var gtv = groups[2].items[0];
+        Assert.IsTrue(gtv.isDrawer);
+        Assert.AreEqual("gtv", gtv.drawerSystem);
+        Assert.AreEqual("A", gtv.drawerType);
+        Assert.AreEqual(350, gtv.drawerLength);
+
+        var movento = groups[2].items[1];
+        Assert.IsTrue(movento.isDrawer);
+        Assert.AreEqual("movento", movento.drawerSystem);
+        Assert.AreEqual("Ящик Movento", movento.name);
     }
 
     [Test]

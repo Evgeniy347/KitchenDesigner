@@ -260,6 +260,7 @@ namespace KitchenDesigner.Core.MCP
     [Serializable]
     public class DrawerInfo
     {
+        public string system = string.Empty;   // "gtv" | "movento"
         public string drawerType = string.Empty;
         public int drawerLength;
         public string drawerColor = string.Empty;

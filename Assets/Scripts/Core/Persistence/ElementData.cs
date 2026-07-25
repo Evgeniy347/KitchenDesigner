@@ -54,6 +54,7 @@ namespace KitchenDesigner.Core
         // JsonUtility оставит дефолт.
         public int cornerRadius = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
 		public bool isDrawer = false;
+		public int drawerSystem = 0;   // 0 = GTV, 1 = Movento (DrawerSystem)
 		public int drawerType = 0;
 		public int drawerNominalLength = 350;
 		public int drawerColor = 0;
@@ -199,6 +200,7 @@ namespace KitchenDesigner.Core
             if (drawer != null)
             {
                 d.isDrawer = true;
+                d.drawerSystem = (int)drawer.System;
                 d.drawerType = (int)drawer.Type;
                 d.drawerNominalLength = drawer.NominalLength;
                 d.drawerColor = (int)drawer.Color;

@@ -113,6 +113,18 @@ namespace KitchenDesigner.Core
                     continue;
                 }
 
+                // Ящик Movento — деревянный короб: в спецификацию отдельными деталями
+                // (боковины, перед, задник, дно), суффикс отличает их в раскрое.
+                // Ящик GTV (покупной металлический короб) остаётся одной строкой ниже.
+                if (e is DrawerElement drawer && drawer.System == DrawerSystem.Movento)
+                {
+                    string decor = MaterialCatalog.Get(e.MaterialId).displayName;
+                    foreach (var part in drawer.GetSpecParts())
+                        Accumulate(groups, order, $"{e.PartName}·{part.suffix}",
+                            part.dimsMM, part.materialKind ?? decor, "");
+                    continue;
+                }
+
                 Accumulate(groups, order, e.PartName, e.DimensionsMM,
                     MaterialCatalog.Get(e.MaterialId).displayName, GroovesLabel(e));
             }

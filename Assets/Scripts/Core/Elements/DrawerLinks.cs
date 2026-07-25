@@ -30,7 +30,7 @@ namespace KitchenDesigner.Core
 
             string pairName = UniqueName(source.PartName + "_top");
             var go = ElementFactory.CreateDrawer(upperType, source.NominalLength,
-                source.Color, source.InternalWidth, pairName, pos);
+                source.Color, source.InternalWidth, pairName, pos, source.System);
             if (go == null) return null;
             go.transform.rotation = source.ClosedRotation;
 

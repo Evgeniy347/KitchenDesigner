@@ -332,7 +332,8 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        public void SpawnDrawer(string drawerType, int length, string colorName, int width, string name)
+        public void SpawnDrawer(string drawerType, int length, string colorName, int width, string name,
+            DrawerSystem system = DrawerSystem.Gtv)
         {
             var type = drawerType switch { "B" => DrawerType.B, "C" => DrawerType.C, "D" => DrawerType.D, _ => DrawerType.A };
             var color = colorName.ToLowerInvariant() switch { "white" => DrawerColor.White, "black" => DrawerColor.Black, _ => DrawerColor.Anthracite };
@@ -340,7 +341,7 @@ namespace KitchenDesigner.Core.UI
             pos.y = DrawerConstants.GetMinOpeningHeight(type) * 0.5f * AppConstants.MM_TO_UNITS;
             pos = GridManager.SnapToGrid(pos);
 
-            var go = ElementFactory.CreateDrawer(type, length, color, width, DrawerLinks.UniqueName(name), pos);
+            var go = ElementFactory.CreateDrawer(type, length, color, width, DrawerLinks.UniqueName(name), pos, system);
             var element = go.GetComponent<KitchenElement>();
             if (element != null)
             {

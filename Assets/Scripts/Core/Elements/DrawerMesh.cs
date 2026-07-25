@@ -78,11 +78,24 @@ namespace KitchenDesigner.Core
                 Mathf.Max(1, lwMM),
                 Mathf.Max(1, DrawerConstants.GetMinOpeningHeight(type)),
                 Mathf.Max(1, nlMM));
+            return BuildFromBoxes(ComputeBoxes(lwMM, type, nlMM), dims);
+        }
+
+        /// <summary>Собрать меш из панелей короба. Панели заданы в мм от угла
+        /// контурного бокса; меш строится в нормализованном кубе [−0.5,0.5] и
+        /// масштабируется localScale элемента = контурный бокс. Переиспользуется
+        /// раскроем GTV и Movento — геометрия панелей у них разная, сборка одна.</summary>
+        public static Mesh BuildFromBoxes(List<Box> boxes, Vector3 contourDimsMM)
+        {
+            var dims = new Vector3(
+                Mathf.Max(1f, contourDimsMM.x),
+                Mathf.Max(1f, contourDimsMM.y),
+                Mathf.Max(1f, contourDimsMM.z));
 
             var verts = new List<Vector3>();
             var tris = new List<int>();
 
-            foreach (var box in ComputeBoxes(lwMM, type, nlMM))
+            foreach (var box in boxes)
             {
                 // мм → нормализованные координаты контурного бокса.
                 Vector3 center = box.minMM + box.sizeMM * 0.5f;

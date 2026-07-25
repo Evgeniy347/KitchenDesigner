@@ -636,7 +636,10 @@ namespace KitchenDesigner.Core.MCP
                             item.name, pos);
                         break;
                     case "drawer":
-                        go = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400, item.name, pos);
+                        go = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400, item.name, pos, DrawerSystem.Gtv);
+                        break;
+                    case "movento_drawer":
+                        go = ElementFactory.CreateDrawer(DrawerType.A, 500, DrawerColor.Anthracite, item.width ?? 568, item.name, pos, DrawerSystem.Movento);
                         break;
                     case "table":
                         go = ElementFactory.CreateTable(new Vector3Int(item.width ?? 2000, item.height ?? 750, item.depth ?? 1000), item.name, pos);

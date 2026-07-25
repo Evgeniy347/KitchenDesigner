@@ -1002,7 +1002,7 @@ namespace KitchenDesigner.Core.UI
 					: isPillar ? "Опора"
 					: isRadiusTable ? "Радиусный стол"
 					: isTable ? "Стол"
-					: isDrawer ? "Ящик GTV"
+					: isDrawer ? DrawerConstants.GetDefaultName(((DrawerElement)element).System)
 					: isWindow ? "Окно"
 					: isDoor ? "Дверь"
 					: element is PanelElement ? "ДВП/ХДФ"

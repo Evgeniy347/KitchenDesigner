@@ -38,8 +38,9 @@ namespace KitchenDesigner.Core
         public static GameObject CreateRadialShelf(int widthMM, int depthMM, int thicknessMM, int cornerRadiusMM, string name, Vector3 position) =>
             Instance.CreateRadialShelf(widthMM, depthMM, thicknessMM, cornerRadiusMM, name, position);
 
-        public static GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position) =>
-            Instance.CreateDrawer(type, nominalLength, color, internalWidth, name, position);
+        public static GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position,
+            DrawerSystem system = DrawerSystem.Gtv) =>
+            Instance.CreateDrawer(type, nominalLength, color, internalWidth, name, position, system);
 
         public static GameObject CreateTable(Vector3Int dimensionsMM, string name, Vector3 position) =>
             Instance.CreateTable(dimensionsMM, name, position);

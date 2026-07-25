@@ -22,6 +22,16 @@ namespace KitchenDesigner.Core
         LowerOnly = 2
     }
 
+    /// <summary>Система выдвижения ящика. От неё зависят раскрой видимого короба
+    /// и то, как ящик попадает в спецификацию: GTV — цельной строкой (покупной
+    /// комплект), Movento — раскладкой на отдельные деревянные детали (боковины,
+    /// перед, задник, дно), которые уходят в CSV как самостоятельные позиции.</summary>
+    public enum DrawerSystem
+    {
+        Gtv = 0,
+        Movento = 1
+    }
+
     public static class DrawerConstants
     {
         public static readonly int[] ValidLengths = { 250, 300, 350, 400, 450, 500, 550, 600 };
@@ -47,6 +57,16 @@ namespace KitchenDesigner.Core
         public const int BACK_WIDTH_INSET = 87;              // задник: ширина = LW − 87
         public const int BOTTOM_DEPTH_INSET = 24;            // дно: глубина = NL − 24 (версия 1)
         public const int BACK_REAR_OFFSET = 8;               // задняя грань задника: NL − 8
+
+        // Раскрой деревянного короба Movento (плита 16 мм). Формулы Blum,
+        // «Building a MOVENTO drawer»: наружная ширина короба SKW = LW − 42
+        // (зазор направляющих 21 мм на сторону), длина боковины = NL − 10,
+        // перед и задник встают между боковин: ширина = SKW − 2·16 = LW − 74.
+        public const int MOVENTO_BOARD_THICKNESS = 16;              // ДСП/МДФ боковин, переда, задника, дна
+        public const int MOVENTO_SLIDE_CLEARANCE_PER_SIDE = 21;     // зазор направляющих на сторону
+        public const int MOVENTO_WIDTH_INSET = 42;                  // короб: наружная ширина = LW − 42
+        public const int MOVENTO_FRONT_BACK_INSET = 74;             // перед/задник: ширина = LW − 74
+        public const int MOVENTO_SIDE_LENGTH_INSET = 10;            // боковина/дно: длина = NL − 10
 
         public const float DRAWER_SLIDE_METERS = 0.4f;
         public const float DRAWER_ANIM_DURATION = 0.4f;
@@ -113,6 +133,26 @@ namespace KitchenDesigner.Core
                 case DrawerType.C: return "Высокий (C)";
                 case DrawerType.D: return "Очень высокий (D)";
                 default: return type.ToString();
+            }
+        }
+
+        public static string GetSystemLabel(DrawerSystem system)
+        {
+            switch (system)
+            {
+                case DrawerSystem.Gtv: return "GTV AXIS PRO";
+                case DrawerSystem.Movento: return "Blum MOVENTO";
+                default: return system.ToString();
+            }
+        }
+
+        /// <summary>Имя по умолчанию для нового ящика этой системы.</summary>
+        public static string GetDefaultName(DrawerSystem system)
+        {
+            switch (system)
+            {
+                case DrawerSystem.Movento: return "Ящик Movento";
+                default: return "Ящик GTV";
             }
         }
 
