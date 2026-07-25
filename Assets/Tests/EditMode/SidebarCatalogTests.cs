@@ -57,13 +57,22 @@ public class SidebarCatalogTests
     {
         var groups = SidebarCatalog.Build();
 
-        Assert.AreEqual(4, groups[1].items.Count);
+        Assert.AreEqual(2, groups[1].items.Count);
         foreach (var it in groups[1].items)
         {
             Assert.IsTrue(it.isFacade, "элемент группы «Фасады» помечен как фасад");
             Assert.AreEqual(18, it.dims.z, "толщина фасада 18 мм");
         }
-        Assert.AreEqual(2, groups[1].items.FindAll(it => it.isAssembled).Count, "2 сборных фасада");
+
+        var plain = groups[1].items.Find(it => it.name == "Фасад щитовой");
+        Assert.IsFalse(plain.isAssembled, "щитовой фасад — не сборный");
+        Assert.AreEqual(new Vector3Int(600, 716, 18), plain.dims, "размеры щитового по умолчанию");
+
+        var assembled = groups[1].items.Find(it => it.name == "Фасад сборный");
+        Assert.IsTrue(assembled.isAssembled, "сборный фасад помечен как сборный");
+        Assert.AreEqual(new Vector3Int(600, 716, 18), assembled.dims);
+
+        Assert.AreEqual(1, groups[1].items.FindAll(it => it.isAssembled).Count, "1 сборный фасад");
     }
 
     [Test]

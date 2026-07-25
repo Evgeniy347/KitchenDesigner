@@ -29,6 +29,10 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
+            // Идёт размещение нового объекта — мышь принадлежит PlacementController.
+            if (PlacementController.IsActive)
+                return;
+
             if (ElementMover.IsDragging)
                 return;
 
@@ -61,6 +65,10 @@ namespace KitchenDesigner.Core
                     // Пол (BasePlate) не выделяется — клик по нему снимает выделение.
                     if (element != null && element.GetComponent<BasePlate>() == null)
                     {
+                        // Режим редактора запрещает выделять часть объектов мышью
+                        // (напр. стены/пол в «обычном»). Программный Select — без ограничений.
+                        if (!EditModeManager.IsInteractable(element)) return;
+
                         bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
                         var group = GroupManager.GroupOf(element);
 

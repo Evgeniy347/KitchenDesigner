@@ -74,67 +74,62 @@
     {
       "type": "Button",
       "text": "Settings",
-      "position": [372, -6]
+      "position": [392, -6]
     },
     {
       "type": "Button",
       "text": "Save",
-      "position": [418, -6]
+      "position": [438, -6]
     },
     {
       "type": "Button",
       "text": "SaveAs",
-      "position": [464, -6]
+      "position": [484, -6]
     },
     {
       "type": "Button",
       "text": "Load",
-      "position": [510, -6]
+      "position": [530, -6]
     },
     {
       "type": "Button",
       "text": "Undo",
-      "position": [572, -6]
+      "position": [592, -6]
     },
     {
       "type": "Button",
       "text": "Redo",
-      "position": [618, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Выравнивание",
-      "position": [680, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Распределить",
-      "position": [822, -6]
+      "position": [638, -6]
     },
     {
       "type": "Button",
       "text": "Ручки: растяжение",
-      "position": [958, -6]
+      "position": [700, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Режим: обычный",
+      "position": [882, -6]
     },
     {
       "type": "Button",
       "text": "Тонировка",
-      "position": [1156, -6]
+      "position": [1094, -6]
     },
     {
       "type": "Button",
       "text": "Свет",
-      "position": [1272, -6]
+      "position": [1210, -6]
     },
     {
       "type": "Button",
       "text": "Солнце",
-      "position": [1348, -6]
+      "position": [1286, -6]
     },
     {
       "type": "Button",
       "text": "Вершины",
-      "position": [1444, -6]
+      "position": [1382, -6]
     },
     {
       "type": "Button",
@@ -181,93 +176,83 @@
     },
     {
       "type": "Button",
-      "text": "Фасад 800×400×18",
+      "text": "Фасад щитовой",
       "position": [22, -163]
     },
     {
       "type": "Button",
-      "text": "Фасад 600×400×18",
+      "text": "Фасад сборный",
       "position": [22, -192]
     },
     {
       "type": "Button",
-      "text": "Сборный 450×700×18",
-      "position": [22, -221]
-    },
-    {
-      "type": "Button",
-      "text": "Сборный 600×716×18",
-      "position": [22, -250]
-    },
-    {
-      "type": "Button",
       "text": "Ящики",
-      "position": [8, -279]
+      "position": [8, -221]
     },
     {
       "type": "Button",
       "text": "Ящик GTV",
-      "position": [22, -313]
+      "position": [22, -255]
     },
     {
       "type": "Button",
       "text": "Ящик Movento",
-      "position": [22, -342]
+      "position": [22, -284]
     },
     {
       "type": "Button",
       "text": "Мебель",
-      "position": [8, -371]
+      "position": [8, -313]
     },
     {
       "type": "Button",
       "text": "Прямоугольный стол",
-      "position": [22, -405]
+      "position": [22, -347]
     },
     {
       "type": "Button",
       "text": "Радиусный стол",
-      "position": [22, -434]
+      "position": [22, -376]
     },
     {
       "type": "Button",
       "text": "Ножка",
-      "position": [22, -463]
+      "position": [22, -405]
     },
     {
       "type": "Button",
       "text": "Помещение",
-      "position": [8, -492]
+      "position": [8, -434]
     },
     {
       "type": "Button",
       "text": "Короб",
-      "position": [22, -526]
+      "position": [22, -468]
     },
     {
       "type": "Button",
       "text": "Стена",
-      "position": [22, -555]
+      "position": [22, -497]
     },
     {
       "type": "Button",
       "text": "Окно",
-      "position": [22, -584]
+      "position": [22, -526]
     },
     {
       "type": "Button",
       "text": "Дверь",
-      "position": [22, -613]
+      "position": [22, -555]
     },
     {
       "type": "Button",
       "text": "Пол",
-      "position": [22, -642]
+      "position": [22, -584]
     },
     {
       "type": "Button",
       "text": "Источник света",
-      "position": [22, -671]
+      "position": [22, -613]
     }
   ]
 }

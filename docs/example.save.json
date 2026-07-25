@@ -70,6 +70,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -142,6 +143,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -214,6 +216,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -286,6 +289,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -358,6 +362,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -430,6 +435,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -502,6 +508,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -574,6 +581,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -646,6 +654,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -718,6 +727,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -790,6 +800,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -862,6 +873,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -934,6 +946,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1006,6 +1019,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1078,6 +1092,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1150,6 +1165,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1222,6 +1238,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1294,6 +1311,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1366,6 +1384,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1438,6 +1457,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1510,6 +1530,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1582,6 +1603,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1654,6 +1676,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1726,6 +1749,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1798,6 +1822,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1870,6 +1895,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -1942,6 +1968,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -2014,6 +2041,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -2086,6 +2114,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -2158,6 +2187,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -2230,6 +2260,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -2302,6 +2333,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -2374,6 +2406,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -2446,6 +2479,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -2518,6 +2552,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -2590,6 +2625,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -2667,6 +2703,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -2744,6 +2781,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -2816,6 +2854,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -2888,6 +2927,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -2965,6 +3005,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -3042,6 +3083,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -3119,6 +3161,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -3196,6 +3239,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -3273,6 +3317,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -3345,6 +3390,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -3417,6 +3463,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -3494,6 +3541,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -3566,6 +3614,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -3643,6 +3692,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -3720,6 +3770,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -3792,6 +3843,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -3864,6 +3916,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -3936,6 +3989,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4008,6 +4062,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4080,6 +4135,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4152,6 +4208,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4224,6 +4281,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4296,6 +4354,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4368,6 +4427,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4440,6 +4500,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4512,6 +4573,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4584,6 +4646,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4656,6 +4719,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4728,6 +4792,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4800,6 +4865,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4872,6 +4938,7 @@
             "lightPowerW": 36,
             "lightDiffusionPct": 50,
             "lightUpPct": 2,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -4944,6 +5011,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5016,6 +5084,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5088,6 +5157,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5160,6 +5230,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5232,6 +5303,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5304,6 +5376,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5376,6 +5449,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5448,6 +5522,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5520,6 +5595,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5592,6 +5668,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5664,6 +5741,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5736,6 +5814,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5808,6 +5887,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5880,6 +5960,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -5952,6 +6033,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6024,6 +6106,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6096,6 +6179,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6168,6 +6252,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6240,6 +6325,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6312,6 +6398,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6384,6 +6471,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6456,6 +6544,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6528,6 +6617,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6600,6 +6690,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6672,6 +6763,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6744,6 +6836,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6816,6 +6909,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6888,6 +6982,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -6960,6 +7055,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -7037,6 +7133,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -7109,6 +7206,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -7181,6 +7279,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -7253,6 +7352,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -7325,6 +7425,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -7397,6 +7498,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -7469,6 +7571,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -7541,6 +7644,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": true,
             "grooves": []
         },
@@ -7613,6 +7717,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -7685,6 +7790,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": [
                 {
@@ -7762,6 +7868,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -7834,6 +7941,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -7906,6 +8014,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -7978,6 +8087,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8050,6 +8160,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8122,6 +8233,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8194,6 +8306,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8266,6 +8379,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8338,6 +8452,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8410,6 +8525,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8482,6 +8598,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8554,6 +8671,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8626,6 +8744,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8698,6 +8817,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": true,
             "grooves": []
         },
@@ -8770,6 +8890,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": true,
             "grooves": []
         },
@@ -8842,6 +8963,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8914,6 +9036,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -8986,6 +9109,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -9058,6 +9182,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -9130,6 +9255,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         },
@@ -9202,6 +9328,372 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "Floor_Balcony",
+            "dimensionsMM": [
+                2790,
+                18,
+                2560
+            ],
+            "position": [
+                -0.1899999976158142,
+                -0.008999999612569809,
+                4.900000095367432
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "Floor_16",
+            "dimensionsMM": [
+                3170,
+                18,
+                5330
+            ],
+            "position": [
+                3.1700000762939455,
+                -0.008999999612569809,
+                3.515000104904175
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "Floor_17",
+            "dimensionsMM": [
+                3220,
+                18,
+                5250
+            ],
+            "position": [
+                6.364999771118164,
+                -0.008999999612569809,
+                3.555000066757202
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "Floor_Center",
+            "dimensionsMM": [
+                4540,
+                18,
+                4470
+            ],
+            "position": [
+                3.8550000190734865,
+                -0.008999999612569809,
+                -1.3849999904632569
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "Floor_41",
+            "dimensionsMM": [
+                1770,
+                18,
+                2350
+            ],
+            "position": [
+                7.010000228881836,
+                -0.008999999612569809,
+                -0.24500000476837159
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         }
@@ -9215,12 +9707,13 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": -0.4023987054824829,
-        "targetY": 0.11025863140821457,
-        "targetZ": -2.5447702407836916,
-        "angleX": 34.199981689453128,
-        "angleY": 156.61634826660157,
-        "distance": 3.599998712539673
+        "targetX": 2.225200653076172,
+        "targetY": -0.18602633476257325,
+        "targetZ": 3.8555524349212648,
+        "angleX": 39.4000244140625,
+        "angleY": 177.01670837402345,
+        "distance": 5.899999618530273,
+        "photoDistance": 8.60000228881836
     },
     "handleMode": "Move",
     "basePlateValid": true,
@@ -9293,380 +9786,11 @@
         "lightPowerW": 9,
         "lightDiffusionPct": 50,
         "lightUpPct": 8,
+        "lightBeamDeg": 150,
         "isPanel": false,
         "grooves": []
     },
     "undoHistory": [
-        {
-            "type": "move",
-            "description": "Move Leg_A3_A4",
-            "elementIndex": 65,
-            "posBefore": [
-                1.002000093460083,
-                0.2800000309944153,
-                -1.3600000143051148
-            ],
-            "posAfter": [
-                1.002000093460083,
-                0.052500009536743167,
-                -1.3600000143051148
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Leg_A3_A4",
-            "elementIndex": 65,
-            "posBefore": [
-                1.002000093460083,
-                0.052500009536743167,
-                -1.3600000143051148
-            ],
-            "posAfter": [
-                -0.2580033540725708,
-                0.052500009536743167,
-                -1.3600000143051148
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Leg_A3_A4",
-            "elementIndex": 65,
-            "posBefore": [
-                -0.2580033540725708,
-                0.05250000208616257,
-                -1.3600000143051148
-            ],
-            "posAfter": [
-                0.8840000629425049,
-                0.05250000208616257,
-                -1.562000036239624
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Dver",
-            "elementIndex": 63,
-            "posBefore": [
-                1.6349999904632569,
-                1.0,
-                0.5260000228881836
-            ],
-            "posAfter": [
-                1.6349999904632569,
-                1.0,
-                0.5260000228881836
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071067690849304,
-                0.0,
-                -0.70710688829422
-            ],
-            "rotAfter": [
-                0.0,
-                -0.7071069478988648,
-                0.0,
-                -0.7071067094802856
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Dver",
-            "elementIndex": 63,
-            "posBefore": [
-                1.6349999904632569,
-                1.0,
-                0.5260000228881836
-            ],
-            "posAfter": [
-                1.6349999904632569,
-                1.0,
-                0.5260000228881836
-            ],
-            "rotBefore": [
-                0.0,
-                -0.7071069478988648,
-                0.0,
-                -0.7071067094802856
-            ],
-            "rotAfter": [
-                0.0,
-                -0.7071066498756409,
-                0.0,
-                0.7071070075035095
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 66,
-            "posBefore": [
-                -0.7300000190734863,
-                2.200000047683716,
-                -4.144000053405762
-            ],
-            "posAfter": [
-                -0.3370000123977661,
-                2.1670000553131105,
-                -2.1500000953674318
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 66,
-            "posBefore": [
-                -0.3370000123977661,
-                2.1670000553131105,
-                -2.1500000953674318
-            ],
-            "posAfter": [
-                -0.3370000123977661,
-                2.1670000553131105,
-                -2.1500000953674318
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                10
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 66,
-            "posBefore": [
-                -0.3370000123977661,
-                2.1670000553131105,
-                -2.1500000953674318
-            ],
-            "posAfter": [
-                -0.3370000123977661,
-                2.1670000553131105,
-                -2.1500000953674318
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                10
-            ],
-            "dimsAfter": [
-                150,
-                10,
-                10
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 66,
-            "posBefore": [
-                -0.3370000123977661,
-                2.1670000553131105,
-                -2.1500000953674318
-            ],
-            "posAfter": [
-                -0.3370000123977661,
-                2.1670000553131105,
-                -2.1500000953674318
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                10,
-                10
-            ],
-            "dimsAfter": [
-                10,
-                10,
-                10
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 66,
-            "posBefore": [
-                -0.3370000123977661,
-                2.1670000553131105,
-                -2.1500000953674318
-            ],
-            "posAfter": [
-                -0.3370000123977661,
-                2.1670000553131105,
-                -2.1500000953674318
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                10,
-                10,
-                10
-            ],
-            "dimsAfter": [
-                150,
-                10,
-                10
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 66,
-            "posBefore": [
-                -0.3370000123977661,
-                2.1670000553131105,
-                -2.1500000953674318
-            ],
-            "posAfter": [
-                -0.3370000123977661,
-                2.1670000553131105,
-                -2.1500000953674318
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                10,
-                10
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                10
-            ],
-            "children": []
-        },
         {
             "type": "resize",
             "description": "Resize Istochnik_sveta",
@@ -44408,6 +44532,82 @@
                 150
             ],
             "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Istochnik_sveta",
+            "elementIndex": 66,
+            "posBefore": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "posAfter": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                150,
+                150,
+                150
+            ],
+            "dimsAfter": [
+                150,
+                150,
+                150
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Istochnik_sveta",
+            "elementIndex": 66,
+            "posBefore": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "posAfter": [
+                -0.05100000277161598,
+                2.501000165939331,
+                -2.017000198364258
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                150,
+                150,
+                150
+            ],
+            "dimsAfter": [
+                150,
+                150,
+                150
+            ],
+            "children": []
         }
     ],
     "redoHistory": [],
@@ -44433,6 +44633,7 @@
         "photoAmbientOcclusion": true,
         "photoBloom": true,
         "photoVignette": true,
-        "photoCeiling": true
+        "photoCeiling": true,
+        "photoSSGI": false
     }
 }

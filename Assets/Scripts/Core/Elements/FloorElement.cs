@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -12,9 +13,22 @@ namespace KitchenDesigner.Core
         public const int DEFAULT_SIZE_MM = 3000;
         public const int DEFAULT_THICKNESS_MM = 100;
 
-        private void OnEnable() => RefreshBasePlateVisibility();
+        // Реестр активных полов: камера прячет каждый из них при взгляде снизу
+        // вверх (как BasePlate), см. CameraController.UpdateFloorVisibility.
+        private static readonly List<FloorElement> _active = new List<FloorElement>();
+        public static IReadOnlyList<FloorElement> Active => _active;
 
-        private void OnDisable() => RefreshBasePlateVisibility(except: this);
+        private void OnEnable()
+        {
+            if (!_active.Contains(this)) _active.Add(this);
+            RefreshBasePlateVisibility();
+        }
+
+        private void OnDisable()
+        {
+            _active.Remove(this);
+            RefreshBasePlateVisibility(except: this);
+        }
 
         /// <summary>Свои полы заменяют дефолтную серую плиту визуально: её рендер
         /// прячется (для валидации BasePlate остаётся якорем), иначе совпадающие
