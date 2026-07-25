@@ -43,6 +43,11 @@
     },
     {
       "type": "Label",
+      "text": "Отражённый свет (SSGI)",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
       "text": "Потолок по стенам",
       "position": [-90, 0]
     },
@@ -91,6 +96,12 @@
     {
       "type": "Toggle",
       "label": "Tgl_Мягкие тени",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Отражённый свет (SSGI)",
       "isOn": true,
       "position": [224, 0]
     },

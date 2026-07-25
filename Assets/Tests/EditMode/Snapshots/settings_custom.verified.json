@@ -20,5 +20,6 @@
     "photoAmbientOcclusion": true,
     "photoBloom": true,
     "photoVignette": true,
-    "photoCeiling": true
+    "photoCeiling": true,
+    "photoSSGI": true
 }

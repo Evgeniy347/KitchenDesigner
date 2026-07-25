@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core.UI
 		private TMP_InputField? _name, _w, _h, _d, _radius,
 			_gapLeft, _gapRight, _gapTop, _gapBottom,
 			_x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight,
-			_lightTemp, _lightPower, _lightDiffusion, _lightUp;
+			_lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam;
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
@@ -322,6 +322,7 @@ namespace KitchenDesigner.Core.UI
 			_lightTemp = LightFieldRow(panel.transform, "Температура", "K");
 			_lightPower = LightFieldRow(panel.transform, "Мощность", "Вт");
 			_lightDiffusion = LightFieldRow(panel.transform, "Рассеивание", "%");
+			_lightBeam = LightFieldRow(panel.transform, "Угол пучка", "°");
 			_lightUp = LightFieldRow(panel.transform, "Свет вверх", "%");
 
             // ── Положение ───────────────────────────────────────────────
@@ -340,14 +341,14 @@ namespace KitchenDesigner.Core.UI
             _rz = TriField(panel.transform, "Z, °", TriCol3);
             TriEndRow(hideForWindow: true);
 
-			foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp }) f!.contentType = TMP_InputField.ContentType.Custom;
+			foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam }) f!.contentType = TMP_InputField.ContentType.Custom;
             foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.Custom;
             // Позиция — целые мм; углы — десятичные градусы.
             foreach (var f in new[] { _x, _y, _z }) f!.contentType = TMP_InputField.ContentType.Custom;
             foreach (var f in new[] { _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.Custom;
 
             // Арифметика: разрешаем + и - (пробелы допускаются, удаляются при вычислении).
-            foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z })
+            foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z })
                 if (f != null) f.onValidateInput = (text, idx, ch) => char.IsDigit(ch) || ch == '+' || ch == '-' || ch == ' ' ? ch : '\0';
             foreach (var f in new[] { _rx, _ry, _rz })
                 if (f != null) f.onValidateInput = (text, idx, ch) => char.IsDigit(ch) || ch == '+' || ch == '-' || ch == '.' || ch == ' ' ? ch : '\0';
@@ -948,6 +949,7 @@ namespace KitchenDesigner.Core.UI
 				if (_lightTemp != null) MaybeRefresh(_lightTemp, lightRt.TemperatureK.ToString());
 				if (_lightPower != null) MaybeRefresh(_lightPower, lightRt.PowerW.ToString());
 				if (_lightDiffusion != null) MaybeRefresh(_lightDiffusion, lightRt.DiffusionPct.ToString());
+				if (_lightBeam != null) MaybeRefresh(_lightBeam, lightRt.BeamAngleDeg.ToString());
 				if (_lightUp != null) MaybeRefresh(_lightUp, lightRt.UpLightPct.ToString());
 			}
 
@@ -1092,6 +1094,7 @@ namespace KitchenDesigner.Core.UI
 					if (_lightTemp != null) _lightTemp.text = lightEl.TemperatureK.ToString();
 					if (_lightPower != null) _lightPower.text = lightEl.PowerW.ToString();
 					if (_lightDiffusion != null) _lightDiffusion.text = lightEl.DiffusionPct.ToString();
+					if (_lightBeam != null) _lightBeam.text = lightEl.BeamAngleDeg.ToString();
 					if (_lightUp != null) _lightUp.text = lightEl.UpLightPct.ToString();
 				}
 
@@ -1270,6 +1273,11 @@ namespace KitchenDesigner.Core.UI
 				{
 					lightApp.DiffusionPct = ParseIntField(_lightDiffusion, lightApp.DiffusionPct);
 					_lightDiffusion.text = lightApp.DiffusionPct.ToString();
+				}
+				if (_lightBeam != null)
+				{
+					lightApp.BeamAngleDeg = ParseIntField(_lightBeam, lightApp.BeamAngleDeg);
+					_lightBeam.text = lightApp.BeamAngleDeg.ToString();
 				}
 				if (_lightUp != null)
 				{
@@ -2175,6 +2183,7 @@ namespace KitchenDesigner.Core.UI
 			TrackField(_lightTemp, lightTrack != null ? lightTrack.TemperatureK.ToString() : LightSourceElement.DEFAULT_TEMPERATURE_K.ToString());
 			TrackField(_lightPower, lightTrack != null ? lightTrack.PowerW.ToString() : LightSourceElement.DEFAULT_POWER_W.ToString());
 			TrackField(_lightDiffusion, lightTrack != null ? lightTrack.DiffusionPct.ToString() : LightSourceElement.DEFAULT_DIFFUSION_PCT.ToString());
+			TrackField(_lightBeam, lightTrack != null ? lightTrack.BeamAngleDeg.ToString() : LightSourceElement.DEFAULT_BEAM_DEG.ToString());
 			TrackField(_lightUp, lightTrack != null ? lightTrack.UpLightPct.ToString() : LightSourceElement.DEFAULT_UP_PCT.ToString());
             var pos = _target.transform.position;
             TrackField(_x, ToMM(pos.x));

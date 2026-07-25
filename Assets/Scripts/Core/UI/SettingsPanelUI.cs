@@ -206,10 +206,13 @@ namespace KitchenDesigner.Core.UI
             AddLinkedToggle(t, ref y, "Свечение (bloom)", s.PhotoBloom, v => s.PhotoBloom = v);
             AddLinkedToggle(t, ref y, "Виньетка", s.PhotoVignette, v => s.PhotoVignette = v);
 
-            // Потолок — не про качество, а про сцену: к пресету не привязан.
+            // Сцена/эксперимент — к пресету не привязаны.
             y -= 6;
             AddToggleRow(t, ref y, "Потолок по стенам", s.PhotoCeiling,
                 v => { s.PhotoCeiling = v; PhotoMode.RefreshIfActive(); });
+
+            AddToggleRow(t, ref y, "Отражённый свет (SSGI)", s.PhotoSSGI,
+                v => { s.PhotoSSGI = v; PhotoMode.RefreshIfActive(); });
         }
 
         // ── Пресет + привязанные тумблеры ───────────────────

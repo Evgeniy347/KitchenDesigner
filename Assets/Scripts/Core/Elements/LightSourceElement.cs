@@ -32,15 +32,20 @@ namespace KitchenDesigner.Core
         // отражает вниз — поэтому весь поток мощности идёт в нижний прожектор, а
         // вверх уходит лишь малая утечка (узкий тусклый прожектор вверх) для
         // лёгкой подсветки потолка. Доля утечки — настраиваемый параметр лампы.
-        private const float DownConeAngle = 150f;   // почти вся нижняя полусфера + стены
-        private const float DownInnerAngle = 105f;
-        private const float UpConeAngle = 100f;
         private const float UpRangeFraction = 0.5f;
+        private const float UpConeFraction = 0.66f;   // верхний конус уже нижнего
 
         // Утечка вверх, % от нижнего потока: 0 = весь свет вниз (полностью
         // отражающий глухой купол), больше — заметнее подсветка потолка.
         public const int DEFAULT_UP_PCT = 8;
         public const int MAX_UP_PCT = 50;
+
+        // Угол пучка (радиус рассеивания), ° — ширина светового конуса. Задаётся
+        // для нижнего прожектора, верхний берёт пропорциональную (более узкую)
+        // долю. Малый угол = узкое пятно, большой = широкий разлёт по комнате.
+        public const int DEFAULT_BEAM_DEG = 150;
+        public const int MIN_BEAM_DEG = 20;
+        public const int MAX_BEAM_DEG = 175;
 
         // LED ~110 лм/Вт; делитель подобран так, чтобы 9 Вт ≈ прежняя яркость 1.4.
         private const float LumensPerWatt = 110f;
@@ -54,6 +59,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _powerW = DEFAULT_POWER_W;
         [SerializeField] private int _diffusionPct = DEFAULT_DIFFUSION_PCT;
         [SerializeField] private int _upLightPct = DEFAULT_UP_PCT;
+        [SerializeField] private int _beamAngleDeg = DEFAULT_BEAM_DEG;
 
         private Light? _light;    // главный прожектор вниз
         private Light? _upLight;  // слабая подсветка потолка вверх
@@ -88,6 +94,14 @@ namespace KitchenDesigner.Core
         {
             get => _upLightPct;
             set { _upLightPct = Mathf.Clamp(value, 0, MAX_UP_PCT); ApplyLightParams(); }
+        }
+
+        /// <summary>Угол пучка (радиус рассеивания), ° — ширина конуса света.
+        /// Влияет и на нижний прожектор, и на верхнюю подсветку.</summary>
+        public int BeamAngleDeg
+        {
+            get => _beamAngleDeg;
+            set { _beamAngleDeg = Mathf.Clamp(value, MIN_BEAM_DEG, MAX_BEAM_DEG); ApplyLightParams(); }
         }
 
         public static void SetGlobalOn(bool on)
@@ -137,13 +151,16 @@ namespace KitchenDesigner.Core
             float sy = Mathf.Max(Mathf.Abs(transform.lossyScale.y), 1e-3f);
             var drop = new Vector3(0f, -LightDropWorld / sy, 0f);
 
+            float downAngle = _beamAngleDeg;
+            float upAngle = Mathf.Clamp(_beamAngleDeg * UpConeFraction, MIN_BEAM_DEG, MAX_BEAM_DEG);
+
             if (_light != null)
             {
                 _light.color = rgb;
                 _light.intensity = intensity;
                 _light.range = range;
-                _light.spotAngle = DownConeAngle;
-                _light.innerSpotAngle = DownInnerAngle;
+                _light.spotAngle = downAngle;
+                _light.innerSpotAngle = downAngle * 0.7f;
                 _light.transform.localPosition = drop;
                 _light.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);  // поток вниз
             }
@@ -153,8 +170,8 @@ namespace KitchenDesigner.Core
                 _upLight.color = rgb;
                 _upLight.intensity = intensity * (_upLightPct / 100f);  // утечка сквозь купол
                 _upLight.range = range * UpRangeFraction;
-                _upLight.spotAngle = UpConeAngle;
-                _upLight.innerSpotAngle = UpConeAngle * 0.7f;
+                _upLight.spotAngle = upAngle;
+                _upLight.innerSpotAngle = upAngle * 0.7f;
                 _upLight.transform.localPosition = drop;
                 _upLight.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f); // поток вверх
             }

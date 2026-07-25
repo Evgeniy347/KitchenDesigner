@@ -70,6 +70,7 @@
             "lightPowerW": 9,
             "lightDiffusionPct": 50,
             "lightUpPct": 8,
+            "lightBeamDeg": 150,
             "isPanel": false,
             "grooves": []
         }
@@ -82,7 +83,8 @@
         "targetZ": 0.0,
         "angleX": 0.0,
         "angleY": 0.0,
-        "distance": 0.0
+        "distance": 0.0,
+        "photoDistance": 0.0
     },
     "handleMode": "Resize",
     "basePlateValid": false,
@@ -155,6 +157,7 @@
         "lightPowerW": 9,
         "lightDiffusionPct": 50,
         "lightUpPct": 8,
+        "lightBeamDeg": 150,
         "isPanel": false,
         "grooves": []
     },
@@ -221,6 +224,7 @@
         "photoAmbientOcclusion": true,
         "photoBloom": true,
         "photoVignette": true,
-        "photoCeiling": true
+        "photoCeiling": true,
+        "photoSSGI": true
     }
 }

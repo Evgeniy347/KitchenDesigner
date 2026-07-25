@@ -395,6 +395,7 @@ public class SnapshotTests
         gs.PhotoBloom = true;
         gs.PhotoVignette = true;
         gs.PhotoCeiling = true;
+        gs.PhotoSSGI = true;
     }
 
     // ── Full ProjectData snapshot (elements + groups + camera + baseplate) ─

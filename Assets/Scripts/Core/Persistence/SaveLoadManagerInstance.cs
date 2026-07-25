@@ -291,6 +291,7 @@ namespace KitchenDesigner.Core
                         lightEl.PowerW = ed.lightPowerW;
                         lightEl.DiffusionPct = ed.lightDiffusionPct;
                         lightEl.UpLightPct = ed.lightUpPct;
+                        lightEl.BeamAngleDeg = ed.lightBeamDeg;
                     }
                 }
                 created.Add(go);
