@@ -161,7 +161,11 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "Duplicates of the same kind+side are rejected. Omit to keep.")]
         public string? grooves;
 
-        // GTV drawer.
+        // Drawer.
+        [McpParam("Drawer only: runner system — gtv (bought metal box, one spec line) or " +
+            "movento (wooden box exploded into separate spec parts). Omit to keep.",
+            Enum = new[] { "gtv", "movento" })]
+        public string? drawer_system;
         [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Omit to keep.",
             Enum = new[] { "A", "B", "C", "D" })]
         public string? drawer_type;
