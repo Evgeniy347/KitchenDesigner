@@ -1,13 +1,14 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 
-/// <summary>PlayMode-тест: загружает example.save.json (два окна на LeftWall
-/// пересекаются по Y) и рендерит изометрический скриншот для визуальной
-/// проверки бага с полосой между окнами.</summary>
+/// <summary>PlayMode-тест: стена с двумя пересекающимися окнами — проверка
+/// меша на вырожденные треугольники (баг с тонкой полосой в зоне перекрытия)
+/// плюс изометрический скриншот для визуальной проверки.</summary>
 public class WindowStripBugTests
 {
     private const int RenderW = 1024;
@@ -108,45 +109,59 @@ public class WindowStripBugTests
         Object.DestroyImmediate(tex);
     }
 
-    /// <summary>Загружает example.save.json и рендерит сцену. Окна на LeftWall
-    /// пересекаются по Y (1.391±0.6 и 2.032±0.6 →overlap ~559мм). Скриншот
-    /// покажет, есть ли визуальная полоса в зоне перекрытия.</summary>
+    /// <summary>Строит стену с двумя ПЕРЕСЕКАЮЩИМИСЯ окнами (геометрия взята
+    /// с проекта, где проявлялся баг: центры по Y 1.391 и 2.032 при высоте
+    /// 1200 мм → перекрытие ~559 мм, плюс перекрытие по X). Проверяет, что
+    /// в меше стены нет вырожденных треугольников — та самая тонкая полоса
+    /// в зоне overlap — и рендерит скриншот для визуальной проверки.</summary>
     [UnityTest]
-    public IEnumerator LoadExampleSave_RenderLeftWall()
+    public IEnumerator TwoOverlappingWindows_NoDegenerateTriangles()
     {
-        // Путь к example.save.json относительно проекта.
-        string savePath = Path.Combine(Application.dataPath, "..", "docs", "example.save.json");
-        Assert.IsTrue(File.Exists(savePath), $"Save file not found: {savePath}");
+        var wallDims = new Vector3Int(3000, 3000, 100);
+        var wallGo = ElementFactory.CreateWall(wallDims, "StripWall", new Vector3(0f, 1.5f, 0f));
+        _spawned.Add(wallGo);
 
-        var data = SaveLoadManager.LoadFromFile(savePath);
-        Assert.IsNotNull(data, "Failed to deserialize save file");
+        // Окна пересекаются и по Y (1.432..1.991), и по X (−0.15..0.15).
+        var winDims = new Vector3Int(900, 1200, 100);
+        var win1 = ElementFactory.CreateWindow(winDims, "StripWin_Lower", new Vector3(-0.3f, 1.391f, 0f));
+        _spawned.Add(win1);
+        var win2 = ElementFactory.CreateWindow(winDims, "StripWin_Upper", new Vector3(0.3f, 2.032f, 0f));
+        _spawned.Add(win2);
 
-        SaveLoadManager.ClearBoards(PartRegistry.GetAll());
-        var created = SaveLoadManager.RestoreScene(data!);
-        Assert.IsTrue(created.Count > 0, "No elements created from save");
+        win1.GetComponent<WindowElement>()!.SnapToWall();
+        win2.GetComponent<WindowElement>()!.SnapToWall();
 
-        // Даём окнам прилипнуть к стенам (SnapToWall вызывается в Update).
+        // Даём стене перестроить меш (RebuildMesh вызывается в Update).
         yield return null;
         yield return null;
         yield return null;
 
-        // Найти LeftWall для фокусировки камеры.
-        GameObject? leftWall = null;
-        foreach (var el in PartRegistry.GetAll())
+        var mesh = wallGo.GetComponent<MeshFilter>()!.sharedMesh;
+        Assert.IsNotNull(mesh, "у стены нет меша");
+
+        var verts = mesh!.vertices;
+        var tris = mesh.triangles;
+
+        // Без этой проверки тест был бы пустым: если бы окна не зарегистрировались
+        // на стене, меш остался бы простым параллелепипедом без вырожденных рёбер.
+        int plainVerts = WallMeshBuilder.Build(new List<WallMeshBuilder.WindowCutout>()).vertexCount;
+        Assert.Greater(verts.Length, plainVerts,
+            "в меше стены нет вырезов — окна не прилипли, проверка полосы ничего не значит");
+        for (int t = 0; t < tris.Length; t += 3)
         {
-            if (el != null && el.gameObject.name == "LeftWall")
-            {
-                leftWall = el.gameObject;
-                break;
-            }
+            var a = verts[tris[t]];
+            var b = verts[tris[t + 1]];
+            var c = verts[tris[t + 2]];
+            float ab = (a - b).magnitude;
+            float bc = (b - c).magnitude;
+            float ca = (c - a).magnitude;
+            Assert.GreaterOrEqual(ab, WallMeshBuilder.MinCellNorm, $"AB={ab} tri {t / 3}: {a}→{b}");
+            Assert.GreaterOrEqual(bc, WallMeshBuilder.MinCellNorm, $"BC={bc} tri {t / 3}: {b}→{c}");
+            Assert.GreaterOrEqual(ca, WallMeshBuilder.MinCellNorm, $"CA={ca} tri {t / 3}: {c}→{a}");
         }
-        Assert.IsNotNull(leftWall, "LeftWall not found in scene");
-
-        var wallEl = leftWall!.GetComponent<KitchenElement>();
-        Assert.IsNotNull(wallEl);
 
         // Камера смотрит на центр стены.
-        var (camGo, cam) = CreateCamera(leftWall.transform.position, MmToUnits(wallEl.DimensionsMM));
+        var (camGo, cam) = CreateCamera(wallGo.transform.position, MmToUnits(wallDims));
         _spawned.Add(camGo);
 
         yield return RenderToPng(cam, "bug_window_strip.png");
