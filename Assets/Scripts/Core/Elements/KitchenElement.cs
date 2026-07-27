@@ -352,6 +352,11 @@ namespace KitchenDesigner.Core
             // Доли паза и проёма мойки считаются от размеров детали — при ресайзе
             // меш надо пересобрать, иначе они растянутся вместе с localScale.
             if (_data.Grooves.Count > 0 || _sinks.Count > 0) RebuildGrooveMesh();
+
+            // localScale тянет UV вместе с деталью, поэтому «вырез» декора надо
+            // пересчитать под новый размер — иначе рисунок растягивается вместо
+            // того, чтобы повторяться в своём физическом масштабе.
+            MaterialManager.RefreshTiling(this);
         }
 
         public virtual Vector3[] GetVertices()

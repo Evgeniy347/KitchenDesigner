@@ -86,11 +86,16 @@ namespace KitchenDesigner.Core
                     Debug.LogWarning($"[Textures] Не картинка/битый файл: {Path.GetFileName(path)}");
                     return null;
                 }
-                tex.wrapMode = TextureWrapMode.Repeat;
+                MaterialManager.ConfigureTexture(tex);
 
                 var baseName = Path.GetFileNameWithoutExtension(path);
                 tex.name = baseName;
                 ParseName(baseName, out string display, out int tileW, out int tileH);
+
+                // Размер не указан в имени — высоту НЕ подставляем: 0 значит
+                // «по пропорциям картинки», иначе широкий декор сплющило бы
+                // в квадрат 800×800.
+                if (!HasSizeSuffix(baseName)) tileH = 0;
 
                 // id = имя файла (стабильно для сейвов); цвет белый — текстура без тонировки.
                 return new MaterialDef(baseName, display, "ЛДСП", Color.white, null, tileW)
@@ -105,6 +110,10 @@ namespace KitchenDesigner.Core
                 return null;
             }
         }
+
+        /// <summary>Есть ли в имени явный суффикс размера <c>_Ш_В</c>. Без него
+        /// высоту плитки задаёт не имя, а пропорции картинки.</summary>
+        public static bool HasSizeSuffix(string baseName) => SizeSuffix.IsMatch(baseName ?? string.Empty);
 
         /// <summary>Разобрать имя файла (без расширения) на отображаемое имя и размер
         /// плитки. Суффикс <c>_Ш_В</c> отрезается; подчёркивания → пробелы. Чистая

@@ -16,6 +16,15 @@ namespace KitchenDesigner.Core
 
         private static readonly Dictionary<string, Material> _cache = new Dictionary<string, Material>();
 
+        // Разрешённый физ. размер плитки (мм) по id декора: высота может браться
+        // из пропорций картинки, а это требует её загрузки — кэшируем, чтобы
+        // тянущийся ресайз не дёргал Resources.Load каждый кадр.
+        private static readonly Dictionary<string, Vector2Int> _tileMM = new Dictionary<string, Vector2Int>();
+
+        // Один переиспользуемый блок: RefreshTiling зовётся на каждый кадр
+        // ресайза, аллокация MaterialPropertyBlock там ни к чему.
+        private static readonly MaterialPropertyBlock _mpb = new MaterialPropertyBlock();
+
         /// <summary>UV-масштаб «вырез под размер щита»: фиксированный физический
         /// масштаб декора, картинка обрезается/повторяется, а не вписывается.
         /// scale = размер_щита_мм / размер_декора_мм. Чистая функция.</summary>
@@ -30,6 +39,44 @@ namespace KitchenDesigner.Core
             float th = Mathf.Max(1, tileHeightMM);
             return new Vector4(dimsMM.x / tw, dimsMM.y / th, 0f, 0f);
         }
+
+        /// <summary>Физ. высота плитки по её ширине и пропорциям картинки. Нужна,
+        /// когда декор задан только шириной: подставлять квадрат для картинки
+        /// 1920×853 значит сплющить её по вертикали в 2,25 раза. Чистая функция.</summary>
+        public static int TileHeightFromAspect(int tileWidthMM, int texWidthPx, int texHeightPx)
+        {
+            if (texWidthPx <= 0 || texHeightPx <= 0) return Mathf.Max(1, tileWidthMM);
+            return Mathf.Max(1, Mathf.RoundToInt(tileWidthMM * (float)texHeightPx / texWidthPx));
+        }
+
+        /// <summary>Физ. размер плитки декора (мм). Ширина — из декора; высота
+        /// либо задана явно, либо выводится из пропорций текстуры (а без
+        /// текстуры плитка квадратная).</summary>
+        public static Vector2Int TileMM(MaterialDef def)
+        {
+            if (def == null) return new Vector2Int(1, 1);
+
+            int w = Mathf.Max(1, def.tileSizeMM);
+            if (def.tileHeightMM > 0) return new Vector2Int(w, def.tileHeightMM);
+
+            if (!string.IsNullOrEmpty(def.id) && _tileMM.TryGetValue(def.id, out var cached))
+                return cached;
+
+            var tex = ResolveTexture(def);
+            var size = new Vector2Int(w, tex != null
+                ? TileHeightFromAspect(w, tex.width, tex.height)
+                : w);
+            if (!string.IsNullOrEmpty(def.id)) _tileMM[def.id] = size;
+            return size;
+        }
+
+        /// <summary>Картинка декора: уже загруженная из внешней папки (приоритет)
+        /// или из Resources. null — декор чисто цветовой.</summary>
+        private static Texture2D? ResolveTexture(MaterialDef def)
+            => def.texture != null ? def.texture
+                : (!string.IsNullOrEmpty(def.baseMapResource)
+                    ? Resources.Load<Texture2D>(def.baseMapResource)
+                    : null);
 
         public static void ApplyById(KitchenElement element, string materialId)
             => Apply(element, MaterialCatalog.Get(materialId));
@@ -134,10 +181,10 @@ namespace KitchenDesigner.Core
             var r = element.GetComponentInChildren<MeshRenderer>();
             if (r == null) return;
 
-            var mpb = new MaterialPropertyBlock();
-            r.GetPropertyBlock(mpb);
-            mpb.SetVector(BaseMapST, ComputeTileST(element.DimensionsMM, def.tileSizeMM, def.TileHeightMM));
-            r.SetPropertyBlock(mpb);
+            var tile = TileMM(def);
+            r.GetPropertyBlock(_mpb);
+            _mpb.SetVector(BaseMapST, ComputeTileST(element.DimensionsMM, tile.x, tile.y));
+            r.SetPropertyBlock(_mpb);
         }
 
         public static Material? GetSharedMaterial(MaterialDef def)
@@ -155,12 +202,10 @@ namespace KitchenDesigner.Core
             mat.SetFloat(Metallic, def.metallic);
             mat.SetFloat(Smoothness, def.smoothness);
 
-            // Текстура: уже загруженная из внешней папки (приоритет) или из Resources.
-            var tex = def.texture != null ? def.texture
-                : (!string.IsNullOrEmpty(def.baseMapResource) ? Resources.Load<Texture2D>(def.baseMapResource) : null);
+            var tex = ResolveTexture(def);
             if (tex != null)
             {
-                tex.wrapMode = TextureWrapMode.Repeat; // повтор декора при крупном щите
+                ConfigureTexture(tex);
                 mat.SetTexture(BaseMap, tex);
                 mat.mainTexture = tex;
             }
@@ -169,7 +214,23 @@ namespace KitchenDesigner.Core
             return mat;
         }
 
+        /// <summary>Режимы фильтрации декора. Repeat — щит крупнее плитки просто
+        /// повторяет её (текстуры бесшовные). Трилинейная фильтрация + анизотропия
+        /// нужны из-за косых углов: столешница и пол уходят от камеры почти в
+        /// плоскость, и на bilinear+aniso 1 дальняя часть смазывается в кашу.</summary>
+        public static void ConfigureTexture(Texture2D tex)
+        {
+            if (tex == null) return;
+            tex.wrapMode = TextureWrapMode.Repeat;
+            tex.filterMode = FilterMode.Trilinear;
+            tex.anisoLevel = 8;
+        }
+
         /// <summary>Сброс кэша материалов (для тестов).</summary>
-        public static void ClearCache() => _cache.Clear();
+        public static void ClearCache()
+        {
+            _cache.Clear();
+            _tileMM.Clear();
+        }
     }
 }

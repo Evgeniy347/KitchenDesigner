@@ -16,11 +16,15 @@ namespace KitchenDesigner.Core
         public Texture2D? texture;      // уже загруженная текстура (из внешней папки); приоритетнее baseMapResource
         public Color baseColor = Color.gray;
         public int tileSizeMM = 800;   // физ. ШИРИНА картинки декора, мм
-        public int tileHeightMM = 0;   // физ. ВЫСОТА картинки, мм (0 → квадрат = tileSizeMM)
+        public int tileHeightMM = 0;   // физ. ВЫСОТА картинки, мм (0 → по пропорциям картинки)
         public float metallic = 0f;
         public float smoothness = 0.2f;
 
-        /// <summary>Физическая высота плитки декора (мм). 0 в поле → квадрат (= ширине).</summary>
+        /// <summary>Физическая высота плитки декора (мм) БЕЗ учёта картинки.
+        /// Настоящую высоту (с выводом из пропорций текстуры при
+        /// <c>tileHeightMM == 0</c>) даёт <c>MaterialManager.TileMM</c> — только
+        /// он умеет доставать текстуру. Здесь остаётся квадратный запас на
+        /// случай чисто цветового декора.</summary>
         public int TileHeightMM => tileHeightMM > 0 ? tileHeightMM : tileSizeMM;
 
         public MaterialDef(string id, string displayName, string kind, Color color,
@@ -53,6 +57,10 @@ namespace KitchenDesigner.Core
             new MaterialDef("oak",     "Дуб сонома",  "ЛДСП", new Color(0.78f, 0.66f, 0.45f), "Textures/oak",     800),
             new MaterialDef("wenge",   "Венге",       "ЛДСП", new Color(0.28f, 0.20f, 0.16f), "Textures/wenge",   800),
             new MaterialDef("concrete","Бетон",       "ЛДСП", new Color(0.62f, 0.62f, 0.60f), "Textures/concrete",1200),
+            // Картинка 1920×853 px — лист декора; при ширине 2000 мм ламель
+            // выходит ~178 мм, как у настоящего дуба. Высота (≈889 мм) считается
+            // из пропорций картинки, задавать её вручную не нужно.
+            new MaterialDef("teplyy_medovyy_dub", "теплый медовый дуб", "ЛДСП", Color.white, "Textures/teplyy_medovyy_dub", 2000),
             new MaterialDef("gtv_anthracite", "Антрацит (GTV)", "Металл", new Color(0.25f, 0.25f, 0.27f), metallic: 0.4f, smoothness: 0.3f),
             new MaterialDef("gtv_white",      "Белый (GTV)",    "Металл", new Color(0.92f, 0.92f, 0.90f), metallic: 0.3f, smoothness: 0.3f),
             new MaterialDef("gtv_black",      "Чёрный (GTV)",   "Металл", new Color(0.10f, 0.10f, 0.11f), metallic: 0.3f, smoothness: 0.3f),

@@ -170,15 +170,19 @@ namespace KitchenDesigner.Core.MCP
         {
             var list = new List<object>();
             foreach (var m in MaterialCatalog.All)
+            {
+                // Высота может выводиться из пропорций картинки — берём разрешённую.
+                var tile = MaterialManager.TileMM(m);
                 list.Add(new
                 {
                     id = m.id,
                     name = m.displayName,
                     kind = m.kind,
                     hasTexture = m.texture != null || !string.IsNullOrEmpty(m.baseMapResource),
-                    tileWidthMM = m.tileSizeMM,
-                    tileHeightMM = m.TileHeightMM
+                    tileWidthMM = tile.x,
+                    tileHeightMM = tile.y
                 });
+            }
             return McpResponse.Result(req.id, new { materials = list, defaultId = MaterialCatalog.DefaultId });
         }
 

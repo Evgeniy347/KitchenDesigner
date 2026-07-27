@@ -8,6 +8,14 @@ using KitchenDesigner.Core;
 public class MaterialTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
+    private readonly List<Texture2D> _textures = new List<Texture2D>();
+
+    private Texture2D Tex(int w, int h)
+    {
+        var t = new Texture2D(w, h);
+        _textures.Add(t);
+        return t;
+    }
 
     private KitchenElement Make(string name, Vector3Int dims, string? materialId = null)
     {
@@ -27,6 +35,8 @@ public class MaterialTests
         MaterialCatalog.ClearDynamic();
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
+        foreach (var t in _textures) if (t != null) Object.DestroyImmediate(t);
+        _textures.Clear();
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null) Object.DestroyImmediate(e.gameObject);
     }
@@ -232,5 +242,93 @@ public class MaterialTests
         var st = MaterialManager.ComputeTileST(new Vector3Int(1200, 1200, 18), 1200, 600);
         Assert.AreEqual(1f, st.x, 0.0001f);
         Assert.AreEqual(2f, st.y, 0.0001f);
+    }
+
+    // --- Физ. размер плитки: высота из пропорций картинки, а не квадрат ---
+
+    [Test]
+    public void TileHeightFromAspect_KeepsImageProportions()
+    {
+        // Картинка 1920×853 при ширине 2000 мм → 889 мм, а не квадрат 2000.
+        Assert.AreEqual(889, MaterialManager.TileHeightFromAspect(2000, 1920, 853));
+    }
+
+    [Test]
+    public void TileHeightFromAspect_NoTexture_FallsBackToSquare()
+    {
+        Assert.AreEqual(800, MaterialManager.TileHeightFromAspect(800, 0, 0));
+    }
+
+    [Test]
+    public void TileMM_ExplicitHeight_WinsOverAspect()
+    {
+        var def = new MaterialDef("tile_explicit", "T", "ЛДСП", Color.white, null, 1200)
+        {
+            tileHeightMM = 600,
+            texture = Tex(64, 16),
+        };
+        MaterialCatalog.RegisterDynamic(def);
+
+        Assert.AreEqual(new Vector2Int(1200, 600), MaterialManager.TileMM(def));
+    }
+
+    [Test]
+    public void TileMM_WideTexture_DerivesHeightFromAspect()
+    {
+        // Широкая картинка 64×16 при ширине 1600 мм → 400 мм. Квадрат 1600×1600
+        // сплющил бы рисунок вчетверо.
+        var def = new MaterialDef("tile_wide", "T", "ЛДСП", Color.white, null, 1600)
+        {
+            texture = Tex(64, 16),
+        };
+        MaterialCatalog.RegisterDynamic(def);
+
+        Assert.AreEqual(new Vector2Int(1600, 400), MaterialManager.TileMM(def));
+    }
+
+    [Test]
+    public void TileMM_ColorOnlyDecor_IsSquare()
+    {
+        var def = new MaterialDef("tile_plain", "T", "ЛДСП", Color.white, null, 900);
+        MaterialCatalog.RegisterDynamic(def);
+
+        Assert.AreEqual(new Vector2Int(900, 900), MaterialManager.TileMM(def));
+    }
+
+    [Test]
+    public void ExternalCatalog_HasSizeSuffix_OnlyForExplicitSize()
+    {
+        Assert.IsTrue(ExternalTextureCatalog.HasSizeSuffix("abrikos_ba_03_cd_100_100"));
+        Assert.IsFalse(ExternalTextureCatalog.HasSizeSuffix("plainoak"));
+    }
+
+    // --- Ресайз не растягивает декор ---
+
+    [Test]
+    public void Resize_RecomputesTiling_DecorDoesNotStretch()
+    {
+        var def = new MaterialDef("resize_decor", "R", "ЛДСП", Color.white, null, 800)
+        {
+            tileHeightMM = 400,
+        };
+        MaterialCatalog.RegisterDynamic(def);
+
+        var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "B", Vector3.zero);
+        _spawned.Add(go);
+        var e = go.GetComponent<KitchenElement>();
+        MaterialManager.Apply(e, def);
+
+        var r = go.GetComponentInChildren<MeshRenderer>();
+        var mpb = new MaterialPropertyBlock();
+        r.GetPropertyBlock(mpb);
+        Assert.AreEqual(new Vector4(1f, 1f, 0f, 0f), mpb.GetVector("_BaseMap_ST"));
+
+        // Щит вдвое шире и вдвое выше — декор должен ПОВТОРИТЬСЯ 2×2,
+        // а не растянуться вместе с деталью.
+        e.DimensionsMM = new Vector3Int(1600, 800, 18);
+
+        r.GetPropertyBlock(mpb);
+        Assert.AreEqual(new Vector4(2f, 2f, 0f, 0f), mpb.GetVector("_BaseMap_ST"),
+            "после ресайза «вырез» декора обязан пересчитаться");
     }
 }
