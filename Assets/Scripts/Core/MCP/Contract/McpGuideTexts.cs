@@ -104,7 +104,10 @@ apply_floorplan {id, origin_x_mm, origin_z_mm, points[], rooms[], walls[],
             top_y_mm, thickness_mm}       — makes a floor + 4 walls; an edge
                                             shared with another room REUSES the
                                             same wall (never two walls in one)
-  walls    {id, from, to, kind, height}   — explicit single walls
+  walls    {id, from, to, kind, height, thickness_mm?}  — explicit single walls;
+            thickness_mm overrides the kind's project instruction for that one
+            wall (a 150 mm facade in a 250/125 project), so a plan can carry
+            more than the two default thicknesses
   floors   {id, poly:[3+ point ids], top_y_mm, thickness_mm}
   openings {id, wall, kind:""window""|""door"", offset_mm (from the wall's
             declared start point), width, height, sill_mm}

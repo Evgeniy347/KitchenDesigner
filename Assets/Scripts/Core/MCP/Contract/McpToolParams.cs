@@ -275,6 +275,10 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Wall kind; thickness/material come from project instructions.", Required = true,
             Enum = new[] { "bearing", "partition" })] public string kind = "";
         [McpParam("Wall height in MM.", Required = true, Min = 1)] public int height;
+        [McpParam("Thickness in MM, overriding the kind's project instruction. Use for walls that " +
+            "do not match the project default (e.g. a 150 mm facade in a 250/125 project). " +
+            "When given, the '<kind>_wall_thickness_mm' instruction is not required.", Min = 1)]
+        public int? thickness_mm;
     }
 
     [Serializable]
@@ -565,6 +569,9 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Wall kind.", Required = true, Enum = new[] { "bearing", "partition" })]
         public string kind = "";
         [McpParam("Height in MM.", Required = true, Min = 1)] public int height;
+        [McpParam("Thickness in MM, overriding the kind's project instruction. Use for walls that " +
+            "do not match the project default (e.g. a 150 mm facade in a 250/125 project).", Min = 1)]
+        public int? thickness_mm;
     }
 
     [Serializable]

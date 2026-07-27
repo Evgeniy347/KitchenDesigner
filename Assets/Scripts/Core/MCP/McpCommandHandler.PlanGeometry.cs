@@ -26,9 +26,19 @@ namespace KitchenDesigner.Core.MCP
                 if (kind != "bearing" && kind != "partition")
                 { errors.Add($"Wall '{s.name}': kind must be bearing or partition"); continue; }
                 if (s.height <= 0) { errors.Add($"Wall '{s.name}': height must be positive"); continue; }
-                string thicknessKey = kind + "_wall_thickness_mm";
-                if (!ProjectInstructions.TryGetPositiveMm(thicknessKey, out int thickness))
-                { errors.Add($"Wall '{s.name}': project instruction '{thicknessKey}: <positive mm>' is required"); continue; }
+                int thickness;
+                if (s.thickness_mm.HasValue)
+                {
+                    thickness = s.thickness_mm.Value;
+                    if (thickness <= 0)
+                    { errors.Add($"Wall '{s.name}': thickness_mm must be positive"); continue; }
+                }
+                else
+                {
+                    string thicknessKey = kind + "_wall_thickness_mm";
+                    if (!ProjectInstructions.TryGetPositiveMm(thicknessKey, out thickness))
+                    { errors.Add($"Wall '{s.name}': project instruction '{thicknessKey}: <positive mm>' is required, or pass thickness_mm"); continue; }
+                }
 
                 long dx = (long)s.to_x - s.from_x, dz = (long)s.to_z - s.from_z;
                 int length = Mathf.RoundToInt(Mathf.Sqrt((float)(dx * dx + dz * dz)));
@@ -296,7 +306,8 @@ namespace KitchenDesigner.Core.MCP
                     {
                         var a = compiled.points[w.from]; var b = compiled.points[w.to];
                         segments.Add(new WallSegmentMm { name = w.id, from_x = a.x, from_z = a.y,
-                            to_x = b.x, to_z = b.y, kind = w.kind, height = w.height });
+                            to_x = b.x, to_z = b.y, kind = w.kind, height = w.height,
+                            thickness_mm = w.thickness });
                     }
                     failedStep = "create walls";
                     failed = HandleCreateWalls(InternalRequest(req.id, new ParamsCreateWalls

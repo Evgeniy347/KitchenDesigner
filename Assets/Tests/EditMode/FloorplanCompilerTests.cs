@@ -137,6 +137,43 @@ public class FloorplanCompilerTests
     }
 
     [Test]
+    public void ApplyFloorplan_PerWallThicknessOverridesTheKindInstruction()
+    {
+        // A real plan carries more than two thicknesses: 250 mm cross-walls, 125 mm
+        // partitions and a 150 mm facade. Only the first two fit the instructions.
+        ProjectInstructions.Text = "bearing_wall_thickness_mm: 250\nfloor_thickness_mm: 120";
+        var d = new ParamsFloorplanDeclaration
+        {
+            id = "Plan",
+            points = new[]
+            {
+                new FloorplanPoint { id = "A", x = 0, z = 0 },
+                new FloorplanPoint { id = "B", x = 3000, z = 0 },
+                new FloorplanPoint { id = "C", x = 3000, z = 3000 },
+            },
+            walls = new[]
+            {
+                new FloorplanWall { id = "Cross", from = "A", to = "B", kind = "bearing", height = 2700 },
+                new FloorplanWall { id = "Facade", from = "B", to = "C", kind = "bearing", height = 2700, thickness_mm = 150 },
+                // partition thickness is NOT in the instructions — the override stands in for it
+                new FloorplanWall { id = "Light", from = "A", to = "C", kind = "partition", height = 2700, thickness_mm = 125 },
+            },
+        };
+        var response = new McpCommandHandler().Handle(new McpRequest
+        { id = "a", method = "apply_floorplan", Params = JObject.Parse(JsonConvert.SerializeObject(d)) });
+
+        Assert.AreEqual("result", response.type, JsonConvert.SerializeObject(response.data));
+        int Thickness(string name)
+        {
+            var dims = PartRegistry.GetAll().Find(e => e.PartName == name)!.DimensionsMM;
+            return dims.z;
+        }
+        Assert.AreEqual(250, Thickness("Cross"), "no override -> bearing instruction");
+        Assert.AreEqual(150, Thickness("Facade"), "override wins over the bearing instruction");
+        Assert.AreEqual(125, Thickness("Light"), "override stands in for a missing instruction");
+    }
+
+    [Test]
     public void ApplyFloorplan_LateFailureRollsBackEverythingAndDoesNotAddUndo()
     {
         ProjectInstructions.Text = "partition_wall_thickness_mm: 100"; // floor thickness intentionally absent

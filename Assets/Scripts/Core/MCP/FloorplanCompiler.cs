@@ -25,6 +25,8 @@ namespace KitchenDesigner.Core.MCP
     {
         public string id = "", from = "", to = "", kind = "";
         public int height;
+        /// <summary>Per-wall thickness override; null = take it from the project instructions.</summary>
+        public int? thickness;
     }
 
     public sealed class CompiledPlanFloor
@@ -60,7 +62,7 @@ namespace KitchenDesigner.Core.MCP
             var elementIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var edges = new Dictionary<string, CompiledPlanWall>(StringComparer.OrdinalIgnoreCase);
             foreach (var w in d.walls ?? Array.Empty<FloorplanWall>())
-                AddWall(c, w?.id, w?.from, w?.to, w?.kind, w?.height ?? 0, elementIds, edges);
+                AddWall(c, w?.id, w?.from, w?.to, w?.kind, w?.height ?? 0, w?.thickness_mm, elementIds, edges);
             foreach (var f in d.floors ?? Array.Empty<FloorplanFloor>())
             {
                 if (f == null) continue;
@@ -85,7 +87,7 @@ namespace KitchenDesigner.Core.MCP
                     {
                         string id = "wall_" + (string.Compare(a, b, StringComparison.OrdinalIgnoreCase) <= 0 ? a + "_" + b : b + "_" + a);
                         AddWall(c, id, a, b, string.IsNullOrEmpty(r.kind) ? "partition" : r.kind,
-                            r.height, elementIds, edges);
+                            r.height, null, elementIds, edges);
                         edges.TryGetValue(edge, out wall);
                     }
                     if (wall != null) room.walls.Add(wall.id);
@@ -149,7 +151,8 @@ namespace KitchenDesigner.Core.MCP
         }
 
         private static void AddWall(CompiledFloorplan c, string? id, string? from, string? to,
-            string? kind, int height, HashSet<string> elementIds, Dictionary<string, CompiledPlanWall> edges)
+            string? kind, int height, int? thickness, HashSet<string> elementIds,
+            Dictionary<string, CompiledPlanWall> edges)
         {
             id ??= ""; from ??= ""; to ??= ""; kind ??= "";
             if (!Reserve(c, id, elementIds, "wall")) return;
@@ -157,7 +160,8 @@ namespace KitchenDesigner.Core.MCP
             if (from.Equals(to, StringComparison.OrdinalIgnoreCase)) c.errors.Add($"Wall '{id}' endpoints must differ");
             if (kind != "bearing" && kind != "partition") c.errors.Add($"Wall '{id}' has invalid kind '{kind}'");
             if (height <= 0) c.errors.Add($"Wall '{id}' height must be positive");
-            var wall = new CompiledPlanWall { id = id, from = from, to = to, kind = kind, height = height };
+            if (thickness.HasValue && thickness.Value <= 0) c.errors.Add($"Wall '{id}' thickness_mm must be positive");
+            var wall = new CompiledPlanWall { id = id, from = from, to = to, kind = kind, height = height, thickness = thickness };
             c.walls.Add(wall);
             string edge = EdgeKey(from, to);
             if (!edges.TryAdd(edge, wall)) c.errors.Add($"Multiple walls declare edge '{from}-{to}'");
