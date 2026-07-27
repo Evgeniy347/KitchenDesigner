@@ -27,9 +27,22 @@ namespace KitchenDesigner.Core.Measure
         {
             var shader = Shader.Find("Hidden/OverlayLine");
             if (shader == null) shader = Resources.Load<Shader>("Shaders/OverlayLine");
-            if (shader == null) return;
+            if (shader == null)
+            {
+                // Молча пропасть нельзя: без материала рулетка рисует подписи,
+                // но не линии — со стороны это выглядит как «текст в воздухе».
+                Debug.LogWarning("[Measure] Шейдер Hidden/OverlayLine не найден — разметка рулетки не будет видна.");
+                return;
+            }
             _lineMaterial = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
         }
+
+        /// <summary>Камера кадра. В URP <see cref="Camera.current"/> внутри
+        /// OnRenderObject не гарантирована (бывает null), а от камеры зависит
+        /// вся геометрия разметки — разворот точек к зрителю и перевод пикселей
+        /// в мир. Поэтому падаем на Camera.main, как остальной код проекта.</summary>
+        public static Camera? ResolveCamera(Camera? current, Camera? main) =>
+            current != null ? current : main;
 
         private void OnDestroy()
         {
@@ -39,7 +52,7 @@ namespace KitchenDesigner.Core.Measure
         private void OnRenderObject()
         {
             if (!MeasureMode.Active || _lineMaterial == null) return;
-            var cam = Camera.current;
+            var cam = ResolveCamera(Camera.current, Camera.main);
             if (cam == null) return;
 
             _lineMaterial.SetPass(0);

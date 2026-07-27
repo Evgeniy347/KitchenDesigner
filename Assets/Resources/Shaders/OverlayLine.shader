@@ -4,7 +4,7 @@ Shader "Hidden/OverlayLine"
     // и внутри корпуса, и за стеной — иначе замер «пропадает» в геометрии.
     SubShader
     {
-        Tags { "RenderType" = "Transparent" "Queue" = "Overlay" }
+        Tags { "RenderType" = "Transparent" "Queue" = "Transparent+100" }
         Pass
         {
             Blend SrcAlpha OneMinusSrcAlpha

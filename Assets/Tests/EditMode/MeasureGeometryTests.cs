@@ -164,6 +164,42 @@ public class MeasureGeometryTests
         Assert.IsNull(MeasureStore.Selected);
     }
 
+    /// <summary>В URP Camera.current внутри OnRenderObject бывает null — тогда
+    /// рендерер обязан взять Camera.main, иначе разметка не рисуется вообще
+    /// и на экране остаётся только подпись расстояния.</summary>
+    [Test]
+    public void MeasureRenderer_ResolveCamera_FallsBackToMainWhenCurrentIsNull()
+    {
+        var go = new GameObject("MeasureCam");
+        try
+        {
+            var main = go.AddComponent<Camera>();
+            Assert.AreSame(main, MeasureRenderer.ResolveCamera(null, main));
+        }
+        finally
+        {
+            Object.DestroyImmediate(go);
+        }
+    }
+
+    [Test]
+    public void MeasureRenderer_ResolveCamera_PrefersCurrent()
+    {
+        var currentGo = new GameObject("Current");
+        var mainGo = new GameObject("Main");
+        try
+        {
+            var current = currentGo.AddComponent<Camera>();
+            var main = mainGo.AddComponent<Camera>();
+            Assert.AreSame(current, MeasureRenderer.ResolveCamera(current, main));
+        }
+        finally
+        {
+            Object.DestroyImmediate(currentGo);
+            Object.DestroyImmediate(mainGo);
+        }
+    }
+
     [Test]
     public void MeasureStore_Remove_DropsSelection()
     {
