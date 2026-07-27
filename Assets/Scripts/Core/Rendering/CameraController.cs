@@ -292,7 +292,14 @@ namespace KitchenDesigner.Core
             bool hide = !PhotoMode.Active && cameraBelow && lookingUp;
 
             renderer.enabled = rendererVisible && !hide;
-            var collider = floor.GetComponent<Collider>();
+
+            // У полигонального пола ДВА коллайдера: BoxCollider куба, выключенный
+            // навсегда, и MeshCollider по контуру (FloorElement.SetPolygonLocalMm).
+            // GetComponent<Collider>() возвращает первый — бокс, поэтому раньше
+            // камера дёргала именно его: меш продолжал ловить клики сквозь скрытый
+            // пол, а бокс ещё и включался обратно. Переключаем рабочий коллайдер.
+            var mesh = floor.GetComponent<MeshCollider>();
+            Collider? collider = mesh != null ? mesh : floor.GetComponent<Collider>();
             if (collider != null)
                 collider.enabled = !hide;
         }

@@ -128,6 +128,60 @@ public class CameraControllerTests
         Assert.IsTrue(collider.enabled, "floor collider should be enabled when camera is above it");
     }
 
+    // ── Полигональный пол: два коллайдера (Box отключён, работает Mesh) ───
+
+    /// <summary>Строит пол так же, как ElementFactory.CreateFloor + SetPolygonLocalMm:
+    /// куб с BoxCollider, поверх — MeshCollider по контуру, Box отключается.</summary>
+    private GameObject CreatePolygonFloor()
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = "PolyFloor";
+        var floor = go.AddComponent<FloorElement>();
+        floor.DimensionsMM = new Vector3Int(3000, 100, 3000);
+        go.transform.position = new Vector3(0, -0.05f, 0);
+        floor.SetPolygonLocalMm(new[]
+        {
+            new Vector2Int(-1500, -1500), new Vector2Int(1500, -1500),
+            new Vector2Int(1500, 1500), new Vector2Int(-1500, 1500)
+        });
+        return go;
+    }
+
+    [Test]
+    public void UpdateFloorVisibility_DisablesMeshCollider_OfPolygonFloor_WhenCameraBelowAndLookingUp()
+    {
+        var polyGo = CreatePolygonFloor();
+        _controller!.AssignTestFloor(polyGo);
+
+        _cameraGo!.transform.position = new Vector3(0, -1f, 0);
+        _cameraGo!.transform.forward = new Vector3(0, 0.5f, 0.866f).normalized;
+        _controller!.UpdateFloorVisibility();
+
+        var mesh = polyGo.GetComponent<MeshCollider>();
+        Assert.IsFalse(mesh.enabled,
+            "меш-коллайдер полигонального пола должен отключаться, иначе клик снизу не проходит сквозь скрытый пол");
+
+        Object.DestroyImmediate(polyGo);
+    }
+
+    [Test]
+    public void UpdateFloorVisibility_KeepsBoxColliderDisabled_OnPolygonFloor()
+    {
+        var polyGo = CreatePolygonFloor();
+        _controller!.AssignTestFloor(polyGo);
+
+        _cameraGo!.transform.position = new Vector3(0, 10f, 0);
+        _controller!.UpdateFloorVisibility();
+
+        var box = polyGo.GetComponent<BoxCollider>();
+        Assert.IsFalse(box.enabled,
+            "прямоугольный BoxCollider полигонального пола выключен навсегда — камера не должна его включать");
+        Assert.IsTrue(polyGo.GetComponent<MeshCollider>().enabled,
+            "меш-коллайдер снова включён, когда камера выше пола");
+
+        Object.DestroyImmediate(polyGo);
+    }
+
     [Test]
     public void UpdateFloorVisibility_KeepsFloorVisible_WhenCameraBelowFloorButLookingDown()
     {
