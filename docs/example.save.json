@@ -75,6 +75,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -151,6 +155,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -227,6 +235,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -303,6 +315,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -379,6 +395,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -455,6 +475,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -531,6 +555,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -607,6 +635,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -683,6 +715,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -759,6 +795,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -835,6 +875,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -911,6 +955,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -987,6 +1035,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1063,6 +1115,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1139,6 +1195,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1215,6 +1275,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1291,6 +1355,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1367,6 +1435,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1443,6 +1515,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1519,6 +1595,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1595,6 +1675,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1671,6 +1755,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1747,6 +1835,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1823,6 +1915,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1899,6 +1995,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1975,6 +2075,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -2051,6 +2155,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -2127,6 +2235,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 0,
@@ -2208,6 +2320,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 0,
@@ -2289,6 +2405,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -2365,6 +2485,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -2441,6 +2565,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 1,
@@ -2522,6 +2650,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 0,
@@ -2603,6 +2735,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 0,
@@ -2684,6 +2820,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 1,
@@ -2765,6 +2905,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 1,
@@ -2846,6 +2990,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -2922,6 +3070,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 1,
@@ -3003,6 +3155,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 0,
@@ -3084,6 +3240,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 0,
@@ -3165,6 +3325,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -3241,6 +3405,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -3317,6 +3485,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -3393,6 +3565,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -3469,6 +3645,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -3545,6 +3725,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -3621,6 +3805,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -3697,6 +3885,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -3773,6 +3965,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -3849,6 +4045,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -3925,6 +4125,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4001,6 +4205,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4077,6 +4285,10 @@
             "lightUpPct": 2,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4153,6 +4365,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4229,6 +4445,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4305,6 +4525,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4381,6 +4605,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4457,6 +4685,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4533,6 +4765,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4609,6 +4845,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4685,6 +4925,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4761,6 +5005,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4837,6 +5085,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4913,6 +5165,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -4989,6 +5245,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5065,6 +5325,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5141,6 +5405,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5217,6 +5485,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5293,6 +5565,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5369,6 +5645,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5445,6 +5725,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5521,6 +5805,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5597,6 +5885,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5673,6 +5965,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5749,6 +6045,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5825,6 +6125,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5901,6 +6205,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -5977,6 +6285,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -6053,6 +6365,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -6129,6 +6445,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -6205,6 +6525,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 1,
@@ -6286,6 +6610,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -6362,6 +6690,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -6438,6 +6770,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -6514,6 +6850,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -6590,6 +6930,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": true,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -6666,6 +7010,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -6742,6 +7090,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": [
                 {
                     "kind": 1,
@@ -6823,6 +7175,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -6899,6 +7255,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -6975,6 +7335,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7051,6 +7415,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7127,6 +7495,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7203,6 +7575,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7279,6 +7655,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7355,6 +7735,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7431,6 +7815,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7507,6 +7895,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7583,6 +7975,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7659,6 +8055,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": true,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7735,6 +8135,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": true,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7811,6 +8215,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7887,6 +8295,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -7963,6 +8375,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8039,6 +8455,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8115,6 +8535,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8191,6 +8615,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8272,6 +8700,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8353,6 +8785,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8434,6 +8870,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8515,6 +8955,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8596,6 +9040,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8677,6 +9125,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8758,6 +9210,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8839,6 +9295,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -8920,6 +9380,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9001,6 +9465,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9082,6 +9550,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9163,6 +9635,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9244,6 +9720,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9325,6 +9805,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9406,6 +9890,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9487,6 +9975,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9568,6 +10060,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9649,6 +10145,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9730,6 +10230,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9811,6 +10315,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9892,6 +10400,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -9973,6 +10485,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10054,6 +10570,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10135,6 +10655,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10216,6 +10740,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10297,6 +10825,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10386,6 +10918,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10462,6 +10998,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10538,6 +11078,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10614,6 +11158,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10690,6 +11238,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10766,6 +11318,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10847,6 +11403,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -10928,6 +11488,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11004,6 +11568,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11080,6 +11648,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11161,6 +11733,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11242,6 +11818,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11323,6 +11903,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11399,6 +11983,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11475,6 +12063,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11551,6 +12143,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11627,6 +12223,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11703,6 +12303,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11779,6 +12383,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11860,6 +12468,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -11941,6 +12553,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12022,6 +12638,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12098,6 +12718,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12174,6 +12798,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12250,6 +12878,10 @@
             "lightUpPct": 2,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12326,6 +12958,10 @@
             "lightUpPct": 2,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12402,6 +13038,10 @@
             "lightUpPct": 2,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12478,6 +13118,10 @@
             "lightUpPct": 2,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12554,6 +13198,10 @@
             "lightUpPct": 2,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12630,6 +13278,10 @@
             "lightUpPct": 2,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12706,6 +13358,10 @@
             "lightUpPct": 2,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12782,6 +13438,10 @@
             "lightUpPct": 2,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12863,6 +13523,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -12944,6 +13608,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -13020,6 +13688,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -13096,6 +13768,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -13172,6 +13848,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -13248,6 +13928,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -13324,6 +14008,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -13400,6 +14088,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -13476,6 +14168,90 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "grooves": []
+        },
+        {
+            "name": "Moyka",
+            "dimensionsMM": [
+                600,
+                188,
+                500
+            ],
+            "position": [
+                0.6849998831748962,
+                0.872589647769928,
+                -3.3477706909179689
+            ],
+            "rotation": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "isSink": true,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         }
     ],
@@ -13566,12 +14342,12 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 0.8451033234596252,
-        "targetY": 0.6518979072570801,
-        "targetZ": -3.155693769454956,
-        "angleX": 24.575307846069337,
-        "angleY": 139.12673950195313,
-        "distance": 4.44107723236084,
+        "targetX": 4.276744842529297,
+        "targetY": -0.6069527864456177,
+        "targetZ": -4.5305657386779789,
+        "angleX": 18.972291946411134,
+        "angleY": 127.50559997558594,
+        "distance": 7.041080951690674,
         "photoDistance": 2.200000047683716
     },
     "handleMode": "Move",
@@ -13651,6 +14427,10 @@
         "lightUpPct": 8,
         "lightBeamDeg": 150,
         "isPanel": false,
+        "isSink": false,
+        "sinkAttachedPartName": "",
+        "sinkOffsetXMM": 0,
+        "sinkOffsetYMM": 0,
         "grooves": []
     },
     "undoHistory": [
@@ -46739,6 +47519,972 @@
                 0.0,
                 0.0,
                 -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.684999942779541,
+                0.9259999990463257,
+                -3.369999885559082
+            ],
+            "posAfter": [
+                0.684999942779541,
+                0.9259999990463257,
+                -3.369999885559082
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.684999942779541,
+                0.9259999990463257,
+                -3.369999885559082
+            ],
+            "posAfter": [
+                0.684999942779541,
+                0.9259999990463257,
+                -3.369999885559082
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.684999942779541,
+                0.9259999990463257,
+                -3.369999885559082
+            ],
+            "posAfter": [
+                0.684999942779541,
+                0.9259999990463257,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.684999942779541,
+                0.9259999990463257,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.684999942779541,
+                1.0,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.684999942779541,
+                1.0,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.684999942779541,
+                0.8520000576972961,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.684999942779541,
+                0.8520000576972961,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.684999942779541,
+                0.8505722880363464,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.684999942779541,
+                0.8505722880363464,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.684999942779541,
+                0.8520000576972961,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.684999942779541,
+                0.8520000576972961,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8520000576972961,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8520000576972961,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8484548330307007,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8484548330307007,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8520000576972961,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8520000576972961,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8550000190734863,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8550000190734863,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                600,
+                188,
+                500
+            ],
+            "dimsAfter": [
+                600,
+                188,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.366000175476074
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.3477706909179689
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                0.8580000400543213,
+                -3.3477706909179689
+            ],
+            "posAfter": [
+                0.6850000619888306,
+                1.0,
+                -3.3477706909179689
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6850000619888306,
+                1.0,
+                -3.3477706909179689
+            ],
+            "posAfter": [
+                0.12699997425079347,
+                1.0,
+                -3.3477706909179689
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.12699997425079347,
+                1.0,
+                -3.3477706909179689
+            ],
+            "posAfter": [
+                0.12699997425079347,
+                0.8660928010940552,
+                -3.3477706909179689
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.12699997425079347,
+                0.8660928010940552,
+                -3.3477706909179689
+            ],
+            "posAfter": [
+                0.12699997425079347,
+                0.812000036239624,
+                -3.3477706909179689
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.12699997425079347,
+                0.812000036239624,
+                -3.3477706909179689
+            ],
+            "posAfter": [
+                0.12699997425079347,
+                1.0399999618530274,
+                -3.3477706909179689
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.12699997425079347,
+                1.0399999618530274,
+                -3.3477706909179689
+            ],
+            "posAfter": [
+                0.12699997425079347,
+                0.872589647769928,
+                -3.3477706909179689
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.12699997425079347,
+                0.872589647769928,
+                -3.3477706909179689
+            ],
+            "posAfter": [
+                0.6849998831748962,
+                0.872589647769928,
+                -3.3477706909179689
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
             ],
             "dimsBefore": [],
             "dimsAfter": [],
