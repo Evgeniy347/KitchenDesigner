@@ -193,6 +193,9 @@ namespace KitchenDesigner.Core
                 if (Input.GetKeyDown(KeyCode.F10))
                     PhotoMode.Toggle();
 
+                if (Input.GetKeyDown(KeyCode.E))
+                    ToggleSelectedOpenables();
+
                 HandleWASD();
                 HandleArrowOrbit();
                 HandlePlusMinusZoom();
@@ -200,6 +203,18 @@ namespace KitchenDesigner.Core
 
             UpdateCameraPosition();
             UpdateFloorVisibility();
+        }
+
+        private void ToggleSelectedOpenables()
+        {
+            var sel = SelectionManager.Instance;
+            if (sel == null) return;
+            foreach (var el in sel.SelectedElements)
+            {
+                if (el is DoorElement d) d.ToggleOpen();
+                else if (el is WindowElement w) w.ToggleOpen();
+                else if (el is FacadeElement f) f.ToggleDoor();
+            }
         }
 
         public void UpdateFloorVisibility()
