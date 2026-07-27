@@ -93,6 +93,81 @@ public class WallCutoutTests : SnapTestBase
             cu: 0.2f, cv: -0.02f, hu: 0.45f / 3f, hv: 0.6f / 2.5f, uAxis: 0);
     }
 
+    /// <summary>Стену с окном сдвинули вдоль её длины: окно остаётся на месте,
+/// значит вырез обязан переехать в новое относительное положение. Регресс:
+/// меш не перестраивался и дыра уезжала вместе со стеной — «окно отдельно,
+/// дыра отдельно».</summary>
+    [Test]
+    public void Wall_MovedAlongLength_RebuildsCutoutAtWindowPosition()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(3000, 2500, 100), "Wall_Move", new Vector3(0f, 1.25f, -1.5f));
+        _spawned.Add(wallGo);
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 1200, 100), "Win_Move", new Vector3(0.6f, 1.25f, -1.5f));
+        _spawned.Add(winGo);
+        winGo.GetComponent<WindowElement>()!.SnapToWall();
+
+        var wall = wallGo.GetComponent<Wall>()!;
+        wallGo.transform.position += new Vector3(0.5f, 0f, 0f);
+        wall.SyncOpeningsIfChanged();
+
+        // Окно осталось на x = 0.6, центр стены уехал на x = 0.5 →
+        // смещение вдоль стены 0.1 м из 3.0 м.
+        var mesh = wallGo.GetComponent<MeshFilter>()!.sharedMesh;
+        AssertFaceHasHole(mesh!, normalAxis: 2,
+            cu: 0.1f / 3f, cv: 0f, hu: 0.45f / 3f, hv: 0.6f / 2.5f, uAxis: 0);
+    }
+
+    /// <summary>Стену с окном растянули по длине: нормализованные координаты
+    /// выреза считаются от новой ширины, иначе дыра «разъезжается» с окном.</summary>
+    [Test]
+    public void Wall_ResizedAlongLength_RebuildsCutoutAtWindowPosition()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(3000, 2500, 100), "Wall_Resize", new Vector3(0f, 1.25f, -1.5f));
+        _spawned.Add(wallGo);
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 1200, 100), "Win_Resize", new Vector3(0.6f, 1.25f, -1.5f));
+        _spawned.Add(winGo);
+        winGo.GetComponent<WindowElement>()!.SnapToWall();
+
+        var wallEl = wallGo.GetComponent<KitchenElement>()!;
+        var wall = wallGo.GetComponent<Wall>()!;
+        wallEl.DimensionsMM = new Vector3Int(4000, 2500, 100);
+        wall.SyncOpeningsIfChanged();
+
+        // Центр стены не двигался, окно на 0.6 м от него, ширина теперь 4.0 м.
+        var mesh = wallGo.GetComponent<MeshFilter>()!.sharedMesh;
+        AssertFaceHasHole(mesh!, normalAxis: 2,
+            cu: 0.6f / 4f, cv: 0f, hu: 0.45f / 4f, hv: 0.6f / 2.5f, uAxis: 0);
+    }
+
+    /// <summary>Опускание стены камерой (WallCutaway) не считается изменением
+    /// геометрии: вырез задан от ПОЛНЫХ размеров, лишний Rebuild каждый кадр
+    /// не нужен.</summary>
+    [Test]
+    public void Wall_Lowered_DoesNotRebuildMesh()
+    {
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(3000, 2500, 100), "Wall_Low", new Vector3(0f, 1.25f, -1.5f));
+        _spawned.Add(wallGo);
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 1200, 100), "Win_Low", new Vector3(0.6f, 1.25f, -1.5f));
+        _spawned.Add(winGo);
+        winGo.GetComponent<WindowElement>()!.SnapToWall();
+
+        var wall = wallGo.GetComponent<Wall>()!;
+        wall.SyncOpeningsIfChanged();
+        var before = wallGo.GetComponent<MeshFilter>()!.sharedMesh;
+
+        wall.SetLowered(true, 0.1f);
+        wall.SyncOpeningsIfChanged();
+
+        Assert.AreSame(before, wallGo.GetComponent<MeshFilter>()!.sharedMesh,
+            "меш пересобран из-за опускания стены — лишняя работа каждый кадр");
+    }
+
     // Зазор между окнами (= Tolerance.EpsilonUnits) меньше порога MinCellNorm —
     // ячейка должна быть скипнута, иначе появится вырожденный квад (полоса).
     private const float CloseGap = Tolerance.EpsilonUnits;

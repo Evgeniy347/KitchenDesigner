@@ -21,6 +21,12 @@ namespace KitchenDesigner.Core
         private readonly List<DoorElement> _attachedDoors = new List<DoorElement>();
         private MeshFilter? _meshFilter;
         private Mesh? _customMesh;
+        // Снимок геометрии стены на момент последней сборки меша.
+        private Vector3 _syncPos;
+        private Quaternion _syncRot = Quaternion.identity;
+        private Vector3 _syncScale;
+        private Vector3Int _syncDims;
+        private bool _hasSyncSnapshot;
 
         public void SetLowered(bool lower, float loweredHeightUnits)
         {
@@ -115,6 +121,40 @@ namespace KitchenDesigner.Core
                 if (d != null) d.RefreshGeometry();
         }
 
+        /// <summary>Пересобирает меш, если сама стена сдвинулась, повернулась или
+        /// изменила размеры. Вырезы хранятся в НОРМАЛИЗОВАННЫХ координатах стены,
+        /// поэтому без пересборки дыра едет вместе со стеной, а окно остаётся на
+        /// месте — «окно отдельно, проём отдельно».</summary>
+        public void SyncOpeningsIfChanged()
+        {
+            if (_attachedWindows.Count == 0 && _attachedDoors.Count == 0) return;
+            if (_hasSyncSnapshot && !GeometryChanged()) return;
+            RebuildMesh();
+        }
+
+        private void LateUpdate() => SyncOpeningsIfChanged();
+
+        /// <summary>Позиция/поворот/размеры стены в ПОЛНОМ виде: опускание стены
+        /// камерой (WallCutaway) меняет transform, но не геометрию проёмов —
+        /// иначе меш пересобирался бы каждый кадр в режиме обзора.</summary>
+        private (Vector3 pos, Quaternion rot, Vector3 scale, Vector3Int dims) CurrentGeometry()
+        {
+            var scale = transform.localScale;
+            scale.y = FullScaleY;
+            var el = GetComponent<KitchenElement>();
+            return (FullPosition, transform.rotation, scale,
+                el != null ? el.DimensionsMM : Vector3Int.zero);
+        }
+
+        private bool GeometryChanged()
+        {
+            var g = CurrentGeometry();
+            return (g.pos - _syncPos).sqrMagnitude > Tolerance.EpsilonSqr ||
+                   (g.scale - _syncScale).sqrMagnitude > Tolerance.EpsilonSqr ||
+                   g.dims != _syncDims ||
+                   Quaternion.Angle(g.rot, _syncRot) > 0.01f;
+        }
+
         public void RebuildMesh()
         {
             if (_meshFilter == null) _meshFilter = GetComponent<MeshFilter>();
@@ -163,6 +203,10 @@ namespace KitchenDesigner.Core
 
             var collider = GetComponent<MeshCollider>();
             if (collider != null) collider.sharedMesh = _customMesh;
+
+            var g = CurrentGeometry();
+            (_syncPos, _syncRot, _syncScale, _syncDims) = g;
+            _hasSyncSnapshot = true;
         }
 
         private void OnDestroy()
