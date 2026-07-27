@@ -193,6 +193,21 @@ export const GEN_TOOLS: GenTool[] = [
     },
   },
   {
+    name: "add_opening",
+    title: "Add a wall opening",
+    description: "Create/update a door or window by wall name, offset from its declared start, width/height/sill in MM. The server positions and attaches it and rebuilds the wall cutout. Atomic, idempotent by opening name, ONE undo step.",
+    kind: "write",
+    inputSchema: {
+      name: z.string().min(1).describe("Stable opening id/name."),
+      wall: z.string().min(1).describe("Exact wall name."),
+      kind: z.enum(["window", "door"]).describe("Opening kind."),
+      offset_mm: z.number().int().min(0).describe("Distance from wall start endpoint to opening left edge in MM."),
+      width: z.number().int().min(1).describe("Opening width in MM."),
+      height: z.number().int().min(1).describe("Opening height in MM."),
+      sill_mm: z.number().int().min(0).optional().describe("Height from wall base to opening bottom in MM. Door usually uses 0."),
+    },
+  },
+  {
     name: "snap_diagnose",
     title: "Diagnose snapping (batch)",
     description: "Explain why each given board does or does not snap to neighbours from its current (or a test) position: best face pair, gap vs threshold, overlap. x/y/z in METERS (optional, default = current position).",

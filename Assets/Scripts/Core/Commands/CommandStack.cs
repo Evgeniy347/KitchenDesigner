@@ -119,11 +119,15 @@ namespace KitchenDesigner.Core
             _created.SetActive(true);
             if (_element != null)
                 PartRegistry.Register(_element);
+            if (_element is WindowElement window) window.SnapToWall();
+            else if (_element is DoorElement door) door.SnapToWall();
         }
 
         public void Undo()
         {
             if (_created == null) return;
+            if (_element is WindowElement window) window.UnregisterFromWall();
+            else if (_element is DoorElement door) door.UnregisterFromWall();
             _created.SetActive(false);
             if (_element != null)
                 PartRegistry.Unregister(_element);

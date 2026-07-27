@@ -185,6 +185,16 @@ namespace KitchenDesigner.Core
             if (wall != null) AlignToWall(wall);
         }
 
+        public void AttachToWall(Wall wall)
+        {
+            if (wall == null) return;
+            UnregisterFromWall();
+            _attachedWallName = wall.gameObject.name;
+            wall.RegisterWindow(this);
+            _lastCutoutPos = transform.position;
+            AlignToWall(wall);
+        }
+
         private Wall? RegisterWithNearestWall()
         {
             var best = FindNearestWall();

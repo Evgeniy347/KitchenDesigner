@@ -185,6 +185,68 @@ namespace KitchenDesigner.Core.MCP
             return PlanMutationResult(req, created, updated, affected);
         }
 
+        private McpResponse HandleAddOpening(McpRequest req)
+        {
+            var p = req.Params?.ToObjectStrict<ParamsAddOpening>();
+            if (p == null || !ElementNaming.IsValid(p.name))
+                return McpResponse.Error(req.id, -32602, $"Valid name required: {ElementNaming.Rule}");
+            string kind = (p.kind ?? "").Trim().ToLowerInvariant();
+            if (kind != "window" && kind != "door")
+                return McpResponse.Error(req.id, -32602, "kind must be window or door");
+            var wallElement = FindElementByName(p.wall);
+            var wall = wallElement != null ? wallElement.GetComponent<Wall>() : null;
+            if (wallElement == null || wall == null)
+                return McpResponse.Error(req.id, -32602, $"Wall '{p.wall}' not found");
+            if (p.offset_mm < 0 || p.width <= 0 || p.height <= 0 || p.sill_mm < 0)
+                return McpResponse.Error(req.id, -32602, "offset/sill must be non-negative; width/height positive");
+            var wallDims = wallElement.DimensionsMM;
+            bool thicknessAlongX = wallDims.x <= wallDims.z;
+            int wallLength = thicknessAlongX ? wallDims.z : wallDims.x;
+            int wallThickness = thicknessAlongX ? wallDims.x : wallDims.z;
+            if (p.offset_mm + p.width > wallLength)
+                return McpResponse.Error(req.id, -32602,
+                    $"Opening exceeds wall length: offset {p.offset_mm} + width {p.width} > {wallLength} mm");
+            if (p.sill_mm + p.height > wallDims.y)
+                return McpResponse.Error(req.id, -32602,
+                    $"Opening exceeds wall height: sill {p.sill_mm} + height {p.height} > {wallDims.y} mm");
+
+            var existing = FindElementByName(p.name);
+            if (existing != null && ((kind == "window" && !(existing is WindowElement)) ||
+                (kind == "door" && !(existing is DoorElement))))
+                return McpResponse.Error(req.id, -32602,
+                    $"Element '{p.name}' exists and is not a {kind}");
+
+            float localXmm = -wallLength * 0.5f + p.offset_mm + p.width * 0.5f;
+            float localYmm = -wallDims.y * 0.5f + p.sill_mm + p.height * 0.5f;
+            var localPosMm = thicknessAlongX
+                ? new Vector3(0f, localYmm, localXmm)
+                : new Vector3(localXmm, localYmm, 0f);
+            Vector3 pos = wall.FullPosition + wall.transform.rotation *
+                (localPosMm * AppConstants.MM_TO_UNITS);
+            var dims = new Vector3Int(p.width, p.height, wallThickness);
+            var created = new List<string>();
+            var affected = new List<KitchenElement>();
+            int updated = 0;
+            IUndoCommand command;
+            if (existing == null)
+            {
+                GameObject go = kind == "window"
+                    ? ElementFactory.CreateWindow(dims, p.name, pos, GlassTint.Clear, 50)
+                    : ElementFactory.CreateDoor(dims, p.name, pos, DoorSashType.Glass);
+                var opening = go.GetComponent<KitchenElement>();
+                if (opening is WindowElement window) window.AttachToWall(wall);
+                else if (opening is DoorElement door) door.AttachToWall(wall);
+                command = new CreateCommand(go); created.Add(opening.PartName); affected.Add(opening);
+            }
+            else
+            {
+                command = new SetOpeningGeometryCommand(existing, dims, pos, wall);
+                affected.Add(existing); updated = 1;
+            }
+            CommandStack.Execute(new CompositeCommand("MCP add_opening", new List<IUndoCommand> { command }));
+            return PlanMutationResult(req, created, updated, affected);
+        }
+
         private McpResponse PlanMutationResult(McpRequest req, List<string> created, int updated,
             List<KitchenElement> affected)
         {

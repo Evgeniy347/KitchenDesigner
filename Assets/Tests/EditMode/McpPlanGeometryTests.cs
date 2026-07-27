@@ -132,4 +132,64 @@ public class McpPlanGeometryTests
         Assert.AreEqual(3, restored.FloorPolygon().Count);
         Assert.AreEqual(new Vector2Int(0, 500), restored.FloorPolygon()[2]);
     }
+
+    [Test]
+    public void AddOpening_PositionsByWallStart_AttachesAndCutsMesh()
+    {
+        ProjectInstructions.Text = "bearing_wall_thickness_mm: 200";
+        _handler.Handle(Req("create_walls", new
+        {
+            segments = new[] { new { name = "WallA", from_x = 0, from_z = 0, to_x = 4000, to_z = 0, kind = "bearing", height = 2700 } }
+        }));
+        var wall = PartRegistry.GetAll().Find(e => e.PartName == "WallA")!.GetComponent<Wall>();
+        int beforeTriangles = wall.GetComponent<MeshFilter>().sharedMesh.triangles.Length;
+
+        var response = _handler.Handle(Req("add_opening", new
+        { name = "Win1", wall = "WallA", kind = "window", offset_mm = 1000, width = 1200, height = 1400, sill_mm = 800 }));
+        Assert.AreEqual("result", response.type);
+        var window = (WindowElement)PartRegistry.GetAll().Find(e => e.PartName == "Win1")!;
+        Assert.AreEqual("WallA", window.AttachedWallName);
+        var local = Quaternion.Inverse(wall.transform.rotation) * (window.transform.position - wall.FullPosition);
+        Assert.AreEqual(-0.4f, local.x, 0.0001f);
+        Assert.AreEqual(0.15f, local.y, 0.0001f);
+        Assert.Greater(wall.GetComponent<MeshFilter>().sharedMesh.triangles.Length, beforeTriangles);
+
+        CommandStack.Undo();
+        Assert.IsNull(PartRegistry.GetAll().Find(e => e.PartName == "Win1"));
+        Assert.AreEqual(0, wall.AttachedWindows.Count);
+        Assert.AreEqual(beforeTriangles, wall.GetComponent<MeshFilter>().sharedMesh.triangles.Length);
+    }
+
+    [Test]
+    public void AddOpening_RepeatedNameUpdatesWithoutDuplicate()
+    {
+        ProjectInstructions.Text = "partition_wall_thickness_mm: 100";
+        _handler.Handle(Req("create_walls", new
+        {
+            segments = new[] { new { name = "W", from_x = 0, from_z = 0, to_x = 3000, to_z = 0, kind = "partition", height = 2500 } }
+        }));
+        object Opening(int offset) => new
+        { name = "D", wall = "W", kind = "door", offset_mm = offset, width = 900, height = 2100, sill_mm = 0 };
+        _handler.Handle(Req("add_opening", Opening(100)));
+        _handler.Handle(Req("add_opening", Opening(500)));
+        Assert.AreEqual(2, PartRegistry.GetAll().Count);
+        var door = (DoorElement)PartRegistry.GetAll().Find(e => e.PartName == "D")!;
+        Assert.AreEqual(0.95f, door.transform.position.x, 0.0001f);
+        CommandStack.Undo();
+        Assert.AreEqual(0.55f, door.transform.position.x, 0.0001f);
+    }
+
+    [Test]
+    public void AddOpening_OutOfBoundsRejectsWithoutCreation()
+    {
+        ProjectInstructions.Text = "bearing_wall_thickness_mm: 200";
+        _handler.Handle(Req("create_walls", new
+        {
+            segments = new[] { new { name = "W", from_x = 0, from_z = 0, to_x = 1000, to_z = 0, kind = "bearing", height = 2500 } }
+        }));
+        var response = _handler.Handle(Req("add_opening", new
+        { name = "Bad", wall = "W", kind = "window", offset_mm = 500, width = 800, height = 1000, sill_mm = 800 }));
+        Assert.AreEqual("error", response.type);
+        Assert.AreEqual(1, PartRegistry.GetAll().Count);
+    }
 }

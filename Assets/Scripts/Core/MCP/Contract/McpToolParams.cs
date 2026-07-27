@@ -300,6 +300,21 @@ namespace KitchenDesigner.Core.MCP.Contract
             Required = true, Min = 3)] public PlanPointMm[] poly = Array.Empty<PlanPointMm>();
     }
 
+    [Serializable]
+    public class ParamsAddOpening
+    {
+        [McpParam("Stable opening id/name.", Required = true)] public string name = "";
+        [McpParam("Exact wall name.", Required = true)] public string wall = "";
+        [McpParam("Opening kind.", Required = true, Enum = new[] { "window", "door" })]
+        public string kind = "";
+        [McpParam("Distance from wall start endpoint to opening left edge in MM.", Required = true, Min = 0)]
+        public int offset_mm;
+        [McpParam("Opening width in MM.", Required = true, Min = 1)] public int width;
+        [McpParam("Opening height in MM.", Required = true, Min = 1)] public int height;
+        [McpParam("Height from wall base to opening bottom in MM. Door usually uses 0.", Min = 0)]
+        public int sill_mm;
+    }
+
     // ── convert / clone / align / rename ─────────────────────────────────────
 
     [Serializable]
