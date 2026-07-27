@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    public class SpecificationPanelUI : MonoBehaviour
+    public class SpecificationPanelUI : MonoBehaviour, IProjectWindow
     {
         private const float ColName = 40f;
         // Ш/В/Г — отдельные колонки: цифры выравниваются друг под другом,
@@ -31,6 +31,7 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
+            ProjectWindows.Register(this);
 
             UIFactory.CreateLabel("SpecTitle", panel.transform, "Спецификация", 24,
                 new Vector2(0, 290), new Vector2(ContentWidth, 36), TextAnchor.MiddleCenter);
@@ -142,6 +143,12 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(closeX, btnY), new Vector2(closeW, 40), () => SetVisible(false));
             UIFactory.CreateCloseButton(parent, () => SetVisible(false));
         }
+
+        public string WindowId => "specification";
+        public RectTransform? WindowRect => _root != null ? (RectTransform)_root.transform : null;
+        public bool HeightAdjustable => false;
+
+        private void OnDestroy() => ProjectWindows.Unregister(this);
 
         public bool IsVisible => _root != null && _root.activeSelf;
 

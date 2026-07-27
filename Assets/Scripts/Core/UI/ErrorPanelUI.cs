@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core.UI
     /// и один полнотекстовый поиск. Анализ выполняется при открытии и по кнопке
     /// «Обновить»; переключение фильтров только перестраивает строки.
     /// </summary>
-    public class ErrorPanelUI : MonoBehaviour
+    public class ErrorPanelUI : MonoBehaviour, IProjectWindow
     {
         private const float PanelW = 940f;
         private const float PanelH = 640f;
@@ -49,6 +49,7 @@ namespace KitchenDesigner.Core.UI
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
             WindowDrag.Attach(panel.rectTransform, 40f);
+            ProjectWindows.Register(this);
 
             UIFactory.CreateLabel("ErrTitle", panel.transform, "Ошибки", UIStyle.FontTitle,
                 new Vector2(Pad, -10), new Vector2(200, 28), TextAnchor.MiddleLeft)
@@ -191,6 +192,12 @@ namespace KitchenDesigner.Core.UI
         }
 
         // ── Видимость ───────────────────────────────────────────────────
+
+        public string WindowId => "errors";
+        public RectTransform? WindowRect => _root != null ? (RectTransform)_root.transform : null;
+        public bool HeightAdjustable => false;
+
+        private void OnDestroy() => ProjectWindows.Unregister(this);
 
         public bool IsVisible => _root != null && _root.activeSelf;
 

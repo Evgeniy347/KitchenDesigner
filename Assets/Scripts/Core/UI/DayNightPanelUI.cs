@@ -7,9 +7,13 @@ namespace KitchenDesigner.Core.UI
     /// <summary>Панель «День/Ночь»: глобальное управление солнцем — время суток
     /// (солнце едет по небосводу), направление (азимут) и яркость. Открывается
     /// кнопкой «Солнце» в тулбаре.</summary>
-    public class DayNightPanelUI : MonoBehaviour
+    public class DayNightPanelUI : MonoBehaviour, IProjectWindow
     {
         public static DayNightPanelUI? Instance { get; private set; }
+
+        public string WindowId => "dayNight";
+        public RectTransform? WindowRect => _root != null ? (RectTransform)_root.transform : null;
+        public bool HeightAdjustable => false;
 
         private GameObject? _root;
         private TMP_Text? _timeLabel;
@@ -33,6 +37,7 @@ namespace KitchenDesigner.Core.UI
             panel.rectTransform.anchoredPosition = new Vector2(-10, -60);
             _root = panel.gameObject;
             WindowDrag.Attach(panel.rectTransform, 40f);
+            ProjectWindows.Register(this);
 
             UIFactory.CreateLabel("DnTitle", panel.transform, "День / Ночь", 20,
                 new Vector2(0, 104), new Vector2(280, 28), TextAnchor.MiddleCenter);
@@ -102,6 +107,8 @@ namespace KitchenDesigner.Core.UI
         {
             if (_root != null) SetVisible(!_root.activeSelf);
         }
+
+        private void OnDestroy() => ProjectWindows.Unregister(this);
 
         private void Update()
         {

@@ -35,12 +35,34 @@ namespace KitchenDesigner.Core
         /// null у старых сейвов — тогда настройки берутся из умолчаний ScriptableObject.</summary>
         public KitchenSettingsData? settings = null;
 
+        /// <summary>Тумблеры вида из тулбара. Инициализаторы = дефолты приложения:
+        /// у старых сейвов этих полей в JSON нет, и JsonUtility оставит их как есть.</summary>
+        public bool tintEnabled = true;
+        public bool lightsOn = true;
+
+        /// <summary>Окна проекта (спецификация, сцена, ошибки, настройки,
+        /// инструкции, день/ночь): положение и открыто/закрыто. Пусто у старых
+        /// сейвов — окна остаются на своих местах по умолчанию.</summary>
+        public WindowStateData[] windows = new WindowStateData[0];
+
         public ProjectData() { }
 
         public ProjectData(IEnumerable<ElementData> items)
         {
             elements = new List<ElementData>(items).ToArray();
         }
+    }
+
+    /// <summary>Состояние одного окна проекта: где стоит и открыто ли.
+    /// height = 0 у окон с фиксированной высотой.</summary>
+    [System.Serializable]
+    public class WindowStateData
+    {
+        public string id = "";
+        public bool visible;
+        public float x;
+        public float y;
+        public float height;
     }
 
     [System.Serializable]

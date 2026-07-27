@@ -1571,5 +1571,8 @@
         "photoVignette": true,
         "photoCeiling": true,
         "photoSSGI": true
-    }
+    },
+    "tintEnabled": true,
+    "lightsOn": true,
+    "windows": []
 }

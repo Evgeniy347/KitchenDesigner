@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using KitchenDesigner.Core.UI;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -133,6 +134,12 @@ namespace KitchenDesigner.Core
             }
 
             data.settings = KitchenSettings.Instance.ToData();
+
+            // Рабочее место пользователя: тумблеры вида из тулбара и окна проекта
+            // (где стоят и какие открыты). Контекстные меню сюда не входят.
+            data.tintEnabled = ElementHighlighter.TintEnabled;
+            data.lightsOn = LightSourceElement.GlobalOn;
+            data.windows = ProjectWindows.Capture();
 
             var indexOf = new Dictionary<KitchenElement, int>();
             for (int i = 0; i < ordered.Count; i++) indexOf[ordered[i]] = i;
@@ -342,6 +349,12 @@ namespace KitchenDesigner.Core
 
             if (data.settings != null)
                 KitchenSettings.Instance.ApplyFrom(data.settings);
+
+            // Тумблеры вида и окна проекта. Тонировку ставим ДО RefreshHighlights
+            // ниже, иначе подсветка перерисуется по старому значению.
+            ElementHighlighter.TintEnabled = data.tintEnabled;
+            LightSourceElement.SetGlobalOn(data.lightsOn);
+            ProjectWindows.Apply(data.windows);
 
             ProjectInstructions.Text = data.projectInstructions ?? "";
             ProjectRooms.Set(data.rooms);

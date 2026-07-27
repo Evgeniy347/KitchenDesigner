@@ -20,9 +20,14 @@ namespace KitchenDesigner.Core.UI
     /// Обновление: события GroupManager.Changed / OnSelectionChanged + дешёвый
     /// fingerprint-поллинг (создание/удаление/переименование из MCP или undo).
     /// </summary>
-    public class HierarchyPanelUI : MonoBehaviour
+    public class HierarchyPanelUI : MonoBehaviour, IProjectWindow
     {
         public static HierarchyPanelUI? Instance { get; private set; }
+
+        public string WindowId => "hierarchy";
+        public RectTransform? WindowRect => _root != null ? (RectTransform)_root.transform : null;
+        // Высоту панели пользователь тянет за нижний край (AttachResizeBottom).
+        public bool HeightAdjustable => true;
 
         private const float PanelW = 300f;
         private const float PanelH = 660f;
@@ -59,6 +64,7 @@ namespace KitchenDesigner.Core.UI
             panel.rectTransform.anchoredPosition = new Vector2(0, -TopOffset);
             _root = panel.gameObject;
             WindowDrag.Attach(panel.rectTransform, 40f);
+            ProjectWindows.Register(this);
 
             UIFactory.CreateLabel("HierTitle", panel.transform, "Сцена", 20,
                 new Vector2(14, -6), new Vector2(120, 28), TextAnchor.MiddleLeft)
@@ -167,6 +173,7 @@ namespace KitchenDesigner.Core.UI
 
         private void OnDestroy()
         {
+            ProjectWindows.Unregister(this);
             GroupManager.Changed -= OnGroupsChanged;
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.OnSelectionChanged -= OnSceneSelectionChanged;

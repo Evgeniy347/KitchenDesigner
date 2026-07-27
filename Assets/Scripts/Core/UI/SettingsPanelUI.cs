@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    public class SettingsPanelUI : MonoBehaviour
+    public class SettingsPanelUI : MonoBehaviour, IProjectWindow
     {
         private GameObject? _root;
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
@@ -45,6 +45,7 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
+            ProjectWindows.Register(this);
 
             UIFactory.CreateLabel("SetTitle", panel.transform, "Настройки", 24,
                 new Vector2(0, TitleY), new Vector2(PanelW - 40, 36), TextAnchor.MiddleCenter);
@@ -231,6 +232,7 @@ namespace KitchenDesigner.Core.UI
 
         private void OnDestroy()
         {
+            ProjectWindows.Unregister(this);
             PhotoMode.Changed -= SyncPhotoActiveToggle;
             EditModeManager.Changed -= UpdateDependentStates;
         }
@@ -547,6 +549,10 @@ namespace KitchenDesigner.Core.UI
         }
 
         // ── Public API ──────────────────────────────────────
+
+        public string WindowId => "settings";
+        public RectTransform? WindowRect => _root != null ? (RectTransform)_root.transform : null;
+        public bool HeightAdjustable => false;
 
         public bool IsVisible => _root != null && _root.activeSelf;
 

@@ -4,10 +4,14 @@ using UnityEngine;
 namespace KitchenDesigner.Core.UI
 {
     /// <summary>Editor for the project-owned conventions shared by the user and MCP.</summary>
-    public class ProjectInstructionsPanelUI : MonoBehaviour
+    public class ProjectInstructionsPanelUI : MonoBehaviour, IProjectWindow
     {
         private GameObject? _root;
         private TMP_InputField? _text;
+
+        public string WindowId => "projectInstructions";
+        public RectTransform? WindowRect => _root != null ? (RectTransform)_root.transform : null;
+        public bool HeightAdjustable => false;
 
         public bool IsVisible => _root != null && _root.activeSelf;
 
@@ -19,6 +23,7 @@ namespace KitchenDesigner.Core.UI
             panel.rectTransform.anchoredPosition = Vector2.zero;
             WindowDrag.Attach(panel.rectTransform, 44f);
             _root = panel.gameObject;
+            ProjectWindows.Register(this);
 
             UIFactory.CreateLabel("PiTitle", panel.transform, "Инструкции проекта", 24,
                 new Vector2(0, 245), new Vector2(590, 34), TextAnchor.MiddleCenter);
@@ -39,6 +44,8 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
             _root.SetActive(false);
         }
+
+        private void OnDestroy() => ProjectWindows.Unregister(this);
 
         public void Toggle() => SetVisible(!IsVisible);
 
