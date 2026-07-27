@@ -8,6 +8,11 @@ namespace KitchenDesigner.Core
         private void Awake()
         {
             Application.runInBackground = true;
+            // Инфо-логи (Debug.Log, в т.ч. каждый «[MCP] …») не должны тащить
+            // полный стек-трейс в Player.log/консоль — это замусоривало лог
+            // (~10 строк стека на каждый информационный лог). Стек оставляем
+            // только для предупреждений и ошибок, где он реально нужен.
+            Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
             // Ограничение FPS теперь динамическое — им управляет FrameRateManager
             // (активный FPS при активности, «почти ноль» в простое).
             GameContext.InitializeWithDefaults();
