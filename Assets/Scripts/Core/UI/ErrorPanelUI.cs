@@ -283,9 +283,12 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildRow(AnalysisIssue iss, float y, int index)
         {
-            // Строка — кнопка: клик выделяет связанные детали в сцене.
+            // Строка — кнопка: клик выделяет связанные детали в сцене,
+            // двойной клик — ещё и фокусирует камеру на них (как клавиша F).
             var btn = UIFactory.CreateButton("Row", _content!, "", Vector2.zero,
                 new Vector2(ContentW, RowH), () => SelectIssue(iss));
+            var dbl = btn.gameObject.AddComponent<ListRowDoubleClick>();
+            dbl.OnDoubleClick = () => FocusOnIssue(iss);
             var row = btn.GetComponent<RectTransform>();
             row.anchorMin = new Vector2(0, 1);
             row.anchorMax = new Vector2(1, 1);
@@ -313,6 +316,12 @@ namespace KitchenDesigner.Core.UI
                 sel.SelectOnly(new List<KitchenElement> { iss.Target, iss.Secondary });
             else
                 sel.Select(iss.Target);
+        }
+
+        private static void FocusOnIssue(AnalysisIssue iss)
+        {
+            if (iss.Target == null) return;
+            CameraController.Instance?.FocusOn(iss.Target.transform.position);
         }
 
         private static void Cell(RectTransform row, string text, float x, float w, Color color)
