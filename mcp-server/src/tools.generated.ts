@@ -57,6 +57,32 @@ export const GEN_TOOLS: GenTool[] = [
     kind: "read",
   },
   {
+    name: "get",
+    title: "Get compact corner geometry",
+    description: "Fetch exact names with selectable fields. Defaults to compact v2 geometry: name, kind, corner anchor in MM, size [width,depth,height] MM, rotY, violations and module. No verbose legacy fields.",
+    kind: "read",
+    inputSchema: {
+      names: z.array(z.string().min(1)).min(1).describe("Exact element names."),
+      fields: z.array(z.string().min(1)).optional().describe("Optional fields: name,kind,anchor,size,rotY,hasViolations,module,wallKind."),
+    },
+  },
+  {
+    name: "preview_floorplan",
+    title: "Preview a floorplan declaration",
+    description: "Validate a declarative floorplan without changing the scene and return a deterministic top-down SVG plus compact counts. Uses the exact same compiler as apply_floorplan.",
+    kind: "read",
+    inputSchema: {
+      id: z.string().min(1).describe("Stable declaration id."),
+      origin_x_mm: z.number().int().optional().describe("World origin X in MM."),
+      origin_z_mm: z.number().int().optional().describe("World origin Z in MM."),
+      points: z.array(z.object({ id: z.string().min(1).describe("Point id."), x: z.number().int().describe("X in MM from floorplan origin."), z: z.number().int().describe("Z in MM from floorplan origin.") })).min(2).describe("Named points."),
+      walls: z.array(z.object({ id: z.string().min(1).describe("Stable wall id."), from: z.string().min(1).describe("Start point id."), to: z.string().min(1).describe("End point id."), kind: z.enum(["bearing", "partition"]).describe("Wall kind."), height: z.number().int().min(1).describe("Height in MM.") })).optional().describe("Explicit walls."),
+      floors: z.array(z.object({ id: z.string().min(1).describe("Stable floor id."), poly: z.array(z.string().min(1)).min(3).describe("Polygon point ids."), top_y_mm: z.number().int().optional().describe("Top Y in MM."), thickness_mm: z.number().int().min(1).optional().describe("Thickness in MM; omit to use floor_thickness_mm instruction.") })).optional().describe("Explicit floors."),
+      openings: z.array(z.object({ id: z.string().min(1).describe("Stable opening id."), wall: z.string().min(1).describe("Wall id."), kind: z.enum(["window", "door"]).describe("Opening kind."), offset_mm: z.number().int().min(0).describe("Offset from wall start in MM."), width: z.number().int().min(1).describe("Width in MM."), height: z.number().int().min(1).describe("Height in MM."), sill_mm: z.number().int().min(0).optional().describe("Sill/bottom height from wall base in MM.") })).optional().describe("Openings on explicit or room-generated walls."),
+      rooms: z.array(z.object({ id: z.string().min(1).describe("Stable room id."), poly: z.array(z.string().min(1)).min(3).describe("Room polygon point ids. Edges become shared/reused walls."), kind: z.enum(["bearing", "partition"]).optional().describe("Wall kind for generated room edges."), height: z.number().int().min(1).optional().describe("Generated wall height in MM."), top_y_mm: z.number().int().optional().describe("Floor top Y in MM."), thickness_mm: z.number().int().min(1).optional().describe("Floor thickness in MM; omit to use floor_thickness_mm instruction.") })).optional().describe("Room wrappers; each creates a floor and reuses walls by undirected point-pair."),
+    },
+  },
+  {
     name: "get_elements",
     title: "Get elements (batch)",
     description: "Info for one or SEVERAL elements in ONE call: pick by exact names and/or a name filter (substring or wildcard \u0027*\u0027). summary:true returns compact one-line info per element; facade_validation:true adds facade opening diagnostics.",

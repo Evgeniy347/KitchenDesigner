@@ -16,6 +16,7 @@ public class McpBulkOpsTests
         PartRegistry.Clear();
         GroupManager.Clear();
         CommandStack.Clear();
+        ProjectRooms.Reset();
     }
 
     [TearDown]
@@ -29,6 +30,7 @@ public class McpBulkOpsTests
         PartRegistry.Clear();
         GroupManager.Clear();
         CommandStack.Clear();
+        ProjectRooms.Reset();
     }
 
     private McpRequest MakeReq(string method, object data)
@@ -208,5 +210,37 @@ public class McpBulkOpsTests
         CommandStack.Undo();
         Assert.AreEqual(0f, a.transform.position.x, 0.001f);
         Assert.AreEqual(0.5f, b.transform.position.x, 0.001f);
+    }
+
+    [Test]
+    public void GetCompact_ReturnsCornerMmAndOnlyRequestedFields()
+    {
+        Make("Board", new Vector3(1f, 0.2f, 2f), new Vector3Int(600, 400, 18));
+        var response = _handler!.Handle(MakeReq("get", new
+        { names = new[] { "Board" }, fields = new[] { "name", "anchor" } }));
+        Assert.AreEqual("result", response.type);
+        var jo = Newtonsoft.Json.Linq.JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(response.data));
+        var row = jo["elements"]![0]!;
+        Assert.AreEqual("Board", row["name"]!.ToString());
+        CollectionAssert.AreEqual(new[] { 700, 1991 }, row["anchor"]!.ToObject<int[]>());
+        Assert.IsNull(row["size"]);
+    }
+
+    [Test]
+    public void GetSceneTree_NestsModulesAndFurnitureIntoPersistedRooms()
+    {
+        var member = Make("Cab_A", new Vector3(1f, 0f, 1f), new Vector3Int(100, 100, 100));
+        Make("Chair", new Vector3(2f, 0f, 2f), new Vector3Int(100, 100, 100));
+        var group = GroupManager.Create("Cab"); GroupManager.AddTo(group, member);
+        ProjectRooms.Set(new[] { new RoomData
+        {
+            id = "Kitchen", floor = "Kitchen_floor", walls = new[] { "W1" },
+            polygonXZ = new[] { 0, 0, 3000, 0, 3000, 3000, 0, 3000 }
+        } });
+        var response = _handler!.Handle(MakeReq("get_scene_tree", new { }));
+        var jo = Newtonsoft.Json.Linq.JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(response.data));
+        Assert.AreEqual(1, (int)jo["roomCount"]!);
+        CollectionAssert.Contains(jo["rooms"]![0]!["modules"]!.ToObject<string[]>(), "Cab");
+        CollectionAssert.Contains(jo["rooms"]![0]!["furniture"]!.ToObject<string[]>(), "Chair");
     }
 }

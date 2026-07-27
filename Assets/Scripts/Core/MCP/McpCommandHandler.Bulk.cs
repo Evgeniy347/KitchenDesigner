@@ -214,6 +214,7 @@ namespace KitchenDesigner.Core.MCP
             var all = PartRegistry.GetAll() ?? new List<KitchenElement>();
             var inModule = new HashSet<KitchenElement>();
             var modules = new List<object>();
+            var moduleCenters = new Dictionary<string, Vector3>();
 
             foreach (var g in GroupManager.AllGroups())
             {
@@ -234,13 +235,15 @@ namespace KitchenDesigner.Core.MCP
                     widthAxis = g.widthAxis,
                     memberCount = names.Count,
                     members = names,
-                    bboxMin = b.HasValue ? V3(b.Value.min) : null,
-                    bboxMax = b.HasValue ? V3(b.Value.max) : null,
+                    bboxMinMm = b.HasValue ? V3Mm(b.Value.min) : null,
+                    bboxMaxMm = b.HasValue ? V3Mm(b.Value.max) : null,
                 });
+                if (b.HasValue) moduleCenters[g.name] = b.Value.center;
             }
 
             var typeCounts = new Dictionary<string, int>();
             var loose = new List<string>();
+            var looseElements = new List<KitchenElement>();
             int elementCount = 0;
             foreach (var e in all)
             {
@@ -248,16 +251,114 @@ namespace KitchenDesigner.Core.MCP
                 elementCount++;
                 var t = ElementSelector.TypeOf(e);
                 typeCounts[t] = typeCounts.TryGetValue(t, out var n) ? n + 1 : 1;
-                if (!inModule.Contains(e)) loose.Add(e.PartName);
+                if (!inModule.Contains(e)) { loose.Add(e.PartName); looseElements.Add(e); }
+            }
+
+            var rooms = new List<object>();
+            foreach (var room in ProjectRooms.Items)
+            {
+                var roomModules = new List<string>();
+                foreach (var pair in moduleCenters) if (RoomContains(room, pair.Value)) roomModules.Add(pair.Key);
+                var furniture = new List<string>();
+                foreach (var e in looseElements)
+                {
+                    string type = ElementSelector.TypeOf(e);
+                    if (type == "wall" || type == "floor" || type == "window" || type == "door") continue;
+                    if (RoomContains(room, e.transform.position)) furniture.Add(e.PartName);
+                }
+                rooms.Add(new
+                {
+                    id = room.id, floor = room.floor, walls = room.walls, openings = room.openings,
+                    modules = roomModules, furniture
+                });
             }
 
             return McpResponse.Result(req.id, new
             {
+                roomCount = rooms.Count,
                 moduleCount = modules.Count,
                 elementCount,
                 typeCounts,
                 modules,
                 loose,
+                rooms,
+            });
+        }
+
+        private static bool RoomContains(RoomData room, Vector3 world)
+        {
+            var poly = room.polygonXZ;
+            if (poly == null || poly.Length < 6 || poly.Length % 2 != 0) return false;
+            float x = world.x / AppConstants.MM_TO_UNITS, z = world.z / AppConstants.MM_TO_UNITS;
+            bool inside = false;
+            int count = poly.Length / 2;
+            for (int i = 0, j = count - 1; i < count; j = i++)
+            {
+                float xi = poly[i * 2], zi = poly[i * 2 + 1];
+                float xj = poly[j * 2], zj = poly[j * 2 + 1];
+                bool crosses = (zi > z) != (zj > z) &&
+                    x < (xj - xi) * (z - zi) / (zj - zi) + xi;
+                if (crosses) inside = !inside;
+            }
+            return inside;
+        }
+
+        private McpResponse HandleGetCompact(McpRequest req)
+        {
+            var p = req.Params?.ToObjectStrict<ParamsGetCompact>();
+            if (p == null || p.names == null || p.names.Length == 0)
+                return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
+            var allowed = new HashSet<string>(new[]
+                { "name", "kind", "anchor", "size", "rotY", "hasViolations", "module", "wallKind" },
+                System.StringComparer.OrdinalIgnoreCase);
+            var fields = p.fields != null && p.fields.Length > 0
+                ? new HashSet<string>(p.fields, System.StringComparer.OrdinalIgnoreCase) : allowed;
+            foreach (var f in fields) if (!allowed.Contains(f))
+                return McpResponse.Error(req.id, -32602, $"Unknown compact field '{f}'");
+            var all = PartRegistry.GetAll();
+            var validation = all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var elements = new List<Dictionary<string, object?>>();
+            var missing = new List<string>();
+            foreach (var name in p.names)
+            {
+                var e = FindElementByName(name);
+                if (e == null) { missing.Add(name); continue; }
+                var row = new Dictionary<string, object?>();
+                var wall = e.GetComponent<Wall>();
+                Vector3 center = wall != null ? wall.FullPosition : e.transform.position;
+                Vector3 halfMm = (Vector3)e.DimensionsMM * 0.5f;
+                Vector3 anchor = center + e.transform.rotation *
+                    (new Vector3(-halfMm.x, -halfMm.y, -halfMm.z) * AppConstants.MM_TO_UNITS);
+                if (fields.Contains("name")) row["name"] = e.PartName;
+                if (fields.Contains("kind")) row["kind"] = ElementSelector.TypeOf(e);
+                if (fields.Contains("anchor")) row["anchor"] = new[]
+                    { Mathf.RoundToInt(anchor.x / AppConstants.MM_TO_UNITS), Mathf.RoundToInt(anchor.z / AppConstants.MM_TO_UNITS) };
+                if (fields.Contains("size")) row["size"] = new[] { e.DimensionsMM.x, e.DimensionsMM.z, e.DimensionsMM.y };
+                if (fields.Contains("rotY")) row["rotY"] = Mathf.Round(e.transform.eulerAngles.y * 10f) / 10f;
+                if (fields.Contains("hasViolations")) row["hasViolations"] = validation != null && validation.violations.Contains(e);
+                if (fields.Contains("module")) row["module"] = GroupManager.GroupOf(e)?.name;
+                if (fields.Contains("wallKind")) row["wallKind"] = wall?.Kind;
+                elements.Add(row);
+            }
+            return McpResponse.Result(req.id, new { count = elements.Count, elements, missing = missing.Count > 0 ? missing : null });
+        }
+
+        private McpResponse HandlePreviewFloorplan(McpRequest req)
+        {
+            var p = req.Params?.ToObjectStrict<ParamsFloorplanDeclaration>();
+            var compiled = FloorplanCompiler.Compile(p);
+            if (!compiled.IsValid)
+                return McpResponse.Error(req.id, -32602,
+                    "floorplan invalid: " + string.Join(" | ", compiled.errors));
+            return McpResponse.Result(req.id, new
+            {
+                ok = true,
+                svg = FloorplanCompiler.ToSvg(compiled),
+                points = compiled.points.Count,
+                walls = compiled.walls.Count,
+                floors = compiled.floors.Count,
+                openings = compiled.openings.Count,
+                rooms = compiled.rooms.Count
             });
         }
 
@@ -269,12 +370,8 @@ namespace KitchenDesigner.Core.MCP
             else b = bb;
         }
 
-        private static float[] V3(Vector3 v) => new[]
-        {
-            Mathf.Round(v.x * 1000f) / 1000f,
-            Mathf.Round(v.y * 1000f) / 1000f,
-            Mathf.Round(v.z * 1000f) / 1000f,
-        };
+        private static int[] V3Mm(Vector3 v) => new[]
+            { Mathf.RoundToInt(v.x / AppConstants.MM_TO_UNITS), Mathf.RoundToInt(v.y / AppConstants.MM_TO_UNITS), Mathf.RoundToInt(v.z / AppConstants.MM_TO_UNITS) };
 
         // ── helpers ────────────────────────────────────────────────────────
         private static LinkGroup? ResolveGroup(string groupName)

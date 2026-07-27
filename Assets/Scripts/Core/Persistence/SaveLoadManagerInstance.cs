@@ -116,6 +116,7 @@ namespace KitchenDesigner.Core
             foreach (var g in GroupManager.AllGroups())
                 groups.Add(new GroupData { id = g.id, name = g.name, movable = g.movable, widthAxis = g.widthAxis });
             data.groups = groups.ToArray();
+            data.rooms = new List<RoomData>(ProjectRooms.Items).ToArray();
 
             if (CameraController.Instance != null)
                 data.camera = CameraController.Instance.GetState();
@@ -330,6 +331,7 @@ namespace KitchenDesigner.Core
                 KitchenSettings.Instance.ApplyFrom(data.settings);
 
             ProjectInstructions.Text = data.projectInstructions ?? "";
+            ProjectRooms.Set(data.rooms);
 
             CommandStack.Instance.Import(data.undoHistory, data.redoHistory,
                 i => (i >= 0 && i < resolved.Count) ? resolved[i]! : null!);

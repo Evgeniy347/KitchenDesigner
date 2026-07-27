@@ -8,6 +8,7 @@ namespace KitchenDesigner.Core
         public int version = AppConstants.SAVE_FORMAT_VERSION;
         public ElementData[] elements = new ElementData[0];
         public GroupData[] groups = new GroupData[0];
+        public RoomData[] rooms = new RoomData[0];
         public CameraState camera = new CameraState();
 
         // Режим ручек выделенного элемента (Resize / Move).
@@ -48,6 +49,17 @@ namespace KitchenDesigner.Core
         public string name = "Группа";
         public bool movable = true;
         public string widthAxis = "x";
+    }
+
+    [System.Serializable]
+    public class RoomData
+    {
+        public string id = "";
+        public string floor = "";
+        public string[] walls = System.Array.Empty<string>();
+        public string[] openings = System.Array.Empty<string>();
+        // World X,Z polygon pairs in MM, used to classify modules/furniture.
+        public int[] polygonXZ = System.Array.Empty<int>();
     }
 
     /// <summary>Сериализуемое состояние камеры. valid=false у старых сейвов без камеры.</summary>

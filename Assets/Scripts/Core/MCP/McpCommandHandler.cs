@@ -102,6 +102,8 @@ namespace KitchenDesigner.Core.MCP
 
                     // ── v2: массовые/реляционные операции (→ .Bulk.cs) ──
                     case "get_scene_tree": return HandleGetSceneTree(request);
+                    case "get": return HandleGetCompact(request);
+                    case "preview_floorplan": return HandlePreviewFloorplan(request);
                     case "set_attr": return HandleSetAttr(request);
                     case "move": return HandleMove(request);
                     case "resize_module": return HandleResizeModule(request);

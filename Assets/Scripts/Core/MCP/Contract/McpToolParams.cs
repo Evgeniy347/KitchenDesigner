@@ -546,6 +546,84 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Face gap in MM.")] public float gap_mm;
     }
 
+    // ── v2 floorplan declaration ───────────────────────────────────────────
+
+    [Serializable]
+    public class FloorplanPoint
+    {
+        [McpParam("Point id.", Required = true)] public string id = "";
+        [McpParam("X in MM from floorplan origin.", Required = true)] public int x;
+        [McpParam("Z in MM from floorplan origin.", Required = true)] public int z;
+    }
+
+    [Serializable]
+    public class FloorplanWall
+    {
+        [McpParam("Stable wall id.", Required = true)] public string id = "";
+        [McpParam("Start point id.", Required = true)] public string from = "";
+        [McpParam("End point id.", Required = true)] public string to = "";
+        [McpParam("Wall kind.", Required = true, Enum = new[] { "bearing", "partition" })]
+        public string kind = "";
+        [McpParam("Height in MM.", Required = true, Min = 1)] public int height;
+    }
+
+    [Serializable]
+    public class FloorplanFloor
+    {
+        [McpParam("Stable floor id.", Required = true)] public string id = "";
+        [McpParam("Polygon point ids.", Required = true, Min = 3)] public string[] poly = Array.Empty<string>();
+        [McpParam("Top Y in MM.")] public int top_y_mm;
+        [McpParam("Thickness in MM; omit to use floor_thickness_mm instruction.", Min = 1)] public int? thickness_mm;
+    }
+
+    [Serializable]
+    public class FloorplanOpening
+    {
+        [McpParam("Stable opening id.", Required = true)] public string id = "";
+        [McpParam("Wall id.", Required = true)] public string wall = "";
+        [McpParam("Opening kind.", Required = true, Enum = new[] { "window", "door" })]
+        public string kind = "";
+        [McpParam("Offset from wall start in MM.", Required = true, Min = 0)] public int offset_mm;
+        [McpParam("Width in MM.", Required = true, Min = 1)] public int width;
+        [McpParam("Height in MM.", Required = true, Min = 1)] public int height;
+        [McpParam("Sill/bottom height from wall base in MM.", Min = 0)] public int sill_mm;
+    }
+
+    [Serializable]
+    public class FloorplanRoom
+    {
+        [McpParam("Stable room id.", Required = true)] public string id = "";
+        [McpParam("Room polygon point ids. Edges become shared/reused walls.", Required = true, Min = 3)]
+        public string[] poly = Array.Empty<string>();
+        [McpParam("Wall kind for generated room edges.", Enum = new[] { "bearing", "partition" })]
+        public string kind = "partition";
+        [McpParam("Generated wall height in MM.", Min = 1)] public int height = 2700;
+        [McpParam("Floor top Y in MM.")] public int top_y_mm;
+        [McpParam("Floor thickness in MM; omit to use floor_thickness_mm instruction.", Min = 1)] public int? thickness_mm;
+    }
+
+    [Serializable]
+    public class ParamsFloorplanDeclaration
+    {
+        [McpParam("Stable declaration id.", Required = true)] public string id = "";
+        [McpParam("World origin X in MM.")] public int origin_x_mm;
+        [McpParam("World origin Z in MM.")] public int origin_z_mm;
+        [McpParam("Named points.", Required = true, Min = 2)] public FloorplanPoint[] points = Array.Empty<FloorplanPoint>();
+        [McpParam("Explicit walls.")] public FloorplanWall[] walls = Array.Empty<FloorplanWall>();
+        [McpParam("Explicit floors.")] public FloorplanFloor[] floors = Array.Empty<FloorplanFloor>();
+        [McpParam("Openings on explicit or room-generated walls.")] public FloorplanOpening[] openings = Array.Empty<FloorplanOpening>();
+        [McpParam("Room wrappers; each creates a floor and reuses walls by undirected point-pair.")]
+        public FloorplanRoom[] rooms = Array.Empty<FloorplanRoom>();
+    }
+
+    [Serializable]
+    public class ParamsGetCompact
+    {
+        [McpParam("Exact element names.", Required = true, Min = 1)] public string[] names = Array.Empty<string>();
+        [McpParam("Optional fields: name,kind,anchor,size,rotY,hasViolations,module,wallKind.")]
+        public string[] fields = Array.Empty<string>();
+    }
+
     [Serializable]
     public class ParamsModule
     {

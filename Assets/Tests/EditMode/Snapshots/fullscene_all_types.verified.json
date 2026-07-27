@@ -388,6 +388,7 @@
         }
     ],
     "groups": [],
+    "rooms": [],
     "camera": {
         "valid": false,
         "targetX": 0.0,

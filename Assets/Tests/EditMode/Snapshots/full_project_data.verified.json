@@ -162,6 +162,7 @@
             "widthAxis": "x"
         }
     ],
+    "rooms": [],
     "camera": {
         "valid": true,
         "targetX": 0.5,
