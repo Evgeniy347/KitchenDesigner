@@ -75,6 +75,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -151,6 +155,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -227,6 +235,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -303,6 +315,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -379,6 +395,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -455,6 +475,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -531,6 +555,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -607,6 +635,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -683,6 +715,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -759,6 +795,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -835,6 +875,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -911,6 +955,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -987,6 +1035,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1063,6 +1115,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1139,6 +1195,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1215,6 +1275,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1291,6 +1355,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         },
         {
@@ -1367,6 +1435,10 @@
             "lightUpPct": 8,
             "lightBeamDeg": 150,
             "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
             "grooves": []
         }
     ],
@@ -1460,6 +1532,10 @@
         "lightUpPct": 8,
         "lightBeamDeg": 150,
         "isPanel": false,
+        "isSink": false,
+        "sinkAttachedPartName": "",
+        "sinkOffsetXMM": 0,
+        "sinkOffsetYMM": 0,
         "grooves": []
     },
     "undoHistory": [],

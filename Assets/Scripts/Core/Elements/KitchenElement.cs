@@ -65,6 +65,51 @@ namespace KitchenDesigner.Core
 
         public IReadOnlyList<GrooveSpec> Grooves => _data.Grooves;
 
+        // ── Врезанные мойки ────────────────────────────────────────────
+        // Мойка живёт отдельным элементом, но её проём — часть геометрии
+        // ДЕТАЛИ (как окно и стена). Список ведётся деталью, чтобы меш
+        // пересобирался из одного места: и при добавлении мойки, и при
+        // ресайзе детали (доля проёма считается от её размеров).
+        private readonly List<SinkElement> _sinks = new List<SinkElement>();
+
+        public IReadOnlyList<SinkElement> AttachedSinks => _sinks;
+
+        public bool HasSink(SinkElement sink) => sink != null && _sinks.Contains(sink);
+
+        public void RegisterSink(SinkElement sink)
+        {
+            if (sink == null || !SupportsGrooves || _sinks.Contains(sink)) return;
+            _sinks.Add(sink);
+            RebuildGrooveMesh();
+        }
+
+        public void UnregisterSink(SinkElement sink)
+        {
+            if (sink == null) return;
+            if (_sinks.Remove(sink)) RebuildGrooveMesh();
+        }
+
+        /// <summary>Снять все мойки (возврат детали в пул).</summary>
+        public void ClearSinks()
+        {
+            if (_sinks.Count == 0) return;
+            _sinks.Clear();
+            RebuildGrooveMesh();
+        }
+
+        /// <summary>Проёмы врезанных моек в нормализованных координатах пласти.</summary>
+        public List<GrooveMesh.Rect2> SinkHoleRects()
+        {
+            var result = new List<GrooveMesh.Rect2>();
+            foreach (var sink in _sinks)
+            {
+                if (sink == null) continue;
+                var rect = sink.CutoutRectIn(this);
+                if (rect.IsValid) result.Add(rect);
+            }
+            return result;
+        }
+
         /// <summary>Добавить паз. Дубль (та же сторона + тип) игнорируется:
         /// смещение фиксировано, второй такой паз лёг бы ровно на первый.</summary>
         public bool AddGroove(GrooveSpec spec)
@@ -126,7 +171,9 @@ namespace KitchenDesigner.Core
             var decor = mats != null && mats.Length > 0 && mats[0] != null
                 ? mats[0] : meshRenderer.sharedMaterial;
 
-            if (_data.Grooves.Count == 0)
+            var holes = SinkHoleRects();
+
+            if (_data.Grooves.Count == 0 && holes.Count == 0)
             {
                 if (_ownedMesh == null) return; // меш и так стандартный
                 // Куба под рукой нет (деталь пришла не из пула) — собираем
@@ -141,7 +188,7 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves);
+            var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves, holes);
             DestroyOwnedMesh();
             _ownedMesh = mesh;
             filter.sharedMesh = mesh;
@@ -296,9 +343,9 @@ namespace KitchenDesigner.Core
                 _data.DimensionsMM.z * AppConstants.MM_TO_UNITS
             );
 
-            // Доли паза считаются от размеров детали — при ресайзе меш надо
-            // пересобрать, иначе паз растянется вместе с localScale.
-            if (_data.Grooves.Count > 0) RebuildGrooveMesh();
+            // Доли паза и проёма мойки считаются от размеров детали — при ресайзе
+            // меш надо пересобрать, иначе они растянутся вместе с localScale.
+            if (_data.Grooves.Count > 0 || _sinks.Count > 0) RebuildGrooveMesh();
         }
 
         public virtual Vector3[] GetVertices()

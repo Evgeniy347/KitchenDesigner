@@ -73,9 +73,10 @@ namespace KitchenDesigner.Core
                 ? ray.GetPoint(enter)
                 : cam.transform.position + cam.transform.forward * 2f;
 
-            // Свет подвешен под потолком — держим его высоту, остальное ставим
-            // на пол (центр по высоте = половина габарита).
-            point.y = pending is LightSourceElement
+            // Свет подвешен под потолком, мойка садится на столешницу сама
+            // (SnapToPart) — им держим текущую высоту; остальное ставим на пол
+            // (центр по высоте = половина габарита).
+            point.y = pending is LightSourceElement || pending is SinkElement
                 ? pending.transform.position.y
                 : pending.DimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS;
 
@@ -123,6 +124,9 @@ namespace KitchenDesigner.Core
             // (OnDestroy при SetActive(false) не вызывается).
             if (el is WindowElement win) win.UnregisterFromWall();
             if (el is DoorElement door) door.UnregisterFromWall();
+            // Мойка врезана в деталь тем же списком — иначе в столешнице
+            // осталась бы дыра от неустановленной мойки.
+            if (el is SinkElement sink) sink.UnregisterFromPart();
 
             go.SetActive(false);
             if (el != null) PartRegistry.Unregister(el);

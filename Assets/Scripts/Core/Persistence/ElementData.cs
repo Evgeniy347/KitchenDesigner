@@ -90,6 +90,12 @@ namespace KitchenDesigner.Core
 		public int lightUpPct = LightSourceElement.DEFAULT_UP_PCT;
 		public int lightBeamDeg = LightSourceElement.DEFAULT_BEAM_DEG;
 		public bool isPanel = false;
+		public bool isSink = false;
+		// Привязка мойки: имя детали-столешницы и смещение от её центра в
+		// ЛОКАЛЬНЫХ мм. Проём восстанавливается из них, а не хранится в детали.
+		public string sinkAttachedPartName = "";
+		public int sinkOffsetXMM = 0;
+		public int sinkOffsetYMM = 0;
 		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
 
@@ -248,6 +254,13 @@ namespace KitchenDesigner.Core
 
 			d.isPillar = pillar != null;
 			d.isPanel = panel != null;
+			if (element is SinkElement sinkEl)
+			{
+				d.isSink = true;
+				d.sinkAttachedPartName = sinkEl.AttachedPartName ?? "";
+				d.sinkOffsetXMM = sinkEl.OffsetXMM;
+				d.sinkOffsetYMM = sinkEl.OffsetYMM;
+			}
 			d.isFloor = element is FloorElement;
 			if (element is FloorElement floor && floor.PolygonLocalMm.Count >= 3)
 			{

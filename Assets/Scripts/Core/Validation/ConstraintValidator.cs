@@ -304,7 +304,10 @@ namespace KitchenDesigner.Core
             var aabbB = _aabbs[bIdx];
 
             // Лампа — декор: не создаёт ни пересечений, ни несущих контактов.
+            // Мойка по определению «пересекает» столешницу — она в неё врезана,
+            // и проём в детали как раз это и оформляет.
             if (a is LightSourceElement || b is LightSourceElement) return;
+            if (a is SinkElement || b is SinkElement) return;
 
             if (AABBsIntersect(aabbA, aabbB, contactDist))
             {
@@ -460,7 +463,7 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < n; i++)
             {
                 var e = all[i];
-                if (e == null || IsAnchor(e) || e is LightSourceElement) continue;
+                if (e == null || IsAnchor(e) || e is LightSourceElement || e is SinkElement) continue;
                 ok[i] = true;
                 faces[i] = e.GetFaces();
                 boxes[i] = ComputeAABB(e.GetVertices());
@@ -801,6 +804,9 @@ namespace KitchenDesigner.Core
                 // Источник света висит в воздухе (лампа/люстра) — отсутствие
                 // опоры для него штатно.
                 if (e is LightSourceElement) continue;
+                // Мойка держится на своей столешнице (проём + борт), а не на
+                // face-контакте — связность к ней неприменима.
+                if (e is SinkElement) continue;
                 if (!visited.Contains(e) || !hasContact.Contains(e))
                 {
                     result.violations.Add(e);

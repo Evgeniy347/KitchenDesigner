@@ -536,4 +536,35 @@ public class IsoScreenshotTests
 
         Object.DestroyImmediate(camGo);
     }
+
+    /// <summary>Мойка, врезанная в столешницу: борт лежит на пласти, чаша уходит
+    /// в сквозной проём, сзади стоит смеситель.</summary>
+    [UnityTest]
+    public IEnumerator IsoSink_InCountertop()
+    {
+        var topDims = new Vector3Int(1200, 600, 38);
+        // Столешница лежит на плите основания (низ на y = 0) — иначе она висит
+        // в воздухе, валидатор пишет «нет опоры», и снапшот UI ловит бейдж ошибок.
+        Vector3 topPos = new Vector3(0f, topDims.z * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var top = SpawnPartAt("IsoCountertop", topDims, topPos);
+        // Кладём деталь плашмя: локальная +Z смотрит вверх.
+        top.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+
+        var sinkGo = ElementFactory.CreateSink("IsoSink", topPos + new Vector3(0f, 0.2f, 0f));
+        _spawned.Add(sinkGo);
+        var sink = sinkGo.GetComponent<SinkElement>();
+        Assert.IsNotNull(sink);
+        sink!.SnapToPart();
+        yield return null;
+
+        Assert.IsTrue(top.HasSink(sink), "мойка врезана в столешницу");
+
+        Vector3 size = MmToUnits(new Vector3Int(topDims.x, 600, topDims.y));
+        var (camGo, cam) = CreateIsoCamera(topPos, size, 1.4f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_sink.png");
+
+        Object.DestroyImmediate(camGo);
+    }
 }

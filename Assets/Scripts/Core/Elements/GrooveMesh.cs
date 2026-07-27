@@ -85,26 +85,58 @@ namespace KitchenDesigner.Core
             return result;
         }
 
+        /// <summary>Сквозные вырезы (мойка и т.п.) в нормализованных координатах
+        /// пласти. В отличие от паза режут деталь НАСКВОЗЬ: клетка внутри выреза
+        /// не даёт ни лицевой, ни задней грани, а по контуру встают стенки во всю
+        /// толщину. Невалидные и вырожденные прямоугольники отбрасываются.</summary>
+        public static List<Rect2> ClampHoles(IReadOnlyList<Rect2>? holes)
+        {
+            var result = new List<Rect2>();
+            if (holes == null) return result;
+            foreach (var h in holes)
+            {
+                var r = new Rect2
+                {
+                    xMin = Mathf.Clamp(h.xMin, -0.5f, 0.5f),
+                    xMax = Mathf.Clamp(h.xMax, -0.5f, 0.5f),
+                    yMin = Mathf.Clamp(h.yMin, -0.5f, 0.5f),
+                    yMax = Mathf.Clamp(h.yMax, -0.5f, 0.5f),
+                };
+                if (r.IsValid) result.Add(r);
+            }
+            return result;
+        }
+
         /// <summary>Меш детали с ДВУМЯ сабмешами: 0 — тело (декор), 1 — пазы
-        /// (тёмный материал). Пустой список пазов даёт обычную коробку.</summary>
-        public static Mesh Build(Vector3Int dims, IReadOnlyList<GrooveSpec>? grooves)
+        /// (тёмный материал). Пустой список пазов даёт обычную коробку.
+        /// holes — сквозные вырезы; их стенки идут в сабмеш тела, чтобы деталь
+        /// с одним лишь вырезом не требовала второго материала.</summary>
+        public static Mesh Build(Vector3Int dims, IReadOnlyList<GrooveSpec>? grooves,
+            IReadOnlyList<Rect2>? holes = null)
         {
             var rects = ComputeRects(dims, grooves);
+            var holeRects = ClampHoles(holes);
             const float zf = 0.5f, zb = -0.5f;
             float gz = zf - DepthFraction(dims);
 
-            var xs = AxisCuts(rects, horizontal: true);
-            var ys = AxisCuts(rects, horizontal: false);
+            var xs = AxisCuts(rects, holeRects, horizontal: true);
+            var ys = AxisCuts(rects, holeRects, horizontal: false);
             int nx = xs.Count - 1, ny = ys.Count - 1;
 
             // Карта «клетка решётки лежит внутри паза» — по ней строятся дно
             // карманов, стенки и укорочение торцов. Пересечения пазов и любое
-            // их количество обрабатываются одинаково.
+            // их количество обрабатываются одинаково. Вторая карта — сквозные
+            // вырезы; они старше пазов: там, где деталь прорезана насквозь,
+            // дна кармана уже нет.
             var inside = new bool[nx, ny];
+            var hole = new bool[nx, ny];
             for (int i = 0; i < nx; i++)
                 for (int j = 0; j < ny; j++)
-                    inside[i, j] = IsInside(rects,
-                        (xs[i] + xs[i + 1]) * 0.5f, (ys[j] + ys[j + 1]) * 0.5f);
+                {
+                    float cx = (xs[i] + xs[i + 1]) * 0.5f, cy = (ys[j] + ys[j + 1]) * 0.5f;
+                    hole[i, j] = IsInside(holeRects, cx, cy);
+                    inside[i, j] = !hole[i, j] && IsInside(rects, cx, cy);
+                }
 
             var verts = new List<Vector3>();
             var uvs = new List<Vector2>();
@@ -116,6 +148,7 @@ namespace KitchenDesigner.Core
             {
                 for (int j = 0; j < ny; j++)
                 {
+                    if (hole[i, j]) continue;
                     float x0 = xs[i], x1 = xs[i + 1], y0 = ys[j], y1 = ys[j + 1];
                     if (inside[i, j])
                         AddQuad(verts, uvs, cut, UvPlane.XY,
@@ -126,15 +159,31 @@ namespace KitchenDesigner.Core
                 }
             }
 
-            // Задняя грань сплошная: паз режет только пласть.
-            AddQuad(verts, uvs, body, UvPlane.XY,
-                V(0.5f, -0.5f, zb), V(-0.5f, -0.5f, zb), V(-0.5f, 0.5f, zb), V(0.5f, 0.5f, zb));
+            // Задняя грань: паз режет только пласть, поэтому без сквозных
+            // вырезов она остаётся одним квадом; с ними — нарезается по решётке.
+            if (holeRects.Count == 0)
+            {
+                AddQuad(verts, uvs, body, UvPlane.XY,
+                    V(0.5f, -0.5f, zb), V(-0.5f, -0.5f, zb), V(-0.5f, 0.5f, zb), V(0.5f, 0.5f, zb));
+            }
+            else
+            {
+                for (int i = 0; i < nx; i++)
+                    for (int j = 0; j < ny; j++)
+                    {
+                        if (hole[i, j]) continue;
+                        float x0 = xs[i], x1 = xs[i + 1], y0 = ys[j], y1 = ys[j + 1];
+                        AddQuad(verts, uvs, body, UvPlane.XY,
+                            V(x1, y0, zb), V(x0, y0, zb), V(x0, y1, zb), V(x1, y1, zb));
+                    }
+            }
 
             // Стенки карманов на внутренних линиях решётки (нормаль — внутрь паза).
             for (int i = 1; i < nx; i++)
             {
                 for (int j = 0; j < ny; j++)
                 {
+                    if (hole[i - 1, j] || hole[i, j]) continue;
                     bool left = inside[i - 1, j], right = inside[i, j];
                     if (left == right) continue;
                     float x = xs[i], y0 = ys[j], y1 = ys[j + 1];
@@ -150,6 +199,7 @@ namespace KitchenDesigner.Core
             {
                 for (int i = 0; i < nx; i++)
                 {
+                    if (hole[i, j - 1] || hole[i, j]) continue;
                     bool below = inside[i, j - 1], above = inside[i, j];
                     if (below == above) continue;
                     float y = ys[j], x0 = xs[i], x1 = xs[i + 1];
@@ -162,27 +212,72 @@ namespace KitchenDesigner.Core
                 }
             }
 
+            // Стенки сквозных вырезов — во всю толщину, нормалью внутрь выреза.
+            for (int i = 1; i < nx; i++)
+            {
+                for (int j = 0; j < ny; j++)
+                {
+                    bool left = hole[i - 1, j], right = hole[i, j];
+                    if (left == right) continue;
+                    float x = xs[i], y0 = ys[j], y1 = ys[j + 1];
+                    if (right)
+                        AddQuad(verts, uvs, body, UvPlane.ZY,
+                            V(x, y0, zf), V(x, y0, zb), V(x, y1, zb), V(x, y1, zf));
+                    else
+                        AddQuad(verts, uvs, body, UvPlane.ZY,
+                            V(x, y0, zb), V(x, y0, zf), V(x, y1, zf), V(x, y1, zb));
+                }
+            }
+            for (int j = 1; j < ny; j++)
+            {
+                for (int i = 0; i < nx; i++)
+                {
+                    bool below = hole[i, j - 1], above = hole[i, j];
+                    if (below == above) continue;
+                    float y = ys[j], x0 = xs[i], x1 = xs[i + 1];
+                    if (above)
+                        AddQuad(verts, uvs, body, UvPlane.XZ,
+                            V(x0, y, zf), V(x1, y, zf), V(x1, y, zb), V(x0, y, zb));
+                    else
+                        AddQuad(verts, uvs, body, UvPlane.XZ,
+                            V(x0, y, zb), V(x1, y, zb), V(x1, y, zf), V(x0, y, zf));
+                }
+            }
+
             // Торцы: полосами по решётке. Там, где сквозной паз выходит наружу,
-            // торец доходит только до дна кармана — паз остаётся открытым.
+            // торец доходит только до дна кармана — паз остаётся открытым;
+            // клетка сквозного выреза торца не даёт вовсе.
             for (int j = 0; j < ny; j++)
             {
                 float y0 = ys[j], y1 = ys[j + 1];
-                float zl = inside[0, j] ? gz : zf;
-                AddQuad(verts, uvs, body, UvPlane.ZY,
-                    V(-0.5f, y0, zb), V(-0.5f, y0, zl), V(-0.5f, y1, zl), V(-0.5f, y1, zb));
-                float zr = inside[nx - 1, j] ? gz : zf;
-                AddQuad(verts, uvs, body, UvPlane.ZY,
-                    V(0.5f, y0, zr), V(0.5f, y0, zb), V(0.5f, y1, zb), V(0.5f, y1, zr));
+                if (!hole[0, j])
+                {
+                    float zl = inside[0, j] ? gz : zf;
+                    AddQuad(verts, uvs, body, UvPlane.ZY,
+                        V(-0.5f, y0, zb), V(-0.5f, y0, zl), V(-0.5f, y1, zl), V(-0.5f, y1, zb));
+                }
+                if (!hole[nx - 1, j])
+                {
+                    float zr = inside[nx - 1, j] ? gz : zf;
+                    AddQuad(verts, uvs, body, UvPlane.ZY,
+                        V(0.5f, y0, zr), V(0.5f, y0, zb), V(0.5f, y1, zb), V(0.5f, y1, zr));
+                }
             }
             for (int i = 0; i < nx; i++)
             {
                 float x0 = xs[i], x1 = xs[i + 1];
-                float zd = inside[i, 0] ? gz : zf;
-                AddQuad(verts, uvs, body, UvPlane.XZ,
-                    V(x0, -0.5f, zb), V(x1, -0.5f, zb), V(x1, -0.5f, zd), V(x0, -0.5f, zd));
-                float zu = inside[i, ny - 1] ? gz : zf;
-                AddQuad(verts, uvs, body, UvPlane.XZ,
-                    V(x0, 0.5f, zu), V(x1, 0.5f, zu), V(x1, 0.5f, zb), V(x0, 0.5f, zb));
+                if (!hole[i, 0])
+                {
+                    float zd = inside[i, 0] ? gz : zf;
+                    AddQuad(verts, uvs, body, UvPlane.XZ,
+                        V(x0, -0.5f, zb), V(x1, -0.5f, zb), V(x1, -0.5f, zd), V(x0, -0.5f, zd));
+                }
+                if (!hole[i, ny - 1])
+                {
+                    float zu = inside[i, ny - 1] ? gz : zf;
+                    AddQuad(verts, uvs, body, UvPlane.XZ,
+                        V(x0, 0.5f, zu), V(x1, 0.5f, zu), V(x1, 0.5f, zb), V(x0, 0.5f, zb));
+                }
             }
 
             var mesh = new Mesh { name = "PartWithGrooves" };
@@ -213,11 +308,16 @@ namespace KitchenDesigner.Core
         // ── Решётка ────────────────────────────────────────────────────
 
         /// <summary>Отсортированные без дублей линии реза по оси: края детали
-        /// плюс границы всех пазов.</summary>
-        private static List<float> AxisCuts(List<Rect2> rects, bool horizontal)
+        /// плюс границы всех пазов и сквозных вырезов.</summary>
+        private static List<float> AxisCuts(List<Rect2> rects, List<Rect2> holes, bool horizontal)
         {
             var cuts = new List<float> { -0.5f, 0.5f };
             foreach (var r in rects)
+            {
+                cuts.Add(horizontal ? r.xMin : r.yMin);
+                cuts.Add(horizontal ? r.xMax : r.yMax);
+            }
+            foreach (var r in holes)
             {
                 cuts.Add(horizontal ? r.xMin : r.yMin);
                 cuts.Add(horizontal ? r.xMax : r.yMax);

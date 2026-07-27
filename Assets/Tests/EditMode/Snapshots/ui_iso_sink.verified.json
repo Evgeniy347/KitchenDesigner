@@ -18,7 +18,12 @@
     },
     {
       "type": "Button",
-      "text": "IsoBoard",
+      "text": "IsoCountertop",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "IsoSink",
       "position": [20, 0]
     },
     {

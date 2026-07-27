@@ -466,6 +466,24 @@ public class ElementConverterTests
         Assert.AreEqual(0, result.Grooves.Count);
     }
 
+    // ── Мойки ─────────────────────────────────────────────────────────
+
+    [Test]
+    public void Convert_PartWithSink_ToFacade_DropsSinkAttachment()
+    {
+        var src = Make<KitchenElement>("Countertop", new Vector3Int(1200, 600, 38), Vector3.zero);
+        var sinkGo = new GameObject("Sink");
+        var sink = sinkGo.AddComponent<SinkElement>();
+        sink.PartName = "Sink";
+        src.RegisterSink(sink);
+        Assert.AreEqual(1, src.AttachedSinks.Count);
+
+        var result = ElementConverter.Convert(src, ElementConverter.TargetType.Facade);
+
+        Assert.AreEqual(0, result.AttachedSinks.Count, "у фасада проёма под мойку нет");
+        Object.DestroyImmediate(sinkGo);
+    }
+
     // ── Reflection: every public property is covered ──────────────────
 
     private static readonly HashSet<string> CommonProperties = new HashSet<string>
@@ -488,7 +506,7 @@ public class ElementConverterTests
     {
         // KitchenElement
         "PartName", "DimensionsMM", "Movable", "GroupId", "MaterialId", "Transparent", "Data",
-        "SupportsGrooves", "Grooves",
+        "SupportsGrooves", "Grooves", "AttachedSinks",
         // FacadeElement
         "GapLeft", "GapRight", "GapTop", "GapBottom", "GapMM", "Mode",
         "IsOpen", "DoorProgress", "IsDoorClosed", "ClosedPosition", "ClosedRotation",

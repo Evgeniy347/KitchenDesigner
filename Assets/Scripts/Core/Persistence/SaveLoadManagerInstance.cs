@@ -206,6 +206,8 @@ namespace KitchenDesigner.Core
 						? ElementFactory.Instance.CreateFloor(ed.Dimensions, ed.name, ed.Position)
 						: ed.isLightSource
 						? ElementFactory.Instance.CreateLightSource(ed.name, ed.Position)
+						: ed.isSink
+						? ElementFactory.Instance.CreateSink(ed.name, ed.Position)
 						: ed.isPillar
 							? ElementFactory.Instance.CreatePillar(ed.midHeightMM, ed.name, ed.Position)
 							: ed.isTable
@@ -303,6 +305,16 @@ namespace KitchenDesigner.Core
                         doorEl.Mode = (DoorMode)ed.doorDoorMode;
                         if (ed.doorIsOpen) doorEl.SetOpen(true);
                         doorEl.AttachedWallName = ed.doorAttachedWallName;
+                    }
+
+                    // Мойка: имя детали и смещение восстанавливаем ДО первого
+                    // SnapToPart, иначе она врежется в столешницу по позиции
+                    // курсора-заглушки, а не туда, где стояла.
+                    if (ed.isSink && el is SinkElement sinkEl)
+                    {
+                        sinkEl.AttachedPartName = ed.sinkAttachedPartName;
+                        sinkEl.OffsetXMM = ed.sinkOffsetXMM;
+                        sinkEl.OffsetYMM = ed.sinkOffsetYMM;
                     }
 
                     if (ed.isLightSource && el is LightSourceElement lightEl)

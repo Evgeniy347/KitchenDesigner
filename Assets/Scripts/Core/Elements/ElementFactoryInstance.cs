@@ -110,7 +110,8 @@ namespace KitchenDesigner.Core
             el.Movable = true;
             el.GroupId = 0;
             // Вернуть встроенный куб и один материал: иначе следующая деталь из
-            // пула досталась бы с чужими пазами.
+            // пула досталась бы с чужими пазами и проёмом под мойку.
+            el.ClearSinks();
             el.ClearGrooves();
             PartRegistry.Unregister(el);
         }
@@ -243,6 +244,15 @@ namespace KitchenDesigner.Core
 			if (source is LightSourceElement)
 			{
 				var go = CreateLightSource(source.PartName, offset);
+				go.transform.rotation = source.transform.rotation;
+				return go;
+			}
+
+			if (source is SinkElement)
+			{
+				// Привязку к детали копия найдёт сама (SnapToPart) — переносить
+				// имя хозяина нельзя: копия «украла» бы проём оригинала.
+				var go = CreateSink(source.PartName, offset);
 				go.transform.rotation = source.transform.rotation;
 				return go;
 			}
@@ -626,6 +636,35 @@ namespace KitchenDesigner.Core
 			return go;
 		}
 
+		/// <summary>Врезная мойка: корень пустой (единичный масштаб), вся геометрия —
+		/// дочерние примитивы, как у окна. Материал свой (нержавейка), поэтому
+		/// MaterialManager к ней не применяется.</summary>
+		public GameObject CreateSink(string name, Vector3 position)
+		{
+			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Мойка" : name));
+			go.tag = "KitchenElement";
+			go.transform.position = position;
+
+			var rb = go.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
+
+			// Коллайдер (BoxCollider по габаритам чаши) создаёт сама мойка в
+			// ApplyDimensions — корневой масштаб единичный.
+			var sink = go.AddComponent<SinkElement>();
+			sink.PartName = go.name;
+			sink.DimensionsMM = new Vector3Int(
+				SinkElement.OUTER_WIDTH_MM, SinkElement.TotalHeightMM, SinkElement.OUTER_DEPTH_MM);
+			sink.Movable = true;
+
+			PartRegistry.Register(sink);
+
+			if (ElementHighlighter.Instance != null)
+				ElementHighlighter.Instance.RefreshHighlights();
+
+			return go;
+		}
+
 		public GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50)
         {
@@ -718,6 +757,20 @@ namespace KitchenDesigner.Core
 			{
 				rTable.DestroyChildren();
 				PartRegistry.Unregister(rTable);
+				if (Application.isPlaying)
+					Object.Destroy(go);
+				else
+					Object.DestroyImmediate(go);
+				return;
+			}
+			var sink = go.GetComponent<SinkElement>();
+			if (sink != null)
+			{
+				// Проём в столешнице снимаем до уничтожения — иначе деталь
+				// осталась бы с дырой от несуществующей мойки.
+				sink.UnregisterFromPart();
+				sink.DestroyChildren();
+				PartRegistry.Unregister(sink);
 				if (Application.isPlaying)
 					Object.Destroy(go);
 				else

@@ -526,6 +526,18 @@ namespace KitchenDesigner.Core.UI
             BeginPlacement(go);
         }
 
+        /// <summary>Мойка ставится на высоте столешницы: оттуда она сама прилипнет
+        /// к ближайшей подходящей детали (SinkElement.SnapToPart).</summary>
+        public void SpawnSink(string name)
+        {
+            Vector3 pos = GroundPointInFrontOfCamera();
+            pos = GridManager.SnapToGrid(pos);
+            pos.y = 0.9f; // ~900 мм — типовая высота рабочей поверхности
+
+            var go = ElementFactory.CreateSink(name, pos);
+            BeginPlacement(go);
+        }
+
         public void SpawnLightSource(string name)
         {
             Vector3 pos = GroundPointInFrontOfCamera();

@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.UI
             public bool isPillar;
             public bool isFloor;
             public bool isLightSource;
+            public bool isSink;           // врезная мойка (садится на деталь-столешницу)
             public bool isPanel;          // ДВП/ХДФ — вкладная панель с зазорами
             public int pillarMidHeightMM;
             public string drawerType;
@@ -43,7 +44,8 @@ namespace KitchenDesigner.Core.UI
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
                 isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false; isDoor = false;
-                isPillar = false; isFloor = false; isLightSource = false; isPanel = false; pillarMidHeightMM = 75;
+                isPillar = false; isFloor = false; isLightSource = false; isSink = false;
+                isPanel = false; pillarMidHeightMM = 75;
                 drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400; drawerSystem = "gtv";
             }
@@ -140,7 +142,16 @@ namespace KitchenDesigner.Core.UI
             var radiusTable = new Item("Радиусный стол", new Vector3Int(2000, 750, 1000));
             radiusTable.isRadiusTable = true;
             var pillar = PillarItem("Ножка", PillarElement.MidHeightMM_Default);
-            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, pillar } };
+            var sink = SinkItem("Мойка");
+            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, pillar, sink } };
+        }
+
+        private static Item SinkItem(string name)
+        {
+            var item = new Item(name, new Vector3Int(
+                SinkElement.OUTER_WIDTH_MM, SinkElement.TotalHeightMM, SinkElement.OUTER_DEPTH_MM));
+            item.isSink = true;
+            return item;
         }
 
         private static Item PillarItem(string name, int midHeightMM)

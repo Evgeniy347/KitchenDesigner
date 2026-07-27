@@ -147,6 +147,7 @@ namespace KitchenDesigner.Core.Bulk
             if (e is TableElement) return "table";
             if (e is PillarElement) return "pillar";
             if (e is LightSourceElement) return "light";
+            if (e is SinkElement) return "sink";
             if (e is FloorElement) return "floor";
             if (e.GetComponent<Wall>() != null) return "wall";
             return "board";
