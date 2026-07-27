@@ -25,6 +25,24 @@ public class KitchenSettingsTests
     }
 
     [Test]
+    public void InputSpeeds_AreClampedToRange()
+    {
+        var s = KitchenSettings.Instance;
+        var backup = s.ToData();
+
+        s.MouseSensitivity = 99f;
+        Assert.AreEqual(KitchenSettings.MAX_INPUT_SPEED, s.MouseSensitivity, 0.001f);
+
+        s.WasdSpeed = 0f;
+        Assert.AreEqual(KitchenSettings.MIN_INPUT_SPEED, s.WasdSpeed, 0.001f);
+
+        s.ArrowSpeed = -3f;
+        Assert.AreEqual(KitchenSettings.MIN_INPUT_SPEED, s.ArrowSpeed, 0.001f);
+
+        s.ApplyFrom(backup);
+    }
+
+    [Test]
     public void Instance_IsNotNull()
     {
         var instance = KitchenSettings.Instance;

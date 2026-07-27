@@ -2,8 +2,10 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Рисует чёрный контур (12 рёбер AABB) каждого объекта через GL,
-    /// если включена настройка EdgeOutline. BasePlate (пол) исключён.</summary>
+    /// <summary>Рисует чёрный контур (12 рёбер AABB) каждого объекта через GL.
+    /// Контур стен и контур прочих объектов — независимые настройки
+    /// (WallOutline и EdgeOutline). BasePlate (пол) исключён, скрытые объекты
+    /// тоже: обводка у невидимой детали выглядела бы «призраком».</summary>
     public class EdgeOutlineRenderer : MonoBehaviour
     {
         private Material? _lineMaterial;
@@ -30,7 +32,8 @@ namespace KitchenDesigner.Core
             var s = KitchenSettings.Instance;
             // В фоторежиме контур (чёрные рёбра) выключен всегда — это техническая
             // подсветка редактора, не нужная для «фото». Саму настройку не трогаем.
-            if (s == null || !s.EdgeOutline || _lineMaterial == null || PhotoMode.Active) return;
+            if (s == null || _lineMaterial == null || PhotoMode.Active) return;
+            if (!s.EdgeOutline && !s.WallOutline) return;
 
             _lineMaterial.SetPass(0);
             GL.PushMatrix();
@@ -41,6 +44,7 @@ namespace KitchenDesigner.Core
             foreach (var e in PartRegistry.GetAll())
             {
                 if (e == null || e.GetComponent<BasePlate>() != null) continue;
+                if (!ShouldOutline(e, s)) continue;
                 var v = e.GetVertices();
                 for (int i = 0; i < Edges.GetLength(0); i++)
                 {
@@ -51,6 +55,18 @@ namespace KitchenDesigner.Core
 
             GL.End();
             GL.PopMatrix();
+        }
+
+        /// <summary>Стена берёт свою настройку контура, остальное — общую.
+        /// Погашенный рендер (скрытые стены, скрытые объекты, окна опущенной
+        /// стены) контура не получает.</summary>
+        public static bool ShouldOutline(KitchenElement e, KitchenSettings s)
+        {
+            if (e == null || s == null) return false;
+            bool isWall = e.GetComponent<Wall>() != null;
+            if (!(isWall ? s.WallOutline : s.EdgeOutline)) return false;
+
+            return SceneVisibility.AnyRendererEnabled(e);
         }
 
         private void OnDestroy()

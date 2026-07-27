@@ -784,6 +784,61 @@ public class RoundTripTests
         gs.WallsEnabled = prevWalls;
     }
 
+    [Test]
+    public void Settings_DisplayAndInput_RoundTrip()
+    {
+        var gs = KitchenSettings.Instance;
+        var backup = gs.ToData();
+
+        gs.WallOutline = false;
+        gs.HideOpeningsOnLoweredWalls = true;
+        gs.ObjectsVisible = false;
+        gs.HideLightSources = true;
+        gs.MouseSensitivity = 2.5f;
+        gs.WasdSpeed = 0.4f;
+        gs.ArrowSpeed = 1.8f;
+
+        var data = gs.ToData();
+
+        gs.WallOutline = true;
+        gs.HideOpeningsOnLoweredWalls = false;
+        gs.ObjectsVisible = true;
+        gs.HideLightSources = false;
+        gs.MouseSensitivity = 1f;
+        gs.WasdSpeed = 1f;
+        gs.ArrowSpeed = 1f;
+
+        gs.ApplyFrom(data);
+
+        Assert.IsFalse(gs.WallOutline, "WallOutline");
+        Assert.IsTrue(gs.HideOpeningsOnLoweredWalls, "HideOpeningsOnLoweredWalls");
+        Assert.IsFalse(gs.ObjectsVisible, "ObjectsVisible");
+        Assert.IsTrue(gs.HideLightSources, "HideLightSources");
+        Assert.AreEqual(2.5f, gs.MouseSensitivity, 0.001f, "MouseSensitivity");
+        Assert.AreEqual(0.4f, gs.WasdSpeed, 0.001f, "WasdSpeed");
+        Assert.AreEqual(1.8f, gs.ArrowSpeed, 0.001f, "ArrowSpeed");
+
+        gs.ApplyFrom(backup);
+    }
+
+    /// <summary>Старый проект без новых полей: JsonUtility оставляет
+    /// инициализаторы, а не нули — иначе стены молча теряли бы контур,
+    /// а камера останавливалась бы (множители 0).</summary>
+    [Test]
+    public void Settings_OldSave_WithoutNewFields_KeepsDefaults()
+    {
+        var data = JsonUtility.FromJson<KitchenSettingsData>(
+            "{\"gridStep\":18,\"gridEnabled\":true,\"wallsEnabled\":true}");
+
+        Assert.IsTrue(data.wallOutline, "wallOutline");
+        Assert.IsTrue(data.objectsVisible, "objectsVisible");
+        Assert.IsFalse(data.hideOpeningsOnLoweredWalls, "hideOpeningsOnLoweredWalls");
+        Assert.IsFalse(data.hideLightSources, "hideLightSources");
+        Assert.AreEqual(1f, data.mouseSensitivity, 0.001f, "mouseSensitivity");
+        Assert.AreEqual(1f, data.wasdSpeed, 0.001f, "wasdSpeed");
+        Assert.AreEqual(1f, data.arrowSpeed, 0.001f, "arrowSpeed");
+    }
+
     // ── 12. Full ProjectData round-trip (groups + camera + baseplate) ────
 
     [Test]

@@ -371,6 +371,9 @@ public class SnapshotTests
         gs.AutoSave = true; gs.AutoSaveInterval = 60;
         gs.SpatialGrid = false; gs.WindowedMode = true;
         gs.EdgeOutline = true; gs.WallsEnabled = true; gs.LowerNearWalls = true;
+        gs.WallOutline = true; gs.HideOpeningsOnLoweredWalls = false;
+        gs.ObjectsVisible = true; gs.HideLightSources = false;
+        gs.MouseSensitivity = 1f; gs.WasdSpeed = 1f; gs.ArrowSpeed = 1f;
         SetPhotoDefaults(gs);
 
         var json = gs.GetSettingsJson();
@@ -386,6 +389,9 @@ public class SnapshotTests
         gs.AutoSave = true; gs.AutoSaveInterval = 120;
         gs.SpatialGrid = true; gs.WindowedMode = false;
         gs.EdgeOutline = true; gs.WallsEnabled = false; gs.LowerNearWalls = true;
+        gs.WallOutline = false; gs.HideOpeningsOnLoweredWalls = true;
+        gs.ObjectsVisible = false; gs.HideLightSources = true;
+        gs.MouseSensitivity = 2f; gs.WasdSpeed = 0.5f; gs.ArrowSpeed = 1.5f;
         SetPhotoDefaults(gs);
 
         var json = gs.GetSettingsJson();

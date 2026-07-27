@@ -469,10 +469,10 @@ export const GEN_TOOLS: GenTool[] = [
   {
     name: "set_setting",
     title: "Change a setting",
-    description: "Toggle one boolean project setting. name is one of: lower_near_walls | snap_enabled | grid_enabled | walls_enabled | camera_pan_free.",
+    description: "Toggle one boolean project setting. name is one of: lower_near_walls | snap_enabled | grid_enabled | walls_enabled | wall_outline | edge_outline | hide_openings_on_lowered_walls | objects_visible | hide_light_sources | camera_pan_free.",
     kind: "write",
     inputSchema: {
-      name: z.enum(["lower_near_walls", "snap_enabled", "grid_enabled", "walls_enabled"]).describe("Setting key."),
+      name: z.enum(["lower_near_walls", "snap_enabled", "grid_enabled", "walls_enabled", "wall_outline", "edge_outline", "hide_openings_on_lowered_walls", "objects_visible", "hide_light_sources", "camera_pan_free"]).describe("Setting key."),
       value: z.boolean().describe("New on/off value."),
     },
   },

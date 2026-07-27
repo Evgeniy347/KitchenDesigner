@@ -35,6 +35,9 @@ public class SettingsPanelUITests
     [TearDown]
     public void TearDown()
     {
+        // Режим редактора — глобальное состояние: тест, который его крутит,
+        // обязан вернуть исходное (см. правила снапшотов в AGENTS.md).
+        EditModeManager.Reset();
         if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
         var es = Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
         if (es != null) Object.DestroyImmediate(es.gameObject);
@@ -55,7 +58,7 @@ public class SettingsPanelUITests
         Assert.IsNotNull(panel);
         var rt = panel.GetComponent<RectTransform>();
         Assert.AreEqual(520, rt.sizeDelta.x, 0.01f);
-        Assert.AreEqual(680, rt.sizeDelta.y, 0.01f);
+        Assert.AreEqual(900, rt.sizeDelta.y, 0.01f);
     }
 
     [Test]
@@ -71,9 +74,9 @@ public class SettingsPanelUITests
     // ── Tabs ────────────────────────────────────────────────
 
     [Test]
-    public void ThreeTabButtons_Exist()
+    public void FourTabButtons_Exist()
     {
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 4; i++)
         {
             var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
             Assert.IsNotNull(tab, $"Tab_{i} should exist");
@@ -83,7 +86,7 @@ public class SettingsPanelUITests
     [Test]
     public void TabButtons_HaveCorrectLabels()
     {
-        string[] expected = { "Проект", "Фото режим", "О программе" };
+        string[] expected = { "Проект", "Управление", "Фото режим", "О программе" };
         for (int i = 0; i < expected.Length; i++)
         {
             var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
@@ -97,6 +100,7 @@ public class SettingsPanelUITests
     public void TabPages_Exist()
     {
         Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Project"), "Tab_Project page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Control"), "Tab_Control page should exist");
         Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Photo"), "Tab_Photo page should exist");
         Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_About"), "Tab_About page should exist");
     }
@@ -112,8 +116,8 @@ public class SettingsPanelUITests
         Assert.IsFalse(photo.activeSelf, "Photo tab should be hidden by default");
         Assert.IsFalse(about.activeSelf, "About tab should be hidden by default");
 
-        // Tab_1 → «Фото режим», Tab_2 → «О программе».
-        _canvas!.transform.Find("SettingsPanel/Tab_2").GetComponent<Button>().onClick.Invoke();
+        // Tab_1 → «Управление», Tab_2 → «Фото режим», Tab_3 → «О программе».
+        _canvas!.transform.Find("SettingsPanel/Tab_3").GetComponent<Button>().onClick.Invoke();
         Assert.IsFalse(project.activeSelf, "Project should hide after switching to About");
         Assert.IsTrue(about.activeSelf, "About should show after click");
         Assert.IsFalse(photo.activeSelf, "Photo should stay hidden");
@@ -218,8 +222,11 @@ public class SettingsPanelUITests
         string[] expectedToggles =
         {
             "Сетка", "Привязка к деталям", "Блокировать недопустимые изменения", "Автосохранение",
-            "Пространственная сетка", "Контур (чёрные рёбра)",
-            "Стены", "Опускать ближние стены", "Свободное панорамирование"
+            "Пространственная сетка",
+            "Стены", "Контур стен", "Опускать ближние стены", "Скрывать окна и двери",
+            "Скрыть источники света",
+            "Объекты", "Контур объектов",
+            "Свободное панорамирование"
         };
 
         var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
@@ -250,10 +257,145 @@ public class SettingsPanelUITests
         AssertToggleValue(project, "Блокировать недопустимые изменения", s.BlockOnViolation);
         AssertToggleValue(project, "Автосохранение", s.AutoSave);
         AssertToggleValue(project, "Пространственная сетка", s.SpatialGrid);
-        AssertToggleValue(project, "Контур (чёрные рёбра)", s.EdgeOutline);
         AssertToggleValue(project, "Стены", s.WallsEnabled);
+        AssertToggleValue(project, "Контур стен", s.WallOutline);
         AssertToggleValue(project, "Опускать ближние стены", s.LowerNearWalls);
+        AssertToggleValue(project, "Скрывать окна и двери", s.HideOpeningsOnLoweredWalls);
+        AssertToggleValue(project, "Скрыть источники света", s.HideLightSources);
+        AssertToggleValue(project, "Объекты", s.ObjectsVisible);
+        AssertToggleValue(project, "Контур объектов", s.EdgeOutline);
         AssertToggleValue(project, "Свободное панорамирование", s.CameraPanFree);
+    }
+
+    // ── Вложенность подопций ────────────────────────────────
+
+    [Test]
+    public void SubOptions_AreIndented_UnderTheirParent()
+    {
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+
+        float wallsX = LabelX(project, "Стены");
+        float outlineX = LabelX(project, "Контур стен");
+        float lowerX = LabelX(project, "Опускать ближние стены");
+        float hideX = LabelX(project, "Скрывать окна и двери");
+
+        Assert.Greater(outlineX, wallsX, "«Контур» должен быть с отступом от «Стены»");
+        Assert.AreEqual(outlineX, lowerX, 0.01f, "оба на первом уровне вложенности");
+        Assert.Greater(hideX, lowerX, "«Скрывать окна и двери» — второй уровень");
+    }
+
+    [Test]
+    public void WallSubOptions_Disabled_WhenWallsOff()
+    {
+        var s = KitchenSettings.Instance;
+        bool prev = s.WallsEnabled;
+
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var walls = project.Find("RowTgl_Стены/Tgl_Стены").GetComponent<Toggle>();
+
+        walls.isOn = false;
+        Assert.IsFalse(ToggleOf(project, "Контур стен").interactable);
+        Assert.IsFalse(ToggleOf(project, "Опускать ближние стены").interactable);
+
+        walls.isOn = true;
+        Assert.IsTrue(ToggleOf(project, "Контур стен").interactable);
+
+        s.WallsEnabled = prev;
+    }
+
+    [Test]
+    public void HideOpenings_Disabled_WhenLowerWallsOff()
+    {
+        var s = KitchenSettings.Instance;
+        bool prev = s.LowerNearWalls;
+
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var lower = project.Find("RowTgl_Опускать ближние стены/Tgl_Опускать ближние стены").GetComponent<Toggle>();
+
+        lower.isOn = false;
+        Assert.IsFalse(ToggleOf(project, "Скрывать окна и двери").interactable);
+
+        lower.isOn = true;
+        Assert.IsTrue(ToggleOf(project, "Скрывать окна и двери").interactable);
+
+        s.LowerNearWalls = prev;
+    }
+
+    [Test]
+    public void LowerNearWalls_Disabled_InRoomMode()
+    {
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        Assert.IsTrue(ToggleOf(project, "Опускать ближние стены").interactable,
+            "в обычном режиме тумблер активен");
+
+        EditModeManager.SetMode(EditMode.Room);
+        Assert.IsFalse(ToggleOf(project, "Опускать ближние стены").interactable,
+            "в режиме «помещение» опускание запрещено");
+
+        EditModeManager.SetMode(EditMode.Normal);
+        Assert.IsTrue(ToggleOf(project, "Опускать ближние стены").interactable);
+    }
+
+    [Test]
+    public void ObjectOutline_Disabled_WhenObjectsOff()
+    {
+        var s = KitchenSettings.Instance;
+        bool prev = s.ObjectsVisible;
+
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var objects = project.Find("RowTgl_Объекты/Tgl_Объекты").GetComponent<Toggle>();
+
+        objects.isOn = false;
+        Assert.IsFalse(ToggleOf(project, "Контур объектов").interactable);
+
+        objects.isOn = true;
+        Assert.IsTrue(ToggleOf(project, "Контур объектов").interactable);
+
+        s.ObjectsVisible = prev;
+    }
+
+    // ── Вкладка «Управление» ────────────────────────────────
+
+    [Test]
+    public void ControlTab_HasThreeSliders()
+    {
+        var control = _canvas!.transform.Find("SettingsPanel/Tab_Control");
+        Assert.IsNotNull(control);
+
+        string[] labels = { "Чувствительность мыши", "Скорость WASD", "Скорость ←→↑↓" };
+        foreach (var label in labels)
+        {
+            var row = control.Find($"RowSld_{label}");
+            Assert.IsNotNull(row, $"Slider row '{label}' should exist");
+            var slider = row.Find($"Sld_{label}").GetComponent<Slider>();
+            Assert.IsNotNull(slider, $"Slider '{label}' should exist");
+            Assert.AreEqual(KitchenSettings.MIN_INPUT_SPEED, slider.minValue, 0.001f);
+            Assert.AreEqual(KitchenSettings.MAX_INPUT_SPEED, slider.maxValue, 0.001f);
+        }
+    }
+
+    [Test]
+    public void ControlSliders_HaveCorrectInitialValues()
+    {
+        var s = KitchenSettings.Instance;
+        var control = _canvas!.transform.Find("SettingsPanel/Tab_Control");
+
+        Assert.AreEqual(s.MouseSensitivity, SliderOf(control, "Чувствительность мыши").value, 0.001f);
+        Assert.AreEqual(s.WasdSpeed, SliderOf(control, "Скорость WASD").value, 0.001f);
+        Assert.AreEqual(s.ArrowSpeed, SliderOf(control, "Скорость ←→↑↓").value, 0.001f);
+    }
+
+    [Test]
+    public void ControlSlider_UpdatesSetting()
+    {
+        var s = KitchenSettings.Instance;
+        float prev = s.WasdSpeed;
+
+        var control = _canvas!.transform.Find("SettingsPanel/Tab_Control");
+        SliderOf(control, "Скорость WASD").value = 2.5f;
+        Assert.AreEqual(2.5f, s.WasdSpeed, 0.001f);
+
+        s.WasdSpeed = prev;
     }
 
     [Test]
@@ -448,6 +590,15 @@ public class SettingsPanelUITests
         Assert.AreEqual(expected.b, actual.b, delta, $"B: expected {expected.b}, got {actual.b}");
         Assert.AreEqual(expected.a, actual.a, delta, $"A: expected {expected.a}, got {actual.a}");
     }
+
+    private static Toggle ToggleOf(Transform parent, string key) =>
+        parent.Find($"RowTgl_{key}/Tgl_{key}").GetComponent<Toggle>();
+
+    private static Slider SliderOf(Transform parent, string key) =>
+        parent.Find($"RowSld_{key}/Sld_{key}").GetComponent<Slider>();
+
+    private static float LabelX(Transform parent, string key) =>
+        parent.Find($"RowTgl_{key}/Lbl_{key}").GetComponent<RectTransform>().anchoredPosition.x;
 
     private static void AssertToggleValue(Transform parent, string label, bool expected)
     {

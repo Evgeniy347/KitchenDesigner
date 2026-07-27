@@ -99,6 +99,16 @@ namespace KitchenDesigner.Core
         public bool lowerNearWalls;
         public bool cameraPanFree;
 
+        // Отображение и управление. Инициализаторы задают дефолты для старых
+        // проектов, где полей ещё нет в JSON (см. комментарий про JsonUtility ниже).
+        public bool wallOutline = true;
+        public bool hideOpeningsOnLoweredWalls = false;
+        public bool objectsVisible = true;
+        public bool hideLightSources = false;
+        public float mouseSensitivity = 1f;
+        public float wasdSpeed = 1f;
+        public float arrowSpeed = 1f;
+
         // Фоторежим. Инициализаторы задают дефолты для старых проектов, где этих
         // полей нет в JSON: JsonUtility.FromJson создаёт объект (инициализаторы
         // срабатывают), затем перезаписывает только присутствующие поля.

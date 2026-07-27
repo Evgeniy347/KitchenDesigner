@@ -58,7 +58,17 @@ namespace KitchenDesigner.Core.MCP
                 autoSave = s.AutoSave,
                 autoSaveIntervalSec = s.AutoSaveInterval,
                 snapVerboseLog = SnapSystem.VerboseLog,
-                cameraPanFree = s.CameraPanFree
+                cameraPanFree = s.CameraPanFree,
+                wallsEnabled = s.WallsEnabled,
+                wallOutline = s.WallOutline,
+                lowerNearWalls = s.LowerNearWalls,
+                hideOpeningsOnLoweredWalls = s.HideOpeningsOnLoweredWalls,
+                objectsVisible = s.ObjectsVisible,
+                edgeOutline = s.EdgeOutline,
+                hideLightSources = s.HideLightSources,
+                mouseSensitivity = s.MouseSensitivity,
+                wasdSpeed = s.WasdSpeed,
+                arrowSpeed = s.ArrowSpeed
             });
         }
 
@@ -92,6 +102,11 @@ namespace KitchenDesigner.Core.MCP
                 case "snap_enabled": s.SnapEnabled = p.value; break;
                 case "grid_enabled": s.GridEnabled = p.value; break;
                 case "walls_enabled": s.WallsEnabled = p.value; break;
+                case "wall_outline": s.WallOutline = p.value; break;
+                case "edge_outline": s.EdgeOutline = p.value; break;
+                case "hide_openings_on_lowered_walls": s.HideOpeningsOnLoweredWalls = p.value; break;
+                case "objects_visible": s.ObjectsVisible = p.value; break;
+                case "hide_light_sources": s.HideLightSources = p.value; break;
                 case "camera_pan_free": s.CameraPanFree = p.value; break;
                 default:
                     return McpResponse.Error(req.id, -32602, $"Unknown setting: {p.name}");

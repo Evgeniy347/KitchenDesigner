@@ -12,7 +12,7 @@ using KitchenDesigner.Tests;
 public class SettingsPanelTabDiagramTests
 {
     private const int PanelW = 520;
-    private const int PanelH = 680;
+    private const int PanelH = 900;
 
     private GameObject? _canvasGo;
     private GameObject? _camGo;
@@ -121,12 +121,22 @@ public class SettingsPanelTabDiagramTests
         yield return CaptureAndSave("settings_tab_project.png");
     }
 
-    // Три вкладки: «Проект» (0), «Фото режим» (1), «О программе» (2).
+    // Четыре вкладки: «Проект» (0), «Управление» (1), «Фото режим» (2),
+    // «О программе» (3).
+    [UnityTest]
+    public IEnumerator TabControl_SavesPng()
+    {
+        BuildPanel();
+        SwitchToTab(1);
+        yield return null;
+        yield return CaptureAndSave("settings_tab_control.png");
+    }
+
     [UnityTest]
     public IEnumerator TabPhoto_SavesPng()
     {
         BuildPanel();
-        SwitchToTab(1);
+        SwitchToTab(2);
         yield return null;
         yield return CaptureAndSave("settings_tab_photo.png");
     }
@@ -135,7 +145,7 @@ public class SettingsPanelTabDiagramTests
     public IEnumerator TabAbout_SavesPng()
     {
         BuildPanel();
-        SwitchToTab(2);
+        SwitchToTab(3);
         yield return null;
         yield return CaptureAndSave("settings_tab_about.png");
     }

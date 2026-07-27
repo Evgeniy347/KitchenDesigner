@@ -28,13 +28,33 @@
     },
     {
       "type": "Label",
-      "text": "Версия: <masked>",
-      "position": [0, 312]
+      "text": "Скорость WASD",
+      "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Сборка: <masked>",
-      "position": [0, 274]
+      "text": "Скорость ←→↑↓",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Чувствительность мыши",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1.0×",
+      "position": [220, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1.0×",
+      "position": [220, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1.0×",
+      "position": [220, 0]
     },
     {
       "type": "Button",

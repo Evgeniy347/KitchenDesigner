@@ -19,15 +19,25 @@ namespace KitchenDesigner.Core.UI
         private static readonly Color InactiveTabColor = new(0.15f, 0.16f, 0.20f, 1f);
 
         private const float PanelW = 520;
-        private const float PanelH = 680;
+        private const float PanelH = 900;
         private const float ContentW = 480;
         private const float RowH = 32;
         private const float RowStep = 38;
         private const float LabelW = 300;
         private const float ControlW = 150;
-        private const float TitleY = 285;
-        private const float TabY = 246;
-        private const float ContentTopY = 202;
+        private const float TitleY = PanelH * 0.5f - 55;
+        private const float TabY = PanelH * 0.5f - 94;
+        private const float ContentTopY = PanelH * 0.5f - 138;
+
+        /// <summary>Отступ одного уровня вложенности подопции (правило дерева
+        /// из UI-GUIDELINES).</summary>
+        private const float IndentPx = 20f;
+
+        /// <summary>Число строк и «воздушных» промежутков на вкладке «Проект» —
+        /// по ним считается позиция кнопки «Закрыть».</summary>
+        private const int ProjectRows = 17;
+        private const int ProjectGaps = 7;
+        private const float GapPx = 6f;
 
         public void Build(Transform canvas)
         {
@@ -48,12 +58,13 @@ namespace KitchenDesigner.Core.UI
 
             BuildTabs(panel.transform);
             BuildProjectTab(panel.transform, s);
+            BuildControlTab(panel.transform, s);
             BuildPhotoTab(panel.transform, s);
             BuildAboutTab(panel.transform);
 
             SwitchTab(0);
 
-            float closeY = ContentTopY - 12 * RowStep - 4 * 6 - 20;
+            float closeY = ContentTopY - ProjectRows * RowStep - ProjectGaps * GapPx - 20;
             UIFactory.CreateButton("SetClose", panel.transform, "Закрыть",
                 new Vector2(0, closeY), new Vector2(160, 40),
                 () => SetVisible(false));
@@ -68,7 +79,7 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildTabs(Transform parent)
         {
-            string[] labels = { "Проект", "Фото режим", "О программе" };
+            string[] labels = { "Проект", "Управление", "Фото режим", "О программе" };
             float tabW = (PanelW - 40) / labels.Length;
 
             for (int i = 0; i < labels.Length; i++)
@@ -142,24 +153,69 @@ namespace KitchenDesigner.Core.UI
                     s.AutoSaveInterval = val; f.text = s.AutoSaveInterval.ToString();
                 }, s.AutoSaveInterval.ToString(), unit: "с", indent: true);
 
-            UpdateDependentStates();
-
-            y -= 6;
+            y -= GapPx;
             AddToggleRow(t, ref y, "Пространственная сетка", s.SpatialGrid,
                 v => { s.SpatialGrid = v; });
 
-            AddToggleRow(t, ref y, "Контур (чёрные рёбра)", s.EdgeOutline,
-                v => { s.EdgeOutline = v; });
-
+            // ── Стены и подопции ───────────────────────────
+            y -= GapPx;
             AddToggleRow(t, ref y, "Стены", s.WallsEnabled,
-                v => { s.WallsEnabled = v; });
+                v => { s.WallsEnabled = v; UpdateDependentStates(); });
 
-            AddToggleRow(t, ref y, "Опускать ближние стены", s.LowerNearWalls,
-                v => { s.LowerNearWalls = v; });
+            _wallOutlineToggle = AddToggleRow(t, ref y, "Контур", s.WallOutline,
+                v => { s.WallOutline = v; }, id: WallOutlineId, indentLevel: 1);
 
-            y -= 6;
+            _lowerWallsToggle = AddToggleRow(t, ref y, "Опускать ближние стены", s.LowerNearWalls,
+                v => { s.LowerNearWalls = v; UpdateDependentStates(); }, indentLevel: 1);
+
+            _hideOpeningsToggle = AddToggleRow(t, ref y, "Скрывать окна и двери", s.HideOpeningsOnLoweredWalls,
+                v => { s.HideOpeningsOnLoweredWalls = v; }, indentLevel: 2);
+
+            // ── Освещение ──────────────────────────────────
+            y -= GapPx;
+            AddHeaderRow(t, ref y, "Освещение");
+
+            AddToggleRow(t, ref y, "Скрыть источники света", s.HideLightSources,
+                v => { s.HideLightSources = v; }, indentLevel: 1);
+
+            // ── Объекты и подопции ─────────────────────────
+            y -= GapPx;
+            AddToggleRow(t, ref y, "Объекты", s.ObjectsVisible,
+                v => { s.ObjectsVisible = v; UpdateDependentStates(); });
+
+            _objectOutlineToggle = AddToggleRow(t, ref y, "Контур", s.EdgeOutline,
+                v => { s.EdgeOutline = v; }, id: ObjectOutlineId, indentLevel: 1);
+
+            y -= GapPx;
             AddToggleRow(t, ref y, "Свободное панорамирование", s.CameraPanFree,
                 v => { s.CameraPanFree = v; });
+
+            // Режим «помещение» блокирует «опускать ближние стены» — состояние
+            // тумблера должно следовать за переключением режима, а не только за
+            // открытием панели.
+            EditModeManager.Changed -= UpdateDependentStates;
+            EditModeManager.Changed += UpdateDependentStates;
+
+            UpdateDependentStates();
+        }
+
+        // ── Tab: Управление ─────────────────────────────────
+
+        private void BuildControlTab(Transform panel, KitchenSettings s)
+        {
+            var page = new GameObject("Tab_Control");
+            page.transform.SetParent(panel, false);
+            _tabPages.Add(page);
+            var t = page.transform;
+
+            float y = ContentTopY;
+
+            AddSliderRow(t, ref y, "Чувствительность мыши", s.MouseSensitivity,
+                v => s.MouseSensitivity = v);
+            AddSliderRow(t, ref y, "Скорость WASD", s.WasdSpeed,
+                v => s.WasdSpeed = v);
+            AddSliderRow(t, ref y, "Скорость ←→↑↓", s.ArrowSpeed,
+                v => s.ArrowSpeed = v);
         }
 
         // ── Tab: Фото режим ─────────────────────────────────
@@ -176,6 +232,7 @@ namespace KitchenDesigner.Core.UI
         private void OnDestroy()
         {
             PhotoMode.Changed -= SyncPhotoActiveToggle;
+            EditModeManager.Changed -= UpdateDependentStates;
         }
 
         private void BuildPhotoTab(Transform panel, KitchenSettings s)
@@ -309,20 +366,71 @@ namespace KitchenDesigner.Core.UI
 
         // ── Row helpers ─────────────────────────────────────
 
-        private Toggle AddToggleRow(Transform parent, ref float y, string label, bool value, Action<bool> onChanged)
+        /// <summary>Строка-тумблер. <paramref name="id"/> нужен, когда подпись
+        /// повторяется у разных родителей («Контур» у стен и у объектов):
+        /// имена объектов сцены обязаны оставаться уникальными.</summary>
+        private Toggle AddToggleRow(Transform parent, ref float y, string label, bool value,
+            Action<bool> onChanged, string? id = null, int indentLevel = 0)
         {
-            var rowRect = UIFactory.CreateRect("RowTgl_" + label, parent);
+            string key = id ?? label;
+            var rowRect = UIFactory.CreateRect("RowTgl_" + key, parent);
+            rowRect.sizeDelta = new Vector2(ContentW, RowH);
+            rowRect.anchoredPosition = new Vector2(0, y);
+
+            var lbl = UIFactory.CreateLabel("Lbl_" + key, rowRect, label, 16,
+                new Vector2(-(ContentW - LabelW) * 0.5f + indentLevel * IndentPx, 0),
+                new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
+            _rowLabels[key] = lbl;
+
+            var toggle = CreateRightToggle("Tgl_" + key, rowRect, value, onChanged);
+
+            y -= RowStep;
+            return toggle;
+        }
+
+        /// <summary>Заголовок группы без собственного тумблера («Освещение»).</summary>
+        private void AddHeaderRow(Transform parent, ref float y, string label)
+        {
+            var rowRect = UIFactory.CreateRect("RowHdr_" + label, parent);
             rowRect.sizeDelta = new Vector2(ContentW, RowH);
             rowRect.anchoredPosition = new Vector2(0, y);
 
             UIFactory.CreateLabel("Lbl_" + label, rowRect, label, 16,
                 new Vector2(-(ContentW - LabelW) * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
 
-            var toggle = CreateRightToggle("Tgl_" + label, rowRect, value, onChanged);
+            y -= RowStep;
+        }
+
+        /// <summary>Строка-ползунок: подпись, сам ползунок и текущее значение
+        /// множителя справа («1.0×»), чтобы цифра была видна без перетаскивания.</summary>
+        private Slider AddSliderRow(Transform parent, ref float y, string label,
+            float value, Action<float> onChanged)
+        {
+            var rowRect = UIFactory.CreateRect("RowSld_" + label, parent);
+            rowRect.sizeDelta = new Vector2(ContentW, RowH);
+            rowRect.anchoredPosition = new Vector2(0, y);
+
+            UIFactory.CreateLabel("Lbl_" + label, rowRect, label, 16,
+                new Vector2(-(ContentW - LabelW) * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
+
+            var valueLabel = UIFactory.CreateLabel("Val_" + label, rowRect, FormatMultiplier(value), 16,
+                new Vector2(ContentW * 0.5f - 20, 0), new Vector2(40, RowH), TextAnchor.MiddleRight);
+
+            var slider = UIFactory.CreateSlider("Sld_" + label, rowRect,
+                KitchenSettings.MIN_INPUT_SPEED, KitchenSettings.MAX_INPUT_SPEED, value,
+                new Vector2(ContentW * 0.5f - ControlW * 0.5f - 20, 0), new Vector2(110, RowH),
+                v =>
+                {
+                    onChanged(v);
+                    if (valueLabel != null) valueLabel.text = FormatMultiplier(v);
+                });
 
             y -= RowStep;
-            return toggle;
+            return slider;
         }
+
+        private static string FormatMultiplier(float v) =>
+            v.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "×";
 
         private Toggle CreateRightToggle(string name, Transform parent, bool value, Action<bool> onChanged)
         {
@@ -387,6 +495,14 @@ namespace KitchenDesigner.Core.UI
         private TMP_InputField? _autoSaveIntervalField;
         private readonly Dictionary<string, TMPro.TextMeshProUGUI> _rowLabels = new();
 
+        private const string WallOutlineId = "Контур стен";
+        private const string ObjectOutlineId = "Контур объектов";
+
+        private Toggle? _wallOutlineToggle;
+        private Toggle? _lowerWallsToggle;
+        private Toggle? _hideOpeningsToggle;
+        private Toggle? _objectOutlineToggle;
+
         private void UpdateDependentStates()
         {
             var s = KitchenSettings.Instance;
@@ -394,6 +510,14 @@ namespace KitchenDesigner.Core.UI
             SetFieldEnabled(_gridStepField, "Шаг сетки", s.GridEnabled);
             SetFieldEnabled(_snapThresholdField, "Порог привязки", s.SnapEnabled);
             SetFieldEnabled(_autoSaveIntervalField, "Интервал автосохранения", s.AutoSave);
+
+            // В режиме «помещение» стены всегда целые — опускание там запрещено,
+            // а не просто игнорируется, поэтому тумблер гасим.
+            bool lowerAvailable = s.WallsEnabled && EditModeManager.Mode != EditMode.Room;
+            SetToggleEnabled(_wallOutlineToggle, WallOutlineId, s.WallsEnabled);
+            SetToggleEnabled(_lowerWallsToggle, "Опускать ближние стены", lowerAvailable);
+            SetToggleEnabled(_hideOpeningsToggle, "Скрывать окна и двери", lowerAvailable && s.LowerNearWalls);
+            SetToggleEnabled(_objectOutlineToggle, ObjectOutlineId, s.ObjectsVisible);
         }
 
         private void SetFieldEnabled(TMP_InputField? field, string labelKey, bool enabled)
@@ -402,7 +526,23 @@ namespace KitchenDesigner.Core.UI
             field.interactable = enabled;
             if (field.textComponent != null)
                 field.textComponent.color = enabled ? UIStyle.Text : UIStyle.TextDisabled;
-            if (_rowLabels.TryGetValue(labelKey, out var lbl))
+            SetLabelEnabled(labelKey, enabled);
+        }
+
+        private void SetToggleEnabled(Toggle? toggle, string labelKey, bool enabled)
+        {
+            if (toggle == null) return;
+            toggle.interactable = enabled;
+            // Галочка — акцентный квадрат (UIFactory.CreateCheckmark); гасим её
+            // цветом, а не подменяем на цвет текста.
+            if (toggle.graphic != null)
+                toggle.graphic.color = enabled ? UIStyle.Accent : UIStyle.TextDisabled;
+            SetLabelEnabled(labelKey, enabled);
+        }
+
+        private void SetLabelEnabled(string labelKey, bool enabled)
+        {
+            if (_rowLabels.TryGetValue(labelKey, out var lbl) && lbl != null)
                 lbl.color = enabled ? UIStyle.Text : UIStyle.TextDisabled;
         }
 
@@ -415,7 +555,11 @@ namespace KitchenDesigner.Core.UI
         public void SetVisible(bool visible)
         {
             if (_root != null) _root.SetActive(visible);
-            if (visible) SyncPhotoActiveToggle();
+            if (visible)
+            {
+                SyncPhotoActiveToggle();
+                UpdateDependentStates();
+            }
         }
 
         // ── Подсветка изменённых полей ──────────────────────

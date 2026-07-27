@@ -4,22 +4,27 @@
     {
       "type": "Label",
       "text": "Настройки",
-      "position": [0, 285]
+      "position": [0, 395]
     },
     {
       "type": "Button",
       "text": "Проект",
-      "position": [-160, 246]
+      "position": [-180, 356]
+    },
+    {
+      "type": "Button",
+      "text": "Управление",
+      "position": [-60, 356]
     },
     {
       "type": "Button",
       "text": "Фото режим",
-      "position": [0, 246]
+      "position": [60, 356]
     },
     {
       "type": "Button",
       "text": "О программе",
-      "position": [160, 246]
+      "position": [180, 356]
     },
     {
       "type": "Label",
@@ -33,12 +38,12 @@
     },
     {
       "type": "Label",
-      "text": "Контур (чёрные рёбра)",
+      "text": "Объекты",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Опускать ближние стены",
+      "text": "Освещение",
       "position": [-90, 0]
     },
     {
@@ -73,13 +78,38 @@
     },
     {
       "type": "Label",
+      "text": "Контур",
+      "position": [-70, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Контур",
+      "position": [-70, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Опускать ближние стены",
+      "position": [-70, 0]
+    },
+    {
+      "type": "Label",
       "text": "Порог привязки",
+      "position": [-70, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Скрыть источники света",
       "position": [-70, 0]
     },
     {
       "type": "Label",
       "text": "Шаг сетки",
       "position": [-70, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Скрывать окна и двери",
+      "position": [-50, 0]
     },
     {
       "type": "InputField",
@@ -116,7 +146,19 @@
     },
     {
       "type": "Toggle",
-      "label": "Tgl_Контур (чёрные рёбра)",
+      "label": "Tgl_Контур объектов",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Контур стен",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Объекты",
       "isOn": true,
       "position": [224, 0]
     },
@@ -152,6 +194,18 @@
     },
     {
       "type": "Toggle",
+      "label": "Tgl_Скрывать окна и двери",
+      "isOn": false,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Скрыть источники света",
+      "isOn": false,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
       "label": "Tgl_Стены",
       "isOn": true,
       "position": [224, 0]
@@ -164,7 +218,7 @@
     {
       "type": "Button",
       "text": "Закрыть",
-      "position": [0, -298]
+      "position": [0, -396]
     }
   ]
 }

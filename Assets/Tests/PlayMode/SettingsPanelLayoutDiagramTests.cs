@@ -17,7 +17,7 @@ using KitchenDesigner.Tests;
 public class SettingsPanelLayoutDiagramTests
 {
     private const int PanelW = 520;
-    private const int PanelH = 680;
+    private const int PanelH = 900;
 
     private GameObject? _canvasGo;
     private GameObject? _camGo;

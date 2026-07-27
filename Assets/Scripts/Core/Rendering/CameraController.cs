@@ -50,6 +50,17 @@ namespace KitchenDesigner.Core
             }
         }
 
+        // Множители из настроек «Управление». Без ассета настроек (юнит-тесты,
+        // ранний старт) работаем как раньше — с коэффициентом 1.
+        private static float MouseSensitivity => KitchenSettings.Instance != null
+            ? KitchenSettings.Instance.MouseSensitivity : 1f;
+
+        private static float WasdSpeed => KitchenSettings.Instance != null
+            ? KitchenSettings.Instance.WasdSpeed : 1f;
+
+        private static float ArrowSpeed => KitchenSettings.Instance != null
+            ? KitchenSettings.Instance.ArrowSpeed : 1f;
+
         private void Awake()
         {
             Instance = this;
@@ -137,8 +148,9 @@ namespace KitchenDesigner.Core
             if (_isOrbiting)
             {
                 Vector3 delta = Input.mousePosition - _lastMouse;
-                _angleY += delta.x * _orbitSpeed * 0.1f;
-                _angleX -= delta.y * _orbitSpeed * 0.1f;
+                float sens = MouseSensitivity;
+                _angleY += delta.x * _orbitSpeed * 0.1f * sens;
+                _angleX -= delta.y * _orbitSpeed * 0.1f * sens;
                 _angleX = Mathf.Clamp(_angleX, -89f, 89f);
                 _lastMouse = Input.mousePosition;
             }
@@ -146,18 +158,19 @@ namespace KitchenDesigner.Core
             if (_isPanning)
             {
                 Vector3 delta = Input.mousePosition - _lastMouse;
+                float pan = _panSpeed * (Dist * 0.1f) * MouseSensitivity;
                 if (KitchenSettings.Instance.CameraPanFree)
                 {
                     Vector3 right = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.right;
                     Vector3 up = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.up;
-                    _target -= (right * delta.x + up * delta.y) * _panSpeed * (Dist * 0.1f);
+                    _target -= (right * delta.x + up * delta.y) * pan;
                 }
                 else
                 {
                     Vector3 forward = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.forward;
                     Vector3 right = Quaternion.Euler(0, _angleY, 0) * Vector3.right;
                     forward.y = 0; forward.Normalize();
-                    _target -= (right * delta.x + forward * delta.y) * _panSpeed * (Dist * 0.1f);
+                    _target -= (right * delta.x + forward * delta.y) * pan;
                 }
                 _lastMouse = Input.mousePosition;
             }
@@ -243,7 +256,7 @@ namespace KitchenDesigner.Core
         public void ApplyWASDMovement(Vector2 input, float dt)
         {
             if (dt < 1e-6f) return;
-            float speed = _moveSpeed * Dist * 0.25f * dt;
+            float speed = _moveSpeed * Dist * 0.25f * dt * WasdSpeed;
 
             Vector3 fwd = Quaternion.Euler(0, _angleY, 0) * Vector3.forward;
             Vector3 right = Quaternion.Euler(0, _angleY, 0) * Vector3.right;
@@ -268,7 +281,7 @@ namespace KitchenDesigner.Core
         public void ApplyArrowOrbit(Vector2 input, float dt)
         {
             if (dt < 1e-6f) return;
-            float speed = _keyboardOrbitSpeed * dt;
+            float speed = _keyboardOrbitSpeed * dt * ArrowSpeed;
 
             _angleY += input.x * speed;
             _angleX += input.y * speed;

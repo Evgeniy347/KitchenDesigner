@@ -4,22 +4,27 @@
     {
       "type": "Label",
       "text": "Настройки",
-      "position": [0, 285]
+      "position": [0, 395]
     },
     {
       "type": "Button",
       "text": "Проект",
-      "position": [-160, 246]
+      "position": [-180, 356]
+    },
+    {
+      "type": "Button",
+      "text": "Управление",
+      "position": [-60, 356]
     },
     {
       "type": "Button",
       "text": "Фото режим",
-      "position": [0, 246]
+      "position": [60, 356]
     },
     {
       "type": "Button",
       "text": "О программе",
-      "position": [160, 246]
+      "position": [180, 356]
     },
     {
       "type": "Label",
@@ -149,7 +154,7 @@
     {
       "type": "Button",
       "text": "Закрыть",
-      "position": [0, -298]
+      "position": [0, -396]
     }
   ]
 }

@@ -38,10 +38,25 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _autoSaveInterval = 60;
         [SerializeField] private bool _spatialGrid = false;
         [SerializeField] private bool _windowedMode = true;
-        [SerializeField] private bool _edgeOutline = true;
+        // Контур: раздельно для стен и для прочих объектов — стены обводить
+        // обычно не нужно, а детали нужно (и наоборот в режиме «помещение»).
+        [SerializeField] private bool _edgeOutline = true;      // контур объектов
+        [SerializeField] private bool _wallOutline = true;      // контур стен
         [SerializeField] private bool _wallsEnabled = true;
         [SerializeField] private bool _lowerNearWalls = true;
+        [SerializeField] private bool _hideOpeningsOnLoweredWalls = false;
+        [SerializeField] private bool _objectsVisible = true;
+        [SerializeField] private bool _hideLightSources = false;
         [SerializeField] private bool _cameraPanFree = false;
+
+        // ── Управление ─────────────────────────────────────
+        // Множители к базовым скоростям камеры (1 = как было до настройки).
+        [SerializeField] private float _mouseSensitivity = 1f;
+        [SerializeField] private float _wasdSpeed = 1f;
+        [SerializeField] private float _arrowSpeed = 1f;
+
+        public const float MIN_INPUT_SPEED = 0.1f;
+        public const float MAX_INPUT_SPEED = 3f;
 
         // ── Фоторежим ──────────────────────────────────────
         // Активность фоторежима — рантайм-состояние (PhotoMode.Active), НЕ хранится:
@@ -111,10 +126,18 @@ namespace KitchenDesigner.Core
             set => _windowedMode = value;
         }
 
+        /// <summary>Контур (чёрные рёбра) у объектов — всё, кроме стен.</summary>
         public bool EdgeOutline
         {
             get => _edgeOutline;
             set => _edgeOutline = value;
+        }
+
+        /// <summary>Контур (чёрные рёбра) у стен. Подопция «Стены».</summary>
+        public bool WallOutline
+        {
+            get => _wallOutline;
+            set => _wallOutline = value;
         }
 
         public bool WallsEnabled
@@ -129,10 +152,54 @@ namespace KitchenDesigner.Core
             set => _lowerNearWalls = value;
         }
 
+        /// <summary>Прятать окна и двери у ОПУЩЕННЫХ стен. Вырез в стене
+        /// остаётся — прячется только сама створка/рама.</summary>
+        public bool HideOpeningsOnLoweredWalls
+        {
+            get => _hideOpeningsOnLoweredWalls;
+            set => _hideOpeningsOnLoweredWalls = value;
+        }
+
+        /// <summary>Показывать «объекты» — всё, кроме стен, пола, окон и дверей.</summary>
+        public bool ObjectsVisible
+        {
+            get => _objectsVisible;
+            set => _objectsVisible = value;
+        }
+
+        /// <summary>Прятать плафоны источников света. Сам свет продолжает
+        /// гореть — за него отвечает кнопка «Свет» в тулбаре.</summary>
+        public bool HideLightSources
+        {
+            get => _hideLightSources;
+            set => _hideLightSources = value;
+        }
+
         public bool CameraPanFree
         {
             get => _cameraPanFree;
             set => _cameraPanFree = value;
+        }
+
+        /// <summary>Чувствительность мыши (орбита и панорамирование), множитель.</summary>
+        public float MouseSensitivity
+        {
+            get => _mouseSensitivity;
+            set => _mouseSensitivity = Mathf.Clamp(value, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
+        }
+
+        /// <summary>Скорость перемещения камеры на WASD, множитель.</summary>
+        public float WasdSpeed
+        {
+            get => _wasdSpeed;
+            set => _wasdSpeed = Mathf.Clamp(value, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
+        }
+
+        /// <summary>Скорость орбиты на стрелках ←→↑↓, множитель.</summary>
+        public float ArrowSpeed
+        {
+            get => _arrowSpeed;
+            set => _arrowSpeed = Mathf.Clamp(value, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
         }
 
         public PhotoQualityPreset PhotoQuality
@@ -213,9 +280,16 @@ namespace KitchenDesigner.Core
             _spatialGrid = false;
             _windowedMode = true;
             _edgeOutline = true;
+            _wallOutline = true;
             _wallsEnabled = true;
             _lowerNearWalls = true;
+            _hideOpeningsOnLoweredWalls = false;
+            _objectsVisible = true;
+            _hideLightSources = false;
             _cameraPanFree = false;
+            _mouseSensitivity = 1f;
+            _wasdSpeed = 1f;
+            _arrowSpeed = 1f;
             _photoQuality = PhotoQualityPreset.High;
             _photoShadows = true;
             _photoSoftShadows = true;
@@ -242,9 +316,16 @@ namespace KitchenDesigner.Core
                 spatialGrid = _spatialGrid,
                 windowedMode = _windowedMode,
                 edgeOutline = _edgeOutline,
+                wallOutline = _wallOutline,
                 wallsEnabled = _wallsEnabled,
                 lowerNearWalls = _lowerNearWalls,
+                hideOpeningsOnLoweredWalls = _hideOpeningsOnLoweredWalls,
+                objectsVisible = _objectsVisible,
+                hideLightSources = _hideLightSources,
                 cameraPanFree = _cameraPanFree,
+                mouseSensitivity = _mouseSensitivity,
+                wasdSpeed = _wasdSpeed,
+                arrowSpeed = _arrowSpeed,
                 photoQuality = (int)_photoQuality,
                 photoShadows = _photoShadows,
                 photoSoftShadows = _photoSoftShadows,
@@ -271,9 +352,16 @@ namespace KitchenDesigner.Core
             _spatialGrid = data.spatialGrid;
             _windowedMode = data.windowedMode;
             _edgeOutline = data.edgeOutline;
+            _wallOutline = data.wallOutline;
             _wallsEnabled = data.wallsEnabled;
             _lowerNearWalls = data.lowerNearWalls;
+            _hideOpeningsOnLoweredWalls = data.hideOpeningsOnLoweredWalls;
+            _objectsVisible = data.objectsVisible;
+            _hideLightSources = data.hideLightSources;
             _cameraPanFree = data.cameraPanFree;
+            _mouseSensitivity = Mathf.Clamp(data.mouseSensitivity, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
+            _wasdSpeed = Mathf.Clamp(data.wasdSpeed, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
+            _arrowSpeed = Mathf.Clamp(data.arrowSpeed, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
             _photoQuality = (PhotoQualityPreset)Mathf.Clamp(data.photoQuality, 0, 3);
             _photoShadows = data.photoShadows;
             _photoSoftShadows = data.photoSoftShadows;
@@ -301,9 +389,16 @@ namespace KitchenDesigner.Core
                 spatialGrid = _spatialGrid,
                 windowedMode = _windowedMode,
                 edgeOutline = _edgeOutline,
+                wallOutline = _wallOutline,
                 wallsHidden = !_wallsEnabled,
                 lowerNearWalls = _lowerNearWalls,
+                hideOpeningsOnLoweredWalls = _hideOpeningsOnLoweredWalls,
+                objectsVisible = _objectsVisible,
+                hideLightSources = _hideLightSources,
                 cameraPanFree = _cameraPanFree,
+                mouseSensitivity = _mouseSensitivity,
+                wasdSpeed = _wasdSpeed,
+                arrowSpeed = _arrowSpeed,
                 photoQuality = (int)_photoQuality,
                 photoShadows = _photoShadows,
                 photoSoftShadows = _photoSoftShadows,
@@ -331,9 +426,16 @@ namespace KitchenDesigner.Core
             public bool spatialGrid;
             public bool windowedMode;
             public bool edgeOutline;
+            public bool wallOutline;
             public bool wallsHidden;   // инверсия: старые сейвы (false) → стены включены
             public bool lowerNearWalls;
+            public bool hideOpeningsOnLoweredWalls;
+            public bool objectsVisible;
+            public bool hideLightSources;
             public bool cameraPanFree;
+            public float mouseSensitivity;
+            public float wasdSpeed;
+            public float arrowSpeed;
             public int photoQuality;
             public bool photoShadows;
             public bool photoSoftShadows;
