@@ -59,7 +59,7 @@ export const GEN_TOOLS: GenTool[] = [
   {
     name: "get",
     title: "Get compact corner geometry",
-    description: "Fetch exact names with selectable fields. Defaults to compact v2 geometry: name, kind, corner anchor in MM, size [width,depth,height] MM, rotY, violations and module. No verbose legacy fields.",
+    description: "Fetch exact names with selectable fields. Defaults to compact v2 geometry: name, kind, corner anchor in MM ([x,z] of the MINIMUM world corner, rotation-aware), size [width,depth,height] MM (the element\u0027s OWN dimensions \u2014 combine with rotY for rotated parts), violations and module. No verbose legacy fields.",
     kind: "read",
     inputSchema: {
       names: z.array(z.string().min(1)).min(1).describe("Exact element names."),

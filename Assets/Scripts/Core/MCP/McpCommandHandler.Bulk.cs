@@ -247,7 +247,11 @@ namespace KitchenDesigner.Core.MCP
             int elementCount = 0;
             foreach (var e in all)
             {
-                if (e == null || e.GetComponent<BasePlate>() != null) continue;
+                // Deletion deactivates rather than destroys (undo keeps the object
+                // around), so an inactive element is a DELETED one — it must not
+                // show up in the overview. ElementSelector filters the same way.
+                if (e == null || !e.gameObject.activeInHierarchy) continue;
+                if (e.GetComponent<BasePlate>() != null) continue;
                 elementCount++;
                 var t = ElementSelector.TypeOf(e);
                 typeCounts[t] = typeCounts.TryGetValue(t, out var n) ? n + 1 : 1;
@@ -325,10 +329,13 @@ namespace KitchenDesigner.Core.MCP
                 if (e == null) { missing.Add(name); continue; }
                 var row = new Dictionary<string, object?>();
                 var wall = e.GetComponent<Wall>();
-                Vector3 center = wall != null ? wall.FullPosition : e.transform.position;
-                Vector3 halfMm = (Vector3)e.DimensionsMM * 0.5f;
-                Vector3 anchor = center + e.transform.rotation *
-                    (new Vector3(-halfMm.x, -halfMm.y, -halfMm.z) * AppConstants.MM_TO_UNITS);
+                // The anchor is the MINIMUM world corner, so it must come from the
+                // world AABB. Rotating the element's own -half corner instead lands
+                // on whichever corner the rotation happens to send there: at rotY=90
+                // that is the element's MAXIMUM Z, which read as a 900 mm error on a
+                // window and broke corner-anchored reasoning.
+                var aabb = ComputeAABB(e.GetVertices());
+                Vector3 anchor = new Vector3(aabb.minX, aabb.minY, aabb.minZ);
                 if (fields.Contains("name")) row["name"] = e.PartName;
                 if (fields.Contains("kind")) row["kind"] = ElementSelector.TypeOf(e);
                 if (fields.Contains("anchor")) row["anchor"] = new[]

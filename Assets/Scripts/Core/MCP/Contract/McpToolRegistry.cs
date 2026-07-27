@@ -36,7 +36,7 @@ namespace KitchenDesigner.Core.MCP.Contract
                 "COMPACT hierarchy for 'looking around' cheaply (use this before the verbose get_all_elements): modules (named groups) with member names + world bbox, loose element names, and per-type counts. Then fetch details for a few names with get_elements.",
                 McpToolKind.Read, null),
             new McpToolDef("get", "Get compact corner geometry",
-                "Fetch exact names with selectable fields. Defaults to compact v2 geometry: name, kind, corner anchor in MM, size [width,depth,height] MM, rotY, violations and module. No verbose legacy fields.",
+                "Fetch exact names with selectable fields. Defaults to compact v2 geometry: name, kind, corner anchor in MM ([x,z] of the MINIMUM world corner, rotation-aware), size [width,depth,height] MM (the element's OWN dimensions — combine with rotY for rotated parts), violations and module. No verbose legacy fields.",
                 McpToolKind.Read, typeof(ParamsGetCompact)),
             new McpToolDef("preview_floorplan", "Preview a floorplan declaration",
                 "Validate a declarative floorplan without changing the scene and return a deterministic top-down SVG plus compact counts. Uses the exact same compiler as apply_floorplan.",

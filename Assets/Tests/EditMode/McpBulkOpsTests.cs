@@ -115,6 +115,41 @@ public class McpBulkOpsTests
     }
 
     [Test]
+    public void GetSceneTree_IgnoresDeletedElements()
+    {
+        Make("kept", Vector3.zero, new Vector3Int(600, 400, 18));
+        var gone = Make("gone", Vector3.zero, new Vector3Int(600, 400, 18));
+        // Deletion deactivates instead of destroying, so undo can bring it back.
+        gone.gameObject.SetActive(false);
+
+        var resp = _handler!.Handle(MakeReq("get_scene_tree", new { }));
+        var jo = Newtonsoft.Json.Linq.JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(resp.data));
+
+        Assert.AreEqual(1, (int)jo["elementCount"]!, "удалённый элемент не считается");
+        var loose = ((Newtonsoft.Json.Linq.JArray)jo["loose"]!).ToObject<List<string>>()!;
+        CollectionAssert.DoesNotContain(loose, "gone");
+        CollectionAssert.Contains(loose, "kept");
+    }
+
+    [Test]
+    public void GetCompact_AnchorIsMinimumWorldCorner_EvenWhenRotated()
+    {
+        // A 900 mm board turned 90 deg: its world footprint runs along Z, so the
+        // anchor must be the minimum Z corner regardless of which local corner
+        // the rotation happens to send there.
+        var e = Make("turned", new Vector3(1f, 0f, 2f), new Vector3Int(900, 1200, 100));
+        e.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+
+        var resp = _handler!.Handle(MakeReq("get", new { names = new[] { "turned" } }));
+        Assert.AreEqual("result", resp.type);
+        var jo = Newtonsoft.Json.Linq.JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(resp.data));
+        var anchor = ((Newtonsoft.Json.Linq.JArray)jo["elements"]![0]!["anchor"]!).ToObject<List<int>>()!;
+
+        Assert.AreEqual(950, anchor[0], 1, "x: центр 1000 минус половина толщины 50");
+        Assert.AreEqual(1550, anchor[1], 1, "z: центр 2000 минус половина длины 450");
+    }
+
+    [Test]
     public void GetSceneTree_ReportsModulesLooseAndCounts()
     {
         var a = Make("B4_side_L", Vector3.zero, new Vector3Int(18, 720, 540));
