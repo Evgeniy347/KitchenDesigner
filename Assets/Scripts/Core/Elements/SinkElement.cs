@@ -333,7 +333,44 @@ namespace KitchenDesigner.Core
         /// перегородку, ящик? Считаем в осях столешницы: чужой габарит переводим
         /// в её систему координат и смотрим, попадает ли он в прямоугольник проёма
         /// и в слой, который занимает чаша.</summary>
-        public bool CutoutBlocked(KitchenElement part, int offX, int offY)
+        public bool CutoutBlocked(KitchenElement part, int offX, int offY) =>
+            FirstBlocker(part, offX, offY) != null;
+
+        /// <summary>Почему мойка (не) садится на эту деталь — все проверки захвата
+        /// одной строкой. Нужна и тестам, и разбору сцены руками.</summary>
+        public string DescribeCatch(KitchenElement part)
+        {
+            if (!IsSuitableHost(part)) return "деталь не годится под мойку";
+            var (offX, offY, height) = LocalPose(part);
+            bool over = IsOverFootprint(part, offX, offY);
+            int cx = offX, cy = offY;
+            ClampOffsets(part, ref cx, ref cy);
+            return $"height={height:F1}мм (полоса {-SNAP_RELEASE_MM}..{SNAP_CATCH_MM}) " +
+                   $"over={over} off=({offX},{offY})→({cx},{cy}) " +
+                   $"blocker={FirstBlocker(part, cx, cy) ?? "-"}";
+        }
+
+        /// <summary>Что мойке действительно мешает — КОРПУСНЫЕ детали: боковины,
+        /// перегородки, стойки, полки, стены. Всё, что висит на коробе снаружи
+        /// или выезжает из него, помехой не считается:
+        ///   • фасад и дверца стоят перед коробом, чаша уходит ЗА них — иначе
+        ///     фасад тумбы, пересекающий проём на 8 мм, запрещал мойку целиком
+        ///     (ровно это и происходило на реальном проекте);
+        ///   • ящик выдвигается, его короб не капитальный;
+        ///   • ДВП/ХДФ — тонкая задняя стенка;
+        ///   • лампа, пол, подложка и другие мойки — не конструктив.</summary>
+        private static bool IsObstacle(KitchenElement el)
+        {
+            if (el is FacadeElement || el is DoorElement || el is WindowElement) return false;
+            if (el is DrawerElement || el is PanelElement) return false;
+            if (el is SinkElement || el is LightSourceElement || el is FloorElement) return false;
+            return el.GetComponent<BasePlate>() == null;
+        }
+
+        /// <summary>Первая деталь, мешающая проёму в этом месте (или null).
+        /// Отдельным методом — чтобы в диагностике было видно имя виновника,
+        /// а не только факт «нельзя».</summary>
+        public string? FirstBlocker(KitchenElement part, int offX, int offY)
         {
             float toU = AppConstants.MM_TO_UNITS;
             var pt = part.transform;
@@ -352,11 +389,7 @@ namespace KitchenDesigner.Core
             var inv = Quaternion.Inverse(pt.rotation);
             foreach (var el in PartRegistry.GetAll())
             {
-                if (el == null || el == this || el == part) continue;
-                // Декор и подложки препятствием не считаются, чужие мойки — тоже
-                // (две мойки рядом разводит клампинг, а не блокировка).
-                if (el is SinkElement || el is LightSourceElement || el is FloorElement) continue;
-                if (el.GetComponent<BasePlate>() != null) continue;
+                if (el == null || el == this || el == part || !IsObstacle(el)) continue;
 
                 var verts = el.GetVertices();
                 if (verts.Length == 0) continue;
@@ -374,9 +407,9 @@ namespace KitchenDesigner.Core
                 if (max[a] <= x0 + eps || min[a] >= x1 - eps) continue;
                 if (max[b] <= y0 + eps || min[b] >= y1 - eps) continue;
                 if (max[up] <= z0 + eps || min[up] >= z1 - eps) continue;
-                return true;
+                return el.PartName;
             }
-            return false;
+            return null;
         }
 
         private void AlignToPart(KitchenElement part)
