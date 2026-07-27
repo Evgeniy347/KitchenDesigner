@@ -30,10 +30,14 @@ namespace KitchenDesigner.Core
         // ЛКМ нажата на детали, но ещё не решено клик это или drag.
         private bool _pressed;
         private Vector2 _pressMouse;
+        private float _pressTime;
         // Пока курсор не сместится дальше этого порога (в пикселях) — это клик
         // (выделение), а не перетаскивание. Только после порога
         // включается drag с зелёной/красной тонировкой.
         private const float DragStartPixels = 6f;
+        // Задержка (сек) перед активацией перетаскивания: защита от ложных
+        // срабатываний при клике (дрожание мыши на момент нажатия кнопки).
+        private const float DragStartSeconds = 0.15f;
 
         private enum AxisLock { None, X, Z }
 
@@ -113,6 +117,7 @@ namespace KitchenDesigner.Core
             _target = element;
             _pressed = true;
             _pressMouse = Input.mousePosition;
+            _pressTime = Time.unscaledTime;
             _startPosition = element.transform.position;
             _startRotation = element.transform.rotation;
             _wasMoved = false;
@@ -128,6 +133,7 @@ namespace KitchenDesigner.Core
 
         private bool PressMovedEnough()
         {
+            if (Time.unscaledTime - _pressTime < DragStartSeconds) return false;
             Vector2 now = Input.mousePosition;
             return (now - _pressMouse).magnitude > DragStartPixels;
         }
