@@ -192,6 +192,7 @@ namespace KitchenDesigner.Core.MCP
         public int objectCount;
         public bool isPlaying;
         public string platform = string.Empty;
+        public string projectInstructions = string.Empty;
     }
 
     // ── Новые типы для пространственной информации ─────────────────────

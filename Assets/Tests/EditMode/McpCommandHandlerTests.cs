@@ -14,6 +14,7 @@ public class McpCommandHandlerTests
     {
         _handler = new McpCommandHandler();
         PartRegistry.Clear();
+        ProjectInstructions.Reset();
     }
 
     [TearDown]
@@ -26,6 +27,7 @@ public class McpCommandHandlerTests
             if (el != null) Object.DestroyImmediate(el.gameObject);
         PartRegistry.Clear();
         MaterialCatalog.ClearDynamic();
+        ProjectInstructions.Reset();
     }
 
     private McpRequest MakeReq(string method, object data)
@@ -63,6 +65,68 @@ public class McpCommandHandlerTests
         var el = PartRegistry.GetAll().Find(e => e.PartName == "TestBoard");
         Assert.NotNull(el);
         Assert.AreEqual("TestBoard", el.PartName);
+    }
+
+    [Test]
+    public void CreateFloor_MakesSizedFloorElement_NotBasePlate()
+    {
+        var resp = _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new[] { new { name = "RoomFloor", type = "floor", width = 3000, height = 18, depth = 4000, x = 0f, y = -0.009f, z = 0f } }
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        var el = PartRegistry.GetAll().Find(e => e.PartName == "RoomFloor");
+        Assert.NotNull(el, "floor element created");
+        Assert.IsInstanceOf<FloorElement>(el, "type floor → FloorElement (не BasePlate-синглтон)");
+        Assert.AreEqual(3000, el!.DimensionsMM.x);
+        Assert.AreEqual(4000, el.DimensionsMM.z);
+    }
+
+    [Test]
+    public void CreateWindow_SnapsToNearbyWall_OnMcpCreate()
+    {
+        // Стена (N-S, тонкая по X) + окно рядом: MCP-создание должно привязать
+        // окно к стене (раньше проём не резался — привязка была только мышью).
+        _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new[] { new { name = "TestWall", type = "wall", width = 100, height = 2700, depth = 3000, x = 0f, y = 1.35f, z = 0f } }
+        }));
+        var resp = _handler.Handle(MakeReq("create_elements", new
+        {
+            items = new[] { new { name = "TestWin", type = "window", width = 900, height = 1200, depth = 100, x = 0f, y = 1.2f, z = 0f } }
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        var win = PartRegistry.GetAll().Find(e => e.PartName == "TestWin") as WindowElement;
+        Assert.NotNull(win, "window created");
+        Assert.AreEqual("TestWall", win!.AttachedWallName, "окно привязалось к стене при MCP-создании");
+    }
+
+    [Test]
+    public void SetProjectInstructions_UpdatesHolder_AndGetReturnsIt()
+    {
+        const string text = "Несущие 250мм, перегородки 100мм. ЛДСП 16мм.";
+        var setResp = _handler!.Handle(MakeReq("set_project_instructions", new { text }));
+        Assert.AreEqual("result", setResp.type);
+        Assert.AreEqual(text, ProjectInstructions.Text);
+
+        var getResp = _handler.Handle(MakeReq("get_project_instructions", new { }));
+        Assert.AreEqual("result", getResp.type);
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(getResp.data);
+        var jo = Newtonsoft.Json.Linq.JObject.Parse(json);
+        Assert.AreEqual(text, jo["text"]!.ToString());
+    }
+
+    [Test]
+    public void GetStatus_IncludesProjectInstructions()
+    {
+        ProjectInstructions.Text = "тест-инструкции";
+        var resp = _handler!.Handle(MakeReq("get_status", new { }));
+        Assert.AreEqual("result", resp.type);
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(resp.data);
+        var jo = Newtonsoft.Json.Linq.JObject.Parse(json);
+        Assert.AreEqual("тест-инструкции", jo["projectInstructions"]!.ToString());
     }
 
     [Test]

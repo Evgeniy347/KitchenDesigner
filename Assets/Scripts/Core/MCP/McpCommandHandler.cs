@@ -97,6 +97,14 @@ namespace KitchenDesigner.Core.MCP
                     case "export_specification_csv": return HandleExportCsv(request);
                     case "get_console_logs": return HandleConsoleLogs(request);
                     case "get_settings": return HandleGetSettings(request);
+                    case "get_project_instructions": return HandleGetProjectInstructions(request);
+                    case "set_project_instructions": return HandleSetProjectInstructions(request);
+
+                    // ── v2: массовые/реляционные операции (→ .Bulk.cs) ──
+                    case "get_scene_tree": return HandleGetSceneTree(request);
+                    case "set_attr": return HandleSetAttr(request);
+                    case "move": return HandleMove(request);
+                    case "resize_module": return HandleResizeModule(request);
                     case "set_setting": return HandleSetSetting(request);
                     case "set_snap_verbose": return HandleSetSnapVerbose(request);
                     case "take_screenshot": return HandleTakeScreenshot(request);

@@ -359,6 +359,48 @@ namespace KitchenDesigner.Core.MCP.Contract
     }
 
     [Serializable]
+    public class ParamsSetProjectInstructions
+    {
+        [McpParam("New free-text project instructions (conventions: wall thicknesses, board thickness, gaps...). Replaces the whole text. Empty string clears it.", Required = true)]
+        public string text = "";
+    }
+
+    // ── v2: массовые/реляционные операции ────────────────────────────────────
+
+    [Serializable]
+    public class ParamsSetAttr
+    {
+        [McpParam("Selector over the scene. Space-separated clauses (AND): name mask 'B4_*', 'name:PAT', 'type:board|wall|floor|window|door|drawer|facade|assembled_facade|radial_shelf|panel|table|pillar|light', 'module:NAME', 'thickness==18' (also width/height/depth with == != >= <= > <), 'all_boards', 'all_modules', '*'.", Required = true)]
+        public string selector = "";
+        [McpParam("New thickness (dimZ) in MM for every matched board (e.g. change all 18 to 16).")] public int? thickness;
+        [McpParam("New width (dimX) in MM.")] public int? width;
+        [McpParam("New height (dimY) in MM.")] public int? height;
+        [McpParam("New depth (dimZ) in MM.")] public int? depth;
+        [McpParam("Material decor id/name to apply to all matched (see list_materials).")] public string? material;
+        [McpParam("Lock (true) / unlock (false) all matched.")] public bool? locked;
+    }
+
+    [Serializable]
+    public class ParamsMove
+    {
+        [McpParam("Selector (see set_attr).", Required = true)] public string selector = "";
+        [McpParam("Shift along world X in MM.")] public float dx;
+        [McpParam("Shift along world Y in MM.")] public float dy;
+        [McpParam("Shift along world Z in MM.")] public float dz;
+    }
+
+    [Serializable]
+    public class ParamsResizeModule
+    {
+        [McpParam("Module = exact group/module name (see get_modules).", Required = true)]
+        public string module = "";
+        [McpParam("World axis to resize along.", Required = true, Enum = new[] { "x", "y", "z" })]
+        public string axis = "x";
+        [McpParam("Delta in MM: positive grows toward +axis, negative shrinks. The near side stays fixed; the server moves the far side and stretches spanning boards.", Required = true)]
+        public float delta_mm;
+    }
+
+    [Serializable]
     public class ParamsSetSetting
     {
         [McpParam("Setting key.", Required = true, Enum = new[] { "lower_near_walls", "snap_enabled", "grid_enabled", "walls_enabled" })]

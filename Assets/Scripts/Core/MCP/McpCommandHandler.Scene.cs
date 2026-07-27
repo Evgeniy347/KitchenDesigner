@@ -25,7 +25,8 @@ namespace KitchenDesigner.Core.MCP
                 sceneName = activeScene.name,
                 objectCount = activeScene.isLoaded ? activeScene.rootCount : 0,
                 isPlaying = Application.isPlaying,
-                platform = Application.platform.ToString()
+                platform = Application.platform.ToString(),
+                projectInstructions = ProjectInstructions.Text
             });
         }
 

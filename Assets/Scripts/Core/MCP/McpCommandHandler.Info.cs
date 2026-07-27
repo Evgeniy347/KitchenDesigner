@@ -62,6 +62,21 @@ namespace KitchenDesigner.Core.MCP
             });
         }
 
+        private McpResponse HandleGetProjectInstructions(McpRequest req)
+        {
+            return McpResponse.Result(req.id, new { text = ProjectInstructions.Text });
+        }
+
+        private McpResponse HandleSetProjectInstructions(McpRequest req)
+        {
+            var p = req.Params?.ToObjectStrict<ParamsSetProjectInstructions>();
+            if (p == null)
+                return McpResponse.Error(req.id, -32602, "text required");
+            ProjectInstructions.Text = p.text ?? "";
+            Debug.Log($"[MCP] Project instructions updated ({ProjectInstructions.Text.Length} chars)");
+            return McpResponse.Result(req.id, new { ok = true });
+        }
+
         private McpResponse HandleSetSetting(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsSetSetting>();
