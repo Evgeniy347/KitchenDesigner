@@ -13023,82 +13023,6 @@
             "grooves": []
         },
         {
-            "name": "A4_side_R_1",
-            "dimensionsMM": [
-                337,
-                600,
-                18
-            ],
-            "position": [
-                1.290000081062317,
-                0.7600000500679016,
-                -1.2890000343322755
-            ],
-            "rotation": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "movable": true,
-            "isWall": false,
-            "wallKind": "",
-            "wallEndShape": [],
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "groupId": 0,
-            "materialId": "default",
-            "legsMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": false,
-            "drawerSystem": 0,
-            "drawerType": 0,
-            "drawerNominalLength": 350,
-            "drawerColor": 0,
-            "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "floorPolygonXZ": [],
-            "isLightSource": false,
-            "lightTemperatureK": 3000,
-            "lightPowerW": 9,
-            "lightDiffusionPct": 50,
-            "lightUpPct": 8,
-            "lightBeamDeg": 150,
-            "isPanel": false,
-            "grooves": []
-        },
-        {
             "name": "fake-oven",
             "dimensionsMM": [
                 596,
@@ -13133,7 +13057,7 @@
             "materialId": "default",
             "legsMaterialId": "default",
             "transparent": false,
-            "doorMode": 12,
+            "doorMode": 3,
             "doorOpen": false,
             "assembled": true,
             "assembledFill": 1,
@@ -13209,11 +13133,315 @@
             "materialId": "default",
             "legsMaterialId": "default",
             "transparent": false,
-            "doorMode": 12,
+            "doorMode": 1,
             "doorOpen": false,
             "assembled": true,
             "assembledFill": 1,
             "grooveCount": 1,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "A4_shelf_1",
+            "dimensionsMM": [
+                540,
+                564,
+                16
+            ],
+            "position": [
+                1.315000057220459,
+                1.068000078201294,
+                -1.5620001554489136
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "A4_shelf_2",
+            "dimensionsMM": [
+                540,
+                564,
+                16
+            ],
+            "position": [
+                1.315000057220459,
+                1.4410001039505005,
+                -1.5620001554489136
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "A4_shelf_3",
+            "dimensionsMM": [
+                540,
+                564,
+                16
+            ],
+            "position": [
+                1.315000057220459,
+                1.7458486557006837,
+                -1.5620001554489136
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "grooves": []
+        },
+        {
+            "name": "A4_shelf_4",
+            "dimensionsMM": [
+                540,
+                564,
+                16
+            ],
+            "position": [
+                1.315000057220459,
+                2.0321786403656008,
+                -1.5620002746582032
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
             "cornerRadius": 0,
             "isDrawer": false,
             "drawerSystem": 0,
@@ -13338,12 +13566,12 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 1.246143102645874,
-        "targetY": 0.00821645837277174,
-        "targetZ": -3.815068244934082,
-        "angleX": 27.503347396850587,
-        "angleY": -223.6650390625,
-        "distance": 4.541077136993408,
+        "targetX": 0.8451033234596252,
+        "targetY": 0.6518979072570801,
+        "targetZ": -3.155693769454956,
+        "angleX": 24.575307846069337,
+        "angleY": 139.12673950195313,
+        "distance": 4.44107723236084,
         "photoDistance": 2.200000047683716
     },
     "handleMode": "Move",
@@ -44888,330 +45116,6 @@
         },
         {
             "type": "move",
-            "description": "Move A4_side_R_1",
-            "elementIndex": 168,
-            "posBefore": [
-                1.415000081062317,
-                0.46000000834465029,
-                -1.2710000276565552
-            ],
-            "posAfter": [
-                1.415000081062317,
-                0.46000000834465029,
-                -1.2890000343322755
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_side_R_1",
-            "elementIndex": 168,
-            "posBefore": [
-                1.415000081062317,
-                0.46000000834465029,
-                -1.2890000343322755
-            ],
-            "posAfter": [
-                1.3912749290466309,
-                0.46000000834465029,
-                -1.2890000343322755
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A4_side_R_1",
-            "elementIndex": 168,
-            "posBefore": [
-                1.3912749290466309,
-                0.46000000834465029,
-                -1.2890000343322755
-            ],
-            "posAfter": [
-                1.2897748947143555,
-                0.46000000834465029,
-                -1.2890000343322755
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                540,
-                720,
-                18
-            ],
-            "dimsAfter": [
-                337,
-                720,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_side_R_1",
-            "elementIndex": 168,
-            "posBefore": [
-                1.2897748947143555,
-                0.46000000834465029,
-                -1.2890000343322755
-            ],
-            "posAfter": [
-                1.2897748947143555,
-                0.47600001096725466,
-                -1.2890000343322755
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_side_R_1",
-            "elementIndex": 168,
-            "posBefore": [
-                1.2897748947143555,
-                0.47600001096725466,
-                -1.2890000343322755
-            ],
-            "posAfter": [
-                1.2897748947143555,
-                0.6075000166893005,
-                -1.2890000343322755
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A4_side_R_1",
-            "elementIndex": 168,
-            "posBefore": [
-                1.2897748947143555,
-                0.6075000166893005,
-                -1.2890000343322755
-            ],
-            "posAfter": [
-                1.2897748947143555,
-                0.5335000157356262,
-                -1.2890000343322755
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                337,
-                720,
-                18
-            ],
-            "dimsAfter": [
-                337,
-                572,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A4_side_R_1",
-            "elementIndex": 168,
-            "posBefore": [
-                1.2897748947143555,
-                0.5335000157356262,
-                -1.2890000343322755
-            ],
-            "posAfter": [
-                1.290000081062317,
-                0.534000039100647,
-                -1.2890000343322755
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                337,
-                572,
-                18
-            ],
-            "dimsAfter": [
-                337,
-                600,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_side_R_1",
-            "elementIndex": 168,
-            "posBefore": [
-                1.290000081062317,
-                0.534000039100647,
-                -1.2890000343322755
-            ],
-            "posAfter": [
-                1.290000081062317,
-                0.5475000143051148,
-                -1.2890000343322755
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_side_R_1",
-            "elementIndex": 168,
-            "posBefore": [
-                1.290000081062317,
-                0.5475000143051148,
-                -1.2890000343322755
-            ],
-            "posAfter": [
-                1.290000081062317,
-                0.7970608472824097,
-                -1.2890000343322755
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_side_R_1",
-            "elementIndex": 168,
-            "posBefore": [
-                1.290000081062317,
-                0.7970608472824097,
-                -1.2890000343322755
-            ],
-            "posAfter": [
-                1.290000081062317,
-                0.9496477842330933,
-                -1.2890000343322755
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
             "description": "Move A4_shelf",
             "elementIndex": 79,
             "posBefore": [
@@ -45235,36 +45139,6 @@
                 0.0,
                 0.0,
                 -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_side_R_1",
-            "elementIndex": 168,
-            "posBefore": [
-                1.290000081062317,
-                0.9496477842330933,
-                -1.2890000343322755
-            ],
-            "posAfter": [
-                1.290000081062317,
-                0.7600000500679016,
-                -1.2890000343322755
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
             ],
             "dimsBefore": [],
             "dimsAfter": [],
@@ -45463,7 +45337,7 @@
         {
             "type": "resize",
             "description": "Resize fake-oven",
-            "elementIndex": 169,
+            "elementIndex": 168,
             "posBefore": [
                 1.0360000133514405,
                 0.7600000500679016,
@@ -45531,7 +45405,7 @@
         {
             "type": "resize",
             "description": "Resize fake-microwave",
-            "elementIndex": 170,
+            "elementIndex": 169,
             "posBefore": [
                 1.1360000371932984,
                 0.7600000500679016,
@@ -45569,7 +45443,7 @@
         {
             "type": "resize",
             "description": "Resize fake-microwave",
-            "elementIndex": 170,
+            "elementIndex": 169,
             "posBefore": [
                 1.1360000371932984,
                 0.7600000500679016,
@@ -45607,7 +45481,7 @@
         {
             "type": "resize",
             "description": "Resize fake-microwave",
-            "elementIndex": 170,
+            "elementIndex": 169,
             "posBefore": [
                 1.1360000371932984,
                 0.7600000500679016,
@@ -45645,7 +45519,7 @@
         {
             "type": "resize",
             "description": "Resize fake-microwave",
-            "elementIndex": 170,
+            "elementIndex": 169,
             "posBefore": [
                 1.1360000371932984,
                 0.7600000500679016,
@@ -45683,7 +45557,7 @@
         {
             "type": "resize",
             "description": "Resize fake-microwave",
-            "elementIndex": 170,
+            "elementIndex": 169,
             "posBefore": [
                 1.1360000371932984,
                 0.7600000500679016,
@@ -45721,7 +45595,7 @@
         {
             "type": "move",
             "description": "Move fake-microwave",
-            "elementIndex": 170,
+            "elementIndex": 169,
             "posBefore": [
                 1.1360000371932984,
                 0.7600000500679016,
@@ -45751,7 +45625,7 @@
         {
             "type": "move",
             "description": "Move fake-microwave",
-            "elementIndex": 170,
+            "elementIndex": 169,
             "posBefore": [
                 0.9939998984336853,
                 0.7600000500679016,
@@ -45781,7 +45655,7 @@
         {
             "type": "move",
             "description": "Move fake-microwave",
-            "elementIndex": 170,
+            "elementIndex": 169,
             "posBefore": [
                 0.9939998984336853,
                 1.2951562404632569,
@@ -45841,7 +45715,7 @@
         {
             "type": "move",
             "description": "Move fake-microwave",
-            "elementIndex": 170,
+            "elementIndex": 169,
             "posBefore": [
                 1.0540001392364503,
                 1.2951562404632569,
@@ -45871,7 +45745,7 @@
         {
             "type": "move",
             "description": "Move fake-microwave",
-            "elementIndex": 170,
+            "elementIndex": 169,
             "posBefore": [
                 1.03600013256073,
                 1.2951562404632569,
@@ -46629,6 +46503,246 @@
             "dimsBefore": [],
             "dimsAfter": [],
             "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_shelf_1",
+            "elementIndex": 170,
+            "posBefore": [
+                1.415000081062317,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.315000057220459,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_shelf_1",
+            "elementIndex": 170,
+            "posBefore": [
+                1.315000057220459,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.315000057220459,
+                1.068000078201294,
+                -1.5620001554489136
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_shelf_2",
+            "elementIndex": 171,
+            "posBefore": [
+                1.415000081062317,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.315000057220459,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_shelf_2",
+            "elementIndex": 171,
+            "posBefore": [
+                1.315000057220459,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.315000057220459,
+                1.4410001039505005,
+                -1.5620001554489136
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_shelf_3",
+            "elementIndex": 172,
+            "posBefore": [
+                1.415000081062317,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.315000057220459,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_shelf_3",
+            "elementIndex": 172,
+            "posBefore": [
+                1.315000057220459,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.315000057220459,
+                1.7458486557006837,
+                -1.5620001554489136
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_shelf_4",
+            "elementIndex": 173,
+            "posBefore": [
+                1.415000081062317,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.315000057220459,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_shelf_4",
+            "elementIndex": 173,
+            "posBefore": [
+                1.315000057220459,
+                0.45200005173683169,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.315000057220459,
+                2.0321786403656008,
+                -1.5620002746582032
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
         }
     ],
     "redoHistory": [],
@@ -46646,6 +46760,13 @@
         "wallsEnabled": true,
         "lowerNearWalls": true,
         "cameraPanFree": true,
+        "wallOutline": false,
+        "hideOpeningsOnLoweredWalls": true,
+        "objectsVisible": true,
+        "hideLightSources": true,
+        "mouseSensitivity": 1.037592887878418,
+        "wasdSpeed": 1.0,
+        "arrowSpeed": 1.0,
         "photoQuality": 2,
         "photoShadows": true,
         "photoSoftShadows": true,
