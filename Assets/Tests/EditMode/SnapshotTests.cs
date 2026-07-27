@@ -66,6 +66,14 @@ public class SnapshotTests
         CommandStack.Clear();
         ElementFactory.ClearPools();
         MaterialManager.ClearCache();
+
+        // Project-level state is serialized INTO the snapshot, so anything a
+        // neighbouring test loaded (SnapMutationTests restores docs/example.save.json,
+        // whose contents change whenever the desktop autosaves) would otherwise
+        // leak into every baseline here.
+        ProjectInstructions.Reset();
+        ProjectRooms.Reset();
+        ProjectFloorplans.Reset();
     }
 
     // ── helpers ─────────────────────────────────────────────────────────
