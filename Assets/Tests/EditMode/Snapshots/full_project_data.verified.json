@@ -304,7 +304,7 @@
         "photoCeiling": true,
         "photoSSGI": true
     },
-    "tintEnabled": false,
+    "tintEnabled": true,
     "lightsOn": true,
     "windows": []
 }
