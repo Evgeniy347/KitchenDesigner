@@ -50,10 +50,7 @@ namespace KitchenDesigner.Core.UI
         private void Awake()
         {
             Instance = this;
-        }
 
-        private void Start()
-        {
             _canvas = UIFactory.CreateCanvas("UICanvas");
             BuildToolbar();
             EditModeManager.Changed += RefreshEditModeLabel;
