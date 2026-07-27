@@ -58,7 +58,14 @@ namespace KitchenDesigner.Core
         // Чашка Ø35 утоплена в заднюю пласть фасада. Стандартная присадка — 22 мм до
         // центра чашки, то есть от кромки до края чашки ≈ 4,5 мм (допустимо 3…6, у
         // толстых фасадов больше). Виртуальная ось поворота лежит у ближней к кромке
-        // стенки чашки, примерно на середине её глубины — отсюда обе формулы.
+        // стенки чашки, на её ДНЕ — то есть почти у лицевой пласти фасада.
+        //
+        // Глубина оси решает, насколько фасад вылезает за линию петли (туда, где стоит
+        // соседний фасад). Вылет за ход открывания равен √(side² + A²) − side, где
+        // A = толщина − глубина оси. Ось на дне чашки даёт A ≈ 5,5 мм у 18-мм фасада,
+        // то есть вылет ~2,6 мм в середине хода и уход ВНУТРЬ линии петли в конце —
+        // ровно то, ради чего четырёхшарнирную петлю и придумали. Ось на середине
+        // чашки давала бы вылет ~6 мм и упор в соседний фасад.
 
         private const float CupDepthMM = 12.5f;   // стандартная глубина чашки
         private const float CupWallMM = 3.5f;     // материал, который должен остаться за чашкой
@@ -67,7 +74,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>
         /// Смещение виртуальной оси чашечной петли от ребра фасада ВНУТРЬ бокса, в юнитах:
-        /// x/y — вбок от кромки, z — вглубь от задней пласти. Считается от толщины фасада
+        /// x/y — вбок от кромки, z — вглубь от задней пласти (до дна чашки). Считается от толщины фасада
         /// (<paramref name="halfExtents"/>.z × 2), поэтому работает и для нестандартных толщин.
         /// </summary>
         public static Vector3 HingePivotOffset(Vector3 halfExtents)
@@ -75,16 +82,17 @@ namespace KitchenDesigner.Core
             float thicknessMM = 2f * Mathf.Abs(halfExtents.z) / AppConstants.MM_TO_UNITS;
 
             float sideMM = Mathf.Clamp(thicknessMM * 0.25f, CupSideMinMM, CupSideMaxMM);
-            float depthMM = 0.5f * Mathf.Min(CupDepthMM, Mathf.Max(0f, thicknessMM - CupWallMM));
+            float depthMM = Mathf.Min(CupDepthMM, Mathf.Max(0f, thicknessMM - CupWallMM));
 
             float side = sideMM * AppConstants.MM_TO_UNITS;
             float depth = depthMM * AppConstants.MM_TO_UNITS;
 
-            // У крошечных фасадов ось не должна перескочить за противоположную кромку.
+            // Смещения отсчитываются от кромки и от задней пласти, то есть через весь
+            // габарит: у крошечных фасадов ось не должна перескочить за противоположную грань.
             return new Vector3(
-                Mathf.Min(side, Mathf.Abs(halfExtents.x)),
-                Mathf.Min(side, Mathf.Abs(halfExtents.y)),
-                Mathf.Min(depth, Mathf.Abs(halfExtents.z)));
+                Mathf.Min(side, 2f * Mathf.Abs(halfExtents.x)),
+                Mathf.Min(side, 2f * Mathf.Abs(halfExtents.y)),
+                Mathf.Min(depth, 2f * Mathf.Abs(halfExtents.z)));
         }
 
         private readonly struct Variant

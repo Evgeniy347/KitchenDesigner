@@ -236,15 +236,49 @@ public class FacadeDoorTests
         Assert.Less(Vector3.Distance(pivot, new Vector3(-Half.x, -Half.y, 0f)), 1e-6f);
     }
 
-    // ── Смещение оси от толщины фасада ───────────────────────────────
-    // side = clamp(T/4, 3, 7) мм; depth = min(12.5, T − 3.5) / 2 мм.
+    // Главный инвариант: за весь ход открывания петлевое ребро почти не вылезает за
+    // линию петли — иначе открытый фасад упрётся в соседний.
+    [TestCase(16, 2f)]
+    [TestCase(18, 3f)]
+    [TestCase(19, 3.5f)]
+    public void Pose_CupHinge_SidewaysOverhang_FitsInFacadeGap(int thicknessMM, float maxOverhangMM)
+    {
+        var half = new Vector3(0.3f, 0.35f, thicknessMM * 0.0005f);
+        var cornerLocal = new Vector3(-half.x, 0f, half.z);
 
-    [TestCase(10, 3f, 3.25f)]
-    [TestCase(16, 4f, 6.25f)]
-    [TestCase(19, 4.75f, 6.25f)]
-    [TestCase(21, 5.25f, 6.25f)]
-    [TestCase(22, 5.5f, 6.25f)]
-    [TestCase(30, 7f, 6.25f)]
+        float worst = float.MinValue;
+        for (float t = 0f; t <= 1.0001f; t += 0.02f)
+        {
+            FacadeDoor.Pose(Vector3.zero, Quaternion.identity, half, DoorMode.HingeFrontLeft, t,
+                out var pos, out var rot);
+            worst = Mathf.Max(worst, -half.x - (pos + rot * cornerLocal).x);
+        }
+
+        Assert.Less(worst * 1000f, maxOverhangMM,
+            $"фасад {thicknessMM} мм вылезает за линию петли на {worst * 1000f:F1} мм");
+    }
+
+    [Test]
+    public void Pose_CupHinge_FullyOpen_TucksInsideHingeLine()
+    {
+        // В конце хода фасад уходит ВНУТРЬ линии петли, а не выступает наружу.
+        var cornerLocal = new Vector3(-Half.x, 0f, Half.z);
+        FacadeDoor.Pose(Vector3.zero, Quaternion.identity, Half, DoorMode.HingeFrontLeft, 1f,
+            out var pos, out var rot);
+
+        Assert.Greater((pos + rot * cornerLocal).x, -Half.x,
+            "открытый фасад не должен выступать за линию петли");
+    }
+
+    // ── Смещение оси от толщины фасада ───────────────────────────────
+    // side = clamp(T/4, 3, 7) мм; depth = min(12.5, T − 3.5) мм — дно чашки.
+
+    [TestCase(10, 3f, 6.5f)]
+    [TestCase(16, 4f, 12.5f)]
+    [TestCase(19, 4.75f, 12.5f)]
+    [TestCase(21, 5.25f, 12.5f)]
+    [TestCase(22, 5.5f, 12.5f)]
+    [TestCase(30, 7f, 12.5f)]
     public void HingePivotOffset_FollowsThickness(int thicknessMM, float sideMM, float depthMM)
     {
         var half = new Vector3(0.3f, 0.35f, thicknessMM * 0.0005f);
@@ -258,13 +292,13 @@ public class FacadeDoorTests
     [Test]
     public void HingePivotOffset_ClampedForTinyFacade()
     {
-        // Фасад 4×4×2 мм: ось не должна выйти за противоположную кромку.
+        // Фасад 4×4×2 мм: ось не должна выйти за противоположную грань.
         var half = new Vector3(0.002f, 0.002f, 0.001f);
         var offset = FacadeDoor.HingePivotOffset(half);
 
-        Assert.LessOrEqual(offset.x, half.x + 1e-6f);
-        Assert.LessOrEqual(offset.y, half.y + 1e-6f);
-        Assert.LessOrEqual(offset.z, half.z + 1e-6f);
+        Assert.LessOrEqual(offset.x, 2f * half.x + 1e-6f);
+        Assert.LessOrEqual(offset.y, 2f * half.y + 1e-6f);
+        Assert.LessOrEqual(offset.z, 2f * half.z + 1e-6f);
     }
 
     [Test]
