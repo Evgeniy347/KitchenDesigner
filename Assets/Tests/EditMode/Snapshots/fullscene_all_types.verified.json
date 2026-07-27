@@ -418,7 +418,12 @@
         "angleX": 0.0,
         "angleY": 0.0,
         "distance": 0.0,
-        "photoDistance": 0.0
+        "photoDistance": 0.0,
+        "photoTargetX": 0.0,
+        "photoTargetY": 0.0,
+        "photoTargetZ": 0.0,
+        "photoAngleX": 0.0,
+        "photoAngleY": 0.0
     },
     "handleMode": "Resize",
     "projectInstructions": "",
@@ -537,7 +542,7 @@
         "photoCeiling": true,
         "photoSSGI": true
     },
-    "tintEnabled": true,
+    "tintEnabled": false,
     "lightsOn": true,
     "windows": []
 }

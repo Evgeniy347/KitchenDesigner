@@ -101,6 +101,9 @@ namespace KitchenDesigner.Core
         public float targetX, targetY, targetZ;
         public float angleX, angleY, distance;
         public float photoDistance; // отдельный зум фоторежима (0 у старых сейвов)
+        // Независимые позиция и угол фоторежима (0 у старых сейвов → fallback на обычные).
+        public float photoTargetX, photoTargetY, photoTargetZ;
+        public float photoAngleX, photoAngleY;
     }
 
     /// <summary>Сериализуемые настройки кухни (сетка, снап, автосейв, графика…).</summary>
