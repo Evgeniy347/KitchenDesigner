@@ -105,6 +105,8 @@ namespace KitchenDesigner.Core.MCP
                     case "set_attr": return HandleSetAttr(request);
                     case "move": return HandleMove(request);
                     case "resize_module": return HandleResizeModule(request);
+                    case "group": return HandleGroupV2(request);
+                    case "align": return HandleAlignSelection(request);
                     case "create_walls": return HandleCreateWalls(request);
                     case "create_floor": return HandleCreateFloorV2(request);
                     case "add_opening": return HandleAddOpening(request);

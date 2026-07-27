@@ -122,6 +122,7 @@ namespace KitchenDesigner.Core.MCP
         public int id;
         public string name = string.Empty;
         public bool movable;
+        public string widthAxis = "x";
         public bool editing;         // модуль сейчас в режиме редактирования
         public int elementCount;
         public float[]? boundsCenter; // центр AABB, юниты (метры)

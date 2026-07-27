@@ -9,6 +9,7 @@ namespace KitchenDesigner.Core
         public int id;
         public string name = "Группа";
         public bool movable = true;
+        public string widthAxis = "x";
     }
 
     /// <summary>Статический фасад над <see cref="IGroupService"/> (паттерн PartRegistry/
@@ -67,6 +68,7 @@ namespace KitchenDesigner.Core
         public static void Clear() => Instance.Clear();
 
         /// <summary>Восстановление группы из сохранения.</summary>
-        public static LinkGroup Register(int id, string name, bool movable) => Instance.Register(id, name, movable);
+        public static LinkGroup Register(int id, string name, bool movable, string widthAxis = "x") =>
+            Instance.Register(id, name, movable, widthAxis);
     }
 }

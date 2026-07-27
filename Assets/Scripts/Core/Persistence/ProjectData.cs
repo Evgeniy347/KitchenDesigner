@@ -47,6 +47,7 @@ namespace KitchenDesigner.Core
         public int id;
         public string name = "Группа";
         public bool movable = true;
+        public string widthAxis = "x";
     }
 
     /// <summary>Сериализуемое состояние камеры. valid=false у старых сейвов без камеры.</summary>

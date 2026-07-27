@@ -454,8 +454,8 @@ namespace KitchenDesigner.Core.MCP.Contract
     {
         [McpParam("Module = exact group/module name (see get_modules).", Required = true)]
         public string module = "";
-        [McpParam("World axis to resize along.", Required = true, Enum = new[] { "x", "y", "z" })]
-        public string axis = "x";
+        [McpParam("World axis to resize along. Omit to use the module's stored width_axis.", Enum = new[] { "x", "y", "z" })]
+        public string axis = "";
         [McpParam("Delta in MM: positive grows toward +axis, negative shrinks. The near side stays fixed; the server moves the far side and stretches spanning boards.", Required = true)]
         public float delta_mm;
     }
@@ -518,6 +518,32 @@ namespace KitchenDesigner.Core.MCP.Contract
     {
         [McpParam("Module name, e.g. 'Тумба с ящиками'.", Required = true)] public string name = string.Empty;
         [McpParam("Board names (at least 2).", Required = true, Min = 2)] public string[] members = Array.Empty<string>();
+        [McpParam("World width axis used by resize_module.", Enum = new[] { "x", "y", "z" })]
+        public string width_axis = "x";
+    }
+
+    [Serializable]
+    public class ParamsGroupV2
+    {
+        [McpParam("Stable group/module id (name).", Required = true)] public string id = "";
+        [McpParam("Element names; declaration replaces the group's membership.", Required = true, Min = 1)]
+        public string[] names = Array.Empty<string>();
+        [McpParam("World width axis used by resize_module.", Enum = new[] { "x", "y", "z" })]
+        public string width_axis = "x";
+    }
+
+    [Serializable]
+    public class ParamsAlignSelection
+    {
+        [McpParam("Selector whose matched groups/elements move.", Required = true)] public string selector = "";
+        [McpParam("Exact target element/wall name.", Required = true)] public string target = "";
+        [McpParam("Moving selection face: left/right/bottom/top/back/front.", Required = true,
+            Enum = new[] { "left", "right", "bottom", "top", "back", "front" })]
+        public string face = "";
+        [McpParam("Target face. Omit for the opposite face on the same axis.",
+            Enum = new[] { "left", "right", "bottom", "top", "back", "front" })]
+        public string target_face = "";
+        [McpParam("Face gap in MM.")] public float gap_mm;
     }
 
     [Serializable]

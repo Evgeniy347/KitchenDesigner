@@ -56,6 +56,7 @@ namespace KitchenDesigner.Core.MCP
             var g = GroupManager.Link(resolved);
             if (g == null) return McpResponse.Error(req.id, -1, "Failed to create module");
             if (!string.IsNullOrEmpty(p.name)) GroupManager.Rename(g, p.name);
+            if (!string.IsNullOrEmpty(p.width_axis)) g.widthAxis = p.width_axis;
 
             Debug.Log($"[MCP] Module '{g.name}' (id {g.id}) created from {resolved.Count} elements");
             return McpResponse.Result(req.id, BuildModuleInfo(g, PartRegistry.GetAll()));

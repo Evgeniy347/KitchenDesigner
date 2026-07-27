@@ -158,7 +158,8 @@
         {
             "id": 1,
             "name": "Группа",
-            "movable": true
+            "movable": true,
+            "widthAxis": "x"
         }
     ],
     "camera": {

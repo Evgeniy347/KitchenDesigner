@@ -162,8 +162,32 @@ export const GEN_TOOLS: GenTool[] = [
     kind: "write",
     inputSchema: {
       module: z.string().min(1).describe("Module = exact group/module name (see get_modules)."),
-      axis: z.enum(["x", "y", "z"]).describe("World axis to resize along."),
+      axis: z.enum(["x", "y", "z"]).optional().describe("World axis to resize along. Omit to use the module\u0027s stored width_axis."),
       delta_mm: z.number().finite().describe("Delta in MM: positive grows toward \u002Baxis, negative shrinks. The near side stays fixed; the server moves the far side and stretches spanning boards."),
+    },
+  },
+  {
+    name: "group",
+    title: "Declare a module group",
+    description: "Create/update an exact named group from element names and annotate its width axis. Idempotent by id; membership is replaced atomically in ONE undo step.",
+    kind: "write",
+    inputSchema: {
+      id: z.string().min(1).describe("Stable group/module id (name)."),
+      names: z.array(z.string().min(1)).min(1).describe("Element names; declaration replaces the group\u0027s membership."),
+      width_axis: z.enum(["x", "y", "z"]).optional().describe("World width axis used by resize_module."),
+    },
+  },
+  {
+    name: "align",
+    title: "Align a selection relationally",
+    description: "Move every matched loose element or whole matched module as a unit until its chosen face meets a target element/wall face with a gap in MM. Server computes all deltas; ONE undo step.",
+    kind: "write",
+    inputSchema: {
+      selector: z.string().min(1).describe("Selector whose matched groups/elements move."),
+      target: z.string().min(1).describe("Exact target element/wall name."),
+      face: z.enum(["left", "right", "bottom", "top", "back", "front"]).describe("Moving selection face: left/right/bottom/top/back/front."),
+      target_face: z.enum(["left", "right", "bottom", "top", "back", "front"]).optional().describe("Target face. Omit for the opposite face on the same axis."),
+      gap_mm: z.number().finite().optional().describe("Face gap in MM."),
     },
   },
   {
@@ -354,6 +378,7 @@ export const GEN_TOOLS: GenTool[] = [
     inputSchema: {
       name: z.string().min(1).describe("Module name, e.g. \u0027\u0422\u0443\u043C\u0431\u0430 \u0441 \u044F\u0449\u0438\u043A\u0430\u043C\u0438\u0027."),
       members: z.array(z.string().min(1)).min(2).describe("Board names (at least 2)."),
+      width_axis: z.enum(["x", "y", "z"]).optional().describe("World width axis used by resize_module."),
     },
   },
   {

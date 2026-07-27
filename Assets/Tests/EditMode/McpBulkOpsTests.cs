@@ -15,6 +15,7 @@ public class McpBulkOpsTests
         _handler = new McpCommandHandler();
         PartRegistry.Clear();
         GroupManager.Clear();
+        CommandStack.Clear();
     }
 
     [TearDown]
@@ -27,6 +28,7 @@ public class McpBulkOpsTests
             if (e != null) Object.DestroyImmediate(e.gameObject);
         PartRegistry.Clear();
         GroupManager.Clear();
+        CommandStack.Clear();
     }
 
     private McpRequest MakeReq(string method, object data)
@@ -61,6 +63,22 @@ public class McpBulkOpsTests
         Assert.AreEqual(16, b1.DimensionsMM.z);
         Assert.AreEqual(16, b2.DimensionsMM.z);
         Assert.AreEqual(16, b3.DimensionsMM.z, "уже был 16 — без изменений");
+    }
+
+    [Test]
+    public void SetAttr_GeometryMaterialAndLockUndoTogether()
+    {
+        var board = Make("board", Vector3.zero, new Vector3Int(600, 400, 18));
+        var response = _handler!.Handle(MakeReq("set_attr", new
+        { selector = "board", thickness = 16, material = "concrete", locked = true }));
+        Assert.AreEqual("result", response.type);
+        Assert.AreEqual(16, board.DimensionsMM.z);
+        Assert.AreEqual("concrete", board.MaterialId);
+        Assert.IsFalse(board.Movable);
+        CommandStack.Undo();
+        Assert.AreEqual(18, board.DimensionsMM.z);
+        Assert.AreEqual(MaterialCatalog.DefaultId, board.MaterialId);
+        Assert.IsTrue(board.Movable);
     }
 
     [Test]
@@ -116,5 +134,79 @@ public class McpBulkOpsTests
         Assert.AreEqual(2, (int)mod["memberCount"]!);
         var loose = (Newtonsoft.Json.Linq.JArray)jo["loose"]!;
         Assert.IsTrue(loose.ToObject<List<string>>()!.Contains("shelf"));
+    }
+
+    [Test]
+    public void Group_DeclaresExactMembershipWidthAxis_AndIsUndoable()
+    {
+        var a = Make("A", Vector3.zero, new Vector3Int(100, 100, 100));
+        var b = Make("B", Vector3.zero, new Vector3Int(100, 100, 100));
+        var c = Make("C", Vector3.zero, new Vector3Int(100, 100, 100));
+        var first = _handler!.Handle(MakeReq("group", new
+        { id = "Cab", names = new[] { "A", "B" }, width_axis = "z" }));
+        Assert.AreEqual("result", first.type);
+        var g = GroupManager.GroupOf(a)!;
+        Assert.AreEqual("z", g.widthAxis);
+        Assert.AreEqual(g.id, b.GroupId);
+
+        _handler.Handle(MakeReq("group", new
+        { id = "Cab", names = new[] { "B", "C" }, width_axis = "x" }));
+        Assert.AreEqual(0, a.GroupId, "declaration replaces membership");
+        Assert.AreEqual(g.id, c.GroupId);
+        Assert.AreEqual("x", g.widthAxis);
+        Assert.AreEqual(1, new List<LinkGroup>(GroupManager.AllGroups()).Count);
+
+        CommandStack.Undo();
+        Assert.AreEqual(g.id, a.GroupId);
+        Assert.AreEqual(0, c.GroupId);
+        Assert.AreEqual("z", g.widthAxis);
+    }
+
+    [Test]
+    public void Group_NewDeclarationUndoRemovesGroupAndRestoresPriorMembership()
+    {
+        var a = Make("A", Vector3.zero, new Vector3Int(100, 100, 100));
+        var old = GroupManager.Create("Old"); GroupManager.AddTo(old, a);
+        _handler!.Handle(MakeReq("group", new
+        { id = "New", names = new[] { "A" }, width_axis = "y" }));
+        Assert.AreEqual("New", GroupManager.GroupOf(a)!.name);
+        CommandStack.Undo();
+        Assert.AreEqual("Old", GroupManager.GroupOf(a)!.name);
+        Assert.AreEqual(1, new List<LinkGroup>(GroupManager.AllGroups()).Count);
+    }
+
+    [Test]
+    public void ResizeModule_OmittedAxisUsesStoredWidthAxis()
+    {
+        var near = Make("near", new Vector3(0f, 0f, 0f), new Vector3Int(100, 100, 18));
+        var far = Make("far", new Vector3(0f, 0f, 0.5f), new Vector3Int(100, 100, 18));
+        var span = Make("span", new Vector3(0f, 0f, 0.25f), new Vector3Int(100, 100, 500));
+        _handler!.Handle(MakeReq("group", new
+        { id = "DepthCab", names = new[] { "near", "far", "span" }, width_axis = "z" }));
+
+        var response = _handler.Handle(MakeReq("resize_module", new
+        { module = "DepthCab", delta_mm = 100f }));
+        Assert.AreEqual("result", response.type);
+        Assert.AreEqual(0.6f, far.transform.position.z, 0.001f);
+        Assert.AreEqual(600, span.DimensionsMM.z);
+    }
+
+    [Test]
+    public void Align_SelectorMovesWholeMatchedModuleToTargetFace()
+    {
+        var a = Make("Cab_A", new Vector3(0f, 0f, 0f), new Vector3Int(100, 100, 100));
+        var b = Make("Cab_B", new Vector3(0.5f, 0f, 0f), new Vector3Int(100, 100, 100));
+        Make("Wall", new Vector3(2f, 0f, 0f), new Vector3Int(200, 1000, 1000));
+        _handler!.Handle(MakeReq("group", new
+        { id = "Cab", names = new[] { "Cab_A", "Cab_B" }, width_axis = "x" }));
+
+        var response = _handler.Handle(MakeReq("align", new
+        { selector = "module:Cab", target = "Wall", face = "right", gap_mm = 0f }));
+        Assert.AreEqual("result", response.type);
+        Assert.AreEqual(1.35f, a.transform.position.x, 0.001f);
+        Assert.AreEqual(1.85f, b.transform.position.x, 0.001f);
+        CommandStack.Undo();
+        Assert.AreEqual(0f, a.transform.position.x, 0.001f);
+        Assert.AreEqual(0.5f, b.transform.position.x, 0.001f);
     }
 }

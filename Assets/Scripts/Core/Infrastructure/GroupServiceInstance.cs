@@ -103,9 +103,9 @@ namespace KitchenDesigner.Core
             RaiseChanged();
         }
 
-        public LinkGroup Register(int id, string name, bool movable)
+        public LinkGroup Register(int id, string name, bool movable, string widthAxis = "x")
         {
-            var g = new LinkGroup { id = id, name = name, movable = movable };
+            var g = new LinkGroup { id = id, name = name, movable = movable, widthAxis = widthAxis };
             _groups[id] = g;
             if (id >= _nextId) _nextId = id + 1;
             RaiseChanged();

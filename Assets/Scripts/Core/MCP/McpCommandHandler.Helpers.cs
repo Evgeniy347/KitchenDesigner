@@ -461,6 +461,7 @@ namespace KitchenDesigner.Core.MCP
                 id = g.id,
                 name = g.name,
                 movable = g.movable,
+                widthAxis = g.widthAxis,
                 editing = ModuleEditMode.Active == g,
                 elementCount = members.Count,
                 elements = new List<ElementInfo>()

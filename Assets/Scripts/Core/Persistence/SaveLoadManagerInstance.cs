@@ -114,7 +114,7 @@ namespace KitchenDesigner.Core
             var data = new ProjectData(items);
             var groups = new List<GroupData>();
             foreach (var g in GroupManager.AllGroups())
-                groups.Add(new GroupData { id = g.id, name = g.name, movable = g.movable });
+                groups.Add(new GroupData { id = g.id, name = g.name, movable = g.movable, widthAxis = g.widthAxis });
             data.groups = groups.ToArray();
 
             if (CameraController.Instance != null)
@@ -179,7 +179,8 @@ namespace KitchenDesigner.Core
             GroupManager.Clear();
             if (data.groups != null)
                 foreach (var gd in data.groups)
-                    if (gd != null) GroupManager.Register(gd.id, gd.name, gd.movable);
+                    if (gd != null) GroupManager.Register(gd.id, gd.name, gd.movable,
+                        string.IsNullOrEmpty(gd.widthAxis) ? "x" : gd.widthAxis);
 
             var resolved = new List<KitchenElement?>();
             foreach (var ed in data.elements)

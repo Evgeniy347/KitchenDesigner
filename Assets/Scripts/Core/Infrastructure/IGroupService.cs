@@ -50,7 +50,7 @@ namespace KitchenDesigner.Core
         void SetMovable(LinkGroup g, bool movable);
 
         /// <summary>Восстановление группы из сохранения (id из файла).</summary>
-        LinkGroup Register(int id, string name, bool movable);
+        LinkGroup Register(int id, string name, bool movable, string widthAxis = "x");
 
         void Clear();
     }
