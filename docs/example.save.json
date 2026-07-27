@@ -14182,15 +14182,15 @@
                 500
             ],
             "position": [
-                0.6826454401016235,
+                0.6830000281333923,
                 0.85999995470047,
-                -3.2990002632141115
+                -3.2990000247955324
             ],
             "rotation": [
                 0.0,
-                1.0,
                 0.0,
-                -4.371138828673793e-8
+                0.0,
+                1.0
             ],
             "movable": true,
             "isWall": false,
@@ -14249,9 +14249,9 @@
             "lightBeamDeg": 150,
             "isPanel": false,
             "isSink": true,
-            "sinkAttachedPartName": "",
-            "sinkOffsetXMM": 0,
-            "sinkOffsetYMM": 0,
+            "sinkAttachedPartName": "Countertop_B",
+            "sinkOffsetXMM": 983,
+            "sinkOffsetYMM": 21,
             "grooves": []
         }
     ],
@@ -14342,12 +14342,12 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 1.3809723854064942,
-        "targetY": -0.3637290298938751,
-        "targetZ": -4.785707950592041,
-        "angleX": 32.82239532470703,
-        "angleY": 157.865966796875,
-        "distance": 3.3410871028900148,
+        "targetX": 1.7112857103347779,
+        "targetY": -0.5675780773162842,
+        "targetZ": -4.353512763977051,
+        "angleX": 30.047142028808595,
+        "angleY": 147.31997680664063,
+        "distance": 2.941087484359741,
         "photoDistance": 2.200000047683716
     },
     "handleMode": "Move",
