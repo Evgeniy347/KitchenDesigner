@@ -233,6 +233,7 @@
         "photoDistance": 0.0
     },
     "handleMode": "Resize",
+    "projectInstructions": "",
     "basePlateValid": false,
     "basePlate": {
         "name": "",

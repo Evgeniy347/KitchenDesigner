@@ -122,6 +122,8 @@ namespace KitchenDesigner.Core
 
             data.handleMode = ResizeHandleManager.Mode.ToString();
 
+            data.projectInstructions = ProjectInstructions.Text;
+
             if (basePlateData != null)
             {
                 data.basePlate = basePlateData;
@@ -310,6 +312,8 @@ namespace KitchenDesigner.Core
 
             if (data.settings != null)
                 KitchenSettings.Instance.ApplyFrom(data.settings);
+
+            ProjectInstructions.Text = data.projectInstructions ?? "";
 
             CommandStack.Instance.Import(data.undoHistory, data.redoHistory,
                 i => (i >= 0 && i < resolved.Count) ? resolved[i]! : null!);

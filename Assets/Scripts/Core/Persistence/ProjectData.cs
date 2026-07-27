@@ -13,6 +13,10 @@ namespace KitchenDesigner.Core
         // Режим ручек выделенного элемента (Resize / Move).
         public string handleMode = "Resize";
 
+        /// <summary>Свободный текст «инструкции проекта» (соглашения: толщины
+        /// несущих/перегородок, толщина ЛДСП, зазоры и т.п.). Пусто у старых сейвов.</summary>
+        public string projectInstructions = "";
+
         /// <summary>true если поле basePlate сохранено (иначе JsonUtility сериализует
         /// null-ссылку как {} с нулями, и десериализация даёт new ElementData(), а не null).</summary>
         public bool basePlateValid = false;

@@ -166,6 +166,7 @@
         "photoDistance": 0.0
     },
     "handleMode": "Resize",
+    "projectInstructions": "",
     "basePlateValid": true,
     "basePlate": {
         "name": "BasePlate",
