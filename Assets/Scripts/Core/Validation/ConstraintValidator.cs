@@ -65,6 +65,16 @@ namespace KitchenDesigner.Core
         private static bool IsAnchor(KitchenElement e) =>
             e != null && (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null || e is WindowElement || e is DoorElement || e is FloorElement);
 
+        /// <summary>Пересечение двух якорей штатно ТОЛЬКО в двух случаях: плита пола
+        /// проходит под стенами, а окно/дверь по построению сидит в теле своей стены.
+        /// Всё остальное — стена в стене, пол в полу — настоящая ошибка геометрии.</summary>
+        private static bool IsLegitAnchorPair(KitchenElement a, KitchenElement b) =>
+            IsFloorAnchor(a) || IsFloorAnchor(b) ||
+            a is WindowElement || a is DoorElement || b is WindowElement || b is DoorElement;
+
+        private static bool IsFloorAnchor(KitchenElement e) =>
+            e != null && (e.GetComponent<BasePlate>() != null || e is FloorElement);
+
         // ── Статический скратч: контейнеры переиспользуются между вызовами Validate,
         //    чтобы в горячем пути (перетаскивание — Validate каждый кадр) не было
         //    аллокаций. Validate НЕ реентерабелен (вложенных вызовов нет), поэтому
@@ -77,6 +87,8 @@ namespace KitchenDesigner.Core
         private static readonly HashSet<long> _seenPairs = new HashSet<long>();
         private static readonly List<(int lo, int hi)> _candidates = new List<(int lo, int hi)>();
         private static readonly HashSet<KitchenElement> _overlapping = new HashSet<KitchenElement>();
+        /// <summary>Якоря, чьё пересечение НЕ является штатным (стена в стене).</summary>
+        private static readonly HashSet<KitchenElement> _hardOverlapAnchors = new HashSet<KitchenElement>();
 
         // 21 бит на координату ячейки (сдвиг +Offset => диапазон ±1M ячеек). Три оси
         // упаковываются в 63 бита без знаковых коллизий — ключ ячейки без коллизий.
@@ -111,6 +123,7 @@ namespace KitchenDesigner.Core
             _seenPairs.Clear();
             _candidates.Clear();
             _overlapping.Clear();
+            _hardOverlapAnchors.Clear();
         }
 
         public static ValidationResult Validate(List<KitchenElement> all)
@@ -202,7 +215,8 @@ namespace KitchenDesigner.Core
             // (BasePlate исключаем — он якорь, его «пересечения» с деталями — это контакт).
             foreach (var e in _overlapping)
             {
-                if (e == null || IsAnchor(e)) continue;
+                if (e == null) continue;
+                if (IsAnchor(e) && !_hardOverlapAnchors.Contains(e)) continue;
                 if (!result.violations.Contains(e))
                     result.violations.Add(e);
             }
@@ -322,10 +336,16 @@ namespace KitchenDesigner.Core
                 // связности они валидны) — это и есть «красный» при перетаскивании.
                 _overlapping.Add(a);
                 _overlapping.Add(b);
-                // Диагностика для окна анализа: пара «якорь+якорь» (пол/стена) —
-                // не действие пользователя, её не регистрируем.
-                if (!(IsAnchor(a) && IsAnchor(b)))
+                // Пара «якорь+якорь» раньше не регистрировалась целиком: считалось,
+                // что пол и стены ставит приложение и столкнуться они не могут. С
+                // блочными стенами это неверно — стена въезжает в стену, и ошибка
+                // молчала. Пропускаем только штатные пары (см. IsLegitAnchorPair).
+                if (!(IsAnchor(a) && IsAnchor(b) && IsLegitAnchorPair(a, b)))
+                {
                     result.AddDiagnostic(a, b, ViolationKind.Overlap);
+                    if (IsAnchor(a)) _hardOverlapAnchors.Add(a);
+                    if (IsAnchor(b)) _hardOverlapAnchors.Add(b);
+                }
                 return;
             }
 

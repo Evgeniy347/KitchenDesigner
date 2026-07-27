@@ -291,8 +291,12 @@ public class McpCommandHandlerTests
         Assert.IsTrue(EnvElement(resp).hasViolations);
     }
 
+    /// <summary>Раньше здесь ожидалось ОБРАТНОЕ: пересечение двух стен считалось
+    /// штатным, потому что стены — якоря и «их ставит приложение». С блочными
+    /// стенами планировки это допущение сломалось: блок въезжал в блок на десятки
+    /// миллиметров, а сцена показывала ноль ошибок.</summary>
     [Test]
-    public void CreateElement_Wall_Response_NoViolations_WhenOverlappingWithAnotherWall()
+    public void CreateElement_Wall_Response_HasViolations_WhenOverlappingWithAnotherWall()
     {
         MakeWall("W1", new Vector3Int(2000, 2500, 100), Vector3.zero);
         var resp = _handler!.Handle(MakeReq("create_elements", new
@@ -301,7 +305,7 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.IsFalse(EnvElement(resp).hasViolations);
+        Assert.IsTrue(EnvElement(resp).hasViolations, "стена в стене — ошибка геометрии");
     }
 
     [Test]

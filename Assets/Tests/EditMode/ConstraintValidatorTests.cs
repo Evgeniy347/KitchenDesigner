@@ -364,4 +364,47 @@ public class ConstraintValidatorTests
         Object.DestroyImmediate(wallGo);
         Object.DestroyImmediate(winGo);
     }
+
+    /// <summary>Стены — якоря, и раньше их взаимные пересечения молча отбрасывались:
+    /// считалось, что пол и стены расставляет приложение. С блочными стенами планировки
+    /// это неверно — блок въезжал в блок на десятки миллиметров, а сцена была «чистой».</summary>
+    [Test]
+    public void Validate_WallDrivenIntoAnotherWall_Violation()
+    {
+        var a = ElementFactory.CreateWall(new Vector3Int(3000, 2700, 250), "Wall_A", Vector3.zero);
+        // вторая стена перпендикулярно, её торец заходит в тело первой на 80 мм
+        var b = ElementFactory.CreateWall(new Vector3Int(2000, 2700, 250), "Wall_B",
+            new Vector3(0f, 0f, 0.955f));
+        b.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+
+        var elements = new List<KitchenElement>
+            { a.GetComponent<KitchenElement>(), b.GetComponent<KitchenElement>() };
+        var result = ConstraintValidator.Validate(elements);
+
+        Assert.IsFalse(result.isValid, "стена в стене — это ошибка геометрии");
+        CollectionAssert.Contains(result.violations, b.GetComponent<KitchenElement>());
+
+        Object.DestroyImmediate(a);
+        Object.DestroyImmediate(b);
+    }
+
+    /// <summary>А вот пол под стеной пересекается с ней штатно и краснеть не должен.</summary>
+    [Test]
+    public void Validate_FloorUnderWall_NoViolation()
+    {
+        var wall = ElementFactory.CreateWall(new Vector3Int(3000, 2700, 250), "Wall_OnFloor",
+            new Vector3(0f, 1.35f, 0f));
+        var floor = ElementFactory.CreateFloor(new Vector3Int(4000, 100, 4000), "Floor_Under",
+            new Vector3(0f, 1.3f, 0f));
+
+        var elements = new List<KitchenElement>
+            { wall.GetComponent<KitchenElement>(), floor.GetComponent<KitchenElement>() };
+        var result = ConstraintValidator.Validate(elements);
+
+        CollectionAssert.DoesNotContain(result.violations, wall.GetComponent<KitchenElement>());
+        CollectionAssert.DoesNotContain(result.violations, floor.GetComponent<KitchenElement>());
+
+        Object.DestroyImmediate(wall);
+        Object.DestroyImmediate(floor);
+    }
 }
