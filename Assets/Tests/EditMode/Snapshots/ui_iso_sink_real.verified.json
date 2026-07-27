@@ -438,17 +438,17 @@
     },
     {
       "type": "Button",
-      "text": "Dver_room16",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
       "text": "Dver_room17",
       "position": [20, 0]
     },
     {
       "type": "Button",
       "text": "Dver_room41",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Fasad_sbornyy",
       "position": [20, 0]
     },
     {
@@ -563,6 +563,31 @@
     },
     {
       "type": "Button",
+      "text": "Korob",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Korob_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Korob_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Korob_2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Korob_3",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
       "text": "Leg_A12_back",
       "position": [20, 0]
     },
@@ -658,12 +683,157 @@
     },
     {
       "type": "Button",
+      "text": "P_HALL_N_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "P_HALL_N_2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "P_HALL_N_3",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "P_HALL_N_4",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
       "text": "P_R41_W",
       "position": [20, 0]
     },
     {
       "type": "Button",
       "text": "Pol_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_1_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_1_1_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_1_1_1_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_1_1_1_1_1_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_1_1_1_1_2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_1_1_1_2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_1_1_2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_1_1_3",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_1_1_3_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_3_2_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_4",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_1_1_5",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_1_1_2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Polka_1_3",
       "position": [20, 0]
     },
     {
@@ -729,6 +899,16 @@
     {
       "type": "Button",
       "text": "W150_04",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "W150_04_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "W150_04_2",
       "position": [20, 0]
     },
     {
@@ -804,6 +984,16 @@
     {
       "type": "Button",
       "text": "W250_11",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "W250_11_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "W250_11_2",
       "position": [20, 0]
     },
     {
@@ -978,23 +1168,28 @@
     },
     {
       "type": "Button",
-      "text": "Тонировка",
-      "position": [1024, -6]
+      "text": "Рулетка",
+      "position": [1008, -6]
     },
     {
       "type": "Button",
-      "text": "Свет",
+      "text": "Тонировка",
       "position": [1140, -6]
     },
     {
       "type": "Button",
+      "text": "Свет",
+      "position": [1256, -6]
+    },
+    {
+      "type": "Button",
       "text": "Солнце",
-      "position": [1216, -6]
+      "position": [1332, -6]
     },
     {
       "type": "Button",
       "text": "Режим: обычный",
-      "position": [1328, -6]
+      "position": [1444, -6]
     },
     {
       "type": "Button",

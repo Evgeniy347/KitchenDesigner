@@ -304,4 +304,22 @@ public class ElementPropertyDiagramTests
             () => { ContextMenuUI.Instance!.Open(el); },
             () => { ContextMenuUI.Instance?.Close(); });
     }
+
+    /// <summary>Окно свойств замера: обе точки в мм, длина и красная «Удалить».
+    /// Открывается выбором отрезка в MeasureStore, как это делает рулетка.</summary>
+    [UnityTest]
+    public IEnumerator MeasureProperties_SavesPng()
+    {
+        var a = new Vector3(0.1f, 0.72f, -0.3f);
+        var b = new Vector3(1.3f, 0.72f, -0.3f);
+        var segment = new KitchenDesigner.Core.Measure.MeasureSegment(a, b);
+
+        yield return CapturePanel("MeasurePanel", "measure_properties.png",
+            () =>
+            {
+                KitchenDesigner.Core.Measure.MeasureStore.Add(segment);
+                KitchenDesigner.Core.Measure.MeasureStore.Select(segment);
+            },
+            () => { KitchenDesigner.Core.Measure.MeasureStore.Clear(); });
+    }
 }

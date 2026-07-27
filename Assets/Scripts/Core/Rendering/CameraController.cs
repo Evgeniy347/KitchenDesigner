@@ -11,6 +11,11 @@ namespace KitchenDesigner.Core
         // Фоторежим держит собственную дистанцию зума (сохраняется в проект),
         // независимую от обычного режима.
         [SerializeField] private float _photoDistance = 8f;
+        // Фоторежим держит собственные позицию и углы обзора (сохраняются в проект),
+        // независимые от обычного режима.
+        private Vector3 _photoTarget = Vector3.zero;
+        private float _photoAngleX = 30f;
+        private float _photoAngleY = 0f;
         [SerializeField] private float _minDistance = 0.5f;
         [SerializeField] private float _maxDistance = 20f;
         [SerializeField] private float _zoomSpeed = 1f;
@@ -50,6 +55,33 @@ namespace KitchenDesigner.Core
             }
         }
 
+        private Vector3 CurrTarget
+        {
+            get => PhotoMode.Active ? _photoTarget : _target;
+            set
+            {
+                if (PhotoMode.Active) _photoTarget = value; else _target = value;
+            }
+        }
+
+        private float CurrAngleX
+        {
+            get => PhotoMode.Active ? _photoAngleX : _angleX;
+            set
+            {
+                if (PhotoMode.Active) _photoAngleX = value; else _angleX = value;
+            }
+        }
+
+        private float CurrAngleY
+        {
+            get => PhotoMode.Active ? _photoAngleY : _angleY;
+            set
+            {
+                if (PhotoMode.Active) _photoAngleY = value; else _angleY = value;
+            }
+        }
+
         // Множители из настроек «Управление». Без ассета настроек (юнит-тесты,
         // ранний старт) работаем как раньше — с коэффициентом 1.
         private static float MouseSensitivity => KitchenSettings.Instance != null
@@ -79,7 +111,9 @@ namespace KitchenDesigner.Core
             valid = true,
             targetX = _target.x, targetY = _target.y, targetZ = _target.z,
             angleX = _angleX, angleY = _angleY, distance = _distance,
-            photoDistance = _photoDistance
+            photoDistance = _photoDistance,
+            photoTargetX = _photoTarget.x, photoTargetY = _photoTarget.y, photoTargetZ = _photoTarget.z,
+            photoAngleX = _photoAngleX, photoAngleY = _photoAngleY
         };
 
         /// <summary>Восстановить состояние камеры из проекта.</summary>
@@ -89,9 +123,17 @@ namespace KitchenDesigner.Core
             _angleX = s.angleX;
             _angleY = s.angleY;
             _distance = Mathf.Clamp(s.distance, _minDistance, _maxDistance);
-            // Старые проекты без photoDistance (0) → оставляем текущее значение.
             if (s.photoDistance > 0f)
                 _photoDistance = Mathf.Clamp(s.photoDistance, _minDistance, _maxDistance);
+            // Старые проекты без photoTarget (0,0,0) → фото-позиция = обычной.
+            _photoTarget = s.photoTargetX != 0f || s.photoTargetY != 0f || s.photoTargetZ != 0f
+                ? new Vector3(s.photoTargetX, s.photoTargetY, s.photoTargetZ)
+                : _target;
+            // Старые проекты без photoAngle (оба 0) → фото-углы = обычным.
+            _photoAngleX = s.photoAngleX != 0f || s.photoAngleY != 0f
+                ? s.photoAngleX : _angleX;
+            _photoAngleY = s.photoAngleX != 0f || s.photoAngleY != 0f
+                ? s.photoAngleY : _angleY;
             UpdateCameraPosition();
         }
 
@@ -149,9 +191,9 @@ namespace KitchenDesigner.Core
             {
                 Vector3 delta = Input.mousePosition - _lastMouse;
                 float sens = MouseSensitivity;
-                _angleY += delta.x * _orbitSpeed * 0.1f * sens;
-                _angleX -= delta.y * _orbitSpeed * 0.1f * sens;
-                _angleX = Mathf.Clamp(_angleX, -89f, 89f);
+                CurrAngleY += delta.x * _orbitSpeed * 0.1f * sens;
+                CurrAngleX -= delta.y * _orbitSpeed * 0.1f * sens;
+                CurrAngleX = Mathf.Clamp(CurrAngleX, -89f, 89f);
                 _lastMouse = Input.mousePosition;
             }
 
@@ -161,16 +203,16 @@ namespace KitchenDesigner.Core
                 float pan = _panSpeed * (Dist * 0.1f) * MouseSensitivity;
                 if (KitchenSettings.Instance.CameraPanFree)
                 {
-                    Vector3 right = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.right;
-                    Vector3 up = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.up;
-                    _target -= (right * delta.x + up * delta.y) * pan;
+                    Vector3 right = Quaternion.Euler(CurrAngleX, CurrAngleY, 0) * Vector3.right;
+                    Vector3 up = Quaternion.Euler(CurrAngleX, CurrAngleY, 0) * Vector3.up;
+                    CurrTarget -= (right * delta.x + up * delta.y) * pan;
                 }
                 else
                 {
-                    Vector3 forward = Quaternion.Euler(_angleX, _angleY, 0) * Vector3.forward;
-                    Vector3 right = Quaternion.Euler(0, _angleY, 0) * Vector3.right;
+                    Vector3 forward = Quaternion.Euler(CurrAngleX, CurrAngleY, 0) * Vector3.forward;
+                    Vector3 right = Quaternion.Euler(0, CurrAngleY, 0) * Vector3.right;
                     forward.y = 0; forward.Normalize();
-                    _target -= (right * delta.x + forward * delta.y) * pan;
+                    CurrTarget -= (right * delta.x + forward * delta.y) * pan;
                 }
                 _lastMouse = Input.mousePosition;
             }
@@ -273,11 +315,11 @@ namespace KitchenDesigner.Core
             if (dt < 1e-6f) return;
             float speed = _moveSpeed * Dist * 0.25f * dt * WasdSpeed;
 
-            Vector3 fwd = Quaternion.Euler(0, _angleY, 0) * Vector3.forward;
-            Vector3 right = Quaternion.Euler(0, _angleY, 0) * Vector3.right;
+            Vector3 fwd = Quaternion.Euler(0, CurrAngleY, 0) * Vector3.forward;
+            Vector3 right = Quaternion.Euler(0, CurrAngleY, 0) * Vector3.right;
 
-            _target += fwd * (input.y * speed);
-            _target += right * (input.x * speed);
+            CurrTarget += fwd * (input.y * speed);
+            CurrTarget += right * (input.x * speed);
         }
 
         private void HandleArrowOrbit()
@@ -298,9 +340,9 @@ namespace KitchenDesigner.Core
             if (dt < 1e-6f) return;
             float speed = _keyboardOrbitSpeed * dt * ArrowSpeed;
 
-            _angleY += input.x * speed;
-            _angleX += input.y * speed;
-            _angleX = Mathf.Clamp(_angleX, -89f, 89f);
+            CurrAngleY += input.x * speed;
+            CurrAngleX += input.y * speed;
+            CurrAngleX = Mathf.Clamp(CurrAngleX, -89f, 89f);
         }
 
         private void HandlePlusMinusZoom()
@@ -366,6 +408,7 @@ namespace KitchenDesigner.Core
         private void HandleRmbClick()
         {
             if (_cachedCamera == null) return;
+            if (Measure.MeasureMode.Active) return; // в режиме рулетки меню не открываем
             Ray ray = _cachedCamera.ScreenPointToRay(Input.mousePosition);
             if (!Physics.Raycast(ray, out RaycastHit hit)) return;
             var e = hit.collider.GetComponentInParent<KitchenElement>();
@@ -392,29 +435,29 @@ namespace KitchenDesigner.Core
 
         private void SetView(float angleX, float angleY)
         {
-            _angleX = angleX;
-            _angleY = angleY;
+            CurrAngleX = angleX;
+            CurrAngleY = angleY;
         }
 
         private void FocusOnSelection()
         {
             if (SelectionManager.Instance != null && SelectionManager.Instance.Selected != null)
-                _target = SelectionManager.Instance.Selected.transform.position;
+                CurrTarget = SelectionManager.Instance.Selected.transform.position;
         }
 
         public void FocusOn(Vector3 point)
         {
-            _target = point;
+            CurrTarget = point;
         }
 
         public void UpdateCameraPosition()
         {
-            Quaternion rotation = Quaternion.Euler(_angleX, _angleY, 0);
+            Quaternion rotation = Quaternion.Euler(CurrAngleX, CurrAngleY, 0);
             Vector3 offset = rotation * (Vector3.back * Dist);
             if (_cachedCamera != null)
             {
-                _cachedCamera.transform.position = _target + offset;
-                _cachedCamera.transform.LookAt(_target);
+                _cachedCamera.transform.position = CurrTarget + offset;
+                _cachedCamera.transform.LookAt(CurrTarget);
             }
         }
     }

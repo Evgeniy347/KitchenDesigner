@@ -26,6 +26,16 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color SurfaceActive = new Color(0.28f, 0.33f, 0.42f, 1f);
         public static readonly Color Separator = new Color(0.35f, 0.37f, 0.42f, 1f);
 
+        // ── Рулетка (замеры поверх сцены) ──────────────────────────────
+        /// <summary>Розовая точка-подсказка: вершина под курсором.</summary>
+        public static readonly Color MeasureHint = new Color(1f, 0.35f, 0.75f, 1f);
+        /// <summary>Красная точка зафиксированного конца замера и сам отрезок.</summary>
+        public static readonly Color MeasureLine = new Color(0.95f, 0.15f, 0.15f, 1f);
+        /// <summary>Светло-жёлтая подсветка отрезка под курсором.</summary>
+        public static readonly Color MeasureHover = new Color(1f, 0.95f, 0.55f, 1f);
+        /// <summary>Прозрачный жёлтый цилиндр вокруг выбранного отрезка.</summary>
+        public static readonly Color MeasureSelected = new Color(1f, 0.85f, 0.1f, 0.25f);
+
         // ── Размеры и ритм (правило 8) ────────────────────────────────
         /// <summary>Минимальный хит-таргет кликабельных элементов.</summary>
         public const float HitTarget = 32f;
@@ -56,5 +66,8 @@ namespace KitchenDesigner.Core.UI
         public const string GlyphExpanded = "▼";
         /// <summary>Стрелка выпадающего списка.</summary>
         public const string GlyphDropdown = "▼";
+        /// <summary>Замер не по оси (диагональ). Именно «∟» (U+221F): знак угла
+        /// «∠» (U+2220) вне WGL4 и в рантайм-атласе TMP отсутствует.</summary>
+        public const string GlyphAngle = "∟";
     }
 }

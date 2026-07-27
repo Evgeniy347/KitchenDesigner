@@ -1,0 +1,35 @@
+﻿{
+  "root": "MeasurePanel",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Замер",
+      "position": [0, 92]
+    },
+    {
+      "type": "Label",
+      "text": "Точка A: X 100, Y 720, Z -300 мм",
+      "position": [0, 56]
+    },
+    {
+      "type": "Label",
+      "text": "Точка B: X 1300, Y 720, Z -300 мм",
+      "position": [0, 26]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Расстояние: 1200 мм",
+      "position": [0, -20]
+    },
+    {
+      "type": "Button",
+      "text": "Удалить",
+      "position": [78, -66]
+    }
+  ]
+}

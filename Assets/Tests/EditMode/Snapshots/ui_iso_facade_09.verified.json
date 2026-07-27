@@ -98,6 +98,11 @@
     },
     {
       "type": "Button",
+      "text": "Рулетка",
+      "position": [1008, -6]
+    },
+    {
+      "type": "Button",
       "text": "Тонировка",
       "position": [1024, -6]
     },

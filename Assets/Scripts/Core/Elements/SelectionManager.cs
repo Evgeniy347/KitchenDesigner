@@ -33,6 +33,10 @@ namespace KitchenDesigner.Core
             if (PlacementController.IsActive)
                 return;
 
+            // В режиме рулетки ЛКМ ставит точки замера, а не выделяет детали.
+            if (Measure.MeasureMode.Active)
+                return;
+
             if (ElementMover.IsDragging)
                 return;
 

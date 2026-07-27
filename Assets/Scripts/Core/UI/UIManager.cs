@@ -31,6 +31,7 @@ namespace KitchenDesigner.Core.UI
         private Button? _errorButton;
         private Button? _projectInstructionsButton;
         private Button? _settingsButton;
+        private Button? _measureButton;
         private Button? _tintButton;
         private Button? _lightsButton;
         private Button? _dayNightButton;
@@ -90,6 +91,12 @@ namespace KitchenDesigner.Core.UI
 
             _projectInstructionsPanel = gameObject.AddComponent<ProjectInstructionsPanelUI>();
             _projectInstructionsPanel.Build(windowLayer);
+
+            var measureProperties = gameObject.AddComponent<MeasurePropertiesUI>();
+            measureProperties.Build(windowLayer);
+
+            var measureLabels = gameObject.AddComponent<MeasureLabelsUI>();
+            measureLabels.Build(_canvas.transform);
 
             var toast = gameObject.AddComponent<ToastNotification>();
             toast.Build(_canvas.transform);
@@ -164,6 +171,10 @@ namespace KitchenDesigner.Core.UI
             // Переключатель режима ручек на гранях: растяжение ↔ перемещение по оси.
             var modeBtn = AddBarButton(bar.transform, "HandleMode", ModeLabel(), ref x, y, h, 176, ToggleHandleMode);
             _modeButtonLabel = modeBtn.GetComponentInChildren<TMP_Text>();
+            // Замер расстояний между вершинами: пока режим включён, мышь
+            // принадлежит только рулетке.
+            _measureButton = AddBarButton(bar.transform, "MeasureToggle", "Рулетка",
+                ref x, y, h, 110, Measure.MeasureMode.Toggle);
             AddSeparator(bar.transform, ref x, y, h);
 
             // Тогглы вида: состояние показывает фон кнопки (нажат = включено),
@@ -274,6 +285,7 @@ namespace KitchenDesigner.Core.UI
             if (_undoButton != null) _undoButton.interactable = CommandStack.CanUndo;
             if (_redoButton != null) _redoButton.interactable = CommandStack.CanRedo;
 
+            SetToggled(_measureButton, Measure.MeasureMode.Active);
             SetToggled(_tintButton, ElementHighlighter.TintEnabled);
             SetToggled(_lightsButton, LightSourceElement.GlobalOn);
             SetToggled(_specButton, _specPanel != null && _specPanel.IsVisible);

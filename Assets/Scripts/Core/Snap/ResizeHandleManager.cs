@@ -113,7 +113,9 @@ namespace KitchenDesigner.Core
             // запрещает и ресайз. Переключается на лету (чекбокс в свойствах).
             // Смена режима (Resize/Move) пересобирает ручки с другим наконечником.
             // В режиме редактирования модуля чужие элементы недоступны.
-            bool show = _target.Movable && ModuleEditMode.IsEditable(_target);
+            // В режиме рулетки ручек нет — они перехватывали бы клики по вершинам.
+            bool show = _target.Movable && ModuleEditMode.IsEditable(_target)
+                        && !Measure.MeasureMode.Active;
             bool needRebuild = show && (_handles.Count == 0 || _builtMode != Mode) && !IsResizing;
             if (needRebuild) { ClearHandles(); BuildHandles(); }
             else if (!show && _handles.Count > 0) { IsResizing = false; ClearHandles(); }
@@ -125,6 +127,9 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
+            // В режиме рулетки ручки не строятся (см. LateUpdate) — и тянуть
+            // их нечем, но страхуемся от начатого до входа в режим драга.
+            if (Measure.MeasureMode.Active) { if (IsResizing) FinishDrag(); return; }
             if (_target == null) return;
 
             if (IsResizing)

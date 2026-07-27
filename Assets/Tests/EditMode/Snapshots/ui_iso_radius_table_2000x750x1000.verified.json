@@ -98,23 +98,28 @@
     },
     {
       "type": "Button",
-      "text": "Тонировка",
-      "position": [1024, -6]
+      "text": "Рулетка",
+      "position": [1008, -6]
     },
     {
       "type": "Button",
-      "text": "Свет",
+      "text": "Тонировка",
       "position": [1140, -6]
     },
     {
       "type": "Button",
+      "text": "Свет",
+      "position": [1256, -6]
+    },
+    {
+      "type": "Button",
       "text": "Солнце",
-      "position": [1216, -6]
+      "position": [1332, -6]
     },
     {
       "type": "Button",
       "text": "Режим: обычный",
-      "position": [1328, -6]
+      "position": [1444, -6]
     },
     {
       "type": "Button",

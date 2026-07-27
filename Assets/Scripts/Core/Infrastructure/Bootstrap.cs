@@ -36,6 +36,10 @@ namespace KitchenDesigner.Core
                 new GameObject("FrameRateManager").AddComponent<FrameRateManager>();
             if (FindAnyObjectByType<SpatialGridRenderer>() == null) gameObject.AddComponent<SpatialGridRenderer>();
             if (FindAnyObjectByType<EdgeOutlineRenderer>() == null) gameObject.AddComponent<EdgeOutlineRenderer>();
+            if (FindAnyObjectByType<Measure.MeasureController>() == null)
+                gameObject.AddComponent<Measure.MeasureController>();
+            if (FindAnyObjectByType<Measure.MeasureRenderer>() == null)
+                gameObject.AddComponent<Measure.MeasureRenderer>();
             if (FindAnyObjectByType<WallManager>() == null) gameObject.AddComponent<WallManager>();
             if (FindAnyObjectByType<SceneVisibilityManager>() == null) gameObject.AddComponent<SceneVisibilityManager>();
             if (FindAnyObjectByType<ResizeHandleManager>() == null) gameObject.AddComponent<ResizeHandleManager>();
