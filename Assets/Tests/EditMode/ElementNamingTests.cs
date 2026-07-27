@@ -123,6 +123,46 @@ public class ElementNamingTests
         Assert.AreEqual("Shelf_1", dupGo.GetComponent<KitchenElement>().PartName);
     }
 
+    [Test]
+    public void Duplicate_IncrementsTrailingNumberInsteadOfNesting()
+    {
+        var src = MakePart("Shelf_5");
+        var dupGo = ElementFactory.Duplicate(src);
+        _spawned.Add(dupGo);
+
+        Assert.AreEqual("Shelf_6",
+            dupGo.GetComponent<KitchenElement>().PartName,
+            "клон Shelf_5 должен дать Shelf_6, а не Shelf_5_1");
+    }
+
+    [Test]
+    public void Duplicate_SkipsTakenIncrementedNames()
+    {
+        MakePart("Shelf_5");
+        MakePart("Shelf_6");
+
+        var src = PartRegistry.GetAll().Find(e => e.PartName == "Shelf_5");
+        Assert.IsNotNull(src);
+        var dupGo = ElementFactory.Duplicate(src);
+        _spawned.Add(dupGo);
+
+        Assert.AreEqual("Shelf_7",
+            dupGo.GetComponent<KitchenElement>().PartName,
+            "Shelf_6 занято — должно дать Shelf_7");
+    }
+
+    [Test]
+    public void Duplicate_FromNestedName_UnnestsOneLevel()
+    {
+        var src = MakePart("Polka_1_1");
+        var dupGo = ElementFactory.Duplicate(src);
+        _spawned.Add(dupGo);
+
+        Assert.AreEqual("Polka_1_2",
+            dupGo.GetComponent<KitchenElement>().PartName,
+            "Polka_1_1 → base=Polka_1, num=1 → Polka_1_2");
+    }
+
     // ── Загрузка проекта ────────────────────────────────────────────────
 
     private static ProjectData ProjectOf(params ElementData[] items)
@@ -149,7 +189,7 @@ public class ElementNamingTests
 
         Assert.AreEqual(2, created.Count);
         Assert.AreEqual("Fasad_600", created[0].GetComponent<KitchenElement>().PartName);
-        Assert.AreEqual("Fasad_600_1", created[1].GetComponent<KitchenElement>().PartName);
+        Assert.AreEqual("Fasad_601", created[1].GetComponent<KitchenElement>().PartName);
     }
 
     /// <summary>Ключевой инвариант: имя — ключ связи, поэтому чистка имён при

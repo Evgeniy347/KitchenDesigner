@@ -92,11 +92,41 @@ namespace KitchenDesigner.Core
             if (string.IsNullOrEmpty(desired)) desired = Fallback;
             if (!IsTaken(desired, except, reserved)) return desired;
 
+            var (baseName, startNum) = TryExtractTrailingNumber(desired);
+            if (baseName != null)
+            {
+                for (int i = startNum + 1; ; i++)
+                {
+                    var candidate = baseName + "_" + i;
+                    if (!IsTaken(candidate, except, reserved)) return candidate;
+                }
+            }
+
             for (int i = 1; ; i++)
             {
                 var candidate = desired + "_" + i;
                 if (!IsTaken(candidate, except, reserved)) return candidate;
             }
+        }
+
+        private static (string? baseName, int num) TryExtractTrailingNumber(string name)
+        {
+            int lastUnderscore = name.LastIndexOf('_');
+            if (lastUnderscore <= 0 || lastUnderscore >= name.Length - 1)
+                return (null, 0);
+
+            string suffix = name.Substring(lastUnderscore + 1);
+            if (suffix.Length == 0 || suffix[0] == '0')
+                return (null, 0);
+
+            foreach (char c in suffix)
+                if (c < '0' || c > '9')
+                    return (null, 0);
+
+            if (!int.TryParse(suffix, out int num) || num < 1)
+                return (null, 0);
+
+            return (name.Substring(0, lastUnderscore), num);
         }
 
         /// <summary>Чистка + уникальность одним вызовом — основная точка входа.</summary>
