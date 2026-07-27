@@ -114,6 +114,46 @@ public class SinkElementTests
         Assert.IsTrue(top.HasSink(sink), "на столешнице одного модуля мойка врезается");
     }
 
+    // ── Реальный проект (docs/example.save.json) ────────────────────────
+
+    /// <summary>Столешницу в проектах набирают не повёрнутой доской, а коробом:
+    /// у Countertop_B габарит 2570×40×600 при НУЛЕВОМ повороте, то есть толщина
+    /// лежит по локальной Y, а вовсе не по пласти ±Z. Мойка обязана врезаться и
+    /// в такую деталь — на этой сцене вырез как раз и не появлялся.</summary>
+    [Test]
+    public void RealProject_Countertop_B_GetsCutOut()
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _spawned.Add(go);
+        var top = go.AddComponent<KitchenElement>();
+        top.PartName = "Countertop_B";
+        top.transform.SetPositionAndRotation(
+            new Vector3(-0.300f, 0.840f, -3.320f), Quaternion.identity);
+        top.DimensionsMM = new Vector3Int(2570, 40, 600);
+        PartRegistry.Register(top);
+
+        Assert.IsTrue(SinkElement.IsSuitableHost(top),
+            "столешница-короб (толщина по Y) обязана годиться под мойку");
+        Assert.AreEqual(1, SinkElement.HoleAxisFor(top), "резать её надо поперёк Y");
+
+        var sink = CreateSink(new Vector3(0.7019751667976379f, 0.85999995470047f, -3.2985825538635256f));
+        sink.transform.rotation = new Quaternion(0f, 1f, 0f, -4.371139e-8f);
+
+        sink.SnapToPart();
+
+        Assert.IsTrue(sink.IsAttached, "мойка садится на столешницу");
+        Assert.IsTrue(top.HasSink(sink));
+        // Верх столешницы 840 + 20 = 860 мм — ровно там, где мойка и стояла.
+        Assert.AreEqual(0.860f, sink.transform.position.y, 1e-4f);
+
+        var mesh = top.GetComponent<MeshFilter>().sharedMesh;
+        Assert.AreNotEqual("Cube", mesh.name, "деталь получила меш с вырезом");
+        // Дырка сквозная по ВЕРТИКАЛИ: пусто и сверху, и снизу плиты (|y| = 0.5).
+        var rect = sink.CutoutRectIn(top);
+        Assert.AreEqual(0, CountInsidePlane(mesh, rect, 0.5f, 0, 2), "верх прорезан");
+        Assert.AreEqual(0, CountInsidePlane(mesh, rect, -0.5f, 0, 2), "низ прорезан");
+    }
+
     // ── Захват и отрыв ──────────────────────────────────────────────────
 
     [Test]
@@ -340,13 +380,19 @@ public class SinkElementTests
     }
 
     /// <summary>Вершины пласти z, лежащие строго внутри проёма.</summary>
-    private static int CountInsideFace(Mesh mesh, GrooveMesh.Rect2 rect, float z)
+    private static int CountInsideFace(Mesh mesh, GrooveMesh.Rect2 rect, float z) =>
+        CountInsidePlane(mesh, rect, z, 0, 1);
+
+    /// <summary>То же для детали, у которой проём режется поперёк другой оси:
+    /// faceAxis задаётся неявно (та, что не a и не b), a/b — оси плоскости выреза.</summary>
+    private static int CountInsidePlane(Mesh mesh, GrooveMesh.Rect2 rect, float faceCoord, int a, int b)
     {
+        int faceAxis = 3 - a - b;
         int count = 0;
         foreach (var v in mesh.vertices)
-            if (Mathf.Abs(v.z - z) < 1e-4f &&
-                v.x > rect.xMin + 1e-4f && v.x < rect.xMax - 1e-4f &&
-                v.y > rect.yMin + 1e-4f && v.y < rect.yMax - 1e-4f)
+            if (Mathf.Abs(v[faceAxis] - faceCoord) < 1e-4f &&
+                v[a] > rect.xMin + 1e-4f && v[a] < rect.xMax - 1e-4f &&
+                v[b] > rect.yMin + 1e-4f && v[b] < rect.yMax - 1e-4f)
                 count++;
         return count;
     }

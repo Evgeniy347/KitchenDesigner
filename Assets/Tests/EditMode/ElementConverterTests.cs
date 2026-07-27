@@ -481,6 +481,7 @@ public class ElementConverterTests
         var result = ElementConverter.Convert(src, ElementConverter.TargetType.Facade);
 
         Assert.AreEqual(0, result.AttachedSinks.Count, "у фасада проёма под мойку нет");
+        Assert.AreEqual(2, result.SinkHoleAxis, "без моек ось выреза каноническая");
         Object.DestroyImmediate(sinkGo);
     }
 
@@ -506,7 +507,7 @@ public class ElementConverterTests
     {
         // KitchenElement
         "PartName", "DimensionsMM", "Movable", "GroupId", "MaterialId", "Transparent", "Data",
-        "SupportsGrooves", "Grooves", "AttachedSinks",
+        "SupportsGrooves", "Grooves", "AttachedSinks", "SinkHoleAxis",
         // FacadeElement
         "GapLeft", "GapRight", "GapTop", "GapBottom", "GapMM", "Mode",
         "IsOpen", "DoorProgress", "IsDoorClosed", "ClosedPosition", "ClosedRotation",

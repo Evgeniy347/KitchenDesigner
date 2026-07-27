@@ -97,7 +97,13 @@ namespace KitchenDesigner.Core
             RebuildGrooveMesh();
         }
 
-        /// <summary>Проёмы врезанных моек в нормализованных координатах пласти.</summary>
+        /// <summary>Ось, ПОПЕРЁК которой режутся проёмы моек: та локальная ось
+        /// детали, что смотрит вверх. У повёрнутой доски это Z (пласть), у
+        /// столешницы-короба — Y (толщина). Без мойки — канонический Z.</summary>
+        public int SinkHoleAxis => _sinks.Count > 0 ? SinkElement.HoleAxisFor(this) : 2;
+
+        /// <summary>Проёмы врезанных моек в нормализованных координатах той
+        /// плоскости, в которой их режет GrooveMesh (см. SinkHoleAxis).</summary>
         public List<GrooveMesh.Rect2> SinkHoleRects()
         {
             var result = new List<GrooveMesh.Rect2>();
@@ -188,7 +194,7 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves, holes);
+            var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves, holes, SinkHoleAxis);
             DestroyOwnedMesh();
             _ownedMesh = mesh;
             filter.sharedMesh = mesh;

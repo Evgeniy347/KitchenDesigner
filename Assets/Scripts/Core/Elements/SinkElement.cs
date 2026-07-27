@@ -168,8 +168,8 @@ namespace KitchenDesigner.Core
         /// она осталась бы на пласти и тут же прилипла снова.</summary>
         private void ReleaseFrom(KitchenElement host)
         {
-            Vector3 up = host.transform.rotation *
-                (TopIsPlusZ(host) ? Vector3.forward : Vector3.back);
+            var (upAxis, upSign) = UpAxisOf(host);
+            Vector3 up = host.transform.rotation * (AxisVector(upAxis) * upSign);
             // Догоняем ровно недостающее: часть пути мойка уже проехала в этом
             // кадре (её сдвинул drag), остальное копилось, пока она держалась.
             float actualHeightMM = LocalPose(host).heightMM;
@@ -196,14 +196,47 @@ namespace KitchenDesigner.Core
             var pt = host.transform;
             Vector3 local = Quaternion.Inverse(pt.rotation) * drift;
             float toU = AppConstants.MM_TO_UNITS;
-            _offsetXMM += Mathf.RoundToInt(local.x / toU);
-            _offsetYMM += Mathf.RoundToInt(local.y / toU);
-            _freeHeightMM += local.z / toU * (TopIsPlusZ(host) ? 1f : -1f);
+            var (up, sign) = UpAxisOf(host);
+            var (a, b) = PlaneAxes(up);
+            _offsetXMM += Mathf.RoundToInt(local[a] / toU);
+            _offsetYMM += Mathf.RoundToInt(local[b] / toU);
+            _freeHeightMM += local[up] / toU * sign;
         }
 
-        /// <summary>Верхняя пласть — та из ±Z, что смотрит вверх.</summary>
-        private static bool TopIsPlusZ(KitchenElement part) =>
-            (part.transform.rotation * Vector3.forward).y >= 0f;
+        // ── Оси детали ──────────────────────────────────────────────────
+        // Столешницу собирают по-разному: повёрнутой доской (толщина по локальной
+        // Z — «пласть») или коробом, у которого толщина лежит по Y. Поэтому
+        // верхнюю грань ищем перебором осей, а не считаем, что это всегда ±Z.
+
+        private static Vector3 AxisVector(int axis) =>
+            axis == 0 ? Vector3.right : axis == 1 ? Vector3.up : Vector3.forward;
+
+        /// <summary>Локальная ось детали, смотрящая вверх, и её знак.</summary>
+        private static (int axis, float sign) UpAxisOf(KitchenElement part)
+        {
+            var rot = part.transform.rotation;
+            int best = 2;
+            float bestDot = 0f;
+            for (int axis = 0; axis < 3; axis++)
+            {
+                float dot = Vector3.Dot(rot * AxisVector(axis), Vector3.up);
+                if (Mathf.Abs(dot) > Mathf.Abs(bestDot)) { bestDot = dot; best = axis; }
+            }
+            return (best, bestDot < 0f ? -1f : 1f);
+        }
+
+        /// <summary>Ось, поперёк которой режется проём в этой детали.</summary>
+        public static int HoleAxisFor(KitchenElement part) => UpAxisOf(part).axis;
+
+        /// <summary>Две оси плоскости столешницы в том порядке, в каком их ждёт
+        /// строитель меша: первая ложится на его X, вторая — на Y (см.
+        /// GrooveMesh.Build с holeAxis).</summary>
+        private static (int a, int b) PlaneAxes(int upAxis) => upAxis switch
+        {
+            2 => (0, 1),   // вырез вдоль Z — сетка в XY (канонический случай)
+            1 => (0, 2),   // вдоль Y — сетка в XZ
+            _ => (2, 1),   // вдоль X — сетка в ZY
+        };
 
         /// <summary>Мойка всё ещё держится на этой детали? Поперёк пласти она не
         /// отрывается — упирается в край (клампинг в AlignToPart); отпускает
@@ -218,19 +251,22 @@ namespace KitchenDesigner.Core
         public static bool IsSuitableHost(KitchenElement part)
         {
             if (part == null || !part.SupportsGrooves) return false;
+            var (up, _) = UpAxisOf(part);
+            // Верхняя грань должна быть горизонтальной — столешница, а не стойка.
+            float upness = Mathf.Abs((part.transform.rotation * AxisVector(up)).y);
+            if (upness < 0.9f) return false;
+            var (a, b) = PlaneAxes(up);
             var dims = part.DimensionsMM;
-            if (dims.x < MinPartWidthMM || dims.y < MinPartDepthMM) return false;
-            // Пласть (локальная ±Z) должна смотреть вверх — столешница, а не стойка.
-            float upness = Mathf.Abs((part.transform.rotation * Vector3.forward).y);
-            return upness > 0.7f;
+            return dims[a] >= MinPartWidthMM && dims[b] >= MinPartDepthMM;
         }
 
         /// <summary>Центр мойки над деталью (иначе она «прилипает» краем к
         /// соседней столешнице через всю комнату).</summary>
         private static bool IsOverFootprint(KitchenElement part, int offX, int offY)
         {
+            var (a, b) = PlaneAxes(UpAxisOf(part).axis);
             var dims = part.DimensionsMM;
-            return Mathf.Abs(offX) <= dims.x * 0.5f && Mathf.Abs(offY) <= dims.y * 0.5f;
+            return Mathf.Abs(offX) <= dims[a] * 0.5f && Mathf.Abs(offY) <= dims[b] * 0.5f;
         }
 
         /// <summary>Столешница, которая ловит мойку прямо сейчас: мойка над её
@@ -270,23 +306,25 @@ namespace KitchenDesigner.Core
             return best;
         }
 
-        /// <summary>Поза мойки в осях детали: смещения по пласти и высота над ней.</summary>
+        /// <summary>Поза мойки в осях детали: смещения по её плоскости и высота
+        /// над верхней гранью.</summary>
         private (int offX, int offY, float heightMM) LocalPose(KitchenElement part)
         {
             var pt = part.transform;
             float toU = AppConstants.MM_TO_UNITS;
             Vector3 local = Quaternion.Inverse(pt.rotation) * (transform.position - pt.position);
-            float halfThickness = part.DimensionsMM.z * 0.5f;
-            float depth = local.z / toU;
-            float height = TopIsPlusZ(part) ? depth - halfThickness : -depth - halfThickness;
-            return (Mathf.RoundToInt(local.x / toU), Mathf.RoundToInt(local.y / toU), height);
+            var (up, sign) = UpAxisOf(part);
+            var (a, b) = PlaneAxes(up);
+            float height = local[up] / toU * sign - part.DimensionsMM[up] * 0.5f;
+            return (Mathf.RoundToInt(local[a] / toU), Mathf.RoundToInt(local[b] / toU), height);
         }
 
         private static void ClampOffsets(KitchenElement part, ref int offX, ref int offY)
         {
+            var (a, b) = PlaneAxes(UpAxisOf(part).axis);
             var dims = part.DimensionsMM;
-            int maxX = (dims.x - CutoutWidthMM) / 2 - MIN_EDGE_MM;
-            int maxY = (dims.y - CutoutDepthMM) / 2 - MIN_EDGE_MM;
+            int maxX = (dims[a] - CutoutWidthMM) / 2 - MIN_EDGE_MM;
+            int maxY = (dims[b] - CutoutDepthMM) / 2 - MIN_EDGE_MM;
             offX = Mathf.Clamp(offX, -maxX, maxX);
             offY = Mathf.Clamp(offY, -maxY, maxY);
         }
@@ -301,13 +339,15 @@ namespace KitchenDesigner.Core
             var pt = part.transform;
             var dims = part.DimensionsMM;
 
+            var (up, sign) = UpAxisOf(part);
+            var (a, b) = PlaneAxes(up);
             float x0 = (offX - CutoutWidthMM * 0.5f) * toU, x1 = (offX + CutoutWidthMM * 0.5f) * toU;
             float y0 = (offY - CutoutDepthMM * 0.5f) * toU, y1 = (offY + CutoutDepthMM * 0.5f) * toU;
-            float halfT = dims.z * 0.5f * toU;
+            float halfT = dims[up] * 0.5f * toU;
             float bowl = BOWL_DEPTH_MM * toU;
-            // Слой чаши: от верхней пласти вглубь на глубину чаши.
-            float z0 = TopIsPlusZ(part) ? halfT - bowl : -halfT;
-            float z1 = TopIsPlusZ(part) ? halfT : -halfT + bowl;
+            // Слой чаши: от верхней грани вглубь на глубину чаши.
+            float z0 = sign > 0f ? halfT - bowl : -halfT;
+            float z1 = sign > 0f ? halfT : -halfT + bowl;
 
             var inv = Quaternion.Inverse(pt.rotation);
             foreach (var el in PartRegistry.GetAll())
@@ -331,9 +371,9 @@ namespace KitchenDesigner.Core
 
                 // Касание кромкой не мешает — блокирует только реальное наложение.
                 float eps = Tolerance.EpsilonUnits;
-                if (max.x <= x0 + eps || min.x >= x1 - eps) continue;
-                if (max.y <= y0 + eps || min.y >= y1 - eps) continue;
-                if (max.z <= z0 + eps || min.z >= z1 - eps) continue;
+                if (max[a] <= x0 + eps || min[a] >= x1 - eps) continue;
+                if (max[b] <= y0 + eps || min[b] >= y1 - eps) continue;
+                if (max[up] <= z0 + eps || min[up] >= z1 - eps) continue;
                 return true;
             }
             return false;
@@ -345,8 +385,15 @@ namespace KitchenDesigner.Core
             var dims = part.DimensionsMM;
             float toU = AppConstants.MM_TO_UNITS;
 
-            bool topIsPlusZ = TopIsPlusZ(part);
-            Quaternion targetRot = pt.rotation * Quaternion.Euler(topIsPlusZ ? 90f : -90f, 0f, 0f);
+            var (up, sign) = UpAxisOf(part);
+            var (a, b) = PlaneAxes(up);
+
+            // Мойка встаёт вертикалью по верхней оси детали, своей X — по её
+            // первой оси плоскости. Локальная +Z мойки при этом смотрит туда,
+            // куда векторное произведение, — сторону крана считаем от неё.
+            Vector3 upLocal = AxisVector(up) * sign;
+            Vector3 fwdLocal = Vector3.Cross(AxisVector(a), upLocal);
+            Quaternion targetRot = Quaternion.LookRotation(pt.rotation * fwdLocal, pt.rotation * upLocal);
 
             // Клампим всегда: ресайз детали может оставить проём за её краем.
             int offX = _offsetXMM, offY = _offsetYMM;
@@ -371,11 +418,10 @@ namespace KitchenDesigner.Core
             _offsetXMM = offX;
             _offsetYMM = offY;
 
-            float halfThickness = dims.z * 0.5f * toU;
-            Vector3 targetPos = pt.position + pt.rotation * new Vector3(
-                _offsetXMM * toU,
-                _offsetYMM * toU,
-                topIsPlusZ ? halfThickness : -halfThickness);
+            Vector3 localPos = AxisVector(a) * (_offsetXMM * toU)
+                             + AxisVector(b) * (_offsetYMM * toU)
+                             + upLocal * (dims[up] * 0.5f * toU);
+            Vector3 targetPos = pt.position + pt.rotation * localPos;
 
             if ((targetPos - transform.position).sqrMagnitude > Tolerance.EpsilonSqr ||
                 Quaternion.Angle(targetRot, transform.rotation) > 0.05f)
@@ -384,11 +430,11 @@ namespace KitchenDesigner.Core
 
             // Смеситель — с той стороны, где до края детали больше места
             // (мойку обычно сдвигают к переднему краю, кран остаётся сзади).
-            // Локальная +Y детали смотрит в −Z мойки, когда верх — это +Z детали.
-            float spacePlusY = dims.y * 0.5f - _offsetYMM - OUTER_DEPTH_MM * 0.5f;
-            float spaceMinusY = dims.y * 0.5f + _offsetYMM - OUTER_DEPTH_MM * 0.5f;
-            int plusYInSinkZ = topIsPlusZ ? -1 : 1;
-            int faucetSign = spacePlusY >= spaceMinusY ? plusYInSinkZ : -plusYInSinkZ;
+            float spacePlusB = dims[b] * 0.5f - _offsetYMM - OUTER_DEPTH_MM * 0.5f;
+            float spaceMinusB = dims[b] * 0.5f + _offsetYMM - OUTER_DEPTH_MM * 0.5f;
+            // Куда смотрит +ось b в осях самой мойки: её локальная Z — это fwdLocal.
+            int plusBInSinkZ = Vector3.Dot(fwdLocal, AxisVector(b)) >= 0f ? 1 : -1;
+            int faucetSign = spacePlusB >= spaceMinusB ? plusBInSinkZ : -plusBInSinkZ;
             if (faucetSign != _faucetSign)
             {
                 _faucetSign = faucetSign;
@@ -414,23 +460,25 @@ namespace KitchenDesigner.Core
             return null;
         }
 
-        /// <summary>Проём мойки в нормализованных координатах пласти детали.
-        /// Доли считаются от ТЕКУЩИХ габаритов, поэтому ресайз детали двигает и
-        /// перемасштабирует вырез автоматически.</summary>
+        /// <summary>Проём мойки в нормализованных координатах той плоскости, в
+        /// которой его режет GrooveMesh (оси задаёт PlaneAxes). Доли считаются от
+        /// ТЕКУЩИХ габаритов, поэтому ресайз детали двигает и перемасштабирует
+        /// вырез автоматически.</summary>
         public GrooveMesh.Rect2 CutoutRectIn(KitchenElement part)
         {
             if (part == null) return default;
+            var (a, b) = PlaneAxes(UpAxisOf(part).axis);
             var dims = part.DimensionsMM;
-            if (dims.x <= 0 || dims.y <= 0) return default;
+            if (dims[a] <= 0 || dims[b] <= 0) return default;
 
             float halfW = CutoutWidthMM * 0.5f;
             float halfD = CutoutDepthMM * 0.5f;
             return new GrooveMesh.Rect2
             {
-                xMin = (_offsetXMM - halfW) / dims.x,
-                xMax = (_offsetXMM + halfW) / dims.x,
-                yMin = (_offsetYMM - halfD) / dims.y,
-                yMax = (_offsetYMM + halfD) / dims.y,
+                xMin = (_offsetXMM - halfW) / dims[a],
+                xMax = (_offsetXMM + halfW) / dims[a],
+                yMin = (_offsetYMM - halfD) / dims[b],
+                yMax = (_offsetYMM + halfD) / dims[b],
             };
         }
 

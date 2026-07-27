@@ -110,9 +110,56 @@ namespace KitchenDesigner.Core
         /// <summary>Меш детали с ДВУМЯ сабмешами: 0 — тело (декор), 1 — пазы
         /// (тёмный материал). Пустой список пазов даёт обычную коробку.
         /// holes — сквозные вырезы; их стенки идут в сабмеш тела, чтобы деталь
-        /// с одним лишь вырезом не требовала второго материала.</summary>
+        /// с одним лишь вырезом не требовала второго материала.
+        ///
+        /// holeAxis — локальная ось, ПОПЕРЁК которой режется сквозной вырез
+        /// (2 = Z, канонический случай «вырез в пласти»). Столешницу в проектах
+        /// часто набирают не повёрнутой доской, а коробом, у которого толщина
+        /// лежит по Y, — тогда резать надо вдоль Y. Такой меш строится в
+        /// канонической системе и переставляется по осям, как это делает
+        /// WallMeshBuilder для стены, повёрнутой длиной вдоль Z.</summary>
         public static Mesh Build(Vector3Int dims, IReadOnlyList<GrooveSpec>? grooves,
-            IReadOnlyList<Rect2>? holes = null)
+            IReadOnlyList<Rect2>? holes = null, int holeAxis = 2)
+        {
+            if (holeAxis != 2)
+            {
+                // Пазы живут только в пласти ±Z, и перестановка увела бы их с неё.
+                // Деталь со сквозным вырезом поперёк другой оси — это столешница,
+                // пазов в ней нет.
+                var permuted = Build(dims, null, holes);
+                Permute(permuted, holeAxis);
+                return permuted;
+            }
+            return BuildAlongZ(dims, grooves, holes);
+        }
+
+        /// <summary>Меняет местами ось выреза и Z. Обе перестановки — зеркальные,
+        /// поэтому обход треугольников разворачивается, иначе нормали смотрели бы
+        /// внутрь детали.</summary>
+        private static void Permute(Mesh mesh, int holeAxis)
+        {
+            var verts = mesh.vertices;
+            for (int i = 0; i < verts.Length; i++)
+            {
+                var v = verts[i];
+                verts[i] = holeAxis == 1
+                    ? new Vector3(v.x, v.z, v.y)
+                    : new Vector3(v.z, v.y, v.x);
+            }
+            mesh.SetVertices(verts);
+            for (int sub = 0; sub < mesh.subMeshCount; sub++)
+            {
+                var tris = mesh.GetTriangles(sub);
+                for (int t = 0; t < tris.Length; t += 3)
+                    (tris[t + 1], tris[t + 2]) = (tris[t + 2], tris[t + 1]);
+                mesh.SetTriangles(tris, sub);
+            }
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+        }
+
+        private static Mesh BuildAlongZ(Vector3Int dims, IReadOnlyList<GrooveSpec>? grooves,
+            IReadOnlyList<Rect2>? holes)
         {
             var rects = ComputeRects(dims, grooves);
             var holeRects = ClampHoles(holes);
