@@ -19,7 +19,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         {
             // ── Meta / cheat-sheet (answered locally, no Unity call) ──────────────
             new McpToolDef("guide", "Guide / cheat-sheet",
-                "Usage cheat-sheet. Topics: workflow (default; units, batch editing, worked examples), elements (element types), fields (what each response field means), drawers (GTV drawers), violations (what counts as a violation). Call this first if unsure.",
+                "Usage cheat-sheet. Topics: workflow (default; units, which tool to reach for, worked examples), planning (declarative floorplans: apply_floorplan/create_walls/create_floor/add_opening), bulk (selectors and set_attr/move/align/resize_module), elements (element types), fields (what each response field means), drawers (GTV drawers), violations (what counts as a violation). Call this first if unsure.",
                 McpToolKind.Read, typeof(ParamsGuide), staticText: true),
 
             // ── Read: scene & elements ────────────────────────────────────────────
@@ -29,8 +29,8 @@ namespace KitchenDesigner.Core.MCP.Contract
             new McpToolDef("get_status", "Scene status",
                 "Basic scene info: scene name, object count, play mode, platform.",
                 McpToolKind.Read, null),
-            new McpToolDef("get_all_elements", "List elements",
-                "List ALL boards/walls/floor with name, size (mm), position (m), rotation, AABB and hasViolations. Call this FIRST before editing.",
+            new McpToolDef("get_all_elements", "List elements (legacy full dump)",
+                "LEGACY, VERBOSE (~1 KB per element): every board/wall/floor with name, size (mm), position (m), rotation, AABB and hasViolations. Prefer get_scene_tree to look around and get/get_elements for the few names you actually need; call this only when a full dump is genuinely required.",
                 McpToolKind.Read, null, cached: true),
             new McpToolDef("get_scene_tree", "Scene tree (compact)",
                 "COMPACT hierarchy for 'looking around' cheaply (use this before the verbose get_all_elements): modules (named groups) with member names + world bbox, loose element names, and per-type counts. Then fetch details for a few names with get_elements.",
@@ -106,7 +106,7 @@ namespace KitchenDesigner.Core.MCP.Contract
 
             // ── Edit elements (ALL batch, ALL atomic) ─────────────────────────────
             new McpToolDef("create_elements", "Create elements (batch)",
-                "Create one or MANY elements in ONE call. Each item: unique name, type (board | wall | floor | facade | assembled_facade | radial_shelf | panel | drawer | table | radius_table | pillar | window | door, default board), x/y/z in METERS, width/height/depth in MILLIMETERS, plus type-specific fields (gaps, fill, drawer params, ...). panel = ДВП/ХДФ back panel whose gaps count toward its bounding box, so it seats into grooves. Atomic: if ANY item is invalid, NOTHING is created. Whole batch is ONE undo step.",
+                "Create one or MANY elements in ONE call. Each item: unique name, type (board | wall | floor | facade | assembled_facade | radial_shelf | panel | drawer | table | radius_table | pillar | window | door, default board), x/y/z in METERS, width/height/depth in MILLIMETERS, plus type-specific fields (gaps, fill, drawer params, ...). panel = ДВП/ХДФ back panel whose gaps count toward its bounding box, so it seats into grooves. Atomic: if ANY item is invalid, NOTHING is created. Whole batch is ONE undo step. For architecture (walls, room floors, windows/doors) prefer the corner-anchored tools apply_floorplan / create_walls / create_floor / add_opening — they derive the geometry server-side instead of making you compute centers.",
                 McpToolKind.Write, typeof(ParamsCreateElements)),
             new McpToolDef("edit_elements", "Edit element properties (batch)",
                 "THE universal editor: change ANY user-editable properties of one or MANY elements in ONE transactional call. Each op: exact name + any of x/y/z (METERS), width/height/depth (MM), rot_x/rot_y/rot_z (DEGREES), locked, material, facade gap_left/right/top/bottom (MM), opening mode, assembled-facade fill, is_open, corner_radius, drawer params (drawer_type/drawer_length/drawer_color/internal_width/is_double/is_upper/paired_drawer_name/attached_facade_name), table leg_inset_mm/tabletop_material/legs_material, pillar mid_height_mm, window tint/sill_protrusion_mm, door sash_type. Type-specific fields are validated against the element's actual type. Atomic: if ANY op is invalid, NOTHING is applied. Geometry changes are ONE undo step. dry_run:true simulates (applies, reports per-op state + violations, reverts) — use it BEFORE risky moves/resizes.",
@@ -118,7 +118,7 @@ namespace KitchenDesigner.Core.MCP.Contract
                 "For EACH op create COUNT copies of a board; copy N is shifted by N*offset (METERS) from the original. Copies are named <name>_2, <name>_3, … Whole batch is ONE undo step. Ideal for 'three identical shelves 300 mm apart'.",
                 McpToolKind.Write, typeof(ParamsCloneElements)),
             new McpToolDef("align_elements", "Align face to face (batch)",
-                "For EACH op move a board so its FACE sits flush against (or gap_mm away from) a TARGET board's face — no manual coordinate math. Ops are applied IN ORDER, so later ops see earlier moves (chain alignments!). Example op: {name:'Shelf1', face:'left', target:'Side_L', target_face:'right'}. Whole batch is ONE undo step.",
+                "For EACH op move a board so its FACE sits flush against (or gap_mm away from) a TARGET board's face — no manual coordinate math. Ops are applied IN ORDER, so later ops see earlier moves (chain alignments!). Example op: {name:'Shelf1', face:'left', target:'Side_L', target_face:'right'}. Whole batch is ONE undo step. To align a whole SELECTION (e.g. every module against a wall) without naming boards, use align instead.",
                 McpToolKind.Write, typeof(ParamsAlignElements)),
             new McpToolDef("distribute_evenly", "Distribute evenly",
                 "Space 3+ boards evenly along a world axis: the two outermost stay, the middle ones move so center-to-center distances are equal. ONE undo step. Ideal for 'three shelves evenly between top and bottom'.",
@@ -138,8 +138,8 @@ namespace KitchenDesigner.Core.MCP.Contract
             new McpToolDef("reload_textures", "Reload external textures",
                 "Re-scan the external textures folder (<app>/Resources/Textures) and refresh the decor catalog WITHOUT restarting the app. Drop new image files there (named '<name>_<widthMM>_<heightMM>.jpg' to set tile size), then call this. Returns how many were loaded and the folder path.",
                 McpToolKind.Write, null),
-            new McpToolDef("resize_floor", "Resize floor",
-                "Set the floor plate size in MILLIMETERS (the floor is a scene singleton). Undoable.",
+            new McpToolDef("resize_floor", "Resize floor (legacy singleton)",
+                "LEGACY: set the size of the scene's single BasePlate floor plate in MILLIMETERS. Real rooms use polygon floors — prefer create_floor / apply_floorplan. Undoable.",
                 McpToolKind.Write, typeof(ParamsResizeFloor)),
 
             // ── Modules (named groups of boards) ──────────────────────────────────
@@ -150,7 +150,7 @@ namespace KitchenDesigner.Core.MCP.Contract
                 "Full configuration of one or MANY modules: members, bounds, edit state.",
                 McpToolKind.Read, typeof(ParamsModules)),
             new McpToolDef("create_module", "Create module",
-                "Group two or more boards into a named module (they then move together).",
+                "Group two or more boards into a named module (they then move together). To declare membership idempotently and annotate the width axis used by resize_module, use group instead.",
                 McpToolKind.Write, typeof(ParamsCreateModule)),
             new McpToolDef("dissolve_module", "Dissolve modules (batch)",
                 "Ungroup one or MANY modules. The boards stay in the scene.",

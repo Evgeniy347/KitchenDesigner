@@ -21,7 +21,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsGuide
     {
         [McpParam("Cheat-sheet topic. Omit for the workflow overview.",
-            Enum = new[] { "workflow", "elements", "fields", "drawers", "violations" })]
+            Enum = new[] { "workflow", "planning", "bulk", "elements", "fields", "drawers", "violations" })]
         public string? topic;
     }
 

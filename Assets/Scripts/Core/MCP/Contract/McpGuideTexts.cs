@@ -5,6 +5,9 @@ using System.Collections.Generic;
 //  Живёт в Contract: кодогенератор переносит тексты в tools.generated.ts,
 //  локальный мост отвечает ими без обращения к Unity.
 //  ЖЁСТКОЕ ОГРАНИЧЕНИЕ ПАПКИ: только System / System.Collections.Generic.
+//
+//  ВАЖНО: имена инструментов в текстах проверяются тестом McpGuideTextsTests
+//  против McpToolRegistry — упоминать можно только существующие инструменты.
 // ============================================================================
 
 namespace KitchenDesigner.Core.MCP.Contract
@@ -17,28 +20,47 @@ namespace KitchenDesigner.Core.MCP.Contract
         {
             ["workflow"] =
 @"KITCHEN DESIGNER — WORKFLOW CHEAT-SHEET
-Other guide topics: guide {topic:""elements"" | ""fields"" | ""drawers"" | ""violations""}
+Other topics: guide {topic:""planning"" | ""bulk"" | ""elements"" | ""fields"" |
+""drawers"" | ""violations""}
+
+FIRST CALL OF A SESSION
+  get_project_instructions -> the project's own conventions (wall thicknesses,
+  board thickness, gaps, naming). They OVERRIDE any default assumption here.
 
 UNITS (the #1 mistake)
-  position x/y/z  = METERS      (1.5 -> 1.5 m)
+  position x/y/z  = METERS      (1.5 -> 1.5 m)   [element tools]
   size w/h/d      = MILLIMETERS (600 -> 600 mm)
+  Plan/bulk tools (apply_floorplan, create_walls, create_floor, add_opening,
+  move, set_attr) are MILLIMETRES ONLY — no meters anywhere in them.
   1 m = 1000 mm.  dimZ = board thickness (smallest side, usually 18 mm).
 
-READING THE SCENE (prefer ONE batch call over many single calls)
-  get_elements {filter:""B4_*"", summary:true}  -> compact list of one cabinet
+READING THE SCENE (cheap -> expensive)
+  get_scene_tree                                -> modules, bboxes, type counts
+  get {names:[""B4_Side_L""]}                     -> compact corner geometry (MM)
+  get_elements {filter:""B4_*"", summary:true}     -> one cabinet, compact
   get_elements {names:[""A"",""B""]}                -> full info for exactly these
-  get_all_elements                              -> everything (large!)
-  get_free_space {between:[""Side_L"",""Side_R""]} -> the empty box between two panels
+  get_free_space {between:[""Side_L"",""Side_R""]} -> the empty box between panels
+  get_all_elements                              -> LEGACY full dump, very large
 
-EDITING (every mutation returns: element info + ITS violations + sceneViolationCount)
-  batch_edit {ops:[{name:""P1"", x:1.2}, {name:""P2"", width:600, rot_y:90}]}
+DRAWING THE APARTMENT — declarative, not by hand
+  apply_floorplan builds rooms/walls/floors/openings in ONE call and ONE undo.
+  Never place walls as boards with hand-computed centers. See guide
+  {topic:""planning""}.
+
+CHANGING MANY BOARDS AT ONCE — let the server do the arithmetic
+  set_attr / move / align / resize_module take a SELECTOR and an intent, so you
+  pass one number instead of per-board coordinates. See guide {topic:""bulk""}.
+
+EDITING SINGLE ELEMENTS (every mutation returns element info + ITS violations)
+  edit_elements {ops:[{name:""P1"", x:1.2}, {name:""P2"", width:600, rot_y:90}]}
      - MANY changes in ONE transactional call, single undo step.
      - dry_run:true = simulate first, nothing is kept.
-  align_element {name:""Shelf"", face:""left"", target:""Side_L"", target_face:""right""}
-     - face-to-face placement WITHOUT coordinate math (gap_mm optional).
-  clone_element {name:""Shelf"", count:2, offset_y:0.3}  -> Shelf_2, Shelf_3
+  create_elements {items:[{name:""Shelf1"", type:""board"", x:.., width:.., ..}]}
+  align_elements {ops:[{name:""Shelf1"", face:""left"", target:""Side_L"",
+                       target_face:""right""}]}   - face-to-face, no math
+  clone_elements {ops:[{name:""Shelf1"", count:2, offset_y:0.3}]} -> _2, _3
   distribute_evenly {names:[...3+...], axis:""y""}
-  Single-element tools also exist: move_element / resize_element / rotate_element.
+  convert_elements / delete_elements / select_elements — all batch, all atomic.
 
 CHECKING
   Look at ""violations"" in EVERY mutation response: [] means this element is clean.
@@ -49,43 +71,157 @@ CHECKING
 
 STEP-BY-STEP EXAMPLE: three shelves between two panels
   1. get_free_space {between:[""Side_L"",""Side_R""]}   -> inner width/position
-  2. create_element {name:""Shelf1"", x:.., y:.., z:.., width:.., height:.., depth:18}
-  3. align_element  {name:""Shelf1"", face:""left"", target:""Side_L"", target_face:""right""}
-  4. clone_element  {name:""Shelf1"", count:2, offset_y:0.3}
+  2. create_elements {items:[{name:""Shelf1"", x:.., y:.., z:.., width:..,
+                              height:.., depth:18}]}
+  3. align_elements  {ops:[{name:""Shelf1"", face:""left"", target:""Side_L"",
+                            target_face:""right""}]}
+  4. clone_elements  {ops:[{name:""Shelf1"", count:2, offset_y:0.3}]}
   5. get_violations {names:[""Shelf1"",""Shelf1_2"",""Shelf1_3""]}  -> expect []
 
 SAFETY
   LOCKED elements (locked:true in element info) reject changes. Unlock with
-  set_element_lock {locked:false} ONLY if the user explicitly allowed it.
-  delete_element / batch_edit / clone_element are undoable with undo.",
+  edit_elements {locked:false} ONLY if the user explicitly allowed it.
+  create_elements / edit_elements / clone_elements / delete_elements are undoable.
+  Prefer them over the ADVANCED raw tools (set_position, set_scale,
+  delete_object) — those bypass undo, validation and snapping.",
+
+            ["planning"] =
+@"FLOORPLANS — DECLARE, DON'T COMPUTE
+
+The server owns the geometry: you send 2D points in MM and it derives wall
+thickness, centers, rotations, corner joints, floor meshes and wall cutouts.
+Never emit walls/floors as plain boards with hand-computed centers.
+
+COORDINATES
+  X = east(+), Z = north(+), Y = up. Everything in MM.
+  origin_x_mm / origin_z_mm place the declaration's (0,0) in the world; all
+  points are relative to it. Convention: origin = inner south-west corner.
+
+apply_floorplan {id, origin_x_mm, origin_z_mm, points[], rooms[], walls[],
+                 floors[], openings[]}
+  points   {id, x, z}                     — named corners
+  rooms    {id, poly:[point ids], kind:""bearing""|""partition"", height,
+            top_y_mm, thickness_mm}       — makes a floor + 4 walls; an edge
+                                            shared with another room REUSES the
+                                            same wall (never two walls in one)
+  walls    {id, from, to, kind, height}   — explicit single walls
+  floors   {id, poly:[3+ point ids], top_y_mm, thickness_mm}
+  openings {id, wall, kind:""window""|""door"", offset_mm (from the wall's
+            declared start point), width, height, sill_mm}
+  Thickness per kind and the default floor thickness come from the project
+  instructions (get_project_instructions) — no hardcoded presets. If an
+  instruction the plan needs is missing, the call fails and NOTHING changes.
+
+  ONE call = ONE undo step. Idempotent by id: call it again with a changed
+  declaration and the scope is reconciled — elements that disappeared from the
+  declaration are deleted. Any failure rolls the whole transaction back.
+
+preview_floorplan — same compiler, no scene change: returns validation errors
+  and a deterministic top-down SVG. Use it to show the user a plan first.
+
+GRANULAR PLAN TOOLS (same geometry engine, when a full declaration is overkill)
+  create_walls {origin_x_mm, origin_z_mm, base_y_mm, segments:[{name, from_x,
+                from_z, to_x, to_z, kind, height}]}
+  create_floor {name, origin_x_mm, origin_z_mm, top_y_mm, thickness_mm, poly:
+                [{x,z}]}
+  add_opening  {name, wall, kind, offset_mm, width, height, sill_mm}
+  All three are idempotent by name and are ONE undo step each.
+
+EXAMPLE — one room with a window
+  apply_floorplan {id:""flat"", origin_x_mm:-1585, origin_z_mm:-3620,
+    points:[{id:""sw"",x:0,z:0},{id:""se"",x:3170,z:0},
+            {id:""ne"",x:3170,z:7240},{id:""nw"",x:0,z:7240}],
+    rooms:[{id:""kitchen"", poly:[""sw"",""se"",""ne"",""nw""], kind:""bearing"",
+            height:2700}],
+    openings:[{id:""w1"", wall:""kitchen_sw_nw"", kind:""window"", offset_mm:4720,
+               width:1200, height:1400, sill_mm:800}]}
+  The response is terse: counts + violations. Wall ids generated by a room are
+  <room>_<from>_<to>; read them back with get_scene_tree if unsure.",
+
+            ["bulk"] =
+@"BULK / RELATIONAL OPERATIONS — PASS INTENT, NOT COORDINATES
+
+The point: ""make every board 16 mm instead of 18"", ""push all modules against
+the wall"", ""widen module B4 by 100 mm"" must be ONE call with ONE number. The
+server picks the elements and recomputes every board.
+
+SELECTOR (a string; space-separated clauses, ALL must match)
+  B4_*                     name mask ('*' = glob; without '*' = substring)
+  name:PATTERN             same, explicit
+  type:board|wall|floor|window|door|drawer|facade|assembled_facade|
+       radial_shelf|panel|table|radius_table|pillar|light
+  module:NAME / group:NAME by module name (mask allowed)
+  thickness==18            compare a dimension in MM; also width/height/depth
+                           with == != >= <= > <
+  all_boards               plain boards only
+  all_modules              anything that belongs to a module
+  *  /  all                everything (the floor anchor is never matched)
+  Example: ""all_boards thickness==18"" or ""module:B4 type:facade"".
+
+TOOLS
+  set_attr {selector, thickness|width|height|depth (MM), material, locked}
+      set_attr {selector:""all_boards thickness==18"", thickness:16}
+  move {selector, dx, dy, dz}          shift the whole selection in MM
+  align {selector, target, face, target_face, gap_mm}
+      Moves each matched loose element — and each matched MODULE as one rigid
+      unit — until its face meets the target's face. ""all modules to the wall""
+      = align {selector:""all_modules"", target:""wall_north"", face:""back""}.
+  resize_module {module, axis:""x""|""y""|""z"", delta_mm}
+      Grows/shrinks a module by a delta: the near side stays, the far side
+      moves, spanning boards (bottom/back/facades) stretch. You pass 3 values,
+      not 15 coordinates. axis defaults to the module's stored width_axis.
+  group {id, names[], width_axis}      declare/replace a module and annotate
+                                       the axis resize_module should use.
+
+  Every one of them is atomic, ONE undo step, and returns
+  {matched, updated, sceneViolationCount} — no per-element dumps.
+
+RELATED: get_modules / module_info list modules; add_to_module,
+remove_from_module, dissolve_module, create_module manage membership one by one
+(group does it declaratively in a single call).",
 
             ["elements"] =
 @"ELEMENT TYPES (field ""type"" in responses)
 
-KitchenElement        Plain board. The default of create_element.
-                      Size = resize_element / batch_edit (width/height/depth, MM).
-Wall (component)      A board that is a structural ANCHOR (create_element {is_wall:true}
-                      or add_wall_component). Other boards must connect to a wall/floor.
-BasePlate (floor)     The floor plate: create_element {is_floor:true}, resize_floor.
-FacadeElement         Door/front with gaps (gap_left/right/top/bottom, MM). It FLOATS in
-                      its opening: a facade with gap > 0 is exempt from connectivity.
-                      Opening mode: set_facade_mode (18 modes, see facadeMode field).
+KitchenElement        Plain board. The default type of create_elements.
+                      Size = edit_elements (width/height/depth, MM).
+Wall (component)      A board that is a structural ANCHOR. Other boards must
+                      connect to a wall/floor. Create walls with create_walls or
+                      apply_floorplan — create_elements {type:""wall""} is the
+                      low-level fallback.
+FloorElement          A floor slab. Create with create_floor / apply_floorplan
+                      (polygon, corner-anchored). create_elements {type:""floor""}
+                      makes a single rectangular slab.
+BasePlate             The scene's floor anchor singleton (resize_floor). Legacy:
+                      real rooms use FloorElement.
+FacadeElement         Door/front with gaps (gap_left/right/top/bottom, MM). It
+                      FLOATS in its opening: a facade with gap > 0 is exempt
+                      from connectivity. Opening mode: edit_elements {mode:..}
+                      (18 modes, see the facadeMode field).
 AssembledFacadeElement Framed (assembled) facade with real frame geometry.
-                      create_element {is_assembled:true, fill:""blind|glass|open""}.
-RadialShelfElement    Board with ONE rounded corner: create_element {is_radial_shelf:true,
-                      corner_radius:..}. Radius via set_radial_shelf_properties.
+                      create_elements {type:""assembled_facade"",
+                      fill:""blind|glass|open""}.
+RadialShelfElement    Board with ONE rounded corner (type:""radial_shelf"");
+                      radius via edit_elements {corner_radius:..}.
+PanelElement          ДВП/ХДФ back panel whose gaps count toward its bounding
+                      box, so it seats into grooves (type:""panel"").
 DrawerElement         GTV drawer (sliding box). SIZE COMES FROM ITS PARAMETERS -
-                      resize is REJECTED; use set_drawer_properties (type A/B/C/D,
-                      drawer_length, internal_width). See guide {topic:""drawers""}.
-TableElement          Table (tabletop + 4 legs): create_element {is_table:true}.
-                      leg_inset_mm and materials via set_table_properties.
-RadiusTableElement    Capsule-shaped table: create_element {is_radius_table:true}.
+                      width/height/depth are REJECTED; use the drawer fields of
+                      edit_elements. See guide {topic:""drawers""}.
+TableElement          Table (tabletop + 4 legs), type:""table"". leg_inset_mm and
+                      materials via edit_elements.
+RadiusTableElement    Capsule-shaped table (type:""radius_table"").
+PillarElement         Pillar (type:""pillar"", mid_height_mm).
+WindowElement / DoorElement
+                      Openings. Prefer add_opening / apply_floorplan: they
+                      attach the opening to a wall and cut the hole. Creating
+                      them with create_elements also snaps to a nearby wall.
 
-CONVERSIONS: convert_element switches board <-> facade <-> assembled_facade <->
+CONVERSIONS: convert_elements switches board <-> facade <-> assembled_facade <->
 radial_shelf in place, keeping name/size/position/material.
 
-MODULES: named groups that move together (create_module, add_to_module, ...).
-An element's module is in moduleId/moduleName of its info.",
+MODULES: named groups that move together (group, create_module, add_to_module,
+...). An element's module is in moduleId/moduleName of its info.",
 
             ["fields"] =
 @"RESPONSE FIELD SEMANTICS (element info)
@@ -102,7 +238,8 @@ rotX/rotY/rotZ        Euler angles in DEGREES.
 aabbMin*/aabbMax*     World bounding box in METERS.
 effectiveDim*         dim + facade gaps (facades only). NOT rotation-aware -
                       prefer worldDim* for world-space reasoning.
-locked                true = move/resize/delete will be rejected (set_element_lock).
+locked                true = move/resize/delete will be rejected (edit_elements
+                      {locked:false} unlocks).
 hasViolations         true = this element overlaps something or is disconnected.
 faceGaps              Per-axis nearest OPPOSITE neighbour: {axis, neighbor, gapMM,
                       touching, isOverlap}. touching=true means flush contact
@@ -113,9 +250,16 @@ materialId            Decor id (list_materials).
 facadeMode            Facade opening mode (""front_left"", ""drawer_out"", ...).
 drawer / table / radiusTable   Type-specific sub-objects, absent otherwise.
 
-MUTATION RESPONSES (move/resize/rotate/create/align/...) always return:
+COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
+  {name, kind, anchor:[x,z] MM corner, size:[width,depth,height] MM, rotY,
+   hasViolations, module}. Positions are the MIN corner in MM, not the center in
+   meters. Use it for reasoning about layout; use get_elements for full detail.
+
+MUTATION RESPONSES (create/edit/align/clone/...) always return:
   { ok, element: <full info above>, violations: [<THIS element's problems>],
     sceneViolationCount: <structural violations in the WHOLE scene> }
+Bulk and plan tools return counts instead: {matched/created/updated/deleted,
+violations, sceneViolationCount}.
 violations kinds: overlap (with severity + penetrationMm), disconnected,
 facade_facing_inward, face_obstruction, opening_collision, drawer_invalid.",
 
@@ -123,27 +267,28 @@ facade_facing_inward, face_obstruction, opening_collision, drawer_invalid.",
 @"GTV DRAWERS (DrawerElement)
 
 A drawer is a parametric sliding box. Its geometry is DERIVED from parameters -
-resize_element is rejected; use set_drawer_properties instead.
+width/height/depth in edit_elements are rejected; use the drawer fields instead.
 
-PARAMETERS
+PARAMETERS (all set through edit_elements)
   drawer_type      Side height: A=86, B=120, C=168, D=200 mm.
   drawer_length    Nominal slide length MM: 250/300/350/400/450/500/550/600.
   internal_width   Internal box width in MM (min 100).
   drawer_color     anthracite | white | black.
 
-CREATE:  create_element {name, x, y, z, is_drawer:true, drawer_type:""B"",
-                         drawer_length:450, drawer_internal_width:400}
+CREATE:  create_elements {items:[{name:""D1"", type:""drawer"", x:.., y:.., z:..,
+                          drawer_type:""B"", drawer_length:450,
+                          drawer_internal_width:400}]}
 
 SYSTEMS (element.drawer.system): ""gtv"" (default, bought metal box - one spec
 line) or ""movento"" (wooden box - explodes into separate spec parts: sides,
 front, back, bottom; parts are automatic, not selectable). Create a Movento
 drawer with create_elements type:""movento_drawer"".
 
-FRONTS:  attach a facade with set_drawer_properties {attached_facade_name:""F1""} -
+FRONTS:  attach a facade with edit_elements {attached_facade_name:""F1""} -
          the facade then slides together with the drawer. Empty string detaches.
 
 DOUBLE DRAWERS: two stacked boxes moving as one system:
-  set_drawer_properties {is_double:true, paired_drawer_name:""OtherDrawer""}
+  edit_elements {is_double:true, paired_drawer_name:""OtherDrawer""}
   (link BOTH drawers to each other; mark the upper one with is_upper:true).
 
 ANIMATION: cycle_drawer_animation toggles a single drawer open/closed; a double
