@@ -103,8 +103,9 @@ namespace KitchenDesigner.Core
         private void ApplyDoorPose()
         {
             if (_sashGroup == null) return;
+            // Дверь помещения — обычные накладные петли: поворот вокруг ребра створки.
             FacadeDoor.Pose(_sashClosedLocal, Quaternion.identity, _sashHalfExtents,
-                _mode, _openT, out var pos, out var rot);
+                _mode, _openT, out var pos, out var rot, HingeKinematics.EdgePivot);
             _sashGroup.localPosition = pos;
             _sashGroup.localRotation = rot;
         }
@@ -138,7 +139,7 @@ namespace KitchenDesigner.Core
                 return OpeningCollision.MinMax(GetVertices());
 
             FacadeDoor.Pose(_sashClosedLocal, Quaternion.identity, _sashHalfExtents,
-                _mode, progress, out var localPos, out var localRot);
+                _mode, progress, out var localPos, out var localRot, HingeKinematics.EdgePivot);
 
             var worldPos = transform.TransformPoint(localPos);
             var worldRot = transform.rotation * localRot;

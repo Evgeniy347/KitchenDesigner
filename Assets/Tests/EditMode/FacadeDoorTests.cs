@@ -108,11 +108,27 @@ public class FacadeDoorTests
     }
 
     [Test]
-    public void Pose_FullyOpen_Rotates90()
+    public void Pose_FullyOpen_CupHinge_Rotates110()
     {
         var cr = Quaternion.identity;
         FacadeDoor.Pose(Vector3.zero, cr, Half, DoorMode.HingeFrontLeft, 1f, out _, out var rot);
+        Assert.AreEqual(110f, Quaternion.Angle(cr, rot), 0.5f);
+    }
+
+    [Test]
+    public void Pose_FullyOpen_EdgePivot_Rotates90()
+    {
+        var cr = Quaternion.identity;
+        FacadeDoor.Pose(Vector3.zero, cr, Half, DoorMode.HingeFrontLeft, 1f, out _, out var rot,
+            HingeKinematics.EdgePivot);
         Assert.AreEqual(90f, Quaternion.Angle(cr, rot), 0.5f);
+    }
+
+    [Test]
+    public void MaxAngle_DependsOnKinematics()
+    {
+        Assert.AreEqual(110f, FacadeDoor.MaxAngle(HingeKinematics.CupHinge), 1e-4f);
+        Assert.AreEqual(90f, FacadeDoor.MaxAngle(HingeKinematics.EdgePivot), 1e-4f);
     }
 
     [TestCase(DoorMode.HingeFrontLeft)]
@@ -123,7 +139,7 @@ public class FacadeDoorTests
     [TestCase(DoorMode.HingeBackTop)]
     [TestCase(DoorMode.HingeEdgeTopLeft)]
     [TestCase(DoorMode.HingeEdgeBottomRight)]
-    public void Pose_HingeEdge_StaysFixed(DoorMode mode)
+    public void Pose_HingeAxis_StaysFixed(DoorMode mode)
     {
         var cp = new Vector3(0.5f, 1f, 0.25f);
         var cr = Quaternion.Euler(0f, 90f, 0f);
@@ -135,7 +151,120 @@ public class FacadeDoorTests
         var pivotOpen = pos + rot * pivotLocal;
 
         Assert.Less(Vector3.Distance(pivotClosed, pivotOpen), 1e-4f,
-            "ребро-петля не должно смещаться при открытии");
+            "ось петли не должна смещаться при открытии");
+    }
+
+    [TestCase(DoorMode.HingeFrontLeft)]
+    [TestCase(DoorMode.HingeFrontRight)]
+    [TestCase(DoorMode.HingeEdgeTopLeft)]
+    public void Pose_EdgePivot_KeepsBoxEdgeFixed(DoorMode mode)
+    {
+        // Дверь и окно помещения по-прежнему вращаются вокруг собственного ребра.
+        var cp = new Vector3(0.5f, 1f, 0.25f);
+        var cr = Quaternion.Euler(0f, 90f, 0f);
+
+        Assert.IsTrue(FacadeDoor.Hinge(mode, Half, out var pivotLocal, out _,
+            HingeKinematics.EdgePivot));
+        var expectedEdge = Vector3.Scale(EdgeSigns(mode), Half);
+        Assert.Less(Vector3.Distance(pivotLocal, expectedEdge), 1e-6f,
+            "при EdgePivot ось совпадает с ребром бокса");
+
+        var pivotClosed = cp + cr * pivotLocal;
+        FacadeDoor.Pose(cp, cr, Half, mode, 1f, out var pos, out var rot, HingeKinematics.EdgePivot);
+        Assert.Less(Vector3.Distance(pivotClosed, pos + rot * pivotLocal), 1e-4f);
+    }
+
+    private static Vector3 EdgeSigns(DoorMode mode) => mode switch
+    {
+        DoorMode.HingeFrontLeft => new Vector3(-1f, 0f, -1f),
+        DoorMode.HingeFrontRight => new Vector3(1f, 0f, -1f),
+        DoorMode.HingeEdgeTopLeft => new Vector3(-1f, 1f, 0f),
+        _ => Vector3.zero
+    };
+
+    // ── Мебельная (чашечная) петля: виртуальная ось ──────────────────
+    // Ось лежит в чашке Ø35, утопленной в заднюю пласть, поэтому петлевое
+    // ребро при открывании уходит внутрь корпуса, а не стоит на месте.
+
+    [Test]
+    public void Pose_CupHinge_HingeEdgeMovesInward()
+    {
+        var cp = Vector3.zero;
+        var cr = Quaternion.identity;
+
+        // Середина петлевого ребра на задней пласти (режим «Дверь: слева»).
+        var edgeLocal = new Vector3(-Half.x, 0f, -Half.z);
+
+        FacadeDoor.Pose(cp, cr, Half, DoorMode.HingeFrontLeft, 1f, out var pos, out var rot);
+        var edgeOpen = pos + rot * edgeLocal;
+
+        var offset = FacadeDoor.HingePivotOffset(Half);
+        float inward = edgeOpen.x - edgeLocal.x; // +X = внутрь фасада, к его центру
+        Assert.Greater(inward, offset.x + offset.z,
+            "петлевое ребро должно уйти внутрь минимум на смещение оси");
+        Assert.Less(inward, 3f * (offset.x + offset.z), "но не улететь");
+    }
+
+    [Test]
+    public void Pose_CupHinge_ReducesSidewaysOverhang()
+    {
+        // Наружный угол фасада выступает за линию петли меньше, чем на всю толщину,
+        // — ради этого четырёхшарнирная петля и придумана.
+        var cr = Quaternion.identity;
+        var cornerLocal = new Vector3(-Half.x, 0f, Half.z);
+
+        FacadeDoor.Pose(Vector3.zero, cr, Half, DoorMode.HingeFrontLeft, 1f, out var cup, out var cupRot);
+        FacadeDoor.Pose(Vector3.zero, cr, Half, DoorMode.HingeFrontLeft, 1f, out var edge, out var edgeRot,
+            HingeKinematics.EdgePivot);
+
+        float cupOverhang = -Half.x - (cup + cupRot * cornerLocal).x;
+        float edgeOverhang = -Half.x - (edge + edgeRot * cornerLocal).x;
+
+        Assert.Greater(edgeOverhang, cupOverhang,
+            "мебельная петля выносит фасад вбок меньше, чем поворот по ребру");
+        Assert.Less(cupOverhang, Half.z,
+            "у мебельной петли вынос меньше половины толщины фасада");
+        Assert.AreEqual(2f * Half.z, edgeOverhang, 1e-4f,
+            "поворот по ребру выносит фасад ровно на его толщину");
+    }
+
+    [Test]
+    public void Pose_CupHinge_NotAppliedToCornerModes()
+    {
+        // Угловые режимы по толщине — не мебельная петля: ребро стоит на месте.
+        Assert.IsTrue(FacadeDoor.Hinge(DoorMode.HingeEdgeBottomLeft, Half, out var pivot, out _));
+        Assert.Less(Vector3.Distance(pivot, new Vector3(-Half.x, -Half.y, 0f)), 1e-6f);
+    }
+
+    // ── Смещение оси от толщины фасада ───────────────────────────────
+    // side = clamp(T/4, 3, 7) мм; depth = min(12.5, T − 3.5) / 2 мм.
+
+    [TestCase(10, 3f, 3.25f)]
+    [TestCase(16, 4f, 6.25f)]
+    [TestCase(19, 4.75f, 6.25f)]
+    [TestCase(21, 5.25f, 6.25f)]
+    [TestCase(22, 5.5f, 6.25f)]
+    [TestCase(30, 7f, 6.25f)]
+    public void HingePivotOffset_FollowsThickness(int thicknessMM, float sideMM, float depthMM)
+    {
+        var half = new Vector3(0.3f, 0.35f, thicknessMM * 0.0005f);
+        var offset = FacadeDoor.HingePivotOffset(half) * 1000f; // юниты → мм
+
+        Assert.AreEqual(sideMM, offset.x, 1e-3f, "боковое смещение (присадка чашки)");
+        Assert.AreEqual(sideMM, offset.y, 1e-3f, "то же по вертикали для верхних/нижних петель");
+        Assert.AreEqual(depthMM, offset.z, 1e-3f, "глубина оси от задней пласти");
+    }
+
+    [Test]
+    public void HingePivotOffset_ClampedForTinyFacade()
+    {
+        // Фасад 4×4×2 мм: ось не должна выйти за противоположную кромку.
+        var half = new Vector3(0.002f, 0.002f, 0.001f);
+        var offset = FacadeDoor.HingePivotOffset(half);
+
+        Assert.LessOrEqual(offset.x, half.x + 1e-6f);
+        Assert.LessOrEqual(offset.y, half.y + 1e-6f);
+        Assert.LessOrEqual(offset.z, half.z + 1e-6f);
     }
 
     [Test]
@@ -251,7 +380,7 @@ public class FacadeDoorAnimationTests
 
         f.StepDoor(1f);
         Assert.AreEqual(1f, f.DoorProgress, 1e-4f);
-        Assert.AreEqual(90f, Quaternion.Angle(closedRot, f.transform.rotation), 0.5f);
+        Assert.AreEqual(110f, Quaternion.Angle(closedRot, f.transform.rotation), 0.5f);
     }
 
     [Test]

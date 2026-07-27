@@ -20,29 +20,85 @@ namespace KitchenDesigner.Core
     }
 
     /// <summary>
+    /// Кинематика петли: как именно фасад уходит от закрытой позы.
+    /// </summary>
+    public enum HingeKinematics
+    {
+        /// <summary>Мебельная четырёхшарнирная (чашечная) петля: ось лежит в чашке
+        /// внутри тела фасада, поэтому петлевое ребро при открывании уходит внутрь.
+        /// Раскрытие 110°.</summary>
+        CupHinge,
+        /// <summary>Простой поворот вокруг ребра (дверь и окно помещения): само ребро
+        /// стоит на месте. Раскрытие 90°.</summary>
+        EdgePivot
+    }
+
+    /// <summary>
     /// Чистая математика открывания фасада (без Unity-состояния — покрывается
-    /// юнит-тестами). Ребро: поворот вокруг ребра закрытой позы (само ребро стоит
-    /// на месте, центр едет по дуге). Ящик: сдвиг по нормали грани. Скорость — по
-    /// синусу (плавный старт и плавное торможение). 18 режимов заданы таблицей.
+    /// юнит-тестами). Ребро: поворот вокруг оси петли закрытой позы (центр едет по
+    /// дуге). Ящик: сдвиг по нормали грани. Скорость — по синусу (плавный старт и
+    /// плавное торможение). 18 режимов заданы таблицей.
     /// </summary>
     public static class FacadeDoor
     {
-        /// <summary>Угол полностью открытой дверцы (градусы).</summary>
-        public const float MaxAngleDeg = 90f;
+        /// <summary>Угол полностью открытой дверцы на мебельной петле (градусы).</summary>
+        public const float CupMaxAngleDeg = 110f;
+
+        /// <summary>Угол полностью открытой дверцы при повороте вокруг ребра (градусы).</summary>
+        public const float EdgeMaxAngleDeg = 90f;
 
         /// <summary>Ход полностью выдвинутого ящика (метры).</summary>
         public const float DrawerSlideMeters = 0.4f;
 
+        /// <summary>Предельный угол раскрытия для выбранной кинематики (градусы).</summary>
+        public static float MaxAngle(HingeKinematics kind) =>
+            kind == HingeKinematics.CupHinge ? CupMaxAngleDeg : EdgeMaxAngleDeg;
+
+        // ── Геометрия чашечной петли ────────────────────────────────────
+        // Чашка Ø35 утоплена в заднюю пласть фасада. Стандартная присадка — 22 мм до
+        // центра чашки, то есть от кромки до края чашки ≈ 4,5 мм (допустимо 3…6, у
+        // толстых фасадов больше). Виртуальная ось поворота лежит у ближней к кромке
+        // стенки чашки, примерно на середине её глубины — отсюда обе формулы.
+
+        private const float CupDepthMM = 12.5f;   // стандартная глубина чашки
+        private const float CupWallMM = 3.5f;     // материал, который должен остаться за чашкой
+        private const float CupSideMinMM = 3f;    // минимальная присадка от кромки
+        private const float CupSideMaxMM = 7f;    // максимальная присадка от кромки
+
+        /// <summary>
+        /// Смещение виртуальной оси чашечной петли от ребра фасада ВНУТРЬ бокса, в юнитах:
+        /// x/y — вбок от кромки, z — вглубь от задней пласти. Считается от толщины фасада
+        /// (<paramref name="halfExtents"/>.z × 2), поэтому работает и для нестандартных толщин.
+        /// </summary>
+        public static Vector3 HingePivotOffset(Vector3 halfExtents)
+        {
+            float thicknessMM = 2f * Mathf.Abs(halfExtents.z) / AppConstants.MM_TO_UNITS;
+
+            float sideMM = Mathf.Clamp(thicknessMM * 0.25f, CupSideMinMM, CupSideMaxMM);
+            float depthMM = 0.5f * Mathf.Min(CupDepthMM, Mathf.Max(0f, thicknessMM - CupWallMM));
+
+            float side = sideMM * AppConstants.MM_TO_UNITS;
+            float depth = depthMM * AppConstants.MM_TO_UNITS;
+
+            // У крошечных фасадов ось не должна перескочить за противоположную кромку.
+            return new Vector3(
+                Mathf.Min(side, Mathf.Abs(halfExtents.x)),
+                Mathf.Min(side, Mathf.Abs(halfExtents.y)),
+                Mathf.Min(depth, Mathf.Abs(halfExtents.z)));
+        }
+
         private readonly struct Variant
         {
             public readonly bool isDrawer;
+            public readonly bool cupHinge;      // режим-грань, где уместна мебельная петля
             public readonly Vector3 pivotSigns; // ребро: pivot = Scale(pivotSigns, half)
             public readonly Vector3 dir;        // ребро: знаковая ось; ящик: направление сдвига (локально)
             public readonly string symbol;      // один знак для компактной подписи
             public readonly string name;        // читаемое название (для выпадающего списка)
-            public Variant(bool isDrawer, Vector3 pivotSigns, Vector3 dir, string symbol, string name)
+            public Variant(bool isDrawer, bool cupHinge, Vector3 pivotSigns, Vector3 dir, string symbol, string name)
             {
-                this.isDrawer = isDrawer; this.pivotSigns = pivotSigns; this.dir = dir;
+                this.isDrawer = isDrawer; this.cupHinge = cupHinge;
+                this.pivotSigns = pivotSigns; this.dir = dir;
                 this.symbol = symbol; this.name = name;
             }
         }
@@ -54,28 +110,28 @@ namespace KitchenDesigner.Core
         // Символы — ASCII, потому что LiberationSans SDF в WebGL не содержит Unicode-стрелок.
         private static readonly Variant[] V =
         {
-            // Передняя грань (z=−hz). Распахиваются наружу — к +Z.
-            new Variant(false, new Vector3(-1f, 0f, -1f),  Y, "<", "Дверь: слева"),
-            new Variant(false, new Vector3( 1f, 0f, -1f), -Y, ">", "Дверь: справа"),
-            new Variant(false, new Vector3( 0f, 1f, -1f),  X, "^", "Дверь: сверху"),
-            new Variant(false, new Vector3( 0f,-1f, -1f), -X, "v", "Дверь: снизу"),
-            // Задняя грань (z=+hz) — оси зеркальны передним.
-            new Variant(false, new Vector3(-1f, 0f,  1f), -Y, "[", "Сзади: слева"),
-            new Variant(false, new Vector3( 1f, 0f,  1f),  Y, "]", "Сзади: справа"),
-            new Variant(false, new Vector3( 0f, 1f,  1f), -X, "{", "Сзади: сверху"),
-            new Variant(false, new Vector3( 0f,-1f,  1f),  X, "}", "Сзади: снизу"),
-            // Рёбра по толщине (ось Z) в 4 углах.
-            new Variant(false, new Vector3(-1f, 1f,  0f),  Z, "(", "Угол: верх-лево"),
-            new Variant(false, new Vector3( 1f, 1f,  0f),  Z, ")", "Угол: верх-право"),
-            new Variant(false, new Vector3(-1f,-1f,  0f),  Z, "\\", "Угол: низ-лево"),
-            new Variant(false, new Vector3( 1f,-1f,  0f),  Z, "/", "Угол: низ-право"),
+            // Передняя грань (z=−hz). Распахиваются наружу — к +Z. Мебельная петля.
+            new Variant(false, true, new Vector3(-1f, 0f, -1f),  Y, "<", "Дверь: слева"),
+            new Variant(false, true, new Vector3( 1f, 0f, -1f), -Y, ">", "Дверь: справа"),
+            new Variant(false, true, new Vector3( 0f, 1f, -1f),  X, "^", "Дверь: сверху"),
+            new Variant(false, true, new Vector3( 0f,-1f, -1f), -X, "v", "Дверь: снизу"),
+            // Задняя грань (z=+hz) — оси зеркальны передним. Тоже мебельная петля.
+            new Variant(false, true, new Vector3(-1f, 0f,  1f), -Y, "[", "Сзади: слева"),
+            new Variant(false, true, new Vector3( 1f, 0f,  1f),  Y, "]", "Сзади: справа"),
+            new Variant(false, true, new Vector3( 0f, 1f,  1f), -X, "{", "Сзади: сверху"),
+            new Variant(false, true, new Vector3( 0f,-1f,  1f),  X, "}", "Сзади: снизу"),
+            // Рёбра по толщине (ось Z) в 4 углах — не мебельная петля, поворот по ребру.
+            new Variant(false, false, new Vector3(-1f, 1f,  0f),  Z, "(", "Угол: верх-лево"),
+            new Variant(false, false, new Vector3( 1f, 1f,  0f),  Z, ")", "Угол: верх-право"),
+            new Variant(false, false, new Vector3(-1f,-1f,  0f),  Z, "\\", "Угол: низ-лево"),
+            new Variant(false, false, new Vector3( 1f,-1f,  0f),  Z, "/", "Угол: низ-право"),
             // Ящик — сдвиг по нормали грани. "Вперёд" = наружу = +Z.
-            new Variant(true, Vector3.zero,  Z, "O", "Ящик: вперёд"),
-            new Variant(true, Vector3.zero, -Z, "X", "Ящик: назад"),
-            new Variant(true, Vector3.zero, -X, "R", "Ящик: вправо"),
-            new Variant(true, Vector3.zero,  X, "L", "Ящик: влево"),
-            new Variant(true, Vector3.zero, -Y, "U", "Ящик: вверх"),
-            new Variant(true, Vector3.zero,  Y, "D", "Ящик: вниз"),
+            new Variant(true, false, Vector3.zero,  Z, "O", "Ящик: вперёд"),
+            new Variant(true, false, Vector3.zero, -Z, "X", "Ящик: назад"),
+            new Variant(true, false, Vector3.zero, -X, "R", "Ящик: вправо"),
+            new Variant(true, false, Vector3.zero,  X, "L", "Ящик: влево"),
+            new Variant(true, false, Vector3.zero, -Y, "U", "Ящик: вверх"),
+            new Variant(true, false, Vector3.zero,  Y, "D", "Ящик: вниз"),
         };
 
         /// <summary>Число режимов (12 рёбер + 6 ящиков = 18).</summary>
@@ -117,10 +173,12 @@ namespace KitchenDesigner.Core
         /// Плавность (синус) применяется внутри.
         /// </summary>
         /// <param name="halfExtents">Половины ФИЗИЧЕСКИХ размеров фасада (localScale/2).</param>
+        /// <param name="kind">Кинематика петли: мебельная чашечная (по умолчанию) или поворот по ребру.</param>
         public static void Pose(
             Vector3 closedPos, Quaternion closedRot, Vector3 halfExtents,
             DoorMode mode, float progress,
-            out Vector3 pos, out Quaternion rot)
+            out Vector3 pos, out Quaternion rot,
+            HingeKinematics kind = HingeKinematics.CupHinge)
         {
             var v = V[(int)mode];
             float e = Ease(progress);
@@ -132,9 +190,9 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            var pivotLocal = Vector3.Scale(v.pivotSigns, halfExtents);
-            // −90° вокруг знаковой оси ребра — двери распахиваются наружу (+Z для передней грани).
-            float angle = -MaxAngleDeg * e;
+            var pivotLocal = PivotLocal(v, halfExtents, kind);
+            // Поворот вокруг знаковой оси — двери распахиваются наружу (+Z для передней грани).
+            float angle = -HingeAngle(v, kind) * e;
             var pivotWorld = closedPos + closedRot * pivotLocal;
             var axisWorld = closedRot * v.dir;
             var delta = Quaternion.AngleAxis(angle, axisWorld);
@@ -143,15 +201,32 @@ namespace KitchenDesigner.Core
             pos = pivotWorld + delta * (closedPos - pivotWorld);
         }
 
-        /// <summary>Точка и ось петли режима-ребра (для тестов). Для ящика — false.</summary>
+        /// <summary>Точка и ось петли режима-ребра (для тестов). Для ящика — false.
+        /// У мебельной петли точка — виртуальная ось внутри тела фасада, а не его ребро.</summary>
         public static bool Hinge(DoorMode mode, Vector3 halfExtents,
-            out Vector3 pivotLocal, out Vector3 axisLocal)
+            out Vector3 pivotLocal, out Vector3 axisLocal,
+            HingeKinematics kind = HingeKinematics.CupHinge)
         {
             var v = V[(int)mode];
             axisLocal = v.dir;
             if (v.isDrawer) { pivotLocal = Vector3.zero; return false; }
-            pivotLocal = Vector3.Scale(v.pivotSigns, halfExtents);
+            pivotLocal = PivotLocal(v, halfExtents, kind);
             return true;
         }
+
+        // Ось поворота: ребро бокса, у мебельной петли сдвинутое внутрь на смещение чашки.
+        // Знаки pivotSigns (0/±1) сами задают направление «внутрь» для любой из 8 граней.
+        private static Vector3 PivotLocal(Variant v, Vector3 halfExtents, HingeKinematics kind)
+        {
+            var pivot = Vector3.Scale(v.pivotSigns, halfExtents);
+            if (!UsesCup(v, kind)) return pivot;
+            return pivot - Vector3.Scale(v.pivotSigns, HingePivotOffset(halfExtents));
+        }
+
+        private static float HingeAngle(Variant v, HingeKinematics kind) =>
+            UsesCup(v, kind) ? CupMaxAngleDeg : EdgeMaxAngleDeg;
+
+        private static bool UsesCup(Variant v, HingeKinematics kind) =>
+            v.cupHinge && kind == HingeKinematics.CupHinge;
     }
 }
