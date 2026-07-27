@@ -17,6 +17,7 @@ namespace KitchenDesigner.Core
     public static class NativeFileDialog
     {
         private const string JsonFilter = "Проект кухни (*.json)\0*.json\0Все файлы (*.*)\0*.*\0\0";
+        private const string CsvFilter = "CSV (*.csv)\0*.csv\0Все файлы (*.*)\0*.*\0\0";
 
         public static string? OpenDialog(string title, string initialDir)
         {
@@ -40,6 +41,23 @@ namespace KitchenDesigner.Core
             string? path = WinDialog(title, defaultName, initialDir, true);
             if (!string.IsNullOrEmpty(path) && !path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 path += ".json";
+            return path;
+#else
+            Debug.LogWarning("[FileDialog] Системный диалог недоступен на этой платформе");
+            return null;
+#endif
+        }
+
+        public static string? SaveCSVDialog(string title, string defaultName, string initialDir)
+        {
+#if UNITY_EDITOR
+            string dir = SafeDir(initialDir);
+            string name = string.IsNullOrEmpty(defaultName) ? "specification" : System.IO.Path.GetFileNameWithoutExtension(defaultName);
+            return UnityEditor.EditorUtility.SaveFilePanel(title, dir, name, "csv");
+#elif UNITY_STANDALONE_WIN
+            string? path = WinDialog(title, defaultName, initialDir, true, CsvFilter, "csv");
+            if (!string.IsNullOrEmpty(path) && !path.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                path += ".csv";
             return path;
 #else
             Debug.LogWarning("[FileDialog] Системный диалог недоступен на этой платформе");
@@ -95,13 +113,14 @@ namespace KitchenDesigner.Core
         private const int OFN_OVERWRITEPROMPT = 0x00000002;
         private const int OFN_NOCHANGEDIR     = 0x00000008;
 
-        private static string? WinDialog(string title, string defaultName, string initialDir, bool save)
+        private static string? WinDialog(string title, string defaultName, string initialDir, bool save,
+            string filter = JsonFilter, string defExt = "json")
         {
             try
             {
                 var ofn = new OpenFileName();
                 ofn.structSize = Marshal.SizeOf(ofn);
-                ofn.filter = JsonFilter;
+                ofn.filter = filter;
                 ofn.file = new string(new char[2048]);
                 if (!string.IsNullOrEmpty(defaultName))
                 {
@@ -113,7 +132,7 @@ namespace KitchenDesigner.Core
                 ofn.maxFileTitle = 512;
                 ofn.initialDir = SafeDir(initialDir);
                 ofn.title = title;
-                ofn.defExt = "json";
+                ofn.defExt = defExt;
                 ofn.flags = save
                     ? (OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR)
                     : (OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR);

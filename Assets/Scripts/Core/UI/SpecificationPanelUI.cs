@@ -202,13 +202,16 @@ namespace KitchenDesigner.Core.UI
         private void ExportCsv()
         {
             var result = SpecificationManager.Build(PartRegistry.All);
-            string path = System.IO.Path.Combine(
-                System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop),
-                $"KitchenSpec_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            string defaultName = $"KitchenSpec_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            string? path = NativeFileDialog.SaveCSVDialog("Экспорт спецификации", defaultName,
+                Application.persistentDataPath);
+            if (string.IsNullOrEmpty(path))
+                return; // пользователь отменил диалог
+
             if (SpecificationExport.SaveToFile(result, path))
             {
                 if (ToastNotification.Instance != null)
-                    ToastNotification.Instance.Show("CSV сохранён на рабочий стол", 2f);
+                    ToastNotification.Instance.Show("CSV сохранён", 2f);
             }
             else
             {
