@@ -5527,7 +5527,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
-            "doorOpen": false,
+            "doorOpen": true,
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
@@ -10074,7 +10074,7 @@
                 125
             ],
             "position": [
-                1.7100001573562623,
+                1.7100000381469727,
                 1.350000023841858,
                 -0.57750004529953
             ],
@@ -14177,14 +14177,14 @@
         {
             "name": "Moyka",
             "dimensionsMM": [
-                600,
+                500,
                 188,
                 500
             ],
             "position": [
-                0.6849998831748962,
-                0.872589647769928,
-                -3.3477706909179689
+                0.7019751667976379,
+                0.85999995470047,
+                -3.2985825538635256
             ],
             "rotation": [
                 0.0,
@@ -14342,12 +14342,12 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 4.276744842529297,
-        "targetY": -0.6069527864456177,
-        "targetZ": -4.5305657386779789,
-        "angleX": 18.972291946411134,
-        "angleY": 127.50559997558594,
-        "distance": 7.041080951690674,
+        "targetX": 1.3833428621292115,
+        "targetY": -1.3985676765441895,
+        "targetZ": -4.31357479095459,
+        "angleX": 51.2777099609375,
+        "angleY": 145.2385711669922,
+        "distance": 3.8410873413085939,
         "photoDistance": 2.200000047683716
     },
     "handleMode": "Move",
@@ -48489,6 +48489,278 @@
             "dimsBefore": [],
             "dimsAfter": [],
             "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize W150_11",
+            "elementIndex": 124,
+            "posBefore": [
+                1.7100001573562623,
+                1.350000023841858,
+                -0.57750004529953
+            ],
+            "posAfter": [
+                1.4100000858306885,
+                1.350000023841858,
+                -0.57750004529953
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                250,
+                2700,
+                125
+            ],
+            "dimsAfter": [
+                850,
+                2700,
+                125
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize W150_11",
+            "elementIndex": 124,
+            "posBefore": [
+                1.4100000858306885,
+                1.350000023841858,
+                -0.57750004529953
+            ],
+            "posAfter": [
+                0.125,
+                1.350000023841858,
+                -0.57750004529953
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                850,
+                2700,
+                125
+            ],
+            "dimsAfter": [
+                3420,
+                2700,
+                125
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize W150_11",
+            "elementIndex": 124,
+            "posBefore": [
+                0.12499995529651642,
+                1.350000023841858,
+                -0.57750004529953
+            ],
+            "posAfter": [
+                1.409999966621399,
+                1.350000023841858,
+                -0.57750004529953
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                3420,
+                2700,
+                125
+            ],
+            "dimsAfter": [
+                850,
+                2700,
+                125
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize W150_11",
+            "elementIndex": 124,
+            "posBefore": [
+                1.409999966621399,
+                1.350000023841858,
+                -0.57750004529953
+            ],
+            "posAfter": [
+                1.7100000381469727,
+                1.350000023841858,
+                -0.57750004529953
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                850,
+                2700,
+                125
+            ],
+            "dimsAfter": [
+                250,
+                2700,
+                125
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6849998831748962,
+                0.872589647769928,
+                -3.3477706909179689
+            ],
+            "posAfter": [
+                0.6835778951644898,
+                0.85999995470047,
+                -3.3199996948242189
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6835778951644898,
+                0.85999995470047,
+                -3.3199996948242189
+            ],
+            "posAfter": [
+                0.6450451612472534,
+                0.85999995470047,
+                -3.3199996948242189
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6450451612472534,
+                0.85999995470047,
+                -3.3199996948242189
+            ],
+            "posAfter": [
+                0.6906063556671143,
+                0.85999995470047,
+                -3.2985825538635256
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Moyka",
+            "elementIndex": 174,
+            "posBefore": [
+                0.6906063556671143,
+                0.85999995470047,
+                -3.2985825538635256
+            ],
+            "posAfter": [
+                0.7019751667976379,
+                0.85999995470047,
+                -3.2985825538635256
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
         }
     ],
     "redoHistory": [],
@@ -48506,11 +48778,11 @@
         "wallsEnabled": true,
         "lowerNearWalls": true,
         "cameraPanFree": true,
-        "wallOutline": false,
+        "wallOutline": true,
         "hideOpeningsOnLoweredWalls": true,
         "objectsVisible": true,
         "hideLightSources": true,
-        "mouseSensitivity": 1.037592887878418,
+        "mouseSensitivity": 0.6938088536262512,
         "wasdSpeed": 1.0,
         "arrowSpeed": 1.0,
         "photoQuality": 2,
