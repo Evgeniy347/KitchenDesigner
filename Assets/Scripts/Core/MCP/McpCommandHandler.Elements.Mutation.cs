@@ -626,11 +626,14 @@ namespace KitchenDesigner.Core.MCP
                 switch (elementType)
                 {
                     case "floor":
-                        var plate = BasePlate.Create();
-                        plate.Element.PartName = item.name;
-                        commands.Add(new CreateCommand(plate.gameObject));
-                        created.Add(plate.Element);
-                        continue;
+                        // Настоящий пол нужного размера/позиции (FloorElement), а НЕ
+                        // BasePlate-синглтон: планировке нужны отдельные полы комнат,
+                        // которые можно двигать/растягивать (баг v1: floor→доска/якорь).
+                        go = ElementFactory.CreateFloor(new Vector3Int(
+                            item.width ?? FloorElement.DEFAULT_SIZE_MM,
+                            item.height ?? FloorElement.DEFAULT_THICKNESS_MM,
+                            item.depth ?? FloorElement.DEFAULT_SIZE_MM), item.name, pos);
+                        break;
                     case "assembled_facade":
                         go = ElementFactory.CreateAssembledFacade(new Vector3Int(item.width ?? 450, item.height ?? 700, item.depth ?? 18), item.name, pos, AssembledFill.Blind);
                         break;
@@ -693,6 +696,17 @@ namespace KitchenDesigner.Core.MCP
 
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP create_elements x{commands.Count}", commands));
+
+            // Окна/двери должны прилипнуть к ближайшей стене и прорезать проём —
+            // как при перетаскивании мышью. При MCP-создании это раньше не
+            // вызывалось, поэтому проём не резался (баг v1). Делаем ПОСЛЕ Execute,
+            // когда все стены батча уже зарегистрированы.
+            foreach (var el in created)
+            {
+                if (el is WindowElement w) w.SnapToWall();
+                else if (el is DoorElement d) d.SnapToWall();
+            }
+
             RefreshElementHighlights();
             var all = PartRegistry.GetAll();
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
