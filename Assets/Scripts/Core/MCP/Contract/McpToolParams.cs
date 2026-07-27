@@ -255,6 +255,51 @@ namespace KitchenDesigner.Core.MCP.Contract
         public CreateItem[] items = Array.Empty<CreateItem>();
     }
 
+    // ── v2 corner-anchored geometry (all coordinates in MM) ────────────────
+
+    [Serializable]
+    public class PlanPointMm
+    {
+        [McpParam("X in MM from the declaration origin.", Required = true)] public int x;
+        [McpParam("Z in MM from the declaration origin.", Required = true)] public int z;
+    }
+
+    [Serializable]
+    public class WallSegmentMm
+    {
+        [McpParam("Stable wall id/name.", Required = true)] public string name = "";
+        [McpParam("Start X in MM from origin.", Required = true)] public int from_x;
+        [McpParam("Start Z in MM from origin.", Required = true)] public int from_z;
+        [McpParam("End X in MM from origin.", Required = true)] public int to_x;
+        [McpParam("End Z in MM from origin.", Required = true)] public int to_z;
+        [McpParam("Wall kind; thickness/material come from project instructions.", Required = true,
+            Enum = new[] { "bearing", "partition" })] public string kind = "";
+        [McpParam("Wall height in MM.", Required = true, Min = 1)] public int height;
+    }
+
+    [Serializable]
+    public class ParamsCreateWalls
+    {
+        [McpParam("World X of declaration origin in MM.")] public int origin_x_mm;
+        [McpParam("World Z of declaration origin in MM.")] public int origin_z_mm;
+        [McpParam("Floor/base Y in MM. Walls extend upward from it.")] public int base_y_mm;
+        [McpParam("Wall segments. Existing walls with the same names are updated (idempotent).",
+            Required = true, Min = 1)] public WallSegmentMm[] segments = Array.Empty<WallSegmentMm>();
+    }
+
+    [Serializable]
+    public class ParamsCreateFloorV2
+    {
+        [McpParam("Stable floor id/name.", Required = true)] public string name = "";
+        [McpParam("World X of declaration origin in MM.")] public int origin_x_mm;
+        [McpParam("World Z of declaration origin in MM.")] public int origin_z_mm;
+        [McpParam("Top surface Y in MM.")] public int top_y_mm;
+        [McpParam("Floor thickness in MM. If omitted, floor_thickness_mm is required in project instructions.", Min = 1)]
+        public int? thickness_mm;
+        [McpParam("Simple polygon vertices in MM from origin (clockwise or counter-clockwise).",
+            Required = true, Min = 3)] public PlanPointMm[] poly = Array.Empty<PlanPointMm>();
+    }
+
     // ── convert / clone / align / rename ─────────────────────────────────────
 
     [Serializable]

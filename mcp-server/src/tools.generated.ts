@@ -167,6 +167,32 @@ export const GEN_TOOLS: GenTool[] = [
     },
   },
   {
+    name: "create_walls",
+    title: "Create walls from corner coordinates",
+    description: "Create/update a batch of bearing or partition walls from endpoint coordinates in MM. Geometry is derived server-side; thickness and optional material come from project instructions. Atomic, idempotent by segment name, ONE undo step.",
+    kind: "write",
+    inputSchema: {
+      origin_x_mm: z.number().int().optional().describe("World X of declaration origin in MM."),
+      origin_z_mm: z.number().int().optional().describe("World Z of declaration origin in MM."),
+      base_y_mm: z.number().int().optional().describe("Floor/base Y in MM. Walls extend upward from it."),
+      segments: z.array(z.object({ name: z.string().min(1).describe("Stable wall id/name."), from_x: z.number().int().describe("Start X in MM from origin."), from_z: z.number().int().describe("Start Z in MM from origin."), to_x: z.number().int().describe("End X in MM from origin."), to_z: z.number().int().describe("End Z in MM from origin."), kind: z.enum(["bearing", "partition"]).describe("Wall kind; thickness/material come from project instructions."), height: z.number().int().min(1).describe("Wall height in MM.") })).min(1).describe("Wall segments. Existing walls with the same names are updated (idempotent)."),
+    },
+  },
+  {
+    name: "create_floor",
+    title: "Create a polygon floor",
+    description: "Create/update a FloorElement from a simple polygon in MM. The top surface is corner-anchored; center/size/mesh are derived server-side. Atomic and idempotent by name, ONE undo step.",
+    kind: "write",
+    inputSchema: {
+      name: z.string().min(1).describe("Stable floor id/name."),
+      origin_x_mm: z.number().int().optional().describe("World X of declaration origin in MM."),
+      origin_z_mm: z.number().int().optional().describe("World Z of declaration origin in MM."),
+      top_y_mm: z.number().int().optional().describe("Top surface Y in MM."),
+      thickness_mm: z.number().int().min(1).optional().describe("Floor thickness in MM. If omitted, floor_thickness_mm is required in project instructions."),
+      poly: z.array(z.object({ x: z.number().int().describe("X in MM from the declaration origin."), z: z.number().int().describe("Z in MM from the declaration origin.") })).min(3).describe("Simple polygon vertices in MM from origin (clockwise or counter-clockwise)."),
+    },
+  },
+  {
     name: "snap_diagnose",
     title: "Diagnose snapping (batch)",
     description: "Explain why each given board does or does not snap to neighbours from its current (or a test) position: best face pair, gap vs threshold, overlap. x/y/z in METERS (optional, default = current position).",

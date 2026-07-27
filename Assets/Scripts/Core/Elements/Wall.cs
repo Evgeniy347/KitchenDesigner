@@ -5,6 +5,15 @@ namespace KitchenDesigner.Core
 {
     public class Wall : MonoBehaviour
     {
+        [SerializeField] private string _kind = "";
+        public string Kind { get => _kind; set => _kind = value ?? ""; }
+        [SerializeField] private WallMeshBuilder.EndShape _endShape = default;
+        [SerializeField] private bool _hasEndShape;
+        public WallMeshBuilder.EndShape EndShape => _hasEndShape ? _endShape : WallMeshBuilder.EndShape.Square;
+        public void SetEndShape(WallMeshBuilder.EndShape shape)
+        {
+            _endShape = shape; _hasEndShape = true; RebuildMesh();
+        }
         private bool _lowered;
         private float _fullScaleY;
         private float _fullPosY;
@@ -149,7 +158,7 @@ namespace KitchenDesigner.Core
                 else Object.DestroyImmediate(_customMesh);
             }
 
-            _customMesh = WallMeshBuilder.Build(cutouts, thickAlongX);
+            _customMesh = WallMeshBuilder.Build(cutouts, thickAlongX, EndShape);
             _meshFilter.sharedMesh = _customMesh;
 
             var collider = GetComponent<MeshCollider>();

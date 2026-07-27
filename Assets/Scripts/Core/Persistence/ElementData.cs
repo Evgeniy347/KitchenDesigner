@@ -32,6 +32,8 @@ namespace KitchenDesigner.Core
         public float[] rotation = new float[4];
         public bool movable = true;
         public bool isWall = false;
+        public string wallKind = "";
+        public float[] wallEndShape = System.Array.Empty<float>();
         public bool isFacade = false;
         public bool isRadialShelf = false;
         public bool isTable = false;
@@ -78,6 +80,8 @@ namespace KitchenDesigner.Core
 		public bool isPillar = false;
 		public int midHeightMM = 75;
 		public bool isFloor = false;
+		// Floor polygon as local X,Z pairs in MM. Empty = legacy rectangular floor.
+		public int[] floorPolygonXZ = System.Array.Empty<int>();
 		public bool isLightSource = false;
 		// Параметры лампы. Инициализаторы = дефолты для старых сейвов без этих полей.
 		public int lightTemperatureK = LightSourceElement.DEFAULT_TEMPERATURE_K;
@@ -140,6 +144,12 @@ namespace KitchenDesigner.Core
 
             d.movable = element.Movable;
             d.isWall = wall != null;
+            d.wallKind = wall != null ? wall.Kind : "";
+            if (wall != null)
+            {
+                var ws = wall.EndShape;
+                d.wallEndShape = new[] { ws.startFront, ws.startBack, ws.endFront, ws.endBack };
+            }
             d.isFacade = facade != null;
             d.isRadialShelf = radialShelf != null;
             d.isRadiusTable = radiusTable != null;
@@ -239,6 +249,15 @@ namespace KitchenDesigner.Core
 			d.isPillar = pillar != null;
 			d.isPanel = panel != null;
 			d.isFloor = element is FloorElement;
+			if (element is FloorElement floor && floor.PolygonLocalMm.Count >= 3)
+			{
+				d.floorPolygonXZ = new int[floor.PolygonLocalMm.Count * 2];
+				for (int i = 0; i < floor.PolygonLocalMm.Count; i++)
+				{
+					d.floorPolygonXZ[i * 2] = floor.PolygonLocalMm[i].x;
+					d.floorPolygonXZ[i * 2 + 1] = floor.PolygonLocalMm[i].y;
+				}
+			}
 			d.isLightSource = element is LightSourceElement;
 			if (element is LightSourceElement lightEl)
 			{
@@ -278,5 +297,15 @@ namespace KitchenDesigner.Core
             rotation != null && rotation.Length >= 4
                 ? new Quaternion(rotation[0], rotation[1], rotation[2], rotation[3])
                 : Quaternion.identity;
+
+		public List<Vector2Int> FloorPolygon()
+		{
+			var result = new List<Vector2Int>();
+			if (floorPolygonXZ == null || floorPolygonXZ.Length < 6 || floorPolygonXZ.Length % 2 != 0)
+				return result;
+			for (int i = 0; i < floorPolygonXZ.Length; i += 2)
+				result.Add(new Vector2Int(floorPolygonXZ[i], floorPolygonXZ[i + 1]));
+			return result;
+		}
     }
 }

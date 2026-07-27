@@ -18,16 +18,26 @@ namespace KitchenDesigner.Core
             public Vector2 halfSizeNorm;
         }
 
+        [System.Serializable]
+        public struct EndShape
+        {
+            public float startFront, startBack, endFront, endBack;
+            public static EndShape Square => new EndShape
+            { startFront = -0.5f, startBack = -0.5f, endFront = 0.5f, endBack = 0.5f };
+        }
+
         /// <summary>Единичный куб стены с сквозными вырезами под окна.
         /// Вырезы задаются в плоскости «ширина × высота»; по умолчанию ширина —
         /// локальная X (толщина по Z). Для стен, повёрнутых длиной вдоль Z,
         /// передайте thicknessAlongX = true — оси X и Z меняются местами.</summary>
-        public static Mesh Build(List<WindowCutout> cutouts, bool thicknessAlongX = false)
+        public static Mesh Build(List<WindowCutout> cutouts, bool thicknessAlongX = false,
+            EndShape? endShape = null)
         {
             var verts = new List<Vector3>();
             var tris = new List<int>();
 
-            AddBoxNorm(verts, tris, Vector3.zero, Vector3.one * 0.5f, cutouts);
+            var shape = endShape ?? EndShape.Square;
+            AddMiteredBoxNorm(verts, tris, cutouts, shape);
 
             if (thicknessAlongX)
             {
@@ -45,6 +55,24 @@ namespace KitchenDesigner.Core
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             return mesh;
+        }
+
+        private static void AddMiteredBoxNorm(List<Vector3> verts, List<int> tris,
+            List<WindowCutout> cutouts, EndShape s)
+        {
+            const float y0 = -0.5f, y1 = 0.5f, front = 0.5f, back = -0.5f;
+            AddFaceWithCutoutsNorm(verts, tris, s.startFront, s.endFront, y0, y1,
+                front, back, true, cutouts);
+            AddFaceWithCutoutsNorm(verts, tris, s.startBack, s.endBack, y0, y1,
+                back, front, false, cutouts);
+            AddQuad(verts, tris, V(s.endFront, y0, front), V(s.endBack, y0, back),
+                V(s.endBack, y1, back), V(s.endFront, y1, front));
+            AddQuad(verts, tris, V(s.startBack, y0, back), V(s.startFront, y0, front),
+                V(s.startFront, y1, front), V(s.startBack, y1, back));
+            AddQuad(verts, tris, V(s.startFront, y1, front), V(s.endFront, y1, front),
+                V(s.endBack, y1, back), V(s.startBack, y1, back));
+            AddQuad(verts, tris, V(s.startBack, y0, back), V(s.endBack, y0, back),
+                V(s.endFront, y0, front), V(s.startFront, y0, front));
         }
 
         private static void AddBoxNorm(List<Vector3> verts, List<int> tris,

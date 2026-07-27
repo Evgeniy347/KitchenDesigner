@@ -246,6 +246,21 @@ namespace KitchenDesigner.Core
                     if (el.SupportsGrooves)
                         el.SetGrooves(ed.GrooveSpecs());
 
+					var wall = el.GetComponent<Wall>();
+					if (wall != null)
+					{
+						wall.Kind = ed.wallKind ?? "";
+						if (ed.wallEndShape != null && ed.wallEndShape.Length >= 4)
+							wall.SetEndShape(new WallMeshBuilder.EndShape
+							{
+								startFront = ed.wallEndShape[0], startBack = ed.wallEndShape[1],
+								endFront = ed.wallEndShape[2], endBack = ed.wallEndShape[3]
+							});
+					}
+
+					if (el is FloorElement floorEl && ed.floorPolygonXZ != null && ed.floorPolygonXZ.Length >= 6)
+						floorEl.SetPolygonLocalMm(ed.FloorPolygon());
+
                     if (ed.isFacade && el is FacadeElement facade)
                     {
                         // Зазоры проставляем ЯВНО для любого фасада: обычный получает их
