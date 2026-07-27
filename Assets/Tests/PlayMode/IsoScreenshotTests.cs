@@ -550,7 +550,9 @@ public class IsoScreenshotTests
         // Кладём деталь плашмя: локальная +Z смотрит вверх.
         top.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
 
-        var sinkGo = ElementFactory.CreateSink("IsoSink", topPos + new Vector3(0f, 0.2f, 0f));
+        // Опускаем мойку в полосу захвата над пластью — оттуда она садится сама.
+        float topFaceY = topPos.y + topDims.z * 0.5f * AppConstants.MM_TO_UNITS;
+        var sinkGo = ElementFactory.CreateSink("IsoSink", new Vector3(0f, topFaceY + 0.05f, 0f));
         _spawned.Add(sinkGo);
         var sink = sinkGo.GetComponent<SinkElement>();
         Assert.IsNotNull(sink);

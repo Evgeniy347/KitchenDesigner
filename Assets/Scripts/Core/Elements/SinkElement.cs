@@ -20,10 +20,13 @@ namespace KitchenDesigner.Core
     public class SinkElement : KitchenElement
     {
         // ── Габариты (мм) ───────────────────────────────────────────────
-        // Типовая врезная мойка под тумбу 600: внешний контур 600×500,
-        // проём в столешнице 560×460 (борт перекрывает срез на 20 мм с каждой
-        // стороны), короб чаши 540×440 — на 10 мм уже проёма, чтобы пройти в него.
-        public const int OUTER_WIDTH_MM = 600;
+        // Мойка НЕ равна модулю: из 600 мм ширины тумбы боковины съедают по 18 мм,
+        // ещё запас нужен на крепёж и на кромку столешницы, поэтому стандартная
+        // врезная мойка под тумбу 600 — 500×500. Проём 460×460 (борт перекрывает
+        // срез на 20 мм с каждой стороны), короб чаши 440×440 — на 10 мм уже
+        // проёма, чтобы в него пройти.
+        public const int MODULE_WIDTH_MM = 600;      // тумба, под которую рассчитана мойка
+        public const int OUTER_WIDTH_MM = 500;
         public const int OUTER_DEPTH_MM = 500;
         public const int RIM_HEIGHT_MM = 8;          // высота борта над столешницей
         public const int RIM_WIDTH_MM = 30;          // ширина борта (контур → короб чаши)
@@ -32,22 +35,22 @@ namespace KitchenDesigner.Core
         public const int BOWL_WALL_MM = 10;
         public const int MIN_EDGE_MM = 30;           // остаток столешницы за проёмом
 
+        /// <summary>Ловится сверху с этой высоты над пластью; выше — мойка просто
+        /// висит в воздухе и ничего не режет.</summary>
+        public const int SNAP_CATCH_MM = 100;
+        /// <summary>Протащили ниже пласти на столько — мойка отлипает и идёт
+        /// дальше вниз (иначе от столешницы было бы не оторваться).</summary>
+        public const int SNAP_RELEASE_MM = 60;
+
         public static int CutoutWidthMM => OUTER_WIDTH_MM - 2 * (RIM_WIDTH_MM - CUTOUT_CLEARANCE_MM);
         public static int CutoutDepthMM => OUTER_DEPTH_MM - 2 * (RIM_WIDTH_MM - CUTOUT_CLEARANCE_MM);
         public static int TotalHeightMM => RIM_HEIGHT_MM + BOWL_DEPTH_MM;
 
-        /// <summary>Минимальные габариты детали, в которую мойка помещается.</summary>
+        /// <summary>Минимальные габариты детали, в которую мойка помещается.
+        /// На модуле 600 столешница 600×600 обязана подходить — отсюда и размер
+        /// самой мойки.</summary>
         public static int MinPartWidthMM => CutoutWidthMM + 2 * MIN_EDGE_MM;
         public static int MinPartDepthMM => CutoutDepthMM + 2 * MIN_EDGE_MM;
-
-        // Корень мойки сидит в плоскости столешницы, а габаритный короб уходит
-        // вниз — центр короба смещён относительно начала координат.
-        private static float CenterOffsetUnits =>
-            (BOWL_DEPTH_MM - RIM_HEIGHT_MM) * 0.5f * AppConstants.MM_TO_UNITS;
-
-        // Гистерезис смены детали: на стыке двух столешниц расстояния почти равны
-        // и дрожат — без запаса мойка скакала бы между ними (как окно между стен).
-        private const float PartSwitchHysteresisU = 0.05f; // 50 мм
 
         [SerializeField] private string _attachedPartName = "";
         [SerializeField] private int _offsetXMM;   // от центра детали вдоль её локальной X
@@ -63,25 +66,34 @@ namespace KitchenDesigner.Core
         private KitchenElement? _lastHost;
         private int _lastOffsetXMM = int.MinValue;
         private int _lastOffsetYMM = int.MinValue;
-        // Поза детали на прошлом кадре — по ней отличаем «пользователь тянет
-        // мойку» от «поехала сама деталь» (см. AlignToPart).
-        private Vector3 _lastHostPos;
-        private Quaternion _lastHostRot = Quaternion.identity;
-        private bool _hasHostPose;
+
+        // «Свободная» высота над пластью в мм: пока мойка прилипла, её позу
+        // диктуем мы, и намерение пользователя жило бы только в этом счётчике —
+        // по нему и решается отрыв. Копится из дрейфа (см. TrackDrift).
+        private float _freeHeightMM;
+        // Позиция, которую выставили сами: всё, что появилось сверх неё, —
+        // движение пользователя (drag, стрелки, MCP), а не переезд столешницы.
+        private Vector3 _appliedPos;
+        private bool _hasAppliedPos;
 
         public string AttachedPartName { get => _attachedPartName; set => _attachedPartName = value ?? ""; }
         public int OffsetXMM { get => _offsetXMM; set => _offsetXMM = value; }
         public int OffsetYMM { get => _offsetYMM; set => _offsetYMM = value; }
+        public bool IsAttached => _lastHost != null;
 
+        // Габарит для ВЫДЕЛЕНИЯ И РУЧЕК — плита борта на столешнице, а не короб
+        // вместе с чашей. Короб уходит на 180 мм в тело детали, и центры его
+        // боковых граней (а с ними и ручки) оказывались замурованы в столешнице.
+        // Плоская же плита проходит общим путём HandlePlacement: тонкая ось Y →
+        // ручки выносятся из плоскости к камере, ровно как у стены и полки.
         protected override Vector3 EffectiveScale => new Vector3(
             OUTER_WIDTH_MM * AppConstants.MM_TO_UNITS,
-            TotalHeightMM * AppConstants.MM_TO_UNITS,
+            RIM_HEIGHT_MM * AppConstants.MM_TO_UNITS,
             OUTER_DEPTH_MM * AppConstants.MM_TO_UNITS);
 
-        // Габаритный короб (выделение, ручки, валидация) — вокруг чаши, а не
-        // вокруг начала координат: иначе он висел бы наполовину над столешницей.
         protected override Vector3 ValidationPosition =>
-            transform.position - transform.rotation * new Vector3(0f, CenterOffsetUnits, 0f);
+            transform.position + transform.rotation *
+                new Vector3(0f, RIM_HEIGHT_MM * 0.5f * AppConstants.MM_TO_UNITS, 0f);
 
         private void Start()
         {
@@ -106,23 +118,30 @@ namespace KitchenDesigner.Core
 
         // ── Привязка к детали ───────────────────────────────────────────
 
-        /// <summary>Прилипание к ближайшей подходящей детали: регистрация проёма,
-        /// разворот по её осям, посадка борта на верхнюю пласть.</summary>
+        /// <summary>Магнит к столешнице: пока мойка прилипла — держим её позу и
+        /// копим «свободную» высоту из движений пользователя; вышли за полосу
+        /// захвата (вверх) или протащили ниже пласти — отлипаем и идём дальше.
+        /// Прилипнуть можно только СВЕРХУ и только к детали, в которую проём
+        /// физически влезает и не попадает на боковину.</summary>
         public void SnapToPart()
         {
-            var part = FindNearestHostPart();
-            if (part == null) return;
+            var host = _lastHost != null ? _lastHost : FindAttachedPart();
+            TrackDrift(host);
 
-            // Проверяем фактическое членство, а не только имя: после загрузки
-            // сцены имя уже восстановлено из сейва, но деталь мойку ещё не знает —
-            // без регистрации проём не строится.
-            if (part.PartName != _attachedPartName || !part.HasSink(this))
+            if (host != null && !StillHolds(host)) { ReleaseFrom(host); host = null; }
+            if (host == null) host = FindCatchingPart();
+            if (host == null) return;
+
+            if (host.PartName != _attachedPartName || !host.HasSink(this))
             {
+                // Проверяем фактическое членство, а не только имя: после загрузки
+                // сцены имя уже восстановлено из сейва, но деталь мойку ещё не
+                // знает — без регистрации проём не строится.
                 UnregisterFromPart();
-                _attachedPartName = part.PartName;
-                part.RegisterSink(this);
+                _attachedPartName = host.PartName;
+                host.RegisterSink(this);
             }
-            AlignToPart(part);
+            AlignToPart(host);
         }
 
         public void AttachToPart(KitchenElement part)
@@ -131,6 +150,7 @@ namespace KitchenDesigner.Core
             UnregisterFromPart();
             _attachedPartName = part.PartName;
             part.RegisterSink(this);
+            _freeHeightMM = 0f;
             AlignToPart(part);
         }
 
@@ -139,9 +159,58 @@ namespace KitchenDesigner.Core
             var part = FindAttachedPart();
             _attachedPartName = "";
             _lastHost = null;
-            _hasHostPose = false;
             if (part != null) part.UnregisterSink(this);
         }
+
+        /// <summary>Отлипнуть и догнать курсор: пока мойка сидела на пласти, её
+        /// позу диктовали мы, а намерение пользователя копилось в _freeHeightMM —
+        /// теперь мойка прыгает туда, куда её всё это время тянули. Без прыжка
+        /// она осталась бы на пласти и тут же прилипла снова.</summary>
+        private void ReleaseFrom(KitchenElement host)
+        {
+            Vector3 up = host.transform.rotation *
+                (TopIsPlusZ(host) ? Vector3.forward : Vector3.back);
+            // Догоняем ровно недостающее: часть пути мойка уже проехала в этом
+            // кадре (её сдвинул drag), остальное копилось, пока она держалась.
+            float actualHeightMM = LocalPose(host).heightMM;
+            transform.position += up * ((_freeHeightMM - actualHeightMM) * AppConstants.MM_TO_UNITS);
+            _appliedPos = transform.position;
+
+            UnregisterFromPart();
+            _freeHeightMM = 0f;
+            _lastOffsetXMM = int.MinValue;
+            _lastOffsetYMM = int.MinValue;
+        }
+
+        /// <summary>Разложить внешнее смещение (drag, стрелки, MCP) по осям детали.
+        /// Всё, что появилось сверх выставленной нами позы, — движение
+        /// пользователя; переезд самой столешницы дрейфа не даёт, потому что
+        /// мойку в тот кадр двигали мы же.</summary>
+        private void TrackDrift(KitchenElement? host)
+        {
+            if (!_hasAppliedPos) { _appliedPos = transform.position; _hasAppliedPos = true; return; }
+            Vector3 drift = transform.position - _appliedPos;
+            _appliedPos = transform.position;
+            if (host == null || drift.sqrMagnitude < Tolerance.EpsilonSqr) return;
+
+            var pt = host.transform;
+            Vector3 local = Quaternion.Inverse(pt.rotation) * drift;
+            float toU = AppConstants.MM_TO_UNITS;
+            _offsetXMM += Mathf.RoundToInt(local.x / toU);
+            _offsetYMM += Mathf.RoundToInt(local.y / toU);
+            _freeHeightMM += local.z / toU * (TopIsPlusZ(host) ? 1f : -1f);
+        }
+
+        /// <summary>Верхняя пласть — та из ±Z, что смотрит вверх.</summary>
+        private static bool TopIsPlusZ(KitchenElement part) =>
+            (part.transform.rotation * Vector3.forward).y >= 0f;
+
+        /// <summary>Мойка всё ещё держится на этой детали? Поперёк пласти она не
+        /// отрывается — упирается в край (клампинг в AlignToPart); отпускает
+        /// только вертикаль.</summary>
+        private bool StillHolds(KitchenElement host) =>
+            IsSuitableHost(host) &&
+            _freeHeightMM >= -SNAP_RELEASE_MM && _freeHeightMM <= SNAP_CATCH_MM;
 
         /// <summary>Деталь годится под мойку: это базовая «Деталь» (у фасада,
         /// стола и прочих подтипов геометрия своя, врезка в неё не определена),
@@ -156,37 +225,118 @@ namespace KitchenDesigner.Core
             return upness > 0.7f;
         }
 
-        private KitchenElement? FindNearestHostPart()
+        /// <summary>Центр мойки над деталью (иначе она «прилипает» краем к
+        /// соседней столешнице через всю комнату).</summary>
+        private static bool IsOverFootprint(KitchenElement part, int offX, int offY)
         {
-            float bestDist = float.MaxValue;
-            float attachedDist = float.MaxValue;
+            var dims = part.DimensionsMM;
+            return Mathf.Abs(offX) <= dims.x * 0.5f && Mathf.Abs(offY) <= dims.y * 0.5f;
+        }
+
+        /// <summary>Столешница, которая ловит мойку прямо сейчас: мойка над её
+        /// пластью не выше полосы захвата и не ниже порога отрыва, проём не
+        /// налезает на боковину. Из нескольких берём ту, к пласти которой ближе.</summary>
+        private KitchenElement? FindCatchingPart()
+        {
             KitchenElement? best = null;
-            KitchenElement? attached = null;
+            float bestHeight = float.MaxValue;
+            int bestX = 0, bestY = 0;
             foreach (var el in PartRegistry.GetAll())
             {
                 if (el == null || el == this || !IsSuitableHost(el)) continue;
-                float dist = DistanceToPart(el);
-                if (el.PartName == _attachedPartName) { attached = el; attachedDist = dist; }
-                if (dist < bestDist) { bestDist = dist; best = el; }
+
+                var (offX, offY, heightMM) = LocalPose(el);
+                if (heightMM > SNAP_CATCH_MM || heightMM < -SNAP_RELEASE_MM) continue;
+                if (!IsOverFootprint(el, offX, offY)) continue;
+
+                ClampOffsets(el, ref offX, ref offY);
+                if (CutoutBlocked(el, offX, offY)) continue;
+
+                float h = Mathf.Abs(heightMM);
+                if (h >= bestHeight) continue;
+                bestHeight = h;
+                best = el;
+                bestX = offX;
+                bestY = offY;
             }
-            if (attached != null && best != attached && attachedDist - bestDist < PartSwitchHysteresisU)
-                return attached;
+            if (best == null) return null;
+
+            _offsetXMM = bestX;
+            _offsetYMM = bestY;
+            // Магнит «съедает» высоту захвата: дальше вертикаль отсчитывается от
+            // самой пласти, и порог отрыва не зависит от того, с какой высоты
+            // мойку опустили.
+            _freeHeightMM = 0f;
             return best;
         }
 
-        /// <summary>Расстояние от центра чаши до бокса детали.</summary>
-        private float DistanceToPart(KitchenElement part)
+        /// <summary>Поза мойки в осях детали: смещения по пласти и высота над ней.</summary>
+        private (int offX, int offY, float heightMM) LocalPose(KitchenElement part)
         {
-            var t = part.transform;
-            var half = t.localScale;
-            half = new Vector3(Mathf.Abs(half.x), Mathf.Abs(half.y), Mathf.Abs(half.z)) * 0.5f;
+            var pt = part.transform;
+            float toU = AppConstants.MM_TO_UNITS;
+            Vector3 local = Quaternion.Inverse(pt.rotation) * (transform.position - pt.position);
+            float halfThickness = part.DimensionsMM.z * 0.5f;
+            float depth = local.z / toU;
+            float height = TopIsPlusZ(part) ? depth - halfThickness : -depth - halfThickness;
+            return (Mathf.RoundToInt(local.x / toU), Mathf.RoundToInt(local.y / toU), height);
+        }
 
-            Vector3 center = ValidationPosition;
-            Vector3 local = Quaternion.Inverse(t.rotation) * (center - t.position);
-            local.x = Mathf.Clamp(local.x, -half.x, half.x);
-            local.y = Mathf.Clamp(local.y, -half.y, half.y);
-            local.z = Mathf.Clamp(local.z, -half.z, half.z);
-            return (t.position + t.rotation * local - center).magnitude;
+        private static void ClampOffsets(KitchenElement part, ref int offX, ref int offY)
+        {
+            var dims = part.DimensionsMM;
+            int maxX = (dims.x - CutoutWidthMM) / 2 - MIN_EDGE_MM;
+            int maxY = (dims.y - CutoutDepthMM) / 2 - MIN_EDGE_MM;
+            offX = Mathf.Clamp(offX, -maxX, maxX);
+            offY = Mathf.Clamp(offY, -maxY, maxY);
+        }
+
+        /// <summary>Проём в этом месте налезает на другую деталь — боковину,
+        /// перегородку, ящик? Считаем в осях столешницы: чужой габарит переводим
+        /// в её систему координат и смотрим, попадает ли он в прямоугольник проёма
+        /// и в слой, который занимает чаша.</summary>
+        public bool CutoutBlocked(KitchenElement part, int offX, int offY)
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            var pt = part.transform;
+            var dims = part.DimensionsMM;
+
+            float x0 = (offX - CutoutWidthMM * 0.5f) * toU, x1 = (offX + CutoutWidthMM * 0.5f) * toU;
+            float y0 = (offY - CutoutDepthMM * 0.5f) * toU, y1 = (offY + CutoutDepthMM * 0.5f) * toU;
+            float halfT = dims.z * 0.5f * toU;
+            float bowl = BOWL_DEPTH_MM * toU;
+            // Слой чаши: от верхней пласти вглубь на глубину чаши.
+            float z0 = TopIsPlusZ(part) ? halfT - bowl : -halfT;
+            float z1 = TopIsPlusZ(part) ? halfT : -halfT + bowl;
+
+            var inv = Quaternion.Inverse(pt.rotation);
+            foreach (var el in PartRegistry.GetAll())
+            {
+                if (el == null || el == this || el == part) continue;
+                // Декор и подложки препятствием не считаются, чужие мойки — тоже
+                // (две мойки рядом разводит клампинг, а не блокировка).
+                if (el is SinkElement || el is LightSourceElement || el is FloorElement) continue;
+                if (el.GetComponent<BasePlate>() != null) continue;
+
+                var verts = el.GetVertices();
+                if (verts.Length == 0) continue;
+                var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+                var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+                foreach (var w in verts)
+                {
+                    Vector3 l = inv * (w - pt.position);
+                    min = Vector3.Min(min, l);
+                    max = Vector3.Max(max, l);
+                }
+
+                // Касание кромкой не мешает — блокирует только реальное наложение.
+                float eps = Tolerance.EpsilonUnits;
+                if (max.x <= x0 + eps || min.x >= x1 - eps) continue;
+                if (max.y <= y0 + eps || min.y >= y1 - eps) continue;
+                if (max.z <= z0 + eps || min.z >= z1 - eps) continue;
+                return true;
+            }
+            return false;
         }
 
         private void AlignToPart(KitchenElement part)
@@ -195,34 +345,31 @@ namespace KitchenDesigner.Core
             var dims = part.DimensionsMM;
             float toU = AppConstants.MM_TO_UNITS;
 
-            // Верхняя пласть — та из ±Z, что смотрит вверх. Локальная Y мойки
-            // (вверх) ложится на неё, локальная X — вдоль X детали.
-            bool topIsPlusZ = (pt.rotation * Vector3.forward).y >= 0f;
+            bool topIsPlusZ = TopIsPlusZ(part);
             Quaternion targetRot = pt.rotation * Quaternion.Euler(topIsPlusZ ? 90f : -90f, 0f, 0f);
 
-            // Кто именно сдвинулся? Если деталь стоит на месте, значит мойку тянут
-            // мышью — проецируем её мировую позицию обратно на пласть и получаем
-            // новое смещение. Если же поехала (или повернулась) сама деталь,
-            // смещение СОХРАНЯЕМ: мойка обязана уехать вместе со столешницей.
-            bool hostMoved = _hasHostPose && _lastHost == part &&
-                ((pt.position - _lastHostPos).sqrMagnitude > Tolerance.EpsilonSqr ||
-                 Quaternion.Angle(pt.rotation, _lastHostRot) > 0.05f);
-
-            int maxX = (dims.x - CutoutWidthMM) / 2 - MIN_EDGE_MM;
-            int maxY = (dims.y - CutoutDepthMM) / 2 - MIN_EDGE_MM;
-            if (!hostMoved)
-            {
-                Vector3 local = Quaternion.Inverse(pt.rotation) * (transform.position - pt.position);
-                _offsetXMM = Mathf.RoundToInt(local.x / toU);
-                _offsetYMM = Mathf.RoundToInt(local.y / toU);
-            }
             // Клампим всегда: ресайз детали может оставить проём за её краем.
-            _offsetXMM = Mathf.Clamp(_offsetXMM, -maxX, maxX);
-            _offsetYMM = Mathf.Clamp(_offsetYMM, -maxY, maxY);
+            int offX = _offsetXMM, offY = _offsetYMM;
+            ClampOffsets(part, ref offX, ref offY);
 
-            _lastHostPos = pt.position;
-            _lastHostRot = pt.rotation;
-            _hasHostPose = true;
+            // Боковина на пути — мойка упирается в неё, как деталь в деталь.
+            // Пробуем скользить вдоль препятствия: сначала откатываем одну ось,
+            // потом другую, и только затем остаёмся на прежнем месте целиком.
+            bool hasPrev = _lastHost == part && _lastOffsetXMM != int.MinValue;
+            if (hasPrev && CutoutBlocked(part, offX, offY))
+            {
+                if (!CutoutBlocked(part, offX, _lastOffsetYMM))
+                    offY = _lastOffsetYMM;
+                else if (!CutoutBlocked(part, _lastOffsetXMM, offY))
+                    offX = _lastOffsetXMM;
+                else
+                {
+                    offX = _lastOffsetXMM;
+                    offY = _lastOffsetYMM;
+                }
+            }
+            _offsetXMM = offX;
+            _offsetYMM = offY;
 
             float halfThickness = dims.z * 0.5f * toU;
             Vector3 targetPos = pt.position + pt.rotation * new Vector3(
@@ -233,6 +380,7 @@ namespace KitchenDesigner.Core
             if ((targetPos - transform.position).sqrMagnitude > Tolerance.EpsilonSqr ||
                 Quaternion.Angle(targetRot, transform.rotation) > 0.05f)
                 transform.SetPositionAndRotation(targetPos, targetRot);
+            _appliedPos = transform.position;
 
             // Смеситель — с той стороны, где до края детали больше места
             // (мойку обычно сдвигают к переднему краю, кран остаётся сзади).
@@ -288,6 +436,9 @@ namespace KitchenDesigner.Core
 
         // ── Геометрия ───────────────────────────────────────────────────
 
+        /// <summary>Кликабельный объём — всё тело: борт плюс чаша. Он шире, чем
+        /// габарит для ручек (там только плита борта), иначе по чаше в проёме
+        /// нельзя было бы попасть мышью.</summary>
         private void UpdateCollider()
         {
             var existing = GetComponent<Collider>();
@@ -295,8 +446,9 @@ namespace KitchenDesigner.Core
                 Object.DestroyImmediate(existing);
             var box = GetComponent<BoxCollider>();
             if (box == null) box = gameObject.AddComponent<BoxCollider>();
-            box.size = EffectiveScale;
-            box.center = new Vector3(0f, -CenterOffsetUnits, 0f);
+            float toU = AppConstants.MM_TO_UNITS;
+            box.size = new Vector3(OUTER_WIDTH_MM * toU, TotalHeightMM * toU, OUTER_DEPTH_MM * toU);
+            box.center = new Vector3(0f, (RIM_HEIGHT_MM - TotalHeightMM) * 0.5f * toU, 0f);
         }
 
         // 0-3 борт, 4-8 чаша, 9-13 смеситель.

@@ -332,6 +332,10 @@ namespace KitchenDesigner.Core
             // У окна ось Z (глубина) бессмысленна: двигать поперёк стены нельзя
             // (снап вернёт), а толщину диктует стена — ручки Z не создаём.
             bool skipDepth = _target is WindowElement || _target is DoorElement;
+            // Мойка — покупное изделие фиксированного размера (её ApplyDimensions
+            // возвращает габарит на место), тянуть у неё нечего: ручки ресайза
+            // только вводили бы в заблуждение. Перемещать её можно.
+            if (Mode == HandleMode.Resize && _target is SinkElement) return;
             var faces = _target!.GetFaces();
             for (int i = 0; i < faces.Length; i++)
             {

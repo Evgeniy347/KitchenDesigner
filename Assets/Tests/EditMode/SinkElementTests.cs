@@ -3,11 +3,16 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
-/// <summary>Врезная мойка: привязка к детали-столешнице, сквозной проём в её
-/// пласти и пересчёт проёма при перемещении/ресайзе детали.</summary>
+/// <summary>Врезная мойка: захват столешницы сверху и отрыв вниз, сквозной проём
+/// в её пласти, пересчёт проёма при перемещении/ресайзе детали и упор в боковины.</summary>
 public class SinkElementTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
+
+    private const float ToU = AppConstants.MM_TO_UNITS;
+    private const int TopThicknessMM = 38;
+    /// <summary>Мировая высота верхней пласти столешницы, созданной CreateCountertop.</summary>
+    private const float TopY = TopThicknessMM * 0.5f * ToU;
 
     [TearDown]
     public void TearDown()
@@ -22,15 +27,31 @@ public class SinkElementTests
         _spawned.Clear();
     }
 
-    /// <summary>Столешница: деталь, положенная плашмя (локальная +Z смотрит вверх).</summary>
-    private KitchenElement CreateCountertop(int widthMM = 1200, int depthMM = 600, int thicknessMM = 38)
+    /// <summary>Столешница: деталь, положенная плашмя (локальная +Z смотрит вверх),
+    /// центр в начале координат.</summary>
+    private KitchenElement CreateCountertop(int widthMM = 1200, int depthMM = 600, string name = "Countertop")
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         _spawned.Add(go);
         var el = go.AddComponent<KitchenElement>();
-        el.PartName = "Countertop";
+        el.PartName = name;
         el.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
-        el.DimensionsMM = new Vector3Int(widthMM, depthMM, thicknessMM);
+        el.DimensionsMM = new Vector3Int(widthMM, depthMM, TopThicknessMM);
+        PartRegistry.Register(el);
+        return el;
+    }
+
+    /// <summary>Боковина: вертикальная деталь под столешницей.</summary>
+    private KitchenElement CreateSidePanel(float x, string name = "Side")
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _spawned.Add(go);
+        var el = go.AddComponent<KitchenElement>();
+        el.PartName = name;
+        // Пласть смотрит вдоль X: боковина стоит поперёк столешницы.
+        el.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        el.DimensionsMM = new Vector3Int(560, 700, 18);
+        el.transform.position = new Vector3(x, -0.35f, 0f);
         PartRegistry.Register(el);
         return el;
     }
@@ -48,7 +69,27 @@ public class SinkElementTests
         return sink;
     }
 
+    /// <summary>Мойка, уже севшая на столешницу (заходит из полосы захвата).</summary>
+    private SinkElement CreateSeatedSink(KitchenElement top, float localX = 0f)
+    {
+        var sink = CreateSink(new Vector3(localX, TopY + 0.05f, 0f));
+        sink.SnapToPart();
+        Assert.IsTrue(sink.IsAttached, "мойка должна сесть на столешницу");
+        return sink;
+    }
+
     // ── Размеры модели ──────────────────────────────────────────────────
+
+    [Test]
+    public void Sink_FitsSingle600Module()
+    {
+        // Мойка ≠ модуль: 600 мм тумбы минус боковины и запас на крепёж.
+        Assert.Less(SinkElement.OUTER_WIDTH_MM, SinkElement.MODULE_WIDTH_MM);
+        // Столешница одного модуля 600×600 обязана принимать мойку — иначе
+        // на самой типовой тумбе мойка не находит хозяина и режет чужую деталь.
+        Assert.LessOrEqual(SinkElement.MinPartWidthMM, SinkElement.MODULE_WIDTH_MM);
+        Assert.LessOrEqual(SinkElement.MinPartDepthMM, SinkElement.MODULE_WIDTH_MM);
+    }
 
     [Test]
     public void Cutout_IsSmallerThanRim_AndLargerThanBowl()
@@ -59,31 +100,107 @@ public class SinkElementTests
             "борт обязан перекрывать срез столешницы");
         Assert.Greater(SinkElement.CutoutWidthMM, bowlOuter,
             "чаша должна проходить в проём");
-        Assert.AreEqual(560, SinkElement.CutoutWidthMM);
-        Assert.AreEqual(460, SinkElement.CutoutDepthMM);
         Assert.AreEqual(SinkElement.RIM_HEIGHT_MM + SinkElement.BOWL_DEPTH_MM,
             SinkElement.TotalHeightMM);
     }
 
-    // ── Привязка ────────────────────────────────────────────────────────
+    [Test]
+    public void Sink_FitsSingleModuleCountertop()
+    {
+        var top = CreateCountertop(600, 600);
+        Assert.IsTrue(SinkElement.IsSuitableHost(top), "столешница модуля 600 годится под мойку");
+
+        var sink = CreateSeatedSink(top);
+        Assert.IsTrue(top.HasSink(sink), "на столешнице одного модуля мойка врезается");
+    }
+
+    // ── Захват и отрыв ──────────────────────────────────────────────────
 
     [Test]
-    public void SnapToPart_HorizontalBoard_AttachesAndSitsOnTopFace()
+    public void HoveringHigh_DoesNotAttach()
     {
         var top = CreateCountertop();
-        var sink = CreateSink(new Vector3(0.1f, 0.5f, 0f));
+        var sink = CreateSink(new Vector3(0f, TopY + (SinkElement.SNAP_CATCH_MM + 50) * ToU, 0f));
 
         sink.SnapToPart();
 
-        Assert.IsTrue(top.HasSink(sink), "мойка врезана в столешницу");
-        Assert.AreEqual("Countertop", sink.AttachedPartName);
-        // Борт лежит на верхней пласти: начало координат мойки = плоскость среза.
-        float topY = 38 * 0.5f * AppConstants.MM_TO_UNITS;
-        Assert.AreEqual(topY, sink.transform.position.y, 1e-4f);
+        Assert.IsFalse(sink.IsAttached, "над столешницей мойка просто висит");
+        Assert.AreEqual(0, top.AttachedSinks.Count, "проём не режется");
     }
 
     [Test]
-    public void SnapToPart_VerticalBoard_NotSuitableHost()
+    public void LoweredFromAbove_AttachesOnce_ThenReleasesWhenPulledThrough()
+    {
+        var top = CreateCountertop();
+        var sink = CreateSink(new Vector3(0f, TopY + 0.3f, 0f));
+        sink.SnapToPart();
+        Assert.IsFalse(sink.IsAttached, "с 300 мм над пластью — ещё не ловится");
+
+        // Спускаем шагами по 50 мм: где-то в полосе захвата мойка садится.
+        int attachedAtStep = -1;
+        for (int step = 1; step <= 8 && attachedAtStep < 0; step++)
+        {
+            sink.transform.position -= new Vector3(0f, 0.05f, 0f);
+            sink.SnapToPart();
+            if (sink.IsAttached) attachedAtStep = step;
+        }
+
+        Assert.Greater(attachedAtStep, 0, "спускаясь сверху, мойка обязана прилипнуть");
+        Assert.AreEqual(TopY, sink.transform.position.y, 1e-4f,
+            "борт сел ровно на пласть");
+        Assert.IsTrue(top.HasSink(sink), "проём прорезан");
+        Assert.AreNotEqual("Cube", top.GetComponent<MeshFilter>().sharedMesh.name);
+
+        // Продолжаем тянуть вниз — мойка держится, пока не пройден порог отрыва.
+        sink.transform.position -= new Vector3(0f, SinkElement.SNAP_RELEASE_MM * 0.5f * ToU, 0f);
+        sink.SnapToPart();
+        Assert.IsTrue(sink.IsAttached, "на полпути к порогу мойка ещё держится");
+        Assert.AreEqual(TopY, sink.transform.position.y, 1e-4f, "и снова притянута к пласти");
+
+        sink.transform.position -= new Vector3(0f, SinkElement.SNAP_RELEASE_MM * ToU, 0f);
+        sink.SnapToPart();
+
+        Assert.IsFalse(sink.IsAttached, "протащили ниже порога — мойка отлипла");
+        Assert.Less(sink.transform.position.y, TopY, "и ушла ниже пласти");
+        Assert.AreEqual(0, top.AttachedSinks.Count, "проём закрылся");
+        Assert.AreEqual("Cube", top.GetComponent<MeshFilter>().sharedMesh.name);
+
+        // Дальше вниз она идёт свободно и обратно не прилипает.
+        for (int step = 0; step < 3; step++)
+        {
+            sink.transform.position -= new Vector3(0f, 0.05f, 0f);
+            sink.SnapToPart();
+            Assert.IsFalse(sink.IsAttached, "ниже столешницы мойка больше не ловится");
+        }
+    }
+
+    [Test]
+    public void SinkBelowCountertop_DoesNotAttachFromUnderneath()
+    {
+        var top = CreateCountertop();
+        var sink = CreateSink(new Vector3(0f, TopY - 0.4f, 0f));
+
+        sink.SnapToPart();
+
+        Assert.IsFalse(sink.IsAttached, "снизу мойка в столешницу не врезается");
+    }
+
+    [Test]
+    public void SinkBesideCountertop_DoesNotAttach()
+    {
+        var top = CreateCountertop();
+        // По высоте — в полосе захвата, но в стороне от детали.
+        var sink = CreateSink(new Vector3(3f, TopY + 0.02f, 0f));
+
+        sink.SnapToPart();
+
+        Assert.IsFalse(sink.IsAttached, "мойка ловится только над самой столешницей");
+    }
+
+    // ── Пригодность детали ──────────────────────────────────────────────
+
+    [Test]
+    public void VerticalBoard_IsNotSuitableHost()
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         _spawned.Add(go);
@@ -96,36 +213,64 @@ public class SinkElementTests
     }
 
     [Test]
-    public void SnapToPart_TooSmallBoard_NotSuitableHost()
+    public void TooSmallBoard_IsNotSuitableHost()
     {
         var small = CreateCountertop(SinkElement.MinPartWidthMM - 1, 600);
         Assert.IsFalse(SinkElement.IsSuitableHost(small),
             "проём не помещается — деталь под мойку не годится");
     }
 
+    // ── Коллизии с боковинами ───────────────────────────────────────────
+
     [Test]
-    public void SnapToPart_ClampsSinkInsidePart()
+    public void CutoutBlocked_WhenSidePanelCrossesIt()
     {
         var top = CreateCountertop();
-        // Утаскиваем мойку далеко вправо за пределы столешницы.
-        var sink = CreateSink(new Vector3(5f, 0.5f, 0f));
+        CreateSidePanel(0f);
 
+        var sink = CreateSink(new Vector3(0.6f, TopY + 0.02f, 0f));
         sink.SnapToPart();
+        Assert.IsTrue(sink.IsAttached, "в стороне от боковины мойка садится");
 
-        int maxX = (1200 - SinkElement.CutoutWidthMM) / 2 - SinkElement.MIN_EDGE_MM;
-        Assert.AreEqual(maxX, sink.OffsetXMM, "смещение упирается в край столешницы");
-
-        var rect = sink.CutoutRectIn(top);
-        Assert.LessOrEqual(rect.xMax, 0.5f);
-        Assert.GreaterOrEqual(rect.xMin, -0.5f);
+        // Проём ровно над боковиной запрещён, рядом — разрешён.
+        Assert.IsTrue(sink.CutoutBlocked(top, 0, 0), "боковина проходит сквозь проём");
+        Assert.IsFalse(sink.CutoutBlocked(top, 500, 0), "правее боковины место свободно");
     }
+
+    [Test]
+    public void MovingSink_StopsAtSidePanel_InsteadOfCuttingThroughIt()
+    {
+        var top = CreateCountertop();
+        CreateSidePanel(0f);
+        var sink = CreateSeatedSink(top, 0.6f);
+        int startOffset = sink.OffsetXMM;
+        Assert.Greater(startOffset, 0);
+
+        // Тянем мойку влево, прямо на боковину.
+        for (int step = 0; step < 12; step++)
+        {
+            sink.transform.position -= new Vector3(0.05f, 0f, 0f);
+            sink.SnapToPart();
+        }
+
+        Assert.IsTrue(sink.IsAttached, "мойка осталась на столешнице");
+        Assert.Less(sink.OffsetXMM, startOffset, "подъехать к боковине мойка успела");
+        // Боковина 18 мм стоит по центру столешницы: её правая пласть на +9 мм.
+        // Левый край проёма не имеет права зайти за неё — иначе вырез рассёк бы
+        // боковину пополам. Считаем по сырой геометрии, а не через CutoutBlocked,
+        // чтобы тест ловил и поломку самой проверки.
+        float cutoutLeftMM = sink.OffsetXMM - SinkElement.CutoutWidthMM * 0.5f;
+        Assert.GreaterOrEqual(cutoutLeftMM, 9f - 1f,
+            $"проём дошёл до {cutoutLeftMM} мм и рассёк боковину");
+    }
+
+    // ── Проём ───────────────────────────────────────────────────────────
 
     [Test]
     public void MovingPart_CarriesSinkAlong()
     {
         var top = CreateCountertop();
-        var sink = CreateSink(new Vector3(0.2f, 0.5f, 0f));
-        sink.SnapToPart();
+        var sink = CreateSeatedSink(top, 0.2f);
 
         var before = sink.transform.position;
         int offsetBefore = sink.OffsetXMM;
@@ -138,24 +283,21 @@ public class SinkElementTests
         Assert.AreEqual(before + delta, sink.transform.position);
     }
 
-    // ── Проём ───────────────────────────────────────────────────────────
-
     [Test]
     public void CutoutRect_KeepsAbsoluteSize_WhenPartResized()
     {
         var top = CreateCountertop();
-        var sink = CreateSink(new Vector3(0f, 0.5f, 0f));
-        sink.SnapToPart();
+        var sink = CreateSeatedSink(top);
 
         var before = sink.CutoutRectIn(top);
         Assert.AreEqual(SinkElement.CutoutWidthMM, (before.xMax - before.xMin) * 1200, 0.01f);
 
-        top.DimensionsMM = new Vector3Int(2000, 600, 38);
+        top.DimensionsMM = new Vector3Int(2000, 600, TopThicknessMM);
         sink.SnapToPart();
 
         var after = sink.CutoutRectIn(top);
         Assert.AreEqual(SinkElement.CutoutWidthMM, (after.xMax - after.xMin) * 2000, 0.01f,
-            "проём остаётся 560 мм — меняется его ДОЛЯ от новой ширины");
+            "проём остаётся прежним в мм — меняется его ДОЛЯ от новой ширины");
         Assert.Less(after.xMax - after.xMin, before.xMax - before.xMin);
     }
 
@@ -163,14 +305,12 @@ public class SinkElementTests
     public void PartMesh_HasThroughHole_UnderSink()
     {
         var top = CreateCountertop();
-        var sink = CreateSink(new Vector3(0f, 0.5f, 0f));
-        sink.SnapToPart();
+        var sink = CreateSeatedSink(top);
 
         var mesh = top.GetComponent<MeshFilter>().sharedMesh;
         var rect = sink.CutoutRectIn(top);
 
         Assert.AreNotEqual("Cube", mesh.name, "деталь получила собственный меш с вырезом");
-        // Вырез сквозной: пусто и на лицевой, и на задней пласти.
         Assert.AreEqual(0, CountInsideFace(mesh, rect, 0.5f), "лицевая пласть прорезана");
         Assert.AreEqual(0, CountInsideFace(mesh, rect, -0.5f), "задняя пласть прорезана");
         AssertHasBoundaryVertex(mesh, rect);
@@ -180,9 +320,7 @@ public class SinkElementTests
     public void PartMesh_ReturnsToPlainBox_WhenSinkRemoved()
     {
         var top = CreateCountertop();
-        var sink = CreateSink(new Vector3(0f, 0.5f, 0f));
-        sink.SnapToPart();
-        Assert.IsTrue(top.HasSink(sink));
+        var sink = CreateSeatedSink(top);
         Assert.AreNotEqual("Cube", top.GetComponent<MeshFilter>().sharedMesh.name);
 
         top.UnregisterSink(sink);
@@ -213,14 +351,33 @@ public class SinkElementTests
         return count;
     }
 
+    // ── Габарит для ручек ───────────────────────────────────────────────
+
+    [Test]
+    public void HandleBox_IsRimPlateAboveSurface_NotBuriedBowl()
+    {
+        var top = CreateCountertop();
+        var sink = CreateSeatedSink(top);
+
+        // Ручки строятся из GetFaces: центры боковых граней должны лежать НАД
+        // пластью, иначе стрелки замурованы в столешнице.
+        foreach (var f in sink.GetFaces())
+            Assert.GreaterOrEqual(f.center.y, TopY - 1e-4f,
+                "грань габарита ушла под столешницу");
+
+        // И это плита: тонкая ось — вертикаль, значит общий HandlePlacement
+        // вынесет боковые ручки из плоскости, как у стены и полки.
+        var box = HandlePlacement.BoxOf(sink.GetFaces());
+        Assert.AreEqual(1, HandlePlacement.ThinAxis(box), "тонкая ось габарита — Y");
+    }
+
     // ── Сериализация ────────────────────────────────────────────────────
 
     [Test]
     public void FromElement_Sink_StoresHostAndOffsets()
     {
         var top = CreateCountertop();
-        var sink = CreateSink(new Vector3(0.2f, 0.5f, 0.05f));
-        sink.SnapToPart();
+        var sink = CreateSeatedSink(top, 0.2f);
 
         var d = ElementData.FromElement(sink);
 
@@ -235,8 +392,7 @@ public class SinkElementTests
     public void Validator_SinkInCountertop_NoViolation()
     {
         var top = CreateCountertop();
-        var sink = CreateSink(new Vector3(0f, 0.5f, 0f));
-        sink.SnapToPart();
+        var sink = CreateSeatedSink(top);
 
         var result = ConstraintValidator.Validate(new List<KitchenElement> { top, sink });
 
