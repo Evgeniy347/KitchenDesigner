@@ -1,4 +1,4 @@
-﻿{
+{
   "root": "UICanvas",
   "children": [
     {
@@ -98,28 +98,23 @@
     },
     {
       "type": "Button",
-      "text": "Режим: обычный",
-      "position": [1008, -6]
-    },
-    {
-      "type": "Button",
       "text": "Тонировка",
-      "position": [1220, -6]
+      "position": [1024, -6]
     },
     {
       "type": "Button",
       "text": "Свет",
-      "position": [1336, -6]
+      "position": [1140, -6]
     },
     {
       "type": "Button",
       "text": "Солнце",
-      "position": [1412, -6]
+      "position": [1216, -6]
     },
     {
       "type": "Button",
-      "text": "Вершины",
-      "position": [1508, -6]
+      "text": "Режим: обычный",
+      "position": [1328, -6]
     },
     {
       "type": "Button",

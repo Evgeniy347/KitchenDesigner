@@ -34,7 +34,6 @@ namespace KitchenDesigner.Core.UI
         private Button? _tintButton;
         private Button? _lightsButton;
         private Button? _dayNightButton;
-        private Button? _vertexButton;
         private TMP_Text? _modeButtonLabel;
         private TMP_Text? _editModeButtonLabel;
         private TMP_Text? _errorButtonLabel;
@@ -165,11 +164,6 @@ namespace KitchenDesigner.Core.UI
             // Переключатель режима ручек на гранях: растяжение ↔ перемещение по оси.
             var modeBtn = AddBarButton(bar.transform, "HandleMode", ModeLabel(), ref x, y, h, 176, ToggleHandleMode);
             _modeButtonLabel = modeBtn.GetComponentInChildren<TMP_Text>();
-
-            // Переключатель режима редактора: фоторежим → помещение → обычный.
-            var editModeBtn = AddBarButton(bar.transform, "EditMode",
-                EditModeManager.Label(EditModeManager.Mode), ref x, y, h, 190, CycleEditMode);
-            _editModeButtonLabel = editModeBtn.GetComponentInChildren<TMP_Text>();
             AddSeparator(bar.transform, ref x, y, h);
 
             // Тогглы вида: состояние показывает фон кнопки (нажат = включено),
@@ -180,8 +174,13 @@ namespace KitchenDesigner.Core.UI
             _lightsButton = AddBarButton(bar.transform, "LightsToggle", "Свет", ref x, y, h, 70, ToggleLights);
             // Панель «День/Ночь» — глобальное управление солнцем.
             _dayNightButton = AddBarButton(bar.transform, "DayNight", "Солнце", ref x, y, h, 90, ToggleDayNight);
-            // Показ буквенных меток вершин A-H у выделенного элемента.
-            _vertexButton = AddBarButton(bar.transform, "VertexLabels", "Вершины", ref x, y, h, 100, ToggleVertexLabels);
+            AddSeparator(bar.transform, ref x, y, h);
+
+            // Переключатель режима редактора: фоторежим → помещение → обычный.
+            // Стоит в конце тулбара, чтобы не путаться с «Ручки: …».
+            var editModeBtn = AddBarButton(bar.transform, "EditMode",
+                EditModeManager.Label(EditModeManager.Mode), ref x, y, h, 190, CycleEditMode);
+            _editModeButtonLabel = editModeBtn.GetComponentInChildren<TMP_Text>();
         }
 
         private void ToggleTint()
@@ -199,11 +198,6 @@ namespace KitchenDesigner.Core.UI
         private void ToggleDayNight()
         {
             if (_dayNightPanel != null) _dayNightPanel.Toggle();
-        }
-
-        private void ToggleVertexLabels()
-        {
-            VertexLabelManager.Toggle();
         }
 
         private void ToggleProjectInstructions() => _projectInstructionsPanel?.Toggle();
@@ -282,7 +276,6 @@ namespace KitchenDesigner.Core.UI
 
             SetToggled(_tintButton, ElementHighlighter.TintEnabled);
             SetToggled(_lightsButton, LightSourceElement.GlobalOn);
-            SetToggled(_vertexButton, VertexLabelManager.Enabled);
             SetToggled(_specButton, _specPanel != null && _specPanel.IsVisible);
             SetToggled(_hierarchyButton, _hierarchyPanel != null && _hierarchyPanel.IsVisible);
             SetToggled(_errorButton, _errorPanel != null && _errorPanel.IsVisible);
