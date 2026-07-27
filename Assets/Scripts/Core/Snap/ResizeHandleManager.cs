@@ -43,6 +43,9 @@ namespace KitchenDesigner.Core
         private const float ShaftRad = 0.012f;
         private const float TipLen = 0.05f;
         private const float TipSize = 0.038f;
+        // Вся стрелка от грани до кончика — на столько её сдвигают назад,
+        // когда выносить наружу некуда (см. PositionHandles).
+        private const float ArrowLen = Gap + ShaftLen + TipLen;
 
         private KitchenElement? _target;
         private readonly List<ResizeHandle> _handles = new List<ResizeHandle>();
@@ -422,6 +425,7 @@ namespace KitchenDesigner.Core
         {
             if (_target == null) return;
             var faces = _target.GetFaces();
+            var cam = Camera.main;
 
             // Окно заподлицо со стеной: центры граней X/Y лежат в толще стены и
             // стрелки тонут в ней. Выдвигаем ручки к камере — чуть перед стеной
@@ -431,10 +435,25 @@ namespace KitchenDesigner.Core
             {
                 Vector3 fwd = _target.transform.forward;
                 float halfDepth = _target.DimensionsMM.z * AppConstants.MM_TO_UNITS * 0.5f;
-                var cam = Camera.main;
                 float side = cam != null &&
                     Vector3.Dot(cam.transform.position - _target.transform.position, fwd) < 0f ? -1f : 1f;
                 outOfWall = fwd * (side * (halfDepth + 0.02f));
+            }
+
+            // Стена — та же беда: ручки сидят в её толще, а торцевые стрелки уходят
+            // по оси стены и при двух смежных стенах оказываются внутри соседней.
+            // Сдвигаем всю обвязку из плоскости стены в сторону камеры.
+            int lengthAxis = -1;
+            float maxPullBack = 0f;
+            if (_target.GetComponent<Wall>() != null && cam != null)
+            {
+                var t = _target.transform;
+                Vector3 scale = t.localScale;
+                lengthAxis = WallHandlePlacement.LengthAxis(scale);
+                maxPullBack = WallHandlePlacement.Length(scale) * 0.5f;
+                outOfWall = WallHandlePlacement.CameraOffset(
+                    t.position, t.rotation, scale, cam.transform.position, Gap);
+                CollectWalls();
             }
 
             foreach (var h in _handles)
@@ -443,7 +462,30 @@ namespace KitchenDesigner.Core
                 var f = faces[h.faceIndex];
                 Vector3 n = f.normal.sqrMagnitude > Tolerance.EpsilonSqr ? f.normal.normalized : Vector3.forward;
                 Vector3 up = Mathf.Abs(Vector3.Dot(n, Vector3.up)) > Tolerance.UpDotThreshold ? Vector3.forward : Vector3.up;
-                h.transform.SetPositionAndRotation(f.center + outOfWall, Quaternion.LookRotation(n, up));
+                Vector3 pos = f.center + outOfWall;
+
+                // Угол: за торцом стоит смежная стена, продолжения оси нет ни в одну
+                // сторону — сажаем стрелку НА саму стену, кончиком к торцу.
+                if (lengthAxis >= 0 && h.faceIndex / 2 == lengthAxis)
+                    pos -= n * WallHandlePlacement.PullBack(pos, n, ArrowLen, maxPullBack, _otherWalls);
+
+                h.transform.SetPositionAndRotation(pos, Quaternion.LookRotation(n, up));
+            }
+        }
+
+        // Соседние стены для проверки «угла». Список переиспользуем: PositionHandles
+        // вызывается каждый кадр, а PartRegistry содержит все детали сцены.
+        private readonly List<KitchenElement> _otherWalls = new List<KitchenElement>();
+
+        private void CollectWalls()
+        {
+            _otherWalls.Clear();
+            var all = PartRegistry.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var e = all[i];
+                if (e == null || e == _target) continue;
+                if (e.GetComponent<Wall>() != null) _otherWalls.Add(e);
             }
         }
 
