@@ -21,6 +21,7 @@ namespace KitchenDesigner.Core.UI
         private GroupMenuUI? _groupMenu;
         private HierarchyPanelUI? _hierarchyPanel;
         private ErrorPanelUI? _errorPanel;
+        private ProjectInstructionsPanelUI? _projectInstructionsPanel;
         private HelpUI? _help;
         private PlacementController? _placement;
         private Button? _undoButton;
@@ -28,6 +29,7 @@ namespace KitchenDesigner.Core.UI
         private Button? _specButton;
         private Button? _hierarchyButton;
         private Button? _errorButton;
+        private Button? _projectInstructionsButton;
         private Button? _settingsButton;
         private Button? _tintButton;
         private Button? _lightsButton;
@@ -87,6 +89,9 @@ namespace KitchenDesigner.Core.UI
             _errorPanel = gameObject.AddComponent<ErrorPanelUI>();
             _errorPanel.Build(windowLayer);
 
+            _projectInstructionsPanel = gameObject.AddComponent<ProjectInstructionsPanelUI>();
+            _projectInstructionsPanel.Build(windowLayer);
+
             var toast = gameObject.AddComponent<ToastNotification>();
             toast.Build(_canvas.transform);
 
@@ -139,6 +144,8 @@ namespace KitchenDesigner.Core.UI
             _hierarchyButton = AddBarButton(bar.transform, "Hierarchy", "Сцена", ref x, y, h, 90, ToggleHierarchy);
             _errorButton = AddBarButton(bar.transform, "Errors", "Ошибки", ref x, y, h, 110, ToggleErrors);
             _errorButtonLabel = _errorButton.GetComponentInChildren<TMP_Text>();
+            _projectInstructionsButton = AddBarButton(bar.transform, "ProjectInstructions",
+                "Инструкции", ref x, y, h, 120, ToggleProjectInstructions);
             AddSeparator(bar.transform, ref x, y, h);
 
             // Понятные значки вместо текста.
@@ -198,6 +205,8 @@ namespace KitchenDesigner.Core.UI
         {
             VertexLabelManager.Toggle();
         }
+
+        private void ToggleProjectInstructions() => _projectInstructionsPanel?.Toggle();
 
         // Два именованных состояния — это не «вкл/выкл», подпись честно
         // называет текущий режим.
@@ -277,6 +286,8 @@ namespace KitchenDesigner.Core.UI
             SetToggled(_specButton, _specPanel != null && _specPanel.IsVisible);
             SetToggled(_hierarchyButton, _hierarchyPanel != null && _hierarchyPanel.IsVisible);
             SetToggled(_errorButton, _errorPanel != null && _errorPanel.IsVisible);
+            SetToggled(_projectInstructionsButton,
+                _projectInstructionsPanel != null && _projectInstructionsPanel.IsVisible);
             SetToggled(_settingsButton, _settingsPanel != null && _settingsPanel.IsVisible);
             SetToggled(_dayNightButton, _dayNightPanel != null && _dayNightPanel.IsVisible);
 

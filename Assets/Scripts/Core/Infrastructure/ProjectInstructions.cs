@@ -11,6 +11,31 @@ namespace KitchenDesigner.Core
     {
         public static string Text { get; set; } = "";
 
+        /// <summary>Reads a deterministic numeric convention from a line such as
+        /// <c>bearing_wall_thickness_mm: 200</c>. Free prose remains allowed;
+        /// geometry only consumes explicitly named key/value lines.</summary>
+        public static bool TryGetPositiveMm(string key, out int value)
+        {
+            value = 0;
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrEmpty(Text)) return false;
+
+            foreach (var raw in Text.Replace("\r", "").Split('\n'))
+            {
+                var line = raw.Trim();
+                if (line.Length == 0 || line.StartsWith("#")) continue;
+                int colon = line.IndexOf(':');
+                if (colon <= 0 || !string.Equals(line.Substring(0, colon).Trim(), key,
+                        System.StringComparison.OrdinalIgnoreCase)) continue;
+                if (int.TryParse(line.Substring(colon + 1).Trim(),
+                        System.Globalization.NumberStyles.Integer,
+                        System.Globalization.CultureInfo.InvariantCulture, out value) && value > 0)
+                    return true;
+                value = 0;
+                return false;
+            }
+            return false;
+        }
+
         public static void Reset() => Text = "";
     }
 }
