@@ -4,10 +4,13 @@ using KitchenDesigner.Core;
 
 public class ElementFactoryTests
 {
+    private GameObject? _extraObjects;
+
     [SetUp]
     public void Setup()
     {
         PartRegistry.Clear();
+        _extraObjects = new GameObject("_test_cleanup");
     }
 
     [TearDown]
@@ -19,6 +22,13 @@ public class ElementFactoryTests
                 ElementFactory.DestroyElement(el.gameObject);
         }
         PartRegistry.Clear();
+        if (_extraObjects != null)
+        {
+            var children = new System.Collections.Generic.List<GameObject>();
+            foreach (Transform t in _extraObjects.transform) children.Add(t.gameObject);
+            foreach (var c in children) Object.DestroyImmediate(c);
+            Object.DestroyImmediate(_extraObjects);
+        }
     }
 
     [Test]
@@ -231,5 +241,43 @@ public class ElementFactoryTests
         var go2 = ElementFactory.CreatePart(new Vector3Int(600, 300, 18), "B", Vector3.zero);
         Assert.IsTrue(PartRegistry.GetAll().Exists(e => e.PartName == "B"));
         ElementFactory.DestroyPart(go2);
+    }
+
+    [Test]
+    public void Duplicate_Wall_DoesNotKeepRedValidationTint_AfterMove()
+    {
+        var hlGo = new GameObject("ElementHighlighter");
+        var hl = hlGo.AddComponent<ElementHighlighter>();
+        hlGo.transform.SetParent(_extraObjects!.transform);
+
+        var instanceProp = typeof(ElementHighlighter).GetProperty("Instance",
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        instanceProp?.SetValue(null, hl);
+
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(2000, 2700, 100), "SourceWall", new Vector3(0f, 1.35f, 0f));
+        var wall = wallGo.GetComponent<KitchenElement>();
+
+        var cloneGo = ElementFactory.Duplicate(wall);
+        var clone = cloneGo.GetComponent<KitchenElement>();
+
+        Assert.IsNotNull(clone.GetComponent<Wall>(), "clone is a wall");
+
+        var renderer = cloneGo.GetComponent<MeshRenderer>();
+        Assert.IsNotNull(renderer, "clone has MeshRenderer");
+
+        var color = renderer!.sharedMaterial.GetColor("_BaseColor");
+        Assert.AreEqual(0.8f, color.r, 0.05f, "clone should have source material (~0.8), not red");
+
+        clone!.transform.position = new Vector3(100f, 100f, 100f);
+        ElementHighlighter.Instance?.RefreshHighlights();
+
+        var vr = ConstraintValidator.Validate(PartRegistry.GetAll());
+        Assert.IsFalse(vr.violations.Contains(clone), "no violations after moving away");
+
+        color = renderer.sharedMaterial.GetColor("_BaseColor");
+        Assert.AreEqual(0.8f, color.r, 0.05f,
+            "after move + refresh, wall should still have source material, not red — " +
+            "ApplyMaterial must not skip walls that still have validation tint");
     }
 }

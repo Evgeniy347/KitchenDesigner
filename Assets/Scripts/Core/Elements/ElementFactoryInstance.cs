@@ -324,7 +324,12 @@ namespace KitchenDesigner.Core
             go2.transform.rotation = source.transform.rotation;
 
             if (source.GetComponent<Wall>() != null)
+            {
                 go2.AddComponent<Wall>();
+                var wallElement = go2.GetComponent<KitchenElement>();
+                if (wallElement != null)
+                    MaterialManager.ApplyById(wallElement, source.MaterialId);
+            }
 
             var copyPart = go2.GetComponent<KitchenElement>();
             if (copyPart != null && copyPart.SupportsGrooves)
