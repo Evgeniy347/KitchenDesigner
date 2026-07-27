@@ -62,51 +62,14 @@ namespace KitchenDesigner.Core
                 if (Physics.Raycast(ray, out RaycastHit hit))
                 {
                     var element = hit.collider.GetComponentInParent<KitchenElement>();
-                    // Пол (BasePlate) не выделяется — клик по нему снимает выделение.
-                    if (element != null && element.GetComponent<BasePlate>() == null)
-                    {
-                        // Режим редактора запрещает выделять часть объектов мышью
-                        // (напр. стены/пол в «обычном»). Программный Select — без ограничений.
-                        if (!EditModeManager.IsInteractable(element)) return;
-
-                        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-                        var group = GroupManager.GroupOf(element);
-
-                        // Режим редактирования модуля: детали активного модуля
-                        // выделяются ПОШТУЧНО, всё вне модуля заблокировано.
-                        if (ModuleEditMode.IsActive)
-                        {
-                            if (!ModuleEditMode.IsEditable(element)) return;
-                            if (ctrl) ToggleInSelection(element);
-                            else Select(element);
-                            return;
-                        }
-
-                        if (ctrl)
-                            ToggleInSelection(element);
-                        else if (group != null)
-                        {
-                            // Двойной клик по модулю — вход в режим редактирования.
-                            if (IsDoubleClickOnGroup(group))
-                            {
-                                ModuleEditMode.Enter(group);
-                                Select(element);
-                            }
-                            else
-                                SelectOnly(GroupManager.MembersOf(group)); // группа целиком
-                        }
-                        else if (_selectedElements.Count > 1 && _selectedElements.Contains(element))
-                            _selected = element; // часть мультивыделения — сохраняем для группового drag
-                        else
-                            Select(element);
-
-                        RememberClick(group);
-                        return;
-                    }
+                    HandleClickOnElement(element,
+                        Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl));
                 }
-
-                if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
-                    DeselectAll();
+                else
+                {
+                    if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
+                        DeselectAll();
+                }
             }
         }
 
@@ -126,6 +89,60 @@ namespace KitchenDesigner.Core
         {
             _lastClickTime = Time.unscaledTime;
             _lastClickGroupId = group != null ? group.id : 0;
+        }
+
+        /// <summary>Обработать клик по элементу (ключая BasePlate и null — клик в пустоту).
+        /// Вынесено из Update() для тестирования.</summary>
+        public void HandleClickOnElement(KitchenElement? element, bool ctrlHeld)
+        {
+            // Пол (BasePlate) не выделяется — клик по нему снимает выделение.
+            if (element != null && element.GetComponent<BasePlate>() == null)
+            {
+                // Режим редактора запрещает выделять часть объектов мышью
+                // (напр. стены/пол в «обычном»). Программный Select — без ограничений.
+                if (!EditModeManager.IsInteractable(element))
+                {
+                    if (!ctrlHeld)
+                        DeselectAll();
+                    return;
+                }
+
+                var group = GroupManager.GroupOf(element);
+
+                // Режим редактирования модуля: детали активного модуля
+                // выделяются ПОШТУЧНО, всё вне модуля заблокировано.
+                if (ModuleEditMode.IsActive)
+                {
+                    if (!ModuleEditMode.IsEditable(element)) return;
+                    if (ctrlHeld) ToggleInSelection(element);
+                    else Select(element);
+                    return;
+                }
+
+                if (ctrlHeld)
+                    ToggleInSelection(element);
+                else if (group != null)
+                {
+                    // Двойной клик по модулю — вход в режим редактирования.
+                    if (IsDoubleClickOnGroup(group))
+                    {
+                        ModuleEditMode.Enter(group);
+                        Select(element);
+                    }
+                    else
+                        SelectOnly(GroupManager.MembersOf(group)); // группа целиком
+                }
+                else if (_selectedElements.Count > 1 && _selectedElements.Contains(element))
+                    _selected = element; // часть мультивыделения — сохраняем для группового drag
+                else
+                    Select(element);
+
+                RememberClick(group);
+                return;
+            }
+
+            if (!ctrlHeld)
+                DeselectAll();
         }
 
         public void Select(KitchenElement element)
