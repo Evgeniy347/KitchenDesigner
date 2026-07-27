@@ -4,11 +4,25 @@ using KitchenDesigner.Core.MCP;
 using KitchenDesigner.Core.MCP.Contract;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
 
 public class FloorplanCompilerTests
 {
+    [SetUp]
+    public void SetUp()
+    {
+        PartRegistry.Clear(); CommandStack.Clear(); ProjectInstructions.Reset();
+        ProjectRooms.Reset(); ProjectFloorplans.Reset();
+    }
+
     [TearDown]
-    public void TearDown() => ProjectRooms.Reset();
+    public void TearDown()
+    {
+        foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            if (e != null) Object.DestroyImmediate(e.gameObject);
+        PartRegistry.Clear(); CommandStack.Clear(); ProjectInstructions.Reset();
+        ProjectRooms.Reset(); ProjectFloorplans.Reset();
+    }
 
     private static ParamsFloorplanDeclaration TwoRooms() => new ParamsFloorplanDeclaration
     {
@@ -87,5 +101,52 @@ public class FloorplanCompilerTests
         Assert.AreEqual("Kitchen", restored.rooms[0].id);
         CollectionAssert.AreEqual(new[] { 0, 0, 1000, 0, 0, 1000 }, restored.rooms[0].polygonXZ);
         ProjectRooms.Reset();
+    }
+
+    [Test]
+    public void ApplyFloorplan_CreatesWholePlanInOneUndo_AndIsIdempotentByScope()
+    {
+        ProjectInstructions.Text = "partition_wall_thickness_mm: 100\nfloor_thickness_mm: 120";
+        var handler = new McpCommandHandler();
+        McpResponse Apply(ParamsFloorplanDeclaration d) => handler.Handle(new McpRequest
+        { id = "a", method = "apply_floorplan", Params = JObject.Parse(JsonConvert.SerializeObject(d)) });
+
+        var first = Apply(TwoRooms());
+        Assert.AreEqual("result", first.type);
+        Assert.AreEqual(10, PartRegistry.GetAll().Count, "7 walls + 2 floors + 1 opening");
+        Assert.AreEqual(1, CommandStack.UndoCount);
+        Assert.AreEqual(2, ProjectRooms.Items.Count);
+        Assert.AreEqual(10, ProjectFloorplans.Find("Plan")!.elements.Length);
+        var shared = PartRegistry.GetAll().Find(e => e.PartName == "wall_B_E")!.GetComponent<Wall>();
+        Assert.AreEqual(1, shared.AttachedDoors.Count);
+
+        var reduced = TwoRooms();
+        reduced.rooms = new[] { reduced.rooms[0] };
+        reduced.openings = System.Array.Empty<FloorplanOpening>();
+        var second = Apply(reduced);
+        Assert.AreEqual("result", second.type);
+        Assert.AreEqual(5, PartRegistry.GetAll().Count, "4 walls + 1 floor; obsolete scope elements removed");
+        Assert.AreEqual(1, ProjectRooms.Items.Count);
+        Assert.AreEqual(2, CommandStack.UndoCount, "each whole-plan call is one undo");
+
+        CommandStack.Undo();
+        Assert.AreEqual(10, PartRegistry.GetAll().Count);
+        Assert.AreEqual(2, ProjectRooms.Items.Count);
+        Assert.AreEqual(1, PartRegistry.GetAll().Find(e => e.PartName == "wall_B_E")!
+            .GetComponent<Wall>().AttachedDoors.Count);
+    }
+
+    [Test]
+    public void ApplyFloorplan_LateFailureRollsBackEverythingAndDoesNotAddUndo()
+    {
+        ProjectInstructions.Text = "partition_wall_thickness_mm: 100"; // floor thickness intentionally absent
+        var d = TwoRooms();
+        var response = new McpCommandHandler().Handle(new McpRequest
+        { id = "a", method = "apply_floorplan", Params = JObject.Parse(JsonConvert.SerializeObject(d)) });
+        Assert.AreEqual("error", response.type);
+        Assert.AreEqual(0, PartRegistry.GetAll().Count);
+        Assert.AreEqual(0, CommandStack.UndoCount);
+        Assert.IsNull(ProjectFloorplans.Find("Plan"));
+        Assert.AreEqual(0, ProjectRooms.Items.Count);
     }
 }

@@ -85,6 +85,7 @@
     ],
     "groups": [],
     "rooms": [],
+    "floorplans": [],
     "camera": {
         "valid": false,
         "targetX": 0.0,

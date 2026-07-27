@@ -9,6 +9,7 @@ namespace KitchenDesigner.Core
         public ElementData[] elements = new ElementData[0];
         public GroupData[] groups = new GroupData[0];
         public RoomData[] rooms = new RoomData[0];
+        public FloorplanScopeData[] floorplans = new FloorplanScopeData[0];
         public CameraState camera = new CameraState();
 
         // Режим ручек выделенного элемента (Resize / Move).
@@ -54,12 +55,20 @@ namespace KitchenDesigner.Core
     [System.Serializable]
     public class RoomData
     {
+        public string floorplanId = "";
         public string id = "";
         public string floor = "";
         public string[] walls = System.Array.Empty<string>();
         public string[] openings = System.Array.Empty<string>();
         // World X,Z polygon pairs in MM, used to classify modules/furniture.
         public int[] polygonXZ = System.Array.Empty<int>();
+    }
+
+    [System.Serializable]
+    public class FloorplanScopeData
+    {
+        public string id = "";
+        public string[] elements = System.Array.Empty<string>();
     }
 
     /// <summary>Сериализуемое состояние камеры. valid=false у старых сейвов без камеры.</summary>

@@ -163,6 +163,7 @@
         }
     ],
     "rooms": [],
+    "floorplans": [],
     "camera": {
         "valid": true,
         "targetX": 0.5,

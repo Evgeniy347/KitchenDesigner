@@ -247,6 +247,148 @@ namespace KitchenDesigner.Core.MCP
             return PlanMutationResult(req, created, updated, affected);
         }
 
+        private McpResponse HandleApplyFloorplan(McpRequest req)
+        {
+            var declaration = req.Params?.ToObjectStrict<ParamsFloorplanDeclaration>();
+            var compiled = FloorplanCompiler.Compile(declaration);
+            if (!compiled.IsValid)
+                return McpResponse.Error(req.id, -32602,
+                    "floorplan invalid: " + string.Join(" | ", compiled.errors));
+
+            var desired = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var desiredList = new List<string>();
+            foreach (var wall in compiled.walls) if (desired.Add(wall.id)) desiredList.Add(wall.id);
+            foreach (var floor in compiled.floors) if (desired.Add(floor.id)) desiredList.Add(floor.id);
+            foreach (var opening in compiled.openings) if (desired.Add(opening.id)) desiredList.Add(opening.id);
+            var scope = ProjectFloorplans.Find(compiled.id);
+            var owned = new HashSet<string>(scope?.elements ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            var toDelete = new List<KitchenElement>();
+            foreach (var name in owned)
+            {
+                var e = FindElementByName(name);
+                if (e != null && (!desired.Contains(name) || ExpectedTypeMismatch(compiled, e))) toDelete.Add(e);
+            }
+            foreach (var name in desired)
+            {
+                var e = FindElementByName(name);
+                if (e != null && ExpectedTypeMismatch(compiled, e) && !owned.Contains(name))
+                    return McpResponse.Error(req.id, -1,
+                        $"Element '{name}' exists with another type and is not owned by floorplan '{compiled.id}'");
+            }
+            toDelete.Sort((a, b) => DeletePriority(a).CompareTo(DeletePriority(b)));
+
+            CommandStack.BeginCapture();
+            string failedStep = "";
+            McpResponse? failed = null;
+            try
+            {
+                if (toDelete.Count > 0)
+                {
+                    failedStep = "delete obsolete";
+                    failed = HandleDeleteElements(InternalRequest(req.id, new ParamsNames
+                        { names = toDelete.ConvertAll(e => e.PartName).ToArray() }));
+                    if (failed.type == "error") throw new InvalidOperationException();
+                }
+                if (compiled.walls.Count > 0)
+                {
+                    var segments = new List<WallSegmentMm>();
+                    foreach (var w in compiled.walls)
+                    {
+                        var a = compiled.points[w.from]; var b = compiled.points[w.to];
+                        segments.Add(new WallSegmentMm { name = w.id, from_x = a.x, from_z = a.y,
+                            to_x = b.x, to_z = b.y, kind = w.kind, height = w.height });
+                    }
+                    failedStep = "create walls";
+                    failed = HandleCreateWalls(InternalRequest(req.id, new ParamsCreateWalls
+                    { origin_x_mm = compiled.originX, origin_z_mm = compiled.originZ, segments = segments.ToArray() }));
+                    if (failed.type == "error") throw new InvalidOperationException();
+                }
+                foreach (var f in compiled.floors)
+                {
+                    var poly = new List<PlanPointMm>();
+                    foreach (var pointId in f.poly)
+                    { var point = compiled.points[pointId]; poly.Add(new PlanPointMm { x = point.x, z = point.y }); }
+                    failedStep = "create floor " + f.id;
+                    failed = HandleCreateFloorV2(InternalRequest(req.id, new ParamsCreateFloorV2
+                    { name = f.id, origin_x_mm = compiled.originX, origin_z_mm = compiled.originZ,
+                        top_y_mm = f.topY, thickness_mm = f.thickness, poly = poly.ToArray() }));
+                    if (failed.type == "error") throw new InvalidOperationException();
+                }
+                foreach (var o in compiled.openings)
+                {
+                    failedStep = "add opening " + o.id;
+                    failed = HandleAddOpening(InternalRequest(req.id, new ParamsAddOpening
+                    { name = o.id, wall = o.wall, kind = o.kind, offset_mm = o.offset_mm,
+                        width = o.width, height = o.height, sill_mm = o.sill_mm }));
+                    if (failed.type == "error") throw new InvalidOperationException();
+                }
+
+                var rooms = BuildRoomData(compiled);
+                CommandStack.Execute(new SetFloorplanMetadataCommand(compiled.id, rooms,
+                    desiredList.ToArray()));
+                CommandStack.EndCapture($"MCP apply_floorplan '{compiled.id}'", true);
+            }
+            catch
+            {
+                CommandStack.EndCapture($"MCP apply_floorplan '{compiled.id}'", false);
+                string detail = failed != null
+                    ? Newtonsoft.Json.JsonConvert.SerializeObject(failed.data) : "unexpected transaction failure";
+                return McpResponse.Error(req.id, -1,
+                    $"apply_floorplan rejected at {failedStep}, NOTHING changed: {detail}");
+            }
+
+            var all = PartRegistry.GetAll();
+            var validation = all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var violations = new List<object>();
+            foreach (var name in desiredList)
+            {
+                var e = FindElementByName(name);
+                if (e != null) violations.AddRange(BuildElementViolations(e, all, validation));
+            }
+            return McpResponse.Result(req.id, new
+            {
+                ok = true, id = compiled.id, elements = desired.Count,
+                walls = compiled.walls.Count, floors = compiled.floors.Count,
+                openings = compiled.openings.Count, rooms = compiled.rooms.Count,
+                deleted = toDelete.Count, violations
+            });
+        }
+
+        private static McpRequest InternalRequest(string id, object value) => new McpRequest
+        { id = id, Params = Newtonsoft.Json.Linq.JObject.FromObject(value) };
+
+        private static int DeletePriority(KitchenElement e) =>
+            e is WindowElement || e is DoorElement ? 0 : e.GetComponent<Wall>() != null ? 2 : 1;
+
+        private static bool ExpectedTypeMismatch(CompiledFloorplan plan, KitchenElement e)
+        {
+            foreach (var w in plan.walls) if (w.id.Equals(e.PartName, StringComparison.OrdinalIgnoreCase))
+                return e.GetComponent<Wall>() == null;
+            foreach (var f in plan.floors) if (f.id.Equals(e.PartName, StringComparison.OrdinalIgnoreCase))
+                return !(e is FloorElement);
+            foreach (var o in plan.openings) if (o.id.Equals(e.PartName, StringComparison.OrdinalIgnoreCase))
+                return o.kind == "window" ? !(e is WindowElement) : !(e is DoorElement);
+            return false;
+        }
+
+        private static List<RoomData> BuildRoomData(CompiledFloorplan plan)
+        {
+            var result = new List<RoomData>();
+            foreach (var room in plan.rooms)
+            {
+                var source = plan.floors.Find(f => f.id == room.floor);
+                var polygon = new List<int>();
+                if (source != null) foreach (var pointId in source.poly)
+                {
+                    var p = plan.points[pointId];
+                    polygon.Add(plan.originX + p.x); polygon.Add(plan.originZ + p.y);
+                }
+                result.Add(new RoomData { floorplanId = plan.id, id = room.id, floor = room.floor,
+                    walls = room.walls.ToArray(), openings = room.openings.ToArray(), polygonXZ = polygon.ToArray() });
+            }
+            return result;
+        }
+
         private McpResponse PlanMutationResult(McpRequest req, List<string> created, int updated,
             List<KitchenElement> affected)
         {

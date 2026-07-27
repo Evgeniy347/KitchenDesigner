@@ -26,13 +26,34 @@ namespace KitchenDesigner.Core
             set => _fallback = value;
         }
         private static ICommandStack? _fallback;
+        private static List<IUndoCommand>? _capture;
 
         public static bool CanUndo => Instance.CanUndo;
         public static bool CanRedo => Instance.CanRedo;
         public static int UndoCount => Instance.UndoCount;
         public static int RedoCount => Instance.RedoCount;
 
-        public static void Execute(IUndoCommand command) => Instance.Execute(command);
+        public static void Execute(IUndoCommand command)
+        {
+            if (_capture == null) { Instance.Execute(command); return; }
+            command.Execute();
+            _capture.Add(command);
+        }
+
+        public static void BeginCapture()
+        {
+            if (_capture != null) throw new InvalidOperationException("Nested command capture is not supported");
+            _capture = new List<IUndoCommand>();
+        }
+
+        public static void EndCapture(string description, bool commit)
+        {
+            if (_capture == null) throw new InvalidOperationException("No command capture is active");
+            var commands = _capture; _capture = null;
+            for (int i = commands.Count - 1; i >= 0; i--) commands[i].Undo();
+            if (commit && commands.Count > 0)
+                Instance.Execute(new CompositeCommand(description, commands));
+        }
         public static void Undo() => Instance.Undo();
         public static void Redo() => Instance.Redo();
         public static void Clear() => Instance.Clear();
@@ -173,6 +194,8 @@ namespace KitchenDesigner.Core
             if (_element != null)
                 PartRegistry.Register(_element);
             _deleted.transform.SetSiblingIndex(_siblingIndex);
+            if (_element is WindowElement window) window.SnapToWall();
+            else if (_element is DoorElement door) door.SnapToWall();
         }
     }
 
