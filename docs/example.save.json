@@ -2183,7 +2183,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 2
         },
         {
             "name": "Countertop_B",
@@ -19618,12 +19618,12 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 0.964899480342865,
-        "targetY": 0.8399999737739563,
-        "targetZ": -2.74944806098938,
-        "angleX": 27.01006317138672,
-        "angleY": 105.50972747802735,
-        "distance": 0.5,
+        "targetX": 0.6580544710159302,
+        "targetY": 0.5405220985412598,
+        "targetZ": -2.0237250328063967,
+        "angleX": 17.93505859375,
+        "angleY": 256.691162109375,
+        "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": 6.478079319000244,
         "photoTargetY": 1.4512913227081299,
@@ -53598,38 +53598,7 @@
             "children": []
         }
     ],
-    "redoHistory": [
-        {
-            "type": "move",
-            "description": "Move Cab_L_Side_R",
-            "elementIndex": 187,
-            "posBefore": [
-                6.840000152587891,
-                1.350000023841858,
-                3.185000419616699
-            ],
-            "posAfter": [
-                6.824000358581543,
-                1.350000023841858,
-                3.201000213623047
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        }
-    ],
+    "redoHistory": [],
     "settings": {
         "gridStep": 1,
         "gridEnabled": false,
@@ -53662,7 +53631,7 @@
         "photoCeiling": true,
         "photoSSGI": false
     },
-    "tintEnabled": false,
+    "tintEnabled": true,
     "lightsOn": false,
     "windows": [
         {
@@ -53674,9 +53643,9 @@
         },
         {
             "id": "errors",
-            "visible": false,
-            "x": 393.8786315917969,
-            "y": -164.70318603515626,
+            "visible": true,
+            "x": 523.2018432617188,
+            "y": -189.533203125,
             "height": 0.0
         },
         {
