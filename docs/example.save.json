@@ -11,7 +11,7 @@
             "position": [
                 1.315000057220459,
                 0.46000000834465029,
-                -2.4710631370544435
+                -2.4710001945495607
             ],
             "rotation": [
                 0.0,
@@ -79,7 +79,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_bottom",
@@ -159,7 +162,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A2_A_planck",
@@ -239,7 +245,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B1_B2_planck",
@@ -319,7 +328,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B1_side_L",
@@ -399,7 +411,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B2_side_R",
@@ -479,7 +494,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B2_side_L",
@@ -559,7 +577,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B2_bottom",
@@ -639,7 +660,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B4_side_R",
@@ -719,7 +743,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B4_side_L",
@@ -799,7 +826,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B4_bottom",
@@ -879,7 +909,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B5_side_R",
@@ -959,7 +992,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B5_side_L",
@@ -1039,7 +1075,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B5_bottom",
@@ -1119,7 +1158,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "K2_side_R",
@@ -1199,7 +1241,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "K2_side_L",
@@ -1279,7 +1324,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "K2_bottom",
@@ -1359,7 +1407,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "K2_door",
@@ -1439,7 +1490,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "K2_planck",
@@ -1519,7 +1573,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A3_side_L",
@@ -1599,7 +1656,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A3_side_R",
@@ -1679,7 +1739,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A3_bottom",
@@ -1691,7 +1754,7 @@
             "position": [
                 1.315000057220459,
                 0.10799999535083771,
-                -2.162062883377075
+                -2.1620001792907717
             ],
             "rotation": [
                 0.7071068286895752,
@@ -1759,7 +1822,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A4_side_L",
@@ -1839,7 +1905,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A4_side_R",
@@ -1919,7 +1988,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A4_bottom",
@@ -1999,7 +2071,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Countertop_A",
@@ -2079,7 +2154,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Countertop_B",
@@ -2159,7 +2237,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_A_bottom",
@@ -2244,7 +2325,10 @@
                     "kind": 0,
                     "side": 3
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_A_top",
@@ -2329,7 +2413,10 @@
                     "kind": 0,
                     "side": 3
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_B_planck",
@@ -2409,7 +2496,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_A_side",
@@ -2489,7 +2579,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B3_upper_side_L",
@@ -2574,7 +2667,10 @@
                     "kind": 1,
                     "side": 3
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B34_upper_bottom",
@@ -2659,7 +2755,10 @@
                     "kind": 0,
                     "side": 0
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B34_upper_top",
@@ -2744,7 +2843,10 @@
                     "kind": 0,
                     "side": 1
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B34_upper_side_L",
@@ -2829,7 +2931,10 @@
                     "kind": 1,
                     "side": 3
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B34_upper_side_R",
@@ -2914,7 +3019,10 @@
                     "kind": 1,
                     "side": 2
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A34K1_upper_top",
@@ -2994,7 +3102,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A34K1_upper_side_L",
@@ -3079,7 +3190,10 @@
                     "kind": 1,
                     "side": 2
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B12_upper_bottom",
@@ -3164,7 +3278,10 @@
                     "kind": 0,
                     "side": 1
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B12_upper_top",
@@ -3249,7 +3366,10 @@
                     "kind": 0,
                     "side": 1
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B5_upper_back",
@@ -3329,7 +3449,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "radial_shelf_upper_4",
@@ -3341,7 +3464,7 @@
             "position": [
                 -0.9390000700950623,
                 2.251000165939331,
-                -3.4450650215148927
+                -3.445000171661377
             ],
             "rotation": [
                 0.0,
@@ -3409,7 +3532,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fridge_Left",
@@ -3489,7 +3615,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fridge_Right",
@@ -3569,7 +3698,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fridge_Back",
@@ -3649,7 +3781,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fridge_Bottom",
@@ -3729,7 +3864,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fridge_Top",
@@ -3809,7 +3947,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fridge_Shelf",
@@ -3889,7 +4030,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fridge_Door_Upper",
@@ -3969,7 +4113,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fridge_Door_Lower",
@@ -4049,7 +4196,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_A_planck",
@@ -4061,7 +4211,7 @@
             "position": [
                 1.24399995803833,
                 1.809999942779541,
-                -3.2399840354919435
+                -3.2400002479553224
             ],
             "rotation": [
                 0.0,
@@ -4129,7 +4279,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Leg_A3_A4",
@@ -4209,7 +4362,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Istochnik_sveta",
@@ -4289,7 +4445,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B5_gtv_single_C",
@@ -4369,7 +4528,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B5_gtv_double_lower_A",
@@ -4449,7 +4611,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A3_gtv_single_C",
@@ -4461,7 +4626,7 @@
             "position": [
                 1.315000057220459,
                 0.23100000619888307,
-                -2.162099838256836
+                -2.1619999408721926
             ],
             "rotation": [
                 0.0,
@@ -4529,7 +4694,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A3_gtv_double_lower_A",
@@ -4540,7 +4708,7 @@
             ],
             "position": [
                 1.2950001955032349,
-                0.5226864218711853,
+                0.5225000381469727,
                 -2.1619999408721926
             ],
             "rotation": [
@@ -4567,7 +4735,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
-            "doorOpen": false,
+            "doorOpen": true,
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
@@ -4582,7 +4750,7 @@
             "drawerIsUpper": false,
             "drawerPairedName": "A3_gtv_double_lower_A_top",
             "drawerAttachedFacadeName": "A3_drawer_upper",
-            "doubleDrawerState": 0,
+            "doubleDrawerState": 1,
             "isWindow": false,
             "windowTint": 0,
             "windowSillProtrusionMM": 50,
@@ -4609,7 +4777,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A4_gtv_drawer",
@@ -4620,7 +4791,7 @@
             ],
             "position": [
                 1.2949999570846558,
-                0.17399999499320985,
+                0.17350000143051148,
                 -1.562000036239624
             ],
             "rotation": [
@@ -4629,7 +4800,7 @@
                 0.0,
                 -0.7071068286895752
             ],
-            "movable": false,
+            "movable": true,
             "isWall": false,
             "wallKind": "",
             "wallEndShape": [],
@@ -4689,7 +4860,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B3_bottom",
@@ -4769,7 +4943,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B4_gtv_single_C",
@@ -4849,7 +5026,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B4_gtv_double_lower_A",
@@ -4929,7 +5109,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B12_upper_door_L",
@@ -5009,7 +5192,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_door",
@@ -5021,7 +5207,7 @@
             "position": [
                 1.24399995803833,
                 1.809999942779541,
-                -2.872983932495117
+                -2.873000144958496
             ],
             "rotation": [
                 0.0,
@@ -5089,7 +5275,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B12_upper_door_R",
@@ -5169,7 +5358,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B34_upper_door",
@@ -5249,7 +5441,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A34K1_upper_door_L",
@@ -5329,7 +5524,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A34K1_upper_door_R",
@@ -5409,7 +5607,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A2_door",
@@ -5447,7 +5648,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
-            "doorOpen": false,
+            "doorOpen": true,
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
@@ -5489,7 +5690,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B2_door",
@@ -5569,7 +5773,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B3_door",
@@ -5649,7 +5856,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B4_drawer_upper",
@@ -5729,7 +5939,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B4_drawer_lower",
@@ -5809,7 +6022,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A3_drawer_lower",
@@ -5889,7 +6105,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A3_drawer_upper",
@@ -5927,7 +6146,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
-            "doorOpen": false,
+            "doorOpen": true,
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
@@ -5969,7 +6188,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B5_drawer_lower",
@@ -6049,7 +6271,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B5_drawer_upper",
@@ -6129,7 +6354,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_shelf_1",
@@ -6209,7 +6437,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B12_upper_shelf_2",
@@ -6289,7 +6520,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B34_upper_shelf_1",
@@ -6369,7 +6603,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A4_shelf",
@@ -6449,7 +6686,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_inner_side",
@@ -6534,7 +6774,10 @@
                     "kind": 1,
                     "side": 3
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_shelf_2",
@@ -6614,7 +6857,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B12_upper_shelf_1",
@@ -6694,7 +6940,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B34_upper_shelf_2",
@@ -6774,7 +7023,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_shelf_2_1",
@@ -6785,7 +7037,7 @@
             ],
             "position": [
                 1.5770000219345093,
-                1.809999942779541,
+                1.8105000257492066,
                 -2.56600022315979
             ],
             "rotation": [
@@ -6854,7 +7106,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_DVP_HDF",
@@ -6865,8 +7120,8 @@
             ],
             "position": [
                 1.567000150680542,
-                1.8100000619888306,
-                -2.56600022315979
+                1.810500144958496,
+                -2.565500020980835
             ],
             "rotation": [
                 0.0,
@@ -6934,7 +7189,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_shelf_2_1_1",
@@ -6945,7 +7203,7 @@
             ],
             "position": [
                 1.055999994277954,
-                1.8099998235702515,
+                1.810500144958496,
                 -3.6120002269744875
             ],
             "rotation": [
@@ -7014,7 +7272,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_shelf_2_1_2",
@@ -7099,7 +7360,10 @@
                     "kind": 1,
                     "side": 0
                 }
-            ]
+            ],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A12_upper_shelf_2_1_1_1",
@@ -7110,7 +7374,7 @@
             ],
             "position": [
                 -0.12300002574920654,
-                1.809999942779541,
+                1.810500144958496,
                 -3.6120002269744875
             ],
             "rotation": [
@@ -7179,7 +7443,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "radial_shelf_upper_3",
@@ -7259,7 +7526,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A3_gtv_double_lower_A_top",
@@ -7270,7 +7540,7 @@
             ],
             "position": [
                 1.2950001955032349,
-                0.6376864314079285,
+                0.6375000476837158,
                 -2.1619999408721926
             ],
             "rotation": [
@@ -7297,7 +7567,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
-            "doorOpen": false,
+            "doorOpen": true,
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
@@ -7312,7 +7582,7 @@
             "drawerIsUpper": true,
             "drawerPairedName": "A3_gtv_double_lower_A",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 0,
+            "doubleDrawerState": 1,
             "isWindow": false,
             "windowTint": 0,
             "windowSillProtrusionMM": 50,
@@ -7339,7 +7609,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Leg_A12_back",
@@ -7419,7 +7692,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Leg_A12_front",
@@ -7499,7 +7775,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Leg_B2_center",
@@ -7579,7 +7858,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Leg_B2_B3",
@@ -7659,7 +7941,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Leg_B3_B4",
@@ -7739,7 +8024,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Leg_B4_B5",
@@ -7819,7 +8107,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Leg_B5_K2",
@@ -7899,7 +8190,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Leg_K2",
@@ -7979,7 +8273,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B12_DVP_HDF",
@@ -8059,7 +8356,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "DVP_HDF",
@@ -8139,7 +8439,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A_apron",
@@ -8219,7 +8522,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B_apron",
@@ -8229,7 +8535,7 @@
                 4
             ],
             "position": [
-                0.23800000548362733,
+                0.23849999904632569,
                 1.1100000143051148,
                 -3.6180002689361574
             ],
@@ -8299,7 +8605,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "radial_shelf_upper_2",
@@ -8379,7 +8688,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "radial_shelf_upper_1",
@@ -8459,7 +8771,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B3_bottom_1",
@@ -8471,7 +8786,7 @@
             "position": [
                 1.315000057220459,
                 0.46000000834465029,
-                -3.0410633087158205
+                -3.0410001277923586
             ],
             "rotation": [
                 0.7071068286895752,
@@ -8539,7 +8854,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "B1_side_L_1",
@@ -8619,7 +8937,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_01",
@@ -8704,7 +9025,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_02",
@@ -8789,7 +9113,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_03",
@@ -8874,7 +9201,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_04",
@@ -8959,7 +9289,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_05",
@@ -9044,7 +9377,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_06",
@@ -9129,7 +9465,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W125_01",
@@ -9214,7 +9553,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W125_02",
@@ -9226,7 +9568,7 @@
             "position": [
                 1.6475001573562623,
                 1.350000023841858,
-                1.283500075340271
+                1.2840001583099366
             ],
             "rotation": [
                 0.0,
@@ -9299,7 +9641,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W150_03",
@@ -9384,7 +9729,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W150_05",
@@ -9469,7 +9817,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_10",
@@ -9554,7 +9905,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W150_07",
@@ -9639,7 +9993,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W125_03",
@@ -9724,7 +10081,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W125_04",
@@ -9809,7 +10169,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W125_05",
@@ -9894,7 +10257,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W125_08",
@@ -9979,7 +10345,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_11",
@@ -10064,7 +10433,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W150_11",
@@ -10149,7 +10521,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W150_12",
@@ -10234,7 +10609,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W150_13",
@@ -10319,7 +10697,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W150_14",
@@ -10404,7 +10785,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_13",
@@ -10489,7 +10873,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_16",
@@ -10574,7 +10961,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_21",
@@ -10659,7 +11049,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_24",
@@ -10744,7 +11137,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_25",
@@ -10829,7 +11225,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Pol_1",
@@ -10839,9 +11238,9 @@
                 10395
             ],
             "position": [
-                3.38700008392334,
+                3.387500286102295,
                 -0.05000000074505806,
-                1.3470001220703126
+                1.3474998474121094
             ],
             "rotation": [
                 0.0,
@@ -10922,7 +11321,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Dver_1",
@@ -10934,7 +11336,7 @@
             "position": [
                 1.7100000381469727,
                 1.0500000715255738,
-                0.19296100735664369
+                0.19300000369548798
             ],
             "rotation": [
                 0.0,
@@ -11002,7 +11404,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Okno_5",
@@ -11082,7 +11487,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Okno_8",
@@ -11162,7 +11570,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Okno_9",
@@ -11242,7 +11653,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Okno_4",
@@ -11254,7 +11668,7 @@
             "position": [
                 -1.709999918937683,
                 1.5,
-                0.0630531907081604
+                0.06350003182888031
             ],
             "rotation": [
                 0.0,
@@ -11322,7 +11736,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W125_13",
@@ -11332,7 +11749,7 @@
                 125
             ],
             "position": [
-                3.5380001068115236,
+                3.5385003089904787,
                 1.350000023841858,
                 -2.129999876022339
             ],
@@ -11407,7 +11824,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W125_16",
@@ -11419,7 +11839,7 @@
             "position": [
                 -1.1920928955078126e-7,
                 1.350000023841858,
-                3.948000192642212
+                3.948500156402588
             ],
             "rotation": [
                 0.0,
@@ -11492,7 +11912,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Okno_3",
@@ -11572,7 +11995,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Dver_6",
@@ -11652,7 +12078,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "P_BATH_N",
@@ -11664,7 +12093,7 @@
             "position": [
                 3.567500114440918,
                 1.350000023841858,
-                -0.5770000219345093
+                -0.5764999985694885
             ],
             "rotation": [
                 0.0,
@@ -11737,7 +12166,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "P_HALL_N",
@@ -11749,7 +12181,7 @@
             "position": [
                 5.9070000648498539,
                 1.350000023841858,
-                1.1299999952316285
+                1.130500078201294
             ],
             "rotation": [
                 0.0,
@@ -11822,7 +12254,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "P_R41_W",
@@ -11832,9 +12267,9 @@
                 125
             ],
             "position": [
-                6.698000431060791,
+                6.698500633239746,
                 1.350000023841858,
-                -0.2510000169277191
+                -0.2504999041557312
             ],
             "rotation": [
                 0.0,
@@ -11907,7 +12342,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Dver_bath1",
@@ -11919,7 +12357,7 @@
             "position": [
                 2.615000009536743,
                 1.0499999523162842,
-                -0.5770000219345093
+                -0.5764999985694885
             ],
             "rotation": [
                 0.0,
@@ -11987,7 +12425,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Dver_bath2",
@@ -11999,7 +12440,7 @@
             "position": [
                 4.315000057220459,
                 1.0499999523162842,
-                -0.5770000219345093
+                -0.5764999985694885
             ],
             "rotation": [
                 0.0,
@@ -12067,7 +12508,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Dver_room17",
@@ -12077,9 +12521,9 @@
                 125
             ],
             "position": [
-                5.826931953430176,
+                5.827000141143799,
                 1.0499999523162842,
-                1.1299999952316285
+                1.130500078201294
             ],
             "rotation": [
                 0.0,
@@ -12147,7 +12591,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Dver_room41",
@@ -12159,7 +12606,7 @@
             "position": [
                 7.590000629425049,
                 1.0500000715255738,
-                1.1299999952316285
+                1.130500078201294
             ],
             "rotation": [
                 0.0,
@@ -12227,7 +12674,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Dver_balkon",
@@ -12239,7 +12689,7 @@
             "position": [
                 1.0180000066757203,
                 1.0500000715255738,
-                3.948000192642212
+                3.948500156402588
             ],
             "rotation": [
                 0.0,
@@ -12307,7 +12757,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W150_04",
@@ -12317,7 +12770,7 @@
                 150
             ],
             "position": [
-                7.650624752044678,
+                7.651000022888184,
                 1.350000023841858,
                 -1.6450002193450928
             ],
@@ -12392,7 +12845,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W125_07",
@@ -12477,7 +12933,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W150_08",
@@ -12562,7 +13021,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Okno_7_1",
@@ -12642,7 +13104,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Okno",
@@ -12654,7 +13119,7 @@
             "position": [
                 0.16899995505809785,
                 1.0500000715255738,
-                3.947999954223633
+                3.948500156402588
             ],
             "rotation": [
                 0.0,
@@ -12722,7 +13187,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Istochnik_sveta_1",
@@ -12802,7 +13270,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Istochnik_sveta_1_1",
@@ -12812,9 +13283,9 @@
                 150
             ],
             "position": [
-                3.2164604663848879,
+                3.2160003185272219,
                 2.501000165939331,
-                3.810944080352783
+                3.811000347137451
             ],
             "rotation": [
                 0.0,
@@ -12882,7 +13353,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Istochnik_sveta_1_2",
@@ -12892,9 +13366,9 @@
                 150
             ],
             "position": [
-                2.6397178173065187,
+                2.640000343322754,
                 2.501000165939331,
-                -1.9986169338226319
+                -1.9989999532699586
             ],
             "rotation": [
                 0.0,
@@ -12962,7 +13436,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Istochnik_sveta_1_2_1",
@@ -13042,7 +13519,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Istochnik_sveta_1_2_1_1",
@@ -13052,9 +13532,9 @@
                 150
             ],
             "position": [
-                5.772244453430176,
+                5.772000312805176,
                 2.501000165939331,
-                0.20666269958019257
+                0.2070000171661377
             ],
             "rotation": [
                 0.0,
@@ -13122,7 +13602,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Istochnik_sveta_1_2_1_1_1",
@@ -13202,7 +13685,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Istochnik_sveta_1_2_1_1_1_1",
@@ -13282,7 +13768,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Istochnik_sveta_1_2_1_1_2",
@@ -13293,7 +13782,7 @@
             ],
             "position": [
                 3.562000274658203,
-                2.511080026626587,
+                2.511000156402588,
                 0.2070000171661377
             ],
             "rotation": [
@@ -13362,7 +13851,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W125_07_1",
@@ -13372,7 +13864,7 @@
                 125
             ],
             "position": [
-                -1.709999918937683,
+                -1.7095000743865967,
                 1.350000023841858,
                 -3.682499885559082
             ],
@@ -13447,7 +13939,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W125_07_2",
@@ -13532,7 +14027,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A4_drawer_facade",
@@ -13612,7 +14110,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "fake-oven",
@@ -13692,7 +14193,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "fake-microwave",
@@ -13772,7 +14276,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A4_shelf_1",
@@ -13852,7 +14359,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A4_shelf_2",
@@ -13932,7 +14442,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A4_shelf_3",
@@ -13943,7 +14456,7 @@
             ],
             "position": [
                 1.315000057220459,
-                1.7458486557006837,
+                1.7460001707077027,
                 -1.5620001554489136
             ],
             "rotation": [
@@ -14012,7 +14525,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "A4_shelf_4",
@@ -14023,7 +14539,7 @@
             ],
             "position": [
                 1.315000057220459,
-                2.0321786403656008,
+                2.0320003032684328,
                 -1.5620002746582032
             ],
             "rotation": [
@@ -14092,7 +14608,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Moyka",
@@ -14172,7 +14691,10 @@
             "sinkAttachedPartName": "Countertop_B",
             "sinkOffsetXMM": 983,
             "sinkOffsetYMM": 21,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_11_1",
@@ -14257,7 +14779,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W250_11_2",
@@ -14342,7 +14867,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W150_04_1",
@@ -14352,7 +14880,7 @@
                 150
             ],
             "position": [
-                8.665124893188477,
+                8.66550064086914,
                 1.350000023841858,
                 -1.6450002193450928
             ],
@@ -14427,7 +14955,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "W150_04_2",
@@ -14437,7 +14968,7 @@
                 150
             ],
             "position": [
-                6.698124408721924,
+                6.698500156402588,
                 1.350000023841858,
                 -1.6450002193450928
             ],
@@ -14512,7 +15043,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "P_HALL_N_1",
@@ -14524,7 +15058,7 @@
             "position": [
                 7.650500297546387,
                 1.350000023841858,
-                1.1299999952316285
+                1.130500078201294
             ],
             "rotation": [
                 0.0,
@@ -14597,7 +15131,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "P_HALL_N_2",
@@ -14609,7 +15146,7 @@
             "position": [
                 6.698500633239746,
                 1.350000023841858,
-                1.1299999952316285
+                1.130500078201294
             ],
             "rotation": [
                 0.0,
@@ -14682,7 +15219,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "P_HALL_N_3",
@@ -14694,7 +15234,7 @@
             "position": [
                 5.114500522613525,
                 1.350000023841858,
-                1.1299999952316285
+                1.130500078201294
             ],
             "rotation": [
                 0.0,
@@ -14767,7 +15307,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "P_HALL_N_4",
@@ -14779,7 +15322,7 @@
             "position": [
                 3.380000352859497,
                 1.350000023841858,
-                1.1299999952316285
+                1.130500078201294
             ],
             "rotation": [
                 0.0,
@@ -14852,7 +15395,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_BackPanel",
@@ -14864,7 +15410,7 @@
             "position": [
                 6.532000541687012,
                 1.350000023841858,
-                2.192000150680542
+                2.193000078201294
             ],
             "rotation": [
                 0.0,
@@ -14932,7 +15478,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Korob",
@@ -14944,7 +15493,7 @@
             "position": [
                 7.539999485015869,
                 0.25,
-                4.840688228607178
+                4.841000080108643
             ],
             "rotation": [
                 0.0,
@@ -15012,7 +15561,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Korob_1",
@@ -15024,7 +15576,7 @@
             "position": [
                 8.289999008178711,
                 0.25,
-                3.690688133239746
+                3.69100022315979
             ],
             "rotation": [
                 0.0,
@@ -15092,7 +15644,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Korob_1_1",
@@ -15104,7 +15659,7 @@
             "position": [
                 8.290000915527344,
                 0.25,
-                5.990688323974609
+                5.991000175476074
             ],
             "rotation": [
                 0.0,
@@ -15172,7 +15727,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Side_R",
@@ -15252,7 +15810,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_L_Side_R",
@@ -15264,7 +15825,7 @@
             "position": [
                 6.840000152587891,
                 1.350000023841858,
-                3.184000253677368
+                3.1820003986358644
             ],
             "rotation": [
                 0.0,
@@ -15332,7 +15893,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_L_Side_L",
@@ -15344,7 +15908,7 @@
             "position": [
                 6.840000629425049,
                 1.350000023841858,
-                1.2005001306533814
+                1.2000000476837159
             ],
             "rotation": [
                 0.0,
@@ -15412,7 +15976,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Side_L",
@@ -15424,7 +15991,7 @@
             "position": [
                 8.239999771118164,
                 1.350000023841858,
-                1.2005000114440919
+                1.2010000944137574
             ],
             "rotation": [
                 0.0,
@@ -15492,7 +16059,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Bottom",
@@ -15572,7 +16142,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Div_1",
@@ -15652,7 +16225,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Div_2",
@@ -15732,7 +16308,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_M1",
@@ -15812,7 +16391,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_R2",
@@ -15892,7 +16474,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_MidWide",
@@ -15972,7 +16557,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_M2",
@@ -16052,7 +16640,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_M3",
@@ -16132,7 +16723,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_R3",
@@ -16212,7 +16806,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_R4",
@@ -16292,7 +16889,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_R5",
@@ -16372,7 +16972,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_L2",
@@ -16452,7 +17055,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_L3",
@@ -16532,7 +17138,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_L4",
@@ -16612,7 +17221,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_L5",
@@ -16692,7 +17304,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_R1",
@@ -16772,7 +17387,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_R_Shf_L1",
@@ -16784,7 +17402,7 @@
             "position": [
                 8.239999771118164,
                 0.42800021171569826,
-                1.3924999237060547
+                1.3930000066757203
             ],
             "rotation": [
                 0.7071068286895752,
@@ -16852,7 +17470,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Korob_2",
@@ -16864,7 +17485,7 @@
             "position": [
                 6.840000152587891,
                 1.8250000476837159,
-                1.8085001707077027
+                1.809000015258789
             ],
             "rotation": [
                 0.0,
@@ -16932,7 +17553,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_L_Shf_A2",
@@ -16944,7 +17568,7 @@
             "position": [
                 6.840000152587891,
                 1.9780000448226929,
-                1.8085002899169922
+                1.8090001344680787
             ],
             "rotation": [
                 0.7071068286895752,
@@ -17012,7 +17636,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Korob_3",
@@ -17022,7 +17649,7 @@
                 600
             ],
             "position": [
-                7.693706512451172,
+                7.694000244140625,
                 0.20000000298023225,
                 2.2320001125335695
             ],
@@ -17092,7 +17719,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_L_Divider",
@@ -17104,7 +17734,7 @@
             "position": [
                 6.840000629425049,
                 1.3930000066757203,
-                2.416569471359253
+                2.4170002937316896
             ],
             "rotation": [
                 0.0,
@@ -17172,7 +17802,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fasad_sbornyy",
@@ -17252,7 +17885,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_L_Top",
@@ -17332,7 +17968,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_L_Shf_A4",
@@ -17344,7 +17983,7 @@
             "position": [
                 6.840000629425049,
                 2.692000389099121,
-                1.8085005283355713
+                1.8090001344680787
             ],
             "rotation": [
                 0.7071068286895752,
@@ -17412,7 +18051,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_L_Shf_A3",
@@ -17492,7 +18134,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Yaschik_Movento",
@@ -17572,19 +18217,22 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_ToeKick_Bottom",
             "dimensionsMM": [
                 600,
-                1968,
+                1965,
                 16
             ],
             "position": [
                 6.840000152587891,
                 0.07800006866455078,
-                2.1924314498901369
+                2.190500259399414
             ],
             "rotation": [
                 0.7071068286895752,
@@ -17652,19 +18300,22 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_ToeKick_Front",
             "dimensionsMM": [
-                1967,
+                1965,
                 70,
                 16
             ],
             "position": [
-                7.117000102996826,
+                7.117000579833984,
                 0.03500000014901161,
-                2.192000150680542
+                2.191500186920166
             ],
             "rotation": [
                 0.0,
@@ -17732,7 +18383,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Korob_4",
@@ -17744,7 +18398,7 @@
             "position": [
                 6.840000152587891,
                 1.8250000476837159,
-                2.799999952316284
+                2.8005001544952394
             ],
             "rotation": [
                 0.0,
@@ -17812,7 +18466,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_L_Shf_B2",
@@ -17824,7 +18481,7 @@
             "position": [
                 6.840000152587891,
                 1.9779999256134034,
-                2.8000693321228029
+                2.8005001544952394
             ],
             "rotation": [
                 0.7071068286895752,
@@ -17892,7 +18549,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_L_Shf_B4",
@@ -17904,7 +18564,7 @@
             "position": [
                 6.840000629425049,
                 2.692000150680542,
-                2.7990000247955324
+                2.7995002269744875
             ],
             "rotation": [
                 0.7071068286895752,
@@ -17972,7 +18632,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_L_Shf_B3",
@@ -17984,7 +18647,7 @@
             "position": [
                 6.840000152587891,
                 2.2940001487731935,
-                2.8000001907348635
+                2.8005003929138185
             ],
             "rotation": [
                 0.7071068286895752,
@@ -18052,7 +18715,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fasad_schitovoy",
@@ -18064,7 +18730,7 @@
             "position": [
                 7.131000518798828,
                 0.18800000846385957,
-                2.8000001907348635
+                2.8005003929138185
             ],
             "rotation": [
                 0.0,
@@ -18132,7 +18798,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Yaschik_Movento_1",
@@ -18212,7 +18881,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fasad_schitovoy_1",
@@ -18224,7 +18896,7 @@
             "position": [
                 7.13100004196167,
                 0.3920000195503235,
-                2.8000001907348635
+                2.8005003929138185
             ],
             "rotation": [
                 0.0,
@@ -18292,7 +18964,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Yaschik_Movento_2",
@@ -18302,9 +18977,9 @@
                 500
             ],
             "position": [
-                6.871928691864014,
+                6.872000694274902,
                 0.5674999952316284,
-                2.8000001907348635
+                2.8005003929138185
             ],
             "rotation": [
                 0.0,
@@ -18372,7 +19047,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Fasad_schitovoy_2",
@@ -18382,9 +19060,9 @@
                 18
             ],
             "position": [
-                7.1309285163879398,
+                7.131000518798828,
                 0.5960000157356262,
-                2.8000001907348635
+                2.8005003929138185
             ],
             "rotation": [
                 0.0,
@@ -18452,19 +19130,22 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_ToeKick_Inner",
             "dimensionsMM": [
-                1967,
+                1968,
                 70,
                 16
             ],
             "position": [
-                6.603097915649414,
+                6.603000164031982,
                 0.03500000014901161,
-                2.192000150680542
+                2.192000389099121
             ],
             "rotation": [
                 0.0,
@@ -18532,7 +19213,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Cab_ToeKick_Inner_1",
@@ -18542,15 +19226,15 @@
                 16
             ],
             "position": [
-                6.860097885131836,
+                6.860500335693359,
                 0.03500000014901161,
-                2.421513319015503
+                2.4220001697540285
             ],
             "rotation": [
                 0.0,
                 1.0,
                 0.0,
-                0.0
+                -4.371138828673793e-8
             ],
             "movable": true,
             "isWall": false,
@@ -18612,7 +19296,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         }
     ],
     "groups": [
@@ -18702,12 +19389,12 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 4.064899444580078,
-        "targetY": 0.6881515979766846,
-        "targetZ": 1.386110782623291,
-        "angleX": -15.487710952758789,
-        "angleY": 614.7937622070313,
-        "distance": 3.999999523162842,
+        "targetX": 5.9070000648498539,
+        "targetY": 1.350000023841858,
+        "targetZ": 1.130500078201294,
+        "angleX": 40.15581130981445,
+        "angleY": 596.19921875,
+        "distance": 3.299999713897705,
         "photoDistance": 0.5,
         "photoTargetX": 6.478079319000244,
         "photoTargetY": 1.4512913227081299,
@@ -18796,468 +19483,12 @@
         "sinkAttachedPartName": "",
         "sinkOffsetXMM": 0,
         "sinkOffsetYMM": 0,
-        "grooves": []
+        "grooves": [],
+        "edgeBanding": true,
+        "edgeThicknessMM": 1.0,
+        "edgeSkipValidation": false
     },
     "undoHistory": [
-        {
-            "type": "move",
-            "description": "Move B34_upper_bottom",
-            "elementIndex": 32,
-            "posBefore": [
-                -0.12299996614456177,
-                1.36899995803833,
-                -3.4539999961853029
-            ],
-            "posAfter": [
-                -0.12299996614456177,
-                1.36899995803833,
-                -3.4539999961853029
-            ],
-            "rotBefore": [
-                -0.5,
-                -0.5,
-                0.5,
-                0.5
-            ],
-            "rotAfter": [
-                0.0,
-                -0.7071068286895752,
-                0.7071068286895752,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B34_upper_bottom",
-            "elementIndex": 32,
-            "posBefore": [
-                -0.12299996614456177,
-                1.36899995803833,
-                -3.4539999961853029
-            ],
-            "posAfter": [
-                -0.12299996614456177,
-                1.36899995803833,
-                -3.4539999961853029
-            ],
-            "rotBefore": [
-                0.0,
-                -0.7071068286895752,
-                0.7071068286895752,
-                0.0
-            ],
-            "rotAfter": [
-                0.5,
-                -0.5,
-                0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B34_upper_bottom",
-            "elementIndex": 32,
-            "posBefore": [
-                -0.12299996614456177,
-                1.36899995803833,
-                -3.4539999961853029
-            ],
-            "posAfter": [
-                -0.12299996614456177,
-                1.36899995803833,
-                -3.4539999961853029
-            ],
-            "rotBefore": [
-                0.5,
-                -0.5,
-                0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B34_upper_shelf_1",
-            "elementIndex": 78,
-            "posBefore": [
-                -0.12300000339746475,
-                1.9570000171661378,
-                -3.4539999961853029
-            ],
-            "posAfter": [
-                -0.12300000339746475,
-                1.9570000171661378,
-                -3.44350004196167
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1264,
-                332,
-                18
-            ],
-            "dimsAfter": [
-                1264,
-                311,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B34_upper_shelf_1",
-            "elementIndex": 78,
-            "posBefore": [
-                -0.12300000339746475,
-                1.9570000171661378,
-                -3.44350004196167
-            ],
-            "posAfter": [
-                -0.12300000339746475,
-                1.9570000171661378,
-                -3.444000005722046
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1264,
-                311,
-                18
-            ],
-            "dimsAfter": [
-                1264,
-                312,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B34_upper_shelf_2",
-            "elementIndex": 83,
-            "posBefore": [
-                -0.12300000339746475,
-                1.6629999876022339,
-                -3.4539999961853029
-            ],
-            "posAfter": [
-                -0.12300000339746475,
-                1.6629999876022339,
-                -3.444000005722046
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1264,
-                332,
-                18
-            ],
-            "dimsAfter": [
-                1264,
-                312,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Leg_A3_A4",
-            "elementIndex": 51,
-            "posBefore": [
-                1.1779999732971192,
-                0.05000000074505806,
-                -1.86899995803833
-            ],
-            "posAfter": [
-                1.1780000925064088,
-                0.05000000074505806,
-                -1.8690000772476197
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                50,
-                100,
-                50
-            ],
-            "dimsAfter": [
-                50,
-                100,
-                50
-            ],
-            "children": []
-        },
-        {
-            "type": "composite",
-            "description": "MCP edit_elements (1 ops)",
-            "elementIndex": -1,
-            "posBefore": [],
-            "posAfter": [],
-            "rotBefore": [],
-            "rotAfter": [],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [
-                {
-                    "type": "move",
-                    "description": "Move Leg_A3_A4",
-                    "elementIndex": 51,
-                    "posBefore": [
-                        1.1780000925064088,
-                        0.05000000074505806,
-                        -1.8690000772476197
-                    ],
-                    "posAfter": [
-                        1.315000057220459,
-                        0.05000000074505806,
-                        -1.8619999885559083
-                    ],
-                    "rotBefore": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        1.0
-                    ],
-                    "rotAfter": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        1.0
-                    ],
-                    "dimsBefore": [],
-                    "dimsAfter": [],
-                    "children": []
-                }
-            ]
-        },
-        {
-            "type": "move",
-            "description": "Move Leg_A12_back",
-            "elementIndex": 91,
-            "posBefore": [
-                1.315000057220459,
-                0.05000000074505806,
-                -3.619999885559082
-            ],
-            "posAfter": [
-                1.315000057220459,
-                0.05000000074505806,
-                -3.344886064529419
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Leg_A12_back",
-            "elementIndex": 91,
-            "posBefore": [
-                1.315000057220459,
-                0.05000000074505806,
-                -3.344886064529419
-            ],
-            "posAfter": [
-                1.315000057220459,
-                0.05000000074505806,
-                -3.3450002670288088
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                50,
-                100,
-                50
-            ],
-            "dimsAfter": [
-                50,
-                100,
-                50
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Leg_A12_back",
-            "elementIndex": 91,
-            "posBefore": [
-                1.315000057220459,
-                0.05000000074505806,
-                -3.3450002670288088
-            ],
-            "posAfter": [
-                1.315000057220459,
-                0.05000000074505806,
-                -3.3400001525878908
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                50,
-                100,
-                50
-            ],
-            "dimsAfter": [
-                50,
-                100,
-                50
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Leg_A12_back",
-            "elementIndex": 91,
-            "posBefore": [
-                1.315000057220459,
-                0.05000000074505806,
-                -3.3400001525878908
-            ],
-            "posAfter": [
-                1.315000057220459,
-                0.05000000074505806,
-                -3.3500001430511476
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                50,
-                100,
-                50
-            ],
-            "dimsAfter": [
-                50,
-                100,
-                50
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Leg_B3_B4",
-            "elementIndex": 95,
-            "posBefore": [
-                -0.17299999296665193,
-                0.05000000074505806,
-                -3.3499999046325685
-            ],
-            "posAfter": [
-                -0.21599997580051423,
-                0.05000000074505806,
-                -3.3499999046325685
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
         {
             "type": "move",
             "description": "Move Leg_B3_B4",
@@ -52985,6 +53216,474 @@
             "dimsBefore": [],
             "dimsAfter": [],
             "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_ToeKick_Inner",
+            "elementIndex": 227,
+            "posBefore": [
+                6.603097915649414,
+                0.03500000014901161,
+                2.192000150680542
+            ],
+            "posAfter": [
+                6.603097915649414,
+                0.03500000014901161,
+                2.1929314136505129
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Inner",
+            "elementIndex": 227,
+            "posBefore": [
+                6.603097915649414,
+                0.03500000014901161,
+                2.1929314136505129
+            ],
+            "posAfter": [
+                6.603097915649414,
+                0.03500000014901161,
+                2.1924314498901369
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1967,
+                70,
+                16
+            ],
+            "dimsAfter": [
+                1968,
+                70,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_ToeKick_Inner_1",
+            "elementIndex": 228,
+            "posBefore": [
+                6.860097885131836,
+                0.03500000014901161,
+                2.421513319015503
+            ],
+            "posAfter": [
+                6.859597682952881,
+                0.03500000014901161,
+                2.421513319015503
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Inner_1",
+            "elementIndex": 228,
+            "posBefore": [
+                6.859597682952881,
+                0.03500000014901161,
+                2.421513319015503
+            ],
+            "posAfter": [
+                6.860000133514404,
+                0.03500000014901161,
+                2.4220001697540285
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                497,
+                70,
+                16
+            ],
+            "dimsAfter": [
+                497,
+                70,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Front",
+            "elementIndex": 217,
+            "posBefore": [
+                7.117000102996826,
+                0.03500000014901161,
+                2.192000150680542
+            ],
+            "posAfter": [
+                7.117000102996826,
+                0.03500000014901161,
+                2.192000150680542
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1967,
+                70,
+                16
+            ],
+            "dimsAfter": [
+                1967,
+                70,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Front",
+            "elementIndex": 217,
+            "posBefore": [
+                7.117000102996826,
+                0.03500000014901161,
+                2.192000150680542
+            ],
+            "posAfter": [
+                7.117000102996826,
+                0.03500000014901161,
+                2.192000150680542
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1967,
+                70,
+                16
+            ],
+            "dimsAfter": [
+                1967,
+                70,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_L_Side_R",
+            "elementIndex": 187,
+            "posBefore": [
+                6.840000152587891,
+                1.350000023841858,
+                3.184000253677368
+            ],
+            "posAfter": [
+                6.840000152587891,
+                1.350000023841858,
+                3.184431552886963
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_ToeKick_Front",
+            "elementIndex": 217,
+            "posBefore": [
+                7.117000102996826,
+                0.03500000014901161,
+                2.192000389099121
+            ],
+            "posAfter": [
+                7.116499900817871,
+                0.03500000014901161,
+                2.192000389099121
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_L_Side_R",
+            "elementIndex": 187,
+            "posBefore": [
+                6.840000152587891,
+                1.350000023841858,
+                3.184431552886963
+            ],
+            "posAfter": [
+                6.840000152587891,
+                1.350000023841858,
+                3.18149995803833
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Front",
+            "elementIndex": 217,
+            "posBefore": [
+                7.116499900817871,
+                0.03500000014901161,
+                2.192000389099121
+            ],
+            "posAfter": [
+                7.116499900817871,
+                0.03500000014901161,
+                2.191000461578369
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1967,
+                70,
+                16
+            ],
+            "dimsAfter": [
+                1965,
+                70,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Bottom",
+            "elementIndex": 216,
+            "posBefore": [
+                6.840000152587891,
+                0.07800006866455078,
+                2.1924314498901369
+            ],
+            "posAfter": [
+                6.840000152587891,
+                0.07800006866455078,
+                2.190931558609009
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                1968,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                1965,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_L_Side_L",
+            "elementIndex": 188,
+            "posBefore": [
+                6.840000629425049,
+                1.350000023841858,
+                1.2005001306533814
+            ],
+            "posAfter": [
+                6.840000629425049,
+                1.350000023841858,
+                1.2004814147949219
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_gtv_drawer",
+            "elementIndex": 57,
+            "posBefore": [
+                1.2949999570846558,
+                0.1745000034570694,
+                -1.562000036239624
+            ],
+            "posAfter": [
+                1.2949999570846558,
+                0.17350000143051148,
+                -1.562000036239624
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_BackPanel",
+            "elementIndex": 182,
+            "posBefore": [
+                6.532000541687012,
+                1.350000023841858,
+                2.192000150680542
+            ],
+            "posAfter": [
+                6.532000541687012,
+                1.350000023841858,
+                2.193000078201294
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
         }
     ],
     "redoHistory": [],
@@ -53032,15 +53731,15 @@
         },
         {
             "id": "errors",
-            "visible": false,
-            "x": 0.0,
-            "y": 0.0,
+            "visible": true,
+            "x": 481.8184509277344,
+            "y": -201.94833374023438,
             "height": 0.0
         },
         {
             "id": "hierarchy",
             "visible": false,
-            "x": -0.00006103515625,
+            "x": 0.0,
             "y": -60.0,
             "height": 660.0
         },
@@ -53060,7 +53759,7 @@
         },
         {
             "id": "specification",
-            "visible": true,
+            "visible": false,
             "x": 0.0,
             "y": 0.0,
             "height": 0.0
