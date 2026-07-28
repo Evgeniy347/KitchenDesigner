@@ -125,6 +125,7 @@ namespace KitchenDesigner.Core
         /// физически влезает и не попадает на боковину.</summary>
         public void SnapToPart()
         {
+            using var _ = PerfMarkers.SinkSnapToPart.Auto();
             var host = _lastHost != null ? _lastHost : FindAttachedPart();
             TrackDrift(host);
 

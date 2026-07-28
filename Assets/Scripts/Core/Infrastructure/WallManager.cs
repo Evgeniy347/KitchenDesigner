@@ -1,4 +1,3 @@
-using Unity.Profiling;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -15,8 +14,6 @@ namespace KitchenDesigner.Core
     /// что он часть меша стены, а не окна.</summary>
     public class WallManager : MonoBehaviour
     {
-        private static readonly ProfilerMarker s_LateUpdate = new("WallManager.LateUpdate");
-
         private const float LoweredHeightMM = 100f;
 
         private Camera? _cachedCamera;
@@ -28,7 +25,7 @@ namespace KitchenDesigner.Core
 
         public void LateUpdate()
         {
-            using var _ = s_LateUpdate.Auto();
+            using var _ = PerfMarkers.WallManagerLateUpdate.Auto();
             var s = KitchenSettings.Instance;
             // В фоторежиме стены всегда видимы и не опускаются — комната цельная.
             bool show = PhotoMode.Active || s == null || s.WallsEnabled;

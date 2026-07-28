@@ -166,6 +166,7 @@ namespace KitchenDesigner.Core
 
         private DrawerElement? FindPairedDrawer()
         {
+            using var _ = PerfMarkers.DrawerFindPaired.Auto();
             if (string.IsNullOrEmpty(_pairedDrawerName)) return null;
             foreach (var e in PartRegistry.GetAll())
                 if (e is DrawerElement d && d != this && d.PartName == _pairedDrawerName) return d;
@@ -290,6 +291,7 @@ namespace KitchenDesigner.Core
         /// при этом своя (ApplyAnimPose от синхронизированной закрытой позы).</summary>
         public void SyncToLower()
         {
+            using var _ = PerfMarkers.DrawerSyncToLower.Auto();
             var lower = FindPairedDrawer();
             if (lower == null || lower._isUpperDrawer) return;
 
@@ -302,6 +304,7 @@ namespace KitchenDesigner.Core
 
         public void StepAnimation(float dt)
         {
+            using var _ = PerfMarkers.DrawerStepAnimation.Auto();
             float target = _open ? 1f : 0f;
             if (Mathf.Approximately(_t, target))
             {

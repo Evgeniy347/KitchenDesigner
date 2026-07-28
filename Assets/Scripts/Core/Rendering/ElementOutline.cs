@@ -1,4 +1,3 @@
-using Unity.Profiling;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -48,8 +47,6 @@ namespace KitchenDesigner.Core
     [DisallowMultipleComponent]
     public class ElementOutline : MonoBehaviour
     {
-        private static readonly ProfilerMarker s_LateUpdate = new("ElementOutline.LateUpdate");
-
         /// <summary>Толщина ребра в метрах.</summary>
         private const float ThicknessMeters = 0.004f;
 
@@ -122,7 +119,7 @@ namespace KitchenDesigner.Core
 
         private void LateUpdate()
         {
-            using var _ = s_LateUpdate.Auto();
+            using var _ = PerfMarkers.ElementOutlineLateUpdate.Auto();
             if (_visible) UpdateEdges();
         }
 

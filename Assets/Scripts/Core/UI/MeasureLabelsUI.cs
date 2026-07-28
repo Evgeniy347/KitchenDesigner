@@ -33,6 +33,7 @@ namespace KitchenDesigner.Core.UI
 
         private void LateUpdate()
         {
+            using var _ = PerfMarkers.MeasureLabelsLateUpdate.Auto();
             _used = 0;
             var cam = Camera.main;
             if (_root != null && MeasureMode.Active && cam != null)

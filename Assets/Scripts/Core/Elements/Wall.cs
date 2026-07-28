@@ -127,6 +127,7 @@ namespace KitchenDesigner.Core
         /// месте — «окно отдельно, проём отдельно».</summary>
         public void SyncOpeningsIfChanged()
         {
+            using var _ = PerfMarkers.WallSyncOpenings.Auto();
             if (_attachedWindows.Count == 0 && _attachedDoors.Count == 0) return;
             if (_hasSyncSnapshot && !GeometryChanged()) return;
             RebuildMesh();

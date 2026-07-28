@@ -268,6 +268,7 @@ namespace KitchenDesigner.Core.UI
         // Откреплённый сайдбар сворачивается при клике вне его области.
         private void Update()
         {
+            using var _ = PerfMarkers.SidebarUpdate.Auto();
             if (_pinned || !_expanded) return;
             if (Input.GetMouseButtonDown(0) &&
                 !RectTransformUtility.RectangleContainsScreenPoint(_panel!, Input.mousePosition, null))

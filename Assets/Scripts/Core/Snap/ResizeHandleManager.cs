@@ -101,6 +101,7 @@ namespace KitchenDesigner.Core
 
         private void LateUpdate()
         {
+            using var _ = PerfMarkers.ResizeHandlesLateUpdate.Auto();
             // Объект уничтожен (Unity fake-null) — убираем осиротевшие ручки.
             if (_target == null)
             {

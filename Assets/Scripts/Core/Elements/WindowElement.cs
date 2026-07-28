@@ -181,6 +181,7 @@ namespace KitchenDesigner.Core
         /// центрирование в срединной плоскости и наследование толщины стены.</summary>
         public void SnapToWall()
         {
+            using var _ = PerfMarkers.WindowSnapToWall.Auto();
             var wall = RegisterWithNearestWall();
             if (wall != null) AlignToWall(wall);
         }

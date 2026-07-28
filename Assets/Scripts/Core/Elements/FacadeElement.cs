@@ -147,6 +147,7 @@ namespace KitchenDesigner.Core
         /// в EditMode-тестах — так поведение двери можно проверять напрямую.</summary>
         public void StepDoor(float dt)
         {
+            using var _ = PerfMarkers.FacadeStepDoor.Auto();
             float target = _open ? 1f : 0f;
             if (Mathf.Approximately(_t, target))
             {

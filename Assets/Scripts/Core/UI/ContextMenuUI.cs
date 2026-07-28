@@ -944,6 +944,7 @@ namespace KitchenDesigner.Core.UI
 
         private void Update()
         {
+            using var _ = PerfMarkers.ContextMenuUpdate.Auto();
             ProcessDeferredClose();
 
             if (Input.GetKeyDown(KeyCode.Escape) && _root != null && _root.activeSelf)

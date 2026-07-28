@@ -3,10 +3,25 @@ setlocal
 REM Local debug: desktop (fastest iteration - Mono development build, incremental).
 REM   run-desktop.cmd            - close previous debug instance, build Windows Debug, launch
 REM   run-desktop.cmd -NoBuild   - just launch the existing Build_Debug\KitchenDesigner.exe
+REM   run-desktop.cmd -Profile   - launch with the native Unity profiler writing test-results\perf\capture.raw
+REM                                (open it later via Window > Analysis > Profiler > Load; the
+REM                                 in-app HUD/CSV on F9 / Shift+F9 needs no editor at all)
+REM   Flags combine: run-desktop.cmd -NoBuild -Profile
+
+set "nobuild="
+set "profile="
+
+:args
+if /i "%~1"=="-NoBuild" set "nobuild=1" & shift & goto :args
+if /i "%~1"=="-Profile" set "profile=1" & shift & goto :args
+if not "%~1"=="" (
+    echo [FAIL] Unknown argument: %~1
+    exit /b 1
+)
 
 for %%I in ("%~dp0.") do set "root=%%~fI"
 
-if /i "%~1"=="-NoBuild" goto :launch
+if defined nobuild goto :launch
 
 REM Close only the previous DEBUG instance (from Build_Debug\) - it locks the output files.
 powershell -NoProfile -Command "Get-Process KitchenDesigner -ErrorAction SilentlyContinue | Where-Object { $_.Path -like '*Build_Debug*' } | Stop-Process -Force" >nul 2>nul
@@ -27,5 +42,14 @@ if not exist "%exe%" (
 )
 
 echo === [2/2] Launch ===
-start "" "%exe%"
-echo Launched: %exe%
+if defined profile (
+    if not exist "%root%\test-results\perf" mkdir "%root%\test-results\perf"
+    REM -profiler-maxusedmemory raises the profiler buffer (default 16 MB overflows fast
+    REM on a scene with hundreds of elements and drops frames from the capture).
+    start "" "%exe%" -profiler-enable -profiler-log-file "%root%\test-results\perf\capture.raw" -profiler-maxusedmemory 268435456
+    echo Launched with profiler: %exe%
+    echo Capture: %root%\test-results\perf\capture.raw
+) else (
+    start "" "%exe%"
+    echo Launched: %exe%
+)

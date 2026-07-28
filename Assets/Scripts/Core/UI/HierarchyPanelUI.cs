@@ -183,6 +183,7 @@ namespace KitchenDesigner.Core.UI
 
         private void Update()
         {
+            using var _ = PerfMarkers.HierarchyPanelUpdate.Auto();
             // События покрывают группы и выделение; поллинг ловит создание/удаление/
             // переименование элементов (MCP, undo, загрузка) без событийной обвязки.
             if (_root == null || !_root.activeSelf) return;

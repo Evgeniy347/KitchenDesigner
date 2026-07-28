@@ -40,7 +40,11 @@ namespace KitchenDesigner.Core
             new Dictionary<KitchenElement, Entry>();
         private static GameObject? _root;
 
-        private void LateUpdate() => SyncAll();
+        private void LateUpdate()
+        {
+            using var _ = PerfMarkers.TextureOverlaySyncAll.Auto();
+            SyncAll();
+        }
 
         private void OnDestroy() => ClearAll();
 

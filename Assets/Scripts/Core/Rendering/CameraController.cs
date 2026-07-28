@@ -1,14 +1,10 @@
 using TMPro;
-using Unity.Profiling;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
     public class CameraController : MonoBehaviour
     {
-        private static readonly ProfilerMarker s_Update = new("CameraController.Update");
-        private static readonly ProfilerMarker s_UpdateFloorVisibility = new("CameraController.UpdateFloorVisibility");
-
         public static CameraController? Instance { get; private set; }
 
         [SerializeField] private float _distance = 5f;
@@ -167,7 +163,7 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
-            using var _ = s_Update.Auto();
+            using var _ = PerfMarkers.CameraUpdate.Auto();
             // Орбита: ПКМ по чему угодно (деталь или пустота). ПКМ-клик по детали — контекстное меню.
             // Pan: ЛКМ по пустому месту или СКМ. ЛКМ по детали = перемещение детали.
             bool overUI = PointerOverUI();
@@ -295,7 +291,7 @@ namespace KitchenDesigner.Core
 
         public void UpdateFloorVisibility()
         {
-            using var _ = s_UpdateFloorVisibility.Auto();
+            using var _ = PerfMarkers.CameraFloorVisibility.Auto();
             if (_cachedCamera == null) return;
 
             var floors = FloorElement.Active;
@@ -479,6 +475,7 @@ namespace KitchenDesigner.Core
 
         private static bool PointerOverUI()
         {
+            using var _ = PerfMarkers.CameraPointerOverUI.Auto();
             var es = UnityEngine.EventSystems.EventSystem.current;
             if (es == null) return false;
             return es.IsPointerOverGameObject() || es.IsPointerOverGameObject(0);

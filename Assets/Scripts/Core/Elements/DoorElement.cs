@@ -162,6 +162,7 @@ namespace KitchenDesigner.Core
 
         public void SnapToWall()
         {
+            using var _ = PerfMarkers.DoorSnapToWall.Auto();
             var wall = RegisterWithNearestWall();
             if (wall != null) AlignToWall(wall);
         }

@@ -285,6 +285,7 @@ namespace KitchenDesigner.Core.UI
         // тогглы вида и панелей показывают своё состояние нажатым фоном.
         private void Update()
         {
+            using var _ = PerfMarkers.UIManagerUpdate.Auto();
             if (_undoButton != null) _undoButton.interactable = CommandStack.CanUndo;
             if (_redoButton != null) _redoButton.interactable = CommandStack.CanRedo;
 
