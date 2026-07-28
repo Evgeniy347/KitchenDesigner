@@ -1,4 +1,4 @@
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+﻿#if UNITY_EDITOR || DEVELOPMENT_BUILD
 
 using System.Text;
 using Unity.Profiling;
@@ -112,7 +112,7 @@ namespace KitchenDesigner.Core
             if (_slots == null) return;
 
             var sb = new StringBuilder();
-            sb.AppendLine($"[Perf] ── frame {Time.frameCount}, окно {_windowFrames} кадров, dt={Time.deltaTime * 1000f:F1}ms ──");
+            sb.AppendLine($"[Perf] -- frame {Time.frameCount}, окно {_windowFrames} кадров, dt={Time.deltaTime * 1000f:F1}ms --");
 
             for (int i = 0; i < _slots.Length; i++)
             {
@@ -125,7 +125,7 @@ namespace KitchenDesigner.Core
 
                 float avg = s.SumMs / s.Samples;
                 sb.AppendLine(s.MaxMs > 1f
-                    ? $"  {s.Name,-42} cur={s.LastMs,6:F2}ms  avg={avg,6:F2}ms  min={s.MinMs,6:F2}ms  max={s.MaxMs,6:F2}ms  ⚠"
+                    ? $"  {s.Name,-42} cur={s.LastMs,6:F2}ms  avg={avg,6:F2}ms  min={s.MinMs,6:F2}ms  max={s.MaxMs,6:F2}ms  [!]"
                     : $"  {s.Name,-42} cur={s.LastMs,6:F2}ms  avg={avg,6:F2}ms  min={s.MinMs,6:F2}ms  max={s.MaxMs,6:F2}ms");
             }
 
