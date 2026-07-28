@@ -36,6 +36,12 @@ namespace KitchenDesigner.Core
         public const float WasdMaxMultiplier = 20f;
         private float _wasdHeld;
 
+        // ── Плавный зум колесом мыши ───────────────────────────────────
+        private float _scrollTarget;     // накопленная цель (метры)
+        private float _scrollCurrent;    // текущее плавное положение
+        private float _scrollVelocity;   // для Mathf.SmoothDamp
+        private const float ScrollSmoothTime = 0.08f;
+
         // ── Плавный фокус (клавиша F, двойной клик в «Ошибках») ───────────
         /// <summary>Длительность перелёта камеры к точке фокуса.</summary>
         public const float FocusSeconds = 2f;
@@ -240,10 +246,10 @@ namespace KitchenDesigner.Core
                 _lastMouse = Input.mousePosition;
             }
 
-            // Колесо мыши — то же смещение вперёд/назад, что и +/−.
+            // Колесо мыши — накапливаем в плавный зум.
             // Щелчок колеса даёт ±0.1 по оси, поэтому масштабируем на 10.
             if (Mathf.Abs(scroll) > 0.01f && !overUI)
-                MoveForward(scroll * 10f * _zoomStep * _zoomSpeed);
+                ApplyScrollInput(scroll * 10f * _zoomStep * _zoomSpeed);
 
             if (!IsTypingInInputField())
             {
@@ -266,6 +272,7 @@ namespace KitchenDesigner.Core
                 HandleWASD();
                 HandleArrowOrbit();
                 HandlePlusMinusZoom();
+                UpdateScrollSmooth(Time.deltaTime);
             }
 
             UpdateFocus(Time.deltaTime);
@@ -426,15 +433,13 @@ namespace KitchenDesigner.Core
 
         private void HandlePlusMinusZoom()
         {
-            // Дефис — допустимый символ имени: без этой проверки набор «B4-upper»
-            // отъезжал бы камерой на каждом «-».
             if (IsTypingInInputField()) return;
-            float delta = 0f;
-            if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus))
-                delta = -1f;
-            else if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
-                delta = 1f;
-            ApplyZoomDelta(delta);
+            float direction = 0f;
+            if (Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.KeypadPlus))
+                direction = 1f;
+            else if (Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.KeypadMinus))
+                direction = -1f;
+            ApplyZoomMovement(direction, Time.deltaTime);
         }
 
         /// <summary>
@@ -445,6 +450,45 @@ namespace KitchenDesigner.Core
         {
             if (Mathf.Abs(delta) < 0.01f) return;
             MoveForward(-delta * _zoomStep * _zoomSpeed);
+        }
+
+        public void ApplyScrollInput(float delta)
+        {
+            _scrollTarget += delta;
+        }
+
+        public void UpdateScrollSmooth(float dt)
+        {
+            if (dt < 1e-6f) return;
+            float smooth = Mathf.SmoothDamp(_scrollCurrent, _scrollTarget, ref _scrollVelocity, ScrollSmoothTime);
+            float delta = smooth - _scrollCurrent;
+            _scrollCurrent = smooth;
+
+            if (Mathf.Abs(delta) > 1e-6f)
+                MoveForward(delta);
+
+            if (Mathf.Abs(_scrollTarget) < 1e-5f && Mathf.Abs(delta) < 1e-5f)
+            {
+                _scrollTarget = 0f;
+                _scrollCurrent = 0f;
+                _scrollVelocity = 0f;
+            }
+        }
+
+        public void ResetScrollSmooth()
+        {
+            _scrollTarget = 0f;
+            _scrollCurrent = 0f;
+            _scrollVelocity = 0f;
+        }
+
+        public void ApplyZoomMovement(float direction, float dt)
+        {
+            if (Mathf.Abs(direction) < 0.01f || dt < 1e-6f) return;
+            CancelFocus();
+            ResetScrollSmooth();
+            float speed = _moveSpeed * dt * WasdSpeed;
+            MoveForward(direction * speed);
         }
 
         /// <summary>

@@ -262,14 +262,12 @@ public class CameraControllerTests
     }
 
     [Test]
-    public void WasdHoldMultiplier_RampsFromOneToTwentyOverFourSeconds()
+    public void WasdHoldMultiplier_WithoutShift_AlwaysReturnsOne()
     {
-        Assert.AreEqual(1f, CameraController.WasdHoldMultiplier(0f, false), 1e-4f, "старт — минимум");
-        Assert.AreEqual(1f, CameraController.WasdHoldMultiplier(1f, false), 1e-4f, "первая секунда — минимум");
-        Assert.AreEqual(1f + 19f / 3f, CameraController.WasdHoldMultiplier(2f, false), 1e-3f,
-            "через 2 с пройдена треть разгона");
-        Assert.AreEqual(20f, CameraController.WasdHoldMultiplier(4f, false), 1e-4f, "через 4 с — ×20");
-        Assert.AreEqual(20f, CameraController.WasdHoldMultiplier(30f, false), 1e-4f, "выше ×20 не растёт");
+        Assert.AreEqual(1f, CameraController.WasdHoldMultiplier(0f, false), 1e-4f, "старт — ×1");
+        Assert.AreEqual(1f, CameraController.WasdHoldMultiplier(1f, false), 1e-4f, "через 1 с — всё ещё ×1");
+        Assert.AreEqual(1f, CameraController.WasdHoldMultiplier(5f, false), 1e-4f, "через 5 с — ×1, разгона нет");
+        Assert.AreEqual(1f, CameraController.WasdHoldMultiplier(30f, false), 1e-4f, "долгое удержание — ×1");
     }
 
     [Test]
@@ -291,13 +289,23 @@ public class CameraControllerTests
             angleX = 0f, angleY = 0f, distance = 5f
         });
 
-        for (int i = 0; i < 4; i++) _controller!.ApplyWASDMovement(Vector2.up, 1f); // разогнались до ×20
-        _controller!.ApplyWASDMovement(Vector2.zero, 0.1f);                          // отпустили
+        // Без Shift: ускорения нет, каждый шаг — базовая скорость 0.6 м/с.
+        _controller!.ApplyWASDMovement(Vector2.up, 1f);
+        float after1 = GetTarget().z;
+        _controller!.ApplyWASDMovement(Vector2.up, 1f);
+        float after2 = GetTarget().z;
+        Assert.AreEqual(0.6f, after1, 1e-4f, "без Shift — всегда базовая скорость");
+        Assert.AreEqual(0.6f, after2 - after1, 1e-4f, "второй шаг — та же скорость, разгона нет");
+
+        // С Shift: разгон работает, сброс по отпусканию.
+        _controller!.ApplyWASDMovement(Vector2.zero, 0.1f);
+        for (int i = 0; i < 2; i++) _controller!.ApplyWASDMovement(Vector2.up, 1f, shift: true);
+        _controller!.ApplyWASDMovement(Vector2.zero, 0.1f);
 
         float before = GetTarget().z;
-        _controller!.ApplyWASDMovement(Vector2.up, 1f);
+        _controller!.ApplyWASDMovement(Vector2.up, 1f, shift: true);
         Assert.AreEqual(0.6f, GetTarget().z - before, 1e-4f,
-            "после отпускания клавиш разгон начинается заново");
+            "после отпускания разгон с Shift начинается заново");
     }
 
     [Test]
@@ -485,6 +493,173 @@ public class CameraControllerTests
 
         var target = GetTarget();
         Assert.AreEqual(new Vector3(1f, 2f, 3f), target);
+    }
+
+    // ── Плавный зум колесом мыши ──────────────────────────────────────
+
+    [Test]
+    public void ApplyScrollInput_DoesNotMoveCamera_Immediately()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.ApplyScrollInput(0.3f);
+        Assert.AreEqual(0f, GetTarget().z, 1e-6f,
+            "накопление не должно двигать камеру мгновенно");
+    }
+
+    [Test]
+    public void UpdateScrollSmooth_MovesGradually_OneStepPartWay()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.ApplyScrollInput(0.3f);
+        _controller!.UpdateScrollSmooth(0.08f);
+
+        float z = GetTarget().z;
+        Assert.Greater(z, 0.01f, "один шаг SmoothDamp должен сместить камеру");
+        Assert.Less(z, 0.3f, "за один шаг камера не должна долететь до цели");
+    }
+
+    [Test]
+    public void UpdateScrollSmooth_ConvergesToTarget()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.ApplyScrollInput(0.3f);
+
+        for (int i = 0; i < 50; i++)
+            _controller!.UpdateScrollSmooth(0.016f);
+
+        Assert.AreEqual(0.3f, GetTarget().z, 1e-4f,
+            "после 0.8 с камера должна сойтись к цели");
+    }
+
+    [Test]
+    public void UpdateScrollSmooth_MultipleEvents_Stack()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.ApplyScrollInput(0.3f);
+        _controller!.ApplyScrollInput(0.2f);
+        _controller!.ApplyScrollInput(-0.1f);
+
+        for (int i = 0; i < 50; i++)
+            _controller!.UpdateScrollSmooth(0.016f);
+
+        Assert.AreEqual(0.4f, GetTarget().z, 1e-4f,
+            "несколько событий колеса должны суммироваться");
+    }
+
+    [Test]
+    public void UpdateScrollSmooth_DoesNothing_AtRest()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.UpdateScrollSmooth(0.1f);
+        Assert.AreEqual(0f, GetTarget().z, 1e-6f,
+            "без событий колеса плавный зум не должен двигать камеру");
+    }
+
+    // ── Непрерывный зум клавишами +/− ─────────────────────────────────
+
+    [Test]
+    public void ApplyZoomMovement_MovesForward_AtWasdSpeed()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.ApplyZoomMovement(1f, 1f);
+
+        Assert.AreEqual(0.6f, GetTarget().z, 1e-4f,
+            "1 секунда '+' смещает камеру вперёд на 0.6 м (как WASD без Shift)");
+    }
+
+    [Test]
+    public void ApplyZoomMovement_MovesBackward_AtWasdSpeed()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.ApplyZoomMovement(-1f, 1f);
+
+        Assert.AreEqual(-0.6f, GetTarget().z, 1e-4f,
+            "1 секунда '−' смещает камеру назад на 0.6 м");
+    }
+
+    [Test]
+    public void ApplyZoomMovement_CancelsFocus()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.FocusOn(new Vector3(10f, 0f, 0f));
+        Assert.IsTrue(_controller!.IsFocusing, "перелёт начался");
+
+        _controller!.ApplyZoomMovement(1f, 0.1f);
+        Assert.IsFalse(_controller!.IsFocusing,
+            "непрерывный зум +/- должен прерывать перелёт");
+    }
+
+    [Test]
+    public void ApplyZoomMovement_ResetsScrollSmooth()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.ApplyScrollInput(0.5f);
+        _controller!.UpdateScrollSmooth(0.08f);
+        float afterScroll = GetTarget().z;
+        Assert.Greater(afterScroll, 0f, "скролл отодвинул камеру");
+
+        _controller!.ApplyZoomMovement(1f, 0.1f);
+        float afterZoom = GetTarget().z;
+        Assert.Greater(afterZoom, afterScroll, "+/- сдвинул камеру дополнительно");
+
+        float before = GetTarget().z;
+        _controller!.UpdateScrollSmooth(0.1f);
+        Assert.AreEqual(before, GetTarget().z, 1e-6f,
+            "после +/- плавный зум колеса не должен применяться");
     }
 
     private Vector3 GetTarget()
