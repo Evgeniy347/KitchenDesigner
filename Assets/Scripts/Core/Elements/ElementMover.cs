@@ -176,7 +176,7 @@ namespace KitchenDesigner.Core
             if (group)
             {
                 foreach (var e in sel!.SelectedElements)
-                    if (e != null && e.Movable && ModuleEditMode.IsEditable(e)) _moveSet.Add(e);
+                    if (e != null && e.Transformable && ModuleEditMode.IsEditable(e)) _moveSet.Add(e);
             }
             if (_moveSet.Count == 0)
                 _moveSet.Add(_target!);
@@ -300,8 +300,8 @@ namespace KitchenDesigner.Core
             {
                 if (!IsDragging && PressMovedEnough())
                 {
-                    if (_target != null && _target.Movable) BeginDrag();
-                    else _pressed = false; // перемещение запрещено — не двигаем
+                    if (_target != null && _target.Transformable) BeginDrag();
+                    else _pressed = false; // перемещение запрещено (или дверца открыта) — не двигаем
                 }
                 if (IsDragging)
                     UpdateDrag();
@@ -449,6 +449,16 @@ namespace KitchenDesigner.Core
 				}
 
 				AutoAdjustPillar();
+
+				// Итог перетаскивания обязан лечь на мм-сетку. Сетка GridManager
+				// применяется только к сырому положению мыши и с шагом 18 мм, а
+				// снэп её намеренно перезаписывает точной геометрией соседа — на
+				// соседе с дробной гранью перетаскиваемая деталь наследовала эту
+				// дробь. Выравниваем ДО сборки MoveCommand, чтобы undo хранил уже
+				// выровненное значение.
+				foreach (var m in _moveSet)
+					if (m != null) MmGrid.Snap(m);
+
 				if (KitchenSettings.Instance.BlockOnViolation && MoveSetCausesViolation())
 				{
 					if (pillarMidBefore.HasValue && _target is PillarElement p)

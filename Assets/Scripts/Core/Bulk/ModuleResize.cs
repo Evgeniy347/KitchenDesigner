@@ -32,7 +32,13 @@ namespace KitchenDesigner.Core.Bulk
             if (members == null || members.Count == 0) return changes;
 
             Vector3 axis = AxisVector(worldAxis);
-            float deltaU = deltaMM * AppConstants.MM_TO_UNITS;
+
+            // Дельту округляем ОДИН раз и от неё считаем и размер, и позицию.
+            // Раньше размер брал Mathf.RoundToInt(deltaMM), а позиция — исходную
+            // дробную дельту: при нечётной или дробной дельте они расходились, и
+            // грани модуля уезжали с миллиметровой сетки.
+            int deltaRoundedMM = Mathf.RoundToInt(deltaMM);
+            float deltaU = deltaRoundedMM * AppConstants.MM_TO_UNITS;
 
             // Границы модуля вдоль оси.
             float mmin = float.MaxValue, mmax = float.MinValue;
@@ -59,7 +65,7 @@ namespace KitchenDesigner.Core.Bulk
                 {
                     // Растягиваем: ближний край на месте, дальний +дельта.
                     var dims = e.DimensionsMM;
-                    dims[localAxis] = Mathf.Max(1, dims[localAxis] + Mathf.RoundToInt(deltaMM));
+                    dims[localAxis] = Mathf.Max(1, dims[localAxis] + deltaRoundedMM);
                     changes.Add(new Change
                     {
                         element = e,

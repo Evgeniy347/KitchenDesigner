@@ -370,6 +370,21 @@ namespace KitchenDesigner.Core
             ProjectRooms.Set(data.rooms);
             ProjectFloorplans.Set(data.floorplans);
 
+            // Инвариант мм-сетки: грани деталей стоят на целых миллиметрах.
+            // Проекты, сделанные до его появления, несут дробные грани (центр
+            // стены как полусумма концов, деление пролёта в distribute_evenly,
+            // дельта модуля мимо округления). Пока грань на 0.5 мм, в этот проём
+            // не встаёт ни одна деталь целого размера, а прилипание лишь выбирает,
+            // с какой из разъехавшихся плоскостей встать заподлицо. Выравниваем
+            // ОДИН раз при загрузке — дальше сетку держат сами операции.
+            // Размеры не трогаем: деталь не того размера чинится правкой габарита,
+            // и сделать это должен человек, а не загрузчик.
+            int gridSnapped = 0;
+            foreach (var el in resolved)
+                if (el != null && MmGrid.Snap(el)) gridSnapped++;
+            if (gridSnapped > 0)
+                Debug.Log($"[MmGrid] Выровнено по миллиметровой сетке: {gridSnapped} дет.");
+
             CommandStack.Instance.Import(data.undoHistory, data.redoHistory,
                 i => (i >= 0 && i < resolved.Count) ? resolved[i]! : null!);
 

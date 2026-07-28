@@ -111,10 +111,12 @@ namespace KitchenDesigner.Core
 
             // Ручки доступны только для подвижного объекта: запрет перемещения
             // запрещает и ресайз. Переключается на лету (чекбокс в свойствах).
+            // Открытая дверца/выдвинутый ящик тоже недоступны — их геометрия
+            // считается от закрытой позы и за трансформом не идёт (Transformable).
             // Смена режима (Resize/Move) пересобирает ручки с другим наконечником.
             // В режиме редактирования модуля чужие элементы недоступны.
             // В режиме рулетки ручек нет — они перехватывали бы клики по вершинам.
-            bool show = _target.Movable && ModuleEditMode.IsEditable(_target)
+            bool show = _target.Transformable && ModuleEditMode.IsEditable(_target)
                         && !Measure.MeasureMode.Active;
             bool needRebuild = show && (_handles.Count == 0 || _builtMode != Mode) && !IsResizing;
             if (needRebuild) { ClearHandles(); BuildHandles(); }
@@ -179,7 +181,7 @@ namespace KitchenDesigner.Core
 
         private void BeginDrag(int faceIndex)
         {
-            if (_target == null || !_target.Movable) return; // запрет перемещения запрещает и ресайз/move
+            if (_target == null || !_target.Transformable) return; // запрет перемещения (или открытая дверца) запрещает и ресайз/move
 
             // Полускрытую стену сперва на полную высоту, ЗАТЕМ берём геометрию грани —
             // иначе стартовые размер/центр берутся в опущенном состоянии и объект «прыгает».
@@ -262,6 +264,13 @@ namespace KitchenDesigner.Core
         {
             IsResizing = false;
             _resizingElement = null;
+
+            // Итог обязан лечь на мм-сетку. Снэп ставит грань заподлицо к соседу,
+            // а размер тут же округляется до целых мм — на соседе, который сам
+            // стоит на 0.5 мм, это оставляло дробную грань и разносило заразу
+            // дальше. Выравниваем ДО снятия afterPos, чтобы в undo-стек попало
+            // уже выровненное значение.
+            if (_target != null) MmGrid.Snap(_target);
 
             var afterDims = _target!.DimensionsMM;
             var afterPos = _target.transform.position;

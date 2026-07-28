@@ -547,7 +547,10 @@ namespace KitchenDesigner.Core.MCP
                 float delta = desired - myCoord;
                 var before = element.transform.position;
                 var after = before;
+                // gap_mm — float, да и полугабариты цели могут быть нечётными:
+                // грань выравниваемой детали ставим на целый миллиметр (MmGrid).
                 after[axis] += delta;
+                after = MmGrid.SnapPosition(element, after);
                 commands.Add(new MoveCommand(element, before, after, element.transform.rotation, element.transform.rotation));
             }
             if (errors.Count > 0)
@@ -604,7 +607,11 @@ namespace KitchenDesigner.Core.MCP
                 var el = resolved[i];
                 var before = el.transform.position;
                 var after = before;
+                // Пролёт делится нацело далеко не всегда: три детали на нечётном
+                // пролёте дают ровно 0.5 мм, семь — бесконечную дробь. Ставим
+                // грань на целый миллиметр (MmGrid).
                 after[axis] = first + spacing * i;
+                after = MmGrid.SnapPosition(el, after);
                 var rot = el.transform.rotation;
                 commands.Add(new MoveCommand(el, before, after, rot, rot));
             }
