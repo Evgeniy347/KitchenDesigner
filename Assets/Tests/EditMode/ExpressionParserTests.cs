@@ -237,6 +237,130 @@ public class ExpressionParserTests
         Assert.AreEqual(105.5f, ExpressionParser.EvaluateFloat("100+5.5"), 0.001f);
     }
 
+    // ── EvaluateInt: умножение и деление ────────────────────────
+
+    [Test]
+    public void EvaluateInt_SimpleMultiplication()
+    {
+        Assert.AreEqual(50, ExpressionParser.EvaluateInt("10*5"));
+    }
+
+    [Test]
+    public void EvaluateInt_SimpleDivision()
+    {
+        Assert.AreEqual(5, ExpressionParser.EvaluateInt("20/4"));
+    }
+
+    [Test]
+    public void EvaluateInt_MixedAllFourOperators()
+    {
+        Assert.AreEqual(18, ExpressionParser.EvaluateInt("2+3*4-2"));
+    }
+
+    [Test]
+    public void EvaluateInt_MultiplyByZero()
+    {
+        Assert.AreEqual(0, ExpressionParser.EvaluateInt("100*0"));
+    }
+
+    [Test]
+    public void EvaluateInt_DivideThenMultiply()
+    {
+        Assert.AreEqual(60, ExpressionParser.EvaluateInt("100/5*3"));
+    }
+
+    [Test]
+    public void EvaluateInt_LeadingMultiply_ReturnsNull()
+    {
+        Assert.IsNull(ExpressionParser.EvaluateInt("*100"));
+    }
+
+    [Test]
+    public void EvaluateInt_LeadingSlash_ReturnsNull()
+    {
+        Assert.IsNull(ExpressionParser.EvaluateInt("/100"));
+    }
+
+    [Test]
+    public void EvaluateInt_TrailingMultiply_ReturnsNull()
+    {
+        Assert.IsNull(ExpressionParser.EvaluateInt("100*"));
+    }
+
+    [Test]
+    public void EvaluateInt_TrailingSlash_ReturnsNull()
+    {
+        Assert.IsNull(ExpressionParser.EvaluateInt("100/"));
+    }
+
+    [Test]
+    public void EvaluateInt_DivideByZero_ReturnsZero()
+    {
+        Assert.AreEqual(0, ExpressionParser.EvaluateInt("10/0"));
+    }
+
+    [Test]
+    public void EvaluateInt_MultiplyWithSpaces()
+    {
+        Assert.AreEqual(120, ExpressionParser.EvaluateInt(" 3 * 40 "));
+    }
+
+    // ── EvaluateFloat: умножение и деление ───────────────────────
+
+    [Test]
+    public void EvaluateFloat_SimpleMultiplication()
+    {
+        Assert.AreEqual(10.0f, ExpressionParser.EvaluateFloat("2.5*4"), 0.001f);
+    }
+
+    [Test]
+    public void EvaluateFloat_SimpleDivision()
+    {
+        Assert.AreEqual(5.0f, ExpressionParser.EvaluateFloat("15.0/3"), 0.001f);
+    }
+
+    [Test]
+    public void EvaluateFloat_MixedAllFourOperators()
+    {
+        Assert.AreEqual(16.0f, ExpressionParser.EvaluateFloat("10.0/2*3+1"), 0.001f);
+    }
+
+    [Test]
+    public void EvaluateFloat_MultiplyWithSpaces()
+    {
+        Assert.AreEqual(12.0f, ExpressionParser.EvaluateFloat(" 3.0 * 4 "), 0.001f);
+    }
+
+    [Test]
+    public void EvaluateFloat_LeadingMultiply_ReturnsNull()
+    {
+        Assert.IsNull(ExpressionParser.EvaluateFloat("*5.0"));
+    }
+
+    [Test]
+    public void EvaluateFloat_LeadingSlash_ReturnsNull()
+    {
+        Assert.IsNull(ExpressionParser.EvaluateFloat("/5.0"));
+    }
+
+    [Test]
+    public void EvaluateFloat_DivideByZero_ReturnsZero()
+    {
+        Assert.AreEqual(0f, ExpressionParser.EvaluateFloat("10.0/0"), 0.001f);
+    }
+
+    [Test]
+    public void EvaluateFloat_IntDivisionTruncates()
+    {
+        Assert.AreEqual(3, ExpressionParser.EvaluateInt("7/2"));
+    }
+
+    [Test]
+    public void EvaluateFloat_FloatDivision()
+    {
+        Assert.AreEqual(3.5f, ExpressionParser.EvaluateFloat("7.0/2"), 0.001f);
+    }
+
     [Test]
     public void EvaluateFloat_DoubleDot_ReturnsNull()
     {

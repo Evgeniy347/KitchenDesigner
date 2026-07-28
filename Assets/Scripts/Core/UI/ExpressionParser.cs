@@ -3,9 +3,10 @@ using System.Collections.Generic;
 namespace KitchenDesigner.Core.UI
 {
     /// <summary>
-    /// Парсер простых арифметических выражений (+ и -) в числовых полях UI.
-    /// Поддерживает: 1234+56 → 1290, 800-100 → 700, -50+100 → 50,
-    /// 10+20-5+3 → 28. Пробелы удаляются. При ошибке возвращает null.
+    /// Парсер простых арифметических выражений (+ - * /) в числовых полях UI.
+    /// Поддерживает: 1234+56 → 1290, 800-100 → 700, 10*5 → 50, 20/4 → 5,
+    /// -50+100 → 50, 10+20-5+3 → 28. Пробелы удаляются. При ошибке возвращает null.
+    /// Деление на ноль → 0 (особый случай).
     /// </summary>
     public static class ExpressionParser
     {
@@ -25,7 +26,10 @@ namespace KitchenDesigner.Core.UI
                     var next = tokens[i + 1];
                     if (next.isOp) return null;
                     if (tok.ch == '+') result += next.value;
-                    else result -= next.value;
+                    else if (tok.ch == '-') result -= next.value;
+                    else if (tok.ch == '*') result *= next.value;
+                    else if (next.value == 0) return 0; // деление на ноль
+                    else result /= next.value;
                     i++;
                 }
                 else
@@ -52,7 +56,10 @@ namespace KitchenDesigner.Core.UI
                     var next = tokens[i + 1];
                     if (next.isOp) return null;
                     if (tok.ch == '+') result += next.value;
-                    else result -= next.value;
+                    else if (tok.ch == '-') result -= next.value;
+                    else if (tok.ch == '*') result *= next.value;
+                    else if (next.value == 0f) return 0f; // деление на ноль
+                    else result /= next.value;
                     i++;
                 }
                 else
@@ -77,7 +84,7 @@ namespace KitchenDesigner.Core.UI
             public float value;
         }
 
-        /// <summary>Разбить строку на токены: числа и операторы +,-.</summary>
+        /// <summary>Разбить строку на токены: числа и операторы +,-,*,/.</summary>
         private static List<IntToken>? Tokenize(string text)
         {
             if (string.IsNullOrEmpty(text)) return null;
@@ -109,6 +116,12 @@ namespace KitchenDesigner.Core.UI
                         tokens.Add(new IntToken { isOp = true, ch = ch });
                         i++;
                     }
+                }
+                else if (ch == '*' || ch == '/')
+                {
+                    if (tokens.Count == 0 || tokens[^1].isOp) return null;
+                    tokens.Add(new IntToken { isOp = true, ch = ch });
+                    i++;
                 }
                 else if (char.IsDigit(ch))
                 {
@@ -158,6 +171,12 @@ namespace KitchenDesigner.Core.UI
                         tokens.Add(new FloatToken { isOp = true, ch = ch });
                         i++;
                     }
+                }
+                else if (ch == '*' || ch == '/')
+                {
+                    if (tokens.Count == 0 || tokens[^1].isOp) return null;
+                    tokens.Add(new FloatToken { isOp = true, ch = ch });
+                    i++;
                 }
                 else if (char.IsDigit(ch) || ch == '.')
                 {
