@@ -163,6 +163,65 @@ public class ElementNamingTests
             "Polka_1_1 → base=Polka_1, num=1 → Polka_1_2");
     }
 
+    // ── Дубликат: материал ─────────────────────────────────────────────
+
+    private FacadeElement MakeFacade(string name)
+    {
+        var go = ElementFactory.CreateFacade(new Vector3Int(600, 400, 18), name, Vector3.zero, 2, 2, 2, 2);
+        _spawned.Add(go);
+        return go.GetComponent<FacadeElement>();
+    }
+
+    [Test]
+    public void Duplicate_Part_PreservesMaterial()
+    {
+        var src = MakePart("Shelf");
+        MaterialManager.ApplyById(src, "oak");
+        Assert.AreEqual("oak", src.MaterialId);
+
+        var dupGo = ElementFactory.Duplicate(src);
+        _spawned.Add(dupGo);
+        var dup = dupGo.GetComponent<KitchenElement>();
+
+        Assert.AreEqual("oak", dup.MaterialId,
+            "дубликат детали должен сохранять материал оригинала");
+    }
+
+    [Test]
+    public void Duplicate_FacadeElement_PreservesMaterial()
+    {
+        var src = MakeFacade("Front");
+        MaterialManager.ApplyById(src, "oak");
+        Assert.AreEqual("oak", src.MaterialId);
+
+        var dupGo = ElementFactory.Duplicate(src);
+        _spawned.Add(dupGo);
+        var dup = dupGo.GetComponent<KitchenElement>();
+
+        Assert.AreEqual("oak", dup.MaterialId,
+            "дубликат фасада должен сохранять материал оригинала");
+    }
+
+    [Test]
+    public void Duplicate_FacadeElement_PreservesGaps()
+    {
+        var src = MakeFacade("Front");
+        // CreateFacade defaults are 2,2,2,2 — change to something non‑default.
+        src.GapLeft = 3;
+        src.GapRight = 4;
+        src.GapTop = 5;
+        src.GapBottom = 6;
+
+        var dupGo = ElementFactory.Duplicate(src);
+        _spawned.Add(dupGo);
+        var dup = dupGo.GetComponent<FacadeElement>();
+
+        Assert.AreEqual(3, dup.GapLeft);
+        Assert.AreEqual(4, dup.GapRight);
+        Assert.AreEqual(5, dup.GapTop);
+        Assert.AreEqual(6, dup.GapBottom);
+    }
+
     // ── Загрузка проекта ────────────────────────────────────────────────
 
     private static ProjectData ProjectOf(params ElementData[] items)

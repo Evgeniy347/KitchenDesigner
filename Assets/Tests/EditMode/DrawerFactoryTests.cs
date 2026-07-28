@@ -164,6 +164,29 @@ public class DrawerFactoryTests
     }
 
     [Test]
+    public void Duplicate_Drawer_PreservesMaterial()
+    {
+        // CreateDrawer ставит материал по цвету; если пользователь
+        // переопределил материал — дубликат должен его сохранить.
+        var go = ElementFactory.CreateDrawer(DrawerType.C, 450, DrawerColor.Black, 550, "MaterialDrawer", Vector3.zero);
+        _spawned.Add(go);
+
+        var src = go.GetComponent<DrawerElement>();
+        Assert.AreEqual(DrawerConstants.GetColorMaterialId(DrawerColor.Black), src.MaterialId);
+
+        // Переопределяем на не-цветовой декор.
+        MaterialManager.ApplyById(src, "oak");
+        Assert.AreEqual("oak", src.MaterialId);
+
+        var dupGo = ElementFactory.Duplicate(src);
+        _spawned.Add(dupGo);
+        var dup = dupGo.GetComponent<DrawerElement>();
+
+        Assert.AreEqual("oak", dup.MaterialId,
+            "дубликат ящика должен сохранять материал, даже если он не цветовой");
+    }
+
+    [Test]
     public void DestroyElement_NonDrawerStillWorks()
     {
         var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "PlainBoard", Vector3.zero);

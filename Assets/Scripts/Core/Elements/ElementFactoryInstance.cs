@@ -205,6 +205,7 @@ namespace KitchenDesigner.Core
                     // Связи по именам НЕ копируем: копия «украла» бы пару/фасад
                     // оригинала (цикл копии двигал бы чужой парный ящик).
                 }
+                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
                 return go;
             }
 
@@ -320,6 +321,7 @@ namespace KitchenDesigner.Core
                 var copyFacade = go.GetComponent<FacadeElement>();
                 if (copyFacade != null)
                     copyFacade.Mode = facade.Mode;
+                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
                 return go;
             }
 
@@ -335,13 +337,17 @@ namespace KitchenDesigner.Core
             }
 
             var copyPart = go2.GetComponent<KitchenElement>();
-            if (copyPart != null && copyPart.SupportsGrooves)
+            if (copyPart != null)
             {
-                copyPart.SetGrooves(source.Grooves);
-                var edges = EdgeBandingState.Of(source);
-                copyPart.EdgeBandingEnabled = edges.enabled;
-                copyPart.EdgeThicknessMM = edges.thicknessMM;
-                copyPart.EdgeManualMask = edges.manualMask;
+                MaterialManager.ApplyById(copyPart, source.MaterialId);
+                if (copyPart.SupportsGrooves)
+                {
+                    copyPart.SetGrooves(source.Grooves);
+                    var edges = EdgeBandingState.Of(source);
+                    copyPart.EdgeBandingEnabled = edges.enabled;
+                    copyPart.EdgeThicknessMM = edges.thicknessMM;
+                    copyPart.EdgeManualMask = edges.manualMask;
+                }
             }
 
             return go2;
