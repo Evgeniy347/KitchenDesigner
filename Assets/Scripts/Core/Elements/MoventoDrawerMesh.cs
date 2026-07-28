@@ -14,7 +14,11 @@ namespace KitchenDesigner.Core
     ///   • наружная ширина короба SKW = LW − 42 (зазор направляющих 21 мм на сторону);
     ///   • длина боковины = NL − 10;
     ///   • перед и задник встают МЕЖДУ боковин: ширина = SKW − 2·16 = LW − 74;
-    ///   • дно лежит заподлицо с низом боковин (требование скрытой направляющей).
+    ///   • дно приподнято над низом боковин на глубину ниши (14 мм) — этот просвет
+    ///     занимает скрытая направляющая. Дно идёт на всю длину боковины, а перед
+    ///     и задник стоят НА нём: их высота = H − ниша − толщина дна.
+    ///
+    /// Соединения встык (под конфирмат) — ни паза, ни четверти под дно нет.
     ///
     /// Панели задаются в мм от левого-нижнего-ЗАДНЕГО угла контурного бокса
     /// LW × минПроём × NL (тот же контур, что у GTV, — снэп/коллайдер общие).</summary>
@@ -35,11 +39,14 @@ namespace KitchenDesigner.Core
             float lift = DrawerConstants.GetBottomLift(type);
             float h = DrawerConstants.GetTypeHeight(type);
 
+            float niche = DrawerConstants.MOVENTO_BOTTOM_NICHE;
             float sideLen = d - DrawerConstants.MOVENTO_SIDE_LENGTH_INSET; // NL − 10
             float fbW = w - DrawerConstants.MOVENTO_FRONT_BACK_INSET;      // LW − 74
-            float bottomD = sideLen - 2f * t;                             // между передом и задником
             float backZ = d - sideLen;                                    // задняя грань короба
             float innerX = clr + t;                                       // внутренняя грань левой боковины
+            float bottomY = lift + niche;                                 // низ дна: над нишей
+            float panelY = bottomY + t;                                   // низ переда/задника: на дне
+            float panelH = Mathf.Max(1f, h - niche - t);                  // высота переда/задника
 
             return new List<DrawerMesh.Box>
             {
@@ -56,26 +63,26 @@ namespace KitchenDesigner.Core
                     minMM = new Vector3(w - clr - t, lift, backZ),
                     sizeMM = new Vector3(t, h, sideLen),
                 },
-                // Перед: между боковин, у переднего торца (ящик выезжает в +Z).
+                // Перед: между боковин, у переднего торца (ящик выезжает в +Z), стоит на дне.
                 new DrawerMesh.Box
                 {
                     name = SUFFIX_FRONT,
-                    minMM = new Vector3(innerX, lift, d - t),
-                    sizeMM = new Vector3(fbW, h, t),
+                    minMM = new Vector3(innerX, panelY, d - t),
+                    sizeMM = new Vector3(fbW, panelH, t),
                 },
-                // Задник: между боковин, у заднего торца короба.
+                // Задник: между боковин, у заднего торца короба, стоит на дне.
                 new DrawerMesh.Box
                 {
                     name = SUFFIX_BACK,
-                    minMM = new Vector3(innerX, lift, backZ),
-                    sizeMM = new Vector3(fbW, h, t),
+                    minMM = new Vector3(innerX, panelY, backZ),
+                    sizeMM = new Vector3(fbW, panelH, t),
                 },
-                // Дно: между боковин и между передом/задником, заподлицо с низом.
+                // Дно: между боковин, на всю длину боковины, приподнято на нишу.
                 new DrawerMesh.Box
                 {
                     name = SUFFIX_BOTTOM,
-                    minMM = new Vector3(innerX, lift, backZ + t),
-                    sizeMM = new Vector3(fbW, t, bottomD),
+                    minMM = new Vector3(innerX, bottomY, backZ),
+                    sizeMM = new Vector3(fbW, t, sideLen),
                 },
             };
         }
@@ -100,15 +107,15 @@ namespace KitchenDesigner.Core
             int h = DrawerConstants.GetTypeHeight(type);
             int sideLen = Mathf.Max(1, nlMM - DrawerConstants.MOVENTO_SIDE_LENGTH_INSET);
             int fbW = Mathf.Max(1, lwMM - DrawerConstants.MOVENTO_FRONT_BACK_INSET);
-            int bottomD = Mathf.Max(1, sideLen - 2 * t);
+            int panelH = Mathf.Max(1, h - DrawerConstants.MOVENTO_BOTTOM_NICHE - t);
 
             return new List<AssembledFacadeMesh.Part>
             {
                 new AssembledFacadeMesh.Part { suffix = SUFFIX_SIDE, dimsMM = new Vector3Int(sideLen, h, t) },
                 new AssembledFacadeMesh.Part { suffix = SUFFIX_SIDE, dimsMM = new Vector3Int(sideLen, h, t) },
-                new AssembledFacadeMesh.Part { suffix = SUFFIX_FRONT, dimsMM = new Vector3Int(fbW, h, t) },
-                new AssembledFacadeMesh.Part { suffix = SUFFIX_BACK, dimsMM = new Vector3Int(fbW, h, t) },
-                new AssembledFacadeMesh.Part { suffix = SUFFIX_BOTTOM, dimsMM = new Vector3Int(fbW, bottomD, t) },
+                new AssembledFacadeMesh.Part { suffix = SUFFIX_FRONT, dimsMM = new Vector3Int(fbW, panelH, t) },
+                new AssembledFacadeMesh.Part { suffix = SUFFIX_BACK, dimsMM = new Vector3Int(fbW, panelH, t) },
+                new AssembledFacadeMesh.Part { suffix = SUFFIX_BOTTOM, dimsMM = new Vector3Int(fbW, sideLen, t) },
             };
         }
     }

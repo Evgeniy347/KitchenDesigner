@@ -62,11 +62,14 @@ namespace KitchenDesigner.Core
         // «Building a MOVENTO drawer»: наружная ширина короба SKW = LW − 42
         // (зазор направляющих 21 мм на сторону), длина боковины = NL − 10,
         // перед и задник встают между боковин: ширина = SKW − 2·16 = LW − 74.
+        // Дно приподнято над низом боковин на глубину ниши — в этот просвет уходит
+        // скрытая направляющая; перед и задник стоят на дне, их высота = H − 14 − 16.
         public const int MOVENTO_BOARD_THICKNESS = 16;              // ДСП/МДФ боковин, переда, задника, дна
         public const int MOVENTO_SLIDE_CLEARANCE_PER_SIDE = 21;     // зазор направляющих на сторону
         public const int MOVENTO_WIDTH_INSET = 42;                  // короб: наружная ширина = LW − 42
         public const int MOVENTO_FRONT_BACK_INSET = 74;             // перед/задник: ширина = LW − 74
         public const int MOVENTO_SIDE_LENGTH_INSET = 10;            // боковина/дно: длина = NL − 10
+        public const int MOVENTO_BOTTOM_NICHE = 14;                 // просвет под дном для скрытой направляющей
 
         public const float DRAWER_SLIDE_METERS = 0.4f;
         public const float DRAWER_ANIM_DURATION = 0.4f;

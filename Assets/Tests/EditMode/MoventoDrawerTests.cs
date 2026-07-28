@@ -56,13 +56,13 @@ public class MoventoDrawerTests
 
         var front = parts.First(p => p.suffix == MoventoDrawerMesh.SUFFIX_FRONT);
         var back = parts.First(p => p.suffix == MoventoDrawerMesh.SUFFIX_BACK);
-        // Перед/задник: ширина LW−74 = 494, высота 86, толщина 16.
-        Assert.AreEqual(new Vector3Int(494, 86, 16), front.dimsMM, "перед = (LW−74)×H×16");
-        Assert.AreEqual(new Vector3Int(494, 86, 16), back.dimsMM, "задник = (LW−74)×H×16");
+        // Перед/задник: ширина LW−74 = 494, высота 86−14−16 = 56 (стоят на дне), толщина 16.
+        Assert.AreEqual(new Vector3Int(494, 56, 16), front.dimsMM, "перед = (LW−74)×(H−30)×16");
+        Assert.AreEqual(new Vector3Int(494, 56, 16), back.dimsMM, "задник = (LW−74)×(H−30)×16");
 
         var bottom = parts.First(p => p.suffix == MoventoDrawerMesh.SUFFIX_BOTTOM);
-        // Дно: ширина LW−74 = 494, глубина (NL−10)−2·16 = 458, толщина 16.
-        Assert.AreEqual(new Vector3Int(494, 458, 16), bottom.dimsMM, "дно = (LW−74)×(NL−42)×16");
+        // Дно: ширина LW−74 = 494, глубина на всю боковину NL−10 = 490, толщина 16.
+        Assert.AreEqual(new Vector3Int(494, 490, 16), bottom.dimsMM, "дно = (LW−74)×(NL−10)×16");
     }
 
     [Test]
@@ -79,6 +79,52 @@ public class MoventoDrawerTests
     {
         var boxes = MoventoDrawerMesh.ComputeBoxes(568, DrawerType.A, 500);
         Assert.AreEqual(5, boxes.Count, "меш короба Movento — 5 панелей");
+    }
+
+    [Test]
+    public void ComputeParts_600x500_TypeD_MatchesReferenceCutList()
+    {
+        // Эталон конструктора Blum: проём LW = 600 «в свету», NL = 500,
+        // тип D (200), ниша под скрытой направляющей 14 мм.
+        var parts = MoventoDrawerMesh.ComputeParts(600, DrawerType.D, 500).ToList();
+
+        var side = parts.First(p => p.suffix == MoventoDrawerMesh.SUFFIX_SIDE);
+        Assert.AreEqual(new Vector3Int(490, 200, 16), side.dimsMM, "боковина = (NL−10)×H×16");
+
+        // Перед и задник стоят НА дне: высота = H − ниша − толщина дна = 200−14−16.
+        var front = parts.First(p => p.suffix == MoventoDrawerMesh.SUFFIX_FRONT);
+        var back = parts.First(p => p.suffix == MoventoDrawerMesh.SUFFIX_BACK);
+        Assert.AreEqual(new Vector3Int(526, 170, 16), front.dimsMM, "перед = (LW−74)×(H−30)×16");
+        Assert.AreEqual(new Vector3Int(526, 170, 16), back.dimsMM, "задник = (LW−74)×(H−30)×16");
+
+        // Дно идёт на всю длину боковины — перед и задник лежат на нём.
+        var bottom = parts.First(p => p.suffix == MoventoDrawerMesh.SUFFIX_BOTTOM);
+        Assert.AreEqual(new Vector3Int(526, 490, 16), bottom.dimsMM, "дно = (LW−74)×(NL−10)×16");
+    }
+
+    [Test]
+    public void ComputeBoxes_BottomLiftedByNiche_PanelsStandOnBottom()
+    {
+        int lift = DrawerConstants.GetBottomLift(DrawerType.D);
+        int niche = DrawerConstants.MOVENTO_BOTTOM_NICHE;
+        int t = DrawerConstants.MOVENTO_BOARD_THICKNESS;
+        var boxes = MoventoDrawerMesh.ComputeBoxes(600, DrawerType.D, 500);
+
+        var side = boxes.First(b => b.name.StartsWith(MoventoDrawerMesh.SUFFIX_SIDE));
+        var bottom = boxes.First(b => b.name == MoventoDrawerMesh.SUFFIX_BOTTOM);
+        var front = boxes.First(b => b.name == MoventoDrawerMesh.SUFFIX_FRONT);
+        var back = boxes.First(b => b.name == MoventoDrawerMesh.SUFFIX_BACK);
+
+        // Боковина уходит до самого низа короба, дно приподнято над ней —
+        // просвет между ними и есть ниша, туда встаёт скрытая направляющая.
+        Assert.AreEqual(lift, side.minMM.y, 0.01f, "боковина — до низа короба");
+        Assert.AreEqual(lift + niche, bottom.minMM.y, 0.01f, "дно приподнято на глубину ниши");
+        Assert.AreEqual(lift + niche + t, front.minMM.y, 0.01f, "перед стоит на дне");
+        Assert.AreEqual(lift + niche + t, back.minMM.y, 0.01f, "задник стоит на дне");
+
+        // Верх у всех четырёх панелей общий — короб ровный сверху.
+        Assert.AreEqual(side.minMM.y + side.sizeMM.y, front.minMM.y + front.sizeMM.y, 0.01f,
+            "перед и боковина заканчиваются на одной высоте");
     }
 
     // ── 2. Спецификация: Movento раскладывается, GTV — нет ───────────────
@@ -98,7 +144,7 @@ public class MoventoDrawerTests
             Assert.IsTrue(line.name.Contains("·"), $"деталь должна иметь суффикс: {line.name}");
 
         var bottom = result.lines.First(l => l.name.EndsWith("·" + MoventoDrawerMesh.SUFFIX_BOTTOM));
-        Assert.AreEqual(new Vector3Int(494, 458, 16), bottom.dimensionsMM, "размер дна в спецификации");
+        Assert.AreEqual(new Vector3Int(494, 490, 16), bottom.dimensionsMM, "размер дна в спецификации");
         Assert.AreEqual(1, bottom.count);
 
         var side = result.lines.First(l => l.name.EndsWith("·" + MoventoDrawerMesh.SUFFIX_SIDE));
