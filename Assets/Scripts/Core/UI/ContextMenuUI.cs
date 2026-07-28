@@ -34,6 +34,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_InputField? _drawerWidth;
         private TMP_Text? _drawerAnimLabel;
         private TMP_Dropdown? _drawerFacadeDropdown;
+        private Color _drawerFacadeNormalColor;
         private TMP_Dropdown? _tintDropdown;
         private TMP_Dropdown? _sashTypeDropdown;
         private TMP_InputField? _sillProtrusion;
@@ -339,12 +340,23 @@ namespace KitchenDesigner.Core.UI
             // Фасад ящика: выбор из существующих (создание/настройка — через сам фасад).
             _drawerFacadeDropdown = LabeledDropdownRow(panel.transform, "Фасад ящика",
                 new List<string> { "(нет фасада)" }, OnDrawerFacadeSelected, AddDrawerRow, "CtxDrawerFacade");
+            _drawerFacadeNormalColor = _drawerFacadeDropdown.captionText.color;
             // Хук: при раскрытии дропдауна обновляем список фасадов.
             var drawerFacadeHook = _drawerFacadeDropdown.template.gameObject.AddComponent<DropdownOpenHook>();
             drawerFacadeHook.OnOpen = () =>
             {
                 RebuildDrawerFacadeOptions();
                 SetDrawerFacadeValue(((_target as DrawerElement)?.AttachedFacadeName) ?? "");
+            };
+            drawerFacadeHook.OnAfterShow = () =>
+            {
+                var dd = _drawerFacadeDropdown;
+                var drawer = _target as DrawerElement;
+                if (dd == null || drawer == null) return;
+                var attachedName = drawer.AttachedFacadeName;
+                if (string.IsNullOrEmpty(attachedName)) return;
+                if (!IsDrawerFacadeOrphaned(attachedName, drawer)) return;
+                ColorOrphanedDrawerFacadeItem(dd, attachedName, Color.red);
             };
 
             // Окно: тонировка стекла и выступ подоконника.
@@ -2494,20 +2506,33 @@ namespace KitchenDesigner.Core.UI
             var attachedName = drawer?.AttachedFacadeName ?? "";
             if (string.IsNullOrEmpty(attachedName))
             {
-                _drawerFacadeDropdown.captionText.color = Color.black;
+                _drawerFacadeDropdown.captionText.color = _drawerFacadeNormalColor;
                 return;
             }
-            // Фасад «осиротел», если его нет в реестре.
-            bool orphaned = true;
+            bool orphaned = IsDrawerFacadeOrphaned(attachedName, drawer!);
+            _drawerFacadeDropdown.captionText.color = orphaned ? Color.red : _drawerFacadeNormalColor;
+        }
+
+        private static bool IsDrawerFacadeOrphaned(string facadeName, DrawerElement drawer)
+        {
             foreach (var el in PartRegistry.GetAll())
             {
-                if (el is FacadeElement fe && fe.PartName == attachedName)
-                {
-                    orphaned = false;
-                    break;
-                }
+                if (el is FacadeElement fe && fe.PartName == facadeName)
+                    return !DrawerLinks.IsFacadeInContact(drawer, fe);
             }
-            _drawerFacadeDropdown.captionText.color = orphaned ? Color.red : Color.black;
+            return true; // фасад не найден в реестре
+        }
+
+        private static void ColorOrphanedDrawerFacadeItem(TMP_Dropdown dd, string name, Color color)
+        {
+            var content = dd.template.Find("Viewport/Content");
+            if (content == null) return;
+            foreach (Transform child in content)
+            {
+                var label = child.GetComponentInChildren<TMP_Text>();
+                if (label != null && label.text == name)
+                    label.color = color;
+            }
         }
 
         private void OnDrawerFacadeSelected(int index)
@@ -2759,7 +2784,17 @@ namespace KitchenDesigner.Core.UI
         private class DropdownOpenHook : MonoBehaviour
         {
             public System.Action? OnOpen;
-            private void OnEnable() { OnOpen?.Invoke(); }
+            public System.Action? OnAfterShow;
+            private void OnEnable()
+            {
+                OnOpen?.Invoke();
+                StartCoroutine(DelayedAfterShow());
+            }
+            private System.Collections.IEnumerator DelayedAfterShow()
+            {
+                yield return null;
+                OnAfterShow?.Invoke();
+            }
         }
     }
 }

@@ -245,7 +245,7 @@ public class ContextMenuRefreshBugTests
     }
 
     [Test]
-    public void OrphanedFacade_CaptionRestoresToBlack_WhenValidFacadeSelected()
+    public void ValidFacadeInContact_CaptionUsesNormalColor()
     {
         _ctx!.Close();
         DestroyAllElements();
@@ -262,8 +262,8 @@ public class ContextMenuRefreshBugTests
         CallRebuildDrawerFacadeOptions();
         CallSetDrawerFacadeValue("F1");
 
-        Assert.AreEqual(Color.black, dd.captionText.color,
-            "BUG: caption валидного фасада красный, должен быть чёрным");
+        Assert.AreEqual(UIStyle.Text, dd.captionText.color,
+            "BUG: caption валидного фасада не использует нормальный цвет UIStyle.Text");
     }
 
     [Test]
@@ -293,8 +293,34 @@ public class ContextMenuRefreshBugTests
         // Сбрасываем выбор на «(нет фасада)».
         CallOnDrawerFacadeSelected(0);
 
-        Assert.AreEqual(Color.black, dd.captionText.color,
-            "BUG: после сброса на '(нет фасада)' caption остался красным");
+        Assert.AreEqual(UIStyle.Text, dd.captionText.color,
+            "BUG: после сброса на '(нет фасада)' caption не вернулся к нормальному цвету");
+    }
+
+    [Test]
+    public void FacadeMovedAway_CaptionTurnsRed()
+    {
+        _ctx!.Close();
+        DestroyAllElements();
+
+        var drawer = CreateDrawer("Yashik", new Vector3(0f, 0.043f, 0f));
+        var facadeGo = ElementFactory.CreateFacade(
+            new Vector3Int(400, 86, 18), "F1", new Vector3(0f, 0.043f, 0.184f));
+        facadeGo.transform.SetParent(_canvasGo!.transform);
+
+        drawer.AttachedFacadeName = "F1";
+        _ctx!.Open(drawer);
+
+        // Отодвигаем фасад далеко — он больше не в контакте, но в реестре есть.
+        var facade = facadeGo.GetComponent<FacadeElement>();
+        facade.transform.position = new Vector3(10f, 0.043f, 0.184f);
+
+        CallRebuildDrawerFacadeOptions();
+        CallSetDrawerFacadeValue("F1");
+
+        var dd = GetDrawerFacadeDropdown();
+        Assert.AreEqual(Color.red, dd.captionText.color,
+            "BUG: фасад отодвинут (не в контакте), но caption не красный");
     }
 
     // ── helpers (existing) ──────────────────────────────────────────────
