@@ -23,6 +23,35 @@ namespace KitchenDesigner.Core
         public GrooveSpec ToSpec() => new GrooveSpec((GrooveKind)kind, (GrooveSide)side);
     }
 
+    /// <summary>Накладка текстуры в файле проекта. Как и GrooveEntry — отдельный
+    /// класс, чтобы формат файла не зависел от внутреннего представления.
+    /// Нулевые width/height означают «во всю грань» (см. TextureOverlaySpec).</summary>
+    [System.Serializable]
+    public class TextureOverlayEntry
+    {
+        public int side;
+        public string materialId = MaterialCatalog.DefaultId;
+        public int u0MM;
+        public int v0MM;
+        public int widthMM;
+        public int heightMM;
+
+        public TextureOverlayEntry() { }
+
+        public TextureOverlayEntry(TextureOverlaySpec spec)
+        {
+            side = (int)spec.side;
+            materialId = spec.MaterialId;
+            u0MM = spec.u0MM;
+            v0MM = spec.v0MM;
+            widthMM = spec.widthMM;
+            heightMM = spec.heightMM;
+        }
+
+        public TextureOverlaySpec ToSpec() =>
+            new TextureOverlaySpec((OverlaySide)side, materialId, u0MM, v0MM, widthMM, heightMM);
+    }
+
     [System.Serializable]
     public class ElementData
     {
@@ -98,6 +127,8 @@ namespace KitchenDesigner.Core
 		public int sinkOffsetYMM = 0;
 		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
+		// Накладки текстур (стена, пол); в старых файлах поля нет — пустой массив.
+		public TextureOverlayEntry[] textureOverlays = System.Array.Empty<TextureOverlayEntry>();
 		// Кромкование. Инициализаторы = дефолты для старых сейвов: кромка
 		// включена, толщина ленты стандартная.
 		public bool edgeBanding = true;
@@ -119,6 +150,16 @@ namespace KitchenDesigner.Core
             if (grooves == null) return result;
             foreach (var g in grooves)
                 if (g != null) result.Add(g.ToSpec());
+            return result;
+        }
+
+        /// <summary>Накладки текстур из файла (устойчиво к null/мусору).</summary>
+        public List<TextureOverlaySpec> TextureOverlaySpecs()
+        {
+            var result = new List<TextureOverlaySpec>();
+            if (textureOverlays == null) return result;
+            foreach (var t in textureOverlays)
+                if (t != null) result.Add(t.ToSpec());
             return result;
         }
 
@@ -298,6 +339,12 @@ namespace KitchenDesigner.Core
 			d.grooves = new GrooveEntry[grooveSpecs.Count];
 			for (int i = 0; i < grooveSpecs.Count; i++)
 				d.grooves[i] = new GrooveEntry(grooveSpecs[i]);
+
+			// Накладки текстур есть только у стены и пола — у прочих список пуст.
+			var overlaySpecs = element.TextureOverlays;
+			d.textureOverlays = new TextureOverlayEntry[overlaySpecs.Count];
+			for (int i = 0; i < overlaySpecs.Count; i++)
+				d.textureOverlays[i] = new TextureOverlayEntry(overlaySpecs[i]);
 
 			// Кромкование, как и пазы, живёт только у базовой «Детали»; у прочих
 			// типов пишутся дефолты и при загрузке отбрасываются.

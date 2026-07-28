@@ -200,6 +200,13 @@ public class ElementPropertyDiagramTests
         return go.GetComponent<KitchenElement>();
     }
 
+    private static KitchenElement SpawnWall(string name)
+    {
+        var go = ElementFactory.CreateWall(new Vector3Int(3000, 2500, 100), name,
+            new Vector3(7f, 1.25f, 0f));
+        return go.GetComponent<KitchenElement>();
+    }
+
     // ── Tests ─────────────────────────────────────────────────
 
     [UnityTest]
@@ -249,6 +256,30 @@ public class ElementPropertyDiagramTests
         Assert.IsNotNull(el);
         yield return CapturePanel("ContextMenu", "contextmenu_drawer.png",
             () => { ContextMenuUI.Instance!.Open(el); },
+            () => { ContextMenuUI.Instance?.Close(); });
+    }
+
+    /// <summary>Меню стены с раскрытым списком накладок: секция «Текстуры» есть
+    /// только у стены и пола, и в свёрнутом виде на снимке видна одной строкой —
+    /// раскрываем её, чтобы на картинке были и строки накладок, и строка
+    /// добавления.</summary>
+    [UnityTest]
+    public IEnumerator ContextMenu_Wall_Textures_SavesPng()
+    {
+        var el = SpawnWall("Стена_3000x2500");
+        Assert.IsNotNull(el);
+        el.SetTextureOverlays(new[]
+        {
+            TextureOverlaySpec.FullFace(OverlaySide.A, "oak"),
+            new TextureOverlaySpec(OverlaySide.B, "white", 100, 200, 1200, 900),
+        });
+
+        yield return CapturePanel("ContextMenu", "contextmenu_wall_textures.png",
+            () =>
+            {
+                ContextMenuUI.Instance!.Open(el);
+                ContextMenuUI.Instance!.ToggleTextures();
+            },
             () => { ContextMenuUI.Instance?.Close(); });
     }
 

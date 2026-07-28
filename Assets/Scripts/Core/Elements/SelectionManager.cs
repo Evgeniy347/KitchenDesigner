@@ -57,8 +57,10 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            // Клик по ручке ресайза не должен менять/снимать выделение.
-            if (ResizeHandleManager.IsResizing || ResizeHandleManager.PointerOverHandle())
+            // Клик по ручке ресайза не должен менять/снимать выделение. Ручки
+            // области накладки живут отдельной системой, но правило то же.
+            if (ResizeHandleManager.IsResizing || ResizeHandleManager.PointerOverHandle()
+                || TextureOverlayHandles.PointerOverHandle())
                 return;
 
             if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))

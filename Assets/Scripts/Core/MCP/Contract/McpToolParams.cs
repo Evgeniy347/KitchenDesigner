@@ -161,6 +161,18 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "Duplicates of the same kind+side are rejected. Omit to keep.")]
         public string? grooves;
 
+        // Texture overlays (walls and floors only).
+        [McpParam("Wall/floor only: REPLACES the whole set of texture overlays — local decors on a patch of " +
+                  "one face. Semicolon-separated \"side:materialId\" items (semicolon, not comma: the area " +
+                  "below already uses commas). side = a|b|c|d|e|f|all, where a..f are faces 0..5 of the box " +
+                  "(index/2 = axis X|Y|Z, even = positive direction) and all means every face. " +
+                  "Optional area \"@u,v+WxH\" in MM from the face's lower-left corner (axes: u along the face's " +
+                  "right axis, v along its up axis); without it the overlay covers the whole face and keeps " +
+                  "covering it after a resize. The picture is NOT scaled to the area — it keeps its physical " +
+                  "tile size and repeats/crops, so the area is a window onto it. " +
+                  "Example: \"a:oak; b:white@100,200+800x600\". Empty string removes all overlays. Omit to keep.")]
+        public string? texture_overlays;
+
         // Edge banding (plain board that is a sheet: exactly one side < 50 mm).
         [McpParam("Sheet board only: glue edge banding on the OPEN ends of the part. Which ends are open is " +
                   "computed from the scene (an end touching another part, a wall or the floor gets no banding) " +

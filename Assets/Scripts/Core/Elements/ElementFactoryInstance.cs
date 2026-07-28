@@ -348,6 +348,10 @@ namespace KitchenDesigner.Core
                     copyPart.EdgeThicknessMM = edges.thicknessMM;
                     copyPart.EdgeManualMask = edges.manualMask;
                 }
+                // Накладки текстур принадлежат стене/полу, а не детали — свой
+                // флаг поддержки и своя ветка.
+                if (copyPart.SupportsTextureOverlays)
+                    copyPart.SetTextureOverlays(source.TextureOverlays);
             }
 
             return go2;

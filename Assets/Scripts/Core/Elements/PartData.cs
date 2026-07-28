@@ -7,6 +7,7 @@ namespace KitchenDesigner.Core
     public class PartData
     {
         [SerializeField] private List<GrooveSpec> _grooves = new List<GrooveSpec>();
+        [SerializeField] private List<TextureOverlaySpec> _textureOverlays = new List<TextureOverlaySpec>();
         [SerializeField] private string _partName = "Board";
         [SerializeField] private Vector3Int _dimensionsMM = new Vector3Int(800, 400, 18);
         [SerializeField] private bool _movable = true;
@@ -118,6 +119,11 @@ namespace KitchenDesigner.Core
         /// <summary>Пазы детали. Список живой — правится через KitchenElement,
         /// который пересобирает меш.</summary>
         public List<GrooveSpec> Grooves => _grooves ??= new List<GrooveSpec>();
+
+        /// <summary>Накладки текстур (стена, пол). Список живой — правится через
+        /// KitchenElement, который дёргает пересборку накладок в сцене.</summary>
+        public List<TextureOverlaySpec> TextureOverlays =>
+            _textureOverlays ??= new List<TextureOverlaySpec>();
 
         public int GapMM => _gapLeft + _gapRight + _gapTop + _gapBottom;
 

@@ -539,6 +539,10 @@ public class ElementConverterTests
         "PartName", "DimensionsMM", "Movable", "GroupId", "MaterialId", "Transparent", "Data",
         "SupportsGrooves", "Grooves", "AttachedSinks", "SinkHoleAxis",
         "SupportsEdges", "EdgeBandingEnabled", "EdgeThicknessMM", "EdgeManualMask",
+        // Накладки текстур принадлежат стене и полу, а конвертация ходит только
+        // между структурными типами (деталь ↔ фасад ↔ полка) — переносить их
+        // некуда и не из чего, см. TextureOverlayTests.
+        "SupportsTextureOverlays", "TextureOverlays",
         // Производные от состояния, а не хранимые: конвертация их не переносит —
         // после смены типа они пересчитаются сами.
         "PoseFollowsTransform", "Transformable",

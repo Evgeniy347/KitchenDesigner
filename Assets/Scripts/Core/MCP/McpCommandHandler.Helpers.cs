@@ -258,6 +258,7 @@ namespace KitchenDesigner.Core.MCP
                 faceGaps = gaps,
                 cornerRadius = radial != null ? radial.CornerRadius : 0,
                 grooves = el.Grooves.Count > 0 ? FormatGrooves(el) : null,
+                textureOverlays = el.TextureOverlays.Count > 0 ? FormatTextureOverlays(el) : null,
                 edgeBanding = el.SupportsEdges ? el.EdgeBandingEnabled : (bool?)null,
                 edgeThicknessMM = el.SupportsEdges ? el.EdgeThicknessMM : (float?)null,
                 // Поле контракта — на всю деталь: true, когда ручными помечены

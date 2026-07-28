@@ -134,8 +134,8 @@ namespace KitchenDesigner.Core
             // ячеек. Без этого пара окон «на одной высоте» (Y отличается на
             // доли мм) даёт ячейку тоньше порога, которую отбрасывали вместе
             // с откосом — сквозная полоса света у верха и низа проёма.
-            CollapseNearDuplicates(xSplits);
-            CollapseNearDuplicates(ySplits);
+            CollapseNearDuplicates(xSplits, MinCellNorm);
+            CollapseNearDuplicates(ySplits, MinCellNorm);
 
             for (int i = 0; i < xSplits.Count - 1; i++)
             {
@@ -185,17 +185,21 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Схлопывает отсортированные разделители, отстоящие менее чем
-        /// на MinCellNorm, в одну границу. Крайние значения (границы самой грани)
+        /// на minGap, в одну границу. Крайние значения (границы самой грани)
         /// сохраняются всегда, поэтому на выходе не меньше двух точек и ни один
-        /// промежуток не тоньше порога — ячеек-волосков не возникает.</summary>
-        private static void CollapseNearDuplicates(List<float> splits)
+        /// промежуток не тоньше порога — ячеек-волосков не возникает.
+        ///
+        /// internal и с порогом-параметром, потому что тем же приёмом режет свою
+        /// плоскость <see cref="PlaneWithHolesMesh"/> — только там координаты в
+        /// миллиметрах, а не нормализованные.</summary>
+        internal static void CollapseNearDuplicates(List<float> splits, float minGap)
         {
             float hi = splits[splits.Count - 1];
             int w = 1; // splits[0] (ближний край грани) всегда остаётся
             for (int r = 1; r < splits.Count; r++)
             {
                 // Не поглощаем дальний край и не оставляем промежуток тоньше порога.
-                if (splits[r] - splits[w - 1] >= MinCellNorm && hi - splits[r] >= MinCellNorm)
+                if (splits[r] - splits[w - 1] >= minGap && hi - splits[r] >= minGap)
                     splits[w++] = splits[r];
             }
             splits[w++] = hi; // дальний край грани обязан уцелеть

@@ -78,6 +78,33 @@ namespace KitchenDesigner.Core
 
         public IReadOnlyList<GrooveSpec> Grooves => _data.Grooves;
 
+        // ── Накладки текстур ───────────────────────────────────────────
+        // Локальный декор на куске грани: плитка на фартуке, обои на одной
+        // стороне стены, ламинат на полу. Поддерживают стена и пол — только у
+        // них есть большие плоскости, которые оформляют участками. У детали для
+        // этого уже есть свой декор на весь щит (MaterialId).
+        public bool SupportsTextureOverlays =>
+            GetComponent<Wall>() != null || this is FloorElement;
+
+        public IReadOnlyList<TextureOverlaySpec> TextureOverlays => _data.TextureOverlays;
+
+        /// <summary>Заменить весь набор накладок (правки из UI, undo, загрузка,
+        /// дублирование). Единственная точка мутации: ей же принадлежит
+        /// уведомление рендера, поэтому накладки в сцене не могут разъехаться
+        /// со списком.</summary>
+        public void SetTextureOverlays(IEnumerable<TextureOverlaySpec>? overlays)
+        {
+            if (!SupportsTextureOverlays) return;
+            _data.TextureOverlays.Clear();
+            if (overlays != null)
+                foreach (var o in overlays)
+                {
+                    if (_data.TextureOverlays.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT) break;
+                    _data.TextureOverlays.Add(o);
+                }
+            TextureOverlayRenderer.Refresh(this);
+        }
+
         // ── Кромки ─────────────────────────────────────────────────────
         // Кромкование поддерживает та же базовая «Деталь», что и пазы, и
         // только когда деталь — лист: ровно одна сторона тоньше порога

@@ -51,6 +51,16 @@ namespace KitchenDesigner.Core.MCP
                     e.Add($"grooves: {grooveError}");
             }
 
+            // Накладки текстур принимают только стена и пол — у остальных типов
+            // декор задаётся на весь элемент полем material.
+            if (op.texture_overlays != null)
+            {
+                if (!el.SupportsTextureOverlays)
+                    e.Add("texture_overlays (walls and floors only)");
+                else if (!TryParseTextureOverlays(op.texture_overlays, out _, out string overlayError))
+                    e.Add($"texture_overlays: {overlayError}");
+            }
+
             // Кромкование — свойство той же базовой «детали», что и пазы.
             // «Лист ли она» проверять здесь рано: размеры могут меняться этой же
             // операцией, и не-лист просто не отдаёт кромок при чтении.
@@ -128,6 +138,123 @@ namespace KitchenDesigner.Core.MCP
                 result.Add(groove);
             }
             return true;
+        }
+
+        /// <summary>Разбор накладок текстур вида
+        /// "a:oak; b:white@100,200+800x600". Разделитель элементов — точка с
+        /// запятой, потому что внутри области запятая уже занята координатами.
+        /// Область необязательна: без неё накладка занимает грань целиком.
+        /// Пустая строка — снять все накладки.</summary>
+        public static bool TryParseTextureOverlays(string spec,
+            out List<TextureOverlaySpec> result, out string error)
+        {
+            result = new List<TextureOverlaySpec>();
+            error = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(spec)) return true;
+
+            foreach (var rawItem in spec.Split(';'))
+            {
+                var item = rawItem.Trim();
+                if (item.Length == 0) continue;
+
+                string body = item;
+                int u0 = 0, v0 = 0, w = 0, h = 0;
+                int at = body.IndexOf('@');
+                if (at >= 0)
+                {
+                    if (!TryParseOverlayRect(body.Substring(at + 1), item, ref u0, ref v0, ref w, ref h, ref error))
+                        return false;
+                    body = body.Substring(0, at);
+                }
+
+                var parts = body.Split(':');
+                if (parts.Length != 2)
+                {
+                    error = $"'{item}' is not \"side:materialId\" (e.g. \"a:oak\")";
+                    return false;
+                }
+
+                string sideText = parts[0].Trim().ToLowerInvariant();
+                OverlaySide side;
+                switch (sideText)
+                {
+                    case "a": side = OverlaySide.A; break;
+                    case "b": side = OverlaySide.B; break;
+                    case "c": side = OverlaySide.C; break;
+                    case "d": side = OverlaySide.D; break;
+                    case "e": side = OverlaySide.E; break;
+                    case "f": side = OverlaySide.F; break;
+                    case "all": side = OverlaySide.All; break;
+                    default:
+                        error = $"unknown side '{parts[0].Trim()}' in '{item}' (expected a|b|c|d|e|f|all)";
+                        return false;
+                }
+
+                string materialId = parts[1].Trim();
+                if (materialId.Length == 0)
+                {
+                    error = $"'{item}' has no material id";
+                    return false;
+                }
+
+                if (result.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT)
+                {
+                    error = $"too many texture overlays (max {TextureOverlayGeometry.MAX_PER_ELEMENT})";
+                    return false;
+                }
+                result.Add(new TextureOverlaySpec(side, materialId, u0, v0, w, h));
+            }
+            return true;
+        }
+
+        /// <summary>Область накладки: "u,v+WxH" — левый нижний угол и размер, мм.</summary>
+        private static bool TryParseOverlayRect(string rect, string item,
+            ref int u0, ref int v0, ref int w, ref int h, ref string error)
+        {
+            int plus = rect.IndexOf('+');
+            int cross = rect.IndexOf('x');
+            int comma = rect.IndexOf(',');
+            if (plus < 0 || cross < plus || comma < 0 || comma > plus)
+            {
+                error = $"'{item}' has a bad area — expected \"@u,v+WxH\" (mm)";
+                return false;
+            }
+
+            bool ok = int.TryParse(rect.Substring(0, comma).Trim(), out u0)
+                & int.TryParse(rect.Substring(comma + 1, plus - comma - 1).Trim(), out v0)
+                & int.TryParse(rect.Substring(plus + 1, cross - plus - 1).Trim(), out w)
+                & int.TryParse(rect.Substring(cross + 1).Trim(), out h);
+            if (!ok)
+            {
+                error = $"'{item}' has non-integer area numbers (mm are whole)";
+                return false;
+            }
+            if (w < TextureOverlaySpec.MIN_SIZE_MM || h < TextureOverlaySpec.MIN_SIZE_MM)
+            {
+                error = $"'{item}': area is smaller than {TextureOverlaySpec.MIN_SIZE_MM} mm";
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>Обратное представление для get_elements.</summary>
+        public static string FormatTextureOverlays(KitchenElement el)
+        {
+            var overlays = el.TextureOverlays;
+            if (overlays.Count == 0) return string.Empty;
+
+            var parts = new List<string>(overlays.Count);
+            foreach (var o in overlays)
+            {
+                string side = o.side == OverlaySide.All
+                    ? "all"
+                    : TextureOverlaySpec.SideLabel(o.side).ToLowerInvariant();
+                parts.Add(o.IsFullFace
+                    ? $"{side}:{o.MaterialId}"
+                    : $"{side}:{o.MaterialId}@{o.u0MM},{o.v0MM}+{o.widthMM}x{o.heightMM}");
+            }
+            return string.Join("; ", parts);
         }
 
         /// <summary>Открытые торцы детали для get_elements: "L1,W1,W2". Пустая
@@ -339,6 +466,10 @@ namespace KitchenDesigner.Core.MCP
                 if (op.grooves != null && el.SupportsGrooves
                     && TryParseGrooves(op.grooves, out var parsedGrooves, out _))
                     el.SetGrooves(parsedGrooves);
+                // Набор накладок тоже задаётся целиком; строка проверена там же.
+                if (op.texture_overlays != null && el.SupportsTextureOverlays
+                    && TryParseTextureOverlays(op.texture_overlays, out var parsedOverlays, out _))
+                    el.SetTextureOverlays(parsedOverlays);
                 if (el.SupportsGrooves)
                 {
                     if (op.edge_banding.HasValue) el.EdgeBandingEnabled = op.edge_banding.Value;

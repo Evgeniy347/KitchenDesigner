@@ -42,6 +42,8 @@ namespace KitchenDesigner.Core
         private static GameObject? _root;
         private static KitchenElement? _shownFor;
         private static EdgeSide _shownSide;
+        // Индекс грани для ShowFace; −1 — показана сторона под кромку (Show).
+        private static int _shownFaceIndex = -1;
         // Поза и габарит детали на момент построения: по ним Sync() понимает,
         // что накладки разъехались с деталью и их надо пересобрать.
         private static Vector3 _shownPos;
@@ -50,7 +52,11 @@ namespace KitchenDesigner.Core
 
         /// <summary>Что подсвечено сейчас (для тестов и повторных наведений).</summary>
         public static bool IsShown(KitchenElement element, EdgeSide side) =>
-            _shownFor == element && _shownSide == side && Quads.Count > 0;
+            _shownFor == element && _shownFaceIndex < 0 && _shownSide == side && Quads.Count > 0;
+
+        /// <summary>Показана ли ИМЕННО грань (ShowFace), а не сторона под кромку.</summary>
+        public static bool IsFaceShown(KitchenElement element, int faceIndex) =>
+            _shownFor == element && _shownFaceIndex == faceIndex && Quads.Count > 0;
 
         /// <summary>Количество накладок: 1 торец + 4 полосы. Меньше — если у
         /// детали не разобран габарит.</summary>
@@ -91,6 +97,36 @@ namespace KitchenDesigner.Core
 
             _shownFor = element;
             _shownSide = side;
+            _shownFaceIndex = -1;
+            Remember(element);
+        }
+
+        /// <summary>Подсветить ОДНУ грань целиком, без каёмок на соседних.
+        ///
+        /// Так подсвечивается сторона под накладку текстуры: там сторона выбирается
+        /// в выпадающем списке буквой (A…F), и человеку надо понять, какая это
+        /// грань в сцене. Полосы на соседних гранях здесь только мешали бы — они
+        /// нужны для торца, который сам по себе почти не виден, а грань стены
+        /// видна и так.</summary>
+        public static void ShowFace(KitchenElement element, int faceIndex)
+        {
+            Hide();
+            if (element == null) return;
+            if (HighlightMaterial() == null) return;
+
+            var faces = element.GetFaces();
+            if (faceIndex < 0 || faceIndex >= faces.Length) return;
+
+            var face = faces[faceIndex];
+            AddQuad(face, face.size, Vector2.zero);
+
+            _shownFor = element;
+            _shownFaceIndex = faceIndex;
+            Remember(element);
+        }
+
+        private static void Remember(KitchenElement element)
+        {
             _shownPos = element.transform.position;
             _shownRot = element.transform.rotation;
             _shownDims = element.DimensionsMM;
@@ -114,7 +150,8 @@ namespace KitchenDesigner.Core
             if (t.position == _shownPos && t.rotation == _shownRot
                 && _shownFor.DimensionsMM == _shownDims) return;
 
-            Show(_shownFor, _shownSide);
+            if (_shownFaceIndex >= 0) ShowFace(_shownFor, _shownFaceIndex);
+            else Show(_shownFor, _shownSide);
         }
 
         public static void Hide()
@@ -123,6 +160,7 @@ namespace KitchenDesigner.Core
                 if (q != null) DestroyObject(q);
             Quads.Clear();
             _shownFor = null;
+            _shownFaceIndex = -1;
         }
 
         /// <summary>В рантайме Destroy: DestroyImmediate из колбэка UI-события

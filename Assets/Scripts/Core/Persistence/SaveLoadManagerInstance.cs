@@ -258,6 +258,11 @@ namespace KitchenDesigner.Core
                     if (el.SupportsGrooves)
                         el.SetGrooves(ed.GrooveSpecs());
 
+                    // Накладки текстур принимают стена и пол; SetTextureOverlays
+                    // сам отсеет лишнее и пересоберёт накладки в сцене.
+                    if (el.SupportsTextureOverlays)
+                        el.SetTextureOverlays(ed.TextureOverlaySpecs());
+
                     // Кромкование — свойство той же базовой «Детали». Наличие
                     // кромки на каждом торце не хранится: оно пересчитывается
                     // по геометрии сцены (см. EdgeBanding.Coverage).

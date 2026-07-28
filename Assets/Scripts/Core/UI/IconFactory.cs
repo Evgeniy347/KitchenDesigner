@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core.UI
         private static readonly Color Accent = new Color(0.45f, 0.85f, 0.5f, 1f);
         private static readonly Color Clear = new Color(0, 0, 0, 0);
 
-        private static Sprite? _gear, _floppy, _floppyPlus, _folder, _undo, _redo, _pin, _warning;
+        private static Sprite? _gear, _floppy, _floppyPlus, _folder, _undo, _redo, _pin, _warning, _pencil;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -24,6 +24,7 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Redo => _redo ??= BuildArrow(true);
         public static Sprite Pin => _pin ??= BuildPin();
         public static Sprite Warning => _warning ??= BuildWarning();
+        public static Sprite Pencil => _pencil ??= BuildPencil();
 
         // --- Иконки ---
 
@@ -102,7 +103,34 @@ namespace KitchenDesigner.Core.UI
             return Finish(px);
         }
 
+        // Карандаш «править» по диагонали: корпус, светлая обойма у обуха и
+        // тёмный грифель у острия. Глифа-карандаша в рантайм-атласе TMP нет
+        // (атлас собирается из LiberationSans, только WGL4 — см. UIStyle),
+        // поэтому иконка рисуется, а не пишется символом.
+        private static Sprite BuildPencil()
+        {
+            var px = NewCanvas();
+            Line(px, 20, 20, 46, 46, 5, Ink);   // корпус
+            Line(px, 41, 41, 47, 47, 5, Ink2);  // обойма у обуха
+            Line(px, 15, 15, 19, 19, 3, Ink2);  // острие
+            Disc(px, 14, 14, 3, Ink);           // грифель
+            return Finish(px);
+        }
+
         // --- Примитивы рисования ---
+
+        // Толстый отрезок: диски по ходу линии — тот же приём, что в Arc.
+        private static void Line(Color32[] px, int x0, int y0, int x1, int y1, int thick, Color col)
+        {
+            int steps = Mathf.Max(Mathf.Abs(x1 - x0), Mathf.Abs(y1 - y0));
+            for (int i = 0; i <= steps; i++)
+            {
+                float t = steps == 0 ? 0f : i / (float)steps;
+                Disc(px, Mathf.RoundToInt(Mathf.Lerp(x0, x1, t)),
+                    Mathf.RoundToInt(Mathf.Lerp(y0, y1, t)), thick, col);
+            }
+        }
+
 
         private static void Arc(Color32[] px, int cx, int cy, int r, float fromDeg, float toDeg, int thick, Color col)
         {

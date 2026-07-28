@@ -1,0 +1,269 @@
+﻿{
+  "root": "ContextMenu",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Размеры",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Материал",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Положение",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Деталь — Stena_3000x2500",
+      "position": [0, -12]
+    },
+    {
+      "type": "Label",
+      "text": "Название",
+      "position": [-134, -48]
+    },
+    {
+      "type": "InputField",
+      "label": "Название",
+      "value": "Stena_3000x2500",
+      "interactable": true,
+      "position": [40, -48]
+    },
+    {
+      "type": "Label",
+      "text": "Ширина",
+      "position": [-80, -104]
+    },
+    {
+      "type": "InputField",
+      "label": "Ширина",
+      "value": "3000",
+      "interactable": true,
+      "position": [100, -104]
+    },
+    {
+      "type": "Label",
+      "text": "Высота",
+      "position": [-80, -135]
+    },
+    {
+      "type": "InputField",
+      "label": "Высота",
+      "value": "2500",
+      "interactable": true,
+      "position": [100, -135]
+    },
+    {
+      "type": "Label",
+      "text": "Глубина",
+      "position": [-80, -166]
+    },
+    {
+      "type": "InputField",
+      "label": "Глубина",
+      "value": "100",
+      "interactable": true,
+      "position": [100, -166]
+    },
+    {
+      "type": "Label",
+      "text": "X, мм",
+      "position": [-110, -222]
+    },
+    {
+      "type": "Label",
+      "text": "Y, мм",
+      "position": [0, -222]
+    },
+    {
+      "type": "Label",
+      "text": "Z, мм",
+      "position": [110, -222]
+    },
+    {
+      "type": "InputField",
+      "label": "X, мм",
+      "value": "7000",
+      "interactable": true,
+      "position": [-110, -242]
+    },
+    {
+      "type": "InputField",
+      "label": "Y, мм",
+      "value": "1250",
+      "interactable": true,
+      "position": [0, -242]
+    },
+    {
+      "type": "InputField",
+      "label": "Z, мм",
+      "value": "0",
+      "interactable": true,
+      "position": [110, -242]
+    },
+    {
+      "type": "Label",
+      "text": "X, °",
+      "position": [-110, -273]
+    },
+    {
+      "type": "Label",
+      "text": "Y, °",
+      "position": [0, -273]
+    },
+    {
+      "type": "Label",
+      "text": "Z, °",
+      "position": [110, -273]
+    },
+    {
+      "type": "InputField",
+      "label": "X, °",
+      "value": "0,0",
+      "interactable": true,
+      "position": [-110, -293]
+    },
+    {
+      "type": "InputField",
+      "label": "Y, °",
+      "value": "0,0",
+      "interactable": true,
+      "position": [0, -293]
+    },
+    {
+      "type": "InputField",
+      "label": "Z, °",
+      "value": "0,0",
+      "interactable": true,
+      "position": [110, -293]
+    },
+    {
+      "type": "Label",
+      "text": "Повернуть на 90°:",
+      "position": [0, -324]
+    },
+    {
+      "type": "Button",
+      "text": "X 90°",
+      "position": [-112, -350]
+    },
+    {
+      "type": "Button",
+      "text": "Y 90°",
+      "position": [0, -350]
+    },
+    {
+      "type": "Button",
+      "text": "Z 90°",
+      "position": [112, -350]
+    },
+    {
+      "type": "Label",
+      "text": "Текстура",
+      "position": [-103, -411]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)"],
+      "selected": 0,
+      "position": [65, -411]
+    },
+    {
+      "type": "Button",
+      "text": "Текстуры (2)  ▼",
+      "position": [0, -446]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["A", "B", "C", "D", "E", "F", "(все)"],
+      "selected": 0,
+      "position": [-138, -481]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)"],
+      "selected": 2,
+      "position": [-5, -481]
+    },
+    {
+      "type": "Button",
+      "text": "CtxTexEdit0",
+      "position": [114, -481]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [150, -481]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["A", "B", "C", "D", "E", "F", "(все)"],
+      "selected": 1,
+      "position": [-138, -513]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)"],
+      "selected": 1,
+      "position": [-5, -513]
+    },
+    {
+      "type": "Button",
+      "text": "CtxTexEdit1",
+      "position": [114, -513]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [150, -513]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["A", "B", "C", "D", "E", "F", "(все)"],
+      "selected": 0,
+      "position": [-138, -545]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)"],
+      "selected": 0,
+      "position": [-23, -545]
+    },
+    {
+      "type": "Button",
+      "text": "Добавить",
+      "position": [114, -545]
+    },
+    {
+      "type": "Toggle",
+      "label": "Прозрачный",
+      "isOn": false,
+      "position": [0, -581]
+    },
+    {
+      "type": "Toggle",
+      "label": "Закрепить",
+      "isOn": false,
+      "position": [0, -614]
+    },
+    {
+      "type": "Button",
+      "text": "Дублировать",
+      "position": [-91, -656]
+    },
+    {
+      "type": "Button",
+      "text": "Удалить",
+      "position": [91, -656]
+    }
+  ]
+}
