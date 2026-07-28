@@ -47,7 +47,8 @@ namespace KitchenDesigner.Core.UI
                 "1  — вид сверху\n" +
                 "2  — вид сбоку\n" +
                 "3  — вид спереди\n" +
-                "F1 — эта справка";
+                "F1 — эта справка\n" +
+                "F9 — логирование / профилировка";
 
             UIFactory.CreateLabel("HelpText", panel.transform, text, 15,
                 new Vector2(0, 10), new Vector2(480, 450), TextAnchor.UpperLeft);
