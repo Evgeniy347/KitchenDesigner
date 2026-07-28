@@ -202,6 +202,10 @@ namespace KitchenDesigner.Core
         protected override Vector3 ValidationPosition => ClosedPosition;
         protected override Quaternion ValidationRotation => ClosedRotation;
 
+        /// <summary>Выдвинутый (или едущий) ящик берёт геометрию от закрытой позы,
+        /// а не от трансформа, — двигать и растягивать его нельзя, пока не задвинут.</summary>
+        public override bool PoseFollowsTransform => !_open && _t <= 0f;
+
         public float AnimProgress => _t;
 
         public bool IsOpen => _open;

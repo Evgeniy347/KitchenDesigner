@@ -93,6 +93,10 @@ namespace KitchenDesigner.Core
         public float DoorProgress => _t;
         public bool IsDoorClosed => !_open && _t <= 0f;
 
+        /// <summary>Открытая (или анимируемая) дверца берёт геометрию от _closedPos,
+        /// а не от трансформа, — двигать и растягивать её нельзя, пока не закрыта.</summary>
+        public override bool PoseFollowsTransform => IsDoorClosed;
+
         /// <summary>Логическая ЗАКРЫТАЯ поза — ИСТОЧНИК ИСТИНЫ для сохранения.
         /// Открытая/анимируемая поза вычисляется из неё каждый кадр, поэтому в
         /// проект нужно писать именно её, а не текущий (смещённый) трансформ —

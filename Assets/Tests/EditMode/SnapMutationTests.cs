@@ -126,7 +126,10 @@ public class SnapMutationTests
         ClearScene();
         var allElements = RestoreScene();
         Assert.IsNotEmpty(allElements, "No KitchenElements in restored scene");
-        var movableNames = allElements.Where(e => e.Movable && e.gameObject.activeInHierarchy)
+        // Transformable, а не Movable: открытая дверца и выдвинутый ящик строят
+        // геометрию от закрытой позы, приложение их двигать и растягивать не даёт —
+        // фаззеру тоже нечего там проверять.
+        var movableNames = allElements.Where(e => e.Transformable && e.gameObject.activeInHierarchy)
             .Select(e => e.PartName).ToList();
         BuildFaceCache(allElements);
 

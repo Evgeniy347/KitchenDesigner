@@ -55,6 +55,35 @@ public class FacadeElementTests
         return e;
     }
 
+    /// <summary>Открытая дверца строит габарит от замороженной закрытой позы, и
+    /// запись в transform.position её не двигает: коробка растёт симметрично, грань
+    /// уходит на половину дельты, снэп мажет, а при закрытии деталь прыгает обратно.
+    /// Поэтому пока дверца открыта, двигать и растягивать её запрещено.</summary>
+    [Test]
+    public void Facade_OpenDoor_IsNotTransformable()
+    {
+        var f = MakeFacade("Дверца", new Vector3Int(400, 700, 18), Vector3.zero);
+        Assert.IsTrue(f.Movable, "фасад по умолчанию подвижен");
+        Assert.IsTrue(f.Transformable, "закрытая дверца двигается и растягивается");
+
+        f.SetOpen(true);
+        Assert.IsFalse(f.PoseFollowsTransform, "у открытой дверцы поза не идёт за трансформом");
+        Assert.IsFalse(f.Transformable, "открытую дверцу двигать и растягивать нельзя");
+
+        f.SetOpen(false);
+        Assert.IsTrue(f.Transformable, "закрыли — снова можно");
+    }
+
+    /// <summary>Запрет перемещения по-прежнему запрещает и ресайз: Transformable
+    /// не должен «оживлять» заблокированную деталь.</summary>
+    [Test]
+    public void Facade_Immovable_IsNotTransformable()
+    {
+        var f = MakeFacade("Дверца", new Vector3Int(400, 700, 18), Vector3.zero);
+        f.Movable = false;
+        Assert.IsFalse(f.Transformable);
+    }
+
     [Test]
     public void Facade_DefaultGap_IsTwoOnAllSides()
     {

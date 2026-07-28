@@ -539,6 +539,9 @@ public class ElementConverterTests
         "PartName", "DimensionsMM", "Movable", "GroupId", "MaterialId", "Transparent", "Data",
         "SupportsGrooves", "Grooves", "AttachedSinks", "SinkHoleAxis",
         "SupportsEdges", "EdgeBandingEnabled", "EdgeThicknessMM", "EdgeSkipValidation",
+        // Производные от состояния, а не хранимые: конвертация их не переносит —
+        // после смены типа они пересчитаются сами.
+        "PoseFollowsTransform", "Transformable",
         // FacadeElement
         "GapLeft", "GapRight", "GapTop", "GapBottom", "GapMM", "Mode",
         "IsOpen", "DoorProgress", "IsDoorClosed", "ClosedPosition", "ClosedRotation",
