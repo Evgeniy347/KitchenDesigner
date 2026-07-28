@@ -326,6 +326,13 @@ namespace KitchenDesigner.Core.UI
             // Фасад ящика: выбор из существующих (создание/настройка — через сам фасад).
             _drawerFacadeDropdown = LabeledDropdownRow(panel.transform, "Фасад ящика",
                 new List<string> { "(нет фасада)" }, OnDrawerFacadeSelected, AddDrawerRow, "CtxDrawerFacade");
+            // Хук: при раскрытии дропдауна обновляем список фасадов.
+            var drawerFacadeHook = _drawerFacadeDropdown.template.gameObject.AddComponent<DropdownOpenHook>();
+            drawerFacadeHook.OnOpen = () =>
+            {
+                RebuildDrawerFacadeOptions();
+                SetDrawerFacadeValue(((_target as DrawerElement)?.AttachedFacadeName) ?? "");
+            };
 
             // Окно: тонировка стекла и выступ подоконника.
             var tintOptions = new List<string> { "Прозрачное", "Тонированное" };
@@ -2186,6 +2193,7 @@ namespace KitchenDesigner.Core.UI
             var opts = new List<TMP_Dropdown.OptionData> { new TMP_Dropdown.OptionData("(нет фасада)") };
             var drawer = _target as DrawerElement;
             var attachedName = drawer?.AttachedFacadeName ?? "";
+            var names = new HashSet<string>();
             foreach (var el in PartRegistry.GetAll())
             {
                 if (!(el is FacadeElement fe) || string.IsNullOrEmpty(fe.PartName)) continue;
@@ -2193,6 +2201,12 @@ namespace KitchenDesigner.Core.UI
                 bool inContact = drawer != null && DrawerLinks.IsFacadeInContact(drawer, fe);
                 if (!isAttached && !inContact) continue;
                 opts.Add(new TMP_Dropdown.OptionData(fe.PartName));
+                names.Add(fe.PartName);
+            }
+            // Если прикреплённый фасад отсутствует в реестре — добавить принудительно.
+            if (!string.IsNullOrEmpty(attachedName) && !names.Contains(attachedName))
+            {
+                opts.Add(new TMP_Dropdown.OptionData(attachedName));
             }
             _drawerFacadeDropdown.options = opts;
         }
@@ -2211,13 +2225,38 @@ namespace KitchenDesigner.Core.UI
             if (_drawerFacadeDropdown == null) return;
             _drawerFacadeDropdown.SetValueWithoutNotify(DrawerFacadeIndex(name));
             _drawerFacadeDropdown.RefreshShownValue();
+            UpdateDrawerFacadeCaptionColor();
+        }
+
+        private void UpdateDrawerFacadeCaptionColor()
+        {
+            if (_drawerFacadeDropdown?.captionText == null) return;
+            var drawer = _target as DrawerElement;
+            var attachedName = drawer?.AttachedFacadeName ?? "";
+            if (string.IsNullOrEmpty(attachedName))
+            {
+                _drawerFacadeDropdown.captionText.color = Color.black;
+                return;
+            }
+            // Фасад «осиротел», если его нет в реестре.
+            bool orphaned = true;
+            foreach (var el in PartRegistry.GetAll())
+            {
+                if (el is FacadeElement fe && fe.PartName == attachedName)
+                {
+                    orphaned = false;
+                    break;
+                }
+            }
+            _drawerFacadeDropdown.captionText.color = orphaned ? Color.red : Color.black;
         }
 
         private void OnDrawerFacadeSelected(int index)
         {
             if (!(_target is DrawerElement d)) return;
-            if (index <= 0 || _drawerFacadeDropdown == null) { d.AttachedFacadeName = ""; return; }
+            if (index <= 0 || _drawerFacadeDropdown == null) { d.AttachedFacadeName = ""; UpdateDrawerFacadeCaptionColor(); return; }
             d.AttachedFacadeName = _drawerFacadeDropdown.options[index].text;
+            UpdateDrawerFacadeCaptionColor();
         }
 
         private void UpdateDoorButton(FacadeElement? facade)
@@ -2456,6 +2495,12 @@ namespace KitchenDesigner.Core.UI
             TrackField(_rx, e.x.ToString("F1"));
             TrackField(_ry, e.y.ToString("F1"));
             TrackField(_rz, e.z.ToString("F1"));
+        }
+
+        private class DropdownOpenHook : MonoBehaviour
+        {
+            public System.Action? OnOpen;
+            private void OnEnable() { OnOpen?.Invoke(); }
         }
     }
 }

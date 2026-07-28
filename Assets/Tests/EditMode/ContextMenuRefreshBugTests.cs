@@ -156,7 +156,148 @@ public class ContextMenuRefreshBugTests
             $"BUG: gapBottom stays '{FieldText("_gapBottom")}' instead of '40'");
     }
 
-    // ── helpers ─────────────────────────────────────────────────────────
+    // ── БАГ: список фасадов ящика не обновляется при открытии дропдауна ──
+    // RED: до фикса фасады в дропдауне не обновлялись после Open().
+    // GREEN: хук на OnEnable template перестраивает список при каждом открытии.
+
+    [Test]
+    public void DrawerFacadeDropdown_Rebuilds_WhenNewFacadeAppears()
+    {
+        _ctx!.Close();
+        DestroyAllElements();
+
+        var drawer = CreateDrawer("Yashik", new Vector3(0f, 0.043f, 0f));
+        _ctx!.Open(drawer);
+
+        var dd = GetDrawerFacadeDropdown();
+        Assert.AreEqual(1, dd.options.Count, "только '(нет фасада)' до появления фасадов");
+
+        // Создаём фасад в контакте с ящиком (позиция из DrawerFacadeContactTests).
+        var facadeGo = ElementFactory.CreateFacade(
+            new Vector3Int(400, 86, 18), "F1", new Vector3(0f, 0.043f, 0.184f));
+        facadeGo.transform.SetParent(_canvasGo!.transform);
+
+        // Вызываем RebuildDrawerFacadeOptions напрямую — именно это делает хук.
+        CallRebuildDrawerFacadeOptions();
+
+        Assert.AreEqual(2, dd.options.Count,
+            "BUG: новый фасад не появился в списке после обновления дропдауна");
+        Assert.AreEqual("F1", dd.options[1].text);
+    }
+
+    [Test]
+    public void OrphanedFacade_StaysInList_WhenFacadeDestroyed()
+    {
+        _ctx!.Close();
+        DestroyAllElements();
+
+        var drawer = CreateDrawer("Yashik", new Vector3(0f, 0.043f, 0f));
+        CreateFacade("F1", new Vector3(0f, 0.043f, 0.184f));
+
+        drawer.AttachedFacadeName = "F1";
+        _ctx!.Open(drawer);
+
+        var dd = GetDrawerFacadeDropdown();
+        Assert.AreEqual(2, dd.options.Count, "опции: '(нет фасада)' + 'F1'");
+        Assert.AreEqual("F1", dd.options[1].text);
+
+        // Удаляем фасад из сцены.
+        var facadeEl = FindElementByName("F1");
+        Assert.IsNotNull(facadeEl, "фасад F1 должен существовать");
+        Object.DestroyImmediate(facadeEl!.gameObject);
+        PartRegistry.Clear(); // гарантия, что в реестре чисто
+
+        // Перестраиваем список — осиротевший фасад должен остаться.
+        CallRebuildDrawerFacadeOptions();
+
+        Assert.AreEqual(2, dd.options.Count,
+            "BUG: осиротевший фасад исчез из списка после удаления");
+        Assert.AreEqual("F1", dd.options[1].text,
+            "BUG: имя осиротевшего фасада не сохранилось в списке");
+    }
+
+    [Test]
+    public void OrphanedFacade_CaptionTurnsRed()
+    {
+        _ctx!.Close();
+        DestroyAllElements();
+
+        var drawer = CreateDrawer("Yashik", new Vector3(0f, 0.043f, 0f));
+        CreateFacade("F1", new Vector3(0f, 0.043f, 0.184f));
+
+        drawer.AttachedFacadeName = "F1";
+        _ctx!.Open(drawer);
+
+        // Удаляем фасад — он становится осиротевшим.
+        var facadeEl = FindElementByName("F1");
+        Assert.IsNotNull(facadeEl);
+        Object.DestroyImmediate(facadeEl!.gameObject);
+        PartRegistry.Clear();
+
+        // Перестраиваем и устанавливаем значение — caption должен стать красным.
+        CallRebuildDrawerFacadeOptions();
+        CallSetDrawerFacadeValue("F1");
+
+        var dd = GetDrawerFacadeDropdown();
+        Assert.IsNotNull(dd.captionText, "captionText should exist");
+        Assert.AreEqual(Color.red, dd.captionText.color,
+            "BUG: caption осиротевшего фасада не покраснел");
+    }
+
+    [Test]
+    public void OrphanedFacade_CaptionRestoresToBlack_WhenValidFacadeSelected()
+    {
+        _ctx!.Close();
+        DestroyAllElements();
+
+        var drawer = CreateDrawer("Yashik", new Vector3(0f, 0.043f, 0f));
+        var facadeGo = ElementFactory.CreateFacade(
+            new Vector3Int(400, 86, 18), "F1", new Vector3(0f, 0.043f, 0.184f));
+        facadeGo.transform.SetParent(_canvasGo!.transform);
+
+        drawer.AttachedFacadeName = "F1";
+        _ctx!.Open(drawer);
+
+        var dd = GetDrawerFacadeDropdown();
+        CallRebuildDrawerFacadeOptions();
+        CallSetDrawerFacadeValue("F1");
+
+        Assert.AreEqual(Color.black, dd.captionText.color,
+            "BUG: caption валидного фасада красный, должен быть чёрным");
+    }
+
+    [Test]
+    public void DrawerFacadeDropdown_ClearingResetsColor()
+    {
+        _ctx!.Close();
+        DestroyAllElements();
+
+        var drawer = CreateDrawer("Yashik", new Vector3(0f, 0.043f, 0f));
+        CreateFacade("F1", new Vector3(0f, 0.043f, 0.184f));
+
+        drawer.AttachedFacadeName = "F1";
+        _ctx!.Open(drawer);
+
+        // Удаляем фасад — осиротел.
+        var facadeEl = FindElementByName("F1");
+        Assert.IsNotNull(facadeEl);
+        Object.DestroyImmediate(facadeEl!.gameObject);
+        PartRegistry.Clear();
+
+        CallRebuildDrawerFacadeOptions();
+        CallSetDrawerFacadeValue("F1");
+
+        var dd = GetDrawerFacadeDropdown();
+        Assert.AreEqual(Color.red, dd.captionText.color, "caption должен быть красным");
+
+        // Сбрасываем выбор на «(нет фасада)».
+        CallOnDrawerFacadeSelected(0);
+
+        Assert.AreEqual(Color.black, dd.captionText.color,
+            "BUG: после сброса на '(нет фасада)' caption остался красным");
+    }
+
+    // ── helpers (existing) ──────────────────────────────────────────────
 
     private void CallRefreshTransformFields()
     {
@@ -190,5 +331,62 @@ public class ContextMenuRefreshBugTests
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null) Object.DestroyImmediate(e.gameObject);
         PartRegistry.Clear();
+    }
+
+    // ── drawer facade helpers ───────────────────────────────────────────
+
+    private DrawerElement CreateDrawer(string name, Vector3 pos)
+    {
+        var go = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400, name, pos);
+        go.transform.SetParent(_canvasGo!.transform);
+        return go.GetComponent<DrawerElement>();
+    }
+
+    private FacadeElement CreateFacade(string name, Vector3 pos)
+    {
+        var go = ElementFactory.CreateFacade(new Vector3Int(400, 86, 18), name, pos, 2, 2, 2, 2);
+        go.transform.SetParent(_canvasGo!.transform);
+        return go.GetComponent<FacadeElement>();
+    }
+
+    private KitchenElement? FindElementByName(string name)
+    {
+        foreach (var el in PartRegistry.GetAll())
+            if (el.PartName == name) return el;
+        return null;
+    }
+
+    private TMP_Dropdown GetDrawerFacadeDropdown()
+    {
+        var field = typeof(ContextMenuUI).GetField("_drawerFacadeDropdown",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.IsNotNull(field, "_drawerFacadeDropdown field should exist");
+        var dd = field.GetValue(_ctx) as TMP_Dropdown;
+        Assert.IsNotNull(dd, "_drawerFacadeDropdown should be a TMP_Dropdown");
+        return dd!;
+    }
+
+    private void CallRebuildDrawerFacadeOptions()
+    {
+        var method = typeof(ContextMenuUI).GetMethod("RebuildDrawerFacadeOptions",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.IsNotNull(method, "RebuildDrawerFacadeOptions method should exist");
+        method.Invoke(_ctx, null);
+    }
+
+    private void CallSetDrawerFacadeValue(string name)
+    {
+        var method = typeof(ContextMenuUI).GetMethod("SetDrawerFacadeValue",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.IsNotNull(method, "SetDrawerFacadeValue method should exist");
+        method.Invoke(_ctx, new object[] { name });
+    }
+
+    private void CallOnDrawerFacadeSelected(int index)
+    {
+        var method = typeof(ContextMenuUI).GetMethod("OnDrawerFacadeSelected",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.IsNotNull(method, "OnDrawerFacadeSelected method should exist");
+        method.Invoke(_ctx, new object[] { index });
     }
 }
