@@ -29,12 +29,8 @@ namespace KitchenDesigner.Core
         // радиуса орбиты. Один щелчок колеса / нажатие +− = столько метров.
         [SerializeField] private float _zoomStep = 0.3f;
 
-        // ── Разгон WASD ───────────────────────────────────────────────────
-        /// <summary>Первая секунда удержания — минимальная скорость (×1).</summary>
-        public const float WasdRampDelay = 1f;
-        /// <summary>Дальше за это время скорость выходит на максимум.</summary>
-        public const float WasdRampSeconds = 3f;
-        /// <summary>С Shift разгон идёт сразу и укладывается в секунду.</summary>
+        // ── Разгон WASD (только с Shift) ──────────────────────────────────
+        /// <summary>С Shift разгон укладывается в секунду.</summary>
         public const float WasdShiftRampSeconds = 1f;
         /// <summary>Максимальный множитель скорости.</summary>
         public const float WasdMaxMultiplier = 20f;
@@ -346,15 +342,13 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>
-        /// Множитель скорости WASD от времени удержания клавиши. Без Shift первая
-        /// секунда идёт на минимальной скорости (×1), следующие три разгоняют до ×20.
-        /// С Shift разгон начинается сразу и укладывается в одну секунду.
+        /// Множитель скорости WASD от времени удержания клавиши. Без Shift —
+        /// постоянная базовая скорость (×1). С Shift разгон за одну секунду до ×20.
         /// </summary>
         public static float WasdHoldMultiplier(float heldSeconds, bool shift)
         {
-            float t = shift
-                ? Mathf.Clamp01(heldSeconds / WasdShiftRampSeconds)
-                : Mathf.Clamp01((heldSeconds - WasdRampDelay) / WasdRampSeconds);
+            if (!shift) return 1f;
+            float t = Mathf.Clamp01(heldSeconds / WasdShiftRampSeconds);
             return Mathf.Lerp(1f, WasdMaxMultiplier, t);
         }
 
@@ -366,16 +360,16 @@ namespace KitchenDesigner.Core
         public void ApplyWASDMovement(Vector2 input, float dt, bool shift = false)
         {
             if (dt < 1e-6f) return;
-            // Клавиши отпущены — разгон сбрасывается, следующее нажатие снова медленное.
-            if (input.sqrMagnitude < 1e-6f)
+            // Клавиши отпущены или Shift не нажат — разгон сбрасывается.
+            if (input.sqrMagnitude < 1e-6f || !shift)
             {
                 _wasdHeld = 0f;
-                return;
+                if (input.sqrMagnitude < 1e-6f) return;
             }
 
             CancelFocus();
-            _wasdHeld += dt;
             float speed = _moveSpeed * WasdHoldMultiplier(_wasdHeld, shift) * dt * WasdSpeed;
+            _wasdHeld += dt;
 
             Vector3 fwd = Quaternion.Euler(0, CurrAngleY, 0) * Vector3.forward;
             Vector3 right = Quaternion.Euler(0, CurrAngleY, 0) * Vector3.right;
@@ -495,10 +489,10 @@ namespace KitchenDesigner.Core
         private void HandleRmbClick()
         {
             if (_cachedCamera == null) return;
-            if (Measure.MeasureMode.Active) return; // в режиме рулетки меню не открываем
+            if (Measure.MeasureMode.Active) return;
             Ray ray = _cachedCamera.ScreenPointToRay(Input.mousePosition);
-            if (!Physics.Raycast(ray, out RaycastHit hit)) return;
-            var e = hit.collider.GetComponentInParent<KitchenElement>();
+            bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            var e = KitchenDesigner.Core.SelectionManager.RaycastTransparentAware(ray, shiftHeld);
             if (e == null || e.GetComponent<BasePlate>() != null) return;
             if (!EditModeManager.IsInteractable(e)) return; // режим редактора блокирует
             if (UI.UIManager.Instance == null) return;

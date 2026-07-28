@@ -102,13 +102,11 @@ namespace KitchenDesigner.Core
         private void TryBeginPress()
         {
             _pressed = false;
-            if (AltHeld || PointerOverUI) return; // Alt+ЛКМ — орбита; клик по UI — не drag
+            if (AltHeld || PointerOverUI) return;
             if (Camera.main == null) return;
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (!Physics.Raycast(ray, out RaycastHit hit)) return;
-
-            var element = hit.collider.GetComponentInParent<KitchenElement>();
+            var element = SelectionManager.RaycastTransparentAware(ray, ShiftHeld);
             if (element == null) return;
             if (element.GetComponent<BasePlate>() != null) return; // пол не таскаем
             if (!ModuleEditMode.IsEditable(element)) return; // вне активного модуля — заблокировано

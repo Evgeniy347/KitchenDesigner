@@ -196,7 +196,11 @@ namespace KitchenDesigner.Core
         private KitchenElement? ResolveClickTarget(Vector3 screenPoint, bool shiftHeld)
         {
             Ray ray = Camera.main.ScreenPointToRay(screenPoint);
+            return RaycastTransparentAware(ray, shiftHeld);
+        }
 
+        public static KitchenElement? RaycastTransparentAware(Ray ray, bool shiftHeld)
+        {
             if (!shiftHeld)
             {
                 if (Physics.Raycast(ray, out RaycastHit hit))

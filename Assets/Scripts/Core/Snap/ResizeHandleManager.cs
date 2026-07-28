@@ -160,9 +160,41 @@ namespace KitchenDesigner.Core
 
         private static bool AltHeld => Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
 
+        private static bool ShiftHeld => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+
         private static bool PointerOverUI() =>
             UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+
+        public static ResizeHandle? PickHandleFromHits(RaycastHit[] orderedHits, bool shiftHeld)
+        {
+            foreach (var h in orderedHits)
+            {
+                var handle = h.collider.GetComponentInParent<ResizeHandle>();
+                if (handle == null)
+                    continue;
+                if (!shiftHeld)
+                    return handle;
+                var el = h.collider.GetComponentInParent<KitchenElement>();
+                if (el == null || !el.Transparent)
+                    return handle;
+            }
+            return null;
+        }
+
+        private static ResizeHandle? RaycastHandleTransparentAware(Ray ray, bool shiftHeld)
+        {
+            if (!shiftHeld)
+            {
+                if (Physics.Raycast(ray, out RaycastHit hit))
+                    return hit.collider.GetComponentInParent<ResizeHandle>();
+                return null;
+            }
+
+            var allHits = Physics.RaycastAll(ray);
+            System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
+            return PickHandleFromHits(allHits, shiftHeld: true);
+        }
 
         /// <summary>Курсор над ручкой ресайза? (для подавления выделения/панорамы камеры).</summary>
         public static bool PointerOverHandle()
@@ -170,8 +202,7 @@ namespace KitchenDesigner.Core
             var cam = Camera.main;
             if (cam == null) return false;
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            return Physics.Raycast(ray, out RaycastHit hit) &&
-                   hit.collider.GetComponentInParent<ResizeHandle>() != null;
+            return RaycastHandleTransparentAware(ray, ShiftHeld) != null;
         }
 
         private bool RaycastHandle(out ResizeHandle? handle)
@@ -180,8 +211,7 @@ namespace KitchenDesigner.Core
             var cam = Camera.main;
             if (cam == null) return false;
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (!Physics.Raycast(ray, out RaycastHit hit)) return false;
-            handle = hit.collider.GetComponentInParent<ResizeHandle>();
+            handle = RaycastHandleTransparentAware(ray, ShiftHeld);
             return handle != null;
         }
 

@@ -443,4 +443,195 @@ public class SelectionManagerTests
             LogAssert.ignoreFailingMessages = false;
         }
     }
+
+    // ── RaycastTransparentAware: клик сквозь прозрачные (интеграция с Physics) ──
+
+    private Camera SetupTestCamera()
+    {
+        var camGo = new GameObject("TestCamera");
+        camGo.tag = "MainCamera";
+        var cam = camGo.AddComponent<Camera>();
+        cam.transform.position = new Vector3(0, 0, -10);
+        cam.transform.rotation = Quaternion.identity;
+        _spawned.Add(camGo);
+        return cam;
+    }
+
+    private KitchenElement MakeWithCollider(string name, Vector3 pos,
+        Vector3Int size, bool transparent = false)
+    {
+        var e = Make(name);
+        e.DimensionsMM = size;
+        e.transform.position = pos;
+        if (transparent) { var d = e.Data; d.Transparent = true; }
+        var bc = e.gameObject.AddComponent<BoxCollider>();
+        bc.size = Vector3.one;
+        bc.center = Vector3.zero;
+        return e;
+    }
+
+    [Test]
+    public void RaycastTransparentAware_NoShift_ReturnsFirstHit()
+    {
+        var cam = SetupTestCamera();
+        var a = MakeWithCollider("A", new Vector3(0, 0, 0),
+            new Vector3Int(800, 400, 18));
+        var b = MakeWithCollider("B", new Vector3(0, 0, 2),
+            new Vector3Int(800, 400, 18));
+        Physics.SyncTransforms();
+
+        var ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        var result = SelectionManager.RaycastTransparentAware(ray, shiftHeld: false);
+
+        Assert.AreEqual(a, result, "без Shift — первый попавшийся");
+    }
+
+    [Test]
+    public void RaycastTransparentAware_Shift_SkipsTransparent()
+    {
+        var cam = SetupTestCamera();
+        var transparent = MakeWithCollider("T", new Vector3(0, 0, 0),
+            new Vector3Int(800, 400, 18), transparent: true);
+        var opaque = MakeWithCollider("O", new Vector3(0, 0, 2),
+            new Vector3Int(800, 400, 18));
+        Physics.SyncTransforms();
+
+        var ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        var result = SelectionManager.RaycastTransparentAware(ray, shiftHeld: true);
+
+        Assert.AreEqual(opaque, result, "Shift пропускает прозрачный, берёт непрозрачный за ним");
+    }
+
+    [Test]
+    public void RaycastTransparentAware_Shift_AllTransparent_ReturnsNull()
+    {
+        var cam = SetupTestCamera();
+        var t1 = MakeWithCollider("T1", new Vector3(0, 0, 0),
+            new Vector3Int(800, 400, 18), transparent: true);
+        var t2 = MakeWithCollider("T2", new Vector3(0, 0, 2),
+            new Vector3Int(800, 400, 18), transparent: true);
+        Physics.SyncTransforms();
+
+        var ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        var result = SelectionManager.RaycastTransparentAware(ray, shiftHeld: true);
+
+        Assert.IsNull(result, "все прозрачные — null");
+    }
+
+    // ── PickHandleFromHits: ручки сквозь прозрачные элементы ──
+
+    private (KitchenElement element, ResizeHandle handle) MakeWithHandle(
+        string name, Vector3 pos, Vector3Int size, int faceIndex,
+        bool transparent = false)
+    {
+        var e = MakeWithCollider(name, pos, size, transparent);
+        var handleGo = new GameObject($"{name}_Handle");
+        handleGo.transform.SetParent(e.transform);
+        handleGo.transform.localPosition = Vector3.zero;
+        var ls = e.transform.localScale;
+        handleGo.transform.localScale = new Vector3(1f / ls.x, 1f / ls.y, 1f / ls.z);
+        var handle = handleGo.AddComponent<ResizeHandle>();
+        handle.faceIndex = faceIndex;
+        var hc = handleGo.AddComponent<BoxCollider>();
+        hc.size = new Vector3(0.15f, 0.15f, 0.15f);
+        hc.center = Vector3.zero;
+        return (e, handle);
+    }
+
+    [Test]
+    public void PickHandleFromHits_NoShift_OpaqueHandle_Found()
+    {
+        var cam = SetupTestCamera();
+        var (el, expected) = MakeWithHandle("B", new Vector3(0, 0, 0),
+            new Vector3Int(800, 400, 18), 0);
+        Physics.SyncTransforms();
+
+        var ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        var allHits = Physics.RaycastAll(ray);
+        System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
+
+        var result = ResizeHandleManager.PickHandleFromHits(allHits, shiftHeld: false);
+        Assert.AreEqual(expected, result, "handle на непрозрачном — найден");
+    }
+
+    [Test]
+    public void PickHandleFromHits_NoShift_TransparentHandle_Found()
+    {
+        var cam = SetupTestCamera();
+        var (el, expected) = MakeWithHandle("T", new Vector3(0, 0, 0),
+            new Vector3Int(800, 400, 18), 0, transparent: true);
+        Physics.SyncTransforms();
+
+        var ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        var allHits = Physics.RaycastAll(ray);
+        System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
+
+        var result = ResizeHandleManager.PickHandleFromHits(allHits, shiftHeld: false);
+        Assert.AreEqual(expected, result,
+            "без Shift handle на прозрачном — НЕ пропускается");
+    }
+
+    [Test]
+    public void PickHandleFromHits_Shift_TransparentHandle_Skipped()
+    {
+        var cam = SetupTestCamera();
+        var (tEl, tHandle) = MakeWithHandle("T", new Vector3(0, 0, 0),
+            new Vector3Int(800, 400, 18), 0, transparent: true);
+        var (oEl, oHandle) = MakeWithHandle("O", new Vector3(0, 0, 2),
+            new Vector3Int(800, 400, 18), 0);
+        Physics.SyncTransforms();
+
+        var ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        var allHits = Physics.RaycastAll(ray);
+        System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
+
+        var result = ResizeHandleManager.PickHandleFromHits(allHits, shiftHeld: true);
+        Assert.AreEqual(oHandle, result,
+            "Shift пропускает handle на прозрачном, берёт handle на непрозрачном за ним");
+    }
+
+    [Test]
+    public void PickHandleFromHits_Shift_AllTransparentHandles_Null()
+    {
+        var cam = SetupTestCamera();
+        var (t1El, t1) = MakeWithHandle("T1", new Vector3(0, 0, 0),
+            new Vector3Int(800, 400, 18), 0, transparent: true);
+        var (t2El, t2) = MakeWithHandle("T2", new Vector3(0, 0, 2),
+            new Vector3Int(800, 400, 18), 0, transparent: true);
+        Physics.SyncTransforms();
+
+        var ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        var allHits = Physics.RaycastAll(ray);
+        System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
+
+        var result = ResizeHandleManager.PickHandleFromHits(allHits, shiftHeld: true);
+        Assert.IsNull(result, "все handle на прозрачных — null");
+    }
+
+    [Test]
+    public void PickHandleFromHits_Shift_NoHandleThenOpaqueHandle_FindsSecond()
+    {
+        var cam = SetupTestCamera();
+        var noHandle = MakeWithCollider("Bare", new Vector3(0, 0, 0),
+            new Vector3Int(800, 400, 18));
+        var (oEl, oHandle) = MakeWithHandle("O", new Vector3(0, 0, 2),
+            new Vector3Int(800, 400, 18), 0);
+        Physics.SyncTransforms();
+
+        var ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        var allHits = Physics.RaycastAll(ray);
+        System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
+
+        var result = ResizeHandleManager.PickHandleFromHits(allHits, shiftHeld: true);
+        Assert.AreEqual(oHandle, result,
+            "хит без handle пропускается, следующий handle на непрозрачном — берётся");
+    }
+
+    [Test]
+    public void PickHandleFromHits_Empty_Null()
+    {
+        var result = ResizeHandleManager.PickHandleFromHits(
+            new RaycastHit[0], shiftHeld: true);
+        Assert.IsNull(result);
+    }
 }
