@@ -29,6 +29,8 @@ namespace KitchenDesigner.Core.UI
         private Button? _specButton;
         private Button? _hierarchyButton;
         private Button? _errorButton;
+        private Button? _gotoIssueButton;
+        private Image? _gotoIssueIcon;
         private Button? _projectInstructionsButton;
         private Button? _settingsButton;
         private Button? _measureButton;
@@ -147,6 +149,10 @@ namespace KitchenDesigner.Core.UI
             _hierarchyButton = AddBarButton(bar.transform, "Hierarchy", "Сцена", ref x, y, h, 90, ToggleHierarchy);
             _errorButton = AddBarButton(bar.transform, "Errors", "Ошибки", ref x, y, h, 110, ToggleErrors);
             _errorButtonLabel = _errorButton.GetComponentInChildren<TMP_Text>();
+            // Быстрый переход к первой проблеме без открытия окна «Ошибки».
+            _gotoIssueButton = AddIconButton(bar.transform, "GotoIssue", IconFactory.Warning,
+                ref x, y, h, GotoFirstIssue);
+            _gotoIssueIcon = _gotoIssueButton.transform.Find("GotoIssue_Icon")?.GetComponent<Image>();
             _projectInstructionsButton = AddBarButton(bar.transform, "ProjectInstructions",
                 "Инструкции", ref x, y, h, 120, ToggleProjectInstructions);
             AddSeparator(bar.transform, ref x, y, h);
@@ -306,8 +312,6 @@ namespace KitchenDesigner.Core.UI
         // без скобок — если проблем нет. Красит рич-текстом только «(N)».
         private void UpdateErrorBadge()
         {
-            if (_errorButtonLabel == null) return;
-
             int errors = 0, warnings = 0;
             foreach (var iss in SceneAnalyzer.Analyze())
             {
@@ -316,19 +320,38 @@ namespace KitchenDesigner.Core.UI
             }
 
             int total = errors + warnings;
-            if (total == 0)
+            Color color = errors > 0 ? UIStyle.HighlightError : UIStyle.HighlightWarning;
+
+            if (_errorButtonLabel != null)
             {
-                _errorButtonLabel.text = "Ошибки";
-                return;
+                _errorButtonLabel.text = total == 0
+                    ? "Ошибки"
+                    : $"Ошибки <color=#{ColorUtility.ToHtmlStringRGB(color)}>({total})</color>";
             }
 
-            Color color = errors > 0 ? UIStyle.HighlightError : ErrorBadgeWarnColor;
-            string hex = ColorUtility.ToHtmlStringRGB(color);
-            _errorButtonLabel.text = $"Ошибки <color=#{hex}>({total})</color>";
+            // Кнопка перехода к проблеме живёт по тому же счётчику. Значок красим
+            // вручную: Button.interactable гасит только фон кнопки, дочерний Image
+            // иконки под ColorBlock не попадает.
+            if (_gotoIssueButton != null) _gotoIssueButton.interactable = total > 0;
+            if (_gotoIssueIcon != null)
+                _gotoIssueIcon.color = total == 0 ? UIStyle.TextDisabled : color;
         }
 
-        /// <summary>Оранжевый для бейджа «только предупреждения».</summary>
-        private static readonly Color ErrorBadgeWarnColor = new Color(1f, 0.55f, 0.1f, 1f);
+        // Выделяет детали первой проблемы сцены, наводит на них камеру и показывает
+        // её описание в статус-баре. Анализ повторяем: кэшировать AnalysisIssue между
+        // кадрами нельзя — ссылки на детали могли протухнуть.
+        private static void GotoFirstIssue()
+        {
+            foreach (var iss in SceneAnalyzer.Analyze())
+            {
+                if (iss.Level != IssueLevel.Error && iss.Level != IssueLevel.Warning) continue;
+
+                ErrorPanelUI.RevealIssue(iss);
+                AutoSaveIndicator.Instance?.ShowMessage(
+                    $"{iss.Code} · {iss.Detail} · {iss.Message}", ErrorPanelUI.LevelColor(iss.Level));
+                return;
+            }
+        }
 
         private void DoUndo()
         {

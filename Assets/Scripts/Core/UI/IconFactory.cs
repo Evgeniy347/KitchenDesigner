@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core.UI
         private static readonly Color Accent = new Color(0.45f, 0.85f, 0.5f, 1f);
         private static readonly Color Clear = new Color(0, 0, 0, 0);
 
-        private static Sprite? _gear, _floppy, _floppyPlus, _folder, _undo, _redo, _pin;
+        private static Sprite? _gear, _floppy, _floppyPlus, _folder, _undo, _redo, _pin, _warning;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Undo => _undo ??= BuildArrow(false);
         public static Sprite Redo => _redo ??= BuildArrow(true);
         public static Sprite Pin => _pin ??= BuildPin();
+        public static Sprite Warning => _warning ??= BuildWarning();
 
         // --- Иконки ---
 
@@ -89,6 +90,18 @@ namespace KitchenDesigner.Core.UI
             return Finish(px);
         }
 
+        // Предупреждающий треугольник с «!». Рисуется БЕЛЫМ (в отличие от прочих
+        // иконок): цвет задаёт вызывающий через Image.color — красный при ошибках,
+        // оранжевый при предупреждениях, серый когда кнопка неактивна.
+        private static Sprite BuildWarning()
+        {
+            var px = NewCanvas();
+            TriangleUp(px, 32, 8, 48, 27, Color.white);
+            Rect(px, 30, 24, 35, 40, Clear);   // палочка «!»
+            Disc(px, 32, 19, 3, Clear);        // точка «!»
+            return Finish(px);
+        }
+
         // --- Примитивы рисования ---
 
         private static void Arc(Color32[] px, int cx, int cy, int r, float fromDeg, float toDeg, int thick, Color col)
@@ -110,6 +123,19 @@ namespace KitchenDesigner.Core.UI
                 int yy = baseY - i;
                 int half = Mathf.RoundToInt((h - i) * 0.55f);
                 Rect(px, tx - half, yy, tx + half + 1, yy + 1, col);
+            }
+        }
+
+        // Заполненный треугольник вершиной вверх: основание шириной 2*halfW у baseY,
+        // вершина в (cx, apexY).
+        private static void TriangleUp(Color32[] px, int cx, int baseY, int apexY, int halfW, Color col)
+        {
+            int h = apexY - baseY;
+            if (h <= 0) return;
+            for (int y = baseY; y <= apexY; y++)
+            {
+                int half = Mathf.RoundToInt(halfW * (1f - (y - baseY) / (float)h));
+                Rect(px, cx - half, y, cx + half + 1, y + 1, col);
             }
         }
 

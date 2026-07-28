@@ -22,6 +22,9 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color HighlightChanged = new Color(1f, 0.84f, 0.0f, 1f);
         /// <summary>Красная рамка «введённое значение не принято».</summary>
         public static readonly Color HighlightError = new Color(0.90f, 0.25f, 0.25f, 1f);
+        /// <summary>Оранжевый уровня «предупреждение»: бейдж «Ошибки (N)», значок
+        /// перехода к проблеме, строка проблемы в статус-баре и таблица окна ошибок.</summary>
+        public static readonly Color HighlightWarning = new Color(1f, 0.55f, 0.1f, 1f);
         /// <summary>Фон нажатого тоггла тулбара / активной вкладки.</summary>
         public static readonly Color SurfaceActive = new Color(0.28f, 0.33f, 0.42f, 1f);
         public static readonly Color Separator = new Color(0.35f, 0.37f, 0.42f, 1f);

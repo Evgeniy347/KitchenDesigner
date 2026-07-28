@@ -288,7 +288,7 @@ namespace KitchenDesigner.Core.UI
             var btn = UIFactory.CreateButton("Row", _content!, "", Vector2.zero,
                 new Vector2(ContentW, RowH), () => SelectIssue(iss));
             var dbl = btn.gameObject.AddComponent<ListRowDoubleClick>();
-            dbl.OnDoubleClick = () => FocusOnIssue(iss);
+            dbl.OnDoubleClick = () => RevealIssue(iss);
             var row = btn.GetComponent<RectTransform>();
             row.anchorMin = new Vector2(0, 1);
             row.anchorMax = new Vector2(1, 1);
@@ -305,6 +305,14 @@ namespace KitchenDesigner.Core.UI
             Cell(row, iss.Code, ColCode, ColDetail - ColCode, UIStyle.Text);
             Cell(row, iss.Detail, ColDetail, ColMessage - ColDetail, UIStyle.Text);
             Cell(row, iss.Message, ColMessage, ColMessageW, UIStyle.Text);
+        }
+
+        /// <summary>Выделить детали проблемы и навести на них камеру. Тот же путь,
+        /// что двойной клик по строке; используется и кнопкой тулбара.</summary>
+        public static void RevealIssue(AnalysisIssue iss)
+        {
+            SelectIssue(iss);
+            FocusOnIssue(iss);
         }
 
         private static void SelectIssue(AnalysisIssue iss)
@@ -345,10 +353,11 @@ namespace KitchenDesigner.Core.UI
             _ => level.ToString(),
         };
 
-        private static Color LevelColor(IssueLevel level) => level switch
+        /// <summary>Цвет уровня проблемы: таблица окна, значок тулбара, статус-бар.</summary>
+        public static Color LevelColor(IssueLevel level) => level switch
         {
             IssueLevel.Error => UIStyle.HighlightError,
-            IssueLevel.Warning => UIStyle.HighlightChanged,
+            IssueLevel.Warning => UIStyle.HighlightWarning,
             IssueLevel.Info => UIStyle.TextSecondary,
             _ => UIStyle.Text,
         };
