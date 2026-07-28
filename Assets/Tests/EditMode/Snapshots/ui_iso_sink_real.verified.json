@@ -1,4 +1,4 @@
-{
+﻿{
   "root": "UICanvas",
   "children": [
     {
@@ -498,6 +498,11 @@
     },
     {
       "type": "Button",
+      "text": "Cab_R_Shf_L5_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
       "text": "Cab_R_Shf_M1",
       "position": [20, 0]
     },
@@ -509,6 +514,11 @@
     {
       "type": "Button",
       "text": "Cab_R_Shf_M3",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_M3_1",
       "position": [20, 0]
     },
     {
@@ -538,6 +548,11 @@
     },
     {
       "type": "Button",
+      "text": "Cab_R_Shf_R5_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
       "text": "Cab_R_Side_L",
       "position": [20, 0]
     },
@@ -549,6 +564,11 @@
     {
       "type": "Button",
       "text": "Cab_ToeKick_Bottom",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_ToeKick_Bottom_1",
       "position": [20, 0]
     },
     {
@@ -888,6 +908,11 @@
     },
     {
       "type": "Button",
+      "text": "Polka",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
       "text": "W125_01",
       "position": [20, 0]
     },
@@ -1088,6 +1113,16 @@
     },
     {
       "type": "Button",
+      "text": "Yaschik_Movento_3",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Yaschik_Movento_4",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
       "text": "fake-microwave",
       "position": [20, 0]
     },
@@ -1168,6 +1203,16 @@
     },
     {
       "type": "Button",
+      "text": "Fasad_schitovoy_3",
+      "position": [36, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Fasad_schitovoy_4",
+      "position": [36, 0]
+    },
+    {
+      "type": "Button",
       "text": "Группа 1 (0)",
       "position": [38, 0]
     },
@@ -1203,73 +1248,78 @@
     },
     {
       "type": "Button",
-      "text": "Ошибки <color=#E64040>(#)</color>",
+      "text": "Ошибки",
       "position": [260, -6]
     },
     {
       "type": "Button",
-      "text": "Инструкции",
+      "text": "GotoIssue",
       "position": [376, -6]
     },
     {
       "type": "Button",
-      "text": "Settings",
-      "position": [518, -6]
+      "text": "Инструкции",
+      "position": [422, -6]
     },
     {
       "type": "Button",
-      "text": "Save",
+      "text": "Settings",
       "position": [564, -6]
     },
     {
       "type": "Button",
-      "text": "SaveAs",
+      "text": "Save",
       "position": [610, -6]
     },
     {
       "type": "Button",
-      "text": "Load",
+      "text": "SaveAs",
       "position": [656, -6]
     },
     {
       "type": "Button",
-      "text": "Undo",
-      "position": [718, -6]
+      "text": "Load",
+      "position": [702, -6]
     },
     {
       "type": "Button",
-      "text": "Redo",
+      "text": "Undo",
       "position": [764, -6]
     },
     {
       "type": "Button",
+      "text": "Redo",
+      "position": [810, -6]
+    },
+    {
+      "type": "Button",
       "text": "Ручки: растяжение",
-      "position": [826, -6]
+      "position": [872, -6]
     },
     {
       "type": "Button",
       "text": "Рулетка",
-      "position": [1008, -6]
+      "position": [1054, -6]
     },
     {
       "type": "Button",
       "text": "Тонировка",
-      "position": [1140, -6]
+      "position": [1186, -6]
     },
     {
       "type": "Button",
       "text": "Свет",
-      "position": [1256, -6]
+      "position": [1302, -6]
     },
     {
       "type": "Button",
       "text": "Солнце",
-      "position": [1332, -6]
+      "position": [1378, -6]
     },
     {
       "type": "Button",
       "text": "Режим: обычный",
-      "position": [1444, -6]
+      "position": [1490, -6]
     },
     {
       "type": "Button",

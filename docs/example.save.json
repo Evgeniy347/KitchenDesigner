@@ -167,7 +167,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 2
         },
         {
             "name": "A2_A_planck",
@@ -334,8 +334,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeSkipValidation": true,
+            "edgeManualMask": 15
         },
         {
             "name": "B1_side_L",
@@ -671,7 +671,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 2
         },
         {
             "name": "B4_side_R",
@@ -1426,8 +1426,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeSkipValidation": true,
+            "edgeManualMask": 15
         },
         {
             "name": "K2_door",
@@ -3320,7 +3320,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 1
         },
         {
             "name": "B12_upper_top",
@@ -3409,7 +3409,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 1
         },
         {
             "name": "B5_upper_back",
@@ -3493,7 +3493,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 14
         },
         {
             "name": "radial_shelf_upper_4",
@@ -4791,7 +4791,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
-            "doorOpen": true,
+            "doorOpen": false,
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
@@ -4806,7 +4806,7 @@
             "drawerIsUpper": false,
             "drawerPairedName": "A3_gtv_double_lower_A_top",
             "drawerAttachedFacadeName": "A3_drawer_upper",
-            "doubleDrawerState": 1,
+            "doubleDrawerState": 0,
             "isWindow": false,
             "windowTint": 0,
             "windowSillProtrusionMM": 50,
@@ -5211,7 +5211,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
-            "doorOpen": false,
+            "doorOpen": true,
             "assembled": true,
             "assembledFill": 1,
             "grooveCount": 1,
@@ -5295,7 +5295,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
-            "doorOpen": true,
+            "doorOpen": false,
             "assembled": true,
             "assembledFill": 1,
             "grooveCount": 1,
@@ -6219,7 +6219,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
-            "doorOpen": true,
+            "doorOpen": false,
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
@@ -6601,7 +6601,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 1
         },
         {
             "name": "B34_upper_shelf_1",
@@ -7026,7 +7026,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 1
         },
         {
             "name": "B34_upper_shelf_2",
@@ -7451,7 +7451,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 8
         },
         {
             "name": "A12_upper_shelf_2_1_1_1",
@@ -7657,7 +7657,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
-            "doorOpen": true,
+            "doorOpen": false,
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
@@ -7672,7 +7672,7 @@
             "drawerIsUpper": true,
             "drawerPairedName": "A3_gtv_double_lower_A",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 1,
+            "doubleDrawerState": 0,
             "isWindow": false,
             "windowTint": 0,
             "windowSillProtrusionMM": 50,
@@ -8963,7 +8963,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 2
         },
         {
             "name": "B1_side_L_1",
@@ -12753,7 +12753,7 @@
                 125
             ],
             "position": [
-                7.590000629425049,
+                7.559000492095947,
                 1.0500000715255738,
                 1.130500078201294
             ],
@@ -16000,7 +16000,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 1
         },
         {
             "name": "Cab_L_Side_R",
@@ -16084,7 +16084,7 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 2
         },
         {
             "name": "Cab_L_Side_L",
@@ -18357,14 +18357,14 @@
         {
             "name": "Yaschik_Movento",
             "dimensionsMM": [
-                751,
+                752,
                 147,
                 500
             ],
             "position": [
                 6.872000694274902,
                 0.15950006246566773,
-                2.8005001544952394
+                2.8010001182556154
             ],
             "rotation": [
                 0.0,
@@ -18400,7 +18400,7 @@
             "drawerType": 120,
             "drawerNominalLength": 500,
             "drawerColor": 0,
-            "drawerInternalWidth": 751,
+            "drawerInternalWidth": 752,
             "drawerIsDouble": false,
             "drawerIsUpper": false,
             "drawerPairedName": "",
@@ -18442,13 +18442,13 @@
             "name": "Cab_ToeKick_Bottom",
             "dimensionsMM": [
                 600,
-                1967,
+                1968,
                 16
             ],
             "position": [
                 6.840000152587891,
                 0.07800006866455078,
-                2.192499876022339
+                2.192999839782715
             ],
             "rotation": [
                 0.7071068286895752,
@@ -18525,14 +18525,14 @@
         {
             "name": "Cab_ToeKick_Front",
             "dimensionsMM": [
-                1965,
+                1968,
                 70,
                 16
             ],
             "position": [
                 7.117000579833984,
                 0.03500000014901161,
-                2.191500186920166
+                2.193000078201294
             ],
             "rotation": [
                 0.0,
@@ -18611,12 +18611,12 @@
             "dimensionsMM": [
                 50,
                 50,
-                751
+                752
             ],
             "position": [
                 6.840000152587891,
                 1.8250000476837159,
-                2.8005001544952394
+                2.8010001182556154
             ],
             "rotation": [
                 0.0,
@@ -18694,13 +18694,13 @@
             "name": "Cab_L_Shf_B2",
             "dimensionsMM": [
                 600,
-                751,
+                752,
                 16
             ],
             "position": [
                 6.840000152587891,
                 1.9779999256134034,
-                2.8005001544952394
+                2.8010001182556154
             ],
             "rotation": [
                 0.7071068286895752,
@@ -18862,13 +18862,13 @@
             "name": "Cab_L_Shf_B3",
             "dimensionsMM": [
                 600,
-                751,
+                752,
                 16
             ],
             "position": [
                 6.840000152587891,
                 2.2940001487731935,
-                2.8005003929138185
+                2.8010003566741945
             ],
             "rotation": [
                 0.7071068286895752,
@@ -18945,14 +18945,14 @@
         {
             "name": "Fasad_schitovoy",
             "dimensionsMM": [
-                747,
+                748,
                 200,
                 18
             ],
             "position": [
                 7.131000518798828,
                 0.18800000846385957,
-                2.8005003929138185
+                2.8010003566741945
             ],
             "rotation": [
                 0.0,
@@ -18974,7 +18974,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "teplyy_medovyy_dub",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
@@ -19029,14 +19029,14 @@
         {
             "name": "Yaschik_Movento_1",
             "dimensionsMM": [
-                751,
+                752,
                 147,
                 500
             ],
             "position": [
                 6.872000694274902,
                 0.36350002884864809,
-                2.8005001544952394
+                2.8010001182556154
             ],
             "rotation": [
                 0.0,
@@ -19072,7 +19072,7 @@
             "drawerType": 120,
             "drawerNominalLength": 500,
             "drawerColor": 0,
-            "drawerInternalWidth": 751,
+            "drawerInternalWidth": 752,
             "drawerIsDouble": false,
             "drawerIsUpper": false,
             "drawerPairedName": "",
@@ -19113,14 +19113,14 @@
         {
             "name": "Fasad_schitovoy_1",
             "dimensionsMM": [
-                747,
+                748,
                 200,
                 18
             ],
             "position": [
                 7.13100004196167,
                 0.3920000195503235,
-                2.8005003929138185
+                2.8010003566741945
             ],
             "rotation": [
                 0.0,
@@ -19142,7 +19142,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "teplyy_medovyy_dub",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
@@ -19197,14 +19197,14 @@
         {
             "name": "Yaschik_Movento_2",
             "dimensionsMM": [
-                751,
+                752,
                 147,
                 500
             ],
             "position": [
                 6.872000694274902,
                 0.5674999952316284,
-                2.8005003929138185
+                2.8010003566741945
             ],
             "rotation": [
                 0.0,
@@ -19240,7 +19240,7 @@
             "drawerType": 120,
             "drawerNominalLength": 500,
             "drawerColor": 0,
-            "drawerInternalWidth": 751,
+            "drawerInternalWidth": 752,
             "drawerIsDouble": false,
             "drawerIsUpper": false,
             "drawerPairedName": "",
@@ -19281,14 +19281,14 @@
         {
             "name": "Fasad_schitovoy_2",
             "dimensionsMM": [
-                747,
+                748,
                 200,
                 18
             ],
             "position": [
                 7.131000518798828,
                 0.5960000157356262,
-                2.8005003929138185
+                2.8010001182556154
             ],
             "rotation": [
                 0.0,
@@ -19310,7 +19310,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "teplyy_medovyy_dub",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
@@ -19449,12 +19449,12 @@
         {
             "name": "Cab_ToeKick_Inner_1",
             "dimensionsMM": [
-                497,
+                498,
                 70,
                 16
             ],
             "position": [
-                6.860500335693359,
+                6.860000133514404,
                 0.03500000014901161,
                 2.4220001697540285
             ],
@@ -19497,6 +19497,762 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
+        },
+        {
+            "name": "Cab_R_Shf_R5_1",
+            "dimensionsMM": [
+                600,
+                368,
+                16
+            ],
+            "position": [
+                8.239999771118164,
+                2.6920006275177,
+                2.9930005073547365
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "teplyy_medovyy_dub",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
+        },
+        {
+            "name": "Cab_R_Shf_L5_1",
+            "dimensionsMM": [
+                600,
+                368,
+                16
+            ],
+            "position": [
+                8.239999771118164,
+                2.692000150680542,
+                1.3930002450942994
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "teplyy_medovyy_dub",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
+        },
+        {
+            "name": "Cab_R_Shf_M3_1",
+            "dimensionsMM": [
+                600,
+                1200,
+                16
+            ],
+            "position": [
+                8.24000072479248,
+                2.6920008659362795,
+                2.193000555038452
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "teplyy_medovyy_dub",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
+        },
+        {
+            "name": "Cab_ToeKick_Bottom_1",
+            "dimensionsMM": [
+                600,
+                752,
+                16
+            ],
+            "position": [
+                6.840000629425049,
+                0.706000030040741,
+                2.800999879837036
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "teplyy_medovyy_dub",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
+        },
+        {
+            "name": "Yaschik_Movento_3",
+            "dimensionsMM": [
+                592,
+                115,
+                500
+            ],
+            "position": [
+                6.872000694274902,
+                0.14350001513957978,
+                1.5050002336502076
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "gtv_anthracite",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": true,
+            "drawerSystem": 1,
+            "drawerType": 86,
+            "drawerNominalLength": 500,
+            "drawerColor": 0,
+            "drawerInternalWidth": 592,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "Fasad_schitovoy_3",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
+        },
+        {
+            "name": "Fasad_schitovoy_3",
+            "dimensionsMM": [
+                588,
+                200,
+                18
+            ],
+            "position": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.505000114440918
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": true,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 12,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
+        },
+        {
+            "name": "Fasad_schitovoy_4",
+            "dimensionsMM": [
+                588,
+                200,
+                18
+            ],
+            "position": [
+                7.131000518798828,
+                0.18800000846385957,
+                2.1130003929138185
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": true,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 2,
+            "gapRight": 2,
+            "gapTop": 2,
+            "gapBottom": 2,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 12,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
+        },
+        {
+            "name": "Polka",
+            "dimensionsMM": [
+                600,
+                400,
+                16
+            ],
+            "position": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.8090001344680787
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
+        },
+        {
+            "name": "Yaschik_Movento_4",
+            "dimensionsMM": [
+                592,
+                115,
+                500
+            ],
+            "position": [
+                6.872000694274902,
+                0.14350001513957978,
+                2.1130003929138185
+            ],
+            "rotation": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "groupId": 0,
+            "materialId": "gtv_anthracite",
+            "legsMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": true,
+            "drawerSystem": 1,
+            "drawerType": 86,
+            "drawerNominalLength": 500,
+            "drawerColor": 0,
+            "drawerInternalWidth": 592,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "Fasad_schitovoy_4",
             "doubleDrawerState": 0,
             "isWindow": false,
             "windowTint": 0,
@@ -19618,11 +20374,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": -1.0048749446868897,
-        "targetY": 1.410460114479065,
-        "targetZ": -4.010965347290039,
-        "angleX": 23.09123992919922,
-        "angleY": -329.26800537109377,
+        "targetX": 6.502640247344971,
+        "targetY": -0.953731894493103,
+        "targetZ": 1.8632557392120362,
+        "angleX": 61.2475700378418,
+        "angleY": 271.74676513671877,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": 6.478079319000244,
@@ -19631,7 +20387,7 @@
         "photoAngleX": 13.95083999633789,
         "photoAngleY": 885.6734619140625
     },
-    "handleMode": "Move",
+    "handleMode": "Resize",
     "projectInstructions": "Планировка квартиры 85,8 м2 (2-комнатная), панельный дом.\n\nОси: X — восток(+), Z — север(+), Y — вверх. Все размеры в мм.\nНачало отсчёта плана (origin) — внутренний юго-западный угол комнаты 22,9 м2:\nмировые координаты (-1585, -3620). Комната 22,9 в чистоте 3170 x 7240.\nКухонные модули (ряды A и B) стоят вплотную к граням z=0 и x=3170 —\nэти грани двигать НЕЛЬЗЯ.\n\nbearing_wall_thickness_mm: 250\npartition_wall_thickness_mm: 125\nfloor_thickness_mm: 100\n\nСтена состоит из ОТДЕЛЬНЫХ БЛОКОВ: несущие пилоны 250 мм (шаг 1200) чередуются\nс перегородками 125 мм по одной линии. Фасады 150 мм — задаются через\nthickness_mm на стене, а не типом. Тёмно-серый на чертеже = несущая,\nсветло-серый = перегородка.\nВысота стен 2700, низ стен и верх пола на Y=0.\n",
     "basePlateValid": true,
     "basePlate": {
@@ -19719,2692 +20475,6 @@
         "edgeManualMask": 0
     },
     "undoHistory": [
-        {
-            "type": "resize",
-            "description": "Resize B12_upper_top",
-            "elementIndex": 39,
-            "posBefore": [
-                1.055999994277954,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.055999994277954,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1022,
-                332,
-                18
-            ],
-            "dimsAfter": [
-                1022,
-                332,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.9820903539657593,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.9820001125335694,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                623,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                623,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.9820001125335694,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.9305000305175782,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.9305000305175782,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.9480000734329224,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                623,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                623,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.9480000734329224,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.9480000734329224,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                623,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                623,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.9480000734329224,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.9305000305175782,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.9305000305175782,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.9820902347564698,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.9820903539657593,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.6715002059936524,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.6715002059936524,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8100001811981202,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                623,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                900,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_upper_top",
-            "elementIndex": 39,
-            "posBefore": [
-                1.055999994277954,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.055999994277954,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1022,
-                332,
-                18
-            ],
-            "dimsAfter": [
-                1022,
-                332,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                2.63700008392334,
-                0.20000000298023225,
-                -2.9900002479553224
-            ],
-            "posAfter": [
-                0.999000072479248,
-                0.20000000298023225,
-                -3.8980002403259279
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.999000072479248,
-                0.20000000298023225,
-                -3.8980002403259279
-            ],
-            "posAfter": [
-                0.999000072479248,
-                1.865538239479065,
-                -3.8980002403259279
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.999000072479248,
-                1.865538239479065,
-                -3.8980002403259279
-            ],
-            "posAfter": [
-                0.999000072479248,
-                1.865538239479065,
-                -3.7214999198913576
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.999000072479248,
-                1.865538239479065,
-                -3.7214999198913576
-            ],
-            "posAfter": [
-                0.999000072479248,
-                1.8660000562667847,
-                -3.7210001945495607
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                600,
-                400,
-                3
-            ],
-            "dimsAfter": [
-                600,
-                400,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.999000072479248,
-                1.8660000562667847,
-                -3.7210001945495607
-            ],
-            "posAfter": [
-                0.999000072479248,
-                1.9139503240585328,
-                -3.7210001945495607
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.999000072479248,
-                1.9139503240585328,
-                -3.7210001945495607
-            ],
-            "posAfter": [
-                0.999000072479248,
-                1.9139503240585328,
-                -3.4597597122192385
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.999000072479248,
-                1.9139503240585328,
-                -3.4597597122192385
-            ],
-            "posAfter": [
-                0.999000072479248,
-                1.9139503240585328,
-                -3.517500162124634
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.999000072479248,
-                1.9139503240585328,
-                -3.517500162124634
-            ],
-            "posAfter": [
-                0.999000072479248,
-                1.9774503707885743,
-                -3.517500162124634
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                600,
-                400,
-                3
-            ],
-            "dimsAfter": [
-                600,
-                527,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.999000072479248,
-                1.9774503707885743,
-                -3.517500162124634
-            ],
-            "posAfter": [
-                0.9225000739097595,
-                1.9774503707885743,
-                -3.517500162124634
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                600,
-                527,
-                3
-            ],
-            "dimsAfter": [
-                753,
-                527,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.9225000739097595,
-                1.9774503707885743,
-                -3.517500162124634
-            ],
-            "posAfter": [
-                0.9225000739097595,
-                1.9774503707885743,
-                -3.6015005111694338
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.9225000739097595,
-                1.9774503707885743,
-                -3.6015005111694338
-            ],
-            "posAfter": [
-                0.9225000739097595,
-                1.9845000505447388,
-                -3.6015005111694338
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.9225000739097595,
-                1.9845000505447388,
-                -3.6015005111694338
-            ],
-            "posAfter": [
-                0.9154999852180481,
-                1.9845000505447388,
-                -3.6015005111694338
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B3_upper_side_L",
-            "elementIndex": 31,
-            "posBefore": [
-                0.5360000133514404,
-                1.809999942779541,
-                -3.4539999961853029
-            ],
-            "posAfter": [
-                0.5360000133514404,
-                1.809999942779541,
-                -3.3808822631835939
-            ],
-            "rotBefore": [
-                0.0,
-                -0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                -0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B3_upper_side_L",
-            "elementIndex": 31,
-            "posBefore": [
-                0.5360000133514404,
-                1.809999942779541,
-                -3.3808822631835939
-            ],
-            "posAfter": [
-                0.5360000133514404,
-                1.809999942779541,
-                -3.4539999961853029
-            ],
-            "rotBefore": [
-                0.0,
-                -0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                -0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                0.9154999852180481,
-                1.9845000505447388,
-                -3.6015005111694338
-            ],
-            "posAfter": [
-                1.055999994277954,
-                1.9845000505447388,
-                -3.6015005111694338
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                753,
-                527,
-                3
-            ],
-            "dimsAfter": [
-                1034,
-                527,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                1.055999994277954,
-                1.9845000505447388,
-                -3.6015005111694338
-            ],
-            "posAfter": [
-                1.055999994277954,
-                1.8100000619888306,
-                -3.6015005111694338
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                1034,
-                527,
-                3
-            ],
-            "dimsAfter": [
-                1034,
-                876,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_upper_top",
-            "elementIndex": 39,
-            "posBefore": [
-                1.055999994277954,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.055999994277954,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1022,
-                332,
-                18
-            ],
-            "dimsAfter": [
-                1022,
-                332,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_DVP_HDF",
-            "elementIndex": 99,
-            "posBefore": [
-                1.055999994277954,
-                1.8100000619888306,
-                -3.6015005111694338
-            ],
-            "posAfter": [
-                1.055999994277954,
-                1.8100000619888306,
-                -3.6020002365112306
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                1034,
-                876,
-                3
-            ],
-            "dimsAfter": [
-                1034,
-                876,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_A_top",
-            "elementIndex": 28,
-            "posBefore": [
-                1.4190000295639039,
-                2.251000165939331,
-                -2.56600022315979
-            ],
-            "posAfter": [
-                1.4190000295639039,
-                2.251000165939331,
-                -2.56600022315979
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                332,
-                1372,
-                18
-            ],
-            "dimsAfter": [
-                332,
-                1372,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_DVP_HDF",
-            "elementIndex": 85,
-            "posBefore": [
-                1.5665000677108765,
-                1.8100001811981202,
-                -2.56600022315979
-            ],
-            "posAfter": [
-                1.5660001039505005,
-                1.8100000619888306,
-                -2.56600022315979
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1383,
-                875,
-                3
-            ],
-            "dimsAfter": [
-                1383,
-                875,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_DVP_HDF",
-            "elementIndex": 85,
-            "posBefore": [
-                1.5660001039505005,
-                1.8100000619888306,
-                -2.56600022315979
-            ],
-            "posAfter": [
-                1.5665000677108765,
-                1.8100000619888306,
-                -2.56600022315979
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1383,
-                875,
-                3
-            ],
-            "dimsAfter": [
-                1383,
-                875,
-                4
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_DVP_HDF",
-            "elementIndex": 85,
-            "posBefore": [
-                1.5665000677108765,
-                1.8100000619888306,
-                -2.56600022315979
-            ],
-            "posAfter": [
-                1.567000150680542,
-                1.8100000619888306,
-                -2.56600022315979
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05114316940307617,
-                2.625,
-                0.46281343698501589
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                -0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                -0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                -0.7071068286895752,
-                0.0,
-                -0.7071068286895752,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                -0.7071068286895752,
-                0.0,
-                -0.7071068286895752,
-                0.0
-            ],
-            "rotAfter": [
-                -0.5,
-                -0.5,
-                -0.5,
-                0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                -0.5,
-                -0.5,
-                -0.5,
-                0.5
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                -0.7071068286895752,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                -0.7071068286895752,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                0.5
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.7071068286895752,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.7071068286895752,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.5,
-                -0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.5,
-                -0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                2.625000238418579,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                1.3268147706985474,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                1.3268147706985474,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                1.8583251237869263,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Istochnik_sveta",
-            "elementIndex": 52,
-            "posBefore": [
-                -0.05100000277161598,
-                1.8583251237869263,
-                0.46300002932548525
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.5011777877807619,
-                0.46300002932548525
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF",
-            "elementIndex": 100,
-            "posBefore": [
-                2.009000062942505,
-                0.20000000298023225,
-                -4.804000377655029
-            ],
-            "posAfter": [
-                0.3410000205039978,
-                0.20000000298023225,
-                -4.308000087738037
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF",
-            "elementIndex": 100,
-            "posBefore": [
-                0.3410000205039978,
-                0.20000000298023225,
-                -4.308000087738037
-            ],
-            "posAfter": [
-                -0.35500001907348635,
-                0.20100000500679017,
-                -3.6185007095336916
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF",
-            "elementIndex": 100,
-            "posBefore": [
-                -0.35500001907348635,
-                0.20100000500679017,
-                -3.6185007095336916
-            ],
-            "posAfter": [
-                -0.35500001907348635,
-                1.5789998769760132,
-                -3.6185007095336916
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF",
-            "elementIndex": 100,
-            "posBefore": [
-                -0.35500001907348635,
-                1.5789998769760132,
-                -3.6185007095336916
-            ],
-            "posAfter": [
-                0.20800001919269563,
-                1.5719999074935914,
-                -3.6014997959136965
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move DVP_HDF",
-            "elementIndex": 100,
-            "posBefore": [
-                0.2080000340938568,
-                1.5719999074935914,
-                -3.6014997959136965
-            ],
-            "posAfter": [
-                0.21500003337860108,
-                1.5719999074935914,
-                -3.6014997959136965
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize DVP_HDF",
-            "elementIndex": 100,
-            "posBefore": [
-                0.21500003337860108,
-                1.5719999074935914,
-                -3.6014997959136965
-            ],
-            "posAfter": [
-                0.21500003337860108,
-                1.6989998817443848,
-                -3.6014997959136965
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                600,
-                400,
-                3
-            ],
-            "dimsAfter": [
-                600,
-                654,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize DVP_HDF",
-            "elementIndex": 100,
-            "posBefore": [
-                0.21500003337860108,
-                1.6989998817443848,
-                -3.6014997959136965
-            ],
-            "posAfter": [
-                0.21500003337860108,
-                1.809999942779541,
-                -3.6014997959136965
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                600,
-                654,
-                3
-            ],
-            "dimsAfter": [
-                600,
-                876,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize DVP_HDF",
-            "elementIndex": 100,
-            "posBefore": [
-                0.21500003337860108,
-                1.809999942779541,
-                -3.6014997959136965
-            ],
-            "posAfter": [
-                -0.12299999594688416,
-                1.809999942779541,
-                -3.6014997959136965
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                600,
-                876,
-                3
-            ],
-            "dimsAfter": [
-                1276,
-                876,
-                3
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A_apron",
-            "elementIndex": 101,
-            "posBefore": [
-                2.0450000762939455,
-                0.20000000298023225,
-                -4.498000144958496
-            ],
-            "posAfter": [
-                2.376000165939331,
-                0.20000000298023225,
-                -4.081000328063965
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A_apron",
-            "elementIndex": 101,
-            "posBefore": [
-                2.376000165939331,
-                0.20000000298023225,
-                -4.081000328063965
-            ],
-            "posAfter": [
-                2.7800002098083498,
-                0.20000000298023225,
-                -2.7770001888275148
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A_apron",
-            "elementIndex": 101,
-            "posBefore": [
-                2.7800002098083498,
-                0.20000000298023225,
-                -2.7770001888275148
-            ],
-            "posAfter": [
-                2.7800002098083498,
-                0.20000000298023225,
-                -2.7770001888275148
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                600,
-                400,
-                16
-            ],
-            "dimsAfter": [
-                600,
-                400,
-                16
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B_apron",
-            "elementIndex": 102,
-            "posBefore": [
-                2.880000114440918,
-                0.20000000298023225,
-                -2.7770001888275148
-            ],
-            "posAfter": [
-                2.880000114440918,
-                0.20000000298023225,
-                -2.7770001888275148
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                600,
-                400,
-                16
-            ],
-            "dimsAfter": [
-                600,
-                400,
-                16
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A_apron",
-            "elementIndex": 101,
-            "posBefore": [
-                2.7800002098083498,
-                0.20000000298023225,
-                -2.7770001888275148
-            ],
-            "posAfter": [
-                2.4150002002716066,
-                0.20000000298023225,
-                -3.6470000743865969
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B_apron",
-            "elementIndex": 102,
-            "posBefore": [
-                2.880000114440918,
-                0.20000000298023225,
-                -2.7770001888275148
-            ],
-            "posAfter": [
-                2.7740001678466799,
-                0.20000000298023225,
-                -2.6000001430511476
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B_apron",
-            "elementIndex": 102,
-            "posBefore": [
-                2.7740001678466799,
-                0.20000000298023225,
-                -2.6000001430511476
-            ],
-            "posAfter": [
-                1.5150001049041749,
-                0.20000000298023225,
-                -3.6120007038116457
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B_apron",
-            "elementIndex": 102,
-            "posBefore": [
-                1.5150001049041749,
-                0.20000000298023225,
-                -3.6120007038116457
-            ],
-            "posAfter": [
-                1.5150001049041749,
-                1.059999942779541,
-                -3.6120007038116457
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A_apron",
-            "elementIndex": 101,
-            "posBefore": [
-                2.4150002002716066,
-                0.20000000298023225,
-                -3.6470000743865969
-            ],
-            "posAfter": [
-                2.5970001220703127,
-                0.20000000298023225,
-                -2.2790000438690187
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A_apron",
-            "elementIndex": 101,
-            "posBefore": [
-                2.5970001220703127,
-                0.20000000298023225,
-                -2.2790000438690187
-            ],
-            "posAfter": [
-                2.5970001220703127,
-                0.20000000298023225,
-                -2.2790000438690187
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A_apron",
-            "elementIndex": 101,
-            "posBefore": [
-                2.5970001220703127,
-                0.20000000298023225,
-                -2.2790000438690187
-            ],
-            "posAfter": [
-                0.5630000233650208,
-                0.20000000298023225,
-                -1.4830000400543213
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A_apron",
-            "elementIndex": 101,
-            "posBefore": [
-                0.5630000233650208,
-                0.20000000298023225,
-                -1.4830000400543213
-            ],
-            "posAfter": [
-                0.7850000262260437,
-                0.20000000298023225,
-                -1.8900001049041749
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A_apron",
-            "elementIndex": 101,
-            "posBefore": [
-                0.7850000262260437,
-                0.20000000298023225,
-                -1.8900001049041749
-            ],
-            "posAfter": [
-                0.7850000262260437,
-                0.971311628818512,
-                -1.8900001049041749
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A_apron",
-            "elementIndex": 101,
-            "posBefore": [
-                0.7850000262260437,
-                0.971311628818512,
-                -1.8900001049041749
-            ],
-            "posAfter": [
-                1.593000054359436,
-                1.0199999809265137,
-                -1.883000135421753
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move B_apron",
-            "elementIndex": 102,
-            "posBefore": [
-                1.5150001049041749,
-                1.059999942779541,
-                -3.6120007038116457
-            ],
-            "posAfter": [
-                1.2850000858306885,
-                1.059999942779541,
-                -3.6120007038116457
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B_apron",
-            "elementIndex": 102,
-            "posBefore": [
-                1.2850000858306885,
-                1.059999942779541,
-                -3.6120007038116457
-            ],
-            "posAfter": [
-                1.2850000858306885,
-                1.0600000619888306,
-                -3.6120002269744875
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                600,
-                400,
-                16
-            ],
-            "dimsAfter": [
-                600,
-                400,
-                4
-            ],
-            "children": []
-        },
         {
             "type": "resize",
             "description": "Resize A_apron",
@@ -53242,6 +51312,2190 @@
                 18
             ],
             "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_L_Shf_B3",
+            "elementIndex": 221,
+            "posBefore": [
+                6.840000152587891,
+                2.2940001487731935,
+                2.8005003929138185
+            ],
+            "posAfter": [
+                6.840000152587891,
+                2.2940001487731935,
+                2.8010003566741945
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                751,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                752,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_L_Shf_B2",
+            "elementIndex": 219,
+            "posBefore": [
+                6.840000152587891,
+                1.9779999256134034,
+                2.8005001544952394
+            ],
+            "posAfter": [
+                6.840000152587891,
+                1.9779999256134034,
+                2.8010001182556154
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                751,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                752,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Yaschik_Movento_2",
+            "elementIndex": 225,
+            "posBefore": [
+                6.872000694274902,
+                0.5674999952316284,
+                2.8005003929138185
+            ],
+            "posAfter": [
+                6.872000694274902,
+                0.5674999952316284,
+                2.707500457763672
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                751,
+                147,
+                500
+            ],
+            "dimsAfter": [
+                565,
+                147,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Yaschik_Movento_1",
+            "elementIndex": 223,
+            "posBefore": [
+                6.872000694274902,
+                0.36350002884864809,
+                2.8005001544952394
+            ],
+            "posAfter": [
+                6.872000694274902,
+                0.36350002884864809,
+                2.7350001335144045
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                751,
+                147,
+                500
+            ],
+            "dimsAfter": [
+                620,
+                147,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Yaschik_Movento",
+            "elementIndex": 215,
+            "posBefore": [
+                6.872000694274902,
+                0.15950006246566773,
+                2.8005001544952394
+            ],
+            "posAfter": [
+                6.872000694274902,
+                0.15950006246566773,
+                2.8010001182556154
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                751,
+                147,
+                500
+            ],
+            "dimsAfter": [
+                752,
+                147,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Yaschik_Movento_1",
+            "elementIndex": 223,
+            "posBefore": [
+                6.872000694274902,
+                0.36350002884864809,
+                2.7350001335144045
+            ],
+            "posAfter": [
+                6.872000694274902,
+                0.36350002884864809,
+                2.8010001182556154
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                620,
+                147,
+                500
+            ],
+            "dimsAfter": [
+                752,
+                147,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Yaschik_Movento_2",
+            "elementIndex": 225,
+            "posBefore": [
+                6.872000694274902,
+                0.5674999952316284,
+                2.707500457763672
+            ],
+            "posAfter": [
+                6.872000694274902,
+                0.5674999952316284,
+                2.8005003929138185
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                565,
+                147,
+                500
+            ],
+            "dimsAfter": [
+                751,
+                147,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Bottom",
+            "elementIndex": 216,
+            "posBefore": [
+                6.840000152587891,
+                0.07800006866455078,
+                2.192499876022339
+            ],
+            "posAfter": [
+                6.840000152587891,
+                0.07800006866455078,
+                2.192999839782715
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                1967,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                1968,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Front",
+            "elementIndex": 217,
+            "posBefore": [
+                7.117000579833984,
+                0.03500000014901161,
+                2.191500186920166
+            ],
+            "posAfter": [
+                7.117000579833984,
+                0.03500000014901161,
+                2.193000078201294
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1965,
+                70,
+                16
+            ],
+            "dimsAfter": [
+                1968,
+                70,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Korob_4",
+            "elementIndex": 218,
+            "posBefore": [
+                6.840000152587891,
+                1.8250000476837159,
+                2.8005001544952394
+            ],
+            "posAfter": [
+                6.840000152587891,
+                1.8250000476837159,
+                2.8010001182556154
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                50,
+                50,
+                751
+            ],
+            "dimsAfter": [
+                50,
+                50,
+                752
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_sbornyy",
+            "elementIndex": 211,
+            "posBefore": [
+                7.5400004386901859,
+                1.0019999742507935,
+                3.183000326156616
+            ],
+            "posAfter": [
+                7.524500370025635,
+                1.0019999742507935,
+                3.183000326156616
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                796,
+                2000,
+                18
+            ],
+            "dimsAfter": [
+                827,
+                2000,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_sbornyy",
+            "elementIndex": 211,
+            "posBefore": [
+                7.524500370025635,
+                1.0019999742507935,
+                3.183000326156616
+            ],
+            "posAfter": [
+                7.5400004386901859,
+                1.0019999742507935,
+                3.183000326156616
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                827,
+                2000,
+                18
+            ],
+            "dimsAfter": [
+                796,
+                2000,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy",
+            "elementIndex": 222,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                2.8005003929138185
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                2.808500289916992
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                747,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                763,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy",
+            "elementIndex": 222,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                2.808500289916992
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                2.8010003566741945
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                763,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                748,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_1",
+            "elementIndex": 224,
+            "posBefore": [
+                7.13100004196167,
+                0.3920000195503235,
+                2.8005003929138185
+            ],
+            "posAfter": [
+                7.13100004196167,
+                0.3920000195503235,
+                2.8010003566741945
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                747,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                748,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_2",
+            "elementIndex": 226,
+            "posBefore": [
+                7.131000518798828,
+                0.5960000157356262,
+                2.8005003929138185
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.5960000157356262,
+                2.8010003566741945
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                747,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                748,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Yaschik_Movento_2",
+            "elementIndex": 225,
+            "posBefore": [
+                6.872000694274902,
+                0.5674999952316284,
+                2.8005003929138185
+            ],
+            "posAfter": [
+                6.872000694274902,
+                0.5674999952316284,
+                2.8010003566741945
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                751,
+                147,
+                500
+            ],
+            "dimsAfter": [
+                752,
+                147,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Inner_1",
+            "elementIndex": 228,
+            "posBefore": [
+                6.860500335693359,
+                0.03500000014901161,
+                2.4220001697540285
+            ],
+            "posAfter": [
+                6.860000133514404,
+                0.03500000014901161,
+                2.4220001697540285
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                497,
+                70,
+                16
+            ],
+            "dimsAfter": [
+                498,
+                70,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_R5_1",
+            "elementIndex": 229,
+            "posBefore": [
+                8.340001106262207,
+                2.244000196456909,
+                2.9930005073547365
+            ],
+            "posAfter": [
+                8.340001106262207,
+                2.4160003662109377,
+                2.9930005073547365
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_R5_1",
+            "elementIndex": 229,
+            "posBefore": [
+                8.340001106262207,
+                2.4160003662109377,
+                2.9930005073547365
+            ],
+            "posAfter": [
+                8.239999771118164,
+                2.4160003662109377,
+                2.9930005073547365
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_R5_1",
+            "elementIndex": 229,
+            "posBefore": [
+                8.239999771118164,
+                2.4160003662109377,
+                2.9930005073547365
+            ],
+            "posAfter": [
+                8.239999771118164,
+                2.6920006275177,
+                2.9930005073547365
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_L5_1",
+            "elementIndex": 230,
+            "posBefore": [
+                8.340001106262207,
+                2.2440004348754885,
+                1.3930002450942994
+            ],
+            "posAfter": [
+                8.340001106262207,
+                2.692000150680542,
+                1.3930002450942994
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_L5_1",
+            "elementIndex": 230,
+            "posBefore": [
+                8.340001106262207,
+                2.692000150680542,
+                1.3930002450942994
+            ],
+            "posAfter": [
+                8.239999771118164,
+                2.692000150680542,
+                1.3930002450942994
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_M3_1",
+            "elementIndex": 231,
+            "posBefore": [
+                8.340001106262207,
+                2.244000196456909,
+                2.193000555038452
+            ],
+            "posAfter": [
+                8.24000072479248,
+                2.244000196456909,
+                2.193000555038452
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_M3_1",
+            "elementIndex": 231,
+            "posBefore": [
+                8.24000072479248,
+                2.244000196456909,
+                2.193000555038452
+            ],
+            "posAfter": [
+                8.24000072479248,
+                2.6920008659362795,
+                2.193000555038452
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Dver_room41",
+            "elementIndex": 149,
+            "posBefore": [
+                7.590000629425049,
+                1.0500000715255738,
+                1.130500078201294
+            ],
+            "posAfter": [
+                7.559000492095947,
+                1.0500000715255738,
+                1.130500078201294
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_ToeKick_Bottom_1",
+            "elementIndex": 232,
+            "posBefore": [
+                6.940000057220459,
+                0.07800006866455078,
+                2.192999839782715
+            ],
+            "posAfter": [
+                6.840000629425049,
+                0.07800006866455078,
+                2.192999839782715
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_ToeKick_Bottom_1",
+            "elementIndex": 232,
+            "posBefore": [
+                6.840000629425049,
+                0.07800006866455078,
+                2.192999839782715
+            ],
+            "posAfter": [
+                6.840000629425049,
+                0.7060000896453857,
+                2.192999839782715
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Bottom_1",
+            "elementIndex": 232,
+            "posBefore": [
+                6.840000629425049,
+                0.7060000896453857,
+                2.192999839782715
+            ],
+            "posAfter": [
+                6.840000629425049,
+                0.706000030040741,
+                2.800999879837036
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                1968,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                752,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_2",
+            "elementIndex": 226,
+            "posBefore": [
+                7.131000518798828,
+                0.5960000157356262,
+                2.8010003566741945
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.5960000157356262,
+                2.8010001182556154
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                748,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                748,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Yaschik_Movento_3",
+            "elementIndex": 233,
+            "posBefore": [
+                6.810999870300293,
+                0.057500001043081287,
+                1.6480457782745362
+            ],
+            "posAfter": [
+                6.810999870300293,
+                0.14350007474422456,
+                1.6480001211166382
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Yaschik_Movento_3",
+            "elementIndex": 233,
+            "posBefore": [
+                6.810999870300293,
+                0.14350007474422456,
+                1.6480001211166382
+            ],
+            "posAfter": [
+                6.810999870300293,
+                0.14350007474422456,
+                1.6480001211166382
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Yaschik_Movento_3",
+            "elementIndex": 233,
+            "posBefore": [
+                6.810999870300293,
+                0.14350007474422456,
+                1.6480001211166382
+            ],
+            "posAfter": [
+                6.840000629425049,
+                0.14350007474422456,
+                1.409000277519226
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Yaschik_Movento_3",
+            "elementIndex": 233,
+            "posBefore": [
+                6.840000629425049,
+                0.14350007474422456,
+                1.409000277519226
+            ],
+            "posAfter": [
+                6.840000629425049,
+                0.14350007474422456,
+                1.8090002536773682
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                400,
+                115,
+                500
+            ],
+            "dimsAfter": [
+                1200,
+                115,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.230999946594238,
+                0.3920000195503235,
+                2.8010003566741945
+            ],
+            "posAfter": [
+                7.13100004196167,
+                0.3920000195503235,
+                2.0330002307891847
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.13100004196167,
+                0.3920000195503235,
+                2.0330002307891847
+            ],
+            "posAfter": [
+                7.13100004196167,
+                0.18799996376037599,
+                2.0330002307891847
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.13100004196167,
+                0.18799996376037599,
+                2.0330002307891847
+            ],
+            "posAfter": [
+                7.13100004196167,
+                0.18799996376037599,
+                1.8090002536773682
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                748,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                1196,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.13100004196167,
+                0.18799996376037599,
+                1.8090002536773682
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.8090001344680787
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1196,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                1196,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.8090001344680787
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.8090001344680787
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1196,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                590,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fasad_schitovoy_4",
+            "elementIndex": 235,
+            "posBefore": [
+                7.2310004234313969,
+                0.18800000846385957,
+                1.8090001344680787
+            ],
+            "posAfter": [
+                7.13100004196167,
+                0.18800006806850434,
+                2.1120004653930666
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.8090001344680787
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.5180003643035889
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.5180003643035889
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.506000280380249
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Polka",
+            "elementIndex": 236,
+            "posBefore": [
+                6.840001106262207,
+                0.20000000298023225,
+                1.8110003471374512
+            ],
+            "posAfter": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.8110003471374512
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Yaschik_Movento_3",
+            "elementIndex": 233,
+            "posBefore": [
+                6.840000629425049,
+                0.14350007474422456,
+                1.8090002536773682
+            ],
+            "posAfter": [
+                6.840000629425049,
+                0.14350007474422456,
+                1.506000280380249
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1200,
+                115,
+                500
+            ],
+            "dimsAfter": [
+                594,
+                115,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fasad_schitovoy_4",
+            "elementIndex": 235,
+            "posBefore": [
+                7.13100004196167,
+                0.18800006806850434,
+                2.1120004653930666
+            ],
+            "posAfter": [
+                7.13100004196167,
+                0.18800006806850434,
+                2.1160004138946535
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fasad_schitovoy_4",
+            "elementIndex": 235,
+            "posBefore": [
+                7.13100004196167,
+                0.18800006806850434,
+                2.1160004138946535
+            ],
+            "posAfter": [
+                7.13100004196167,
+                0.18800006806850434,
+                2.1120002269744875
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.506000280380249
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.50600004196167
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                590,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                589,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Yaschik_Movento_3",
+            "elementIndex": 233,
+            "posBefore": [
+                6.840000629425049,
+                0.14350007474422456,
+                1.506000280380249
+            ],
+            "posAfter": [
+                6.840000629425049,
+                0.14350007474422456,
+                1.4175002574920655
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                594,
+                115,
+                500
+            ],
+            "dimsAfter": [
+                417,
+                115,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Polka",
+            "elementIndex": 236,
+            "posBefore": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.8110003471374512
+            ],
+            "posAfter": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.8070001602172852
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Polka",
+            "elementIndex": 236,
+            "posBefore": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.8070001602172852
+            ],
+            "posAfter": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.811000108718872
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Polka",
+            "elementIndex": 236,
+            "posBefore": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.811000108718872
+            ],
+            "posAfter": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.8070001602172852
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Polka",
+            "elementIndex": 236,
+            "posBefore": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.8070001602172852
+            ],
+            "posAfter": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.811000108718872
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.50600004196167
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.50600004196167
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                589,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                589,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_4",
+            "elementIndex": 235,
+            "posBefore": [
+                7.13100004196167,
+                0.18800006806850434,
+                2.1120002269744875
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                2.111999988555908
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                590,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                589,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.50600004196167
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.50600004196167
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                589,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                588,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.50600004196167
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.5050002336502076
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_3",
+            "elementIndex": 234,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.5050002336502076
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                1.505000114440918
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                588,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                588,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fasad_schitovoy_4",
+            "elementIndex": 235,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                2.111999988555908
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                2.111999988555908
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                589,
+                200,
+                18
+            ],
+            "dimsAfter": [
+                588,
+                200,
+                18
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Fasad_schitovoy_4",
+            "elementIndex": 235,
+            "posBefore": [
+                7.131000518798828,
+                0.18800000846385957,
+                2.111999988555908
+            ],
+            "posAfter": [
+                7.131000518798828,
+                0.18800000846385957,
+                2.1130003929138185
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Polka",
+            "elementIndex": 236,
+            "posBefore": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.811000108718872
+            ],
+            "posAfter": [
+                6.840001106262207,
+                0.2860000729560852,
+                1.8090001344680787
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Yaschik_Movento_3",
+            "elementIndex": 233,
+            "posBefore": [
+                6.840000629425049,
+                0.14350007474422456,
+                1.4175002574920655
+            ],
+            "posAfter": [
+                6.840000629425049,
+                0.14350007474422456,
+                1.5050002336502076
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                417,
+                115,
+                500
+            ],
+            "dimsAfter": [
+                592,
+                115,
+                500
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Yaschik_Movento_3",
+            "elementIndex": 233,
+            "posBefore": [
+                6.840000629425049,
+                0.14350007474422456,
+                1.5050002336502076
+            ],
+            "posAfter": [
+                6.872000694274902,
+                0.14350001513957978,
+                1.5050002336502076
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Yaschik_Movento_4",
+            "elementIndex": 237,
+            "posBefore": [
+                6.972000598907471,
+                0.14350001513957978,
+                1.5050002336502076
+            ],
+            "posAfter": [
+                6.872000694274902,
+                0.14350001513957978,
+                2.0970003604888918
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Yaschik_Movento_4",
+            "elementIndex": 237,
+            "posBefore": [
+                6.872000694274902,
+                0.14350001513957978,
+                2.0970003604888918
+            ],
+            "posAfter": [
+                6.872000694274902,
+                0.14350001513957978,
+                2.1130003929138185
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
         }
     ],
     "redoHistory": [],
@@ -53263,6 +53517,7 @@
         "hideOpeningsOnLoweredWalls": true,
         "objectsVisible": true,
         "hideLightSources": true,
+        "edgePartialThresholdPct": 5,
         "mouseSensitivity": 1.0312532186508179,
         "wasdSpeed": 0.9998016357421875,
         "arrowSpeed": 1.0,
@@ -53290,8 +53545,8 @@
         {
             "id": "errors",
             "visible": false,
-            "x": 192.134521484375,
-            "y": -52.450714111328128,
+            "x": -523.2017822265625,
+            "y": -201.94827270507813,
             "height": 0.0
         },
         {
