@@ -976,7 +976,9 @@ namespace KitchenDesigner.Core.UI
 
                 // Накладки правятся не только строками меню, но и ручками
                 // области, undo и MCP — счётчик и строки должны догонять.
-                if (_target.SupportsTextureOverlays
+                // Во время предпросмотра набор заведомо «не настоящий»: сторож
+                // переписал бы дропдаун открытого списка показанным значением.
+                if (_target.SupportsTextureOverlays && !TexturePreviewActive
                     && TextureFingerprint(_target.TextureOverlays) != _textureFingerprint)
                 {
                     RefreshTextureUI();
@@ -1107,6 +1109,9 @@ namespace KitchenDesigner.Core.UI
             _opening = true;
             try
             {
+                // Предпросмотр принадлежал прошлому элементу — снимаем ДО смены
+                // цели, иначе показанная накладка осталась бы на нём насовсем.
+                EndTexturePreview();
                 _target = element;
                 _groovesExpanded = false; // список пазов открывается свёрнутым
                 _texturesExpanded = false; // и список накладок тоже
@@ -1302,6 +1307,9 @@ namespace KitchenDesigner.Core.UI
             // Панель гаснет без PointerExit по полосе кромки — подсветку стороны
             // снимаем сами, иначе накладки остаются висеть на детали.
             EdgeSideHighlighter.Hide();
+            // Панель закрыли с раскрытым списком декора — показанная накладка не
+            // должна пережить закрытие, как и подсветка стороны.
+            EndTexturePreview();
             // Ручки области жили только пока открыто меню: без него их нечем
             // выключить, и они перехватывали бы клики по сцене.
             TextureOverlayHandles.End();
@@ -1805,6 +1813,8 @@ namespace KitchenDesigner.Core.UI
                 var matDd = UIFactory.CreateDropdown($"CtxTexMat{i}", parent,
                     new List<string>(matOptions), new Vector2(TexMatX, 0),
                     new Vector2(TexMatW, TexRowH), _ => EditTextureOverlay(index));
+                DropdownHover.Attach(matDd,
+                    option => PreviewTextureMaterial(index, option), EndTexturePreview);
                 var orderCol = BuildTextureOrderColumn(parent, i, index);
                 var editBtn = UIFactory.CreateIconButton($"CtxTexEdit{i}", parent, IconFactory.Pencil,
                     new Vector2(TexEditX, 0), new Vector2(TexBtnW, TexRowH),
@@ -1829,6 +1839,8 @@ namespace KitchenDesigner.Core.UI
             _textureMaterialDropdown = UIFactory.CreateDropdown("CtxTexMat", parent,
                 new List<string>(matOptions), new Vector2(TexAddMatX, 0),
                 new Vector2(TexAddMatW, TexRowH), _ => { });
+            DropdownHover.Attach(_textureMaterialDropdown,
+                option => PreviewTextureMaterial(TexturePreviewNewRow, option), EndTexturePreview);
             var addBtn = UIFactory.CreateButton("CtxTexAdd", parent, "Добавить",
                 new Vector2(114f, 0), new Vector2(100, TexRowH), AddTextureOverlayFromUI);
             AttachSideHover(_textureSideDropdown);
@@ -1890,6 +1902,7 @@ namespace KitchenDesigner.Core.UI
         private void AddTextureOverlayFromUI()
         {
             if (_target == null || _textureSideDropdown == null || _textureMaterialDropdown == null) return;
+            EndTexturePreview(); // добавляем к исходному набору, а не к показанному
             var all = MaterialCatalog.All;
             int matIndex = _textureMaterialDropdown.value;
             if (matIndex < 0 || matIndex >= all.Count) return;
@@ -1899,12 +1912,13 @@ namespace KitchenDesigner.Core.UI
             var spec = TextureOverlaySpec.FullFace(
                 (OverlaySide)_textureSideDropdown.value, all[matIndex].id);
 
+            // Совпадение с уже добавленной накладкой НЕ ошибка, в отличие от паза:
+            // накладки лежат слоями и различаются областью, а новая всегда
+            // приходит «во всю грань». Две одинаковые — это нормальное начало
+            // работы («положить два куска на одну стену и развести ручками»),
+            // и запрет на них не давал сделать ровно то, ради чего накладки и
+            // умеют прилипать друг к другу.
             var after = new List<TextureOverlaySpec>(_target.TextureOverlays);
-            if (after.Contains(spec))
-            {
-                ToastNotification.Instance?.Show("Такая текстура уже есть");
-                return;
-            }
             if (after.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT)
             {
                 ToastNotification.Instance?.Show(
@@ -1937,6 +1951,7 @@ namespace KitchenDesigner.Core.UI
             var sideDd = _texRowSide[index];
             var matDd = _texRowMaterial[index];
             if (sideDd == null || matDd == null) return;
+            EndTexturePreview(); // «до» у команды — исходный набор, а не показанный
 
             var all = MaterialCatalog.All;
             if (matDd.value < 0 || matDd.value >= all.Count) return;
@@ -1947,16 +1962,77 @@ namespace KitchenDesigner.Core.UI
 
             var after = new List<TextureOverlaySpec>(_target.TextureOverlays);
             if (after[index].Equals(spec)) return;
-            for (int i = 0; i < after.Count; i++)
-                if (i != index && after[i].Equals(spec))
-                {
-                    ToastNotification.Instance?.Show("Такая текстура уже есть");
-                    RefreshTextureUI(); // вернуть дропдауны к фактическому набору
-                    return;
-                }
             after[index] = spec;
             ApplyTextureOverlays(after);
             AfterTexturesChanged();
+        }
+
+        // ── Предпросмотр декора наведением ────────────────────────────
+        // Название декора («Дуб сонома») не говорит, как он ляжет именно на эту
+        // стену, а выбирать вслепую и откатывать через Ctrl+Z — не выбор, а
+        // перебор. Пока курсор стоит на пункте списка, накладка показывается на
+        // объекте по-настоящему; ушли с пункта или закрыли список, ничего не
+        // выбрав, — набор возвращается ровно в то состояние, что было.
+        //
+        // Предпросмотр пишется в элемент НАПРЯМУЮ, минуя CommandStack: это показ,
+        // а не правка, и в undo-стеке ему делать нечего (правило 2 говорит про
+        // изменения, а предпросмотр по определению ничего не меняет).
+
+        /// <summary>«Строка» предпросмотра для строки ДОБАВЛЕНИЯ: там накладки
+        /// ещё нет, поэтому предпросмотр дорисовывает временную.</summary>
+        private const int TexturePreviewNewRow = -1;
+
+        private List<TextureOverlaySpec>? _texturePreviewBefore;
+        private KitchenElement? _texturePreviewTarget;
+
+        /// <summary>Идёт предпросмотр — набор накладок сейчас «не настоящий».</summary>
+        public bool TexturePreviewActive => _texturePreviewBefore != null;
+
+        private void PreviewTextureMaterial(int row, int optionIndex)
+        {
+            if (_target == null) return;
+            var all = MaterialCatalog.All;
+            if (optionIndex < 0 || optionIndex >= all.Count) return;
+
+            BeginTexturePreview();
+            var preview = new List<TextureOverlaySpec>(_texturePreviewBefore!);
+
+            if (row == TexturePreviewNewRow)
+            {
+                if (_textureSideDropdown == null
+                    || preview.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT) return;
+                preview.Add(TextureOverlaySpec.FullFace(
+                    (OverlaySide)_textureSideDropdown.value, all[optionIndex].id));
+            }
+            else
+            {
+                if (row < 0 || row >= preview.Count) return;
+                preview[row] = preview[row].WithMaterial(all[optionIndex].id);
+            }
+
+            _target.SetTextureOverlays(preview);
+        }
+
+        private void BeginTexturePreview()
+        {
+            if (_texturePreviewBefore != null && _texturePreviewTarget == _target) return;
+            EndTexturePreview();
+            _texturePreviewTarget = _target;
+            _texturePreviewBefore = new List<TextureOverlaySpec>(_target!.TextureOverlays);
+        }
+
+        /// <summary>Вернуть набор к состоянию до предпросмотра. Зовётся и с ухода
+        /// курсора, и при закрытии списка (DropdownHover шлёт onExit на оба), и
+        /// первым делом из настоящих правок — иначе «до» у команды оказалось бы
+        /// показанным, а не исходным, и Ctrl+Z возвращал бы предпросмотр.</summary>
+        private void EndTexturePreview()
+        {
+            var before = _texturePreviewBefore;
+            var target = _texturePreviewTarget;
+            _texturePreviewBefore = null;
+            _texturePreviewTarget = null;
+            if (before == null || target == null) return;
+            target.SetTextureOverlays(before);
         }
 
         /// <summary>Переставить накладку в списке на одну позицию. Порядок — это и

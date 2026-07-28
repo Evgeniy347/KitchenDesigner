@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
@@ -171,6 +172,118 @@ public class ContextMenuLayoutTests
         Assert.Greater(up.anchoredPosition.y, down.anchoredPosition.y, "↑ сверху, ↓ снизу");
         Assert.LessOrEqual(up.sizeDelta.y * 2f, column.sizeDelta.y,
             "обе половинки помещаются в клетку по высоте");
+    }
+
+    // ── Предпросмотр декора наведением ────────────────────────────────
+
+    private static readonly MethodInfo _previewTexture =
+        typeof(ContextMenuUI).GetMethod("PreviewTextureMaterial",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+    private static readonly MethodInfo _endTexturePreview =
+        typeof(ContextMenuUI).GetMethod("EndTexturePreview",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+    private static int MaterialIndexOf(string id)
+    {
+        var all = MaterialCatalog.All;
+        for (int i = 0; i < all.Count; i++)
+            if (all[i].id == id) return i;
+        Assert.Fail($"декора «{id}» нет в каталоге");
+        return -1;
+    }
+
+    private void Preview(int row, int option) =>
+        _previewTexture!.Invoke(_menu, new object[] { row, option });
+
+    private void EndPreview() => _endTexturePreview!.Invoke(_menu, null);
+
+    [Test]
+    public void Wall_TextureHover_ShowsDecorOnElement_AndRestoresOnExit()
+    {
+        var wall = OpenWallWithTwoOverlays();
+
+        Preview(0, MaterialIndexOf("white"));
+        Assert.AreEqual("white", wall.TextureOverlays[0].MaterialId,
+            "наведение на пункт показывает декор на объекте");
+        Assert.AreEqual(2, wall.TextureOverlays.Count);
+
+        EndPreview();
+        Assert.AreEqual("oak", wall.TextureOverlays[0].MaterialId,
+            "ушли с пункта, ничего не выбрав — набор возвращается как был");
+    }
+
+    [Test]
+    public void Wall_AddRowHover_ShowsFutureOverlay_AndRemovesItOnExit()
+    {
+        var wall = OpenWallWithTwoOverlays();
+
+        Preview(-1, MaterialIndexOf("white"));
+        Assert.AreEqual(3, wall.TextureOverlays.Count,
+            "в строке добавления накладки ещё нет — предпросмотр дорисовывает будущую");
+
+        EndPreview();
+        Assert.AreEqual(2, wall.TextureOverlays.Count);
+    }
+
+    [Test]
+    public void Wall_TexturePreview_ThenSelect_UndoRestoresOriginalDecor()
+    {
+        var wall = OpenWallWithTwoOverlays();
+        int white = MaterialIndexOf("white");
+
+        Preview(0, white);
+        // Пользователь всё-таки выбрал этот пункт — дропдаун шлёт onValueChanged.
+        Panel().Find("CtxTexMat0").GetComponent<TMP_Dropdown>().value = white;
+        Assert.AreEqual("white", wall.TextureOverlays[0].MaterialId);
+
+        CommandStack.Undo();
+        Assert.AreEqual("oak", wall.TextureOverlays[0].MaterialId,
+            "Ctrl+Z возвращает исходный декор, а не показанный предпросмотром");
+    }
+
+    [Test]
+    public void Wall_ClosingMenuDuringPreview_RestoresOverlays()
+    {
+        var wall = OpenWallWithTwoOverlays();
+
+        Preview(0, MaterialIndexOf("white"));
+        _menu!.Close();
+
+        Assert.AreEqual("oak", wall.TextureOverlays[0].MaterialId,
+            "показанная накладка не должна пережить закрытие панели");
+    }
+
+    [Test]
+    public void Wall_AddSameTextureTwice_IsAllowed()
+    {
+        var wall = MakeWall("Стена");
+        _menu!.Open(wall);
+        Panel().Find("CtxTextures").GetComponent<Button>().onClick.Invoke();
+
+        var add = Panel().Find("CtxTexAdd").GetComponent<Button>();
+        add.onClick.Invoke();
+        add.onClick.Invoke();
+
+        Assert.AreEqual(2, wall.TextureOverlays.Count,
+            "две одинаковые накладки — законное начало работы: их разводят ручками");
+    }
+
+    [Test]
+    public void ConfirmDelete_SurvivesItsOwnConfirmingPress()
+    {
+        // Button шлёт onClick на ОТПУСКАНИИ, а сторож смотрит на нажатие: без
+        // проверки «нажали по самой кнопке» взвод гас бы раньше клика, и кнопка
+        // молча взводилась бы заново, ничего не удаляя.
+        Assert.IsFalse(ConfirmDeleteButton.ShouldDisarm(10, 10, 9, true, false),
+            "кадр взвода пропускаем");
+        Assert.IsFalse(ConfirmDeleteButton.ShouldDisarm(20, 10, 20, true, false),
+            "нажатие по самой кнопке взвод не снимает");
+        Assert.IsTrue(ConfirmDeleteButton.ShouldDisarm(20, 10, 9, true, false),
+            "нажатие мимо — снимает");
+        Assert.IsFalse(ConfirmDeleteButton.ShouldDisarm(20, 10, 9, false, false),
+            "без нажатия взвод держится");
+        Assert.IsTrue(ConfirmDeleteButton.ShouldDisarm(20, 10, 20, false, true),
+            "Escape и ПКМ гасят даже над кнопкой");
     }
 
     [Test]

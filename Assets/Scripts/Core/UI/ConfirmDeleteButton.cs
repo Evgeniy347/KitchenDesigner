@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
@@ -14,13 +15,16 @@ namespace KitchenDesigner.Core.UI
     /// дольше, чем само действие. Два клика по одной и той же кнопке — то же
     /// подтверждение, но без смены фокуса.
     ///
-    /// Взвод снимается в LateUpdate, а не в Update: к этому моменту EventSystem
-    /// уже разослал клик текущего кадра, поэтому подтверждающее нажатие по самой
-    /// кнопке успевает сработать и не гасится собственным сторожем. Кадр взвода
-    /// пропускается по той же причине — нажатие, которое кнопку и взвело, ещё
-    /// висит в <c>Input.GetMouseButtonDown</c>.</summary>
+    /// Взвод снимает сторож в LateUpdate: к этому моменту EventSystem уже разослал
+    /// события кадра. Сторож смотрит на НАЖАТИЕ мыши, а <see cref="Button"/>
+    /// присылает onClick только на ОТПУСКАНИИ — то есть на кадр-другой позже.
+    /// Поэтому одного «кадр взвода пропускаем» мало: подтверждающее нажатие тоже
+    /// придёт отдельным кадром и погасило бы взвод раньше, чем сработал бы клик
+    /// (кнопка молча взводилась бы снова и снова, ничего не удаляя). Отсюда
+    /// <see cref="IPointerDownHandler"/>: нажатие ПО САМОЙ кнопке сторож
+    /// пропускает, любое другое — гасит.</summary>
     [RequireComponent(typeof(Button))]
-    public class ConfirmDeleteButton : MonoBehaviour
+    public class ConfirmDeleteButton : MonoBehaviour, IPointerDownHandler
     {
         /// <summary>Взведена всегда не больше одной кнопки: вопрос «удалять?»
         /// должен висеть в одном месте, а не в трёх строках сразу.</summary>
@@ -80,11 +84,25 @@ namespace KitchenDesigner.Core.UI
             if (_label != null) _label.text = _idleText;
         }
 
+        /// <summary>Кадр, в котором нажали по самой кнопке (ставит EventSystem).</summary>
+        private int _pointerDownFrame = -1;
+
+        public void OnPointerDown(PointerEventData eventData) => _pointerDownFrame = Time.frameCount;
+
+        /// <summary>Пора ли снимать взвод. Вынесено отдельно и чисто, потому что
+        /// вся суть бага «второй клик не удаляет» — в сравнении кадров, а
+        /// смоделировать мышь в EditMode-тесте нельзя.</summary>
+        public static bool ShouldDisarm(int frame, int armedFrame, int pointerDownFrame,
+            bool mouseDown, bool cancelled) =>
+            frame != armedFrame
+            && (cancelled || (mouseDown && frame != pointerDownFrame));
+
         private void LateUpdate()
         {
-            if (!Armed || Time.frameCount == _armedFrame) return;
-            if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1)
-                || Input.GetKeyDown(KeyCode.Escape))
+            if (!Armed) return;
+            bool cancelled = Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape);
+            if (ShouldDisarm(Time.frameCount, _armedFrame, _pointerDownFrame,
+                    Input.GetMouseButtonDown(0), cancelled))
                 Disarm();
         }
 
