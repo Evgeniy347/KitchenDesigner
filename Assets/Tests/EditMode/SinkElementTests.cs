@@ -8,6 +8,10 @@ using KitchenDesigner.Core;
 public class SinkElementTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
+    private ProjectLoadStateGuard? _guard;
+
+    [SetUp]
+    public void SetUp() => _guard = ProjectLoadStateGuard.Capture();
 
     private const float ToU = AppConstants.MM_TO_UNITS;
     private const int TopThicknessMM = 38;
@@ -17,6 +21,7 @@ public class SinkElementTests
     [TearDown]
     public void TearDown()
     {
+        _guard?.Restore();
         foreach (var go in _spawned)
         {
             if (go == null) continue;

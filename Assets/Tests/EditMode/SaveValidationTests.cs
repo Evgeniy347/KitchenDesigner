@@ -37,9 +37,7 @@ public class SaveValidationTests
 
     private string _json = "";
     private string _reportPath = "";
-    private KitchenSettingsData? _settingsBefore;
-    private ResizeHandleManager.HandleMode _modeBefore;
-    private bool _lightsOnBefore;
+    private ProjectLoadStateGuard? _guard;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -58,20 +56,19 @@ public class SaveValidationTests
 
     /// <summary>Загрузка сейва переписывает ГЛОБАЛЬНОЕ состояние целиком: блок
     /// настроек (KitchenSettings — синглтон-ассет, включая ObjectsVisible /
-    /// HideLightSources), режим ручек (ResizeHandleManager.Mode) и статик
-    /// LightSourceElement.GlobalOn (RestoreScene зовёт SetGlobalOn(data.lightsOn),
-    /// а в сейве свет выключен). Точечного сохранения трёх флагов мало — в полном
-    /// прогоне это роняло SceneVisibilityTests и SettingsPanelUITests. Снимаем и
-    /// возвращаем всё целиком, как это делает SnapshotTests.</summary>
+    /// HideLightSources), режим ручек (ResizeHandleManager.Mode) и статики
+    /// LightSourceElement.GlobalOn и ElementHighlighter.TintEnabled — RestoreScene
+    /// выставляет их из файла проекта. Точечного сохранения пары флагов мало: в
+    /// полном прогоне это роняло SceneVisibilityTests, SettingsPanelUITests, а
+    /// тонировка утекала в эталоны SnapshotTests. Снимаем и возвращаем всё
+    /// целиком, как это делает SnapshotTests.</summary>
     [SetUp]
     public void SetUp()
     {
         var s = KitchenSettings.Instance;
         Assert.IsNotNull(s);
 
-        _settingsBefore = s.ToData();
-        _modeBefore = ResizeHandleManager.Mode;
-        _lightsOnBefore = LightSourceElement.GlobalOn;
+        _guard = ProjectLoadStateGuard.Capture();
 
         s.AutoSave = false;
         s.SpatialGrid = false;
@@ -84,12 +81,7 @@ public class SaveValidationTests
     public void TearDown()
     {
         ClearScene();
-
-        var s = KitchenSettings.Instance;
-        if (s != null && _settingsBefore != null) s.ApplyFrom(_settingsBefore);
-        _settingsBefore = null;
-        ResizeHandleManager.SetMode(_modeBefore);
-        LightSourceElement.SetGlobalOn(_lightsOnBefore);
+        _guard?.Restore();
         FaceCache.Clear();
     }
 

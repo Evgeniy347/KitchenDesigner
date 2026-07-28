@@ -29,9 +29,7 @@ public class SnapMutationTests
     private string _json = "";
     private readonly List<string> _errors = new();
     private readonly List<string> _warnings = new();
-    private bool _prevAutoSave;
-    private bool _prevSpatialGrid;
-    private bool _prevEdgeOutline;
+    private ProjectLoadStateGuard? _guard;
 
     private readonly Dictionary<KitchenElement, KitchenElement.Face[]> _faceCache = new();
 
@@ -64,9 +62,9 @@ public class SnapMutationTests
         var s = KitchenSettings.Instance;
         Assert.IsNotNull(s);
 
-        _prevAutoSave = s.AutoSave;
-        _prevSpatialGrid = s.SpatialGrid;
-        _prevEdgeOutline = s.EdgeOutline;
+        // Загрузка сейва переписывает блок настроек, режим ручек, свет и
+        // тонировку целиком — точечного снимка трёх флагов не хватало.
+        _guard = ProjectLoadStateGuard.Capture();
 
         s.AutoSave = false;
         s.SpatialGrid = false;
@@ -81,13 +79,7 @@ public class SnapMutationTests
     public void TearDown()
     {
         ClearScene();
-        var s = KitchenSettings.Instance;
-        if (s != null)
-        {
-            s.AutoSave = _prevAutoSave;
-            s.SpatialGrid = _prevSpatialGrid;
-            s.EdgeOutline = _prevEdgeOutline;
-        }
+        _guard?.Restore();
         _errors.Clear();
         _warnings.Clear();
         FaceCache.Clear();

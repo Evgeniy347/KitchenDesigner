@@ -12,6 +12,10 @@ public class SinkRealSceneTests
 {
     private const string SaveFileName = "example.save.json";
     private string _json = "";
+    private ProjectLoadStateGuard? _guard;
+
+    [SetUp]
+    public void SetUp() => _guard = ProjectLoadStateGuard.Capture();
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -24,6 +28,7 @@ public class SinkRealSceneTests
     [TearDown]
     public void TearDown()
     {
+        _guard?.Restore();
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
             if (e != null) Object.DestroyImmediate(e.gameObject);
         PartRegistry.Clear();

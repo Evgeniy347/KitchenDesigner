@@ -14,12 +14,19 @@ public class PanelSeatingTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
+    private ProjectLoadStateGuard? _guard;
+
     [SetUp]
-    public void SetUp() => PartRegistry.Clear();
+    public void SetUp()
+    {
+        _guard = ProjectLoadStateGuard.Capture();
+        PartRegistry.Clear();
+    }
 
     [TearDown]
     public void TearDown()
     {
+        _guard?.Restore();
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();

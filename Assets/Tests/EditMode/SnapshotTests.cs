@@ -74,6 +74,12 @@ public class SnapshotTests
         ProjectInstructions.Reset();
         ProjectRooms.Reset();
         ProjectFloorplans.Reset();
+        // Тонировка тоже project-level и тоже сериализуется в снапшот: её ставит
+        // RestoreScene из файла проекта, а грузят example.save.json сразу
+        // несколько наборов (SnapMutationTests, SaveValidationTests, SinkRealSceneTests).
+        // Стоит десктопу сохранить проект с выключенной тонировкой — и эталоны
+        // здесь краснеют по причине, к ним не относящейся.
+        ElementHighlighter.TintEnabled = true;
     }
 
     // ── helpers ─────────────────────────────────────────────────────────
