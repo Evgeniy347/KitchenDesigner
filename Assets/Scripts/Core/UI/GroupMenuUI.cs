@@ -12,7 +12,13 @@ namespace KitchenDesigner.Core.UI
     {
         public static GroupMenuUI? Instance { get; private set; }
 
+        // Окно «Связать выделенные?» компактнее окна настроек группы —
+        // в нём всего заголовок и одна кнопка.
+        private static readonly Vector2 GroupSize = new Vector2(280, 240);
+        private static readonly Vector2 LinkSize = new Vector2(240, 132);
+
         private GameObject? _root;
+        private RectTransform? _panelRect;
         private GameObject? _linkRoot;
         private GameObject? _groupRoot;
         private TMP_InputField? _nameField;
@@ -23,19 +29,20 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("GroupMenu", canvas, Vector2.zero, new Vector2(280, 240));
+            var panel = UIFactory.CreatePanel("GroupMenu", canvas, Vector2.zero, GroupSize);
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(0, 40);
             _root = panel.gameObject;
+            _panelRect = panel.rectTransform;
             // Полоса до низа заголовка «Группа»/«Связать выделенные?»; контролы,
             // созданные позже, перекрывают её в raycast и остаются кликабельными.
             WindowDrag.Attach(panel.rectTransform, 96f);
 
             _linkRoot = NewRoot(panel.transform);
             UIFactory.CreateLabel("GmLinkTitle", _linkRoot.transform, "Связать выделенные?", 18,
-                new Vector2(0, 40), new Vector2(260, 28), TextAnchor.MiddleCenter);
+                new Vector2(0, 26), new Vector2(210, 28), TextAnchor.MiddleCenter);
             UIFactory.CreateButton("GmLink", _linkRoot.transform, "Связать (замок)",
-                new Vector2(0, -6), new Vector2(180, 40), DoLink);
+                new Vector2(0, -22), new Vector2(180, 40), DoLink);
 
             _groupRoot = NewRoot(panel.transform);
             UIFactory.CreateLabel("GmTitle", _groupRoot.transform, "Группа", 20,
@@ -52,6 +59,9 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateButton("GmUnlink", _groupRoot.transform, "Разорвать связь",
                 new Vector2(0, -82), new Vector2(200, 36), DoUnlink);
 
+            // Крестик создаём последним: он должен перекрывать полосу перетаскивания.
+            UIFactory.CreateCloseButton(panel.transform, Close);
+
             _root!.SetActive(false);
 
             if (SelectionManager.Instance != null)
@@ -63,8 +73,14 @@ namespace KitchenDesigner.Core.UI
             var rt = UIFactory.CreateRect("Root", parent);
             UIFactory.AnchorCenter(rt);
             rt.anchoredPosition = Vector2.zero;
-            rt.sizeDelta = new Vector2(280, 240);
+            rt.sizeDelta = GroupSize;
             return rt.gameObject;
+        }
+
+        // Размер окна зависит от режима: «Связать выделенные?» заметно компактнее.
+        private void SetPanelSize(Vector2 size)
+        {
+            if (_panelRect != null) _panelRect.sizeDelta = size;
         }
 
         public void Open(KitchenElement element)
@@ -74,6 +90,7 @@ namespace KitchenDesigner.Core.UI
 
             if (_group != null)
             {
+                SetPanelSize(GroupSize);
                 _linkRoot!.SetActive(false);
                 _groupRoot!.SetActive(true);
                 _nameField!.SetTextWithoutNotify(_group.name);
@@ -84,6 +101,7 @@ namespace KitchenDesigner.Core.UI
 
             var sel = SelectionManager.Instance;
             if (sel == null || sel.SelectedElements.Count < 2) { Close(); return; }
+            SetPanelSize(LinkSize);
             _linkRoot!.SetActive(true);
             _groupRoot!.SetActive(false);
             _root!.SetActive(true);

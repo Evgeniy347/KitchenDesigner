@@ -105,4 +105,24 @@ public class UiAsciiSymbolsTests
 
         Object.DestroyImmediate(canvas.gameObject);
     }
+
+    [Test]
+    public void GroupMenuUI_CloseButton_UsesCloseGlyph()
+    {
+        var canvas = CreateCanvas("GroupMenuAsciiCanvas");
+        var ui = canvas.gameObject.AddComponent<GroupMenuUI>();
+        ui.Build(canvas.transform);
+
+        var root = canvas.transform.Find("GroupMenu");
+        Assert.IsNotNull(root, "panel root exists");
+
+        var closeBtn = root.Find("CloseBtn");
+        Assert.IsNotNull(closeBtn, "close button exists");
+
+        var label = closeBtn.GetComponentInChildren<TMP_Text>(true);
+        Assert.IsNotNull(label, "close button has label");
+        Assert.AreEqual(UIStyle.GlyphClose, label.text, "close button uses the × glyph");
+
+        Object.DestroyImmediate(canvas.gameObject);
+    }
 }
