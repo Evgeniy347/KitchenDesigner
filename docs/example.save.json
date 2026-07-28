@@ -82,7 +82,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_bottom",
@@ -165,7 +166,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A2_A_planck",
@@ -248,7 +250,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B1_B2_planck",
@@ -331,7 +334,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B1_side_L",
@@ -414,7 +418,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B2_side_R",
@@ -497,7 +502,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B2_side_L",
@@ -580,7 +586,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B2_bottom",
@@ -663,7 +670,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B4_side_R",
@@ -746,7 +754,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B4_side_L",
@@ -829,7 +838,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B4_bottom",
@@ -912,7 +922,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B5_side_R",
@@ -995,7 +1006,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B5_side_L",
@@ -1078,7 +1090,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B5_bottom",
@@ -1161,7 +1174,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "K2_side_R",
@@ -1244,7 +1258,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "K2_side_L",
@@ -1327,7 +1342,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "K2_bottom",
@@ -1410,7 +1426,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "K2_door",
@@ -1493,7 +1510,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "K2_planck",
@@ -1576,7 +1594,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A3_side_L",
@@ -1659,7 +1678,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A3_side_R",
@@ -1742,7 +1762,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A3_bottom",
@@ -1825,7 +1846,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A4_side_L",
@@ -1908,7 +1930,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A4_side_R",
@@ -1991,7 +2014,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A4_bottom",
@@ -2074,7 +2098,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Countertop_A",
@@ -2157,7 +2182,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Countertop_B",
@@ -2240,7 +2266,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_A_bottom",
@@ -2328,7 +2355,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_A_top",
@@ -2416,7 +2444,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_B_planck",
@@ -2499,7 +2528,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_A_side",
@@ -2582,7 +2612,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B3_upper_side_L",
@@ -2670,7 +2701,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B34_upper_bottom",
@@ -2758,7 +2790,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B34_upper_top",
@@ -2846,7 +2879,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B34_upper_side_L",
@@ -2934,7 +2968,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B34_upper_side_R",
@@ -3022,7 +3057,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A34K1_upper_top",
@@ -3105,7 +3141,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A34K1_upper_side_L",
@@ -3193,7 +3230,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B12_upper_bottom",
@@ -3281,7 +3319,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B12_upper_top",
@@ -3369,7 +3408,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B5_upper_back",
@@ -3452,7 +3492,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "radial_shelf_upper_4",
@@ -3535,7 +3576,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fridge_Left",
@@ -3618,7 +3660,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fridge_Right",
@@ -3701,7 +3744,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fridge_Back",
@@ -3784,7 +3828,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fridge_Bottom",
@@ -3867,7 +3912,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fridge_Top",
@@ -3950,7 +3996,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fridge_Shelf",
@@ -4033,7 +4080,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fridge_Door_Upper",
@@ -4116,7 +4164,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fridge_Door_Lower",
@@ -4199,7 +4248,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_A_planck",
@@ -4282,7 +4332,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Leg_A3_A4",
@@ -4365,7 +4416,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Istochnik_sveta",
@@ -4448,7 +4500,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B5_gtv_single_C",
@@ -4531,7 +4584,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B5_gtv_double_lower_A",
@@ -4614,7 +4668,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A3_gtv_single_C",
@@ -4697,7 +4752,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A3_gtv_double_lower_A",
@@ -4735,7 +4791,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
-            "doorOpen": true,
+            "doorOpen": false,
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
@@ -4750,7 +4806,7 @@
             "drawerIsUpper": false,
             "drawerPairedName": "A3_gtv_double_lower_A_top",
             "drawerAttachedFacadeName": "A3_drawer_upper",
-            "doubleDrawerState": 1,
+            "doubleDrawerState": 0,
             "isWindow": false,
             "windowTint": 0,
             "windowSillProtrusionMM": 50,
@@ -4780,7 +4836,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A4_gtv_drawer",
@@ -4863,7 +4920,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B3_bottom",
@@ -4946,7 +5004,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B4_gtv_single_C",
@@ -5029,7 +5088,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B4_gtv_double_lower_A",
@@ -5112,7 +5172,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B12_upper_door_L",
@@ -5195,7 +5256,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_door",
@@ -5278,7 +5340,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B12_upper_door_R",
@@ -5361,7 +5424,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B34_upper_door",
@@ -5444,7 +5508,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A34K1_upper_door_L",
@@ -5527,7 +5592,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A34K1_upper_door_R",
@@ -5610,7 +5676,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A2_door",
@@ -5648,7 +5715,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
-            "doorOpen": true,
+            "doorOpen": false,
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
@@ -5693,7 +5760,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B2_door",
@@ -5776,7 +5844,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B3_door",
@@ -5859,7 +5928,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B4_drawer_upper",
@@ -5942,7 +6012,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B4_drawer_lower",
@@ -6025,7 +6096,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A3_drawer_lower",
@@ -6108,7 +6180,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A3_drawer_upper",
@@ -6146,7 +6219,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
-            "doorOpen": true,
+            "doorOpen": false,
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
@@ -6191,7 +6264,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B5_drawer_lower",
@@ -6274,7 +6348,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B5_drawer_upper",
@@ -6357,7 +6432,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_shelf_1",
@@ -6440,7 +6516,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B12_upper_shelf_2",
@@ -6523,7 +6600,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B34_upper_shelf_1",
@@ -6606,7 +6684,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A4_shelf",
@@ -6689,7 +6768,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_inner_side",
@@ -6777,7 +6857,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_shelf_2",
@@ -6860,7 +6941,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B12_upper_shelf_1",
@@ -6943,7 +7025,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B34_upper_shelf_2",
@@ -7026,7 +7109,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_shelf_2_1",
@@ -7109,7 +7193,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_DVP_HDF",
@@ -7192,7 +7277,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_shelf_2_1_1",
@@ -7275,7 +7361,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_shelf_2_1_2",
@@ -7363,7 +7450,8 @@
             ],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A12_upper_shelf_2_1_1_1",
@@ -7446,7 +7534,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "radial_shelf_upper_3",
@@ -7529,7 +7618,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A3_gtv_double_lower_A_top",
@@ -7567,7 +7657,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
-            "doorOpen": true,
+            "doorOpen": false,
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
@@ -7582,7 +7672,7 @@
             "drawerIsUpper": true,
             "drawerPairedName": "A3_gtv_double_lower_A",
             "drawerAttachedFacadeName": "",
-            "doubleDrawerState": 1,
+            "doubleDrawerState": 0,
             "isWindow": false,
             "windowTint": 0,
             "windowSillProtrusionMM": 50,
@@ -7612,7 +7702,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Leg_A12_back",
@@ -7695,7 +7786,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Leg_A12_front",
@@ -7778,7 +7870,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Leg_B2_center",
@@ -7861,7 +7954,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Leg_B2_B3",
@@ -7944,7 +8038,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Leg_B3_B4",
@@ -8027,7 +8122,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Leg_B4_B5",
@@ -8110,7 +8206,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Leg_B5_K2",
@@ -8193,7 +8290,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Leg_K2",
@@ -8276,7 +8374,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B12_DVP_HDF",
@@ -8359,7 +8458,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "DVP_HDF",
@@ -8442,7 +8542,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A_apron",
@@ -8525,7 +8626,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B_apron",
@@ -8608,7 +8710,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "radial_shelf_upper_2",
@@ -8691,7 +8794,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "radial_shelf_upper_1",
@@ -8774,7 +8878,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B3_bottom_1",
@@ -8857,7 +8962,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "B1_side_L_1",
@@ -8940,7 +9046,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_01",
@@ -9028,7 +9135,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_02",
@@ -9116,7 +9224,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_03",
@@ -9204,7 +9313,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_04",
@@ -9292,7 +9402,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_05",
@@ -9380,7 +9491,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_06",
@@ -9468,7 +9580,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W125_01",
@@ -9556,7 +9669,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W125_02",
@@ -9644,7 +9758,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W150_03",
@@ -9732,7 +9847,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W150_05",
@@ -9820,7 +9936,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_10",
@@ -9908,7 +10025,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W150_07",
@@ -9996,7 +10114,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W125_03",
@@ -10084,7 +10203,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W125_04",
@@ -10172,7 +10292,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W125_05",
@@ -10260,7 +10381,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W125_08",
@@ -10348,7 +10470,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_11",
@@ -10436,7 +10559,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W150_11",
@@ -10524,7 +10648,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W150_12",
@@ -10612,7 +10737,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W150_13",
@@ -10700,7 +10826,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W150_14",
@@ -10788,7 +10915,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_13",
@@ -10876,7 +11004,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_16",
@@ -10964,7 +11093,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_21",
@@ -11052,7 +11182,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_24",
@@ -11140,7 +11271,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_25",
@@ -11228,7 +11360,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Pol_1",
@@ -11324,7 +11457,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Dver_1",
@@ -11407,7 +11541,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Okno_5",
@@ -11490,7 +11625,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Okno_8",
@@ -11573,7 +11709,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Okno_9",
@@ -11656,7 +11793,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Okno_4",
@@ -11739,7 +11877,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W125_13",
@@ -11827,7 +11966,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W125_16",
@@ -11915,7 +12055,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Okno_3",
@@ -11998,7 +12139,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Dver_6",
@@ -12081,7 +12223,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "P_BATH_N",
@@ -12169,7 +12312,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "P_HALL_N",
@@ -12257,7 +12401,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "P_R41_W",
@@ -12345,7 +12490,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Dver_bath1",
@@ -12428,7 +12574,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Dver_bath2",
@@ -12511,7 +12658,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Dver_room17",
@@ -12594,7 +12742,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Dver_room41",
@@ -12677,7 +12826,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Dver_balkon",
@@ -12760,7 +12910,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W150_04",
@@ -12848,7 +12999,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W125_07",
@@ -12936,7 +13088,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W150_08",
@@ -13024,7 +13177,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Okno_7_1",
@@ -13107,7 +13261,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Okno",
@@ -13190,7 +13345,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Istochnik_sveta_1",
@@ -13273,7 +13429,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Istochnik_sveta_1_1",
@@ -13356,7 +13513,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Istochnik_sveta_1_2",
@@ -13439,7 +13597,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Istochnik_sveta_1_2_1",
@@ -13522,7 +13681,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Istochnik_sveta_1_2_1_1",
@@ -13605,7 +13765,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Istochnik_sveta_1_2_1_1_1",
@@ -13688,7 +13849,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Istochnik_sveta_1_2_1_1_1_1",
@@ -13771,7 +13933,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Istochnik_sveta_1_2_1_1_2",
@@ -13854,7 +14017,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W125_07_1",
@@ -13942,7 +14106,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W125_07_2",
@@ -14030,7 +14195,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A4_drawer_facade",
@@ -14113,7 +14279,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "fake-oven",
@@ -14196,7 +14363,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "fake-microwave",
@@ -14279,7 +14447,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A4_shelf_1",
@@ -14362,7 +14531,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A4_shelf_2",
@@ -14445,7 +14615,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A4_shelf_3",
@@ -14528,7 +14699,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "A4_shelf_4",
@@ -14611,7 +14783,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Moyka",
@@ -14694,7 +14867,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_11_1",
@@ -14782,7 +14956,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W250_11_2",
@@ -14870,7 +15045,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W150_04_1",
@@ -14958,7 +15134,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "W150_04_2",
@@ -15046,7 +15223,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "P_HALL_N_1",
@@ -15134,7 +15312,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "P_HALL_N_2",
@@ -15222,7 +15401,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "P_HALL_N_3",
@@ -15310,7 +15490,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "P_HALL_N_4",
@@ -15398,7 +15579,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_BackPanel",
@@ -15481,7 +15663,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Korob",
@@ -15564,7 +15747,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Korob_1",
@@ -15647,7 +15831,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Korob_1_1",
@@ -15730,7 +15915,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Side_R",
@@ -15742,7 +15928,7 @@
             "position": [
                 8.24000072479248,
                 1.350000023841858,
-                3.184000015258789
+                3.185000419616699
             ],
             "rotation": [
                 0.0,
@@ -15813,7 +15999,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_L_Side_R",
@@ -15825,7 +16012,7 @@
             "position": [
                 6.840000152587891,
                 1.350000023841858,
-                3.1820003986358644
+                3.185000419616699
             ],
             "rotation": [
                 0.0,
@@ -15896,7 +16083,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_L_Side_L",
@@ -15908,7 +16096,7 @@
             "position": [
                 6.840000629425049,
                 1.350000023841858,
-                1.2000000476837159
+                1.2010002136230469
             ],
             "rotation": [
                 0.0,
@@ -15979,7 +16167,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Side_L",
@@ -16062,7 +16251,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Bottom",
@@ -16074,7 +16264,7 @@
             "position": [
                 8.532000541687012,
                 0.36000004410743716,
-                2.192000150680542
+                2.193000316619873
             ],
             "rotation": [
                 0.5,
@@ -16145,7 +16335,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Div_1",
@@ -16157,7 +16348,7 @@
             "position": [
                 8.239999771118164,
                 1.350000023841858,
-                1.5840001106262208
+                1.5850003957748414
             ],
             "rotation": [
                 0.0,
@@ -16228,7 +16419,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Div_2",
@@ -16240,7 +16432,7 @@
             "position": [
                 8.239999771118164,
                 1.350000023841858,
-                2.8000001907348635
+                2.8010005950927736
             ],
             "rotation": [
                 0.0,
@@ -16311,7 +16503,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_M1",
@@ -16323,7 +16516,7 @@
             "position": [
                 8.24000072479248,
                 0.7280000448226929,
-                2.191999912261963
+                2.193000555038452
             ],
             "rotation": [
                 0.7071068286895752,
@@ -16394,7 +16587,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_R2",
@@ -16406,7 +16600,7 @@
             "position": [
                 8.24000072479248,
                 0.7280000448226929,
-                2.992000102996826
+                2.9930005073547365
             ],
             "rotation": [
                 0.7071068286895752,
@@ -16477,7 +16671,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_MidWide",
@@ -16489,7 +16684,7 @@
             "position": [
                 8.532000541687012,
                 1.2360000610351563,
-                2.192000150680542
+                2.1930007934570314
             ],
             "rotation": [
                 0.5,
@@ -16560,7 +16755,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_M2",
@@ -16572,7 +16768,7 @@
             "position": [
                 8.24000072479248,
                 1.7440000772476197,
-                2.192000389099121
+                2.193000555038452
             ],
             "rotation": [
                 0.7071068286895752,
@@ -16643,7 +16839,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_M3",
@@ -16655,7 +16852,7 @@
             "position": [
                 8.24000072479248,
                 2.244000196456909,
-                2.192000389099121
+                2.193000555038452
             ],
             "rotation": [
                 0.7071068286895752,
@@ -16726,7 +16923,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_R3",
@@ -16738,7 +16936,7 @@
             "position": [
                 8.24000072479248,
                 1.2360000610351563,
-                2.992000102996826
+                2.9930005073547365
             ],
             "rotation": [
                 0.7071068286895752,
@@ -16809,7 +17007,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_R4",
@@ -16821,7 +17020,7 @@
             "position": [
                 8.24000072479248,
                 1.7440000772476197,
-                2.992000102996826
+                2.9930005073547365
             ],
             "rotation": [
                 0.7071068286895752,
@@ -16892,7 +17091,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_R5",
@@ -16904,7 +17104,7 @@
             "position": [
                 8.24000072479248,
                 2.244000196456909,
-                2.992000102996826
+                2.9930005073547365
             ],
             "rotation": [
                 0.7071068286895752,
@@ -16975,7 +17175,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_L2",
@@ -16987,7 +17188,7 @@
             "position": [
                 8.24000072479248,
                 0.7280000448226929,
-                1.3920000791549683
+                1.3930000066757203
             ],
             "rotation": [
                 0.7071068286895752,
@@ -17058,7 +17259,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_L3",
@@ -17070,7 +17272,7 @@
             "position": [
                 8.24000072479248,
                 1.2360000610351563,
-                1.3920000791549683
+                1.3930001258850098
             ],
             "rotation": [
                 0.7071068286895752,
@@ -17141,7 +17343,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_L4",
@@ -17153,7 +17356,7 @@
             "position": [
                 8.24000072479248,
                 1.7440000772476197,
-                1.3920000791549683
+                1.3930001258850098
             ],
             "rotation": [
                 0.7071068286895752,
@@ -17224,7 +17427,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_L5",
@@ -17236,7 +17440,7 @@
             "position": [
                 8.24000072479248,
                 2.2440004348754885,
-                1.3920001983642579
+                1.3930002450942994
             ],
             "rotation": [
                 0.7071068286895752,
@@ -17307,7 +17511,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_R1",
@@ -17319,7 +17524,7 @@
             "position": [
                 8.24000072479248,
                 0.4280000329017639,
-                2.992000102996826
+                2.9930005073547365
             ],
             "rotation": [
                 0.7071068286895752,
@@ -17390,7 +17595,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_R_Shf_L1",
@@ -17473,7 +17679,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Korob_2",
@@ -17556,7 +17763,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_L_Shf_A2",
@@ -17639,7 +17847,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Korob_3",
@@ -17722,7 +17931,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_L_Divider",
@@ -17805,7 +18015,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fasad_sbornyy",
@@ -17888,7 +18099,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_L_Top",
@@ -17900,7 +18112,7 @@
             "position": [
                 7.5400004386901859,
                 2.3519999980926515,
-                3.184000253677368
+                3.185000419616699
             ],
             "rotation": [
                 0.0,
@@ -17971,7 +18183,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_L_Shf_A4",
@@ -18054,7 +18267,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_L_Shf_A3",
@@ -18137,7 +18351,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Yaschik_Movento",
@@ -18220,19 +18435,20 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_ToeKick_Bottom",
             "dimensionsMM": [
                 600,
-                1965,
+                1967,
                 16
             ],
             "position": [
                 6.840000152587891,
                 0.07800006866455078,
-                2.190500259399414
+                2.192499876022339
             ],
             "rotation": [
                 0.7071068286895752,
@@ -18303,7 +18519,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_ToeKick_Front",
@@ -18386,7 +18603,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Korob_4",
@@ -18469,7 +18687,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_L_Shf_B2",
@@ -18552,19 +18771,20 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_L_Shf_B4",
             "dimensionsMM": [
                 600,
-                749,
+                752,
                 16
             ],
             "position": [
                 6.840000629425049,
                 2.692000150680542,
-                2.7995002269744875
+                2.8010001182556154
             ],
             "rotation": [
                 0.7071068286895752,
@@ -18635,7 +18855,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_L_Shf_B3",
@@ -18718,7 +18939,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fasad_schitovoy",
@@ -18801,7 +19023,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Yaschik_Movento_1",
@@ -18884,7 +19107,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fasad_schitovoy_1",
@@ -18967,7 +19191,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Yaschik_Movento_2",
@@ -19050,7 +19275,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Fasad_schitovoy_2",
@@ -19133,7 +19359,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_ToeKick_Inner",
@@ -19145,7 +19372,7 @@
             "position": [
                 6.603000164031982,
                 0.03500000014901161,
-                2.192000389099121
+                2.193000316619873
             ],
             "rotation": [
                 0.0,
@@ -19216,7 +19443,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Cab_ToeKick_Inner_1",
@@ -19299,7 +19527,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         }
     ],
     "groups": [
@@ -19389,12 +19618,12 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 5.9070000648498539,
-        "targetY": 1.350000023841858,
-        "targetZ": 1.130500078201294,
-        "angleX": 40.15581130981445,
-        "angleY": 596.19921875,
-        "distance": 3.299999713897705,
+        "targetX": 0.964899480342865,
+        "targetY": 0.8399999737739563,
+        "targetZ": -2.74944806098938,
+        "angleX": 27.01006317138672,
+        "angleY": 105.50972747802735,
+        "distance": 0.5,
         "photoDistance": 0.5,
         "photoTargetX": 6.478079319000244,
         "photoTargetY": 1.4512913227081299,
@@ -19486,1419 +19715,10 @@
         "grooves": [],
         "edgeBanding": true,
         "edgeThicknessMM": 1.0,
-        "edgeSkipValidation": false
+        "edgeSkipValidation": false,
+        "edgeManualMask": 0
     },
     "undoHistory": [
-        {
-            "type": "move",
-            "description": "Move Leg_B3_B4",
-            "elementIndex": 95,
-            "posBefore": [
-                -0.21599997580051423,
-                0.05000000074505806,
-                -3.3499999046325685
-            ],
-            "posAfter": [
-                -0.1979999542236328,
-                0.05000000074505806,
-                -3.3499999046325685
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Leg_B2_B3",
-            "elementIndex": 94,
-            "posBefore": [
-                0.4359999895095825,
-                0.05000000074505806,
-                -3.3499999046325685
-            ],
-            "posAfter": [
-                0.4519999623298645,
-                0.05000000074505806,
-                -3.3499999046325685
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Leg_B4_B5",
-            "elementIndex": 96,
-            "posBefore": [
-                -0.7549999952316284,
-                0.05000000074505806,
-                -3.3499999046325685
-            ],
-            "posAfter": [
-                -0.7660000920295715,
-                0.05000000074505806,
-                -3.3499999046325685
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Leg_B2_center",
-            "elementIndex": 93,
-            "posBefore": [
-                0.7269999980926514,
-                0.05000000074505806,
-                -3.3499999046325685
-            ],
-            "posAfter": [
-                1.0339999198913575,
-                0.05000000074505806,
-                -3.3499999046325685
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_shelf_2_1_1_1",
-            "elementIndex": 88,
-            "posBefore": [
-                -0.12299990653991699,
-                1.8100000619888306,
-                -3.6120002269744875
-            ],
-            "posAfter": [
-                -0.1229998841881752,
-                1.6305603981018067,
-                -3.6120002269744875
-            ],
-            "rotBefore": [
-                -0.7071068286895752,
-                -0.7071068286895752,
-                0.0,
-                0.0
-            ],
-            "rotAfter": [
-                -0.7071068286895752,
-                -0.7071068286895752,
-                0.0,
-                0.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_shelf_2_1_1",
-            "elementIndex": 86,
-            "posBefore": [
-                1.055999994277954,
-                1.710499882698059,
-                -3.6120002269744875
-            ],
-            "posAfter": [
-                1.055999994277954,
-                1.6320903301239014,
-                -3.6120002269744875
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.7071068286895752,
-                -3.090862321641907e-8,
-                -3.090862321641907e-8
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.7071068286895752,
-                -3.090862321641907e-8,
-                -3.090862321641907e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8100000619888306,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8240001201629639,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                864,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                892,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_upper_top",
-            "elementIndex": 39,
-            "posBefore": [
-                1.0549999475479127,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.0559998750686646,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1020,
-                332,
-                18
-            ],
-            "dimsAfter": [
-                1022,
-                332,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8240001201629639,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8030000925064088,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                892,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                850,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8030000925064088,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.815000057220459,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                850,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                874,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.815000057220459,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.814500093460083,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                874,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                873,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.814500093460083,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8035000562667847,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                873,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                851,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8035000562667847,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8105000257492066,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                851,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                865,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8105000257492066,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8100000619888306,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                865,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                865,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_upper_top",
-            "elementIndex": 39,
-            "posBefore": [
-                1.0559998750686646,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.055999994277954,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1022,
-                332,
-                18
-            ],
-            "dimsAfter": [
-                1022,
-                332,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8100000619888306,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.815500020980835,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                865,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                876,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.815500020980835,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.80649995803833,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                876,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                858,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.80649995803833,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8060001134872437,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                858,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                858,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_upper_top",
-            "elementIndex": 39,
-            "posBefore": [
-                1.055999994277954,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.055999994277954,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1022,
-                332,
-                18
-            ],
-            "dimsAfter": [
-                1022,
-                332,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8060001134872437,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8095000982284547,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                858,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                865,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8095000982284547,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8100000619888306,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                865,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                865,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8100000619888306,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.819000005722046,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                865,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                883,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.819000005722046,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.818000078201294,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                883,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                883,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.818000078201294,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.818000078201294,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                883,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                883,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.818000078201294,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8090001344680787,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                883,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                865,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8090001344680787,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.7650001049041749,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                865,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                777,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.7650001049041749,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.777000069618225,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                777,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                801,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.777000069618225,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.784000039100647,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                801,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                815,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.784000039100647,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.784000039100647,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                815,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                815,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.784000039100647,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.809000015258789,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                815,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                865,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.809000015258789,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.7834999561309815,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                865,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                814,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.7834999561309815,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.783000111579895,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                814,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                814,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize B12_upper_top",
-            "elementIndex": 39,
-            "posBefore": [
-                1.055999994277954,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.055999994277954,
-                2.251000165939331,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.7071068286895752,
-                0.0,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                1022,
-                332,
-                18
-            ],
-            "dimsAfter": [
-                1022,
-                332,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.783000111579895,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8090001344680787,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                814,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                866,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8090001344680787,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8264634609222413,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8264634609222413,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.7976704835891724,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.7976704835891724,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.7956054210662842,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.7956054210662842,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.8111053705215455,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                866,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                897,
-                331,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize A12_upper_shelf_2_1_2",
-            "elementIndex": 87,
-            "posBefore": [
-                1.5760000944137574,
-                1.8111053705215455,
-                -3.454000234603882
-            ],
-            "posAfter": [
-                1.5760000944137574,
-                1.810105323791504,
-                -3.454000234603882
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [
-                897,
-                331,
-                18
-            ],
-            "dimsAfter": [
-                899,
-                331,
-                18
-            ],
-            "children": []
-        },
         {
             "type": "move",
             "description": "Move A12_upper_shelf_2_1_2",
@@ -53684,9 +52504,1132 @@
             "dimsBefore": [],
             "dimsAfter": [],
             "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_L_Side_L",
+            "elementIndex": 188,
+            "posBefore": [
+                6.840000629425049,
+                1.350000023841858,
+                1.2000000476837159
+            ],
+            "posAfter": [
+                6.840000629425049,
+                1.350000023841858,
+                1.2010002136230469
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_L_Side_L",
+            "elementIndex": 188,
+            "posBefore": [
+                6.840000629425049,
+                1.350000023841858,
+                1.2010002136230469
+            ],
+            "posAfter": [
+                6.840000629425049,
+                1.350000023841858,
+                1.2960001230239869
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_L_Side_L",
+            "elementIndex": 188,
+            "posBefore": [
+                6.840000629425049,
+                1.350000023841858,
+                1.2960001230239869
+            ],
+            "posAfter": [
+                6.840000629425049,
+                1.350000023841858,
+                1.2010002136230469
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_ToeKick_Bottom",
+            "elementIndex": 216,
+            "posBefore": [
+                6.840000152587891,
+                0.07800006866455078,
+                2.190500259399414
+            ],
+            "posAfter": [
+                6.840000152587891,
+                0.07800006866455078,
+                2.2095000743865969
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_L_Side_R",
+            "elementIndex": 187,
+            "posBefore": [
+                6.840000152587891,
+                1.350000023841858,
+                3.1820003986358644
+            ],
+            "posAfter": [
+                6.840000152587891,
+                1.350000023841858,
+                3.185000419616699
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_L_Shf_B4",
+            "elementIndex": 220,
+            "posBefore": [
+                6.840000629425049,
+                2.692000150680542,
+                2.7995002269744875
+            ],
+            "posAfter": [
+                6.840000629425049,
+                2.692000150680542,
+                2.8025002479553224
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_L_Shf_B4",
+            "elementIndex": 220,
+            "posBefore": [
+                6.840000629425049,
+                2.692000150680542,
+                2.8025002479553224
+            ],
+            "posAfter": [
+                6.840000629425049,
+                2.692000150680542,
+                2.8010001182556154
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                749,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                752,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Bottom",
+            "elementIndex": 216,
+            "posBefore": [
+                6.840000152587891,
+                0.07800006866455078,
+                2.2095000743865969
+            ],
+            "posAfter": [
+                6.840000152587891,
+                0.07800007611513138,
+                2.1644999980926515
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                1965,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                1875,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Bottom",
+            "elementIndex": 216,
+            "posBefore": [
+                6.840000152587891,
+                0.07800007611513138,
+                2.1644999980926515
+            ],
+            "posAfter": [
+                6.840000152587891,
+                0.07800006866455078,
+                2.2249999046325685
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                1875,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                1754,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Inner",
+            "elementIndex": 227,
+            "posBefore": [
+                6.603000164031982,
+                0.03500000014901161,
+                2.192000389099121
+            ],
+            "posAfter": [
+                6.603000164031982,
+                0.03500000014901161,
+                2.1550004482269289
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1968,
+                70,
+                16
+            ],
+            "dimsAfter": [
+                1894,
+                70,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Inner",
+            "elementIndex": 227,
+            "posBefore": [
+                6.603000164031982,
+                0.03500000014901161,
+                2.1550004482269289
+            ],
+            "posAfter": [
+                6.603000164031982,
+                0.03500000014901161,
+                2.147500514984131
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1894,
+                70,
+                16
+            ],
+            "dimsAfter": [
+                1909,
+                70,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Inner",
+            "elementIndex": 227,
+            "posBefore": [
+                6.603000164031982,
+                0.03500000014901161,
+                2.147500514984131
+            ],
+            "posAfter": [
+                6.603000164031982,
+                0.03500000014901161,
+                2.1555004119873049
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1909,
+                70,
+                16
+            ],
+            "dimsAfter": [
+                1893,
+                70,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Inner",
+            "elementIndex": 227,
+            "posBefore": [
+                6.603000164031982,
+                0.03500000014901161,
+                2.1555004119873049
+            ],
+            "posAfter": [
+                6.603000164031982,
+                0.03500000014901161,
+                2.193000316619873
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                1893,
+                70,
+                16
+            ],
+            "dimsAfter": [
+                1968,
+                70,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Bottom",
+            "elementIndex": 216,
+            "posBefore": [
+                6.840000152587891,
+                0.07800006866455078,
+                2.2249999046325685
+            ],
+            "posAfter": [
+                6.840000152587891,
+                0.07800006121397019,
+                2.2619998455047609
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                1754,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                1828,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_ToeKick_Bottom",
+            "elementIndex": 216,
+            "posBefore": [
+                6.840000152587891,
+                0.07800006121397019,
+                2.2619998455047609
+            ],
+            "posAfter": [
+                6.840000152587891,
+                0.07800006866455078,
+                2.192499876022339
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                1828,
+                16
+            ],
+            "dimsAfter": [
+                600,
+                1967,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_L_Top",
+            "elementIndex": 212,
+            "posBefore": [
+                7.5400004386901859,
+                2.3519999980926515,
+                3.184000253677368
+            ],
+            "posAfter": [
+                7.5400004386901859,
+                2.3519999980926515,
+                3.185000419616699
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Side_R",
+            "elementIndex": 186,
+            "posBefore": [
+                8.24000072479248,
+                1.350000023841858,
+                3.184000015258789
+            ],
+            "posAfter": [
+                8.24000072479248,
+                1.350000023841858,
+                3.185000419616699
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_R4",
+            "elementIndex": 199,
+            "posBefore": [
+                8.24000072479248,
+                1.7440000772476197,
+                2.992000102996826
+            ],
+            "posAfter": [
+                8.24000072479248,
+                1.7440000772476197,
+                2.9930005073547365
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_R3",
+            "elementIndex": 198,
+            "posBefore": [
+                8.24000072479248,
+                1.2360000610351563,
+                2.992000102996826
+            ],
+            "posAfter": [
+                8.24000072479248,
+                1.2360000610351563,
+                3.008000373840332
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_R3",
+            "elementIndex": 198,
+            "posBefore": [
+                8.24000072479248,
+                1.2360000610351563,
+                3.008000373840332
+            ],
+            "posAfter": [
+                8.24000072479248,
+                1.2360000610351563,
+                2.9930005073547365
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_R2",
+            "elementIndex": 194,
+            "posBefore": [
+                8.24000072479248,
+                0.7280000448226929,
+                2.992000102996826
+            ],
+            "posAfter": [
+                8.24000072479248,
+                0.7280000448226929,
+                2.9930005073547365
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_R1",
+            "elementIndex": 205,
+            "posBefore": [
+                8.24000072479248,
+                0.4280000329017639,
+                2.992000102996826
+            ],
+            "posAfter": [
+                8.24000072479248,
+                0.4280000329017639,
+                2.9930005073547365
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Div_2",
+            "elementIndex": 192,
+            "posBefore": [
+                8.239999771118164,
+                1.350000023841858,
+                2.8000001907348635
+            ],
+            "posAfter": [
+                8.239999771118164,
+                1.350000023841858,
+                2.8010005950927736
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_R5",
+            "elementIndex": 200,
+            "posBefore": [
+                8.24000072479248,
+                2.244000196456909,
+                2.992000102996826
+            ],
+            "posAfter": [
+                8.24000072479248,
+                2.244000196456909,
+                2.9930005073547365
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_M3",
+            "elementIndex": 197,
+            "posBefore": [
+                8.24000072479248,
+                2.244000196456909,
+                2.192000389099121
+            ],
+            "posAfter": [
+                8.24000072479248,
+                2.244000196456909,
+                2.193000555038452
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_M2",
+            "elementIndex": 196,
+            "posBefore": [
+                8.24000072479248,
+                1.7440000772476197,
+                2.192000389099121
+            ],
+            "posAfter": [
+                8.24000072479248,
+                1.7440000772476197,
+                2.193000555038452
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_M1",
+            "elementIndex": 193,
+            "posBefore": [
+                8.24000072479248,
+                0.7280000448226929,
+                2.191999912261963
+            ],
+            "posAfter": [
+                8.24000072479248,
+                0.7280000448226929,
+                2.193000555038452
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_MidWide",
+            "elementIndex": 195,
+            "posBefore": [
+                8.532000541687012,
+                1.2360000610351563,
+                2.192000150680542
+            ],
+            "posAfter": [
+                8.532000541687012,
+                1.2360000610351563,
+                2.1930007934570314
+            ],
+            "rotBefore": [
+                0.5,
+                -0.5,
+                0.5,
+                -0.5
+            ],
+            "rotAfter": [
+                0.5,
+                -0.5,
+                0.5,
+                -0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Div_1",
+            "elementIndex": 191,
+            "posBefore": [
+                8.239999771118164,
+                1.350000023841858,
+                1.5840001106262208
+            ],
+            "posAfter": [
+                8.239999771118164,
+                1.350000023841858,
+                1.5850003957748414
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Bottom",
+            "elementIndex": 190,
+            "posBefore": [
+                8.532000541687012,
+                0.36000004410743716,
+                2.192000150680542
+            ],
+            "posAfter": [
+                8.532000541687012,
+                0.36000004410743716,
+                2.193000316619873
+            ],
+            "rotBefore": [
+                0.5,
+                -0.5,
+                0.5,
+                -0.5
+            ],
+            "rotAfter": [
+                0.5,
+                -0.5,
+                0.5,
+                -0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_L2",
+            "elementIndex": 201,
+            "posBefore": [
+                8.24000072479248,
+                0.7280000448226929,
+                1.3920000791549683
+            ],
+            "posAfter": [
+                8.24000072479248,
+                0.7280000448226929,
+                1.3930000066757203
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_L3",
+            "elementIndex": 202,
+            "posBefore": [
+                8.24000072479248,
+                1.2360000610351563,
+                1.3920000791549683
+            ],
+            "posAfter": [
+                8.24000072479248,
+                1.2360000610351563,
+                1.3930001258850098
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_L4",
+            "elementIndex": 203,
+            "posBefore": [
+                8.24000072479248,
+                1.7440000772476197,
+                1.3920000791549683
+            ],
+            "posAfter": [
+                8.24000072479248,
+                1.7440000772476197,
+                1.3930001258850098
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_L5",
+            "elementIndex": 204,
+            "posBefore": [
+                8.24000072479248,
+                2.2440004348754885,
+                1.3920001983642579
+            ],
+            "posAfter": [
+                8.24000072479248,
+                2.2440004348754885,
+                1.3930002450942994
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
         }
     ],
-    "redoHistory": [],
+    "redoHistory": [
+        {
+            "type": "move",
+            "description": "Move Cab_L_Side_R",
+            "elementIndex": 187,
+            "posBefore": [
+                6.840000152587891,
+                1.350000023841858,
+                3.185000419616699
+            ],
+            "posAfter": [
+                6.824000358581543,
+                1.350000023841858,
+                3.201000213623047
+            ],
+            "rotBefore": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                1.0,
+                0.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        }
+    ],
     "settings": {
         "gridStep": 1,
         "gridEnabled": false,
@@ -53698,15 +53641,15 @@
         "spatialGrid": false,
         "windowedMode": true,
         "edgeOutline": true,
-        "wallsEnabled": true,
+        "wallsEnabled": false,
         "lowerNearWalls": false,
         "cameraPanFree": true,
         "wallOutline": true,
         "hideOpeningsOnLoweredWalls": true,
         "objectsVisible": true,
         "hideLightSources": true,
-        "mouseSensitivity": 0.6938088536262512,
-        "wasdSpeed": 1.0,
+        "mouseSensitivity": 1.0312532186508179,
+        "wasdSpeed": 0.9998016357421875,
         "arrowSpeed": 1.0,
         "photoQuality": 2,
         "photoShadows": true,
@@ -53719,7 +53662,7 @@
         "photoCeiling": true,
         "photoSSGI": false
     },
-    "tintEnabled": true,
+    "tintEnabled": false,
     "lightsOn": false,
     "windows": [
         {
@@ -53731,9 +53674,9 @@
         },
         {
             "id": "errors",
-            "visible": true,
-            "x": 481.8184509277344,
-            "y": -201.94833374023438,
+            "visible": false,
+            "x": 393.8786315917969,
+            "y": -164.70318603515626,
             "height": 0.0
         },
         {
