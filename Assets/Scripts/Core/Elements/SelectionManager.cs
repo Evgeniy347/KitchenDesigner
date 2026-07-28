@@ -72,19 +72,15 @@ namespace KitchenDesigner.Core
 
             if (Input.GetMouseButtonDown(0))
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+                bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 
-                if (Physics.Raycast(ray, out RaycastHit hit))
-                {
-                    var element = hit.collider.GetComponentInParent<KitchenElement>();
-                    HandleClickOnElement(element,
-                        Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl));
-                }
-                else
-                {
-                    if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
-                        DeselectAll();
-                }
+                var clicked = ResolveClickTarget(Input.mousePosition, shiftHeld);
+
+                if (clicked != null)
+                    HandleClickOnElement(clicked, ctrlHeld);
+                else if (!ctrlHeld)
+                    DeselectAll();
             }
         }
 
@@ -179,6 +175,42 @@ namespace KitchenDesigner.Core
             _collapseCandidate = null;
             if (candidate == null || _selectedElements.Count <= 1) return;
             SelectOnly(new List<KitchenElement> { candidate });
+        }
+
+        public static KitchenElement? PickFromOrderedHits(
+            IReadOnlyList<KitchenElement> hits, bool shiftHeld)
+        {
+            foreach (var el in hits)
+            {
+                if (el == null)
+                    continue;
+                if (!shiftHeld || !el.Transparent)
+                    return el;
+            }
+            return null;
+        }
+
+        private KitchenElement? ResolveClickTarget(Vector3 screenPoint, bool shiftHeld)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(screenPoint);
+
+            if (!shiftHeld)
+            {
+                if (Physics.Raycast(ray, out RaycastHit hit))
+                    return hit.collider.GetComponentInParent<KitchenElement>();
+                return null;
+            }
+
+            var allHits = Physics.RaycastAll(ray);
+            System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
+            var elements = new List<KitchenElement>(allHits.Length);
+            foreach (var h in allHits)
+            {
+                var el = h.collider.GetComponentInParent<KitchenElement>();
+                if (el != null)
+                    elements.Add(el);
+            }
+            return PickFromOrderedHits(elements, shiftHeld: true);
         }
 
         public void Select(KitchenElement element)

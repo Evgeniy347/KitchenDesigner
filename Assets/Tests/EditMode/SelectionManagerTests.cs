@@ -224,6 +224,92 @@ public class SelectionManagerTests
         Assert.IsFalse(sm.IsSelected(a), "вторая деталь снята с выделения");
     }
 
+    // ── PickFromOrderedHits: клик сквозь прозрачные элементы по Shift ──
+
+    private KitchenElement MakeTransparent(string name)
+    {
+        var e = Make(name);
+        var d = e.Data;
+        d.Transparent = true;
+        return e;
+    }
+
+    [Test]
+    public void Pick_NoShift_ReturnsFirst()
+    {
+        var a = Make("A");
+        var hits = new List<KitchenElement> { a };
+        Assert.AreEqual(a, SelectionManager.PickFromOrderedHits(hits, shiftHeld: false));
+    }
+
+    [Test]
+    public void Pick_NoShift_TransparentInFront_ReturnsTransparent()
+    {
+        var transparent = MakeTransparent("Прозрачный");
+        var opaque = Make("Непрозрачный");
+        var hits = new List<KitchenElement> { transparent, opaque };
+        Assert.AreEqual(transparent, SelectionManager.PickFromOrderedHits(hits, shiftHeld: false),
+            "без Shift прозрачный элемент спереди не пропускается");
+    }
+
+    [Test]
+    public void Pick_Shift_TransparentInFront_SkipsToOpaque()
+    {
+        var transparent = MakeTransparent("Прозрачный");
+        var opaque = Make("Непрозрачный");
+        var hits = new List<KitchenElement> { transparent, opaque };
+        Assert.AreEqual(opaque, SelectionManager.PickFromOrderedHits(hits, shiftHeld: true),
+            "с Shift прозрачный элемент пропускается, выбирается непрозрачный за ним");
+    }
+
+    [Test]
+    public void Pick_Shift_AllTransparent_ReturnsNull()
+    {
+        var t1 = MakeTransparent("Прозрачный 1");
+        var t2 = MakeTransparent("Прозрачный 2");
+        var hits = new List<KitchenElement> { t1, t2 };
+        Assert.IsNull(SelectionManager.PickFromOrderedHits(hits, shiftHeld: true),
+            "все элементы прозрачные — выбирать нечего");
+    }
+
+    [Test]
+    public void Pick_Shift_AllOpaque_ReturnsFirst()
+    {
+        var a = Make("A");
+        var b = Make("B");
+        var hits = new List<KitchenElement> { a, b };
+        Assert.AreEqual(a, SelectionManager.PickFromOrderedHits(hits, shiftHeld: true),
+            "Shift без прозрачных элементов — первый по порядку");
+    }
+
+    [Test]
+    public void Pick_Shift_TwoTransparentThenOpaque()
+    {
+        var t1 = MakeTransparent("Прозрачный 1");
+        var t2 = MakeTransparent("Прозрачный 2");
+        var opaque = Make("Непрозрачный");
+        var hits = new List<KitchenElement> { t1, t2, opaque };
+        Assert.AreEqual(opaque, SelectionManager.PickFromOrderedHits(hits, shiftHeld: true),
+            "два прозрачных подряд — пропускаются оба");
+    }
+
+    [Test]
+    public void Pick_EmptyList_ReturnsNull()
+    {
+        var hits = new List<KitchenElement>();
+        Assert.IsNull(SelectionManager.PickFromOrderedHits(hits, shiftHeld: false));
+        Assert.IsNull(SelectionManager.PickFromOrderedHits(hits, shiftHeld: true));
+    }
+
+    [Test]
+    public void Pick_Shift_NullElementsSkipped()
+    {
+        var opaque = Make("Непрозрачный");
+        var hits = new List<KitchenElement> { null!, opaque };
+        Assert.AreEqual(opaque, SelectionManager.PickFromOrderedHits(hits, shiftHeld: true),
+            "null элементы пропускаются");
+    }
+
     [Test]
     public void ClickInsideMultiSelection_WithCtrl_TogglesInsteadOfCollapsing()
     {
