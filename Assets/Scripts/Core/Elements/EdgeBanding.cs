@@ -167,6 +167,26 @@ namespace KitchenDesigner.Core
         public static string FormatThickness(float thicknessMM) =>
             thicknessMM.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
 
+        /// <summary>Сосед, который торец НЕ закрывает и кромку с него не снимает.
+        ///
+        /// Лампа — декор, мойка врезана в столешницу: ни та, ни другая торец не
+        /// закрывают (те же исключения, что у ConstraintValidator). Опора
+        /// подпирает деталь снизу точечно: торец над ней остаётся видимым и
+        /// кромкуется целиком, иначе каждая деталь на опорах ловила ложную
+        /// EDG-01 на 2–9 %.
+        ///
+        /// Фасад и ящик ОТКРЫВАЮТСЯ: торец за ними виден в открытом состоянии и
+        /// кромкуется. Считать их перекрытием нельзя — передние торцы всего
+        /// корпуса уходили в раскрой без кромки, а фасад с зазорами (GappedBox
+        /// уменьшает габарит) накрывал торец частично и давал ложную EDG-01.
+        /// Грани фасада к тому же берутся от ЗАКРЫТОЙ позы, так что от анимации
+        /// это не зависит. AssembledFacadeElement наследует FacadeElement и
+        /// попадает сюда же; PanelElement (ХДФ, задняя стенка, дно ящика)
+        /// дверцей не является и торец закрывает как обычная деталь.</summary>
+        private static bool IsTransparentToEdges(KitchenElement other) =>
+            other is LightSourceElement || other is SinkElement || other is PillarElement
+            || other is FacadeElement || other is DrawerElement;
+
         /// <summary>Доля перекрытия каждого торца детали соседями. others —
         /// вся сцена (пол и стены тоже перекрывают торец и снимают кромку).</summary>
         public static EdgeCoverage Coverage(KitchenElement element, IReadOnlyList<KitchenElement> others)
@@ -195,12 +215,7 @@ namespace KitchenDesigner.Core
             {
                 if (other == null || other == element) continue;
                 if (!other.gameObject.activeInHierarchy) continue;
-                // Лампа — декор, мойка врезана в столешницу: ни та, ни другая
-                // торец не закрывают (те же исключения, что у ConstraintValidator).
-                // Опора подпирает деталь снизу точечно: торец над ней остаётся
-                // видимым и кромкуется целиком, поэтому перекрытием она не считается —
-                // иначе каждая деталь на опорах ловила ложную EDG-01 на 2–9%.
-                if (other is LightSourceElement || other is SinkElement || other is PillarElement) continue;
+                if (IsTransparentToEdges(other)) continue;
 
                 var otherFaces = other.GetFaces();
                 for (int i = 0; i < 4; i++)
@@ -257,7 +272,7 @@ namespace KitchenDesigner.Core
             {
                 if (other == null || other == element) continue;
                 if (!other.gameObject.activeInHierarchy) continue;
-                if (other is LightSourceElement || other is SinkElement || other is PillarElement) continue;
+                if (IsTransparentToEdges(other)) continue;
 
                 // Сосед может прилегать несколькими гранями — берём их объединение,
                 // иначе деталь, накрывшая торец «уголком», недосчитает площадь.

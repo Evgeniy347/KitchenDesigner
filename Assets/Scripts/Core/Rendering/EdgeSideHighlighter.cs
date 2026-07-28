@@ -16,6 +16,12 @@ namespace KitchenDesigner.Core
     ///
     /// Накладки — отдельные квады поверх поверхности, геометрия детали не
     /// трогается. Живут только пока курсор на полосе.
+    ///
+    /// Квады НЕ парентятся к детали: у KitchenElement в transform.localScale
+    /// лежит физический габарит (см. ApplyDimensions), и накладка-ребёнок
+    /// домножалась бы на него — по тонкой оси в 0.018 раза, то есть в ноль, да
+    /// ещё с перекосом от неравномерного масштаба. Держим их под собственным
+    /// корнем в мировых координатах, как ElementOutline.
     /// </summary>
     public static class EdgeSideHighlighter
     {
@@ -33,8 +39,14 @@ namespace KitchenDesigner.Core
 
         private static readonly List<GameObject> Quads = new List<GameObject>();
         private static Material? _material;
+        private static GameObject? _root;
         private static KitchenElement? _shownFor;
         private static EdgeSide _shownSide;
+        // Поза и габарит детали на момент построения: по ним Sync() понимает,
+        // что накладки разъехались с деталью и их надо пересобрать.
+        private static Vector3 _shownPos;
+        private static Quaternion _shownRot;
+        private static Vector3Int _shownDims;
 
         /// <summary>Что подсвечено сейчас (для тестов и повторных наведений).</summary>
         public static bool IsShown(KitchenElement element, EdgeSide side) =>
@@ -43,6 +55,12 @@ namespace KitchenDesigner.Core
         /// <summary>Количество накладок: 1 торец + 4 полосы. Меньше — если у
         /// детали не разобран габарит.</summary>
         public static int QuadCount => Quads.Count;
+
+        /// <summary>Сами накладки — тестам нужно проверять их МИРОВОЙ размер:
+        /// на этом класс и горел (накладка наследовала габарит детали и
+        /// схлопывалась по тонкой оси), а счётчик квадов такое не ловит.
+        /// Первая в списке — торец, остальные четыре — полосы.</summary>
+        public static IReadOnlyList<GameObject> QuadObjects => Quads;
 
         public static void Show(KitchenElement element, EdgeSide side)
         {
@@ -61,33 +79,77 @@ namespace KitchenDesigner.Core
             var end = faces[endIndex];
 
             // Сам торец — целиком.
-            AddQuad(element, end, end.size, Vector2.zero);
+            AddQuad(end, end.size, Vector2.zero);
 
             // Соседние грани — все, кроме самого торца и противоположного ему.
             int oppositeIndex = endIndex % 2 == 0 ? endIndex + 1 : endIndex - 1;
             for (int i = 0; i < faces.Length; i++)
             {
                 if (i == endIndex || i == oppositeIndex) continue;
-                AddBand(element, faces[i], end);
+                AddBand(faces[i], end);
             }
 
             _shownFor = element;
             _shownSide = side;
+            _shownPos = element.transform.position;
+            _shownRot = element.transform.rotation;
+            _shownDims = element.DimensionsMM;
+        }
+
+        /// <summary>Догнать деталь: снять подсветку, если детали больше нет или
+        /// её рендер погашен, и пересобрать накладки, если деталь сдвинули,
+        /// повернули или изменили в размерах (undo, ввод в полях, MCP). Зовётся
+        /// из ContextMenuUI.Update — своего апдейта у статического класса нет.</summary>
+        public static void Sync()
+        {
+            if (Quads.Count == 0) return;
+
+            if (_shownFor == null || !SceneVisibility.AnyRendererEnabled(_shownFor))
+            {
+                Hide();
+                return;
+            }
+
+            var t = _shownFor.transform;
+            if (t.position == _shownPos && t.rotation == _shownRot
+                && _shownFor.DimensionsMM == _shownDims) return;
+
+            Show(_shownFor, _shownSide);
         }
 
         public static void Hide()
         {
             foreach (var q in Quads)
-                if (q != null) Object.DestroyImmediate(q);
+                if (q != null) DestroyObject(q);
             Quads.Clear();
             _shownFor = null;
+        }
+
+        /// <summary>В рантайме Destroy: DestroyImmediate из колбэка UI-события
+        /// Unity запрещает. В EditMode-тестах Destroy не отрабатывает вовсе,
+        /// поэтому там — DestroyImmediate.</summary>
+        private static void DestroyObject(GameObject go)
+        {
+            if (Application.isPlaying) Object.Destroy(go);
+            else Object.DestroyImmediate(go);
+        }
+
+        /// <summary>Общий корень накладок — в мировых координатах, вне иерархии
+        /// детали (см. комментарий к классу).</summary>
+        private static Transform Root()
+        {
+            if (_root == null)
+            {
+                _root = new GameObject("__EdgeSideHighlight") { hideFlags = HideFlags.DontSave };
+                _root.transform.SetParent(null, worldPositionStays: false);
+            }
+            return _root.transform;
         }
 
         /// <summary>Полоса вдоль общего ребра соседней грани с торцом: она
         /// прижата к торцу и уходит вглубь на BandFraction размера ЭТОЙ грани в
         /// направлении от торца, но не больше BandMaxMm.</summary>
-        private static void AddBand(KitchenElement element, in KitchenElement.Face face,
-            in KitchenElement.Face end)
+        private static void AddBand(in KitchenElement.Face face, in KitchenElement.Face end)
         {
             // Направление «от торца» внутри плоскости соседней грани — это
             // нормаль торца, спроецированная на плоскость грани. Для граней
@@ -107,17 +169,18 @@ namespace KitchenDesigner.Core
 
             var size = alongU ? new Vector2(depth, face.size.y) : new Vector2(face.size.x, depth);
             var shift = alongU ? new Vector2(offset, 0f) : new Vector2(0f, offset);
-            AddQuad(element, face, size, shift);
+            AddQuad(face, size, shift);
         }
 
         /// <summary>Накладка на грань: размер в юнитах и сдвиг от центра грани
         /// в её собственных осях.</summary>
-        private static void AddQuad(KitchenElement element, in KitchenElement.Face face,
-            Vector2 size, Vector2 shiftInFace)
+        private static void AddQuad(in KitchenElement.Face face, Vector2 size, Vector2 shiftInFace)
         {
             var go = new GameObject("EdgeSideHighlight");
             go.hideFlags = HideFlags.DontSave;
-            go.transform.SetParent(element.transform, worldPositionStays: true);
+            // Корень стоит в позе identity, поэтому локальный трансформ квада и
+            // есть мировой: масштаб детали в накладку не просачивается.
+            go.transform.SetParent(Root(), worldPositionStays: false);
 
             Vector3 center = face.center
                 + face.rightAxis * shiftInFace.x
@@ -141,7 +204,8 @@ namespace KitchenDesigner.Core
         private static Mesh? _quad;
 
         /// <summary>Единичный квад в плоскости XY. Свой, а не CreatePrimitive:
-        /// примитивы вырезаются из WebGL-сборки вместе с коллайдерами.</summary>
+        /// примитивы вырезаются из WebGL-сборки вместе с коллайдерами.
+        /// Цвет лежит в вершинах — его берёт Hidden/OverlayLine.</summary>
         private static Mesh QuadMesh()
         {
             if (_quad != null) return _quad;
@@ -154,6 +218,8 @@ namespace KitchenDesigner.Core
             _quad.triangles = new[] { 0, 2, 1, 0, 3, 2 };
             _quad.normals = new[] { -Vector3.forward, -Vector3.forward, -Vector3.forward, -Vector3.forward };
             _quad.uv = new[] { Vector2.zero, Vector2.right, Vector2.one, Vector2.up };
+            var c = UI.UIStyle.EdgeHighlight3D;
+            _quad.colors = new[] { c, c, c, c };
             return _quad;
         }
 
@@ -186,6 +252,11 @@ namespace KitchenDesigner.Core
             _material.color = color;
             if (_material.HasProperty("_BaseColor")) _material.SetColor("_BaseColor", color);
 
+            // Hidden/OverlayLine уже настроен как надо (ZTest Always, ZWrite Off,
+            // альфа-смешивание, своя очередь) и цвет берёт из вершин — ему ничего
+            // выставлять не нужно, а перебивать его renderQueue вредно.
+            if (shader.name == "Hidden/OverlayLine") return _material;
+
             // Прозрачность: под накладкой должна читаться текстура детали. У URP
             // мало выставить _Surface — без ключевого слова и режимов смешивания
             // материал остаётся непрозрачным.
@@ -203,15 +274,25 @@ namespace KitchenDesigner.Core
 
         /// <summary>Шейдер накладки с запасными вариантами.
         ///
-        /// URP/Unlit ВЫРЕЗАЕТСЯ стриппингом, если им не пользуется ни один
-        /// материал проекта, а Unlit/Color — шейдер встроенного пайплайна,
-        /// которого в URP-сборке нет вовсе: в билде оба давали null, и
-        /// конструктор материала падал с ArgumentNullException на каждое
-        /// наведение (Player.log). Цепочка та же, что в ElementOutline.MakeUnlit:
-        /// URP/Lit гарантированно в сборке — его используют все детали.</summary>
+        /// Основной — Hidden/OverlayLine (рулетка): ZTest Always, ZWrite Off,
+        /// Cull Off, альфа-смешивание, цвет из вершин. ZTest Always здесь по
+        /// делу: подсветка должна читаться и когда торец прижат к соседней
+        /// детали, и когда сторона смотрит от камеры, — иначе она «пропадает»
+        /// в геометрии, ради чего вся затея и не работала. Лежит в Resources,
+        /// поэтому стриппинг его не трогает; Resources.Load — на случай, когда
+        /// Shader.Find не видит шейдер, не использованный ни одним материалом
+        /// сцены (тот же приём в EdgeOutlineRenderer).
+        ///
+        /// Дальше — прежняя цепочка. URP/Unlit ВЫРЕЗАЕТСЯ стриппингом, если им
+        /// не пользуется ни один материал проекта, а Unlit/Color — шейдер
+        /// встроенного пайплайна, которого в URP-сборке нет вовсе: в билде оба
+        /// давали null, и конструктор материала падал с ArgumentNullException
+        /// на каждое наведение (Player.log).</summary>
         private static Shader? FindHighlightShader()
         {
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
+            var shader = Shader.Find("Hidden/OverlayLine");
+            if (shader == null) shader = Resources.Load<Shader>("Shaders/OverlayLine");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) shader = Shader.Find("Sprites/Default");
             return shader;

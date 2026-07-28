@@ -926,6 +926,11 @@ namespace KitchenDesigner.Core.UI
                 if (_target.SupportsEdges && --_edgeRefreshCountdown <= 0)
                     RefreshEdgeUI();
             }
+
+            // Накладки подсветки стороны живут в мировых координатах и своего
+            // апдейта не имеют: деталь могли сдвинуть, изменить или удалить
+            // (undo, MCP) прямо во время наведения.
+            EdgeSideHighlighter.Sync();
         }
 
         private bool IsAnyFieldFocused()
@@ -1030,6 +1035,10 @@ namespace KitchenDesigner.Core.UI
         public void Open(KitchenElement element)
         {
             if (element == null) return;
+
+            // Подсветка стороны принадлежит ПРЕДЫДУЩЕЙ детали: схема кромок под
+            // курсором пересобирается, PointerExit по старой полосе не придёт.
+            EdgeSideHighlighter.Hide();
 
             // Верхний ящик пары своего окна свойств не имеет — открываем нижний.
             if (element is DrawerElement upper && upper.IsUpperDrawer)
@@ -1228,6 +1237,9 @@ namespace KitchenDesigner.Core.UI
 
         public void Close()
         {
+            // Панель гаснет без PointerExit по полосе кромки — подсветку стороны
+            // снимаем сами, иначе накладки остаются висеть на детали.
+            EdgeSideHighlighter.Hide();
             _target = null;
             if (_root != null) _root.SetActive(false);
         }

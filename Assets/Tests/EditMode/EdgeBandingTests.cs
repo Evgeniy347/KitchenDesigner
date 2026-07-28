@@ -254,6 +254,90 @@ public class EdgeBandingTests
         Assert.IsTrue(coverage.HasEdge(EdgeSide.W1), "зазор 5 мм — торец открыт");
     }
 
+    /// <summary>Фасад ОТКРЫВАЕТСЯ: торец за ним виден и кромкуется. Пока фасад
+    /// считался перекрытием, передние торцы всего корпуса уходили в раскрой без
+    /// кромки — деталь под фасадом не получала её вообще.</summary>
+    [Test]
+    public void FacadeAtEnd_LeavesEdge()
+    {
+        var shelf = CreatePart("Shelf", ShelfDims);
+        var go = new GameObject("Facade");
+        _spawned.Add(go);
+        var facade = go.AddComponent<FacadeElement>();
+        // Та же геометрия, что у стойки из EndCoveredByNeighbour_HasNoEdge:
+        // разница только в типе элемента.
+        facade.DimensionsMM = new Vector3Int(18, 700, 400);
+        go.transform.position = new Vector3(0.409f, 0f, 0f);
+
+        var coverage = EdgeBanding.Coverage(shelf, new List<KitchenElement> { shelf, facade });
+
+        Assert.AreEqual(0f, coverage.Ratio(EdgeSide.W1), 1e-4f, "фасад торец не закрывает");
+        Assert.IsTrue(coverage.HasEdge(EdgeSide.W1), "торец под фасадом виден при открывании — кромка нужна");
+        Assert.IsFalse(coverage.IsPartial(EdgeSide.W1));
+    }
+
+    /// <summary>Фасад с зазорами (GappedBox уменьшает габарит) накрывал торец не
+    /// целиком, а процентов на 97 — и SceneAnalyzer выдавал ложную EDG-01
+    /// «торец перекрыт частично» на каждую деталь корпуса.</summary>
+    [Test]
+    public void FacadeWithGaps_DoesNotRaisePartialCover()
+    {
+        var shelf = CreatePart("Shelf", ShelfDims);
+        var go = new GameObject("Facade");
+        _spawned.Add(go);
+        var facade = go.AddComponent<FacadeElement>();
+        facade.DimensionsMM = new Vector3Int(18, 700, 400);
+        go.transform.position = new Vector3(0.409f, 0f, 0f);
+        facade.GapTop = 3;
+        facade.GapBottom = 3;
+        foreach (var el in new[] { shelf, (KitchenElement)facade }) PartRegistry.Register(el);
+
+        var coverage = EdgeBanding.Coverage(shelf, new List<KitchenElement> { shelf, facade });
+        Assert.IsFalse(coverage.IsPartial(EdgeSide.W1));
+
+        var issues = SceneAnalyzer.Analyze();
+        Assert.IsNull(issues.Find(i => i.Code == IssueCatalog.CodeEdgePartialCover
+                                       && i.Target == shelf).Code,
+            "EDG-01 из-за фасада быть не должно");
+    }
+
+    /// <summary>Ящик выдвигается — торец за его коробом тоже виден и кромкуется.</summary>
+    [Test]
+    public void DrawerAtEnd_LeavesEdge()
+    {
+        var shelf = CreatePart("Shelf", ShelfDims);
+        var go = new GameObject("Drawer");
+        _spawned.Add(go);
+        var drawer = go.AddComponent<DrawerElement>();
+        drawer.DimensionsMM = new Vector3Int(600, 0, 0); // высоту и глубину диктует тип ящика
+        // Габарит по X ящик оставляет как задали — ставим его вплотную к торцу W1
+        // полки (её грань +X на x = 0.4).
+        float halfX = drawer.DimensionsMM.x * 0.5f * AppConstants.MM_TO_UNITS;
+        go.transform.position = new Vector3(0.4f + halfX, 0f, 0f);
+
+        var coverage = EdgeBanding.Coverage(shelf, new List<KitchenElement> { shelf, drawer });
+
+        Assert.AreEqual(0f, coverage.Ratio(EdgeSide.W1), 1e-4f, "ящик торец не закрывает");
+        Assert.IsTrue(coverage.HasEdge(EdgeSide.W1));
+    }
+
+    /// <summary>Контроль к двум тестам выше: ХДФ-панель (задняя стенка, дно
+    /// ящика) дверцей не является и торец закрывает как обычная деталь.</summary>
+    [Test]
+    public void PanelAtEnd_StillCoversEnd()
+    {
+        var shelf = CreatePart("Shelf", ShelfDims);
+        var go = new GameObject("Panel");
+        _spawned.Add(go);
+        var panel = go.AddComponent<PanelElement>();
+        panel.DimensionsMM = new Vector3Int(18, 700, 400);
+        go.transform.position = new Vector3(0.409f, 0f, 0f);
+
+        var coverage = EdgeBanding.Coverage(shelf, new List<KitchenElement> { shelf, panel });
+
+        Assert.IsFalse(coverage.HasEdge(EdgeSide.W1), "панель не открывается — торец закрыт");
+    }
+
     private List<KitchenElement> PartRegistryList()
     {
         var list = new List<KitchenElement>();
@@ -496,31 +580,95 @@ public class EdgeBandingTests
         }
     }
 
-    /// <summary>Глубина полосы — 20 % размера соседней грани, но не более 50 мм.
-    /// У полки 800×400 обе величины упираются в потолок; проверяем и мелкую
-    /// деталь, где работает процент.</summary>
+    /// <summary>Накладка живёт в МИРОВЫХ единицах. Пока квад парентился к детали,
+    /// он домножался на её localScale (габарит в юнитах): по тонкой оси в 0.018
+    /// раза — подсветка схлопывалась в ноль, отсюда «где-то видна, где-то нет».
+    /// Проверяется фактический размер, а не формула.</summary>
     [Test]
-    public void EdgeHighlight_BandDepth_IsCappedAtFiftyMillimetres()
+    public void EdgeHighlight_QuadsAreSizedInWorldUnits()
     {
-        var big = CreatePart("Big", ShelfDims);                            // 800 → 20% = 160
-        var small = CreatePart("Small", new Vector3Int(120, 18, 100),      // 120 → 20% = 24
-            new Vector3(0f, 1f, 0f));
+        var shelf = CreatePart("Shelf", ShelfDims);
+        var layout = EdgeBanding.LayoutOf(ShelfDims);
+        var end = shelf.GetFaces()[layout.FaceIndex(EdgeSide.W1)];
 
-        float toMm = 1f / AppConstants.MM_TO_UNITS;
-        float cap = EdgeSideHighlighter.BandMaxMm;
+        EdgeSideHighlighter.Show(shelf, EdgeSide.W1);
+        var quads = EdgeSideHighlighter.QuadObjects;
+        Assert.AreEqual(5, quads.Count, "торец + 4 полосы");
 
-        Assert.AreEqual(cap, Mathf.Min(800f * EdgeSideHighlighter.BandFraction, cap), 1e-3f,
-            "на крупной детали работает потолок 50 мм");
-        Assert.AreEqual(24f, Mathf.Min(120f * EdgeSideHighlighter.BandFraction, cap), 1e-3f,
-            "на мелкой детали работает процент");
+        // Первая накладка — сам торец: ровно размер грани (0.018 × 0.4).
+        var endScale = quads[0].transform.lossyScale;
+        Assert.AreEqual(end.size.x, endScale.x, 1e-4f, "ширина накладки торца = ширине грани");
+        Assert.AreEqual(end.size.y, endScale.y, 1e-4f, "высота накладки торца = высоте грани");
 
-        // Накладки строятся для обеих без падения на вырожденной геометрии.
-        EdgeSideHighlighter.Show(big, EdgeSide.W1);
-        Assert.AreEqual(5, EdgeSideHighlighter.QuadCount);
-        EdgeSideHighlighter.Show(small, EdgeSide.L1);
+        // Полосы на пластях (грань 800×400): глубина упирается в потолок 50 мм,
+        // длина равна стороне грани. Пласти узнаём по длинной стороне 0.4.
+        float cap = EdgeSideHighlighter.BandMaxMm * AppConstants.MM_TO_UNITS;
+        int faceBands = 0;
+        for (int i = 1; i < quads.Count; i++)
+        {
+            var s = quads[i].transform.lossyScale;
+            float depth = Mathf.Min(s.x, s.y);
+            Assert.Greater(depth, 1e-4f, "полоса не схлопнута в ноль");
+
+            if (Mathf.Abs(Mathf.Max(s.x, s.y) - 0.4f) > 1e-3f) continue;
+            faceBands++;
+            Assert.AreEqual(cap, depth, 1e-4f, "20 % от 800 мм = 160 мм → потолок 50 мм");
+        }
+        Assert.AreEqual(2, faceBands, "полосы легли на обе пласти");
+
+        EdgeSideHighlighter.Show(shelf, EdgeSide.L1);
         Assert.AreEqual(5, EdgeSideHighlighter.QuadCount, "показ переключается без накопления");
+
         EdgeSideHighlighter.Hide();
-        Assert.Greater(toMm, 0f);
+    }
+
+    /// <summary>На мелкой детали работает процент, а не потолок: 20 % от 120 мм.
+    /// И у повёрнутой детали накладка не перекошена — прежняя парентовка к
+    /// детали давала skew от неравномерного масштаба родителя.</summary>
+    [Test]
+    public void EdgeHighlight_BandDepth_UsesPercentOnSmallPart_AndSurvivesRotation()
+    {
+        var small = CreatePart("Small", new Vector3Int(120, 18, 100));
+        small.transform.rotation = Quaternion.Euler(0f, 37f, 0f);
+        var layout = EdgeBanding.LayoutOf(small.DimensionsMM);
+        var end = small.GetFaces()[layout.FaceIndex(EdgeSide.W1)];
+
+        EdgeSideHighlighter.Show(small, EdgeSide.W1);
+        var quads = EdgeSideHighlighter.QuadObjects;
+        Assert.AreEqual(5, quads.Count);
+
+        var endScale = quads[0].transform.lossyScale;
+        Assert.AreEqual(end.size.x, endScale.x, 1e-4f);
+        Assert.AreEqual(end.size.y, endScale.y, 1e-4f);
+
+        // Пласть 120×100: 20 % от 120 мм = 24 мм, потолок не срабатывает.
+        float expected = 120f * EdgeSideHighlighter.BandFraction * AppConstants.MM_TO_UNITS;
+        int faceBands = 0;
+        for (int i = 1; i < quads.Count; i++)
+        {
+            var s = quads[i].transform.lossyScale;
+            if (Mathf.Abs(Mathf.Max(s.x, s.y) - 0.1f) > 1e-3f) continue;
+            faceBands++;
+            Assert.AreEqual(expected, Mathf.Min(s.x, s.y), 1e-4f);
+        }
+        Assert.AreEqual(2, faceBands);
+
+        EdgeSideHighlighter.Hide();
+    }
+
+    /// <summary>Деталь удалили, пока курсор стоял на полосе схемы: PointerExit
+    /// уже не придёт, накладки обязана снять синхронизация.</summary>
+    [Test]
+    public void EdgeHighlight_Sync_DropsHighlightOfDestroyedPart()
+    {
+        var shelf = CreatePart("Shelf", ShelfDims);
+        EdgeSideHighlighter.Show(shelf, EdgeSide.W1);
+        Assert.AreEqual(5, EdgeSideHighlighter.QuadCount);
+
+        Object.DestroyImmediate(shelf.gameObject);
+        EdgeSideHighlighter.Sync();
+
+        Assert.AreEqual(0, EdgeSideHighlighter.QuadCount, "подсветка снята вместе с деталью");
     }
 
     [Test]
