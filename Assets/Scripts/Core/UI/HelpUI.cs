@@ -25,13 +25,14 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, 236), new Vector2(480, 36), TextAnchor.MiddleCenter);
 
             var text = "" +
-                "W A S D  — перемещение камеры\n" +
+                "W A S D  — перемещение камеры (разгон при удержании)\n" +
+                "Shift + W A S D  — разгон сразу\n" +
                 "< ^ > v  — поворот камеры\n" +
-                "+ / -    — приближение / отдаление\n" +
+                "+ / -    — вперёд / назад\n" +
                 "\n" +
-                "ПКМ + движение  — орбита камеры\n" +
+                "ПКМ + движение  — поворот камеры на месте\n" +
                 "СКМ / ЛКМ + пусто  — панорамирование\n" +
-                "Колёсико мыши  — зум\n" +
+                "Колёсико мыши  — вперёд / назад\n" +
                 "\n" +
                 "ЛКМ по детали  — выделение\n" +
                 "Ctrl + ЛКМ  — мультивыделение\n" +
@@ -49,7 +50,7 @@ namespace KitchenDesigner.Core.UI
                 "F1 — эта справка";
 
             UIFactory.CreateLabel("HelpText", panel.transform, text, 15,
-                new Vector2(0, 20), new Vector2(480, 430), TextAnchor.UpperLeft);
+                new Vector2(0, 10), new Vector2(480, 450), TextAnchor.UpperLeft);
 
             UIFactory.CreateButton("HelpClose", panel.transform, "Закрыть",
                 new Vector2(0, -260), new Vector2(160, 40), Close);

@@ -46,7 +46,7 @@ A visual 3D furniture board constructor for laying out cabinets, kitchens, and o
 - **Save/Load** — projects saved as JSON. Load a ready-made configuration from file (see `docs/example.save.json`)
 - **Auto-save** — configurable interval, only when changes detected. **Backup** — on manual save, the old file is archived to `saves/backups/`
 - **Undo/Redo** — command stack of up to 1000 operations
-- **Camera controls** — orbit (RMB), pan (MMB), zoom (scroll), WASD movement
+- **Camera controls** — turn in place (RMB), pan (MMB), move forward/back (scroll), WASD movement with hold-to-accelerate
 - **Resize handles** — interactive resize via handles on selected boards
 - **Material catalog** — apply textures/decor to boards
 - **Wall cutaway** (Sims-like) — walls lower to 100 mm when near for visibility
@@ -160,7 +160,7 @@ MCP flow: the server hosts a **real MCP server** at `http(s)://…:8081/mcp` (St
 - **Рабочее место в файле проекта** — вместе со сценой сохраняются окна проекта (спецификация, сцена, ошибки, настройки, инструкции, день/ночь): их положение и то, какие были открыты, а также тумблеры «Тонировка» и «Свет». Контекстное меню детали не сохраняется
 - **Автосохранение** — с настраиваемым интервалом, только при наличии изменений. **Бекап** — при ручном сохранении старый файл архивируется в `saves/backups/`
 - **Undo/Redo** — стек команд до 1000 операций
-- **Управление камерой** — орбита (ПКМ), панорама (СММ), зум (колесо), WASD
+- **Управление камерой** — поворот на месте (ПКМ), панорама (СММ), вперёд/назад (колесо), WASD с разгоном при удержании
 - **Ручки изменения размера** — интерактивное изменение через ручки на выделенной доске
 - **Каталог материалов** — применение текстур/декора к доскам
 - **Обрезка стен** (Sims-like) — при наведении стены опускаются до 100 мм для обзора

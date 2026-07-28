@@ -235,22 +235,69 @@ public class CameraControllerTests
     // ── Скорость клавиатурного управления ─────────────────────────────
 
     [Test]
-    public void ApplyWASDMovement_MovesAtQuarterMultiplier()
+    public void ApplyWASDMovement_FirstSecond_MovesAtBaseSpeed_IndependentOfZoom()
     {
+        // Одна и та же секунда удержания при разном зуме даёт одно и то же смещение.
         _controller!.SetState(new CameraState
         {
             valid = true,
             targetX = 0f, targetY = 0f, targetZ = 0f,
             angleX = 0f, angleY = 0f, distance = 2f
         });
+        _controller!.ApplyWASDMovement(Vector2.up, 1f); // W
+        float near = GetTarget().z;
 
-        float dt = 1f;
-        _controller!.ApplyWASDMovement(Vector2.up, dt); // W
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 18f
+        });
+        _controller!.ApplyWASDMovement(Vector2.zero, 0.1f); // сброс разгона
+        _controller!.ApplyWASDMovement(Vector2.up, 1f);
+        float far = GetTarget().z;
 
-        var target = GetTarget();
-        float expectedZ = 3f * 2f * 0.25f * dt; // _moveSpeed * _distance * 0.25f * dt
-        Assert.AreEqual(expectedZ, target.z, 1e-4f, "WASD speed multiplier should be 0.25 (half of previous 0.5)");
-        Assert.AreEqual(0f, target.x, 1e-4f);
+        Assert.AreEqual(0.6f, near, 1e-4f, "первая секунда — базовая скорость 0.6 м/с");
+        Assert.AreEqual(near, far, 1e-4f, "скорость WASD не должна зависеть от зума");
+    }
+
+    [Test]
+    public void WasdHoldMultiplier_RampsFromOneToTwentyOverFourSeconds()
+    {
+        Assert.AreEqual(1f, CameraController.WasdHoldMultiplier(0f, false), 1e-4f, "старт — минимум");
+        Assert.AreEqual(1f, CameraController.WasdHoldMultiplier(1f, false), 1e-4f, "первая секунда — минимум");
+        Assert.AreEqual(1f + 19f / 3f, CameraController.WasdHoldMultiplier(2f, false), 1e-3f,
+            "через 2 с пройдена треть разгона");
+        Assert.AreEqual(20f, CameraController.WasdHoldMultiplier(4f, false), 1e-4f, "через 4 с — ×20");
+        Assert.AreEqual(20f, CameraController.WasdHoldMultiplier(30f, false), 1e-4f, "выше ×20 не растёт");
+    }
+
+    [Test]
+    public void WasdHoldMultiplier_WithShift_ReachesMaxInOneSecond()
+    {
+        Assert.AreEqual(1f, CameraController.WasdHoldMultiplier(0f, true), 1e-4f);
+        Assert.AreEqual(10.5f, CameraController.WasdHoldMultiplier(0.5f, true), 1e-3f,
+            "с Shift разгон идёт сразу, без паузы в первую секунду");
+        Assert.AreEqual(20f, CameraController.WasdHoldMultiplier(1f, true), 1e-4f);
+    }
+
+    [Test]
+    public void ApplyWASDMovement_ResetsRamp_WhenKeysReleased()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        for (int i = 0; i < 4; i++) _controller!.ApplyWASDMovement(Vector2.up, 1f); // разогнались до ×20
+        _controller!.ApplyWASDMovement(Vector2.zero, 0.1f);                          // отпустили
+
+        float before = GetTarget().z;
+        _controller!.ApplyWASDMovement(Vector2.up, 1f);
+        Assert.AreEqual(0.6f, GetTarget().z - before, 1e-4f,
+            "после отпускания клавиш разгон начинается заново");
     }
 
     [Test]
@@ -272,7 +319,7 @@ public class CameraControllerTests
     }
 
     [Test]
-    public void ApplyZoomDelta_ZoomsAtHalvedSpeed()
+    public void ApplyZoomDelta_MovesCameraForward_WithoutChangingDistance()
     {
         _controller!.SetState(new CameraState
         {
@@ -281,12 +328,118 @@ public class CameraControllerTests
             angleX = 0f, angleY = 0f, distance = 5f
         });
 
-        _controller!.ApplyZoomDelta(1f); // Minus key (zoom in)
+        _controller!.ApplyZoomDelta(-1f); // клавиша «+» — приблизиться
+        _controller!.UpdateCameraPosition();
 
         var state = _controller!.GetState();
-        float expectedDistance = 5f + 1f * 1f * 5f * 0.1f; // new multiplier 0.1 (half of previous 0.2)
-        Assert.AreEqual(expectedDistance, state.distance, 1e-4f,
-            "plus/minus zoom multiplier should be 0.1 (half of previous 0.2)");
+        Assert.AreEqual(5f, state.distance, 1e-4f, "зум больше не меняет радиус орбиты");
+        Assert.AreEqual(0.3f, state.targetZ, 1e-4f, "камера сместилась вперёд на шаг зума");
+        Assert.AreEqual(-4.7f, _cameraGo!.transform.position.z, 1e-3f,
+            "позиция камеры сдвинулась вперёд на тот же шаг");
+    }
+
+    [Test]
+    public void MoveForward_FollowsLookDirection_IncludingPitch()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 90f, angleY = 0f, distance = 5f   // смотрим строго вниз
+        });
+
+        _controller!.MoveForward(1f);
+
+        var t = GetTarget();
+        Assert.AreEqual(-1f, t.y, 1e-3f, "взгляд вниз — смещение вперёд идёт вниз");
+        Assert.AreEqual(0f, t.z, 1e-3f);
+    }
+
+    // ── ПКМ: поворот на месте ─────────────────────────────────────────
+
+    [Test]
+    public void ApplyOrbit_KeepsCameraPosition_AndTurnsView()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+        _controller!.UpdateCameraPosition();
+        Vector3 before = _cameraGo!.transform.position;
+
+        _controller!.ApplyOrbit(90f, 0f);
+        _controller!.UpdateCameraPosition();
+
+        Assert.AreEqual(before.x, _cameraGo!.transform.position.x, 1e-3f, "камера осталась на месте");
+        Assert.AreEqual(before.y, _cameraGo!.transform.position.y, 1e-3f);
+        Assert.AreEqual(before.z, _cameraGo!.transform.position.z, 1e-3f);
+
+        var t = GetTarget();
+        Assert.AreEqual(5f, t.x, 1e-3f, "точка взгляда переехала вправо от камеры");
+        Assert.AreEqual(-5f, t.z, 1e-3f);
+    }
+
+    [Test]
+    public void ApplyOrbit_ClampsPitch()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.ApplyOrbit(0f, 200f);
+        Assert.AreEqual(89f, _controller!.GetState().angleX, 1e-4f);
+    }
+
+    // ── Плавный фокус ─────────────────────────────────────────────────
+
+    [Test]
+    public void FocusOn_MovesTargetGradually_OverTwoSeconds()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.FocusOn(new Vector3(10f, 0f, 0f));
+        Assert.IsTrue(_controller!.IsFocusing, "перелёт начался");
+        Assert.AreEqual(0f, GetTarget().x, 1e-4f, "камера не прыгает мгновенно");
+
+        _controller!.UpdateFocus(1f);
+        float mid = GetTarget().x;
+        Assert.Greater(mid, 0.5f, "за половину времени камера прошла заметную часть пути");
+        Assert.Less(mid, 9.5f);
+        Assert.IsTrue(_controller!.IsFocusing, "через 1 из 2 секунд перелёт ещё идёт");
+
+        _controller!.UpdateFocus(1f);
+        Assert.AreEqual(10f, GetTarget().x, 1e-3f, "через 2 секунды камера в точке фокуса");
+        Assert.IsFalse(_controller!.IsFocusing, "перелёт завершён");
+    }
+
+    [Test]
+    public void FocusOn_IsCancelled_ByManualMovement()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.FocusOn(new Vector3(10f, 0f, 0f));
+        _controller!.ApplyWASDMovement(Vector2.up, 0.1f);
+        Assert.IsFalse(_controller!.IsFocusing, "ручное управление прерывает перелёт");
+
+        float z = GetTarget().z;
+        _controller!.UpdateFocus(1f);
+        Assert.AreEqual(0f, GetTarget().x, 1e-4f, "прерванный перелёт не продолжается");
+        Assert.AreEqual(z, GetTarget().z, 1e-4f);
     }
 
     [Test]

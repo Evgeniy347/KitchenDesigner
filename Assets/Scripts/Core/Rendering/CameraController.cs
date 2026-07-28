@@ -21,8 +21,31 @@ namespace KitchenDesigner.Core
         [SerializeField] private float _zoomSpeed = 1f;
         [SerializeField] private float _orbitSpeed = 2f;
         [SerializeField] private float _panSpeed = 0.02f;
-        [SerializeField] private float _moveSpeed = 3f;
+        // Базовая (минимальная) скорость WASD в м/с. От зума НЕ зависит —
+        // разгон даёт удержание клавиши, см. WasdHoldMultiplier.
+        [SerializeField] private float _moveSpeed = 0.6f;
         [SerializeField] private float _keyboardOrbitSpeed = 45f;
+        // Зум — это смещение камеры вперёд/назад по взгляду, а не изменение
+        // радиуса орбиты. Один щелчок колеса / нажатие +− = столько метров.
+        [SerializeField] private float _zoomStep = 0.3f;
+
+        // ── Разгон WASD ───────────────────────────────────────────────────
+        /// <summary>Первая секунда удержания — минимальная скорость (×1).</summary>
+        public const float WasdRampDelay = 1f;
+        /// <summary>Дальше за это время скорость выходит на максимум.</summary>
+        public const float WasdRampSeconds = 3f;
+        /// <summary>С Shift разгон идёт сразу и укладывается в секунду.</summary>
+        public const float WasdShiftRampSeconds = 1f;
+        /// <summary>Максимальный множитель скорости.</summary>
+        public const float WasdMaxMultiplier = 20f;
+        private float _wasdHeld;
+
+        // ── Плавный фокус (клавиша F, двойной клик в «Ошибках») ───────────
+        /// <summary>Длительность перелёта камеры к точке фокуса.</summary>
+        public const float FocusSeconds = 2f;
+        private Vector3 _focusFrom;
+        private Vector3 _focusTo;
+        private float _focusTime = -1f;   // < 0 — перелёта нет
 
         private Vector3 _target = Vector3.zero;
         private float _angleX = 30f;
@@ -119,6 +142,7 @@ namespace KitchenDesigner.Core
         /// <summary>Восстановить состояние камеры из проекта.</summary>
         public void SetState(CameraState s)
         {
+            CancelFocus();
             _target = new Vector3(s.targetX, s.targetY, s.targetZ);
             _angleX = s.angleX;
             _angleY = s.angleY;
@@ -191,14 +215,14 @@ namespace KitchenDesigner.Core
             {
                 Vector3 delta = Input.mousePosition - _lastMouse;
                 float sens = MouseSensitivity;
-                CurrAngleY += delta.x * _orbitSpeed * 0.1f * sens;
-                CurrAngleX -= delta.y * _orbitSpeed * 0.1f * sens;
-                CurrAngleX = Mathf.Clamp(CurrAngleX, -89f, 89f);
+                ApplyOrbit(delta.x * _orbitSpeed * 0.1f * sens,
+                          -delta.y * _orbitSpeed * 0.1f * sens);
                 _lastMouse = Input.mousePosition;
             }
 
             if (_isPanning)
             {
+                CancelFocus();
                 Vector3 delta = Input.mousePosition - _lastMouse;
                 float pan = _panSpeed * (Dist * 0.1f) * MouseSensitivity;
                 if (KitchenSettings.Instance.CameraPanFree)
@@ -217,8 +241,10 @@ namespace KitchenDesigner.Core
                 _lastMouse = Input.mousePosition;
             }
 
+            // Колесо мыши — то же смещение вперёд/назад, что и +/−.
+            // Щелчок колеса даёт ±0.1 по оси, поэтому масштабируем на 10.
             if (Mathf.Abs(scroll) > 0.01f && !overUI)
-                Dist -= scroll * _zoomSpeed;   // сеттер сам ограничивает диапазон
+                MoveForward(scroll * 10f * _zoomStep * _zoomSpeed);
 
             if (!IsTypingInInputField())
             {
@@ -243,6 +269,7 @@ namespace KitchenDesigner.Core
                 HandlePlusMinusZoom();
             }
 
+            UpdateFocus(Time.deltaTime);
             UpdateCameraPosition();
             UpdateFloorVisibility();
         }
@@ -310,23 +337,69 @@ namespace KitchenDesigner.Core
             Vector2 input = new Vector2(
                 (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f),
                 (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f));
-            ApplyWASDMovement(input, dt);
+            bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            ApplyWASDMovement(input, dt, shift);
+        }
+
+        /// <summary>
+        /// Множитель скорости WASD от времени удержания клавиши. Без Shift первая
+        /// секунда идёт на минимальной скорости (×1), следующие три разгоняют до ×20.
+        /// С Shift разгон начинается сразу и укладывается в одну секунду.
+        /// </summary>
+        public static float WasdHoldMultiplier(float heldSeconds, bool shift)
+        {
+            float t = shift
+                ? Mathf.Clamp01(heldSeconds / WasdShiftRampSeconds)
+                : Mathf.Clamp01((heldSeconds - WasdRampDelay) / WasdRampSeconds);
+            return Mathf.Lerp(1f, WasdMaxMultiplier, t);
         }
 
         /// <summary>
         /// Применяет WASD-движение камеры. input.x: +1=D, -1=A; input.y: +1=W, -1=S.
+        /// Скорость от зума не зависит: базовая м/с × разгон от удержания.
         /// Вынесено в публичный метод для покрытия юнит-тестами.
         /// </summary>
-        public void ApplyWASDMovement(Vector2 input, float dt)
+        public void ApplyWASDMovement(Vector2 input, float dt, bool shift = false)
         {
             if (dt < 1e-6f) return;
-            float speed = _moveSpeed * Dist * 0.25f * dt * WasdSpeed;
+            // Клавиши отпущены — разгон сбрасывается, следующее нажатие снова медленное.
+            if (input.sqrMagnitude < 1e-6f)
+            {
+                _wasdHeld = 0f;
+                return;
+            }
+
+            CancelFocus();
+            _wasdHeld += dt;
+            float speed = _moveSpeed * WasdHoldMultiplier(_wasdHeld, shift) * dt * WasdSpeed;
 
             Vector3 fwd = Quaternion.Euler(0, CurrAngleY, 0) * Vector3.forward;
             Vector3 right = Quaternion.Euler(0, CurrAngleY, 0) * Vector3.right;
 
             CurrTarget += fwd * (input.y * speed);
             CurrTarget += right * (input.x * speed);
+        }
+
+        /// <summary>
+        /// Поворот камеры «на месте» (ПКМ — как будто вертим головой): позиция камеры
+        /// остаётся, а точка-цель переезжает вперёд по новому направлению взгляда.
+        /// </summary>
+        public void ApplyOrbit(float deltaYaw, float deltaPitch)
+        {
+            CancelFocus();
+            Vector3 camPos = CurrTarget + Quaternion.Euler(CurrAngleX, CurrAngleY, 0) * (Vector3.back * Dist);
+            CurrAngleY += deltaYaw;
+            CurrAngleX = Mathf.Clamp(CurrAngleX + deltaPitch, -89f, 89f);
+            CurrTarget = camPos + Quaternion.Euler(CurrAngleX, CurrAngleY, 0) * (Vector3.forward * Dist);
+        }
+
+        /// <summary>Смещение камеры вперёд (+) / назад (−) по направлению взгляда.
+        /// Это и есть зум: радиус орбиты не меняется.</summary>
+        public void MoveForward(float metres)
+        {
+            if (Mathf.Abs(metres) < 1e-6f) return;
+            CancelFocus();
+            CurrTarget += Quaternion.Euler(CurrAngleX, CurrAngleY, 0) * (Vector3.forward * metres);
         }
 
         private void HandleArrowOrbit()
@@ -345,6 +418,7 @@ namespace KitchenDesigner.Core
         public void ApplyArrowOrbit(Vector2 input, float dt)
         {
             if (dt < 1e-6f) return;
+            if (input.sqrMagnitude > 1e-6f) CancelFocus();
             float speed = _keyboardOrbitSpeed * dt * ArrowSpeed;
 
             CurrAngleY += input.x * speed;
@@ -366,12 +440,13 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>
-        /// Применяет один шаг зума клавишами +/-. delta: +1 = приблизить (-), -1 = отдалить (+).
+        /// Применяет один шаг зума клавишами +/-. delta: -1 = приблизить (+), +1 = отдалить (-).
+        /// Зум — смещение камеры вперёд/назад, дистанция орбиты не меняется.
         /// </summary>
         public void ApplyZoomDelta(float delta)
         {
             if (Mathf.Abs(delta) < 0.01f) return;
-            Dist += delta * _zoomSpeed * Dist * 0.1f;   // сеттер ограничивает диапазон
+            MoveForward(-delta * _zoomStep * _zoomSpeed);
         }
 
         /// <summary>
@@ -442,6 +517,7 @@ namespace KitchenDesigner.Core
 
         private void SetView(float angleX, float angleY)
         {
+            CancelFocus();
             CurrAngleX = angleX;
             CurrAngleY = angleY;
         }
@@ -449,12 +525,39 @@ namespace KitchenDesigner.Core
         private void FocusOnSelection()
         {
             if (SelectionManager.Instance != null && SelectionManager.Instance.Selected != null)
-                CurrTarget = SelectionManager.Instance.Selected.transform.position;
+                FocusOn(SelectionManager.Instance.Selected.transform.position);
         }
 
+        /// <summary>Плавно (за <see cref="FocusSeconds"/>) перелететь к точке —
+        /// клавиша F и двойной клик по строке в «Ошибках».</summary>
         public void FocusOn(Vector3 point)
         {
-            CurrTarget = point;
+            _focusFrom = CurrTarget;
+            _focusTo = point;
+            if ((point - _focusFrom).sqrMagnitude < 1e-8f)
+            {
+                _focusTime = -1f;
+                CurrTarget = point;
+                return;
+            }
+            _focusTime = 0f;
+        }
+
+        /// <summary>Идёт ли сейчас плавный перелёт.</summary>
+        public bool IsFocusing => _focusTime >= 0f;
+
+        /// <summary>Прервать перелёт: любое ручное управление камерой важнее.</summary>
+        public void CancelFocus() => _focusTime = -1f;
+
+        /// <summary>Шаг перелёта. Публично для юнит-тестов.</summary>
+        public void UpdateFocus(float dt)
+        {
+            if (_focusTime < 0f) return;
+            _focusTime += dt;
+            float t = Mathf.Clamp01(_focusTime / FocusSeconds);
+            // SmoothStep: плавный старт и торможение в конце.
+            CurrTarget = Vector3.Lerp(_focusFrom, _focusTo, Mathf.SmoothStep(0f, 1f, t));
+            if (t >= 1f) _focusTime = -1f;
         }
 
         public void UpdateCameraPosition()
