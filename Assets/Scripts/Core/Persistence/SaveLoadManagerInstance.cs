@@ -265,7 +265,12 @@ namespace KitchenDesigner.Core
                     {
                         el.EdgeBandingEnabled = ed.edgeBanding;
                         el.EdgeThicknessMM = ed.edgeThicknessMM;
-                        el.EdgeSkipValidation = ed.edgeSkipValidation;
+                        // Проекты старее сторон-по-отдельности несут общий флаг
+                        // «не проверять кромки» — он равнозначен «все четыре
+                        // стороны ручные».
+                        el.EdgeManualMask = ed.edgeManualMask != 0
+                            ? ed.edgeManualMask
+                            : (ed.edgeSkipValidation ? EdgeManual.AllMask : 0);
                     }
 
 					var wall = el.GetComponent<Wall>();

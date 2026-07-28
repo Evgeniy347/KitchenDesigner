@@ -14,6 +14,24 @@ namespace KitchenDesigner.Core
         W2,
     }
 
+    /// <summary>Маска «ручных» сторон: пользователь сам решил, есть ли кромка на
+    /// этой стороне, и снял с неё автоматическую проверку. Маска, а не четыре
+    /// поля, — чтобы состояние ехало через сохранение, команды и конвертацию
+    /// одним числом, как и остальные флаги детали.</summary>
+    public static class EdgeManual
+    {
+        public static int Bit(EdgeSide side) => 1 << (int)side;
+
+        /// <summary>Все четыре стороны разом — сюда мигрирует старый флажок
+        /// «не проверять кромки», который стоял на всю деталь.</summary>
+        public const int AllMask = 0b1111;
+
+        public static bool Has(int mask, EdgeSide side) => (mask & Bit(side)) != 0;
+
+        public static int With(int mask, EdgeSide side, bool manual) =>
+            manual ? mask | Bit(side) : mask & ~Bit(side);
+    }
+
     /// <summary>Разбор габарита листовой детали на «толщина / длина / ширина» и
     /// соответствие сторон L1/L2/W1/W2 индексам граней <see cref="KitchenElement.GetFaces"/>.
     /// Порядок граней — контракт: index/2 = ось (0=X, 1=Y, 2=Z), чётный индекс —
@@ -179,7 +197,10 @@ namespace KitchenDesigner.Core
                 if (!other.gameObject.activeInHierarchy) continue;
                 // Лампа — декор, мойка врезана в столешницу: ни та, ни другая
                 // торец не закрывают (те же исключения, что у ConstraintValidator).
-                if (other is LightSourceElement || other is SinkElement) continue;
+                // Опора подпирает деталь снизу точечно: торец над ней остаётся
+                // видимым и кромкуется целиком, поэтому перекрытием она не считается —
+                // иначе каждая деталь на опорах ловила ложную EDG-01 на 2–9%.
+                if (other is LightSourceElement || other is SinkElement || other is PillarElement) continue;
 
                 var otherFaces = other.GetFaces();
                 for (int i = 0; i < 4; i++)
@@ -236,7 +257,7 @@ namespace KitchenDesigner.Core
             {
                 if (other == null || other == element) continue;
                 if (!other.gameObject.activeInHierarchy) continue;
-                if (other is LightSourceElement || other is SinkElement) continue;
+                if (other is LightSourceElement || other is SinkElement || other is PillarElement) continue;
 
                 // Сосед может прилегать несколькими гранями — берём их объединение,
                 // иначе деталь, накрывшая торец «уголком», недосчитает площадь.

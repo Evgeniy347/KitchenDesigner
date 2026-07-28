@@ -51,7 +51,7 @@ namespace KitchenDesigner.Core.Analysis
         {
             foreach (var e in all)
             {
-                if (e == null || !e.EdgeBandingEnabled || e.EdgeSkipValidation) continue;
+                if (e == null || !e.EdgeBandingEnabled) continue;
 
                 var coverage = EdgeBanding.Coverage(e, all);
                 var sides = new List<string>();
@@ -64,6 +64,9 @@ namespace KitchenDesigner.Core.Analysis
 
                 foreach (EdgeSide side in System.Enum.GetValues(typeof(EdgeSide)))
                 {
+                    // Ручную сторону пользователь взял на себя: геометрия про неё
+                    // больше не спорит.
+                    if (e.IsEdgeManual(side)) continue;
                     if (!coverage.IsPartial(side)) continue;
                     sides.Add($"{side} {coverage.Ratio(side) * 100f:F0}%");
 

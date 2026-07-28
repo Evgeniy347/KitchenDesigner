@@ -33,6 +33,12 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color EdgeAbsent = new Color(0.72f, 0.74f, 0.78f, 1f);
         /// <summary>Заливка пласти на схеме кромок.</summary>
         public static readonly Color EdgeBoard = new Color(0.18f, 0.19f, 0.22f, 1f);
+        /// <summary>Сторона в полуручном режиме: кромку назначил человек,
+        /// автоматическая проверка на неё не смотрит.</summary>
+        public static readonly Color EdgeManualSide = new Color(0.95f, 0.80f, 0.25f, 1f);
+        /// <summary>Подсветка стороны на самой детали в 3D (светло-жёлтая,
+        /// полупрозрачная — под ней должна читаться текстура детали).</summary>
+        public static readonly Color EdgeHighlight3D = new Color(1f, 0.95f, 0.55f, 0.55f);
 
         // ── Рулетка (замеры поверх сцены) ──────────────────────────────
         /// <summary>Розовая точка-подсказка: вершина под курсором.</summary>

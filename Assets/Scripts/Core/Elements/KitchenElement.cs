@@ -98,11 +98,17 @@ namespace KitchenDesigner.Core
             set => _data.EdgeThicknessMM = value;
         }
 
-        public bool EdgeSkipValidation
+        /// <summary>Стороны с ручной кромкой (маска по <see cref="EdgeSide"/>):
+        /// пользователь взял их на себя, автоматическая проверка на них молчит.</summary>
+        public int EdgeManualMask
         {
-            get => _data.EdgeSkipValidation;
-            set => _data.EdgeSkipValidation = value;
+            get => _data.EdgeManualMask;
+            set => _data.EdgeManualMask = value;
         }
+
+        public bool IsEdgeManual(EdgeSide side) => _data.IsEdgeManual(side);
+
+        public void SetEdgeManual(EdgeSide side, bool manual) => _data.SetEdgeManual(side, manual);
 
         // ── Врезанные мойки ────────────────────────────────────────────
         // Мойка живёт отдельным элементом, но её проём — часть геометрии

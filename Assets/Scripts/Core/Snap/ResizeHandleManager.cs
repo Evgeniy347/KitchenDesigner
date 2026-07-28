@@ -230,7 +230,7 @@ namespace KitchenDesigner.Core
 
             _target!.DimensionsMM = newDims;
             // Центр — от ПРИНЯТОГО размера: деталь могла зажать запрошенный
-            // (нога держит высоту в 80..130 мм и сечение 50×50), и центр под
+            // (опора держит высоту в 80..130 мм и сечение 50×50), и центр под
             // невозможный размер отрывал её от опоры.
             _target.transform.position = ResizeMath.CenterForAppliedDims(
                 _centerStart, _normal, _sizeStartUnits, _target.DimensionsMM, _axisIndex);

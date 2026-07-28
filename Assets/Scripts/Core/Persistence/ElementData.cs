@@ -102,7 +102,13 @@ namespace KitchenDesigner.Core
 		// включена, толщина ленты стандартная.
 		public bool edgeBanding = true;
 		public float edgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
+		/// <summary>УСТАРЕЛО: общий отказ от проверки кромок на всю деталь.
+		/// Заменён на edgeManualMask (стороны по отдельности). Читается ради
+		/// старых проектов и пишется как «ручными помечены все четыре» — чтобы
+		/// файл, сохранённый новой версией, не терял смысл в старой.</summary>
 		public bool edgeSkipValidation = false;
+		/// <summary>Битовая маска сторон с ручной кромкой (см. EdgeManual).</summary>
+		public int edgeManualMask = 0;
 
         public ElementData() { }
 
@@ -297,7 +303,8 @@ namespace KitchenDesigner.Core
 			// типов пишутся дефолты и при загрузке отбрасываются.
 			d.edgeBanding = element.Data.EdgeBanding;
 			d.edgeThicknessMM = element.Data.EdgeThicknessMM;
-			d.edgeSkipValidation = element.Data.EdgeSkipValidation;
+			d.edgeManualMask = element.Data.EdgeManualMask;
+			d.edgeSkipValidation = d.edgeManualMask == EdgeManual.AllMask;
 
 			d.groupId = element.GroupId;
             d.materialId = element.MaterialId;

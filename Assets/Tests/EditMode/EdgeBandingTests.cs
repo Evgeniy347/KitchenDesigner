@@ -168,6 +168,32 @@ public class EdgeBandingTests
         Assert.AreEqual(0.5f, coverage.Ratio(EdgeSide.W1), 0.01f);
     }
 
+    /// <summary>Опора подпирает деталь точечно: торец над ней виден целиком и
+    /// кромкуется целиком. Считать её перекрытием нельзя — каждая деталь на
+    /// опорах ловила ложную EDG-01 на несколько процентов.</summary>
+    [Test]
+    public void PillarUnderEnd_DoesNotCoverIt()
+    {
+        var shelf = CreatePart("Shelf", ShelfDims);
+        // Сечение опоры 50×50 → её грань −X встаёт на x = 0.4, вплотную к торцу W1
+        // полки (её грань +X там же). По Z опора закрывает 50 мм из 400.
+        var pillarGo = ElementFactory.CreatePillar(PillarElement.MidHeightMM_Default,
+            "Опора", new Vector3(0.425f, 0f, 0f));
+        _spawned.Add(pillarGo);
+        var pillar = pillarGo.GetComponent<KitchenElement>();
+        foreach (var el in new[] { shelf, pillar }) PartRegistry.Register(el);
+
+        var coverage = EdgeBanding.Coverage(shelf, new List<KitchenElement> { shelf, pillar });
+        Assert.AreEqual(0f, coverage.Ratio(EdgeSide.W1), 1e-4f, "опора торец не закрывает");
+        Assert.IsTrue(coverage.HasEdge(EdgeSide.W1), "торец открыт — кромка нужна");
+        Assert.IsFalse(coverage.IsPartial(EdgeSide.W1), "и это не «перекрыт частично»");
+
+        var issues = SceneAnalyzer.Analyze();
+        Assert.IsNull(issues.Find(i => i.Code == IssueCatalog.CodeEdgePartialCover
+                                       && i.Target == shelf).Code,
+            "EDG-01 из-за опоры быть не должно");
+    }
+
     /// <summary>Ошибка EDG-01 обязана называть ВИНОВНИКА и подсвечивать его:
     /// без второй детали непонятно, что именно наезжает на кромку. Соседей может
     /// быть несколько — берём того, кто закрыл торец большей площадью.</summary>
@@ -332,10 +358,10 @@ public class EdgeBandingTests
     }
 
     [Test]
-    public void Analyze_SkipValidationFlag_SuppressesError()
+    public void Analyze_ManualSide_SuppressesError()
     {
         var shelf = CreatePart("Shelf", ShelfDims);
-        shelf.EdgeSkipValidation = true;
+        shelf.SetEdgeManual(EdgeSide.W1, true);
         var side = SidePanelAtW1(200, zOffset: 0.1f);
         PartRegistry.Register(shelf);
         PartRegistry.Register(side);
@@ -368,14 +394,35 @@ public class EdgeBandingTests
         var part = CreatePart("Board", ShelfDims);
         part.EdgeBandingEnabled = false;
         part.EdgeThicknessMM = 2.0f;
-        part.EdgeSkipValidation = true;
+        part.SetEdgeManual(EdgeSide.L1, true);
+        part.SetEdgeManual(EdgeSide.W2, true);
 
         var json = JsonUtility.ToJson(ElementData.FromElement(part));
         var restored = JsonUtility.FromJson<ElementData>(json);
 
         Assert.IsFalse(restored.edgeBanding);
         Assert.AreEqual(2.0f, restored.edgeThicknessMM, 1e-4f);
-        Assert.IsTrue(restored.edgeSkipValidation);
+        Assert.AreEqual(EdgeManual.Bit(EdgeSide.L1) | EdgeManual.Bit(EdgeSide.W2),
+            restored.edgeManualMask);
+        Assert.IsFalse(restored.edgeSkipValidation,
+            "устаревший флаг взводится только когда ручные ВСЕ четыре стороны");
+    }
+
+    /// <summary>Проект, сделанный до сторон-по-отдельности, несёт общий флаг
+    /// «не проверять кромки» — он равнозначен «все четыре стороны ручные».</summary>
+    [Test]
+    public void LegacySkipValidationFlag_MigratesToAllSidesManual()
+    {
+        var legacy = JsonUtility.FromJson<ElementData>(
+            "{\"name\":\"Board\",\"dimensionsMM\":[800,400,18],\"edgeSkipValidation\":true}");
+
+        Assert.IsTrue(legacy.edgeSkipValidation);
+        Assert.AreEqual(0, legacy.edgeManualMask, "в старом файле маски нет");
+
+        int migrated = legacy.edgeManualMask != 0
+            ? legacy.edgeManualMask
+            : (legacy.edgeSkipValidation ? EdgeManual.AllMask : 0);
+        Assert.AreEqual(EdgeManual.AllMask, migrated);
     }
 
     [Test]
@@ -394,18 +441,63 @@ public class EdgeBandingTests
     {
         var part = CreatePart("Board", ShelfDims);
         var before = EdgeBandingState.Of(part);
-        var after = new EdgeBandingState(false, 2.0f, true);
+        var after = new EdgeBandingState(false, 2.0f, EdgeManual.Bit(EdgeSide.W1));
 
         var command = new SetEdgeBandingCommand(part, before, after);
         command.Execute();
         Assert.IsFalse(part.EdgeBandingEnabled);
         Assert.AreEqual(2.0f, part.EdgeThicknessMM, 1e-4f);
-        Assert.IsTrue(part.EdgeSkipValidation);
+        Assert.IsTrue(part.IsEdgeManual(EdgeSide.W1));
+        Assert.IsFalse(part.IsEdgeManual(EdgeSide.W2), "соседние стороны не задеты");
 
         command.Undo();
         Assert.IsTrue(part.EdgeBandingEnabled);
         Assert.AreEqual(AppConstants.EDGE_THICKNESS_DEFAULT_MM, part.EdgeThicknessMM, 1e-4f);
-        Assert.IsFalse(part.EdgeSkipValidation);
+        Assert.IsFalse(part.IsEdgeManual(EdgeSide.W1));
+    }
+
+    /// <summary>Подсветка стороны на детали: сам торец плюс полоса на каждой из
+    /// четырёх соседних граней. Полосы нужны, чтобы сторону было видно с любого
+    /// ракурса — даже когда торец смотрит от камеры.</summary>
+    [Test]
+    public void EdgeHighlight_CoversEndAndFourNeighbourBands()
+    {
+        var shelf = CreatePart("Shelf", ShelfDims);
+
+        EdgeSideHighlighter.Show(shelf, EdgeSide.W1);
+        Assert.IsTrue(EdgeSideHighlighter.IsShown(shelf, EdgeSide.W1));
+        Assert.AreEqual(5, EdgeSideHighlighter.QuadCount, "торец + 4 полосы");
+
+        EdgeSideHighlighter.Hide();
+        Assert.AreEqual(0, EdgeSideHighlighter.QuadCount);
+        Assert.IsFalse(EdgeSideHighlighter.IsShown(shelf, EdgeSide.W1));
+    }
+
+    /// <summary>Глубина полосы — 20 % размера соседней грани, но не более 50 мм.
+    /// У полки 800×400 обе величины упираются в потолок; проверяем и мелкую
+    /// деталь, где работает процент.</summary>
+    [Test]
+    public void EdgeHighlight_BandDepth_IsCappedAtFiftyMillimetres()
+    {
+        var big = CreatePart("Big", ShelfDims);                            // 800 → 20% = 160
+        var small = CreatePart("Small", new Vector3Int(120, 18, 100),      // 120 → 20% = 24
+            new Vector3(0f, 1f, 0f));
+
+        float toMm = 1f / AppConstants.MM_TO_UNITS;
+        float cap = EdgeSideHighlighter.BandMaxMm;
+
+        Assert.AreEqual(cap, Mathf.Min(800f * EdgeSideHighlighter.BandFraction, cap), 1e-3f,
+            "на крупной детали работает потолок 50 мм");
+        Assert.AreEqual(24f, Mathf.Min(120f * EdgeSideHighlighter.BandFraction, cap), 1e-3f,
+            "на мелкой детали работает процент");
+
+        // Накладки строятся для обеих без падения на вырожденной геометрии.
+        EdgeSideHighlighter.Show(big, EdgeSide.W1);
+        Assert.AreEqual(5, EdgeSideHighlighter.QuadCount);
+        EdgeSideHighlighter.Show(small, EdgeSide.L1);
+        Assert.AreEqual(5, EdgeSideHighlighter.QuadCount, "показ переключается без накопления");
+        EdgeSideHighlighter.Hide();
+        Assert.Greater(toMm, 0f);
     }
 
     [Test]

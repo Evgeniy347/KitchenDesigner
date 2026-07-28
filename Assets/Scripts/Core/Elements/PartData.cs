@@ -22,7 +22,7 @@ namespace KitchenDesigner.Core
         // не «ещё не посчитано», а сознательный отказ от кромки на этой детали.
         [SerializeField] private bool _edgeBanding = true;
         [SerializeField] private float _edgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
-        [SerializeField] private bool _edgeSkipValidation;
+        [SerializeField] private int _edgeManualMask;
 
         public string PartName
         {
@@ -99,12 +99,21 @@ namespace KitchenDesigner.Core
                 AppConstants.EDGE_THICKNESS_MIN_MM, AppConstants.EDGE_THICKNESS_MAX_MM);
         }
 
-        /// <summary>Не выдавать ошибку о частично перекрытом торце.</summary>
-        public bool EdgeSkipValidation
+        /// <summary>Стороны, кромку которых пользователь проставил ВРУЧНУЮ
+        /// (битовая маска по <see cref="EdgeSide"/>). Обычно кромка выводится из
+        /// геометрии — открытый торец кромкуется, закрытый нет. Но геометрия не
+        /// знает всего: деталь может стоять вплотную к чему-то, чего в проекте
+        /// нет. Ручная сторона перестаёт проверяться на «перекрыт частично».</summary>
+        public int EdgeManualMask
         {
-            get => _edgeSkipValidation;
-            set => _edgeSkipValidation = value;
+            get => _edgeManualMask;
+            set => _edgeManualMask = value & EdgeManual.AllMask;
         }
+
+        public bool IsEdgeManual(EdgeSide side) => EdgeManual.Has(_edgeManualMask, side);
+
+        public void SetEdgeManual(EdgeSide side, bool manual) =>
+            _edgeManualMask = EdgeManual.With(_edgeManualMask, side, manual);
 
         /// <summary>Пазы детали. Список живой — правится через KitchenElement,
         /// который пересобирает меш.</summary>

@@ -343,7 +343,11 @@ namespace KitchenDesigner.Core.MCP
                 {
                     if (op.edge_banding.HasValue) el.EdgeBandingEnabled = op.edge_banding.Value;
                     if (op.edge_thickness_mm.HasValue) el.EdgeThicknessMM = op.edge_thickness_mm.Value;
-                    if (op.edge_skip_validation.HasValue) el.EdgeSkipValidation = op.edge_skip_validation.Value;
+                    // Кромки правятся по сторонам (EdgeManualMask), но в контракте
+                    // MCP осталось прежнее поле на всю деталь: оно означает
+                    // «все четыре стороны ручные».
+                    if (op.edge_skip_validation.HasValue)
+                        el.EdgeManualMask = op.edge_skip_validation.Value ? EdgeManual.AllMask : 0;
                 }
                 if (el is DrawerElement drawer) ApplyDrawerEdits(op, drawer);
                 if (el is TableElement table) ApplyTableEdits(op, table);

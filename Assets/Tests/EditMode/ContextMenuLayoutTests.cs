@@ -119,7 +119,7 @@ public class ContextMenuLayoutTests
         Assert.IsTrue(panel.Find("CtxEdgeDiagram").gameObject.activeSelf,
             "галочка включена — схема нарисована");
         Assert.IsTrue(panel.Find("F_EdgeThickness").gameObject.activeSelf);
-        Assert.IsTrue(panel.Find("CtxEdgeSkipValidation").gameObject.activeSelf);
+        Assert.IsTrue(panel.Find("CtxEdgeHint").gameObject.activeSelf);
     }
 
     [Test]
@@ -153,7 +153,7 @@ public class ContextMenuLayoutTests
         Assert.IsTrue(panel.Find("CtxEdges").gameObject.activeSelf, "сама галочка остаётся");
         Assert.IsFalse(panel.Find("CtxEdgeDiagram").gameObject.activeSelf);
         Assert.IsFalse(panel.Find("F_EdgeThickness").gameObject.activeSelf);
-        Assert.IsFalse(panel.Find("CtxEdgeSkipValidation").gameObject.activeSelf);
+        Assert.IsFalse(panel.Find("CtxEdgeHint").gameObject.activeSelf);
 
         CommandStack.Undo();
         Assert.IsTrue(board.EdgeBandingEnabled, "Ctrl+Z возвращает кромки");

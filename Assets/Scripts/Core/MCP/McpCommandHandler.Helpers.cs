@@ -260,7 +260,10 @@ namespace KitchenDesigner.Core.MCP
                 grooves = el.Grooves.Count > 0 ? FormatGrooves(el) : null,
                 edgeBanding = el.SupportsEdges ? el.EdgeBandingEnabled : (bool?)null,
                 edgeThicknessMM = el.SupportsEdges ? el.EdgeThicknessMM : (float?)null,
-                edgeSkipValidation = el.SupportsEdges && el.EdgeSkipValidation ? true : (bool?)null,
+                // Поле контракта — на всю деталь: true, когда ручными помечены
+                // все четыре стороны (частичный набор в MCP не выводится).
+                edgeSkipValidation = el.SupportsEdges && el.EdgeManualMask == EdgeManual.AllMask
+                    ? true : (bool?)null,
                 edges = el.EdgeBandingEnabled && allElements != null
                     ? FormatEdges(el, allElements) : null,
                 facadeMode = el is FacadeElement feMode ? FacadeDoor.WireName(feMode.Mode) : null,

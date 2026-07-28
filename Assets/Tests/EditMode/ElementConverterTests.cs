@@ -492,14 +492,14 @@ public class ElementConverterTests
     {
         var src = Make<FacadeElement>("F1", new Vector3Int(600, 700, 18), Vector3.zero);
         src.EdgeThicknessMM = 2f;
-        src.EdgeSkipValidation = true;
+        src.SetEdgeManual(EdgeSide.L1, true);
 
         var result = ElementConverter.Convert(src, ElementConverter.TargetType.Part);
 
         Assert.IsTrue(result.SupportsEdges, "деталь-лист кромкуется");
         Assert.IsTrue(result.EdgeBandingEnabled);
         Assert.AreEqual(2f, result.EdgeThicknessMM, 1e-4f);
-        Assert.IsTrue(result.EdgeSkipValidation);
+        Assert.IsTrue(result.IsEdgeManual(EdgeSide.L1));
     }
 
     [Test]
@@ -538,7 +538,7 @@ public class ElementConverterTests
         // KitchenElement
         "PartName", "DimensionsMM", "Movable", "GroupId", "MaterialId", "Transparent", "Data",
         "SupportsGrooves", "Grooves", "AttachedSinks", "SinkHoleAxis",
-        "SupportsEdges", "EdgeBandingEnabled", "EdgeThicknessMM", "EdgeSkipValidation",
+        "SupportsEdges", "EdgeBandingEnabled", "EdgeThicknessMM", "EdgeManualMask",
         // Производные от состояния, а не хранимые: конвертация их не переносит —
         // после смены типа они пересчитаются сами.
         "PoseFollowsTransform", "Transformable",

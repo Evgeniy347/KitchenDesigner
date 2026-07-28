@@ -1,7 +1,7 @@
 namespace KitchenDesigner.Core
 {
     /// <summary>Правка параметров кромкования детали (галочка, толщина ленты,
-    /// отключение валидации) одной командой: снимок «до» и «после». Три поля
+    /// ручные стороны) одной командой: снимок «до» и «после». Три поля
     /// живут в одной команде, потому что правятся из одного блока меню и
     /// раздельный откат смотрелся бы как «Ctrl+Z ничего не вернул».</summary>
     public class SetEdgeBandingCommand : IUndoCommand
@@ -29,7 +29,7 @@ namespace KitchenDesigner.Core
             if (_element == null) return;
             _element.EdgeBandingEnabled = state.enabled;
             _element.EdgeThicknessMM = state.thicknessMM;
-            _element.EdgeSkipValidation = state.skipValidation;
+            _element.EdgeManualMask = state.manualMask;
         }
     }
 
@@ -38,13 +38,14 @@ namespace KitchenDesigner.Core
     {
         public readonly bool enabled;
         public readonly float thicknessMM;
-        public readonly bool skipValidation;
+        /// <summary>Битовая маска ручных сторон (<see cref="EdgeManual"/>).</summary>
+        public readonly int manualMask;
 
-        public EdgeBandingState(bool enabled, float thicknessMM, bool skipValidation)
+        public EdgeBandingState(bool enabled, float thicknessMM, int manualMask)
         {
             this.enabled = enabled;
             this.thicknessMM = thicknessMM;
-            this.skipValidation = skipValidation;
+            this.manualMask = manualMask;
         }
 
         /// <summary>Снимок берётся из данных детали, а НЕ через
@@ -53,11 +54,15 @@ namespace KitchenDesigner.Core
         /// галочку у детали, которая просто временно не лист.</summary>
         public static EdgeBandingState Of(KitchenElement element) =>
             new EdgeBandingState(element.Data.EdgeBanding, element.Data.EdgeThicknessMM,
-                element.Data.EdgeSkipValidation);
+                element.Data.EdgeManualMask);
+
+        /// <summary>То же состояние с перевёрнутой ручной пометкой одной стороны.</summary>
+        public EdgeBandingState WithManual(EdgeSide side, bool manual) =>
+            new EdgeBandingState(enabled, thicknessMM, EdgeManual.With(manualMask, side, manual));
 
         public bool Equals(EdgeBandingState other) =>
             enabled == other.enabled
             && UnityEngine.Mathf.Approximately(thicknessMM, other.thicknessMM)
-            && skipValidation == other.skipValidation;
+            && manualMask == other.manualMask;
     }
 }

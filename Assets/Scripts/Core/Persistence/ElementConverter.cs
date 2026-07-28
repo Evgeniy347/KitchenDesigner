@@ -116,7 +116,7 @@ namespace KitchenDesigner.Core
             // молча возвращала бы настройки к умолчанию.
             result.EdgeBandingEnabled = edges.enabled;
             result.EdgeThicknessMM = edges.thicknessMM;
-            result.EdgeSkipValidation = edges.skipValidation;
+            result.EdgeManualMask = edges.manualMask;
 
             if (result is FacadeElement newFacade)
             {

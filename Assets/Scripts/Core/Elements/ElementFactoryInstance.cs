@@ -115,7 +115,7 @@ namespace KitchenDesigner.Core
             el.ClearGrooves();
             el.EdgeBandingEnabled = true;
             el.EdgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
-            el.EdgeSkipValidation = false;
+            el.EdgeManualMask = 0;
             PartRegistry.Unregister(el);
         }
 
@@ -341,7 +341,7 @@ namespace KitchenDesigner.Core
                 var edges = EdgeBandingState.Of(source);
                 copyPart.EdgeBandingEnabled = edges.enabled;
                 copyPart.EdgeThicknessMM = edges.thicknessMM;
-                copyPart.EdgeSkipValidation = edges.skipValidation;
+                copyPart.EdgeManualMask = edges.manualMask;
             }
 
             return go2;
