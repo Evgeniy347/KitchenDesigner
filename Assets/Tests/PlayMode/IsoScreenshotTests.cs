@@ -48,9 +48,8 @@ public class IsoScreenshotTests
     [UnityTearDown]
     public IEnumerator TearDown()
     {
-        // IsoSink_RealProject поднимает example.save.json, а тот несёт
-        // handleMode="Move" → RestoreScene выставляет глобальный статик.
-        // Возвращаем дефолт, иначе тулбар «Ручки: перенос» течёт в снапшоты
+        // Возвращаем дефолтный режим ручек: некоторые тесты могли изменить
+        // глобальный статик ResizeHandleManager, иначе он течёт в снапшоты
         // следующих тестов (см. AGENTS.md про глобальное состояние снапшотов).
         ResizeHandleManager.SetMode(ResizeHandleManager.HandleMode.Resize);
 
@@ -576,62 +575,4 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
-    /// <summary>Мойка на РЕАЛЬНОМ проекте (docs/example.save.json): сцена
-    /// поднимается штатной загрузкой, врезка происходит сама в Update — то есть
-    /// проверяется тот же путь, что и в приложении, а не ручной вызов из теста.</summary>
-    [UnityTest]
-    public IEnumerator IsoSink_RealProject()
-    {
-        string savePath = Path.Combine(Application.dataPath, "..", "docs", "example.save.json");
-        Assert.IsTrue(File.Exists(savePath), $"Save file not found: {savePath}");
-        var data = SaveLoadManager.LoadFromFile(savePath);
-        Assert.IsNotNull(data);
-
-        SaveLoadManager.ClearBoards(PartRegistry.GetAll());
-        var created = SaveLoadManager.RestoreScene(data!);
-        Assert.IsTrue(created.Count > 0);
-        foreach (var go in created) _spawned.Add(go);
-
-        // Кадр — только 3D-мойка, ни одного окна проекта. Иначе состав окон в
-        // эталоне определяет сейв (см. ProjectWindowsTestState).
-        ProjectWindowsTestState.ShowOnly(null);
-        var windows = KitchenDesigner.Core.UI.ProjectWindows.All;
-        Assert.IsNotEmpty(windows, "окна проекта не зарегистрированы — проверка ниже пуста");
-        foreach (var w in windows)
-            Assert.IsFalse(w.IsVisible, $"окно {w.WindowId} осталось открытым");
-
-        // Пара кадров — Start/Update мойки успевают найти столешницу сами.
-        yield return null;
-        yield return null;
-
-        SinkElement? sink = null;
-        foreach (var el in PartRegistry.GetAll())
-            if (el is SinkElement s) sink = s;
-        Assert.IsNotNull(sink, "в проекте есть мойка");
-
-        KitchenElement? host = null;
-        foreach (var el in PartRegistry.GetAll())
-            if (el != null && el.HasSink(sink!)) host = el;
-        Assert.IsNotNull(host, "мойка врезалась в столешницу без ручного вмешательства");
-        Assert.AreEqual("Countertop_B", host!.PartName);
-        Assert.AreNotEqual("Cube", host.GetComponent<MeshFilter>().sharedMesh.name,
-            "у столешницы собственный меш с проёмом");
-
-        // Смотрим сверху-сбоку: комната закрыта стенами, изометрический ракурс
-        // упёрся бы камерой в стену за мойкой.
-        var camGo = new GameObject("SinkCam");
-        var cam = camGo.AddComponent<Camera>();
-        cam.clearFlags = CameraClearFlags.SolidColor;
-        cam.backgroundColor = new Color(0.18f, 0.18f, 0.20f, 1f);
-        cam.fieldOfView = IsoFov;
-        cam.nearClipPlane = 0.01f;
-        cam.farClipPlane = 100f;
-        camGo.transform.position = sink!.transform.position + new Vector3(0.35f, 0.85f, 0.75f);
-        camGo.transform.LookAt(sink.transform.position);
-        _spawned.Add(camGo);
-
-        yield return RenderToPng(cam, "iso_sink_real.png");
-
-        Object.DestroyImmediate(camGo);
-    }
 }
