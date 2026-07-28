@@ -232,7 +232,7 @@ namespace KitchenDesigner.Core
             float attachedDist = float.MaxValue;
             Wall? bestWall = null;
             Wall? attached = null;
-            foreach (var el in PartRegistry.GetAll())
+            foreach (var el in PartRegistry.All)
             {
                 if (el == null || el == this) continue;
                 var wall = el.GetComponent<Wall>();
@@ -333,7 +333,7 @@ namespace KitchenDesigner.Core
         private Wall? FindAttachedWall()
         {
             if (string.IsNullOrEmpty(_attachedWallName)) return null;
-            foreach (var el in PartRegistry.GetAll())
+            foreach (var el in PartRegistry.All)
             {
                 if (el == null) continue;
                 var wall = el.GetComponent<Wall>();

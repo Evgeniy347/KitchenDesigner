@@ -168,7 +168,7 @@ namespace KitchenDesigner.Core
         {
             using var _ = PerfMarkers.DrawerFindPaired.Auto();
             if (string.IsNullOrEmpty(_pairedDrawerName)) return null;
-            foreach (var e in PartRegistry.GetAll())
+            foreach (var e in PartRegistry.All)
                 if (e is DrawerElement d && d != this && d.PartName == _pairedDrawerName) return d;
             return null;
         }
@@ -180,7 +180,7 @@ namespace KitchenDesigner.Core
         public FacadeElement? FindAttachedFacade()
         {
             if (string.IsNullOrEmpty(_attachedFacadeName)) return null;
-            foreach (var e in PartRegistry.GetAll())
+            foreach (var e in PartRegistry.All)
                 if (e is FacadeElement f && f.PartName == _attachedFacadeName) return f;
             return null;
         }

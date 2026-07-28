@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core
             float precision = 0.001f)
         {
             var others = new List<KitchenElement>();
-            foreach (var el in PartRegistry.GetAll())
+            foreach (var el in PartRegistry.All)
             {
                 if (el == null || el == self) continue;
                 if (exclude != null && exclude.Contains(el)) continue;

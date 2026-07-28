@@ -41,7 +41,7 @@ namespace KitchenDesigner.Core
             GL.Begin(GL.LINES);
             GL.Color(Color.black);
 
-            foreach (var e in PartRegistry.GetAll())
+            foreach (var e in PartRegistry.All)
             {
                 if (e == null || e.GetComponent<BasePlate>() != null) continue;
                 if (!ShouldOutline(e, s)) continue;

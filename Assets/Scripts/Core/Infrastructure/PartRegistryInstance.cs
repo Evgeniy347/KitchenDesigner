@@ -27,11 +27,12 @@ namespace KitchenDesigner.Core
             if (element == null || _all.Contains(element)) return;
             _all.Add(element);
             SceneRevision.Bump();
+            SceneVisibilityManager.Invalidate();
         }
 
         public void Unregister(KitchenElement element)
         {
-            if (_all.Remove(element)) SceneRevision.Bump();
+            if (_all.Remove(element)) { SceneRevision.Bump(); SceneVisibilityManager.Invalidate(); }
         }
 
         public List<KitchenElement> GetAll()

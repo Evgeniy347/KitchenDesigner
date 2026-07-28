@@ -81,13 +81,13 @@ namespace KitchenDesigner.Core
 
             if (element is DrawerElement)
             {
-                foreach (var e in PartRegistry.GetAll())
+                foreach (var e in PartRegistry.All)
                     if (e is DrawerElement d && d != element && d.PairedDrawerName == oldName)
                         d.PairedDrawerName = newName;
             }
             else if (element is FacadeElement)
             {
-                foreach (var e in PartRegistry.GetAll())
+                foreach (var e in PartRegistry.All)
                     if (e is DrawerElement d && d.AttachedFacadeName == oldName)
                         d.AttachedFacadeName = newName;
             }

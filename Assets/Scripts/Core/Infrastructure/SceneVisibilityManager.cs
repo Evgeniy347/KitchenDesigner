@@ -55,16 +55,29 @@ namespace KitchenDesigner.Core
     }
 
     /// <summary>Применяет настройки «Объекты» и «Скрыть источники света»
-    /// к сцене каждый кадр — по тем же правилам, что WallManager для стен.</summary>
+    /// к сцене каждый кадр — по тем же правилам, что WallManager для стен.
+    /// Перебор пропускается, пока настройки не менялись и элементы не добавлялись/удалялись.</summary>
     public class SceneVisibilityManager : MonoBehaviour
     {
+        private static int _appliedHash = -1;
+
         public void LateUpdate() => Apply();
+
+        /// <summary>Заказать переприменение видимости на следующем кадре — вызывается
+        /// при добавлении/удалении элемента или смене настроек.</summary>
+        public static void Invalidate() => _appliedHash = -1;
 
         public static void Apply()
         {
             using var _ = PerfMarkers.SceneVisibilityApply.Auto();
             var s = KitchenSettings.Instance;
-            foreach (var e in PartRegistry.GetAll())
+            int hash = (s != null && s.ObjectsVisible ? 1 : 0)
+                     | (s != null && s.HideLightSources ? 2 : 0)
+                     | (PhotoMode.Active ? 4 : 0);
+            if (hash == _appliedHash) return;
+            _appliedHash = hash;
+
+            foreach (var e in PartRegistry.All)
             {
                 if (e == null || !SceneVisibility.IsObject(e)) continue;
                 SceneVisibility.SetRenderersEnabled(e, SceneVisibility.ShouldBeVisible(e, s));

@@ -100,9 +100,15 @@ namespace KitchenDesigner.Core
             SnapToPart();
         }
 
+        private int _lastPoseVersion;
+
         private void Update()
         {
-            SnapToPart();
+            if (PoseVersion != _lastPoseVersion)
+            {
+                _lastPoseVersion = PoseVersion;
+                SnapToPart();
+            }
         }
 
         /// <summary>Размер мойки фиксирован моделью — ресайз лишь возвращает его
@@ -278,7 +284,7 @@ namespace KitchenDesigner.Core
             KitchenElement? best = null;
             float bestHeight = float.MaxValue;
             int bestX = 0, bestY = 0;
-            foreach (var el in PartRegistry.GetAll())
+            foreach (var el in PartRegistry.All)
             {
                 if (el == null || el == this || !IsSuitableHost(el)) continue;
 
@@ -388,7 +394,7 @@ namespace KitchenDesigner.Core
             float z1 = sign > 0f ? halfT : -halfT + bowl;
 
             var inv = Quaternion.Inverse(pt.rotation);
-            foreach (var el in PartRegistry.GetAll())
+            foreach (var el in PartRegistry.All)
             {
                 if (el == null || el == this || el == part || !IsObstacle(el)) continue;
 
@@ -488,7 +494,7 @@ namespace KitchenDesigner.Core
         private KitchenElement? FindAttachedPart()
         {
             if (string.IsNullOrEmpty(_attachedPartName)) return null;
-            foreach (var el in PartRegistry.GetAll())
+            foreach (var el in PartRegistry.All)
                 if (el != null && el != this && el.PartName == _attachedPartName)
                     return el;
             return null;

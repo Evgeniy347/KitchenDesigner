@@ -15,8 +15,8 @@ public class SceneRevisionTests
 
     private KitchenElement Make()
     {
-        var go = new GameObject("E");
-        var e = go.AddComponent<KitchenElement>();
+        var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "E", Vector3.zero);
+        var e = go.GetComponent<KitchenElement>()!;
         _spawned.Add(go);
         return e;
     }
@@ -53,10 +53,11 @@ public class SceneRevisionTests
     {
         Make();
         int before = SceneRevision.Version;
-        var stranger = new GameObject("stranger").AddComponent<KitchenElement>();
-        PartRegistry.Unregister(stranger);   // Awake уже снял его через Register/Unregister
-        PartRegistry.Unregister(stranger);   // второй раз — реестр не менялся
-        Object.DestroyImmediate(stranger.gameObject);
+        var strangerGo = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "stranger", Vector3.zero);
+        var stranger = strangerGo.GetComponent<KitchenElement>()!;
+        PartRegistry.Unregister(stranger);   // первое снятие — реестр меняется
+        PartRegistry.Unregister(stranger);   // второе — реестр не менялся
+        Object.DestroyImmediate(strangerGo);
 
         Assert.AreEqual(before + 2, SceneRevision.Version,
             "Учтены должны быть только настоящие изменения реестра: регистрация в Awake и первое снятие");

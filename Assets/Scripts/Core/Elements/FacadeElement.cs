@@ -127,7 +127,7 @@ namespace KitchenDesigner.Core
 
             // Если фасад прикреплён к ящику — закрываем и ящик тоже,
             // чтобы состояния никогда не расходились (не то ящик открыт, не то закрыт).
-            foreach (var el in PartRegistry.GetAll())
+            foreach (var el in PartRegistry.All)
                 if (el is DrawerElement d && d.AttachedFacadeName == PartName)
                 {
                     d.ForceClose();
@@ -163,7 +163,7 @@ namespace KitchenDesigner.Core
             if (_open && _t > 0f)
             {
                 var exclude = new System.Collections.Generic.List<KitchenElement>();
-                foreach (var el in PartRegistry.GetAll())
+                foreach (var el in PartRegistry.All)
                 {
                     if (el is DrawerElement d && d.AttachedFacadeName == PartName)
                     {
