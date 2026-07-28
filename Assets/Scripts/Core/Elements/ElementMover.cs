@@ -286,6 +286,10 @@ namespace KitchenDesigner.Core
         {
             // Идёт ресайз ручкой — перемещение объекта не запускаем.
             if (ResizeHandleManager.IsResizing) return;
+            // Правится область накладки: клик по её ручке не должен утаскивать
+            // саму стену. Ручка не ребёнок элемента, поэтому TryBeginPress о ней
+            // сам не знает — спрашиваем явно.
+            if (TextureOverlayHandles.Active && TextureOverlayHandles.PointerOverHandle()) return;
 
             if (Input.GetKeyDown(KeyCode.Escape) && IsDragging)
             {

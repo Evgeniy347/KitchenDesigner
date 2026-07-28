@@ -30,9 +30,15 @@ namespace KitchenDesigner.Core
     [DefaultExecutionOrder(100)]
     public class TextureOverlayHandles : MonoBehaviour
     {
-        /// <summary>Длина ручки от поверхности и её толщина, юниты.</summary>
-        private const float StemLen = 0.06f;
-        private const float TipSize = 0.035f;
+        /// <summary>Вынос кубика ручки от поверхности и его ребро, юниты.</summary>
+        private const float StemLen = 0.07f;
+        private const float TipSize = 0.045f;
+
+        /// <summary>Габарит зоны захвата (её ось Z — нормаль грани). Зона заведомо
+        /// крупнее кубика и НЕ уходит внутрь объекта: утопленный коллайдер ловил
+        /// луч наравне со стеной, и попасть по ручке получалось через раз.</summary>
+        private const float GrabWidth = 0.11f;
+        private const float GrabDepth = 0.13f;
 
         private static KitchenElement? _element;
         private static int _index = -1;
@@ -74,15 +80,34 @@ namespace KitchenDesigner.Core
             _instance?.ClearHandles();
         }
 
-        /// <summary>Курсор над ручкой области — выделение и панорама камеры
-        /// должны молчать, как и над ручками ресайза.</summary>
-        public static bool PointerOverHandle()
+        /// <summary>Курсор над ручкой области — выделение, перетаскивание объекта
+        /// и панорама камеры должны молчать, как и над ручками ресайза.</summary>
+        public static bool PointerOverHandle() => PickHandle() != null;
+
+        /// <summary>Ручка под курсором, или null.
+        ///
+        /// Именно RaycastAll, а не Raycast: ручка стоит ВПЛОТНУЮ к поверхности, и
+        /// одиночный луч сплошь и рядом возвращал сначала саму стену — особенно у
+        /// накладки во всю грань, где ручки сидят на самом краю. Ближайший ко всему
+        /// прочему объект нас не интересует: если луч задел ручку, значит по ручке и
+        /// кликнули.</summary>
+        private static TextureOverlayHandle? PickHandle()
         {
+            if (!Active) return null;
             var cam = Camera.main;
-            if (cam == null) return false;
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            return Physics.Raycast(ray, out RaycastHit hit)
-                   && hit.collider.GetComponentInParent<TextureOverlayHandle>() != null;
+            if (cam == null) return null;
+
+            var hits = Physics.RaycastAll(cam.ScreenPointToRay(Input.mousePosition));
+            TextureOverlayHandle? best = null;
+            float bestDist = float.MaxValue;
+            foreach (var hit in hits)
+            {
+                var handle = hit.collider.GetComponentInParent<TextureOverlayHandle>();
+                if (handle == null || hit.distance >= bestDist) continue;
+                best = handle;
+                bestDist = hit.distance;
+            }
+            return best;
         }
 
         // ── Экземпляр ───────────────────────────────────────────────────
@@ -148,23 +173,13 @@ namespace KitchenDesigner.Core
 
             if (!Input.GetMouseButtonDown(0)) return;
             if (PointerOverUI()) return;
-            if (RaycastHandle(out var handle)) BeginDrag(handle!.edge);
+            var handle = PickHandle();
+            if (handle != null) BeginDrag(handle.edge);
         }
 
         private static bool PointerOverUI() =>
             UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
-
-        private bool RaycastHandle(out TextureOverlayHandle? handle)
-        {
-            handle = null;
-            var cam = Camera.main;
-            if (cam == null) return false;
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (!Physics.Raycast(ray, out RaycastHit hit)) return false;
-            handle = hit.collider.GetComponentInParent<TextureOverlayHandle>();
-            return handle != null;
-        }
 
         // ── Перетаскивание ──────────────────────────────────────────────
 
@@ -325,8 +340,8 @@ namespace KitchenDesigner.Core
                 marker.edge = edge;
 
                 var col = go.AddComponent<BoxCollider>();
-                col.center = new Vector3(0, 0, StemLen * 0.5f);
-                col.size = new Vector3(TipSize * 2f, TipSize * 2f, StemLen + TipSize);
+                col.center = new Vector3(0, 0, GrabDepth * 0.5f);
+                col.size = new Vector3(GrabWidth, GrabWidth, GrabDepth);
 
                 var tip = new GameObject("Tip");
                 tip.transform.SetParent(go.transform, false);
