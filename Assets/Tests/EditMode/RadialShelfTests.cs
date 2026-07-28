@@ -316,11 +316,12 @@ public class RadialShelfTests
         Assert.AreEqual("RS", converted.PartName);
         Assert.AreEqual(new Vector3Int(600, 18, 400), converted.DimensionsMM);
 
-        // После конвертации в Part меш должен быть кубом, а не радиальным.
+        // После конвертации в Part меш должен быть коробкой, а не радиальным:
+        // 6 граней по 4 вершины (см. GrooveMesh).
         var mf = converted.GetComponent<MeshFilter>();
         Assert.IsNotNull(mf, "MeshFilter is present");
         Assert.IsNotNull(mf!.sharedMesh, "sharedMesh is assigned");
-        Assert.AreEqual("Cube", mf.sharedMesh.name, "mesh is cube, not radial");
+        Assert.AreEqual(24, mf.sharedMesh.vertexCount, "mesh is a box, not radial");
 
         // Коллайдер — BoxCollider, а не MeshCollider от радиальной полки.
         Assert.IsNull(converted.GetComponent<MeshCollider>(), "MeshCollider is removed");

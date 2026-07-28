@@ -126,11 +126,11 @@ namespace KitchenDesigner.Core
                 // Пазы живут только в пласти ±Z, и перестановка увела бы их с неё.
                 // Деталь со сквозным вырезом поперёк другой оси — это столешница,
                 // пазов в ней нет.
-                var permuted = Build(dims, null, holes);
+                var permuted = BuildAlongZ(dims, null, holes, holeAxis);
                 Permute(permuted, holeAxis);
                 return permuted;
             }
-            return BuildAlongZ(dims, grooves, holes);
+            return BuildAlongZ(dims, grooves, holes, 2);
         }
 
         /// <summary>Меняет местами ось выреза и Z. Обе перестановки — зеркальные,
@@ -159,7 +159,7 @@ namespace KitchenDesigner.Core
         }
 
         private static Mesh BuildAlongZ(Vector3Int dims, IReadOnlyList<GrooveSpec>? grooves,
-            IReadOnlyList<Rect2>? holes)
+            IReadOnlyList<Rect2>? holes, int holeAxis)
         {
             var rects = ComputeRects(dims, grooves);
             var holeRects = ClampHoles(holes);
@@ -330,12 +330,61 @@ namespace KitchenDesigner.Core
             var mesh = new Mesh { name = "PartWithGrooves" };
             mesh.SetVertices(verts);
             mesh.SetUVs(0, uvs);
-            mesh.subMeshCount = 2;
+            // Второй сабмеш заводим только когда есть что в него класть: у детали
+            // без пазов это обычная коробка с одним материалом.
+            mesh.subMeshCount = cut.Count > 0 ? 2 : 1;
             mesh.SetTriangles(body, 0);
-            mesh.SetTriangles(cut, 1);
+            if (cut.Count > 0) mesh.SetTriangles(cut, 1);
             mesh.RecalculateNormals();
+            ScaleUvToDecor(mesh, dims, holeAxis);
             mesh.RecalculateBounds();
             return mesh;
+        }
+
+        // ── Физический масштаб декора ──────────────────────────────────
+
+        /// <summary>Ось детали, в которую перестановка (см. Permute) уводит
+        /// каноническую ось. Без перестановки — она же сама.</summary>
+        private static int FinalAxis(int canonical, int holeAxis) => holeAxis switch
+        {
+            1 => canonical == 0 ? 0 : (canonical == 1 ? 2 : 1),
+            0 => canonical == 1 ? 1 : (canonical == 0 ? 2 : 0),
+            _ => canonical,
+        };
+
+        /// <summary>Приводит UV к ФИЗИЧЕСКОМУ масштабу декора на каждой грани.
+        ///
+        /// _BaseMap_ST один на весь рендерер и масштабирует UV в (Ш/плитка,
+        /// В/плитка) — см. MaterialManager.ComputeTileST. Для пласти ±Z это ровно
+        /// то, что нужно: её UV идут по X и Y. А на торце ±X горизонталь идёт по
+        /// глубине, на пласти ±Y вертикаль тоже по глубине — там тот же множитель
+        /// растягивал бы рисунок пропорционально Z. Разницу компенсируем в самом
+        /// меше: UV вдоль оси a умножаем на dims[a]/dims[X|Y].
+        ///
+        /// Плоскость UV квада однозначно задаётся осью его нормали (см. AddQuad),
+        /// поэтому считать её отдельно не нужно.</summary>
+        private static void ScaleUvToDecor(Mesh mesh, Vector3Int dims, int holeAxis)
+        {
+            float[] d =
+            {
+                Mathf.Max(1, dims.x), Mathf.Max(1, dims.y), Mathf.Max(1, dims.z),
+            };
+            var normals = mesh.normals;
+            var uv = mesh.uv;
+            for (int i = 0; i < uv.Length; i++)
+            {
+                var n = normals[i];
+                float ax = Mathf.Abs(n.x), ay = Mathf.Abs(n.y), az = Mathf.Abs(n.z);
+                int uAxis, vAxis;
+                if (ax >= ay && ax >= az) { uAxis = 2; vAxis = 1; }      // торец ±X → ZY
+                else if (ay >= az) { uAxis = 0; vAxis = 2; }             // пласть ±Y → XZ
+                else { uAxis = 0; vAxis = 1; }                           // пласть ±Z → XY
+
+                uv[i] = new Vector2(
+                    uv[i].x * d[FinalAxis(uAxis, holeAxis)] / d[0],
+                    uv[i].y * d[FinalAxis(vAxis, holeAxis)] / d[1]);
+            }
+            mesh.SetUVs(0, uv);
         }
 
         /// <summary>Тёмный материал дна и стенок паза (общий на все детали).</summary>

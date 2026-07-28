@@ -152,7 +152,8 @@ public class SinkElementTests
         Assert.AreEqual(0.860f, sink.transform.position.y, 1e-4f);
 
         var mesh = top.GetComponent<MeshFilter>().sharedMesh;
-        Assert.AreNotEqual("Cube", mesh.name, "деталь получила меш с вырезом");
+        // Коробка без выреза — ровно 24 вершины (6 граней × 4).
+        Assert.Greater(mesh.vertexCount, 24, "деталь получила меш с вырезом");
         // Дырка сквозная по ВЕРТИКАЛИ: пусто и сверху, и снизу плиты (|y| = 0.5).
         var rect = sink.CutoutRectIn(top);
         Assert.AreEqual(0, CountInsidePlane(mesh, rect, 0.5f, 0, 2), "верх прорезан");
@@ -194,7 +195,7 @@ public class SinkElementTests
         Assert.AreEqual(TopY, sink.transform.position.y, 1e-4f,
             "борт сел ровно на пласть");
         Assert.IsTrue(top.HasSink(sink), "проём прорезан");
-        Assert.AreNotEqual("Cube", top.GetComponent<MeshFilter>().sharedMesh.name);
+        Assert.Greater(top.GetComponent<MeshFilter>().sharedMesh.vertexCount, 24);
 
         // Продолжаем тянуть вниз — мойка держится, пока не пройден порог отрыва.
         sink.transform.position -= new Vector3(0f, SinkElement.SNAP_RELEASE_MM * 0.5f * ToU, 0f);
@@ -208,7 +209,8 @@ public class SinkElementTests
         Assert.IsFalse(sink.IsAttached, "протащили ниже порога — мойка отлипла");
         Assert.Less(sink.transform.position.y, TopY, "и ушла ниже пласти");
         Assert.AreEqual(0, top.AttachedSinks.Count, "проём закрылся");
-        Assert.AreEqual("Cube", top.GetComponent<MeshFilter>().sharedMesh.name);
+        Assert.AreEqual(24, top.GetComponent<MeshFilter>().sharedMesh.vertexCount,
+            "меш снова простая коробка");
 
         // Дальше вниз она идёт свободно и обратно не прилипает.
         for (int step = 0; step < 3; step++)
@@ -355,7 +357,7 @@ public class SinkElementTests
         var mesh = top.GetComponent<MeshFilter>().sharedMesh;
         var rect = sink.CutoutRectIn(top);
 
-        Assert.AreNotEqual("Cube", mesh.name, "деталь получила собственный меш с вырезом");
+        Assert.Greater(mesh.vertexCount, 24, "деталь получила собственный меш с вырезом");
         Assert.AreEqual(0, CountInsideFace(mesh, rect, 0.5f), "лицевая пласть прорезана");
         Assert.AreEqual(0, CountInsideFace(mesh, rect, -0.5f), "задняя пласть прорезана");
         AssertHasBoundaryVertex(mesh, rect);
@@ -366,13 +368,13 @@ public class SinkElementTests
     {
         var top = CreateCountertop();
         var sink = CreateSeatedSink(top);
-        Assert.AreNotEqual("Cube", top.GetComponent<MeshFilter>().sharedMesh.name);
+        Assert.Greater(top.GetComponent<MeshFilter>().sharedMesh.vertexCount, 24);
 
         top.UnregisterSink(sink);
 
         Assert.IsFalse(top.HasSink(sink));
-        Assert.AreEqual("Cube", top.GetComponent<MeshFilter>().sharedMesh.name,
-            "без мойки и пазов деталь возвращается на встроенный куб");
+        Assert.AreEqual(24, top.GetComponent<MeshFilter>().sharedMesh.vertexCount,
+            "без мойки и пазов деталь возвращается на простую коробку");
     }
 
     private static void AssertHasBoundaryVertex(Mesh mesh, GrooveMesh.Rect2 rect)

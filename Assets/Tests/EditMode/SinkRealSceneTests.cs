@@ -60,7 +60,8 @@ public class SinkRealSceneTests
         Assert.AreEqual("Countertop_B", host!.PartName);
 
         var mesh = host.GetComponent<MeshFilter>().sharedMesh;
-        Assert.AreNotEqual("Cube", mesh.name, "столешница получила меш с вырезом");
+        // Коробка без выреза — ровно 24 вершины (6 граней × 4).
+        Assert.Greater(mesh.vertexCount, 24, "столешница получила меш с вырезом");
 
         var rect = sink.CutoutRectIn(host);
         int upAxis = SinkElement.HoleAxisFor(host);

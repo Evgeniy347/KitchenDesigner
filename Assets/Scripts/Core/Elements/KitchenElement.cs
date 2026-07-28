@@ -68,8 +68,12 @@ namespace KitchenDesigner.Core
         // прочих подтипов геометрия своя процедурная, и врезка в неё пласти не
         // определена. Стена и подложка — тоже KitchenElement, но деталями не
         // являются, поэтому исключены явно.
-        private static Mesh? _builtinCubeMesh;
         private Mesh? _ownedMesh;
+
+        // Размеры, под которые собран _ownedMesh. UV в нём привязаны к пропорциям
+        // детали (см. GrooveMesh.ScaleUvToDecor), поэтому ресайз требует пересборки,
+        // а повторный вызов с теми же размерами — нет.
+        private Vector3Int _meshDims;
 
         public bool SupportsGrooves =>
             GetType() == typeof(KitchenElement)
@@ -228,8 +232,10 @@ namespace KitchenDesigner.Core
             RebuildGrooveMesh();
         }
 
-        /// <summary>Пересобрать меш под текущие пазы. Без пазов возвращается
-        /// встроенный куб — деталь не тащит собственный меш без нужды.</summary>
+        /// <summary>Пересобрать меш под текущие пазы и размеры. Без пазов это
+        /// обычная коробка — но СОБСТВЕННАЯ, а не встроенный куб: UV в ней
+        /// приведены к физическому масштабу декора, а он зависит от пропорций
+        /// детали (см. GrooveMesh.ScaleUvToDecor).</summary>
         public void RebuildGrooveMesh()
         {
             if (!SupportsGrooves) return;
@@ -237,41 +243,22 @@ namespace KitchenDesigner.Core
             var meshRenderer = GetComponent<MeshRenderer>();
             if (filter == null || meshRenderer == null) return;
 
-            // Первое касание пуловой детали: запоминаем встроенный куб, иначе
-            // после удаления пазов вернуть исходный меш было бы нечем. Проверка
-            // имени обязательна — деталь могла получиться конвертацией и нести
-            // чужой меш, который нельзя раздавать всем деталям через статик.
-            if (_ownedMesh == null && _builtinCubeMesh == null
-                && filter.sharedMesh != null && filter.sharedMesh.name == "Cube")
-                _builtinCubeMesh = filter.sharedMesh;
-
             var mats = meshRenderer.sharedMaterials;
             var decor = mats != null && mats.Length > 0 && mats[0] != null
                 ? mats[0] : meshRenderer.sharedMaterial;
 
             var holes = SinkHoleRects();
 
-            if (_data.Grooves.Count == 0 && holes.Count == 0)
-            {
-                if (_ownedMesh == null) return; // меш и так стандартный
-                // Куба под рукой нет (деталь пришла не из пула) — собираем
-                // собственную коробку без пазов.
-                var restored = _builtinCubeMesh != null
-                    ? _builtinCubeMesh
-                    : GrooveMesh.Build(_data.DimensionsMM, null);
-                DestroyOwnedMesh();
-                if (restored != _builtinCubeMesh) _ownedMesh = restored;
-                filter.sharedMesh = restored;
-                if (decor != null) meshRenderer.sharedMaterials = new[] { decor };
-                return;
-            }
-
             var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves, holes, SinkHoleAxis);
             DestroyOwnedMesh();
             _ownedMesh = mesh;
+            _meshDims = _data.DimensionsMM;
             filter.sharedMesh = mesh;
-            // Сабмеш 0 — декор (им управляет MaterialManager), 1 — пазы.
-            meshRenderer.sharedMaterials = new[] { decor!, GrooveMesh.GrooveMaterial() };
+            // Сабмеш 0 — декор (им управляет MaterialManager), 1 — пазы; у детали
+            // без пазов второго сабмеша нет и второй материал ей не нужен.
+            meshRenderer.sharedMaterials = mesh.subMeshCount > 1 && decor != null
+                ? new[] { decor, GrooveMesh.GrooveMaterial() }
+                : new[] { decor! };
         }
 
         private void DestroyOwnedMesh()
@@ -429,9 +416,10 @@ namespace KitchenDesigner.Core
                 _data.DimensionsMM.z * AppConstants.MM_TO_UNITS
             );
 
-            // Доли паза и проёма мойки считаются от размеров детали — при ресайзе
-            // меш надо пересобрать, иначе они растянутся вместе с localScale.
-            if (_data.Grooves.Count > 0 || _sinks.Count > 0) RebuildGrooveMesh();
+            // Доли паза и проёма мойки считаются от размеров детали, а UV — от её
+            // пропорций: при ресайзе меш надо пересобрать, иначе и то и другое
+            // растянется вместе с localScale.
+            if (_meshDims != _data.DimensionsMM || _ownedMesh == null) RebuildGrooveMesh();
 
             // localScale тянет UV вместе с деталью, поэтому «вырез» декора надо
             // пересчитать под новый размер — иначе рисунок растягивается вместо

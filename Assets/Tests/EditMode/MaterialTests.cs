@@ -331,4 +331,127 @@ public class MaterialTests
         Assert.AreEqual(new Vector4(2f, 2f, 0f, 0f), mpb.GetVector("_BaseMap_ST"),
             "после ресайза «вырез» декора обязан пересчитаться");
     }
+
+    // --- Физ. масштаб декора одинаков на ВСЕХ гранях (включая глубину) ---
+    //
+    // _BaseMap_ST один на весь рендерер и масштабирует UV по X/Y детали. Грани,
+    // у которых UV идёт вдоль Z (торцы ±X и пласти ±Y), обязаны компенсировать
+    // это в самом меше — иначе рисунок на них тянется пропорционально глубине.
+
+    private const int Tile = 800;
+
+    /// <summary>Протяжённость UV на грани с заданной нормалью (min/max по её вершинам).</summary>
+    private static Vector2 UvSpan(Mesh mesh, Vector3 normal)
+    {
+        var normals = mesh.normals;
+        var uv = mesh.uv;
+        float minU = float.MaxValue, maxU = float.MinValue;
+        float minV = float.MaxValue, maxV = float.MinValue;
+        int found = 0;
+        for (int i = 0; i < normals.Length; i++)
+        {
+            if (Vector3.Dot(normals[i], normal) < 0.999f) continue;
+            found++;
+            minU = Mathf.Min(minU, uv[i].x); maxU = Mathf.Max(maxU, uv[i].x);
+            minV = Mathf.Min(minV, uv[i].y); maxV = Mathf.Max(maxV, uv[i].y);
+        }
+        Assert.Greater(found, 0, $"грань с нормалью {normal} в меше не найдена");
+        return new Vector2(maxU - minU, maxV - minV);
+    }
+
+    /// <summary>Физ. размер куска декора, который ложится на грань, в мм:
+    /// UV-протяжённость × ST × размер плитки. Должен совпадать с размером грани.</summary>
+    private static Vector2 DecorSpanMM(Mesh mesh, Vector3Int dims, Vector3 normal)
+    {
+        var span = UvSpan(mesh, normal);
+        var st = MaterialManager.ComputeTileST(dims, Tile, Tile);
+        return new Vector2(span.x * st.x * Tile, span.y * st.y * Tile);
+    }
+
+    [Test]
+    public void BoxMesh_FrontFace_DecorMatchesFaceSize()
+    {
+        // Контрольная грань: она и сейчас работает верно.
+        var dims = new Vector3Int(600, 400, 500);
+        var mesh = GrooveMesh.Build(dims, null);
+        var mm = DecorSpanMM(mesh, dims, Vector3.forward);
+        Assert.AreEqual(600f, mm.x, 0.5f, "пласть ±Z: ширина");
+        Assert.AreEqual(400f, mm.y, 0.5f, "пласть ±Z: высота");
+        Object.DestroyImmediate(mesh);
+    }
+
+    [Test]
+    public void BoxMesh_EndFace_DecorMatchesDepth()
+    {
+        // Торец ±X имеет размер Z×Y — по горизонтали на нём должно уложиться
+        // ровно 500 мм декора, а не 600 (ширина детали).
+        var dims = new Vector3Int(600, 400, 500);
+        var mesh = GrooveMesh.Build(dims, null);
+        var mm = DecorSpanMM(mesh, dims, Vector3.right);
+        Assert.AreEqual(500f, mm.x, 0.5f, "торец ±X: глубина");
+        Assert.AreEqual(400f, mm.y, 0.5f, "торец ±X: высота");
+        Object.DestroyImmediate(mesh);
+    }
+
+    [Test]
+    public void BoxMesh_TopFace_DecorMatchesDepth()
+    {
+        // Полка 600×18×500: сверху видна грань 600×500. Именно здесь растяжение
+        // по глубине заметнее всего — 18 мм декора размазывается на 500.
+        var dims = new Vector3Int(600, 18, 500);
+        var mesh = GrooveMesh.Build(dims, null);
+        var mm = DecorSpanMM(mesh, dims, Vector3.up);
+        Assert.AreEqual(600f, mm.x, 0.5f, "пласть ±Y: ширина");
+        Assert.AreEqual(500f, mm.y, 0.5f, "пласть ±Y: глубина");
+        Object.DestroyImmediate(mesh);
+    }
+
+    [Test]
+    public void BoxMesh_DepthChange_DoesNotStretchDecor()
+    {
+        // Та же деталь глубже вдвое — физ. масштаб декора на торце обязан
+        // остаться прежним, повторов просто станет вдвое больше.
+        var shallow = new Vector3Int(600, 400, 250);
+        var deep = new Vector3Int(600, 400, 500);
+        var m1 = GrooveMesh.Build(shallow, null);
+        var m2 = GrooveMesh.Build(deep, null);
+
+        Assert.AreEqual(250f, DecorSpanMM(m1, shallow, Vector3.right).x, 0.5f);
+        Assert.AreEqual(500f, DecorSpanMM(m2, deep, Vector3.right).x, 0.5f);
+
+        Object.DestroyImmediate(m1);
+        Object.DestroyImmediate(m2);
+    }
+
+    [Test]
+    public void BoxMesh_HoleAlongY_KeepsDecorScaleAfterPermute()
+    {
+        // Столешница-короб: вырез режется поперёк Y, меш строится канонически
+        // и переставляется по осям. UV обязаны пережить перестановку.
+        var dims = new Vector3Int(1200, 40, 600);
+        var holes = new List<GrooveMesh.Rect2>
+        {
+            new GrooveMesh.Rect2 { xMin = -0.2f, xMax = 0.2f, yMin = -0.2f, yMax = 0.2f },
+        };
+        var mesh = GrooveMesh.Build(dims, null, holes, holeAxis: 1);
+        var mm = DecorSpanMM(mesh, dims, Vector3.up);
+        Assert.AreEqual(1200f, mm.x, 1f, "верхняя пласть: ширина");
+        Assert.AreEqual(600f, mm.y, 1f, "верхняя пласть: глубина");
+        Object.DestroyImmediate(mesh);
+    }
+
+    [Test]
+    public void Part_PlainBoard_DecorScaleEqualOnAllFaces()
+    {
+        // Сквозная проверка через реальную деталь: меш ей ставит ApplyDimensions.
+        var dims = new Vector3Int(600, 18, 500);
+        var go = ElementFactory.CreatePart(dims, "Shelf", Vector3.zero);
+        _spawned.Add(go);
+        var e = go.GetComponent<KitchenElement>();
+        e.DimensionsMM = dims;
+
+        var mesh = go.GetComponent<MeshFilter>().sharedMesh;
+        Assert.AreEqual(500f, DecorSpanMM(mesh, dims, Vector3.up).y, 0.5f, "пласть ±Y: глубина");
+        Assert.AreEqual(500f, DecorSpanMM(mesh, dims, Vector3.right).x, 0.5f, "торец ±X: глубина");
+    }
 }

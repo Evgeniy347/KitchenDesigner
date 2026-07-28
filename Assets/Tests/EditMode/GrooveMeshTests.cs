@@ -102,8 +102,7 @@ public class GrooveMeshTests
     public void Build_WithoutGrooves_ProducesClosedBox()
     {
         var mesh = GrooveMesh.Build(Dims, null);
-        Assert.AreEqual(2, mesh.subMeshCount, "сабмеши: тело + пазы");
-        Assert.AreEqual(0, mesh.GetTriangles(1).Length, "без пазов тёмный сабмеш пуст");
+        Assert.AreEqual(1, mesh.subMeshCount, "без пазов тёмный сабмеш не заводится");
         // 6 граней × 2 треугольника × 3 индекса.
         Assert.AreEqual(36, mesh.GetTriangles(0).Length);
         Object.DestroyImmediate(mesh);
