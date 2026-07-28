@@ -140,4 +140,94 @@ public class WallManagerTests
 
         settings.WallsEnabled = prev;
     }
+
+    // ── Collider tests ─────────────────────────────────────────────────────
+
+    [Test]
+    public void LateUpdate_DisablesColliderWhenWallsDisabled()
+    {
+        var settings = KitchenSettings.Instance;
+        Assert.IsNotNull(settings);
+        bool prevWalls = settings.WallsEnabled;
+        settings.WallsEnabled = false;
+
+        var e = Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0));
+        var collider = e.gameObject.AddComponent<BoxCollider>();
+        Assert.IsTrue(collider.enabled, "collider should start enabled");
+
+        _wallManager!.LateUpdate();
+
+        Assert.IsFalse(collider.enabled, "collider should be disabled when walls are hidden");
+
+        settings.WallsEnabled = prevWalls;
+    }
+
+    [Test]
+    public void LateUpdate_EnablesColliderWhenWallsEnabled()
+    {
+        var settings = KitchenSettings.Instance;
+        Assert.IsNotNull(settings);
+        bool prevWalls = settings.WallsEnabled;
+        settings.WallsEnabled = true;
+
+        var e = Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0));
+        var collider = e.gameObject.AddComponent<BoxCollider>();
+
+        _wallManager!.LateUpdate();
+
+        Assert.IsTrue(collider.enabled, "collider should stay enabled when walls are visible");
+
+        settings.WallsEnabled = prevWalls;
+    }
+
+    [Test]
+    public void LateUpdate_KeepsColliderEnabledWhenWallsEnabledAndLowered()
+    {
+        var settings = KitchenSettings.Instance;
+        Assert.IsNotNull(settings);
+        bool prevWalls = settings.WallsEnabled;
+        bool prevLower = settings.LowerNearWalls;
+        settings.WallsEnabled = true;
+        settings.LowerNearWalls = true;
+
+        _cameraGo!.transform.position = new Vector3(0, 1.25f, -5f);
+        _cameraGo!.transform.LookAt(Vector3.zero);
+
+        var e = Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, -2f));
+        var collider = e.gameObject.AddComponent<BoxCollider>();
+        var wall = e.GetComponent<Wall>();
+
+        _wallManager!.LateUpdate();
+
+        Assert.IsTrue(wall.IsLowered, "wall should be lowered");
+        Assert.IsTrue(collider.enabled, "lowered wall collider should remain enabled (smaller)");
+
+        settings.WallsEnabled = prevWalls;
+        settings.LowerNearWalls = prevLower;
+    }
+
+    [Test]
+    public void LateUpdate_RestoresColliderWhenWallsReEnabled()
+    {
+        var settings = KitchenSettings.Instance;
+        Assert.IsNotNull(settings);
+        bool prevWalls = settings.WallsEnabled;
+
+        // Шаг 1: выключаем стены
+        settings.WallsEnabled = false;
+
+        var e = Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0));
+        var collider = e.gameObject.AddComponent<BoxCollider>();
+
+        _wallManager!.LateUpdate();
+        Assert.IsFalse(collider.enabled, "collider should be disabled when walls are hidden");
+
+        // Шаг 2: включаем стены обратно
+        settings.WallsEnabled = true;
+
+        _wallManager!.LateUpdate();
+        Assert.IsTrue(collider.enabled, "collider should be re-enabled when walls are visible again");
+
+        settings.WallsEnabled = prevWalls;
+    }
 }

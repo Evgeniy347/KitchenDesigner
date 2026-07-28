@@ -44,6 +44,9 @@ namespace KitchenDesigner.Core
                 var renderer = e.GetComponent<MeshRenderer>();
                 if (renderer != null) renderer.enabled = show;
 
+                var collider = e.GetComponent<Collider>();
+                if (collider != null) collider.enabled = show;
+
                 // Стену, которую сейчас перетаскивают или ресайзят, держим на полной
                 // высоте (иначе изменение геометрии ломает drag/прилипание к полу).
                 if (!show || ElementMover.IsMoving(e) || ResizeHandleManager.IsResizingElement(e))
