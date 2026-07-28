@@ -129,4 +129,48 @@ public class SceneAnalyzerTests
         MakeDrawer("d_upper", facade: "", isDouble: true, isUpper: true);
         Assert.IsFalse(Has(SceneAnalyzer.Analyze(), IssueCatalog.CodeDrawerNoFacade));
     }
+
+    // ── Фасад ящика оторвался (DRW-02) ───────────────────────────────
+
+    [Test]
+    public void DrawerFacade_InContact_NoWarning()
+    {
+        // Ящик type A: 400×86×350 мм, фронт в z=0.175.
+        // Фасад 400×86×18 мм вплотную: задняя грань фасада (−Z) на z=0.175.
+        var goD = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400, "d", new Vector3(0f, 0.043f, 0f));
+        var goF = ElementFactory.CreateFacade(new Vector3Int(400, 86, 18), "f", new Vector3(0f, 0.043f, 0.184f), 2, 2, 2, 2);
+        _spawned.Add(goD);
+        _spawned.Add(goF);
+        var drawer = goD.GetComponent<DrawerElement>();
+        drawer.AttachedFacadeName = "f";
+
+        Assert.IsFalse(Has(SceneAnalyzer.Analyze(), IssueCatalog.CodeDrawerFacadeOrphaned));
+    }
+
+    [Test]
+    public void DrawerFacade_Detached_Warns()
+    {
+        // Фасад далеко от ящика — контакта нет → DRW-02.
+        var goD = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400, "d", new Vector3(0f, 0.043f, 0f));
+        var goF = ElementFactory.CreateFacade(new Vector3Int(400, 86, 18), "f", new Vector3(0f, 0.043f, 0.5f), 2, 2, 2, 2);
+        _spawned.Add(goD);
+        _spawned.Add(goF);
+        var drawer = goD.GetComponent<DrawerElement>();
+        drawer.AttachedFacadeName = "f";
+
+        Assert.IsTrue(Has(SceneAnalyzer.Analyze(), IssueCatalog.CodeDrawerFacadeOrphaned));
+    }
+
+    [Test]
+    public void DrawerFacade_NoSuchFacade_NoWarning()
+    {
+        // AttachedFacadeName указывает на несуществующий фасад — DRW-02 не срабатывает
+        // (за это отвечает DRW-01, но здесь он не сработает т.к. имя НЕ пустое).
+        var goD = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400, "d", new Vector3(0f, 0.043f, 0f));
+        _spawned.Add(goD);
+        var drawer = goD.GetComponent<DrawerElement>();
+        drawer.AttachedFacadeName = "ghost_facade";
+
+        Assert.IsFalse(Has(SceneAnalyzer.Analyze(), IssueCatalog.CodeDrawerFacadeOrphaned));
+    }
 }

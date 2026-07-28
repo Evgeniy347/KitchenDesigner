@@ -118,17 +118,32 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
-        // ── Warning: ящик без ссылки на фасад ────────────────────────────
+        // ── Warning: ящик без ссылки на фасад или фасад оторвался ─────────
         private static void CollectDrawerFacadeLinks(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             foreach (var e in all)
             {
                 if (!(e is DrawerElement d)) continue;
-                if (!string.IsNullOrEmpty(d.AttachedFacadeName)) continue;
-                // Верхний ящик двойной пары штатно без своего фасада — фасад у нижнего.
-                if (d.IsUpperDrawer && d.IsDouble) continue;
-                issues.Add(IssueCatalog.DrawerNoFacade(d));
+                if (string.IsNullOrEmpty(d.AttachedFacadeName))
+                {
+                    // Верхний ящик двойной пары штатно без своего фасада — фасад у нижнего.
+                    if (d.IsUpperDrawer && d.IsDouble) continue;
+                    issues.Add(IssueCatalog.DrawerNoFacade(d));
+                    continue;
+                }
+                // Фасад указан, но физического контакта нет — ящик или фасад сдвинули.
+                var facade = FindFacade(all, d.AttachedFacadeName);
+                if (facade != null && !DrawerLinks.IsFacadeInContact(d, facade))
+                    issues.Add(IssueCatalog.DrawerFacadeOrphaned(d, facade));
             }
+        }
+
+        private static FacadeElement? FindFacade(List<KitchenElement> all, string name)
+        {
+            foreach (var e in all)
+                if (e is FacadeElement f && f.PartName == name)
+                    return f;
+            return null;
         }
     }
 
@@ -148,6 +163,7 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodePanelNotSeated = "SEAT-01";
         public const string CodeFacadeGap = "FAC-01";
         public const string CodeDrawerNoFacade = "DRW-01";
+        public const string CodeDrawerFacadeOrphaned = "DRW-02";
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {
@@ -207,6 +223,12 @@ namespace KitchenDesigner.Core.Analysis
         public static AnalysisIssue DrawerNoFacade(KitchenElement drawer) =>
             new AnalysisIssue(IssueLevel.Warning, CodeDrawerNoFacade,
                 Name(drawer), "Ящик без ссылки на фасад", drawer);
+
+        public static AnalysisIssue DrawerFacadeOrphaned(KitchenElement drawer, KitchenElement? facade) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeDrawerFacadeOrphaned,
+                PairDetail(drawer, facade),
+                $"Фасад ящика не на месте — {Name(drawer)} и {Name(facade)} не в контакте",
+                drawer, facade);
 
         private static string Name(KitchenElement? e) =>
             e != null && !string.IsNullOrEmpty(e.PartName) ? e.PartName : "—";
