@@ -449,8 +449,13 @@ namespace KitchenDesigner.Core.UI
 
             var matOptions = new List<string>();
             foreach (var m in MaterialCatalog.All) matOptions.Add(m.displayName);
+            // У стены и пола этой строки нет: накладка со стороной «(все)» и есть
+            // «декор на весь объект», и держать рядом два способа задать одно и то
+            // же — только путать (правило 5 UI-GUIDELINES: одно действие — одно место).
             _materialDropdown = LabeledDropdownRow(panel.transform, "Текстура", matOptions,
-                OnMaterialSelected, (h, g, rects) => AddRow(h, g, () => !_currentIsTable, rects), "CtxMaterial");
+                OnMaterialSelected,
+                (h, g, rects) => AddRow(h, g, () => !_currentIsTable && !TexturesEligible(), rects),
+                "CtxMaterial");
 
             // Текстуры столешницы и опор (только для столов).
             _tabletopMaterialDropdown = LabeledDropdownRow(panel.transform, "Столешница",
@@ -1736,10 +1741,11 @@ namespace KitchenDesigner.Core.UI
         // раскрывашка со счётчиком → строки текущих накладок → строка добавления.
         // Все правки идут через SetTextureOverlaysCommand (правило 2).
 
-        // Геометрия строки накладки: рабочая зона панели −166…164.
-        private const float TexSideX = -138f, TexSideW = 56f;
-        private const float TexMatX = -5f, TexMatW = 194f;   // в строке накладки
-        private const float TexAddMatX = -23f, TexAddMatW = 158f; // в строке добавления
+        // Геометрия строки накладки: рабочая зона панели −166…164. Ширина списка
+        // сторон рассчитана на самый длинный пункт «(все)», а не на букву.
+        private const float TexSideX = -128f, TexSideW = 76f;
+        private const float TexMatX = 5f, TexMatW = 174f;   // в строке накладки
+        private const float TexAddMatX = -13f, TexAddMatW = 138f; // в строке добавления
         private const float TexEditX = 114f, TexDelX = 150f, TexBtnW = 28f;
         private const float TexRowH = 28f;
 
