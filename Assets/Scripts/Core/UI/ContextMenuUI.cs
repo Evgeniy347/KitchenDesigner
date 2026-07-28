@@ -58,6 +58,12 @@ namespace KitchenDesigner.Core.UI
             new TMP_Dropdown?[TextureOverlayGeometry.MAX_PER_ELEMENT];
         private readonly TMP_Dropdown?[] _texRowMaterial =
             new TMP_Dropdown?[TextureOverlayGeometry.MAX_PER_ELEMENT];
+        // Стрелки порядка наложения: на краях списка соответствующая гаснет —
+        // серая кнопка честнее, чем кликабельная, которая ничего не делает.
+        private readonly Button?[] _texRowUp =
+            new Button?[TextureOverlayGeometry.MAX_PER_ELEMENT];
+        private readonly Button?[] _texRowDown =
+            new Button?[TextureOverlayGeometry.MAX_PER_ELEMENT];
         private bool _texturesExpanded;
         private int _textureFingerprint;
 
@@ -221,8 +227,8 @@ namespace KitchenDesigner.Core.UI
                 var kindDd = UIFactory.CreateDropdown($"CtxGrooveKind{i}", panel.transform,
                     new List<string>(grooveKindOptions), new Vector2(26, 0), new Vector2(168, 28),
                     _ => EditGroove(index));
-                var delBtn = UIFactory.CreateDangerButton($"CtxGrooveDel{i}", panel.transform, "×",
-                    new Vector2(148, 0), new Vector2(28, 28), () => RemoveGroove(index));
+                var delBtn = UIFactory.CreateConfirmDeleteButton($"CtxGrooveDel{i}", panel.transform,
+                    UIStyle.GlyphClose, new Vector2(148, 0), new Vector2(28, 28), () => RemoveGroove(index));
                 _grooveRowSide[i] = sideDd;
                 _grooveRowKind[i] = kindDd;
                 AddPartRowWhen(() => _groovesExpanded && GrooveCount() > index, 28f, 4f,
@@ -1722,6 +1728,9 @@ namespace KitchenDesigner.Core.UI
         /// <summary>Обновить кнопку-раскрывашку и строки пазов.</summary>
         private void RefreshGrooveUI()
         {
+            // Набор под кнопками поменялся — взведённое удаление спрашивало бы
+            // уже про другую строку.
+            ConfirmDeleteButton.DisarmAll();
             if (_grooveCountLabel != null)
                 _grooveCountLabel.text =
                     $"Пазы ({GrooveCount()})  {(_groovesExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
@@ -1758,11 +1767,19 @@ namespace KitchenDesigner.Core.UI
 
         // Геометрия строки накладки: рабочая зона панели −166…164. Ширина списка
         // сторон рассчитана на самый длинный пункт «(все)», а не на букву.
+        // Слева направо: сторона │ декор │ порядок │ карандаш │ удалить.
         private const float TexSideX = -128f, TexSideW = 76f;
-        private const float TexMatX = 5f, TexMatW = 174f;   // в строке накладки
+        private const float TexMatX = -13f, TexMatW = 138f; // в строке накладки
         private const float TexAddMatX = -13f, TexAddMatW = 138f; // в строке добавления
+        private const float TexOrderX = 78f;
         private const float TexEditX = 114f, TexDelX = 150f, TexBtnW = 28f;
         private const float TexRowH = 28f;
+
+        // Стрелки порядка занимают ОДНУ кнопочную клетку 28×28, поделённую на две
+        // половинки по высоте: колонка «вверх/вниз» ничего не добавляет к ширине
+        // строки, а из ряда одинаковых квадратов её выделяет форма, а не размер.
+        private const float TexOrderBtnH = 13f;
+        private const float TexOrderGap = 2f;
 
         private bool TexturesEligible() => _target != null && _target.SupportsTextureOverlays;
 
@@ -1788,11 +1805,12 @@ namespace KitchenDesigner.Core.UI
                 var matDd = UIFactory.CreateDropdown($"CtxTexMat{i}", parent,
                     new List<string>(matOptions), new Vector2(TexMatX, 0),
                     new Vector2(TexMatW, TexRowH), _ => EditTextureOverlay(index));
+                var orderCol = BuildTextureOrderColumn(parent, i, index);
                 var editBtn = UIFactory.CreateIconButton($"CtxTexEdit{i}", parent, IconFactory.Pencil,
                     new Vector2(TexEditX, 0), new Vector2(TexBtnW, TexRowH),
                     () => ToggleTextureOverlayEdit(index));
-                var delBtn = UIFactory.CreateDangerButton($"CtxTexDel{i}", parent, UIStyle.GlyphClose,
-                    new Vector2(TexDelX, 0), new Vector2(TexBtnW, TexRowH),
+                var delBtn = UIFactory.CreateConfirmDeleteButton($"CtxTexDel{i}", parent,
+                    UIStyle.GlyphClose, new Vector2(TexDelX, 0), new Vector2(TexBtnW, TexRowH),
                     () => RemoveTextureOverlay(index));
 
                 AttachSideHover(sideDd);
@@ -1802,7 +1820,7 @@ namespace KitchenDesigner.Core.UI
                 AddRow(TexRowH, 4f,
                     () => TexturesEligible() && _texturesExpanded && TextureCount() > index,
                     sideDd.GetComponent<RectTransform>(), matDd.GetComponent<RectTransform>(),
-                    editBtn.GetComponent<RectTransform>(), delBtn.GetComponent<RectTransform>());
+                    orderCol, editBtn.GetComponent<RectTransform>(), delBtn.GetComponent<RectTransform>());
             }
 
             _textureSideDropdown = UIFactory.CreateDropdown("CtxTexSide", parent,
@@ -1819,6 +1837,27 @@ namespace KitchenDesigner.Core.UI
                 _textureSideDropdown.GetComponent<RectTransform>(),
                 _textureMaterialDropdown.GetComponent<RectTransform>(),
                 addBtn.GetComponent<RectTransform>());
+        }
+
+        /// <summary>Колонка «выше/ниже» в строке накладки: две половинки одной
+        /// кнопочной клетки. Обе кнопки — дети общего контейнера, потому что
+        /// раскладка панели ставит строке ОДНУ вертикальную координату на rect;
+        /// две самостоятельные кнопки она бы просто положила одну на другую.</summary>
+        private RectTransform BuildTextureOrderColumn(Transform parent, int slot, int index)
+        {
+            var column = UIFactory.CreateRect($"CtxTexOrder{slot}", parent);
+            column.sizeDelta = new Vector2(TexBtnW, TexRowH);
+            column.anchoredPosition = new Vector2(TexOrderX, 0);
+
+            float half = (TexOrderBtnH + TexOrderGap) * 0.5f;
+            var size = new Vector2(TexBtnW, TexOrderBtnH);
+            _texRowUp[slot] = UIFactory.CreateIconButton($"CtxTexUp{slot}", column,
+                IconFactory.CaretUp, new Vector2(0, half), size,
+                () => MoveTextureOverlay(index, -1), iconPad: 4f);
+            _texRowDown[slot] = UIFactory.CreateIconButton($"CtxTexDown{slot}", column,
+                IconFactory.CaretDown, new Vector2(0, -half), size,
+                () => MoveTextureOverlay(index, +1), iconPad: 4f);
+            return column;
         }
 
         /// <summary>Наведение на пункт списка сторон подсвечивает эту грань прямо
@@ -1920,6 +1959,32 @@ namespace KitchenDesigner.Core.UI
             AfterTexturesChanged();
         }
 
+        /// <summary>Переставить накладку в списке на одну позицию. Порядок — это и
+        /// есть порядок наложения: следующая в списке лежит слоем выше (см.
+        /// TextureOverlayRenderer.LayerLiftMM), поэтому «вниз» = «поверх соседа».
+        ///
+        /// Ручки области переезжают вместе со своей накладкой: пользователь
+        /// меняет порядок ровно тогда, когда подгоняет перекрытие, и терять при
+        /// этом ручки — значит заставлять его каждый раз браться за карандаш
+        /// заново. Если правилась соседняя накладка, её индекс тоже сдвинулся.</summary>
+        private void MoveTextureOverlay(int index, int delta)
+        {
+            if (_target == null) return;
+            int other = index + delta;
+            var after = new List<TextureOverlaySpec>(_target.TextureOverlays);
+            if (index < 0 || index >= after.Count || other < 0 || other >= after.Count) return;
+
+            int edited = -1;
+            if (TextureOverlayHandles.IsEditing(_target, index)) edited = other;
+            else if (TextureOverlayHandles.IsEditing(_target, other)) edited = index;
+
+            (after[index], after[other]) = (after[other], after[index]);
+            ApplyTextureOverlays(after);
+
+            if (edited >= 0) TextureOverlayHandles.Begin(_target, edited);
+            AfterTexturesChanged();
+        }
+
         /// <summary>Карандаш: включить/выключить ручки области этой накладки.</summary>
         private void ToggleTextureOverlayEdit(int index)
         {
@@ -1942,6 +2007,7 @@ namespace KitchenDesigner.Core.UI
         /// <summary>Обновить кнопку-раскрывашку и строки накладок.</summary>
         private void RefreshTextureUI()
         {
+            ConfirmDeleteButton.DisarmAll(); // см. RefreshGrooveUI
             if (_textureCountLabel != null)
                 _textureCountLabel.text =
                     $"Текстуры ({TextureCount()})  {(_texturesExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
@@ -1956,6 +2022,8 @@ namespace KitchenDesigner.Core.UI
                 _texRowSide[i]?.RefreshShownValue();
                 _texRowMaterial[i]?.SetValueWithoutNotify(MaterialIndex(overlays[i].MaterialId));
                 _texRowMaterial[i]?.RefreshShownValue();
+                if (_texRowUp[i] != null) _texRowUp[i]!.interactable = i > 0;
+                if (_texRowDown[i] != null) _texRowDown[i]!.interactable = i < overlays.Count - 1;
             }
         }
 

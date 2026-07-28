@@ -95,6 +95,97 @@ public class ContextMenuLayoutTests
         Assert.IsFalse(panel.Find("CtxGrooveAdd").gameObject.activeSelf);
     }
 
+    // ── Секция накладок текстур ───────────────────────────────────────
+
+    private KitchenElement MakeWall(string name)
+    {
+        var go = new GameObject(name);
+        go.AddComponent<MeshFilter>();
+        go.AddComponent<MeshRenderer>();
+        var el = go.AddComponent<KitchenElement>();
+        el.PartName = name;
+        el.DimensionsMM = new Vector3Int(3000, 2500, 100);
+        go.AddComponent<Wall>();
+        _spawned.Add(go);
+        return el;
+    }
+
+    private KitchenElement OpenWallWithTwoOverlays()
+    {
+        var wall = MakeWall("Стена");
+        wall.SetTextureOverlays(new[]
+        {
+            TextureOverlaySpec.FullFace(OverlaySide.A, "oak"),
+            new TextureOverlaySpec(OverlaySide.A, "white", 100, 200, 1200, 900),
+        });
+        _menu!.Open(wall);
+        Panel().Find("CtxTextures").GetComponent<Button>().onClick.Invoke();
+        return wall;
+    }
+
+    private Button OrderButton(int row, bool up) =>
+        Panel().Find($"CtxTexOrder{row}/CtxTex{(up ? "Up" : "Down")}{row}").GetComponent<Button>();
+
+    [Test]
+    public void Wall_TextureOrderArrows_SwapNeighbours_AndAreUndoable()
+    {
+        var wall = OpenWallWithTwoOverlays();
+
+        OrderButton(0, up: false).onClick.Invoke();
+        Assert.AreEqual("white", wall.TextureOverlays[0].MaterialId,
+            "«вниз» опускает накладку по списку — она уходит под соседку");
+        Assert.AreEqual("oak", wall.TextureOverlays[1].MaterialId);
+
+        OrderButton(1, up: true).onClick.Invoke();
+        Assert.AreEqual("oak", wall.TextureOverlays[0].MaterialId, "«вверх» возвращает порядок");
+
+        CommandStack.Undo();
+        Assert.AreEqual("white", wall.TextureOverlays[0].MaterialId,
+            "смена порядка обязана быть отменяемой (правило 2 UI-GUIDELINES)");
+    }
+
+    [Test]
+    public void Wall_TextureOrderArrows_AreDisabledAtListEnds()
+    {
+        OpenWallWithTwoOverlays();
+
+        Assert.IsFalse(OrderButton(0, up: true).interactable, "верхнюю накладку выше не поднять");
+        Assert.IsTrue(OrderButton(0, up: false).interactable);
+        Assert.IsTrue(OrderButton(1, up: true).interactable);
+        Assert.IsFalse(OrderButton(1, up: false).interactable, "нижнюю ниже не опустить");
+    }
+
+    [Test]
+    public void Wall_TextureOrderColumn_FitsOneButtonCell()
+    {
+        OpenWallWithTwoOverlays();
+
+        var column = Panel().Find("CtxTexOrder0").GetComponent<RectTransform>();
+        var edit = Panel().Find("CtxTexEdit0").GetComponent<RectTransform>();
+        Assert.AreEqual(edit.sizeDelta, column.sizeDelta,
+            "колонка стрелок занимает ровно одну кнопочную клетку");
+
+        var up = OrderButton(0, up: true).GetComponent<RectTransform>();
+        var down = OrderButton(0, up: false).GetComponent<RectTransform>();
+        Assert.AreEqual(column.sizeDelta.x, up.sizeDelta.x);
+        Assert.Greater(up.anchoredPosition.y, down.anchoredPosition.y, "↑ сверху, ↓ снизу");
+        Assert.LessOrEqual(up.sizeDelta.y * 2f, column.sizeDelta.y,
+            "обе половинки помещаются в клетку по высоте");
+    }
+
+    [Test]
+    public void Wall_TextureDelete_NeedsTwoClicks()
+    {
+        var wall = OpenWallWithTwoOverlays();
+        var del = Panel().Find("CtxTexDel0").GetComponent<Button>();
+
+        del.onClick.Invoke();
+        Assert.AreEqual(2, wall.TextureOverlays.Count, "первый клик спрашивает");
+        del.onClick.Invoke();
+        Assert.AreEqual(1, wall.TextureOverlays.Count, "второй удаляет");
+        Assert.AreEqual("white", wall.TextureOverlays[0].MaterialId);
+    }
+
     // ── Секция кромок ─────────────────────────────────────────────────
 
     private KitchenElement MakeBar(string name)
@@ -227,11 +318,44 @@ public class ContextMenuLayoutTests
         var panel = Panel();
         Assert.IsTrue(panel.Find("CtxGrooveSide0").gameObject.activeSelf);
 
-        panel.Find("CtxGrooveDel0").GetComponent<Button>().onClick.Invoke();
+        var del = panel.Find("CtxGrooveDel0").GetComponent<Button>();
+        del.onClick.Invoke();
+        Assert.AreEqual(1, board.Grooves.Count,
+            "первый клик только взводит кнопку (правило 3 UI-GUIDELINES)");
+        del.onClick.Invoke();
 
         Assert.AreEqual(0, board.Grooves.Count);
         Assert.IsFalse(panel.Find("CtxGrooveSide0").gameObject.activeSelf);
         Assert.AreEqual("Пазы (0)  ▼", GroovesButtonText(panel));
+    }
+
+    [Test]
+    public void Board_DeleteButton_ArmsThenConfirms_AndShowsGlyph()
+    {
+        var board = MakeBoard("B1");
+        board.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Top));
+        _menu!.Open(board);
+        ClickGroovesHeader();
+
+        var panel = Panel();
+        var del = panel.Find("CtxGrooveDel0").GetComponent<Button>();
+        var label = del.GetComponentInChildren<TMP_Text>(true);
+        var confirm = del.GetComponent<ConfirmDeleteButton>();
+        Assert.NotNull(confirm, "у кнопки удаления обязано быть подтверждение");
+        Assert.AreEqual(UIStyle.GlyphClose, label.text);
+
+        del.onClick.Invoke();
+        Assert.IsTrue(confirm!.Armed);
+        Assert.AreEqual(UIStyle.GlyphConfirm, label.text,
+            "взведённая кнопка спрашивает, а не удаляет молча");
+        Assert.AreEqual(1, board.Grooves.Count);
+
+        // Клик по любому другому контролу снимает взвод.
+        confirm.Disarm();
+        Assert.AreEqual(UIStyle.GlyphClose, label.text);
+        del.onClick.Invoke();
+        Assert.AreEqual(1, board.Grooves.Count,
+            "после сброса счёт кликов начинается заново");
     }
 
     [Test]

@@ -140,7 +140,13 @@ namespace KitchenDesigner.Core
         private List<TextureOverlaySpec> _before = new List<TextureOverlaySpec>();
         private float _grabU, _grabV;         // точка захвата в координатах грани, мм
         private KitchenElement.Face _face;
+        private int _faceIndex;
         private Vector2Int _faceMM;
+
+        /// <summary>Рёбра соседних накладок вдоль оси перетаскивания, мм. Набор
+        /// снимается ОДИН раз в начале драга: соседи за время тяги не меняются, а
+        /// пересчёт на каждый кадр заодно ловил бы саму двигаемую область.</summary>
+        private List<int> _snapEdges = new List<int>();
 
         private void Awake() => _instance = this;
 
@@ -214,6 +220,8 @@ namespace KitchenDesigner.Core
             // при первом же перетаскивании превращается в конкретный прямоугольник.
             _rectBefore = el.TextureOverlays[_index].Resolve(_faceMM);
             _before = new List<TextureOverlaySpec>(el.TextureOverlays);
+            _snapEdges = TextureOverlaySnap.NeighbourEdges(
+                el.TextureOverlays, _index, _faceIndex, _faceMM, edge <= 1);
             _dragging = true;
         }
 
@@ -223,9 +231,26 @@ namespace KitchenDesigner.Core
             if (el == null || !StillValid()) { FinishDrag(); return; }
             if (!PointOnFace(out float u, out float v)) return;
 
-            var rect = ResizeHandleManager.Mode == ResizeHandleManager.HandleMode.Move
-                ? MoveRect(_rectBefore, _dragEdge, u - _grabU, v - _grabV, _faceMM)
-                : StretchRect(_rectBefore, _dragEdge, u, v, _faceMM);
+            bool alongU = _dragEdge <= 1;
+            float threshold = TextureOverlaySnap.ThresholdMM();
+            RectInt rect;
+
+            if (ResizeHandleManager.Mode == ResizeHandleManager.HandleMode.Move)
+            {
+                rect = MoveRect(_rectBefore, _dragEdge, u - _grabU, v - _grabV, _faceMM);
+                rect = TextureOverlaySnap.SnapMoved(rect, alongU, _snapEdges, threshold, _faceMM);
+            }
+            else
+            {
+                // Прилипает ТОЧКА ТЯГИ, а не готовый прямоугольник: края грани и
+                // минимальный размер всё равно наложит StretchRect, и порядок
+                // «сначала снэп, потом ограничения» не даёт снэпу их обойти.
+                if (TextureOverlaySnap.Nearest(_snapEdges, alongU ? u : v, threshold, out int snapped))
+                {
+                    if (alongU) u = snapped; else v = snapped;
+                }
+                rect = StretchRect(_rectBefore, _dragEdge, u, v, _faceMM);
+            }
 
             ApplyRect(el, rect);
         }
@@ -300,10 +325,10 @@ namespace KitchenDesigner.Core
 
         private void CaptureFace(KitchenElement el)
         {
-            int faceIndex = (int)el.TextureOverlays[_index].side;
             var faces = el.GetFaces();
-            _face = faces[Mathf.Clamp(faceIndex, 0, faces.Length - 1)];
-            _faceMM = TextureOverlayGeometry.FaceSizeMM(el.DimensionsMM, faceIndex);
+            _faceIndex = Mathf.Clamp((int)el.TextureOverlays[_index].side, 0, faces.Length - 1);
+            _face = faces[_faceIndex];
+            _faceMM = TextureOverlayGeometry.FaceSizeMM(el.DimensionsMM, _faceIndex);
         }
 
         /// <summary>Точка под курсором в координатах грани (мм от её левого нижнего

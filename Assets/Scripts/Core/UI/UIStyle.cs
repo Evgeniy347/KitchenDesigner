@@ -78,6 +78,10 @@ namespace KitchenDesigner.Core.UI
         // LiberationSans, и глифы вне WGL4 (✓, ✕, ▸) в нём отсутствуют.
         /// <summary>Закрыть окно/панель. Только для этого.</summary>
         public const string GlyphClose = "×";
+        /// <summary>Взведённое удаление: «×» строки списка после первого клика
+        /// ждёт подтверждения вторым (правило 3). Только ASCII — глиф ставится
+        /// вместо «×» в узкой кнопке и обязан быть в атласе при любом шрифте.</summary>
+        public const string GlyphConfirm = "?!";
         /// <summary>Свёрнуто (раскрывашка).</summary>
         public const string GlyphCollapsed = "►";
         /// <summary>Развёрнуто (раскрывашка).</summary>

@@ -168,6 +168,110 @@ public class TextureOverlayTests
         Assert.AreEqual(800, pushed.width, "перенос не меняет размер области");
     }
 
+    // ── Прилипание накладок друг к другу ───────────────────────────────
+
+    /// <summary>Две накладки на грани A: соседка занимает 1000…1800 по U.</summary>
+    private static List<TextureOverlaySpec> TwoOnFaceA() => new List<TextureOverlaySpec>
+    {
+        new TextureOverlaySpec(OverlaySide.A, "oak", 100, 200, 800, 600),
+        new TextureOverlaySpec(OverlaySide.A, "white", 1000, 400, 800, 500),
+    };
+
+    [Test]
+    public void NeighbourEdges_TakesOnlyOtherOverlaysOfTheSameFace()
+    {
+        var face = new Vector2Int(3000, 2500);
+        var overlays = TwoOnFaceA();
+        overlays.Add(new TextureOverlaySpec(OverlaySide.B, "oak", 0, 0, 500, 500));
+
+        var u = TextureOverlaySnap.NeighbourEdges(overlays, 0, (int)OverlaySide.A, face, alongU: true);
+        CollectionAssert.AreEquivalent(new[] { 1000, 1800 }, u,
+            "своя область и накладка чужой грани в кандидаты не идут");
+
+        var v = TextureOverlaySnap.NeighbourEdges(overlays, 0, (int)OverlaySide.A, face, alongU: false);
+        CollectionAssert.AreEquivalent(new[] { 400, 900 }, v);
+    }
+
+    [Test]
+    public void NeighbourEdges_IncludeAllSideOverlay()
+    {
+        var face = new Vector2Int(3000, 2500);
+        var overlays = new List<TextureOverlaySpec>
+        {
+            new TextureOverlaySpec(OverlaySide.A, "oak", 100, 200, 800, 600),
+            new TextureOverlaySpec(OverlaySide.All, "white", 200, 0, 700, 500),
+        };
+
+        var u = TextureOverlaySnap.NeighbourEdges(overlays, 0, (int)OverlaySide.A, face, alongU: true);
+        CollectionAssert.AreEquivalent(new[] { 200, 900 }, u,
+            "«(все)» лежит и на этой грани — прилипать к ней можно");
+    }
+
+    [Test]
+    public void Stretch_SnapsGrabbedEdgeToNeighbour()
+    {
+        var face = new Vector2Int(3000, 2500);
+        var edges = TextureOverlaySnap.NeighbourEdges(TwoOnFaceA(), 0, (int)OverlaySide.A, face, true);
+
+        // Тянем правую границу почти до левого края соседки (1000).
+        Assert.IsTrue(TextureOverlaySnap.Nearest(edges, 985f, 50f, out int snapped));
+        Assert.AreEqual(1000, snapped);
+        var rect = TextureOverlayHandles.StretchRect(
+            new RectInt(100, 200, 800, 600), 1, snapped, 0f, face);
+        Assert.AreEqual(1000, rect.xMax, "область встала встык к соседке");
+    }
+
+    [Test]
+    public void Snap_IgnoresEdgesBeyondThreshold_AndWhenDisabled()
+    {
+        var face = new Vector2Int(3000, 2500);
+        var edges = TextureOverlaySnap.NeighbourEdges(TwoOnFaceA(), 0, (int)OverlaySide.A, face, true);
+
+        Assert.IsFalse(TextureOverlaySnap.Nearest(edges, 900f, 50f, out _),
+            "100 мм до соседки при пороге 50 — не прилипаем");
+        Assert.IsFalse(TextureOverlaySnap.Nearest(edges, 999f, 0f, out _),
+            "нулевой порог = привязка выключена");
+        Assert.IsTrue(TextureOverlaySnap.Nearest(edges, 950f, 50f, out int onBorder),
+            "ровно на пороге снэп срабатывает (как в ResizeSnap)");
+        Assert.AreEqual(1000, onBorder);
+    }
+
+    [Test]
+    public void Snap_PicksNearestEdge()
+    {
+        var edges = new List<int> { 1000, 1030 };
+        Assert.IsTrue(TextureOverlaySnap.Nearest(edges, 1020f, 50f, out int snapped));
+        Assert.AreEqual(1030, snapped);
+    }
+
+    [Test]
+    public void Move_SnapsWholeAreaByEitherEdge_AndKeepsSize()
+    {
+        var face = new Vector2Int(3000, 2500);
+        var edges = TextureOverlaySnap.NeighbourEdges(TwoOnFaceA(), 0, (int)OverlaySide.A, face, true);
+
+        // Область 800 мм подъехала правым краем к 985 — прилипает к 1000.
+        var moved = TextureOverlaySnap.SnapMoved(new RectInt(185, 200, 800, 600), true, edges, 50f, face);
+        Assert.AreEqual(new RectInt(200, 200, 800, 600), moved);
+        Assert.AreEqual(800, moved.width, "перенос со снэпом не меняет размер");
+
+        // Левым краем к правому краю соседки (1800).
+        var right = TextureOverlaySnap.SnapMoved(new RectInt(1780, 200, 800, 600), true, edges, 50f, face);
+        Assert.AreEqual(1800, right.xMin);
+    }
+
+    [Test]
+    public void Move_Snap_DoesNotPushAreaOffTheFace()
+    {
+        var face = new Vector2Int(2000, 2500);
+        var edges = new List<int> { 1210 };
+
+        // Прилипание левым краем к 1210 увело бы правый край за грань (2010).
+        var moved = TextureOverlaySnap.SnapMoved(new RectInt(1180, 0, 800, 600), true, edges, 50f, face);
+        Assert.AreEqual(1200, moved.xMin, "упор в край грани сильнее снэпа");
+        Assert.AreEqual(2000, moved.xMax);
+    }
+
     // ── Меш накладки ───────────────────────────────────────────────────
 
     [Test]

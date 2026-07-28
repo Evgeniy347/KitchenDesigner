@@ -15,6 +15,7 @@ namespace KitchenDesigner.Core.UI
         private static readonly Color Clear = new Color(0, 0, 0, 0);
 
         private static Sprite? _gear, _floppy, _floppyPlus, _folder, _undo, _redo, _pin, _warning, _pencil;
+        private static Sprite? _caretUp, _caretDown;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -25,6 +26,8 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Pin => _pin ??= BuildPin();
         public static Sprite Warning => _warning ??= BuildWarning();
         public static Sprite Pencil => _pencil ??= BuildPencil();
+        public static Sprite CaretUp => _caretUp ??= BuildCaret(true);
+        public static Sprite CaretDown => _caretDown ??= BuildCaret(false);
 
         // --- Иконки ---
 
@@ -114,6 +117,26 @@ namespace KitchenDesigner.Core.UI
             Line(px, 41, 41, 47, 47, 5, Ink2);  // обойма у обуха
             Line(px, 15, 15, 19, 19, 3, Ink2);  // острие
             Disc(px, 14, 14, 3, Ink);           // грифель
+            return Finish(px);
+        }
+
+        // Сплошной треугольник вершиной вверх/вниз — «поднять/опустить в списке».
+        // Именно спрайт, а не глифы «↑»/«↓»: рантайм-атлас TMP собирается из
+        // LiberationSans по WGL4, и в узкой кнопке высотой 13 px стрелка-символ
+        // ещё и упиралась бы в базовую линию (см. BuildPencil).
+        private static Sprite BuildCaret(bool up)
+        {
+            var px = NewCanvas();
+            const int halfW = 26;
+            int baseY = up ? 12 : 52;
+            int step = up ? 1 : -1;
+            int h = 40;
+            for (int i = 0; i <= h; i++)
+            {
+                int y = baseY + i * step;
+                int half = Mathf.RoundToInt(halfW * (1f - i / (float)h));
+                Rect(px, 32 - half, y, 32 + half + 1, y + 1, Ink);
+            }
             return Finish(px);
         }
 

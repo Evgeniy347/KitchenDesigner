@@ -194,6 +194,18 @@ namespace KitchenDesigner.Core.UI
             return button;
         }
 
+        /// <summary>Красная кнопка удаления с подтверждением в два клика
+        /// (правило 3): первый клик меняет глиф на «?!», второй удаляет. Любой
+        /// клик мимо возвращает кнопку в исходный вид — см.
+        /// <see cref="ConfirmDeleteButton"/>.</summary>
+        public static Button CreateConfirmDeleteButton(string name, Transform parent, string text,
+            Vector2 anchoredPos, Vector2 size, System.Action onConfirm)
+        {
+            var button = CreateDangerButton(name, parent, text, anchoredPos, size, null);
+            ConfirmDeleteButton.Attach(button, onConfirm);
+            return button;
+        }
+
         /// <summary>Стандартная кнопка закрытия окна: «×» 32×32 в правом верхнем
         /// углу с отступом 8 px (правило 7 UI-GUIDELINES).</summary>
         public static Button CreateCloseButton(Transform windowPanel, System.Action onClose)
@@ -238,8 +250,11 @@ namespace KitchenDesigner.Core.UI
             return rect;
         }
 
-        /// <summary>Кнопка с иконкой-спрайтом по центру вместо текста.</summary>
-        public static Button CreateIconButton(string name, Transform parent, Sprite icon, Vector2 anchoredPos, Vector2 size, System.Action onClick)
+        /// <summary>Кнопка с иконкой-спрайтом по центру вместо текста.
+        /// <paramref name="iconPad"/> — суммарный отступ иконки от краёв: у низких
+        /// кнопок (стрелки порядка в строке списка) стандартные 12 px не оставили
+        /// бы от иконки ничего.</summary>
+        public static Button CreateIconButton(string name, Transform parent, Sprite icon, Vector2 anchoredPos, Vector2 size, System.Action onClick, float iconPad = 12f)
         {
             var rect = CreateRect(name, parent);
             rect.sizeDelta = size;
@@ -255,7 +270,7 @@ namespace KitchenDesigner.Core.UI
 
             var iconRect = CreateRect(name + "_Icon", rect);
             iconRect.anchorMin = iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-            float s = Mathf.Min(size.x, size.y) - 12f;
+            float s = Mathf.Max(4f, Mathf.Min(size.x, size.y) - iconPad);
             iconRect.sizeDelta = new Vector2(s, s);
             iconRect.anchoredPosition = Vector2.zero;
 
