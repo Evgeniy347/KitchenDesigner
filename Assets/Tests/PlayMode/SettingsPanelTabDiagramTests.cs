@@ -121,13 +121,22 @@ public class SettingsPanelTabDiagramTests
         yield return CaptureAndSave("settings_tab_project.png");
     }
 
-    // Четыре вкладки: «Проект» (0), «Управление» (1), «Фото режим» (2),
-    // «О программе» (3).
+    // Пять вкладок: «Проект» (0), «Помещение» (1), «Управление» (2),
+    // «Фото режим» (3), «О программе» (4).
+    [UnityTest]
+    public IEnumerator TabRoom_SavesPng()
+    {
+        BuildPanel();
+        SwitchToTab(1);
+        yield return null;
+        yield return CaptureAndSave("settings_tab_room.png");
+    }
+
     [UnityTest]
     public IEnumerator TabControl_SavesPng()
     {
         BuildPanel();
-        SwitchToTab(1);
+        SwitchToTab(2);
         yield return null;
         yield return CaptureAndSave("settings_tab_control.png");
     }
@@ -136,7 +145,7 @@ public class SettingsPanelTabDiagramTests
     public IEnumerator TabPhoto_SavesPng()
     {
         BuildPanel();
-        SwitchToTab(2);
+        SwitchToTab(3);
         yield return null;
         yield return CaptureAndSave("settings_tab_photo.png");
     }
@@ -145,7 +154,7 @@ public class SettingsPanelTabDiagramTests
     public IEnumerator TabAbout_SavesPng()
     {
         BuildPanel();
-        SwitchToTab(3);
+        SwitchToTab(4);
         yield return null;
         yield return CaptureAndSave("settings_tab_about.png");
     }

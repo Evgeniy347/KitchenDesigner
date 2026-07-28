@@ -66,6 +66,7 @@ namespace KitchenDesigner.Core.MCP
                 objectsVisible = s.ObjectsVisible,
                 edgeOutline = s.EdgeOutline,
                 hideLightSources = s.HideLightSources,
+                edgePartialThresholdPct = s.EdgePartialThresholdPct,
                 mouseSensitivity = s.MouseSensitivity,
                 wasdSpeed = s.WasdSpeed,
                 arrowSpeed = s.ArrowSpeed

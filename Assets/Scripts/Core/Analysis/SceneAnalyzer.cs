@@ -49,6 +49,12 @@ namespace KitchenDesigner.Core.Analysis
         // полностью открытый — норма (кромка есть); ошибка ровно посередине.
         private static void CollectEdgeCover(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
+            // Планка или царга задевает торец на пару процентов — это нормальная
+            // конструкция, а не наезд на кромку. Порог настраивается («Нижний
+            // порог кромки»), 0 — сообщать о любом перекрытии.
+            var settings = KitchenSettings.Instance;
+            float minRatio = (settings != null ? settings.EdgePartialThresholdPct : 0) / 100f;
+
             foreach (var e in all)
             {
                 if (e == null || !e.EdgeBandingEnabled) continue;
@@ -68,6 +74,7 @@ namespace KitchenDesigner.Core.Analysis
                     // больше не спорит.
                     if (e.IsEdgeManual(side)) continue;
                     if (!coverage.IsPartial(side)) continue;
+                    if (coverage.Ratio(side) < minRatio) continue;
                     sides.Add($"{side} {coverage.Ratio(side) * 100f:F0}%");
 
                     var coverer = EdgeBanding.DominantCoverer(e, all, side, out float area);

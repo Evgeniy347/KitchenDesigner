@@ -9,22 +9,27 @@
     {
       "type": "Button",
       "text": "Проект",
-      "position": [-180, 356]
+      "position": [-192, 356]
+    },
+    {
+      "type": "Button",
+      "text": "Помещение",
+      "position": [-96, 356]
     },
     {
       "type": "Button",
       "text": "Управление",
-      "position": [-60, 356]
+      "position": [0, 356]
     },
     {
       "type": "Button",
       "text": "Фото режим",
-      "position": [60, 356]
+      "position": [96, 356]
     },
     {
       "type": "Button",
       "text": "О программе",
-      "position": [180, 356]
+      "position": [192, 356]
     },
     {
       "type": "Label",

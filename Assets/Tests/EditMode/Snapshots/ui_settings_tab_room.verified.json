@@ -33,33 +33,63 @@
     },
     {
       "type": "Label",
-      "text": "Скорость WASD",
+      "text": "Освещение",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Скорость ←→↑↓",
+      "text": "Стены",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Чувствительность мыши",
-      "position": [-90, 0]
+      "text": "Контур",
+      "position": [-70, 0]
     },
     {
       "type": "Label",
-      "text": "1.0×",
-      "position": [220, 0]
+      "text": "Опускать ближние стены",
+      "position": [-70, 0]
     },
     {
       "type": "Label",
-      "text": "1.0×",
-      "position": [220, 0]
+      "text": "Скрыть источники света",
+      "position": [-70, 0]
     },
     {
       "type": "Label",
-      "text": "1.0×",
-      "position": [220, 0]
+      "text": "Скрывать окна и двери",
+      "position": [-50, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Контур стен",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Опускать ближние стены",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Скрывать окна и двери",
+      "isOn": false,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Скрыть источники света",
+      "isOn": false,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Стены",
+      "isOn": true,
+      "position": [224, 0]
     },
     {
       "type": "Button",

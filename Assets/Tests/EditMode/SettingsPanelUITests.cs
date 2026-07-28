@@ -74,9 +74,9 @@ public class SettingsPanelUITests
     // ── Tabs ────────────────────────────────────────────────
 
     [Test]
-    public void FourTabButtons_Exist()
+    public void FiveTabButtons_Exist()
     {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 5; i++)
         {
             var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
             Assert.IsNotNull(tab, $"Tab_{i} should exist");
@@ -86,7 +86,7 @@ public class SettingsPanelUITests
     [Test]
     public void TabButtons_HaveCorrectLabels()
     {
-        string[] expected = { "Проект", "Управление", "Фото режим", "О программе" };
+        string[] expected = { "Проект", "Помещение", "Управление", "Фото режим", "О программе" };
         for (int i = 0; i < expected.Length; i++)
         {
             var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
@@ -100,6 +100,7 @@ public class SettingsPanelUITests
     public void TabPages_Exist()
     {
         Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Project"), "Tab_Project page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Room"), "Tab_Room page should exist");
         Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Control"), "Tab_Control page should exist");
         Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Photo"), "Tab_Photo page should exist");
         Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_About"), "Tab_About page should exist");
@@ -116,8 +117,9 @@ public class SettingsPanelUITests
         Assert.IsFalse(photo.activeSelf, "Photo tab should be hidden by default");
         Assert.IsFalse(about.activeSelf, "About tab should be hidden by default");
 
-        // Tab_1 → «Управление», Tab_2 → «Фото режим», Tab_3 → «О программе».
-        _canvas!.transform.Find("SettingsPanel/Tab_3").GetComponent<Button>().onClick.Invoke();
+        // Tab_1 → «Помещение», Tab_2 → «Управление», Tab_3 → «Фото режим»,
+        // Tab_4 → «О программе».
+        _canvas!.transform.Find("SettingsPanel/Tab_4").GetComponent<Button>().onClick.Invoke();
         Assert.IsFalse(project.activeSelf, "Project should hide after switching to About");
         Assert.IsTrue(about.activeSelf, "About should show after click");
         Assert.IsFalse(photo.activeSelf, "Photo should stay hidden");
@@ -223,8 +225,6 @@ public class SettingsPanelUITests
         {
             "Сетка", "Привязка к деталям", "Блокировать недопустимые изменения", "Автосохранение",
             "Пространственная сетка",
-            "Стены", "Контур стен", "Опускать ближние стены", "Скрывать окна и двери",
-            "Скрыть источники света",
             "Объекты", "Контур объектов",
             "Свободное панорамирование"
         };
@@ -244,6 +244,51 @@ public class SettingsPanelUITests
         }
     }
 
+    /// <summary>Стены и освещение переехали на отдельную вкладку «Помещение» —
+    /// они описывают помещение, а не правила работы с деталями.</summary>
+    [Test]
+    public void RoomTab_HasWallAndLightRows()
+    {
+        string[] expectedToggles =
+        {
+            "Стены", "Контур стен", "Опускать ближние стены", "Скрывать окна и двери",
+            "Скрыть источники света"
+        };
+
+        var room = _canvas!.transform.Find("SettingsPanel/Tab_Room");
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+
+        foreach (var label in expectedToggles)
+        {
+            Assert.IsNotNull(room.Find($"RowTgl_{label}"), $"'{label}' должен быть на вкладке «Помещение»");
+            Assert.IsNull(project.Find($"RowTgl_{label}"), $"'{label}' больше не на вкладке «Проект»");
+        }
+    }
+
+    /// <summary>Нижний порог кромки: ниже него наезд соседа на торец не считается
+    /// ошибкой EDG-01.</summary>
+    [Test]
+    public void ProjectTab_HasEdgeThresholdField()
+    {
+        var s = KitchenSettings.Instance;
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+
+        var row = project.Find("RowFld_Нижний порог кромки");
+        Assert.IsNotNull(row, "строка порога должна быть на вкладке «Проект»");
+
+        var field = row.GetComponentInChildren<TMP_InputField>();
+        Assert.IsNotNull(field);
+        Assert.AreEqual(s.EdgePartialThresholdPct.ToString(), field.text);
+
+        field.text = "12";
+        field.onEndEdit.Invoke("12");
+        Assert.AreEqual(12, s.EdgePartialThresholdPct);
+
+        field.text = "5";
+        field.onEndEdit.Invoke("5");
+        Assert.AreEqual(KitchenSettings.EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT, s.EdgePartialThresholdPct);
+    }
+
     [Test]
     public void ToggleRows_HaveCorrectInitialValues()
     {
@@ -257,14 +302,16 @@ public class SettingsPanelUITests
         AssertToggleValue(project, "Блокировать недопустимые изменения", s.BlockOnViolation);
         AssertToggleValue(project, "Автосохранение", s.AutoSave);
         AssertToggleValue(project, "Пространственная сетка", s.SpatialGrid);
-        AssertToggleValue(project, "Стены", s.WallsEnabled);
-        AssertToggleValue(project, "Контур стен", s.WallOutline);
-        AssertToggleValue(project, "Опускать ближние стены", s.LowerNearWalls);
-        AssertToggleValue(project, "Скрывать окна и двери", s.HideOpeningsOnLoweredWalls);
-        AssertToggleValue(project, "Скрыть источники света", s.HideLightSources);
         AssertToggleValue(project, "Объекты", s.ObjectsVisible);
         AssertToggleValue(project, "Контур объектов", s.EdgeOutline);
         AssertToggleValue(project, "Свободное панорамирование", s.CameraPanFree);
+
+        var room = _canvas!.transform.Find("SettingsPanel/Tab_Room");
+        AssertToggleValue(room, "Стены", s.WallsEnabled);
+        AssertToggleValue(room, "Контур стен", s.WallOutline);
+        AssertToggleValue(room, "Опускать ближние стены", s.LowerNearWalls);
+        AssertToggleValue(room, "Скрывать окна и двери", s.HideOpeningsOnLoweredWalls);
+        AssertToggleValue(room, "Скрыть источники света", s.HideLightSources);
     }
 
     // ── Вложенность подопций ────────────────────────────────
@@ -272,12 +319,12 @@ public class SettingsPanelUITests
     [Test]
     public void SubOptions_AreIndented_UnderTheirParent()
     {
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var room = _canvas!.transform.Find("SettingsPanel/Tab_Room");
 
-        float wallsX = LabelX(project, "Стены");
-        float outlineX = LabelX(project, "Контур стен");
-        float lowerX = LabelX(project, "Опускать ближние стены");
-        float hideX = LabelX(project, "Скрывать окна и двери");
+        float wallsX = LabelX(room, "Стены");
+        float outlineX = LabelX(room, "Контур стен");
+        float lowerX = LabelX(room, "Опускать ближние стены");
+        float hideX = LabelX(room, "Скрывать окна и двери");
 
         Assert.Greater(outlineX, wallsX, "«Контур» должен быть с отступом от «Стены»");
         Assert.AreEqual(outlineX, lowerX, 0.01f, "оба на первом уровне вложенности");
@@ -290,15 +337,15 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         bool prev = s.WallsEnabled;
 
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
-        var walls = project.Find("RowTgl_Стены/Tgl_Стены").GetComponent<Toggle>();
+        var room = _canvas!.transform.Find("SettingsPanel/Tab_Room");
+        var walls = room.Find("RowTgl_Стены/Tgl_Стены").GetComponent<Toggle>();
 
         walls.isOn = false;
-        Assert.IsFalse(ToggleOf(project, "Контур стен").interactable);
-        Assert.IsFalse(ToggleOf(project, "Опускать ближние стены").interactable);
+        Assert.IsFalse(ToggleOf(room, "Контур стен").interactable);
+        Assert.IsFalse(ToggleOf(room, "Опускать ближние стены").interactable);
 
         walls.isOn = true;
-        Assert.IsTrue(ToggleOf(project, "Контур стен").interactable);
+        Assert.IsTrue(ToggleOf(room, "Контур стен").interactable);
 
         s.WallsEnabled = prev;
     }
@@ -309,14 +356,14 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         bool prev = s.LowerNearWalls;
 
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
-        var lower = project.Find("RowTgl_Опускать ближние стены/Tgl_Опускать ближние стены").GetComponent<Toggle>();
+        var room = _canvas!.transform.Find("SettingsPanel/Tab_Room");
+        var lower = room.Find("RowTgl_Опускать ближние стены/Tgl_Опускать ближние стены").GetComponent<Toggle>();
 
         lower.isOn = false;
-        Assert.IsFalse(ToggleOf(project, "Скрывать окна и двери").interactable);
+        Assert.IsFalse(ToggleOf(room, "Скрывать окна и двери").interactable);
 
         lower.isOn = true;
-        Assert.IsTrue(ToggleOf(project, "Скрывать окна и двери").interactable);
+        Assert.IsTrue(ToggleOf(room, "Скрывать окна и двери").interactable);
 
         s.LowerNearWalls = prev;
     }
@@ -324,16 +371,16 @@ public class SettingsPanelUITests
     [Test]
     public void LowerNearWalls_Disabled_InRoomMode()
     {
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
-        Assert.IsTrue(ToggleOf(project, "Опускать ближние стены").interactable,
+        var room = _canvas!.transform.Find("SettingsPanel/Tab_Room");
+        Assert.IsTrue(ToggleOf(room, "Опускать ближние стены").interactable,
             "в обычном режиме тумблер активен");
 
         EditModeManager.SetMode(EditMode.Room);
-        Assert.IsFalse(ToggleOf(project, "Опускать ближние стены").interactable,
+        Assert.IsFalse(ToggleOf(room, "Опускать ближние стены").interactable,
             "в режиме «помещение» опускание запрещено");
 
         EditModeManager.SetMode(EditMode.Normal);
-        Assert.IsTrue(ToggleOf(project, "Опускать ближние стены").interactable);
+        Assert.IsTrue(ToggleOf(room, "Опускать ближние стены").interactable);
     }
 
     [Test]

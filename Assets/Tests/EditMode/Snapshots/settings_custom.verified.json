@@ -16,6 +16,7 @@
     "objectsVisible": false,
     "hideLightSources": true,
     "cameraPanFree": false,
+    "edgePartialThresholdPct": 5,
     "mouseSensitivity": 2.0,
     "wasdSpeed": 0.5,
     "arrowSpeed": 1.5,

@@ -211,6 +211,7 @@
         "hideOpeningsOnLoweredWalls": false,
         "objectsVisible": true,
         "hideLightSources": false,
+        "edgePartialThresholdPct": 5,
         "mouseSensitivity": 1.0,
         "wasdSpeed": 1.0,
         "arrowSpeed": 1.0,

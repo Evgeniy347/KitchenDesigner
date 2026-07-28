@@ -48,6 +48,9 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _objectsVisible = true;
         [SerializeField] private bool _hideLightSources = false;
         [SerializeField] private bool _cameraPanFree = false;
+        // Ниже этого процента перекрытие торца соседом считается технологическим
+        // (планка, царга, наезд на пару миллиметров) и ошибкой EDG-01 не является.
+        [SerializeField] private int _edgePartialThresholdPct = EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT;
 
         // ── Управление ─────────────────────────────────────
         // Множители к базовым скоростям камеры (1 = как было до настройки).
@@ -175,6 +178,19 @@ namespace KitchenDesigner.Core
             set => _hideLightSources = value;
         }
 
+        /// <summary>Нижний порог «частичного перекрытия» торца, %. Кромку клеят на
+        /// весь торец, поэтому наехавший сосед — ошибка (EDG-01); но планка или
+        /// царга, задевающая торец на пару процентов, — нормальная конструкция, и
+        /// без порога такой шум забивал отчёт. 0 — сообщать о любом наезде.</summary>
+        public const int EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT = 5;
+        public const int EDGE_PARTIAL_THRESHOLD_MAX_PCT = 50;
+
+        public int EdgePartialThresholdPct
+        {
+            get => _edgePartialThresholdPct;
+            set => _edgePartialThresholdPct = Mathf.Clamp(value, 0, EDGE_PARTIAL_THRESHOLD_MAX_PCT);
+        }
+
         public bool CameraPanFree
         {
             get => _cameraPanFree;
@@ -287,6 +303,7 @@ namespace KitchenDesigner.Core
             _objectsVisible = true;
             _hideLightSources = false;
             _cameraPanFree = false;
+            _edgePartialThresholdPct = EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT;
             _mouseSensitivity = 1f;
             _wasdSpeed = 1f;
             _arrowSpeed = 1f;
@@ -323,6 +340,7 @@ namespace KitchenDesigner.Core
                 objectsVisible = _objectsVisible,
                 hideLightSources = _hideLightSources,
                 cameraPanFree = _cameraPanFree,
+                edgePartialThresholdPct = _edgePartialThresholdPct,
                 mouseSensitivity = _mouseSensitivity,
                 wasdSpeed = _wasdSpeed,
                 arrowSpeed = _arrowSpeed,
@@ -359,6 +377,7 @@ namespace KitchenDesigner.Core
             _objectsVisible = data.objectsVisible;
             _hideLightSources = data.hideLightSources;
             _cameraPanFree = data.cameraPanFree;
+            _edgePartialThresholdPct = Mathf.Clamp(data.edgePartialThresholdPct, 0, EDGE_PARTIAL_THRESHOLD_MAX_PCT);
             _mouseSensitivity = Mathf.Clamp(data.mouseSensitivity, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
             _wasdSpeed = Mathf.Clamp(data.wasdSpeed, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
             _arrowSpeed = Mathf.Clamp(data.arrowSpeed, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
@@ -396,6 +415,7 @@ namespace KitchenDesigner.Core
                 objectsVisible = _objectsVisible,
                 hideLightSources = _hideLightSources,
                 cameraPanFree = _cameraPanFree,
+                edgePartialThresholdPct = _edgePartialThresholdPct,
                 mouseSensitivity = _mouseSensitivity,
                 wasdSpeed = _wasdSpeed,
                 arrowSpeed = _arrowSpeed,
@@ -433,6 +453,7 @@ namespace KitchenDesigner.Core
             public bool objectsVisible;
             public bool hideLightSources;
             public bool cameraPanFree;
+            public int edgePartialThresholdPct;
             public float mouseSensitivity;
             public float wasdSpeed;
             public float arrowSpeed;

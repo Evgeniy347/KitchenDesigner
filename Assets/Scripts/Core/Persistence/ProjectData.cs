@@ -130,6 +130,9 @@ namespace KitchenDesigner.Core
         public bool hideOpeningsOnLoweredWalls = false;
         public bool objectsVisible = true;
         public bool hideLightSources = false;
+        // Нижний порог EDG-01, %: в старых проектах поля нет → инициализатор
+        // даёт то же значение, что и «из коробки».
+        public int edgePartialThresholdPct = KitchenSettings.EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT;
         public float mouseSensitivity = 1f;
         public float wasdSpeed = 1f;
         public float arrowSpeed = 1f;

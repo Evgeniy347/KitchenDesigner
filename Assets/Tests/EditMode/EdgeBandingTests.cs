@@ -338,6 +338,41 @@ public class EdgeBandingTests
         Assert.IsFalse(coverage.HasEdge(EdgeSide.W1), "панель не открывается — торец закрыт");
     }
 
+    /// <summary>Нижний порог кромки: планка, задевающая торец на пару процентов, —
+    /// нормальная конструкция, а не наезд на кромку. Ниже порога EDG-01 молчит,
+    /// с порогом 0 — сообщает о любом перекрытии.</summary>
+    [Test]
+    public void PartialCover_BelowThreshold_IsNotReported()
+    {
+        var s = KitchenSettings.Instance;
+        int prev = s.EdgePartialThresholdPct;
+        try
+        {
+            var shelf = CreatePart("Shelf", ShelfDims);
+            // 12 мм из 400 по глубине торца — 3 %.
+            var planck = SidePanelAtW1(12, zOffset: 0.19f);
+            foreach (var el in new[] { shelf, planck }) PartRegistry.Register(el);
+
+            var coverage = EdgeBanding.Coverage(shelf, new List<KitchenElement> { shelf, planck });
+            Assert.AreEqual(0.03f, coverage.Ratio(EdgeSide.W1), 0.005f);
+            Assert.IsTrue(coverage.IsPartial(EdgeSide.W1), "геометрически перекрытие частичное");
+
+            s.EdgePartialThresholdPct = 5;
+            Assert.IsNull(SceneAnalyzer.Analyze()
+                    .Find(i => i.Code == IssueCatalog.CodeEdgePartialCover && i.Target == shelf).Code,
+                "3 % ниже порога 5 % — не ошибка");
+
+            s.EdgePartialThresholdPct = 0;
+            Assert.IsNotNull(SceneAnalyzer.Analyze()
+                    .Find(i => i.Code == IssueCatalog.CodeEdgePartialCover && i.Target == shelf).Code,
+                "с порогом 0 сообщается любое перекрытие");
+        }
+        finally
+        {
+            s.EdgePartialThresholdPct = prev;
+        }
+    }
+
     private List<KitchenElement> PartRegistryList()
     {
         var list = new List<KitchenElement>();

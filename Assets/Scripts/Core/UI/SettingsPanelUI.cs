@@ -33,10 +33,12 @@ namespace KitchenDesigner.Core.UI
         /// из UI-GUIDELINES).</summary>
         private const float IndentPx = 20f;
 
-        /// <summary>Число строк и «воздушных» промежутков на вкладке «Проект» —
-        /// по ним считается позиция кнопки «Закрыть».</summary>
-        private const int ProjectRows = 17;
-        private const int ProjectGaps = 7;
+        /// <summary>«Закрыть» стоит у нижнего края панели, а не под последней
+        /// строкой самой длинной вкладки: вкладок пять, содержимое у них разной
+        /// высоты, и кнопка не должна прыгать при переключении (а заодно —
+        /// съезжать вверх, когда строку переносят на другую вкладку).</summary>
+        private const float CloseY = -PanelH * 0.5f + 54;
+        private const float TabFontSize = 14f;
         private const float GapPx = 6f;
 
         public void Build(Transform canvas)
@@ -58,16 +60,23 @@ namespace KitchenDesigner.Core.UI
             }
 
             BuildTabs(panel.transform);
+            // Порядок вызовов = порядок подписей в BuildTabs: страницы ложатся в
+            // _tabPages, и SwitchTab адресует их тем же индексом.
             BuildProjectTab(panel.transform, s);
+            BuildRoomTab(panel.transform, s);
             BuildControlTab(panel.transform, s);
             BuildPhotoTab(panel.transform, s);
             BuildAboutTab(panel.transform);
 
             SwitchTab(0);
 
-            float closeY = ContentTopY - ProjectRows * RowStep - ProjectGaps * GapPx - 20;
+            // Зависимые строки живут на двух вкладках сразу (поля — на «Проекте»,
+            // тумблеры стен — на «Помещении»), поэтому синхронизация одна на всё
+            // окно и только после того, как построены обе страницы.
+            UpdateDependentStates();
+
             UIFactory.CreateButton("SetClose", panel.transform, "Закрыть",
-                new Vector2(0, closeY), new Vector2(160, 40),
+                new Vector2(0, CloseY), new Vector2(160, 40),
                 () => SetVisible(false));
 
             // Крестик — как у всех окон (правило 7 UI-GUIDELINES).
@@ -80,7 +89,7 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildTabs(Transform parent)
         {
-            string[] labels = { "Проект", "Управление", "Фото режим", "О программе" };
+            string[] labels = { "Проект", "Помещение", "Управление", "Фото режим", "О программе" };
             float tabW = (PanelW - 40) / labels.Length;
 
             for (int i = 0; i < labels.Length; i++)
@@ -91,6 +100,10 @@ namespace KitchenDesigner.Core.UI
                     new Vector2(posX, TabY), new Vector2(tabW - 4, 32),
                     () => SwitchTab(idx));
                 btn.GetComponent<Image>().color = InactiveTabColor;
+                // Пятая вкладка сузила каждую до ~92 px, и «Помещение» с
+                // «Управлением» ломались на две строки с обрезкой хвоста.
+                var caption = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+                if (caption != null) caption.fontSize = TabFontSize;
                 _tabButtons.Add(btn);
             }
         }
@@ -158,26 +171,18 @@ namespace KitchenDesigner.Core.UI
             AddToggleRow(t, ref y, "Пространственная сетка", s.SpatialGrid,
                 v => { s.SpatialGrid = v; });
 
-            // ── Стены и подопции ───────────────────────────
-            y -= GapPx;
-            AddToggleRow(t, ref y, "Стены", s.WallsEnabled,
-                v => { s.WallsEnabled = v; UpdateDependentStates(); });
-
-            _wallOutlineToggle = AddToggleRow(t, ref y, "Контур", s.WallOutline,
-                v => { s.WallOutline = v; }, id: WallOutlineId, indentLevel: 1);
-
-            _lowerWallsToggle = AddToggleRow(t, ref y, "Опускать ближние стены", s.LowerNearWalls,
-                v => { s.LowerNearWalls = v; UpdateDependentStates(); }, indentLevel: 1);
-
-            _hideOpeningsToggle = AddToggleRow(t, ref y, "Скрывать окна и двери", s.HideOpeningsOnLoweredWalls,
-                v => { s.HideOpeningsOnLoweredWalls = v; }, indentLevel: 2);
-
-            // ── Освещение ──────────────────────────────────
-            y -= GapPx;
-            AddHeaderRow(t, ref y, "Освещение");
-
-            AddToggleRow(t, ref y, "Скрыть источники света", s.HideLightSources,
-                v => { s.HideLightSources = v; }, indentLevel: 1);
+            // Ниже этого процента наезд соседа на торец не считается ошибкой
+            // EDG-01 (планка, царга — нормальная конструкция).
+            _edgeThresholdField = AddInputRow(t, ref y, "Нижний порог кромки",
+                s.EdgePartialThresholdPct.ToString(),
+                TMP_InputField.ContentType.IntegerNumber,
+                (TMP_InputField f) =>
+                {
+                    var val = ExpressionParser.EvaluateInt(f.text)
+                        ?? (int.TryParse(f.text, out int parsed) ? parsed : s.EdgePartialThresholdPct);
+                    s.EdgePartialThresholdPct = val;
+                    f.text = s.EdgePartialThresholdPct.ToString();
+                }, s.EdgePartialThresholdPct.ToString(), unit: "%");
 
             // ── Объекты и подопции ─────────────────────────
             y -= GapPx;
@@ -190,14 +195,45 @@ namespace KitchenDesigner.Core.UI
             y -= GapPx;
             AddToggleRow(t, ref y, "Свободное панорамирование", s.CameraPanFree,
                 v => { s.CameraPanFree = v; });
+        }
+
+        // ── Tab: Помещение ──────────────────────────────────
+
+        /// <summary>Стены и освещение — всё, что описывает само помещение, а не
+        /// правила работы с деталями. Раньше лежало в конце вкладки «Проект» и
+        /// тонуло среди сетки, привязки и автосохранения.</summary>
+        private void BuildRoomTab(Transform panel, KitchenSettings s)
+        {
+            var page = new GameObject("Tab_Room");
+            page.transform.SetParent(panel, false);
+            _tabPages.Add(page);
+            var t = page.transform;
+
+            float y = ContentTopY;
+
+            AddToggleRow(t, ref y, "Стены", s.WallsEnabled,
+                v => { s.WallsEnabled = v; UpdateDependentStates(); });
+
+            _wallOutlineToggle = AddToggleRow(t, ref y, "Контур", s.WallOutline,
+                v => { s.WallOutline = v; }, id: WallOutlineId, indentLevel: 1);
+
+            _lowerWallsToggle = AddToggleRow(t, ref y, "Опускать ближние стены", s.LowerNearWalls,
+                v => { s.LowerNearWalls = v; UpdateDependentStates(); }, indentLevel: 1);
+
+            _hideOpeningsToggle = AddToggleRow(t, ref y, "Скрывать окна и двери", s.HideOpeningsOnLoweredWalls,
+                v => { s.HideOpeningsOnLoweredWalls = v; }, indentLevel: 2);
+
+            y -= GapPx;
+            AddHeaderRow(t, ref y, "Освещение");
+
+            AddToggleRow(t, ref y, "Скрыть источники света", s.HideLightSources,
+                v => { s.HideLightSources = v; }, indentLevel: 1);
 
             // Режим «помещение» блокирует «опускать ближние стены» — состояние
             // тумблера должно следовать за переключением режима, а не только за
             // открытием панели.
             EditModeManager.Changed -= UpdateDependentStates;
             EditModeManager.Changed += UpdateDependentStates;
-
-            UpdateDependentStates();
         }
 
         // ── Tab: Управление ─────────────────────────────────
@@ -495,6 +531,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_InputField? _gridStepField;
         private TMP_InputField? _snapThresholdField;
         private TMP_InputField? _autoSaveIntervalField;
+        private TMP_InputField? _edgeThresholdField;
         private readonly Dictionary<string, TMPro.TextMeshProUGUI> _rowLabels = new();
 
         private const string WallOutlineId = "Контур стен";

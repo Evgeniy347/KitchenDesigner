@@ -9,22 +9,27 @@
     {
       "type": "Button",
       "text": "Проект",
-      "position": [-180, 356]
+      "position": [-192, 356]
+    },
+    {
+      "type": "Button",
+      "text": "Помещение",
+      "position": [-96, 356]
     },
     {
       "type": "Button",
       "text": "Управление",
-      "position": [-60, 356]
+      "position": [0, 356]
     },
     {
       "type": "Button",
       "text": "Фото режим",
-      "position": [60, 356]
+      "position": [96, 356]
     },
     {
       "type": "Button",
       "text": "О программе",
-      "position": [180, 356]
+      "position": [192, 356]
     },
     {
       "type": "Label",
@@ -38,12 +43,12 @@
     },
     {
       "type": "Label",
-      "text": "Объекты",
+      "text": "Нижний порог кромки",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Освещение",
+      "text": "Объекты",
       "position": [-90, 0]
     },
     {
@@ -68,11 +73,6 @@
     },
     {
       "type": "Label",
-      "text": "Стены",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
       "text": "Интервал автосохранения",
       "position": [-70, 0]
     },
@@ -83,22 +83,7 @@
     },
     {
       "type": "Label",
-      "text": "Контур",
-      "position": [-70, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Опускать ближние стены",
-      "position": [-70, 0]
-    },
-    {
-      "type": "Label",
       "text": "Порог привязки",
-      "position": [-70, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Скрыть источники света",
       "position": [-70, 0]
     },
     {
@@ -107,14 +92,16 @@
       "position": [-70, 0]
     },
     {
-      "type": "Label",
-      "text": "Скрывать окна и двери",
-      "position": [-50, 0]
-    },
-    {
       "type": "InputField",
       "label": "Fld_Интервал автосохранения",
       "value": "60",
+      "interactable": true,
+      "position": [165, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Fld_Нижний порог кромки",
+      "value": "5",
       "interactable": true,
       "position": [165, 0]
     },
@@ -152,19 +139,7 @@
     },
     {
       "type": "Toggle",
-      "label": "Tgl_Контур стен",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
       "label": "Tgl_Объекты",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Опускать ближние стены",
       "isOn": true,
       "position": [224, 0]
     },
@@ -189,24 +164,6 @@
     {
       "type": "Toggle",
       "label": "Tgl_Сетка",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Скрывать окна и двери",
-      "isOn": false,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Скрыть источники света",
-      "isOn": false,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Стены",
       "isOn": true,
       "position": [224, 0]
     },
