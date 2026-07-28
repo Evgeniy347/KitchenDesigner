@@ -80,6 +80,11 @@ namespace KitchenDesigner.Core.MCP
         public List<AxisGapInfo>? faceGaps; // зазоры/пересечения с ближайшим соседом «напротив» по осям (ось без соседа опускается)
         public int cornerRadius; // радиус скругления угла радиусной полки, иначе 0
         public string? grooves;  // пазы детали "through:top, blind:left"; null, если пазов нет
+        // Кромкование (только листовая «деталь»; у прочих типов поля опускаются).
+        public bool? edgeBanding;        // кромковать открытые торцы
+        public float? edgeThicknessMM;   // толщина кромочной ленты, мм
+        public bool? edgeSkipValidation; // не выдавать EDG-01 по этой детали
+        public string? edges;            // торцы с кромкой, вычислено: "L1,W1"
 
         // ── Фасадная валидация (только для FacadeElement / AssembledFacadeElement;
         //    null-поля опускаются сериализатором — обычные детали их не несут) ──

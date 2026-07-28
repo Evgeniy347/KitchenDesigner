@@ -50,6 +50,23 @@ namespace KitchenDesigner.Core.MCP
                 else if (!TryParseGrooves(op.grooves, out _, out string grooveError))
                     e.Add($"grooves: {grooveError}");
             }
+
+            // Кромкование — свойство той же базовой «детали», что и пазы.
+            // «Лист ли она» проверять здесь рано: размеры могут меняться этой же
+            // операцией, и не-лист просто не отдаёт кромок при чтении.
+            if (!el.SupportsGrooves)
+            {
+                if (op.edge_banding.HasValue) e.Add("edge_banding (plain boards only)");
+                if (op.edge_thickness_mm.HasValue) e.Add("edge_thickness_mm (plain boards only)");
+                if (op.edge_skip_validation.HasValue) e.Add("edge_skip_validation (plain boards only)");
+            }
+            else if (op.edge_thickness_mm.HasValue
+                && (op.edge_thickness_mm.Value < AppConstants.EDGE_THICKNESS_MIN_MM
+                    || op.edge_thickness_mm.Value > AppConstants.EDGE_THICKNESS_MAX_MM))
+            {
+                e.Add($"edge_thickness_mm: out of range " +
+                      $"({AppConstants.EDGE_THICKNESS_MIN_MM}..{AppConstants.EDGE_THICKNESS_MAX_MM} mm)");
+            }
             return e;
         }
 
@@ -111,6 +128,21 @@ namespace KitchenDesigner.Core.MCP
                 result.Add(groove);
             }
             return true;
+        }
+
+        /// <summary>Открытые торцы детали для get_elements: "L1,W1,W2". Пустая
+        /// строка — все торцы упираются в соседей, кромки нет ни на одном.
+        /// Наличие кромки вычисляется, а не хранится, поэтому и отдаётся
+        /// вычисленным по текущей сцене.</summary>
+        public static string FormatEdges(KitchenElement el, List<KitchenElement> all)
+        {
+            if (!el.EdgeBandingEnabled) return string.Empty;
+
+            var coverage = EdgeBanding.Coverage(el, all);
+            var sides = new List<string>(4);
+            foreach (EdgeSide side in System.Enum.GetValues(typeof(EdgeSide)))
+                if (coverage.HasEdge(side)) sides.Add(side.ToString());
+            return string.Join(",", sides);
         }
 
         /// <summary>Обратное представление для get_elements: "through:top, blind:left".</summary>
@@ -307,6 +339,12 @@ namespace KitchenDesigner.Core.MCP
                 if (op.grooves != null && el.SupportsGrooves
                     && TryParseGrooves(op.grooves, out var parsedGrooves, out _))
                     el.SetGrooves(parsedGrooves);
+                if (el.SupportsGrooves)
+                {
+                    if (op.edge_banding.HasValue) el.EdgeBandingEnabled = op.edge_banding.Value;
+                    if (op.edge_thickness_mm.HasValue) el.EdgeThicknessMM = op.edge_thickness_mm.Value;
+                    if (op.edge_skip_validation.HasValue) el.EdgeSkipValidation = op.edge_skip_validation.Value;
+                }
                 if (el is DrawerElement drawer) ApplyDrawerEdits(op, drawer);
                 if (el is TableElement table) ApplyTableEdits(op, table);
                 if (el is RadiusTableElement rt) ApplyRadiusTableEdits(op, rt);

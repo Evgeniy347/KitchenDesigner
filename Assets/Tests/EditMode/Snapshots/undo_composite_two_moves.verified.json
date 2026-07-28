@@ -79,7 +79,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Board_B",
@@ -159,7 +162,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         }
     ],
     "groups": [],
@@ -261,7 +267,10 @@
         "sinkAttachedPartName": "",
         "sinkOffsetXMM": 0,
         "sinkOffsetYMM": 0,
-        "grooves": []
+        "grooves": [],
+        "edgeBanding": true,
+        "edgeThicknessMM": 1.0,
+        "edgeSkipValidation": false
     },
     "undoHistory": [
         {

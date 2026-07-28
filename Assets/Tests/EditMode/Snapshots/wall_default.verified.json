@@ -84,7 +84,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         }
     ],
     "groups": [],
@@ -186,7 +189,10 @@
         "sinkAttachedPartName": "",
         "sinkOffsetXMM": 0,
         "sinkOffsetYMM": 0,
-        "grooves": []
+        "grooves": [],
+        "edgeBanding": true,
+        "edgeThicknessMM": 1.0,
+        "edgeSkipValidation": false
     },
     "undoHistory": [],
     "redoHistory": [],
@@ -223,6 +229,6 @@
         "photoSSGI": true
     },
     "tintEnabled": true,
-    "lightsOn": true,
+    "lightsOn": false,
     "windows": []
 }

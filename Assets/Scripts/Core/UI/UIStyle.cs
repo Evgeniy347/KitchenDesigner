@@ -26,6 +26,14 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color SurfaceActive = new Color(0.28f, 0.33f, 0.42f, 1f);
         public static readonly Color Separator = new Color(0.35f, 0.37f, 0.42f, 1f);
 
+        // ── Схема кромок детали ────────────────────────────────────────
+        /// <summary>Торец с кромкой (открытая поверхность).</summary>
+        public static readonly Color EdgePresent = new Color(0.30f, 0.75f, 0.35f, 1f);
+        /// <summary>Торец без кромки (упирается в соседа).</summary>
+        public static readonly Color EdgeAbsent = new Color(0.72f, 0.74f, 0.78f, 1f);
+        /// <summary>Заливка пласти на схеме кромок.</summary>
+        public static readonly Color EdgeBoard = new Color(0.18f, 0.19f, 0.22f, 1f);
+
         // ── Рулетка (замеры поверх сцены) ──────────────────────────────
         /// <summary>Розовая точка-подсказка: вершина под курсором.</summary>
         public static readonly Color MeasureHint = new Color(1f, 0.35f, 0.75f, 1f);

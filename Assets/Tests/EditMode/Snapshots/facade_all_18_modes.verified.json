@@ -79,7 +79,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_1",
@@ -159,7 +162,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_2",
@@ -239,7 +245,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_3",
@@ -319,7 +328,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_4",
@@ -399,7 +411,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_5",
@@ -479,7 +494,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_6",
@@ -559,7 +577,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_7",
@@ -639,7 +660,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_8",
@@ -719,7 +743,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_9",
@@ -799,7 +826,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_10",
@@ -879,7 +909,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_11",
@@ -959,7 +992,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_12",
@@ -1039,7 +1075,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_13",
@@ -1119,7 +1158,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_14",
@@ -1199,7 +1241,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_15",
@@ -1279,7 +1324,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_16",
@@ -1359,7 +1407,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         },
         {
             "name": "Mode_17",
@@ -1439,7 +1490,10 @@
             "sinkAttachedPartName": "",
             "sinkOffsetXMM": 0,
             "sinkOffsetYMM": 0,
-            "grooves": []
+            "grooves": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false
         }
     ],
     "groups": [],
@@ -1541,7 +1595,10 @@
         "sinkAttachedPartName": "",
         "sinkOffsetXMM": 0,
         "sinkOffsetYMM": 0,
-        "grooves": []
+        "grooves": [],
+        "edgeBanding": true,
+        "edgeThicknessMM": 1.0,
+        "edgeSkipValidation": false
     },
     "undoHistory": [],
     "redoHistory": [],
@@ -1578,6 +1635,6 @@
         "photoSSGI": true
     },
     "tintEnabled": true,
-    "lightsOn": true,
+    "lightsOn": false,
     "windows": []
 }

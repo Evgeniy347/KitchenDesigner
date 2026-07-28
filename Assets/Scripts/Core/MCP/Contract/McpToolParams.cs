@@ -161,6 +161,17 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "Duplicates of the same kind+side are rejected. Omit to keep.")]
         public string? grooves;
 
+        // Edge banding (plain board that is a sheet: exactly one side < 50 mm).
+        [McpParam("Sheet board only: glue edge banding on the OPEN ends of the part. Which ends are open is " +
+                  "computed from the scene (an end touching another part, a wall or the floor gets no banding) " +
+                  "and cannot be set by hand. false clears all four CSV edge columns. Omit to keep.")]
+        public bool? edge_banding;
+        [McpParam("Sheet board only: edge banding tape thickness in MM (0.1..5, fractional). Omit to keep.")]
+        public float? edge_thickness_mm;
+        [McpParam("Sheet board only: suppress the EDG-01 error about an end that is only PARTIALLY covered " +
+                  "by another part. Omit to keep.")]
+        public bool? edge_skip_validation;
+
         // Drawer.
         [McpParam("Drawer only: runner system — gtv (bought metal box, one spec line) or " +
             "movento (wooden box exploded into separate spec parts). Omit to keep.",

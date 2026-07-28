@@ -63,6 +63,7 @@ namespace KitchenDesigner.Core
             // встроенный куб и один материал. Иначе новый тип унаследовал бы от
             // детали меш с пазами — причём уже уничтоженный в OnDestroy.
             var grooves = new System.Collections.Generic.List<GrooveSpec>(source.Grooves);
+            var edges = EdgeBandingState.Of(source);
             source.ClearGrooves();
 
             PartRegistry.Unregister(source);
@@ -109,6 +110,13 @@ namespace KitchenDesigner.Core
             // (сейчас — базовая «деталь»); в фасад/полку они не уезжают.
             if (result.SupportsGrooves)
                 result.SetGrooves(grooves);
+
+            // Параметры кромкования переносятся ВСЕГДА, даже в фасад, который
+            // их не показывает: иначе конвертация «деталь → фасад → деталь»
+            // молча возвращала бы настройки к умолчанию.
+            result.EdgeBandingEnabled = edges.enabled;
+            result.EdgeThicknessMM = edges.thicknessMM;
+            result.EdgeSkipValidation = edges.skipValidation;
 
             if (result is FacadeElement newFacade)
             {

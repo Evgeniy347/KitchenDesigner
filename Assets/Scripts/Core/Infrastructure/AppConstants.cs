@@ -32,6 +32,16 @@ namespace KitchenDesigner.Core
         // 4 стороны × 2 типа: дубли (сторона+тип) не имеют смысла, смещение фиксировано.
         public const int GROOVE_MAX_PER_PART = 8;
 
+        // Кромкование торцов. Кромка клеится только на ТОРЕЦ — узкую грань
+        // листовой детали, поэтому «деталь под кромку» — та, у которой ровно
+        // одна сторона тоньше порога (это и есть толщина плиты). Если тонких
+        // сторон две и больше, деталь — брусок, а не лист: где у неё торец,
+        // геометрически не определено, и свойство не показывается.
+        public const int EDGE_MAX_SIDE_MM = 50;
+        public const float EDGE_THICKNESS_DEFAULT_MM = 1.0f;
+        public const float EDGE_THICKNESS_MIN_MM = 0.1f;
+        public const float EDGE_THICKNESS_MAX_MM = 5.0f;
+
         public const int WINDOW_FRAME_MM = 80;
         public const int WINDOW_SLOPE_MM = 18;
         public const int WINDOW_DRIP_DEFAULT_MM = 30;

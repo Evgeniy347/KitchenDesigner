@@ -113,6 +113,9 @@ namespace KitchenDesigner.Core
             // пула досталась бы с чужими пазами и проёмом под мойку.
             el.ClearSinks();
             el.ClearGrooves();
+            el.EdgeBandingEnabled = true;
+            el.EdgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
+            el.EdgeSkipValidation = false;
             PartRegistry.Unregister(el);
         }
 
@@ -333,7 +336,13 @@ namespace KitchenDesigner.Core
 
             var copyPart = go2.GetComponent<KitchenElement>();
             if (copyPart != null && copyPart.SupportsGrooves)
+            {
                 copyPart.SetGrooves(source.Grooves);
+                var edges = EdgeBandingState.Of(source);
+                copyPart.EdgeBandingEnabled = edges.enabled;
+                copyPart.EdgeThicknessMM = edges.thicknessMM;
+                copyPart.EdgeSkipValidation = edges.skipValidation;
+            }
 
             return go2;
         }

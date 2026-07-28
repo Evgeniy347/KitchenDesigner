@@ -25,6 +25,7 @@ namespace KitchenDesigner.Core.Analysis
             if (all == null || all.Count == 0) return issues;
 
             CollectCollisions(all, issues);
+            CollectEdgeCover(all, issues);
             CollectNearContacts(all, issues);
             CollectPanelSeating(all, issues);
             CollectFacadeGaps(all, issues);
@@ -39,6 +40,28 @@ namespace KitchenDesigner.Core.Analysis
             if (result.diagnostics == null) return;
             foreach (var diag in result.diagnostics)
                 issues.Add(IssueCatalog.FromViolation(diag));
+        }
+
+        // ── Error: торец под кромку перекрыт частично ────────────────────
+        // Кромку клеят на весь торец: если сосед закрывает его наполовину,
+        // деталь либо не встанет на место (кромка мешает), либо кромка
+        // оборвётся посередине. Полностью закрытый торец — норма (кромки нет),
+        // полностью открытый — норма (кромка есть); ошибка ровно посередине.
+        private static void CollectEdgeCover(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var e in all)
+            {
+                if (e == null || !e.EdgeBandingEnabled || e.EdgeSkipValidation) continue;
+
+                var coverage = EdgeBanding.Coverage(e, all);
+                var sides = new List<string>();
+                foreach (EdgeSide side in System.Enum.GetValues(typeof(EdgeSide)))
+                    if (coverage.IsPartial(side))
+                        sides.Add($"{side} {coverage.Ratio(side) * 100f:F0}%");
+
+                if (sides.Count > 0)
+                    issues.Add(IssueCatalog.EdgePartialCover(e, string.Join(", ", sides)));
+            }
         }
 
         // ── Warning: почти касание (зазор ≤ порога) ──────────────────────
@@ -95,6 +118,7 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeOverlap = "COL-01";
         public const string CodeUnsupported = "COL-02";
         public const string CodeOutOfWallBounds = "COL-03";
+        public const string CodeEdgePartialCover = "EDG-01";
         // Предупреждения.
         public const string CodeNearContact = "GAP-01";
         public const string CodePanelNotSeated = "SEAT-01";
@@ -125,6 +149,10 @@ namespace KitchenDesigner.Core.Analysis
                         Name(v.element), "Нарушение геометрии", v.element);
             }
         }
+
+        public static AnalysisIssue EdgePartialCover(KitchenElement element, string sides) =>
+            new AnalysisIssue(IssueLevel.Error, CodeEdgePartialCover,
+                Name(element), $"Торец под кромку перекрыт частично: {sides}", element);
 
         public static AnalysisIssue NearContact(KitchenElement a, KitchenElement b, float gapMm) =>
             new AnalysisIssue(IssueLevel.Warning, CodeNearContact,

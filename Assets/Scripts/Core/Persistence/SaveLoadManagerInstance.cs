@@ -258,6 +258,16 @@ namespace KitchenDesigner.Core
                     if (el.SupportsGrooves)
                         el.SetGrooves(ed.GrooveSpecs());
 
+                    // Кромкование — свойство той же базовой «Детали». Наличие
+                    // кромки на каждом торце не хранится: оно пересчитывается
+                    // по геометрии сцены (см. EdgeBanding.Coverage).
+                    if (el.SupportsGrooves)
+                    {
+                        el.EdgeBandingEnabled = ed.edgeBanding;
+                        el.EdgeThicknessMM = ed.edgeThicknessMM;
+                        el.EdgeSkipValidation = ed.edgeSkipValidation;
+                    }
+
 					var wall = el.GetComponent<Wall>();
 					if (wall != null)
 					{

@@ -258,6 +258,11 @@ namespace KitchenDesigner.Core.MCP
                 faceGaps = gaps,
                 cornerRadius = radial != null ? radial.CornerRadius : 0,
                 grooves = el.Grooves.Count > 0 ? FormatGrooves(el) : null,
+                edgeBanding = el.SupportsEdges ? el.EdgeBandingEnabled : (bool?)null,
+                edgeThicknessMM = el.SupportsEdges ? el.EdgeThicknessMM : (float?)null,
+                edgeSkipValidation = el.SupportsEdges && el.EdgeSkipValidation ? true : (bool?)null,
+                edges = el.EdgeBandingEnabled && allElements != null
+                    ? FormatEdges(el, allElements) : null,
                 facadeMode = el is FacadeElement feMode ? FacadeDoor.WireName(feMode.Mode) : null,
                 faceNormalX = facadeValidation?.normal.x,
                 faceNormalY = facadeValidation?.normal.y,

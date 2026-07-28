@@ -485,6 +485,36 @@ public class ElementConverterTests
         Object.DestroyImmediate(sinkGo);
     }
 
+    // ── Кромкование ───────────────────────────────────────────────────
+
+    [Test]
+    public void Convert_FacadeToPart_KeepsEdgeSettings()
+    {
+        var src = Make<FacadeElement>("F1", new Vector3Int(600, 700, 18), Vector3.zero);
+        src.EdgeThicknessMM = 2f;
+        src.EdgeSkipValidation = true;
+
+        var result = ElementConverter.Convert(src, ElementConverter.TargetType.Part);
+
+        Assert.IsTrue(result.SupportsEdges, "деталь-лист кромкуется");
+        Assert.IsTrue(result.EdgeBandingEnabled);
+        Assert.AreEqual(2f, result.EdgeThicknessMM, 1e-4f);
+        Assert.IsTrue(result.EdgeSkipValidation);
+    }
+
+    [Test]
+    public void Convert_PartWithEdgesOff_ToFacadeAndBack_KeepsFlagOff()
+    {
+        var src = Make<KitchenElement>("B1", new Vector3Int(800, 400, 18), Vector3.zero);
+        src.EdgeBandingEnabled = false;
+
+        var facade = ElementConverter.Convert(src, ElementConverter.TargetType.Facade);
+        Assert.IsFalse(facade.SupportsEdges, "фасад кромок не показывает");
+
+        var back = ElementConverter.Convert(facade, ElementConverter.TargetType.Part);
+        Assert.IsFalse(back.EdgeBandingEnabled, "снятая галочка переживает конвертацию туда-обратно");
+    }
+
     // ── Reflection: every public property is covered ──────────────────
 
     private static readonly HashSet<string> CommonProperties = new HashSet<string>
@@ -508,6 +538,7 @@ public class ElementConverterTests
         // KitchenElement
         "PartName", "DimensionsMM", "Movable", "GroupId", "MaterialId", "Transparent", "Data",
         "SupportsGrooves", "Grooves", "AttachedSinks", "SinkHoleAxis",
+        "SupportsEdges", "EdgeBandingEnabled", "EdgeThicknessMM", "EdgeSkipValidation",
         // FacadeElement
         "GapLeft", "GapRight", "GapTop", "GapBottom", "GapMM", "Mode",
         "IsOpen", "DoorProgress", "IsDoorClosed", "ClosedPosition", "ClosedRotation",

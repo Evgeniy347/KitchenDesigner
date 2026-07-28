@@ -98,6 +98,11 @@ namespace KitchenDesigner.Core
 		public int sinkOffsetYMM = 0;
 		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
+		// Кромкование. Инициализаторы = дефолты для старых сейвов: кромка
+		// включена, толщина ленты стандартная.
+		public bool edgeBanding = true;
+		public float edgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
+		public bool edgeSkipValidation = false;
 
         public ElementData() { }
 
@@ -287,6 +292,12 @@ namespace KitchenDesigner.Core
 			d.grooves = new GrooveEntry[grooveSpecs.Count];
 			for (int i = 0; i < grooveSpecs.Count; i++)
 				d.grooves[i] = new GrooveEntry(grooveSpecs[i]);
+
+			// Кромкование, как и пазы, живёт только у базовой «Детали»; у прочих
+			// типов пишутся дефолты и при загрузке отбрасываются.
+			d.edgeBanding = element.Data.EdgeBanding;
+			d.edgeThicknessMM = element.Data.EdgeThicknessMM;
+			d.edgeSkipValidation = element.Data.EdgeSkipValidation;
 
 			d.groupId = element.GroupId;
             d.materialId = element.MaterialId;

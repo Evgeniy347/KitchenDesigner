@@ -95,6 +95,89 @@ public class ContextMenuLayoutTests
         Assert.IsFalse(panel.Find("CtxGrooveAdd").gameObject.activeSelf);
     }
 
+    // ── Секция кромок ─────────────────────────────────────────────────
+
+    private KitchenElement MakeBar(string name)
+    {
+        var go = new GameObject(name);
+        var el = go.AddComponent<KitchenElement>();
+        el.PartName = name;
+        el.DimensionsMM = new Vector3Int(18, 18, 800); // брусок: две тонких стороны
+        _spawned.Add(go);
+        return el;
+    }
+
+    [Test]
+    public void Board_EdgeSection_VisibleWithDiagramAndParameters()
+    {
+        var board = MakeBoard("B1");
+        _menu!.Open(board);
+        var panel = Panel();
+
+        Assert.IsTrue(panel.Find("CtxEdges").gameObject.activeSelf,
+            "галочка «Кромки» видна у листовой детали");
+        Assert.IsTrue(panel.Find("CtxEdgeDiagram").gameObject.activeSelf,
+            "галочка включена — схема нарисована");
+        Assert.IsTrue(panel.Find("F_EdgeThickness").gameObject.activeSelf);
+        Assert.IsTrue(panel.Find("CtxEdgeSkipValidation").gameObject.activeSelf);
+    }
+
+    [Test]
+    public void Bar_EdgeSection_Hidden()
+    {
+        _menu!.Open(MakeBar("Bar1"));
+        var panel = Panel();
+
+        Assert.IsFalse(panel.Find("CtxEdges").gameObject.activeSelf,
+            "у бруска торец под кромку не определён — свойства нет");
+        Assert.IsFalse(panel.Find("CtxEdgeDiagram").gameObject.activeSelf);
+    }
+
+    [Test]
+    public void Facade_EdgeSection_Hidden()
+    {
+        _menu!.Open(MakeFacade("F1"));
+        Assert.IsFalse(Panel().Find("CtxEdges").gameObject.activeSelf);
+    }
+
+    [Test]
+    public void Board_UncheckEdges_HidesDiagramAndParameters_WithUndo()
+    {
+        var board = MakeBoard("B1");
+        _menu!.Open(board);
+        var panel = Panel();
+
+        panel.Find("CtxEdges").GetComponent<Toggle>().isOn = false;
+
+        Assert.IsFalse(board.EdgeBandingEnabled);
+        Assert.IsTrue(panel.Find("CtxEdges").gameObject.activeSelf, "сама галочка остаётся");
+        Assert.IsFalse(panel.Find("CtxEdgeDiagram").gameObject.activeSelf);
+        Assert.IsFalse(panel.Find("F_EdgeThickness").gameObject.activeSelf);
+        Assert.IsFalse(panel.Find("CtxEdgeSkipValidation").gameObject.activeSelf);
+
+        CommandStack.Undo();
+        Assert.IsTrue(board.EdgeBandingEnabled, "Ctrl+Z возвращает кромки");
+    }
+
+    [Test]
+    public void Board_EdgeDiagram_ShowsLengthAndWidthAndPaintsOpenEnds()
+    {
+        var board = MakeBoard("B1"); // 800×400×18 → L = 800, W = 400
+        _menu!.Open(board);
+        var panel = Panel();
+
+        Assert.AreEqual("800 мм", panel.Find("CtxEdgeDiagram/CtxEdgeLen")
+            .GetComponent<TMP_Text>().text);
+        Assert.AreEqual("400 мм", panel.Find("CtxEdgeDiagram/CtxEdgeWid")
+            .GetComponent<TMP_Text>().text);
+
+        // Одинокая деталь: все четыре торца открыты — все полосы зелёные.
+        foreach (var side in new[] { "L1", "L2", "W1", "W2" })
+            Assert.AreEqual(UIStyle.EdgePresent,
+                panel.Find($"CtxEdgeDiagram/CtxEdge{side}").GetComponent<Image>().color,
+                $"торец {side} открыт — кромка есть");
+    }
+
     [Test]
     public void Board_ExpandGrooves_ShowsAddRowAndFlipsArrow()
     {

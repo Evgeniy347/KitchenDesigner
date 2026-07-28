@@ -17,6 +17,12 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _gapTop;
         [SerializeField] private int _gapBottom;
         [SerializeField] private bool _transparent;
+        // Кромкование по умолчанию включено: наличие кромки на каждом торце
+        // считается автоматически по геометрии, и «выключено» здесь означает
+        // не «ещё не посчитано», а сознательный отказ от кромки на этой детали.
+        [SerializeField] private bool _edgeBanding = true;
+        [SerializeField] private float _edgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
+        [SerializeField] private bool _edgeSkipValidation;
 
         public string PartName
         {
@@ -76,6 +82,28 @@ namespace KitchenDesigner.Core
         {
             get => _transparent;
             set => _transparent = value;
+        }
+
+        /// <summary>Клеить ли кромку на открытые торцы детали.</summary>
+        public bool EdgeBanding
+        {
+            get => _edgeBanding;
+            set => _edgeBanding = value;
+        }
+
+        /// <summary>Толщина кромочной ленты, мм.</summary>
+        public float EdgeThicknessMM
+        {
+            get => _edgeThicknessMM <= 0f ? AppConstants.EDGE_THICKNESS_DEFAULT_MM : _edgeThicknessMM;
+            set => _edgeThicknessMM = Mathf.Clamp(value,
+                AppConstants.EDGE_THICKNESS_MIN_MM, AppConstants.EDGE_THICKNESS_MAX_MM);
+        }
+
+        /// <summary>Не выдавать ошибку о частично перекрытом торце.</summary>
+        public bool EdgeSkipValidation
+        {
+            get => _edgeSkipValidation;
+            set => _edgeSkipValidation = value;
         }
 
         /// <summary>Пазы детали. Список живой — правится через KitchenElement,

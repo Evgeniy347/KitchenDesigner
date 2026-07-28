@@ -65,6 +65,32 @@ namespace KitchenDesigner.Core
 
         public IReadOnlyList<GrooveSpec> Grooves => _data.Grooves;
 
+        // ── Кромки ─────────────────────────────────────────────────────
+        // Кромкование поддерживает та же базовая «Деталь», что и пазы, и
+        // только когда деталь — лист: ровно одна сторона тоньше порога
+        // (см. EdgeBanding.IsSheet). У бруска/куба торцов в смысле кромки нет.
+        public bool SupportsEdges => SupportsGrooves && EdgeBanding.IsSheet(_data.DimensionsMM);
+
+        /// <summary>Клеить ли кромку на открытые торцы. У детали, которая
+        /// кромкование не поддерживает, всегда false.</summary>
+        public bool EdgeBandingEnabled
+        {
+            get => SupportsEdges && _data.EdgeBanding;
+            set => _data.EdgeBanding = value;
+        }
+
+        public float EdgeThicknessMM
+        {
+            get => _data.EdgeThicknessMM;
+            set => _data.EdgeThicknessMM = value;
+        }
+
+        public bool EdgeSkipValidation
+        {
+            get => _data.EdgeSkipValidation;
+            set => _data.EdgeSkipValidation = value;
+        }
+
         // ── Врезанные мойки ────────────────────────────────────────────
         // Мойка живёт отдельным элементом, но её проём — часть геометрии
         // ДЕТАЛИ (как окно и стена). Список ведётся деталью, чтобы меш
