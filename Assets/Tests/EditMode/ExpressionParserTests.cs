@@ -366,4 +366,61 @@ public class ExpressionParserTests
     {
         Assert.IsNull(ExpressionParser.EvaluateFloat("1.2.3"));
     }
+
+    // ── IsValidDimensionChar: фильтр ввода UI ────────────────────
+
+    [Test]
+    public void IsValidDimensionChar_AllowsDigit()
+    {
+        Assert.IsTrue(ExpressionParser.IsValidDimensionChar('5'));
+    }
+
+    [Test]
+    public void IsValidDimensionChar_AllowsPlus()
+    {
+        Assert.IsTrue(ExpressionParser.IsValidDimensionChar('+'));
+    }
+
+    [Test]
+    public void IsValidDimensionChar_AllowsMinus()
+    {
+        Assert.IsTrue(ExpressionParser.IsValidDimensionChar('-'));
+    }
+
+    [Test]
+    public void IsValidDimensionChar_AllowsMultiply()
+    {
+        Assert.IsTrue(ExpressionParser.IsValidDimensionChar('*'));
+    }
+
+    [Test]
+    public void IsValidDimensionChar_AllowsDivide()
+    {
+        Assert.IsTrue(ExpressionParser.IsValidDimensionChar('/'));
+    }
+
+    [Test]
+    public void IsValidDimensionChar_AllowsSpace()
+    {
+        Assert.IsTrue(ExpressionParser.IsValidDimensionChar(' '));
+    }
+
+    [Test]
+    public void IsValidDimensionChar_RejectsDotByDefault()
+    {
+        Assert.IsFalse(ExpressionParser.IsValidDimensionChar('.'));
+    }
+
+    [Test]
+    public void IsValidDimensionChar_AllowsDotWhenDecimal()
+    {
+        Assert.IsTrue(ExpressionParser.IsValidDimensionChar('.', allowDecimal: true));
+    }
+
+    [Test]
+    public void IsValidDimensionChar_RejectsLetter()
+    {
+        Assert.IsFalse(ExpressionParser.IsValidDimensionChar('a'));
+        Assert.IsFalse(ExpressionParser.IsValidDimensionChar('Z'));
+    }
 }

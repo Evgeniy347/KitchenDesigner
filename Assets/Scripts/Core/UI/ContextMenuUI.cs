@@ -428,11 +428,11 @@ namespace KitchenDesigner.Core.UI
             foreach (var f in new[] { _x, _y, _z }) f!.contentType = TMP_InputField.ContentType.Custom;
             foreach (var f in new[] { _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.Custom;
 
-            // Арифметика: разрешаем + и - (пробелы допускаются, удаляются при вычислении).
+            // Арифметика: разрешаем + - * / (пробелы допускаются, удаляются при вычислении).
             foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z })
-                if (f != null) f.onValidateInput = (text, idx, ch) => char.IsDigit(ch) || ch == '+' || ch == '-' || ch == ' ' ? ch : '\0';
+                if (f != null) f.onValidateInput = (text, idx, ch) => ExpressionParser.IsValidDimensionChar(ch) ? ch : '\0';
             foreach (var f in new[] { _rx, _ry, _rz })
-                if (f != null) f.onValidateInput = (text, idx, ch) => char.IsDigit(ch) || ch == '+' || ch == '-' || ch == '.' || ch == ' ' ? ch : '\0';
+                if (f != null) f.onValidateInput = (text, idx, ch) => ExpressionParser.IsValidDimensionChar(ch, allowDecimal: true) ? ch : '\0';
 
             // Имя: недопустимые символы не даём набрать вовсе — иначе поле
             // показывало бы одно, а применилось бы очищенное другое.

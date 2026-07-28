@@ -10,6 +10,13 @@ namespace KitchenDesigner.Core.UI
     /// </summary>
     public static class ExpressionParser
     {
+        /// <summary>Допустимый ли символ для ввода в размерное поле (цифра, +, -, *, /, пробел, опционально точка).</summary>
+        public static bool IsValidDimensionChar(char ch, bool allowDecimal = false)
+        {
+            return char.IsDigit(ch) || ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == ' '
+                || (allowDecimal && ch == '.');
+        }
+
         public static int? EvaluateInt(string text)
         {
             var tokens = Tokenize(text);

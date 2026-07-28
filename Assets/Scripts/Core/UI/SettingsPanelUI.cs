@@ -564,7 +564,7 @@ namespace KitchenDesigner.Core.UI
             field.contentType = TMP_InputField.ContentType.Custom;
             bool isDecimal = contentType == TMP_InputField.ContentType.DecimalNumber;
             field.onValidateInput = (text, idx, ch) =>
-                char.IsDigit(ch) || ch == '+' || ch == '-' || ch == ' ' || (isDecimal && ch == '.') ? ch : '\0';
+                ExpressionParser.IsValidDimensionChar(ch, allowDecimal: isDecimal) ? ch : '\0';
             TrackField(field, cleanValue);
             field.onEndEdit.AddListener(t =>
             {
