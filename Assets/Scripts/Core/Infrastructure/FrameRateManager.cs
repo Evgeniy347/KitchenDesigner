@@ -1,3 +1,4 @@
+using Unity.Profiling;
 using UnityEngine;
 #if UNITY_WEBGL && !UNITY_EDITOR
 using System.Runtime.InteropServices;
@@ -17,6 +18,9 @@ namespace KitchenDesigner.Core
     /// </summary>
     public class FrameRateManager : MonoBehaviour
     {
+        private static readonly ProfilerMarker s_Update = new("FrameRateManager.Update");
+        private static readonly ProfilerMarker s_DetectInput = new("FrameRateManager.DetectInput");
+
         public static FrameRateManager? Instance { get; private set; }
 
         /// <summary>FPS при активности. WebGL — 30 (как было), иначе без ограничения.</summary>
@@ -102,6 +106,7 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
+            using var _ = s_Update.Auto();
             if (DetectInput())
                 MarkActive(Time.unscaledTime, IdleGraceSeconds);
             Apply(TargetFpsAt(Time.unscaledTime));
@@ -109,6 +114,7 @@ namespace KitchenDesigner.Core
 
         private bool DetectInput()
         {
+            using var _ = s_DetectInput.Auto();
             if (Input.anyKey) return true;            // включает кнопки мыши
             if (Input.touchCount > 0) return true;
             if (Input.mouseScrollDelta.sqrMagnitude > 0f) return true;

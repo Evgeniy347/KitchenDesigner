@@ -48,6 +48,10 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<UI.ConsoleOverlay>() == null) gameObject.AddComponent<UI.ConsoleOverlay>();
             if (FindAnyObjectByType<UndoHandler>() == null) gameObject.AddComponent<UndoHandler>();
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (FindAnyObjectByType<PerfMonitor>() == null) gameObject.AddComponent<PerfMonitor>();
+#endif
+
 #if UNITY_WEBGL
             if (FindAnyObjectByType<Networking.ProjectApiClient>() == null)
                 gameObject.AddComponent<Networking.ProjectApiClient>();

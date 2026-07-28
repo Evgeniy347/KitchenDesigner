@@ -1,3 +1,4 @@
+using Unity.Profiling;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -58,10 +59,13 @@ namespace KitchenDesigner.Core
     /// к сцене каждый кадр — по тем же правилам, что WallManager для стен.</summary>
     public class SceneVisibilityManager : MonoBehaviour
     {
+        private static readonly ProfilerMarker s_Apply = new("SceneVisibilityManager.Apply");
+
         public void LateUpdate() => Apply();
 
         public static void Apply()
         {
+            using var _ = s_Apply.Auto();
             var s = KitchenSettings.Instance;
             foreach (var e in PartRegistry.GetAll())
             {
