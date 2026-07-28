@@ -473,6 +473,29 @@ public class EdgeBandingTests
         Assert.IsFalse(EdgeSideHighlighter.IsShown(shelf, EdgeSide.W1));
     }
 
+    /// <summary>Регрессия из Player.log: в сборке URP/Unlit вырезается стриппингом,
+    /// а Unlit/Color — шейдер встроенного пайплайна, которого в URP-билде нет вовсе.
+    /// Оба давали null, и конструктор материала падал ArgumentNullException на
+    /// КАЖДОЕ наведение на полосу кромки. Отсутствие шейдера — не повод ронять
+    /// приложение: подсветки просто нет.</summary>
+    [Test]
+    public void EdgeHighlight_WithoutShader_DoesNotThrowAndDrawsNothing()
+    {
+        var shelf = CreatePart("Shelf", ShelfDims);
+        EdgeSideHighlighter.MaterialFactory = () => null;
+        try
+        {
+            Assert.DoesNotThrow(() => EdgeSideHighlighter.Show(shelf, EdgeSide.W1));
+            Assert.AreEqual(0, EdgeSideHighlighter.QuadCount, "без материала накладок нет");
+            Assert.IsFalse(EdgeSideHighlighter.IsShown(shelf, EdgeSide.W1));
+        }
+        finally
+        {
+            EdgeSideHighlighter.MaterialFactory = null;
+            EdgeSideHighlighter.Hide();
+        }
+    }
+
     /// <summary>Глубина полосы — 20 % размера соседней грани, но не более 50 мм.
     /// У полки 800×400 обе величины упираются в потолок; проверяем и мелкую
     /// деталь, где работает процент.</summary>

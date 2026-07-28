@@ -52,6 +52,10 @@ namespace KitchenDesigner.Core
             var layout = EdgeBanding.LayoutOf(element.DimensionsMM);
             if (!layout.IsValid) return;
 
+            // Материал добываем ДО построения накладок: без него квады рисовались
+            // бы стандартным розовым «нет материала», что хуже отсутствия подсветки.
+            if (HighlightMaterial() == null) return;
+
             var faces = element.GetFaces();
             int endIndex = layout.FaceIndex(side);
             var end = faces[endIndex];
@@ -153,17 +157,64 @@ namespace KitchenDesigner.Core
             return _quad;
         }
 
-        private static Material HighlightMaterial()
+        /// <summary>Подмена материала для тестов. В редакторе Shader.Find находит
+        /// всё, и отказ шейдера, специфичный для СБОРКИ, там не воспроизвести —
+        /// а проверить, что подсветка при этом не роняет приложение, надо.</summary>
+        public static System.Func<Material?>? MaterialFactory;
+
+        /// <summary>Шейдера нет в сборке — повторно не ищем и не спамим в лог.</summary>
+        private static bool _shaderMissing;
+
+        /// <summary>Материал накладки; null — подходящего шейдера в сборке нет.</summary>
+        private static Material? HighlightMaterial()
         {
+            if (MaterialFactory != null) return MaterialFactory();
             if (_material != null) return _material;
-            var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+            if (_shaderMissing) return null;
+
+            var shader = FindHighlightShader();
+            if (shader == null)
+            {
+                _shaderMissing = true;
+                Debug.LogWarning("[EdgeSideHighlight] Шейдер накладки не найден — "
+                    + "подсветка стороны под кромку не будет видна.");
+                return null;
+            }
+
             _material = new Material(shader) { hideFlags = HideFlags.DontSave };
-            _material.color = UI.UIStyle.EdgeHighlight3D;
-            if (_material.HasProperty("_BaseColor")) _material.SetColor("_BaseColor", UI.UIStyle.EdgeHighlight3D);
-            // Прозрачность: под накладкой должна читаться текстура детали.
+            var color = UI.UIStyle.EdgeHighlight3D;
+            _material.color = color;
+            if (_material.HasProperty("_BaseColor")) _material.SetColor("_BaseColor", color);
+
+            // Прозрачность: под накладкой должна читаться текстура детали. У URP
+            // мало выставить _Surface — без ключевого слова и режимов смешивания
+            // материал остаётся непрозрачным.
             if (_material.HasProperty("_Surface")) _material.SetFloat("_Surface", 1f);
+            if (_material.HasProperty("_Blend")) _material.SetFloat("_Blend", 0f);
+            if (_material.HasProperty("_SrcBlend"))
+                _material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            if (_material.HasProperty("_DstBlend"))
+                _material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            if (_material.HasProperty("_ZWrite")) _material.SetFloat("_ZWrite", 0f);
+            _material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             _material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             return _material;
+        }
+
+        /// <summary>Шейдер накладки с запасными вариантами.
+        ///
+        /// URP/Unlit ВЫРЕЗАЕТСЯ стриппингом, если им не пользуется ни один
+        /// материал проекта, а Unlit/Color — шейдер встроенного пайплайна,
+        /// которого в URP-сборке нет вовсе: в билде оба давали null, и
+        /// конструктор материала падал с ArgumentNullException на каждое
+        /// наведение (Player.log). Цепочка та же, что в ElementOutline.MakeUnlit:
+        /// URP/Lit гарантированно в сборке — его используют все детали.</summary>
+        private static Shader? FindHighlightShader()
+        {
+            var shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) shader = Shader.Find("Sprites/Default");
+            return shader;
         }
     }
 }
