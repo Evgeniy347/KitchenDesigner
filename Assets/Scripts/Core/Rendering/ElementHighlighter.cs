@@ -127,10 +127,16 @@ namespace KitchenDesigner.Core
             var renderer = element.GetComponent<MeshRenderer>();
             if (renderer == null) return;
 
-            if (element.GetComponent<BasePlate>() != null || element.GetComponent<Wall>() != null) return;
-            // Пол и источник света держат собственный материал (пол — как BasePlate,
-            // лампа — светящийся плафон), валидационная тонировка к ним не применяется.
-            if (element is FloorElement || element is LightSourceElement) return;
+            // Подложка и лампа держат СВОЙ материал (лампа — светящийся плафон):
+            // ни тонировки, ни прозрачности к ним не применяем.
+            if (element.GetComponent<BasePlate>() != null || element is LightSourceElement) return;
+
+            // Стена и пол валидационной тонировки не получают — у них всегда свой
+            // декор. Но выключатель «Прозрачный» им доступен, поэтому пройти ветку
+            // прозрачности ниже они обязаны: раньше метод выходил здесь, и
+            // прозрачную стену было НЕЧЕМ вернуть обратно — материал так и
+            // оставался сквозным (его пересохраняла подсветка выделения).
+            bool ownDecorOnly = element.GetComponent<Wall>() != null || element is FloorElement;
 
             // В режиме редактирования модуля всё вне модуля затемнено —
             // визуальный сигнал «заблокировано».
@@ -145,6 +151,16 @@ namespace KitchenDesigner.Core
             {
                 renderer.material = isValid ? _validTransparentMaterial! : _invalidTransparentMaterial!;
                 ElementOutline.Ensure(element)?.Show(selected: false);
+            }
+            else if (ownDecorOnly)
+            {
+                MaterialManager.ApplyOwnDecor(element);
+                ElementOutline.For(element)?.Hide();
+                // Декор перебил подсветку выделения — возвращаем её ПОВЕРХ свежего
+                // материала. Заодно это чинит саму причину «залипшей» прозрачности:
+                // SelectionManager запоминал как «исходный» тот материал, что застал,
+                // то есть уже сквозной, и копировал его дальше из выделения в выделение.
+                SelectionManager.Instance?.RefreshHighlight(element);
             }
             else if (isValid && (!TintEnabled || MaterialManager.HasCustomDecor(element)))
             {

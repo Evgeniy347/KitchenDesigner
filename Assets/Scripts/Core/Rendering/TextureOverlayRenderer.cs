@@ -114,13 +114,21 @@ namespace KitchenDesigner.Core
                 || Hidden(el) != entry.hidden;
         }
 
-        /// <summary>Накладки не показываем, когда сам элемент не виден, и когда
-        /// стена опущена режимом обзора: её геометрия — временный обрубок, и
-        /// накладка, построенная по ПОЛНОЙ грани, висела бы в воздухе.</summary>
+        /// <summary>Накладки не показываем, когда сам элемент не виден, когда он
+        /// объявлен прозрачным и когда стена опущена режимом обзора.
+        ///
+        /// Прозрачность здесь принципиальна: накладка — отдельный непрозрачный
+        /// меш поверх грани, и сквозная стена с ней выглядела бы сплошной —
+        /// выключатель «Прозрачный» просто переставал работать. «Прозрачный»
+        /// значит «хочу видеть сквозь», поэтому накладки гаснут вместе с гранью.
+        ///
+        /// Опущенная стена — временный обрубок, накладка по ПОЛНОЙ грани висела
+        /// бы в воздухе.</summary>
         private static bool Hidden(KitchenElement el)
         {
             if (!el.gameObject.activeInHierarchy) return true;
             if (!SceneVisibility.AnyRendererEnabled(el)) return true;
+            if (PhotoMode.ResolveTransparent(el.Transparent)) return true;
             var wall = el.GetComponent<Wall>();
             return wall != null && wall.IsLowered;
         }

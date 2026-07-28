@@ -296,6 +296,25 @@ public class TextureOverlayTests
             "проём режет накладку на ячейки — сплошного квада быть не может");
     }
 
+    /// <summary>«Прозрачный» обязан гасить и накладки: непрозрачный меш поверх
+    /// сквозной грани делал стену сплошной, и выключатель переставал работать.</summary>
+    [Test]
+    public void Renderer_HidesQuadsWhileElementIsTransparent()
+    {
+        var wall = CreateWall(new Vector3Int(3000, 2500, 100));
+        wall.SetTextureOverlays(new[] { TextureOverlaySpec.FullFace(OverlaySide.E, "oak") });
+        Assert.AreEqual(1, TextureOverlayRenderer.QuadsOf(wall).Count);
+
+        wall.Transparent = true;
+        TextureOverlayRenderer.SyncAll();
+        Assert.AreEqual(0, TextureOverlayRenderer.QuadsOf(wall).Count);
+
+        wall.Transparent = false;
+        TextureOverlayRenderer.SyncAll();
+        Assert.AreEqual(1, TextureOverlayRenderer.QuadsOf(wall).Count,
+            "снятая прозрачность возвращает накладку");
+    }
+
     [Test]
     public void Renderer_ClearsQuadsWhenOverlaysRemoved()
     {
@@ -305,6 +324,42 @@ public class TextureOverlayTests
 
         wall.SetTextureOverlays(new TextureOverlaySpec[0]);
         Assert.AreEqual(0, TextureOverlayRenderer.QuadsOf(wall).Count);
+    }
+
+    /// <summary>Стену можно вернуть из прозрачной обратно. Раньше ElementHighlighter
+    /// выходил на стене досрочно: прозрачный материал ей никто не снимал, а подсветка
+    /// выделения запоминала его как «исходный» и тащила дальше.</summary>
+    [Test]
+    public void WallTransparency_CanBeTurnedBackOff()
+    {
+        // Смена материала через renderer.material в EditMode заставляет Unity
+        // ругаться на Destroy прежнего экземпляра. Это шум редактора, а не
+        // проверяемая логика: в игре тот же код молчит.
+        UnityEngine.TestTools.LogAssert.ignoreFailingMessages = true;
+        try
+        {
+            var hlGo = new GameObject("Highlighter");
+            _spawned.Add(hlGo);
+            var highlighter = hlGo.AddComponent<ElementHighlighter>();
+            highlighter.RefreshHighlights(); // здесь же создаются материалы
+
+            var wall = CreateWall(new Vector3Int(3000, 2500, 100));
+            var renderer = wall.GetComponent<MeshRenderer>();
+
+            wall.Transparent = true;
+            highlighter.ApplyForElement(wall);
+            Assert.AreEqual((int)UnityEngine.Rendering.RenderQueue.Transparent,
+                renderer.sharedMaterial.renderQueue, "стена стала прозрачной");
+
+            wall.Transparent = false;
+            highlighter.ApplyForElement(wall);
+            Assert.AreNotEqual((int)UnityEngine.Rendering.RenderQueue.Transparent,
+                renderer.sharedMaterial.renderQueue, "и вернулась обратно");
+        }
+        finally
+        {
+            UnityEngine.TestTools.LogAssert.ignoreFailingMessages = false;
+        }
     }
 
     // ── Undo ───────────────────────────────────────────────────────────
