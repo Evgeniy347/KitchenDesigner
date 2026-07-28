@@ -37,8 +37,17 @@ namespace KitchenDesigner.Core
             if (Measure.MeasureMode.Active)
                 return;
 
+            // Началось перетаскивание — клик отменён, выделение не сжимаем.
             if (ElementMover.IsDragging)
+            {
+                _collapseCandidate = null;
                 return;
+            }
+
+            // Отпускание ЛКМ обрабатываем ДО прочих ранних выходов: клик мог
+            // начаться на детали, а курсор к моменту отпускания уйти на UI.
+            if (Input.GetMouseButtonUp(0))
+                HandleClickRelease();
 
             // Esc в режиме редактирования модуля — выход из режима.
             if (ModuleEditMode.IsActive && Input.GetKeyDown(KeyCode.Escape))
@@ -99,6 +108,8 @@ namespace KitchenDesigner.Core
         /// Вынесено из Update() для тестирования.</summary>
         public void HandleClickOnElement(KitchenElement? element, bool ctrlHeld)
         {
+            _collapseCandidate = null;
+
             // Пол (BasePlate) не выделяется — клик по нему снимает выделение.
             if (element != null && element.GetComponent<BasePlate>() == null)
             {
@@ -137,7 +148,13 @@ namespace KitchenDesigner.Core
                         SelectOnly(GroupManager.MembersOf(group)); // группа целиком
                 }
                 else if (_selectedElements.Count > 1 && _selectedElements.Contains(element))
-                    _selected = element; // часть мультивыделения — сохраняем для группового drag
+                {
+                    // Часть мультивыделения: на нажатии выборку не трогаем — иначе
+                    // пропадёт групповой drag. Если drag так и не начнётся,
+                    // HandleClickRelease оставит выделенной одну эту деталь.
+                    _selected = element;
+                    _collapseCandidate = element;
+                }
                 else
                     Select(element);
 
@@ -147,6 +164,19 @@ namespace KitchenDesigner.Core
 
             if (!ctrlHeld)
                 DeselectAll();
+        }
+
+        // Деталь, по которой кликнули внутри мультивыделения. Ждёт отпускания ЛКМ.
+        private KitchenElement? _collapseCandidate;
+
+        /// <summary>Отпускание ЛКМ без перетаскивания. Клик без Ctrl по детали из
+        /// мультивыделения оставляет выделенной только её. Публично для тестов.</summary>
+        public void HandleClickRelease()
+        {
+            var candidate = _collapseCandidate;
+            _collapseCandidate = null;
+            if (candidate == null || _selectedElements.Count <= 1) return;
+            SelectOnly(new List<KitchenElement> { candidate });
         }
 
         public void Select(KitchenElement element)

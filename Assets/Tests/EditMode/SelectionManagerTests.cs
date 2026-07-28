@@ -192,4 +192,58 @@ public class SelectionManagerTests
         Assert.IsNull(sm.Selected,
             "клик по полу снимает выделение");
     }
+
+    // ── Клик по детали внутри мультивыделения ─────────────────────
+
+    [Test]
+    public void ClickInsideMultiSelection_WithoutDrag_LeavesOnlyClickedElement()
+    {
+        EditModeManager.Reset();
+
+        var a = Make("Доска A");
+        var b = Make("Доска B");
+
+        var smGo = new GameObject("SelectionManager");
+        var sm = smGo.AddComponent<SelectionManager>();
+        _spawned.Add(smGo);
+
+        sm.SelectOnly(new List<KitchenElement> { a, b });
+        Assert.AreEqual(2, sm.SelectedElements.Count, "выделены две детали");
+
+        // Нажатие: выборка ещё цела — иначе пропал бы групповой drag.
+        sm.HandleClickOnElement(b, ctrlHeld: false);
+        Assert.AreEqual(2, sm.SelectedElements.Count, "на нажатии выделение не сжимается");
+        Assert.AreEqual(b, sm.Selected);
+
+        // Отпускание без перетаскивания — остаётся только та деталь, по которой кликнули.
+        sm.HandleClickRelease();
+
+        Assert.AreEqual(1, sm.SelectedElements.Count,
+            "ЛКМ без Ctrl по детали мультивыделения оставляет выделенной только её");
+        Assert.AreEqual(b, sm.Selected);
+        Assert.IsFalse(sm.IsSelected(a), "вторая деталь снята с выделения");
+    }
+
+    [Test]
+    public void ClickInsideMultiSelection_WithCtrl_TogglesInsteadOfCollapsing()
+    {
+        EditModeManager.Reset();
+
+        var a = Make("Доска A");
+        var b = Make("Доска B");
+        var c = Make("Доска C");
+
+        var smGo = new GameObject("SelectionManager");
+        var sm = smGo.AddComponent<SelectionManager>();
+        _spawned.Add(smGo);
+
+        sm.SelectOnly(new List<KitchenElement> { a, b, c });
+        sm.HandleClickOnElement(c, ctrlHeld: true);
+        sm.HandleClickRelease();
+
+        Assert.AreEqual(2, sm.SelectedElements.Count,
+            "Ctrl+клик снимает одну деталь и не сжимает выделение до одной");
+        Assert.IsTrue(sm.IsSelected(a));
+        Assert.IsTrue(sm.IsSelected(b));
+    }
 }
