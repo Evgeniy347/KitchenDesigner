@@ -85,6 +85,164 @@ public class AssembledFacadeMeshTests
         finally { Object.DestroyImmediate(blind); Object.DestroyImmediate(open); }
     }
 
+    [Test]
+    public void Build_HasUV_MatchingVertexCount()
+    {
+        var mesh = AssembledFacadeMesh.Build(new Vector3Int(600, 716, 18),
+            AssembledFill.Blind, 4, Frame);
+        try
+        {
+            var uv = mesh.uv;
+            Assert.AreEqual(mesh.vertexCount, uv.Length,
+                "UV-координат должно быть столько же, сколько вершин");
+            Assert.Greater(uv.Length, 0);
+        }
+        finally { Object.DestroyImmediate(mesh); }
+    }
+
+    [Test]
+    public void Build_UV_InRange()
+    {
+        var mesh = AssembledFacadeMesh.Build(new Vector3Int(600, 716, 18),
+            AssembledFill.Blind, 4, Frame);
+        try
+        {
+            var uv = mesh.uv;
+            foreach (var v in uv)
+            {
+                Assert.GreaterOrEqual(v.x, -1e-5f, $"u={v.x} < 0");
+                Assert.LessOrEqual(v.x, 1f + 1e-5f, $"u={v.x} > 1");
+                Assert.GreaterOrEqual(v.y, -1e-5f, $"v={v.y} < 0");
+                Assert.LessOrEqual(v.y, 1f + 1e-5f, $"v={v.y} > 1");
+            }
+        }
+        finally { Object.DestroyImmediate(mesh); }
+    }
+
+    [Test]
+    public void Build_FrontFaceUV_MatchesXY()
+    {
+        var mesh = AssembledFacadeMesh.Build(new Vector3Int(600, 716, 18),
+            AssembledFill.Blind, 4, Frame);
+        try
+        {
+            var verts = mesh.vertices;
+            var normals = mesh.normals;
+            var uv = mesh.uv;
+            int frontCount = 0;
+            for (int i = 0; i < verts.Length; i++)
+            {
+                if (normals[i].z <= 0.9f) continue;
+                frontCount++;
+                var v = verts[i];
+                Assert.AreEqual(v.x + 0.5f, uv[i].x, 1e-4f,
+                    $"Фронтальная вершина [{i}] uv.x (={uv[i].x:F4}) != x+0.5 (={v.x+0.5f:F4})");
+                Assert.AreEqual(v.y + 0.5f, uv[i].y, 1e-4f,
+                    $"Фронтальная вершина [{i}] uv.y (={uv[i].y:F4}) != y+0.5 (={v.y+0.5f:F4})");
+            }
+            Assert.Greater(frontCount, 0, "должна быть хотя бы одна фронтальная вершина");
+        }
+        finally { Object.DestroyImmediate(mesh); }
+    }
+
+    [Test]
+    public void Build_SideFaceUV_MatchesZY()
+    {
+        var mesh = AssembledFacadeMesh.Build(new Vector3Int(600, 716, 18),
+            AssembledFill.Blind, 4, Frame);
+        try
+        {
+            var verts = mesh.vertices;
+            var normals = mesh.normals;
+            var uv = mesh.uv;
+            int sideCount = 0;
+            for (int i = 0; i < verts.Length; i++)
+            {
+                if (Mathf.Abs(normals[i].x) <= 0.9f) continue;
+                sideCount++;
+                var v = verts[i];
+                Assert.AreEqual(v.z + 0.5f, uv[i].x, 1e-4f,
+                    $"Боковая вершина [{i}] uv.x (={uv[i].x:F4}) != z+0.5 (={v.z+0.5f:F4})");
+                Assert.AreEqual(v.y + 0.5f, uv[i].y, 1e-4f,
+                    $"Боковая вершина [{i}] uv.y (={uv[i].y:F4}) != y+0.5 (={v.y+0.5f:F4})");
+            }
+            Assert.Greater(sideCount, 0, "должна быть хотя бы одна боковая вершина");
+        }
+        finally { Object.DestroyImmediate(mesh); }
+    }
+
+    [Test]
+    public void Build_TopFaceUV_MatchesXZ()
+    {
+        var mesh = AssembledFacadeMesh.Build(new Vector3Int(600, 716, 18),
+            AssembledFill.Blind, 4, Frame);
+        try
+        {
+            var verts = mesh.vertices;
+            var normals = mesh.normals;
+            var uv = mesh.uv;
+            int topCount = 0;
+            for (int i = 0; i < verts.Length; i++)
+            {
+                if (normals[i].y <= 0.9f) continue;
+                topCount++;
+                var v = verts[i];
+                Assert.AreEqual(v.x + 0.5f, uv[i].x, 1e-4f,
+                    $"Верхняя вершина [{i}] uv.x (={uv[i].x:F4}) != x+0.5 (={v.x+0.5f:F4})");
+                Assert.AreEqual(v.z + 0.5f, uv[i].y, 1e-4f,
+                    $"Верхняя вершина [{i}] uv.y (={uv[i].y:F4}) != z+0.5 (={v.z+0.5f:F4})");
+            }
+            Assert.Greater(topCount, 0, "должна быть хотя бы одна верхняя вершина");
+        }
+        finally { Object.DestroyImmediate(mesh); }
+    }
+
+    [Test]
+    public void Build_Glass_HasUV()
+    {
+        var mesh = AssembledFacadeMesh.Build(new Vector3Int(600, 716, 18),
+            AssembledFill.Glass, 4, Frame);
+        try
+        {
+            Assert.AreEqual(mesh.vertexCount, mesh.uv.Length, "Glass: UV count = vertex count");
+            Assert.Greater(mesh.uv.Length, 0);
+        }
+        finally { Object.DestroyImmediate(mesh); }
+    }
+
+    [Test]
+    public void Build_Open_HasUV()
+    {
+        var mesh = AssembledFacadeMesh.Build(new Vector3Int(600, 716, 18),
+            AssembledFill.Open, 4, Frame);
+        try
+        {
+            Assert.AreEqual(mesh.vertexCount, mesh.uv.Length, "Open: UV count = vertex count");
+            Assert.Greater(mesh.uv.Length, 0);
+        }
+        finally { Object.DestroyImmediate(mesh); }
+    }
+
+    [Test]
+    public void Build_NoGrooves_HasUV()
+    {
+        var mesh = AssembledFacadeMesh.Build(new Vector3Int(600, 716, 18),
+            AssembledFill.Blind, 0, Frame);
+        try
+        {
+            Assert.AreEqual(mesh.vertexCount, mesh.uv.Length,
+                "Без фрезеровок: UV count = vertex count");
+            Assert.Greater(mesh.uv.Length, 0);
+            var uv = mesh.uv;
+            foreach (var v in uv)
+            {
+                Assert.GreaterOrEqual(v.x, -1e-5f);
+                Assert.LessOrEqual(v.x, 1f + 1e-5f);
+            }
+        }
+        finally { Object.DestroyImmediate(mesh); }
+    }
+
     private static void AssertPartCount(List<AssembledFacadeMesh.Part> parts, string suffix,
         Vector3Int dims, int expected)
     {

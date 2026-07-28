@@ -74,12 +74,13 @@ namespace KitchenDesigner.Core
             float iy = 0.5f - fy; // внутренняя полу-высота проёма
 
             var verts = new List<Vector3>();
+            var uvs = new List<Vector2>();
             var frame = new List<int>();
             var grooves = new List<int>();
 
             // Стойки — на всю высоту (ширина fx).
-            AddBox(verts, frame, new Vector3(-(0.5f - fx / 2f), 0f, 0f), new Vector3(fx, 1f, 1f));
-            AddBox(verts, frame, new Vector3(0.5f - fx / 2f, 0f, 0f), new Vector3(fx, 1f, 1f));
+            AddBox(verts, uvs, frame, new Vector3(-(0.5f - fx / 2f), 0f, 0f), new Vector3(fx, 1f, 1f));
+            AddBox(verts, uvs, frame, new Vector3(0.5f - fx / 2f, 0f, 0f), new Vector3(fx, 1f, 1f));
 
             // Перекладины — между стойками (ширина 2*ix, высота fy). На каждой — ДВЕ
             // реальные прямоугольные выемки (5×5 мм) у краёв проёма (отступ A от края).
@@ -90,16 +91,16 @@ namespace KitchenDesigner.Core
             float[] grooveX = grooveCount > 0
                 ? new[] { -(ix - gw / 2f), ix - gw / 2f }
                 : System.Array.Empty<float>();
-            AddGroovedRail(verts, frame, grooves,
+            AddGroovedRail(verts, uvs, frame, grooves,
                 new Vector3(0f, 0.5f - fy / 2f, 0f), new Vector3(railW, fy, 1f), grooveX, gw, gd);
-            AddGroovedRail(verts, frame, grooves,
+            AddGroovedRail(verts, uvs, frame, grooves,
                 new Vector3(0f, -(0.5f - fy / 2f), 0f), new Vector3(railW, fy, 1f), grooveX, gw, gd);
 
             // Глухой — панель заполняет проём, утоплена к задней грани.
             if (fill == AssembledFill.Blind)
             {
                 const float pt = 0.5f; // панель занимает заднюю половину толщины
-                AddBox(verts, frame, new Vector3(0f, 0f, -(0.5f - pt / 2f)),
+                AddBox(verts, uvs, frame, new Vector3(0f, 0f, -(0.5f - pt / 2f)),
                     new Vector3(2f * ix, 2f * iy, pt));
             }
 
@@ -110,30 +111,44 @@ namespace KitchenDesigner.Core
             mesh.SetTriangles(grooves, 1);
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
+            mesh.SetUVs(0, uvs);
             return mesh;
         }
 
         /// <summary>Добавить коробку (24 вершины, 12 треугольников) с плоскими
         /// гранями (нормали через RecalculateNormals). center/half в норм. координатах.</summary>
-        private static void AddBox(List<Vector3> verts, List<int> tris, Vector3 center, Vector3 half)
+        private static void AddBox(List<Vector3> verts, List<Vector2> uvs, List<int> tris,
+            Vector3 center, Vector3 half)
         {
             float x0 = center.x - half.x * 0.5f, x1 = center.x + half.x * 0.5f;
             float y0 = center.y - half.y * 0.5f, y1 = center.y + half.y * 0.5f;
             float z0 = center.z - half.z * 0.5f, z1 = center.z + half.z * 0.5f;
 
-            // +Z (лицо), -Z, +X, -X, +Y, -Y — каждая грань CCW снаружи.
-            AddQuad(verts, tris, V(x0, y0, z1), V(x1, y0, z1), V(x1, y1, z1), V(x0, y1, z1));
-            AddQuad(verts, tris, V(x1, y0, z0), V(x0, y0, z0), V(x0, y1, z0), V(x1, y1, z0));
-            AddQuad(verts, tris, V(x1, y0, z1), V(x1, y0, z0), V(x1, y1, z0), V(x1, y1, z1));
-            AddQuad(verts, tris, V(x0, y0, z0), V(x0, y0, z1), V(x0, y1, z1), V(x0, y1, z0));
-            AddQuad(verts, tris, V(x0, y1, z1), V(x1, y1, z1), V(x1, y1, z0), V(x0, y1, z0));
-            AddQuad(verts, tris, V(x0, y0, z0), V(x1, y0, z0), V(x1, y0, z1), V(x0, y0, z1));
+            // +Z (лицо) — XY-плоскость: u=x+0.5, v=y+0.5
+            AddQuad(verts, uvs, tris, V(x0,y0,z1), V(x1,y0,z1), V(x1,y1,z1), V(x0,y1,z1),
+                Uv(V(x0,y0,z1)), Uv(V(x1,y0,z1)), Uv(V(x1,y1,z1)), Uv(V(x0,y1,z1)));
+            // -Z — XY-плоскость
+            AddQuad(verts, uvs, tris, V(x1,y0,z0), V(x0,y0,z0), V(x0,y1,z0), V(x1,y1,z0),
+                Uv(V(x1,y0,z0)), Uv(V(x0,y0,z0)), Uv(V(x0,y1,z0)), Uv(V(x1,y1,z0)));
+            // +X — ZY-плоскость: u=z+0.5, v=y+0.5
+            AddQuad(verts, uvs, tris, V(x1,y0,z1), V(x1,y0,z0), V(x1,y1,z0), V(x1,y1,z1),
+                UvX(V(x1,y0,z1)), UvX(V(x1,y0,z0)), UvX(V(x1,y1,z0)), UvX(V(x1,y1,z1)));
+            // -X — ZY-плоскость
+            AddQuad(verts, uvs, tris, V(x0,y0,z0), V(x0,y0,z1), V(x0,y1,z1), V(x0,y1,z0),
+                UvX(V(x0,y0,z0)), UvX(V(x0,y0,z1)), UvX(V(x0,y1,z1)), UvX(V(x0,y1,z0)));
+            // +Y — XZ-плоскость: u=x+0.5, v=z+0.5
+            AddQuad(verts, uvs, tris, V(x0,y1,z1), V(x1,y1,z1), V(x1,y1,z0), V(x0,y1,z0),
+                UvY(V(x0,y1,z1)), UvY(V(x1,y1,z1)), UvY(V(x1,y1,z0)), UvY(V(x0,y1,z0)));
+            // -Y — XZ-плоскость
+            AddQuad(verts, uvs, tris, V(x0,y0,z0), V(x1,y0,z0), V(x1,y0,z1), V(x0,y0,z1),
+                UvY(V(x0,y0,z0)), UvY(V(x1,y0,z0)), UvY(V(x1,y0,z1)), UvY(V(x0,y0,z1)));
         }
 
         /// <summary>Перекладина-коробка с РЕАЛЬНЫМИ прямоугольными выемками на лицевой
         /// грани (карман: дно + 4 стенки, тёмный сабмеш). Задняя грань и боковые стенки
         /// сплошные; лицевая грань тесселируется в обход выемок.</summary>
-        private static void AddGroovedRail(List<Vector3> verts, List<int> frame, List<int> grooves,
+        private static void AddGroovedRail(List<Vector3> verts, List<Vector2> uvs,
+            List<int> frame, List<int> grooves,
             Vector3 center, Vector3 size, float[] grooveX, float gw, float gd)
         {
             float hx = size.x * 0.5f, hy = size.y * 0.5f, hz = size.z * 0.5f;
@@ -142,15 +157,21 @@ namespace KitchenDesigner.Core
             float zb = center.z - hz, zf = center.z + hz;
 
             // Задняя грань и боковые стенки (сплошные).
-            AddQuad(verts, frame, V(x1, y0, zb), V(x0, y0, zb), V(x0, y1, zb), V(x1, y1, zb)); // -Z
-            AddQuad(verts, frame, V(x1, y0, zf), V(x1, y0, zb), V(x1, y1, zb), V(x1, y1, zf)); // +X
-            AddQuad(verts, frame, V(x0, y0, zb), V(x0, y0, zf), V(x0, y1, zf), V(x0, y1, zb)); // -X
-            AddQuad(verts, frame, V(x0, y1, zf), V(x1, y1, zf), V(x1, y1, zb), V(x0, y1, zb)); // +Y
-            AddQuad(verts, frame, V(x0, y0, zb), V(x1, y0, zb), V(x1, y0, zf), V(x0, y0, zf)); // -Y
+            AddQuad(verts, uvs, frame, V(x1,y0,zb), V(x0,y0,zb), V(x0,y1,zb), V(x1,y1,zb),
+                Uv(V(x1,y0,zb)), Uv(V(x0,y0,zb)), Uv(V(x0,y1,zb)), Uv(V(x1,y1,zb))); // -Z
+            AddQuad(verts, uvs, frame, V(x1,y0,zf), V(x1,y0,zb), V(x1,y1,zb), V(x1,y1,zf),
+                UvX(V(x1,y0,zf)), UvX(V(x1,y0,zb)), UvX(V(x1,y1,zb)), UvX(V(x1,y1,zf))); // +X
+            AddQuad(verts, uvs, frame, V(x0,y0,zb), V(x0,y0,zf), V(x0,y1,zf), V(x0,y1,zb),
+                UvX(V(x0,y0,zb)), UvX(V(x0,y0,zf)), UvX(V(x0,y1,zf)), UvX(V(x0,y1,zb))); // -X
+            AddQuad(verts, uvs, frame, V(x0,y1,zf), V(x1,y1,zf), V(x1,y1,zb), V(x0,y1,zb),
+                UvY(V(x0,y1,zf)), UvY(V(x1,y1,zf)), UvY(V(x1,y1,zb)), UvY(V(x0,y1,zb))); // +Y
+            AddQuad(verts, uvs, frame, V(x0,y0,zb), V(x1,y0,zb), V(x1,y0,zf), V(x0,y0,zf),
+                UvY(V(x0,y0,zb)), UvY(V(x1,y0,zb)), UvY(V(x1,y0,zf)), UvY(V(x0,y0,zf))); // -Y
 
             if (grooveX == null || grooveX.Length == 0)
             {
-                AddQuad(verts, frame, V(x0, y0, zf), V(x1, y0, zf), V(x1, y1, zf), V(x0, y1, zf));
+                AddQuad(verts, uvs, frame, V(x0,y0,zf), V(x1,y0,zf), V(x1,y1,zf), V(x0,y1,zf),
+                    Uv(V(x0,y0,zf)), Uv(V(x1,y0,zf)), Uv(V(x1,y1,zf)), Uv(V(x0,y1,zf)));
                 return;
             }
 
@@ -159,8 +180,10 @@ namespace KitchenDesigner.Core
             float gz = zf - gd;          // дно кармана
 
             // Нижняя и верхняя полосы лицевой грани (полная ширина).
-            AddQuad(verts, frame, V(x0, y0, zf), V(x1, y0, zf), V(x1, gy0, zf), V(x0, gy0, zf));
-            AddQuad(verts, frame, V(x0, gy1, zf), V(x1, gy1, zf), V(x1, y1, zf), V(x0, y1, zf));
+            AddQuad(verts, uvs, frame, V(x0,y0,zf), V(x1,y0,zf), V(x1,gy0,zf), V(x0,gy0,zf),
+                Uv(V(x0,y0,zf)), Uv(V(x1,y0,zf)), Uv(V(x1,gy0,zf)), Uv(V(x0,gy0,zf)));
+            AddQuad(verts, uvs, frame, V(x0,gy1,zf), V(x1,gy1,zf), V(x1,y1,zf), V(x0,y1,zf),
+                Uv(V(x0,gy1,zf)), Uv(V(x1,gy1,zf)), Uv(V(x1,y1,zf)), Uv(V(x0,y1,zf)));
 
             // Средний ряд: полосы лицевой грани между выемками + карманы.
             var gs = (float[])grooveX.Clone();
@@ -170,27 +193,40 @@ namespace KitchenDesigner.Core
             {
                 float ga = gcx - gw * 0.5f, gb = gcx + gw * 0.5f;
                 if (ga > cx)
-                    AddQuad(verts, frame, V(cx, gy0, zf), V(ga, gy0, zf), V(ga, gy1, zf), V(cx, gy1, zf));
+                    AddQuad(verts, uvs, frame, V(cx,gy0,zf), V(ga,gy0,zf), V(ga,gy1,zf), V(cx,gy1,zf),
+                        Uv(V(cx,gy0,zf)), Uv(V(ga,gy0,zf)), Uv(V(ga,gy1,zf)), Uv(V(cx,gy1,zf)));
 
                 // Карман (тёмный сабмеш): дно + 4 стенки.
-                AddQuad(verts, grooves, V(ga, gy0, gz), V(gb, gy0, gz), V(gb, gy1, gz), V(ga, gy1, gz)); // дно
-                AddQuad(verts, grooves, V(ga, gy0, zf), V(ga, gy0, gz), V(ga, gy1, gz), V(ga, gy1, zf)); // -X
-                AddQuad(verts, grooves, V(gb, gy0, gz), V(gb, gy0, zf), V(gb, gy1, zf), V(gb, gy1, gz)); // +X
-                AddQuad(verts, grooves, V(ga, gy0, zf), V(gb, gy0, zf), V(gb, gy0, gz), V(ga, gy0, gz)); // -Y
-                AddQuad(verts, grooves, V(ga, gy1, gz), V(gb, gy1, gz), V(gb, gy1, zf), V(ga, gy1, zf)); // +Y
+                AddQuad(verts, uvs, grooves, V(ga,gy0,gz), V(gb,gy0,gz), V(gb,gy1,gz), V(ga,gy1,gz),
+                    Uv(V(ga,gy0,gz)), Uv(V(gb,gy0,gz)), Uv(V(gb,gy1,gz)), Uv(V(ga,gy1,gz))); // дно
+                AddQuad(verts, uvs, grooves, V(ga,gy0,zf), V(ga,gy0,gz), V(ga,gy1,gz), V(ga,gy1,zf),
+                    UvX(V(ga,gy0,zf)), UvX(V(ga,gy0,gz)), UvX(V(ga,gy1,gz)), UvX(V(ga,gy1,zf))); // -X
+                AddQuad(verts, uvs, grooves, V(gb,gy0,gz), V(gb,gy0,zf), V(gb,gy1,zf), V(gb,gy1,gz),
+                    UvX(V(gb,gy0,gz)), UvX(V(gb,gy0,zf)), UvX(V(gb,gy1,zf)), UvX(V(gb,gy1,gz))); // +X
+                AddQuad(verts, uvs, grooves, V(ga,gy0,zf), V(gb,gy0,zf), V(gb,gy0,gz), V(ga,gy0,gz),
+                    UvY(V(ga,gy0,zf)), UvY(V(gb,gy0,zf)), UvY(V(gb,gy0,gz)), UvY(V(ga,gy0,gz))); // -Y
+                AddQuad(verts, uvs, grooves, V(ga,gy1,gz), V(gb,gy1,gz), V(gb,gy1,zf), V(ga,gy1,zf),
+                    UvY(V(ga,gy1,gz)), UvY(V(gb,gy1,gz)), UvY(V(gb,gy1,zf)), UvY(V(ga,gy1,zf))); // +Y
                 cx = gb;
             }
             if (x1 > cx)
-                AddQuad(verts, frame, V(cx, gy0, zf), V(x1, gy0, zf), V(x1, gy1, zf), V(cx, gy1, zf));
+                AddQuad(verts, uvs, frame, V(cx,gy0,zf), V(x1,gy0,zf), V(x1,gy1,zf), V(cx,gy1,zf),
+                    Uv(V(cx,gy0,zf)), Uv(V(x1,gy0,zf)), Uv(V(x1,gy1,zf)), Uv(V(cx,gy1,zf)));
         }
 
         private static Vector3 V(float x, float y, float z) => new Vector3(x, y, z);
 
-        private static void AddQuad(List<Vector3> verts, List<int> tris,
-            Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+        private static Vector2 Uv(Vector3 v) => new Vector2(v.x + 0.5f, v.y + 0.5f);
+        private static Vector2 UvX(Vector3 v) => new Vector2(v.z + 0.5f, v.y + 0.5f);
+        private static Vector2 UvY(Vector3 v) => new Vector2(v.x + 0.5f, v.z + 0.5f);
+
+        private static void AddQuad(List<Vector3> verts, List<Vector2> uvs, List<int> tris,
+            Vector3 a, Vector3 b, Vector3 c, Vector3 d,
+            Vector2 uvA, Vector2 uvB, Vector2 uvC, Vector2 uvD)
         {
             int i = verts.Count;
             verts.Add(a); verts.Add(b); verts.Add(c); verts.Add(d);
+            uvs.Add(uvA); uvs.Add(uvB); uvs.Add(uvC); uvs.Add(uvD);
             tris.Add(i); tris.Add(i + 1); tris.Add(i + 2);
             tris.Add(i); tris.Add(i + 2); tris.Add(i + 3);
         }
