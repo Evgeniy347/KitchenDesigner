@@ -546,6 +546,9 @@ public class ElementConverterTests
         // Производные от состояния, а не хранимые: конвертация их не переносит —
         // после смены типа они пересчитаются сами.
         "PoseFollowsTransform", "Transformable",
+        // Счётчик изменений позы: рантайм-состояние для SceneChangeTracker,
+        // в сейве его нет и переносить при конвертации нечего.
+        "PoseVersion",
         // FacadeElement
         "GapLeft", "GapRight", "GapTop", "GapBottom", "GapMM", "Mode",
         "IsOpen", "DoorProgress", "IsDoorClosed", "ClosedPosition", "ClosedRotation",

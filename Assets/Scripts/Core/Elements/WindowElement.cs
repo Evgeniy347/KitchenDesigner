@@ -127,10 +127,16 @@ namespace KitchenDesigner.Core
             _sashGroup.localRotation = rot;
         }
 
+        private int _lastPoseVersion;
+
         private void Update()
         {
             StepDoor(Time.deltaTime);
-            SnapToWall();
+            if (PoseVersion != _lastPoseVersion)
+            {
+                _lastPoseVersion = PoseVersion;
+                SnapToWall();
+            }
         }
 
         public void StepDoor(float dt)

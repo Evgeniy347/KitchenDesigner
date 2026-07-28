@@ -35,6 +35,10 @@ namespace KitchenDesigner.Core
 
         public static void Execute(IUndoCommand command)
         {
+            // Через стек команд проходит каждое пользовательское изменение (правило
+            // «undo на всё»), поэтому здесь ловятся и правки свойств, которые не
+            // трогают ни трансформ, ни реестр — например, включение кромки.
+            SceneRevision.Bump();
             if (_capture == null) { Instance.Execute(command); return; }
             command.Execute();
             _capture.Add(command);
@@ -54,8 +58,8 @@ namespace KitchenDesigner.Core
             if (commit && commands.Count > 0)
                 Instance.Execute(new CompositeCommand(description, commands));
         }
-        public static void Undo() => Instance.Undo();
-        public static void Redo() => Instance.Redo();
+        public static void Undo() { SceneRevision.Bump(); Instance.Undo(); }
+        public static void Redo() { SceneRevision.Bump(); Instance.Redo(); }
         public static void Clear() => Instance.Clear();
         public static string PeekUndoDescription() => Instance.PeekUndoDescription();
 

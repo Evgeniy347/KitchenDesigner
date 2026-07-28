@@ -154,19 +154,27 @@ namespace KitchenDesigner.Core
             }
         }
 
-        private void ToggleCsv()
-        {
-            if (_csv == null) return;
+        private void ToggleCsv() => SetCsvRecording(_csv == null || !_csv.Recording);
 
-            if (_csv.Recording)
+        /// <summary>Включает или выключает запись CSV. При выключении возвращает путь
+        /// сохранённого файла (null, если писать было нечего). Публичный метод нужен
+        /// профилировочным PlayMode-прогонам, которые крутят сцену без участия человека.</summary>
+        public string? SetCsvRecording(bool on)
+        {
+            if (_csv == null) return null;
+
+            if (!on)
             {
+                if (!_csv.Recording) return null;
                 int rows = _csv.Rows;
                 var path = _csv.Stop();
                 Debug.Log(path != null
-                    ? $"[Perf] CSV: {rows} кадров → {path}"
+                    ? $"[Perf] CSV: {rows} кадров -> {path}"
                     : "[Perf] CSV: писать нечего");
-                return;
+                return path;
             }
+
+            if (_csv.Recording) return null;
 
             // Запись без замера бессмысленна — включаем заодно.
             if (!Enabled)
@@ -176,6 +184,7 @@ namespace KitchenDesigner.Core
             }
             _csv.Start();
             Debug.Log($"[Perf] запись CSV пошла (до {CsvCapacityFrames} кадров, Shift+F9 — стоп)");
+            return null;
         }
 
         // ── Сбор ────────────────────────────────────────────────────────────

@@ -24,13 +24,14 @@ namespace KitchenDesigner.Core
 
         public void Register(KitchenElement element)
         {
-            if (element != null && !_all.Contains(element))
-                _all.Add(element);
+            if (element == null || _all.Contains(element)) return;
+            _all.Add(element);
+            SceneRevision.Bump();
         }
 
         public void Unregister(KitchenElement element)
         {
-            _all.Remove(element);
+            if (_all.Remove(element)) SceneRevision.Bump();
         }
 
         public List<KitchenElement> GetAll()
@@ -44,7 +45,9 @@ namespace KitchenDesigner.Core
 
         public void Clear()
         {
+            if (_all.Count == 0) return;
             _all.Clear();
+            SceneRevision.Bump();
         }
     }
 }

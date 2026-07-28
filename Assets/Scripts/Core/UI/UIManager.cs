@@ -41,10 +41,18 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _editModeButtonLabel;
         private TMP_Text? _errorButtonLabel;
 
-        // Счётчик проблем на кнопке «Ошибки» пересчитывается не каждый кадр
-        // (анализ сцены — тяжёлый O(n²) по коллизиям), а раз в интервал.
-        private const float ErrorBadgeIntervalSec = 1f;
-        private float _errorBadgeTimer;
+        // Счётчик проблем на кнопке «Ошибки» пересчитывается только когда сцена
+        // изменилась. Раньше это был таймер раз в секунду, и полный анализ сцены
+        // (O(n²) по коллизиям и покрытию кромок) давал на 259 элементах хич в
+        // 150-220 мс ровно раз в секунду — именно он ощущался как рывок камеры.
+        private int _errorBadgeRevision = -1;
+        private int _errorBadgePendingRevision = -1;
+        private float _errorBadgeStableAt;
+
+        /// <summary>Сколько сцена должна постоять неизменной, прежде чем пересчитывать
+        /// бейдж. Без этой паузы перетаскивание детали (ревизия растёт каждый кадр)
+        /// запускало бы анализ в каждом кадре — хуже прежнего таймера.</summary>
+        private const float ErrorBadgeSettleSec = 0.25f;
 
         public Canvas? Canvas => _canvas;
         public const string QuickSaveName = "quicksave";
@@ -300,12 +308,25 @@ namespace KitchenDesigner.Core.UI
             SetToggled(_settingsButton, _settingsPanel != null && _settingsPanel.IsVisible);
             SetToggled(_dayNightButton, _dayNightPanel != null && _dayNightPanel.IsVisible);
 
-            _errorBadgeTimer -= Time.unscaledDeltaTime;
-            if (_errorBadgeTimer <= 0f)
+            RefreshErrorBadgeIfSettled();
+        }
+
+        /// <summary>Пересчитывает бейдж, когда сцена изменилась И успокоилась:
+        /// во время перетаскивания или ресайза анализ не запускается вовсе, а
+        /// сразу после отпускания считается ровно один раз.</summary>
+        private void RefreshErrorBadgeIfSettled()
+        {
+            if (SceneRevision.Changed(ref _errorBadgePendingRevision))
             {
-                _errorBadgeTimer = ErrorBadgeIntervalSec;
-                UpdateErrorBadge();
+                _errorBadgeStableAt = Time.unscaledTime + ErrorBadgeSettleSec;
+                return;
             }
+
+            if (_errorBadgePendingRevision == _errorBadgeRevision) return;
+            if (Time.unscaledTime < _errorBadgeStableAt) return;
+
+            _errorBadgeRevision = _errorBadgePendingRevision;
+            UpdateErrorBadge();
         }
 
         // «(N)» на кнопке «Ошибки»: N = ошибки + предупреждения. Число красное,

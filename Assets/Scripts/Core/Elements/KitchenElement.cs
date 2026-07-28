@@ -391,6 +391,14 @@ namespace KitchenDesigner.Core
             }
         }
 
+        /// <summary>Версия позы: растёт, когда <see cref="SceneChangeTracker"/> замечает
+        /// запись в трансформ. Системам, которым важно «деталь сдвинули» (привязка окна к
+        /// стене, мойки к столешнице, верхнего ящика к нижнему), достаточно сравнить её со
+        /// своей — вместо покадрового пересчёта.</summary>
+        public int PoseVersion { get; private set; }
+
+        internal void BumpPoseVersion() => PoseVersion++;
+
         private void Awake()
         {
             ApplyDimensions();
