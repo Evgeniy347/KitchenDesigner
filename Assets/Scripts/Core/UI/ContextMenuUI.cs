@@ -461,12 +461,14 @@ namespace KitchenDesigner.Core.UI
 
             var matOptions = new List<string>();
             foreach (var m in MaterialCatalog.All) matOptions.Add(m.displayName);
-            // У стены и пола этой строки нет: накладка со стороной «(все)» и есть
-            // «декор на весь объект», и держать рядом два способа задать одно и то
-            // же — только путать (правило 5 UI-GUIDELINES: одно действие — одно место).
+            // Строка нужна и стене с полом. Накладка со стороной «(все)» похожа на
+            // «декор на весь объект», но заменяет его только когда её ЯВНО добавили
+            // на все шесть граней: накладка — плёнка поверх грани, и вокруг неё (на
+            // прочих гранях, на не покрытой растяжением части, после удаления
+            // накладки) видно именно этот базовый декор. Пряталась — и у стен из
+            // старых проектов декор становился неуправляемым.
             _materialDropdown = LabeledDropdownRow(panel.transform, "Текстура", matOptions,
-                OnMaterialSelected,
-                (h, g, rects) => AddRow(h, g, () => !_currentIsTable && !TexturesEligible(), rects),
+                OnMaterialSelected, (h, g, rects) => AddRow(h, g, () => !_currentIsTable, rects),
                 "CtxMaterial");
 
             // Текстуры столешницы и опор (только для столов).
@@ -1781,7 +1783,7 @@ namespace KitchenDesigner.Core.UI
                 int index = i; // копия для замыкания: иначе все кнопки правили бы последнюю
                 var sideDd = UIFactory.CreateDropdown($"CtxTexSide{i}", parent,
                     new List<string>(sideOptions), new Vector2(TexSideX, 0),
-                    new Vector2(TexSideW, TexRowH), _ => EditTextureOverlay(index));
+                    new Vector2(TexSideW, TexRowH), _ => { EdgeSideHighlighter.Hide(); EditTextureOverlay(index); });
                 var matDd = UIFactory.CreateDropdown($"CtxTexMat{i}", parent,
                     new List<string>(matOptions), new Vector2(TexMatX, 0),
                     new Vector2(TexMatW, TexRowH), _ => EditTextureOverlay(index));
@@ -1804,7 +1806,7 @@ namespace KitchenDesigner.Core.UI
 
             _textureSideDropdown = UIFactory.CreateDropdown("CtxTexSide", parent,
                 new List<string>(sideOptions), new Vector2(TexSideX, 0),
-                new Vector2(TexSideW, TexRowH), _ => { });
+                new Vector2(TexSideW, TexRowH), _ => EdgeSideHighlighter.Hide());
             _textureMaterialDropdown = UIFactory.CreateDropdown("CtxTexMat", parent,
                 new List<string>(matOptions), new Vector2(TexAddMatX, 0),
                 new Vector2(TexAddMatW, TexRowH), _ => { });

@@ -39,14 +39,16 @@ namespace KitchenDesigner.Core.UI
 
         private void Update()
         {
-            // Список Unity создаёт и уничтожает сам; ловим оба события по факту.
+            // Список Unity создаёт и уничтожает сам; на практике может и
+            // просто деактивировать — ловим оба варианта.
             var list = _dropdown != null
                 ? _dropdown.transform.Find("Dropdown List")
                 : null;
 
-            if (list == _list) return;
+            if (list == _list && (list == null || list.gameObject.activeInHierarchy))
+                return;
 
-            if (list == null)
+            if (list == null || !list.gameObject.activeInHierarchy)
             {
                 _list = null;
                 _onExit?.Invoke();

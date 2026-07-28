@@ -1,7 +1,10 @@
 using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.UI;
 
 /// <summary>Накладки текстур: модель, геометрия области, меш с вырезами,
 /// сохранение и MCP-контракт.</summary>
@@ -501,6 +504,45 @@ public class TextureOverlayTests
         finally
         {
             Object.DestroyImmediate(material);
+        }
+    }
+
+    // ── DropdownHover: деактивация списка (не уничтожение) ─────────────
+
+    private static readonly MethodInfo _dropdownHoverUpdate =
+        typeof(DropdownHover).GetMethod("Update", BindingFlags.NonPublic | BindingFlags.Instance);
+
+    [Test]
+    public void DropdownHover_ExitFires_WhenListIsDeactivated()
+    {
+        var root = new GameObject("TestRoot");
+        try
+        {
+            var dd = UIFactory.CreateDropdown("TestDD", root.transform,
+                new List<string> { "A", "B", "C" },
+                Vector2.zero, new Vector2(200, 28), _ => { });
+            int exitCalls = 0;
+            DropdownHover.Attach(dd, _ => { }, () => exitCalls++);
+
+            // Эмулируем открытие: список появился активным
+            var listGo = new GameObject("Dropdown List");
+            listGo.transform.SetParent(dd.transform, worldPositionStays: false);
+            listGo.SetActive(true);
+            _dropdownHoverUpdate!.Invoke(
+                dd.GetComponent<DropdownHover>(), null);
+            Assert.AreEqual(0, exitCalls, "до закрытия выхода быть не должно");
+
+            // Эмулируем закрытие: список деактивирован (не уничтожен)
+            listGo.SetActive(false);
+            _dropdownHoverUpdate!.Invoke(
+                dd.GetComponent<DropdownHover>(), null);
+            Assert.AreEqual(1, exitCalls,
+                "onExit должен сработать при деактивации списка — без" +
+                " него подсветка остаётся висеть после выбора грани");
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
         }
     }
 }
