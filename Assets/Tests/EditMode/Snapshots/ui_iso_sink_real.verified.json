@@ -1,4 +1,4 @@
-﻿{
+{
   "root": "UICanvas",
   "children": [
     {
@@ -398,6 +398,176 @@
     },
     {
       "type": "Button",
+      "text": "Cab_BackPanel",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_L_Divider",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_L_Shf_A2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_L_Shf_A3",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_L_Shf_A4",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_L_Shf_B2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_L_Shf_B3",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_L_Shf_B4",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_L_Side_L",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_L_Side_R",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_L_Top",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Bottom",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Div_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Div_2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_MidWide",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_L1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_L2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_L3",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_L4",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_L5",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_M1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_M2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_M3",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_R1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_R2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_R3",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_R4",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Shf_R5",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Side_L",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_R_Side_R",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_ToeKick_Bottom",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_ToeKick_Front",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_ToeKick_Inner",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Cab_ToeKick_Inner_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
       "text": "Countertop_A",
       "position": [20, 0]
     },
@@ -588,6 +758,11 @@
     },
     {
       "type": "Button",
+      "text": "Korob_4",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
       "text": "Leg_A12_back",
       "position": [20, 0]
     },
@@ -709,131 +884,6 @@
     {
       "type": "Button",
       "text": "Pol_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_1_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_1_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_1_1_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_1_1_1_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_1_1_1_1_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_1_1_1_1_1_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_1_1_1_1_2",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_1_1_1_2",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_1_1_2",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_1_1_3",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_1_1_3_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_2",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_3_2_1",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_4",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_1_1_5",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_1_1_2",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_2",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Polka_1_3",
       "position": [20, 0]
     },
     {
@@ -1023,6 +1073,21 @@
     },
     {
       "type": "Button",
+      "text": "Yaschik_Movento",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Yaschik_Movento_1",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Yaschik_Movento_2",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
       "text": "fake-microwave",
       "position": [20, 0]
     },
@@ -1088,6 +1153,21 @@
     },
     {
       "type": "Button",
+      "text": "Fasad_schitovoy",
+      "position": [36, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Fasad_schitovoy_1",
+      "position": [36, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Fasad_schitovoy_2",
+      "position": [36, 0]
+    },
+    {
+      "type": "Button",
       "text": "Группа 1 (0)",
       "position": [38, 0]
     },
@@ -1123,7 +1203,7 @@
     },
     {
       "type": "Button",
-      "text": "Ошибки",
+      "text": "Ошибки <color=#E64040>(#)</color>",
       "position": [260, -6]
     },
     {

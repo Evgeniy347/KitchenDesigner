@@ -90,3 +90,25 @@ public static class UiTestTree
             if (go != null) go.SetActive(true);
     }
 }
+
+/// <summary>
+/// Окна проекта в скриншот-тестах.
+///
+/// Файл проекта хранит, какие окна были открыты, и <c>RestoreScene</c> их
+/// восстанавливает (<c>ProjectWindows.Apply</c>). Для эталонного рендера это
+/// недопустимый источник недетерминизма: <c>docs/example.save.json</c>
+/// перезаписывается автосохранением десктопа, и вместе с ним в кадр приезжает
+/// тот набор окон, который был открыт в момент сохранения — тест краснеет с
+/// диффом вида «Кухня → Ошибка». Состав окон задаёт САМ тест, сразу после
+/// загрузки проекта.
+/// </summary>
+public static class ProjectWindowsTestState
+{
+    /// <summary>Закрыть все окна проекта, оставив открытым только
+    /// <paramref name="windowId"/>. null — закрыть все.</summary>
+    public static void ShowOnly(string? windowId)
+    {
+        foreach (var w in KitchenDesigner.Core.UI.ProjectWindows.All)
+            w.SetVisible(w.WindowId == windowId);
+    }
+}

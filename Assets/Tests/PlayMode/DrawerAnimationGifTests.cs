@@ -94,6 +94,9 @@ public class DrawerAnimationGifTests
         var created = SaveLoadManager.RestoreScene(data!);
         Assert.IsTrue(created.Count > 0, "No elements created from save");
 
+        // Состав окон задаёт тест, а не сейв (см. ProjectWindowsTestState).
+        ProjectWindowsTestState.ShowOnly(null);
+
         yield return null;
         yield return null;
         yield return null;

@@ -592,6 +592,14 @@ public class IsoScreenshotTests
         Assert.IsTrue(created.Count > 0);
         foreach (var go in created) _spawned.Add(go);
 
+        // Кадр — только 3D-мойка, ни одного окна проекта. Иначе состав окон в
+        // эталоне определяет сейв (см. ProjectWindowsTestState).
+        ProjectWindowsTestState.ShowOnly(null);
+        var windows = KitchenDesigner.Core.UI.ProjectWindows.All;
+        Assert.IsNotEmpty(windows, "окна проекта не зарегистрированы — проверка ниже пуста");
+        foreach (var w in windows)
+            Assert.IsFalse(w.IsVisible, $"окно {w.WindowId} осталось открытым");
+
         // Пара кадров — Start/Update мойки успевают найти столешницу сами.
         yield return null;
         yield return null;

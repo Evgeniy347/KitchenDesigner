@@ -270,10 +270,23 @@ namespace KitchenDesigner.Tests
             {
                 var tmp = child.GetComponent<TextMeshProUGUI>();
                 if (tmp != null && !string.IsNullOrEmpty(tmp.text))
-                    return tmp.text;
+                    return MaskLiveCounters(tmp.text);
             }
             return null;
         }
+
+        /// <summary>Заменить «живой» счётчик в цветном бейдже на «(#)».
+        ///
+        /// Кнопка «Ошибки» несёт число проблем текущего проекта
+        /// («Ошибки &lt;color=#E64040&gt;(52)&lt;/color&gt;»). Это ДАННЫЕ, а не вёрстка:
+        /// любая правка геометрии меняет счётчик и роняет эталон, к UI отношения
+        /// не имеющий. Маскируем только число внутри цветного тега — обычные
+        /// подписи с цифрами (номера вкладок, размеры) остаются как есть.</summary>
+        private static string MaskLiveCounters(string text) =>
+            CounterBadge.Replace(text, "(#)");
+
+        private static readonly Regex CounterBadge =
+            new Regex(@"(?<=<color=[^>]*>)\(\d+\)(?=</color>)", RegexOptions.Compiled);
 
         // ── Serialization ───────────────────────────────────────────────
 
