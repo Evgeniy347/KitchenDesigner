@@ -83,9 +83,19 @@ namespace KitchenDesigner.Core
         private static void ApplyOpeningVisibility(Wall wall, bool hidden)
         {
             foreach (var w in wall.AttachedWindows)
-                if (w != null) SceneVisibility.SetRenderersEnabled(w, !hidden);
+                if (w != null)
+                {
+                    SceneVisibility.SetRenderersEnabled(w, !hidden);
+                    var c = w.GetComponent<Collider>();
+                    if (c != null) c.enabled = !hidden || RoomMode;
+                }
             foreach (var d in wall.AttachedDoors)
-                if (d != null) SceneVisibility.SetRenderersEnabled(d, !hidden);
+                if (d != null)
+                {
+                    SceneVisibility.SetRenderersEnabled(d, !hidden);
+                    var c = d.GetComponent<Collider>();
+                    if (c != null) c.enabled = !hidden || RoomMode;
+                }
         }
     }
 }

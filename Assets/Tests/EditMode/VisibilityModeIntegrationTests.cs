@@ -237,6 +237,27 @@ public class VisibilityModeIntegrationTests
     }
 
     [Test]
+    public void NormalMode_WallsDisabled_DisablesOpeningColliders()
+    {
+        Normal.wallsEnabled = false;
+
+        EditModeManager.SetMode(EditMode.Normal);
+        ApplyVisibility();
+
+        Assert.IsFalse(_wallFrontComp.IsLowered, "стена восстановлена");
+        Assert.IsFalse(SceneVisibility.AnyRendererEnabled(_windowEl), "окно скрыто");
+        Assert.IsFalse(SceneVisibility.AnyRendererEnabled(_doorEl), "дверь скрыта");
+
+        var windowCollider = _window.GetComponent<Collider>();
+        Assert.IsNotNull(windowCollider, "у окна есть коллайдер");
+        Assert.IsFalse(windowCollider!.enabled, "коллайдер окна выключен вместе со стеной");
+
+        var doorCollider = _door.GetComponent<Collider>();
+        Assert.IsNotNull(doorCollider, "у двери есть коллайдер");
+        Assert.IsFalse(doorCollider!.enabled, "коллайдер двери выключен вместе со стеной");
+    }
+
+    [Test]
     public void NormalMode_ObjectsVisibleFalse_HidesDetailsAndLamp()
     {
         Normal.objectsVisible = false;
@@ -294,6 +315,14 @@ public class VisibilityModeIntegrationTests
         Assert.IsTrue(_wallFrontComp.IsLowered, "стена опущена");
         Assert.IsFalse(SceneVisibility.AnyRendererEnabled(_windowEl), "окно опущенной стены скрыто");
         Assert.IsFalse(SceneVisibility.AnyRendererEnabled(_doorEl), "дверь опущенной стены скрыта");
+
+        var windowCollider = _window.GetComponent<Collider>();
+        Assert.IsNotNull(windowCollider, "у окна есть коллайдер");
+        Assert.IsFalse(windowCollider!.enabled, "коллайдер окна выключен — клик не должен его задеть");
+
+        var doorCollider = _door.GetComponent<Collider>();
+        Assert.IsNotNull(doorCollider, "у двери есть коллайдер");
+        Assert.IsFalse(doorCollider!.enabled, "коллайдер двери выключен — клик не должен его задеть");
 
         // Привязка сохраняется — вырез в стене часть её меша, а не окна.
         Assert.GreaterOrEqual(_wallFrontComp.AttachedWindows.Count, 1, "окно всё ещё AttachedWindow");
