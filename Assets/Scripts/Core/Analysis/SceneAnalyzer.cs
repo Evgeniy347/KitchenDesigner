@@ -55,12 +55,26 @@ namespace KitchenDesigner.Core.Analysis
 
                 var coverage = EdgeBanding.Coverage(e, all);
                 var sides = new List<string>();
+
+                // Виновник — сосед, накрывший торец больше всех. Торцов может быть
+                // испорчено несколько, а вторая деталь в отчёте одна: берём того,
+                // у кого площадь перекрытия максимальна по всем сторонам.
+                KitchenElement? culprit = null;
+                float culpritArea = 0f;
+
                 foreach (EdgeSide side in System.Enum.GetValues(typeof(EdgeSide)))
-                    if (coverage.IsPartial(side))
-                        sides.Add($"{side} {coverage.Ratio(side) * 100f:F0}%");
+                {
+                    if (!coverage.IsPartial(side)) continue;
+                    sides.Add($"{side} {coverage.Ratio(side) * 100f:F0}%");
+
+                    var coverer = EdgeBanding.DominantCoverer(e, all, side, out float area);
+                    if (coverer == null || area <= culpritArea) continue;
+                    culprit = coverer;
+                    culpritArea = area;
+                }
 
                 if (sides.Count > 0)
-                    issues.Add(IssueCatalog.EdgePartialCover(e, string.Join(", ", sides)));
+                    issues.Add(IssueCatalog.EdgePartialCover(e, string.Join(", ", sides), culprit));
             }
         }
 
@@ -150,9 +164,18 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
-        public static AnalysisIssue EdgePartialCover(KitchenElement element, string sides) =>
-            new AnalysisIssue(IssueLevel.Error, CodeEdgePartialCover,
-                Name(element), $"Торец под кромку перекрыт частично: {sides}", element);
+        /// <summary>culprit — сосед, накрывший торец больше всех; может быть null,
+        /// если перекрытие дают только якоря вроде пола или стены.</summary>
+        public static AnalysisIssue EdgePartialCover(KitchenElement element, string sides,
+            KitchenElement? culprit = null) =>
+            culprit != null
+                // Пара в колонке «Деталь» — как у GAP-01/COL-01: по клику
+                // ErrorPanelUI выделяет обе детали, и виновник виден в сцене.
+                ? new AnalysisIssue(IssueLevel.Error, CodeEdgePartialCover,
+                    PairDetail(element, culprit),
+                    $"Торец под кромку перекрыт частично: {sides}", element, culprit)
+                : new AnalysisIssue(IssueLevel.Error, CodeEdgePartialCover,
+                    Name(element), $"Торец под кромку перекрыт частично: {sides}", element);
 
         public static AnalysisIssue NearContact(KitchenElement a, KitchenElement b, float gapMm) =>
             new AnalysisIssue(IssueLevel.Warning, CodeNearContact,

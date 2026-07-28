@@ -168,6 +168,27 @@ public class EdgeBandingTests
         Assert.AreEqual(0.5f, coverage.Ratio(EdgeSide.W1), 0.01f);
     }
 
+    /// <summary>Ошибка EDG-01 обязана называть ВИНОВНИКА и подсвечивать его:
+    /// без второй детали непонятно, что именно наезжает на кромку. Соседей может
+    /// быть несколько — берём того, кто закрыл торец большей площадью.</summary>
+    [Test]
+    public void PartialCover_ReportsBiggestCovererAsSecondary()
+    {
+        var shelf = CreatePart("Shelf", ShelfDims);
+        var small = SidePanelAtW1(60, zOffset: 0.17f);   // узкий сосед
+        var big = SidePanelAtW1(160, zOffset: -0.12f);   // широкий сосед
+        foreach (var el in new[] { shelf, small, big }) PartRegistry.Register(el);
+
+        var issues = SceneAnalyzer.Analyze();
+        var edge = issues.Find(i => i.Code == IssueCatalog.CodeEdgePartialCover
+                                    && i.Target == shelf);
+
+        Assert.AreNotEqual(default(AnalysisIssue), edge, "торец перекрыт частично — ждём EDG-01");
+        Assert.AreSame(big, edge.Secondary, "виновник — сосед с наибольшей площадью перекрытия");
+        StringAssert.Contains(big.PartName, edge.Detail, "пара в колонке «Деталь» — как у GAP-01");
+        StringAssert.Contains(shelf.PartName, edge.Detail);
+    }
+
     [Test]
     public void EndCoveredByTwoNeighbours_CountsAsFullyCovered()
     {

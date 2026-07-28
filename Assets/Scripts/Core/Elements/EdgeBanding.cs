@@ -210,6 +210,58 @@ namespace KitchenDesigner.Core
                 CoveredRatio(ends[3], covers[3]));
         }
 
+        /// <summary>Деталь, которая закрывает торец больше остальных (по площади
+        /// перекрытия), или null. Нужна, чтобы ошибка «торец перекрыт частично»
+        /// называла ВИНОВНИКА и подсвечивала его в сцене, а не только саму деталь.
+        ///
+        /// Отдельный проход, а не побочный результат <see cref="Coverage"/>:
+        /// Coverage — горячий путь O(n²) на всю сцену, а частично перекрытые
+        /// торцы редки, и точечный доп. проход по ним дешевле, чем таскать
+        /// ссылки на детали через каждый вызов.</summary>
+        public static KitchenElement? DominantCoverer(KitchenElement element,
+            IReadOnlyList<KitchenElement> others, EdgeSide side, out float coveredArea)
+        {
+            coveredArea = 0f;
+            if (element == null) return null;
+            var layout = LayoutOf(element.DimensionsMM);
+            if (!layout.IsValid) return null;
+
+            var face = element.GetFaces()[layout.FaceIndex(side)];
+            Vector3 u = face.rightAxis, v = face.upAxis;
+            Rect target = FaceRect(face, u, v);
+            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+
+            KitchenElement? best = null;
+            foreach (var other in others)
+            {
+                if (other == null || other == element) continue;
+                if (!other.gameObject.activeInHierarchy) continue;
+                if (other is LightSourceElement || other is SinkElement) continue;
+
+                // Сосед может прилегать несколькими гранями — берём их объединение,
+                // иначе деталь, накрывшая торец «уголком», недосчитает площадь.
+                var rects = new List<Rect>();
+                foreach (var of in other.GetFaces())
+                {
+                    if (Vector3.Dot(face.normal, of.normal) > -Tolerance.ParallelDot) continue;
+                    if (Mathf.Abs(Vector3.Dot(of.center - face.center, face.normal)) > contactDist) continue;
+
+                    Rect r = FaceRect(of, u, v);
+                    float xMin = Mathf.Max(target.xMin, r.xMin), xMax = Mathf.Min(target.xMax, r.xMax);
+                    float yMin = Mathf.Max(target.yMin, r.yMin), yMax = Mathf.Min(target.yMax, r.yMax);
+                    if (xMax <= xMin || yMax <= yMin) continue;
+                    rects.Add(Rect.MinMaxRect(xMin, yMin, xMax, yMax));
+                }
+                if (rects.Count == 0) continue;
+
+                float area = UnionArea(rects);
+                if (area <= coveredArea) continue;
+                coveredArea = area;
+                best = other;
+            }
+            return best;
+        }
+
         /// <summary>Доля площади грани, накрытая собранными прямоугольниками.</summary>
         private static float CoveredRatio(in KitchenElement.Face face, List<Rect> covers)
         {
