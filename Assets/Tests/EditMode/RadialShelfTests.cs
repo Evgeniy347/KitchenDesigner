@@ -315,6 +315,16 @@ public class RadialShelfTests
         Assert.IsNull(converted as RadialShelfElement);
         Assert.AreEqual("RS", converted.PartName);
         Assert.AreEqual(new Vector3Int(600, 18, 400), converted.DimensionsMM);
+
+        // После конвертации в Part меш должен быть кубом, а не радиальным.
+        var mf = converted.GetComponent<MeshFilter>();
+        Assert.IsNotNull(mf, "MeshFilter is present");
+        Assert.IsNotNull(mf!.sharedMesh, "sharedMesh is assigned");
+        Assert.AreEqual("Cube", mf.sharedMesh.name, "mesh is cube, not radial");
+
+        // Коллайдер — BoxCollider, а не MeshCollider от радиальной полки.
+        Assert.IsNull(converted.GetComponent<MeshCollider>(), "MeshCollider is removed");
+        Assert.IsNotNull(converted.GetComponent<BoxCollider>(), "BoxCollider is present");
     }
 
     private static bool HasVertexAtXZ(Vector3[] verts, float x, float z)

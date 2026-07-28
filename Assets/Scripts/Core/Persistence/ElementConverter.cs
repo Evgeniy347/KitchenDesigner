@@ -83,6 +83,7 @@ namespace KitchenDesigner.Core
                     break;
                 default:
                     result = go.AddComponent<KitchenElement>();
+                    ResetToPartMesh(go);
                     break;
             }
             PartRegistry.Register(result);
@@ -146,6 +147,22 @@ namespace KitchenDesigner.Core
             if (element is DoorElement) return TargetType.Door;
             if (element is FacadeElement) return TargetType.Facade;
             return TargetType.Part;
+        }
+
+        private static void ResetToPartMesh(GameObject go)
+        {
+            var mf = go.GetComponent<MeshFilter>();
+            if (mf != null && mf.sharedMesh != null && mf.sharedMesh.name != "Cube")
+            {
+                var cube = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
+                if (cube != null) mf.sharedMesh = cube;
+            }
+
+            var mc = go.GetComponent<MeshCollider>();
+            if (mc != null) UnityEngine.Object.DestroyImmediate(mc);
+
+            if (go.GetComponent<BoxCollider>() == null)
+                go.AddComponent<BoxCollider>();
         }
     }
 }
