@@ -77,13 +77,14 @@ namespace KitchenDesigner.Core
                     break;
                 case TargetType.Facade:
                     result = go.AddComponent<FacadeElement>();
+                    ResetToCubeMesh(go);
                     break;
                 case TargetType.RadialShelf:
                     result = go.AddComponent<RadialShelfElement>();
                     break;
                 default:
                     result = go.AddComponent<KitchenElement>();
-                    ResetToPartMesh(go);
+                    ResetToCubeMesh(go);
                     break;
             }
             PartRegistry.Register(result);
@@ -109,7 +110,7 @@ namespace KitchenDesigner.Core
 
             // Пазы переносятся только между типами, которые их поддерживают
             // (сейчас — базовая «деталь»); в фасад/полку они не уезжают.
-            if (result.SupportsGrooves)
+            if (result.SupportsGrooves && grooves.Count > 0)
                 result.SetGrooves(grooves);
 
             // Параметры кромкования переносятся ВСЕГДА, даже в фасад, который
@@ -149,13 +150,24 @@ namespace KitchenDesigner.Core
             return TargetType.Part;
         }
 
-        private static void ResetToPartMesh(GameObject go)
+        private static Mesh? _cubeMesh;
+
+        private static void ResetToCubeMesh(GameObject go)
         {
             var mf = go.GetComponent<MeshFilter>();
-            if (mf != null && mf.sharedMesh != null && mf.sharedMesh.name != "Cube")
+            if (mf != null && (mf.sharedMesh == null || mf.sharedMesh.name != "Cube"))
             {
-                var cube = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
-                if (cube != null) mf.sharedMesh = cube;
+                if (_cubeMesh == null)
+                {
+                    _cubeMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
+                    if (_cubeMesh == null)
+                    {
+                        var tmp = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        _cubeMesh = tmp.GetComponent<MeshFilter>().sharedMesh;
+                        UnityEngine.Object.DestroyImmediate(tmp);
+                    }
+                }
+                mf.sharedMesh = _cubeMesh;
             }
 
             var mc = go.GetComponent<MeshCollider>();

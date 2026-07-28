@@ -515,6 +515,102 @@ public class ElementConverterTests
         Assert.IsFalse(back.EdgeBandingEnabled, "снятая галочка переживает конвертацию туда-обратно");
     }
 
+    // ── Mesh and collider cleanup after conversion ────────────────────
+
+    private static void AssertMeshIsCube(GameObject go)
+    {
+        var mf = go.GetComponent<MeshFilter>();
+        Assert.IsNotNull(mf, "MeshFilter is present");
+        Assert.IsNotNull(mf!.sharedMesh, "sharedMesh is assigned");
+        var mesh = mf.sharedMesh;
+        Assert.That(mesh.name == "Cube" || mesh.name == "PartWithGrooves",
+            "sharedMesh is a cube (built-in 'Cube' or GrooveMesh 'PartWithGrooves' without grooves)");
+        Assert.AreEqual(24, mesh.vertexCount, "cube has 24 vertices");
+    }
+
+    private static void AssertBoxColliderOnly(GameObject go)
+    {
+        Assert.IsNull(go.GetComponent<MeshCollider>(), "no MeshCollider");
+        Assert.IsNotNull(go.GetComponent<BoxCollider>(), "has BoxCollider");
+    }
+
+    [Test]
+    public void RadialShelf_To_Part_HasCubeMeshAndBoxCollider()
+    {
+        var src = Make<RadialShelfElement>("RS", new Vector3Int(600, 18, 400), Vector3.zero);
+        var go = src.gameObject;
+
+        var converted = ElementConverter.Convert(src, ElementConverter.TargetType.Part);
+
+        Assert.IsNotNull(converted as KitchenElement);
+        Assert.IsNull(converted as RadialShelfElement);
+        AssertMeshIsCube(go);
+        AssertBoxColliderOnly(go);
+    }
+
+    [Test]
+    public void RadialShelf_To_Facade_HasCubeMeshAndBoxCollider()
+    {
+        var src = Make<RadialShelfElement>("RS", new Vector3Int(500, 18, 500), Vector3.zero);
+        var go = src.gameObject;
+
+        var converted = ElementConverter.Convert(src, ElementConverter.TargetType.Facade);
+
+        Assert.IsNotNull(converted as FacadeElement);
+        AssertMeshIsCube(go);
+        AssertBoxColliderOnly(go);
+    }
+
+    [Test]
+    public void Assembled_To_Part_HasCubeMeshAndBoxCollider()
+    {
+        var src = MakeAssembled("AF", new Vector3Int(700, 400, 18), Vector3.zero,
+            fill: AssembledFill.Blind);
+        var go = src.gameObject;
+
+        var converted = ElementConverter.Convert(src, ElementConverter.TargetType.Part);
+
+        Assert.IsNotNull(converted as KitchenElement);
+        Assert.IsNull(converted as AssembledFacadeElement);
+        AssertMeshIsCube(go);
+        AssertBoxColliderOnly(go);
+    }
+
+    [Test]
+    public void Assembled_To_Facade_HasCubeMeshAndBoxCollider()
+    {
+        var src = MakeAssembled("AF", new Vector3Int(600, 350, 18), Vector3.zero,
+            fill: AssembledFill.Glass);
+        var go = src.gameObject;
+
+        var converted = ElementConverter.Convert(src, ElementConverter.TargetType.Facade);
+
+        Assert.IsNotNull(converted as FacadeElement);
+        Assert.IsNull(converted as AssembledFacadeElement);
+        AssertMeshIsCube(go);
+        AssertBoxColliderOnly(go);
+    }
+
+    [Test]
+    public void RadialShelfElement_OnDestroy_CleansUpOwnedMesh()
+    {
+        var go = new GameObject("TestShelf", typeof(MeshFilter), typeof(MeshRenderer));
+        var shelf = go.AddComponent<RadialShelfElement>();
+        shelf.PartName = "TestShelf";
+        shelf.DimensionsMM = new Vector3Int(600, 18, 400);
+        shelf.CornerRadius = 200;
+
+        var mf = go.GetComponent<MeshFilter>();
+        Assert.IsNotNull(mf.sharedMesh, "mesh built");
+        Assert.AreNotEqual("Cube", mf.sharedMesh.name, "radial mesh is not a cube");
+
+        Object.DestroyImmediate(shelf);
+
+        Assert.That(mf.sharedMesh == null || mf.sharedMesh.name == "",
+            "mesh is destroyed or invalid — radial mesh was cleaned up");
+        Object.DestroyImmediate(go);
+    }
+
     // ── Reflection: every public property is covered ──────────────────
 
     private static readonly HashSet<string> CommonProperties = new HashSet<string>

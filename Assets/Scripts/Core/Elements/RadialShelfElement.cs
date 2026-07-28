@@ -8,6 +8,7 @@ namespace KitchenDesigner.Core
     public class RadialShelfElement : KitchenElement
     {
         [SerializeField] private int _cornerRadius = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
+        private Mesh? _ownedMesh;
         private bool _applying;
 
         protected override Vector3 EffectiveScale => new Vector3(
@@ -65,6 +66,8 @@ namespace KitchenDesigner.Core
                 dims.z * AppConstants.MM_TO_UNITS,
                 dims.y * AppConstants.MM_TO_UNITS,
                 _cornerRadius * AppConstants.MM_TO_UNITS);
+            if (_ownedMesh != null) DestroyImmediate(_ownedMesh);
+            _ownedMesh = mesh;
             meshFilter.sharedMesh = mesh;
 
             var meshRenderer = GetComponent<MeshRenderer>();
@@ -86,6 +89,16 @@ namespace KitchenDesigner.Core
                 meshCollider.convex = true;
             }
             meshCollider.sharedMesh = mesh;
+        }
+
+        private void OnDestroy()
+        {
+            PartRegistry.Unregister(this);
+            if (_ownedMesh != null)
+            {
+                DestroyImmediate(_ownedMesh);
+                _ownedMesh = null;
+            }
         }
     }
 }
