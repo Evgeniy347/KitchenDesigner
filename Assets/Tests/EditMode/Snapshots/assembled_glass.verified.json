@@ -82,7 +82,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         }
     ],
     "groups": [],
@@ -187,7 +188,8 @@
         "grooves": [],
         "edgeBanding": true,
         "edgeThicknessMM": 1.0,
-        "edgeSkipValidation": false
+        "edgeSkipValidation": false,
+        "edgeManualMask": 0
     },
     "undoHistory": [],
     "redoHistory": [],
@@ -224,6 +226,6 @@
         "photoSSGI": true
     },
     "tintEnabled": true,
-    "lightsOn": false,
+    "lightsOn": true,
     "windows": []
 }

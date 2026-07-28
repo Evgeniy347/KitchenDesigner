@@ -7,6 +7,11 @@
       "position": [-50, 56]
     },
     {
+      "type": "Button",
+      "text": "CtxEdgeL1",
+      "position": [-50, 40]
+    },
+    {
       "type": "Label",
       "text": "L1",
       "position": [-50, 26]
@@ -32,6 +37,11 @@
       "position": [-8, -8]
     },
     {
+      "type": "Button",
+      "text": "CtxEdgeW2",
+      "position": [-145, -10]
+    },
+    {
       "type": "Label",
       "text": "W2",
       "position": [-126, -10]
@@ -40,6 +50,11 @@
       "type": "Label",
       "text": "W1",
       "position": [26, -10]
+    },
+    {
+      "type": "Button",
+      "text": "CtxEdgeW1",
+      "position": [45, -10]
     },
     {
       "type": "Label",
@@ -66,6 +81,11 @@
       "options": ["Деталь", "Фасад", "Сборный фасад", "Радиусная полка"],
       "selected": 0,
       "position": [65, -48]
+    },
+    {
+      "type": "Button",
+      "text": "CtxEdgeL2",
+      "position": [-50, -60]
     },
     {
       "type": "Label",
@@ -139,135 +159,134 @@
       "position": [100, -447]
     },
     {
-      "type": "Toggle",
-      "label": "Отключить валидацию",
-      "isOn": false,
+      "type": "Label",
+      "text": "Клик по стороне — кромка вручную",
       "position": [0, -478]
     },
     {
       "type": "Label",
       "text": "X, мм",
-      "position": [-110, -537]
+      "position": [-110, -531]
     },
     {
       "type": "Label",
       "text": "Y, мм",
-      "position": [0, -537]
+      "position": [0, -531]
     },
     {
       "type": "Label",
       "text": "Z, мм",
-      "position": [110, -537]
+      "position": [110, -531]
     },
     {
       "type": "InputField",
       "label": "X, мм",
       "value": "1000",
       "interactable": true,
-      "position": [-110, -557]
+      "position": [-110, -551]
     },
     {
       "type": "InputField",
       "label": "Y, мм",
       "value": "200",
       "interactable": true,
-      "position": [0, -557]
+      "position": [0, -551]
     },
     {
       "type": "InputField",
       "label": "Z, мм",
       "value": "0",
       "interactable": true,
-      "position": [110, -557]
+      "position": [110, -551]
     },
     {
       "type": "Label",
       "text": "X, °",
-      "position": [-110, -588]
+      "position": [-110, -582]
     },
     {
       "type": "Label",
       "text": "Y, °",
-      "position": [0, -588]
+      "position": [0, -582]
     },
     {
       "type": "Label",
       "text": "Z, °",
-      "position": [110, -588]
+      "position": [110, -582]
     },
     {
       "type": "InputField",
       "label": "X, °",
       "value": "0,0",
       "interactable": true,
-      "position": [-110, -608]
+      "position": [-110, -602]
     },
     {
       "type": "InputField",
       "label": "Y, °",
       "value": "0,0",
       "interactable": true,
-      "position": [0, -608]
+      "position": [0, -602]
     },
     {
       "type": "InputField",
       "label": "Z, °",
       "value": "0,0",
       "interactable": true,
-      "position": [110, -608]
+      "position": [110, -602]
     },
     {
       "type": "Label",
       "text": "Повернуть на 90°:",
-      "position": [0, -639]
+      "position": [0, -633]
     },
     {
       "type": "Button",
       "text": "X 90°",
-      "position": [-112, -665]
+      "position": [-112, -659]
     },
     {
       "type": "Button",
       "text": "Y 90°",
-      "position": [0, -665]
+      "position": [0, -659]
     },
     {
       "type": "Button",
       "text": "Z 90°",
-      "position": [112, -665]
+      "position": [112, -659]
     },
     {
       "type": "Label",
       "text": "Текстура",
-      "position": [-103, -726]
+      "position": [-103, -720]
     },
     {
       "type": "Dropdown",
       "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)"],
       "selected": 0,
-      "position": [65, -726]
+      "position": [65, -720]
     },
     {
       "type": "Toggle",
       "label": "Прозрачный",
       "isOn": false,
-      "position": [0, -761]
+      "position": [0, -755]
     },
     {
       "type": "Toggle",
       "label": "Закрепить",
       "isOn": false,
-      "position": [0, -794]
+      "position": [0, -788]
     },
     {
       "type": "Button",
       "text": "Дублировать",
-      "position": [-91, -836]
+      "position": [-91, -830]
     },
     {
       "type": "Button",
       "text": "Удалить",
-      "position": [91, -836]
+      "position": [91, -830]
     }
   ]
 }

@@ -82,7 +82,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_1",
@@ -165,7 +166,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_2",
@@ -248,7 +250,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_3",
@@ -331,7 +334,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_4",
@@ -414,7 +418,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_5",
@@ -497,7 +502,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_6",
@@ -580,7 +586,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_7",
@@ -663,7 +670,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_8",
@@ -746,7 +754,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_9",
@@ -829,7 +838,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_10",
@@ -912,7 +922,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_11",
@@ -995,7 +1006,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_12",
@@ -1078,7 +1090,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_13",
@@ -1161,7 +1174,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_14",
@@ -1244,7 +1258,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_15",
@@ -1327,7 +1342,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_16",
@@ -1410,7 +1426,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         },
         {
             "name": "Mode_17",
@@ -1493,7 +1510,8 @@
             "grooves": [],
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
         }
     ],
     "groups": [],
@@ -1598,7 +1616,8 @@
         "grooves": [],
         "edgeBanding": true,
         "edgeThicknessMM": 1.0,
-        "edgeSkipValidation": false
+        "edgeSkipValidation": false,
+        "edgeManualMask": 0
     },
     "undoHistory": [],
     "redoHistory": [],
@@ -1635,6 +1654,6 @@
         "photoSSGI": true
     },
     "tintEnabled": true,
-    "lightsOn": false,
+    "lightsOn": true,
     "windows": []
 }

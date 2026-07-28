@@ -76,12 +76,12 @@
     },
     {
       "type": "Label",
-      "text": "Сдвиг ножек",
+      "text": "Сдвиг опор",
       "position": [-80, -197]
     },
     {
       "type": "InputField",
-      "label": "Сдвиг ножек",
+      "label": "Сдвиг опор",
       "value": "100",
       "interactable": true,
       "position": [100, -197]
