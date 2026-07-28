@@ -2541,9 +2541,10 @@ namespace KitchenDesigner.Core.UI
         private void OnDrawerFacadeSelected(int index)
         {
             if (!(_target is DrawerElement d)) return;
-            if (index <= 0 || _drawerFacadeDropdown == null) { d.AttachedFacadeName = ""; UpdateDrawerFacadeCaptionColor(); return; }
+            if (index <= 0 || _drawerFacadeDropdown == null) { d.AttachedFacadeName = ""; UpdateDrawerFacadeCaptionColor(); SceneRevision.Bump(); return; }
             d.AttachedFacadeName = _drawerFacadeDropdown.options[index].text;
             UpdateDrawerFacadeCaptionColor();
+            SceneRevision.Bump();
         }
 
         private void UpdateDoorButton(FacadeElement? facade)

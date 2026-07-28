@@ -41,6 +41,13 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _countLabel;
 
         private readonly List<AnalysisIssue> _allIssues = new List<AnalysisIssue>();
+        private int _lastSceneVersion;
+
+        /// <summary>Сколько строк сейчас в таблице (без учёта фильтров — все issues).</summary>
+        public int TotalIssueCount => _allIssues.Count;
+
+        /// <summary>Сколько строк видно в таблице (с учётом фильтров).</summary>
+        public int VisibleIssueCount => _content != null ? _content.childCount : 0;
 
         public void Build(Transform layer)
         {
@@ -191,6 +198,15 @@ namespace KitchenDesigner.Core.UI
             scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
         }
 
+        // ── Автообновление ──────────────────────────────────────────────
+
+        private void Update()
+        {
+            if (_root == null || !_root.activeSelf) return;
+            if (_lastSceneVersion == SceneRevision.Version) return;
+            Analyze();
+        }
+
         // ── Видимость ───────────────────────────────────────────────────
 
         public string WindowId => "errors";
@@ -216,6 +232,7 @@ namespace KitchenDesigner.Core.UI
         {
             _allIssues.Clear();
             _allIssues.AddRange(SceneAnalyzer.Analyze());
+            _lastSceneVersion = SceneRevision.Version;
 
             // Опции фильтров — только реально встречающиеся значения.
             var levels = new List<string>();

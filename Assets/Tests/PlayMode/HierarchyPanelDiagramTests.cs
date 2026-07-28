@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Analysis;
 using KitchenDesigner.Core.UI;
 using KitchenDesigner.Tests;
 
@@ -283,5 +284,40 @@ public class HierarchyPanelDiagramTests
                 Assert.IsNotNull(panel, "ErrorPanelUI not found");
                 panel!.SetVisible(true);
             }, goldenJson: false);
+    }
+
+    [UnityTest]
+    public IEnumerator ErrorPanel_AutoRemovesDrw01AfterFacadeAttached()
+    {
+        var drawer = ElementFactory.CreateDrawer(DrawerType.B, 450, DrawerColor.Anthracite, 400,
+            "Ящик для теста DRW", new Vector3(0f, 0.55f, 0f)).GetComponent<DrawerElement>();
+        ElementFactory.CreateFacade(new Vector3Int(560, 140, 18), "Фасад для теста DRW",
+            new Vector3(0f, 0.55f, -0.27f), 2, 2, 2, 2);
+        yield return null;
+
+        var drawerName = drawer.PartName;
+        var issuesBefore = SceneAnalyzer.Analyze();
+        Assert.IsTrue(issuesBefore.Exists(i => i.Code == "DRW-01" && i.Detail.Contains(drawerName)),
+            $"DRW-01 должен быть до прикрепления фасада, partName={drawerName}");
+
+        var panel = Object.FindAnyObjectByType<ErrorPanelUI>();
+        Assert.IsNotNull(panel, "ErrorPanelUI not found");
+        panel!.SetVisible(true);
+        yield return null;
+        yield return null;
+
+        Assert.Greater(panel.TotalIssueCount, 0, "ErrorPanel должна показывать DRW-01");
+
+        drawer.AttachedFacadeName = "Фасад для теста DRW";
+        SceneRevision.Bump();
+        yield return null;
+        yield return null;
+
+        var issuesAfter = SceneAnalyzer.Analyze();
+        Assert.IsFalse(issuesAfter.Exists(i => i.Code == "DRW-01" && i.Detail.Contains(drawerName)),
+            $"DRW-01 должен исчезнуть после прикрепления фасада, partName={drawerName}");
+
+        Assert.AreEqual(0, panel.VisibleIssueCount,
+            $"ErrorPanel должна быть пустой после автообновления, но {panel.VisibleIssueCount} строк");
     }
 }
