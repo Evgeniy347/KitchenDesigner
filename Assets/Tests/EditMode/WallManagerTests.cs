@@ -36,7 +36,7 @@ public class WallManagerTests
         _spawned.Add(go);
 
         if (KitchenSettings.Instance != null)
-            _originalLowerNearWalls = KitchenSettings.Instance.LowerNearWalls;
+            _originalLowerNearWalls = KitchenSettings.Instance.NormalView.lowerNearWalls;
     }
 
     [TearDown]
@@ -51,7 +51,7 @@ public class WallManagerTests
         if (_cameraGo != null) Object.DestroyImmediate(_cameraGo);
 
         if (KitchenSettings.Instance != null)
-            KitchenSettings.Instance.LowerNearWalls = _originalLowerNearWalls;
+            KitchenSettings.Instance.NormalView.lowerNearWalls = _originalLowerNearWalls;
     }
 
     [Test]
@@ -79,7 +79,7 @@ public class WallManagerTests
     {
         var settings = KitchenSettings.Instance;
         Assert.IsNotNull(settings, "KitchenSettings.Instance should be loadable from Resources");
-        settings.LowerNearWalls = true;
+        settings.NormalView.lowerNearWalls = true;
 
         _cameraGo!.transform.position = new Vector3(0, 1.25f, -5f);
         _cameraGo!.transform.LookAt(Vector3.zero);
@@ -97,7 +97,7 @@ public class WallManagerTests
     {
         var settings = KitchenSettings.Instance;
         Assert.IsNotNull(settings);
-        settings.LowerNearWalls = true;
+        settings.NormalView.lowerNearWalls = true;
 
         _cameraGo!.transform.position = new Vector3(0, 1.25f, -5f);
         _cameraGo!.transform.LookAt(Vector3.zero);
@@ -126,8 +126,8 @@ public class WallManagerTests
     {
         var settings = KitchenSettings.Instance;
         Assert.IsNotNull(settings);
-        bool prev = settings.WallsEnabled;
-        settings.WallsEnabled = false;
+        bool prev = settings.NormalView.wallsEnabled;
+        settings.NormalView.wallsEnabled = false;
 
         var e = Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0));
         var wall = e.GetComponent<Wall>();
@@ -138,7 +138,7 @@ public class WallManagerTests
         Assert.IsFalse(wall.IsLowered, "wall should be restored to full height when walls are disabled");
         Assert.AreEqual(2.5f, e.transform.localScale.y, 0.001f, "wall height should be restored");
 
-        settings.WallsEnabled = prev;
+        settings.NormalView.wallsEnabled = prev;
     }
 
     // ── Collider tests ─────────────────────────────────────────────────────
@@ -148,8 +148,8 @@ public class WallManagerTests
     {
         var settings = KitchenSettings.Instance;
         Assert.IsNotNull(settings);
-        bool prevWalls = settings.WallsEnabled;
-        settings.WallsEnabled = false;
+        bool prevWalls = settings.NormalView.wallsEnabled;
+        settings.NormalView.wallsEnabled = false;
 
         var e = Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0));
         var collider = e.gameObject.AddComponent<BoxCollider>();
@@ -159,7 +159,7 @@ public class WallManagerTests
 
         Assert.IsFalse(collider.enabled, "collider should be disabled when walls are hidden");
 
-        settings.WallsEnabled = prevWalls;
+        settings.NormalView.wallsEnabled = prevWalls;
     }
 
     [Test]
@@ -167,8 +167,8 @@ public class WallManagerTests
     {
         var settings = KitchenSettings.Instance;
         Assert.IsNotNull(settings);
-        bool prevWalls = settings.WallsEnabled;
-        settings.WallsEnabled = true;
+        bool prevWalls = settings.NormalView.wallsEnabled;
+        settings.NormalView.wallsEnabled = true;
 
         var e = Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0));
         var collider = e.gameObject.AddComponent<BoxCollider>();
@@ -177,7 +177,7 @@ public class WallManagerTests
 
         Assert.IsTrue(collider.enabled, "collider should stay enabled when walls are visible");
 
-        settings.WallsEnabled = prevWalls;
+        settings.NormalView.wallsEnabled = prevWalls;
     }
 
     [Test]
@@ -185,10 +185,10 @@ public class WallManagerTests
     {
         var settings = KitchenSettings.Instance;
         Assert.IsNotNull(settings);
-        bool prevWalls = settings.WallsEnabled;
-        bool prevLower = settings.LowerNearWalls;
-        settings.WallsEnabled = true;
-        settings.LowerNearWalls = true;
+        bool prevWalls = settings.NormalView.wallsEnabled;
+        bool prevLower = settings.NormalView.lowerNearWalls;
+        settings.NormalView.wallsEnabled = true;
+        settings.NormalView.lowerNearWalls = true;
 
         _cameraGo!.transform.position = new Vector3(0, 1.25f, -5f);
         _cameraGo!.transform.LookAt(Vector3.zero);
@@ -202,8 +202,8 @@ public class WallManagerTests
         Assert.IsTrue(wall.IsLowered, "wall should be lowered");
         Assert.IsTrue(collider.enabled, "lowered wall collider should remain enabled (smaller)");
 
-        settings.WallsEnabled = prevWalls;
-        settings.LowerNearWalls = prevLower;
+        settings.NormalView.wallsEnabled = prevWalls;
+        settings.NormalView.lowerNearWalls = prevLower;
     }
 
     [Test]
@@ -211,10 +211,10 @@ public class WallManagerTests
     {
         var settings = KitchenSettings.Instance;
         Assert.IsNotNull(settings);
-        bool prevWalls = settings.WallsEnabled;
+        bool prevWalls = settings.NormalView.wallsEnabled;
 
         // Шаг 1: выключаем стены
-        settings.WallsEnabled = false;
+        settings.NormalView.wallsEnabled = false;
 
         var e = Make("Wall", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0));
         var collider = e.gameObject.AddComponent<BoxCollider>();
@@ -223,11 +223,11 @@ public class WallManagerTests
         Assert.IsFalse(collider.enabled, "collider should be disabled when walls are hidden");
 
         // Шаг 2: включаем стены обратно
-        settings.WallsEnabled = true;
+        settings.NormalView.wallsEnabled = true;
 
         _wallManager!.LateUpdate();
         Assert.IsTrue(collider.enabled, "collider should be re-enabled when walls are visible again");
 
-        settings.WallsEnabled = prevWalls;
+        settings.NormalView.wallsEnabled = prevWalls;
     }
 }

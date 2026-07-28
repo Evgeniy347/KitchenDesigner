@@ -51,7 +51,7 @@ public class GapsScreenshotTests
     [UnityTearDown]
     public IEnumerator TearDown()
     {
-        KitchenSettings.Instance.EdgeOutline = false;
+        KitchenSettings.Instance.NormalView.edgeOutline = false;
         // example.save.json несёт handleMode="Move" → RestoreScene выставил
         // глобальный статик. Возвращаем дефолт, иначе тулбар «Ручки: перенос»
         // течёт в снапшоты последующих фикстур (Iso*, тулбар).
@@ -100,7 +100,7 @@ public class GapsScreenshotTests
         yield return null;
 
         // ── 2. Включить контуры зазоров ─────────────────────────────────
-        KitchenSettings.Instance.EdgeOutline = true;
+        KitchenSettings.Instance.NormalView.edgeOutline = true;
         yield return null;
 
         // ── 3. Камера из сейва ───────────────────────────────────────────
@@ -170,7 +170,7 @@ public class GapsScreenshotTests
             c.worldCamera = null;
         }
 
-        KitchenSettings.Instance.EdgeOutline = false;
+        KitchenSettings.Instance.NormalView.edgeOutline = false;
         yield return null;
     }
 }

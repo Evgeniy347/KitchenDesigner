@@ -29,11 +29,12 @@ namespace KitchenDesigner.Core
 
         private void OnRenderObject()
         {
-            var s = KitchenSettings.Instance;
-            // В фоторежиме контур (чёрные рёбра) выключен всегда — это техническая
-            // подсветка редактора, не нужная для «фото». Саму настройку не трогаем.
-            if (s == null || _lineMaterial == null || PhotoMode.Active) return;
-            if (!s.EdgeOutline && !s.WallOutline) return;
+            if (_lineMaterial == null) return;
+            // Контур — единственная настройка вида, которую фоторежим не форсирует:
+            // это не сокрытие геометрии, и нужен он в кадре или нет — решает
+            // пользователь заранее, в обычном режиме.
+            var view = ViewResolver.Current;
+            if (!view.EdgeOutline && !view.WallOutline) return;
 
             _lineMaterial.SetPass(0);
             GL.PushMatrix();
@@ -44,7 +45,7 @@ namespace KitchenDesigner.Core
             foreach (var e in PartRegistry.All)
             {
                 if (e == null || e.GetComponent<BasePlate>() != null) continue;
-                if (!ShouldOutline(e, s)) continue;
+                if (!ShouldOutline(e, view)) continue;
                 var v = e.GetVertices();
                 for (int i = 0; i < Edges.GetLength(0); i++)
                 {
@@ -60,11 +61,11 @@ namespace KitchenDesigner.Core
         /// <summary>Стена берёт свою настройку контура, остальное — общую.
         /// Погашенный рендер (скрытые стены, скрытые объекты, окна опущенной
         /// стены) контура не получает.</summary>
-        public static bool ShouldOutline(KitchenElement e, KitchenSettings s)
+        public static bool ShouldOutline(KitchenElement e, in ViewState view)
         {
-            if (e == null || s == null) return false;
+            if (e == null) return false;
             bool isWall = e.GetComponent<Wall>() != null;
-            if (!(isWall ? s.WallOutline : s.EdgeOutline)) return false;
+            if (!(isWall ? view.WallOutline : view.EdgeOutline)) return false;
 
             return SceneVisibility.AnyRendererEnabled(e);
         }

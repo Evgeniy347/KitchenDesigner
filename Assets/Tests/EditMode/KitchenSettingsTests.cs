@@ -121,35 +121,35 @@ public class KitchenSettingsTests
     public void EdgeOutline_SavesAndLoads()
     {
         var gs = KitchenSettings.Instance;
-        bool prev = gs.EdgeOutline;
+        bool prev = gs.NormalView.edgeOutline;
 
-        gs.EdgeOutline = true;
+        gs.NormalView.edgeOutline = true;
         var data = gs.ToData();
-        gs.EdgeOutline = false;
+        gs.NormalView.edgeOutline = false;
         gs.ApplyFrom(data);
-        Assert.IsTrue(gs.EdgeOutline);
+        Assert.IsTrue(gs.NormalView.edgeOutline);
 
-        gs.EdgeOutline = prev;
+        gs.NormalView.edgeOutline = prev;
     }
 
     [Test]
     public void WallSettings_SaveAndLoad()
     {
         var gs = KitchenSettings.Instance;
-        bool prevWalls = gs.WallsEnabled;
-        bool prevLower = gs.LowerNearWalls;
+        bool prevWalls = gs.NormalView.wallsEnabled;
+        bool prevLower = gs.NormalView.lowerNearWalls;
 
-        gs.WallsEnabled = false;
-        gs.LowerNearWalls = true;
+        gs.NormalView.wallsEnabled = false;
+        gs.NormalView.lowerNearWalls = true;
         var data = gs.ToData();
-        gs.WallsEnabled = true;
-        gs.LowerNearWalls = false;
+        gs.NormalView.wallsEnabled = true;
+        gs.NormalView.lowerNearWalls = false;
         gs.ApplyFrom(data);
-        Assert.IsFalse(gs.WallsEnabled);
-        Assert.IsTrue(gs.LowerNearWalls);
+        Assert.IsFalse(gs.NormalView.wallsEnabled);
+        Assert.IsTrue(gs.NormalView.lowerNearWalls);
 
-        gs.WallsEnabled = prevWalls;
-        gs.LowerNearWalls = prevLower;
+        gs.NormalView.wallsEnabled = prevWalls;
+        gs.NormalView.lowerNearWalls = prevLower;
     }
 
     [Test]

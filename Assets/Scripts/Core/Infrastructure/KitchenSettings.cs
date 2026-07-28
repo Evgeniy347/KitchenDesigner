@@ -38,15 +38,12 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _autoSaveInterval = 60;
         [SerializeField] private bool _spatialGrid = false;
         [SerializeField] private bool _windowedMode = true;
-        // Контур: раздельно для стен и для прочих объектов — стены обводить
-        // обычно не нужно, а детали нужно (и наоборот в режиме «помещение»).
-        [SerializeField] private bool _edgeOutline = true;      // контур объектов
-        [SerializeField] private bool _wallOutline = true;      // контур стен
-        [SerializeField] private bool _wallsEnabled = true;
-        [SerializeField] private bool _lowerNearWalls = true;
-        [SerializeField] private bool _hideOpeningsOnLoweredWalls = false;
-        [SerializeField] private bool _objectsVisible = true;
-        [SerializeField] private bool _hideLightSources = false;
+        // Что показывать — своё для каждого режима работы: погашенные в обычном
+        // режиме стены не должны мешать правке помещения и наоборот. Читать эти
+        // пресеты напрямую нельзя: режим часть значений форсирует, поэтому и
+        // рендер, и UI ходят через ViewResolver.
+        [SerializeField] private ViewPreset? _normalView = new ViewPreset();
+        [SerializeField] private ViewPreset? _roomView = new ViewPreset();
         [SerializeField] private bool _cameraPanFree = false;
         // Ниже этого процента перекрытие торца соседом считается технологическим
         // (планка, царга, наезд на пару миллиметров) и ошибкой EDG-01 не является.
@@ -129,54 +126,13 @@ namespace KitchenDesigner.Core
             set => _windowedMode = value;
         }
 
-        /// <summary>Контур (чёрные рёбра) у объектов — всё, кроме стен.</summary>
-        public bool EdgeOutline
-        {
-            get => _edgeOutline;
-            set => _edgeOutline = value;
-        }
+        /// <summary>Пресет вида обычного режима. Фоторежим правит его же —
+        /// он «обычный + фоторендер». Эффективные значения — через
+        /// <see cref="ViewResolver"/>, здесь лежит «что хотел пользователь».</summary>
+        public ViewPreset NormalView => _normalView ??= new ViewPreset();
 
-        /// <summary>Контур (чёрные рёбра) у стен. Подопция «Стены».</summary>
-        public bool WallOutline
-        {
-            get => _wallOutline;
-            set => _wallOutline = value;
-        }
-
-        public bool WallsEnabled
-        {
-            get => _wallsEnabled;
-            set => _wallsEnabled = value;
-        }
-
-        public bool LowerNearWalls
-        {
-            get => _lowerNearWalls;
-            set => _lowerNearWalls = value;
-        }
-
-        /// <summary>Прятать окна и двери у ОПУЩЕННЫХ стен. Вырез в стене
-        /// остаётся — прячется только сама створка/рама.</summary>
-        public bool HideOpeningsOnLoweredWalls
-        {
-            get => _hideOpeningsOnLoweredWalls;
-            set => _hideOpeningsOnLoweredWalls = value;
-        }
-
-        /// <summary>Показывать «объекты» — всё, кроме стен, пола, окон и дверей.</summary>
-        public bool ObjectsVisible
-        {
-            get => _objectsVisible;
-            set => _objectsVisible = value;
-        }
-
-        /// <summary>Прятать плафоны источников света. Сам свет продолжает
-        /// гореть — за него отвечает кнопка «Свет» в тулбаре.</summary>
-        public bool HideLightSources
-        {
-            get => _hideLightSources;
-            set => _hideLightSources = value;
-        }
+        /// <summary>Пресет вида режима «помещение».</summary>
+        public ViewPreset RoomView => _roomView ??= new ViewPreset();
 
         /// <summary>Нижний порог «частичного перекрытия» торца, %. Кромку клеят на
         /// весь торец, поэтому наехавший сосед — ошибка (EDG-01); но планка или
@@ -295,13 +251,8 @@ namespace KitchenDesigner.Core
             _autoSaveInterval = 60;
             _spatialGrid = false;
             _windowedMode = true;
-            _edgeOutline = true;
-            _wallOutline = true;
-            _wallsEnabled = true;
-            _lowerNearWalls = true;
-            _hideOpeningsOnLoweredWalls = false;
-            _objectsVisible = true;
-            _hideLightSources = false;
+            NormalView.ResetToDefaults();
+            RoomView.ResetToDefaults();
             _cameraPanFree = false;
             _edgePartialThresholdPct = EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT;
             _mouseSensitivity = 1f;
@@ -332,13 +283,19 @@ namespace KitchenDesigner.Core
                 autoSaveInterval = _autoSaveInterval,
                 spatialGrid = _spatialGrid,
                 windowedMode = _windowedMode,
-                edgeOutline = _edgeOutline,
-                wallOutline = _wallOutline,
-                wallsEnabled = _wallsEnabled,
-                lowerNearWalls = _lowerNearWalls,
-                hideOpeningsOnLoweredWalls = _hideOpeningsOnLoweredWalls,
-                objectsVisible = _objectsVisible,
-                hideLightSources = _hideLightSources,
+                viewSchema = KitchenSettingsData.CURRENT_VIEW_SCHEMA,
+                viewNormal = NormalView.Clone(),
+                viewRoom = RoomView.Clone(),
+                // Плоские поля больше не читаются, но пишутся из «обычного»
+                // пресета: сборка без пресетов откроет такой проект осмысленно,
+                // а не с чужими значениями инициализаторов.
+                wallsEnabled = NormalView.wallsEnabled,
+                wallOutline = NormalView.wallOutline,
+                lowerNearWalls = NormalView.lowerNearWalls,
+                hideOpeningsOnLoweredWalls = NormalView.hideOpeningsOnLoweredWalls,
+                objectsVisible = NormalView.objectsVisible,
+                edgeOutline = NormalView.edgeOutline,
+                hideLightSources = NormalView.hideLightSources,
                 cameraPanFree = _cameraPanFree,
                 edgePartialThresholdPct = _edgePartialThresholdPct,
                 mouseSensitivity = _mouseSensitivity,
@@ -369,13 +326,7 @@ namespace KitchenDesigner.Core
             _autoSaveInterval = Mathf.Max(10, data.autoSaveInterval);
             _spatialGrid = data.spatialGrid;
             _windowedMode = data.windowedMode;
-            _edgeOutline = data.edgeOutline;
-            _wallOutline = data.wallOutline;
-            _wallsEnabled = data.wallsEnabled;
-            _lowerNearWalls = data.lowerNearWalls;
-            _hideOpeningsOnLoweredWalls = data.hideOpeningsOnLoweredWalls;
-            _objectsVisible = data.objectsVisible;
-            _hideLightSources = data.hideLightSources;
+            ApplyViewPresets(data);
             _cameraPanFree = data.cameraPanFree;
             _edgePartialThresholdPct = Mathf.Clamp(data.edgePartialThresholdPct, 0, EDGE_PARTIAL_THRESHOLD_MAX_PCT);
             _mouseSensitivity = Mathf.Clamp(data.mouseSensitivity, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
@@ -393,6 +344,31 @@ namespace KitchenDesigner.Core
             _photoSSGI = data.photoSSGI;
         }
 
+        /// <summary>Пресеты вида появились позже плоских флагов. У старого проекта
+        /// (viewSchema = 0) единственный набор флагов был общим на все режимы —
+        /// кладём его в «обычный», а «помещение» получает значения из коробки.</summary>
+        private void ApplyViewPresets(KitchenSettingsData data)
+        {
+            if (data.viewSchema < KitchenSettingsData.CURRENT_VIEW_SCHEMA)
+            {
+                NormalView.CopyFrom(new ViewPreset
+                {
+                    wallsEnabled = data.wallsEnabled,
+                    wallOutline = data.wallOutline,
+                    lowerNearWalls = data.lowerNearWalls,
+                    hideOpeningsOnLoweredWalls = data.hideOpeningsOnLoweredWalls,
+                    objectsVisible = data.objectsVisible,
+                    edgeOutline = data.edgeOutline,
+                    hideLightSources = data.hideLightSources,
+                });
+                RoomView.ResetToDefaults();
+                return;
+            }
+
+            NormalView.CopyFrom(data.viewNormal);
+            RoomView.CopyFrom(data.viewRoom);
+        }
+
         /// <summary>Возвращает текущий JSON настроек (для снапшот-тестов).</summary>
         public string GetSettingsJson()
         {
@@ -407,13 +383,8 @@ namespace KitchenDesigner.Core
                 autoSaveInterval = _autoSaveInterval,
                 spatialGrid = _spatialGrid,
                 windowedMode = _windowedMode,
-                edgeOutline = _edgeOutline,
-                wallOutline = _wallOutline,
-                wallsHidden = !_wallsEnabled,
-                lowerNearWalls = _lowerNearWalls,
-                hideOpeningsOnLoweredWalls = _hideOpeningsOnLoweredWalls,
-                objectsVisible = _objectsVisible,
-                hideLightSources = _hideLightSources,
+                viewNormal = NormalView.Clone(),
+                viewRoom = RoomView.Clone(),
                 cameraPanFree = _cameraPanFree,
                 edgePartialThresholdPct = _edgePartialThresholdPct,
                 mouseSensitivity = _mouseSensitivity,
@@ -445,13 +416,9 @@ namespace KitchenDesigner.Core
             public int autoSaveInterval;
             public bool spatialGrid;
             public bool windowedMode;
-            public bool edgeOutline;
-            public bool wallOutline;
-            public bool wallsHidden;   // инверсия: старые сейвы (false) → стены включены
-            public bool lowerNearWalls;
-            public bool hideOpeningsOnLoweredWalls;
-            public bool objectsVisible;
-            public bool hideLightSources;
+            // Пресеты вида — по одному на режим («обычный», «помещение»).
+            public ViewPreset? viewNormal;
+            public ViewPreset? viewRoom;
             public bool cameraPanFree;
             public int edgePartialThresholdPct;
             public float mouseSensitivity;

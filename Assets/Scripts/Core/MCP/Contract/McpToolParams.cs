@@ -490,7 +490,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsSetSetting
     {
-        [McpParam("Setting key.", Required = true, Enum = new[] { "lower_near_walls", "snap_enabled", "grid_enabled", "walls_enabled", "wall_outline", "edge_outline", "hide_openings_on_lowered_walls", "objects_visible", "hide_light_sources", "camera_pan_free" })]
+        [McpParam("Setting key.", Required = true, Enum = new[] { "snap_enabled", "grid_enabled", "camera_pan_free" })]
         public string name = string.Empty;
         [McpParam("New on/off value.", Required = true)] public bool value;
     }

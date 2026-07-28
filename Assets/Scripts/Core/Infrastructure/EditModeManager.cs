@@ -31,26 +31,6 @@ namespace KitchenDesigner.Core
         /// <summary>Смена режима — для тулбара и сайдбара.</summary>
         public static event Action? Changed;
 
-        private static bool _subscribed;
-
-        static EditModeManager() => EnsureSubscribed();
-
-        // Тумблер «Фоторежим» в настройках и F10 меняют PhotoMode напрямую —
-        // держим Mode согласованным с ним в обе стороны без рекурсии
-        // (SetActive/SetMode рано выходят, если значение не изменилось).
-        private static void EnsureSubscribed()
-        {
-            if (_subscribed) return;
-            _subscribed = true;
-            PhotoMode.Changed += OnPhotoChanged;
-        }
-
-        private static void OnPhotoChanged()
-        {
-            if (PhotoMode.Active && Mode != EditMode.Photo) SetMode(EditMode.Photo);
-            else if (!PhotoMode.Active && Mode == EditMode.Photo) SetMode(EditMode.Normal);
-        }
-
         /// <summary>Цикл кнопки: фоторежим → помещение → обычный → фоторежим.</summary>
         public static void Cycle()
         {
@@ -64,23 +44,32 @@ namespace KitchenDesigner.Core
 
         public static void SetMode(EditMode mode)
         {
-            EnsureSubscribed();
             if (mode == Mode) return;
+            bool wasPhoto = Mode == EditMode.Photo;
+            bool isPhoto = mode == EditMode.Photo;
+
+            // Режим меняем ДО применения эффектов: PhotoMode.Active — производное
+            // от Mode, и Enter/Exit должны видеть уже новое состояние.
             Mode = mode;
 
-            bool wantPhoto = mode == EditMode.Photo;
-            if (PhotoMode.Active != wantPhoto) PhotoMode.SetActive(wantPhoto);
+            if (isPhoto && !wasPhoto) PhotoMode.Enter();
+            else if (!isPhoto && wasPhoto) PhotoMode.Exit();
 
             // Часть объектов в новом режиме недоступна — снимаем выделение,
             // чтобы у скрытых ручек/меню не осталось «залипшей» цели.
             SelectionManager.Instance?.DeselectAll();
 
+            // Видимость считается от режима — заказываем переприменение.
+            SceneVisibilityManager.Invalidate();
+
+            if (isPhoto != wasPhoto) PhotoMode.RaiseChanged();
             Changed?.Invoke();
         }
 
         /// <summary>Сброс к исходному режиму (изоляция тестов, глобальное
-        /// состояние — см. правила снапшотов в AGENTS.md).</summary>
-        public static void Reset() => Mode = EditMode.Normal;
+        /// состояние — см. правила снапшотов в AGENTS.md). Идёт через SetMode,
+        /// иначе фоторежим остался бы включённым при Mode = Normal.</summary>
+        public static void Reset() => SetMode(EditMode.Normal);
 
         /// <summary>Читаемое название текущего режима для подписи кнопки.</summary>
         public static string Label(EditMode mode) => mode switch

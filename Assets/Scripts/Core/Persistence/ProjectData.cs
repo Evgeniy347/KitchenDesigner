@@ -119,13 +119,23 @@ namespace KitchenDesigner.Core
         public int autoSaveInterval;
         public bool spatialGrid;
         public bool windowedMode;
-        public bool edgeOutline;
-        public bool wallsEnabled;
-        public bool lowerNearWalls;
         public bool cameraPanFree;
 
-        // Отображение и управление. Инициализаторы задают дефолты для старых
-        // проектов, где полей ещё нет в JSON (см. комментарий про JsonUtility ниже).
+        /// <summary>Версия формата настроек вида. 0 — плоские поля ниже, один
+        /// набор на все режимы; 1 — пресеты viewNormal/viewRoom. Отличить
+        /// «поля нет» от «поле false» иначе нельзя: JsonUtility не различает.</summary>
+        public const int CURRENT_VIEW_SCHEMA = 1;
+        public int viewSchema = 0;
+
+        public ViewPreset? viewNormal;
+        public ViewPreset? viewRoom;
+
+        // Плоские поля вида — только чтение старых проектов (viewSchema = 0).
+        // Инициализаторы задают дефолты для проектов, где полей ещё нет в JSON
+        // (см. комментарий про JsonUtility ниже).
+        public bool edgeOutline = true;
+        public bool wallsEnabled = true;
+        public bool lowerNearWalls = true;
         public bool wallOutline = true;
         public bool hideOpeningsOnLoweredWalls = false;
         public bool objectsVisible = true;

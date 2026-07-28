@@ -72,7 +72,7 @@ public class SaveValidationTests
 
         s.AutoSave = false;
         s.SpatialGrid = false;
-        s.EdgeOutline = false;
+        s.NormalView.edgeOutline = false;
 
         ClearScene();
     }

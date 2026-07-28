@@ -717,9 +717,9 @@ public class RoundTripTests
         gs.AutoSaveInterval = 300;
         gs.SpatialGrid = true;
         gs.WindowedMode = false;
-        gs.EdgeOutline = true;
-        gs.WallsEnabled = false;
-        gs.LowerNearWalls = true;
+        gs.NormalView.edgeOutline = true;
+        gs.NormalView.wallsEnabled = false;
+        gs.NormalView.lowerNearWalls = true;
 
         var data = gs.ToData();
 
@@ -733,9 +733,9 @@ public class RoundTripTests
         gs.AutoSaveInterval = 60;
         gs.SpatialGrid = false;
         gs.WindowedMode = true;
-        gs.EdgeOutline = false;
-        gs.WallsEnabled = true;
-        gs.LowerNearWalls = false;
+        gs.NormalView.edgeOutline = false;
+        gs.NormalView.wallsEnabled = true;
+        gs.NormalView.lowerNearWalls = false;
 
         // Применяем — должны восстановиться все 12 полей
         gs.ApplyFrom(data);
@@ -749,39 +749,39 @@ public class RoundTripTests
         Assert.AreEqual(300, gs.AutoSaveInterval, "AutoSaveInterval");
         Assert.IsTrue(gs.SpatialGrid, "SpatialGrid");
         Assert.IsFalse(gs.WindowedMode, "WindowedMode");
-        Assert.IsTrue(gs.EdgeOutline, "EdgeOutline");
-        Assert.IsFalse(gs.WallsEnabled, "WallsEnabled");
-        Assert.IsTrue(gs.LowerNearWalls, "LowerNearWalls");
+        Assert.IsTrue(gs.NormalView.edgeOutline, "EdgeOutline");
+        Assert.IsFalse(gs.NormalView.wallsEnabled, "WallsEnabled");
+        Assert.IsTrue(gs.NormalView.lowerNearWalls, "LowerNearWalls");
 
         // Возвращаем дефолт
         gs.GridStep = 1; gs.GridEnabled = true; gs.SnapEnabled = true;
         gs.SnapThreshold = 50f; gs.BlockOnViolation = true;
         gs.AutoSave = false; gs.AutoSaveInterval = 60;
         gs.SpatialGrid = false; gs.WindowedMode = true;
-        gs.EdgeOutline = false; gs.WallsEnabled = true; gs.LowerNearWalls = false;
+        gs.NormalView.edgeOutline = false; gs.NormalView.wallsEnabled = true; gs.NormalView.lowerNearWalls = false;
     }
 
     [Test]
     public void Settings_WallsEnabled_RoundTrip()
     {
         var gs = KitchenSettings.Instance;
-        bool prevWalls = gs.WallsEnabled;
+        bool prevWalls = gs.NormalView.wallsEnabled;
 
         // false round-trips correctly
-        gs.WallsEnabled = false;
+        gs.NormalView.wallsEnabled = false;
         var data = gs.ToData();
-        gs.WallsEnabled = true;
+        gs.NormalView.wallsEnabled = true;
         gs.ApplyFrom(data);
-        Assert.IsFalse(gs.WallsEnabled, "false round-trips correctly");
+        Assert.IsFalse(gs.NormalView.wallsEnabled, "false round-trips correctly");
 
         // true round-trips correctly
-        gs.WallsEnabled = true;
+        gs.NormalView.wallsEnabled = true;
         data = gs.ToData();
-        gs.WallsEnabled = false;
+        gs.NormalView.wallsEnabled = false;
         gs.ApplyFrom(data);
-        Assert.IsTrue(gs.WallsEnabled, "true round-trips correctly");
+        Assert.IsTrue(gs.NormalView.wallsEnabled, "true round-trips correctly");
 
-        gs.WallsEnabled = prevWalls;
+        gs.NormalView.wallsEnabled = prevWalls;
     }
 
     [Test]
@@ -790,30 +790,30 @@ public class RoundTripTests
         var gs = KitchenSettings.Instance;
         var backup = gs.ToData();
 
-        gs.WallOutline = false;
-        gs.HideOpeningsOnLoweredWalls = true;
-        gs.ObjectsVisible = false;
-        gs.HideLightSources = true;
+        gs.NormalView.wallOutline = false;
+        gs.NormalView.hideOpeningsOnLoweredWalls = true;
+        gs.NormalView.objectsVisible = false;
+        gs.NormalView.hideLightSources = true;
         gs.MouseSensitivity = 2.5f;
         gs.WasdSpeed = 0.4f;
         gs.ArrowSpeed = 1.8f;
 
         var data = gs.ToData();
 
-        gs.WallOutline = true;
-        gs.HideOpeningsOnLoweredWalls = false;
-        gs.ObjectsVisible = true;
-        gs.HideLightSources = false;
+        gs.NormalView.wallOutline = true;
+        gs.NormalView.hideOpeningsOnLoweredWalls = false;
+        gs.NormalView.objectsVisible = true;
+        gs.NormalView.hideLightSources = false;
         gs.MouseSensitivity = 1f;
         gs.WasdSpeed = 1f;
         gs.ArrowSpeed = 1f;
 
         gs.ApplyFrom(data);
 
-        Assert.IsFalse(gs.WallOutline, "WallOutline");
-        Assert.IsTrue(gs.HideOpeningsOnLoweredWalls, "HideOpeningsOnLoweredWalls");
-        Assert.IsFalse(gs.ObjectsVisible, "ObjectsVisible");
-        Assert.IsTrue(gs.HideLightSources, "HideLightSources");
+        Assert.IsFalse(gs.NormalView.wallOutline, "WallOutline");
+        Assert.IsTrue(gs.NormalView.hideOpeningsOnLoweredWalls, "HideOpeningsOnLoweredWalls");
+        Assert.IsFalse(gs.NormalView.objectsVisible, "ObjectsVisible");
+        Assert.IsTrue(gs.NormalView.hideLightSources, "HideLightSources");
         Assert.AreEqual(2.5f, gs.MouseSensitivity, 0.001f, "MouseSensitivity");
         Assert.AreEqual(0.4f, gs.WasdSpeed, 0.001f, "WasdSpeed");
         Assert.AreEqual(1.8f, gs.ArrowSpeed, 0.001f, "ArrowSpeed");
@@ -837,6 +837,60 @@ public class RoundTripTests
         Assert.AreEqual(1f, data.mouseSensitivity, 0.001f, "mouseSensitivity");
         Assert.AreEqual(1f, data.wasdSpeed, 0.001f, "wasdSpeed");
         Assert.AreEqual(1f, data.arrowSpeed, 0.001f, "arrowSpeed");
+    }
+
+    /// <summary>Пресеты вида сохраняются раздельно: правка одного не утекает
+    /// во второй ни при записи, ни при чтении.</summary>
+    [Test]
+    public void Settings_BothViewPresets_RoundTrip()
+    {
+        var gs = KitchenSettings.Instance;
+        var backup = gs.ToData();
+
+        gs.NormalView.wallsEnabled = false;
+        gs.NormalView.hideLightSources = true;
+        gs.RoomView.wallsEnabled = true;
+        gs.RoomView.hideLightSources = false;
+        gs.RoomView.objectsVisible = false;
+
+        var data = gs.ToData();
+        gs.ResetToDefaults();
+        gs.ApplyFrom(data);
+
+        Assert.IsFalse(gs.NormalView.wallsEnabled, "обычный: стены");
+        Assert.IsTrue(gs.NormalView.hideLightSources, "обычный: свет");
+        Assert.IsTrue(gs.RoomView.wallsEnabled, "помещение: стены");
+        Assert.IsFalse(gs.RoomView.hideLightSources, "помещение: свет");
+        Assert.IsFalse(gs.RoomView.objectsVisible, "помещение: объекты");
+
+        gs.ApplyFrom(backup);
+    }
+
+    /// <summary>Миграция: у старого проекта (viewSchema = 0) единственный набор
+    /// флагов был общим на все режимы — он становится пресетом обычного, а
+    /// «помещение» получает значения из коробки.</summary>
+    [Test]
+    public void Settings_OldSave_MigratesFlatFlagsIntoNormalPreset()
+    {
+        var gs = KitchenSettings.Instance;
+        var backup = gs.ToData();
+
+        var data = JsonUtility.FromJson<KitchenSettingsData>(
+            "{\"gridStep\":18,\"gridEnabled\":true,\"wallsEnabled\":false,"
+            + "\"objectsVisible\":false,\"hideLightSources\":true}");
+        Assert.AreEqual(0, data.viewSchema, "старый файл без версии");
+
+        gs.ApplyFrom(data);
+
+        Assert.IsFalse(gs.NormalView.wallsEnabled, "обычный: стены из старых полей");
+        Assert.IsFalse(gs.NormalView.objectsVisible, "обычный: объекты из старых полей");
+        Assert.IsTrue(gs.NormalView.hideLightSources, "обычный: свет из старых полей");
+
+        Assert.IsTrue(gs.RoomView.wallsEnabled, "помещение: значения из коробки");
+        Assert.IsTrue(gs.RoomView.objectsVisible, "помещение: значения из коробки");
+        Assert.IsFalse(gs.RoomView.hideLightSources, "помещение: значения из коробки");
+
+        gs.ApplyFrom(backup);
     }
 
     // ── 12. Full ProjectData round-trip (groups + camera + baseplate) ────

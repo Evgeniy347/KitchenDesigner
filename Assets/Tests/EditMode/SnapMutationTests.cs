@@ -68,7 +68,7 @@ public class SnapMutationTests
 
         s.AutoSave = false;
         s.SpatialGrid = false;
-        s.EdgeOutline = false;
+        s.NormalView.edgeOutline = false;
         s.SnapEnabled = true;
         s.SnapThreshold = 50f;
         s.BlockOnViolation = false;

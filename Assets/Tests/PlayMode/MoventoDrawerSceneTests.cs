@@ -127,7 +127,7 @@ public class MoventoDrawerSceneTests
         Assert.IsTrue(spec.lines.Any(l => l.name.EndsWith("·" + MoventoDrawerMesh.SUFFIX_SIDE)), "есть боковины");
 
         // ── Скриншот ─────────────────────────────────────────────
-        KitchenSettings.Instance.EdgeOutline = true;
+        KitchenSettings.Instance.NormalView.edgeOutline = true;
         yield return RenderIso(new Vector3(0, H / 2f, 0) * Mm,
             new Vector3(W, H, D) * Mm, "iso_movento_double_540x720x600.png");
     }

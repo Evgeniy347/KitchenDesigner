@@ -59,13 +59,9 @@ namespace KitchenDesigner.Core.MCP
                 autoSaveIntervalSec = s.AutoSaveInterval,
                 snapVerboseLog = SnapSystem.VerboseLog,
                 cameraPanFree = s.CameraPanFree,
-                wallsEnabled = s.WallsEnabled,
-                wallOutline = s.WallOutline,
-                lowerNearWalls = s.LowerNearWalls,
-                hideOpeningsOnLoweredWalls = s.HideOpeningsOnLoweredWalls,
-                objectsVisible = s.ObjectsVisible,
-                edgeOutline = s.EdgeOutline,
-                hideLightSources = s.HideLightSources,
+                // Настройки вида (стены, объекты, контуры, свет) через MCP не
+                // отдаются и не меняются: они привязаны к режиму работы и
+                // существуют только для человека за панелью настроек.
                 edgePartialThresholdPct = s.EdgePartialThresholdPct,
                 mouseSensitivity = s.MouseSensitivity,
                 wasdSpeed = s.WasdSpeed,
@@ -99,15 +95,8 @@ namespace KitchenDesigner.Core.MCP
 
             switch (p.name.ToLowerInvariant())
             {
-                case "lower_near_walls": s.LowerNearWalls = p.value; break;
                 case "snap_enabled": s.SnapEnabled = p.value; break;
                 case "grid_enabled": s.GridEnabled = p.value; break;
-                case "walls_enabled": s.WallsEnabled = p.value; break;
-                case "wall_outline": s.WallOutline = p.value; break;
-                case "edge_outline": s.EdgeOutline = p.value; break;
-                case "hide_openings_on_lowered_walls": s.HideOpeningsOnLoweredWalls = p.value; break;
-                case "objects_visible": s.ObjectsVisible = p.value; break;
-                case "hide_light_sources": s.HideLightSources = p.value; break;
                 case "camera_pan_free": s.CameraPanFree = p.value; break;
                 default:
                     return McpResponse.Error(req.id, -32602, $"Unknown setting: {p.name}");

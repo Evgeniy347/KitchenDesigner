@@ -376,9 +376,9 @@ public class SnapshotTests
         gs.SnapThreshold = 50f; gs.BlockOnViolation = true;
         gs.AutoSave = true; gs.AutoSaveInterval = 60;
         gs.SpatialGrid = false; gs.WindowedMode = true;
-        gs.EdgeOutline = true; gs.WallsEnabled = true; gs.LowerNearWalls = true;
-        gs.WallOutline = true; gs.HideOpeningsOnLoweredWalls = false;
-        gs.ObjectsVisible = true; gs.HideLightSources = false;
+        gs.NormalView.edgeOutline = true; gs.NormalView.wallsEnabled = true; gs.NormalView.lowerNearWalls = true;
+        gs.NormalView.wallOutline = true; gs.NormalView.hideOpeningsOnLoweredWalls = false;
+        gs.NormalView.objectsVisible = true; gs.NormalView.hideLightSources = false;
         gs.MouseSensitivity = 1f; gs.WasdSpeed = 1f; gs.ArrowSpeed = 1f;
         SetPhotoDefaults(gs);
 
@@ -394,9 +394,13 @@ public class SnapshotTests
         gs.SnapThreshold = 80f; gs.BlockOnViolation = false;
         gs.AutoSave = true; gs.AutoSaveInterval = 120;
         gs.SpatialGrid = true; gs.WindowedMode = false;
-        gs.EdgeOutline = true; gs.WallsEnabled = false; gs.LowerNearWalls = true;
-        gs.WallOutline = false; gs.HideOpeningsOnLoweredWalls = true;
-        gs.ObjectsVisible = false; gs.HideLightSources = true;
+        gs.NormalView.edgeOutline = true; gs.NormalView.wallsEnabled = false; gs.NormalView.lowerNearWalls = true;
+        gs.NormalView.wallOutline = false; gs.NormalView.hideOpeningsOnLoweredWalls = true;
+        gs.NormalView.objectsVisible = false; gs.NormalView.hideLightSources = true;
+        // Второй пресет отличается от первого — в снапшоте видно, что они
+        // сохраняются раздельно, а не дублируют друг друга.
+        gs.RoomView.edgeOutline = false; gs.RoomView.wallOutline = true;
+        gs.RoomView.objectsVisible = true; gs.RoomView.hideLightSources = false;
         gs.MouseSensitivity = 2f; gs.WasdSpeed = 0.5f; gs.ArrowSpeed = 1.5f;
         SetPhotoDefaults(gs);
 

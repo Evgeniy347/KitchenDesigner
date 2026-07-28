@@ -13,7 +13,7 @@
     },
     {
       "type": "Button",
-      "text": "Помещение",
+      "text": "Вид",
       "position": [-96, 356]
     },
     {
@@ -32,6 +32,16 @@
       "position": [192, 356]
     },
     {
+      "type": "Button",
+      "text": "Обычный (текущий)",
+      "position": [-120, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Объекты",
+      "position": [-90, 0]
+    },
+    {
       "type": "Label",
       "text": "Освещение",
       "position": [-90, 0]
@@ -40,6 +50,11 @@
       "type": "Label",
       "text": "Стены",
       "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Контур",
+      "position": [-70, 0]
     },
     {
       "type": "Label",
@@ -62,8 +77,25 @@
       "position": [-50, 0]
     },
     {
+      "type": "Button",
+      "text": "Помещение",
+      "position": [120, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Контур объектов",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
       "type": "Toggle",
       "label": "Tgl_Контур стен",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Объекты",
       "isOn": true,
       "position": [224, 0]
     },

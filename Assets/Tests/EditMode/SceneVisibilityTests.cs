@@ -28,6 +28,10 @@ public class SceneVisibilityTests
         var go = new GameObject("WallManager");
         _wallManager = go.AddComponent<WallManager>();
         _spawned.Add(go);
+
+        // Хеш «уже применённых настроек» статический и переживает тест: без
+        // сброса Apply() выйдет рано и оставит рендереры от предыдущего теста.
+        SceneVisibilityManager.Invalidate();
     }
 
     [TearDown]
@@ -61,11 +65,11 @@ public class SceneVisibilityTests
     {
         var part = Spawn(ElementFactory.CreatePart(new Vector3Int(600, 18, 500), "Board", Vector3.zero));
 
-        KitchenSettings.Instance.ObjectsVisible = false;
+        KitchenSettings.Instance.NormalView.objectsVisible = false;
         SceneVisibilityManager.Apply();
         Assert.IsFalse(part.GetComponent<MeshRenderer>()!.enabled, "деталь должна скрыться");
 
-        KitchenSettings.Instance.ObjectsVisible = true;
+        KitchenSettings.Instance.NormalView.objectsVisible = true;
         SceneVisibilityManager.Apply();
         Assert.IsTrue(part.GetComponent<MeshRenderer>()!.enabled, "деталь должна вернуться");
     }
@@ -77,14 +81,18 @@ public class SceneVisibilityTests
         var floor = Spawn(ElementFactory.CreateFloor(new Vector3Int(3000, 20, 3000), "F", Vector3.zero));
         var win = Spawn(ElementFactory.CreateWindow(new Vector3Int(900, 1200, 100), "Win", new Vector3(0.6f, 1.2f, -1.5f)));
         win.GetComponent<WindowElement>()!.SnapToWall();
+        var door = Spawn(ElementFactory.CreateDoor(new Vector3Int(900, 2000, 100), "Door", new Vector3(-0.6f, 1.0f, -1.5f)));
+        door.GetComponent<DoorElement>()!.SnapToWall();
 
-        KitchenSettings.Instance.ObjectsVisible = false;
+        KitchenSettings.Instance.NormalView.objectsVisible = false;
         SceneVisibilityManager.Apply();
 
         Assert.IsTrue(wall.GetComponent<MeshRenderer>()!.enabled, "стена — не «объект»");
         Assert.IsTrue(floor.GetComponent<MeshRenderer>()!.enabled, "пол — не «объект»");
         Assert.IsTrue(SceneVisibility.AnyRendererEnabled(win.GetComponent<KitchenElement>()!),
             "окно — не «объект»");
+        Assert.IsTrue(SceneVisibility.AnyRendererEnabled(door.GetComponent<KitchenElement>()!),
+            "дверь — не «объект»");
     }
 
     [Test]
@@ -93,7 +101,7 @@ public class SceneVisibilityTests
         var lamp = Spawn(ElementFactory.CreateLightSource("Lamp", new Vector3(0f, 2f, 0f)));
         var part = Spawn(ElementFactory.CreatePart(new Vector3Int(600, 18, 500), "Board", Vector3.zero));
 
-        KitchenSettings.Instance.HideLightSources = true;
+        KitchenSettings.Instance.NormalView.hideLightSources = true;
         SceneVisibilityManager.Apply();
 
         Assert.IsFalse(lamp.GetComponent<MeshRenderer>()!.enabled, "плафон должен скрыться");
@@ -110,7 +118,7 @@ public class SceneVisibilityTests
         ls.EnsureLight();
         ls.SyncLightState();
 
-        KitchenSettings.Instance.HideLightSources = true;
+        KitchenSettings.Instance.NormalView.hideLightSources = true;
         SceneVisibilityManager.Apply();
 
         Assert.IsTrue(ls.PointLight!.enabled, "свет должен остаться включённым");
@@ -125,13 +133,13 @@ public class SceneVisibilityTests
         var part = Spawn(ElementFactory.CreatePart(new Vector3Int(600, 18, 500), "Board", Vector3.zero));
         var s = KitchenSettings.Instance;
 
-        s.WallOutline = true; s.EdgeOutline = false;
-        Assert.IsTrue(EdgeOutlineRenderer.ShouldOutline(wall.GetComponent<KitchenElement>()!, s));
-        Assert.IsFalse(EdgeOutlineRenderer.ShouldOutline(part.GetComponent<KitchenElement>()!, s));
+        s.NormalView.wallOutline = true; s.NormalView.edgeOutline = false;
+        Assert.IsTrue(EdgeOutlineRenderer.ShouldOutline(wall.GetComponent<KitchenElement>()!, ViewResolver.Current));
+        Assert.IsFalse(EdgeOutlineRenderer.ShouldOutline(part.GetComponent<KitchenElement>()!, ViewResolver.Current));
 
-        s.WallOutline = false; s.EdgeOutline = true;
-        Assert.IsFalse(EdgeOutlineRenderer.ShouldOutline(wall.GetComponent<KitchenElement>()!, s));
-        Assert.IsTrue(EdgeOutlineRenderer.ShouldOutline(part.GetComponent<KitchenElement>()!, s));
+        s.NormalView.wallOutline = false; s.NormalView.edgeOutline = true;
+        Assert.IsFalse(EdgeOutlineRenderer.ShouldOutline(wall.GetComponent<KitchenElement>()!, ViewResolver.Current));
+        Assert.IsTrue(EdgeOutlineRenderer.ShouldOutline(part.GetComponent<KitchenElement>()!, ViewResolver.Current));
     }
 
     [Test]
@@ -139,11 +147,11 @@ public class SceneVisibilityTests
     {
         var part = Spawn(ElementFactory.CreatePart(new Vector3Int(600, 18, 500), "Board", Vector3.zero));
         var s = KitchenSettings.Instance;
-        s.EdgeOutline = true;
-        s.ObjectsVisible = false;
+        s.NormalView.edgeOutline = true;
+        s.NormalView.objectsVisible = false;
         SceneVisibilityManager.Apply();
 
-        Assert.IsFalse(EdgeOutlineRenderer.ShouldOutline(part.GetComponent<KitchenElement>()!, s),
+        Assert.IsFalse(EdgeOutlineRenderer.ShouldOutline(part.GetComponent<KitchenElement>()!, ViewResolver.Current),
             "у скрытой детали контур рисоваться не должен");
     }
 
@@ -165,8 +173,8 @@ public class SceneVisibilityTests
     {
         var (wall, win) = MakeLoweredWallWithWindow();
         var s = KitchenSettings.Instance;
-        s.LowerNearWalls = true;
-        s.HideOpeningsOnLoweredWalls = true;
+        s.NormalView.lowerNearWalls = true;
+        s.NormalView.hideOpeningsOnLoweredWalls = true;
 
         _wallManager!.LateUpdate();
 
@@ -184,8 +192,8 @@ public class SceneVisibilityTests
     {
         var (wall, win) = MakeLoweredWallWithWindow();
         var s = KitchenSettings.Instance;
-        s.LowerNearWalls = true;
-        s.HideOpeningsOnLoweredWalls = false;
+        s.NormalView.lowerNearWalls = true;
+        s.NormalView.hideOpeningsOnLoweredWalls = false;
 
         _wallManager!.LateUpdate();
 
@@ -201,7 +209,7 @@ public class SceneVisibilityTests
     {
         var (wall, _) = MakeLoweredWallWithWindow();
         var s = KitchenSettings.Instance;
-        s.LowerNearWalls = true;
+        s.NormalView.lowerNearWalls = true;
 
         EditModeManager.SetMode(EditMode.Room);
         _wallManager!.LateUpdate();
@@ -216,8 +224,8 @@ public class SceneVisibilityTests
     {
         var (_, win) = MakeLoweredWallWithWindow();
         var s = KitchenSettings.Instance;
-        s.LowerNearWalls = true;
-        s.HideOpeningsOnLoweredWalls = true;
+        s.NormalView.lowerNearWalls = true;
+        s.NormalView.hideOpeningsOnLoweredWalls = true;
 
         EditModeManager.SetMode(EditMode.Room);
         _wallManager!.LateUpdate();

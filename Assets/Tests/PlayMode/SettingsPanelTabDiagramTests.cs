@@ -121,15 +121,15 @@ public class SettingsPanelTabDiagramTests
         yield return CaptureAndSave("settings_tab_project.png");
     }
 
-    // Пять вкладок: «Проект» (0), «Помещение» (1), «Управление» (2),
+    // Пять вкладок: «Проект» (0), «Вид» (1), «Управление» (2),
     // «Фото режим» (3), «О программе» (4).
     [UnityTest]
-    public IEnumerator TabRoom_SavesPng()
+    public IEnumerator TabView_SavesPng()
     {
         BuildPanel();
         SwitchToTab(1);
         yield return null;
-        yield return CaptureAndSave("settings_tab_room.png");
+        yield return CaptureAndSave("settings_tab_view.png");
     }
 
     [UnityTest]

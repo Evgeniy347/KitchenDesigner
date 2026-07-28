@@ -241,7 +241,7 @@ public class IsoScreenshotTests
         Assert.IsNotNull(drawer);
 
         // Контур (чёрные рёбра) по параллелепипеду с зазорами.
-        KitchenSettings.Instance.EdgeOutline = true;
+        KitchenSettings.Instance.NormalView.edgeOutline = true;
         yield return null;
 
         Vector3 size = MmToUnits(new Vector3Int(lw, openingH, nl));
@@ -327,7 +327,7 @@ public class IsoScreenshotTests
     [UnityTest]
     public IEnumerator TopDownRadialShelf_300()
     {
-        KitchenSettings.Instance.EdgeOutline = true;
+        KitchenSettings.Instance.NormalView.edgeOutline = true;
         const int width = 600, depth = 400, thickness = 18, cornerRadius = 200;
         Vector3 pos = new Vector3(0f, thickness * 0.5f * AppConstants.MM_TO_UNITS, 0f);
         var go = ElementFactory.CreateRadialShelf(width, depth, thickness, cornerRadius, "TopDownRadialShelf", pos);
@@ -358,7 +358,7 @@ public class IsoScreenshotTests
 
         yield return RenderToPng(cam, "topdown_radial_shelf_300.png");
 
-        KitchenSettings.Instance.EdgeOutline = false;
+        KitchenSettings.Instance.NormalView.edgeOutline = false;
         Object.DestroyImmediate(camGo);
     }
 
@@ -472,8 +472,8 @@ public class IsoScreenshotTests
         [UnityTest]
         public IEnumerator IsoRoom_Raised()
     {
-        KitchenSettings.Instance.WallsEnabled = true;
-        KitchenSettings.Instance.LowerNearWalls = false;
+        KitchenSettings.Instance.NormalView.wallsEnabled = true;
+        KitchenSettings.Instance.NormalView.lowerNearWalls = false;
 
         yield return RenderRoom("iso_room_raised.png");
     }
@@ -481,8 +481,8 @@ public class IsoScreenshotTests
     [UnityTest]
     public IEnumerator IsoRoom_Lowered()
     {
-        KitchenSettings.Instance.WallsEnabled = true;
-        KitchenSettings.Instance.LowerNearWalls = true;
+        KitchenSettings.Instance.NormalView.wallsEnabled = true;
+        KitchenSettings.Instance.NormalView.lowerNearWalls = true;
 
         yield return RenderRoom("iso_room_lowered.png");
     }

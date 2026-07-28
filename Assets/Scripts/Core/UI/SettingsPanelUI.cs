@@ -63,7 +63,7 @@ namespace KitchenDesigner.Core.UI
             // Порядок вызовов = порядок подписей в BuildTabs: страницы ложатся в
             // _tabPages, и SwitchTab адресует их тем же индексом.
             BuildProjectTab(panel.transform, s);
-            BuildRoomTab(panel.transform, s);
+            BuildViewTab(panel.transform, s);
             BuildControlTab(panel.transform, s);
             BuildPhotoTab(panel.transform, s);
             BuildAboutTab(panel.transform);
@@ -71,9 +71,10 @@ namespace KitchenDesigner.Core.UI
             SwitchTab(0);
 
             // Зависимые строки живут на двух вкладках сразу (поля — на «Проекте»,
-            // тумблеры стен — на «Помещении»), поэтому синхронизация одна на всё
-            // окно и только после того, как построены обе страницы.
-            UpdateDependentStates();
+            // тумблеры вида — на «Виде»), поэтому синхронизация одна на всё
+            // окно и только после того, как построены обе страницы. Заодно
+            // вкладка «Вид» встаёт на пресет текущего режима.
+            OnEditModeChanged();
 
             UIFactory.CreateButton("SetClose", panel.transform, "Закрыть",
                 new Vector2(0, CloseY), new Vector2(160, 40),
@@ -89,7 +90,7 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildTabs(Transform parent)
         {
-            string[] labels = { "Проект", "Помещение", "Управление", "Фото режим", "О программе" };
+            string[] labels = { "Проект", "Вид", "Управление", "Фото режим", "О программе" };
             float tabW = (PanelW - 40) / labels.Length;
 
             for (int i = 0; i < labels.Length; i++)
@@ -184,56 +185,107 @@ namespace KitchenDesigner.Core.UI
                     f.text = s.EdgePartialThresholdPct.ToString();
                 }, s.EdgePartialThresholdPct.ToString(), unit: "%");
 
-            // ── Объекты и подопции ─────────────────────────
-            y -= GapPx;
-            AddToggleRow(t, ref y, "Объекты", s.ObjectsVisible,
-                v => { s.ObjectsVisible = v; UpdateDependentStates(); });
-
-            _objectOutlineToggle = AddToggleRow(t, ref y, "Контур", s.EdgeOutline,
-                v => { s.EdgeOutline = v; }, id: ObjectOutlineId, indentLevel: 1);
-
+            // «Объекты» и их контур переехали на вкладку «Вид»: они часть пресета
+            // режима, а не правил работы с деталями.
             y -= GapPx;
             AddToggleRow(t, ref y, "Свободное панорамирование", s.CameraPanFree,
                 v => { s.CameraPanFree = v; });
         }
 
-        // ── Tab: Помещение ──────────────────────────────────
+        // ── Tab: Вид ────────────────────────────────────────
 
-        /// <summary>Стены и освещение — всё, что описывает само помещение, а не
-        /// правила работы с деталями. Раньше лежало в конце вкладки «Проект» и
-        /// тонуло среди сетки, привязки и автосохранения.</summary>
-        private void BuildRoomTab(Transform panel, KitchenSettings s)
+        /// <summary>Что показывать в сцене. Настройка своя для каждого режима
+        /// работы: пресет «обычный» и пресет «помещение» — отдельные наборы,
+        /// поэтому погашенные для работы с деталями стены не мешают правке
+        /// помещения и возвращаются при выходе из него. Сверху — переключатель,
+        /// какой пресет мы сейчас правим; часть тумблеров режим форсирует, они
+        /// показывают своё значение серыми (см. <see cref="ViewResolver"/>).</summary>
+        private void BuildViewTab(Transform panel, KitchenSettings s)
         {
-            var page = new GameObject("Tab_Room");
+            var page = new GameObject("Tab_View");
             page.transform.SetParent(panel, false);
             _tabPages.Add(page);
             var t = page.transform;
 
             float y = ContentTopY;
 
-            AddToggleRow(t, ref y, "Стены", s.WallsEnabled,
-                v => { s.WallsEnabled = v; UpdateDependentStates(); });
+            BuildViewPresetSwitch(t, ref y);
+            y -= GapPx;
 
-            _wallOutlineToggle = AddToggleRow(t, ref y, "Контур", s.WallOutline,
-                v => { s.WallOutline = v; }, id: WallOutlineId, indentLevel: 1);
+            AddViewToggle(t, ref y, ViewField.Walls, "Стены", "Стены", 0);
+            AddViewToggle(t, ref y, ViewField.WallOutline, "Контур", WallOutlineId, 1);
+            AddViewToggle(t, ref y, ViewField.LowerNearWalls, "Опускать ближние стены",
+                "Опускать ближние стены", 1);
+            AddViewToggle(t, ref y, ViewField.HideOpeningsOnLoweredWalls, "Скрывать окна и двери",
+                "Скрывать окна и двери", 2);
 
-            _lowerWallsToggle = AddToggleRow(t, ref y, "Опускать ближние стены", s.LowerNearWalls,
-                v => { s.LowerNearWalls = v; UpdateDependentStates(); }, indentLevel: 1);
-
-            _hideOpeningsToggle = AddToggleRow(t, ref y, "Скрывать окна и двери", s.HideOpeningsOnLoweredWalls,
-                v => { s.HideOpeningsOnLoweredWalls = v; }, indentLevel: 2);
+            y -= GapPx;
+            AddViewToggle(t, ref y, ViewField.Objects, "Объекты", "Объекты", 0);
+            AddViewToggle(t, ref y, ViewField.ObjectOutline, "Контур", ObjectOutlineId, 1);
 
             y -= GapPx;
             AddHeaderRow(t, ref y, "Освещение");
+            AddViewToggle(t, ref y, ViewField.HideLightSources, "Скрыть источники света",
+                "Скрыть источники света", 1);
 
-            AddToggleRow(t, ref y, "Скрыть источники света", s.HideLightSources,
-                v => { s.HideLightSources = v; }, indentLevel: 1);
+            // Режим форсирует часть тумблеров — состояние вкладки должно следовать
+            // за переключением режима, а не только за открытием панели.
+            EditModeManager.Changed -= OnEditModeChanged;
+            EditModeManager.Changed += OnEditModeChanged;
+        }
 
-            // Режим «помещение» блокирует «опускать ближние стены» — состояние
-            // тумблера должно следовать за переключением режима, а не только за
-            // открытием панели.
-            EditModeManager.Changed -= UpdateDependentStates;
-            EditModeManager.Changed += UpdateDependentStates;
+        /// <summary>Переключатель «какой пресет правим». Не переключает режим
+        /// редактора — только то, что показано на вкладке.</summary>
+        private void BuildViewPresetSwitch(Transform parent, ref float y)
+        {
+            var rowRect = UIFactory.CreateRect("RowViewPreset", parent);
+            rowRect.sizeDelta = new Vector2(ContentW, RowH);
+            rowRect.anchoredPosition = new Vector2(0, y);
+
+            float btnW = (ContentW - 8) * 0.5f;
+            for (int i = 0; i < 2; i++)
+            {
+                int idx = i;
+                var btn = UIFactory.CreateButton($"ViewPreset_{idx}", rowRect, "",
+                    new Vector2(-btnW * 0.5f - 2 + idx * (btnW + 4), 0), new Vector2(btnW, RowH),
+                    () => SwitchViewPreset(idx));
+                _viewPresetButtons.Add(btn);
+            }
+
+            y -= RowStep;
+        }
+
+        private void SwitchViewPreset(int index)
+        {
+            _viewPresetTab = index;
+            UpdateDependentStates();
+        }
+
+        /// <summary>Режим, чей пресет открыт на вкладке.</summary>
+        private EditMode EditedPresetMode => _viewPresetTab == 1 ? EditMode.Room : EditMode.Normal;
+
+        private void AddViewToggle(Transform parent, ref float y, ViewField field,
+            string label, string key, int indentLevel)
+        {
+            var toggle = AddToggleRow(parent, ref y, label, ViewResolver.Resolve(EditedPresetMode).Get(field),
+                v =>
+                {
+                    var s = KitchenSettings.Instance;
+                    if (s == null) return;
+                    ViewResolver.PresetFor(EditedPresetMode, s).Set(field, v);
+                    SceneVisibilityManager.Invalidate();
+                    UpdateDependentStates();
+                }, id: key, indentLevel: indentLevel);
+            _viewToggles[field] = toggle;
+            _viewToggleKeys[field] = key;
+        }
+
+        /// <summary>При смене режима вкладка показывает пресет нового режима —
+        /// иначе пользователь правил бы не то, что видит в сцене.</summary>
+        private void OnEditModeChanged()
+        {
+            _viewPresetTab = EditModeManager.Mode == EditMode.Room ? 1 : 0;
+            UpdateDependentStates();
         }
 
         // ── Tab: Управление ─────────────────────────────────
@@ -270,7 +322,7 @@ namespace KitchenDesigner.Core.UI
         {
             ProjectWindows.Unregister(this);
             PhotoMode.Changed -= SyncPhotoActiveToggle;
-            EditModeManager.Changed -= UpdateDependentStates;
+            EditModeManager.Changed -= OnEditModeChanged;
         }
 
         private void BuildPhotoTab(Transform panel, KitchenSettings s)
@@ -537,10 +589,10 @@ namespace KitchenDesigner.Core.UI
         private const string WallOutlineId = "Контур стен";
         private const string ObjectOutlineId = "Контур объектов";
 
-        private Toggle? _wallOutlineToggle;
-        private Toggle? _lowerWallsToggle;
-        private Toggle? _hideOpeningsToggle;
-        private Toggle? _objectOutlineToggle;
+        private int _viewPresetTab;
+        private readonly List<Button> _viewPresetButtons = new();
+        private readonly Dictionary<ViewField, Toggle> _viewToggles = new();
+        private readonly Dictionary<ViewField, string> _viewToggleKeys = new();
 
         private void UpdateDependentStates()
         {
@@ -549,14 +601,47 @@ namespace KitchenDesigner.Core.UI
             SetFieldEnabled(_gridStepField, "Шаг сетки", s.GridEnabled);
             SetFieldEnabled(_snapThresholdField, "Порог привязки", s.SnapEnabled);
             SetFieldEnabled(_autoSaveIntervalField, "Интервал автосохранения", s.AutoSave);
+            RefreshViewTab();
+        }
 
-            // В режиме «помещение» стены всегда целые — опускание там запрещено,
-            // а не просто игнорируется, поэтому тумблер гасим.
-            bool lowerAvailable = s.WallsEnabled && EditModeManager.Mode != EditMode.Room;
-            SetToggleEnabled(_wallOutlineToggle, WallOutlineId, s.WallsEnabled);
-            SetToggleEnabled(_lowerWallsToggle, "Опускать ближние стены", lowerAvailable);
-            SetToggleEnabled(_hideOpeningsToggle, "Скрывать окна и двери", lowerAvailable && s.LowerNearWalls);
-            SetToggleEnabled(_objectOutlineToggle, ObjectOutlineId, s.ObjectsVisible);
+        /// <summary>Значения и доступность тумблеров вида берутся из одной
+        /// таблицы, что и рендер — иначе UI разрешал бы то, что сцена всё равно
+        /// проигнорирует. Форсированные режимом поля показывают своё реальное
+        /// значение, но серыми; в фоторежиме серое всё.</summary>
+        private void RefreshViewTab()
+        {
+            var edited = EditedPresetMode;
+            var state = ViewResolver.Resolve(edited);
+
+            for (int i = 0; i < _viewPresetButtons.Count; i++)
+            {
+                var btn = _viewPresetButtons[i];
+                if (btn == null) continue;
+                var img = btn.GetComponent<Image>();
+                if (img != null) img.color = i == _viewPresetTab ? ActiveTabColor : InactiveTabColor;
+                var caption = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+                if (caption == null) continue;
+                // Фоторежим правит пресет обычного — он и помечается текущим.
+                int currentIdx = EditModeManager.Mode == EditMode.Room ? 1 : 0;
+                caption.text = (i == 1 ? "Помещение" : "Обычный") + (i == currentIdx ? " (текущий)" : "");
+            }
+
+            foreach (var kv in _viewToggles)
+            {
+                var field = kv.Key;
+                var toggle = kv.Value;
+                if (toggle == null) continue;
+
+                toggle.SetIsOnWithoutNotify(state.Get(field));
+
+                // Подопция без включённого родителя бессмысленна — гасим её
+                // (правило дерева из UI-GUIDELINES).
+                var parent = ViewResolver.ParentOf(field);
+                bool parentOn = parent == null || state.Get(parent.Value);
+                bool enabled = parentOn
+                    && ViewResolver.IsEditable(EditModeManager.Mode, edited, field);
+                SetToggleEnabled(toggle, _viewToggleKeys[field], enabled);
+            }
         }
 
         private void SetFieldEnabled(TMP_InputField? field, string labelKey, bool enabled)

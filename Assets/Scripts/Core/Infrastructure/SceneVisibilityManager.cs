@@ -44,13 +44,15 @@ namespace KitchenDesigner.Core
             return true;
         }
 
-        /// <summary>Должен ли объект быть виден при текущих настройках.
-        /// В фоторежиме сцена цельная — прячем только по «скрыть источники света».</summary>
-        public static bool ShouldBeVisible(KitchenElement element, KitchenSettings? s)
+        /// <summary>Должен ли «объект» быть виден при данном состоянии вида.
+        /// Про режим здесь не знают: что фоторежим показывает всё, а помещение —
+        /// нет, уже учтено в <see cref="ViewResolver"/>. Вызывать только после
+        /// <see cref="IsObject"/> — для стен, полов, окон и дверей ответ не имеет
+        /// смысла, ими владеют другие менеджеры.</summary>
+        public static bool ShouldBeVisible(KitchenElement element, in ViewState view)
         {
-            if (s == null) return true;
-            if (element is LightSourceElement && s.HideLightSources) return false;
-            return PhotoMode.Active || s.ObjectsVisible;
+            if (element is LightSourceElement && view.HideLightSources) return false;
+            return view.ObjectsVisible;
         }
     }
 
@@ -70,17 +72,17 @@ namespace KitchenDesigner.Core
         public static void Apply()
         {
             using var _ = PerfMarkers.SceneVisibilityApply.Auto();
-            var s = KitchenSettings.Instance;
-            int hash = (s != null && s.ObjectsVisible ? 1 : 0)
-                     | (s != null && s.HideLightSources ? 2 : 0)
-                     | (PhotoMode.Active ? 4 : 0);
+            var view = ViewResolver.Current;
+            // Хеш по ЭФФЕКТИВНЫМ значениям: в фоторежиме они не меняются, сколько
+            // бы тумблеров ни трогали, и лишнего прохода по сцене не будет.
+            int hash = (view.ObjectsVisible ? 1 : 0) | (view.HideLightSources ? 2 : 0);
             if (hash == _appliedHash) return;
             _appliedHash = hash;
 
             foreach (var e in PartRegistry.All)
             {
                 if (e == null || !SceneVisibility.IsObject(e)) continue;
-                SceneVisibility.SetRenderersEnabled(e, SceneVisibility.ShouldBeVisible(e, s));
+                SceneVisibility.SetRenderersEnabled(e, SceneVisibility.ShouldBeVisible(e, view));
             }
         }
     }

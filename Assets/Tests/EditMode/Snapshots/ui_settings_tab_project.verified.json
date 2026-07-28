@@ -13,7 +13,7 @@
     },
     {
       "type": "Button",
-      "text": "Помещение",
+      "text": "Вид",
       "position": [-96, 356]
     },
     {
@@ -48,11 +48,6 @@
     },
     {
       "type": "Label",
-      "text": "Объекты",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
       "text": "Привязка к деталям",
       "position": [-90, 0]
     },
@@ -74,11 +69,6 @@
     {
       "type": "Label",
       "text": "Интервал автосохранения",
-      "position": [-70, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Контур",
       "position": [-70, 0]
     },
     {
@@ -128,18 +118,6 @@
     {
       "type": "Toggle",
       "label": "Tgl_Блокировать недопустимые изменения",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Контур объектов",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Объекты",
       "isOn": true,
       "position": [224, 0]
     },
