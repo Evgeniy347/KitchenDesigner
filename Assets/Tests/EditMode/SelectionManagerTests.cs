@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 
 public class SelectionManagerTests
@@ -331,5 +333,114 @@ public class SelectionManagerTests
             "Ctrl+клик снимает одну деталь и не сжимает выделение до одной");
         Assert.IsTrue(sm.IsSelected(a));
         Assert.IsTrue(sm.IsSelected(b));
+    }
+
+    // ── DeselectAll не оставляет orphan-записей в _savedMaterials ──
+
+    private KitchenElement MakeWithRenderer(string name, bool wall = false)
+    {
+        var e = Make(name, wall);
+        var go = e.gameObject;
+        var mf = go.AddComponent<MeshFilter>();
+        mf.sharedMesh = new Mesh();
+        var mr = go.AddComponent<MeshRenderer>();
+        mr.sharedMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        return e;
+    }
+
+    private static void InitHighlighterMaterials(ElementHighlighter hl)
+    {
+        var shader = Shader.Find("Universal Render Pipeline/Lit");
+        if (shader == null) shader = Shader.Find("Standard");
+        const BindingFlags f = BindingFlags.NonPublic | BindingFlags.Instance;
+        typeof(ElementHighlighter).GetField("_validMaterial", f)!.SetValue(hl, new Material(shader));
+        typeof(ElementHighlighter).GetField("_invalidMaterial", f)!.SetValue(hl, new Material(shader));
+        typeof(ElementHighlighter).GetField("_dimmedMaterial", f)!.SetValue(hl, new Material(shader));
+        typeof(ElementHighlighter).GetField("_validTransparentMaterial", f)!.SetValue(hl, new Material(shader));
+        typeof(ElementHighlighter).GetField("_invalidTransparentMaterial", f)!.SetValue(hl, new Material(shader));
+        typeof(ElementHighlighter).GetField("_materialsInitialized", f)!.SetValue(hl, true);
+    }
+
+    /// <summary>
+    /// Баг: DeselectAll шёл по _selectedElements и дёргал RestoreMaterial,
+    /// а тот триггерил ElementHighlighter.ApplyForElement → ApplyMaterial
+    /// (ветка ownDecorOnly для стен) → RefreshHighlight → HighlightSelected
+    /// — и заново сохранял материал в _savedMaterials, потому что список
+    /// _selectedElements ещё не был очищен. После очистки орфан оставался
+    /// навсегда.
+    /// </summary>
+    [Test]
+    public void DeselectAll_LeavesNoOrphanSavedMaterials()
+    {
+        LogAssert.ignoreFailingMessages = true;
+        try
+        {
+            var hlGo = new GameObject("ElementHighlighter");
+            var hl = hlGo.AddComponent<ElementHighlighter>();
+            InitHighlighterMaterials(hl);
+            _spawned.Add(hlGo);
+
+            var wallA = MakeWithRenderer("Стена_тест_A", wall: true);
+            var wallB = MakeWithRenderer("Стена_тест_B", wall: true);
+
+            var smGo = new GameObject("SelectionManager");
+            var sm = smGo.AddComponent<SelectionManager>();
+            _spawned.Add(smGo);
+
+            sm.Select(wallA);
+            Assert.AreEqual(1, sm.SelectedElements.Count);
+            Assert.IsTrue(sm.HasSavedMaterialFor(wallA));
+
+            sm.Select(wallB);
+
+            Assert.AreEqual(1, sm.SelectedElements.Count, "только одна стена выделена");
+            Assert.IsTrue(sm.IsSelected(wallB));
+            Assert.IsFalse(sm.IsSelected(wallA));
+            Assert.IsFalse(sm.HasSavedMaterialFor(wallA),
+                "после DeselectAll у стены A НЕ ДОЛЖНО быть orphan-записи в _savedMaterials");
+        }
+        finally
+        {
+            LogAssert.ignoreFailingMessages = false;
+        }
+    }
+
+    [Test]
+    public void DeselectAll_CleansUpAllSavedMaterials()
+    {
+        LogAssert.ignoreFailingMessages = true;
+        try
+        {
+            var hlGo = new GameObject("ElementHighlighter");
+            var hl = hlGo.AddComponent<ElementHighlighter>();
+            InitHighlighterMaterials(hl);
+            _spawned.Add(hlGo);
+
+            var wallA = MakeWithRenderer("Стена_тест_A", wall: true);
+            var wallB = MakeWithRenderer("Стена_тест_B", wall: true);
+
+            var smGo = new GameObject("SelectionManager");
+            var sm = smGo.AddComponent<SelectionManager>();
+            _spawned.Add(smGo);
+
+            sm.Select(wallA);
+            sm.AddToSelection(wallB);
+            Assert.AreEqual(2, sm.SelectedElements.Count);
+            Assert.IsTrue(sm.HasSavedMaterialFor(wallA));
+            Assert.IsTrue(sm.HasSavedMaterialFor(wallB));
+
+            sm.DeselectAll();
+
+            Assert.AreEqual(0, sm.SelectedElements.Count, "ничего не выделено");
+            Assert.IsNull(sm.Selected);
+            Assert.IsFalse(sm.HasSavedMaterialFor(wallA),
+                "после DeselectAll у стены A нет orphan-материала");
+            Assert.IsFalse(sm.HasSavedMaterialFor(wallB),
+                "после DeselectAll у стены B нет orphan-материала");
+        }
+        finally
+        {
+            LogAssert.ignoreFailingMessages = false;
+        }
     }
 }

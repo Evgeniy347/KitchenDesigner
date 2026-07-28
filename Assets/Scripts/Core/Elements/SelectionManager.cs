@@ -16,6 +16,9 @@ namespace KitchenDesigner.Core
         public IReadOnlyList<KitchenElement> SelectedElements => _selectedElements;
         public event System.Action<KitchenElement?>? OnSelectionChanged;
 
+        /// <summary>Только для тестов: есть ли сохранённый материал у элемента.</summary>
+        public bool HasSavedMaterialFor(KitchenElement element) => _savedMaterials.ContainsKey(element);
+
         private struct SavedMaterial
         {
             public Material material;
@@ -271,14 +274,18 @@ namespace KitchenDesigner.Core
 
         public void DeselectAll()
         {
-            foreach (var e in _selectedElements)
+            if (_selectedElements.Count == 0) return;
+
+            var toRestore = new List<KitchenElement>(_selectedElements);
+            _selectedElements.Clear();
+            _selected = null;
+
+            foreach (var e in toRestore)
             {
                 if (e != null)
                     RestoreMaterial(e);
             }
 
-            _selectedElements.Clear();
-            _selected = null;
             OnSelectionChanged?.Invoke(null);
         }
 
@@ -291,8 +298,8 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            RestoreMaterial(_selected);
             _selectedElements.Remove(_selected);
+            RestoreMaterial(_selected);
             _selected = _selectedElements.Count > 0
                 ? _selectedElements[_selectedElements.Count - 1]
                 : null;
