@@ -167,92 +167,103 @@
       "position": [112, -350]
     },
     {
+      "type": "Label",
+      "text": "Текстура",
+      "position": [-103, -411]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)"],
+      "selected": 0,
+      "position": [65, -411]
+    },
+    {
       "type": "Button",
       "text": "Текстуры (2)  ▼",
-      "position": [0, -411]
+      "position": [0, -446]
     },
     {
       "type": "Dropdown",
       "options": ["A", "B", "C", "D", "E", "F", "(все)"],
       "selected": 0,
-      "position": [-128, -446]
+      "position": [-128, -481]
     },
     {
       "type": "Dropdown",
       "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)"],
       "selected": 2,
-      "position": [5, -446]
+      "position": [5, -481]
     },
     {
       "type": "Button",
       "text": "CtxTexEdit0",
-      "position": [114, -446]
+      "position": [114, -481]
     },
     {
       "type": "Button",
       "text": "×",
-      "position": [150, -446]
+      "position": [150, -481]
     },
     {
       "type": "Dropdown",
       "options": ["A", "B", "C", "D", "E", "F", "(все)"],
       "selected": 1,
-      "position": [-128, -478]
+      "position": [-128, -513]
     },
     {
       "type": "Dropdown",
       "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)"],
       "selected": 1,
-      "position": [5, -478]
+      "position": [5, -513]
     },
     {
       "type": "Button",
       "text": "CtxTexEdit1",
-      "position": [114, -478]
+      "position": [114, -513]
     },
     {
       "type": "Button",
       "text": "×",
-      "position": [150, -478]
+      "position": [150, -513]
     },
     {
       "type": "Dropdown",
       "options": ["A", "B", "C", "D", "E", "F", "(все)"],
       "selected": 0,
-      "position": [-128, -510]
+      "position": [-128, -545]
     },
     {
       "type": "Dropdown",
       "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)"],
       "selected": 0,
-      "position": [-13, -510]
+      "position": [-13, -545]
     },
     {
       "type": "Button",
       "text": "Добавить",
-      "position": [114, -510]
+      "position": [114, -545]
     },
     {
       "type": "Toggle",
       "label": "Прозрачный",
       "isOn": false,
-      "position": [0, -546]
+      "position": [0, -581]
     },
     {
       "type": "Toggle",
       "label": "Закрепить",
       "isOn": false,
-      "position": [0, -579]
+      "position": [0, -614]
     },
     {
       "type": "Button",
       "text": "Дублировать",
-      "position": [-91, -621]
+      "position": [-91, -656]
     },
     {
       "type": "Button",
       "text": "Удалить",
-      "position": [91, -621]
+      "position": [91, -656]
     }
   ]
 }

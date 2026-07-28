@@ -8,6 +8,10 @@ namespace KitchenDesigner.Core
     public class TextureOverlayHandle : MonoBehaviour
     {
         public int edge;
+
+        /// <summary>Мировая точка, по которой ручку ловит курсор (её обновляет
+        /// PositionHandles). Для кубика это сам кубик, для стрелки — её середина.</summary>
+        public Vector3 grabPoint;
     }
 
     /// <summary>Ручки области накладки текстуры прямо на поверхности.
@@ -30,15 +34,22 @@ namespace KitchenDesigner.Core
     [DefaultExecutionOrder(100)]
     public class TextureOverlayHandles : MonoBehaviour
     {
-        /// <summary>Вынос кубика ручки от поверхности и его ребро, юниты.</summary>
-        private const float StemLen = 0.07f;
-        private const float TipSize = 0.045f;
+        /// <summary>Зазор ручки над поверхностью, юниты.</summary>
+        private const float Lift = 0.012f;
 
-        /// <summary>Габарит зоны захвата (её ось Z — нормаль грани). Зона заведомо
-        /// крупнее кубика и НЕ уходит внутрь объекта: утопленный коллайдер ловил
-        /// луч наравне со стеной, и попасть по ручке получалось через раз.</summary>
-        private const float GrabWidth = 0.11f;
-        private const float GrabDepth = 0.13f;
+        /// <summary>Кубик растяжения: ребро.</summary>
+        private const float CubeSize = 0.05f;
+
+        // Стрелка переноса: тонкий стержень + конус на конце (как у ручек
+        // перемещения объекта — ResizeHandleManager, чтобы жест читался одинаково).
+        private const float ShaftLen = 0.09f;
+        private const float ShaftRad = 0.012f;
+        private const float TipLen = 0.05f;
+        private const float TipSize = 0.04f;
+        private const float ArrowLen = ShaftLen + TipLen;
+
+        /// <summary>Радиус захвата ручки в ПИКСЕЛЯХ экрана.</summary>
+        private const float GrabPixels = 26f;
 
         private static KitchenElement? _element;
         private static int _index = -1;
@@ -86,26 +97,31 @@ namespace KitchenDesigner.Core
 
         /// <summary>Ручка под курсором, или null.
         ///
-        /// Именно RaycastAll, а не Raycast: ручка стоит ВПЛОТНУЮ к поверхности, и
-        /// одиночный луч сплошь и рядом возвращал сначала саму стену — особенно у
-        /// накладки во всю грань, где ручки сидят на самом краю. Ближайший ко всему
-        /// прочему объект нас не интересует: если луч задел ручку, значит по ручке и
-        /// кликнули.</summary>
+        /// Попадание считается НА ЭКРАНЕ, а не лучом по коллайдеру. Физика тут
+        /// подводит трижды: ручка стоит вплотную к поверхности и луч возвращает
+        /// стену; ручка на дальней грани оказывается за геометрией; а перемещённый
+        /// в LateUpdate коллайдер до следующего FixedUpdate вообще стоит на старом
+        /// месте (Physics.autoSyncTransforms по умолчанию выключен). Расстояние в
+        /// пикселях от курсора до ручки ничем из этого не портится и заодно даёт
+        /// одинаковый размер зоны захвата на любом зуме.</summary>
         private static TextureOverlayHandle? PickHandle()
         {
-            if (!Active) return null;
+            if (!Active || _instance == null) return null;
             var cam = Camera.main;
             if (cam == null) return null;
 
-            var hits = Physics.RaycastAll(cam.ScreenPointToRay(Input.mousePosition));
+            Vector2 mouse = Input.mousePosition;
             TextureOverlayHandle? best = null;
-            float bestDist = float.MaxValue;
-            foreach (var hit in hits)
+            float bestDist = GrabPixels;
+            foreach (var h in _instance._handles)
             {
-                var handle = hit.collider.GetComponentInParent<TextureOverlayHandle>();
-                if (handle == null || hit.distance >= bestDist) continue;
-                best = handle;
-                bestDist = hit.distance;
+                if (h == null) continue;
+                var sp = cam.WorldToScreenPoint(h.grabPoint);
+                if (sp.z <= 0f) continue; // ручка за камерой
+                float d = Vector2.Distance(mouse, new Vector2(sp.x, sp.y));
+                if (d > bestDist) continue;
+                best = h;
+                bestDist = d;
             }
             return best;
         }
@@ -330,28 +346,54 @@ namespace KitchenDesigner.Core
 
         // ── Ручки ───────────────────────────────────────────────────────
 
+        /// <summary>Форма ручки говорит, что она делает, — как и у ручек объекта:
+        /// «Ручки: растяжение» → кубик на границе области, «Ручки: перенос» →
+        /// стрелка вдоль оси, по которой область поедет.</summary>
         private void BuildHandles()
         {
             _builtMode = ResizeHandleManager.Mode;
+            bool move = _builtMode == ResizeHandleManager.HandleMode.Move;
+
             for (int edge = 0; edge < 4; edge++)
             {
                 var go = new GameObject($"TextureOverlayHandle_{edge}") { hideFlags = HideFlags.DontSave };
                 var marker = go.AddComponent<TextureOverlayHandle>();
                 marker.edge = edge;
 
-                var col = go.AddComponent<BoxCollider>();
-                col.center = new Vector3(0, 0, GrabDepth * 0.5f);
-                col.size = new Vector3(GrabWidth, GrabWidth, GrabDepth);
-
-                var tip = new GameObject("Tip");
-                tip.transform.SetParent(go.transform, false);
-                tip.transform.localPosition = new Vector3(0, 0, StemLen);
-                tip.transform.localScale = Vector3.one * TipSize;
-                tip.AddComponent<MeshFilter>().sharedMesh = CubeMesh();
-                tip.AddComponent<MeshRenderer>().sharedMaterial = HandleMaterial();
+                if (move) BuildArrow(go.transform);
+                else BuildCube(go.transform);
 
                 _handles.Add(marker);
             }
+        }
+
+        private void BuildCube(Transform parent)
+        {
+            var cube = new GameObject("Cube");
+            cube.transform.SetParent(parent, false);
+            cube.transform.localScale = Vector3.one * CubeSize;
+            cube.AddComponent<MeshFilter>().sharedMesh = CubeMesh();
+            cube.AddComponent<MeshRenderer>().sharedMaterial = HandleMaterial();
+        }
+
+        // Локальный +Z — направление оси переноса.
+        private void BuildArrow(Transform parent)
+        {
+            var mat = HandleMaterial();
+
+            var shaft = new GameObject("Shaft");
+            shaft.transform.SetParent(parent, false);
+            shaft.transform.localPosition = new Vector3(0, 0, ShaftLen * 0.5f);
+            shaft.transform.localScale = new Vector3(ShaftRad * 2f, ShaftRad * 2f, ShaftLen);
+            shaft.AddComponent<MeshFilter>().sharedMesh = CubeMesh();
+            shaft.AddComponent<MeshRenderer>().sharedMaterial = mat;
+
+            var tip = new GameObject("Tip");
+            tip.transform.SetParent(parent, false);
+            tip.transform.localPosition = new Vector3(0, 0, ShaftLen + TipLen * 0.5f);
+            tip.transform.localScale = new Vector3(TipSize * 1.4f, TipSize * 1.4f, TipLen);
+            tip.AddComponent<MeshFilter>().sharedMesh = ConeMesh();
+            tip.AddComponent<MeshRenderer>().sharedMaterial = mat;
         }
 
         private void PositionHandles()
@@ -366,13 +408,37 @@ namespace KitchenDesigner.Core
             // в стене и её нечем схватить.
             var n = _face.normal.sqrMagnitude > Tolerance.EpsilonSqr
                 ? _face.normal.normalized : Vector3.forward;
+            bool move = _builtMode == ResizeHandleManager.HandleMode.Move;
+
             foreach (var h in _handles)
             {
                 if (h == null) continue;
-                h.transform.SetPositionAndRotation(EdgeCenter(rect, h.edge),
-                    Quaternion.LookRotation(n, _face.upAxis));
+                Vector3 basePoint = EdgeCenter(rect, h.edge) + n * Lift;
+
+                if (move)
+                {
+                    // Стрелка смотрит НАРУЖУ области вдоль своей оси — туда же,
+                    // куда область поедет за эту ручку.
+                    Vector3 dir = AxisOf(h.edge);
+                    h.transform.SetPositionAndRotation(basePoint, Quaternion.LookRotation(dir, n));
+                    h.grabPoint = basePoint + dir * (ArrowLen * 0.6f);
+                }
+                else
+                {
+                    h.transform.SetPositionAndRotation(basePoint, Quaternion.LookRotation(n, _face.upAxis));
+                    h.grabPoint = basePoint;
+                }
             }
         }
+
+        /// <summary>Направление стороны области наружу, в плоскости грани.</summary>
+        private Vector3 AxisOf(int edge) => edge switch
+        {
+            0 => -_face.rightAxis,
+            1 => _face.rightAxis,
+            2 => -_face.upAxis,
+            _ => _face.upAxis,
+        };
 
         private void ClearHandles()
         {
@@ -395,6 +461,34 @@ namespace KitchenDesigner.Core
             if (_material.HasProperty("_BaseColor"))
                 _material.SetColor("_BaseColor", UI.UIStyle.HighlightChanged);
             return _material;
+        }
+
+        // Единичный конус вдоль +Z: основание (r = 0.5) при z = −0.5, вершина при
+        // z = +0.5. Как у стрелок перемещения объекта.
+        private static Mesh? _cone;
+        private static Mesh ConeMesh()
+        {
+            if (_cone != null) return _cone;
+            const int seg = 16;
+            var verts = new List<Vector3> { new Vector3(0, 0, 0.5f), new Vector3(0, 0, -0.5f) };
+            int apex = 0, baseCenter = 1, ring = verts.Count;
+            for (int i = 0; i < seg; i++)
+            {
+                float a = (float)i / seg * Mathf.PI * 2f;
+                verts.Add(new Vector3(Mathf.Cos(a) * 0.5f, Mathf.Sin(a) * 0.5f, -0.5f));
+            }
+            var tris = new List<int>();
+            for (int i = 0; i < seg; i++)
+            {
+                int cur = ring + i, next = ring + (i + 1) % seg;
+                tris.Add(apex); tris.Add(next); tris.Add(cur);
+                tris.Add(baseCenter); tris.Add(cur); tris.Add(next);
+            }
+            _cone = new Mesh { name = "TextureOverlayHandleCone", hideFlags = HideFlags.DontSave };
+            _cone.SetVertices(verts);
+            _cone.SetTriangles(tris, 0);
+            _cone.RecalculateNormals();
+            return _cone;
         }
 
         // Единичный куб. Свой, а не CreatePrimitive: примитивы вырезаются из
