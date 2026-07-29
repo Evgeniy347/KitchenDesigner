@@ -483,6 +483,15 @@ namespace KitchenDesigner.Core.UI
             _legsMaterialDropdown = LabeledDropdownRow(panel.transform, "Ножки",
                 new List<string>(matOptions), OnLegsMaterialSelected, AddTableRow, "CtxTableLegs");
 
+            // Наведение на пункт показывает декор прямо на объекте (см. блок
+            // «Предпросмотр базового декора»).
+            DropdownHover.Attach(_materialDropdown,
+                option => PreviewMaterial(legs: false, optionIndex: option), EndMaterialPreview);
+            DropdownHover.Attach(_tabletopMaterialDropdown,
+                option => PreviewMaterial(legs: false, optionIndex: option), EndMaterialPreview);
+            DropdownHover.Attach(_legsMaterialDropdown,
+                option => PreviewMaterial(legs: true, optionIndex: option), EndMaterialPreview);
+
             BuildTextureOverlaySection(panel.transform, matOptions);
 
             // ── Свойства ────────────────────────────────────────────────
@@ -1112,6 +1121,7 @@ namespace KitchenDesigner.Core.UI
                 // Предпросмотр принадлежал прошлому элементу — снимаем ДО смены
                 // цели, иначе показанная накладка осталась бы на нём насовсем.
                 EndTexturePreview();
+                EndMaterialPreview();
                 _target = element;
                 _groovesExpanded = false; // список пазов открывается свёрнутым
                 _texturesExpanded = false; // и список накладок тоже
@@ -1310,6 +1320,9 @@ namespace KitchenDesigner.Core.UI
             // Панель закрыли с раскрытым списком декора — показанная накладка не
             // должна пережить закрытие, как и подсветка стороны.
             EndTexturePreview();
+            // …и показанный наведением декор тоже: список закрылся вместе с
+            // панелью, onExit по нему уже не придёт.
+            EndMaterialPreview();
             // Ручки области жили только пока открыто меню: без него их нечем
             // выключить, и они перехватывали бы клики по сцене.
             TextureOverlayHandles.End();
@@ -2334,6 +2347,10 @@ namespace KitchenDesigner.Core.UI
             foreach (var m in MaterialCatalog.All)
                 opts.Add(new TMP_Dropdown.OptionData(m.displayName));
             dropdown.options = opts;
+            // Названия декоров длинные и приходят в том числе из внешней папки:
+            // высоту пункта пересчитываем под НОВЫЙ набор, иначе перенос строк
+            // обрежется по старой высоте.
+            UIFactory.FitDropdownItems(dropdown);
         }
 
         private void RebuildMaterialOptions() => FillMaterialOptions(_materialDropdown);
@@ -2351,43 +2368,130 @@ namespace KitchenDesigner.Core.UI
 
         private void OnMaterialSelected(int index)
         {
+            ApplyMaterialChoice(legs: false, index: index);
+        }
+
+        private void OnLegsMaterialSelected(int index)
+        {
+            ApplyMaterialChoice(legs: true, index: index);
+        }
+
+        /// <summary>Настоящий выбор декора: предпросмотр сворачивается ПЕРВЫМ
+        /// делом (иначе уход курсора после клика вернул бы старый декор поверх
+        /// выбранного), затем декор применяется и возвращается подсветка.</summary>
+        private void ApplyMaterialChoice(bool legs, int index)
+        {
             if (_target == null) return;
             var all = MaterialCatalog.All;
             if (index < 0 || index >= all.Count) return;
 
-            if (_currentIsTable)
-            {
-                var def = all[index];
-                if (_target is TableElement tableEl)
-                    MaterialManager.ApplyTabletop(tableEl, def);
-                else if (_target is RadiusTableElement rtEl)
-                    MaterialManager.ApplyTabletop(rtEl, def);
-            }
-            else
-            {
-                MaterialManager.Apply(_target, all[index]);
-            }
+            EndMaterialPreview();
+            ApplyMaterialSlot(_target, SlotFor(legs), all[index]);
 
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.RefreshHighlight(_target);
             RefreshHighlights();
         }
 
-        private void OnLegsMaterialSelected(int index)
+        /// <summary>Какой декор правит строка: у стола «Текстура» скрыта, а её
+        /// список показывает столешницу (см. Layout).</summary>
+        private MaterialSlot SlotFor(bool legs)
+            => legs ? MaterialSlot.Legs
+                : _currentIsTable ? MaterialSlot.Tabletop : MaterialSlot.Base;
+
+        private enum MaterialSlot { Base, Tabletop, Legs }
+
+        private static void ApplyMaterialSlot(KitchenElement target, MaterialSlot slot, MaterialDef def)
+        {
+            switch (slot)
+            {
+                case MaterialSlot.Tabletop:
+                    if (target is TableElement topTable) MaterialManager.ApplyTabletop(topTable, def);
+                    else if (target is RadiusTableElement topRadius) MaterialManager.ApplyTabletop(topRadius, def);
+                    break;
+                case MaterialSlot.Legs:
+                    if (target is TableElement legsTable) MaterialManager.ApplyLegs(legsTable, def);
+                    else if (target is RadiusTableElement legsRadius) MaterialManager.ApplyLegs(legsRadius, def);
+                    break;
+                default:
+                    MaterialManager.Apply(target, def);
+                    break;
+            }
+        }
+
+        private static string MaterialIdOf(KitchenElement target, MaterialSlot slot)
+        {
+            switch (slot)
+            {
+                case MaterialSlot.Tabletop:
+                    if (target is TableElement topTable) return topTable.TabletopMaterialId;
+                    if (target is RadiusTableElement topRadius) return topRadius.TabletopMaterialId;
+                    return target.MaterialId;
+                case MaterialSlot.Legs:
+                    if (target is TableElement legsTable) return legsTable.LegsMaterialId;
+                    if (target is RadiusTableElement legsRadius) return legsRadius.LegsMaterialId;
+                    return target.MaterialId;
+                default:
+                    return target.MaterialId;
+            }
+        }
+
+        // ── Предпросмотр базового декора наведением ───────────────────
+        // То же обещание, что и у накладок: название («Дуб каселла натуральный
+        // светлый») не говорит, как декор ляжет именно на эту деталь. Пока
+        // курсор стоит на пункте, декор надет на объект по-настоящему; ушли с
+        // пункта или закрыли список — возвращается прежний.
+        //
+        // Выделение на время показа СНИМАЕТСЯ: жёлтая заливка перекрашивает
+        // деталь, и оценивать под ней текстуру бессмысленно. Само выделение
+        // остаётся — меню свойств никуда не девается.
+        //
+        // Предпросмотр пишется в элемент напрямую, минуя CommandStack: это
+        // показ, а не правка, и в undo-стеке ему делать нечего.
+
+        private KitchenElement? _matPreviewTarget;
+        private string? _matPreviewBefore;
+        private MaterialSlot _matPreviewSlot;
+
+        /// <summary>Идёт предпросмотр — декор на объекте сейчас «не настоящий».</summary>
+        public bool MaterialPreviewActive => _matPreviewBefore != null;
+
+        private void PreviewMaterial(bool legs, int optionIndex)
         {
             if (_target == null) return;
             var all = MaterialCatalog.All;
-            if (index < 0 || index >= all.Count) return;
+            if (optionIndex < 0 || optionIndex >= all.Count) return;
 
-            var def = all[index];
-            if (_target is TableElement tableEl)
-                MaterialManager.ApplyLegs(tableEl, def);
-            else if (_target is RadiusTableElement rtEl)
-                MaterialManager.ApplyLegs(rtEl, def);
+            BeginMaterialPreview(SlotFor(legs));
+            ApplyMaterialSlot(_target, _matPreviewSlot, all[optionIndex]);
+        }
 
-            if (SelectionManager.Instance != null)
-                SelectionManager.Instance.RefreshHighlight(_target);
-            RefreshHighlights();
+        private void BeginMaterialPreview(MaterialSlot slot)
+        {
+            if (_matPreviewBefore != null && _matPreviewTarget == _target && _matPreviewSlot == slot)
+                return; // тот же список, соседний пункт — «до» уже запомнено
+            EndMaterialPreview();
+            _matPreviewTarget = _target;
+            _matPreviewSlot = slot;
+            _matPreviewBefore = MaterialIdOf(_target!, slot);
+            SelectionManager.Instance?.SuppressHighlight(_target!);
+        }
+
+        /// <summary>Вернуть декор и подсветку в состояние до предпросмотра.
+        /// Зовётся с ухода курсора, при закрытии списка (DropdownHover шлёт
+        /// onExit на оба) и первым делом из настоящего выбора — повторный вызов
+        /// уже ничего не делает.</summary>
+        private void EndMaterialPreview()
+        {
+            var before = _matPreviewBefore;
+            var target = _matPreviewTarget;
+            var slot = _matPreviewSlot;
+            _matPreviewBefore = null;
+            _matPreviewTarget = null;
+            if (before == null || target == null) return;
+
+            ApplyMaterialSlot(target, slot, MaterialCatalog.Get(before));
+            SelectionManager.Instance?.ResumeHighlight(target);
         }
 
         // ── Тип: родственные группы конвертации ─────────────────────────

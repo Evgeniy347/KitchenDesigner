@@ -66,6 +66,9 @@ namespace KitchenDesigner.Core.UI
         /// <summary>Кнопка закрытия окна: размер и отступ от углов (правило 7).</summary>
         public const float CloseBtnSize = 32f;
         public const float CloseBtnInset = 8f;
+        /// <summary>Пункт выпадающего списка в одну строку. Нижняя граница: пункт
+        /// короче этого не бывает, даже если название совсем короткое.</summary>
+        public const float DropdownItemH = 24f;
 
         // ── Шрифты ─────────────────────────────────────────────────────
         public const int FontTitle = 20;

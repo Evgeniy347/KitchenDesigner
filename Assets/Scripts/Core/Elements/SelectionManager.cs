@@ -315,8 +315,43 @@ namespace KitchenDesigner.Core
             return _selectedElements.Contains(element);
         }
 
+        // ── Временное снятие подсветки (предпросмотр декора) ───────────
+        // Жёлтая заливка выделения перекрашивает деталь, и текстуру под ней
+        // оценить нельзя. На время показа декора наведением подсветку снимаем,
+        // но САМО выделение оставляем: пользователь ничего не выбирал заново,
+        // и меню свойств обязано остаться открытым на том же элементе.
+
+        private KitchenElement? _highlightSuppressed;
+
+        public bool IsHighlightSuppressed(KitchenElement element)
+            => element != null && _highlightSuppressed == element;
+
+        /// <summary>Снять подсветку с выделенного элемента, не снимая выделения.
+        /// Повторный вызов — не ошибка.</summary>
+        public void SuppressHighlight(KitchenElement element)
+        {
+            if (element == null || _highlightSuppressed == element) return;
+            if (!_selectedElements.Contains(element)) return;
+            // Флаг ставим ДО восстановления: ApplyForElement по дороге зовёт
+            // RefreshHighlight (у стены и пола), и без флага подсветка тут же
+            // вернулась бы обратно.
+            _highlightSuppressed = element;
+            RestoreMaterial(element);
+        }
+
+        /// <summary>Вернуть подсветку, снятую <see cref="SuppressHighlight"/>.</summary>
+        public void ResumeHighlight(KitchenElement element)
+        {
+            if (element == null || _highlightSuppressed != element) return;
+            _highlightSuppressed = null;
+            RefreshHighlight(element);
+        }
+
         private void HighlightSelected(KitchenElement element, bool isMulti)
         {
+            // Подсветка снята на время предпросмотра — ничего не красим.
+            if (_highlightSuppressed == element) return;
+
             var renderer = element.GetComponent<MeshRenderer>();
             if (renderer != null && renderer.material != null)
             {
@@ -368,6 +403,12 @@ namespace KitchenDesigner.Core
                 renderer.material = saved.material;
             }
             _savedMaterials.Remove(element);
+
+            // Элемент вышел из выделения — снятая подсветка больше не «снята
+            // на время», возвращать нечего. Сам предпросмотр этой веткой не
+            // задет: там элемент остаётся выделенным.
+            if (_highlightSuppressed == element && !_selectedElements.Contains(element))
+                _highlightSuppressed = null;
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.ApplyForElement(element);

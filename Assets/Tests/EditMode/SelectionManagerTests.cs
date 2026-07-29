@@ -444,6 +444,130 @@ public class SelectionManagerTests
         }
     }
 
+    // ── Временное снятие подсветки (предпросмотр декора) ───────────
+
+    /// <summary>Жёлтая подсветка выделения перекрашивает деталь, и оценить под
+    /// ней показанную наведением текстуру нельзя. На время показа подсветка
+    /// снимается — но выделение остаётся.</summary>
+    [Test]
+    public void SuppressHighlight_RestoresOwnMaterial_ButKeepsSelection()
+    {
+        LogAssert.ignoreFailingMessages = true;
+        try
+        {
+            var el = MakeWithRenderer("Деталь_тест");
+            var own = new Color(0.2f, 0.4f, 0.6f, 1f);
+            el.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_BaseColor", own);
+
+            var smGo = new GameObject("SelectionManager");
+            var sm = smGo.AddComponent<SelectionManager>();
+            _spawned.Add(smGo);
+
+            sm.Select(el);
+            var highlighted = el.GetComponent<MeshRenderer>().material.GetColor("_BaseColor");
+            Assert.AreNotEqual(own, highlighted, "выделение красит деталь жёлтым");
+
+            sm.SuppressHighlight(el);
+
+            Assert.AreEqual(own, el.GetComponent<MeshRenderer>().material.GetColor("_BaseColor"),
+                "BUG: подсветка не снята — текстуру под ней не видно");
+            Assert.IsTrue(sm.IsHighlightSuppressed(el));
+            Assert.IsTrue(sm.IsSelected(el), "само выделение снимать нельзя");
+        }
+        finally
+        {
+            LogAssert.ignoreFailingMessages = false;
+        }
+    }
+
+    /// <summary>У стены и пола ApplyForElement по дороге зовёт RefreshHighlight
+    /// (ветка ownDecorOnly). Пока подсветка снята, она возвращаться не должна —
+    /// иначе предпросмотр текстуры на стене был бы жёлтым.</summary>
+    [Test]
+    public void RefreshHighlight_DoesNothing_WhileSuppressed()
+    {
+        LogAssert.ignoreFailingMessages = true;
+        try
+        {
+            var wall = MakeWithRenderer("Стена_тест", wall: true);
+            var own = new Color(0.2f, 0.4f, 0.6f, 1f);
+            wall.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_BaseColor", own);
+
+            var smGo = new GameObject("SelectionManager");
+            var sm = smGo.AddComponent<SelectionManager>();
+            _spawned.Add(smGo);
+
+            sm.Select(wall);
+            sm.SuppressHighlight(wall);
+            sm.RefreshHighlight(wall);
+
+            Assert.AreEqual(own, wall.GetComponent<MeshRenderer>().material.GetColor("_BaseColor"),
+                "BUG: подсветка вернулась сама, поверх показанной текстуры");
+        }
+        finally
+        {
+            LogAssert.ignoreFailingMessages = false;
+        }
+    }
+
+    [Test]
+    public void ResumeHighlight_PutsHighlightBack()
+    {
+        LogAssert.ignoreFailingMessages = true;
+        try
+        {
+            var el = MakeWithRenderer("Деталь_тест");
+            var own = new Color(0.2f, 0.4f, 0.6f, 1f);
+            el.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_BaseColor", own);
+
+            var smGo = new GameObject("SelectionManager");
+            var sm = smGo.AddComponent<SelectionManager>();
+            _spawned.Add(smGo);
+
+            sm.Select(el);
+            sm.SuppressHighlight(el);
+            sm.ResumeHighlight(el);
+
+            Assert.IsFalse(sm.IsHighlightSuppressed(el));
+            Assert.AreNotEqual(own, el.GetComponent<MeshRenderer>().material.GetColor("_BaseColor"),
+                "BUG: после предпросмотра выделение не вернулось");
+            Assert.IsTrue(sm.HasSavedMaterialFor(el));
+        }
+        finally
+        {
+            LogAssert.ignoreFailingMessages = false;
+        }
+    }
+
+    /// <summary>Элемент сняли с выделения, пока подсветка была снята: «вернуть»
+    /// потом нечего, и флаг не должен пережить выделение.</summary>
+    [Test]
+    public void Deselect_ClearsSuppression()
+    {
+        LogAssert.ignoreFailingMessages = true;
+        try
+        {
+            var el = MakeWithRenderer("Деталь_тест");
+            var smGo = new GameObject("SelectionManager");
+            var sm = smGo.AddComponent<SelectionManager>();
+            _spawned.Add(smGo);
+
+            sm.Select(el);
+            sm.SuppressHighlight(el);
+            sm.DeselectAll();
+
+            Assert.IsFalse(sm.IsHighlightSuppressed(el),
+                "BUG: снятая подсветка пережила выделение — следующее выделение будет без неё");
+
+            sm.Select(el);
+            Assert.IsTrue(sm.HasSavedMaterialFor(el), "новое выделение снова подсвечено");
+        }
+        finally
+        {
+            LogAssert.ignoreFailingMessages = false;
+        }
+    }
+
     // ── RaycastTransparentAware: клик сквозь прозрачные (интеграция с Physics) ──
 
     private Camera SetupTestCamera()

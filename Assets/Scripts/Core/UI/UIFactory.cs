@@ -455,6 +455,18 @@ namespace KitchenDesigner.Core.UI
             return img;
         }
 
+        // Геометрия пункта списка: подпись отступает от левого края на ширину
+        // галочки, справа — обычное поле. Обе величины нужны и снаружи —
+        // FitDropdownItems считает по ним ширину текста.
+        public const float DropdownItemLabelLeft = 26f;
+        public const float DropdownItemLabelRight = 8f;
+        public const int DropdownItemFontSize = 14;
+
+        // Шаблон списка: сколько высоты пункта показывать, не прокручивая, и в
+        // каких пределах. Высокие пункты не должны превращать список в окно.
+        private const float DropdownListMinH = 170f;
+        private const float DropdownListMaxH = 240f;
+
         /// <summary>Выпадающий список (TMPro Dropdown), собранный из кода —
         /// с прокручиваемым шаблоном списка. Возвращает TMP_Dropdown.</summary>
         public static TMP_Dropdown CreateDropdown(string name, Transform parent,
@@ -475,6 +487,10 @@ namespace KitchenDesigner.Core.UI
             var capRt = caption.rectTransform;
             capRt.anchorMin = Vector2.zero; capRt.anchorMax = Vector2.one;
             capRt.offsetMin = new Vector2(8, 2); capRt.offsetMax = new Vector2(-18, -2);
+            // Свёрнутый список — одна строка фиксированной высоты: длинное имя
+            // здесь обрезается многоточием, а целиком его показывает сам список.
+            caption.enableWordWrapping = false;
+            caption.overflowMode = TextOverflowModes.Ellipsis;
 
             var arrow = CreateLabel(name + "_Arrow", rect, UIStyle.GlyphDropdown, 10, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
             arrow.color = UIStyle.TextSecondary;
@@ -521,10 +537,16 @@ namespace KitchenDesigner.Core.UI
             var itemCheckImg = itemCheck.gameObject.AddComponent<Image>();
             itemCheckImg.color = new Color(0.4f, 0.7f, 1f, 1f);
 
-            var itemLabel = CreateLabel("Item Label", item, "Option", 14, Vector2.zero, Vector2.zero, TextAnchor.MiddleLeft);
+            var itemLabel = CreateLabel("Item Label", item, "Option", DropdownItemFontSize,
+                Vector2.zero, Vector2.zero, TextAnchor.MiddleLeft);
             var ilRt = itemLabel.rectTransform;
             ilRt.anchorMin = Vector2.zero; ilRt.anchorMax = Vector2.one;
-            ilRt.offsetMin = new Vector2(26, 1); ilRt.offsetMax = new Vector2(-8, -1);
+            ilRt.offsetMin = new Vector2(DropdownItemLabelLeft, 1);
+            ilRt.offsetMax = new Vector2(-DropdownItemLabelRight, -1);
+            // Пункт — единственное место, где название видно целиком, поэтому
+            // здесь перенос по словам, а не обрезка (высоту даёт FitDropdownItems).
+            itemLabel.enableWordWrapping = true;
+            itemLabel.overflowMode = TextOverflowModes.Truncate;
 
             itemToggle.targetGraphic = itemBgImg;
             itemToggle.graphic = itemCheckImg;
@@ -547,11 +569,42 @@ namespace KitchenDesigner.Core.UI
             template.gameObject.SetActive(false);
             dropdown.value = 0;
             dropdown.RefreshShownValue();
+            FitDropdownItems(dropdown);
 
             if (onChanged != null)
                 dropdown.onValueChanged.AddListener(v => onChanged(v));
 
             return dropdown;
+        }
+
+        /// <summary>Подогнать высоту пунктов списка под самое длинное название.
+        /// Звать после КАЖДОЙ смены options: набор декоров меняется в рантайме
+        /// (внешняя папка текстур), и высота, посчитанная при сборке меню, к
+        /// новому набору отношения не имеет.</summary>
+        public static void FitDropdownItems(TMP_Dropdown? dropdown)
+        {
+            if (dropdown == null) return;
+            var template = dropdown.template;
+            if (template == null) return;
+
+            var item = template.Find("Viewport/Content/Item") as RectTransform;
+            var content = template.Find("Viewport/Content") as RectTransform;
+            if (item == null || content == null) return;
+
+            // Пункт растянут по ширине списка, а список — по ширине самого
+            // дропдауна: sizeDelta пункта тут ничего не скажет.
+            var ddRt = dropdown.GetComponent<RectTransform>();
+            float itemWidth = ddRt.rect.width > 1f ? ddRt.rect.width : ddRt.sizeDelta.x;
+            float textWidth = itemWidth - DropdownItemLabelLeft - DropdownItemLabelRight;
+
+            var texts = new System.Collections.Generic.List<string>(dropdown.options.Count);
+            foreach (var o in dropdown.options) texts.Add(o.text);
+
+            float itemH = DropdownItemFit.HeightFor(texts, textWidth, DropdownItemFontSize);
+            item.sizeDelta = new Vector2(item.sizeDelta.x, itemH);
+            content.sizeDelta = new Vector2(content.sizeDelta.x, itemH + 2f);
+            template.sizeDelta = new Vector2(template.sizeDelta.x,
+                Mathf.Clamp(itemH * 4f, DropdownListMinH, DropdownListMaxH));
         }
     }
 }
