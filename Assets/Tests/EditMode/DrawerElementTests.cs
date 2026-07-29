@@ -525,6 +525,183 @@ public class DrawerElementTests
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // SYSTEM CONVERSION (GTV ↔ Movento)
+    // ═══════════════════════════════════════════════════════════════
+
+    [Test]
+    public void Drawer_DefaultSystem_IsGtv()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 400, DrawerColor.Anthracite);
+        Assert.AreEqual(DrawerSystem.Gtv, d.System);
+    }
+
+    [Test]
+    public void Drawer_SwitchToMovento_PreservesInternalWidth()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 564, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        Assert.AreEqual(564, d.InternalWidth, "InternalWidth не должен меняться при смене системы");
+    }
+
+    [Test]
+    public void Drawer_SwitchToMovento_RebuildsMesh()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 564, DrawerColor.Anthracite);
+        var meshBefore = d.GetComponent<MeshFilter>().sharedMesh;
+        d.System = DrawerSystem.Movento;
+        var meshAfter = d.GetComponent<MeshFilter>().sharedMesh;
+        Assert.IsNotNull(meshAfter, "меш должен пересобраться");
+        Assert.AreNotSame(meshBefore, meshAfter, "меш Movento отличается от GTV");
+    }
+
+    [Test]
+    public void Drawer_SwitchBackToGtv_PreservesInternalWidth()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 564, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        d.System = DrawerSystem.Gtv;
+        Assert.AreEqual(564, d.InternalWidth, "InternalWidth не теряется при Gtv→Movento→Gtv");
+        Assert.AreEqual(DrawerSystem.Gtv, d.System);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // RESIZE → INTERNAL WIDTH SYNC
+    // ═══════════════════════════════════════════════════════════════
+
+    [Test]
+    public void Drawer_SetDimensionsMM_InternalWidthFollows()
+    {
+        // При ресайзе ручками DimensionsMM.x меняется → InternalWidth синхронизируется
+        var d = MakeDrawer("D", DrawerType.C, 350, 400, DrawerColor.Anthracite);
+        d.DimensionsMM = new Vector3Int(500, 999, 777);
+        Assert.AreEqual(500, d.InternalWidth, "InternalWidth = DimensionsMM.x после ресайза");
+        Assert.AreEqual(500, d.DimensionsMM.x, "DimensionsMM.x = InternalWidth");
+    }
+
+    [Test]
+    public void Drawer_SetDimensionsMM_Movento_InternalWidthFollows()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 400, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        d.DimensionsMM = new Vector3Int(600, 999, 777);
+        Assert.AreEqual(600, d.InternalWidth, "InternalWidth = DimensionsMM.x после ресайза Movento");
+        Assert.AreEqual(600, d.DimensionsMM.x);
+    }
+
+    [Test]
+    public void Drawer_ResizeViaDimensionsMM_PreservesTypeHeight()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 400, DrawerColor.Anthracite);
+        int expectedH = DrawerConstants.GetMinOpeningHeight(DrawerType.C);
+        d.DimensionsMM = new Vector3Int(500, 999, 777);
+        Assert.AreEqual(expectedH, d.DimensionsMM.y, "высота всегда от типа");
+        Assert.AreEqual(350, d.DimensionsMM.z, "глубина всегда от номинальной длины");
+    }
+
+    [Test]
+    public void Drawer_ResizeViaDimensionsMM_Movento_PreservesTypeHeight()
+    {
+        var d = MakeDrawer("D", DrawerType.D, 450, 400, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        int expectedH = DrawerConstants.GetMinOpeningHeight(DrawerType.D);
+        d.DimensionsMM = new Vector3Int(700, 999, 555);
+        Assert.AreEqual(expectedH, d.DimensionsMM.y);
+        Assert.AreEqual(450, d.DimensionsMM.z);
+        Assert.AreEqual(700, d.InternalWidth);
+    }
+
+    [Test]
+    public void Drawer_MultipleResizes_InternalWidthStaysConsistent()
+    {
+        var d = MakeDrawer("D", DrawerType.B, 300, 400, DrawerColor.Anthracite);
+        int[] widths = { 500, 350, 600, 250, 800 };
+        foreach (int w in widths)
+        {
+            d.DimensionsMM = new Vector3Int(w, 0, 0);
+            Assert.AreEqual(w, d.InternalWidth, $"после ресайза до {w} мм");
+            Assert.AreEqual(w, d.DimensionsMM.x);
+        }
+    }
+
+    [Test]
+    public void Drawer_Movento_MultipleResizes_InternalWidthStaysConsistent()
+    {
+        var d = MakeDrawer("D", DrawerType.B, 300, 400, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        int[] widths = { 500, 350, 600, 250, 800 };
+        foreach (int w in widths)
+        {
+            d.DimensionsMM = new Vector3Int(w, 0, 0);
+            Assert.AreEqual(w, d.InternalWidth, $"Movento: после ресайза до {w} мм");
+            Assert.AreEqual(w, d.DimensionsMM.x);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INTERNAL WIDTH → DIMENSIONS MM ROUND-TRIP
+    // ═══════════════════════════════════════════════════════════════
+
+    [Test]
+    public void Drawer_InternalWidthToDimensionsMM_RoundTrip()
+    {
+        var d = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite);
+        d.InternalWidth = 550;
+        Assert.AreEqual(550, d.DimensionsMM.x, "DimensionsMM.x = InternalWidth после установки");
+        Assert.AreEqual(550, d.InternalWidth, "InternalWidth не изменился обратно");
+    }
+
+    [Test]
+    public void Drawer_Movento_InternalWidthToDimensionsMM_RoundTrip()
+    {
+        var d = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        d.InternalWidth = 550;
+        Assert.AreEqual(550, d.DimensionsMM.x);
+        Assert.AreEqual(550, d.InternalWidth);
+    }
+
+    [Test]
+    public void Drawer_ScaleMatchesDimensionsMM_AfterResize()
+    {
+        var d = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite);
+        d.DimensionsMM = new Vector3Int(600, 0, 0);
+        Assert.AreEqual(0.600f, d.transform.localScale.x, 1e-5f);
+    }
+
+    [Test]
+    public void Drawer_Movento_ScaleMatchesDimensionsMM_AfterResize()
+    {
+        var d = MakeDrawer("D", DrawerType.A, 350, 400, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        d.DimensionsMM = new Vector3Int(600, 0, 0);
+        Assert.AreEqual(0.600f, d.transform.localScale.x, 1e-5f);
+    }
+
+    [Test]
+    public void Drawer_SystemSwitchThenResize_InternalWidthCorrect()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 400, 564, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        Assert.AreEqual(564, d.InternalWidth, "после конвертации");
+        d.DimensionsMM = new Vector3Int(480, 0, 0);
+        Assert.AreEqual(480, d.InternalWidth, "после конвертации + ресайза");
+        Assert.AreEqual(480, d.DimensionsMM.x);
+    }
+
+    [Test]
+    public void Drawer_SystemSwitchBackAndForth_Resize_InternalWidthCorrect()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 400, 564, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        d.System = DrawerSystem.Gtv;
+        d.DimensionsMM = new Vector3Int(320, 0, 0);
+        Assert.AreEqual(320, d.InternalWidth);
+        Assert.AreEqual(320, d.DimensionsMM.x);
+        d.System = DrawerSystem.Movento;
+        Assert.AreEqual(320, d.InternalWidth, "после Gtv→Movento→Gtv→resize→Movento");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // DOUBLE DRAWER + SHARED FACADE — COLLISION REGRESSION
     // ═══════════════════════════════════════════════════════════════
 

@@ -1152,6 +1152,10 @@ namespace KitchenDesigner.Core.UI
             if (radial != null)
                 MaybeRefresh(_radius, radial.CornerRadius.ToString());
 
+            var drawerRef = _target as DrawerElement;
+            if (drawerRef != null && _drawerWidth != null)
+                MaybeRefresh(_drawerWidth, drawerRef.InternalWidth.ToString());
+
             MaybeRefresh(_name, _target.PartName);
             RefreshTitle();
 
