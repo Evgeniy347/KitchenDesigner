@@ -115,6 +115,9 @@ if !errorlevel! neq 0 (echo ERROR: scp docker-compose.prod.yml failed & exit /b 
 REM nginx mounts ./server/nginx.conf - copying it to the root would be a no-op.
 scp %SSH_FLAGS% "%SCRIPT_DIR%server\nginx.conf" %SERVER%:%REMOTE_DIR%/server/nginx.conf
 if !errorlevel! neq 0 (echo ERROR: scp nginx.conf failed & exit /b 1)
+REM Keep the ops guide on the box in sync with the repo - it drifted for weeks once.
+scp %SSH_FLAGS% "%SCRIPT_DIR%server\OPERATIONS.md" %SERVER%:%REMOTE_DIR%/OPERATIONS.md
+if !errorlevel! neq 0 (echo ERROR: scp OPERATIONS.md failed & exit /b 1)
 echo   Done.
 
 echo.
@@ -150,9 +153,18 @@ echo   Done.
 
 echo.
 echo Health check...
-ssh %SSH_FLAGS% %SERVER% "cd %REMOTE_DIR% && docker compose %COMPOSE% exec -T web curl -fsS http://localhost:8080/health"
-if !errorlevel! neq 0 (
-    echo WARNING: /health did not answer yet. Check: ssh %SERVER% "cd %REMOTE_DIR% ^&^& docker compose %COMPOSE% logs --tail 50 web"
+REM The container has a 30s start_period; a single immediate probe always cries wolf.
+set "healthOk="
+for /l %%A in (1,1,8) do (
+    if not defined healthOk (
+        ssh %SSH_FLAGS% %SERVER% "cd %REMOTE_DIR% && docker compose %COMPOSE% exec -T web curl -fsS -o /dev/null http://localhost:8080/health && echo '  healthy'" && set "healthOk=1"
+        if not defined healthOk ssh %SSH_FLAGS% %SERVER% "sleep 5"
+    )
+)
+if not defined healthOk (
+    echo WARNING: /health did not answer within 40s. Inspect the web container logs:
+    echo   ssh %SERVER%
+    echo   cd %REMOTE_DIR% ^&^& docker compose %COMPOSE% logs --tail 50 web
 )
 
 echo.
