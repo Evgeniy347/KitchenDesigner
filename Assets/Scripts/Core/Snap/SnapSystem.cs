@@ -85,7 +85,6 @@ namespace KitchenDesigner.Core
 
             float threshold = KitchenSettings.Instance.SnapThreshold * AppConstants.MM_TO_UNITS;
             float maxDist = threshold + ThresholdEpsilon;
-            Vector3 prevPos = moved.transform.position;
 
             // Кандидаты делятся на два сорта:
             //  - «нулевые» (сдвиг ≈ 0) — деталь УЖЕ заподлицо с этой гранью; это
@@ -161,7 +160,7 @@ namespace KitchenDesigner.Core
                 if (Mathf.Abs(picked.dv) > ZeroShiftEpsilon) locked.Add(picked.v);
             }
 
-            moved.transform.position = prevPos;
+            // Восстанавливать позицию больше не нужно: Collect её и не трогал.
 
             // Кромочный (line contact) снэп не должен утаскивать деталь с уже
             // существующего полноплощадного контакта: полка, стоящая заподлицо к
@@ -199,25 +198,21 @@ namespace KitchenDesigner.Core
 
         /// <summary>Сбор кандидатов прилипания из позиции basePos: нормали
         /// «нулевых» пар (деталь уже заподлицо) идут в zeroNormals, содержательные
-        /// кандидаты — в candidates. Оставляет moved в позиции basePos —
-        /// вызывающий обязан восстановить исходную позицию.</summary>
+        /// кандидаты — в candidates. Сцену НЕ меняет: геометрия движимой детали
+        /// считается для basePos аналитически (ToGeometryAt), а не примеркой через
+        /// запись в transform.position — каждая такая запись грязнила поддерево
+        /// трансформов, и пересчёт оплачивал тот, кто следующим читал геометрию.</summary>
         private static void Collect(KitchenElement moved, List<KitchenElement> others, Vector3 basePos,
             float maxDist, List<Candidate> candidates, List<Vector3> zeroNormals,
             ref SnapResult bestZero, ref string? bestZeroLog, ref bool anyFullAreaZero,
             List<Vector3>? alignedNormals = null)
         {
-            moved.transform.position = basePos;
-            Face[] movedFaces = FaceCache.GetFaces(moved);
+            var movedGeo = moved.ToGeometryAt(basePos);
+            Face[] movedFaces = movedGeo.Faces;
 
             // Габарит движимой детали в basePos — чтобы проверять, не загонит ли
             // выравнивание по дальней кромке деталь В ТЕЛО соседа (см. ниже).
-            Vector3[] mVerts = moved.GetVertices();
-            Vector3 mMin = mVerts[0], mMax = mVerts[0];
-            for (int k = 1; k < 8; k++)
-            {
-                mMin = Vector3.Min(mMin, mVerts[k]);
-                mMax = Vector3.Max(mMax, mVerts[k]);
-            }
+            Vector3 mMin = movedGeo.Min, mMax = movedGeo.Max;
 
             foreach (var other in others)
             {
@@ -571,6 +566,15 @@ namespace KitchenDesigner.Core
         /// </summary>
         public static SnapDiagnosis Diagnose(KitchenElement moved, List<KitchenElement> others,
             Vector3 testPosition, int maxNeighbors = 5)
+            => Diagnose(moved, others, testPosition, null, maxNeighbors);
+
+        /// <summary>То же, но с УЖЕ вычисленным результатом <see cref="TrySnap"/>
+        /// для той же тройки (moved, others, testPosition). Прилипание — чистая
+        /// функция от неё, поэтому передать готовый результат и посчитать заново —
+        /// одно и то же; свип, которому разбор нужен лишь на сработавших шагах,
+        /// экономит на этом второй полный проход снэпа.</summary>
+        public static SnapDiagnosis Diagnose(KitchenElement moved, List<KitchenElement> others,
+            Vector3 testPosition, SnapResult? knownSnap, int maxNeighbors = 5)
         {
             var settings = KitchenSettings.Instance;
             var report = new SnapDiagnosis
@@ -580,15 +584,16 @@ namespace KitchenDesigner.Core
             };
             if (moved == null || others == null) return report;
 
-            var snap = TrySnap(moved, others, testPosition);
+            var snap = knownSnap ?? TrySnap(moved, others, testPosition);
             report.wouldSnap = snap.snapped;
             report.snapTarget = snap.snapped ? snap.targetName : null;
 
             float maxDist = report.thresholdMM * AppConstants.MM_TO_UNITS + ThresholdEpsilon;
 
-            Vector3 prevPos = moved.transform.position;
-        moved.transform.position = testPosition;
-        Face[] movedFaces = FaceCache.GetFaces(moved);
+            // Геометрия примеряемой позиции считается аналитически — сцена не
+            // трогается (см. Collect).
+            Face[] movedFaces = moved.GetFacesAt(testPosition);
+            Vector3[] movedVerts = moved.GetVerticesAt(testPosition);
 
             foreach (var other in others)
             {
@@ -599,7 +604,7 @@ namespace KitchenDesigner.Core
                 {
                     name = other.PartName,
                     centerDistanceMM = Vector3.Distance(testPosition, other.transform.position) / AppConstants.MM_TO_UNITS,
-                    intersects = ElementsIntersect(moved, other),
+                    intersects = ElementsIntersectAt(moved, movedVerts, other),
                     bestDot = 1f,
                 };
 
@@ -666,8 +671,6 @@ namespace KitchenDesigner.Core
 
                 report.neighbors.Add(n);
             }
-
-            moved.transform.position = prevPos;
 
             // Ближние — первыми; у деталей без встречных граней зазора нет,
             // ранжируем их по расстоянию между центрами.
@@ -816,8 +819,13 @@ namespace KitchenDesigner.Core
         }
 
         public static bool ElementsIntersect(KitchenElement a, KitchenElement b)
+            => ElementsIntersectAt(a, a.GetVertices(), b);
+
+        /// <summary>То же, но габарит A берётся по ГОТОВЫМ вершинам — например,
+        /// посчитанным для примеряемой позиции. Раньше для этого деталь двигали
+        /// записью в transform.position.</summary>
+        public static bool ElementsIntersectAt(KitchenElement a, Vector3[] va, KitchenElement b)
         {
-            Vector3[] va = a.GetVertices();
             Vector3[] vb = b.GetVertices();
 
             float aMinX = va[0].x, aMaxX = va[0].x;

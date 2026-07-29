@@ -91,8 +91,12 @@ namespace KitchenDesigner.Core
             RIM_HEIGHT_MM * AppConstants.MM_TO_UNITS,
             OUTER_DEPTH_MM * AppConstants.MM_TO_UNITS);
 
-        protected override Vector3 ValidationPosition =>
-            transform.position + transform.rotation *
+        protected override Vector3 ValidationPosition => ValidationPositionAt(transform.position);
+
+        // Бортик мойки приподнят над плоскостью врезки — сдвиг едет вместе с
+        // примеряемой позицией.
+        protected override Vector3 ValidationPositionAt(Vector3 transformPosition) =>
+            transformPosition + transform.rotation *
                 new Vector3(0f, RIM_HEIGHT_MM * 0.5f * AppConstants.MM_TO_UNITS, 0f);
 
         private void Start()

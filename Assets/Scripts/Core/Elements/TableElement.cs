@@ -168,13 +168,15 @@ namespace KitchenDesigner.Core
             SetLegsMaterial(material);
         }
 
-        public override Face[] GetFaces()
+        public override Face[] GetFaces() => GetFacesAt(transform.position);
+
+        public override Face[] GetFacesAt(Vector3 position)
         {
             var size = new Vector3(
                 DimensionsMM.x * AppConstants.MM_TO_UNITS,
                 DimensionsMM.y * AppConstants.MM_TO_UNITS,
                 DimensionsMM.z * AppConstants.MM_TO_UNITS);
-            var pos = ValidationPosition;
+            var pos = position;
             var rot = ValidationRotation;
             var half = size * 0.5f;
 
@@ -219,14 +221,16 @@ namespace KitchenDesigner.Core
             return faces;
         }
 
-        public override Vector3[] GetVertices()
+        public override Vector3[] GetVertices() => GetVerticesAt(transform.position);
+
+        public override Vector3[] GetVerticesAt(Vector3 position)
         {
             var size = new Vector3(
                 DimensionsMM.x * AppConstants.MM_TO_UNITS,
                 DimensionsMM.y * AppConstants.MM_TO_UNITS,
                 DimensionsMM.z * AppConstants.MM_TO_UNITS);
             var half = size * 0.5f;
-            var pos = transform.position;
+            var pos = position;
             var rot = transform.rotation;
 
             var localCorners = new Vector3[]

@@ -74,12 +74,14 @@ namespace KitchenDesigner.Core
 			meshCollider.sharedMesh = mesh;
 		}
 
-		public override Vector3[] GetVertices()
+		public override Vector3[] GetVertices() => GetVerticesAt(transform.position);
+
+		public override Vector3[] GetVerticesAt(Vector3 position)
 		{
 			float toU = AppConstants.MM_TO_UNITS;
 			float halfSize = TopDiameterMM * 0.5f * toU;
 			float halfH = TotalHeightMM * 0.5f * toU;
-			var pos = transform.position;
+			var pos = position;
 			var rot = transform.rotation;
 
 			var localCorners = new Vector3[]
@@ -100,14 +102,16 @@ namespace KitchenDesigner.Core
 			return result;
 		}
 
-		public override Face[] GetFaces()
+		public override Face[] GetFaces() => GetFacesAt(transform.position);
+
+		public override Face[] GetFacesAt(Vector3 position)
 		{
 			float toU = AppConstants.MM_TO_UNITS;
 			float w = TopDiameterMM * toU;
 			float h = TotalHeightMM * toU;
 			float hw = w * 0.5f;
 			float hh = h * 0.5f;
-			var pos = transform.position;
+			var pos = position;
 			var rot = transform.rotation;
 
 			var axes = new Vector3[]

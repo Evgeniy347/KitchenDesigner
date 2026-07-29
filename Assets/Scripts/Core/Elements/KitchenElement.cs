@@ -275,14 +275,17 @@ namespace KitchenDesigner.Core
         ///
         /// Габаритные грани (GetFaces) паз НЕ меняет: короб остаётся коробом,
         /// иначе поехали бы ручки, выделение и прилипание соседних деталей.</summary>
-        public Face[] GetGrooveSeatFaces()
+        public Face[] GetGrooveSeatFaces() => GetGrooveSeatFacesAt(transform.position);
+
+        /// <summary>Дно пазов для ЗАДАННОЙ позиции детали (см. GetFacesAt).</summary>
+        public Face[] GetGrooveSeatFacesAt(Vector3 position)
         {
             int count = _data.Grooves.Count;
             if (count == 0) return System.Array.Empty<Face>();
 
             var scale = transform.localScale;
             var rot = transform.rotation;
-            var pos = transform.position;
+            var pos = position;
             // Пласть, в которой режется паз, — локальная грань +Z.
             var normal = rot * Vector3.forward;
             var right = rot * Vector3.right;
@@ -313,14 +316,17 @@ namespace KitchenDesigner.Core
         /// пласти снаружи и в сам паз не заходит. Снэп берёт отсюда координаты
         /// и добавляет детенты «начало паза» / «конец паза» рядом с кромкой
         /// детали (16 и 20 мм от неё).</summary>
-        public Face[] GetGrooveWallFaces()
+        public Face[] GetGrooveWallFaces() => GetGrooveWallFacesAt(transform.position);
+
+        /// <summary>Стенки пазов для ЗАДАННОЙ позиции детали (см. GetFacesAt).</summary>
+        public Face[] GetGrooveWallFacesAt(Vector3 position)
         {
             int count = _data.Grooves.Count;
             if (count == 0) return System.Array.Empty<Face>();
 
             var scale = transform.localScale;
             var rot = transform.rotation;
-            var pos = transform.position;
+            var pos = position;
             float depthFrac = GrooveMesh.DepthFraction(_data.DimensionsMM);
             // Стенка тянется от дна паза до пласти.
             float wallCenterZ = 0.5f - depthFrac * 0.5f;
@@ -394,6 +400,14 @@ namespace KitchenDesigner.Core
         protected virtual Vector3 ValidationPosition => transform.position;
         protected virtual Quaternion ValidationRotation => transform.rotation;
 
+        /// <summary>Та же <see cref="ValidationPosition"/>, но для ГИПОТЕТИЧЕСКОЙ
+        /// позиции трансформа. Кто сдвигает позу валидации относительно трансформа
+        /// (мойка и варочная панель приподняты на половину бортика) или замораживает
+        /// её (выдвинутый ящик), обязан переопределить и это — иначе примерка
+        /// детали в другую позицию разойдётся с тем, что даёт настоящий сдвиг.</summary>
+        protected virtual Vector3 ValidationPositionAt(Vector3 transformPosition)
+            => transformPosition;
+
         /// <summary>Не пересобирать меш и материалы в <see cref="ApplyDimensions"/>.
         /// Размер, поза и логические ограничения применяются как обычно — гасится
         /// только то, что нужно ГЛАЗУ. Для расчётных тестов, где сцену никто не
@@ -425,8 +439,21 @@ namespace KitchenDesigner.Core
 
         public virtual Vector3[] GetVertices()
         {
+            return GetVerticesAt(transform.position);
+        }
+
+        /// <summary>Вершины для ЗАДАННОЙ позы детали. Нужны прилипанию, чтобы
+        /// примерить деталь в гипотетическую позицию, НЕ двигая её: раньше для
+        /// этого писали в transform.position и возвращали назад, а каждая такая
+        /// запись грязнит поддерево трансформов.
+        ///
+        /// Позиция — это то, что подставляется вместо <see cref="ValidationPosition"/>;
+        /// все прочие правила (опущенная стена, замороженная поза открытой
+        /// дверцы) остаются за наследником.</summary>
+        public virtual Vector3[] GetVerticesAt(Vector3 position)
+        {
             var size = EffectiveScale;
-            var pos = ValidationPosition;
+            var pos = ValidationPositionAt(position);
             var rot = ValidationRotation;
 
             // Стена может быть опущена (режим обзора WallCutaway) — используем
@@ -458,10 +485,13 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        public virtual Face[] GetFaces()
+        public virtual Face[] GetFaces() => GetFacesAt(transform.position);
+
+        /// <summary>Грани для ЗАДАННОЙ позы. См. <see cref="GetVerticesAt"/>.</summary>
+        public virtual Face[] GetFacesAt(Vector3 position)
         {
             var size = EffectiveScale;
-            var pos = ValidationPosition;
+            var pos = ValidationPositionAt(position);
             var rot = ValidationRotation;
 
             var wall = GetComponent<Wall>();

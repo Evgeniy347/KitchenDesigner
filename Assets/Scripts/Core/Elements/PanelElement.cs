@@ -49,6 +49,12 @@ namespace KitchenDesigner.Core
         public override Face[] GetFaces()
             => GappedBox.Faces(transform.localScale, Data.Gaps, transform.position, transform.rotation);
 
+        public override Vector3[] GetVerticesAt(Vector3 position)
+            => GappedBox.Vertices(transform.localScale, Data.Gaps, position, transform.rotation);
+
+        public override Face[] GetFacesAt(Vector3 position)
+            => GappedBox.Faces(transform.localScale, Data.Gaps, position, transform.rotation);
+
         /// <summary>Проставить одинаковый зазор со всех четырёх сторон.</summary>
         public void SetUniformGap(int gapMM)
         {

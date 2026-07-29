@@ -210,6 +210,12 @@ namespace KitchenDesigner.Core
         protected override Vector3 ValidationPosition => ClosedPosition;
         protected override Quaternion ValidationRotation => ClosedRotation;
 
+        // Пока ящик выдвинут, поза заморожена в _closedPos и за трансформом не
+        // идёт: примерка в другую позицию его геометрию не двигает вовсе — ровно
+        // так же, как раньше её не двигала запись в transform.position.
+        protected override Vector3 ValidationPositionAt(Vector3 transformPosition) =>
+            PoseFollowsTransform ? transformPosition : ClosedPosition;
+
         /// <summary>Выдвинутый (или едущий) ящик берёт геометрию от закрытой позы,
         /// а не от трансформа, — двигать и растягивать его нельзя, пока не задвинут.</summary>
         public override bool PoseFollowsTransform => !_open && _t <= 0f;

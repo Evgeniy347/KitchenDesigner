@@ -41,6 +41,11 @@ public class SnapMutationTests
     private KitchenElement? OtherByName(string? name)
         => name != null && _othersByName.TryGetValue(name, out var e) ? e : null;
 
+    /// <summary>Снимки соседей текущей детали. Соседи в свипе неподвижны, поэтому
+    /// снимок строится ОДИН раз на деталь: пересборка на каждом миллиметре стоила
+    /// дороже самого расчёта прилипания.</summary>
+    private List<ElementGeometry> _othersGeo = new();
+
     private long _ticksRestore, _ticksDimSet, _ticksTrySnap, _ticksPosSet;
     private int _countRestore, _countDimSet, _countTrySnap, _countPosSet;
 
@@ -184,6 +189,7 @@ public class SnapMutationTests
                 if (!_othersByName.ContainsKey(o.PartName)) _othersByName[o.PartName] = o;
             }
             FaceCache.Set(staticCache);
+            _othersGeo = others.ToGeometry();
 
             // ── Phase 0 ──
             var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -358,7 +364,7 @@ public class SnapMutationTests
         float sizeStartUnits = origDim * AppConstants.MM_TO_UNITS;
 
         ResizeMath.Compute(savedDims, axis, f.normal, f.center, f.rightAxis, f.upAxis, f.size,
-            savedPos, sizeStartUnits, rawDelta, others.ToGeometry(), moved.ToGeometry(),
+            savedPos, sizeStartUnits, rawDelta, _othersGeo, moved.ToGeometry(),
             snapEnabled: true, thresholdMm * AppConstants.MM_TO_UNITS,
             out Vector3Int newDims, out Vector3 _, out bool snapped);
 
@@ -443,7 +449,7 @@ public class SnapMutationTests
 
             var swRC = System.Diagnostics.Stopwatch.StartNew();
             ResizeMath.Compute(savedDims, axis, f.normal, f.center, f.rightAxis, f.upAxis, f.size,
-                savedPos, sizeStartUnits, rawDelta, others.ToGeometry(), moved.ToGeometry(),
+                savedPos, sizeStartUnits, rawDelta, _othersGeo, moved.ToGeometry(),
                 snapEnabled: true, thresholdMm * AppConstants.MM_TO_UNITS,
                 out Vector3Int newDims, out Vector3 _, out bool snapped);
             _ticksResizeCompute += swRC.ElapsedTicks;
@@ -581,7 +587,8 @@ public class SnapMutationTests
             // нормали отдать деталь. Кандидаты с других осей не конкуренты, а
             // дополнение — TrySnap добирает их отдельными проходами.
             var swDg = System.Diagnostics.Stopwatch.StartNew();
-            var diag = SnapSystem.Diagnose(moved, others, testPos, maxNeighbors: 50);
+            // Результат снэпа уже посчитан выше — второй полный проход не нужен.
+            var diag = SnapSystem.Diagnose(moved, others, testPos, snap, maxNeighbors: 50);
             _ticksDiagnose += swDg.ElapsedTicks;
             _countDiagnose++;
             var chosen = diag.neighbors.FirstOrDefault(n => n.name == snap.targetName && n.wouldSnap);

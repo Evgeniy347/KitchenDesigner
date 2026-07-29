@@ -38,6 +38,18 @@ namespace KitchenDesigner.Core
         public override Face[] GetFaces()
             => GappedBox.Faces(transform.localScale, Data.Gaps, ClosedPosition, ClosedRotation);
 
+        // У ОТКРЫТОЙ дверцы поза заморожена в _closedPos и за трансформом не
+        // идёт — примерка в другую позицию её геометрию не двигает вовсе.
+        // Это ровно прежнее поведение: запись в transform.position открытую
+        // дверцу тоже не сдвигала.
+        private Vector3 PoseAt(Vector3 position) => IsDoorClosed ? position : _closedPos;
+
+        public override Vector3[] GetVerticesAt(Vector3 position)
+            => GappedBox.Vertices(transform.localScale, Data.Gaps, PoseAt(position), ClosedRotation);
+
+        public override Face[] GetFacesAt(Vector3 position)
+            => GappedBox.Faces(transform.localScale, Data.Gaps, PoseAt(position), ClosedRotation);
+
         private void CornerUnits(out float minX, out float maxX, out float minY, out float maxY, out float minZ, out float maxZ)
             => GappedBox.CornerUnits(transform.localScale, Data.Gaps,
                 out minX, out maxX, out minY, out maxY, out minZ, out maxZ);
