@@ -146,3 +146,4 @@ server/.env
 
 # Удалённые файлы уезжают сюда, а не стираются (CONVENTIONS.md)
 _trash/
+/server/KitchenServer.Tests/TestResults
