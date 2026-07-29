@@ -48,8 +48,6 @@ public class SnapMutationTests
     private int _countFindMove, _countDiagnose, _countIntersect;
     private long _ticksResizeCompute, _ticksFindResize, _ticksOpposing;
     private int _countResizeCompute, _countFindResize, _countOpposing;
-    private long _allocP4, _allocP5;
-    private int _gcP4, _gcP5;
 
     private void BuildFaceCache(List<KitchenElement> elements)
     {
@@ -163,8 +161,6 @@ public class SnapMutationTests
         _countFindMove = _countDiagnose = _countIntersect = 0;
         _ticksResizeCompute = _ticksFindResize = _ticksOpposing = 0;
         _countResizeCompute = _countFindResize = _countOpposing = 0;
-        _allocP4 = _allocP5 = 0;
-        _gcP4 = _gcP5 = 0;
 
         foreach (var name in movableNames)
         {
@@ -217,28 +213,20 @@ public class SnapMutationTests
             ticksP3 += sw.ElapsedTicks;
 
             // ── Phase 4: покадровый (1 мм) ресайз ──
-            int gc1P4 = System.GC.CollectionCount(1);
-            int gcP4 = System.GC.CollectionCount(0);
             sw.Restart();
             for (int face = 0; face < 6; face++)
                 SweepResizeFromFace(moved, others, savedPos, savedDims, savedRot, face,
                     SweepMaxMm, SweepStepMm, threshold, ref totalSweepSnapEvents,
                     ref totalSweepCompetitionWarnings);
             ticksP4 += sw.ElapsedTicks;
-            _allocP4 += System.GC.CollectionCount(1) - gc1P4;
-            _gcP4 += System.GC.CollectionCount(0) - gcP4;
 
             // ── Phase 5: покадровый (1 мм) перенос ──
-            int gc1P5 = System.GC.CollectionCount(1);
-            int gcP5 = System.GC.CollectionCount(0);
             sw.Restart();
             foreach (var dir in MoveDirs)
                 SweepMoveDirection(moved, others, savedPos, savedDims, savedRot, dir,
                     SweepMaxMm, SweepStepMm, threshold, ref totalSweepSnapEvents,
                     ref totalSweepCompetitionWarnings);
             ticksP5 += sw.ElapsedTicks;
-            _allocP5 += System.GC.CollectionCount(1) - gc1P5;
-            _gcP5 += System.GC.CollectionCount(0) - gcP5;
 
             RestoreElementState(moved, savedPos, savedDims, savedRot);
             FaceCache.Clear();
@@ -259,9 +247,6 @@ public class SnapMutationTests
         report.AppendLine($"  DimensionsMM set:    {TicksToMs(_ticksDimSet):F0}ms ({_countDimSet} calls)");
         report.AppendLine($"  TrySnap:             {TicksToMs(_ticksTrySnap):F0}ms ({_countTrySnap} calls)");
         report.AppendLine($"  transform.position:  {TicksToMs(_ticksPosSet):F0}ms ({_countPosSet} calls)");
-        report.AppendLine($"  ── allocations ──");
-        report.AppendLine($"  Phase 4: gen0={_gcP4} gen1={_allocP4}");
-        report.AppendLine($"  Phase 5: gen0={_gcP5} gen1={_allocP5}");
         report.AppendLine($"  ── phase 4 details ──");
         report.AppendLine($"  FindResizeTargets:   {TicksToMs(_ticksFindResize):F0}ms ({_countFindResize} calls)");
         report.AppendLine($"  ResizeMath.Compute:  {TicksToMs(_ticksResizeCompute):F0}ms ({_countResizeCompute} calls)");
