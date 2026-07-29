@@ -34,6 +34,9 @@ public static class UnityWebGLStaticFiles
             ".html" => "text/html",
             ".css" => "text/css",
             ".png" => "image/png",
+            // Декоры лежат в StreamingAssets/Textures и раздаются отсюда же.
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".webp" => "image/webp",
             ".ico" => "image/x-icon",
             _ => "application/octet-stream"
         };

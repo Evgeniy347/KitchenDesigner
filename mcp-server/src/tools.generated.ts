@@ -377,13 +377,13 @@ export const GEN_TOOLS: GenTool[] = [
   {
     name: "list_materials",
     title: "List materials / textures",
-    description: "List the available material decors / textures (id, display name, kind, whether it has a texture, and its physical tile size in MM). Use before edit_elements {material} to pick a valid id.",
+    description: "List the available material decors / textures (id, display name, kind, whether it has a texture file, whether that file is already loaded, and its physical tile size in MM). Textures load lazily, so textureLoaded=false is normal, not an error. Use before edit_elements {material} to pick a valid id.",
     kind: "read",
   },
   {
     name: "reload_textures",
-    title: "Reload external textures",
-    description: "Re-scan the external textures folder (\u003Capp\u003E/Resources/Textures) and refresh the decor catalog WITHOUT restarting the app. Drop new image files there (named \u0027\u003Cname\u003E_\u003CwidthMM\u003E_\u003CheightMM\u003E.jpg\u0027 to set tile size), then call this. Returns how many were loaded and the folder path.",
+    title: "Reload the texture folder",
+    description: "Re-read the decor folder (StreamingAssets/Textures) and refresh the catalog WITHOUT restarting the app. Every decor is described in that folder\u0027s index.json: id, display name, kind, image file name and physical tile size in MM. Drop a new image there, add its entry, then call this. Returns how many decors the catalog now has and the folder path.",
     kind: "write",
   },
   {
