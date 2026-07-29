@@ -79,9 +79,22 @@ namespace KitchenDesigner.Core
         /// строят сцену без Unity), и как эталон порядка граней.</summary>
         public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
             bool isPanel = false)
+            => Box(name, center, sizeUnits, Quaternion.identity, isPanel);
+
+        /// <summary>Коробка с поворотом. Кватернион принимается ГОТОВЫМ, а не
+        /// строится из углов: `Quaternion.Euler`/`AngleAxis` — вызовы в нативный
+        /// движок и под CoreCLR падают, а ядро обязано исполняться без Unity.
+        /// Умножение кватерниона на вектор при этом чисто управляемое.</summary>
+        public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
+            Quaternion rotation, bool isPanel = false)
         {
             var half = sizeUnits * 0.5f;
-            var axes = new[] { Vector3.right, Vector3.up, Vector3.forward };
+            var axes = new[]
+            {
+                rotation * Vector3.right,
+                rotation * Vector3.up,
+                rotation * Vector3.forward,
+            };
             var faceDims = new[]
             {
                 new Vector2(sizeUnits.y, sizeUnits.z),
@@ -103,9 +116,22 @@ namespace KitchenDesigner.Core
                 faces[i] = new Face(center + offsets[i], normals[i], faceDims[i / 2],
                     rightAxis[i], upAxis[i]);
 
+            // AABB — по восьми повёрнутым углам, а не по half: у повёрнутой
+            // детали габарит шире тела, и снэп на это рассчитывает.
+            var corners = new Vector3[8];
+            int c = 0;
+            for (int sx = -1; sx <= 1; sx += 2)
+                for (int sy = -1; sy <= 1; sy += 2)
+                    for (int sz = -1; sz <= 1; sz += 2)
+                        corners[c++] = center
+                            + axes[0] * (half.x * sx)
+                            + axes[1] * (half.y * sy)
+                            + axes[2] * (half.z * sz);
+            BoundsOf(corners, out var min, out var max);
+
             var empty = System.Array.Empty<Face>();
             return new ElementGeometry(name.GetHashCode(), name, faces, empty, empty,
-                center - half, center + half, isPanel);
+                min, max, isPanel);
         }
     }
 }

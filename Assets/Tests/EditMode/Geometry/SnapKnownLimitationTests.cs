@@ -7,19 +7,22 @@ using KitchenDesigner.Core;
 /// "KnownLimitation"). Это не баги, а сознательные границы текущей модели
 /// «контакт только между параллельными гранями». Тесты фиксируют фактическое
 /// поведение, чтобы изменения были осознанными.
+///
+/// Кламп порога снэпа к 1 мм проверяется отдельно в сценовой части: он живёт
+/// в KitchenSettings, а ядро порог принимает параметром и ничего не клампит.
 /// </summary>
 [Category("KnownLimitation")]
-public class SnapKnownLimitationTests : SnapTestBase
+public class SnapKnownLimitationTests : SnapCoreTestBase
 {
     // Произвольный поворот (45°/30°) делает грани непараллельными (|dot|<0.999) —
-    // снэп их не находит. деталь подносится СБОКУ, где параллельны только
+    // снэп их не находит. Деталь подносится СБОКУ, где параллельны только
     // повёрнутые грани (грани ±Y слишком далеко по нормали).
 
     [Test]
     public void Rotated45AroundY_FacesNotParallel_NoSnap()
     {
-        var a = MakeStd("A", Vector3.zero);
-        var b = MakeStd("B", Vector3.zero, Quaternion.AngleAxis(45f, Vector3.up));
+        var a = Std("A", Vector3.zero);
+        var b = MakeStd("B", RotY(45f));
         AssertNotSnapped(b, a, new Vector3(0.83f, 0f, 0f),
             "45° — нет параллельных граней у бокового контакта");
     }
@@ -27,8 +30,8 @@ public class SnapKnownLimitationTests : SnapTestBase
     [Test]
     public void Rotated30AroundY_FacesNotParallel_NoSnap()
     {
-        var a = MakeStd("A", Vector3.zero);
-        var b = MakeStd("B", Vector3.zero, Quaternion.AngleAxis(30f, Vector3.up));
+        var a = Std("A", Vector3.zero);
+        var b = MakeStd("B", RotY(30f));
         AssertNotSnapped(b, a, new Vector3(0.83f, 0f, 0f));
     }
 
@@ -38,20 +41,14 @@ public class SnapKnownLimitationTests : SnapTestBase
         // Контраст: если ОБЕ детали повёрнуты одинаково, их грани снова параллельны
         // друг другу — снэп работает. Показывает, что ограничение именно в
         // относительной непараллельности, а не в повороте как таковом.
-        var rot = Quaternion.AngleAxis(45f, Vector3.up);
-        var a = MakeStd("A", Vector3.zero, rot);
-        var b = MakeStd("B", Vector3.zero, rot);
+        var rot = RotY(45f);
+        var a = At(MakeStd("A", rot), Vector3.zero);
+        var b = MakeStd("B", rot);
+
         // встык вдоль локальной ширины детали, повёрнутой на 45°
         Vector3 dir = rot * Vector3.right;
         var r = Snap(b, a, dir * 0.83f);
-        Assert.IsTrue(r.snapped, "одинаково повёрнутые детали имеют параллельные грани");
-    }
 
-    [Test]
-    public void Threshold_CannotBeZero_ClampedTo1mm()
-    {
-        // Документируем: порог снэпа нельзя выставить в 0 — кламп к 1 мм.
-        KitchenSettings.Instance.SnapThreshold = 0f;
-        Assert.AreEqual(1f, KitchenSettings.Instance.SnapThreshold, 0.0001f);
+        Assert.IsTrue(r.snapped, "одинаково повёрнутые детали имеют параллельные грани");
     }
 }

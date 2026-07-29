@@ -236,8 +236,8 @@ public readonly struct ElementGeometry
 | 2* | Остаток стадии 2, съехавший на этап 3: `GrooveMath` (расщепление `GrooveMesh`), `GappedBox`, `EdgeBanding`, `FaceContact`. Причина — они тянут `PartData`, а тот через `MaterialCatalog` тянет загрузку текстур; развязывается это тем же снимком, что и этап 3 | — | — |
 | 3 | ✅ **Сделано.** `ElementGeometry` + `BoxGaps` + `ToGeometry()`; `ResizeSnap`, `ResizeMath`, `GappedBox` → ядро на снимках. Адаптеры не понадобились: вызовов оказалось 8, переписаны напрямую | 8–12 | Ресайз-математика не видит сцену; инвариант цел. Mutation score временно упал до 21%: тесты перевезённого кода ещё в Unity-части — это работа этапа 5 |
 | 4 | ✅ **Сделано.** Запись в `transform` убрана (`GetFacesAt`/`GetVerticesAt`/`ValidationPositionAt` во всех шести классах со своей геометрией); `Collect`, `TryPickCandidate`, `FacesOverlap`, `GetFaceRect`, `BestEdgeDelta` переехали в `SnapCore`. `SnapSystem` остался адаптером сцены (настройки, снимки, `Diagnose`, логи) | 16–24 | Ядро снэпа собирается и тестируется под `dotnet`. Тест: **160.9 → 124.6s**; `TrySnap` 79.6→51.8s, `Diagnose` 82→26s, `ResizeMath` 22.6→3.7s |
-| 5 | 🔶 **Частично.** Перенесены `ResizeSnapTests` и `ResizeMathTests` (сценозависимый остаток выделен в `ResizeMathSceneTests`), дописаны `GappedBoxTests` и `ElementGeometryTests`. Осталось: ветки пазов в `ResizeSnap` — для них нужны снимки с дном и стенками паза | 8–10 | 92 теста ядра за 68 мс, Stryker **65.3%** |
-| 6 | Stryker в CI: baseline score, `--threshold-break`, ночной прогон, отчёт в артефакты | 4–6 | Мутационный порог как gate |
+| 5 | 🔶 **Частично.** Перенесены `ResizeSnapTests`, `ResizeMathTests`, `SnapPostEdgeDetentTests`, `SnapKnownLimitationTests`; заведена база `SnapCoreTestBase` с поддержкой поворотов; дописаны `GappedBoxTests` и `ElementGeometryTests`. Осталось: ветки пазов в `ResizeSnap`/`SnapCore` (нужны снимки с дном и стенками паза) и файлы, завязанные на `ConstraintValidator`/`Diagnose` | 8–10 | 101 тест ядра за 91 мс |
+| 6 | ✅ **Сделано.** `tools/mutation-test.ps1`: тесты ядра + Stryker с порогом (`--break-at`), проверен в обе стороны — при 45 проходит, при 95 роняет прогон | 4–6 | Порог как gate; baseline **48.9%** |
 | 7 | *(опционально)* `ConstraintValidator`: развязать `GetComponent<>`-проверки типа через флаги в снимке | 12–16 | Валидация тоже мутируется |
 
 **Этапы 1–6: 48–68 ч.**
@@ -287,15 +287,28 @@ Sweep snap events: 320835 | competition warnings: 0
 
 ## 8. CI
 
+```powershell
+# на каждый push — секунды
+.\tools\mutation-test.ps1 -TestsOnly
+.\build.cmd -RunTests                       # ~6 мин
+
+# ночью
+.\tools\mutation-test.ps1 -ThresholdBreak 45
+.\build.cmd -RunPlayMode
 ```
-push:
-  cd geometry/tests && dotnet test                               # секунды
-  build.cmd -RunTests                                            # ~6 мин
-nightly:
-  cd geometry/tests && dotnet-stryker --project Geometry.csproj \
-                 --threshold-break <baseline-5> --reporter html --reporter json
-  build.cmd -RunPlayMode
-```
+
+**Ограничение, которое надо учитывать при переносе в GitHub Actions.** Ядро
+ИСПОЛНЯЕТСЯ без Unity, но при СБОРКЕ ему нужен `UnityEngine.CoreModule.dll`:
+`Vector3`, `Mathf`, `Rect` лежат в нём. На чистом раннере без установленного
+редактора `dotnet build` ядра не пройдёт. Варианты:
+
+- гонять джобу в образе с редактором (`unityci/editor`) — лицензия для
+  `dotnet build` не нужна, она нужна только самому Unity;
+- либо довести ядро до `noEngineReferences` со своими типами вектора и
+  математики — тогда никакой зависимости от Unity не остаётся вовсе.
+
+До того как это решено, скрипт рассчитан на локальный запуск и принимает
+`-UnityManagedDir` для нестандартного пути к редактору.
 
 Проекты разведены по подпапкам (`geometry/core`, `geometry/tests`) не для
 красоты: в одном каталоге они делили `obj/`, и сборка ядра (без единого

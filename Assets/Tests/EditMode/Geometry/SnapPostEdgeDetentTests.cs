@@ -20,32 +20,27 @@ using KitchenDesigner.Core;
 /// проход, и стойка не ловила панель ни на одном миллиметре, хотя ресайз той же
 /// пары работал.
 /// </summary>
-public class SnapPostEdgeDetentTests : SnapTestBase
+public class SnapPostEdgeDetentTests : SnapCoreTestBase
 {
-    private KitchenElement? _panel;
-    private KitchenElement? _post;
-
     /// <summary>Y центра стойки, при котором её верх заподлицо с низом панели.</summary>
     private const float FlushUnderPanel = 1.7925f;
 
-    /// <summary>Ставит стойку центром в posY и возвращает результат снэпа.</summary>
-    private SnapResult SnapAt(float posY)
-    {
-        var testPos = new Vector3(1.576f, posY, -3.454f);
-        return SnapSystem.TrySnap(_post!, Others(), testPos);
-    }
+    /// <summary>Y центра стойки, при котором её верх заподлицо с ВЕРХОМ панели
+    /// (дальняя кромка, 2260 мм). Второй детент той же панели.</summary>
+    private const float FlushWithPanelTop = 1.8105f;
 
-    private List<KitchenElement> Others() =>
-        new List<KitchenElement>(_spawned.ConvertAll(go => go.GetComponent<KitchenElement>()));
+    private static readonly Box Post = Make("Post", new Vector3Int(18, 899, 331));
 
-    [SetUp]
-    public void BuildScene()
+    private static List<ElementGeometry> Others() => new List<ElementGeometry>
     {
-        _panel = Make("Panel", new Vector3Int(1022, 18, 332), new Vector3(1.056f, 2.251f, -3.454f));
-        _post = Make("Post", new Vector3Int(18, 899, 331), new Vector3(1.576f, 1.8101f, -3.454f));
+        At(Make("Panel", new Vector3Int(1022, 18, 332)), new Vector3(1.056f, 2.251f, -3.454f)),
         // Стена сзади: её -Z грань в 0.5 мм от +Z грани стойки (-3.2885).
-        Make("Wall", new Vector3Int(4000, 2700, 100), new Vector3(1.0f, 1.35f, -3.2380f));
-    }
+        At(Make("Wall", new Vector3Int(4000, 2700, 100)), new Vector3(1.0f, 1.35f, -3.2380f)),
+    };
+
+    /// <summary>Ставит стойку центром в posY и возвращает результат снэпа.</summary>
+    private static SnapResult SnapAt(float posY)
+        => Snap(Post, Others(), new Vector3(1.576f, posY, -3.454f));
 
     [Test]
     public void Post_DraggedUpUnderPanel_SnapsFlushToPanelUnderside()
@@ -57,10 +52,6 @@ public class SnapPostEdgeDetentTests : SnapTestBase
         Assert.AreEqual(FlushUnderPanel, r.position.y, Tol,
             "верх стойки встаёт заподлицо с низом панели");
     }
-
-    /// <summary>Y центра стойки, при котором её верх заподлицо с ВЕРХОМ панели
-    /// (дальняя кромка, 2260 мм). Второй детент той же панели.</summary>
-    private const float FlushWithPanelTop = 1.8105f;
 
     /// <summary>Детент ловится издалека, а не только вплотную. Смещения взяты в
     /// пределах, где ближайшая плоскость — именно низ панели (середина между
