@@ -177,6 +177,80 @@ public class MaterialTests
             "декор должен лечь на рендерер (текстура/цвет объекта включена)");
     }
 
+    // --- _BaseColor и картинка: цвет не имеет права красить текстуру ---
+    //
+    // URP Lit считает альбедо как _BaseColor × _BaseMap. Если оставить в цвете
+    // средний тон самой картинки (а именно он лежит в index.json как заглушка),
+    // декор темнеет примерно вдвое и заодно насыщается по каналам. Ровно это и
+    // случилось при переезде каталога в index.json.
+
+    private MaterialDef TexturedDef(string id, Color placeholder, Texture2D? tex)
+    {
+        var def = new MaterialDef(id, id, "ЛДСП", placeholder, "some.png", 800)
+        {
+            tileHeightMM = 800,
+            textureState = TextureState.Loading, // «запрос ушёл» — файл трогать не надо
+            texture = tex,
+        };
+        MaterialCatalog.Register(def);
+        return def;
+    }
+
+    [Test]
+    public void SharedMaterial_TextureLoaded_BaseColorIsWhite()
+    {
+        var def = TexturedDef("tex_white_base", new Color(0.53f, 0.36f, 0.20f), Tex(8, 8));
+
+        var mat = MaterialManager.GetSharedMaterial(def);
+
+        Assert.AreEqual(Color.white, mat!.GetColor("_BaseColor"),
+            "цвет-заглушка обязан погаснуть: иначе он домножится на картинку");
+        Assert.AreSame(def.texture, mat.mainTexture);
+    }
+
+    [Test]
+    public void SharedMaterial_TextureNotLoadedYet_ShowsPlaceholderColor()
+    {
+        // Пока картинки нет, деталь должна быть правдоподобного тона, а не белой.
+        var placeholder = new Color(0.53f, 0.36f, 0.20f);
+        var def = TexturedDef("tex_placeholder", placeholder, null);
+
+        var mat = MaterialManager.GetSharedMaterial(def);
+
+        Assert.AreEqual(placeholder, mat!.GetColor("_BaseColor"));
+        Assert.IsNull(mat.mainTexture);
+    }
+
+    [Test]
+    public void OnTextureArrived_ClearsPlaceholderColor()
+    {
+        var placeholder = new Color(0.53f, 0.36f, 0.20f);
+        var def = TexturedDef("tex_late_color", placeholder, null);
+        var mat = MaterialManager.GetSharedMaterial(def);
+        Assert.AreEqual(placeholder, mat!.GetColor("_BaseColor"), "до загрузки — заглушка");
+
+        def.texture = Tex(8, 8);
+        MaterialManager.OnTextureArrived(def);
+
+        Assert.AreEqual(Color.white, mat.GetColor("_BaseColor"),
+            "картинка приехала — заглушка обязана погаснуть");
+    }
+
+    [Test]
+    public void SharedMaterial_ColorOnlyDecor_KeepsItsColor()
+    {
+        // Обратная сторона правила: у декора БЕЗ картинки цвет — это весь декор,
+        // белить его нельзя.
+        var color = new Color(0.28f, 0.20f, 0.16f);
+        var def = new MaterialDef("plain_color", "Plain", "ЛДСП", color);
+        MaterialCatalog.Register(def);
+
+        var mat = MaterialManager.GetSharedMaterial(def);
+
+        Assert.AreEqual(color, mat!.GetColor("_BaseColor"));
+        Assert.IsNull(mat.mainTexture);
+    }
+
     // --- Каталог: регистрация поверх индекса и сброс ---
 
     [Test]

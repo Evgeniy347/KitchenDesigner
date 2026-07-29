@@ -102,6 +102,9 @@ namespace KitchenDesigner.Core
             {
                 mat.SetTexture(BaseMap, def.texture);
                 mat.mainTexture = def.texture;
+                // Заглушка отработала: дальше цвет обязан быть белым, иначе он
+                // домножится на приехавшую картинку и перекрасит её.
+                ApplyAlbedo(mat, def);
             }
 
             if (def.tileHeightMM > 0) return; // размер плитки от картинки не зависел
@@ -291,11 +294,11 @@ namespace KitchenDesigner.Core
             if (shader == null) return null;
 
             var mat = new Material(shader);
-            mat.SetColor(BaseColor, def.baseColor);
-            mat.color = def.baseColor; // совместимость со стандартным доступом
             mat.SetFloat(Metallic, def.metallic);
             mat.SetFloat(Smoothness, def.smoothness);
 
+            // Картинку достаём ДО цвета: от того, приехала ли она, зависит, что
+            // класть в _BaseColor (см. ApplyAlbedo).
             var tex = ResolveTexture(def);
             if (tex != null)
             {
@@ -303,9 +306,28 @@ namespace KitchenDesigner.Core
                 mat.SetTexture(BaseMap, tex);
                 mat.mainTexture = tex;
             }
+            ApplyAlbedo(mat, def);
 
             _cache[def.id] = mat;
             return mat;
+        }
+
+        /// <summary>Положить в <c>_BaseColor</c> то, что должно быть видно.
+        ///
+        /// У декора с ЗАГРУЖЕННОЙ картинкой цвет обязан быть белым: URP Lit
+        /// умножает <c>_BaseColor</c> на <c>_BaseMap</c>, и любой другой цвет
+        /// перекрашивает текстуру. Средний цвет самой картинки тут особенно
+        /// коварен — декор темнеет примерно вдвое, а по каналам ещё и насыщается.
+        ///
+        /// <c>MaterialDef.baseColor</c> у такого декора — ЗАГЛУШКА: она видна,
+        /// пока картинка не приехала (иначе деталь секунду светится белым), и
+        /// гасится в <see cref="OnTextureArrived"/>. У декора БЕЗ картинки цвет —
+        /// это и есть весь декор.</summary>
+        private static void ApplyAlbedo(Material mat, MaterialDef def)
+        {
+            var color = def.texture != null ? Color.white : def.baseColor;
+            mat.SetColor(BaseColor, color);
+            mat.color = color; // совместимость со стандартным доступом
         }
 
         /// <summary>Режимы фильтрации декора. Repeat — щит крупнее плитки просто

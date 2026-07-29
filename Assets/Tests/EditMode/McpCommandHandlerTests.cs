@@ -1118,6 +1118,36 @@ public class McpCommandHandlerTests
     }
 
     [Test]
+    public void ListMaterials_ReportsTextureFileAndLoadState()
+    {
+        // Агент по этим полям решает, годится ли декор. Картинки грузятся лениво,
+        // поэтому hasTexture=true при textureLoaded=false — норма, а не сбой.
+        MaterialCatalog.Register(new MaterialDef("mcp_tex", "Tex", "ЛДСП", Color.white, "some.png", 800)
+            { tileHeightMM = 800, textureState = TextureState.Loading });
+        MaterialCatalog.Register(new MaterialDef("mcp_plain", "Plain", "ЛДСП", Color.gray));
+
+        var resp = _handler!.Handle(MakeReq("list_materials", new { }));
+
+        Assert.AreEqual("result", resp.type);
+        var jObj = Newtonsoft.Json.Linq.JObject.FromObject(resp.data!);
+        var arr = (Newtonsoft.Json.Linq.JArray)jObj["materials"]!;
+        Newtonsoft.Json.Linq.JToken Find(string id)
+        {
+            foreach (var t in arr) if ((string?)t["id"] == id) return t;
+            Assert.Fail($"декор '{id}' не попал в list_materials");
+            return null!;
+        }
+
+        var tex = Find("mcp_tex");
+        Assert.IsTrue((bool)tex["hasTexture"]!, "у декора задан файл картинки");
+        Assert.IsFalse((bool)tex["textureLoaded"]!, "но она ещё не прочитана");
+
+        var plain = Find("mcp_plain");
+        Assert.IsFalse((bool)plain["hasTexture"]!, "чисто цветовой декор картинки не имеет");
+        Assert.IsFalse((bool)plain["textureLoaded"]!);
+    }
+
+    [Test]
     public void ListMaterials_IncludesDynamicDecors()
     {
         MaterialCatalog.Register(new MaterialDef("ext_a", "Ext A", "ЛДСП", Color.white));

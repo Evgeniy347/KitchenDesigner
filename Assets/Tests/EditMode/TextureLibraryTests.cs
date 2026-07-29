@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using UnityEngine;
@@ -11,9 +12,25 @@ public class TextureLibraryTests
     // Квадрат 1080×1080 (стороны кратны 4 — значит сжатие обязано сработать).
     private const string DecorId = "dub_galifaks_belyy_h1176";
 
+    private readonly List<GameObject> _spawned = new List<GameObject>();
+
+    private KitchenElement MakeBoard(string name, string materialId)
+    {
+        var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), name, Vector3.zero);
+        _spawned.Add(go);
+        var el = go.GetComponent<KitchenElement>();
+        el.MaterialId = materialId;
+        return el;
+    }
+
     [TearDown]
     public void Teardown()
     {
+        foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
+        _spawned.Clear();
+        foreach (var el in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
+            if (el != null) Object.DestroyImmediate(el.gameObject);
+        PartRegistry.Clear();
         MaterialManager.ClearCache();
         MaterialCatalog.Reset();
     }
@@ -95,5 +112,55 @@ public class TextureLibraryTests
 
         Assert.AreEqual(TextureState.NotRequested, def.textureState);
         Assert.IsNull(def.texture);
+    }
+
+    // --- Предзагрузка декоров сцены ---
+
+    [Test]
+    public void PrefetchScene_LoadsOnlyDecorsUsedInScene()
+    {
+        MakeBoard("PrefetchBoard", DecorId);
+        Assert.AreEqual(TextureState.NotRequested, MaterialCatalog.Get(DecorId).textureState);
+        var unused = MaterialCatalog.Get("yasen_navarra_h1250");
+
+        TextureLibrary.PrefetchScene();
+
+        Assert.AreEqual(TextureState.Loaded, MaterialCatalog.Get(DecorId).textureState,
+            "декор, который стоит в сцене, обязан приехать до первого кадра");
+        Assert.AreEqual(TextureState.NotRequested, unused.textureState,
+            "остальные грузятся лениво, пачкой их тянуть незачем");
+    }
+
+    // --- Перечитывание папки ---
+
+    [Test]
+    public void Reload_KeepsElementDecor_AndReappliesTexture()
+    {
+        // Reload уничтожает прежние картинки. Если он не пере-наденет декоры,
+        // рендереры останутся с материалами, ссылающимися в пустоту.
+        var el = MakeBoard("ReloadBoard", MaterialCatalog.DefaultId);
+        MaterialManager.ApplyById(el, DecorId);
+
+        int count = TextureLibrary.Reload();
+
+        Assert.Greater(count, 1, "индекс перечитан");
+        Assert.AreEqual(DecorId, el.MaterialId, "элемент не забывает свой декор");
+        var r = el.GetComponentInChildren<MeshRenderer>();
+        Assert.IsNotNull(r.sharedMaterial.mainTexture, "картинка снова на материале");
+        Assert.AreEqual(Color.white, r.sharedMaterial.GetColor("_BaseColor"),
+            "после перезагрузки цвет-заглушка не должен вернуться поверх картинки");
+    }
+
+    [Test]
+    public void Reload_ForgetsPreviouslyLoadedTextures()
+    {
+        var def = MaterialCatalog.Get(DecorId);
+        TextureLibrary.Request(def);
+        Assert.AreEqual(TextureState.Loaded, def.textureState);
+
+        TextureLibrary.Reload();
+
+        Assert.AreEqual(TextureState.NotRequested, MaterialCatalog.Get(DecorId).textureState,
+            "каталог собран заново, картинки грузятся по новой");
     }
 }
