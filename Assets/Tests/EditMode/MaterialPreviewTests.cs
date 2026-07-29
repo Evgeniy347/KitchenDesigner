@@ -118,7 +118,7 @@ public class MaterialPreviewTests
     }
 
     [Test]
-    public void FitDropdownItems_GrowsItem_ForLongOptions()
+    public void FitDropdownItems_WidensList_InsteadOfGrowingEveryItem()
     {
         var root = new GameObject("FitRoot");
         try
@@ -126,8 +126,10 @@ public class MaterialPreviewTests
             var dd = UIFactory.CreateDropdown("Fit", root.transform,
                 new List<string> { "А", "Б" }, Vector2.zero, new Vector2(202, 28), _ => { });
             var item = ItemRect(dd);
+            float narrow = ListWidth(dd);
             Assert.AreEqual(UIStyle.DropdownItemH, item.sizeDelta.y,
                 "короткий список — пункт в одну строку");
+            Assert.AreEqual(202f, narrow, "короткому списку расширяться незачем");
 
             dd.options = new List<TMP_Dropdown.OptionData>
             {
@@ -135,8 +137,10 @@ public class MaterialPreviewTests
             };
             UIFactory.FitDropdownItems(dd);
 
-            Assert.Greater(item.sizeDelta.y, UIStyle.DropdownItemH,
-                "BUG: длинное название не влезает — пункт остался в одну строку");
+            Assert.Greater(ListWidth(dd), narrow,
+                "BUG: список не расширился — длинное название пришлось переносить");
+            Assert.AreEqual(UIStyle.DropdownItemH, item.sizeDelta.y,
+                "BUG: пункт стал многострочным там, где хватило расширить список");
             Assert.AreEqual(item.sizeDelta.y + 2f, ContentRect(dd).sizeDelta.y,
                 "контент списка должен идти за высотой пункта");
         }
@@ -147,15 +151,74 @@ public class MaterialPreviewTests
     }
 
     [Test]
-    public void MaterialDropdown_ItemWraps_AndIsTallerThanOneLine()
+    public void FitDropdownItems_GrowsItem_WhenEvenTheWidestListIsNotEnough()
+    {
+        var root = new GameObject("FitRoot");
+        try
+        {
+            var dd = UIFactory.CreateDropdown("Fit", root.transform,
+                new List<string> { new string('я', 200) }, Vector2.zero,
+                new Vector2(202, 28), _ => { });
+
+            Assert.Greater(ItemRect(dd).sizeDelta.y, UIStyle.DropdownItemH,
+                "BUG: название, не влезающее и в предельно широкий список, обрезано");
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void MaterialDropdown_KeepsOneLineRows_AndWidensTheList()
+    {
+        var dd = Dropdown("_materialDropdown");
+
+        Assert.IsTrue(dd.itemText.enableWordWrapping,
+            "BUG: в пункте выключен перенос — совсем длинное название обрежется");
+        Assert.AreEqual(UIStyle.DropdownItemH, ItemRect(dd).sizeDelta.y,
+            "BUG: все декоры стали двухстрочными из-за одного длинного названия");
+        Assert.Greater(ListWidth(dd), dd.GetComponent<RectTransform>().rect.width,
+            "BUG: список не расширен под названия декоров");
+    }
+
+    /// <summary>Из-за высоких пунктов в окно списка помещалось всего 4 декора
+    /// из трёх десятков, и список выглядел так, будто текстуры пропали.</summary>
+    [Test]
+    public void MaterialDropdown_ShowsSevenItemsWithoutScrolling()
+    {
+        var dd = Dropdown("_materialDropdown");
+        float visible = dd.template.rect.height / ItemRect(dd).sizeDelta.y;
+
+        Assert.GreaterOrEqual(visible, 7f,
+            "BUG: без прокрутки видно меньше семи декоров");
+        Assert.Greater(dd.options.Count, 7,
+            "в каталоге больше декоров, чем помещается — остальные доступны прокруткой");
+    }
+
+    /// <summary>Ширина строки считается по средней букве — это приближение.
+    /// Здесь его сверяет сам TMP на реальном шрифте: ни одно название каталога
+    /// не должно выходить за высоту пункта (иначе хвост просто обрежется).</summary>
+    [Test]
+    public void MaterialDropdown_EveryOptionFitsItem_ByRealTextMetrics()
     {
         var dd = Dropdown("_materialDropdown");
         var label = dd.itemText;
+        float textWidth = ListWidth(dd)
+            - UIFactory.DropdownItemLabelLeft - UIFactory.DropdownItemLabelRight;
+        float itemH = ItemRect(dd).sizeDelta.y;
 
-        Assert.IsTrue(label.enableWordWrapping,
-            "BUG: в пункте выключен перенос — длинное название обрежется");
-        Assert.Greater(ItemRect(dd).sizeDelta.y, UIStyle.DropdownItemH,
-            "BUG: пункт списка «Текстура» не подрос под длинные названия декоров");
+        string worstName = "";
+        float worst = 0f;
+        foreach (var o in dd.options)
+        {
+            float h = label.GetPreferredValues(o.text, textWidth, 0f).y;
+            if (h > worst) { worst = h; worstName = o.text; }
+        }
+
+        Assert.Greater(worst, 0f, "TMP ничего не измерил — проверка была бы пустой");
+        Assert.LessOrEqual(worst, itemH,
+            $"BUG: «{worstName}» не влезает в пункт ({worst:F1} > {itemH:F1} px) и обрежется");
     }
 
     [Test]
@@ -393,6 +456,11 @@ public class MaterialPreviewTests
         Assert.IsNotNull(rt, "шаблон списка должен содержать пункт");
         return rt!;
     }
+
+    /// <summary>Ширина раскрытого списка: шаблон растянут по ширине дропдауна,
+    /// а sizeDelta.x — добавка к ней.</summary>
+    private static float ListWidth(TMP_Dropdown dd)
+        => dd.GetComponent<RectTransform>().rect.width + dd.template.sizeDelta.x;
 
     private static RectTransform ContentRect(TMP_Dropdown dd)
     {

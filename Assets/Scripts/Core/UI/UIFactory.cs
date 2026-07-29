@@ -462,10 +462,12 @@ namespace KitchenDesigner.Core.UI
         public const float DropdownItemLabelRight = 8f;
         public const int DropdownItemFontSize = 14;
 
-        // Шаблон списка: сколько высоты пункта показывать, не прокручивая, и в
-        // каких пределах. Высокие пункты не должны превращать список в окно.
-        private const float DropdownListMinH = 170f;
-        private const float DropdownListMaxH = 240f;
+        // Раскрытый список: сколько пунктов видно без прокрутки и докуда он
+        // вправе разрастись. Ширина больше панели свойств — это нормально,
+        // список всё равно попап, а TMP_Dropdown вжимает его в экран сам.
+        private const int DropdownVisibleItems = 7;
+        private const float DropdownListMaxH = 320f;
+        private const float DropdownListMaxW = 420f;
 
         /// <summary>Выпадающий список (TMPro Dropdown), собранный из кода —
         /// с прокручиваемым шаблоном списка. Возвращает TMP_Dropdown.</summary>
@@ -577,9 +579,18 @@ namespace KitchenDesigner.Core.UI
             return dropdown;
         }
 
-        /// <summary>Подогнать высоту пунктов списка под самое длинное название.
+        /// <summary>Подогнать раскрытый список под самое длинное название:
+        /// СНАЧАЛА расширить сам список, и только если и на предельной ширине
+        /// название не влезает — сделать пункт многострочным.
+        ///
+        /// Порядок именно такой, потому что высота у пункта одна на весь
+        /// список: подняв её ради одного длинного названия, мы делаем
+        /// двухстрочными и «Венге», и «Белый», а в окно списка перестаёт
+        /// помещаться половина декоров. Список же — попап, ширина свёрнутого
+        /// контрола ему не указ.
+        ///
         /// Звать после КАЖДОЙ смены options: набор декоров меняется в рантайме
-        /// (внешняя папка текстур), и высота, посчитанная при сборке меню, к
+        /// (внешняя папка текстур), и раскладка, посчитанная при сборке меню, к
         /// новому набору отношения не имеет.</summary>
         public static void FitDropdownItems(TMP_Dropdown? dropdown)
         {
@@ -591,20 +602,27 @@ namespace KitchenDesigner.Core.UI
             var content = template.Find("Viewport/Content") as RectTransform;
             if (item == null || content == null) return;
 
-            // Пункт растянут по ширине списка, а список — по ширине самого
-            // дропдауна: sizeDelta пункта тут ничего не скажет.
-            var ddRt = dropdown.GetComponent<RectTransform>();
-            float itemWidth = ddRt.rect.width > 1f ? ddRt.rect.width : ddRt.sizeDelta.x;
-            float textWidth = itemWidth - DropdownItemLabelLeft - DropdownItemLabelRight;
-
             var texts = new System.Collections.Generic.List<string>(dropdown.options.Count);
             foreach (var o in dropdown.options) texts.Add(o.text);
 
-            float itemH = DropdownItemFit.HeightFor(texts, textWidth, DropdownItemFontSize);
+            // Список растянут по ширине дропдауна, sizeDelta.x — добавка к ней.
+            var ddRt = dropdown.GetComponent<RectTransform>();
+            float ddWidth = ddRt.rect.width > 1f ? ddRt.rect.width : ddRt.sizeDelta.x;
+            const float pad = DropdownItemLabelLeft + DropdownItemLabelRight;
+
+            float listWidth = Mathf.Clamp(
+                DropdownItemFit.WidthFor(texts, DropdownItemFontSize) + pad,
+                ddWidth, DropdownListMaxW);
+            template.sizeDelta = new Vector2(listWidth - ddWidth, template.sizeDelta.y);
+
+            float itemH = DropdownItemFit.HeightFor(texts, listWidth - pad, DropdownItemFontSize);
             item.sizeDelta = new Vector2(item.sizeDelta.x, itemH);
             content.sizeDelta = new Vector2(content.sizeDelta.x, itemH + 2f);
+            // Сколько пунктов видно без прокрутки — величина постоянная, а не
+            // «сколько влезет в 170 px»: от неё зависит, выглядит ли список
+            // полным. При высоком пункте окно списка растёт вместе с ним.
             template.sizeDelta = new Vector2(template.sizeDelta.x,
-                Mathf.Clamp(itemH * 4f, DropdownListMinH, DropdownListMaxH));
+                Mathf.Min(itemH * DropdownVisibleItems, DropdownListMaxH));
         }
     }
 }

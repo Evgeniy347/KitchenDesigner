@@ -73,6 +73,23 @@ namespace KitchenDesigner.Core.UI
             return Mathf.Clamp(lines, 1, Mathf.Max(1, maxLines));
         }
 
+        /// <summary>Ширина текста, при которой самое длинное название влезает в
+        /// ОДНУ строку. Список — попап, он не обязан быть шириной со свёрнутый
+        /// контрол: расширить список дешевле, чем сделать двухстрочными все
+        /// пункты подряд (высота у пункта одна на весь список). Чистая функция.</summary>
+        public static float WidthFor(IEnumerable<string>? options, int fontSize)
+        {
+            int longest = 0;
+            if (options != null)
+                foreach (var o in options)
+                    if (!string.IsNullOrEmpty(o)) longest = Mathf.Max(longest, o!.Length);
+            // Запас в два глифа: ширина считается по средней букве, а у названия
+            // из широких («Ш», «Ж») реальная строка чуть длиннее оценки. Без
+            // запаса такое название переносится, а вторая строка в однострочном
+            // пункте просто обрезается.
+            return longest > 0 ? Mathf.Ceil((longest + 2) * fontSize * GlyphWidthFactor) : 0f;
+        }
+
         /// <summary>Высота пункта, в который помещается самое длинное название.
         /// Чистая функция.</summary>
         public static float HeightFor(IEnumerable<string>? options, float textWidth,
