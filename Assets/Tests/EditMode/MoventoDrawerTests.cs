@@ -226,4 +226,26 @@ public class MoventoDrawerTests
         Assert.AreEqual(1, restored.Length);
         Assert.AreEqual(DrawerSystem.Movento, restored[0].System, "система переживает сохранение/загрузку");
     }
+
+    // ── 4. UV-канал: декор должен ложиться на деревянный короб ───────────
+
+    [Test]
+    public void Build_ProducesUvChannel_ForDecorTexture()
+    {
+        foreach (DrawerType type in System.Enum.GetValues(typeof(DrawerType)))
+        {
+            var mesh = MoventoDrawerMesh.Build(568, type, 500);
+            Assert.IsTrue(mesh.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.TexCoord0),
+                $"{type}: нужен UV-канал, чтобы декор лёг на короб");
+            Assert.AreEqual(mesh.vertexCount, mesh.uv.Length, $"{type}: UV на каждую вершину");
+            foreach (var uv in mesh.uv)
+            {
+                Assert.GreaterOrEqual(uv.x, 0f, $"{type}: u >= 0");
+                Assert.LessOrEqual(uv.x, 1f, $"{type}: u <= 1");
+                Assert.GreaterOrEqual(uv.y, 0f, $"{type}: v >= 0");
+                Assert.LessOrEqual(uv.y, 1f, $"{type}: v <= 1");
+            }
+            Object.DestroyImmediate(mesh);
+        }
+    }
 }

@@ -129,4 +129,24 @@ public class DrawerMeshTests
         Assert.GreaterOrEqual(bounds.min.z, -0.5f - 1e-4f);
         Object.DestroyImmediate(mesh);
     }
+
+    [Test]
+    public void Build_ProducesUvChannel_ForDecorTexture()
+    {
+        foreach (DrawerType type in System.Enum.GetValues(typeof(DrawerType)))
+        {
+            var mesh = DrawerMesh.Build(LW, type, NL);
+            Assert.IsTrue(mesh.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.TexCoord0),
+                $"{type}: нужен UV-канал, чтобы декор лёг на короб");
+            Assert.AreEqual(mesh.vertexCount, mesh.uv.Length, $"{type}: UV на каждую вершину");
+            foreach (var uv in mesh.uv)
+            {
+                Assert.GreaterOrEqual(uv.x, 0f, $"{type}: u >= 0");
+                Assert.LessOrEqual(uv.x, 1f, $"{type}: u <= 1");
+                Assert.GreaterOrEqual(uv.y, 0f, $"{type}: v >= 0");
+                Assert.LessOrEqual(uv.y, 1f, $"{type}: v <= 1");
+            }
+            Object.DestroyImmediate(mesh);
+        }
+    }
 }

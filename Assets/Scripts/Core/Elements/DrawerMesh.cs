@@ -93,6 +93,7 @@ namespace KitchenDesigner.Core
                 Mathf.Max(1f, contourDimsMM.z));
 
             var verts = new List<Vector3>();
+            var uvs = new List<Vector2>();
             var tris = new List<int>();
 
             foreach (var box in boxes)
@@ -107,11 +108,12 @@ namespace KitchenDesigner.Core
                     box.sizeMM.x / dims.x,
                     box.sizeMM.y / dims.y,
                     box.sizeMM.z / dims.z);
-                AddBox(verts, tris, c, s);
+                AddBox(verts, uvs, tris, c, s);
             }
 
             var mesh = new Mesh { name = "DrawerBox" };
             mesh.SetVertices(verts);
+            mesh.SetUVs(0, uvs);
             mesh.SetTriangles(tris, 0);
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
@@ -119,28 +121,54 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Коробка с плоскими гранями (как AssembledFacadeMesh.AddBox).</summary>
-        private static void AddBox(List<Vector3> verts, List<int> tris, Vector3 center, Vector3 size)
+        private static void AddBox(List<Vector3> verts, List<Vector2> uvs, List<int> tris,
+            Vector3 center, Vector3 size)
         {
             float x0 = center.x - size.x * 0.5f, x1 = center.x + size.x * 0.5f;
             float y0 = center.y - size.y * 0.5f, y1 = center.y + size.y * 0.5f;
             float z0 = center.z - size.z * 0.5f, z1 = center.z + size.z * 0.5f;
 
-            // +Z, -Z, +X, -X, +Y, -Y — каждая грань CCW снаружи.
-            AddQuad(verts, tris, V(x0, y0, z1), V(x1, y0, z1), V(x1, y1, z1), V(x0, y1, z1));
-            AddQuad(verts, tris, V(x1, y0, z0), V(x0, y0, z0), V(x0, y1, z0), V(x1, y1, z0));
-            AddQuad(verts, tris, V(x1, y0, z1), V(x1, y0, z0), V(x1, y1, z0), V(x1, y1, z1));
-            AddQuad(verts, tris, V(x0, y0, z0), V(x0, y0, z1), V(x0, y1, z1), V(x0, y1, z0));
-            AddQuad(verts, tris, V(x0, y1, z1), V(x1, y1, z1), V(x1, y1, z0), V(x0, y1, z0));
-            AddQuad(verts, tris, V(x0, y0, z0), V(x1, y0, z0), V(x1, y0, z1), V(x0, y0, z1));
+            // Декор ложится как на полку: UV = позиция в контурном боксе
+            // ([−0.5,0.5] → [0,1]), проекция плоская по грани (как у фасада).
+            void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d,
+                Vector2 ua, Vector2 ub, Vector2 uc, Vector2 ud) =>
+                AddQuad(verts, uvs, tris, a, b, c, d, ua, ub, uc, ud);
+
+            // +Z
+            Quad(V(x0, y0, z1), V(x1, y0, z1), V(x1, y1, z1), V(x0, y1, z1),
+                new Vector2(x0 + 0.5f, y0 + 0.5f), new Vector2(x1 + 0.5f, y0 + 0.5f),
+                new Vector2(x1 + 0.5f, y1 + 0.5f), new Vector2(x0 + 0.5f, y1 + 0.5f));
+            // −Z
+            Quad(V(x1, y0, z0), V(x0, y0, z0), V(x0, y1, z0), V(x1, y1, z0),
+                new Vector2(x1 + 0.5f, y0 + 0.5f), new Vector2(x0 + 0.5f, y0 + 0.5f),
+                new Vector2(x0 + 0.5f, y1 + 0.5f), new Vector2(x1 + 0.5f, y1 + 0.5f));
+            // +X
+            Quad(V(x1, y0, z1), V(x1, y0, z0), V(x1, y1, z0), V(x1, y1, z1),
+                new Vector2(z1 + 0.5f, y0 + 0.5f), new Vector2(z0 + 0.5f, y0 + 0.5f),
+                new Vector2(z0 + 0.5f, y1 + 0.5f), new Vector2(z1 + 0.5f, y1 + 0.5f));
+            // −X
+            Quad(V(x0, y0, z0), V(x0, y0, z1), V(x0, y1, z1), V(x0, y1, z0),
+                new Vector2(z0 + 0.5f, y0 + 0.5f), new Vector2(z1 + 0.5f, y0 + 0.5f),
+                new Vector2(z1 + 0.5f, y1 + 0.5f), new Vector2(z0 + 0.5f, y1 + 0.5f));
+            // +Y
+            Quad(V(x0, y1, z1), V(x1, y1, z1), V(x1, y1, z0), V(x0, y1, z0),
+                new Vector2(x0 + 0.5f, z1 + 0.5f), new Vector2(x1 + 0.5f, z1 + 0.5f),
+                new Vector2(x1 + 0.5f, z0 + 0.5f), new Vector2(x0 + 0.5f, z0 + 0.5f));
+            // −Y
+            Quad(V(x0, y0, z0), V(x1, y0, z0), V(x1, y0, z1), V(x0, y0, z1),
+                new Vector2(x0 + 0.5f, z0 + 0.5f), new Vector2(x1 + 0.5f, z0 + 0.5f),
+                new Vector2(x1 + 0.5f, z1 + 0.5f), new Vector2(x0 + 0.5f, z1 + 0.5f));
         }
 
         private static Vector3 V(float x, float y, float z) => new Vector3(x, y, z);
 
-        private static void AddQuad(List<Vector3> verts, List<int> tris,
-            Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+        private static void AddQuad(List<Vector3> verts, List<Vector2> uvs, List<int> tris,
+            Vector3 a, Vector3 b, Vector3 c, Vector3 d,
+            Vector2 ua, Vector2 ub, Vector2 uc, Vector2 ud)
         {
             int i = verts.Count;
             verts.Add(a); verts.Add(b); verts.Add(c); verts.Add(d);
+            uvs.Add(ua); uvs.Add(ub); uvs.Add(uc); uvs.Add(ud);
             tris.Add(i); tris.Add(i + 1); tris.Add(i + 2);
             tris.Add(i); tris.Add(i + 2); tris.Add(i + 3);
         }
