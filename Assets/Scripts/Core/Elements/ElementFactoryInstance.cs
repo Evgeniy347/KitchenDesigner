@@ -261,6 +261,13 @@ namespace KitchenDesigner.Core
 				return go;
 			}
 
+			if (source is CooktopElement)
+			{
+				var go = CreateCooktop(source.PartName, offset);
+				go.transform.rotation = source.transform.rotation;
+				return go;
+			}
+
 			if (source is PillarElement srcPillar)
 			{
 				var go = CreatePillar(srcPillar.MidHeightMM, source.PartName, offset);
@@ -682,6 +689,30 @@ namespace KitchenDesigner.Core
 			sink.Movable = true;
 
 			PartRegistry.Register(sink);
+
+			if (ElementHighlighter.Instance != null)
+				ElementHighlighter.Instance.RefreshHighlights();
+
+			return go;
+		}
+
+		public GameObject CreateCooktop(string name, Vector3 position)
+		{
+			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Варочная" : name));
+			go.tag = "KitchenElement";
+			go.transform.position = position;
+
+			var rb = go.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
+
+			var cooktop = go.AddComponent<CooktopElement>();
+			cooktop.PartName = go.name;
+			cooktop.DimensionsMM = new Vector3Int(
+				CooktopElement.WIDTH_MM, CooktopElement.TOTAL_HEIGHT_MM, CooktopElement.DEPTH_MM);
+			cooktop.Movable = true;
+
+			PartRegistry.Register(cooktop);
 
 			if (ElementHighlighter.Instance != null)
 				ElementHighlighter.Instance.RefreshHighlights();

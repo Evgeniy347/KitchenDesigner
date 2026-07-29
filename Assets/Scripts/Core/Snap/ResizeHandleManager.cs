@@ -386,7 +386,7 @@ namespace KitchenDesigner.Core
             // Мойка — покупное изделие фиксированного размера (её ApplyDimensions
             // возвращает габарит на место), тянуть у неё нечего: ручки ресайза
             // только вводили бы в заблуждение. Перемещать её можно.
-            if (Mode == HandleMode.Resize && _target is SinkElement) return;
+            if (Mode == HandleMode.Resize && (_target is SinkElement || _target is CooktopElement)) return;
             var faces = _target!.GetFaces();
             for (int i = 0; i < faces.Length; i++)
             {

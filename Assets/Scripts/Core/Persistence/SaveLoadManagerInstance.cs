@@ -215,6 +215,8 @@ namespace KitchenDesigner.Core
 						? ElementFactory.Instance.CreateLightSource(ed.name, ed.Position)
 						: ed.isSink
 						? ElementFactory.Instance.CreateSink(ed.name, ed.Position)
+						: ed.isCooktop
+							? ElementFactory.Instance.CreateCooktop(ed.name, ed.Position)
 						: ed.isPillar
 							? ElementFactory.Instance.CreatePillar(ed.midHeightMM, ed.name, ed.Position)
 							: ed.isTable
@@ -342,6 +344,13 @@ namespace KitchenDesigner.Core
                         sinkEl.AttachedPartName = ed.sinkAttachedPartName;
                         sinkEl.OffsetXMM = ed.sinkOffsetXMM;
                         sinkEl.OffsetYMM = ed.sinkOffsetYMM;
+                    }
+
+                    if (ed.isCooktop && el is CooktopElement cooktopEl)
+                    {
+                        cooktopEl.AttachedPartName = ed.cooktopAttachedPartName;
+                        cooktopEl.OffsetXMM = ed.cooktopOffsetXMM;
+                        cooktopEl.OffsetYMM = ed.cooktopOffsetYMM;
                     }
 
                     if (ed.isLightSource && el is LightSourceElement lightEl)

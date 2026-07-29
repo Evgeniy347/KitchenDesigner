@@ -137,6 +137,11 @@ namespace KitchenDesigner.Core
 		public string sinkAttachedPartName = "";
 		public int sinkOffsetXMM = 0;
 		public int sinkOffsetYMM = 0;
+		// Варочная поверхность: привязка к столешнице без выреза.
+		public bool isCooktop = false;
+		public string cooktopAttachedPartName = "";
+		public int cooktopOffsetXMM = 0;
+		public int cooktopOffsetYMM = 0;
 		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
 		// Накладки текстур (стена, пол); в старых файлах поля нет — пустой массив.
@@ -324,6 +329,13 @@ namespace KitchenDesigner.Core
 				d.sinkAttachedPartName = sinkEl.AttachedPartName ?? "";
 				d.sinkOffsetXMM = sinkEl.OffsetXMM;
 				d.sinkOffsetYMM = sinkEl.OffsetYMM;
+			}
+			if (element is CooktopElement cooktopEl)
+			{
+				d.isCooktop = true;
+				d.cooktopAttachedPartName = cooktopEl.AttachedPartName ?? "";
+				d.cooktopOffsetXMM = cooktopEl.OffsetXMM;
+				d.cooktopOffsetYMM = cooktopEl.OffsetYMM;
 			}
 			d.isFloor = element is FloorElement;
 			if (element is FloorElement floor && floor.PolygonLocalMm.Count >= 3)

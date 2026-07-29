@@ -844,6 +844,9 @@ namespace KitchenDesigner.Core.MCP
                     case "pillar":
                         go = ElementFactory.CreatePillar(item.height ?? PillarElement.MidHeightMM_Default, item.name, pos);
                         break;
+                    case "cooktop":
+                        go = ElementFactory.CreateCooktop(item.name, pos);
+                        break;
                     case "window":
                         go = ElementFactory.CreateWindow(new Vector3Int(item.width ?? 900, item.height ?? 1200, item.depth ?? 100),
                             item.name, pos, GlassTint.Clear, 50);

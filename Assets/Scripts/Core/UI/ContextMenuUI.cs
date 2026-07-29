@@ -1270,7 +1270,8 @@ namespace KitchenDesigner.Core.UI
 			_currentIsDoor = isDoor;
 				// Заголовок различает и подтипы («Сборный фасад» ≠ «Фасад») и
 				// конкретный элемент (имя после тире).
-				_currentTypeName = element is SinkElement ? "Мойка"
+				_currentTypeName = element is CooktopElement ? "Варочная"
+					: element is SinkElement ? "Мойка"
 					: element is LightSourceElement ? "Источник света"
 					: isPillar ? "Опора"
 					: isRadiusTable ? "Радиусный стол"
@@ -2639,7 +2640,7 @@ namespace KitchenDesigner.Core.UI
             if (e is TableElement || e is RadiusTableElement || e is PillarElement
                 || e is WindowElement || e is DoorElement || e is PanelElement
                 || e is LightSourceElement || e is FloorElement
-                || e is SinkElement) return TypeGroup.None;
+                || e is SinkElement || e is CooktopElement) return TypeGroup.None;
             if (e.GetComponent<Wall>() != null || e.GetComponent<BasePlate>() != null) return TypeGroup.None;
             // AssembledFacade — подкласс Facade; порядок проверок не важен, обе → структурная.
             if (e is AssembledFacadeElement || e is RadialShelfElement || e is FacadeElement)

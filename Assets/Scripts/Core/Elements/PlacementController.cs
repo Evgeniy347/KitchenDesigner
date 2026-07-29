@@ -76,7 +76,7 @@ namespace KitchenDesigner.Core
             // Свет подвешен под потолком, мойка садится на столешницу сама
             // (SnapToPart) — им держим текущую высоту; остальное ставим на пол
             // (центр по высоте = половина габарита).
-            point.y = pending is LightSourceElement || pending is SinkElement
+            point.y = pending is LightSourceElement || pending is SinkElement || pending is CooktopElement
                 ? pending.transform.position.y
                 : pending.DimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS;
 
@@ -127,6 +127,7 @@ namespace KitchenDesigner.Core
             // Мойка врезана в деталь тем же списком — иначе в столешнице
             // осталась бы дыра от неустановленной мойки.
             if (el is SinkElement sink) sink.UnregisterFromPart();
+            if (el is CooktopElement cooktop) cooktop.UnregisterFromPart();
 
             go.SetActive(false);
             if (el != null) PartRegistry.Unregister(el);

@@ -640,6 +640,16 @@ namespace KitchenDesigner.Core.UI
             BeginPlacement(go);
         }
 
+        public void SpawnCooktop(string name)
+        {
+            Vector3 pos = GroundPointInFrontOfCamera();
+            pos = GridManager.SnapToGrid(pos);
+            pos.y = 0.9f; // ~900 мм — типовая высота рабочей поверхности
+
+            var go = ElementFactory.CreateCooktop(name, pos);
+            BeginPlacement(go);
+        }
+
         public void SpawnLightSource(string name)
         {
             Vector3 pos = GroundPointInFrontOfCamera();

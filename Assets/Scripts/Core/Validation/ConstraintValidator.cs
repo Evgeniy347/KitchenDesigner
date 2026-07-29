@@ -308,6 +308,7 @@ namespace KitchenDesigner.Core
             // и проём в детали как раз это и оформляет.
             if (a is LightSourceElement || b is LightSourceElement) return;
             if (a is SinkElement || b is SinkElement) return;
+            if (a is CooktopElement || b is CooktopElement) return;
 
             if (AABBsIntersect(aabbA, aabbB, contactDist))
             {
@@ -463,7 +464,7 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < n; i++)
             {
                 var e = all[i];
-                if (e == null || IsAnchor(e) || e is LightSourceElement || e is SinkElement) continue;
+                if (e == null || IsAnchor(e) || e is LightSourceElement || e is SinkElement || e is CooktopElement) continue;
                 ok[i] = true;
                 faces[i] = e.GetFaces();
                 boxes[i] = ComputeAABB(e.GetVertices());
@@ -806,7 +807,7 @@ namespace KitchenDesigner.Core
                 if (e is LightSourceElement) continue;
                 // Мойка держится на своей столешнице (проём + борт), а не на
                 // face-контакте — связность к ней неприменима.
-                if (e is SinkElement) continue;
+                if (e is SinkElement || e is CooktopElement) continue;
                 if (!visited.Contains(e) || !hasContact.Contains(e))
                 {
                     result.violations.Add(e);

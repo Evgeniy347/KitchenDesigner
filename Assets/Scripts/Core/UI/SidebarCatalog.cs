@@ -24,6 +24,7 @@ namespace KitchenDesigner.Core.UI
             public bool isFloor;
             public bool isLightSource;
             public bool isSink;           // врезная мойка (садится на деталь-столешницу)
+            public bool isCooktop;        // варочная поверхность (садится на деталь-столешницу без выреза)
             public bool isPanel;          // ДВП/ХДФ — вкладная панель с зазорами
             public int pillarMidHeightMM;
             public string drawerType;
@@ -44,7 +45,7 @@ namespace KitchenDesigner.Core.UI
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
                 isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false; isDoor = false;
-                isPillar = false; isFloor = false; isLightSource = false; isSink = false;
+                isPillar = false; isFloor = false; isLightSource = false; isSink = false; isCooktop = false;
                 isPanel = false; pillarMidHeightMM = 75;
                 drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400; drawerSystem = "gtv";
@@ -143,7 +144,16 @@ namespace KitchenDesigner.Core.UI
             radiusTable.isRadiusTable = true;
             var pillar = PillarItem("Ножка", PillarElement.MidHeightMM_Default);
             var sink = SinkItem("Мойка");
-            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, pillar, sink } };
+            var cooktop = CooktopItem("Варочная поверхность");
+            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, pillar, sink, cooktop } };
+        }
+
+        private static Item CooktopItem(string name)
+        {
+            var item = new Item(name, new Vector3Int(
+                CooktopElement.WIDTH_MM, CooktopElement.TOTAL_HEIGHT_MM, CooktopElement.DEPTH_MM));
+            item.isCooktop = true;
+            return item;
         }
 
         private static Item SinkItem(string name)

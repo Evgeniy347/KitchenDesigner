@@ -19,6 +19,7 @@ namespace KitchenDesigner.Core
             if (currentType == TargetType.Drawer || targetType == TargetType.Drawer) return source;
             if (currentType == TargetType.Window || targetType == TargetType.Window) return source;
             if (currentType == TargetType.Door || targetType == TargetType.Door) return source;
+            if (source is CooktopElement) return source;
 
             var go = source.gameObject;
 
