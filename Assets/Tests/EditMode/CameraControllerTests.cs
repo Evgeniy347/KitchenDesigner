@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
@@ -13,6 +14,8 @@ public class CameraControllerTests
     [SetUp]
     public void SetUp()
     {
+        PartRegistry.Clear();
+
         _cameraGo = new GameObject("TestCamera");
         _cameraGo!.tag = "MainCamera";
         _cameraGo!.AddComponent<Camera>();
@@ -666,5 +669,120 @@ public class CameraControllerTests
     {
         var state = _controller!.GetState();
         return new Vector3(state.targetX, state.targetY, state.targetZ);
+    }
+
+    // ── E-key openables ──────────────────────────────────────────
+
+    private GameObject? _selGo;
+    private SelectionManager? _sel;
+    private readonly List<GameObject> _openableSpawned = new List<GameObject>();
+
+    private SelectionManager EnsureSelection()
+    {
+        if (_sel != null) return _sel;
+        _selGo = new GameObject("SelectionManager");
+        _sel = _selGo.AddComponent<SelectionManager>();
+        var awake = typeof(SelectionManager).GetMethod("Awake",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        awake?.Invoke(_sel, null);
+        PartRegistry.Clear();
+        return _sel;
+    }
+
+    private FacadeElement MakeFacade(string name)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = name;
+        var f = go.AddComponent<FacadeElement>();
+        f.PartName = name;
+        PartRegistry.Register(f);
+        _openableSpawned.Add(go);
+        return f;
+    }
+
+    private DrawerElement MakeTestDrawer(string name, int internalWidth = 400)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = name;
+        var d = go.AddComponent<DrawerElement>();
+        d.PartName = name;
+        d.Type = DrawerType.A;
+        d.NominalLength = 350;
+        d.InternalWidth = internalWidth;
+        d.Color = DrawerColor.Anthracite;
+        PartRegistry.Register(d);
+        _openableSpawned.Add(go);
+        return d;
+    }
+
+    [TearDown]
+    public void TearDownOpenables()
+    {
+        if (_sel != null) Object.DestroyImmediate(_selGo!);
+        foreach (var go in _openableSpawned) if (go != null) Object.DestroyImmediate(go);
+        _openableSpawned.Clear();
+        PartRegistry.Clear();
+    }
+
+    [Test]
+    public void ToggleSelectedOpenables_OpensPlainFacade()
+    {
+        var sel = EnsureSelection();
+        var facade = MakeFacade("test_facade");
+        sel.Select(facade);
+
+        Assert.False(facade.IsOpen, "фасад закрыт");
+        _controller!.ToggleSelectedOpenables();
+        Assert.True(facade.IsOpen, "E открывает обычный фасад");
+    }
+
+    [Test]
+    public void ToggleSelectedOpenables_OpensDrawer()
+    {
+        var sel = EnsureSelection();
+        var drawer = MakeTestDrawer("test_drawer");
+        sel.Select(drawer);
+
+        Assert.False(drawer.IsOpen, "ящик закрыт");
+        _controller!.ToggleSelectedOpenables();
+        Assert.True(drawer.IsOpen, "E открывает ящик");
+    }
+
+    [Test]
+    public void ToggleSelectedOpenables_FacadeOnDrawer_OpensDrawerNotFacade()
+    {
+        var sel = EnsureSelection();
+        var drawer = MakeTestDrawer("test_drawer");
+        var facade = MakeFacade("test_facade");
+        drawer.AttachedFacadeName = "test_facade";
+        sel.Select(facade);
+
+        Assert.False(facade.IsOpen, "фасад закрыт");
+        Assert.False(drawer.IsOpen, "ящик закрыт");
+
+        _controller!.ToggleSelectedOpenables();
+
+        Assert.True(facade.IsOpen, "фасад синхронно открыт с ящиком (SyncAttachedFacade)");
+        Assert.True(drawer.IsOpen, "E открывает привязанный ящик через фасад");
+    }
+
+    [Test]
+    public void ToggleSelectedOpenables_DoubleDrawer_CyclesState()
+    {
+        var sel = EnsureSelection();
+        var lower = MakeTestDrawer("lower");
+        var upper = MakeTestDrawer("upper");
+        lower.IsDouble = true;
+        lower.IsUpperDrawer = false;
+        lower.PairedDrawerName = "upper";
+        upper.IsDouble = true;
+        upper.IsUpperDrawer = true;
+        upper.PairedDrawerName = "lower";
+        sel.Select(lower);
+
+        Assert.AreEqual(DoubleDrawerState.Closed, lower.DoubleState);
+        _controller!.ToggleSelectedOpenables();
+        Assert.AreNotEqual(DoubleDrawerState.Closed, lower.DoubleState,
+            "E циклирует двойной ящик");
     }
 }

@@ -2825,6 +2825,13 @@ namespace KitchenDesigner.Core.UI
                 _drawerAnimLabel.text = d.IsOpen ? "Закрыть ящик" : "Открыть ящик";
         }
 
+        internal void SyncOpenLabels()
+        {
+            if (_root == null || !_root.activeSelf || _target == null) return;
+            if (_target is FacadeElement f) UpdateDoorButton(f);
+            else if (_target is DrawerElement d) UpdateDrawerAnimButton(d);
+        }
+
         // ── Фасад ящика ───────────────────────────────────────────────
         // Фасад — отдельный элемент: его можно выбрать из существующих, создать
         // (фронт ящика, линейное открывание) или перейти к его настройке.
@@ -2933,7 +2940,7 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        private static DrawerElement? FindDrawerForFacade(FacadeElement facade)
+        internal static DrawerElement? FindDrawerForFacade(FacadeElement facade)
         {
             if (string.IsNullOrEmpty(facade.PartName)) return null;
             foreach (var e in PartRegistry.GetAll())

@@ -280,7 +280,7 @@ namespace KitchenDesigner.Core
             UpdateFloorVisibility();
         }
 
-        private void ToggleSelectedOpenables()
+        public void ToggleSelectedOpenables()
         {
             var sel = SelectionManager.Instance;
             if (sel == null) return;
@@ -288,8 +288,27 @@ namespace KitchenDesigner.Core
             {
                 if (el is DoorElement d) d.ToggleOpen();
                 else if (el is WindowElement w) w.ToggleOpen();
-                else if (el is FacadeElement f) f.ToggleDoor();
+                else if (el is DrawerElement dr)
+                {
+                    if (dr.FindPaired() != null) dr.CycleDoubleState();
+                    else dr.ToggleOpen();
+                }
+                else if (el is FacadeElement f)
+                {
+                    var drawer = UI.ContextMenuUI.FindDrawerForFacade(f);
+                    if (drawer != null)
+                    {
+                        if (drawer.FindPaired() != null) drawer.CycleDoubleState();
+                        else drawer.ToggleOpen();
+                    }
+                    else
+                    {
+                        f.ToggleDoor();
+                    }
+                }
             }
+
+            UI.ContextMenuUI.Instance?.SyncOpenLabels();
         }
 
         public void UpdateFloorVisibility()
