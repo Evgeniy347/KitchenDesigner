@@ -236,7 +236,7 @@ public readonly struct ElementGeometry
 | 2* | Остаток стадии 2, съехавший на этап 3: `GrooveMath` (расщепление `GrooveMesh`), `GappedBox`, `EdgeBanding`, `FaceContact`. Причина — они тянут `PartData`, а тот через `MaterialCatalog` тянет загрузку текстур; развязывается это тем же снимком, что и этап 3 | — | — |
 | 3 | ✅ **Сделано.** `ElementGeometry` + `BoxGaps` + `ToGeometry()`; `ResizeSnap`, `ResizeMath`, `GappedBox` → ядро на снимках. Адаптеры не понадобились: вызовов оказалось 8, переписаны напрямую | 8–12 | Ресайз-математика не видит сцену; инвариант цел. Mutation score временно упал до 21%: тесты перевезённого кода ещё в Unity-части — это работа этапа 5 |
 | 4 | **Ядро снэпа**: `Collect`, `TryPickCandidate`, `FacesOverlap`, `GetFaceRect`, `BestEdgeDelta` → на снимки; убирается запись в `transform`; `TrySnap`/`Diagnose` — адаптеры | 16–24 | Снэп чист; здесь же выигрыш по времени |
-| 5 | Перенос быстрых юнит-тестов снэпа в `Assets/Tests/EditMode/Geometry/` | 8–10 | Реальный набор гоняется под `dotnet test` |
+| 5 | 🔶 **Частично.** Перенесены `ResizeSnapTests` и `ResizeMathTests` (сценозависимый остаток выделен в `ResizeMathSceneTests`), дописаны `GappedBoxTests` и `ElementGeometryTests`. Осталось: ветки пазов в `ResizeSnap` — для них нужны снимки с дном и стенками паза | 8–10 | 92 теста ядра за 68 мс, Stryker **65.3%** |
 | 6 | Stryker в CI: baseline score, `--threshold-break`, ночной прогон, отчёт в артефакты | 4–6 | Мутационный порог как gate |
 | 7 | *(опционально)* `ConstraintValidator`: развязать `GetComponent<>`-проверки типа через флаги в снимке | 12–16 | Валидация тоже мутируется |
 

@@ -40,6 +40,11 @@ dotnet-stryker --project Geometry.csproj --reporter html
 требование флага `--test-project`: Stryker отказывался работать, когда в
 каталоге больше одного проекта.
 
+Тесты ядра (`Assets/Tests/EditMode/Geometry/`) живут по тем же правилам: они
+компилируются в обе сборки. Поворот в тесте задавайте литералом
+(`new Quaternion(0, 0.70710678f, 0, 0.70710678f)` — это 90° вокруг Y), а не
+через `Quaternion.Euler`, иначе `dotnet test` упадёт с `SecurityException`.
+
 ## Что разрешено
 
 `Vector3`, `Vector2`, `Vector3Int`, `Rect`, `Bounds`, весь `Mathf`, а также
