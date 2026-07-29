@@ -525,7 +525,7 @@ public class DrawerElementTests
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // SYSTEM CONVERSION (GTV ↔ Movento)
+    // SYSTEM CONVERSION (GTV ↔ Movento) + BOX WIDTH
     // ═══════════════════════════════════════════════════════════════
 
     [Test]
@@ -536,11 +536,57 @@ public class DrawerElementTests
     }
 
     [Test]
+    public void Drawer_Gtv_BoxWidthEqualsInternalWidth()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 564, DrawerColor.Anthracite);
+        Assert.AreEqual(564, d.BoxWidth, "GTV: ширина короба = LW");
+    }
+
+    [Test]
+    public void Drawer_Movento_BoxWidthIsLwMinus42()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 564, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        Assert.AreEqual(564 - 42, d.BoxWidth, "Movento: ширина короба = LW − 42");
+    }
+
+    [Test]
+    public void Drawer_Movento_BoxWidthUpdatesWithInternalWidth()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 564, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        Assert.AreEqual(522, d.BoxWidth);
+        d.InternalWidth = 600;
+        Assert.AreEqual(558, d.BoxWidth, "Movento: BoxWidth = LW − 42 после смены LW");
+    }
+
+    [Test]
+    public void Drawer_SetInternalWidthFromBoxWidth_Movento()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 564, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        d.InternalWidth = d.BoxWidth + DrawerConstants.MOVENTO_WIDTH_INSET; // 522 + 42 = 564
+        Assert.AreEqual(564, d.InternalWidth, "обратный пересчёт: LW = BoxWidth + 42");
+        Assert.AreEqual(522, d.BoxWidth);
+    }
+
+    [Test]
     public void Drawer_SwitchToMovento_PreservesInternalWidth()
     {
         var d = MakeDrawer("D", DrawerType.C, 350, 564, DrawerColor.Anthracite);
         d.System = DrawerSystem.Movento;
         Assert.AreEqual(564, d.InternalWidth, "InternalWidth не должен меняться при смене системы");
+    }
+
+    [Test]
+    public void Drawer_SwitchToMovento_BoxWidthRecalculates()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 564, DrawerColor.Anthracite);
+        Assert.AreEqual(564, d.BoxWidth, "GTV box = LW");
+        d.System = DrawerSystem.Movento;
+        Assert.AreEqual(522, d.BoxWidth, "Movento box = LW − 42");
+        d.System = DrawerSystem.Gtv;
+        Assert.AreEqual(564, d.BoxWidth, "обратно GTV: box = LW");
     }
 
     [Test]
@@ -699,6 +745,35 @@ public class DrawerElementTests
         Assert.AreEqual(320, d.DimensionsMM.x);
         d.System = DrawerSystem.Movento;
         Assert.AreEqual(320, d.InternalWidth, "после Gtv→Movento→Gtv→resize→Movento");
+    }
+
+    [Test]
+    public void Drawer_BoxWidth_FollowsResize_Gtv()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 400, DrawerColor.Anthracite);
+        d.DimensionsMM = new Vector3Int(600, 0, 0);
+        Assert.AreEqual(600, d.BoxWidth, "GTV: BoxWidth = LW после ресайза");
+    }
+
+    [Test]
+    public void Drawer_BoxWidth_FollowsResize_Movento()
+    {
+        var d = MakeDrawer("D", DrawerType.C, 350, 400, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        d.DimensionsMM = new Vector3Int(600, 0, 0);
+        Assert.AreEqual(600 - DrawerConstants.MOVENTO_WIDTH_INSET, d.BoxWidth,
+            "Movento: BoxWidth = LW − 42 после ресайза");
+    }
+
+    [Test]
+    public void Drawer_BoxWidth_ClampsAtMin100_Movento()
+    {
+        var d = MakeDrawer("D", DrawerType.A, 350, 200, DrawerColor.Anthracite);
+        d.System = DrawerSystem.Movento;
+        d.InternalWidth = 100;
+        Assert.AreEqual(100 - DrawerConstants.MOVENTO_WIDTH_INSET, d.BoxWidth,
+            "Movento: BoxWidth = minLW − 42");
+        Assert.GreaterOrEqual(d.BoxWidth, 100 - 42);
     }
 
     // ═══════════════════════════════════════════════════════════════

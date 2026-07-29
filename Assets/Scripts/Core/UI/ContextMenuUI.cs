@@ -1154,7 +1154,7 @@ namespace KitchenDesigner.Core.UI
 
             var drawerRef = _target as DrawerElement;
             if (drawerRef != null && _drawerWidth != null)
-                MaybeRefresh(_drawerWidth, drawerRef.InternalWidth.ToString());
+                MaybeRefresh(_drawerWidth, drawerRef.BoxWidth.ToString());
 
             MaybeRefresh(_name, _target.PartName);
             RefreshTitle();
@@ -1329,7 +1329,7 @@ namespace KitchenDesigner.Core.UI
                     if (_drawerColorDropdown != null)
                         _drawerColorDropdown.SetValueWithoutNotify((int)drawer.Color);
                     if (_drawerWidth != null)
-                        _drawerWidth.text = drawer.InternalWidth.ToString();
+                        _drawerWidth.text = drawer.BoxWidth.ToString();
                     var upperDrawer = drawer.FindPaired();
                     if (_drawerUpperLenDropdown != null && upperDrawer != null)
                         _drawerUpperLenDropdown.SetValueWithoutNotify(
@@ -1499,7 +1499,12 @@ namespace KitchenDesigner.Core.UI
             }
             else if (drawer != null)
             {
-                if (_drawerWidth != null) drawer.InternalWidth = ParseIntField(_drawerWidth, drawer.InternalWidth);
+                if (_drawerWidth != null)
+                {
+                    int boxW = ParseIntField(_drawerWidth, drawer.BoxWidth);
+                    int inset = drawer.System == DrawerSystem.Movento ? DrawerConstants.MOVENTO_WIDTH_INSET : 0;
+                    drawer.InternalWidth = Mathf.Max(100, boxW + inset);
+                }
             }
             else if (pillar != null)
             {
@@ -3123,7 +3128,7 @@ namespace KitchenDesigner.Core.UI
             TrackField(_gapTop, facade != null ? facade.GapTop.ToString() : panelTrack != null ? panelTrack.GapTop.ToString() : "0");
             TrackField(_gapBottom, facade != null ? facade.GapBottom.ToString() : panelTrack != null ? panelTrack.GapBottom.ToString() : "0");
             var drawerEl2 = _target as DrawerElement;
-            TrackField(_drawerWidth, drawerEl2 != null ? drawerEl2.InternalWidth.ToString() : "400");
+            TrackField(_drawerWidth, drawerEl2 != null ? drawerEl2.BoxWidth.ToString() : "400");
 			var windowEl2 = _target as WindowElement;
 			TrackField(_sillProtrusion, windowEl2 != null ? windowEl2.SillProtrusionMM.ToString() : "50");
 			var tableEl2 = _target as TableElement;

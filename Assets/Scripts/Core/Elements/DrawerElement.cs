@@ -106,6 +106,13 @@ namespace KitchenDesigner.Core
             }
         }
 
+        /// <summary>Реальная наружная ширина короба (мм). Для GTV = LW (изделие
+        /// подбирается по проёму), для Movento = LW − 42 (SKW по Blum).</summary>
+        public int BoxWidth =>
+            _system == DrawerSystem.Movento
+                ? _internalWidth - DrawerConstants.MOVENTO_WIDTH_INSET
+                : _internalWidth;
+
         public bool IsDouble
         {
             get => _isDouble;
