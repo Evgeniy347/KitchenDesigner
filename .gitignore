@@ -69,6 +69,7 @@ nunit-*.xml
 # Code Coverage
 # ===========================
 /CoverageResults/
+/CodeCoverage/
 
 # ===========================
 # Logs
