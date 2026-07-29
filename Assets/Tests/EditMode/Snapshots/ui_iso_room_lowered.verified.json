@@ -241,38 +241,43 @@
     },
     {
       "type": "Button",
+      "text": "Варочная поверхность",
+      "position": [22, -463]
+    },
+    {
+      "type": "Button",
       "text": "Помещение",
-      "position": [8, -463]
+      "position": [8, -492]
     },
     {
       "type": "Button",
       "text": "Короб",
-      "position": [22, -497]
-    },
-    {
-      "type": "Button",
-      "text": "Стена",
       "position": [22, -526]
     },
     {
       "type": "Button",
-      "text": "Окно",
+      "text": "Стена",
       "position": [22, -555]
     },
     {
       "type": "Button",
-      "text": "Дверь",
+      "text": "Окно",
       "position": [22, -584]
     },
     {
       "type": "Button",
-      "text": "Пол",
+      "text": "Дверь",
       "position": [22, -613]
     },
     {
       "type": "Button",
-      "text": "Источник света",
+      "text": "Пол",
       "position": [22, -642]
+    },
+    {
+      "type": "Button",
+      "text": "Источник света",
+      "position": [22, -671]
     }
   ]
 }

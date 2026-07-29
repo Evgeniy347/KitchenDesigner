@@ -97,11 +97,21 @@ public class SidebarCatalogTests
     public void FurnitureGroup_HasTable()
     {
         var groups = SidebarCatalog.Build();
-        Assert.AreEqual(4, groups[3].items.Count);
+        Assert.AreEqual(5, groups[3].items.Count);
         var it = groups[3].items.Find(i => i.name == "Прямоугольный стол");
         Assert.IsNotNull(it);
         Assert.IsTrue(it.isFurniture);
         Assert.AreEqual(new Vector3Int(2000, 750, 1000), it.dims);
+    }
+
+    [Test]
+    public void FurnitureGroup_HasCooktop()
+    {
+        var groups = SidebarCatalog.Build();
+        var it = groups[3].items.Find(i => i.name == "Варочная поверхность");
+        Assert.IsNotNull(it, "в FurnitureGroup должен быть элемент «Варочная поверхность»");
+        Assert.IsTrue(it.isCooktop, "элемент «Варочная поверхность» помечен как isCooktop");
+        Assert.AreEqual(new Vector3Int(CooktopElement.WIDTH_MM, CooktopElement.TOTAL_HEIGHT_MM, CooktopElement.DEPTH_MM), it.dims);
     }
 
     [Test]
