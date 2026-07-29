@@ -3653,7 +3653,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "gtv_anthracite",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -3714,7 +3714,7 @@
                 40
             ],
             "position": [
-                1.309999942779541,
+                1.3100000619888306,
                 1.0,
                 -0.6600000262260437
             ],
@@ -3738,7 +3738,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "gtv_anthracite",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -3823,7 +3823,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "gtv_anthracite",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -3908,7 +3908,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "gtv_anthracite",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -3993,7 +3993,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "gtv_anthracite",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -4078,7 +4078,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "gtv_anthracite",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -4248,7 +4248,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "gtv_anthracite",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
@@ -5268,7 +5268,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
@@ -5353,7 +5353,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -5438,7 +5438,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
@@ -5523,7 +5523,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -5608,7 +5608,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
@@ -5778,7 +5778,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -5863,7 +5863,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -5948,7 +5948,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 3,
@@ -6033,7 +6033,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
@@ -6118,7 +6118,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
@@ -6203,7 +6203,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
@@ -6288,7 +6288,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
@@ -6373,7 +6373,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
@@ -6458,7 +6458,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
@@ -8763,7 +8763,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy_tinting_2",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -14413,7 +14413,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
@@ -14498,7 +14498,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 3,
@@ -14583,7 +14583,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
@@ -18023,7 +18023,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "oak",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
@@ -23009,18 +23009,18 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 0.2603367567062378,
-        "targetY": 1.2292072772979737,
-        "targetZ": -0.36129429936408999,
-        "angleX": 11.485895156860352,
-        "angleY": 1195.240966796875,
+        "targetX": -0.057647205889225009,
+        "targetY": 1.4121665954589844,
+        "targetZ": -1.4852567911148072,
+        "angleX": 28.29996681213379,
+        "angleY": 1228.6524658203125,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
-        "photoTargetX": 0.13117201626300813,
-        "photoTargetY": 1.7864686250686646,
-        "photoTargetZ": 1.4158544540405274,
-        "photoAngleX": -4.1632866859436039,
-        "photoAngleY": 1133.0316162109375
+        "photoTargetX": -1.0666234493255616,
+        "photoTargetY": 1.6153008937835694,
+        "photoTargetZ": 1.1310044527053834,
+        "photoAngleX": 13.54830265045166,
+        "photoAngleY": 1162.4183349609375
     },
     "handleMode": "Resize",
     "projectInstructions": "Планировка квартиры 85,8 м2 (2-комнатная), панельный дом.\n\nОси: X — восток(+), Z — север(+), Y — вверх. Все размеры в мм.\nНачало отсчёта плана (origin) — внутренний юго-западный угол комнаты 22,9 м2:\nмировые координаты (-1585, -3620). Комната 22,9 в чистоте 3170 x 7240.\nКухонные модули (ряды A и B) стоят вплотную к граням z=0 и x=3170 —\nэти грани двигать НЕЛЬЗЯ.\n\nbearing_wall_thickness_mm: 250\npartition_wall_thickness_mm: 125\nfloor_thickness_mm: 100\n\nСтена состоит из ОТДЕЛЬНЫХ БЛОКОВ: несущие пилоны 250 мм (шаг 1200) чередуются\nс перегородками 125 мм по одной линии. Фасады 150 мм — задаются через\nthickness_mm на стене, а не типом. Тёмно-серый на чертеже = несущая,\nсветло-серый = перегородка.\nВысота стен 2700, низ стен и верх пола на Y=0.\n",
@@ -23111,120 +23111,6 @@
         "edgeManualMask": 0
     },
     "undoHistory": [
-        {
-            "type": "resize",
-            "description": "Resize W150_11",
-            "elementIndex": 124,
-            "posBefore": [
-                1.4100000858306885,
-                1.350000023841858,
-                -0.57750004529953
-            ],
-            "posAfter": [
-                0.125,
-                1.350000023841858,
-                -0.57750004529953
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                850,
-                2700,
-                125
-            ],
-            "dimsAfter": [
-                3420,
-                2700,
-                125
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize W150_11",
-            "elementIndex": 124,
-            "posBefore": [
-                0.12499995529651642,
-                1.350000023841858,
-                -0.57750004529953
-            ],
-            "posAfter": [
-                1.409999966621399,
-                1.350000023841858,
-                -0.57750004529953
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                3420,
-                2700,
-                125
-            ],
-            "dimsAfter": [
-                850,
-                2700,
-                125
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize W150_11",
-            "elementIndex": 124,
-            "posBefore": [
-                1.409999966621399,
-                1.350000023841858,
-                -0.57750004529953
-            ],
-            "posAfter": [
-                1.7100000381469727,
-                1.350000023841858,
-                -0.57750004529953
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                850,
-                2700,
-                125
-            ],
-            "dimsAfter": [
-                250,
-                2700,
-                125
-            ],
-            "children": []
-        },
         {
             "type": "move",
             "description": "Move Moyka",
@@ -56678,6 +56564,44 @@
                 463
             ],
             "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Fridge_Right",
+            "elementIndex": 43,
+            "posBefore": [
+                1.309999942779541,
+                1.0,
+                -0.6600000262260437
+            ],
+            "posAfter": [
+                1.3100000619888306,
+                1.0,
+                -0.6600000262260437
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                550,
+                2000,
+                40
+            ],
+            "dimsAfter": [
+                550,
+                2000,
+                40
+            ],
+            "children": []
         }
     ],
     "redoHistory": [],
@@ -56738,7 +56662,7 @@
     "windows": [
         {
             "id": "dayNight",
-            "visible": true,
+            "visible": false,
             "x": -10.0,
             "y": -60.0,
             "height": 0.0
