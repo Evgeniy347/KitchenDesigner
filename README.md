@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">Kitchen Designer</h1>
   <p align="center">
-    3D Furniture Board Constructor / 3D-конструктор мебельных щитов<br>
+    3D-конструктор мебельных щитов<br>
     Unity 6000 • C# • URP • ASP.NET Core 10 • PostgreSQL
   </p>
 </p>
@@ -14,119 +14,6 @@
 <p align="center">
   <img src="docs/overview.png" alt="Общий вид программы" width="700">
 </p>
-
----
-
-## English
-
-### Overview
-
-A visual 3D furniture board constructor for laying out cabinets, kitchens, and other case furniture.
-
-**Live demo:** [https://kitchendesigner.duckdns.org/](https://kitchendesigner.duckdns.org/)
-
-### Features
-
-- **Create boards** of arbitrary size or from presets
-- **Face-to-face snapping** — boards automatically snap to each other's faces (configurable threshold)
-- **Grid snapping** — configurable grid step (default 1 mm)
-- **Spatial grid** — optional 3D grid rendered on the floor
-- **Facade gaps** — per-side gap control (left, right, top, bottom; default 2 mm each)
-
-  <img src="docs/facade-gaps.png" alt="Facade gaps" width="500">
-
-- **Validation system** — automatic intersection and connectivity checking (BFS from walls/floor); violations highlighted in red
-- **Block on violation** — optionally prevent moves that make the structure invalid
-- **Groups (modules)** — group boards into named modules, move them as one
-- **Module edit mode** — edit one module while others are locked and dimmed
-- **Specification** — bill of materials with dimensions and area, export to CSV
-
-  <img src="docs/export-csv.png" alt="Export to CSV" width="500">
-
-- **Save/Load** — projects saved as JSON. Load a ready-made configuration from file (see `docs/example.save.json`)
-- **Auto-save** — configurable interval, only when changes detected. **Backup** — on manual save, the old file is archived to `saves/backups/`
-- **Undo/Redo** — command stack of up to 1000 operations
-- **Camera controls** — turn in place (RMB), pan (MMB), move forward/back (scroll), WASD movement with hold-to-accelerate
-- **Resize handles** — interactive resize via handles on selected boards
-- **Material catalog** — apply textures/decor to boards
-- **Wall cutaway** (Sims-like) — walls lower to 100 mm when near for visibility
-- **Edge outlines** — optional board edge highlighting
-- **Align/Distribute** — align and evenly distribute boards
-
-### MCP Bridge (AI-driven modeling)
-
-Kitchen Designer is available via **MCP (Model Context Protocol)** — an AI agent can model the construction autonomously.
-
-Any MCP-compatible AI agent (Claude Code, opencode, etc.) can read the scene, create/move/resize boards, check violations, control the camera, and export specifications.
-
-To connect an agent, simply ask it to read the [`readme-mcp.md`](readme-mcp.md) file and follow the workflow described there.
-
-### Quick Start
-
-```bash
-# Open in Unity Editor
-# Open Assets/Scenes/TestScene.unity
-# Hit Play
-```
-
-### Launch configurations
-
-**Local (debug):**
-
-| Script | Purpose |
-|--------|---------|
-| `run-desktop.cmd` | Fastest iteration: incremental Windows development build (Mono) → `Build_Debug/`, launches the exe. `-NoBuild` to just launch |
-| `run-webgl.cmd` | WebGL debug in Docker: builds `Builds/WebGL_Debug` (no compression, no stripping), starts nginx+web+db from `server/docker-compose.local.yml`, opens http://localhost:8080. nginx bind-mounts the build folder — rebuild WebGL and refresh the browser, no docker restart needed. `-NoBuild` to skip the Unity build |
-
-**Release:**
-
-| Script | Purpose |
-|--------|---------|
-| `build.cmd -WebGL` | WebGL release build (gzip, high stripping) → `Builds/WebGL` |
-| `deploy.cmd` | Publish server + copy WebGL build + `server/docker-compose.yml` to the production host |
-
-**Measured build times** (Ryzen-class dev machine, warm Library cache; wall time includes ~15 s Unity editor startup):
-
-| Variant | Wall time | Unity pipeline | Output size |
-|---------|-----------|----------------|-------------|
-| Windows Debug, incremental (`-WinDebug`) | 19 s | 6 s | 157 MB |
-| Windows Debug, first run | 71 s | 55 s | 157 MB |
-| WebGL Debug (`-WebGLDebug`) | 73 s | 56 s | 200 MB |
-| WebGL Release (`-WebGL`) | 9.5 min | 549 s | 13.5 MB |
-
-### Server architecture
-
-The `web` container is self-contained and exposes **two ports**:
-
-| Port | Purpose | Routes |
-|------|---------|--------|
-| 8080 | HTTP — site, API, WebGL | Blazor pages, `/api/*`, `/unity/*` (WebGL build from the `WebGL:RootPath` mount), `/api/mcp/ws` (client channel) |
-| 8081 | MCP — AI agents only | `/mcp` (real MCP over Streamable HTTP), `/health` |
-
-nginx is a pure reverse proxy in front of 8080; agents connect to 8081 directly. The database schema is created automatically on first start (with retries while PostgreSQL boots). Project saves are **files** under `/app/data/projects/{userId}/{projectId}.json` (source of truth, size limit + JSON validation + rotated `.bak` backups); the DB keeps metadata. Auth: ASP.NET Identity with static-SSR login/register/profile pages, POST-only logout, lockout after failed attempts, 401/403 (not redirects) for `/api/*`.
-
-MCP flow: the server hosts a **real MCP server** at `http(s)://…:8081/mcp` (Streamable HTTP). The tool set is generated from one C# contract (`Assets/Scripts/Core/MCP/Contract`, shared with the Unity handler; `index.ts` is generated from it too). The agent connects, then **must call `authenticate` first** with the tab's project key — until then every tool returns *"требуется подключение к проекту…"*. The user opens the project in a tab (a unique key is shown in the top nav next to a red/green light), copies the key to the agent; on authenticate the server pings that tab over `/api/mcp/ws`, binds the MCP session to it (light turns green), and relays all subsequent commands to it.
-
-### Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `build.cmd` | Build Windows (.exe) or WebGL. Flags: `-Clean`, `-RunTests`, `-RunPlayMode`, `-BuildOnly`, `-WebGL`, `-WebGLDebug`, `-WinDebug` |
-| `build-server.cmd` | Build ASP.NET server |
-| `clean.cmd` | Clean temporary files (Unity + server) |
-
-### Stack
-
-| Component | Version |
-|-----------|---------|
-| Unity | 6000.4.3f1 |
-| Render Pipeline | URP 17.4.0 |
-| Language (front) | C# |
-| Backend | ASP.NET Core 10 + Blazor Server |
-| Orchestration | .NET Aspire 13 |
-| Auth | ASP.NET Identity |
-| Database | PostgreSQL |
-| Tests | Unity Test Framework (NUnit) |
 
 ---
 
@@ -244,6 +131,6 @@ nginx — чистый reverse-proxy перед 8080; агенты подклю�
 
 ---
 
-## Лицензия / License
+## Лицензия
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT License. Подробнее в [LICENSE](LICENSE).

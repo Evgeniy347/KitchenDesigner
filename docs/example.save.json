@@ -4163,7 +4163,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "gtv_anthracite",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
@@ -5693,7 +5693,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
@@ -22756,12 +22756,12 @@
             "dimensionsMM": [
                 200,
                 16,
-                459
+                463
             ],
             "position": [
                 6.424000263214111,
                 0.40800002217292788,
-                2.9645001888275148
+                2.9625003337860109
             ],
             "rotation": [
                 0.0,
@@ -23009,11 +23009,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": -0.46578145027160647,
-        "targetY": 1.400296688079834,
-        "targetZ": -1.731755018234253,
-        "angleX": 14.893083572387696,
-        "angleY": 1214.9300537109375,
+        "targetX": 0.2603367567062378,
+        "targetY": 1.2292072772979737,
+        "targetZ": -0.36129429936408999,
+        "angleX": 11.485895156860352,
+        "angleY": 1195.240966796875,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": 0.13117201626300813,
@@ -23111,74 +23111,6 @@
         "edgeManualMask": 0
     },
     "undoHistory": [
-        {
-            "type": "move",
-            "description": "Move Moyka",
-            "elementIndex": 173,
-            "posBefore": [
-                0.12699997425079347,
-                0.872589647769928,
-                -3.3477706909179689
-            ],
-            "posAfter": [
-                0.6849998831748962,
-                0.872589647769928,
-                -3.3477706909179689
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize W150_11",
-            "elementIndex": 124,
-            "posBefore": [
-                1.7100001573562623,
-                1.350000023841858,
-                -0.57750004529953
-            ],
-            "posAfter": [
-                1.4100000858306885,
-                1.350000023841858,
-                -0.57750004529953
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                250,
-                2700,
-                125
-            ],
-            "dimsAfter": [
-                850,
-                2700,
-                125
-            ],
-            "children": []
-        },
         {
             "type": "resize",
             "description": "Resize W150_11",
@@ -56670,6 +56602,82 @@
                 461
             ],
             "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Polka_4",
+            "elementIndex": 264,
+            "posBefore": [
+                6.424000263214111,
+                0.40800002217292788,
+                2.9645001888275148
+            ],
+            "posAfter": [
+                6.424000263214111,
+                0.40800002217292788,
+                2.9700002670288088
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                200,
+                16,
+                459
+            ],
+            "dimsAfter": [
+                200,
+                16,
+                448
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Polka_4",
+            "elementIndex": 264,
+            "posBefore": [
+                6.424000263214111,
+                0.40800002217292788,
+                2.9700002670288088
+            ],
+            "posAfter": [
+                6.424000263214111,
+                0.40800002217292788,
+                2.9625003337860109
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [
+                200,
+                16,
+                448
+            ],
+            "dimsAfter": [
+                200,
+                16,
+                463
+            ],
+            "children": []
         }
     ],
     "redoHistory": [],
@@ -56730,7 +56738,7 @@
     "windows": [
         {
             "id": "dayNight",
-            "visible": false,
+            "visible": true,
             "x": -10.0,
             "y": -60.0,
             "height": 0.0

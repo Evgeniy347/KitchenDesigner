@@ -61,6 +61,21 @@ namespace KitchenDesigner.Core
             // выходит ~178 мм, как у настоящего дуба. Высота (≈889 мм) считается
             // из пропорций картинки, задавать её вручную не нужно.
             new MaterialDef("teplyy_medovyy_dub", "теплый медовый дуб", "ЛДСП", Color.white, "Textures/teplyy_medovyy_dub", 2000),
+            // Строганый шпон дуба (фото 14_dub_16, лист целиком — ламелей нет).
+            // Опорный размер — ширина листа шпона ~220 мм: она занимает ~380 px
+            // исходника, кроп взял 214 px ≈ 124 мм по высоте, откуда ширина
+            // 920 px ≈ 550 мм. Высота считается из пропорций картинки.
+            new MaterialDef("dub_evropeyskiy", "Дуб европейский", "ЛДСП", Color.white, "Textures/dub_evropeyskiy", 550),
+            // Тот же шпон под тонировкой: картинка умножена в линейном свете на
+            // константу по каналам, поэтому рисунок волокон тот же, изменён тон.
+            // Цель — альбедо пола с фото-референса, sRGB (142, 102, 66).
+            new MaterialDef("dub_evropeyskiy_tinting", "Дуб европейский тонированный", "ЛДСП", Color.white, "Textures/dub_evropeyskiy_tinting", 550),
+            new MaterialDef("dub_evropeyskiy_tinting_2", "Сосна", "ЛДСП", Color.white, "Textures/dub_evropeyskiy_tinting_2", 550),
+            // Та же тонировка, но тон снят со второго фото той же поверхности.
+            // Два фото дают РАЗНОЕ альбедо (см. tmp-scripts/tint-match.ps1):
+            // (153,114,78) против (200,175,148). Лист бумаги снимает цвет лампы,
+            // но не убирает блик-вуаль от глянца — какой вариант верный, решает глаз.
+            new MaterialDef("dub_evropeyskiy_tinting_3", "Дуб европейский тонированный 3", "ЛДСП", Color.white, "Textures/dub_evropeyskiy_tinting_3", 550),
             new MaterialDef("gtv_anthracite", "Антрацит (GTV)", "Металл", new Color(0.25f, 0.25f, 0.27f), metallic: 0.4f, smoothness: 0.3f),
             new MaterialDef("gtv_white",      "Белый (GTV)",    "Металл", new Color(0.92f, 0.92f, 0.90f), metallic: 0.3f, smoothness: 0.3f),
             new MaterialDef("gtv_black",      "Чёрный (GTV)",   "Металл", new Color(0.10f, 0.10f, 0.11f), metallic: 0.3f, smoothness: 0.3f),
