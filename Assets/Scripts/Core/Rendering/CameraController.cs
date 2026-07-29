@@ -340,6 +340,7 @@ namespace KitchenDesigner.Core
 
         private void HandleWASD()
         {
+            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) return;
             float dt = Time.deltaTime;
             Vector2 input = new Vector2(
                 (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f),
