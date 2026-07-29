@@ -293,8 +293,16 @@ public class MaterialPreviewTests
         Preview(legs: false, id: "oak");
         Choose(legs: false, id: "wenge");
 
-        Assert.IsFalse(CommandStack.CanUndo,
+        // Сам выбор декора отменяться обязан (правило 2 UI-GUIDELINES), а вот
+        // показанный наведением «Дуб сонома» — не правка, и своей записи в стеке
+        // у него быть не должно: одна команда на весь сценарий, и её отмена
+        // возвращает декор, который был ДО наведения, а не предпросмотр.
+        Assert.AreEqual(1, CommandStack.UndoCount,
             "предпросмотр — показ, а не правка: в undo-стеке ему делать нечего");
+
+        CommandStack.Undo();
+        Assert.AreEqual("white", _element!.MaterialId,
+            "отмена обязана вернуть исходный декор, а не предпросмотр");
     }
 
     [Test]

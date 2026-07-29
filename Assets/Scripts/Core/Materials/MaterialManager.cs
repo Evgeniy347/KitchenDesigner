@@ -71,8 +71,9 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Картинка декора: уже загруженная из внешней папки (приоритет)
-        /// или из Resources. null — декор чисто цветовой.</summary>
-        private static Texture2D? ResolveTexture(MaterialDef def)
+        /// или из Resources. null — декор чисто цветовой (тогда показывать надо
+        /// <see cref="MaterialDef.baseColor"/>, как делает образец пипетки).</summary>
+        public static Texture2D? ResolveTexture(MaterialDef def)
             => def.texture != null ? def.texture
                 : (!string.IsNullOrEmpty(def.baseMapResource)
                     ? Resources.Load<Texture2D>(def.baseMapResource)
@@ -80,6 +81,47 @@ namespace KitchenDesigner.Core
 
         public static void ApplyById(KitchenElement element, string materialId)
             => Apply(element, MaterialCatalog.Get(materialId));
+
+        /// <summary>Надеть декор на конкретный слот элемента. У обычной детали
+        /// слот один («Текстура»), у стола их три — щит, столешница и ножки.</summary>
+        public static void ApplySlot(KitchenElement element, MaterialSlot slot, MaterialDef def)
+        {
+            if (element == null || def == null) return;
+            switch (slot)
+            {
+                case MaterialSlot.Tabletop:
+                    if (element is TableElement topTable) ApplyTabletop(topTable, def);
+                    else if (element is RadiusTableElement topRadius) ApplyTabletop(topRadius, def);
+                    break;
+                case MaterialSlot.Legs:
+                    if (element is TableElement legsTable) ApplyLegs(legsTable, def);
+                    else if (element is RadiusTableElement legsRadius) ApplyLegs(legsRadius, def);
+                    break;
+                default:
+                    Apply(element, def);
+                    break;
+            }
+        }
+
+        /// <summary>Декор, который сейчас в слоте. У элемента без столешницы и
+        /// ножек любой слот отвечает базовым декором.</summary>
+        public static string MaterialIdOf(KitchenElement element, MaterialSlot slot)
+        {
+            if (element == null) return MaterialCatalog.DefaultId;
+            switch (slot)
+            {
+                case MaterialSlot.Tabletop:
+                    if (element is TableElement topTable) return topTable.TabletopMaterialId;
+                    if (element is RadiusTableElement topRadius) return topRadius.TabletopMaterialId;
+                    return element.MaterialId;
+                case MaterialSlot.Legs:
+                    if (element is TableElement legsTable) return legsTable.LegsMaterialId;
+                    if (element is RadiusTableElement legsRadius) return legsRadius.LegsMaterialId;
+                    return element.MaterialId;
+                default:
+                    return element.MaterialId;
+            }
+        }
 
         public static void ApplyTabletop(TableElement table, MaterialDef def)
         {

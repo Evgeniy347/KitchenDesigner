@@ -2378,7 +2378,11 @@ namespace KitchenDesigner.Core.UI
 
         /// <summary>Настоящий выбор декора: предпросмотр сворачивается ПЕРВЫМ
         /// делом (иначе уход курсора после клика вернул бы старый декор поверх
-        /// выбранного), затем декор применяется и возвращается подсветка.</summary>
+        /// выбранного), затем декор применяется и возвращается подсветка.
+        ///
+        /// Через CommandStack, а не напрямую: смена декора обязана отменяться
+        /// Ctrl+Z (правило 2 UI-GUIDELINES). Порядок важен — «до» читается ПОСЛЕ
+        /// свёртки предпросмотра, иначе в команду попал бы показанный декор.</summary>
         private void ApplyMaterialChoice(bool legs, int index)
         {
             if (_target == null) return;
@@ -2386,7 +2390,8 @@ namespace KitchenDesigner.Core.UI
             if (index < 0 || index >= all.Count) return;
 
             EndMaterialPreview();
-            ApplyMaterialSlot(_target, SlotFor(legs), all[index]);
+            var slot = SlotFor(legs);
+            CommandStack.Execute(new SetMaterialCommand(_target, slot, all[index].id));
 
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.RefreshHighlight(_target);
@@ -2399,42 +2404,13 @@ namespace KitchenDesigner.Core.UI
             => legs ? MaterialSlot.Legs
                 : _currentIsTable ? MaterialSlot.Tabletop : MaterialSlot.Base;
 
-        private enum MaterialSlot { Base, Tabletop, Legs }
-
+        // Применение и чтение слота живут в MaterialManager: через них ходит ещё
+        // и SetMaterialCommand, и пипетка.
         private static void ApplyMaterialSlot(KitchenElement target, MaterialSlot slot, MaterialDef def)
-        {
-            switch (slot)
-            {
-                case MaterialSlot.Tabletop:
-                    if (target is TableElement topTable) MaterialManager.ApplyTabletop(topTable, def);
-                    else if (target is RadiusTableElement topRadius) MaterialManager.ApplyTabletop(topRadius, def);
-                    break;
-                case MaterialSlot.Legs:
-                    if (target is TableElement legsTable) MaterialManager.ApplyLegs(legsTable, def);
-                    else if (target is RadiusTableElement legsRadius) MaterialManager.ApplyLegs(legsRadius, def);
-                    break;
-                default:
-                    MaterialManager.Apply(target, def);
-                    break;
-            }
-        }
+            => MaterialManager.ApplySlot(target, slot, def);
 
         private static string MaterialIdOf(KitchenElement target, MaterialSlot slot)
-        {
-            switch (slot)
-            {
-                case MaterialSlot.Tabletop:
-                    if (target is TableElement topTable) return topTable.TabletopMaterialId;
-                    if (target is RadiusTableElement topRadius) return topRadius.TabletopMaterialId;
-                    return target.MaterialId;
-                case MaterialSlot.Legs:
-                    if (target is TableElement legsTable) return legsTable.LegsMaterialId;
-                    if (target is RadiusTableElement legsRadius) return legsRadius.LegsMaterialId;
-                    return target.MaterialId;
-                default:
-                    return target.MaterialId;
-            }
-        }
+            => MaterialManager.MaterialIdOf(target, slot);
 
         // ── Предпросмотр базового декора наведением ───────────────────
         // То же обещание, что и у накладок: название («Дуб каселла натуральный
