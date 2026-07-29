@@ -30,7 +30,7 @@ public class CooktopElementTests
         _spawned.Clear();
     }
 
-    private KitchenElement CreateCountertop(int widthMM = 1200, int depthMM = 600, string name = "Countertop")
+    private KitchenElement CreateCountertop(int widthMM = 1200, int depthMM = 650, string name = "Countertop")
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         _spawned.Add(go);
@@ -83,10 +83,10 @@ public class CooktopElementTests
     [Test]
     public void Cooktop_FitsSingle600Module()
     {
-        Assert.LessOrEqual(CooktopElement.MinPartWidthMM, CooktopElement.WIDTH_MM);
-        Assert.LessOrEqual(CooktopElement.MinPartDepthMM, CooktopElement.DEPTH_MM);
-        Assert.LessOrEqual(CooktopElement.MinPartWidthMM, 600);
-        Assert.LessOrEqual(CooktopElement.MinPartDepthMM, 600);
+        Assert.GreaterOrEqual(CooktopElement.MinPartWidthMM, CooktopElement.WIDTH_MM);
+        Assert.GreaterOrEqual(CooktopElement.MinPartDepthMM, CooktopElement.DEPTH_MM);
+        Assert.AreEqual(CooktopElement.WIDTH_MM + 2 * CooktopElement.MIN_EDGE_MM, CooktopElement.MinPartWidthMM);
+        Assert.AreEqual(CooktopElement.DEPTH_MM + 2 * CooktopElement.MIN_EDGE_MM, CooktopElement.MinPartDepthMM);
         Assert.AreEqual(CooktopElement.RIM_HEIGHT_MM + CooktopElement.BODY_DEPTH_MM,
             CooktopElement.TOTAL_HEIGHT_MM);
     }
@@ -94,8 +94,8 @@ public class CooktopElementTests
     [Test]
     public void Cooktop_FitsCountertop()
     {
-        var top = CreateCountertop(600, 600);
-        Assert.IsTrue(CooktopElement.IsSuitableHost(top), "столешница модуля 600 годится под варочную");
+        var top = CreateCountertop(610, 610);
+        Assert.IsTrue(CooktopElement.IsSuitableHost(top), "столешница 610×610 должна годиться под варочную 550×550 с отступом 30 мм");
         var cooktop = CreateSeatedCooktop(top);
         Assert.IsTrue(cooktop.IsAttached);
     }
@@ -168,7 +168,7 @@ public class CooktopElementTests
     [Test]
     public void TooSmallBoard_IsNotSuitableHost()
     {
-        var small = CreateCountertop(CooktopElement.WIDTH_MM - 1, 600);
+        var small = CreateCountertop(CooktopElement.MinPartWidthMM - 1, CooktopElement.MinPartDepthMM);
         Assert.IsFalse(CooktopElement.IsSuitableHost(small));
     }
 
@@ -261,13 +261,13 @@ public class CooktopElementTests
     [Test]
     public void TwoCountertops_WithCooktop_HaveNoViolation()
     {
-        var top1 = CreateCountertop(1200, 600, "Top1");
+        var top1 = CreateCountertop(1200, 650, "Top1");
         var top2Go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         _spawned.Add(top2Go);
         var top2 = top2Go.AddComponent<KitchenElement>();
         top2.PartName = "Top2";
         top2.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
-        top2.DimensionsMM = new Vector3Int(1200, 600, TopThicknessMM);
+        top2.DimensionsMM = new Vector3Int(1200, 650, TopThicknessMM);
         top2.transform.position = new Vector3(1.2f, 0f, 0f);
         PartRegistry.Register(top2);
 

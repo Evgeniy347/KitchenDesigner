@@ -88,6 +88,9 @@ namespace KitchenDesigner.Core
             var snap = SnapSystem.TrySnap(pending, others, pos);
             pending.transform.position = WorldBounds.Clamp(snap.snapped ? snap.position : pos);
 
+            if (pending is CooktopElement cooktop) cooktop.SnapToPart();
+            if (pending is SinkElement sink) sink.SnapToPart();
+
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.ApplyForElement(pending);
         }

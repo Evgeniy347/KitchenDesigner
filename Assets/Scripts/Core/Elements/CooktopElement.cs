@@ -34,6 +34,7 @@ namespace KitchenDesigner.Core
         private float _freeHeightMM;
         private Vector3 _appliedPos;
         private bool _hasAppliedPos;
+        private Vector3 _lastHostPosition;
 
         public string AttachedPartName { get => _attachedPartName; set => _attachedPartName = value ?? ""; }
         public int OffsetXMM { get => _offsetXMM; set => _offsetXMM = value; }
@@ -56,11 +57,15 @@ namespace KitchenDesigner.Core
 
         private int _lastPoseVersion;
 
+        private bool HostMoved =>
+            _lastHost != null &&
+            (_lastHost.transform.position - _lastHostPosition).sqrMagnitude > Tolerance.EpsilonSqr;
+
         private void Update()
         {
-            if (PoseVersion != _lastPoseVersion)
+            if (HostMoved)
             {
-                _lastPoseVersion = PoseVersion;
+                _lastHostPosition = _lastHost!.transform.position;
                 SnapToPart();
             }
         }
@@ -172,8 +177,8 @@ namespace KitchenDesigner.Core
             return dims[a] >= MinPartWidthMM && dims[b] >= MinPartDepthMM;
         }
 
-        public static int MinPartWidthMM => WIDTH_MM;
-        public static int MinPartDepthMM => DEPTH_MM;
+        public static int MinPartWidthMM => WIDTH_MM + 2 * MIN_EDGE_MM;
+        public static int MinPartDepthMM => DEPTH_MM + 2 * MIN_EDGE_MM;
 
         private static bool IsOverFootprint(KitchenElement part, int offX, int offY)
         {
@@ -344,6 +349,7 @@ namespace KitchenDesigner.Core
                 _lastHost = part;
                 _lastOffsetXMM = _offsetXMM;
                 _lastOffsetYMM = _offsetYMM;
+                _lastHostPosition = part.transform.position;
             }
         }
 
@@ -395,6 +401,31 @@ namespace KitchenDesigner.Core
             _children[0].transform.localPosition = new Vector3(0f, centerY, 0f);
             _children[0].transform.localRotation = Quaternion.identity;
             _children[0].transform.localScale = new Vector3(WIDTH_MM * toU, TOTAL_HEIGHT_MM * toU, DEPTH_MM * toU);
+
+            ApplyMaterials();
+        }
+
+        private static Material? _surfaceMat;
+
+        private static Material SurfaceMaterial()
+        {
+            if (_surfaceMat == null)
+            {
+                var color = new Color(0.08f, 0.08f, 0.08f, 1f);
+                _surfaceMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                _surfaceMat.SetColor("_BaseColor", color);
+                _surfaceMat.color = color;
+                _surfaceMat.SetFloat("_Metallic", 0.05f);
+                _surfaceMat.SetFloat("_Smoothness", 0.92f);
+            }
+            return _surfaceMat!;
+        }
+
+        private void ApplyMaterials()
+        {
+            if (_children.Count < ChildCount) return;
+            var mr = _children[0].GetComponent<MeshRenderer>();
+            if (mr != null) mr.sharedMaterial = SurfaceMaterial();
         }
 
         public void DestroyChildren()
