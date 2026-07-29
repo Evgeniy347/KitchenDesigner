@@ -16,6 +16,7 @@ if /i "%~1"=="-NoBuild" set "nobuild=1" & shift & goto :args
 if /i "%~1"=="-Profile" set "profile=1" & shift & goto :args
 if not "%~1"=="" (
     echo [FAIL] Unknown argument: %~1
+    pause
     exit /b 1
 )
 
@@ -30,6 +31,7 @@ echo === [1/2] Unity Windows Debug build ===
 call "%root%\build.cmd" -WinDebug
 if %errorlevel% neq 0 (
     echo [FAIL] Windows Debug build failed
+    pause
     exit /b 1
 )
 
@@ -38,6 +40,7 @@ if not exist "%root%\Build_Debug" mkdir "%root%\Build_Debug"
 set "exe=%root%\Build_Debug\KitchenDesigner.exe"
 if not exist "%exe%" (
     echo [FAIL] %exe% not found. Run without -NoBuild first.
+    pause
     exit /b 1
 )
 
