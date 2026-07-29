@@ -37,6 +37,7 @@ public class TextureOverlayTests
     [TearDown]
     public void TearDown()
     {
+        TextureOverlayHandles.End();
         TextureOverlayRenderer.ClearAll();
         EdgeSideHighlighter.Hide();
         EdgeSideHighlighter.MaterialFactory = null;
@@ -117,6 +118,73 @@ public class TextureOverlayTests
         Assert.AreEqual(new[] { 3 }, TextureOverlayGeometry.FaceIndices(OverlaySide.D));
     }
 
+    [Test]
+    public void WithRect_TurnsFullFaceIntoExplicit()
+    {
+        var spec = TextureOverlaySpec.FullFace(OverlaySide.E, "oak");
+        Assert.IsTrue(spec.IsFullFace);
+
+        var rect = spec.WithRect(new RectInt(100, 200, 800, 600));
+        Assert.IsFalse(rect.IsFullFace);
+        Assert.AreEqual(100, rect.u0MM);
+        Assert.AreEqual(200, rect.v0MM);
+        Assert.AreEqual(800, rect.widthMM);
+        Assert.AreEqual(600, rect.heightMM);
+    }
+
+    [Test]
+    public void WithRect_ClampsToMinSize()
+    {
+        var spec = TextureOverlaySpec.FullFace(OverlaySide.E, "oak");
+        var tiny = spec.WithRect(new RectInt(0, 0, 3, 5));
+        Assert.AreEqual(TextureOverlaySpec.MIN_SIZE_MM, tiny.widthMM);
+        Assert.AreEqual(TextureOverlaySpec.MIN_SIZE_MM, tiny.heightMM);
+    }
+
+    [Test]
+    public void WithRect_PreservesMaterialAndSide()
+    {
+        var spec = new TextureOverlaySpec(OverlaySide.B, "white", 100, 200, 800, 600);
+        var moved = spec.WithRect(new RectInt(50, 150, 900, 700));
+        Assert.AreEqual(OverlaySide.B, moved.side);
+        Assert.AreEqual("white", moved.MaterialId);
+    }
+
+    [Test]
+    public void Equals_SameValues_ReturnsTrue()
+    {
+        var a = new TextureOverlaySpec(OverlaySide.E, "oak", 100, 200, 800, 600);
+        var b = new TextureOverlaySpec(OverlaySide.E, "oak", 100, 200, 800, 600);
+        Assert.IsTrue(a.Equals(b));
+        Assert.AreEqual(a.GetHashCode(), b.GetHashCode());
+    }
+
+    [Test]
+    public void Equals_DifferentSide_ReturnsFalse()
+    {
+        var a = new TextureOverlaySpec(OverlaySide.E, "oak", 100, 200, 800, 600);
+        var b = new TextureOverlaySpec(OverlaySide.A, "oak", 100, 200, 800, 600);
+        Assert.IsFalse(a.Equals(b));
+    }
+
+    [Test]
+    public void Equals_DifferentMaterial_ReturnsFalse()
+    {
+        var a = new TextureOverlaySpec(OverlaySide.E, "oak", 100, 200, 800, 600);
+        var b = new TextureOverlaySpec(OverlaySide.E, "white", 100, 200, 800, 600);
+        Assert.IsFalse(a.Equals(b));
+    }
+
+    [Test]
+    public void NewOverlay_DefaultMaterialIsUsedWhenNullOrEmpty()
+    {
+        var spec = new TextureOverlaySpec(OverlaySide.E, null, 100, 200, 800, 600);
+        Assert.AreEqual(MaterialCatalog.DefaultId, spec.MaterialId);
+
+        var spec2 = new TextureOverlaySpec(OverlaySide.E, "", 100, 200, 800, 600);
+        Assert.AreEqual(MaterialCatalog.DefaultId, spec2.MaterialId);
+    }
+
     // ── Ручки области ──────────────────────────────────────────────────
 
     [Test]
@@ -168,7 +236,170 @@ public class TextureOverlayTests
         Assert.AreEqual(800, pushed.width, "перенос не меняет размер области");
     }
 
-    // ── Прилипание накладок друг к другу ───────────────────────────────
+    [Test]
+    public void Stretch_EachEdge_MovesOnlyThatEdge()
+    {
+        var rect = new RectInt(100, 200, 800, 600);
+        var face = new Vector2Int(3000, 2500);
+
+        var left = TextureOverlayHandles.StretchRect(rect, 0, 50f, 0f, face);
+        Assert.AreEqual(50, left.xMin);
+        Assert.AreEqual(900, left.xMax);
+
+        var bottom = TextureOverlayHandles.StretchRect(rect, 2, 0f, 50f, face);
+        Assert.AreEqual(50, bottom.yMin);
+        Assert.AreEqual(800, bottom.yMax);
+
+        var top = TextureOverlayHandles.StretchRect(rect, 3, 0f, 1500f, face);
+        Assert.AreEqual(200, top.yMin);
+        Assert.AreEqual(1500, top.yMax);
+    }
+
+    [Test]
+    public void Move_IsAxisConstrained()
+    {
+        var rect = new RectInt(100, 200, 800, 600);
+        var face = new Vector2Int(3000, 2500);
+
+        var alongV = TextureOverlayHandles.MoveRect(rect, 3, 999f, 500f, face);
+        Assert.AreEqual(new RectInt(100, 700, 800, 600), alongV);
+    }
+
+    [Test]
+    public void Move_NegativeDelta_StopsAtZero()
+    {
+        var rect = new RectInt(100, 200, 800, 600);
+        var face = new Vector2Int(3000, 2500);
+
+        var left = TextureOverlayHandles.MoveRect(rect, 0, -9999f, 0f, face);
+        Assert.AreEqual(0, left.xMin);
+
+        var down = TextureOverlayHandles.MoveRect(rect, 2, 0f, -9999f, face);
+        Assert.AreEqual(0, down.yMin);
+    }
+
+    [Test]
+    public void Move_SizeWiderThanFace_StaysAtZero()
+    {
+        var rect = new RectInt(0, 0, 4000, 600);
+        var face = new Vector2Int(3000, 2500);
+        var moved = TextureOverlayHandles.MoveRect(rect, 1, 9999f, 0f, face);
+        Assert.AreEqual(0, moved.xMin, "некуда двигать — и так на нуле");
+    }
+
+    // ── Жизненный цикл ручек ────────────────────────────────────────────
+
+    [Test]
+    public void Begin_NullElement_StaysInactive()
+    {
+        TextureOverlayHandles.Begin(null!, 0);
+        Assert.IsFalse(TextureOverlayHandles.Active);
+    }
+
+    [Test]
+    public void Begin_NegativeIndex_StaysInactive()
+    {
+        var wall = CreateWall(new Vector3Int(3000, 2500, 100));
+        wall.SetTextureOverlays(new[] { TextureOverlaySpec.FullFace(OverlaySide.E, "oak") });
+        TextureOverlayHandles.Begin(wall, -1);
+        Assert.IsFalse(TextureOverlayHandles.Active);
+    }
+
+    [Test]
+    public void Begin_IndexOutOfRange_StaysInactive()
+    {
+        var wall = CreateWall(new Vector3Int(3000, 2500, 100));
+        TextureOverlayHandles.Begin(wall, 0);
+        Assert.IsFalse(TextureOverlayHandles.Active);
+    }
+
+    [Test]
+    public void Begin_AllSide_IsRejected()
+    {
+        var wall = CreateWall(new Vector3Int(3000, 2500, 100));
+        wall.SetTextureOverlays(new[] { TextureOverlaySpec.FullFace(OverlaySide.All, "oak") });
+        TextureOverlayHandles.Begin(wall, 0);
+        Assert.IsFalse(TextureOverlayHandles.Active);
+    }
+
+    [Test]
+    public void Begin_ThenEnd_ClearsActive()
+    {
+        var wall = CreateWall(new Vector3Int(3000, 2500, 100));
+        wall.SetTextureOverlays(new[] { TextureOverlaySpec.FullFace(OverlaySide.E, "oak") });
+        TextureOverlayHandles.Begin(wall, 0);
+        Assert.IsTrue(TextureOverlayHandles.Active);
+        TextureOverlayHandles.End();
+        Assert.IsFalse(TextureOverlayHandles.Active);
+    }
+
+    [Test]
+    public void Toggle_ActivatesThenDeactivates()
+    {
+        var wall = CreateWall(new Vector3Int(3000, 2500, 100));
+        wall.SetTextureOverlays(new[] { TextureOverlaySpec.FullFace(OverlaySide.E, "oak") });
+        TextureOverlayHandles.Toggle(wall, 0);
+        Assert.IsTrue(TextureOverlayHandles.Active);
+        TextureOverlayHandles.Toggle(wall, 0);
+        Assert.IsFalse(TextureOverlayHandles.Active);
+    }
+
+    [Test]
+    public void IsEditing_SameElementAndIndex_ReturnsTrue()
+    {
+        var wall = CreateWall(new Vector3Int(3000, 2500, 100));
+        wall.SetTextureOverlays(new[] { TextureOverlaySpec.FullFace(OverlaySide.E, "oak") });
+        TextureOverlayHandles.Begin(wall, 0);
+        Assert.IsTrue(TextureOverlayHandles.IsEditing(wall, 0));
+        TextureOverlayHandles.End();
+    }
+
+    [Test]
+    public void IsEditing_DifferentElement_ReturnsFalse()
+    {
+        var wallA = CreateWall(new Vector3Int(3000, 2500, 100));
+        var wallB = CreateWall(new Vector3Int(2000, 2500, 100));
+        wallA.SetTextureOverlays(new[] { TextureOverlaySpec.FullFace(OverlaySide.E, "oak") });
+        TextureOverlayHandles.Begin(wallA, 0);
+        Assert.IsFalse(TextureOverlayHandles.IsEditing(wallB, 0));
+        TextureOverlayHandles.End();
+    }
+
+    [Test]
+    public void IsEditing_WrongIndex_ReturnsFalse()
+    {
+        var wall = CreateWall(new Vector3Int(3000, 2500, 100));
+        wall.SetTextureOverlays(new[]
+        {
+            TextureOverlaySpec.FullFace(OverlaySide.E, "oak"),
+            TextureOverlaySpec.FullFace(OverlaySide.A, "white"),
+        });
+        TextureOverlayHandles.Begin(wall, 0);
+        Assert.IsFalse(TextureOverlayHandles.IsEditing(wall, 1));
+        TextureOverlayHandles.End();
+    }
+
+    [Test]
+    public void Begin_EachFaceSide_Activates()
+    {
+        var wall = CreateWall(new Vector3Int(3000, 2500, 200));
+        var sides = new[] { OverlaySide.A, OverlaySide.B, OverlaySide.C,
+            OverlaySide.D, OverlaySide.E, OverlaySide.F };
+        for (int i = 0; i < sides.Length; i++)
+        {
+            wall.SetTextureOverlays(new[] { TextureOverlaySpec.FullFace(sides[i], "oak") });
+            TextureOverlayHandles.Begin(wall, 0);
+            Assert.IsTrue(TextureOverlayHandles.Active, $"сторона {sides[i]} должна активировать ручки");
+            TextureOverlayHandles.End();
+        }
+    }
+
+    [Test]
+    public void End_WhileInactive_IsSafe()
+    {
+        TextureOverlayHandles.End();
+        Assert.IsFalse(TextureOverlayHandles.Active);
+    }
 
     /// <summary>Две накладки на грани A: соседка занимает 1000…1800 по U.</summary>
     private static List<TextureOverlaySpec> TwoOnFaceA() => new List<TextureOverlaySpec>
