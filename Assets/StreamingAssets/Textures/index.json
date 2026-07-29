@@ -1,0 +1,328 @@
+{
+  "version": 1,
+  "textures": [
+    {
+      "id": "default",
+      "name": "Серый",
+      "kind": "ЛДСП",
+      "tileWidthMM": 800,
+      "color": "#CCCCCC"
+    },
+    {
+      "id": "white",
+      "name": "Белый",
+      "kind": "ЛДСП",
+      "tileWidthMM": 800,
+      "color": "#F2F2F2"
+    },
+    {
+      "id": "oak",
+      "name": "Дуб сонома",
+      "kind": "ЛДСП",
+      "tileWidthMM": 800,
+      "color": "#C7A873"
+    },
+    {
+      "id": "wenge",
+      "name": "Венге",
+      "kind": "ЛДСП",
+      "tileWidthMM": 800,
+      "color": "#473329"
+    },
+    {
+      "id": "concrete",
+      "name": "Бетон",
+      "kind": "ЛДСП",
+      "tileWidthMM": 1200,
+      "color": "#9E9E99"
+    },
+    {
+      "id": "teplyy_medovyy_dub",
+      "name": "теплый медовый дуб",
+      "kind": "ЛДСП",
+      "file": "teplyy_medovyy_dub.png",
+      "tileWidthMM": 2000,
+      "tileHeightMM": 889,
+      "color": "#885C33"
+    },
+    {
+      "id": "dub_evropeyskiy",
+      "name": "Дуб европейский",
+      "kind": "ЛДСП",
+      "file": "dub_evropeyskiy.png",
+      "tileWidthMM": 550,
+      "tileHeightMM": 128,
+      "color": "#C7A477"
+    },
+    {
+      "id": "dub_evropeyskiy_tinting",
+      "name": "Дуб европейский тонированный",
+      "kind": "ЛДСП",
+      "file": "dub_evropeyskiy_tinting.png",
+      "tileWidthMM": 550,
+      "tileHeightMM": 128,
+      "color": "#99714D"
+    },
+    {
+      "id": "dub_evropeyskiy_tinting_2",
+      "name": "Сосна",
+      "kind": "ЛДСП",
+      "file": "dub_evropeyskiy_tinting_2.png",
+      "tileWidthMM": 550,
+      "tileHeightMM": 128,
+      "color": "#8C7149"
+    },
+    {
+      "id": "dub_evropeyskiy_tinting_3",
+      "name": "Дуб европейский тонированный 3",
+      "kind": "ЛДСП",
+      "file": "dub_evropeyskiy_tinting_3.png",
+      "tileWidthMM": 550,
+      "tileHeightMM": 128,
+      "color": "#BBA58D"
+    },
+    {
+      "id": "belaya_gladkaya_svisskrono",
+      "name": "Белая гладкая (СвиссКроно)",
+      "kind": "ЛМДФ",
+      "file": "belaya_gladkaya_svisskrono.jpg",
+      "tileWidthMM": 600,
+      "tileHeightMM": 600,
+      "color": "#F8F8F8"
+    },
+    {
+      "id": "belaya_gladkaya_kastamonu",
+      "name": "Белая гладкая (Kastamonu F)",
+      "kind": "ЛМДФ",
+      "file": "belaya_gladkaya_kastamonu.jpg",
+      "tileWidthMM": 600,
+      "tileHeightMM": 600,
+      "color": "#FAF9F7"
+    },
+    {
+      "id": "belyy_premium_filvud_w1000",
+      "name": "Белый премиум филвуд (W1000 ST38)",
+      "kind": "ЛМДФ",
+      "file": "belyy_premium_filvud_w1000.jpg",
+      "tileWidthMM": 600,
+      "tileHeightMM": 600,
+      "color": "#FDFBEF"
+    },
+    {
+      "id": "les_chernyy_u998",
+      "name": "Лес чёрный филвуд (U998 ST38)",
+      "kind": "ЛМДФ",
+      "file": "les_chernyy_u998.jpg",
+      "tileWidthMM": 600,
+      "tileHeightMM": 600,
+      "color": "#030408"
+    },
+    {
+      "id": "dub_galifaks_belyy_h1176",
+      "name": "Дуб галифакс белый (H1176 ST37)",
+      "kind": "ЛМДФ",
+      "file": "dub_galifaks_belyy_h1176.jpg",
+      "tileWidthMM": 400,
+      "tileHeightMM": 400,
+      "color": "#CFB79F"
+    },
+    {
+      "id": "dub_galifaks_naturalnyy_h1180",
+      "name": "Дуб галифакс натуральный (H1180 ST37)",
+      "kind": "ЛМДФ",
+      "file": "dub_galifaks_naturalnyy_h1180.jpg",
+      "tileWidthMM": 400,
+      "tileHeightMM": 400,
+      "color": "#BB9C76"
+    },
+    {
+      "id": "dub_galifaks_olovo_h3176",
+      "name": "Дуб галифакс олово (H3176 ST37)",
+      "kind": "ЛМДФ",
+      "file": "dub_galifaks_olovo_h3176.jpg",
+      "tileWidthMM": 400,
+      "tileHeightMM": 400,
+      "color": "#82674E"
+    },
+    {
+      "id": "dub_galifaks_tabak_h1181",
+      "name": "Дуб галифакс табак (H1181 ST37)",
+      "kind": "ЛМДФ",
+      "file": "dub_galifaks_tabak_h1181.jpg",
+      "tileWidthMM": 550,
+      "tileHeightMM": 550,
+      "color": "#7F654D"
+    },
+    {
+      "id": "dub_gladstoun_pesochnyy_h3309",
+      "name": "Дуб гладстоун песочный (H3309 ST28)",
+      "kind": "ЛМДФ",
+      "file": "dub_gladstoun_pesochnyy_h3309.jpg",
+      "tileWidthMM": 550,
+      "tileHeightMM": 550,
+      "color": "#C6AA89"
+    },
+    {
+      "id": "dub_gladstoun_tabak_h3325",
+      "name": "Дуб гладстоун табак (H3325 ST28)",
+      "kind": "ЛМДФ",
+      "file": "dub_gladstoun_tabak_h3325.jpg",
+      "tileWidthMM": 550,
+      "tileHeightMM": 550,
+      "color": "#594A40"
+    },
+    {
+      "id": "dub_davenport_naturalnyy_svetlyy_h3359",
+      "name": "Дуб давенпорт натуральный светлый (H3359 ST32)",
+      "kind": "ЛМДФ",
+      "file": "dub_davenport_naturalnyy_svetlyy_h3359.jpg",
+      "tileWidthMM": 550,
+      "tileHeightMM": 550,
+      "color": "#BE9E7D"
+    },
+    {
+      "id": "dub_kuneo_korichnevyy_h3317",
+      "name": "Дуб кунео коричневый (H3317 ST28)",
+      "kind": "ЛМДФ",
+      "file": "dub_kuneo_korichnevyy_h3317.jpg",
+      "tileWidthMM": 750,
+      "tileHeightMM": 750,
+      "color": "#AA8766"
+    },
+    {
+      "id": "dub_kasella_kashtanovyy_h1369",
+      "name": "Дуб каселла каштановый (H1369 ST40)",
+      "kind": "ЛМДФ",
+      "file": "dub_kasella_kashtanovyy_h1369.jpg",
+      "tileWidthMM": 1150,
+      "tileHeightMM": 1150,
+      "color": "#553C31"
+    },
+    {
+      "id": "dub_kasella_korichnevyy_h1386",
+      "name": "Дуб каселла коричневый (H1386 ST40)",
+      "kind": "ЛМДФ",
+      "file": "dub_kasella_korichnevyy_h1386.jpg",
+      "tileWidthMM": 400,
+      "tileHeightMM": 400,
+      "color": "#876549"
+    },
+    {
+      "id": "dub_kasella_naturalnyy_svetlyy_h1367",
+      "name": "Дуб каселла натуральный светлый (H1367 ST40)",
+      "kind": "ЛМДФ",
+      "file": "dub_kasella_naturalnyy_svetlyy_h1367.jpg",
+      "tileWidthMM": 750,
+      "tileHeightMM": 750,
+      "color": "#CBAD8A"
+    },
+    {
+      "id": "dub_kasella_naturalnyy_h1385",
+      "name": "Дуб каселла натуральный (H1385 ST40)",
+      "kind": "ЛМДФ",
+      "file": "dub_kasella_naturalnyy_h1385.jpg",
+      "tileWidthMM": 750,
+      "tileHeightMM": 750,
+      "color": "#AF8A64"
+    },
+    {
+      "id": "dub_sakramento_korichnevyy_h1142",
+      "name": "Дуб сакраменто коричневый (H1142 ST36)",
+      "kind": "ЛМДФ",
+      "file": "dub_sakramento_korichnevyy_h1142.jpg",
+      "tileWidthMM": 750,
+      "tileHeightMM": 750,
+      "color": "#B79773"
+    },
+    {
+      "id": "dub_charlston_temno_korichnevyy_h3154",
+      "name": "Дуб чарльстон тёмно-коричневый (H3154 ST36)",
+      "kind": "ЛМДФ",
+      "file": "dub_charlston_temno_korichnevyy_h3154.jpg",
+      "tileWidthMM": 950,
+      "tileHeightMM": 950,
+      "color": "#694F37"
+    },
+    {
+      "id": "dub_sherman_antratsit_h1346",
+      "name": "Дуб шерман антрацит (H1346 ST32)",
+      "kind": "ЛМДФ",
+      "file": "dub_sherman_antratsit_h1346.jpg",
+      "tileWidthMM": 550,
+      "tileHeightMM": 550,
+      "color": "#514E48"
+    },
+    {
+      "id": "dub_sherman_konyak_h1344",
+      "name": "Дуб шерман коньяк коричневый (H1344 ST32)",
+      "kind": "ЛМДФ",
+      "file": "dub_sherman_konyak_h1344.jpg",
+      "tileWidthMM": 400,
+      "tileHeightMM": 400,
+      "color": "#906D43"
+    },
+    {
+      "id": "yasen_navarra_h1250",
+      "name": "Ясень наварра (H1250 ST36)",
+      "kind": "ЛМДФ",
+      "file": "yasen_navarra_h1250.jpg",
+      "tileWidthMM": 950,
+      "tileHeightMM": 950,
+      "color": "#D2BEA6"
+    },
+    {
+      "id": "gtv_anthracite",
+      "name": "Антрацит (GTV)",
+      "kind": "Металл",
+      "tileWidthMM": 800,
+      "color": "#404045",
+      "metallic": 0.4,
+      "smoothness": 0.3
+    },
+    {
+      "id": "gtv_white",
+      "name": "Белый (GTV)",
+      "kind": "Металл",
+      "tileWidthMM": 800,
+      "color": "#EBEBE6",
+      "metallic": 0.3,
+      "smoothness": 0.3
+    },
+    {
+      "id": "gtv_black",
+      "name": "Чёрный (GTV)",
+      "kind": "Металл",
+      "tileWidthMM": 800,
+      "color": "#1A1A1C",
+      "metallic": 0.3,
+      "smoothness": 0.3
+    },
+    {
+      "id": "abrikos_ba_03_cd_100_100",
+      "name": "abrikos ba 03 cd",
+      "kind": "ЛДСП",
+      "file": "abrikos_ba_03_cd_100_100.jpg",
+      "tileWidthMM": 100,
+      "tileHeightMM": 100,
+      "color": "#5D5455"
+    },
+    {
+      "id": "bambuk_horizontal_caramel_100_100",
+      "name": "bambuk horizontal caramel",
+      "kind": "ЛДСП",
+      "file": "bambuk_horizontal_caramel_100_100.jpg",
+      "tileWidthMM": 100,
+      "tileHeightMM": 100,
+      "color": "#BF9271"
+    },
+    {
+      "id": "buk_belyy_99q_100_100",
+      "name": "buk belyy 99q",
+      "kind": "ЛДСП",
+      "file": "buk_belyy_99q_100_100.jpg",
+      "tileWidthMM": 100,
+      "tileHeightMM": 100,
+      "color": "#D6B69D"
+    }
+  ]
+}

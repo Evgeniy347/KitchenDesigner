@@ -168,7 +168,10 @@ namespace KitchenDesigner.Core.MCP
                     id = m.id,
                     name = m.displayName,
                     kind = m.kind,
-                    hasTexture = m.texture != null || !string.IsNullOrEmpty(m.baseMapResource),
+                    hasTexture = m.HasTextureFile,
+                    // Картинки грузятся лениво: декор может быть в каталоге, а его
+                    // файл ещё не прочитан — это НЕ ошибка.
+                    textureLoaded = m.texture != null,
                     tileWidthMM = tile.x,
                     tileHeightMM = tile.y
                 });
@@ -178,20 +181,17 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleReloadTextures(McpRequest req)
         {
-            int n = ExternalTextureCatalog.LoadAll();
-
-            var all = PartRegistry.GetAll();
-            if (all != null)
-                foreach (var el in all)
-                    if (el != null) MaterialManager.ApplyById(el, el.MaterialId);
+            // Reload сам пере-надевает декоры на сцену: старые картинки уничтожены,
+            // и рендереры остались бы с материалами, ссылающимися в пустоту.
+            int n = TextureLibrary.Reload();
             RefreshElementHighlights();
 
-            Debug.Log($"[MCP] reload_textures: {n} decors from {ExternalTextureCatalog.DirectoryPath}");
+            Debug.Log($"[MCP] reload_textures: {n} decors from {TextureLibrary.DirectoryPath}");
             return McpResponse.Result(req.id, new
             {
                 ok = true,
                 loaded = n,
-                directory = ExternalTextureCatalog.DirectoryPath,
+                directory = TextureLibrary.DirectoryPath,
                 totalMaterials = MaterialCatalog.All.Count
             });
         }

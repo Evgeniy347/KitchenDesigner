@@ -7,8 +7,8 @@ namespace KitchenDesigner.Core
     /// UI-GUIDELINES). Через эту команду теперь идут оба пути: и список в окне
     /// свойств, и покраска пипеткой.
     ///
-    /// Хранятся id, а не MaterialDef: каталог декоров пополняется в рантайме
-    /// (ExternalTextureCatalog), и держать ссылку на объект определения незачем —
+    /// Хранятся id, а не MaterialDef: каталог декоров перечитывается в рантайме
+    /// (TextureLibrary.Reload), и держать ссылку на объект определения незачем —
     /// по id он всегда находится заново.</summary>
     public class SetMaterialCommand : IUndoCommand
     {

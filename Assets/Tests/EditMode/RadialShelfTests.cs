@@ -11,7 +11,7 @@ public class RadialShelfTests
     {
         if (_go != null) Object.DestroyImmediate(_go);
         PartRegistry.Clear();
-        MaterialCatalog.ClearDynamic();
+        MaterialCatalog.Reset();
     }
 
     [Test]

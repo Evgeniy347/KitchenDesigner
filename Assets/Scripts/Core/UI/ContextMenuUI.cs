@@ -2338,8 +2338,8 @@ namespace KitchenDesigner.Core.UI
         }
 
         /// <summary>Наполнить список декорами каталога. Пересобирать нужно на
-        /// каждое открытие меню: внешняя папка текстур подгружается в рантайме
-        /// (ExternalTextureCatalog), и набор декоров меняется по ходу работы.</summary>
+        /// каждое открытие меню: папку текстур можно перечитать в рантайме
+        /// (TextureLibrary.Reload), и набор декоров меняется по ходу работы.</summary>
         private static void FillMaterialOptions(TMP_Dropdown? dropdown)
         {
             if (dropdown == null) return;

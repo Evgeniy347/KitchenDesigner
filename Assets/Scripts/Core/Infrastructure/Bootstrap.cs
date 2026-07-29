@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -17,13 +18,21 @@ namespace KitchenDesigner.Core
             // (активный FPS при активности, «почти ноль» в простое).
             GameContext.InitializeWithDefaults();
             // Настройки загружаются вместе с проектом через SaveLoadManager.LoadLastSession().
-            // Внешние текстуры грузим ДО загрузки сцены (Start → LoadLastSession),
-            // иначе сохранённые materialId не найдут свой декор в каталоге.
-            ExternalTextureCatalog.LoadAll();
             DisplaySettings.ApplyWindowMode();
         }
 
-        private void Start()
+        // Каталог декоров должен быть прочитан ДО восстановления сцены, иначе
+        // сохранённые materialId не найдут свой декор. На десктопе это обычное
+        // чтение файла, в WebGL — запрос, поэтому старт живёт в корутине.
+        private IEnumerator Start()
+        {
+            if (!TextureLibrary.TryLoadIndexSync())
+                yield return TextureLibrary.LoadIndexAsync();
+
+            SetupScene();
+        }
+
+        private void SetupScene()
         {
             if (FindAnyObjectByType<BasePlate>() == null) BasePlate.Create();
             if (FindAnyObjectByType<CameraController>() == null) gameObject.AddComponent<CameraController>();
@@ -84,19 +93,23 @@ namespace KitchenDesigner.Core
                                 SaveLoadManager.RestoreScene(projectData);
                                 if (ElementHighlighter.Instance != null)
                                     ElementHighlighter.Instance.RefreshHighlights();
+                                TextureLibrary.PrefetchScene();
                             },
                             _ =>
                             {
             GameContext.Services!.SaveLoadManager.LoadLastSession();
+                                TextureLibrary.PrefetchScene();
                             });
                         return;
                     }
                 }
                 // Server save disabled or no current project — fall back to local.
             GameContext.Services!.SaveLoadManager.LoadLastSession();
+                TextureLibrary.PrefetchScene();
             });
 #else
             GameContext.Services!.SaveLoadManager.LoadLastSession();
+            TextureLibrary.PrefetchScene();
 #endif
 
 #if UNITY_WEBGL

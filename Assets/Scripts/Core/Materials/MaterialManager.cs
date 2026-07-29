@@ -66,18 +66,70 @@ namespace KitchenDesigner.Core
             var size = new Vector2Int(w, tex != null
                 ? TileHeightFromAspect(w, tex.width, tex.height)
                 : w);
-            if (!string.IsNullOrEmpty(def.id)) _tileMM[def.id] = size;
+
+            // Пока картинка декора не приехала, квадрат — ВРЕМЕННЫЙ ответ.
+            // Закэшировать его значило бы оставить сплющенный декор до конца
+            // сессии: OnTextureArrived сбросит запись, но только если она есть.
+            if (!string.IsNullOrEmpty(def.id) && (tex != null || !def.HasTextureFile))
+                _tileMM[def.id] = size;
             return size;
         }
 
-        /// <summary>Картинка декора: уже загруженная из внешней папки (приоритет)
-        /// или из Resources. null — декор чисто цветовой (тогда показывать надо
-        /// <see cref="MaterialDef.baseColor"/>, как делает образец пипетки).</summary>
+        /// <summary>Картинка декора. null — либо декор чисто цветовой (тогда
+        /// показывать надо <see cref="MaterialDef.baseColor"/>, как делает образец
+        /// пипетки), либо картинка ещё не загружена: обращение к ней и есть повод
+        /// её затребовать.</summary>
         public static Texture2D? ResolveTexture(MaterialDef def)
-            => def.texture != null ? def.texture
-                : (!string.IsNullOrEmpty(def.baseMapResource)
-                    ? Resources.Load<Texture2D>(def.baseMapResource)
-                    : null);
+        {
+            if (def == null) return null;
+            if (def.texture != null) return def.texture;
+            TextureLibrary.Request(def);
+            return def.texture;
+        }
+
+        /// <summary>Картинка декора доехала. Материал шарится по id, поэтому
+        /// достаточно положить текстуру в него — она появится сразу на всех
+        /// деталях с этим декором, без обхода сцены.
+        ///
+        /// Если высота плитки выводилась из пропорций картинки, до её прихода она
+        /// была квадратной — пересчитываем «вырез» у элементов с этим декором и
+        /// перестраиваем накладки: их МЕШ строится по TileMM.</summary>
+        public static void OnTextureArrived(MaterialDef def)
+        {
+            if (def == null || def.texture == null) return;
+
+            if (_cache.TryGetValue(def.id, out var mat) && mat != null)
+            {
+                mat.SetTexture(BaseMap, def.texture);
+                mat.mainTexture = def.texture;
+            }
+
+            if (def.tileHeightMM > 0) return; // размер плитки от картинки не зависел
+
+            _tileMM.Remove(def.id);
+            var all = PartRegistry.GetAll();
+            if (all == null) return;
+
+            foreach (var el in all)
+            {
+                if (el == null) continue;
+
+                if (el.MaterialId == def.id
+                    || MaterialIdOf(el, MaterialSlot.Tabletop) == def.id)
+                    RefreshTiling(el, def);
+
+                // SyncAll здесь не поможет: он пересобирает только сдвинутые и
+                // растянутые элементы, а тут поменялся размер плитки декора.
+                if (UsesInOverlay(el, def.id)) TextureOverlayRenderer.Refresh(el);
+            }
+        }
+
+        private static bool UsesInOverlay(KitchenElement element, string materialId)
+        {
+            foreach (var overlay in element.TextureOverlays)
+                if (overlay.MaterialId == materialId) return true;
+            return false;
+        }
 
         public static void ApplyById(KitchenElement element, string materialId)
             => Apply(element, MaterialCatalog.Get(materialId));

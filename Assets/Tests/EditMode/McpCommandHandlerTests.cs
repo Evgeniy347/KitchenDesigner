@@ -26,7 +26,7 @@ public class McpCommandHandlerTests
         foreach (var el in PartRegistry.GetAll())
             if (el != null) Object.DestroyImmediate(el.gameObject);
         PartRegistry.Clear();
-        MaterialCatalog.ClearDynamic();
+        MaterialCatalog.Reset();
         ProjectInstructions.Reset();
     }
 
@@ -1105,7 +1105,7 @@ public class McpCommandHandlerTests
     [Test]
     public void SetMaterial_DynamicExternalDecor_Applies()
     {
-        MaterialCatalog.RegisterDynamic(
+        MaterialCatalog.Register(
             new MaterialDef("abrikos_ba_03_cd_100_100", "abrikos ba 03 cd", "ЛДСП", Color.white, null, 100)
             { tileHeightMM = 100 });
 
@@ -1120,7 +1120,7 @@ public class McpCommandHandlerTests
     [Test]
     public void ListMaterials_IncludesDynamicDecors()
     {
-        MaterialCatalog.RegisterDynamic(new MaterialDef("ext_a", "Ext A", "ЛДСП", Color.white));
+        MaterialCatalog.Register(new MaterialDef("ext_a", "Ext A", "ЛДСП", Color.white));
         var resp = _handler!.Handle(MakeReq("list_materials", new { }));
 
         Assert.AreEqual("result", resp.type);

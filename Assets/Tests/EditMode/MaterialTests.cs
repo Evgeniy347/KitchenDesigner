@@ -32,7 +32,7 @@ public class MaterialTests
     public void Teardown()
     {
         MaterialManager.ClearCache();
-        MaterialCatalog.ClearDynamic();
+        MaterialCatalog.Reset();
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         foreach (var t in _textures) if (t != null) Object.DestroyImmediate(t);
@@ -44,11 +44,16 @@ public class MaterialTests
     // --- Каталог ---
 
     [Test]
-    public void Catalog_HasDefault_AndKnownDecors()
+    public void Catalog_LoadsProjectIndex_WithKnownDecors()
     {
+        // Каталог целиком приходит из StreamingAssets/Textures/index.json. Декоры
+        // из старых сейвов (docs/example.save.json) обязаны в нём остаться: их id
+        // — ключ сохранения, потерять его значит потерять декор у проекта.
         Assert.IsNotNull(MaterialCatalog.Default);
         Assert.AreEqual(MaterialCatalog.DefaultId, MaterialCatalog.Default.id);
         Assert.AreEqual("oak", MaterialCatalog.Get("oak").id);
+        Assert.AreEqual("wenge", MaterialCatalog.Get("wenge").id);
+        Assert.AreEqual("gtv_anthracite", MaterialCatalog.Get("gtv_anthracite").id);
         Assert.Greater(MaterialCatalog.All.Count, 1);
     }
 
@@ -172,67 +177,61 @@ public class MaterialTests
             "декор должен лечь на рендерер (текстура/цвет объекта включена)");
     }
 
-    // --- Внешние текстуры: разбор имени файла и динамический каталог ---
+    // --- Каталог: регистрация поверх индекса и сброс ---
 
     [Test]
-    public void ParseName_WithSizeSuffix_SplitsNameAndTile()
-    {
-        ExternalTextureCatalog.ParseName("abrikos_ba_03_cd_100_100",
-            out string display, out int w, out int h);
-        Assert.AreEqual("abrikos ba 03 cd", display);
-        Assert.AreEqual(100, w);
-        Assert.AreEqual(100, h);
-    }
-
-    [Test]
-    public void ParseName_NonSquare_KeepsBothSizes()
-    {
-        ExternalTextureCatalog.ParseName("grain_1200_600", out string display, out int w, out int h);
-        Assert.AreEqual("grain", display);
-        Assert.AreEqual(1200, w);
-        Assert.AreEqual(600, h);
-    }
-
-    [Test]
-    public void ParseName_NoSuffix_DefaultsTile800()
-    {
-        ExternalTextureCatalog.ParseName("plainoak", out string display, out int w, out int h);
-        Assert.AreEqual("plainoak", display);
-        Assert.AreEqual(800, w);
-        Assert.AreEqual(800, h);
-    }
-
-    [Test]
-    public void Catalog_RegisterDynamic_AppearsInAll_AndGet()
+    public void Catalog_Register_AppearsInAll_AndGet()
     {
         int before = MaterialCatalog.All.Count;
         var def = new MaterialDef("ext_test", "Ext Test", "ЛДСП", Color.white, null, 100) { tileHeightMM = 100 };
-        MaterialCatalog.RegisterDynamic(def);
+        MaterialCatalog.Register(def);
 
         Assert.AreEqual(before + 1, MaterialCatalog.All.Count);
         Assert.AreSame(def, MaterialCatalog.Get("ext_test"));
     }
 
     [Test]
-    public void Catalog_RegisterDynamic_SameId_Replaces_NoDuplicate()
+    public void Catalog_Register_SameId_Replaces_NoDuplicate()
     {
-        MaterialCatalog.RegisterDynamic(new MaterialDef("dup", "One", "ЛДСП", Color.white));
+        MaterialCatalog.Register(new MaterialDef("dup", "One", "ЛДСП", Color.white));
         int after1 = MaterialCatalog.All.Count;
-        MaterialCatalog.RegisterDynamic(new MaterialDef("dup", "Two", "ЛДСП", Color.white));
+        MaterialCatalog.Register(new MaterialDef("dup", "Two", "ЛДСП", Color.white));
 
         Assert.AreEqual(after1, MaterialCatalog.All.Count, "тот же id не должен дублироваться");
         Assert.AreEqual("Two", MaterialCatalog.Get("dup").displayName);
     }
 
     [Test]
-    public void Catalog_ClearDynamic_RemovesOnlyDynamic()
+    public void Catalog_Register_SurvivesFirstCatalogRead()
     {
-        int builtin = MaterialCatalog.All.Count;
-        MaterialCatalog.RegisterDynamic(new MaterialDef("x", "X", "ЛДСП", Color.white));
-        MaterialCatalog.ClearDynamic();
+        // Регистрация ДО первого чтения каталога: если Register не дочитает индекс
+        // сам, чтение файла затрёт добавленный декор.
+        MaterialCatalog.Reset();
+        MaterialCatalog.Register(new MaterialDef("registered_first", "First", "ЛДСП", Color.white));
 
-        Assert.AreEqual(builtin, MaterialCatalog.All.Count);
-        Assert.AreEqual(MaterialCatalog.DefaultId, MaterialCatalog.Get("default").id, "встроенные остаются");
+        Assert.AreEqual("First", MaterialCatalog.Get("registered_first").displayName);
+        Assert.Greater(MaterialCatalog.All.Count, 1, "индекс тоже должен быть прочитан");
+    }
+
+    [Test]
+    public void Catalog_Reset_DropsRegistered_AndRereadsIndex()
+    {
+        int fromIndex = MaterialCatalog.All.Count;
+        MaterialCatalog.Register(new MaterialDef("x", "X", "ЛДСП", Color.white));
+        MaterialCatalog.Reset();
+
+        Assert.AreEqual(fromIndex, MaterialCatalog.All.Count);
+        Assert.AreEqual(MaterialCatalog.DefaultId, MaterialCatalog.Get("x").id,
+            "снятый декор отвечает дефолтным");
+    }
+
+    [Test]
+    public void Catalog_EmptyIndex_EverythingFallsBackToDefault()
+    {
+        MaterialCatalog.Load(new List<MaterialDef>());
+
+        Assert.AreEqual(MaterialCatalog.DefaultId, MaterialCatalog.Get("oak").id);
+        Assert.AreEqual(MaterialCatalog.DefaultId, MaterialCatalog.Default.id);
     }
 
     [Test]
@@ -267,7 +266,7 @@ public class MaterialTests
             tileHeightMM = 600,
             texture = Tex(64, 16),
         };
-        MaterialCatalog.RegisterDynamic(def);
+        MaterialCatalog.Register(def);
 
         Assert.AreEqual(new Vector2Int(1200, 600), MaterialManager.TileMM(def));
     }
@@ -281,7 +280,7 @@ public class MaterialTests
         {
             texture = Tex(64, 16),
         };
-        MaterialCatalog.RegisterDynamic(def);
+        MaterialCatalog.Register(def);
 
         Assert.AreEqual(new Vector2Int(1600, 400), MaterialManager.TileMM(def));
     }
@@ -290,16 +289,71 @@ public class MaterialTests
     public void TileMM_ColorOnlyDecor_IsSquare()
     {
         var def = new MaterialDef("tile_plain", "T", "ЛДСП", Color.white, null, 900);
-        MaterialCatalog.RegisterDynamic(def);
+        MaterialCatalog.Register(def);
 
         Assert.AreEqual(new Vector2Int(900, 900), MaterialManager.TileMM(def));
     }
 
     [Test]
-    public void ExternalCatalog_HasSizeSuffix_OnlyForExplicitSize()
+    public void TileMM_TextureNotLoadedYet_DoesNotCacheSquare()
     {
-        Assert.IsTrue(ExternalTextureCatalog.HasSizeSuffix("abrikos_ba_03_cd_100_100"));
-        Assert.IsFalse(ExternalTextureCatalog.HasSizeSuffix("plainoak"));
+        // Картинка ещё не приехала → высота временно равна ширине. Закэшировать
+        // этот ответ значило бы оставить декор сплющенным до конца сессии.
+        var def = new MaterialDef("tile_pending", "T", "ЛДСП", Color.white, "pending.png", 1600)
+        {
+            textureState = TextureState.Loading, // «запрос ушёл» — файл трогать не надо
+        };
+        MaterialCatalog.Register(def);
+        Assert.AreEqual(new Vector2Int(1600, 1600), MaterialManager.TileMM(def));
+
+        def.texture = Tex(64, 16);
+        Assert.AreEqual(new Vector2Int(1600, 400), MaterialManager.TileMM(def),
+            "после прихода картинки размер плитки обязан пересчитаться");
+    }
+
+    [Test]
+    public void OnTextureArrived_PutsTextureOnSharedMaterial()
+    {
+        var def = new MaterialDef("late_tex", "Late", "ЛДСП", Color.white, "late.png", 800)
+        {
+            tileHeightMM = 800,
+            textureState = TextureState.Loading,
+        };
+        MaterialCatalog.Register(def);
+
+        var mat = MaterialManager.GetSharedMaterial(def);
+        Assert.IsNotNull(mat);
+        Assert.IsNull(mat!.mainTexture, "картинки ещё нет — материал чисто цветовой");
+
+        def.texture = Tex(64, 64);
+        MaterialManager.OnTextureArrived(def);
+
+        Assert.AreSame(def.texture, mat.mainTexture,
+            "материал шарится по id: картинка обязана лечь в него, а не в новый");
+    }
+
+    [Test]
+    public void OnTextureArrived_ElementKeepsMaterialId_AndGetsDecor()
+    {
+        var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "B", Vector3.zero);
+        _spawned.Add(go);
+        var e = go.GetComponent<KitchenElement>();
+
+        var def = new MaterialDef("late_on_board", "Late", "ЛДСП", Color.white, "late.png", 800)
+        {
+            tileHeightMM = 800,
+            textureState = TextureState.Loading,
+        };
+        MaterialCatalog.Register(def);
+        MaterialManager.ApplyById(e, "late_on_board");
+        Assert.AreEqual("late_on_board", e.MaterialId, "декор назначен ещё до загрузки картинки");
+
+        def.texture = Tex(64, 64);
+        MaterialManager.OnTextureArrived(def);
+
+        var r = go.GetComponentInChildren<MeshRenderer>();
+        Assert.AreEqual("late_on_board", e.MaterialId, "элемент не забывает свой декор");
+        Assert.AreSame(def.texture, r.sharedMaterial.mainTexture);
     }
 
     // --- Ресайз не растягивает декор ---
@@ -311,7 +365,7 @@ public class MaterialTests
         {
             tileHeightMM = 400,
         };
-        MaterialCatalog.RegisterDynamic(def);
+        MaterialCatalog.Register(def);
 
         var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "B", Vector3.zero);
         _spawned.Add(go);

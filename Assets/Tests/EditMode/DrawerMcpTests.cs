@@ -16,9 +16,9 @@ public class DrawerMcpTests
         _handler = new McpCommandHandler();
         PartRegistry.Clear();
         GroupManager.Clear();
-        MaterialCatalog.RegisterDynamic(new MaterialDef("gtv_anthracite", "Антрацит (GTV)", "Металл", new Color(0.25f, 0.25f, 0.27f)));
-        MaterialCatalog.RegisterDynamic(new MaterialDef("gtv_white", "Белый (GTV)", "Металл", new Color(0.92f, 0.92f, 0.90f)));
-        MaterialCatalog.RegisterDynamic(new MaterialDef("gtv_black", "Чёрный (GTV)", "Металл", new Color(0.10f, 0.10f, 0.11f)));
+        MaterialCatalog.Register(new MaterialDef("gtv_anthracite", "Антрацит (GTV)", "Металл", new Color(0.25f, 0.25f, 0.27f)));
+        MaterialCatalog.Register(new MaterialDef("gtv_white", "Белый (GTV)", "Металл", new Color(0.92f, 0.92f, 0.90f)));
+        MaterialCatalog.Register(new MaterialDef("gtv_black", "Чёрный (GTV)", "Металл", new Color(0.10f, 0.10f, 0.11f)));
     }
 
     [TearDown]

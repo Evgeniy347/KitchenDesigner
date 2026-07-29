@@ -143,3 +143,6 @@ tmp-scripts/
 # Deployment secrets
 .env
 server/.env
+
+# Удалённые файлы уезжают сюда, а не стираются (CONVENTIONS.md)
+_trash/
