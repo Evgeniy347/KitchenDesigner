@@ -1,0 +1,9 @@
+# Release deploy override.
+# Prod runs a pre-built image shipped by deploy.cmd (`docker save | ssh docker load`).
+# It must NOT build on the server: /opt/kitchen-designer holds no source tree, so the
+# `build.context: ..` of docker-compose.yml resolves to /opt and the build fails with
+# "lstat /opt/server: no such file or directory".
+# Apply with: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+services:
+  web:
+    image: kitchen-server:release
