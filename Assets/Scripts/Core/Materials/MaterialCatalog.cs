@@ -76,6 +76,36 @@ namespace KitchenDesigner.Core
             // (153,114,78) против (200,175,148). Лист бумаги снимает цвет лампы,
             // но не убирает блик-вуаль от глянца — какой вариант верный, решает глаз.
             new MaterialDef("dub_evropeyskiy_tinting_3", "Дуб европейский тонированный 3", "ЛДСП", Color.white, "Textures/dub_evropeyskiy_tinting_3", 550),
+            // --- ЛМДФ двусторонняя (EGGER / Kastamonu / СвиссКроно), лист 2800×2070×16 ---
+            // Исходники — квадратные сколы декора 1080×1080 px, обработаны на
+            // бесшовность (tools/make-seamless.ps1). tileSizeMM = число ламелей
+            // поперёк картинки × 190 мм (реальная ширина плашки), высота считается
+            // из пропорций — картинки квадратные, поэтому равна ширине.
+            // Однотонные декоры рисунка не имеют, им дан нейтральный размер 600 мм.
+            new MaterialDef("belaya_gladkaya_svisskrono", "Белая гладкая (СвиссКроно)", "ЛМДФ", Color.white, "Textures/belaya_gladkaya_svisskrono", 600),
+            new MaterialDef("belaya_gladkaya_kastamonu", "Белая гладкая (Kastamonu F)", "ЛМДФ", Color.white, "Textures/belaya_gladkaya_kastamonu", 600),
+            new MaterialDef("belyy_premium_filvud_w1000", "Белый премиум филвуд (W1000 ST38)", "ЛМДФ", Color.white, "Textures/belyy_premium_filvud_w1000", 600),
+            new MaterialDef("les_chernyy_u998", "Лес чёрный филвуд (U998 ST38)", "ЛМДФ", Color.white, "Textures/les_chernyy_u998", 600),
+            new MaterialDef("dub_galifaks_belyy_h1176", "Дуб галифакс белый (H1176 ST37)", "ЛМДФ", Color.white, "Textures/dub_galifaks_belyy_h1176", 400),
+            new MaterialDef("dub_galifaks_naturalnyy_h1180", "Дуб галифакс натуральный (H1180 ST37)", "ЛМДФ", Color.white, "Textures/dub_galifaks_naturalnyy_h1180", 400),
+            new MaterialDef("dub_galifaks_olovo_h3176", "Дуб галифакс олово (H3176 ST37)", "ЛМДФ", Color.white, "Textures/dub_galifaks_olovo_h3176", 400),
+            new MaterialDef("dub_galifaks_tabak_h1181", "Дуб галифакс табак (H1181 ST37)", "ЛМДФ", Color.white, "Textures/dub_galifaks_tabak_h1181", 550),
+            new MaterialDef("dub_gladstoun_pesochnyy_h3309", "Дуб гладстоун песочный (H3309 ST28)", "ЛМДФ", Color.white, "Textures/dub_gladstoun_pesochnyy_h3309", 550),
+            new MaterialDef("dub_gladstoun_tabak_h3325", "Дуб гладстоун табак (H3325 ST28)", "ЛМДФ", Color.white, "Textures/dub_gladstoun_tabak_h3325", 550),
+            new MaterialDef("dub_davenport_naturalnyy_svetlyy_h3359", "Дуб давенпорт натуральный светлый (H3359 ST32)", "ЛМДФ", Color.white, "Textures/dub_davenport_naturalnyy_svetlyy_h3359", 550),
+            new MaterialDef("dub_kuneo_korichnevyy_h3317", "Дуб кунео коричневый (H3317 ST28)", "ЛМДФ", Color.white, "Textures/dub_kuneo_korichnevyy_h3317", 750),
+            // Единственный декор партии со СНЯТЫМ ПОПЕРЁК рисунком: ламели идут
+            // горизонтально, 6 штук по высоте. Картинка квадратная, поэтому
+            // ширина равна той же высоте — 6 × 190 ≈ 1150 мм.
+            new MaterialDef("dub_kasella_kashtanovyy_h1369", "Дуб каселла каштановый (H1369 ST40)", "ЛМДФ", Color.white, "Textures/dub_kasella_kashtanovyy_h1369", 1150),
+            new MaterialDef("dub_kasella_korichnevyy_h1386", "Дуб каселла коричневый (H1386 ST40)", "ЛМДФ", Color.white, "Textures/dub_kasella_korichnevyy_h1386", 400),
+            new MaterialDef("dub_kasella_naturalnyy_svetlyy_h1367", "Дуб каселла натуральный светлый (H1367 ST40)", "ЛМДФ", Color.white, "Textures/dub_kasella_naturalnyy_svetlyy_h1367", 750),
+            new MaterialDef("dub_kasella_naturalnyy_h1385", "Дуб каселла натуральный (H1385 ST40)", "ЛМДФ", Color.white, "Textures/dub_kasella_naturalnyy_h1385", 750),
+            new MaterialDef("dub_sakramento_korichnevyy_h1142", "Дуб сакраменто коричневый (H1142 ST36)", "ЛМДФ", Color.white, "Textures/dub_sakramento_korichnevyy_h1142", 750),
+            new MaterialDef("dub_charlston_temno_korichnevyy_h3154", "Дуб чарльстон тёмно-коричневый (H3154 ST36)", "ЛМДФ", Color.white, "Textures/dub_charlston_temno_korichnevyy_h3154", 950),
+            new MaterialDef("dub_sherman_antratsit_h1346", "Дуб шерман антрацит (H1346 ST32)", "ЛМДФ", Color.white, "Textures/dub_sherman_antratsit_h1346", 550),
+            new MaterialDef("dub_sherman_konyak_h1344", "Дуб шерман коньяк коричневый (H1344 ST32)", "ЛМДФ", Color.white, "Textures/dub_sherman_konyak_h1344", 400),
+            new MaterialDef("yasen_navarra_h1250", "Ясень наварра (H1250 ST36)", "ЛМДФ", Color.white, "Textures/yasen_navarra_h1250", 950),
             new MaterialDef("gtv_anthracite", "Антрацит (GTV)", "Металл", new Color(0.25f, 0.25f, 0.27f), metallic: 0.4f, smoothness: 0.3f),
             new MaterialDef("gtv_white",      "Белый (GTV)",    "Металл", new Color(0.92f, 0.92f, 0.90f), metallic: 0.3f, smoothness: 0.3f),
             new MaterialDef("gtv_black",      "Чёрный (GTV)",   "Металл", new Color(0.10f, 0.10f, 0.11f), metallic: 0.3f, smoothness: 0.3f),
