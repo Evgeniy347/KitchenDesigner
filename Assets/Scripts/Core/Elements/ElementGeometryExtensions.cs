@@ -21,6 +21,7 @@ namespace KitchenDesigner.Core
             ElementGeometry.BoundsOf(element.GetVertices(), out var min, out var max);
 
             return new ElementGeometry(
+                element.GetInstanceID(),
                 element.PartName,
                 faces,
                 element.GetGrooveSeatFaces(),
@@ -43,6 +44,7 @@ namespace KitchenDesigner.Core
             ElementGeometry.BoundsOf(element.GetVerticesAt(position), out var min, out var max);
 
             return new ElementGeometry(
+                element.GetInstanceID(),
                 element.PartName,
                 element.GetFacesAt(position),
                 element.GetGrooveSeatFacesAt(position),

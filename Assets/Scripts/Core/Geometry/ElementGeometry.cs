@@ -16,6 +16,10 @@ namespace KitchenDesigner.Core
     /// после него может двигаться, снимок об этом не узнает и не должен.</summary>
     public readonly struct ElementGeometry
     {
+        /// <summary>Устойчивый идентификатор детали. Ядру он нужен ровно для
+        /// одного: не считать деталь соседом самой себе.</summary>
+        public readonly int Id;
+
         /// <summary>Имя детали. Снэп возвращает его в результате — по нему
         /// вызывающий код находит цель у себя.</summary>
         public readonly string Name;
@@ -42,9 +46,10 @@ namespace KitchenDesigner.Core
         /// внутрь короба.</summary>
         public readonly bool IsPanel;
 
-        public ElementGeometry(string name, Face[] faces, Face[] grooveSeatFaces,
+        public ElementGeometry(int id, string name, Face[] faces, Face[] grooveSeatFaces,
             Face[] grooveWallFaces, Vector3 min, Vector3 max, bool isPanel)
         {
+            Id = id;
             Name = name;
             Faces = faces;
             GrooveSeatFaces = grooveSeatFaces;
@@ -99,7 +104,7 @@ namespace KitchenDesigner.Core
                     rightAxis[i], upAxis[i]);
 
             var empty = System.Array.Empty<Face>();
-            return new ElementGeometry(name, faces, empty, empty,
+            return new ElementGeometry(name.GetHashCode(), name, faces, empty, empty,
                 center - half, center + half, isPanel);
         }
     }

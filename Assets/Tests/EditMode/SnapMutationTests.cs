@@ -402,7 +402,7 @@ public class SnapMutationTests
         RestoreElementState(moved, savedPos, savedDims, savedRot);
 
         Vector3 testPos = savedPos + dir.normalized * (distanceMm * AppConstants.MM_TO_UNITS);
-        var snap = SnapSystem.TrySnap(moved, others, testPos);
+        var snap = SnapSystem.TrySnap(moved, _othersGeo, testPos);
 
         string label = $"{moved.PartName} MOVE {distanceMm}мм dir={dir}";
         if (snap.snapped)
@@ -542,7 +542,7 @@ public class SnapMutationTests
             Vector3 testPos = savedPos + d * (mm * AppConstants.MM_TO_UNITS);
 
             var swSnap = System.Diagnostics.Stopwatch.StartNew();
-            var snap = SnapSystem.TrySnap(moved, others, testPos);
+            var snap = SnapSystem.TrySnap(moved, _othersGeo, testPos);
             _ticksTrySnap += swSnap.ElapsedTicks;
             _countTrySnap++;
             if (!snap.snapped)
