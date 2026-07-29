@@ -113,7 +113,7 @@ namespace KitchenDesigner.Core
         /// паза. Только по длине: по глубине деталь с пазом не перекрывается, она
         /// стоит у пласти снаружи.</summary>
         private static bool OverlapsAlongGroove(Vector3 faceCenter, Vector3 uAxis, Vector3 vAxis,
-            Vector2 faceSize, KitchenElement.Face wall)
+            Vector2 faceSize, Face wall)
         {
             Vector3 lengthAxis = wall.rightAxis; // у стенки паза rightAxis — вдоль длины
             float faceHalf = Mathf.Abs(Vector3.Dot(uAxis, lengthAxis)) * faceSize.x * 0.5f

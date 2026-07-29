@@ -177,7 +177,7 @@ namespace KitchenDesigner.Core
             }
         }
 
-        private static GameObject MakeQuad(in KitchenElement.Face face, Vector2Int faceMM,
+        private static GameObject MakeQuad(in Face face, Vector2Int faceMM,
             RectInt rect, Mesh mesh, Material material, float lift)
         {
             var go = new GameObject("TextureOverlay") { hideFlags = HideFlags.DontSave };
@@ -234,7 +234,7 @@ namespace KitchenDesigner.Core
         }
 
         private static void AddHole(List<RectInt> holes, KitchenElement? opening,
-            in KitchenElement.Face face, Vector2Int faceMM)
+            in Face face, Vector2Int faceMM)
         {
             if (opening == null) return;
 

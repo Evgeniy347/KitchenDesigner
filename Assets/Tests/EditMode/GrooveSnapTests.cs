@@ -93,7 +93,7 @@ public class GrooveSnapTests
     private const int PanelDepthMM = 40;   // насколько панель уходит вглубь/наружу
     private const int PanelWidthMM = 200;
 
-    private PanelElement MakeSeatedPanel(KitchenElement.Face seat, float shortfallM, int gap)
+    private PanelElement MakeSeatedPanel(Face seat, float shortfallM, int gap)
     {
         var panel = MakePanel("двп", new Vector3Int(PanelDepthMM, PanelWidthMM, 3), gap);
         panel.transform.rotation = Quaternion.Euler(0f, 90f, 0f);

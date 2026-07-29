@@ -84,7 +84,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Собирает ящик из граней. Опирается на контракт порядка граней:
         /// index/2 = ось (0=X, 1=Y, 2=Z), чётный индекс — положительное направление.</summary>
-        public static Box BoxOf(KitchenElement.Face[] faces)
+        public static Box BoxOf(Face[] faces)
         {
             Vector3 ax = Normal(faces, 0, Vector3.right);
             Vector3 ay = Normal(faces, 2, Vector3.up);
@@ -97,7 +97,7 @@ namespace KitchenDesigner.Core
             return new Box(center, ax, ay, az, half);
         }
 
-        private static Vector3 Normal(KitchenElement.Face[] faces, int index, Vector3 fallback) =>
+        private static Vector3 Normal(Face[] faces, int index, Vector3 fallback) =>
             faces[index].normal.sqrMagnitude > Tolerance.EpsilonSqr
                 ? faces[index].normal.normalized
                 : fallback;

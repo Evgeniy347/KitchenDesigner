@@ -184,8 +184,8 @@ namespace KitchenDesigner.Core
         /// <summary>Грань детали «съедена» пазом на участке, куда метит панель:
         /// у грани та же нормаль, что у дна паза, и панель попадает в контур паза.
         /// Тогда контактом служит дно, а не поверхность детали.</summary>
-        private static bool SeatSupersedesFace(KitchenElement.Face movedFace,
-            KitchenElement.Face otherFace, KitchenElement.Face[] seatFaces)
+        private static bool SeatSupersedesFace(Face movedFace,
+            Face otherFace, Face[] seatFaces)
         {
             foreach (var seat in seatFaces)
             {
@@ -207,7 +207,7 @@ namespace KitchenDesigner.Core
             List<Vector3>? alignedNormals = null)
         {
             moved.transform.position = basePos;
-            KitchenElement.Face[] movedFaces = FaceCache.GetFaces(moved);
+            Face[] movedFaces = FaceCache.GetFaces(moved);
 
             // Габарит движимой детали в basePos — чтобы проверять, не загонит ли
             // выравнивание по дальней кромке деталь В ТЕЛО соседа (см. ниже).
@@ -228,19 +228,19 @@ namespace KitchenDesigner.Core
                 // кромок. Face-pair loop ниже сам отфильтрует глубокие пересечения
                 // по planeDist > maxDist.
 
-                KitchenElement.Face[] otherFaces = FaceCache.GetFaces(other);
+                Face[] otherFaces = FaceCache.GetFaces(other);
 
                 // Дно паза — посадочное место, и только для вкладной панели:
                 // толстая деталь в паз не садится, и предлагать ей дно значит
                 // ловить ложные притяжения внутрь короба.
-                KitchenElement.Face[] seatFaces = moved is PanelElement
+                Face[] seatFaces = moved is PanelElement
                     ? other.GetGrooveSeatFaces()
-                    : System.Array.Empty<KitchenElement.Face>();
+                    : System.Array.Empty<Face>();
 
                 // Стенки паза — разметочный ориентир, доступный ЛЮБОЙ детали:
                 // «поставь полку по краю паза». Даёт детенты на 16 и 20 мм от
                 // кромки в дополнение к самой кромке.
-                KitchenElement.Face[] wallFaces = other.GetGrooveWallFaces();
+                Face[] wallFaces = other.GetGrooveWallFaces();
 
                 // Габарит соседа — для проверки «кандидат не загоняет центр внутрь соседа».
                 Vector3[] oVerts = other.GetVertices();
@@ -588,7 +588,7 @@ namespace KitchenDesigner.Core
 
             Vector3 prevPos = moved.transform.position;
         moved.transform.position = testPosition;
-        KitchenElement.Face[] movedFaces = FaceCache.GetFaces(moved);
+        Face[] movedFaces = FaceCache.GetFaces(moved);
 
             foreach (var other in others)
             {
@@ -603,14 +603,14 @@ namespace KitchenDesigner.Core
                     bestDot = 1f,
                 };
 
-                KitchenElement.Face[] otherFaces = FaceCache.GetFaces(other);
+                Face[] otherFaces = FaceCache.GetFaces(other);
 
                 // Те же грани, что видит TrySnap: шесть габаритных плюс дно каждого
                 // паза (только для вкладной панели). Без дна паза диагностика
                 // сообщала «не прилипнет» там, где TrySnap сажает панель в паз.
-                KitchenElement.Face[] seatFaces = moved is PanelElement
+                Face[] seatFaces = moved is PanelElement
                     ? other.GetGrooveSeatFaces()
-                    : System.Array.Empty<KitchenElement.Face>();
+                    : System.Array.Empty<Face>();
 
                 int bestRank = int.MaxValue;
                 float bestGap = float.MaxValue;
@@ -688,7 +688,7 @@ namespace KitchenDesigner.Core
         /// <summary>Координаты стенок пазов вдоль оси axis — только для стенок,
         /// плоскость которых этой оси перпендикулярна. Это разметочные линии для
         /// выравнивания кромки: паз даёт детенты на 16 и 20 мм от кромки детали.</summary>
-        private static List<float> GrooveEdgeCoords(KitchenElement.Face[] wallFaces, Vector3 axis)
+        private static List<float> GrooveEdgeCoords(Face[] wallFaces, Vector3 axis)
         {
             var coords = new List<float>();
             foreach (var w in wallFaces)
@@ -740,7 +740,7 @@ namespace KitchenDesigner.Core
             return best;
         }
 
-        private static bool FacesOverlap(KitchenElement.Face a, KitchenElement.Face b, out float overlapRatio, out bool hasLineContact)
+        private static bool FacesOverlap(Face a, Face b, out float overlapRatio, out bool hasLineContact)
         {
             overlapRatio = 0;
             hasLineContact = false;
@@ -800,7 +800,7 @@ namespace KitchenDesigner.Core
             return true;
         }
 
-        private static Rect GetFaceRect(KitchenElement.Face face, Vector3 u, Vector3 v)
+        private static Rect GetFaceRect(Face face, Vector3 u, Vector3 v)
         {
             Vector2 center = new Vector2(
                 Vector3.Dot(face.center, u),

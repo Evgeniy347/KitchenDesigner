@@ -232,7 +232,8 @@ public readonly struct ElementGeometry
 |---|---|---|---|
 | 0 | Ручная проверка сигнала: 40–60 курируемых мутаций по `SnapSystem`/`ResizeSnap` против РЕАЛЬНОГО набора тестов | 6–8 | Доля выживших на реальных тестах — обоснование объёма работ цифрой |
 | 1 | ✅ **Сделано.** Каркас двойной сборки: asmdef `Geometry`, `geometry/Geometry.csproj` + `Geometry.Tests.csproj`, перенос `Tolerance`, 20 тестов, архитектурный сторож | 4–6 | Unity 17/17 и `dotnet test` 20/20 (31 мс); Stryker **100%** на `Tolerance`; инвариант `SnapMutationTests` цел |
-| 2 | Листовая математика без смены сигнатур: `GrooveMath`, `GappedBox`, `EdgeBanding`, `DrawerConstants`, `FaceContact` → struct без ссылок на компонент | 8–10 | Ядро растёт, поведение не меняется |
+| 2 | ✅ **Сделано.** `AppConstants`, `GrooveSpec`, `DrawerConstants` → ядро; `Face` из вложенного типа `KitchenElement` в самостоятельный тип ядра (54 ссылки в 14 файлах); контракт порядка граней закреплён тестом | 8–10 | 59 тестов ядра за 53 мс; Stryker **90.6%**; инвариант `SnapMutationTests` цел |
+| 2* | Остаток стадии 2, съехавший на этап 3: `GrooveMath` (расщепление `GrooveMesh`), `GappedBox`, `EdgeBanding`, `FaceContact`. Причина — они тянут `PartData`, а тот через `MaterialCatalog` тянет загрузку текстур; развязывается это тем же снимком, что и этап 3 | — | — |
 | 3 | Граница снимка: `ElementGeometry` + `KitchenElement.ToGeometry()`; `ResizeSnap`/`ResizeMath` на снимки, старые сигнатуры — адаптеры | 8–12 | Ресайз-математика тестируется без сцены |
 | 4 | **Ядро снэпа**: `Collect`, `TryPickCandidate`, `FacesOverlap`, `GetFaceRect`, `BestEdgeDelta` → на снимки; убирается запись в `transform`; `TrySnap`/`Diagnose` — адаптеры | 16–24 | Снэп чист; здесь же выигрыш по времени |
 | 5 | Перенос быстрых юнит-тестов снэпа в `Assets/Tests/EditMode/Geometry/` | 8–10 | Реальный набор гоняется под `dotnet test` |
@@ -280,17 +281,20 @@ Sweep snap events: 320835 | competition warnings: 0
 
 ```
 push:
-  cd geometry && dotnet test Geometry.Tests.csproj               # секунды
+  cd geometry/tests && dotnet test                               # секунды
   build.cmd -RunTests                                            # ~6 мин
 nightly:
-  cd geometry && dotnet-stryker --project Geometry.csproj \
-                 --test-project Geometry.Tests.csproj \
+  cd geometry/tests && dotnet-stryker --project Geometry.csproj \
                  --threshold-break <baseline-5> --reporter html --reporter json
   build.cmd -RunPlayMode
 ```
 
-`--test-project` обязателен: в каталоге `geometry/` лежат два .csproj, и без
-флага Stryker падает с «Expected exactly one .csproj file».
+Проекты разведены по подпапкам (`geometry/core`, `geometry/tests`) не для
+красоты: в одном каталоге они делили `obj/`, и сборка ядра (без единого
+PackageReference) затирала `project.assets.json` тестов — следующий
+`dotnet test` падал на «не найдено пространство имён NUnit», и `dotnet restore`
+не помогал, только удаление `obj/`. Разделение попутно сняло требование флага
+`--test-project`.
 
 Порог: снимать baseline после каждого этапа и ставить `--threshold-break` на
 5 пунктов ниже достигнутого.

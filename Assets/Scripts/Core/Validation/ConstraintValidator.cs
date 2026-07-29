@@ -81,7 +81,7 @@ namespace KitchenDesigner.Core
         //    статическое состояние безопасно.
         private static readonly List<KitchenElement> _elems = new List<KitchenElement>();
         private static readonly List<AABB> _aabbs = new List<AABB>();
-        private static readonly List<KitchenElement.Face[]> _faces = new List<KitchenElement.Face[]>();
+        private static readonly List<Face[]> _faces = new List<Face[]>();
         private static readonly Dictionary<long, List<int>> _grid = new Dictionary<long, List<int>>();
         private static readonly Stack<List<int>> _cellPool = new Stack<List<int>>();
         private static readonly HashSet<long> _seenPairs = new HashSet<long>();
@@ -230,7 +230,7 @@ namespace KitchenDesigner.Core
         /// его насквозь. Проверяется по посадочным граням (дну пазов) — если панель
         /// загнали глубже дна, это уже настоящее пересечение и оно останется красным.</summary>
         private static bool IsSeatedInGroove(KitchenElement panel, KitchenElement board,
-            out KitchenElement.Face seatFace)
+            out Face seatFace)
         {
             seatFace = default;
             if (!(panel is PanelElement) || board == null) return false;
@@ -272,7 +272,7 @@ namespace KitchenDesigner.Core
         }
 
         private static void AddSeatContact(KitchenElement a, KitchenElement b,
-            int aIdx, int bIdx, KitchenElement.Face seat, bool panelIsA, ValidationResult result)
+            int aIdx, int bIdx, Face seat, bool panelIsA, ValidationResult result)
         {
             // Грань панели смотрит НА дно паза, грань детали — вдоль его нормали.
             int panelFace = FaceIndexByNormal(panelIsA ? _faces[aIdx] : _faces[bIdx], -seat.normal);
@@ -284,7 +284,7 @@ namespace KitchenDesigner.Core
                 : new FaceContact(a, b, boardFace, panelFace, area, true));
         }
 
-        private static int FaceIndexByNormal(KitchenElement.Face[] faces, Vector3 normal)
+        private static int FaceIndexByNormal(Face[] faces, Vector3 normal)
         {
             int best = 0;
             float bestDot = float.MinValue;
@@ -357,7 +357,7 @@ namespace KitchenDesigner.Core
         }
 
         private static void CheckPair(KitchenElement a, KitchenElement b,
-            KitchenElement.Face[] facesA, KitchenElement.Face[] facesB,
+            Face[] facesA, Face[] facesB,
             float contactDist, ValidationResult result)
         {
             for (int fa = 0; fa < 6; fa++)
@@ -458,7 +458,7 @@ namespace KitchenDesigner.Core
             float toMm = 1f / AppConstants.MM_TO_UNITS;
 
             int n = all.Count;
-            var faces = new KitchenElement.Face[n][];
+            var faces = new Face[n][];
             var boxes = new AABB[n];
             var ok = new bool[n];
             for (int i = 0; i < n; i++)
@@ -500,7 +500,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Минимальный зазор между параллельными хорошо перекрытыми
         /// гранями в диапазоне (contactDist, maxGap]; 0 — подходящей пары нет.</summary>
-        private static float MinParallelGap(KitchenElement.Face[] fa, KitchenElement.Face[] fb,
+        private static float MinParallelGap(Face[] fa, Face[] fb,
             float contactDist, float maxGap)
         {
             float best = 0f;
@@ -588,7 +588,7 @@ namespace KitchenDesigner.Core
         /// <summary>Панель «относится» к пазу: её ближайшая кромка стоит у устья/внутри
         /// паза (по нормали) и панель перекрывает прямоугольник паза в плоскости.
         /// out minAlong — отступ ближайшей вершины панели от ДНА паза вдоль нормали.</summary>
-        private static bool PanelEngagesSeat(Vector3[] pverts, in KitchenElement.Face seat,
+        private static bool PanelEngagesSeat(Vector3[] pverts, in Face seat,
             float depthUnits, float engageMargin, float contactDist, out float minAlong)
         {
             minAlong = float.MaxValue;
@@ -648,7 +648,7 @@ namespace KitchenDesigner.Core
         }
 
         private static bool FacesOverlap(
-            KitchenElement.Face a, KitchenElement.Face b,
+            Face a, Face b,
             out float overlapArea, out float overlapRatio)
         {
             Vector3 u = a.rightAxis;
@@ -685,7 +685,7 @@ namespace KitchenDesigner.Core
             return true;
         }
 
-        private static Rect GetFaceRect(KitchenElement.Face face, Vector3 u, Vector3 v)
+        private static Rect GetFaceRect(Face face, Vector3 u, Vector3 v)
         {
             Vector2 center = new Vector2(
                 Vector3.Dot(face.center, u),

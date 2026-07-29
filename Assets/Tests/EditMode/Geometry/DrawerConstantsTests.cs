@@ -205,4 +205,82 @@ public class DrawerConstantsTests
         Assert.AreEqual(22, DrawerConstants.GetBottomLift(DrawerType.C)); // 190−168
         Assert.AreEqual(22, DrawerConstants.GetBottomLift(DrawerType.D)); // 222−200
     }
+
+    // ── Границы и запасные ветки ──────────────────────────────────────────
+    // Ниже — то, что не достигается перебором A/B/C/D, поэтому и не проверялось:
+    // границы индекса и default-формулы. Незакрытые, они тихо гниют.
+
+    [Test]
+    public void TypeFromIndex_AcceptsBothEndsOfTheRange()
+    {
+        Assert.AreEqual(DrawerConstants.Types[0], DrawerConstants.TypeFromIndex(0),
+            "нижняя граница диапазона обязана попадать в таблицу");
+        int last = DrawerConstants.Types.Length - 1;
+        Assert.AreEqual(DrawerConstants.Types[last], DrawerConstants.TypeFromIndex(last),
+            "верхняя граница диапазона тоже внутри таблицы");
+    }
+
+    [Test]
+    public void TypeFromIndex_FallsBackJustOutsideTheRange()
+    {
+        Assert.AreEqual(DrawerType.A, DrawerConstants.TypeFromIndex(-1));
+        Assert.AreEqual(DrawerType.A, DrawerConstants.TypeFromIndex(DrawerConstants.Types.Length));
+    }
+
+    /// <summary>Запасные формулы для типа вне таблицы. Высота типа — это его
+    /// числовое значение, от него и считаются задник, проём и верх боковины.</summary>
+    [Test]
+    public void UnknownType_UsesArithmeticFallbacks()
+    {
+        var unknown = (DrawerType)500;
+
+        Assert.AreEqual(500, DrawerConstants.GetTypeHeight(unknown));
+        Assert.AreEqual(498, DrawerConstants.GetBackHeight(unknown), "задник = высота − 2");
+        Assert.AreEqual(530, DrawerConstants.GetMinOpeningHeight(unknown), "проём = высота + 30");
+        Assert.AreEqual(521, DrawerConstants.GetMountedTopHeight(unknown), "верх боковины = высота + 21");
+        Assert.AreEqual(21, DrawerConstants.GetBottomLift(unknown), "подъём = верх боковины − высота");
+    }
+
+    [Test]
+    public void PresetDimensions_AreNotEmpty()
+    {
+        Assert.IsNotEmpty(AppConstants.PRESET_DIMENSIONS_MM);
+    }
+
+    /// <summary>Идентификатор материала — это не подпись для глаз, а ключ в
+    /// каталоге декоров: пустой или задвоенный ключ красит ящик не в тот цвет.</summary>
+    [Test]
+    public void ColorMaterialIds_AreDistinctAndNonEmpty()
+    {
+        var ids = new System.Collections.Generic.List<string>();
+        foreach (DrawerColor color in System.Enum.GetValues(typeof(DrawerColor)))
+        {
+            var id = DrawerConstants.GetColorMaterialId(color);
+            Assert.IsNotEmpty(id, $"у цвета {color} нет идентификатора материала");
+            ids.Add(id);
+        }
+
+        CollectionAssert.AllItemsAreUnique(ids);
+    }
+
+    /// <summary>Каждая система ящиков обязана называться по-своему: имена
+    /// уходят в спецификацию, где их читает человек на производстве.</summary>
+    [Test]
+    public void SystemLabelsAndNames_AreDistinctAndNonEmpty()
+    {
+        var labels = new System.Collections.Generic.List<string>();
+        var names = new System.Collections.Generic.List<string>();
+        foreach (DrawerSystem system in System.Enum.GetValues(typeof(DrawerSystem)))
+        {
+            var label = DrawerConstants.GetSystemLabel(system);
+            var name = DrawerConstants.GetDefaultName(system);
+            Assert.IsNotEmpty(label, $"у системы {system} нет подписи");
+            Assert.IsNotEmpty(name, $"у системы {system} нет имени по умолчанию");
+            labels.Add(label);
+            names.Add(name);
+        }
+
+        CollectionAssert.AllItemsAreUnique(labels);
+        CollectionAssert.AllItemsAreUnique(names);
+    }
 }

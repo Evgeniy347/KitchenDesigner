@@ -75,11 +75,11 @@ public class GroovePanelBoxTests
 
     /// <summary>Дно паза детали, обращённое к ДВП: ищем seat-грань, чья нормаль
     /// направлена к центру панели.</summary>
-    private static KitchenElement.Face SeatToward(KitchenElement board, Vector3 panelCenter)
+    private static Face SeatToward(KitchenElement board, Vector3 panelCenter)
     {
         var seats = board.GetGrooveSeatFaces();
         Assert.Greater(seats.Length, 0, $"{board.PartName}: нет посадочной грани паза");
-        KitchenElement.Face best = seats[0];
+        Face best = seats[0];
         float bestDot = float.MinValue;
         foreach (var s in seats)
         {
@@ -184,7 +184,7 @@ public class GroovePanelBoxTests
         Vector3 vAxis = Vector3.Cross(faceNormal, uAxis).normalized;
 
         // Текущая грань ДВП с этой нормалью.
-        KitchenElement.Face face = default;
+        Face face = default;
         foreach (var f in panel.GetFaces())
             if (Vector3.Dot(f.normal, faceNormal) > 0.999f) { face = f; break; }
 

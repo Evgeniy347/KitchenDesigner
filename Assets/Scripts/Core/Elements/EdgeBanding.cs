@@ -299,7 +299,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Доля площади грани, накрытая собранными прямоугольниками.</summary>
-        private static float CoveredRatio(in KitchenElement.Face face, List<Rect> covers)
+        private static float CoveredRatio(in Face face, List<Rect> covers)
         {
             float area = face.size.x * face.size.y;
             if (area <= 0f || covers.Count == 0) return 0f;
@@ -348,7 +348,7 @@ namespace KitchenDesigner.Core
         /// <summary>Габарит грани в координатах (u, v) — та же проекция, что в
         /// ConstraintValidator: у повёрнутой детали грань остаётся прямоугольной
         /// только в собственных осях, поэтому берётся её описанный прямоугольник.</summary>
-        private static Rect FaceRect(in KitchenElement.Face face, Vector3 u, Vector3 v)
+        private static Rect FaceRect(in Face face, Vector3 u, Vector3 v)
         {
             float cu = Vector3.Dot(face.center, u);
             float cv = Vector3.Dot(face.center, v);

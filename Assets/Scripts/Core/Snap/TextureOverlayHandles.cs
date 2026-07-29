@@ -139,7 +139,7 @@ namespace KitchenDesigner.Core
         private RectInt _rectBefore;
         private List<TextureOverlaySpec> _before = new List<TextureOverlaySpec>();
         private float _grabU, _grabV;         // точка захвата в координатах грани, мм
-        private KitchenElement.Face _face;
+        private Face _face;
         private int _faceIndex;
         private Vector2Int _faceMM;
 

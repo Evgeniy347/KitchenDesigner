@@ -1,8 +1,9 @@
 # KitchenDesigner.Geometry — ядро без сцены
 
-Чистая геометрия: допуски, грани, прилипание, ресайз, пазы. Собирается ДВАЖДЫ
-из этих же исходников — Unity по `KitchenDesigner.Geometry.asmdef`, а `dotnet`
-по `geometry/Geometry.csproj` (glob на эту папку). Дублирования нет.
+Чистая геометрия: допуски, грани, константы, прилипание, ресайз, пазы.
+Собирается ДВАЖДЫ из этих же исходников — Unity по
+`KitchenDesigner.Geometry.asmdef`, а `dotnet` по `geometry/core/Geometry.csproj`
+(glob на эту папку). Дублирования нет.
 
 Смысл второй сборки — мутационное тестирование штатным `dotnet-stryker` и
 прогон тестов ядра за миллисекунды вместо минут. Полный план и обоснование:
@@ -26,13 +27,18 @@
 ## Как запускать
 
 ```
-cd geometry
-dotnet test Geometry.Tests.csproj
-dotnet-stryker --project Geometry.csproj --test-project Geometry.Tests.csproj --reporter html
+cd geometry/tests
+dotnet test
+dotnet-stryker --project Geometry.csproj --reporter html
 ```
 
-`--test-project` обязателен: в каталоге два .csproj, и без флага Stryker не
-выбирает, какой из них мутировать.
+Проекты РАЗВЕДЕНЫ по подпапкам (`geometry/core`, `geometry/tests`) намеренно.
+Пока оба .csproj лежали в одном каталоге, они делили `obj/`, и сборка ядра
+(в котором нет ни одного PackageReference) затирала `project.assets.json`
+тестов — следующий `dotnet test` падал с «не найдено пространство имён NUnit».
+`dotnet restore` это не чинило, помогало только удаление `obj/`. Заодно ушло
+требование флага `--test-project`: Stryker отказывался работать, когда в
+каталоге больше одного проекта.
 
 ## Что разрешено
 

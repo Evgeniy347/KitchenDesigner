@@ -53,7 +53,7 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        public static KitchenElement.Face[] Faces(Vector3 physical, PartData data,
+        public static Face[] Faces(Vector3 physical, PartData data,
             Vector3 pos, Quaternion rot)
         {
             CornerUnits(physical, data, out var minX, out var maxX,
@@ -77,9 +77,9 @@ namespace KitchenDesigner.Core
             var rightAxis = new[] { axes[1], axes[1], axes[0], axes[0], axes[0], axes[0] };
             var upAxis = new[] { axes[2], axes[2], axes[2], axes[2], axes[1], axes[1] };
 
-            var faces = new KitchenElement.Face[6];
+            var faces = new Face[6];
             for (int i = 0; i < 6; i++)
-                faces[i] = new KitchenElement.Face(
+                faces[i] = new Face(
                     pos + centerShift + offsets[i], normals[i], faceDims[i / 2],
                     rightAxis[i], upAxis[i]);
             return faces;

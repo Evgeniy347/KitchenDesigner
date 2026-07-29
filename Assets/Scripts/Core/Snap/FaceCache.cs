@@ -8,11 +8,11 @@ namespace KitchenDesigner.Core
     /// в рантайме выключен, чтобы не хранить устаревшее состояние.</summary>
     public static class FaceCache
     {
-        private static Dictionary<KitchenElement, KitchenElement.Face[]>? _cache;
+        private static Dictionary<KitchenElement, Face[]>? _cache;
 
         public static bool Enabled => _cache != null;
 
-        public static void Set(Dictionary<KitchenElement, KitchenElement.Face[]> cache)
+        public static void Set(Dictionary<KitchenElement, Face[]> cache)
         {
             _cache = cache;
         }
@@ -22,7 +22,7 @@ namespace KitchenDesigner.Core
             _cache = null;
         }
 
-        public static KitchenElement.Face[] GetFaces(KitchenElement element)
+        public static Face[] GetFaces(KitchenElement element)
         {
             if (_cache != null && _cache.TryGetValue(element, out var faces))
                 return faces;

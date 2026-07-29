@@ -31,7 +31,7 @@ public class SnapMutationTests
     private readonly List<string> _warnings = new();
     private ProjectLoadStateGuard? _guard;
 
-    private readonly Dictionary<KitchenElement, KitchenElement.Face[]> _faceCache = new();
+    private readonly Dictionary<KitchenElement, Face[]> _faceCache = new();
 
     /// <summary>Соседи текущей детали по имени. Свип ищет цель снэпа по имени на
     /// каждом сработавшем шаге — линейный поиск по списку стоил заметно дороже
@@ -57,7 +57,7 @@ public class SnapMutationTests
                 _faceCache[e] = e.GetFaces();
     }
 
-    private KitchenElement.Face[] GetFacesCached(KitchenElement e)
+    private Face[] GetFacesCached(KitchenElement e)
     {
         if (_faceCache.TryGetValue(e, out var faces)) return faces;
         return e.GetFaces();
@@ -176,7 +176,7 @@ public class SnapMutationTests
             float nearbyRadiusMm = SweepMaxMm + threshold + 100f;
             var others = GetNeighborsWithin(moved, allOthers, nearbyRadiusMm);
 
-            var staticCache = new Dictionary<KitchenElement, KitchenElement.Face[]>();
+            var staticCache = new Dictionary<KitchenElement, Face[]>();
             _othersByName.Clear();
             foreach (var o in others)
             {
@@ -734,7 +734,7 @@ public class SnapMutationTests
     ///
     /// Грани пазов не учитываются — они дают ДОПОЛНИТЕЛЬНЫЕ детенты, от их
     /// отсутствия здесь возможен только пропуск ошибки, но не ложная.</summary>
-    private List<ResizeTarget> FindResizeTargets(KitchenElement.Face movedFace, float rawDelta,
+    private List<ResizeTarget> FindResizeTargets(Face movedFace, float rawDelta,
         List<KitchenElement> others, float thresholdMm)
     {
         var result = new List<ResizeTarget>();
@@ -867,7 +867,7 @@ public class SnapMutationTests
     /// (заподлицо с дальней кромкой) — ресайз использует обе. Проверяем только
     /// параллельность нормалей и зазор; перекрытие не требуем — это «конкуренция
     /// по расстоянию», а не полноценный снэп.</summary>
-    private FaceCandidate FindClosestOpposingFace(KitchenElement.Face movedFace,
+    private FaceCandidate FindClosestOpposingFace(Face movedFace,
         List<KitchenElement> others, float thresholdMm)
     {
         float threshold = thresholdMm * AppConstants.MM_TO_UNITS;
@@ -896,7 +896,7 @@ public class SnapMutationTests
             : new FaceCandidate("", -1f, false);
     }
 
-    private List<FaceCandidate> FindAllOpposingFaces(KitchenElement.Face movedFace,
+    private List<FaceCandidate> FindAllOpposingFaces(Face movedFace,
         List<KitchenElement> others, float thresholdMm)
     {
         float threshold = thresholdMm * AppConstants.MM_TO_UNITS;

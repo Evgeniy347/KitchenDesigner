@@ -220,7 +220,7 @@ public class SaveValidationTests
         float deadBand = Tolerance.SnapEpsilon;                            // 0.01 мм
         float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS; // 0.5 мм
 
-        var faces = new Dictionary<KitchenElement, KitchenElement.Face[]>();
+        var faces = new Dictionary<KitchenElement, Face[]>();
         var boxes = new Dictionary<KitchenElement, (Vector3 min, Vector3 max)>();
         var parts = new List<KitchenElement>();
         foreach (var e in elements)
@@ -350,7 +350,7 @@ public class SaveValidationTests
     /// Знак: + щель, − врезание. Гейты те же, что у ConstraintValidator.MinParallelGap
     /// (параллельность, перекрытие ≥ MinSupportOverlap), но нормали обязаны быть
     /// ВСТРЕЧНЫМИ — только тогда расстояние между плоскостями имеет знак.</summary>
-    private static bool WorstSubToleranceJoint(KitchenElement.Face[] fa, KitchenElement.Face[] fb,
+    private static bool WorstSubToleranceJoint(Face[] fa, Face[] fb,
         float deadBand, float maxDist, out float gapUnits, out int faceIndex)
     {
         gapUnits = 0f;
@@ -377,7 +377,7 @@ public class SaveValidationTests
     /// <summary>Перекрытие граней в плоскости — копия ConstraintValidator.FacesOverlap
     /// (там private). Полуосевое отношение, а не отношение площадей: узкие
     /// перпендикулярные грани иначе отсекались бы.</summary>
-    private static bool FacesOverlap(KitchenElement.Face a, KitchenElement.Face b,
+    private static bool FacesOverlap(Face a, Face b,
         out float overlapRatio)
     {
         Vector3 u = a.rightAxis;
@@ -403,7 +403,7 @@ public class SaveValidationTests
         return true;
     }
 
-    private static Rect FaceRect(KitchenElement.Face face, Vector3 u, Vector3 v)
+    private static Rect FaceRect(Face face, Vector3 u, Vector3 v)
     {
         var center = new Vector2(Vector3.Dot(face.center, u), Vector3.Dot(face.center, v));
         float halfU = Mathf.Abs(Vector3.Dot(face.rightAxis, u)) * face.size.x * 0.5f

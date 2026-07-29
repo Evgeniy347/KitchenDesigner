@@ -187,7 +187,7 @@ namespace KitchenDesigner.Core
         /// <summary>Полоса вдоль общего ребра соседней грани с торцом: она
         /// прижата к торцу и уходит вглубь на BandFraction размера ЭТОЙ грани в
         /// направлении от торца, но не больше BandMaxMm.</summary>
-        private static void AddBand(in KitchenElement.Face face, in KitchenElement.Face end)
+        private static void AddBand(in Face face, in Face end)
         {
             // Направление «от торца» внутри плоскости соседней грани — это
             // нормаль торца, спроецированная на плоскость грани. Для граней
@@ -212,7 +212,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Накладка на грань: размер в юнитах и сдвиг от центра грани
         /// в её собственных осях.</summary>
-        private static void AddQuad(in KitchenElement.Face face, Vector2 size, Vector2 shiftInFace)
+        private static void AddQuad(in Face face, Vector2 size, Vector2 shiftInFace)
         {
             var go = new GameObject("EdgeSideHighlight");
             go.hideFlags = HideFlags.DontSave;
