@@ -83,7 +83,7 @@
     },
     {
       "id": "belaya_gladkaya_svisskrono",
-      "name": "Белая гладкая (СвиссКроно)",
+      "name": "ЛМДФ Белая гладкая (СвиссКроно)",
       "kind": "ЛМДФ",
       "file": "belaya_gladkaya_svisskrono.jpg",
       "tileWidthMM": 600,
@@ -92,7 +92,7 @@
     },
     {
       "id": "belaya_gladkaya_kastamonu",
-      "name": "Белая гладкая (Kastamonu F)",
+      "name": "ЛМДФ Белая гладкая (Kastamonu F)",
       "kind": "ЛМДФ",
       "file": "belaya_gladkaya_kastamonu.jpg",
       "tileWidthMM": 600,
@@ -101,7 +101,7 @@
     },
     {
       "id": "belyy_premium_filvud_w1000",
-      "name": "Белый премиум филвуд (W1000 ST38)",
+      "name": "ЛМДФ Белый премиум филвуд (W1000 ST38)",
       "kind": "ЛМДФ",
       "file": "belyy_premium_filvud_w1000.jpg",
       "tileWidthMM": 600,
@@ -110,7 +110,7 @@
     },
     {
       "id": "les_chernyy_u998",
-      "name": "Лес чёрный филвуд (U998 ST38)",
+      "name": "ЛМДФ Лес чёрный филвуд (U998 ST38)",
       "kind": "ЛМДФ",
       "file": "les_chernyy_u998.jpg",
       "tileWidthMM": 600,
@@ -119,7 +119,7 @@
     },
     {
       "id": "dub_galifaks_belyy_h1176",
-      "name": "Дуб галифакс белый (H1176 ST37)",
+      "name": "ЛМДФ Дуб галифакс белый (H1176 ST37)",
       "kind": "ЛМДФ",
       "file": "dub_galifaks_belyy_h1176.jpg",
       "tileWidthMM": 400,
@@ -128,7 +128,7 @@
     },
     {
       "id": "dub_galifaks_naturalnyy_h1180",
-      "name": "Дуб галифакс натуральный (H1180 ST37)",
+      "name": "ЛМДФ Дуб галифакс натуральный (H1180 ST37)",
       "kind": "ЛМДФ",
       "file": "dub_galifaks_naturalnyy_h1180.jpg",
       "tileWidthMM": 400,
@@ -137,7 +137,7 @@
     },
     {
       "id": "dub_galifaks_olovo_h3176",
-      "name": "Дуб галифакс олово (H3176 ST37)",
+      "name": "ЛМДФ Дуб галифакс олово (H3176 ST37)",
       "kind": "ЛМДФ",
       "file": "dub_galifaks_olovo_h3176.jpg",
       "tileWidthMM": 400,
@@ -146,7 +146,7 @@
     },
     {
       "id": "dub_galifaks_tabak_h1181",
-      "name": "Дуб галифакс табак (H1181 ST37)",
+      "name": "ЛМДФ Дуб галифакс табак (H1181 ST37)",
       "kind": "ЛМДФ",
       "file": "dub_galifaks_tabak_h1181.jpg",
       "tileWidthMM": 550,
@@ -155,7 +155,7 @@
     },
     {
       "id": "dub_gladstoun_pesochnyy_h3309",
-      "name": "Дуб гладстоун песочный (H3309 ST28)",
+      "name": "ЛМДФ Дуб гладстоун песочный (H3309 ST28)",
       "kind": "ЛМДФ",
       "file": "dub_gladstoun_pesochnyy_h3309.jpg",
       "tileWidthMM": 550,
@@ -164,7 +164,7 @@
     },
     {
       "id": "dub_gladstoun_tabak_h3325",
-      "name": "Дуб гладстоун табак (H3325 ST28)",
+      "name": "ЛМДФ Дуб гладстоун табак (H3325 ST28)",
       "kind": "ЛМДФ",
       "file": "dub_gladstoun_tabak_h3325.jpg",
       "tileWidthMM": 550,
@@ -173,7 +173,7 @@
     },
     {
       "id": "dub_davenport_naturalnyy_svetlyy_h3359",
-      "name": "Дуб давенпорт натуральный светлый (H3359 ST32)",
+      "name": "ЛМДФ Дуб давенпорт натуральный светлый (H3359 ST32)",
       "kind": "ЛМДФ",
       "file": "dub_davenport_naturalnyy_svetlyy_h3359.jpg",
       "tileWidthMM": 550,
@@ -182,7 +182,7 @@
     },
     {
       "id": "dub_kuneo_korichnevyy_h3317",
-      "name": "Дуб кунео коричневый (H3317 ST28)",
+      "name": "ЛМДФ Дуб кунео коричневый (H3317 ST28)",
       "kind": "ЛМДФ",
       "file": "dub_kuneo_korichnevyy_h3317.jpg",
       "tileWidthMM": 750,
@@ -191,7 +191,7 @@
     },
     {
       "id": "dub_kasella_kashtanovyy_h1369",
-      "name": "Дуб каселла каштановый (H1369 ST40)",
+      "name": "ЛМДФ Дуб каселла каштановый (H1369 ST40)",
       "kind": "ЛМДФ",
       "file": "dub_kasella_kashtanovyy_h1369.jpg",
       "tileWidthMM": 1150,
@@ -200,7 +200,7 @@
     },
     {
       "id": "dub_kasella_korichnevyy_h1386",
-      "name": "Дуб каселла коричневый (H1386 ST40)",
+      "name": "ЛМДФ Дуб каселла коричневый (H1386 ST40)",
       "kind": "ЛМДФ",
       "file": "dub_kasella_korichnevyy_h1386.jpg",
       "tileWidthMM": 400,
@@ -209,7 +209,7 @@
     },
     {
       "id": "dub_kasella_naturalnyy_svetlyy_h1367",
-      "name": "Дуб каселла натуральный светлый (H1367 ST40)",
+      "name": "ЛМДФ Дуб каселла натуральный светлый (H1367 ST40)",
       "kind": "ЛМДФ",
       "file": "dub_kasella_naturalnyy_svetlyy_h1367.jpg",
       "tileWidthMM": 750,
@@ -218,7 +218,7 @@
     },
     {
       "id": "dub_kasella_naturalnyy_h1385",
-      "name": "Дуб каселла натуральный (H1385 ST40)",
+      "name": "ЛМДФ Дуб каселла натуральный (H1385 ST40)",
       "kind": "ЛМДФ",
       "file": "dub_kasella_naturalnyy_h1385.jpg",
       "tileWidthMM": 750,
@@ -227,7 +227,7 @@
     },
     {
       "id": "dub_sakramento_korichnevyy_h1142",
-      "name": "Дуб сакраменто коричневый (H1142 ST36)",
+      "name": "ЛМДФ Дуб сакраменто коричневый (H1142 ST36)",
       "kind": "ЛМДФ",
       "file": "dub_sakramento_korichnevyy_h1142.jpg",
       "tileWidthMM": 750,
@@ -236,7 +236,7 @@
     },
     {
       "id": "dub_charlston_temno_korichnevyy_h3154",
-      "name": "Дуб чарльстон тёмно-коричневый (H3154 ST36)",
+      "name": "ЛМДФ Дуб чарльстон тёмно-коричневый (H3154 ST36)",
       "kind": "ЛМДФ",
       "file": "dub_charlston_temno_korichnevyy_h3154.jpg",
       "tileWidthMM": 950,
@@ -245,7 +245,7 @@
     },
     {
       "id": "dub_sherman_antratsit_h1346",
-      "name": "Дуб шерман антрацит (H1346 ST32)",
+      "name": "ЛМДФ Дуб шерман антрацит (H1346 ST32)",
       "kind": "ЛМДФ",
       "file": "dub_sherman_antratsit_h1346.jpg",
       "tileWidthMM": 550,
@@ -254,7 +254,7 @@
     },
     {
       "id": "dub_sherman_konyak_h1344",
-      "name": "Дуб шерман коньяк коричневый (H1344 ST32)",
+      "name": "ЛМДФ Дуб шерман коньяк коричневый (H1344 ST32)",
       "kind": "ЛМДФ",
       "file": "dub_sherman_konyak_h1344.jpg",
       "tileWidthMM": 400,
@@ -263,12 +263,81 @@
     },
     {
       "id": "yasen_navarra_h1250",
-      "name": "Ясень наварра (H1250 ST36)",
+      "name": "ЛМДФ Ясень наварра (H1250 ST36)",
       "kind": "ЛМДФ",
       "file": "yasen_navarra_h1250.jpg",
       "tileWidthMM": 950,
       "tileHeightMM": 950,
       "color": "#D2BEA6"
+    },
+    {
+      "id": "lhdf_dub_sonoma_shagren_3025pe",
+      "name": "ЛХДФ Дуб сонома шагрень (3025 РЕ, Кроношпан)",
+      "kind": "ЛХДФ",
+      "file": "lhdf_dub_sonoma_shagren_3025pe.jpg",
+      "tileWidthMM": 900,
+      "tileHeightMM": 900,
+      "color": "#AF9B7F"
+    },
+    {
+      "id": "lhdf_antratsit_shagren_164pe",
+      "name": "ЛХДФ Антрацит шагрень (164 РЕ, Кроношпан)",
+      "kind": "ЛХДФ",
+      "file": "lhdf_antratsit_shagren_164pe.jpg",
+      "tileWidthMM": 600,
+      "tileHeightMM": 600,
+      "color": "#37393A"
+    },
+    {
+      "id": "hdf_neshlifovannaya",
+      "name": "ХДФ Нешлифованная (Кроношпан)",
+      "kind": "ХДФ",
+      "file": "hdf_neshlifovannaya.jpg",
+      "tileWidthMM": 400,
+      "tileHeightMM": 400,
+      "color": "#9C7A50"
+    },
+    {
+      "id": "lhdf_belyy_0101pe",
+      "name": "ЛХДФ Белый (0101 РЕ, Кроношпан)",
+      "kind": "ЛХДФ",
+      "tileWidthMM": 600,
+      "color": "#EFF0EA"
+    },
+    {
+      "id": "lhdf_belyy_knyazhpogost_101pe",
+      "name": "ЛХДФ Белый (101 РЕ, Княжпогост)",
+      "kind": "ЛХДФ",
+      "tileWidthMM": 600,
+      "color": "#FEFFF1"
+    },
+    {
+      "id": "lhdf_belaya_shagren_101pe_sm",
+      "name": "ЛХДФ Белая шагрень (101 РЕ, Кроношпан СМ)",
+      "kind": "ЛХДФ",
+      "tileWidthMM": 600,
+      "color": "#FFFFFF"
+    },
+    {
+      "id": "lhdf_bezhevyy_0522pe",
+      "name": "ЛХДФ Бежевый (0522 РЕ, Кроношпан)",
+      "kind": "ЛХДФ",
+      "tileWidthMM": 600,
+      "color": "#E0D2B7"
+    },
+    {
+      "id": "lhdf_seryy_kamen_0112pe",
+      "name": "ЛХДФ Серый камень (0112 РЕ, Кроношпан)",
+      "kind": "ЛХДФ",
+      "tileWidthMM": 600,
+      "color": "#C7CCCF"
+    },
+    {
+      "id": "lhdf_chernyy_0190pe",
+      "name": "ЛХДФ Чёрный (0190 РЕ, Кроношпан)",
+      "kind": "ЛХДФ",
+      "tileWidthMM": 600,
+      "color": "#121816"
     },
     {
       "id": "gtv_anthracite",
