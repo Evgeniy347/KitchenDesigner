@@ -203,7 +203,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -288,7 +288,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -1478,7 +1478,7 @@
             "gapTop": 2,
             "gapBottom": 2,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
@@ -1563,7 +1563,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -2508,7 +2508,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -4333,7 +4333,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -8678,7 +8678,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -16889,14 +16889,14 @@
         {
             "name": "Cab_R_Shf_M2",
             "dimensionsMM": [
-                600,
+                500,
                 1200,
                 16
             ],
             "position": [
-                8.24000072479248,
+                8.289999961853028,
                 1.7440000772476197,
-                2.193000555038452
+                2.193000078201294
             ],
             "rotation": [
                 0.7071068286895752,
@@ -18027,7 +18027,7 @@
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 1,
-            "doorOpen": false,
+            "doorOpen": true,
             "assembled": true,
             "assembledFill": 0,
             "grooveCount": 1,
@@ -23009,11 +23009,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 0.24134518206119538,
-        "targetY": 0.7650198340415955,
-        "targetZ": -2.2485172748565676,
-        "angleX": 27.156028747558595,
-        "angleY": 864.1553955078125,
+        "targetX": -0.2816734313964844,
+        "targetY": 1.7514276504516602,
+        "targetZ": -2.7027711868286135,
+        "angleX": 8.63945198059082,
+        "angleY": 1223.421875,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": -1.0666234493255616,
@@ -23111,36 +23111,6 @@
         "edgeManualMask": 0
     },
     "undoHistory": [
-        {
-            "type": "move",
-            "description": "Move Moyka",
-            "elementIndex": 173,
-            "posBefore": [
-                0.5325360298156738,
-                0.85999995470047,
-                -3.2990002632141115
-            ],
-            "posAfter": [
-                0.7026727795600891,
-                0.85999995470047,
-                -3.2990002632141115
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
         {
             "type": "move",
             "description": "Move Moyka",
@@ -56383,6 +56353,112 @@
                 2000,
                 40
             ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_R_Shf_M2",
+            "elementIndex": 195,
+            "posBefore": [
+                8.24000072479248,
+                1.7440000772476197,
+                2.193000555038452
+            ],
+            "posAfter": [
+                8.293001174926758,
+                1.7440000772476197,
+                2.193000555038452
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                600,
+                1200,
+                16
+            ],
+            "dimsAfter": [
+                494,
+                1200,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Cab_R_Shf_M2",
+            "elementIndex": 195,
+            "posBefore": [
+                8.293001174926758,
+                1.7440000772476197,
+                2.193000555038452
+            ],
+            "posAfter": [
+                8.293000221252442,
+                1.7440000772476197,
+                2.193000078201294
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                494,
+                1200,
+                16
+            ],
+            "dimsAfter": [
+                500,
+                1200,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Cab_R_Shf_M2",
+            "elementIndex": 195,
+            "posBefore": [
+                8.293000221252442,
+                1.7440000772476197,
+                2.193000078201294
+            ],
+            "posAfter": [
+                8.289999961853028,
+                1.7440000772476197,
+                2.193000078201294
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
             "children": []
         }
     ],
