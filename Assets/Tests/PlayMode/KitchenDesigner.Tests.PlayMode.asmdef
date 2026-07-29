@@ -5,6 +5,7 @@
 		"UnityEngine.TestRunner",
 		"UnityEditor.TestRunner",
 		"KitchenDesigner.Runtime",
+		"Unity.TextMeshPro",
 		"KitchenDesigner.Tests.Shared"
 	],
 	"includePlatforms": [],

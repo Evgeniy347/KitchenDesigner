@@ -616,6 +616,57 @@ public class TextureOverlayTests
     private static readonly MethodInfo _dropdownHoverUpdate =
         typeof(DropdownHover).GetMethod("Update", BindingFlags.NonPublic | BindingFlags.Instance);
 
+    /// <summary>Наведение вешается компонентом, который умеет ТОЛЬКО вход и
+    /// выход курсора. EventTrigger здесь запрещён: он реализует все интерфейсы
+    /// событий сразу, забирает себе и колесо мыши, и прокрутка длинного списка
+    /// перестаёт работать.</summary>
+    [Test]
+    public void DropdownHover_ItemHover_ReportsIndex_WithoutEatingScroll()
+    {
+        var root = new GameObject("TestRoot");
+        try
+        {
+            var dd = UIFactory.CreateDropdown("TestDD", root.transform,
+                new List<string> { "A", "B" }, Vector2.zero, new Vector2(200, 28), _ => { });
+            int entered = -1;
+            int exits = 0;
+            DropdownHover.Attach(dd, i => entered = i, () => exits++);
+
+            var listGo = new GameObject("Dropdown List");
+            listGo.transform.SetParent(dd.transform, worldPositionStays: false);
+            var second = MakeItem(listGo.transform, "Item 1");
+            var first = MakeItem(listGo.transform, "Item 0");
+            first.transform.SetSiblingIndex(0);
+            _dropdownHoverUpdate!.Invoke(dd.GetComponent<DropdownHover>(), null);
+
+            // Обработчиков наведения на пункте двое: сам Toggle (подсветка) и
+            // наш — дёргаем оба, как это делает EventSystem.
+            var evt = new UnityEngine.EventSystems.PointerEventData(null);
+            foreach (var h in second.GetComponents<UnityEngine.EventSystems.IPointerEnterHandler>())
+                h.OnPointerEnter(evt);
+            Assert.AreEqual(1, entered, "наведение должно сообщать индекс пункта");
+
+            foreach (var h in second.GetComponents<UnityEngine.EventSystems.IPointerExitHandler>())
+                h.OnPointerExit(evt);
+            Assert.AreEqual(1, exits, "уход курсора должен снимать предпросмотр");
+
+            Assert.IsNull(second.GetComponent<UnityEngine.EventSystems.IScrollHandler>(),
+                "BUG: пункт перехватывает колесо мыши — список не прокрутить");
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    private static GameObject MakeItem(Transform parent, string name)
+    {
+        var go = new GameObject(name, typeof(RectTransform));
+        go.transform.SetParent(parent, worldPositionStays: false);
+        go.AddComponent<UnityEngine.UI.Toggle>();
+        return go;
+    }
+
     [Test]
     public void DropdownHover_ExitFires_WhenListIsDeactivated()
     {
