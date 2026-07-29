@@ -38,6 +38,7 @@ namespace KitchenDesigner.Core.UI
                 "Ctrl + ЛКМ  — мультивыделение\n" +
                 "Delete  — удалить объект(ы)\n" +
                 "Ctrl + D  — дублировать\n" +
+                "Ctrl + S  — сохранить\n" +
                 "Ctrl + Z  — отмена\n" +
                 "Ctrl + Y / Ctrl+Shift+Z  — повтор\n" +
                 "Escape  — отменить перетаскивание / закрыть меню\n" +

@@ -31,6 +31,11 @@ namespace KitchenDesigner.Core
                 }
             }
 
+            if (ctrl && Input.GetKeyDown(KeyCode.S))
+            {
+                UI.UIManager.Instance?.SaveCurrent();
+            }
+
             if (ctrl && Input.GetKeyDown(KeyCode.Y))
             {
                 if (CommandStack.CanRedo)

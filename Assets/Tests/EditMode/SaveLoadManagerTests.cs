@@ -285,6 +285,49 @@ public class SaveLoadManagerTests
     }
 
     [Test]
+    public void SaveToLastPath_SavesFile_WithCorrectContent()
+    {
+        CreateElement("CtrlS_Board", new Vector3Int(800, 400, 18), new Vector3(0.5f, 0.2f, 0.3f));
+        var all = _spawned.ConvertAll(g => g.GetComponent<KitchenElement>());
+        foreach (var e in all) PartRegistry.Register(e);
+        var path = Path.Combine(Application.temporaryCachePath, "ctrls_lastpath.json");
+        SaveLoadManager.LastPath = path;
+
+        Assert.IsTrue(SaveLoadManager.SaveToLastPath());
+        Assert.IsTrue(File.Exists(path));
+
+        var loaded = SaveLoadManager.LoadFromFile(path);
+        Assert.IsNotNull(loaded);
+        Assert.AreEqual(1, loaded!.elements.Length);
+        Assert.AreEqual("CtrlS_Board", loaded.elements[0].name);
+        Assert.AreEqual(new[] { 800, 400, 18 }, loaded.elements[0].dimensionsMM);
+
+        foreach (var e in all) PartRegistry.Unregister(e);
+        File.Delete(path);
+    }
+
+    [Test]
+    public void SaveProject_QuickSave_WritesFile()
+    {
+        CreateElement("QuickBoard", new Vector3Int(600, 300, 18), Vector3.zero);
+        var all = _spawned.ConvertAll(g => g.GetComponent<KitchenElement>());
+        foreach (var e in all) PartRegistry.Register(e);
+        SaveLoadManager.LastPath = "";
+
+        Assert.IsTrue(SaveLoadManager.SaveProject("quicksave"));
+        var path = SaveLoadManager.PathForName("quicksave");
+        Assert.IsTrue(File.Exists(path));
+
+        var loaded = SaveLoadManager.LoadFromFile(path);
+        Assert.IsNotNull(loaded);
+        Assert.AreEqual(1, loaded!.elements.Length);
+        Assert.AreEqual("QuickBoard", loaded.elements[0].name);
+
+        foreach (var e in all) PartRegistry.Unregister(e);
+        File.Delete(path);
+    }
+
+    [Test]
     public void Facade_SaveAndRestore_PreservesComponentAndGaps()
     {
         var go = ElementFactory.CreateFacade(
