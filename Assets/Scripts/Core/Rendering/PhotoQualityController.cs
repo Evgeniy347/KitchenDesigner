@@ -18,7 +18,6 @@ namespace KitchenDesigner.Core
 
         // Плотная карта теней для чёткого мягкого края в пределах комнаты.
         private const int ShadowMapResolution = 4096;
-        private const float ShadowDistanceUnits = 22f;
 
         private static bool _applied;
         private static GameObject? _volumeGo;
@@ -53,8 +52,11 @@ namespace KitchenDesigner.Core
             ApplyPipeline(s);
             ApplyShadows(s);
             ApplyCamera(s);
-            ApplyAmbient();
+            ApplyAmbient(s);
             ApplyPostProcessing(s);
+            // Лампы читают глобальное разрешение теней — на входе в режим их
+            // надо пересчитать (тумблер мог измениться при выключенном фото).
+            LightSourceElement.RefreshAll();
             SetRendererFeatureActive("ScreenSpaceAmbientOcclusion", s.PhotoAmbientOcclusion);
             SetRendererFeatureActive("ScreenSpaceGIFeature", s.PhotoSSGI);
 
@@ -132,7 +134,7 @@ namespace KitchenDesigner.Core
 
             asset.msaaSampleCount = s.PhotoAntiAliasing ? 4 : 1;
             asset.renderScale = s.PhotoSupersampling ? 1.5f : 1f;
-            asset.shadowDistance = ShadowDistanceUnits;
+            asset.shadowDistance = s.PhotoShadowDistanceM;
 
             // Разрешение карты теней — рантайм-сеттера нет, ставим полем через рефлексию.
             _prevShadowRes = GetIntField(asset, "m_MainLightShadowmapResolution");
@@ -151,7 +153,7 @@ namespace KitchenDesigner.Core
             sun.shadows = !s.PhotoShadows
                 ? LightShadows.None
                 : (s.PhotoSoftShadows ? LightShadows.Soft : LightShadows.Hard);
-            sun.shadowStrength = 1f;
+            sun.shadowStrength = s.PhotoSunShadowStrengthPct / 100f;
             // Малые смещения при плотной карте — убирает и «лесенку», и acne.
             sun.shadowBias = 0.05f;
             sun.shadowNormalBias = 0.35f;
@@ -175,7 +177,7 @@ namespace KitchenDesigner.Core
             data.renderPostProcessing = true;
         }
 
-        private static void ApplyAmbient()
+        private static void ApplyAmbient(KitchenSettings s)
         {
             _prevAmbientMode = RenderSettings.ambientMode;
             _prevAmbientLight = RenderSettings.ambientLight;
@@ -190,11 +192,14 @@ namespace KitchenDesigner.Core
             // тёплый отскок от пола/дерева, поэтому под полкой не чёрный провал.
             // Верхние грани — слабый холодный «sky». Уровень низкий: «темно значит
             // темно» сохраняется, лечится именно чёрный провал в тени.
-            Color bounce = SampleFloorBounce();
+            // Уровень задаётся настройкой «Окружающий свет»: 100 % — прежнее
+            // зашитое значение, больше — мягче и «воздушнее», 0 — глухая тень.
+            float k = s.PhotoAmbientPct / 100f;
+            Color bounce = SampleFloorBounce() * (s.PhotoFloorBouncePct / 100f);
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.20f, 0.21f, 0.24f);
-            RenderSettings.ambientEquatorColor = new Color(0.17f, 0.16f, 0.15f);
-            RenderSettings.ambientGroundColor = bounce;
+            RenderSettings.ambientSkyColor = new Color(0.20f, 0.21f, 0.24f) * k;
+            RenderSettings.ambientEquatorColor = new Color(0.17f, 0.16f, 0.15f) * k;
+            RenderSettings.ambientGroundColor = bounce * k;
         }
 
         /// <summary>Цвет «отскока» снизу — тёплый оттенок пола, приглушённый.
@@ -233,21 +238,22 @@ namespace KitchenDesigner.Core
             tonemap.mode.Override(TonemappingMode.ACES);
 
             var color = profile.Add<ColorAdjustments>();
-            color.contrast.Override(8f);
-            color.saturation.Override(6f);
+            color.postExposure.Override(s.PhotoExposurePct / 100f);   // сотые EV → EV
+            color.contrast.Override(s.PhotoContrastPct);
+            color.saturation.Override(s.PhotoSaturationPct);
 
             if (s.PhotoBloom)
             {
                 var bloom = profile.Add<Bloom>();
-                bloom.intensity.Override(0.35f);
-                bloom.threshold.Override(1.1f);
+                bloom.intensity.Override(s.PhotoBloomPct / 100f);
+                bloom.threshold.Override(s.PhotoBloomThresholdPct / 100f);
                 bloom.scatter.Override(0.6f);
             }
 
             if (s.PhotoVignette)
             {
                 var vignette = profile.Add<Vignette>();
-                vignette.intensity.Override(0.22f);
+                vignette.intensity.Override(s.PhotoVignettePct / 100f);
                 vignette.smoothness.Override(0.4f);
             }
 

@@ -40,5 +40,16 @@
     "photoBloom": true,
     "photoVignette": true,
     "photoCeiling": true,
-    "photoSSGI": true
+    "photoSSGI": true,
+    "photoAmbientPct": 100,
+    "photoFloorBouncePct": 100,
+    "photoExposurePct": 0,
+    "photoContrastPct": 8,
+    "photoSaturationPct": 6,
+    "photoBloomPct": 35,
+    "photoBloomThresholdPct": 110,
+    "photoVignettePct": 22,
+    "photoSunShadowStrengthPct": 100,
+    "photoShadowDistanceM": 22,
+    "photoLampShadows": true
 }

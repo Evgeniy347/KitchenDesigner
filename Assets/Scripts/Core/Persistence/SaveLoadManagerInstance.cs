@@ -351,6 +351,18 @@ namespace KitchenDesigner.Core
                         lightEl.DiffusionPct = ed.lightDiffusionPct;
                         lightEl.UpLightPct = ed.lightUpPct;
                         lightEl.BeamAngleDeg = ed.lightBeamDeg;
+                        lightEl.SoftnessPct = ed.lightSoftnessPct;
+                        lightEl.RangeMinMM = ed.lightRangeMinMM;
+                        lightEl.RangeMaxMM = ed.lightRangeMaxMM;
+                        lightEl.DropMM = ed.lightDropMM;
+                        lightEl.UpConePct = ed.lightUpConePct;
+                        lightEl.UpRangePct = ed.lightUpRangePct;
+                        lightEl.EfficacyLmPerW = ed.lightEfficacyLmPerW;
+                        lightEl.LumensPerUnit = ed.lightLumensPerUnit;
+                        lightEl.GlowPct = ed.lightGlowPct;
+                        lightEl.ShadowStrengthPct = ed.lightShadowStrengthPct;
+                        lightEl.Shape = (LampShape)Mathf.Clamp(ed.lightShape, 0, 1);
+                        lightEl.Shadow = (LampShadow)Mathf.Clamp(ed.lightShadow, 0, 2);
                     }
                 }
                 created.Add(go);

@@ -18,7 +18,9 @@ namespace KitchenDesigner.Core.UI
         private static readonly Color ActiveTabColor = new(0.28f, 0.33f, 0.42f, 1f);
         private static readonly Color InactiveTabColor = new(0.15f, 0.16f, 0.20f, 1f);
 
-        private const float PanelW = 520;
+        // Шесть вкладок: при прежних 520 px «Управление» и «О программе»
+        // ломались на две строки, поэтому панель шире ровно на одну вкладку.
+        private const float PanelW = 600;
         private const float PanelH = 900;
         private const float ContentW = 480;
         private const float RowH = 32;
@@ -34,7 +36,7 @@ namespace KitchenDesigner.Core.UI
         private const float IndentPx = 20f;
 
         /// <summary>«Закрыть» стоит у нижнего края панели, а не под последней
-        /// строкой самой длинной вкладки: вкладок пять, содержимое у них разной
+        /// строкой самой длинной вкладки: вкладок шесть, содержимое у них разной
         /// высоты, и кнопка не должна прыгать при переключении (а заодно —
         /// съезжать вверх, когда строку переносят на другую вкладку).</summary>
         private const float CloseY = -PanelH * 0.5f + 54;
@@ -66,6 +68,7 @@ namespace KitchenDesigner.Core.UI
             BuildViewTab(panel.transform, s);
             BuildControlTab(panel.transform, s);
             BuildPhotoTab(panel.transform, s);
+            BuildLightTab(panel.transform, s);
             BuildAboutTab(panel.transform);
 
             SwitchTab(0);
@@ -90,7 +93,7 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildTabs(Transform parent)
         {
-            string[] labels = { "Проект", "Вид", "Управление", "Фото режим", "О программе" };
+            string[] labels = { "Проект", "Вид", "Управление", "Фото режим", "Свет", "О программе" };
             float tabW = (PanelW - 40) / labels.Length;
 
             for (int i = 0; i < labels.Length; i++)
@@ -101,8 +104,8 @@ namespace KitchenDesigner.Core.UI
                     new Vector2(posX, TabY), new Vector2(tabW - 4, 32),
                     () => SwitchTab(idx));
                 btn.GetComponent<Image>().color = InactiveTabColor;
-                // Пятая вкладка сузила каждую до ~92 px, и «Помещение» с
-                // «Управлением» ломались на две строки с обрезкой хвоста.
+                // Вкладок шесть, каждая ~93 px: без уменьшенного кегля
+                // «Управление» и «О программе» ломаются на две строки.
                 var caption = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
                 if (caption != null) caption.fontSize = TabFontSize;
                 _tabButtons.Add(btn);
@@ -459,6 +462,103 @@ namespace KitchenDesigner.Core.UI
             PhotoQualityPreset.High => "Высокое",
             _ => "Свои настройки"
         };
+
+        // ── Tab: Свет ───────────────────────────────────────
+        // Тонкая настройка света фоторежима: всё, что раньше было зашито в
+        // PhotoQualityController константами. Дефолты равны прежним числам,
+        // поэтому «не трогал ничего» = прежняя картинка.
+
+        private void BuildLightTab(Transform panel, KitchenSettings s)
+        {
+            var page = new GameObject("Tab_Light");
+            page.transform.SetParent(panel, false);
+            _tabPages.Add(page);
+            var t = page.transform;
+
+            float y = ContentTopY;
+
+            AddHeaderRow(t, ref y, "Заполняющий свет");
+            AddIntSliderRow(t, ref y, "Окружающий свет", 0, KitchenSettings.PHOTO_AMBIENT_MAX_PCT,
+                s.PhotoAmbientPct, Pct, v => { s.PhotoAmbientPct = v; PhotoMode.RefreshIfActive(); });
+            AddIntSliderRow(t, ref y, "Отскок от пола", 0, KitchenSettings.PHOTO_FLOOR_BOUNCE_MAX_PCT,
+                s.PhotoFloorBouncePct, Pct, v => { s.PhotoFloorBouncePct = v; PhotoMode.RefreshIfActive(); });
+
+            y -= 6;
+            AddHeaderRow(t, ref y, "Экспозиция и тон");
+            AddIntSliderRow(t, ref y, "Экспозиция",
+                KitchenSettings.PHOTO_EXPOSURE_MIN_PCT, KitchenSettings.PHOTO_EXPOSURE_MAX_PCT,
+                s.PhotoExposurePct, Ev, v => { s.PhotoExposurePct = v; PhotoMode.RefreshIfActive(); });
+            AddIntSliderRow(t, ref y, "Контраст",
+                KitchenSettings.PHOTO_COLOR_MIN_PCT, KitchenSettings.PHOTO_COLOR_MAX_PCT,
+                s.PhotoContrastPct, Pct, v => { s.PhotoContrastPct = v; PhotoMode.RefreshIfActive(); });
+            AddIntSliderRow(t, ref y, "Насыщенность",
+                KitchenSettings.PHOTO_COLOR_MIN_PCT, KitchenSettings.PHOTO_COLOR_MAX_PCT,
+                s.PhotoSaturationPct, Pct, v => { s.PhotoSaturationPct = v; PhotoMode.RefreshIfActive(); });
+
+            y -= 6;
+            AddHeaderRow(t, ref y, "Эффекты");
+            AddIntSliderRow(t, ref y, "Сила свечения", 0, KitchenSettings.PHOTO_BLOOM_MAX_PCT,
+                s.PhotoBloomPct, Pct, v => { s.PhotoBloomPct = v; PhotoMode.RefreshIfActive(); });
+            AddIntSliderRow(t, ref y, "Порог свечения", 0, KitchenSettings.PHOTO_BLOOM_THRESHOLD_MAX_PCT,
+                s.PhotoBloomThresholdPct, Pct, v => { s.PhotoBloomThresholdPct = v; PhotoMode.RefreshIfActive(); });
+            AddIntSliderRow(t, ref y, "Сила виньетки", 0, 100,
+                s.PhotoVignettePct, Pct, v => { s.PhotoVignettePct = v; PhotoMode.RefreshIfActive(); });
+
+            y -= 6;
+            // Подпись отличается от одноимённого тумблера на вкладке «Фото
+            // режим»: имена объектов сцены обязаны быть уникальными.
+            AddHeaderRow(t, ref y, "Тени сцены");
+            AddIntSliderRow(t, ref y, "Сила теней солнца", 0, 100,
+                s.PhotoSunShadowStrengthPct, Pct, v => { s.PhotoSunShadowStrengthPct = v; PhotoMode.RefreshIfActive(); });
+            AddIntSliderRow(t, ref y, "Дальность теней",
+                KitchenSettings.PHOTO_SHADOW_DISTANCE_MIN_M, KitchenSettings.PHOTO_SHADOW_DISTANCE_MAX_M,
+                s.PhotoShadowDistanceM, Meters, v => { s.PhotoShadowDistanceM = v; PhotoMode.RefreshIfActive(); });
+            AddToggleRow(t, ref y, "Тени от ламп", s.PhotoLampShadows,
+                v =>
+                {
+                    s.PhotoLampShadows = v;
+                    LightSourceElement.RefreshAll();   // режим тени у каждой лампы свой
+                    PhotoMode.RefreshIfActive();
+                });
+        }
+
+        private static string Pct(int v) => v + " %";
+        private static string Meters(int v) => v + " м";
+        private static string Ev(int v) =>
+            (v / 100f).ToString("+0.0;-0.0;0.0", System.Globalization.CultureInfo.InvariantCulture) + " EV";
+
+        /// <summary>Строка-ползунок с целым значением и своей единицей
+        /// измерения справа. В отличие от <see cref="AddSliderRow"/> диапазон
+        /// задаётся вызывающим — множители скорости тут ни при чём.</summary>
+        private Slider AddIntSliderRow(Transform parent, ref float y, string label,
+            int min, int max, int value, Func<int, string> format, Action<int> onChanged)
+        {
+            var rowRect = UIFactory.CreateRect("RowSld_" + label, parent);
+            rowRect.sizeDelta = new Vector2(ContentW, RowH);
+            rowRect.anchoredPosition = new Vector2(0, y);
+
+            var lbl = UIFactory.CreateLabel("Lbl_" + label, rowRect, label, 16,
+                new Vector2(-(ContentW - LabelW) * 0.5f, 0), new Vector2(LabelW, RowH), TextAnchor.MiddleLeft);
+            _rowLabels[label] = lbl;
+
+            var valueLabel = UIFactory.CreateLabel("Val_" + label, rowRect, format(value), 16,
+                new Vector2(ContentW * 0.5f - 32, 0), new Vector2(64, RowH), TextAnchor.MiddleRight);
+
+            var slider = UIFactory.CreateSlider("Sld_" + label, rowRect, min, max, value,
+                // Ползунок сдвинут влево ровно настолько, чтобы не наехать на
+                // колонку значения справа («250 %», «−1.5 EV»).
+                new Vector2(ContentW * 0.5f - ControlW * 0.5f - 46, 0), new Vector2(110, RowH),
+                v =>
+                {
+                    int iv = Mathf.RoundToInt(v);
+                    onChanged(iv);
+                    if (valueLabel != null) valueLabel.text = format(iv);
+                });
+            slider.wholeNumbers = true;
+
+            y -= RowStep;
+            return slider;
+        }
 
         // ── Tab: О программе ────────────────────────────────
 

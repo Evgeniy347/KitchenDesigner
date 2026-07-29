@@ -118,6 +118,18 @@ namespace KitchenDesigner.Core
 		public int lightDiffusionPct = LightSourceElement.DEFAULT_DIFFUSION_PCT;
 		public int lightUpPct = LightSourceElement.DEFAULT_UP_PCT;
 		public int lightBeamDeg = LightSourceElement.DEFAULT_BEAM_DEG;
+		public int lightSoftnessPct = LightSourceElement.DEFAULT_SOFTNESS_PCT;
+		public int lightRangeMinMM = LightSourceElement.DEFAULT_RANGE_MIN_MM;
+		public int lightRangeMaxMM = LightSourceElement.DEFAULT_RANGE_MAX_MM;
+		public int lightDropMM = LightSourceElement.DEFAULT_DROP_MM;
+		public int lightUpConePct = LightSourceElement.DEFAULT_UP_CONE_PCT;
+		public int lightUpRangePct = LightSourceElement.DEFAULT_UP_RANGE_PCT;
+		public int lightEfficacyLmPerW = LightSourceElement.DEFAULT_EFFICACY_LM_PER_W;
+		public int lightLumensPerUnit = LightSourceElement.DEFAULT_LUMENS_PER_UNIT;
+		public int lightGlowPct = LightSourceElement.DEFAULT_GLOW_PCT;
+		public int lightShadowStrengthPct = LightSourceElement.DEFAULT_SHADOW_STRENGTH_PCT;
+		public int lightShape = (int)LightSourceElement.DEFAULT_SHAPE;
+		public int lightShadow = (int)LightSourceElement.DEFAULT_SHADOW;
 		public bool isPanel = false;
 		public bool isSink = false;
 		// Привязка мойки: имя детали-столешницы и смещение от её центра в
@@ -331,6 +343,18 @@ namespace KitchenDesigner.Core
 				d.lightDiffusionPct = lightEl.DiffusionPct;
 				d.lightUpPct = lightEl.UpLightPct;
 				d.lightBeamDeg = lightEl.BeamAngleDeg;
+				d.lightSoftnessPct = lightEl.SoftnessPct;
+				d.lightRangeMinMM = lightEl.RangeMinMM;
+				d.lightRangeMaxMM = lightEl.RangeMaxMM;
+				d.lightDropMM = lightEl.DropMM;
+				d.lightUpConePct = lightEl.UpConePct;
+				d.lightUpRangePct = lightEl.UpRangePct;
+				d.lightEfficacyLmPerW = lightEl.EfficacyLmPerW;
+				d.lightLumensPerUnit = lightEl.LumensPerUnit;
+				d.lightGlowPct = lightEl.GlowPct;
+				d.lightShadowStrengthPct = lightEl.ShadowStrengthPct;
+				d.lightShape = (int)lightEl.Shape;
+				d.lightShadow = (int)lightEl.Shadow;
 			}
 			d.midHeightMM = pillar != null ? pillar.MidHeightMM : PillarElement.MidHeightMM_Default;
 

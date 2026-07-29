@@ -17,7 +17,13 @@ namespace KitchenDesigner.Core.UI
 		private TMP_InputField? _name, _w, _h, _d, _radius,
 			_gapLeft, _gapRight, _gapTop, _gapBottom,
 			_x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight,
-			_lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam;
+			_lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam,
+			_lightSoftness, _lightGlow, _lightShadowStrength, _lightDrop,
+			_lightUpCone, _lightUpRange, _lightRangeMin, _lightRangeMax,
+			_lightEfficacy, _lightLumens;
+		private TMP_Dropdown? _lightShapeDropdown, _lightShadowDropdown;
+		private TMP_Text? _lightAdvancedLabel;
+		private bool _lightAdvancedExpanded;  // раскрыта ли калибровка лампы
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
@@ -399,12 +405,37 @@ namespace KitchenDesigner.Core.UI
 			// Высота средней секции опоры (только для опор).
 			_midHeight = PillarFieldRow(panel.transform, "Средняя секция");
 
-			// Параметры лампы (только для источников света).
+			// Параметры лампы (только для источников света). Порядок — от
+			// «крутят каждый день» к тонкой калибровке светотехники.
 			_lightTemp = LightFieldRow(panel.transform, "Температура", "K");
 			_lightPower = LightFieldRow(panel.transform, "Мощность", "Вт");
 			_lightDiffusion = LightFieldRow(panel.transform, "Рассеивание", "%");
 			_lightBeam = LightFieldRow(panel.transform, "Угол пучка", "°");
+			_lightSoftness = LightFieldRow(panel.transform, "Мягкость края", "%");
 			_lightUp = LightFieldRow(panel.transform, "Свет вверх", "%");
+
+			_lightShapeDropdown = LabeledDropdownRow(panel.transform, "Форма потока",
+				new List<string> { "Плафон", "Шар" }, OnLightShapeSelected, AddLightRow, "CtxLightShape");
+			_lightShadowDropdown = LabeledDropdownRow(panel.transform, "Тени лампы",
+				new List<string> { "Нет", "Жёсткие", "Мягкие" }, OnLightShadowSelected, AddLightRow, "CtxLightShadow");
+			_lightShadowStrength = LightFieldRow(panel.transform, "Сила тени", "%");
+
+			// Калибровка светотехники — под раскрывашкой: нужна редко, а места
+			// занимает больше, чем все остальные параметры лампы вместе.
+			var lightAdvBtn = UIFactory.CreateButton("CtxLightAdv", panel.transform,
+				$"Тонкая настройка  {UIStyle.GlyphCollapsed}",
+				new Vector2(0, 0), new Vector2(332, BtnH), ToggleLightAdvanced);
+			_lightAdvancedLabel = lightAdvBtn.GetComponentInChildren<TMP_Text>();
+			AddLightRow(BtnH, RowGap, lightAdvBtn.GetComponent<RectTransform>());
+
+			_lightGlow = LightAdvancedFieldRow(panel.transform, "Свечение плафона", "%");
+			_lightDrop = LightAdvancedFieldRow(panel.transform, "Отступ вниз", "мм");
+			_lightUpCone = LightAdvancedFieldRow(panel.transform, "Верхний конус", "%");
+			_lightUpRange = LightAdvancedFieldRow(panel.transform, "Верхний радиус", "%");
+			_lightRangeMin = LightAdvancedFieldRow(panel.transform, "Радиус при 0 %", "мм");
+			_lightRangeMax = LightAdvancedFieldRow(panel.transform, "Радиус при 100 %", "мм");
+			_lightEfficacy = LightAdvancedFieldRow(panel.transform, "Светоотдача", "лм/Вт");
+			_lightLumens = LightAdvancedFieldRow(panel.transform, "Калибровка", "лм/ед");
 
             // ── Положение ───────────────────────────────────────────────
             AddRow(18f, RowGap, UIFactory.CreateSectionHeader("CtxSecPos", panel.transform, "Положение", 332f));
@@ -423,6 +454,7 @@ namespace KitchenDesigner.Core.UI
             TriEndRow(hideForWindow: true);
 
 			foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam }) f!.contentType = TMP_InputField.ContentType.Custom;
+			foreach (var f in LightExtraFields()) f!.contentType = TMP_InputField.ContentType.Custom;
             foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.Custom;
             // Позиция — целые мм; углы — десятичные градусы.
             foreach (var f in new[] { _x, _y, _z }) f!.contentType = TMP_InputField.ContentType.Custom;
@@ -430,6 +462,8 @@ namespace KitchenDesigner.Core.UI
 
             // Арифметика: разрешаем + - * / (пробелы допускаются, удаляются при вычислении).
             foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z })
+                if (f != null) f.onValidateInput = (text, idx, ch) => ExpressionParser.IsValidDimensionChar(ch) ? ch : '\0';
+            foreach (var f in LightExtraFields())
                 if (f != null) f.onValidateInput = (text, idx, ch) => ExpressionParser.IsValidDimensionChar(ch) ? ch : '\0';
             foreach (var f in new[] { _rx, _ry, _rz })
                 if (f != null) f.onValidateInput = (text, idx, ch) => ExpressionParser.IsValidDimensionChar(ch, allowDecimal: true) ? ch : '\0';
@@ -847,6 +881,46 @@ namespace KitchenDesigner.Core.UI
 			return field;
 		}
 
+		/// <summary>Строка лампы, видимая только в раскрытой «тонкой настройке».
+		/// Калибровочных параметров десяток, и держать их всегда на виду —
+		/// меню длиной в экран ради полей, которые трогают раз в жизни.</summary>
+		private void AddLightRowWhen(System.Func<bool> visibleWhen, float height, float gapAfter,
+			params RectTransform[] rects)
+		{
+			foreach (var rt in rects)
+				if (rt != null) AnchorTop(rt);
+			_layout.Add(new LayoutRow
+			{
+				rects = rects, height = height, gapAfter = gapAfter,
+				lightOnly = true, visibleWhen = visibleWhen,
+			});
+		}
+
+		private TMP_InputField LightAdvancedFieldRow(Transform parent, string label, string unit)
+		{
+			var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
+				new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
+			var field = UIFactory.CreateNumberField("F_" + label, parent, "",
+				new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
+			AddLightRowWhen(() => _lightAdvancedExpanded, RowH, RowGap,
+				lbl.rectTransform, field.GetComponent<RectTransform>());
+			return field;
+		}
+
+		private void ToggleLightAdvanced()
+		{
+			_lightAdvancedExpanded = !_lightAdvancedExpanded;
+			UpdateLightAdvancedLabel();
+			RelayoutForTarget();
+		}
+
+		private void UpdateLightAdvancedLabel()
+		{
+			if (_lightAdvancedLabel != null)
+				_lightAdvancedLabel.text =
+					$"Тонкая настройка  {(_lightAdvancedExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
+		}
+
 		private void AddLightRow(float height, float gapAfter, params RectTransform[] rects)
 		{
 			foreach (var rt in rects)
@@ -862,6 +936,50 @@ namespace KitchenDesigner.Core.UI
 				new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
 			AddLightRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
 			return field;
+		}
+
+		/// <summary>Тонкие параметры лампы: поле ↔ свойство ↔ значение «из
+		/// коробки». Их полтора десятка, и каждый нужен в четырёх местах
+		/// (Open, Apply, обновление извне, подсветка правок) — таблица держит
+		/// их синхронными вместо четырёх одинаковых простыней.</summary>
+		private (TMP_InputField? field, System.Func<LightSourceElement, int> get,
+			System.Action<LightSourceElement, int> set, int def)[] LightExtraBindings()
+		{
+			System.Func<LightSourceElement, int> G(System.Func<LightSourceElement, int> f) => f;
+			System.Action<LightSourceElement, int> S(System.Action<LightSourceElement, int> f) => f;
+			return new[]
+			{
+				(_lightSoftness, G(l => l.SoftnessPct), S((l, v) => l.SoftnessPct = v), LightSourceElement.DEFAULT_SOFTNESS_PCT),
+				(_lightShadowStrength, G(l => l.ShadowStrengthPct), S((l, v) => l.ShadowStrengthPct = v), LightSourceElement.DEFAULT_SHADOW_STRENGTH_PCT),
+				(_lightGlow, G(l => l.GlowPct), S((l, v) => l.GlowPct = v), LightSourceElement.DEFAULT_GLOW_PCT),
+				(_lightDrop, G(l => l.DropMM), S((l, v) => l.DropMM = v), LightSourceElement.DEFAULT_DROP_MM),
+				(_lightUpCone, G(l => l.UpConePct), S((l, v) => l.UpConePct = v), LightSourceElement.DEFAULT_UP_CONE_PCT),
+				(_lightUpRange, G(l => l.UpRangePct), S((l, v) => l.UpRangePct = v), LightSourceElement.DEFAULT_UP_RANGE_PCT),
+				(_lightRangeMin, G(l => l.RangeMinMM), S((l, v) => l.RangeMinMM = v), LightSourceElement.DEFAULT_RANGE_MIN_MM),
+				(_lightRangeMax, G(l => l.RangeMaxMM), S((l, v) => l.RangeMaxMM = v), LightSourceElement.DEFAULT_RANGE_MAX_MM),
+				(_lightEfficacy, G(l => l.EfficacyLmPerW), S((l, v) => l.EfficacyLmPerW = v), LightSourceElement.DEFAULT_EFFICACY_LM_PER_W),
+				(_lightLumens, G(l => l.LumensPerUnit), S((l, v) => l.LumensPerUnit = v), LightSourceElement.DEFAULT_LUMENS_PER_UNIT),
+			};
+		}
+
+		private TMP_InputField?[] LightExtraFields()
+		{
+			var bindings = LightExtraBindings();
+			var fields = new TMP_InputField?[bindings.Length];
+			for (int i = 0; i < bindings.Length; i++) fields[i] = bindings[i].field;
+			return fields;
+		}
+
+		private void OnLightShapeSelected(int index)
+		{
+			if (_target is LightSourceElement ls)
+				ls.Shape = index == 1 ? LampShape.Sphere : LampShape.Plafond;
+		}
+
+		private void OnLightShadowSelected(int index)
+		{
+			if (_target is LightSourceElement ls)
+				ls.Shadow = (LampShadow)Mathf.Clamp(index, 0, 2);
 		}
 
 		private TMP_InputField WindowFieldRow(Transform parent, string label, System.Func<bool>? visibleWhen = null)
@@ -1073,6 +1191,10 @@ namespace KitchenDesigner.Core.UI
 				if (_lightDiffusion != null) MaybeRefresh(_lightDiffusion, lightRt.DiffusionPct.ToString());
 				if (_lightBeam != null) MaybeRefresh(_lightBeam, lightRt.BeamAngleDeg.ToString());
 				if (_lightUp != null) MaybeRefresh(_lightUp, lightRt.UpLightPct.ToString());
+				foreach (var b in LightExtraBindings())
+					if (b.field != null) MaybeRefresh(b.field, b.get(lightRt).ToString());
+				if (_lightShapeDropdown != null) _lightShapeDropdown.SetValueWithoutNotify((int)lightRt.Shape);
+				if (_lightShadowDropdown != null) _lightShadowDropdown.SetValueWithoutNotify((int)lightRt.Shadow);
 			}
 
 			var window = _target as WindowElement;
@@ -1125,6 +1247,8 @@ namespace KitchenDesigner.Core.UI
                 _target = element;
                 _groovesExpanded = false; // список пазов открывается свёрнутым
                 _texturesExpanded = false; // и список накладок тоже
+                _lightAdvancedExpanded = false; // калибровка лампы — тоже
+                UpdateLightAdvancedLabel();
                 // Ручки области принадлежали прошлому элементу.
                 TextureOverlayHandles.End();
                 if (SelectionManager.Instance != null)
@@ -1230,6 +1354,10 @@ namespace KitchenDesigner.Core.UI
 					if (_lightDiffusion != null) _lightDiffusion.text = lightEl.DiffusionPct.ToString();
 					if (_lightBeam != null) _lightBeam.text = lightEl.BeamAngleDeg.ToString();
 					if (_lightUp != null) _lightUp.text = lightEl.UpLightPct.ToString();
+					foreach (var b in LightExtraBindings())
+						if (b.field != null) b.field.text = b.get(lightEl).ToString();
+					if (_lightShapeDropdown != null) _lightShapeDropdown.SetValueWithoutNotify((int)lightEl.Shape);
+					if (_lightShadowDropdown != null) _lightShadowDropdown.SetValueWithoutNotify((int)lightEl.Shadow);
 				}
 
 				var window = element as WindowElement;
@@ -1432,6 +1560,12 @@ namespace KitchenDesigner.Core.UI
 				{
 					lightApp.UpLightPct = ParseIntField(_lightUp, lightApp.UpLightPct);
 					_lightUp.text = lightApp.UpLightPct.ToString();
+				}
+				foreach (var b in LightExtraBindings())
+				{
+					if (b.field == null) continue;
+					b.set(lightApp, ParseIntField(b.field, b.get(lightApp)));
+					b.field.text = b.get(lightApp).ToString();  // показать применённый clamp
 				}
 			}
 
@@ -2998,6 +3132,8 @@ namespace KitchenDesigner.Core.UI
 			TrackField(_lightDiffusion, lightTrack != null ? lightTrack.DiffusionPct.ToString() : LightSourceElement.DEFAULT_DIFFUSION_PCT.ToString());
 			TrackField(_lightBeam, lightTrack != null ? lightTrack.BeamAngleDeg.ToString() : LightSourceElement.DEFAULT_BEAM_DEG.ToString());
 			TrackField(_lightUp, lightTrack != null ? lightTrack.UpLightPct.ToString() : LightSourceElement.DEFAULT_UP_PCT.ToString());
+			foreach (var b in LightExtraBindings())
+				TrackField(b.field, lightTrack != null ? b.get(lightTrack).ToString() : b.def.ToString());
 			TrackField(_edgeThickness, EdgeBanding.FormatThickness(_target.EdgeThicknessMM));
             var pos = _target.transform.position;
             TrackField(_x, ToMM(pos.x));

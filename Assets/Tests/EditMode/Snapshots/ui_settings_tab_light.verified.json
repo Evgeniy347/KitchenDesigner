@@ -38,122 +38,133 @@
     },
     {
       "type": "Label",
-      "text": "Ambient occlusion",
+      "text": "Дальность теней",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Качество",
+      "text": "Заполняющий свет",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Виньетка",
+      "text": "Контраст",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Мягкие тени",
+      "text": "Насыщенность",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Отражённый свет (SSGI)",
+      "text": "Окружающий свет",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Потолок по стенам",
+      "text": "Отскок от пола",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Свечение (bloom)",
+      "text": "Порог свечения",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Сглаживание",
+      "text": "Сила виньетки",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Суперсэмплинг",
+      "text": "Сила свечения",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Тени",
+      "text": "Сила теней солнца",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Фоторежим",
+      "text": "Тени от ламп",
       "position": [-90, 0]
     },
     {
-      "type": "Button",
-      "text": "Высокое",
-      "position": [165, 0]
+      "type": "Label",
+      "text": "Тени сцены",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Экспозиция",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Экспозиция и тон",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Эффекты",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "22 м",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "8 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "6 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "110 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "22 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "35 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.0 EV",
+      "position": [208, 0]
     },
     {
       "type": "Toggle",
-      "label": "Tgl_Ambient occlusion",
+      "label": "Tgl_Тени от ламп",
       "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Виньетка",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Мягкие тени",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Отражённый свет (SSGI)",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Потолок по стенам",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Свечение (bloom)",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Сглаживание",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Суперсэмплинг",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Тени",
-      "isOn": true,
-      "position": [224, 0]
-    },
-    {
-      "type": "Toggle",
-      "label": "Tgl_Фоторежим",
-      "isOn": false,
       "position": [224, 0]
     },
     {

@@ -158,6 +158,17 @@ public class PhotoModeTests
         gs.PhotoVignette = false;
         gs.PhotoCeiling = false;
         gs.PhotoSSGI = false;
+        gs.PhotoAmbientPct = 250;
+        gs.PhotoFloorBouncePct = 40;
+        gs.PhotoExposurePct = -150;
+        gs.PhotoContrastPct = -20;
+        gs.PhotoSaturationPct = 30;
+        gs.PhotoBloomPct = 80;
+        gs.PhotoBloomThresholdPct = 200;
+        gs.PhotoVignettePct = 5;
+        gs.PhotoSunShadowStrengthPct = 60;
+        gs.PhotoShadowDistanceM = 35;
+        gs.PhotoLampShadows = false;
 
         var data = gs.ToData();
 
@@ -183,6 +194,17 @@ public class PhotoModeTests
         Assert.IsFalse(gs.PhotoVignette);
         Assert.IsFalse(gs.PhotoCeiling);
         Assert.IsFalse(gs.PhotoSSGI);
+        Assert.AreEqual(250, gs.PhotoAmbientPct);
+        Assert.AreEqual(40, gs.PhotoFloorBouncePct);
+        Assert.AreEqual(-150, gs.PhotoExposurePct);
+        Assert.AreEqual(-20, gs.PhotoContrastPct);
+        Assert.AreEqual(30, gs.PhotoSaturationPct);
+        Assert.AreEqual(80, gs.PhotoBloomPct);
+        Assert.AreEqual(200, gs.PhotoBloomThresholdPct);
+        Assert.AreEqual(5, gs.PhotoVignettePct);
+        Assert.AreEqual(60, gs.PhotoSunShadowStrengthPct);
+        Assert.AreEqual(35, gs.PhotoShadowDistanceM);
+        Assert.IsFalse(gs.PhotoLampShadows);
 
         gs.ApplyFrom(before);
     }
@@ -272,6 +294,120 @@ public class PhotoModeTests
     }
 
     [Test]
+    public void LightSource_Softness_DrivesInnerCone()
+    {
+        var go = new GameObject("Light");
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.EnsureLight();
+
+        ls.BeamAngleDeg = 100;
+        ls.SoftnessPct = 0;
+        Assert.AreEqual(100f, ls.PointLight!.innerSpotAngle, 0.5f, "0 % — резкий край: внутренний конус = внешнему");
+
+        ls.SoftnessPct = 100;
+        Assert.AreEqual(0f, ls.PointLight!.innerSpotAngle, 0.5f, "100 % — свет гаснет от самого центра");
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void LightSource_Sphere_LightsAllDirections()
+    {
+        var go = new GameObject("Light");
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.EnsureLight();
+
+        ls.Shape = LampShape.Sphere;
+        Assert.AreEqual(LightType.Point, ls.PointLight!.type, "шар светит во все стороны");
+        Assert.AreEqual(0f, ls.UpLight!.intensity, 1e-4f, "отдельная подсветка потолка шару не нужна");
+        Assert.IsFalse(ls.UpLight!.enabled);
+
+        ls.Shape = LampShape.Plafond;
+        Assert.AreEqual(LightType.Spot, ls.PointLight!.type);
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void LightSource_Shadow_ModeAndStrength()
+    {
+        var gs = KitchenSettings.Instance;
+        var before = gs.ToData();
+        gs.PhotoLampShadows = true;
+
+        var go = new GameObject("Light");
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.EnsureLight();
+
+        Assert.AreEqual(LightShadows.None, ls.PointLight!.shadows, "по умолчанию тени от ламп выключены");
+
+        ls.Shadow = LampShadow.Soft;
+        ls.ShadowStrengthPct = 40;
+        Assert.AreEqual(LightShadows.Soft, ls.PointLight!.shadows);
+        Assert.AreEqual(0.4f, ls.PointLight!.shadowStrength, 1e-3f);
+
+        // Глобальный запрет сильнее режима самой лампы.
+        gs.PhotoLampShadows = false;
+        ls.ApplyLightParams();
+        Assert.AreEqual(LightShadows.None, ls.PointLight!.shadows);
+
+        Object.DestroyImmediate(go);
+        gs.ApplyFrom(before);
+    }
+
+    [Test]
+    public void LightSource_RangeBounds_DriveDiffusionScale()
+    {
+        var go = new GameObject("Light");
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.EnsureLight();
+
+        ls.RangeMinMM = 1000;
+        ls.RangeMaxMM = 5000;
+        ls.DiffusionPct = 0;
+        Assert.AreEqual(1f, ls.PointLight!.range, 1e-3f, "0 % рассеивания = нижняя граница");
+        ls.DiffusionPct = 100;
+        Assert.AreEqual(5f, ls.PointLight!.range, 1e-3f, "100 % = верхняя граница");
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void LightSource_Efficacy_And_Calibration_ScaleIntensity()
+    {
+        var go = new GameObject("Light");
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.EnsureLight();
+
+        ls.PowerW = 9;
+        ls.EfficacyLmPerW = 110;
+        ls.LumensPerUnit = 700;
+        Assert.AreEqual(9f * 110f / 700f, ls.PointLight!.intensity, 1e-3f, "прежняя калибровка = прежняя яркость");
+
+        ls.EfficacyLmPerW = 220;
+        Assert.AreEqual(9f * 220f / 700f, ls.PointLight!.intensity, 1e-3f);
+        ls.LumensPerUnit = 1400;
+        Assert.AreEqual(9f * 220f / 1400f, ls.PointLight!.intensity, 1e-3f, "больше лм на единицу — тусклее");
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void LightSource_Drop_LowersSourceUnderPlafond()
+    {
+        var go = new GameObject("Light");
+        var ls = go.AddComponent<LightSourceElement>();
+        ls.EnsureLight();
+
+        ls.DropMM = 300;
+        Assert.AreEqual(-0.3f, ls.PointLight!.transform.localPosition.y, 1e-3f);
+        ls.DropMM = 0;
+        Assert.AreEqual(0f, ls.PointLight!.transform.localPosition.y, 1e-3f);
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
     public void LightSource_HasEmissivePlafond()
     {
         var go = new GameObject("Light");
@@ -328,5 +464,10 @@ public class PhotoModeTests
         Assert.AreEqual((int)PhotoQualityPreset.High, legacy.photoQuality);
         Assert.IsTrue(legacy.photoShadows);
         Assert.IsTrue(legacy.photoCeiling);
+        // Свет: старый проект должен открыться с прежней (зашитой) картинкой.
+        Assert.AreEqual(KitchenSettings.PHOTO_AMBIENT_DEFAULT_PCT, legacy.photoAmbientPct);
+        Assert.AreEqual(KitchenSettings.PHOTO_BLOOM_DEFAULT_PCT, legacy.photoBloomPct);
+        Assert.AreEqual(KitchenSettings.PHOTO_SHADOW_DISTANCE_DEFAULT_M, legacy.photoShadowDistanceM);
+        Assert.IsTrue(legacy.photoLampShadows);
     }
 }

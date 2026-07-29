@@ -9,27 +9,32 @@
     {
       "type": "Button",
       "text": "Проект",
-      "position": [-192, 356]
+      "position": [-233, 356]
     },
     {
       "type": "Button",
       "text": "Вид",
-      "position": [-96, 356]
+      "position": [-140, 356]
     },
     {
       "type": "Button",
       "text": "Управление",
-      "position": [0, 356]
+      "position": [-47, 356]
     },
     {
       "type": "Button",
       "text": "Фото режим",
-      "position": [96, 356]
+      "position": [47, 356]
+    },
+    {
+      "type": "Button",
+      "text": "Свет",
+      "position": [140, 356]
     },
     {
       "type": "Button",
       "text": "О программе",
-      "position": [192, 356]
+      "position": [233, 356]
     },
     {
       "type": "Button",

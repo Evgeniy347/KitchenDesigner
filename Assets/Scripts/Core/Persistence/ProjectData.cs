@@ -160,5 +160,19 @@ namespace KitchenDesigner.Core
         public bool photoVignette = true;
         public bool photoCeiling = true;
         public bool photoSSGI = true;
+
+        // Свет фоторежима. Инициализаторы = прежние зашитые значения, поэтому
+        // проект, сохранённый до появления этих полей, открывается как раньше.
+        public int photoAmbientPct = KitchenSettings.PHOTO_AMBIENT_DEFAULT_PCT;
+        public int photoFloorBouncePct = KitchenSettings.PHOTO_FLOOR_BOUNCE_DEFAULT_PCT;
+        public int photoExposurePct = KitchenSettings.PHOTO_EXPOSURE_DEFAULT_PCT;
+        public int photoContrastPct = KitchenSettings.PHOTO_CONTRAST_DEFAULT_PCT;
+        public int photoSaturationPct = KitchenSettings.PHOTO_SATURATION_DEFAULT_PCT;
+        public int photoBloomPct = KitchenSettings.PHOTO_BLOOM_DEFAULT_PCT;
+        public int photoBloomThresholdPct = KitchenSettings.PHOTO_BLOOM_THRESHOLD_DEFAULT_PCT;
+        public int photoVignettePct = KitchenSettings.PHOTO_VIGNETTE_DEFAULT_PCT;
+        public int photoSunShadowStrengthPct = KitchenSettings.PHOTO_SUN_SHADOW_DEFAULT_PCT;
+        public int photoShadowDistanceM = KitchenSettings.PHOTO_SHADOW_DISTANCE_DEFAULT_M;
+        public bool photoLampShadows = true;
     }
 }

@@ -72,6 +72,44 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _photoCeiling = true;
         [SerializeField] private bool _photoSSGI = true;
 
+        // ── Свет фоторежима ────────────────────────────────
+        // Всё, что раньше было зашито в PhotoQualityController. Дефолты равны
+        // прежним константам, поэтому картинка «из коробки» не меняется.
+        [SerializeField] private int _photoAmbientPct = PHOTO_AMBIENT_DEFAULT_PCT;
+        [SerializeField] private int _photoFloorBouncePct = PHOTO_FLOOR_BOUNCE_DEFAULT_PCT;
+        [SerializeField] private int _photoExposurePct = PHOTO_EXPOSURE_DEFAULT_PCT;
+        [SerializeField] private int _photoContrastPct = PHOTO_CONTRAST_DEFAULT_PCT;
+        [SerializeField] private int _photoSaturationPct = PHOTO_SATURATION_DEFAULT_PCT;
+        [SerializeField] private int _photoBloomPct = PHOTO_BLOOM_DEFAULT_PCT;
+        [SerializeField] private int _photoBloomThresholdPct = PHOTO_BLOOM_THRESHOLD_DEFAULT_PCT;
+        [SerializeField] private int _photoVignettePct = PHOTO_VIGNETTE_DEFAULT_PCT;
+        [SerializeField] private int _photoSunShadowStrengthPct = PHOTO_SUN_SHADOW_DEFAULT_PCT;
+        [SerializeField] private int _photoShadowDistanceM = PHOTO_SHADOW_DISTANCE_DEFAULT_M;
+        [SerializeField] private bool _photoLampShadows = true;
+
+        // Границы «крутилок» света — они же диапазоны ползунков в настройках.
+        public const int PHOTO_AMBIENT_DEFAULT_PCT = 100;
+        public const int PHOTO_AMBIENT_MAX_PCT = 400;
+        public const int PHOTO_FLOOR_BOUNCE_DEFAULT_PCT = 100;
+        public const int PHOTO_FLOOR_BOUNCE_MAX_PCT = 300;
+        // Экспозиция в сотых EV: −300 = −3 EV (темнее), +300 = +3 EV (светлее).
+        public const int PHOTO_EXPOSURE_DEFAULT_PCT = 0;
+        public const int PHOTO_EXPOSURE_MIN_PCT = -300;
+        public const int PHOTO_EXPOSURE_MAX_PCT = 300;
+        public const int PHOTO_CONTRAST_DEFAULT_PCT = 8;
+        public const int PHOTO_SATURATION_DEFAULT_PCT = 6;
+        public const int PHOTO_COLOR_MIN_PCT = -100;
+        public const int PHOTO_COLOR_MAX_PCT = 100;
+        public const int PHOTO_BLOOM_DEFAULT_PCT = 35;
+        public const int PHOTO_BLOOM_MAX_PCT = 300;
+        public const int PHOTO_BLOOM_THRESHOLD_DEFAULT_PCT = 110;
+        public const int PHOTO_BLOOM_THRESHOLD_MAX_PCT = 500;
+        public const int PHOTO_VIGNETTE_DEFAULT_PCT = 22;
+        public const int PHOTO_SUN_SHADOW_DEFAULT_PCT = 100;
+        public const int PHOTO_SHADOW_DISTANCE_DEFAULT_M = 22;
+        public const int PHOTO_SHADOW_DISTANCE_MIN_M = 5;
+        public const int PHOTO_SHADOW_DISTANCE_MAX_M = 100;
+
         public int GridStep
         {
             get => _gridStep;
@@ -235,6 +273,88 @@ namespace KitchenDesigner.Core
             set => _photoSSGI = value;
         }
 
+        /// <summary>Окружающий (заполняющий) свет, % — множитель к ambient.
+        /// 0 = только прямой свет и глухая тень, 200 % = мягкая «пасмурная»
+        /// подсветка без чёрных провалов.</summary>
+        public int PhotoAmbientPct
+        {
+            get => _photoAmbientPct;
+            set => _photoAmbientPct = Mathf.Clamp(value, 0, PHOTO_AMBIENT_MAX_PCT);
+        }
+
+        /// <summary>Отскок от пола, % — насколько цвет пола подсвечивает низ
+        /// полок и столешниц.</summary>
+        public int PhotoFloorBouncePct
+        {
+            get => _photoFloorBouncePct;
+            set => _photoFloorBouncePct = Mathf.Clamp(value, 0, PHOTO_FLOOR_BOUNCE_MAX_PCT);
+        }
+
+        /// <summary>Экспозиция кадра в сотых EV (−300…+300 = −3…+3 EV).</summary>
+        public int PhotoExposurePct
+        {
+            get => _photoExposurePct;
+            set => _photoExposurePct = Mathf.Clamp(value, PHOTO_EXPOSURE_MIN_PCT, PHOTO_EXPOSURE_MAX_PCT);
+        }
+
+        /// <summary>Контраст пост-обработки, %.</summary>
+        public int PhotoContrastPct
+        {
+            get => _photoContrastPct;
+            set => _photoContrastPct = Mathf.Clamp(value, PHOTO_COLOR_MIN_PCT, PHOTO_COLOR_MAX_PCT);
+        }
+
+        /// <summary>Насыщенность пост-обработки, %.</summary>
+        public int PhotoSaturationPct
+        {
+            get => _photoSaturationPct;
+            set => _photoSaturationPct = Mathf.Clamp(value, PHOTO_COLOR_MIN_PCT, PHOTO_COLOR_MAX_PCT);
+        }
+
+        /// <summary>Сила свечения (bloom), %.</summary>
+        public int PhotoBloomPct
+        {
+            get => _photoBloomPct;
+            set => _photoBloomPct = Mathf.Clamp(value, 0, PHOTO_BLOOM_MAX_PCT);
+        }
+
+        /// <summary>Порог свечения, % яркости: ниже него bloom не появляется.</summary>
+        public int PhotoBloomThresholdPct
+        {
+            get => _photoBloomThresholdPct;
+            set => _photoBloomThresholdPct = Mathf.Clamp(value, 0, PHOTO_BLOOM_THRESHOLD_MAX_PCT);
+        }
+
+        /// <summary>Сила виньетки, %.</summary>
+        public int PhotoVignettePct
+        {
+            get => _photoVignettePct;
+            set => _photoVignettePct = Mathf.Clamp(value, 0, 100);
+        }
+
+        /// <summary>Сила тени от солнца, %. Меньше — мягче и «воздушнее».</summary>
+        public int PhotoSunShadowStrengthPct
+        {
+            get => _photoSunShadowStrengthPct;
+            set => _photoSunShadowStrengthPct = Mathf.Clamp(value, 0, 100);
+        }
+
+        /// <summary>Дальность прорисовки теней, м.</summary>
+        public int PhotoShadowDistanceM
+        {
+            get => _photoShadowDistanceM;
+            set => _photoShadowDistanceM = Mathf.Clamp(value, PHOTO_SHADOW_DISTANCE_MIN_M, PHOTO_SHADOW_DISTANCE_MAX_M);
+        }
+
+        /// <summary>Разрешены ли тени от ламп. Режим тени задаётся у каждой
+        /// лампы отдельно, а этот тумблер запрещает их всем разом: тени
+        /// точечных источников — самая дорогая часть кадра.</summary>
+        public bool PhotoLampShadows
+        {
+            get => _photoLampShadows;
+            set => _photoLampShadows = value;
+        }
+
         /// <summary>Значения «из коробки» — те же, что в инициализаторах полей.
         /// Инициализаторы срабатывают только при СОЗДАНИИ ассета, а Instance
         /// грузится из Resources с уже сохранённым состоянием, поэтому сброс
@@ -268,6 +388,17 @@ namespace KitchenDesigner.Core
             _photoVignette = true;
             _photoCeiling = true;
             _photoSSGI = true;
+            _photoAmbientPct = PHOTO_AMBIENT_DEFAULT_PCT;
+            _photoFloorBouncePct = PHOTO_FLOOR_BOUNCE_DEFAULT_PCT;
+            _photoExposurePct = PHOTO_EXPOSURE_DEFAULT_PCT;
+            _photoContrastPct = PHOTO_CONTRAST_DEFAULT_PCT;
+            _photoSaturationPct = PHOTO_SATURATION_DEFAULT_PCT;
+            _photoBloomPct = PHOTO_BLOOM_DEFAULT_PCT;
+            _photoBloomThresholdPct = PHOTO_BLOOM_THRESHOLD_DEFAULT_PCT;
+            _photoVignettePct = PHOTO_VIGNETTE_DEFAULT_PCT;
+            _photoSunShadowStrengthPct = PHOTO_SUN_SHADOW_DEFAULT_PCT;
+            _photoShadowDistanceM = PHOTO_SHADOW_DISTANCE_DEFAULT_M;
+            _photoLampShadows = true;
         }
 
         public KitchenSettingsData ToData()
@@ -310,7 +441,18 @@ namespace KitchenDesigner.Core
                 photoBloom = _photoBloom,
                 photoVignette = _photoVignette,
                 photoCeiling = _photoCeiling,
-                photoSSGI = _photoSSGI
+                photoSSGI = _photoSSGI,
+                photoAmbientPct = _photoAmbientPct,
+                photoFloorBouncePct = _photoFloorBouncePct,
+                photoExposurePct = _photoExposurePct,
+                photoContrastPct = _photoContrastPct,
+                photoSaturationPct = _photoSaturationPct,
+                photoBloomPct = _photoBloomPct,
+                photoBloomThresholdPct = _photoBloomThresholdPct,
+                photoVignettePct = _photoVignettePct,
+                photoSunShadowStrengthPct = _photoSunShadowStrengthPct,
+                photoShadowDistanceM = _photoShadowDistanceM,
+                photoLampShadows = _photoLampShadows
             };
         }
 
@@ -342,6 +484,17 @@ namespace KitchenDesigner.Core
             _photoVignette = data.photoVignette;
             _photoCeiling = data.photoCeiling;
             _photoSSGI = data.photoSSGI;
+            PhotoAmbientPct = data.photoAmbientPct;
+            PhotoFloorBouncePct = data.photoFloorBouncePct;
+            PhotoExposurePct = data.photoExposurePct;
+            PhotoContrastPct = data.photoContrastPct;
+            PhotoSaturationPct = data.photoSaturationPct;
+            PhotoBloomPct = data.photoBloomPct;
+            PhotoBloomThresholdPct = data.photoBloomThresholdPct;
+            PhotoVignettePct = data.photoVignettePct;
+            PhotoSunShadowStrengthPct = data.photoSunShadowStrengthPct;
+            PhotoShadowDistanceM = data.photoShadowDistanceM;
+            _photoLampShadows = data.photoLampShadows;
         }
 
         /// <summary>Пресеты вида появились позже плоских флагов. У старого проекта
@@ -399,7 +552,18 @@ namespace KitchenDesigner.Core
                 photoBloom = _photoBloom,
                 photoVignette = _photoVignette,
                 photoCeiling = _photoCeiling,
-                photoSSGI = _photoSSGI
+                photoSSGI = _photoSSGI,
+                photoAmbientPct = _photoAmbientPct,
+                photoFloorBouncePct = _photoFloorBouncePct,
+                photoExposurePct = _photoExposurePct,
+                photoContrastPct = _photoContrastPct,
+                photoSaturationPct = _photoSaturationPct,
+                photoBloomPct = _photoBloomPct,
+                photoBloomThresholdPct = _photoBloomThresholdPct,
+                photoVignettePct = _photoVignettePct,
+                photoSunShadowStrengthPct = _photoSunShadowStrengthPct,
+                photoShadowDistanceM = _photoShadowDistanceM,
+                photoLampShadows = _photoLampShadows
             };
             return JsonUtility.ToJson(data, true);
         }
@@ -434,6 +598,17 @@ namespace KitchenDesigner.Core
             public bool photoVignette;
             public bool photoCeiling;
             public bool photoSSGI;
+            public int photoAmbientPct;
+            public int photoFloorBouncePct;
+            public int photoExposurePct;
+            public int photoContrastPct;
+            public int photoSaturationPct;
+            public int photoBloomPct;
+            public int photoBloomThresholdPct;
+            public int photoVignettePct;
+            public int photoSunShadowStrengthPct;
+            public int photoShadowDistanceM;
+            public bool photoLampShadows;
         }
     }
 }
