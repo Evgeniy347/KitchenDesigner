@@ -59,7 +59,6 @@ namespace KitchenDesigner.Core
         public override void ApplyDimensions()
         {
             base.ApplyDimensions();
-            transform.localScale = Vector3.one;
 
             var dims = DimensionsMM;
             int overallW = dims.x;
@@ -72,13 +71,17 @@ namespace KitchenDesigner.Core
             float legCross = LegCrossSectionMM * toU;
             float topThicknessU = TabletopThicknessMM * toU;
 
-            float legCenterY = (legH * 0.5f - overallH * 0.5f) * toU;
-            float topCenterY = (overallH * 0.5f - TabletopThicknessMM * 0.5f) * toU;
+            float psX = overallW * toU;
+            float psY = overallH * toU;
+            float psZ = overallD * toU;
+
+            float legCenterY_world = (legH * 0.5f - overallH * 0.5f) * toU;
+            float topCenterY_world = (overallH * 0.5f - TabletopThicknessMM * 0.5f) * toU;
 
             var meshFilter = GetComponent<MeshFilter>();
             if (meshFilter == null) meshFilter = gameObject.AddComponent<MeshFilter>();
 
-            var mesh = CapsuleTableMesh.Build(overallW * toU, topThicknessU, overallD * toU, topCenterY);
+            var mesh = CapsuleTableMesh.Build(1f, topThicknessU / psY, 1f, topCenterY_world / psY);
             meshFilter.sharedMesh = mesh;
 
             var meshRenderer = GetComponent<MeshRenderer>();
@@ -88,14 +91,17 @@ namespace KitchenDesigner.Core
 
             UpdateCollider(mesh);
 
-            var legScale = new Vector3(legCross, legH * toU, legCross);
-            var legPositions = CapsuleTableMesh.GetLegPositions(overallW, overallH, overallD, legCenterY, _legInsetMM);
+            var legPositions_world = CapsuleTableMesh.GetLegPositions(
+                overallW, overallH, overallD, legCenterY_world, _legInsetMM);
+
+            var legScale = new Vector3(legCross / psX, legH * toU / psY, legCross / psZ);
 
             EnsureLegs(4);
 
             for (int i = 0; i < 4; i++)
             {
-                _legs[i].transform.localPosition = legPositions[i];
+                var wp = legPositions_world[i];
+                _legs[i].transform.localPosition = new Vector3(wp.x / psX, wp.y / psY, wp.z / psZ);
                 _legs[i].transform.localScale = legScale;
                 _legs[i].transform.localRotation = Quaternion.identity;
             }
@@ -156,6 +162,57 @@ namespace KitchenDesigner.Core
         {
             SetTabletopMaterial(material);
             SetLegsMaterial(material);
+        }
+
+        public override Face[] GetFaces()
+        {
+            var size = new Vector3(
+                DimensionsMM.x * AppConstants.MM_TO_UNITS,
+                DimensionsMM.y * AppConstants.MM_TO_UNITS,
+                DimensionsMM.z * AppConstants.MM_TO_UNITS);
+            var pos = ValidationPosition;
+            var rot = ValidationRotation;
+            var half = size * 0.5f;
+
+            var axes = new Vector3[] { rot * Vector3.right, rot * Vector3.up, rot * Vector3.forward };
+
+            var faceDims = new Vector2[]
+            {
+                new Vector2(size.y, size.z),
+                new Vector2(size.x, size.z),
+                new Vector2(size.x, size.y),
+            };
+
+            var offsets = new Vector3[]
+            {
+                 axes[0] * half.x, -axes[0] * half.x,
+                 axes[1] * half.y, -axes[1] * half.y,
+                 axes[2] * half.z, -axes[2] * half.z,
+            };
+
+            var normals = new Vector3[]
+            {
+                 axes[0], -axes[0],
+                 axes[1], -axes[1],
+                 axes[2], -axes[2],
+            };
+
+            var rightAxis = new Vector3[] { axes[1], axes[1], axes[0], axes[0], axes[0], axes[0] };
+            var upAxis = new Vector3[] { axes[2], axes[2], axes[2], axes[2], axes[1], axes[1] };
+
+            var faces = new Face[6];
+            for (int i = 0; i < 6; i++)
+            {
+                int dimIdx = i / 2;
+                faces[i] = new Face(
+                    pos + offsets[i],
+                    normals[i],
+                    faceDims[dimIdx],
+                    rightAxis[i],
+                    upAxis[i]
+                );
+            }
+            return faces;
         }
 
         public override Vector3[] GetVertices()

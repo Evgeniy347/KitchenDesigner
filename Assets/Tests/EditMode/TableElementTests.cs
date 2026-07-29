@@ -224,48 +224,168 @@ public class TableElementTests
     }
 
     // ═══════════════════════════════════════════════════════════════
-    //  Ресайз стола не должен ломать геометрию (двойное масштабирование)
+    //  Ресайз стола не должен ломать геометрию
     // ═══════════════════════════════════════════════════════════════
 
     [Test]
-    public void RadiusTable_LocalScale_IsOne_AfterResize()
+    public void Table_LocalScale_MatchesDimensions()
     {
-        var go = ElementFactory.CreateRadiusTable(
-            new Vector3Int(2000, 750, 1000), "RadiusScl", Vector3.zero);
-        var table = go.GetComponent<RadiusTableElement>();
+        var dims = new Vector3Int(2000, 750, 1000);
+        var go = ElementFactory.CreateTable(dims, "RectScl", Vector3.zero);
+        var table = go.GetComponent<TableElement>();
         Assert.IsNotNull(table);
 
-        Assert.AreEqual(Vector3.one, table.transform.localScale,
-            "BUG: после создания радиусного стола localScale != (1,1,1) — " +
-            "меш двойным масштабированием растянут");
+        float toU = AppConstants.MM_TO_UNITS;
+        var expectedScale = new Vector3(dims.x * toU, dims.y * toU, dims.z * toU);
+        Assert.AreEqual(expectedScale, table.transform.localScale,
+            "BUG: localScale не совпадает с размерами — GetFaces будет неверен");
 
-        // Ресайз
         table.DimensionsMM = new Vector3Int(1500, 800, 600);
-
-        Assert.AreEqual(Vector3.one, table.transform.localScale,
-            "BUG: после ресайза радиусного стола localScale != (1,1,1) — " +
-            "меш двойным масштабированием растянут");
+        var expectedScale2 = new Vector3(1500f * toU, 800f * toU, 600f * toU);
+        Assert.AreEqual(expectedScale2, table.transform.localScale,
+            "BUG: после ресайза localScale не совпадает с размерами");
 
         Object.DestroyImmediate(go);
     }
 
     [Test]
-    public void Table_LocalScale_IsOne_AfterResize()
+    public void RadiusTable_LocalScale_MatchesDimensions()
     {
-        var go = ElementFactory.CreateTable(
-            new Vector3Int(2000, 750, 1000), "RectScl", Vector3.zero);
+        var dims = new Vector3Int(2000, 750, 1000);
+        var go = ElementFactory.CreateRadiusTable(dims, "RadiusScl", Vector3.zero);
+        var table = go.GetComponent<RadiusTableElement>();
+        Assert.IsNotNull(table);
+
+        float toU = AppConstants.MM_TO_UNITS;
+        var expectedScale = new Vector3(dims.x * toU, dims.y * toU, dims.z * toU);
+        Assert.AreEqual(expectedScale, table.transform.localScale,
+            "BUG: localScale не совпадает с размерами");
+
+        table.DimensionsMM = new Vector3Int(1500, 800, 600);
+        var expectedScale2 = new Vector3(1500f * toU, 800f * toU, 600f * toU);
+        Assert.AreEqual(expectedScale2, table.transform.localScale,
+            "BUG: после ресайза localScale не совпадает с размерами");
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void Table_Resize_ChildrenWorldSizeMatchesDimensions()
+    {
+        var dims = new Vector3Int(1200, 750, 700);
+        var go = ElementFactory.CreateTable(dims, "RectChild", Vector3.zero);
         var table = go.GetComponent<TableElement>();
         Assert.IsNotNull(table);
 
-        Assert.AreEqual(Vector3.one, table.transform.localScale,
-            "BUG: после создания прямоугольного стола localScale != (1,1,1) — " +
-            "дочерние кубы двойным масштабированием растянуты");
+        // Проверяем что столешница (ребёнок 4) имеет правильный world-размер
+        var topMr = table.transform.GetChild(4).GetComponent<MeshRenderer>();
+        Assert.IsNotNull(topMr);
+        var topBounds = topMr.bounds.size;
+        Assert.AreEqual(1.2f, topBounds.x, 0.01f, "world ширина столешницы != 1200mm");
+        Assert.AreEqual(0.03f, topBounds.y, 0.01f, "world толщина столешницы != 30mm");
+        Assert.AreEqual(0.7f, topBounds.z, 0.01f, "world глубина столешницы != 700mm");
 
-        table.DimensionsMM = new Vector3Int(1500, 800, 600);
+        // Ресайз
+        table.DimensionsMM = new Vector3Int(1800, 800, 900);
 
-        Assert.AreEqual(Vector3.one, table.transform.localScale,
-            "BUG: после ресайза прямоугольного стола localScale != (1,1,1) — " +
-            "дочерние кубы двойным масштабированием растянуты");
+        var topBounds2 = topMr.bounds.size;
+        Assert.AreEqual(1.8f, topBounds2.x, 0.01f, "после ресайза: world ширина столешницы != 1800mm");
+        Assert.AreEqual(0.03f, topBounds2.y, 0.01f, "после ресайза: world толщина столешницы != 30mm");
+        Assert.AreEqual(0.9f, topBounds2.z, 0.01f, "после ресайза: world глубина столешницы != 900mm");
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void RadiusTable_Resize_MeshWorldSizeMatchesDimensions()
+    {
+        var dims = new Vector3Int(1200, 750, 700);
+        var go = ElementFactory.CreateRadiusTable(dims, "RadMesh", Vector3.zero);
+        var table = go.GetComponent<RadiusTableElement>();
+        Assert.IsNotNull(table);
+
+        var mr = table.GetComponent<MeshRenderer>();
+        Assert.IsNotNull(mr);
+        var bounds = mr.bounds.size;
+        // Толщина столешницы 30mm = 0.03m (bounding box по Y — только столешница, не весь стол)
+        Assert.AreEqual(0.03f, bounds.y, 0.005f, "BUG: толщина меша столешницы не 30mm — двойной масштаб");
+
+        // Ресайз
+        table.DimensionsMM = new Vector3Int(1800, 800, 900);
+        var bounds2 = mr.bounds.size;
+        Assert.AreEqual(0.03f, bounds2.y, 0.005f,
+            "BUG: после ресайза толщина меша столешницы не 30mm");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  GetFaces: центры граней должны совпадать с размерами стола
+    // ═══════════════════════════════════════════════════════════════
+
+    [Test]
+    public void Table_GetFaces_CentersMatchDimensions()
+    {
+        var dims = new Vector3Int(2000, 750, 1000);
+        var go = ElementFactory.CreateTable(dims, "FaceTbl", Vector3.zero);
+        var table = go.GetComponent<TableElement>();
+        Assert.IsNotNull(table);
+
+        var faces = table.GetFaces();
+        Assert.AreEqual(6, faces.Length);
+
+        var sizeM = new Vector3(
+            dims.x * AppConstants.MM_TO_UNITS,
+            dims.y * AppConstants.MM_TO_UNITS,
+            dims.z * AppConstants.MM_TO_UNITS);
+        var half = sizeM * 0.5f;
+
+        // Face index/2 = axis. Top face (Y+, index 2): center.y должен быть на верху стола
+        var topFace = faces[2];
+        Assert.AreEqual(half.y, topFace.center.y, 0.001f,
+            "BUG: центр верхней грани не на верху стола — ручки будут под столешницей");
+
+        // Bottom face (Y-, index 3): center.y у низа
+        var bottomFace = faces[3];
+        Assert.AreEqual(-half.y, bottomFace.center.y, 0.001f);
+
+        // Right face (X+, index 0)
+        Assert.AreEqual( half.x, faces[0].center.x, 0.001f);
+        // Left face (X-, index 1)
+        Assert.AreEqual(-half.x, faces[1].center.x, 0.001f);
+
+        // Front face (Z+, index 4)
+        Assert.AreEqual( half.z, faces[4].center.z, 0.001f);
+        // Back face (Z-, index 5)
+        Assert.AreEqual(-half.z, faces[5].center.z, 0.001f);
+
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void RadiusTable_GetFaces_CentersMatchDimensions()
+    {
+        var dims = new Vector3Int(2000, 750, 1000);
+        var go = ElementFactory.CreateRadiusTable(dims, "FaceRad", Vector3.zero);
+        var table = go.GetComponent<RadiusTableElement>();
+        Assert.IsNotNull(table);
+
+        var faces = table.GetFaces();
+        Assert.AreEqual(6, faces.Length);
+
+        var sizeM = new Vector3(
+            dims.x * AppConstants.MM_TO_UNITS,
+            dims.y * AppConstants.MM_TO_UNITS,
+            dims.z * AppConstants.MM_TO_UNITS);
+        var half = sizeM * 0.5f;
+
+        Assert.AreEqual( half.y, faces[2].center.y, 0.001f,
+            "BUG: радиусный стол — центр верхней грани не на верху");
+        Assert.AreEqual(-half.y, faces[3].center.y, 0.001f);
+        Assert.AreEqual( half.x, faces[0].center.x, 0.001f);
+        Assert.AreEqual(-half.x, faces[1].center.x, 0.001f);
+        Assert.AreEqual( half.z, faces[4].center.z, 0.001f);
+        Assert.AreEqual(-half.z, faces[5].center.z, 0.001f);
 
         Object.DestroyImmediate(go);
     }

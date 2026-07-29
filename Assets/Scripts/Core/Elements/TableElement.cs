@@ -59,7 +59,6 @@ namespace KitchenDesigner.Core
         public override void ApplyDimensions()
         {
             base.ApplyDimensions();
-            transform.localScale = Vector3.one;
 
             var rootMf = GetComponent<MeshFilter>();
             if (rootMf != null) Object.DestroyImmediate(rootMf);
@@ -72,32 +71,39 @@ namespace KitchenDesigner.Core
             int overallD = dims.z;
 
             int legH = Mathf.Max(1, overallH - TabletopThicknessMM);
-            int topW = overallW;
-            int topD = overallD;
 
             float toU = AppConstants.MM_TO_UNITS;
             float legCross = LegCrossSectionMM * toU;
             float topThicknessU = TabletopThicknessMM * toU;
 
-            float legCenterY = (legH * 0.5f - overallH * 0.5f) * toU;
-            float topCenterY = (overallH * 0.5f - TabletopThicknessMM * 0.5f) * toU;
+            float psX = overallW * toU;
+            float psY = overallH * toU;
+            float psZ = overallD * toU;
 
-            float halfW = overallW * 0.5f * toU;
-            float halfD = overallD * 0.5f * toU;
-            float legInset = legCross * 0.5f;
-            float insetOffset = _legInsetMM * toU;
+            float legCenterY_world = (legH * 0.5f - overallH * 0.5f) * toU;
+            float topCenterY_world = (overallH * 0.5f - TabletopThicknessMM * 0.5f) * toU;
+
+            float halfW_world = overallW * 0.5f * toU;
+            float halfD_world = overallD * 0.5f * toU;
+            float legInset_world = legCross * 0.5f;
+            float insetOffset_world = _legInsetMM * toU;
+
+            float leftX_norm   = (-halfW_world + legInset_world + insetOffset_world) / psX;
+            float rightX_norm  = ( halfW_world - legInset_world - insetOffset_world) / psX;
+            float frontZ_norm  = (-halfD_world + legInset_world + insetOffset_world) / psZ;
+            float backZ_norm   = ( halfD_world - legInset_world - insetOffset_world) / psZ;
 
             var legPositions = new Vector3[]
             {
-                new Vector3(-halfW + legInset + insetOffset, legCenterY, -halfD + legInset + insetOffset),
-                new Vector3( halfW - legInset - insetOffset, legCenterY, -halfD + legInset + insetOffset),
-                new Vector3(-halfW + legInset + insetOffset, legCenterY,  halfD - legInset - insetOffset),
-                new Vector3( halfW - legInset - insetOffset, legCenterY,  halfD - legInset - insetOffset),
+                new Vector3(leftX_norm,  legCenterY_world / psY, frontZ_norm),
+                new Vector3(rightX_norm, legCenterY_world / psY, frontZ_norm),
+                new Vector3(leftX_norm,  legCenterY_world / psY, backZ_norm),
+                new Vector3(rightX_norm, legCenterY_world / psY, backZ_norm),
             };
 
-            var legScale = new Vector3(legCross, legH * toU, legCross);
-            var topScale = new Vector3(topW * toU, topThicknessU, topD * toU);
-            var topPos = new Vector3(0f, topCenterY, 0f);
+            var legScale = new Vector3(legCross / psX, legH * toU / psY, legCross / psZ);
+            var topScale = new Vector3(1f, topThicknessU / psY, 1f);
+            var topPos = new Vector3(0f, topCenterY_world / psY, 0f);
 
             EnsureChildren(5);
 
@@ -160,6 +166,57 @@ namespace KitchenDesigner.Core
         {
             SetTabletopMaterial(material);
             SetLegsMaterial(material);
+        }
+
+        public override Face[] GetFaces()
+        {
+            var size = new Vector3(
+                DimensionsMM.x * AppConstants.MM_TO_UNITS,
+                DimensionsMM.y * AppConstants.MM_TO_UNITS,
+                DimensionsMM.z * AppConstants.MM_TO_UNITS);
+            var pos = ValidationPosition;
+            var rot = ValidationRotation;
+            var half = size * 0.5f;
+
+            var axes = new Vector3[] { rot * Vector3.right, rot * Vector3.up, rot * Vector3.forward };
+
+            var faceDims = new Vector2[]
+            {
+                new Vector2(size.y, size.z),
+                new Vector2(size.x, size.z),
+                new Vector2(size.x, size.y),
+            };
+
+            var offsets = new Vector3[]
+            {
+                 axes[0] * half.x, -axes[0] * half.x,
+                 axes[1] * half.y, -axes[1] * half.y,
+                 axes[2] * half.z, -axes[2] * half.z,
+            };
+
+            var normals = new Vector3[]
+            {
+                 axes[0], -axes[0],
+                 axes[1], -axes[1],
+                 axes[2], -axes[2],
+            };
+
+            var rightAxis = new Vector3[] { axes[1], axes[1], axes[0], axes[0], axes[0], axes[0] };
+            var upAxis = new Vector3[] { axes[2], axes[2], axes[2], axes[2], axes[1], axes[1] };
+
+            var faces = new Face[6];
+            for (int i = 0; i < 6; i++)
+            {
+                int dimIdx = i / 2;
+                faces[i] = new Face(
+                    pos + offsets[i],
+                    normals[i],
+                    faceDims[dimIdx],
+                    rightAxis[i],
+                    upAxis[i]
+                );
+            }
+            return faces;
         }
 
         public override Vector3[] GetVertices()
