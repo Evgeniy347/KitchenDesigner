@@ -103,23 +103,28 @@
     },
     {
       "type": "Button",
-      "text": "Рулетка",
+      "text": "MeasureToggle",
       "position": [1054, -6]
     },
     {
       "type": "Button",
+      "text": "Eyedropper",
+      "position": [1100, -6]
+    },
+    {
+      "type": "Button",
       "text": "Тонировка",
-      "position": [1186, -6]
+      "position": [1162, -6]
     },
     {
       "type": "Button",
-      "text": "Свет",
-      "position": [1302, -6]
+      "text": "LightsToggle",
+      "position": [1278, -6]
     },
     {
       "type": "Button",
-      "text": "Солнце",
-      "position": [1378, -6]
+      "text": "DayNight",
+      "position": [1324, -6]
     },
     {
       "type": "Button",

@@ -34,6 +34,11 @@ namespace KitchenDesigner.Core.UI
         private Button? _projectInstructionsButton;
         private Button? _settingsButton;
         private Button? _measureButton;
+        private Button? _eyedropperButton;
+        private RawImage? _eyedropperSwatch;
+        /// <summary>Декор, который сейчас показан в образце пипетки (пустая
+        /// строка — образец спрятан).</summary>
+        private string _swatchId = string.Empty;
         private Button? _tintButton;
         private Button? _lightsButton;
         private Button? _dayNightButton;
@@ -159,24 +164,24 @@ namespace KitchenDesigner.Core.UI
             _errorButtonLabel = _errorButton.GetComponentInChildren<TMP_Text>();
             // Быстрый переход к первой проблеме без открытия окна «Ошибки».
             _gotoIssueButton = AddIconButton(bar.transform, "GotoIssue", IconFactory.Warning,
-                ref x, y, h, GotoFirstIssue);
+                ref x, y, h, GotoFirstIssue, "Перейти к первой проблеме");
             _gotoIssueIcon = _gotoIssueButton.transform.Find("GotoIssue_Icon")?.GetComponent<Image>();
             _projectInstructionsButton = AddBarButton(bar.transform, "ProjectInstructions",
                 "Инструкции", ref x, y, h, 120, ToggleProjectInstructions);
             AddSeparator(bar.transform, ref x, y, h);
 
             // Понятные значки вместо текста.
-            _settingsButton = AddIconButton(bar.transform, "Settings", IconFactory.Gear, ref x, y, h, ToggleSettings);
-            AddIconButton(bar.transform, "Save", IconFactory.Floppy, ref x, y, h, SaveCurrent);
+            _settingsButton = AddIconButton(bar.transform, "Settings", IconFactory.Gear, ref x, y, h, ToggleSettings, "Настройки");
+            AddIconButton(bar.transform, "Save", IconFactory.Floppy, ref x, y, h, SaveCurrent, "Сохранить");
             // «Сохранить как» и «Загрузить» доступны на всех платформах:
             //   • WebGL — браузерные окна сохранения/выбора файла;
             //   • desktop/редактор — системные диалоги Windows.
-            AddIconButton(bar.transform, "SaveAs", IconFactory.FloppyPlus, ref x, y, h, SaveAs);
-            AddIconButton(bar.transform, "Load", IconFactory.Folder, ref x, y, h, LoadDialog);
+            AddIconButton(bar.transform, "SaveAs", IconFactory.FloppyPlus, ref x, y, h, SaveAs, "Сохранить как");
+            AddIconButton(bar.transform, "Load", IconFactory.Folder, ref x, y, h, LoadDialog, "Загрузить");
             AddSeparator(bar.transform, ref x, y, h);
 
-            _undoButton = AddIconButton(bar.transform, "Undo", IconFactory.Undo, ref x, y, h, DoUndo);
-            _redoButton = AddIconButton(bar.transform, "Redo", IconFactory.Redo, ref x, y, h, DoRedo);
+            _undoButton = AddIconButton(bar.transform, "Undo", IconFactory.Undo, ref x, y, h, DoUndo, "Отменить");
+            _redoButton = AddIconButton(bar.transform, "Redo", IconFactory.Redo, ref x, y, h, DoRedo, "Повторить");
             AddSeparator(bar.transform, ref x, y, h);
 
             // Переключатель режима ручек на гранях: растяжение ↔ перемещение по оси.
@@ -184,8 +189,12 @@ namespace KitchenDesigner.Core.UI
             _modeButtonLabel = modeBtn.GetComponentInChildren<TMP_Text>();
             // Замер расстояний между вершинами: пока режим включён, мышь
             // принадлежит только рулетке.
-            _measureButton = AddBarButton(bar.transform, "MeasureToggle", "Рулетка",
-                ref x, y, h, 110, Measure.MeasureMode.Toggle);
+            _measureButton = AddIconButton(bar.transform, "MeasureToggle", IconFactory.Ruler,
+                ref x, y, h, Measure.MeasureMode.Toggle, "Рулетка");
+            // Перенос декора: ПКМ подбирает текстуру, ЛКМ красит ею.
+            _eyedropperButton = AddIconButton(bar.transform, "Eyedropper", IconFactory.Eyedropper,
+                ref x, y, h, Tools.EyedropperMode.Toggle, "Пипетка: ПКМ — взять текстуру, ЛКМ — применить");
+            _eyedropperSwatch = AddSwatch(_eyedropperButton.transform);
             AddSeparator(bar.transform, ref x, y, h);
 
             // Тогглы вида: состояние показывает фон кнопки (нажат = включено),
@@ -193,9 +202,11 @@ namespace KitchenDesigner.Core.UI
             // Тонировка валидности (светло-зелёный): выкл — видны текстуры деталей.
             _tintButton = AddBarButton(bar.transform, "TintToggle", "Тонировка", ref x, y, h, 110, ToggleTint);
             // Глобальный выключатель источников света.
-            _lightsButton = AddBarButton(bar.transform, "LightsToggle", "Свет", ref x, y, h, 70, ToggleLights);
+            _lightsButton = AddIconButton(bar.transform, "LightsToggle", IconFactory.Bulb,
+                ref x, y, h, ToggleLights, "Свет");
             // Панель «День/Ночь» — глобальное управление солнцем.
-            _dayNightButton = AddBarButton(bar.transform, "DayNight", "Солнце", ref x, y, h, 90, ToggleDayNight);
+            _dayNightButton = AddIconButton(bar.transform, "DayNight", IconFactory.Sun,
+                ref x, y, h, ToggleDayNight, "Солнце");
             AddSeparator(bar.transform, ref x, y, h);
 
             // Переключатель режима редактора: фоторежим → помещение → обычный.
@@ -280,13 +291,55 @@ namespace KitchenDesigner.Core.UI
             if (img != null) img.color = on ? UIStyle.SurfaceActive : UIStyle.Surface;
         }
 
-        private Button AddIconButton(Transform parent, string name, Sprite icon, ref float x, float y, float h, System.Action onClick)
+        /// <summary>Кнопка-значок. У неё нет подписи, поэтому tooltip обязателен —
+        /// иначе назначение приходится угадывать (чек-лист UI-GUIDELINES).</summary>
+        private Button AddIconButton(Transform parent, string name, Sprite icon, ref float x, float y, float h, System.Action onClick, string tooltip)
         {
             var btn = UIFactory.CreateIconButton(name, parent, icon, new Vector2(x, y), new Vector2(h, h), onClick);
             UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
             btn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
+            TooltipUI.Attach(btn.gameObject, tooltip);
             x += h + 6;
             return btn;
+        }
+
+        /// <summary>Образец «что сейчас в пипетке» в углу её кнопки: текстура
+        /// подобранного декора. Без него режим молчит о том, что он подобрал, и
+        /// первый же клик красит наугад.</summary>
+        private static RawImage AddSwatch(Transform button)
+        {
+            const float size = 14f;
+            var rect = UIFactory.CreateRect("Swatch", button);
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(1, 0);
+            rect.sizeDelta = new Vector2(size, size);
+            rect.anchoredPosition = new Vector2(-3f, 3f);
+            var img = rect.gameObject.AddComponent<RawImage>();
+            img.raycastTarget = false;
+            rect.gameObject.SetActive(false);
+            return img;
+        }
+
+        /// <summary>Показать в образце подобранный декор: его картинку, а у чисто
+        /// цветового декора («Серый», «Белый») — его цвет. Пересчёт только при
+        /// смене декора: Resources.Load каждый кадр тут ни к чему.</summary>
+        private void RefreshEyedropperSwatch()
+        {
+            if (_eyedropperSwatch == null) return;
+            var id = Tools.EyedropperMode.PickedMaterialId ?? string.Empty;
+            if (id == _swatchId) return;
+            _swatchId = id;
+
+            if (id.Length == 0)
+            {
+                _eyedropperSwatch.gameObject.SetActive(false);
+                return;
+            }
+
+            var def = MaterialCatalog.Get(id);
+            var tex = MaterialManager.ResolveTexture(def);
+            _eyedropperSwatch.texture = tex;
+            _eyedropperSwatch.color = tex != null ? Color.white : def.baseColor;
+            _eyedropperSwatch.gameObject.SetActive(true);
         }
 
         // Кнопки отмены/повтора активны только когда есть что отменять/повторять;
@@ -298,6 +351,8 @@ namespace KitchenDesigner.Core.UI
             if (_redoButton != null) _redoButton.interactable = CommandStack.CanRedo;
 
             SetToggled(_measureButton, Measure.MeasureMode.Active);
+            SetToggled(_eyedropperButton, Tools.EyedropperMode.Active);
+            RefreshEyedropperSwatch();
             SetToggled(_tintButton, ElementHighlighter.TintEnabled);
             SetToggled(_lightsButton, LightSourceElement.GlobalOn);
             SetToggled(_specButton, _specPanel != null && _specPanel.IsVisible);

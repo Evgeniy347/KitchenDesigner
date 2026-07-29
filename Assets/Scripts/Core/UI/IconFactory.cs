@@ -16,6 +16,7 @@ namespace KitchenDesigner.Core.UI
 
         private static Sprite? _gear, _floppy, _floppyPlus, _folder, _undo, _redo, _pin, _warning, _pencil;
         private static Sprite? _caretUp, _caretDown;
+        private static Sprite? _ruler, _bulb, _sun, _eyedropper;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -28,6 +29,10 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Pencil => _pencil ??= BuildPencil();
         public static Sprite CaretUp => _caretUp ??= BuildCaret(true);
         public static Sprite CaretDown => _caretDown ??= BuildCaret(false);
+        public static Sprite Ruler => _ruler ??= BuildRuler();
+        public static Sprite Bulb => _bulb ??= BuildBulb();
+        public static Sprite Sun => _sun ??= BuildSun();
+        public static Sprite Eyedropper => _eyedropper ??= BuildEyedropper();
 
         // --- Иконки ---
 
@@ -137,6 +142,60 @@ namespace KitchenDesigner.Core.UI
                 int half = Mathf.RoundToInt(halfW * (1f - i / (float)h));
                 Rect(px, 32 - half, y, 32 + half + 1, y + 1, Ink);
             }
+            return Finish(px);
+        }
+
+        // Линейка «Рулетка»: светлый корпус с тёмными насечками по верхнему краю.
+        // Именно линейка, а не круглый корпус рулетки с лентой: в 28 px кнопки от
+        // корпуса осталось бы неразличимое кольцо, а насечки читаются как «мерить».
+        private static Sprite BuildRuler()
+        {
+            var px = NewCanvas();
+            Rect(px, 6, 23, 58, 41, Ink);
+            for (int x = 13; x <= 51; x += 8)
+                Rect(px, x, 33, x + 3, 41, Ink2);
+            return Finish(px);
+        }
+
+        // Лампочка «Свет»: колба, шейка и тёмный цоколь с двумя витками.
+        private static Sprite BuildBulb()
+        {
+            var px = NewCanvas();
+            Disc(px, 32, 41, 15, Ink);      // колба
+            Rect(px, 25, 26, 40, 42, Ink);  // шейка
+            Rect(px, 24, 13, 41, 26, Ink2); // цоколь
+            Rect(px, 24, 22, 41, 24, Ink);  // витки цоколя
+            Rect(px, 24, 17, 41, 19, Ink);
+            return Finish(px);
+        }
+
+        // Солнце «День/Ночь»: диск и восемь лучей.
+        private static Sprite BuildSun()
+        {
+            var px = NewCanvas();
+            Disc(px, 32, 32, 13, Ink);
+            for (int k = 0; k < 8; k++)
+            {
+                float a = k * Mathf.PI / 4f;
+                float cos = Mathf.Cos(a), sin = Mathf.Sin(a);
+                Line(px,
+                    32 + Mathf.RoundToInt(cos * 19), 32 + Mathf.RoundToInt(sin * 19),
+                    32 + Mathf.RoundToInt(cos * 27), 32 + Mathf.RoundToInt(sin * 27),
+                    2, Ink);
+            }
+            return Finish(px);
+        }
+
+        // Пипетка: тёмный баллон сверху, светлый корпус, сужающееся острие внизу.
+        // Вертикальная, а не диагональная (как BuildPencil), — иначе в тулбаре
+        // рядом её было бы не отличить от карандаша.
+        private static Sprite BuildEyedropper()
+        {
+            var px = NewCanvas();
+            Disc(px, 32, 49, 12, Ink2);     // баллон
+            Rect(px, 26, 20, 39, 48, Ink);  // корпус
+            Rect(px, 23, 36, 42, 40, Ink2); // обойма
+            ArrowDown(px, 32, 21, 13, Ink); // острие
             return Finish(px);
         }
 
