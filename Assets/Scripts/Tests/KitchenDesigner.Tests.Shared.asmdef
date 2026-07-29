@@ -2,6 +2,7 @@
 	"name": "KitchenDesigner.Tests.Shared",
 	"rootNamespace": "",
 	"references": [
+		"KitchenDesigner.Geometry",
 		"KitchenDesigner.Runtime",
 		"Unity.TextMeshPro"
 	],

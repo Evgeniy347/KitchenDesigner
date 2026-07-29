@@ -4,6 +4,7 @@
 	"references": [
 		"UnityEngine.TestRunner",
 		"UnityEditor.TestRunner",
+		"KitchenDesigner.Geometry",
 		"KitchenDesigner.Runtime",
 		"Unity.TextMeshPro",
 		"KitchenDesigner.Tests.Shared"

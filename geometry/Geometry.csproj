@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Вторая сборка ядра — из ТЕХ ЖЕ исходников, что компилирует Unity по
+    Assets/Scripts/Core/Geometry/KitchenDesigner.Geometry.asmdef.
+    Нужна, чтобы гонять тесты ядра обычным dotnet test (миллисекунды вместо
+    минут) и мутировать его штатным dotnet-stryker.
+    Обоснование и план: docs/GEOMETRY-EXTRACTION-PLAN.md
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>KitchenDesigner.Geometry</AssemblyName>
+    <RootNamespace>KitchenDesigner.Core</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <AnalysisMode>None</AnalysisMode>
+    <NoWarn>CA1305;CS0618;CS8632</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UnityManagedDir)' == ''">
+    <UnityManagedDir>C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Managed\UnityEngine\</UnityManagedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Assets\Scripts\Core\Geometry\**\*.cs" />
+  </ItemGroup>
+
+  <!--
+    UnityEngine.CoreModule грузится под CoreCLR нормально: SecurityException
+    «ECall methods must be packaged into a system module» возникает только при
+    ВЫЗОВЕ extern-метода. Vector3/Vector2/Vector3Int/Rect/Bounds/Mathf и
+    Quaternion как данные исполняются; конструкторы поворотов и Matrix4x4 — нет.
+    Список запретов и тест, который их стережёт, — в README ядра.
+  -->
+  <ItemGroup>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(UnityManagedDir)UnityEngine.CoreModule.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

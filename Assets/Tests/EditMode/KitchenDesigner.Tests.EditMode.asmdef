@@ -2,6 +2,7 @@
 	"name": "KitchenDesigner.Tests.EditMode",
 	"rootNamespace": "",
 	"references": [
+		"KitchenDesigner.Geometry",
 		"KitchenDesigner.Runtime",
 		"KitchenDesigner.Editor",
 		"Unity.TextMeshPro",

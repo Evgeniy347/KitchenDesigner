@@ -231,7 +231,7 @@ public readonly struct ElementGeometry
 | # | Этап | Часы | Результат |
 |---|---|---|---|
 | 0 | Ручная проверка сигнала: 40–60 курируемых мутаций по `SnapSystem`/`ResizeSnap` против РЕАЛЬНОГО набора тестов | 6–8 | Доля выживших на реальных тестах — обоснование объёма работ цифрой |
-| 1 | Каркас двойной сборки: asmdef `Geometry`, два csproj, перенос `Tolerance` + `Face`, 5–10 тестов, CI-шаг `dotnet test` | 4–6 | Обе сборки зелёные, CI ловит регресс за секунды |
+| 1 | ✅ **Сделано.** Каркас двойной сборки: asmdef `Geometry`, `geometry/Geometry.csproj` + `Geometry.Tests.csproj`, перенос `Tolerance`, 20 тестов, архитектурный сторож | 4–6 | Unity 17/17 и `dotnet test` 20/20 (31 мс); Stryker **100%** на `Tolerance`; инвариант `SnapMutationTests` цел |
 | 2 | Листовая математика без смены сигнатур: `GrooveMath`, `GappedBox`, `EdgeBanding`, `DrawerConstants`, `FaceContact` → struct без ссылок на компонент | 8–10 | Ядро растёт, поведение не меняется |
 | 3 | Граница снимка: `ElementGeometry` + `KitchenElement.ToGeometry()`; `ResizeSnap`/`ResizeMath` на снимки, старые сигнатуры — адаптеры | 8–12 | Ресайз-математика тестируется без сцены |
 | 4 | **Ядро снэпа**: `Collect`, `TryPickCandidate`, `FacesOverlap`, `GetFaceRect`, `BestEdgeDelta` → на снимки; убирается запись в `transform`; `TrySnap`/`Diagnose` — адаптеры | 16–24 | Снэп чист; здесь же выигрыш по времени |
@@ -280,16 +280,20 @@ Sweep snap events: 320835 | competition warnings: 0
 
 ```
 push:
-  dotnet test geometry/KitchenDesigner.Geometry.Tests.csproj     # секунды
+  cd geometry && dotnet test Geometry.Tests.csproj               # секунды
   build.cmd -RunTests                                            # ~6 мин
 nightly:
-  dotnet-stryker --project KitchenDesigner.Geometry.csproj \
-                 --threshold-break 60 --reporter html --reporter json
+  cd geometry && dotnet-stryker --project Geometry.csproj \
+                 --test-project Geometry.Tests.csproj \
+                 --threshold-break <baseline-5> --reporter html --reporter json
   build.cmd -RunPlayMode
 ```
 
-Порог: снять baseline после этапа 5, поставить `--threshold-break` на 5 пунктов
-ниже и поднимать по мере усиления тестов.
+`--test-project` обязателен: в каталоге `geometry/` лежат два .csproj, и без
+флага Stryker падает с «Expected exactly one .csproj file».
+
+Порог: снимать baseline после каждого этапа и ставить `--threshold-break` на
+5 пунктов ниже достигнутого.
 
 ---
 

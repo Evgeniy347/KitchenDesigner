@@ -26,6 +26,13 @@ ehthumbs_vista.db
 *.csproj
 *.sln
 *.unityproj
+
+# Вторая сборка геометрического ядра — рукописная, Unity её не генерирует.
+# Собирает те же исходники под dotnet test / Stryker (см. geometry/Geometry.csproj).
+!/geometry/*.csproj
+/geometry/**/bin/
+/geometry/**/obj/
+/geometry/**/StrykerOutput/
 *.opendb
 *.VC.db
 *.VC.VC.opendb
