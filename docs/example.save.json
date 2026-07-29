@@ -5193,7 +5193,7 @@
             "grooveCount": 0,
             "cornerRadius": 0,
             "isDrawer": true,
-            "drawerSystem": 0,
+            "drawerSystem": 1,
             "drawerType": 168,
             "drawerNominalLength": 500,
             "drawerColor": 0,
@@ -8763,7 +8763,7 @@
             "gapTop": 0,
             "gapBottom": 0,
             "groupId": 0,
-            "materialId": "dub_evropeyskiy_tinting_2",
+            "materialId": "dub_evropeyskiy",
             "legsMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
@@ -23009,11 +23009,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": -0.057647205889225009,
-        "targetY": 1.4121665954589844,
-        "targetZ": -1.4852567911148072,
-        "angleX": 28.29996681213379,
-        "angleY": 1228.6524658203125,
+        "targetX": 0.24134518206119538,
+        "targetY": 0.7650198340415955,
+        "targetZ": -2.2485172748565676,
+        "angleX": 27.156028747558595,
+        "angleY": 864.1553955078125,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": -1.0666234493255616,
@@ -23022,7 +23022,7 @@
         "photoAngleX": 13.54830265045166,
         "photoAngleY": 1162.4183349609375
     },
-    "handleMode": "Resize",
+    "handleMode": "Move",
     "projectInstructions": "Планировка квартиры 85,8 м2 (2-комнатная), панельный дом.\n\nОси: X — восток(+), Z — север(+), Y — вверх. Все размеры в мм.\nНачало отсчёта плана (origin) — внутренний юго-западный угол комнаты 22,9 м2:\nмировые координаты (-1585, -3620). Комната 22,9 в чистоте 3170 x 7240.\nКухонные модули (ряды A и B) стоят вплотную к граням z=0 и x=3170 —\nэти грани двигать НЕЛЬЗЯ.\n\nbearing_wall_thickness_mm: 250\npartition_wall_thickness_mm: 125\nfloor_thickness_mm: 100\n\nСтена состоит из ОТДЕЛЬНЫХ БЛОКОВ: несущие пилоны 250 мм (шаг 1200) чередуются\nс перегородками 125 мм по одной линии. Фасады 150 мм — задаются через\nthickness_mm на стене, а не типом. Тёмно-серый на чертеже = несущая,\nсветло-серый = перегородка.\nВысота стен 2700, низ стен и верх пола на Y=0.\n",
     "basePlateValid": true,
     "basePlate": {
@@ -23111,224 +23111,6 @@
         "edgeManualMask": 0
     },
     "undoHistory": [
-        {
-            "type": "move",
-            "description": "Move Moyka",
-            "elementIndex": 173,
-            "posBefore": [
-                0.6849998831748962,
-                0.872589647769928,
-                -3.3477706909179689
-            ],
-            "posAfter": [
-                0.6835778951644898,
-                0.85999995470047,
-                -3.3199996948242189
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Moyka",
-            "elementIndex": 173,
-            "posBefore": [
-                0.6835778951644898,
-                0.85999995470047,
-                -3.3199996948242189
-            ],
-            "posAfter": [
-                0.6450451612472534,
-                0.85999995470047,
-                -3.3199996948242189
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Moyka",
-            "elementIndex": 173,
-            "posBefore": [
-                0.6450451612472534,
-                0.85999995470047,
-                -3.3199996948242189
-            ],
-            "posAfter": [
-                0.6906063556671143,
-                0.85999995470047,
-                -3.2985825538635256
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Moyka",
-            "elementIndex": 173,
-            "posBefore": [
-                0.6906063556671143,
-                0.85999995470047,
-                -3.2985825538635256
-            ],
-            "posAfter": [
-                0.7019751667976379,
-                0.85999995470047,
-                -3.2985825538635256
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Moyka",
-            "elementIndex": 173,
-            "posBefore": [
-                0.7019751667976379,
-                0.85999995470047,
-                -3.2985825538635256
-            ],
-            "posAfter": [
-                0.7020000219345093,
-                0.8600000143051148,
-                -3.2990002632141115
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "dimsBefore": [
-                500,
-                188,
-                500
-            ],
-            "dimsAfter": [
-                500,
-                188,
-                500
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Moyka",
-            "elementIndex": 173,
-            "posBefore": [
-                0.7020000219345093,
-                0.85999995470047,
-                -3.2990002632141115
-            ],
-            "posAfter": [
-                0.6730818748474121,
-                0.85999995470047,
-                -3.2990002632141115
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Moyka",
-            "elementIndex": 173,
-            "posBefore": [
-                0.6730818748474121,
-                0.85999995470047,
-                -3.2990002632141115
-            ],
-            "posAfter": [
-                0.5325360298156738,
-                0.85999995470047,
-                -3.2990002632141115
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
         {
             "type": "move",
             "description": "Move Moyka",
