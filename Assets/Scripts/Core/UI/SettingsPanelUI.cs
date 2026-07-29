@@ -311,6 +311,7 @@ namespace KitchenDesigner.Core.UI
 
         private Button? _presetButton;
         private Toggle? _photoActiveToggle;
+        private Toggle? _photoSSGIToggle;
 
         private void SyncPhotoActiveToggle()
         {
@@ -358,8 +359,29 @@ namespace KitchenDesigner.Core.UI
             AddToggleRow(t, ref y, "Потолок по стенам", s.PhotoCeiling,
                 v => { s.PhotoCeiling = v; PhotoMode.RefreshIfActive(); });
 
-            AddToggleRow(t, ref y, "Отражённый свет (SSGI)", s.PhotoSSGI,
+            _photoSSGIToggle = AddToggleRow(t, ref y, "Отражённый свет (SSGI)", s.PhotoSSGI,
                 v => { s.PhotoSSGI = v; PhotoMode.RefreshIfActive(); });
+
+#if UNITY_WEBGL
+            SetToggleEnabled(_photoSSGIToggle, "Отражённый свет (SSGI)", false);
+            if (_rowLabels.TryGetValue("Отражённый свет (SSGI)", out var ssgiLbl))
+                ssgiLbl.text = "Отражённый свет (SSGI)*";
+
+            if (_photoLinkedToggles.TryGetValue("Суперсэмплинг", out var supToggle))
+            {
+                supToggle.interactable = false;
+                if (supToggle.graphic != null)
+                    supToggle.graphic.color = UIStyle.TextDisabled;
+            }
+            SetLabelEnabled("Суперсэмплинг", false);
+            if (_rowLabels.TryGetValue("Суперсэмплинг", out var supLbl))
+                supLbl.text = "Суперсэмплинг*";
+
+            y -= 4;
+            UIFactory.CreateLabel("PhotoWebGLLimitations", t,
+                "* данные функции отключены в WebGL", 13,
+                new Vector2(0, y), new Vector2(ContentW, 24), TextAnchor.MiddleCenter);
+#endif
         }
 
         // ── Пресет + привязанные тумблеры ───────────────────
