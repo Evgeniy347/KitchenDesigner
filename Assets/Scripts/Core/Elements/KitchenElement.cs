@@ -408,6 +408,14 @@ namespace KitchenDesigner.Core
         protected virtual Vector3 ValidationPosition => transform.position;
         protected virtual Quaternion ValidationRotation => transform.rotation;
 
+        /// <summary>Не пересобирать меш и материалы в <see cref="ApplyDimensions"/>.
+        /// Размер, поза и логические ограничения применяются как обычно — гасится
+        /// только то, что нужно ГЛАЗУ. Для расчётных тестов, где сцену никто не
+        /// рисует: прилипание считается по localScale и позе, меша не касается,
+        /// а покадровый свип упирался именно в пересборку меша на каждый
+        /// миллиметр. Тест обязан вернуть флаг в false в TearDown.</summary>
+        public static bool SuppressVisualRebuild;
+
         public virtual void ApplyDimensions()
         {
             transform.localScale = new Vector3(
@@ -415,6 +423,8 @@ namespace KitchenDesigner.Core
                 _data.DimensionsMM.y * AppConstants.MM_TO_UNITS,
                 _data.DimensionsMM.z * AppConstants.MM_TO_UNITS
             );
+
+            if (SuppressVisualRebuild) return;
 
             // Доли паза и проёма мойки считаются от размеров детали, а UV — от её
             // пропорций: при ресайзе меш надо пересобрать, иначе и то и другое

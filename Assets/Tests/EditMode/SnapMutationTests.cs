@@ -33,6 +33,24 @@ public class SnapMutationTests
 
     private readonly Dictionary<KitchenElement, KitchenElement.Face[]> _faceCache = new();
 
+    /// <summary>Соседи текущей детали по имени. Свип ищет цель снэпа по имени на
+    /// каждом сработавшем шаге — линейный поиск по списку стоил заметно дороже
+    /// самой проверки. Первое вхождение, как у прежнего FirstOrDefault.</summary>
+    private readonly Dictionary<string, KitchenElement> _othersByName = new();
+
+    private KitchenElement? OtherByName(string? name)
+        => name != null && _othersByName.TryGetValue(name, out var e) ? e : null;
+
+    private long _ticksRestore, _ticksDimSet, _ticksTrySnap, _ticksPosSet;
+    private int _countRestore, _countDimSet, _countTrySnap, _countPosSet;
+
+    private long _ticksFindMove, _ticksDiagnose, _ticksIntersect;
+    private int _countFindMove, _countDiagnose, _countIntersect;
+    private long _ticksResizeCompute, _ticksFindResize, _ticksOpposing;
+    private int _countResizeCompute, _countFindResize, _countOpposing;
+    private long _allocP4, _allocP5;
+    private int _gcP4, _gcP5;
+
     private void BuildFaceCache(List<KitchenElement> elements)
     {
         _faceCache.Clear();
@@ -78,6 +96,7 @@ public class SnapMutationTests
     [TearDown]
     public void TearDown()
     {
+        KitchenElement.SuppressVisualRebuild = false;
         ClearScene();
         _guard?.Restore();
         _errors.Clear();
@@ -118,12 +137,15 @@ public class SnapMutationTests
         ClearScene();
         var allElements = RestoreScene();
         Assert.IsNotEmpty(allElements, "No KitchenElements in restored scene");
-        // Transformable, а не Movable: открытая дверца и выдвинутый ящик строят
-        // геометрию от закрытой позы, приложение их двигать и растягивать не даёт —
-        // фаззеру тоже нечего там проверять.
         var movableNames = allElements.Where(e => e.Transformable && e.gameObject.activeInHierarchy)
             .Select(e => e.PartName).ToList();
         BuildFaceCache(allElements);
+
+        // Сцена уже построена — дальше мутируем только геометрию, и меш с
+        // материалами никто не смотрит: прилипание работает по localScale и позе.
+        // Пересборка меша на каждый миллиметр свипа была самой дорогой строчкой
+        // фазы 4. Флаг снимается в TearDown, снимок сцены он не затрагивает.
+        KitchenElement.SuppressVisualRebuild = true;
 
         TestContext.WriteLine(
             $"=== Mutation: {SaveFileName} | {movableNames.Count} movable / {allElements.Count} total ===");
@@ -133,6 +155,16 @@ public class SnapMutationTests
         int totalBigMoveOk = 0;
         int totalSweepSnapEvents = 0;
         int totalSweepCompetitionWarnings = 0;
+
+        long ticksP0 = 0, ticksP1 = 0, ticksP2 = 0, ticksP3 = 0, ticksP4 = 0, ticksP5 = 0;
+        _ticksRestore = _ticksDimSet = _ticksTrySnap = _ticksPosSet = 0;
+        _countRestore = _countDimSet = _countTrySnap = _countPosSet = 0;
+        _ticksFindMove = _ticksDiagnose = _ticksIntersect = 0;
+        _countFindMove = _countDiagnose = _countIntersect = 0;
+        _ticksResizeCompute = _ticksFindResize = _ticksOpposing = 0;
+        _countResizeCompute = _countFindResize = _countOpposing = 0;
+        _allocP4 = _allocP5 = 0;
+        _gcP4 = _gcP5 = 0;
 
         foreach (var name in movableNames)
         {
@@ -145,52 +177,69 @@ public class SnapMutationTests
             float threshold = KitchenSettings.Instance.SnapThreshold;
             var allOthers = allElements.Where(e => e != moved && e != null && e.gameObject.activeInHierarchy).ToList();
 
-            // Предфильтр по расстоянию: в sweep/move участвуют только соседи в радиусе
-            // 200 мм ресайза/переноса + 50 мм порог + запас. Это уменьшает
-            // количество пар граней на порядок.
             float nearbyRadiusMm = SweepMaxMm + threshold + 100f;
             var others = GetNeighborsWithin(moved, allOthers, nearbyRadiusMm);
 
-            // Хитрый кэш: грани всех НЕподвижных соседей считаем один раз за итерацию.
-            // Подвижный элемент в кэш не попадает — его геометрия меняется.
             var staticCache = new Dictionary<KitchenElement, KitchenElement.Face[]>();
+            _othersByName.Clear();
             foreach (var o in others)
+            {
                 staticCache[o] = GetFacesCached(o);
+                if (!_othersByName.ContainsKey(o.PartName)) _othersByName[o.PartName] = o;
+            }
             FaceCache.Set(staticCache);
 
-            // ── Phase 0: диагностика существующих пар граней ─────────────────
+            // ── Phase 0 ──
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             foreach (var target in others)
                 TestExistingPairAttraction(moved, target, savedPos, savedDims, ref totalSnapOk);
+            ticksP0 += sw.ElapsedTicks;
 
-            // ── Phase 1: +200 мм с каждой из 6 граней ────────────────────────
+            // ── Phase 1: +200 мм с каждой из 6 граней ──
+            sw.Restart();
             for (int face = 0; face < 6; face++)
                 TestResizeFromFace(moved, others, savedPos, savedDims, savedRot, face, +BigStepMm,
                     threshold, ref totalBigResizeOk, "GROW");
+            ticksP1 += sw.ElapsedTicks;
 
-            // ── Phase 2: -200 мм с каждой из 6 граней ────────────────────────
+            // ── Phase 2: -200 мм с каждой из 6 граней ──
+            sw.Restart();
             for (int face = 0; face < 6; face++)
                 TestResizeFromFace(moved, others, savedPos, savedDims, savedRot, face, -BigStepMm,
                     threshold, ref totalBigResizeOk, "SHRINK");
+            ticksP2 += sw.ElapsedTicks;
 
-            // ── Phase 3: перемещение на 200 мм в 6 направлениях ──────────────
+            // ── Phase 3: перемещение на 200 мм в 6 направлениях ──
+            sw.Restart();
             foreach (var dir in MoveDirs)
                 TestMoveDirection(moved, others, savedPos, savedDims, savedRot, dir, BigStepMm,
                     threshold, ref totalBigMoveOk);
+            ticksP3 += sw.ElapsedTicks;
 
-            // ── Phase 4: покадровый (1 мм) ресайз с каждой грани ─────────────
+            // ── Phase 4: покадровый (1 мм) ресайз ──
+            int gc1P4 = System.GC.CollectionCount(1);
+            int gcP4 = System.GC.CollectionCount(0);
+            sw.Restart();
             for (int face = 0; face < 6; face++)
                 SweepResizeFromFace(moved, others, savedPos, savedDims, savedRot, face,
                     SweepMaxMm, SweepStepMm, threshold, ref totalSweepSnapEvents,
                     ref totalSweepCompetitionWarnings);
+            ticksP4 += sw.ElapsedTicks;
+            _allocP4 += System.GC.CollectionCount(1) - gc1P4;
+            _gcP4 += System.GC.CollectionCount(0) - gcP4;
 
-            // ── Phase 5: покадровый (1 мм) перенос в 6 направлениях ──────────
+            // ── Phase 5: покадровый (1 мм) перенос ──
+            int gc1P5 = System.GC.CollectionCount(1);
+            int gcP5 = System.GC.CollectionCount(0);
+            sw.Restart();
             foreach (var dir in MoveDirs)
                 SweepMoveDirection(moved, others, savedPos, savedDims, savedRot, dir,
                     SweepMaxMm, SweepStepMm, threshold, ref totalSweepSnapEvents,
                     ref totalSweepCompetitionWarnings);
+            ticksP5 += sw.ElapsedTicks;
+            _allocP5 += System.GC.CollectionCount(1) - gc1P5;
+            _gcP5 += System.GC.CollectionCount(0) - gcP5;
 
-            // Возвращаем только движимый элемент в исходное состояние.
-            // Полный сброс сцены не нужен — остальные элементы не менялись.
             RestoreElementState(moved, savedPos, savedDims, savedRot);
             FaceCache.Clear();
         }
@@ -199,6 +248,28 @@ public class SnapMutationTests
 
         // ── Report ────────────────────────────────────────────────────────
         var report = new System.Text.StringBuilder();
+        report.AppendLine($"Phase 0 (existing): {TicksToMs(ticksP0):F0}ms");
+        report.AppendLine($"Phase 1 (big grow):  {TicksToMs(ticksP1):F0}ms");
+        report.AppendLine($"Phase 2 (big shrink):{TicksToMs(ticksP2):F0}ms");
+        report.AppendLine($"Phase 3 (big move):  {TicksToMs(ticksP3):F0}ms");
+        report.AppendLine($"Phase 4 (sweep resize):{TicksToMs(ticksP4):F0}ms");
+        report.AppendLine($"Phase 5 (sweep move):  {TicksToMs(ticksP5):F0}ms");
+        report.AppendLine($"  ── sweep internals ──");
+        report.AppendLine($"  RestoreElementState: {TicksToMs(_ticksRestore):F0}ms ({_countRestore} calls)");
+        report.AppendLine($"  DimensionsMM set:    {TicksToMs(_ticksDimSet):F0}ms ({_countDimSet} calls)");
+        report.AppendLine($"  TrySnap:             {TicksToMs(_ticksTrySnap):F0}ms ({_countTrySnap} calls)");
+        report.AppendLine($"  transform.position:  {TicksToMs(_ticksPosSet):F0}ms ({_countPosSet} calls)");
+        report.AppendLine($"  ── allocations ──");
+        report.AppendLine($"  Phase 4: gen0={_gcP4} gen1={_allocP4}");
+        report.AppendLine($"  Phase 5: gen0={_gcP5} gen1={_allocP5}");
+        report.AppendLine($"  ── phase 4 details ──");
+        report.AppendLine($"  FindResizeTargets:   {TicksToMs(_ticksFindResize):F0}ms ({_countFindResize} calls)");
+        report.AppendLine($"  ResizeMath.Compute:  {TicksToMs(_ticksResizeCompute):F0}ms ({_countResizeCompute} calls)");
+        report.AppendLine($"  Opposing-face check: {TicksToMs(_ticksOpposing):F0}ms ({_countOpposing} calls)");
+        report.AppendLine($"  ── phase 5 details ──");
+        report.AppendLine($"  FindMoveTargets:     {TicksToMs(_ticksFindMove):F0}ms ({_countFindMove} calls)");
+        report.AppendLine($"  Diagnose:            {TicksToMs(_ticksDiagnose):F0}ms ({_countDiagnose} calls)");
+        report.AppendLine($"  ElementsIntersect:   {TicksToMs(_ticksIntersect):F0}ms ({_countIntersect} calls)");
         report.AppendLine($"Existing snap OK: {totalSnapOk} | Big resize OK: {totalBigResizeOk} | Big move OK: {totalBigMoveOk}");
         report.AppendLine($"Sweep snap events: {totalSweepSnapEvents} | sweep competition warnings: {totalSweepCompetitionWarnings}");
         report.AppendLine($"Total time: {swTotal.Elapsed.TotalSeconds:F1}s");
@@ -371,22 +442,27 @@ public class SnapMutationTests
 
         for (int mm = 0; mm <= maxMm; mm += stepMm)
         {
+            var swR = System.Diagnostics.Stopwatch.StartNew();
             RestoreElementState(moved, savedPos, savedDims, savedRot);
+            _ticksRestore += swR.ElapsedTicks;
+            _countRestore++;
 
             var f = moved.GetFaces()[faceIndex];
             float rawDelta = mm * AppConstants.MM_TO_UNITS;
             float sizeStartUnits = origDim * AppConstants.MM_TO_UNITS;
 
-            // Чего МЫ ждём от прилипания — считается независимо от ResizeSnap по
-            // сырому (не прилипшему) положению грани. Без этого тест видит только
-            // состоявшиеся снэпы, а пропущенное прилипание для него невидимо —
-            // именно поэтому он молчал на стойке, касающейся панели по ребру.
+            var swFR = System.Diagnostics.Stopwatch.StartNew();
             var expected = FindResizeTargets(f, rawDelta, others, thresholdMm);
+            _ticksFindResize += swFR.ElapsedTicks;
+            _countFindResize++;
 
+            var swRC = System.Diagnostics.Stopwatch.StartNew();
             ResizeMath.Compute(savedDims, axis, f.normal, f.center, f.rightAxis, f.upAxis, f.size,
                 savedPos, sizeStartUnits, rawDelta, others, moved,
                 snapEnabled: true, thresholdMm * AppConstants.MM_TO_UNITS,
                 out Vector3Int newDims, out Vector3 _, out bool snapped);
+            _ticksResizeCompute += swRC.ElapsedTicks;
+            _countResizeCompute++;
 
             if (!snapped && expected.Count > 0)
             {
@@ -396,7 +472,10 @@ public class SnapMutationTests
                     $"({(nearest.edgeOnly ? "по ребру" : "по площади")}), но прилипание не сработало");
             }
 
+            var swD = System.Diagnostics.Stopwatch.StartNew();
             moved.DimensionsMM = newDims;
+            _ticksDimSet += swD.ElapsedTicks;
+            _countDimSet++;
             var appliedDims = moved.DimensionsMM;
             if (appliedDims == savedDims) continue; // деталь отказалась менять размер
 
@@ -413,8 +492,11 @@ public class SnapMutationTests
             if (snapped)
             {
                 snapEvents++;
+                var swOp = System.Diagnostics.Stopwatch.StartNew();
                 var movedFace = moved.GetFaces()[faceIndex];
                 var closest = FindClosestOpposingFace(movedFace, others, thresholdMm);
+                _ticksOpposing += swOp.ElapsedTicks;
+                _countOpposing++;
 
                 if (!closest.found)
                 {
@@ -462,16 +544,25 @@ public class SnapMutationTests
 
         for (int mm = 0; mm <= maxMm; mm += stepMm)
         {
+            var swR = System.Diagnostics.Stopwatch.StartNew();
             RestoreElementState(moved, savedPos, savedDims, savedRot);
+            _ticksRestore += swR.ElapsedTicks;
+            _countRestore++;
             Vector3 testPos = savedPos + d * (mm * AppConstants.MM_TO_UNITS);
 
+            var swSnap = System.Diagnostics.Stopwatch.StartNew();
             var snap = SnapSystem.TrySnap(moved, others, testPos);
+            _ticksTrySnap += swSnap.ElapsedTicks;
+            _countTrySnap++;
             if (!snap.snapped)
             {
                 // Пропущенное прилипание: есть встречная грань в пределах порога с
                 // достаточным перекрытием, а снэпа нет. Без этой проверки тест
                 // видел только СОСТОЯВШИЕСЯ снэпы и не мог поймать «не прилипает».
+                var swF = System.Diagnostics.Stopwatch.StartNew();
                 var missed = FindMoveTargets(moved, others, testPos, thresholdMm);
+                _ticksFindMove += swF.ElapsedTicks;
+                _countFindMove++;
                 if (missed.Count > 0)
                 {
                     var nearest = missed.OrderBy(t => Mathf.Abs(t.gapMm)).First();
@@ -483,9 +574,16 @@ public class SnapMutationTests
             }
 
             snapEvents++;
+            var swP = System.Diagnostics.Stopwatch.StartNew();
             moved.transform.position = snap.position;
-            var snapTarget = others.FirstOrDefault(o => o.PartName == snap.targetName);
-            if (snapTarget != null && !IsPanel(moved) && SnapSystem.ElementsIntersect(moved, snapTarget))
+            _ticksPosSet += swP.ElapsedTicks;
+            _countPosSet++;
+            var swI = System.Diagnostics.Stopwatch.StartNew();
+            var snapTarget = OtherByName(snap.targetName);
+            bool intersects = snapTarget != null && !IsPanel(moved) && SnapSystem.ElementsIntersect(moved, snapTarget);
+            _ticksIntersect += swI.ElapsedTicks;
+            _countIntersect++;
+            if (intersects)
                 AddError($"INTERSECT-AFTER-SNAP: {moved.PartName} SWEEP-MOVE {dirLabel} @ {mm}мм → {snap.targetName}");
 
             // Снэп «на месте» — это подтверждение уже существующего контакта, а не
@@ -497,7 +595,10 @@ public class SnapMutationTests
             // Конкуренция — это спор ЗА ОДНУ ОСЬ: какой из встречных граней вдоль
             // нормали отдать деталь. Кандидаты с других осей не конкуренты, а
             // дополнение — TrySnap добирает их отдельными проходами.
+            var swDg = System.Diagnostics.Stopwatch.StartNew();
             var diag = SnapSystem.Diagnose(moved, others, testPos, maxNeighbors: 50);
+            _ticksDiagnose += swDg.ElapsedTicks;
+            _countDiagnose++;
             var chosen = diag.neighbors.FirstOrDefault(n => n.name == snap.targetName && n.wouldSnap);
             if (chosen == null) continue;
 
@@ -538,9 +639,16 @@ public class SnapMutationTests
     private void RestoreElementState(KitchenElement moved, Vector3 pos, Vector3Int dims, Quaternion rot)
     {
         moved.transform.position = pos;
-        moved.DimensionsMM = dims;
+        // Запись размера тянет за собой ApplyDimensions: пересборку меша, UV и
+        // property block. В свипе ПЕРЕНОСА размер не меняется вообще, поэтому
+        // 268 938 таких записей были чистой потерей. Сеттер сам это отсечь не
+        // может — там ApplyDimensions ещё и СОБИРАЕТ дочернюю геометрию, и
+        // деталь, загруженная с дефолтным размером, осталась бы без неё.
+        if (moved.DimensionsMM != dims) moved.DimensionsMM = dims;
         moved.transform.rotation = rot;
     }
+
+    private static double TicksToMs(long ticks) => ticks * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
 
     private static string DirectionLabel(Vector3 dir)
     {
