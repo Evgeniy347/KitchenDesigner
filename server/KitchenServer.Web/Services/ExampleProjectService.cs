@@ -10,8 +10,13 @@ public class ExampleProjectService
     private readonly string[] _searchPaths;
     private readonly ILogger<ExampleProjectService> _logger;
 
+    // Order matters. /app/seed-live is a bind mount from the host (deploy.cmd writes it),
+    // so the demo can be refreshed without rebuilding and shipping the whole image.
+    // /app/seed is baked into the image and stays the fallback: if the mount is missing
+    // or empty, the demo still works.
     internal static readonly string[] DefaultSearchPaths = new[]
     {
+        "/app/seed-live/example.save.json",
         "/app/seed/example.save.json",
         "seed/example.save.json",
         "example.save.json"

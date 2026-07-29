@@ -35,6 +35,8 @@ services:
       - appdata-local:/app/data
       - ../Builds/WebGL_Debug:/app/webgl:ro
       - ./KitchenServer.Web/wwwroot/app.css:/app/wwwroot/app.css:ro
+      # Demo project straight from the repo — edit docs/example.save.json, restart web.
+      - ../docs:/app/seed-live:ro
     depends_on:
       db:
         condition: service_healthy

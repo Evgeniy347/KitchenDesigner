@@ -289,6 +289,56 @@ public sealed class ExampleProjectServiceTests : IDisposable
         Assert.NotEqual(user1Projects[0].ProjectGroupId, user2Projects[0].ProjectGroupId);
     }
 
+    // ── Search path precedence ──────────────────────────────────────────
+
+    [Fact]
+    public void LoadExampleFile_PrefersTheEarlierPath_WhenBothExist()
+    {
+        var live = Path.Combine(_tempDir, "live.json");
+        var baked = Path.Combine(_tempDir, "baked.json");
+        File.WriteAllText(live, """{"source":"live"}""");
+        File.WriteAllText(baked, """{"source":"baked"}""");
+
+        var svc = new ExampleProjectService(
+            NullLogger<ExampleProjectService>.Instance,
+            new[] { live, baked });
+
+        Assert.Equal("""{"source":"live"}""", svc.GetExampleJson());
+    }
+
+    [Fact]
+    public void LoadExampleFile_FallsBackToTheBakedCopy_WhenTheMountIsMissing()
+    {
+        var live = Path.Combine(_tempDir, "missing", "example.save.json");
+        var baked = Path.Combine(_tempDir, "baked.json");
+        File.WriteAllText(baked, """{"source":"baked"}""");
+
+        var svc = new ExampleProjectService(
+            NullLogger<ExampleProjectService>.Instance,
+            new[] { live, baked });
+
+        Assert.True(svc.IsAvailable);
+        Assert.Equal("""{"source":"baked"}""", svc.GetExampleJson());
+    }
+
+    /// <summary>
+    /// The bind mount must win over the image copy, and the image copy must stay as the
+    /// fallback — otherwise a deploy either cannot refresh the demo, or loses it entirely
+    /// when /app/seed-live is not mounted.
+    /// </summary>
+    [Fact]
+    public void DefaultSearchPaths_PutTheMountBeforeTheBakedCopy()
+    {
+        var paths = ExampleProjectService.DefaultSearchPaths;
+
+        var liveIndex = Array.IndexOf(paths, "/app/seed-live/example.save.json");
+        var bakedIndex = Array.IndexOf(paths, "/app/seed/example.save.json");
+
+        Assert.True(liveIndex >= 0, "the /app/seed-live mount must be searched");
+        Assert.True(bakedIndex >= 0, "the baked-in copy must remain as a fallback");
+        Assert.True(liveIndex < bakedIndex, "the mount must take precedence over the baked copy");
+    }
+
     // ── Unavailable file ────────────────────────────────────────────────
 
     [Fact]

@@ -31,6 +31,10 @@ services:
     volumes:
       - appdata:/app/data
       - ./webgl:/app/webgl:ro
+      # Demo project, updatable without an image rebuild. Takes precedence over the
+      # copy baked into the image (see ExampleProjectService.DefaultSearchPaths);
+      # the service reads it once at startup, so a change needs `restart web`.
+      - ./seed:/app/seed-live:ro
     depends_on:
       db:
         condition: service_healthy

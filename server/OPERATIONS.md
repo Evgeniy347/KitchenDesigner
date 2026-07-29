@@ -21,6 +21,8 @@ truth — edit here, then `scp` it over.
 │   └── nginx.conf            ← nginx config (HTTPS + reverse proxy), bind-mounted
 ├── webgl/                    ← Unity WebGL build, bind-mounted read-only into web
 │   └── _trash/               ← superseded builds parked by deploy.cmd
+├── seed/
+│   └── example.save.json     ← demo project, bind-mounted read-only as /app/seed-live
 ├── data/
 │   └── pgdata/               ← PostgreSQL data (bind mount)
 └── OPERATIONS.md             ← copy of this file
@@ -60,6 +62,19 @@ see `Services/UnityWebGLStaticFiles.cs`), not by nginx — nginx proxies everyth
 | Data-protection keys (auth cookies) | same volume → `/app/data/keys` | Yes — sessions stay valid |
 | SSL certs | `/etc/letsencrypt` on the host | Yes — never touched by deploy |
 | WebGL client | `./webgl`, bind-mounted read-only | Replaced by every deploy (old build → `webgl/_trash`) |
+| Demo project | `./seed/example.save.json`, mounted as `/app/seed-live` | Replaced by every deploy |
+
+### Demo project
+
+`docs/example.save.json` reaches the server twice over: baked into the image at `/app/seed`
+and bind-mounted at `/app/seed-live`, which wins (`ExampleProjectService.DefaultSearchPaths`).
+The mount is what lets `deploy.cmd` refresh the demo without shipping a new image; the baked
+copy is the fallback if the mount is ever missing.
+
+The service reads the file **once at startup**, so a new demo needs `restart web` —
+`deploy.cmd` does that automatically, and only when the file actually changed. Users who
+already imported the example get a new version of their project on their next visit to
+`/demo` or the project list; their own edits are not deleted but move into version history.
 
 Schema handling on startup (`Program.cs`): `EnsureCreated()` is a no-op on an existing
 database, followed by additive `ALTER TABLE … ADD COLUMN IF NOT EXISTS`. Nothing drops or
@@ -80,8 +95,9 @@ builds → scp `Builds/WebGL` → scp compose files + `nginx.conf` → `docker s
 → `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d` → `nginx -t` + reload
 → `/health` check.
 
-Only the client changed? Skip the image entirely — `webgl/` is a bind mount, so the new build
-goes live with no restart:
+Only the client or the demo changed? Skip the image entirely — both are bind mounts. The
+WebGL build goes live with no restart; the demo triggers a `restart web` only if its content
+actually changed:
 
 ```
 deploy.cmd -WebGLOnly
@@ -104,6 +120,7 @@ Same mechanism with `Builds/WebGL_Debug` and the `kitchen-server:debug` image
 - `server/nginx.conf` → `/opt/kitchen-designer/server/nginx.conf` (this is the path nginx
   bind-mounts; a copy in the root directory is ignored)
 - `Builds/WebGL/*` → `/opt/kitchen-designer/webgl/`
+- `docs/example.save.json` → `/opt/kitchen-designer/seed/` (also baked into the image)
 - the `kitchen-server:release` image, as a `docker save` stream — the ASP.NET publish happens
   inside the image build, nothing is published to the server as loose DLLs
 

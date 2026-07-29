@@ -29,7 +29,7 @@ set SSH_FLAGS=-o ConnectTimeout=10 -o StrictHostKeyChecking=no
 set IMAGE_TAG=kitchen-server:release
 set COMPOSE=-f docker-compose.yml -f docker-compose.prod.yml
 
-if defined FLAG_WEBGL_ONLY (set "TOTAL=2") else (set "TOTAL=6")
+if defined FLAG_WEBGL_ONLY (set "TOTAL=3") else (set "TOTAL=7")
 
 echo.
 echo ========================================
@@ -64,7 +64,7 @@ echo.
 if defined FLAG_WEBGL_ONLY (set "STEP=1") else (set "STEP=2")
 echo [!STEP!/!TOTAL!] Preparing remote directories...
 REM webgl/_trash keeps superseded builds instead of deleting them (see CONVENTIONS.md).
-ssh %SSH_FLAGS% %SERVER% "mkdir -p %REMOTE_DIR%/webgl/_trash %REMOTE_DIR%/data %REMOTE_DIR%/server && find %REMOTE_DIR%/webgl -maxdepth 2 -name '_trash' -prune -o -name 'WebGL_Debug.*' -exec mv -t %REMOTE_DIR%/webgl/_trash {} +"
+ssh %SSH_FLAGS% %SERVER% "mkdir -p %REMOTE_DIR%/webgl/_trash %REMOTE_DIR%/data %REMOTE_DIR%/server %REMOTE_DIR%/seed && find %REMOTE_DIR%/webgl -maxdepth 2 -name '_trash' -prune -o -name 'WebGL_Debug.*' -exec mv -t %REMOTE_DIR%/webgl/_trash {} +"
 if !errorlevel! neq 0 (
     echo ERROR: failed to prepare remote directories
     exit /b 1
@@ -80,11 +80,34 @@ if !errorlevel! neq 0 (
     exit /b 1
 )
 echo   Done.
+echo.
+
+REM The demo project is bind-mounted (./seed:/app/seed-live:ro) so it can be refreshed
+REM without shipping a new image. ExampleProjectService reads it once at startup, so the
+REM web container has to restart when the file actually changed - hence the cmp dance.
+if defined FLAG_WEBGL_ONLY (set "STEP=3") else (set "STEP=4")
+echo [!STEP!/!TOTAL!] Copying demo project (docs\example.save.json)...
+if not exist "%SCRIPT_DIR%docs\example.save.json" (
+    echo ERROR: docs\example.save.json not found - the demo project would go stale.
+    exit /b 1
+)
+scp %SSH_FLAGS% "%SCRIPT_DIR%docs\example.save.json" %SERVER%:%REMOTE_DIR%/seed/example.save.json.new
+if !errorlevel! neq 0 (echo ERROR: scp example.save.json failed & exit /b 1)
+
+if defined FLAG_WEBGL_ONLY (
+    REM Nothing else restarts in this mode, so do it here - and only if the demo changed.
+    ssh %SSH_FLAGS% %SERVER% "cd %REMOTE_DIR%/seed && if cmp -s example.save.json.new example.save.json; then rm -f example.save.json.new; echo '  demo unchanged'; else mv example.save.json.new example.save.json; echo '  demo updated - restarting web'; cd %REMOTE_DIR% && docker compose %COMPOSE% restart web; fi"
+) else (
+    REM The web container is recreated later in this run, so it will pick the file up.
+    ssh %SSH_FLAGS% %SERVER% "cd %REMOTE_DIR%/seed && mv -f example.save.json.new example.save.json"
+)
+if !errorlevel! neq 0 (echo ERROR: failed to install the demo project & exit /b 1)
+echo   Done.
 
 if defined FLAG_WEBGL_ONLY goto :done_webgl_only
 
 echo.
-echo [4/!TOTAL!] Copying Docker config...
+echo [5/!TOTAL!] Copying Docker config...
 scp %SSH_FLAGS% "%SCRIPT_DIR%server\docker-compose.yml" %SERVER%:%REMOTE_DIR%/docker-compose.yml
 if !errorlevel! neq 0 (echo ERROR: scp docker-compose.yml failed & exit /b 1)
 scp %SSH_FLAGS% "%SCRIPT_DIR%server\docker-compose.prod.yml" %SERVER%:%REMOTE_DIR%/docker-compose.prod.yml
@@ -95,7 +118,7 @@ if !errorlevel! neq 0 (echo ERROR: scp nginx.conf failed & exit /b 1)
 echo   Done.
 
 echo.
-echo [5/!TOTAL!] Transferring Docker image to server (docker save ^| ssh docker load)...
+echo [6/!TOTAL!] Transferring Docker image to server (docker save ^| ssh docker load)...
 docker save %IMAGE_TAG% | ssh %SSH_FLAGS% %SERVER% "docker load"
 if !errorlevel! neq 0 (
     echo ERROR: docker save/load failed
@@ -104,7 +127,7 @@ if !errorlevel! neq 0 (
 echo   Done.
 
 echo.
-echo [6/!TOTAL!] Starting Docker services on server (pre-built image, no build)...
+echo [7/!TOTAL!] Starting Docker services on server (pre-built image, no build)...
 ssh %SSH_FLAGS% %SERVER% "cd %REMOTE_DIR% && docker compose %COMPOSE% up -d"
 if !errorlevel! neq 0 (
     echo ERROR: docker compose up failed
