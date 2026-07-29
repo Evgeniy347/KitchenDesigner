@@ -36,8 +36,9 @@ namespace KitchenDesigner.Core
             if (PlacementController.IsActive)
                 return;
 
-            // В режиме рулетки ЛКМ ставит точки замера, а не выделяет детали.
-            if (Measure.MeasureMode.Active)
+            // В режиме инструмента ЛКМ принадлежит ему (рулетка ставит точки
+            // замера, пипетка красит), а не выделению.
+            if (Tools.ToolMode.MouseCaptured)
                 return;
 
             // Началось перетаскивание — клик отменён, выделение не сжимаем.
@@ -200,24 +201,30 @@ namespace KitchenDesigner.Core
         }
 
         public static KitchenElement? RaycastTransparentAware(Ray ray, bool shiftHeld)
+            => RaycastTransparentAware(ray, shiftHeld, out _);
+
+        /// <summary>Тот же поиск, но отдаёт и само попадание: пипетке нужна точка
+        /// на поверхности, чтобы понять, в какую накладку текстуры пришёл клик.</summary>
+        public static KitchenElement? RaycastTransparentAware(Ray ray, bool shiftHeld, out RaycastHit hit)
         {
+            hit = default;
             if (!shiftHeld)
             {
-                if (Physics.Raycast(ray, out RaycastHit hit))
+                if (Physics.Raycast(ray, out hit))
                     return hit.collider.GetComponentInParent<KitchenElement>();
                 return null;
             }
 
             var allHits = Physics.RaycastAll(ray);
             System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
-            var elements = new List<KitchenElement>(allHits.Length);
             foreach (var h in allHits)
             {
                 var el = h.collider.GetComponentInParent<KitchenElement>();
-                if (el != null)
-                    elements.Add(el);
+                if (el == null || el.Transparent) continue;
+                hit = h;
+                return el;
             }
-            return PickFromOrderedHits(elements, shiftHeld: true);
+            return null;
         }
 
         public void Select(KitchenElement element)

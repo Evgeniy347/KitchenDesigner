@@ -116,9 +116,10 @@ namespace KitchenDesigner.Core
             // считается от закрытой позы и за трансформом не идёт (Transformable).
             // Смена режима (Resize/Move) пересобирает ручки с другим наконечником.
             // В режиме редактирования модуля чужие элементы недоступны.
-            // В режиме рулетки ручек нет — они перехватывали бы клики по вершинам.
+            // В режиме инструмента ручек нет — они перехватывали бы клики по
+            // вершинам (рулетка) и по поверхности детали (пипетка).
             bool show = _target.Transformable && ModuleEditMode.IsEditable(_target)
-                        && !Measure.MeasureMode.Active
+                        && !Tools.ToolMode.MouseCaptured
                         && !TextureOverlayHandles.Active;
             bool needRebuild = show && (_handles.Count == 0 || _builtMode != Mode) && !IsResizing;
             if (needRebuild) { ClearHandles(); BuildHandles(); }
@@ -131,9 +132,9 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
-            // В режиме рулетки ручки не строятся (см. LateUpdate) — и тянуть
+            // В режиме инструмента ручки не строятся (см. LateUpdate) — и тянуть
             // их нечем, но страхуемся от начатого до входа в режим драга.
-            if (Measure.MeasureMode.Active) { if (IsResizing) FinishDrag(); return; }
+            if (Tools.ToolMode.MouseCaptured) { if (IsResizing) FinishDrag(); return; }
             // Правится область накладки — ручки элемента не строятся (см. LateUpdate),
             // но и ловить клики нечем: без этой проверки Update продолжал бы
             // искать ручку лучом и начинать ресайз поверх правки области.

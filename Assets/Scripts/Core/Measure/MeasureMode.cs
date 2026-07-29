@@ -25,6 +25,9 @@ namespace KitchenDesigner.Core.Measure
             // (не `?.`): после выгрузки сцены Instance — уничтоженный объект.
             if (on)
             {
+                // Симметрично EyedropperMode: два режима-захватчика мыши
+                // одновременно не имеют смысла.
+                Tools.EyedropperMode.SetActive(false);
                 if (SelectionManager.Instance != null) SelectionManager.Instance.DeselectAll();
             }
             else

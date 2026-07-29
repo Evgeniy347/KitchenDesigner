@@ -40,6 +40,8 @@ namespace KitchenDesigner.Core
                 gameObject.AddComponent<Measure.MeasureController>();
             if (FindAnyObjectByType<Measure.MeasureRenderer>() == null)
                 gameObject.AddComponent<Measure.MeasureRenderer>();
+            if (FindAnyObjectByType<Tools.EyedropperController>() == null)
+                gameObject.AddComponent<Tools.EyedropperController>();
             if (FindAnyObjectByType<SceneChangeTracker>() == null) gameObject.AddComponent<SceneChangeTracker>();
             if (FindAnyObjectByType<WallManager>() == null) gameObject.AddComponent<WallManager>();
             if (FindAnyObjectByType<SceneVisibilityManager>() == null) gameObject.AddComponent<SceneVisibilityManager>();
