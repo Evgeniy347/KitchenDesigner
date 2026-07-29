@@ -459,6 +459,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (op.locked.HasValue) el.Movable = !op.locked.Value;
                 if (mat != null) MaterialManager.Apply(el, mat);
+                if (mat != null) SelectionManager.Instance?.RefreshHighlight(el);
                 if (el is FacadeElement facade && !(el is AssembledFacadeElement)) ApplyFacadeEdits(op, facade);
                 if (el is AssembledFacadeElement asmFacade) ApplyAssembledEdits(op, asmFacade);
                 if (el is RadialShelfElement shelf) ApplyRadialShelfEdits(op, shelf);

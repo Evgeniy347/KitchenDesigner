@@ -356,35 +356,30 @@ namespace KitchenDesigner.Core
 
         private void HighlightSelected(KitchenElement element, bool isMulti)
         {
-            // Подсветка снята на время предпросмотра — ничего не красим.
             if (_highlightSuppressed == element) return;
 
             var renderer = element.GetComponent<MeshRenderer>();
-            if (renderer != null && renderer.material != null)
+            var srcMat = renderer != null ? renderer.sharedMaterial : null;
+            if (renderer != null && srcMat != null)
             {
                 if (!_savedMaterials.ContainsKey(element))
                 {
                     _savedMaterials[element] = new SavedMaterial
                     {
-                        material = renderer.material,
-                        color = renderer.material.GetColor("_BaseColor")
+                        material = srcMat,
+                        color = srcMat.GetColor("_BaseColor")
                     };
                 }
 
-                // Прозрачность определяем по ФЛАГУ элемента, а не по альфе
-                // текущего материала (иначе подсветка «залипает» в непрозрачную
-                // ветку и красит сквозной элемент сплошным цветом).
                 if (element.Transparent)
                 {
-                    // Грань остаётся сквозной (blend-состояния задаёт helper);
-                    // выделение показываем жёлтым контуром.
                     renderer.material = ElementHighlighter.MakeTransparent(
-                        renderer.material.shader, new Color(1f, 0.9f, 0.4f, 0.12f));
+                        srcMat.shader, new Color(1f, 0.9f, 0.4f, 0.12f));
                     ElementOutline.Ensure(element)!.Show(selected: true);
                     return;
                 }
 
-                var mat = new Material(renderer.material);
+                var mat = new Material(srcMat);
                 mat.EnableKeyword("_EMISSION");
                 float intensity = isMulti ? 0.3f : 0.5f;
                 mat.SetColor("_EmissionColor", new Color(0.8f, 0.7f, 0.1f) * intensity);
@@ -407,7 +402,8 @@ namespace KitchenDesigner.Core
             var renderer = element.GetComponent<MeshRenderer>();
             if (renderer != null && _savedMaterials.TryGetValue(element, out var saved))
             {
-                renderer.material = saved.material;
+                if (!MaterialManager.HasCustomDecor(element))
+                    renderer.material = saved.material;
             }
             _savedMaterials.Remove(element);
 

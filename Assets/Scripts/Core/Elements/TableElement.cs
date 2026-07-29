@@ -59,6 +59,7 @@ namespace KitchenDesigner.Core
         public override void ApplyDimensions()
         {
             base.ApplyDimensions();
+            transform.localScale = Vector3.one;
 
             var rootMf = GetComponent<MeshFilter>();
             if (rootMf != null) Object.DestroyImmediate(rootMf);
