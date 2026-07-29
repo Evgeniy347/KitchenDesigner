@@ -328,6 +328,106 @@ public class RadialShelfTests
         Assert.IsNotNull(converted.GetComponent<BoxCollider>(), "BoxCollider is present");
     }
 
+    // ── Физ. масштаб декора ────────────────────────────────────────────────
+    //
+    // _BaseMap_ST у полки строится по (ширина, ТОЛЩИНА): DimensionsMM полки —
+    // это (Ш, толщина, Г), см. MaterialManager.ComputeTileST. Значит UV любого
+    // куска меша обязаны мериться этими же двумя размерами, иначе декор на нём
+    // растягивается. Меряем так же, как у детали: протяжённость UV × ST × плитка
+    // даёт физический размер куска декора, легшего на грань.
+
+    private const int Tile = 800;
+
+    private static Vector2 DecorSpanMM(Mesh mesh, Vector3Int dims, System.Func<Vector3, bool> pick)
+    {
+        var normals = mesh.normals;
+        var uv = mesh.uv;
+        float minU = float.MaxValue, maxU = float.MinValue;
+        float minV = float.MaxValue, maxV = float.MinValue;
+        int found = 0;
+        for (int i = 0; i < normals.Length; i++)
+        {
+            if (!pick(normals[i])) continue;
+            found++;
+            minU = Mathf.Min(minU, uv[i].x); maxU = Mathf.Max(maxU, uv[i].x);
+            minV = Mathf.Min(minV, uv[i].y); maxV = Mathf.Max(maxV, uv[i].y);
+        }
+        Assert.Greater(found, 0, "нужные вершины в меше не найдены");
+
+        var st = MaterialManager.ComputeTileST(dims, Tile, Tile);
+        return new Vector2((maxU - minU) * st.x * Tile, (maxV - minV) * st.y * Tile);
+    }
+
+    private static System.Func<Vector3, bool> Facing(Vector3 normal)
+        => n => Vector3.Dot(n, normal) > 0.999f;
+
+    [Test]
+    public void Decor_TopFace_MatchesWidthAndDepth()
+    {
+        var shelf = CreateShelf("RD1", 600, 400, 18, 200, Vector3.zero);
+        _go = shelf.gameObject;
+
+        var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
+        var mm = DecorSpanMM(mesh, shelf.DimensionsMM, Facing(Vector3.up));
+
+        Assert.AreEqual(600f, mm.x, 0.5f, "пласть: ширина");
+        Assert.AreEqual(400f, mm.y, 0.5f, "пласть: глубина");
+    }
+
+    [Test]
+    public void Decor_FlatSides_MatchWallLengthAndThickness()
+    {
+        var shelf = CreateShelf("RD2", 600, 400, 18, 200, Vector3.zero);
+        _go = shelf.gameObject;
+
+        var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
+        var dims = shelf.DimensionsMM;
+
+        // Торец x=0 идёт на всю глубину, торец z=0 — на всю ширину. Оба
+        // получают ОДИН и тот же ST, значит длину обязаны нести UV.
+        var left = DecorSpanMM(mesh, dims, Facing(-Vector3.right));
+        Assert.AreEqual(400f, left.x, 0.5f, "торец x=0: длина равна глубине");
+        Assert.AreEqual(18f, left.y, 0.5f, "торец x=0: толщина");
+
+        var front = DecorSpanMM(mesh, dims, Facing(-Vector3.forward));
+        Assert.AreEqual(600f, front.x, 0.5f, "торец z=0: длина равна ширине");
+    }
+
+    [Test]
+    public void Decor_CurvedSide_MatchesArcLength()
+    {
+        var shelf = CreateShelf("RD3", 600, 400, 18, 200, Vector3.zero);
+        _go = shelf.gameObject;
+
+        var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
+        // Только внутренние вершины дуги: у плоских торцов нормаль строго по оси,
+        // и на концах дуга с ними совпадает.
+        var mm = DecorSpanMM(mesh, shelf.DimensionsMM,
+            n => Mathf.Abs(n.y) < 0.01f && n.x > 0.01f && n.z > 0.01f);
+
+        int seg = RadialShelfMesh.Segments;
+        float arc = Mathf.PI * 0.5f * 200f * (seg - 2) / seg; // без крайних сегментов
+        Assert.AreEqual(arc, mm.x, 1f, "дуга: декор ложится по её длине, а не по ширине полки");
+        Assert.AreEqual(18f, mm.y, 0.5f, "дуга: толщина");
+    }
+
+    [Test]
+    public void Decor_Tiling_RecomputedOnResize()
+    {
+        var shelf = CreateShelf("RD4", 600, 400, 18, 200, Vector3.zero);
+        _go = shelf.gameObject;
+        var def = MaterialCatalog.Get("oak");
+        MaterialManager.Apply(shelf, def);
+
+        shelf.DimensionsMM = new Vector3Int(1200, 18, 400);
+
+        var mpb = new MaterialPropertyBlock();
+        shelf.GetComponent<MeshRenderer>().GetPropertyBlock(mpb);
+        var tile = MaterialManager.TileMM(def);
+        Assert.AreEqual(1200f / tile.x, mpb.GetVector("_BaseMap_ST").x, 1e-3f,
+            "после ресайза «вырез» декора обязан пересчитаться");
+    }
+
     private static bool HasVertexAtXZ(Vector3[] verts, float x, float z)
     {
         foreach (var v in verts)

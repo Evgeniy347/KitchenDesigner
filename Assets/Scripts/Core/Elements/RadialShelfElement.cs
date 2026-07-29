@@ -48,6 +48,11 @@ namespace KitchenDesigner.Core
                 // Меш строится в мировых единицах — localScale остаётся единичным.
                 transform.localScale = Vector3.one;
                 RebuildMesh();
+
+                // base.ApplyDimensions() здесь не зовём (он ставит localScale по
+                // габаритам), поэтому «вырез» декора под новый размер приходится
+                // пересчитывать явно — иначе после ресайза он остаётся от старого.
+                MaterialManager.RefreshTiling(this);
             }
             finally
             {
