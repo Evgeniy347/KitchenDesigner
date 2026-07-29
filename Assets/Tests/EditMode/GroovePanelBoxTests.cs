@@ -200,7 +200,7 @@ public class GroovePanelBoxTests
         float rawDelta = (seatCoord - faceCoord) - 0.003f;
 
         ResizeMath.Compute(dims, axisIndex, faceNormal, face.center, uAxis, vAxis, face.size,
-            panel.transform.position, sizeStart, rawDelta, others, panel,
+            panel.transform.position, sizeStart, rawDelta, others.ToGeometry(), panel.ToGeometry(),
             snapEnabled: true, threshold: 0.05f,
             out Vector3Int newDims, out Vector3 newCenter, out _);
 

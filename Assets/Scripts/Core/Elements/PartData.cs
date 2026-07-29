@@ -79,6 +79,11 @@ namespace KitchenDesigner.Core
             set => _gapBottom = Mathf.Max(0, value);
         }
 
+        /// <summary>Зазоры одним значением — то, что от детали нужно
+        /// <see cref="GappedBox"/>. Ядро геометрии не видит PartData: он тянет
+        /// каталог декоров, а ядро обязано исполняться без Unity.</summary>
+        public BoxGaps Gaps => new BoxGaps(_gapLeft, _gapRight, _gapTop, _gapBottom);
+
         public bool Transparent
         {
             get => _transparent;

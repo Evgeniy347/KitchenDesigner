@@ -12,14 +12,14 @@ namespace KitchenDesigner.Core
     {
         /// <summary>Границы проёмного бокса в локальных единицах. Зазоры
         /// асимметричны, поэтому бокс может быть НЕ центрирован вокруг transform.</summary>
-        public static void CornerUnits(Vector3 physical, PartData data,
+        public static void CornerUnits(Vector3 physical, BoxGaps gaps,
             out float minX, out float maxX, out float minY, out float maxY,
             out float minZ, out float maxZ)
         {
-            float gl = data.GapLeft * AppConstants.MM_TO_UNITS;
-            float gr = data.GapRight * AppConstants.MM_TO_UNITS;
-            float gt = data.GapTop * AppConstants.MM_TO_UNITS;
-            float gb = data.GapBottom * AppConstants.MM_TO_UNITS;
+            float gl = gaps.Left * AppConstants.MM_TO_UNITS;
+            float gr = gaps.Right * AppConstants.MM_TO_UNITS;
+            float gt = gaps.Top * AppConstants.MM_TO_UNITS;
+            float gb = gaps.Bottom * AppConstants.MM_TO_UNITS;
             minX = -physical.x * 0.5f - gl;
             maxX = physical.x * 0.5f + gr;
             minY = -physical.y * 0.5f - gb;
@@ -29,16 +29,16 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Размер проёмного бокса (толщина по Z зазорами не меняется).</summary>
-        public static Vector3 EffectiveScale(Vector3 physical, PartData data)
+        public static Vector3 EffectiveScale(Vector3 physical, BoxGaps gaps)
         {
-            float gapX = (data.GapLeft + data.GapRight) * AppConstants.MM_TO_UNITS;
-            float gapY = (data.GapTop + data.GapBottom) * AppConstants.MM_TO_UNITS;
+            float gapX = (gaps.Left + gaps.Right) * AppConstants.MM_TO_UNITS;
+            float gapY = (gaps.Top + gaps.Bottom) * AppConstants.MM_TO_UNITS;
             return physical + new Vector3(gapX, gapY, 0f);
         }
 
-        public static Vector3[] Vertices(Vector3 physical, PartData data, Vector3 pos, Quaternion rot)
+        public static Vector3[] Vertices(Vector3 physical, BoxGaps gaps, Vector3 pos, Quaternion rot)
         {
-            CornerUnits(physical, data, out var minX, out var maxX,
+            CornerUnits(physical, gaps, out var minX, out var maxX,
                 out var minY, out var maxY, out var minZ, out var maxZ);
             var local = new[]
             {
@@ -53,10 +53,10 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        public static Face[] Faces(Vector3 physical, PartData data,
+        public static Face[] Faces(Vector3 physical, BoxGaps gaps,
             Vector3 pos, Quaternion rot)
         {
-            CornerUnits(physical, data, out var minX, out var maxX,
+            CornerUnits(physical, gaps, out var minX, out var maxX,
                 out var minY, out var maxY, out var minZ, out var maxZ);
 
             var axes = new[] { rot * Vector3.right, rot * Vector3.up, rot * Vector3.forward };

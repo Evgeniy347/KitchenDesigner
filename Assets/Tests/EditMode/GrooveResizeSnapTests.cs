@@ -78,7 +78,7 @@ public class GrooveResizeSnapTests
         float sizeStartUnits = ShelfDims.x * AppConstants.MM_TO_UNITS;
 
         ResizeMath.Compute(ShelfDims, 0, normal, faceCenter0, uAxis, vAxis, faceSize,
-            ShelfCenter, sizeStartUnits, rawDelta, others, shelf,
+            ShelfCenter, sizeStartUnits, rawDelta, others.ToGeometry(), shelf.ToGeometry(),
             snapEnabled: true, threshold: 0.05f,
             out Vector3Int newDims, out _, out _);
         return newDims.x;

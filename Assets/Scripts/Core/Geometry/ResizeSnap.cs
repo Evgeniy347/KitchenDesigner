@@ -16,7 +16,7 @@ namespace KitchenDesigner.Core
         /// (units, со знаком) для выравнивания плоскостей заподлицо. false — снэпа нет.</summary>
         public static bool SnapDelta(
             Vector3 faceCenter, Vector3 normal, Vector3 uAxis, Vector3 vAxis, Vector2 faceSize,
-            IList<KitchenElement> others, KitchenElement self, float threshold, out float gap)
+            IReadOnlyList<ElementGeometry> others, in ElementGeometry self, float threshold, out float gap)
         {
             gap = 0f;
             if (others == null) return false;
@@ -25,12 +25,13 @@ namespace KitchenDesigner.Core
             float bestAbs = float.MaxValue;
             bool found = false;
 
+            // Снимки строит вызывающий, и только для активных деталей: проверок
+            // сцены здесь больше нет — ядро её не видит.
             foreach (var o in others)
             {
-                if (o == null || o == self) continue;
-                if (!o.gameObject.activeInHierarchy) continue;
+                if (o.IsEmpty || ReferenceEquals(o.Faces, self.Faces)) continue;
 
-                var faces = FaceCache.GetFaces(o);
+                var faces = o.Faces;
                 for (int j = 0; j < faces.Length; j++)
                 {
                     var g = faces[j];
@@ -64,9 +65,9 @@ namespace KitchenDesigner.Core
                 // растягивая ДВП, её грань доводят до дна паза (номиналом), а не до
                 // пласти детали. Дно встречное грани панели, проверяется как обычная
                 // грань. Толстой детали дно паза не предлагаем.
-                if (self is PanelElement)
+                if (self.IsPanel)
                 {
-                    foreach (var seat in o.GetGrooveSeatFaces())
+                    foreach (var seat in o.GrooveSeatFaces)
                     {
                         if (Vector3.Dot(seat.normal, normal) > -Tolerance.ParallelDot) continue;
                         float d = Vector3.Dot(seat.center - faceCenter, normal);
@@ -90,7 +91,7 @@ namespace KitchenDesigner.Core
                 // Отсюда два послабления против обычной грани:
                 //  • нормаль не обязана быть встречной — плоскость двусторонняя;
                 //  • перекрытие проверяем только ВДОЛЬ ДЛИНЫ паза, по глубине его нет.
-                foreach (var wall in o.GetGrooveWallFaces())
+                foreach (var wall in o.GrooveWallFaces)
                 {
                     if (Mathf.Abs(Vector3.Dot(wall.normal, normal)) < Tolerance.ParallelDot) continue;
 

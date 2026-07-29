@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core
             Vector3Int dimsBefore, int axisIndex,
             Vector3 normal, Vector3 faceCenter0, Vector3 uAxis, Vector3 vAxis, Vector2 faceSize,
             Vector3 centerStart, float sizeStartUnits,
-            float rawDelta, IList<KitchenElement> others, KitchenElement self,
+            float rawDelta, IReadOnlyList<ElementGeometry> others, in ElementGeometry self,
             bool snapEnabled, float threshold,
             out Vector3Int newDims, out Vector3 newCenter, out bool snapped)
         {

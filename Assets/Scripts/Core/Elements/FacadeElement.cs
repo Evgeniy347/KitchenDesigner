@@ -30,16 +30,16 @@ namespace KitchenDesigner.Core
 
         public int GapMM => Data.GapMM;
 
-        protected override Vector3 EffectiveScale => GappedBox.EffectiveScale(transform.localScale, Data);
+        protected override Vector3 EffectiveScale => GappedBox.EffectiveScale(transform.localScale, Data.Gaps);
 
         public override Vector3[] GetVertices()
-            => GappedBox.Vertices(transform.localScale, Data, ClosedPosition, ClosedRotation);
+            => GappedBox.Vertices(transform.localScale, Data.Gaps, ClosedPosition, ClosedRotation);
 
         public override Face[] GetFaces()
-            => GappedBox.Faces(transform.localScale, Data, ClosedPosition, ClosedRotation);
+            => GappedBox.Faces(transform.localScale, Data.Gaps, ClosedPosition, ClosedRotation);
 
         private void CornerUnits(out float minX, out float maxX, out float minY, out float maxY, out float minZ, out float maxZ)
-            => GappedBox.CornerUnits(transform.localScale, Data,
+            => GappedBox.CornerUnits(transform.localScale, Data.Gaps,
                 out minX, out maxX, out minY, out maxY, out minZ, out maxZ);
 
         /// <summary>Мировые границы фасада (AABB) при заданном прогрессе открывания [0..1].</summary>

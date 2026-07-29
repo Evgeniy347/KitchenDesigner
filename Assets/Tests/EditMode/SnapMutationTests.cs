@@ -358,7 +358,7 @@ public class SnapMutationTests
         float sizeStartUnits = origDim * AppConstants.MM_TO_UNITS;
 
         ResizeMath.Compute(savedDims, axis, f.normal, f.center, f.rightAxis, f.upAxis, f.size,
-            savedPos, sizeStartUnits, rawDelta, others, moved,
+            savedPos, sizeStartUnits, rawDelta, others.ToGeometry(), moved.ToGeometry(),
             snapEnabled: true, thresholdMm * AppConstants.MM_TO_UNITS,
             out Vector3Int newDims, out Vector3 _, out bool snapped);
 
@@ -443,7 +443,7 @@ public class SnapMutationTests
 
             var swRC = System.Diagnostics.Stopwatch.StartNew();
             ResizeMath.Compute(savedDims, axis, f.normal, f.center, f.rightAxis, f.upAxis, f.size,
-                savedPos, sizeStartUnits, rawDelta, others, moved,
+                savedPos, sizeStartUnits, rawDelta, others.ToGeometry(), moved.ToGeometry(),
                 snapEnabled: true, thresholdMm * AppConstants.MM_TO_UNITS,
                 out Vector3Int newDims, out Vector3 _, out bool snapped);
             _ticksResizeCompute += swRC.ElapsedTicks;

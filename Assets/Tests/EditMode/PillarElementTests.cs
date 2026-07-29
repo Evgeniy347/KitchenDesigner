@@ -659,7 +659,7 @@ public class PillarElementTests
 		ResizeMath.Compute(pillar.DimensionsMM, axis, topFace.normal, topFace.center,
 			topFace.rightAxis, topFace.upAxis, topFace.size,
 			pillar.transform.position, sizeStart, 200f * AppConstants.MM_TO_UNITS,
-			new List<KitchenElement>(), pillar, snapEnabled: false, 0f,
+			new List<ElementGeometry>(), pillar.ToGeometry(), snapEnabled: false, 0f,
 			out var newDims, out _, out _);
 
 		pillar.DimensionsMM = newDims;

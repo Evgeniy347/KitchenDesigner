@@ -38,7 +38,7 @@ public class ResizeMathTests
         float sizeStart = dimMM * AppConstants.MM_TO_UNITS;
 
         ResizeMath.Compute(dims, axisIndex, f.normal.normalized, f.center, f.rightAxis, f.upAxis, f.size,
-            target.transform.position, sizeStart, rawDelta, others, target,
+            target.transform.position, sizeStart, rawDelta, others.ToGeometry(), target.ToGeometry(),
             threshold > 0f, threshold, out newDims, out newCenter, out snapped);
     }
 

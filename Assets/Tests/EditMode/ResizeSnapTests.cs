@@ -40,7 +40,7 @@ public class ResizeSnapTests
         var fa = PlusXFace(a);
 
         bool snapped = ResizeSnap.SnapDelta(fa.c, fa.n, fa.u, fa.v, fa.s,
-            new List<KitchenElement> { b }, a, 0.05f, out float gap);
+            new List<KitchenElement> { b }.ToGeometry(), a.ToGeometry(), 0.05f, out float gap);
 
         Assert.IsTrue(snapped);
         Assert.AreEqual(0.05f, gap, 0.0005f);
@@ -54,7 +54,7 @@ public class ResizeSnapTests
         var fa = PlusXFace(a);
 
         bool snapped = ResizeSnap.SnapDelta(fa.c, fa.n, fa.u, fa.v, fa.s,
-            new List<KitchenElement> { b }, a, 0.05f, out _);
+            new List<KitchenElement> { b }.ToGeometry(), a.ToGeometry(), 0.05f, out _);
 
         Assert.IsFalse(snapped);
     }
@@ -68,7 +68,7 @@ public class ResizeSnapTests
         var fa = PlusXFace(a);
 
         bool snapped = ResizeSnap.SnapDelta(fa.c, fa.n, fa.u, fa.v, fa.s,
-            new List<KitchenElement> { b }, a, 0.05f, out _);
+            new List<KitchenElement> { b }.ToGeometry(), a.ToGeometry(), 0.05f, out _);
 
         Assert.IsFalse(snapped);
     }
@@ -82,7 +82,7 @@ public class ResizeSnapTests
         var fa = PlusXFace(a);
 
         bool snapped = ResizeSnap.SnapDelta(fa.c, fa.n, fa.u, fa.v, fa.s,
-            new List<KitchenElement> { b }, a, 0.05f, out _);
+            new List<KitchenElement> { b }.ToGeometry(), a.ToGeometry(), 0.05f, out _);
 
         Assert.IsFalse(snapped);
     }
@@ -92,7 +92,7 @@ public class ResizeSnapTests
     {
         var a = Make(new Vector3(0, 0.2f, 0), new Vector3Int(800, 400, 18));
         var fa = PlusXFace(a);
-        Assert.IsFalse(ResizeSnap.SnapDelta(fa.c, fa.n, fa.u, fa.v, fa.s, null!, a, 0.05f, out _));
+        Assert.IsFalse(ResizeSnap.SnapDelta(fa.c, fa.n, fa.u, fa.v, fa.s, null!, a.ToGeometry(), 0.05f, out _));
     }
 
     /// <summary>Репро из сцены: вертикальная стойка (A12_upper_shelf_2_1_2) стоит
@@ -112,7 +112,7 @@ public class ResizeSnapTests
         Assert.AreEqual(1f, Vector3.Dot(f.normal, Vector3.up), 0.001f, "грань смотрит вверх");
 
         bool snapped = ResizeSnap.SnapDelta(f.center, f.normal, f.rightAxis, f.upAxis, f.size,
-            new List<KitchenElement> { top }, post, 0.05f, out float gap);
+            new List<KitchenElement> { top }.ToGeometry(), post.ToGeometry(), 0.05f, out float gap);
 
         Assert.IsTrue(snapped, "касание ровно по ребру — это контакт, прилипание обязано сработать");
         // Верх стойки на 2259.5 — ближайшая плоскость панели это её верх (2260),
@@ -136,13 +136,13 @@ public class ResizeSnapTests
         // Верх стойки поднят до 2255 — ближе к верху панели (2260), чем к низу (2242).
         Vector3 raised = f.center + f.normal * (-0.0045f);
         Assert.IsTrue(ResizeSnap.SnapDelta(raised, f.normal, f.rightAxis, f.upAxis, f.size,
-            new List<KitchenElement> { top }, post, 0.05f, out float gapUp));
+            new List<KitchenElement> { top }.ToGeometry(), post.ToGeometry(), 0.05f, out float gapUp));
         Assert.AreEqual(0.005f, gapUp, 0.0005f, "заподлицо с верхом панели (2260 мм)");
 
         // Верх стойки опущен до 2230 — ближе к низу панели (2242).
         Vector3 lowered = f.center + f.normal * (-0.0295f);
         Assert.IsTrue(ResizeSnap.SnapDelta(lowered, f.normal, f.rightAxis, f.upAxis, f.size,
-            new List<KitchenElement> { top }, post, 0.05f, out float gapDown));
+            new List<KitchenElement> { top }.ToGeometry(), post.ToGeometry(), 0.05f, out float gapDown));
         Assert.AreEqual(0.012f, gapDown, 0.0005f, "встык под низ панели (2242 мм)");
     }
 
@@ -158,7 +158,7 @@ public class ResizeSnapTests
 
         var f = post.GetFaces()[2];
         Assert.IsFalse(ResizeSnap.SnapDelta(f.center, f.normal, f.rightAxis, f.upAxis, f.size,
-            new List<KitchenElement> { top }, post, 0.05f, out _),
+            new List<KitchenElement> { top }.ToGeometry(), post.ToGeometry(), 0.05f, out _),
             "footprint'ы разнесены — контакта нет");
     }
 }
