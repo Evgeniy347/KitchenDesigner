@@ -100,6 +100,12 @@ namespace KitchenDesigner.Core
             var list = PartRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
 
+            // Подложка торцов зависит от СОСЕДЕЙ ровно так же, как валидация, и
+            // меняется от тех же событий — сдвинули, удалили, загрузили проект.
+            // Отдельного триггера ей не нужно; пересборку она делает только там,
+            // где набор некромкованных торцов реально изменился.
+            EdgeSubstrate.SyncScene(list);
+
             foreach (var element in list)
             {
                 if (element == null) continue;

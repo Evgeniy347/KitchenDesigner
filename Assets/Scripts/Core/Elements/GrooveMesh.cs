@@ -135,19 +135,18 @@ namespace KitchenDesigner.Core
         /// канонической системе и переставляется по осям, как это делает
         /// WallMeshBuilder для стены, повёрнутой длиной вдоль Z.</summary>
         public static Mesh Build(Vector3Int dims, IReadOnlyList<GrooveSpec>? grooves,
-            IReadOnlyList<Rect2>? holes = null, int holeAxis = 2, int bareEndAxis = -1)
-            => Build(dims, grooves, holes, holeAxis, bareEndAxis, out _);
+            IReadOnlyList<Rect2>? holes = null, int holeAxis = 2, int bareFaceMask = 0)
+            => Build(dims, grooves, holes, holeAxis, bareFaceMask, out _);
 
         /// <summary>Как выше, но сообщает, какие сабмеши получились.
         ///
-        /// bareEndAxis — ось ТОЛЩИНЫ детали, торцы которой рисуются подложкой
-        /// (см. <see cref="EdgeSubstrate"/>); −1 — вся деталь одним декором.
-        /// Торцы — это четыре грани, перпендикулярные двум ОСТАЛЬНЫМ осям:
-        /// у листа толщиной по Z ими оказываются ±X и ±Y, у столешницы-короба
-        /// толщиной по Y — ±X и ±Z. Ось задаётся в осях ДЕТАЛИ; перестановку
-        /// под holeAxis Build делает сам.</summary>
+        /// bareFaceMask — битовая маска ГРАНЕЙ, которые рисуются подложкой
+        /// (см. <see cref="EdgeSubstrate"/>); 0 — вся деталь одним декором.
+        /// Номера граней — как у <c>KitchenElement.GetFaces</c>: index/2 = ось
+        /// (0=X, 1=Y, 2=Z), чётный индекс — положительное направление. Маска
+        /// задаётся в осях ДЕТАЛИ; перестановку под holeAxis Build делает сам.</summary>
         public static Mesh Build(Vector3Int dims, IReadOnlyList<GrooveSpec>? grooves,
-            IReadOnlyList<Rect2>? holes, int holeAxis, int bareEndAxis,
+            IReadOnlyList<Rect2>? holes, int holeAxis, int bareFaceMask,
             out SubmeshLayout layout)
         {
             if (holeAxis != 2)
@@ -155,15 +154,26 @@ namespace KitchenDesigner.Core
                 // Пазы живут только в пласти ±Z, и перестановка увела бы их с неё.
                 // Деталь со сквозным вырезом поперёк другой оси — это столешница,
                 // пазов в ней нет.
-                //
-                // Перестановка ходит в обе стороны (FinalAxis сам себе обратная),
-                // поэтому ось толщины переводится в каноническую тем же вызовом.
                 var permuted = BuildAlongZ(dims, null, holes, holeAxis,
-                    bareEndAxis < 0 ? -1 : FinalAxis(bareEndAxis, holeAxis), out layout);
+                    PermuteFaceMask(bareFaceMask, holeAxis), out layout);
                 Permute(permuted, holeAxis);
                 return permuted;
             }
-            return BuildAlongZ(dims, grooves, holes, 2, bareEndAxis, out layout);
+            return BuildAlongZ(dims, grooves, holes, 2, bareFaceMask, out layout);
+        }
+
+        /// <summary>Маска граней из осей детали в канонические оси меша.
+        /// Перестановка только МЕНЯЕТ ОСИ МЕСТАМИ, знака не трогает, поэтому
+        /// чётность номера грани сохраняется, а ось переводит FinalAxis — она
+        /// сама себе обратная, так что этот же метод годится в обе стороны.</summary>
+        private static int PermuteFaceMask(int mask, int holeAxis)
+        {
+            if (mask == 0 || holeAxis == 2) return mask;
+            int result = 0;
+            for (int face = 0; face < 6; face++)
+                if ((mask & (1 << face)) != 0)
+                    result |= 1 << (FinalAxis(face / 2, holeAxis) * 2 + (face & 1));
+            return result;
         }
 
         /// <summary>Меняет местами ось выреза и Z. Обе перестановки — зеркальные,
@@ -191,10 +201,10 @@ namespace KitchenDesigner.Core
             mesh.RecalculateBounds();
         }
 
-        /// <summary>bareThickAxis — ось толщины в КАНОНИЧЕСКИХ осях меша (Build
-        /// переводит её туда сам); −1 — подложки нет.</summary>
+        /// <summary>bareFaceMask — маска граней в КАНОНИЧЕСКИХ осях меша (Build
+        /// переводит её туда сам); 0 — подложки нет.</summary>
         private static Mesh BuildAlongZ(Vector3Int dims, IReadOnlyList<GrooveSpec>? grooves,
-            IReadOnlyList<Rect2>? holes, int holeAxis, int bareThickAxis,
+            IReadOnlyList<Rect2>? holes, int holeAxis, int bareFaceMask,
             out SubmeshLayout layout)
         {
             var rects = ComputeRects(dims, grooves);
@@ -231,7 +241,7 @@ namespace KitchenDesigner.Core
             // торец — в подложку, всё остальное — в декор. Внутренние поверхности
             // (дно и стенки пазов, стенки сквозных вырезов) сюда не попадают:
             // паз режется по своему материалу, а стенка выреза скрыта врезкой.
-            List<int> Outer(int axis) => bareThickAxis >= 0 && axis != bareThickAxis ? ends : body;
+            List<int> Outer(int face) => (bareFaceMask & (1 << face)) != 0 ? ends : body;
 
             // Лицевая грань: клетки вне пазов — на пласти, внутри — на дне кармана.
             for (int i = 0; i < nx; i++)
@@ -244,7 +254,7 @@ namespace KitchenDesigner.Core
                         AddQuad(verts, uvs, cut, UvPlane.XY,
                             V(x0, y0, gz), V(x1, y0, gz), V(x1, y1, gz), V(x0, y1, gz));
                     else
-                        AddQuad(verts, uvs, Outer(2), UvPlane.XY,
+                        AddQuad(verts, uvs, Outer(4), UvPlane.XY,
                             V(x0, y0, zf), V(x1, y0, zf), V(x1, y1, zf), V(x0, y1, zf));
                 }
             }
@@ -253,7 +263,7 @@ namespace KitchenDesigner.Core
             // вырезов она остаётся одним квадом; с ними — нарезается по решётке.
             if (holeRects.Count == 0)
             {
-                AddQuad(verts, uvs, Outer(2), UvPlane.XY,
+                AddQuad(verts, uvs, Outer(5), UvPlane.XY,
                     V(0.5f, -0.5f, zb), V(-0.5f, -0.5f, zb), V(-0.5f, 0.5f, zb), V(0.5f, 0.5f, zb));
             }
             else
@@ -263,7 +273,7 @@ namespace KitchenDesigner.Core
                     {
                         if (hole[i, j]) continue;
                         float x0 = xs[i], x1 = xs[i + 1], y0 = ys[j], y1 = ys[j + 1];
-                        AddQuad(verts, uvs, Outer(2), UvPlane.XY,
+                        AddQuad(verts, uvs, Outer(5), UvPlane.XY,
                             V(x1, y0, zb), V(x0, y0, zb), V(x0, y1, zb), V(x1, y1, zb));
                     }
             }
@@ -343,7 +353,7 @@ namespace KitchenDesigner.Core
                 if (!hole[0, j])
                 {
                     float zl = inside[0, j] ? gz : zf;
-                    AddQuad(verts, uvs, Outer(0), UvPlane.ZY,
+                    AddQuad(verts, uvs, Outer(1), UvPlane.ZY,
                         V(-0.5f, y0, zb), V(-0.5f, y0, zl), V(-0.5f, y1, zl), V(-0.5f, y1, zb));
                 }
                 if (!hole[nx - 1, j])
@@ -359,13 +369,13 @@ namespace KitchenDesigner.Core
                 if (!hole[i, 0])
                 {
                     float zd = inside[i, 0] ? gz : zf;
-                    AddQuad(verts, uvs, Outer(1), UvPlane.XZ,
+                    AddQuad(verts, uvs, Outer(3), UvPlane.XZ,
                         V(x0, -0.5f, zb), V(x1, -0.5f, zb), V(x1, -0.5f, zd), V(x0, -0.5f, zd));
                 }
                 if (!hole[i, ny - 1])
                 {
                     float zu = inside[i, ny - 1] ? gz : zf;
-                    AddQuad(verts, uvs, Outer(1), UvPlane.XZ,
+                    AddQuad(verts, uvs, Outer(2), UvPlane.XZ,
                         V(x0, 0.5f, zu), V(x1, 0.5f, zu), V(x1, 0.5f, zb), V(x0, 0.5f, zb));
                 }
             }

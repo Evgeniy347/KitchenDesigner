@@ -48,6 +48,7 @@ namespace KitchenDesigner.Core
         // ── Рендер поверх сцены ──────────────────────────────────────────
         public static readonly ProfilerMarker ElementOutlineLateUpdate = Reg("ElementOutline.LateUpdate");
         public static readonly ProfilerMarker TextureOverlaySyncAll = Reg("TextureOverlayRenderer.SyncAll");
+        public static readonly ProfilerMarker EdgeSubstrateSync = Reg("EdgeSubstrate.SyncScene");
         public static readonly ProfilerMarker ResizeHandlesLateUpdate = Reg("ResizeHandleManager.LateUpdate");
         public static readonly ProfilerMarker MeasureLabelsLateUpdate = Reg("MeasureLabelsUI.LateUpdate");
 

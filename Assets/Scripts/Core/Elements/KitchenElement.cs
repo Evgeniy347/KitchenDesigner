@@ -83,10 +83,14 @@ namespace KitchenDesigner.Core
         // а повторный вызов с теми же размерами — нет.
         private Vector3Int _meshDims;
 
-        // Ось толщины, под которую в _ownedMesh заведён сабмеш некромкованных
-        // торцов (−1 — сабмеша нет). Сравнением с текущей ловится и выключатель
-        // кромкования, и ресайз, после которого деталь перестала быть листом.
-        private int _meshBareEndAxis = -1;
+        // Грани, на которых кромки нет: их рисует подложка (EdgeSubstrate).
+        // Маска приходит СНАРУЖИ — перекрытие торца зависит от соседей, и знать
+        // о нём деталь не может; источник один, EdgeSubstrate.Sync/SyncScene.
+        private int _bareFaceMask;
+
+        // Маска, под которую собран _ownedMesh: расхождение с текущей означает,
+        // что сабмеш торцов пора пересобрать.
+        private int _meshBareFaceMask;
 
         // Номера служебных сабмешей в _ownedMesh (см. GrooveMesh.SubmeshLayout).
         private GrooveMesh.SubmeshLayout _meshLayout = new GrooveMesh.SubmeshLayout(-1, -1);
@@ -141,9 +145,9 @@ namespace KitchenDesigner.Core
             {
                 if (_data.EdgeBanding == value) return;
                 _data.EdgeBanding = value;
-                // Кромка закрывает торец, а без неё видна голая плита — это
-                // РАЗНЫЕ материалы и разный набор сабмешей (см. BareEndAxis).
-                if (!SuppressVisualRebuild) RebuildGrooveMesh();
+                // Кромка закрывает торец, а без неё видна голая плита — набор
+                // граней под подложкой меняется целиком.
+                if (!SuppressVisualRebuild) EdgeSubstrate.Sync(this);
             }
         }
 
@@ -289,14 +293,13 @@ namespace KitchenDesigner.Core
                 ? mats[0] : meshRenderer.sharedMaterial;
 
             var holes = CutoutHoleRects();
-            int bareEnds = BareEndAxis;
 
             var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves, holes,
-                CutoutHoleAxis, bareEnds, out var layout);
+                CutoutHoleAxis, _bareFaceMask, out var layout);
             DestroyOwnedMesh();
             _ownedMesh = mesh;
             _meshDims = _data.DimensionsMM;
-            _meshBareEndAxis = bareEnds;
+            _meshBareFaceMask = _bareFaceMask;
             _meshLayout = layout;
             filter.sharedMesh = mesh;
 
@@ -333,19 +336,19 @@ namespace KitchenDesigner.Core
             meshRenderer.sharedMaterials = slots;
         }
 
-        /// <summary>Ось толщины детали, торцы которой рисуются подложкой, или −1.
-        ///
-        /// Подложка — это голая плита на торце, а закрывает её кромка (см.
-        /// <see cref="EdgeSubstrate"/>). Смотрим только на выключатель кромкования,
-        /// а не на посторонность каждого торца: кромки нет ровно на тех торцах,
-        /// которые чем-то ЗАКРЫТЫ (см. EdgeBanding.Coverage), а закрытый торец и
-        /// так не виден. Иначе пришлось бы пересобирать меш детали каждый раз,
-        /// когда двинули соседа, — O(n²) на весь проект вместо булева поля.
-        ///
-        /// У бруска и куба торец не определён, ThinAxis отвечает −1 — и подложки
-        /// у них не бывает.</summary>
-        private int BareEndAxis =>
-            EdgeBandingEnabled ? -1 : EdgeBanding.ThinAxis(_data.DimensionsMM);
+        /// <summary>Грани без кромки — их рисует подложка (см. <see cref="EdgeSubstrate"/>).
+        /// Маску считает EdgeSubstrate по всей сцене, деталь её только хранит.</summary>
+        public int BareFaceMask => _bareFaceMask;
+
+        /// <summary>Принять новую маску некромкованных граней. Меш пересобирается
+        /// только когда маска действительно поменялась: проход по сцене идёт на
+        /// каждое изменение, а пересборка меша дороже самого расчёта.</summary>
+        public void SetBareFaceMask(int mask)
+        {
+            if (mask == _bareFaceMask) return;
+            _bareFaceMask = mask;
+            if (!SuppressVisualRebuild) RebuildGrooveMesh();
+        }
 
         private void DestroyOwnedMesh()
         {
@@ -515,8 +518,12 @@ namespace KitchenDesigner.Core
             // Доли паза и проёма мойки считаются от размеров детали, а UV — от её
             // пропорций: при ресайзе меш надо пересобрать, иначе и то и другое
             // растянется вместе с localScale.
+            // Ресайз переставляет торцы (у листа 800×18 и 18×800 это разные
+            // грани), поэтому маска пересчитывается вместе с мешем.
+            if (_meshDims != _data.DimensionsMM) EdgeSubstrate.Sync(this);
+
             if (_meshDims != _data.DimensionsMM || _ownedMesh == null
-                || _meshBareEndAxis != BareEndAxis) RebuildGrooveMesh();
+                || _meshBareFaceMask != _bareFaceMask) RebuildGrooveMesh();
 
             // localScale тянет UV вместе с деталью, поэтому «вырез» декора надо
             // пересчитать под новый размер — иначе рисунок растягивается вместо

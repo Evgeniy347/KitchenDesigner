@@ -111,6 +111,88 @@ namespace KitchenDesigner.Core
         }
     }
 
+    /// <summary>Слепок сцены для расчёта перекрытий: грани каждой детали и её
+    /// габаритная сфера, посчитанные ОДИН раз.
+    ///
+    /// Нужен потому, что <see cref="KitchenElement.GetFaces"/> каждый раз строит
+    /// новый массив из шести Face, а перекрытие торцов — задача попарная: без
+    /// слепка проход по сцене из n деталей звал его n² раз. Сфера поверх этого
+    /// отсекает заведомо далёких соседей до всякой работы с гранями.</summary>
+    public sealed class SceneFaces
+    {
+        /// <summary>Габаритная сфера детали в мировых координатах.</summary>
+        public readonly struct Sphere
+        {
+            public readonly Vector3 Center;
+            public readonly float Radius;
+
+            public Sphere(Vector3 center, float radius)
+            {
+                Center = center;
+                Radius = radius;
+            }
+
+            /// <summary>Сферы могут касаться с точностью до допуска контакта.
+            /// Сравнение квадратов — без корня.</summary>
+            public bool Touches(in Sphere other, float slack)
+            {
+                float reach = Radius + other.Radius + slack;
+                return (Center - other.Center).sqrMagnitude <= reach * reach;
+            }
+        }
+
+        private readonly List<KitchenElement> _elements = new List<KitchenElement>();
+        private readonly List<Face[]> _faces = new List<Face[]>();
+        private readonly List<Sphere> _spheres = new List<Sphere>();
+
+        public static SceneFaces Of(IReadOnlyList<KitchenElement>? all)
+        {
+            var scene = new SceneFaces();
+            if (all == null) return scene;
+            foreach (var element in all)
+            {
+                if (element == null) continue;
+                var faces = element.GetFaces();
+                scene._elements.Add(element);
+                scene._faces.Add(faces);
+                scene._spheres.Add(BoundingSphere(element, faces));
+            }
+            return scene;
+        }
+
+        public int Count => _elements.Count;
+        public KitchenElement ElementAt(int i) => _elements[i];
+        public Face[] FacesAt(int i) => _faces[i];
+        public Sphere SphereAt(int i) => _spheres[i];
+
+        /// <summary>Сфера детали из слепка, а если её там нет — посчитанная на
+        /// месте (деталь могли создать уже после снятия слепка).</summary>
+        public Sphere SphereOf(KitchenElement element)
+        {
+            for (int i = 0; i < _elements.Count; i++)
+                if (_elements[i] == element) return _spheres[i];
+            return BoundingSphere(element, element.GetFaces());
+        }
+
+        /// <summary>Сфера СТРОГО по граням, а не по DimensionsMM: у опоры и
+        /// стола грани считаются от собственных размеров, и сфера по габариту
+        /// детали оказалась бы меньше настоящей — широкая фаза начала бы терять
+        /// соседей.</summary>
+        private static Sphere BoundingSphere(KitchenElement element, Face[] faces)
+        {
+            var center = element.transform.position;
+            float radius = 0f;
+            foreach (var f in faces)
+            {
+                // Дальний угол грани от центра детали: до её середины плюс
+                // половина диагонали самой грани.
+                float half = 0.5f * Mathf.Sqrt(f.size.x * f.size.x + f.size.y * f.size.y);
+                radius = Mathf.Max(radius, (f.center - center).magnitude + half);
+            }
+            return new Sphere(center, radius);
+        }
+    }
+
     /// <summary>
     /// Кромкование торцов: какие торцы детали открыты (кромка есть), а какие
     /// упираются в соседей (кромки нет). Считается ПОЛНОСТЬЮ автоматически по
@@ -191,8 +273,15 @@ namespace KitchenDesigner.Core
         /// <summary>Доля перекрытия каждого торца детали соседями. others —
         /// вся сцена (пол и стены тоже перекрывают торец и снимают кромку).</summary>
         public static EdgeCoverage Coverage(KitchenElement element, IReadOnlyList<KitchenElement> others)
+            => Coverage(element, SceneFaces.Of(others));
+
+        /// <summary>То же по ГОТОВОМУ слепку сцены. Слепок стоит одного вызова
+        /// GetFaces на деталь, а без него каждая пара деталей звала его заново:
+        /// на проекте в 275 деталей проход по всей сцене занимал 154 мс, из них
+        /// почти всё — 75 тысяч аллокаций массива граней.</summary>
+        public static EdgeCoverage Coverage(KitchenElement element, SceneFaces scene)
         {
-            if (element == null) return default;
+            if (element == null || scene == null) return default;
             var layout = LayoutOf(element.DimensionsMM);
             if (!layout.IsValid) return default;
 
@@ -212,13 +301,17 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < 4; i++) covers[i] = new List<Rect>();
 
             float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-            foreach (var other in others)
+            var sphere = scene.SphereOf(element);
+            for (int k = 0; k < scene.Count; k++)
             {
+                var other = scene.ElementAt(k);
                 if (other == null || other == element) continue;
                 if (!other.gameObject.activeInHierarchy) continue;
                 if (IsTransparentToEdges(other)) continue;
+                // Широкая фаза: деталь на другом конце кухни торец не закроет.
+                if (!sphere.Touches(scene.SphereAt(k), contactDist)) continue;
 
-                var otherFaces = other.GetFaces();
+                var otherFaces = scene.FacesAt(k);
                 for (int i = 0; i < 4; i++)
                 {
                     var face = ends[i];
