@@ -251,38 +251,48 @@
     },
     {
       "type": "Button",
+      "text": "Духовка Bosch HBA514BB3",
+      "position": [22, -555]
+    },
+    {
+      "type": "Button",
+      "text": "Посудомойка Bosch SMV25EX02E",
+      "position": [22, -584]
+    },
+    {
+      "type": "Button",
       "text": "Помещение",
-      "position": [8, -555]
+      "position": [8, -613]
     },
     {
       "type": "Button",
       "text": "Короб",
-      "position": [22, -589]
-    },
-    {
-      "type": "Button",
-      "text": "Стена",
-      "position": [22, -618]
-    },
-    {
-      "type": "Button",
-      "text": "Окно",
       "position": [22, -647]
     },
     {
       "type": "Button",
-      "text": "Дверь",
+      "text": "Стена",
       "position": [22, -676]
     },
     {
       "type": "Button",
-      "text": "Пол",
+      "text": "Окно",
       "position": [22, -705]
     },
     {
       "type": "Button",
-      "text": "Источник света",
+      "text": "Дверь",
       "position": [22, -734]
+    },
+    {
+      "type": "Button",
+      "text": "Пол",
+      "position": [22, -763]
+    },
+    {
+      "type": "Button",
+      "text": "Источник света",
+      "position": [22, -792]
     }
   ]
 }
