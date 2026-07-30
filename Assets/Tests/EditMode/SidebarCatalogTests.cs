@@ -5,17 +5,29 @@ using KitchenDesigner.Core.UI;
 
 public class SidebarCatalogTests
 {
+    /// <summary>Индекс группы «Помещение»: она последняя, и её номер сдвигается
+    /// каждый раз, когда перед ней появляется новая группа.</summary>
+    private const int RoomIndex = 5;
+
     [Test]
-    public void Build_HasFiveGroups()
+    public void Build_HasSixGroups()
     {
         var groups = SidebarCatalog.Build();
 
-        Assert.AreEqual(5, groups.Count);
+        Assert.AreEqual(6, groups.Count);
         Assert.AreEqual("детали", groups[0].title);
         Assert.AreEqual("Фасады", groups[1].title);
         Assert.AreEqual("Ящики", groups[2].title);
         Assert.AreEqual("Мебель", groups[3].title);
-        Assert.AreEqual("Помещение", groups[4].title);
+        Assert.AreEqual("Техника", groups[4].title);
+        Assert.AreEqual("Помещение", groups[RoomIndex].title);
+    }
+
+    [Test]
+    public void ApplianceGroup_ShortLabelIsT()
+    {
+        var groups = SidebarCatalog.Build();
+        Assert.AreEqual("Т", groups[4].shortLabel, "свёрнутый сайдбар подписывает «Технику» буквой Т");
     }
 
     [Test]
@@ -148,7 +160,7 @@ public class SidebarCatalogTests
     public void Room_ContainsKorob_600Cube()
     {
         var groups = SidebarCatalog.Build();
-        var room = groups[4];
+        var room = groups[RoomIndex];
         var korob = room.items[0];
 
         Assert.AreEqual("Короб", korob.name);
@@ -160,7 +172,7 @@ public class SidebarCatalogTests
     public void Room_ContainsWall_MarkedAsWall()
     {
         var groups = SidebarCatalog.Build();
-        var room = groups[4];
+        var room = groups[RoomIndex];
         var wall = room.items.Find(it => it.name == "Стена");
 
         Assert.IsTrue(wall.isWall, "элемент «Стена» помечен как стена");
@@ -171,7 +183,7 @@ public class SidebarCatalogTests
     public void Build_Room_DoesNotContainRoomSettings()
     {
         var groups = SidebarCatalog.Build();
-        var room = groups[4];
+        var room = groups[RoomIndex];
         Assert.IsFalse(room.items.Exists(it => it.name == "Размеры помещения"),
             "пункт «Размеры помещения» удалён: пол теперь отдельный элемент");
     }
@@ -180,7 +192,7 @@ public class SidebarCatalogTests
     public void Room_ContainsFloor_MarkedAsFloor()
     {
         var groups = SidebarCatalog.Build();
-        var room = groups[4];
+        var room = groups[RoomIndex];
         var floor = room.items.Find(it => it.name == "Пол");
 
         Assert.IsTrue(floor.isFloor, "элемент «Пол» помечен как пол");
@@ -194,7 +206,7 @@ public class SidebarCatalogTests
     public void Room_ContainsLightSource_MarkedAsLightSource()
     {
         var groups = SidebarCatalog.Build();
-        var room = groups[4];
+        var room = groups[RoomIndex];
         var lamp = room.items.Find(it => it.name == "Источник света");
 
         Assert.IsTrue(lamp.isLightSource, "элемент «Источник света» помечен как источник света");

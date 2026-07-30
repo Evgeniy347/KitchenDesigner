@@ -24,8 +24,14 @@ namespace KitchenDesigner.Core
     ///
     /// Геометрия строится в мировых единицах при единичном масштабе корня — как
     /// у мойки и окна, иначе дети масштабируются дважды.
+    ///
+    /// Тот же класс обслуживает и ФИКСИРОВАННЫЙ пресет готовой модели из группы
+    /// «Техника» (<see cref="Model"/> непустая): габариты плиты и вырез берутся
+    /// у производителя, правка запрещена, а на стекле появляются конфорки и
+    /// панель управления. Отдельный класс дублировал бы всю врезку — привязку к
+    /// детали, проём, магниты, — ради одной таблицы чисел.
     /// </summary>
-    public class CooktopElement : KitchenElement, IPartCutout
+    public class CooktopElement : KitchenElement, IPartCutout, IFixedSizeElement
     {
         // ── Габариты (мм) ───────────────────────────────────────────────
         public const int RIM_HEIGHT_MM = 5;          // толщина верхней плиты (над столешницей)
@@ -59,6 +65,35 @@ namespace KitchenDesigner.Core
         /// <summary>Магнит выреза к грани боковины/фасада под столешницей.</summary>
         public const int SNAP_PLANE_MM = 20;
 
+        // ── Готовые модели ──────────────────────────────────────────────
+        // Индукционная поверхность Bosch Serie 4 PUE611BB5E: стекло 592×522,
+        // общая высота 51, ниша врезки 560×490 (docs/APPLIANCES-BRIEF.md, §1).
+        public const string MODEL_BOSCH_PUE611BB5E = "Bosch PUE611BB5E";
+        public const int BOSCH_WIDTH_MM = 592;
+        public const int BOSCH_DEPTH_MM = 522;
+        public const int BOSCH_HEIGHT_MM = 51;
+        public const int BOSCH_CUTOUT_WIDTH_MM = 560;
+        public const int BOSCH_CUTOUT_DEPTH_MM = 490;
+
+        /// <summary>Габарит плиты готовой модели (мм, Ш×В×Г) или нули, если
+        /// модель неизвестна — тогда варочная остаётся свободной. Новая модель
+        /// добавляется одной строкой сюда и в <see cref="ModelCutoutMM"/>.</summary>
+        public static Vector3Int ModelDimensionsMM(string? model) => model switch
+        {
+            MODEL_BOSCH_PUE611BB5E => new Vector3Int(BOSCH_WIDTH_MM, BOSCH_HEIGHT_MM, BOSCH_DEPTH_MM),
+            _ => Vector3Int.zero,
+        };
+
+        /// <summary>Ниша врезки готовой модели (мм, Ш×Г).</summary>
+        public static Vector2Int ModelCutoutMM(string? model) => model switch
+        {
+            MODEL_BOSCH_PUE611BB5E => new Vector2Int(BOSCH_CUTOUT_WIDTH_MM, BOSCH_CUTOUT_DEPTH_MM),
+            _ => Vector2Int.zero,
+        };
+
+        public static bool IsKnownModel(string? model) => ModelDimensionsMM(model).x > 0;
+
+        [SerializeField] private string _model = "";
         [SerializeField] private string _attachedPartName = "";
         [SerializeField] private int _offsetXMM;
         [SerializeField] private int _offsetYMM;
@@ -76,6 +111,23 @@ namespace KitchenDesigner.Core
         private Vector3 _appliedPos;
         private bool _hasAppliedPos;
         private Vector3 _lastHostPosition;
+
+        /// <summary>Идентификатор готовой модели («Bosch PUE611BB5E») или пусто —
+        /// свободная варочная с редактируемыми размерами. Задаётся фабрикой при
+        /// создании и восстанавливается из сейва; пользователь его не меняет.</summary>
+        [NotUndoable("модель прибора задаётся при создании; отменять нечего — габариты от неё производные")]
+        public string Model
+        {
+            get => _model;
+            set
+            {
+                _model = value ?? "";
+                ApplyDimensions();
+            }
+        }
+
+        /// <summary>Готовая модель: габариты и вырез заданы производителем.</summary>
+        public bool HasFixedSize => IsKnownModel(_model);
 
         [NotUndoable("служебная привязка к детали, вычисляется SnapToPart")]
         public string AttachedPartName { get => _attachedPartName; set => _attachedPartName = value ?? ""; }
@@ -129,9 +181,12 @@ namespace KitchenDesigner.Core
         [NotUndoable("своя команда SetCooktopCutoutCommand: геттер клампится по плите, снимок был бы лоссовым")]
         public int CutoutWidthMM
         {
-            get => ClampCutout(_cutoutWidthMM, DimensionsMM.x);
+            get => HasFixedSize
+                ? ModelCutoutMM(_model).x
+                : ClampCutout(_cutoutWidthMM, DimensionsMM.x);
             set
             {
+                if (HasFixedSize) return;   // ниша задана производителем
                 _cutoutWidthMM = Mathf.Clamp(value, MIN_CUTOUT_MM, MAX_SIDE_MM);
                 ApplyDimensions();
             }
@@ -140,9 +195,12 @@ namespace KitchenDesigner.Core
         [NotUndoable("см. CutoutWidthMM — SetCooktopCutoutCommand")]
         public int CutoutDepthMM
         {
-            get => ClampCutout(_cutoutDepthMM, DimensionsMM.z);
+            get => HasFixedSize
+                ? ModelCutoutMM(_model).y
+                : ClampCutout(_cutoutDepthMM, DimensionsMM.z);
             set
             {
+                if (HasFixedSize) return;
                 _cutoutDepthMM = Mathf.Clamp(value, MIN_CUTOUT_MM, MAX_SIDE_MM);
                 ApplyDimensions();
             }
@@ -197,6 +255,12 @@ namespace KitchenDesigner.Core
         public override void ApplyDimensions()
         {
             transform.localScale = Vector3.one;
+
+            // Габарит готовой модели возвращается на место здесь, а не в сеттерах:
+            // через ApplyDimensions проходит ЛЮБОЙ путь правки (окно свойств,
+            // ResizeCommand, MCP, загрузка сейва), и одна эта строка запирает все.
+            var fixedDims = ModelDimensionsMM(_model);
+            if (fixedDims.x > 0) Data.DimensionsMM = fixedDims;
 
             var dims = Data.DimensionsMM;
             int w = ClampSide(dims.x <= 0 ? DEFAULT_WIDTH_MM : dims.x);
@@ -658,19 +722,59 @@ namespace KitchenDesigner.Core
             box.center = new Vector3(0f, (RIM_HEIGHT_MM - dims.y) * 0.5f * toU, 0f);
         }
 
-        // 0 — верхняя плита, 1 — короб выреза.
-        private const int ChildCount = 2;
+        // 0 — верхняя плита, 1 — короб выреза; дальше — рисунок готовой модели:
+        // 2..5 конфорки, 6 панель управления.
+        private const int BaseChildCount = 2;
+        private const int BurnerCount = 4;
+        private const int DecorChildCount = BurnerCount + 1;
 
-        private static string ChildName(int idx) => idx == 0 ? "Top" : "Body";
+        /// <summary>Конфорки готовой модели: диаметр (мм) и центр на стекле в
+        /// ЛОКАЛЬНЫХ мм от центра плиты. «Перёд» прибора — сторона +Z локальных
+        /// осей, там же панель управления.</summary>
+        private static readonly (int diameterMM, int x, int z)[] BoschBurners =
+        {
+            (180, -145, -130),   // задняя левая
+            (145,  150, -130),   // задняя правая
+            (180, -145,  110),   // передняя левая
+            (210,  150,  110),   // передняя правая
+        };
+
+        /// <summary>Панель управления: полоса спереди по центру (Ш × Г, мм) и
+        /// отступ её центра от переднего края стекла.</summary>
+        private const int PANEL_WIDTH_MM = 260;
+        private const int PANEL_DEPTH_MM = 20;
+        private const int PANEL_EDGE_MM = 20;
+
+        /// <summary>Толщина накладного рисунка над стеклом — плоские шайбы,
+        /// приподнятые на доли миллиметра, чтобы не мерцать с плитой.</summary>
+        private const float DECOR_THICKNESS_MM = 0.6f;
+
+        private int RequiredChildCount => HasFixedSize ? BaseChildCount + DecorChildCount : BaseChildCount;
+
+        private static string ChildName(int idx) => idx switch
+        {
+            0 => "Top",
+            1 => "Body",
+            BaseChildCount + BurnerCount => "Panel",
+            _ => "Burner" + (idx - BaseChildCount + 1),
+        };
+
+        // Примитивы Unity: цилиндр высотой 2 (localScale.y = ПОЛУвысота) и куб.
+        private static PrimitiveType ChildPrimitive(int idx) =>
+            idx >= BaseChildCount && idx < BaseChildCount + BurnerCount
+                ? PrimitiveType.Cylinder
+                : PrimitiveType.Cube;
 
         private void EnsureChildren()
         {
-            while (_children.Count < ChildCount)
+            while (_children.Count < RequiredChildCount)
             {
                 int idx = _children.Count;
-                var child = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                var child = GameObject.CreatePrimitive(ChildPrimitive(idx));
                 child.name = ChildName(idx);
-                var col = child.GetComponent<BoxCollider>();
+                // Коллайдер у детей не нужен (клик ловит BoxCollider корня), а в
+                // WebGL-сборке примитив всё равно приходит без него.
+                var col = child.GetComponent<Collider>();
                 if (col != null) Object.DestroyImmediate(col);
                 child.transform.SetParent(transform, false);
                 _children.Add(child);
@@ -679,7 +783,7 @@ namespace KitchenDesigner.Core
 
         private void RebuildGeometry()
         {
-            if (_children.Count < ChildCount) return;
+            if (_children.Count < BaseChildCount) return;
             float toU = AppConstants.MM_TO_UNITS;
             var dims = Data.DimensionsMM;
 
@@ -693,6 +797,7 @@ namespace KitchenDesigner.Core
             Cube(1, new Vector3(0f, -bodyH * 0.5f, 0f),
                 new Vector3(CutoutWidthMM * toU, bodyH, CutoutDepthMM * toU));
 
+            RebuildDecor(rimH, toU, dims);
             ApplyMaterials();
             // Размер изменился — «вырез» декора надо пересчитать, иначе рисунок
             // растягивается вместо того, чтобы повторяться в своём масштабе.
@@ -705,6 +810,42 @@ namespace KitchenDesigner.Core
             go.transform.localPosition = localPos;
             go.transform.localRotation = Quaternion.identity;
             go.transform.localScale = localScale;
+        }
+
+        /// <summary>Конфорки и панель управления готовой модели. У свободной
+        /// варочной этих детей просто нет — рисунок принадлежит модели, а не
+        /// произвольному прямоугольнику стекла.</summary>
+        private void RebuildDecor(float rimH, float toU, Vector3Int dims)
+        {
+            if (_children.Count < RequiredChildCount) return;
+            if (!HasFixedSize)
+            {
+                // Модель сняли (такое бывает только в тестах) — рисунок прячем.
+                for (int i = BaseChildCount; i < _children.Count; i++)
+                    if (_children[i] != null) _children[i].SetActive(false);
+                return;
+            }
+
+            float lift = DECOR_THICKNESS_MM * toU;
+            for (int i = 0; i < BurnerCount; i++)
+            {
+                var (diameterMM, x, z) = BoschBurners[i];
+                var go = _children[BaseChildCount + i];
+                if (go == null) continue;
+                go.SetActive(true);
+                go.transform.localPosition = new Vector3(x * toU, rimH + lift * 0.5f, z * toU);
+                go.transform.localRotation = Quaternion.identity;
+                // Цилиндр Unity высотой 2 → по Y задаём ПОЛОВИНУ толщины.
+                go.transform.localScale = new Vector3(diameterMM * toU, lift * 0.5f, diameterMM * toU);
+            }
+
+            var panel = _children[BaseChildCount + BurnerCount];
+            if (panel == null) return;
+            panel.SetActive(true);
+            float panelZ = (dims.z * 0.5f - PANEL_EDGE_MM - PANEL_DEPTH_MM * 0.5f) * toU;
+            panel.transform.localPosition = new Vector3(0f, rimH + lift * 0.5f, panelZ);
+            panel.transform.localRotation = Quaternion.identity;
+            panel.transform.localScale = new Vector3(PANEL_WIDTH_MM * toU, lift, PANEL_DEPTH_MM * toU);
         }
 
         private static Material? _surfaceMat;
@@ -723,24 +864,44 @@ namespace KitchenDesigner.Core
             return _surfaceMat!;
         }
 
+        private static Material? _decorMat;
+
+        /// <summary>Конфорки и панель управления — чуть светлее стекла, иначе на
+        /// чёрном их не видно вовсе.</summary>
+        private static Material DecorMaterial()
+        {
+            if (_decorMat == null)
+            {
+                var color = new Color(0.19f, 0.19f, 0.20f, 1f);
+                _decorMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                _decorMat.SetColor("_BaseColor", color);
+                _decorMat.color = color;
+                _decorMat.SetFloat("_Metallic", 0.05f);
+                _decorMat.SetFloat("_Smoothness", 0.55f);
+            }
+            return _decorMat!;
+        }
+
         /// <summary>Материал обеих коробок. Источник истины — MaterialId самой
         /// варочной: выбранный декор обязан пережить любую пересборку геометрии
         /// (ресайз, загрузка проекта), иначе после перезапуска текстура молча
-        /// заменялась бы штатным чёрным стеклом.</summary>
+        /// заменялась бы штатным чёрным стеклом. Конфорки и панель управления
+        /// декору не подчиняются — это рисунок прибора, а не отделка.</summary>
         public void ApplyMaterials()
         {
-            if (_children.Count < ChildCount) return;
+            if (_children.Count < BaseChildCount) return;
 
             Material? mat = null;
             if (MaterialManager.HasCustomDecor(this))
                 mat = MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
             mat ??= SurfaceMaterial();
 
-            foreach (var child in _children)
+            for (int i = 0; i < _children.Count; i++)
             {
+                var child = _children[i];
                 if (child == null) continue;
                 var mr = child.GetComponent<MeshRenderer>();
-                if (mr != null) mr.sharedMaterial = mat;
+                if (mr != null) mr.sharedMaterial = i < BaseChildCount ? mat : DecorMaterial();
             }
         }
 

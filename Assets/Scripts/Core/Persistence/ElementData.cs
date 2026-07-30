@@ -141,6 +141,10 @@ namespace KitchenDesigner.Core
 		// плиты лежат в общем dimensionsMM; вырез — здесь. 0 в старых проектах
 		// (поля тогда не было) читается как «дефолтный вырез».
 		public bool isCooktop = false;
+		// Готовая модель («Bosch PUE611BB5E») — у неё габариты и вырез
+		// восстанавливаются из таблицы модели, а не из файла. Пусто = свободная
+		// варочная (в том числе во всех проектах старше этого поля).
+		public string cooktopModel = "";
 		public string cooktopAttachedPartName = "";
 		public int cooktopOffsetXMM = 0;
 		public int cooktopOffsetYMM = 0;
@@ -337,6 +341,7 @@ namespace KitchenDesigner.Core
 			if (element is CooktopElement cooktopEl)
 			{
 				d.isCooktop = true;
+				d.cooktopModel = cooktopEl.Model ?? "";
 				d.cooktopAttachedPartName = cooktopEl.AttachedPartName ?? "";
 				d.cooktopOffsetXMM = cooktopEl.OffsetXMM;
 				d.cooktopOffsetYMM = cooktopEl.OffsetYMM;

@@ -308,6 +308,8 @@ namespace KitchenDesigner.Core.MCP
                 } : null,
                 cooktop = cooktop != null ? new CooktopInfo
                 {
+                    model = cooktop.Model,
+                    fixedSize = cooktop.HasFixedSize,
                     cutoutWidthMM = cooktop.CutoutWidthMM,
                     cutoutDepthMM = cooktop.CutoutDepthMM,
                     plateHeightMM = CooktopElement.RIM_HEIGHT_MM,

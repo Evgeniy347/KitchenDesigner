@@ -26,6 +26,10 @@ namespace KitchenDesigner.Core.UI
             public bool isSink;           // врезная мойка (садится на деталь-столешницу)
             public bool isCooktop;        // варочная поверхность (садится на деталь-столешницу без выреза)
             public bool isPanel;          // ДВП/ХДФ — вкладная панель с зазорами
+            /// <summary>Готовая модель встраиваемой техники (группа «Техника»):
+            /// габариты берутся у производителя и не редактируются. Пусто —
+            /// свободный элемент.</summary>
+            public string applianceModel;
             public int pillarMidHeightMM;
             public string drawerType;
             public int drawerLength;
@@ -46,7 +50,7 @@ namespace KitchenDesigner.Core.UI
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
                 isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false; isDoor = false;
                 isPillar = false; isFloor = false; isLightSource = false; isSink = false; isCooktop = false;
-                isPanel = false; pillarMidHeightMM = 75;
+                isPanel = false; applianceModel = ""; pillarMidHeightMM = 75;
                 drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400; drawerSystem = "gtv";
             }
@@ -67,6 +71,7 @@ namespace KitchenDesigner.Core.UI
                 FacadeGroup(),
                 DrawerGroup(),
                 FurnitureGroup(),
+                ApplianceGroup(),
                 new Group
                 {
                     title = "Помещение",
@@ -146,6 +151,30 @@ namespace KitchenDesigner.Core.UI
             var sink = SinkItem("Мойка");
             var cooktop = CooktopItem("Варочная поверхность");
             return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, pillar, sink, cooktop } };
+        }
+
+        /// <summary>Встраиваемая техника — готовые модели производителя. Габариты
+        /// у пунктов этой группы фиксированы (<see cref="IFixedSizeElement"/>):
+        /// поля Ш/В/Г в окне свойств серые, ручек ресайза нет.
+        ///
+        /// Как добавить прибор: положить сюда ещё один Item со своим флагом типа
+        /// (по образцу <see cref="CooktopModelItem"/>) и развести его в
+        /// SidebarUI.Spawn. Порядок пунктов — варочная, духовка, посудомойка.</summary>
+        private static Group ApplianceGroup()
+        {
+            var cooktop = CooktopModelItem("Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E,
+                CooktopElement.MODEL_BOSCH_PUE611BB5E);
+            return new Group { title = "Техника", shortLabel = "Т", items = new List<Item> { cooktop } };
+        }
+
+        /// <summary>Варочная поверхность готовой модели: размеры берутся из её
+        /// таблицы в CooktopElement, а не из каталога.</summary>
+        private static Item CooktopModelItem(string name, string model)
+        {
+            var item = new Item(name, CooktopElement.ModelDimensionsMM(model));
+            item.isCooktop = true;
+            item.applianceModel = model;
+            return item;
         }
 
         private static Item CooktopItem(string name)

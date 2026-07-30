@@ -277,6 +277,11 @@ namespace KitchenDesigner.Core.MCP.Contract
         public int? height;
         [McpParam("Thickness along Z in MM. Defaults: board 18, radial shelf 400 (its depth), table 1000, window/door 100.", Min = 1)]
         public int? depth;
+
+        [McpParam("Appliance model for a built-in appliance (type cooktop). Its size and cutout come from the " +
+                  "manufacturer and cannot be edited afterwards; width/height/depth are ignored. Omit for a free-size appliance.",
+            Enum = new[] { "Bosch PUE611BB5E" })]
+        public string? model;
     }
 
     [Serializable]

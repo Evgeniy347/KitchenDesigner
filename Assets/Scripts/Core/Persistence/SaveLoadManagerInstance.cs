@@ -216,7 +216,7 @@ namespace KitchenDesigner.Core
 						: ed.isSink
 						? ElementFactory.Instance.CreateSink(ed.name, ed.Position)
 						: ed.isCooktop
-							? ElementFactory.Instance.CreateCooktop(ed.name, ed.Position)
+							? ElementFactory.Instance.CreateCooktop(ed.name, ed.Position, ed.cooktopModel)
 						: ed.isPillar
 							? ElementFactory.Instance.CreatePillar(ed.midHeightMM, ed.name, ed.Position)
 							: ed.isTable
@@ -348,6 +348,9 @@ namespace KitchenDesigner.Core
 
                     if (ed.isCooktop && el is CooktopElement cooktopEl)
                     {
+                        // Модель первой: она запирает габариты и вырез, и всё
+                        // ниже для готовой модели становится подтверждением.
+                        cooktopEl.Model = ed.cooktopModel;
                         cooktopEl.AttachedPartName = ed.cooktopAttachedPartName;
                         cooktopEl.OffsetXMM = ed.cooktopOffsetXMM;
                         cooktopEl.OffsetYMM = ed.cooktopOffsetYMM;

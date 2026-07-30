@@ -23,258 +23,205 @@
     },
     {
       "type": "Label",
-      "text": "Ящик GTV — Yaschik_A_350",
+      "text": "Варочная — Varochnaya",
       "position": [0, -12]
     },
     {
       "type": "Label",
-      "text": "Тип",
-      "position": [-103, -48]
-    },
-    {
-      "type": "Dropdown",
-      "options": ["Ящик GTV", "Ящик Movento"],
-      "selected": 0,
-      "position": [65, -48]
-    },
-    {
-      "type": "Label",
       "text": "Название",
-      "position": [-134, -83]
+      "position": [-134, -48]
     },
     {
       "type": "InputField",
       "label": "Название",
-      "value": "Yaschik_A_350",
+      "value": "Varochnaya",
       "interactable": true,
-      "position": [40, -83]
+      "position": [40, -48]
     },
     {
       "type": "Label",
       "text": "Ширина",
-      "position": [-80, -139]
+      "position": [-80, -104]
     },
     {
       "type": "InputField",
       "label": "Ширина",
-      "value": "400",
-      "interactable": false,
-      "position": [100, -139]
+      "value": "590",
+      "interactable": true,
+      "position": [100, -104]
     },
     {
       "type": "Label",
       "text": "Высота",
-      "position": [-80, -170]
+      "position": [-80, -135]
     },
     {
       "type": "InputField",
       "label": "Высота",
-      "value": "115",
-      "interactable": false,
-      "position": [100, -170]
+      "value": "65",
+      "interactable": true,
+      "position": [100, -135]
     },
     {
       "type": "Label",
       "text": "Глубина",
-      "position": [-80, -201]
+      "position": [-80, -166]
     },
     {
       "type": "InputField",
       "label": "Глубина",
-      "value": "350",
-      "interactable": false,
-      "position": [100, -201]
+      "value": "520",
+      "interactable": true,
+      "position": [100, -166]
     },
     {
       "type": "Label",
-      "text": "Тип ящика",
-      "position": [-103, -232]
-    },
-    {
-      "type": "Dropdown",
-      "options": ["A — борт 86 мм", "B — борт 120 мм", "C — борт 168 мм", "D — борт 200 мм"],
-      "selected": 0,
-      "position": [65, -232]
-    },
-    {
-      "type": "Label",
-      "text": "Длина",
-      "position": [-103, -267]
-    },
-    {
-      "type": "Dropdown",
-      "options": ["250 мм", "300 мм", "350 мм", "400 мм", "450 мм", "500 мм", "550 мм", "600 мм"],
-      "selected": 2,
-      "position": [65, -267]
-    },
-    {
-      "type": "Label",
-      "text": "Цвет",
-      "position": [-103, -302]
-    },
-    {
-      "type": "Dropdown",
-      "options": ["Антрацит", "Белый", "Чёрный"],
-      "selected": 0,
-      "position": [65, -302]
-    },
-    {
-      "type": "Label",
-      "text": "Ширина короба",
-      "position": [-80, -337]
+      "text": "Ширина выреза",
+      "position": [-80, -197]
     },
     {
       "type": "InputField",
-      "label": "Ширина короба",
-      "value": "400",
+      "label": "Ширина выреза",
+      "value": "560",
       "interactable": true,
-      "position": [100, -337]
-    },
-    {
-      "type": "Button",
-      "text": "Двойной ящик",
-      "position": [0, -368]
-    },
-    {
-      "type": "Button",
-      "text": "Открыть ящик",
-      "position": [0, -404]
+      "position": [100, -197]
     },
     {
       "type": "Label",
-      "text": "Фасад ящика",
-      "position": [-103, -440]
+      "text": "Глубина выреза",
+      "position": [-80, -228]
     },
     {
-      "type": "Dropdown",
-      "options": ["(нет фасада)"],
-      "selected": 0,
-      "position": [65, -440]
+      "type": "InputField",
+      "label": "Глубина выреза",
+      "value": "490",
+      "interactable": true,
+      "position": [100, -228]
     },
     {
       "type": "Label",
       "text": "X, мм",
-      "position": [-110, -500]
+      "position": [-110, -284]
     },
     {
       "type": "Label",
       "text": "Y, мм",
-      "position": [0, -500]
+      "position": [0, -284]
     },
     {
       "type": "Label",
       "text": "Z, мм",
-      "position": [110, -500]
+      "position": [110, -284]
     },
     {
       "type": "InputField",
       "label": "X, мм",
-      "value": "5000",
+      "value": "0",
       "interactable": true,
-      "position": [-110, -520]
+      "position": [-110, -304]
     },
     {
       "type": "InputField",
       "label": "Y, мм",
-      "value": "43",
+      "value": "900",
       "interactable": true,
-      "position": [0, -520]
+      "position": [0, -304]
     },
     {
       "type": "InputField",
       "label": "Z, мм",
       "value": "0",
       "interactable": true,
-      "position": [110, -520]
+      "position": [110, -304]
     },
     {
       "type": "Label",
       "text": "X, °",
-      "position": [-110, -551]
+      "position": [-110, -335]
     },
     {
       "type": "Label",
       "text": "Y, °",
-      "position": [0, -551]
+      "position": [0, -335]
     },
     {
       "type": "Label",
       "text": "Z, °",
-      "position": [110, -551]
+      "position": [110, -335]
     },
     {
       "type": "InputField",
       "label": "X, °",
       "value": "0,0",
       "interactable": true,
-      "position": [-110, -571]
+      "position": [-110, -355]
     },
     {
       "type": "InputField",
       "label": "Y, °",
       "value": "0,0",
       "interactable": true,
-      "position": [0, -571]
+      "position": [0, -355]
     },
     {
       "type": "InputField",
       "label": "Z, °",
       "value": "0,0",
       "interactable": true,
-      "position": [110, -571]
+      "position": [110, -355]
     },
     {
       "type": "Label",
       "text": "Повернуть на 90°:",
-      "position": [0, -602]
+      "position": [0, -386]
     },
     {
       "type": "Button",
       "text": "X 90°",
-      "position": [-112, -628]
+      "position": [-112, -412]
     },
     {
       "type": "Button",
       "text": "Y 90°",
-      "position": [0, -628]
+      "position": [0, -412]
     },
     {
       "type": "Button",
       "text": "Z 90°",
-      "position": [112, -628]
+      "position": [112, -412]
     },
     {
       "type": "Label",
       "text": "Текстура",
-      "position": [-103, -689]
+      "position": [-103, -473]
     },
     {
       "type": "Dropdown",
       "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Дуб европейский", "Дуб европейский тонированный", "Сосна", "Дуб европейский тонированный 3", "ЛМДФ Белая гладкая (СвиссКроно)", "ЛМДФ Белая гладкая (Kastamonu F)", "ЛМДФ Белый премиум филвуд (W1000 ST38)", "ЛМДФ Лес чёрный филвуд (U998 ST38)", "ЛМДФ Дуб галифакс белый (H1176 ST37)", "ЛМДФ Дуб галифакс натуральный (H1180 ST37)", "ЛМДФ Дуб галифакс олово (H3176 ST37)", "ЛМДФ Дуб галифакс табак (H1181 ST37)", "ЛМДФ Дуб гладстоун песочный (H3309 ST28)", "ЛМДФ Дуб гладстоун табак (H3325 ST28)", "ЛМДФ Дуб давенпорт натуральный светлый (H3359 ST32)", "ЛМДФ Дуб кунео коричневый (H3317 ST28)", "ЛМДФ Дуб каселла каштановый (H1369 ST40)", "ЛМДФ Дуб каселла коричневый (H1386 ST40)", "ЛМДФ Дуб каселла натуральный светлый (H1367 ST40)", "ЛМДФ Дуб каселла натуральный (H1385 ST40)", "ЛМДФ Дуб сакраменто коричневый (H1142 ST36)", "ЛМДФ Дуб чарльстон тёмно-коричневый (H3154 ST36)", "ЛМДФ Дуб шерман антрацит (H1346 ST32)", "ЛМДФ Дуб шерман коньяк коричневый (H1344 ST32)", "ЛМДФ Ясень наварра (H1250 ST36)", "ЛХДФ Дуб сонома шагрень (3025 РЕ, Кроношпан)", "ЛХДФ Антрацит шагрень (164 РЕ, Кроношпан)", "ХДФ Нешлифованная (Кроношпан)", "ЛХДФ Белый (0101 РЕ, Кроношпан)", "ЛХДФ Белый (101 РЕ, Княжпогост)", "ЛХДФ Белая шагрень (101 РЕ, Кроношпан СМ)", "ЛХДФ Бежевый (0522 РЕ, Кроношпан)", "ЛХДФ Серый камень (0112 РЕ, Кроношпан)", "ЛХДФ Чёрный (0190 РЕ, Кроношпан)", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)", "abrikos ba 03 cd", "bambuk horizontal caramel", "buk belyy 99q", "МДФ шлифованная"],
-      "selected": 40,
-      "position": [65, -689]
+      "selected": 0,
+      "position": [65, -473]
     },
     {
       "type": "Toggle",
       "label": "Прозрачный",
       "isOn": false,
-      "position": [0, -724]
+      "position": [0, -508]
     },
     {
       "type": "Toggle",
       "label": "Закрепить",
       "isOn": false,
-      "position": [0, -757]
+      "position": [0, -541]
     },
     {
       "type": "Button",
       "text": "Дублировать",
-      "position": [-91, -799]
+      "position": [-91, -583]
     },
     {
       "type": "Button",
       "text": "Удалить",
-      "position": [91, -799]
+      "position": [91, -583]
     }
   ]
 }

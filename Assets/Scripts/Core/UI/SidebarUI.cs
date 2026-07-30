@@ -211,7 +211,7 @@ namespace KitchenDesigner.Core.UI
             }
             if (item.isCooktop)
             {
-                UIManager.Instance.SpawnCooktop(item.name);
+                UIManager.Instance.SpawnCooktop(item.name, item.applianceModel);
                 return;
             }
             if (item.isDrawer)

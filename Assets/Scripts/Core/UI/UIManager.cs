@@ -640,13 +640,15 @@ namespace KitchenDesigner.Core.UI
             BeginPlacement(go);
         }
 
-        public void SpawnCooktop(string name)
+        /// <param name="model">Готовая модель из группы «Техника» (габариты
+        /// фиксированы) либо пусто — свободная варочная из группы «Мебель».</param>
+        public void SpawnCooktop(string name, string model = "")
         {
             Vector3 pos = GroundPointInFrontOfCamera();
             pos = GridManager.SnapToGrid(pos);
             pos.y = 0.9f; // ~900 мм — типовая высота рабочей поверхности
 
-            var go = ElementFactory.CreateCooktop(name, pos);
+            var go = ElementFactory.CreateCooktop(name, pos, model);
             BeginPlacement(go);
         }
 

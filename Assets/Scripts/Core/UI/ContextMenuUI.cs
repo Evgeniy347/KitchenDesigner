@@ -1293,7 +1293,11 @@ namespace KitchenDesigner.Core.UI
 			_currentIsDoor = isDoor;
 				// Заголовок различает и подтипы («Сборный фасад» ≠ «Фасад») и
 				// конкретный элемент (имя после тире).
-				_currentTypeName = element is CooktopElement ? "Варочная"
+				// У готовой модели в заголовке стоит она сама — «Варочная» ничего
+				// не сказало бы о том, что размеры залочены производителем.
+				_currentTypeName = element is CooktopElement fixedCooktop && fixedCooktop.HasFixedSize
+						? fixedCooktop.Model
+						: element is CooktopElement ? "Варочная"
 					: element is SinkElement ? "Мойка"
 					: element is LightSourceElement ? "Источник света"
 					: isPillar ? "Опора"
@@ -1419,8 +1423,12 @@ namespace KitchenDesigner.Core.UI
                 }
 
                 // Габариты ящика (контурный бокс) вычисляются из типа/длины/ширины —
-                // прямое редактирование недоступно, поля затемняются.
-                SetDimensionFieldsEditable(!isDrawer);
+                // прямое редактирование недоступно, поля затемняются. У готовой
+                // техники размеры и ниша врезки заданы производителем — тоже серые.
+                bool fixedSize = FixedSize.IsFixed(element);
+                SetDimensionFieldsEditable(!isDrawer && !fixedSize);
+                SetDimensionFieldEditable(_cutoutW, !fixedSize);
+                SetDimensionFieldEditable(_cutoutD, !fixedSize);
                 // Глубину окна диктует толщина стены — поле только для чтения.
                 if (isWindow || isDoor) SetDimensionFieldEditable(_d, false);
                 // Ширина и глубина опоры фиксированы — только для чтения.

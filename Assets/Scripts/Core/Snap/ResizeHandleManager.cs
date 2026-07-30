@@ -377,8 +377,11 @@ namespace KitchenDesigner.Core
         ///     окне свойств.
         /// Тот же признак использует мутационный свип прилипания: тянуть за грань
         /// то, что в приложении не тянут, — проверка несуществующего сценария.</summary>
+        /// Готовая техника (<see cref="IFixedSizeElement"/>) тоже не тянется: её
+        /// габарит задан производителем, и мышь не должна обходить окно свойств.
         public static bool SupportsHandleResize(KitchenElement? element) =>
-            element != null && !(element is SinkElement) && !(element is CooktopElement);
+            element != null && !(element is SinkElement) && !(element is CooktopElement)
+            && !FixedSize.IsFixed(element);
 
         // --- Ручки ---
 

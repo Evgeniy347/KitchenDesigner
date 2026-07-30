@@ -236,38 +236,48 @@
     },
     {
       "type": "Button",
-      "text": "Помещение",
+      "text": "Техника",
       "position": [8, -492]
     },
     {
       "type": "Button",
-      "text": "Короб",
+      "text": "Варочная Bosch PUE611BB5E",
       "position": [22, -526]
     },
     {
       "type": "Button",
+      "text": "Помещение",
+      "position": [8, -555]
+    },
+    {
+      "type": "Button",
+      "text": "Короб",
+      "position": [22, -589]
+    },
+    {
+      "type": "Button",
       "text": "Стена",
-      "position": [22, -555]
+      "position": [22, -618]
     },
     {
       "type": "Button",
       "text": "Окно",
-      "position": [22, -584]
+      "position": [22, -647]
     },
     {
       "type": "Button",
       "text": "Дверь",
-      "position": [22, -613]
+      "position": [22, -676]
     },
     {
       "type": "Button",
       "text": "Пол",
-      "position": [22, -642]
+      "position": [22, -705]
     },
     {
       "type": "Button",
       "text": "Источник света",
-      "position": [22, -671]
+      "position": [22, -734]
     }
   ]
 }

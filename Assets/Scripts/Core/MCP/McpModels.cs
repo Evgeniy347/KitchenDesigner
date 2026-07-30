@@ -312,6 +312,10 @@ namespace KitchenDesigner.Core.MCP
 	[Serializable]
 	public class CooktopInfo
 	{
+		/// <summary>Готовая модель производителя («Bosch PUE611BB5E») или пусто.
+		/// У модели размеры и вырез фиксированы — edit_elements их отклоняет.</summary>
+		public string model = string.Empty;
+		public bool fixedSize;
 		public int cutoutWidthMM;
 		public int cutoutDepthMM;
 		public int plateHeightMM;

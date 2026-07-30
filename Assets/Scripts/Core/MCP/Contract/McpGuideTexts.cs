@@ -224,6 +224,10 @@ SinkElement / CooktopElement
                       is cutout_width/cutout_depth via edit_elements. Its cutout
                       magnets flush to sides and facades under the countertop;
                       overlapping a carcass board there is a violation.
+                      A cooktop created with model:""Bosch PUE611BB5E"" is a fixed
+                      appliance: 592x522 glass, 51 total height, 560x490 cutout.
+                      Its size and cutout come from the manufacturer — width,
+                      height, depth and cutout_* are REJECTED by edit_elements.
 WindowElement / DoorElement
                       Openings. Prefer add_opening / apply_floorplan: they
                       attach the opening to a wall and cut the hole. Creating

@@ -267,7 +267,7 @@ namespace KitchenDesigner.Core
 				// хозяина не переносим. А вот габариты и вырез редактируемые,
 				// поэтому копия обязана унаследовать их, иначе «дублировать»
 				// молча возвращало бы дефолтную панель.
-				var go = CreateCooktop(source.PartName, offset);
+				var go = CreateCooktop(source.PartName, offset, srcCooktop.Model);
 				go.transform.rotation = source.transform.rotation;
 				var copy = go.GetComponent<CooktopElement>();
 				copy.DimensionsMM = srcCooktop.DimensionsMM;
@@ -705,7 +705,7 @@ namespace KitchenDesigner.Core
 			return go;
 		}
 
-		public GameObject CreateCooktop(string name, Vector3 position)
+		public GameObject CreateCooktop(string name, Vector3 position, string model = "")
 		{
 			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Варочная" : name));
 			go.tag = "KitchenElement";
@@ -717,8 +717,14 @@ namespace KitchenDesigner.Core
 
 			var cooktop = go.AddComponent<CooktopElement>();
 			cooktop.PartName = go.name;
-			cooktop.DimensionsMM = new Vector3Int(
-				CooktopElement.DEFAULT_WIDTH_MM, CooktopElement.DEFAULT_HEIGHT_MM, CooktopElement.DEFAULT_DEPTH_MM);
+			// Модель ДО габаритов: у готовой модели размеры и вырез приходят из
+			// её таблицы, а присвоение DimensionsMM их только подтверждает.
+			cooktop.Model = model ?? "";
+			var modelDims = CooktopElement.ModelDimensionsMM(cooktop.Model);
+			cooktop.DimensionsMM = modelDims.x > 0
+				? modelDims
+				: new Vector3Int(
+					CooktopElement.DEFAULT_WIDTH_MM, CooktopElement.DEFAULT_HEIGHT_MM, CooktopElement.DEFAULT_DEPTH_MM);
 			cooktop.Movable = true;
 
 			PartRegistry.Register(cooktop);

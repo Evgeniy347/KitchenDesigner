@@ -23,7 +23,10 @@ namespace KitchenDesigner.Core
 		GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position);
 		GameObject CreateLightSource(string name, Vector3 position);
 		GameObject CreateSink(string name, Vector3 position);
-		GameObject CreateCooktop(string name, Vector3 position);
+		/// <param name="model">Идентификатор готовой модели (см.
+		/// <see cref="CooktopElement.MODEL_BOSCH_PUE611BB5E"/>) — тогда габариты и
+		/// вырез фиксированы. Пусто — свободная варочная с правкой размеров.</param>
+		GameObject CreateCooktop(string name, Vector3 position, string model = "");
 		GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50);
         GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position,

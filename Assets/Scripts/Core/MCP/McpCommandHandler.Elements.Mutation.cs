@@ -41,6 +41,16 @@ namespace KitchenDesigner.Core.MCP
             if (IsNot<WindowElement>()) { if (op.tint != null) e.Add("tint"); if (op.sill_protrusion_mm.HasValue) e.Add("sill_protrusion_mm"); }
             if (IsNot<DoorElement>()) { if (op.sash_type != null) e.Add("sash_type"); }
             if (el is DrawerElement && (op.width.HasValue || op.height.HasValue || op.depth.HasValue)) e.Add("width/height/depth not settable on drawers (size is parametric)");
+            // Готовая техника: габарит и ниша врезки заданы производителем.
+            // Молча игнорировать правку хуже, чем отказать: клиент решил бы, что
+            // размер применён.
+            if (FixedSize.IsFixed(el))
+            {
+                if (op.width.HasValue || op.height.HasValue || op.depth.HasValue)
+                    e.Add("width/height/depth not settable on a fixed appliance model (size is set by the manufacturer)");
+                if (op.cutout_width.HasValue || op.cutout_depth.HasValue)
+                    e.Add("cutout_width/cutout_depth not settable on a fixed appliance model");
+            }
 
             // Пазы принимает только базовая «деталь»: у фасада/полки/ящика своя
             // процедурная геометрия, врезка в неё не определена.
@@ -811,6 +821,10 @@ namespace KitchenDesigner.Core.MCP
                 if (existing != null) { errors.Add($"Element '{item.name}' already exists"); continue; }
 
                 var elementType = (item.type ?? "board").Trim().ToLowerInvariant();
+                // Неизвестная модель молча дала бы свободный прибор «почти того»
+                // размера — отказываем, пока клиент не назовёт модель из списка.
+                if (!string.IsNullOrEmpty(item.model) && !CooktopElement.IsKnownModel(item.model))
+                { errors.Add($"Unknown appliance model '{item.model}' for '{item.name}'"); continue; }
                 var pos = new Vector3(item.x, item.y, item.z);
                 GameObject go = null!;
 
@@ -855,7 +869,7 @@ namespace KitchenDesigner.Core.MCP
                         go = ElementFactory.CreatePillar(item.height ?? PillarElement.MidHeightMM_Default, item.name, pos);
                         break;
                     case "cooktop":
-                        go = ElementFactory.CreateCooktop(item.name, pos);
+                        go = ElementFactory.CreateCooktop(item.name, pos, item.model ?? "");
                         break;
                     case "window":
                         go = ElementFactory.CreateWindow(new Vector3Int(item.width ?? 900, item.height ?? 1200, item.depth ?? 100),
