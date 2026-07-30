@@ -11,6 +11,7 @@ using SimpleGif.Enums;
 /// <summary>PlayMode-тест: загружает example.save.json, находит двойной ящик
 /// A3_gtv_double_lower_A и записывает GIF-анимацию цикла: открыть оба → закрыть
 /// верхний → закрыть все. Сохраняет в docs/drawer_animation.gif.</summary>
+[Explicit("генератор docs/drawer_animation.gif: 730 кадров по 100 мс — см. tools\\artifacts.ps1")]
 public class DrawerAnimationGifTests
 {
     private const int RenderW = 480;

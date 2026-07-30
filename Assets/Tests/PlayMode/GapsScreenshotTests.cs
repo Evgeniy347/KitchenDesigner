@@ -8,6 +8,7 @@ using KitchenDesigner.Core;
 /// <summary>PlayMode: загружает example.save.json, включает EdgeOutline
 /// (чёрные контуры зазоров) и делает скриншот в docs/gaps_overview.png.
 /// Две камеры: основная (3D) + UI-оверлей → один RenderTexture.</summary>
+[Explicit("генератор docs/gaps_overview.png — см. tools\\artifacts.ps1")]
 public class GapsScreenshotTests
 {
     private const int RenderW = 1920;

@@ -8,6 +8,7 @@ using KitchenDesigner.Core;
 /// <summary>PlayMode-тест: загружает example.save.json и делает скриншот
 /// всей сцены (3D + UI: тулбар, левая панель инструментов).
 /// Сохраняет в docs/overview.png.</summary>
+[Explicit("генератор docs/overview.png — см. tools\\artifacts.ps1")]
 public class OverviewScreenshotTests
 {
     private const int RenderW = 1920;
