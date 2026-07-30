@@ -25,7 +25,7 @@
 
 .EXAMPLE
     .\tools\mutation-test.ps1 -TestsOnly
-    .\tools\mutation-test.ps1 -ThresholdBreak 45
+    .\tools\mutation-test.ps1 -ThresholdBreak 53
 #>
 [CmdletBinding()]
 param(

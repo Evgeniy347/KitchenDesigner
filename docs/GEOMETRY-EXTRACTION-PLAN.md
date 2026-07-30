@@ -2,12 +2,12 @@
 
 **Дата:** 13.08.2026
 **Unity:** 6000.4.3f1
-**Статус:** этапы 1–4 и 6 выполнены, 5 частично, 7 не начат (см. §6.1)
+**Статус:** этапы 1–4, 6 и 7 выполнены, 5 частично (см. §6.1–6.3)
 
 | Метрика | Было | Стало |
 |---|---|---|
-| Тесты ядра под `dotnet` | — | **101 за 91 мс** |
-| Mutation score ядра | — | **48.9%** (порог 45 в `tools/mutation-test.ps1`) |
+| Тесты ядра под `dotnet` | — | **140 за 155 мс** |
+| Mutation score ядра | — | **58.4%** (порог 53 в `tools/mutation-test.ps1`) |
 | `SnapMutationTests` | 160.9 с | **124.6 с** |
 | Инвариант снэпа | — | совпал во всех прогонах, кроме одного пойманного бага |
 
@@ -162,6 +162,7 @@ Score 40% посчитан против семи тестов спайка, а �
 Assets/Scripts/Core/Geometry/          ← asmdef KitchenDesigner.Geometry
    Tolerance.cs  Face.cs  ElementGeometry.cs
    ResizeSnap.cs  ResizeMath.cs  SnapCore.cs
+   ValidationCore.cs (ElementKind, ValidationElement)
    GrooveMath.cs  GappedBox.cs  EdgeBanding.cs
 
 Assets/Scripts/Core/**                 ← asmdef KitchenDesigner.Runtime
@@ -245,9 +246,9 @@ public readonly struct ElementGeometry
 | 4 | ✅ **Сделано.** Запись в `transform` убрана (`GetFacesAt`/`GetVerticesAt`/`ValidationPositionAt` во всех шести классах со своей геометрией); `Collect`, `TryPickCandidate`, `FacesOverlap`, `GetFaceRect`, `BestEdgeDelta` переехали в `SnapCore`. `SnapSystem` остался адаптером сцены (настройки, снимки, `Diagnose`, логи) | 16–24 | Ядро снэпа собирается и тестируется под `dotnet`. Тест: **160.9 → 124.6s**; `TrySnap` 79.6→51.8s, `Diagnose` 82→26s, `ResizeMath` 22.6→3.7s |
 | 5 | 🔶 **Частично.** Перенесены `ResizeSnapTests`, `ResizeMathTests`, `SnapPostEdgeDetentTests`, `SnapKnownLimitationTests`; заведена база `SnapCoreTestBase` с поддержкой поворотов; дописаны `GappedBoxTests` и `ElementGeometryTests`. Осталось: ветки пазов в `ResizeSnap`/`SnapCore` (нужны снимки с дном и стенками паза) и файлы, завязанные на `ConstraintValidator`/`Diagnose` | 8–10 | 101 тест ядра за 91 мс |
 | 6 | ✅ **Сделано.** `tools/mutation-test.ps1`: тесты ядра + Stryker с порогом (`--break-at`), проверен в обе стороны — при 45 проходит, при 95 роняет прогон | 4–6 | Порог как gate; baseline **48.9%** |
-| 7 | *(опционально, НЕ начат)* `ConstraintValidator` — см. разбор ниже: связь семантическая, а не геометрическая, и требует отдельной абстракции | 16–24 | Валидация тоже мутируется |
+| 7 | ✅ **Сделано.** Инвариант валидации (10 чисел, §6.2), `ElementKind` + `ValidationElement`, ядро `ValidationCore`; `ConstraintValidator` стал адаптером сцены | 16–24 | Валидация исполняется под `dotnet` и мутируется. Тестов ядра **101 → 140** (155 мс); mutation score **48.9 → 58.4%**, по самому `ValidationCore` — **71%** (465 мутантов, 12 без покрытия) |
 
-### 6.1. Почему этап 7 — отдельная работа, а не продолжение
+### 6.1. Почему этап 7 был отдельной работой
 
 Разведка (901 строка, 24 точки связи с Unity) показала, что `ConstraintValidator`
 цепляется за движок иначе, чем снэп. У снэпа связь была ГЕОМЕТРИЧЕСКАЯ — «дай
@@ -256,19 +257,81 @@ public readonly struct ElementGeometry
 мойка/варочная/светильник — пропустить», «это ящик», «это фасад с зазором»,
 «панель села в паз этой доски».
 
-Снимком геометрии это не выражается. Нужен отдельный тип — `ElementKind` (или
-набор флагов рядом с `ElementGeometry`), то есть ВТОРАЯ абстракция границы, и
-проектировать её надо осознанно, а не выводить из `ElementGeometry`.
+Снимком геометрии это не выражается — нужна ВТОРАЯ абстракция границы.
 
 Второе отличие важнее. Этапы 1–6 страховал инвариант `SnapMutationTests`: пять
 чисел, которые обязаны совпасть. **Валидацию он не покрывает.** Её страхуют шесть
 файлов (`ConstraintValidatorTests`, `FacadeValidatorTests`, `DrawerValidatorTests`,
 `DrawerOpenValidationTests`, `AssembledFacadeValidationReproTests`,
-`SaveValidationTests`) — сеть заметно реже. Перед началом этапа 7 разумно сперва
-завести для валидации аналог инварианта: прогон по `example.save.json` с
-фиксацией числа нарушений по типам.
+`SaveValidationTests`) — сеть заметно реже. Поэтому этап начат не с переноса, а
+с инварианта (§6.2).
 
 Оценка поднята с 12–16 до 16–24 ч именно из-за этих двух пунктов.
+
+### 6.3. Как решена семантика: `ElementKind`
+
+Роль детали уехала в ядро отдельным набором флагов, а решение «кто есть кто»
+осталось в сцене — ровно один файл, `Validation/ValidationSnapshot.cs`, где и
+живут все `GetComponent` и проверки типа.
+
+| Флаг | Что даёт |
+|---|---|
+| `Anchor` | корень BFS связности: пол, стена, проём в ней |
+| `FloorAnchor` | пол штатно проходит ПОД стенами — пересечение якорей законно |
+| `Opening` | окно/дверь: сидит в теле стены, но обязано в неё помещаться по высоте |
+| `Drawer` | штатно пересекается с панелями своего модуля и с парным ящиком |
+| `Decor` | светильник: ни пересечений, ни опоры |
+| `Recessed` | мойка/варочная: врезана в столешницу, держится бортиком |
+| `FloatingFacade` | фасад с зазором плавает в проёме — face-контакта не требует |
+
+Флаги не взаимоисключающие: пол — это `Anchor|FloorAnchor`, окно —
+`Anchor|Opening`. Два производных предиката (`IgnoredInPairs`, `NeedsNoSupport`)
+собраны из них в самом ядре: раньше эти списки типов дублировались в трёх местах
+(`ProcessPair`, `CheckConnectivity`, `FindNearContacts`) и расходились.
+
+Снимок валидации — `ValidationElement`: геометрия + флаги + четыре скаляра, без
+которых правила не работают (`GroupId`, имя парного ящика, габарит по высоте,
+индекс своей стены). Стена разрешается ПО ИМЕНИ в адаптере, а в ядро приезжает
+уже готовым индексом — имён ядро не знает вовсе.
+
+Что осталось в адаптере `ConstraintValidator`: сборка снимков, перевод индексов
+обратно в `KitchenElement` и два запроса «по требованию» (`FindNearContacts`,
+`FindUnseatedPanels`), которые ходят по сцене напрямую и в горячий путь не
+входят. Правила пересечений, контактов, связности и высоты проёмов — целиком в
+ядре.
+
+**Побочный эффект:** высота стены теперь всегда меряется от ЛОГИЧЕСКОЙ позы
+(`Wall.FullPosition`), а не от трансформа. Раньше это делалось только внутри
+проверки проёмов; теперь это свойство снимка, и подрезанная `WallCutaway` стена
+не может дать ложное «окно вылезло за стену».
+
+### 6.2. Инвариант валидации (сделано)
+
+`Assets/Tests/EditMode/ValidationInvariantTests.cs` — аналог `SnapMutationTests`
+для валидации: `docs/example.save.json` (274 детали) прогоняется через все три
+валидатора, десять счётчиков обязаны совпасть до единицы.
+
+```
+elements 274 | contacts 1336 | violations 0 | isolatedGroups 0
+kind.Overlap 0 | kind.Unsupported 0 | kind.OutOfWallBounds 0
+drawer.errors 30 | facade.faceObstructions 0 | facade.openingViolations 63
+```
+
+По `ConstraintValidator` сцена чиста; 30 и 63 — реальные замечания
+`DrawerValidator` (зазор 40 мм на сторону при допуске 12,5) и `FacadeValidator`
+(траектория открывания). Это baseline реального сейва, а не эталон качества:
+задача инварианта — поймать, что число поехало само.
+
+Второй тест — детерминизм: два прогона `Validate` на одной сцене обязаны дать
+одинаковые счётчики и одинаковый список нарушений. Валидатор держит статические
+scratch-буферы и словарь broad-phase сетки; если их чистка сломается, baseline
+начнёт плавать между прогонами, а мутационный прогон — давать ложные убийства.
+
+Полный список нарушений пишется в `test-results/validation-invariant.log`, в
+консоль идёт только таблица расхождений. Оба теста — 2,2 с.
+
+**Правило приёмки этапа 7:** десять чисел обязаны совпасть, как пять чисел
+`SnapMutationTests` — для этапов 1–6.
 
 **Этапы 1–6: 48–68 ч.**
 
@@ -323,7 +386,7 @@ Sweep snap events: 320835 | competition warnings: 0
 .\build.cmd -RunTests                       # ~6 мин
 
 # ночью
-.\tools\mutation-test.ps1 -ThresholdBreak 45
+.\tools\mutation-test.ps1 -ThresholdBreak 53
 .\build.cmd -RunPlayMode
 ```
 
