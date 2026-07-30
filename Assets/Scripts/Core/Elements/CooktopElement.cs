@@ -239,12 +239,28 @@ namespace KitchenDesigner.Core
             SnapToPart();
         }
 
+        private int _lastPoseVersion;
+
         private bool HostMoved =>
             _lastHost != null &&
             (_lastHost.transform.position - _lastHostPosition).sqrMagnitude > Tolerance.EpsilonSqr;
 
-        private void Update()
+        /// <summary>Покадровая реакция на изменение позы. Два триггера ведут в
+        /// SnapToPart: собственное движение (drag, стрелки, MCP) копится в
+        /// TrackDrift и пересобирает проём в столешнице, а переезд хозяина
+        /// тянет варочную за ним. Один только HostMoved оставлял вырез на
+        /// старом месте при перетаскивании самой панели; один только PoseVersion
+        /// не догонял бы переехавшую столешницу — нужны оба.
+        /// Internal: Unity зовёт Update независимо от видимости, а тесты
+        /// гоняют тот же путь, что и цикл кадра.</summary>
+        internal void Update()
         {
+            if (PoseVersion != _lastPoseVersion)
+            {
+                _lastPoseVersion = PoseVersion;
+                SnapToPart();
+            }
+
             if (HostMoved)
             {
                 _lastHostPosition = _lastHost!.transform.position;

@@ -372,6 +372,33 @@ public class CooktopElementTests
         Assert.AreEqual(expected.z, cooktop.transform.position.z, 1e-4f);
     }
 
+    [Test]
+    public void MovingCooktop_MovesHoleInCountertop()
+    {
+        var top = CreateCountertop(2000, 1200);
+        var cooktop = CreateSeatedCooktop(top, 0.2f);
+
+        var before = top.CutoutHoleRects()[0];
+        int offsetBefore = cooktop.OffsetXMM;
+
+        // Рантайм-цепочка перетаскивания: drag пишет в трансформ →
+        // SceneChangeTracker в LateUpdate двигает PoseVersion → в следующем
+        // кадре Update зовёт SnapToPart, который копит дрейф и пересобирает
+        // проём. Тест гонит ту же цепочку явными вызовами.
+        cooktop.transform.position += new Vector3(0.3f, 0f, 0f);
+        SceneChangeTracker.Poll();
+        cooktop.Update();
+
+        Assert.AreEqual(offsetBefore + 300, cooktop.OffsetXMM,
+            "смещение от центра столешницы обязано накопиться из дрейфа");
+        var after = top.CutoutHoleRects()[0];
+        Assert.AreEqual(before.xMin + 300f / 2000f, after.xMin, 1e-4f,
+            "проём в столешнице обязан переехать вместе с варочной");
+        Assert.AreEqual(before.xMax + 300f / 2000f, after.xMax, 1e-4f);
+        Assert.AreEqual(before.yMin, after.yMin, 1e-4f);
+        Assert.AreEqual(before.yMax, after.yMax, 1e-4f);
+    }
+
     // ── Магнит к боковинам и фасадам ──────────────────────────────────
 
     [Test]
