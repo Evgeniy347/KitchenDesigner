@@ -13,12 +13,19 @@ using TMPro;
 /// </summary>
 public class UiAsciiSymbolsTests
 {
+    /// <summary>
+    /// Проверяет глиф, НЕ трогая ассет. `TryAddCharacters` вместо вопроса
+    /// мутирует динамический атлас общего шрифта — а атлас переживает прогон
+    /// в живом редакторе и меняется всеми тестами, которые рисуют текст;
+    /// заодно он грузит шрифт в статический FontEngine. Отсюда и мерцание:
+    /// глиф в ttf есть, а ответ «нет». `HasCharacters` только читает таблицу
+    /// символов ассета (× ▼ ► в неё запечены при генерации).
+    /// </summary>
     private static bool FontHasGlyph(string s)
     {
         var font = UIFactory.FontAsset;
         Assert.IsNotNull(font, "TMP font asset should be available");
-        font!.TryAddCharacters(s, out string missing);
-        return string.IsNullOrEmpty(missing);
+        return font!.HasCharacters(s);
     }
 
     [Test]
