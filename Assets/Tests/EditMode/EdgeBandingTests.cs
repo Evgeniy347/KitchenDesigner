@@ -583,13 +583,13 @@ public class EdgeBandingTests
     {
         var shelf = CreatePart("Shelf", ShelfDims);
 
-        EdgeSideHighlighter.Show(shelf, EdgeSide.W1);
-        Assert.IsTrue(EdgeSideHighlighter.IsShown(shelf, EdgeSide.W1));
-        Assert.AreEqual(5, EdgeSideHighlighter.QuadCount, "торец + 4 полосы");
+        SideHighlighter.ShowEdgeSide(shelf, EdgeSide.W1);
+        Assert.IsTrue(SideHighlighter.IsShown(shelf, EdgeSide.W1));
+        Assert.AreEqual(5, SideHighlighter.QuadCount, "торец + 4 полосы");
 
-        EdgeSideHighlighter.Hide();
-        Assert.AreEqual(0, EdgeSideHighlighter.QuadCount);
-        Assert.IsFalse(EdgeSideHighlighter.IsShown(shelf, EdgeSide.W1));
+        SideHighlighter.Hide();
+        Assert.AreEqual(0, SideHighlighter.QuadCount);
+        Assert.IsFalse(SideHighlighter.IsShown(shelf, EdgeSide.W1));
     }
 
     /// <summary>Регрессия из Player.log: в сборке URP/Unlit вырезается стриппингом,
@@ -601,17 +601,17 @@ public class EdgeBandingTests
     public void EdgeHighlight_WithoutShader_DoesNotThrowAndDrawsNothing()
     {
         var shelf = CreatePart("Shelf", ShelfDims);
-        EdgeSideHighlighter.MaterialFactory = () => null;
+        SideHighlighter.MaterialFactory = () => null;
         try
         {
-            Assert.DoesNotThrow(() => EdgeSideHighlighter.Show(shelf, EdgeSide.W1));
-            Assert.AreEqual(0, EdgeSideHighlighter.QuadCount, "без материала накладок нет");
-            Assert.IsFalse(EdgeSideHighlighter.IsShown(shelf, EdgeSide.W1));
+            Assert.DoesNotThrow(() => SideHighlighter.ShowEdgeSide(shelf, EdgeSide.W1));
+            Assert.AreEqual(0, SideHighlighter.QuadCount, "без материала накладок нет");
+            Assert.IsFalse(SideHighlighter.IsShown(shelf, EdgeSide.W1));
         }
         finally
         {
-            EdgeSideHighlighter.MaterialFactory = null;
-            EdgeSideHighlighter.Hide();
+            SideHighlighter.MaterialFactory = null;
+            SideHighlighter.Hide();
         }
     }
 
@@ -626,8 +626,8 @@ public class EdgeBandingTests
         var layout = EdgeBanding.LayoutOf(ShelfDims);
         var end = shelf.GetFaces()[layout.FaceIndex(EdgeSide.W1)];
 
-        EdgeSideHighlighter.Show(shelf, EdgeSide.W1);
-        var quads = EdgeSideHighlighter.QuadObjects;
+        SideHighlighter.ShowEdgeSide(shelf, EdgeSide.W1);
+        var quads = SideHighlighter.QuadObjects;
         Assert.AreEqual(5, quads.Count, "торец + 4 полосы");
 
         // Первая накладка — сам торец: ровно размер грани (0.018 × 0.4).
@@ -637,7 +637,7 @@ public class EdgeBandingTests
 
         // Полосы на пластях (грань 800×400): глубина упирается в потолок 50 мм,
         // длина равна стороне грани. Пласти узнаём по длинной стороне 0.4.
-        float cap = EdgeSideHighlighter.BandMaxMm * AppConstants.MM_TO_UNITS;
+        float cap = SideHighlighter.BandMaxMm * AppConstants.MM_TO_UNITS;
         int faceBands = 0;
         for (int i = 1; i < quads.Count; i++)
         {
@@ -651,10 +651,10 @@ public class EdgeBandingTests
         }
         Assert.AreEqual(2, faceBands, "полосы легли на обе пласти");
 
-        EdgeSideHighlighter.Show(shelf, EdgeSide.L1);
-        Assert.AreEqual(5, EdgeSideHighlighter.QuadCount, "показ переключается без накопления");
+        SideHighlighter.ShowEdgeSide(shelf, EdgeSide.L1);
+        Assert.AreEqual(5, SideHighlighter.QuadCount, "показ переключается без накопления");
 
-        EdgeSideHighlighter.Hide();
+        SideHighlighter.Hide();
     }
 
     /// <summary>На мелкой детали работает процент, а не потолок: 20 % от 120 мм.
@@ -668,8 +668,8 @@ public class EdgeBandingTests
         var layout = EdgeBanding.LayoutOf(small.DimensionsMM);
         var end = small.GetFaces()[layout.FaceIndex(EdgeSide.W1)];
 
-        EdgeSideHighlighter.Show(small, EdgeSide.W1);
-        var quads = EdgeSideHighlighter.QuadObjects;
+        SideHighlighter.ShowEdgeSide(small, EdgeSide.W1);
+        var quads = SideHighlighter.QuadObjects;
         Assert.AreEqual(5, quads.Count);
 
         var endScale = quads[0].transform.lossyScale;
@@ -677,7 +677,7 @@ public class EdgeBandingTests
         Assert.AreEqual(end.size.y, endScale.y, 1e-4f);
 
         // Пласть 120×100: 20 % от 120 мм = 24 мм, потолок не срабатывает.
-        float expected = 120f * EdgeSideHighlighter.BandFraction * AppConstants.MM_TO_UNITS;
+        float expected = 120f * SideHighlighter.BandFraction * AppConstants.MM_TO_UNITS;
         int faceBands = 0;
         for (int i = 1; i < quads.Count; i++)
         {
@@ -688,7 +688,7 @@ public class EdgeBandingTests
         }
         Assert.AreEqual(2, faceBands);
 
-        EdgeSideHighlighter.Hide();
+        SideHighlighter.Hide();
     }
 
     /// <summary>Деталь удалили, пока курсор стоял на полосе схемы: PointerExit
@@ -697,13 +697,13 @@ public class EdgeBandingTests
     public void EdgeHighlight_Sync_DropsHighlightOfDestroyedPart()
     {
         var shelf = CreatePart("Shelf", ShelfDims);
-        EdgeSideHighlighter.Show(shelf, EdgeSide.W1);
-        Assert.AreEqual(5, EdgeSideHighlighter.QuadCount);
+        SideHighlighter.ShowEdgeSide(shelf, EdgeSide.W1);
+        Assert.AreEqual(5, SideHighlighter.QuadCount);
 
         Object.DestroyImmediate(shelf.gameObject);
-        EdgeSideHighlighter.Sync();
+        SideHighlighter.Sync();
 
-        Assert.AreEqual(0, EdgeSideHighlighter.QuadCount, "подсветка снята вместе с деталью");
+        Assert.AreEqual(0, SideHighlighter.QuadCount, "подсветка снята вместе с деталью");
     }
 
     [Test]

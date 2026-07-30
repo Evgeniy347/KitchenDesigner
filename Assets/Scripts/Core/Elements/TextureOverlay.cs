@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core
     /// Буквы, а не «Перед/Зад/Верх»: стена может стоять как угодно и быть
     /// повёрнутой, поэтому словесное название грани врало бы ровно там, где оно
     /// нужнее всего. Какая грань какая, показывает подсветка при наведении на
-    /// пункт списка (EdgeSideHighlighter.ShowFace).</summary>
+    /// пункт списка (SideHighlighter.ShowFace).</summary>
     public enum OverlaySide
     {
         A = 0,

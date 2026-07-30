@@ -8,12 +8,15 @@ namespace KitchenDesigner.Core
         GameObject CreatePreset(int presetIndex, Vector3 position);
         GameObject CreateWall(Vector3Int dimensionsMM, string name, Vector3 position);
         GameObject CreateFacade(Vector3Int dimensionsMM, string name, Vector3 position,
-            int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2);
+            int gapLeft = FacadeElement.DEFAULT_GAP_MM, int gapRight = FacadeElement.DEFAULT_GAP_MM,
+            int gapTop = FacadeElement.DEFAULT_GAP_MM, int gapBottom = FacadeElement.DEFAULT_GAP_MM,
+            int gapFront = 0, int gapBack = 0);
         GameObject CreateAssembledFacade(Vector3Int dimensionsMM, string name, Vector3 position,
             AssembledFill fill = AssembledFill.Blind);
         GameObject CreatePanel(Vector3Int dimensionsMM, string name, Vector3 position,
             int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
-            int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM);
+            int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM,
+            int gapFront = PanelElement.DEFAULT_GAP_MM, int gapBack = PanelElement.DEFAULT_GAP_MM);
         GameObject CreateRadialShelf(int widthMM, int depthMM, int thicknessMM, int cornerRadiusMM, string name, Vector3 position);
         GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position,
             DrawerSystem system = DrawerSystem.Gtv);

@@ -4,15 +4,17 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     /// <summary>
-    /// Подсветка стороны под кромку прямо на детали.
+    /// Подсветка стороны детали прямо в сцене.
     ///
-    /// В окне свойств стороны обозначены как L1/L2/W1/W2 на плоской схеме, и по
-    /// ней невозможно понять, какой торец имеется в виду в реальной сцене —
-    /// особенно если камера смотрит с другой стороны. При наведении на полосу
-    /// схемы этот класс кладёт поверх детали светло-жёлтые накладки: сам торец
-    /// целиком плюс полоса на каждой из четырёх соседних граней. Полосы нужны
-    /// именно для того, чтобы сторону было видно с ЛЮБОГО ракурса: даже когда
-    /// торец смотрит от камеры, его выдаёт жёлтая кайма на видимых гранях.
+    /// Общая для всех мест, где в окне свойств сторона названа символом, а не
+    /// показана: L1/L2/W1/W2 у кромок, буквы A…F у накладок текстур, «слева /
+    /// справа / спереди» у зазоров. По такому обозначению невозможно понять,
+    /// какая это грань в реальной сцене — особенно если камера смотрит с другой
+    /// стороны. При наведении курсора класс кладёт поверх детали красные
+    /// полупрозрачные накладки: саму грань целиком и, если попросили, полосу на
+    /// каждой из четырёх соседних. Полосы нужны для торца, который сам по себе
+    /// почти не виден: даже когда он смотрит от камеры, его выдаёт кайма на
+    /// видимых гранях.
     ///
     /// Накладки — отдельные квады поверх поверхности, геометрия детали не
     /// трогается. Живут только пока курсор на полосе.
@@ -23,7 +25,7 @@ namespace KitchenDesigner.Core
     /// ещё с перекосом от неравномерного масштаба. Держим их под собственным
     /// корнем в мировых координатах, как ElementOutline.
     /// </summary>
-    public static class EdgeSideHighlighter
+    public static class SideHighlighter
     {
         /// <summary>Насколько глубоко полоса заходит на соседнюю грань — доля
         /// её размера в этом направлении.</summary>
@@ -41,9 +43,11 @@ namespace KitchenDesigner.Core
         private static Material? _material;
         private static GameObject? _root;
         private static KitchenElement? _shownFor;
-        private static EdgeSide _shownSide;
-        // Индекс грани для ShowFace; −1 — показана сторона под кромку (Show).
+        // Сторона под кромку, если подсветку заказали именно ею; иначе null.
+        private static EdgeSide? _shownEdgeSide;
+        // Что подсвечено: индекс грани и нужны ли каёмки на соседних гранях.
         private static int _shownFaceIndex = -1;
+        private static bool _shownBands;
         // Поза и габарит детали на момент построения: по ним Sync() понимает,
         // что накладки разъехались с деталью и их надо пересобрать.
         private static Vector3 _shownPos;
@@ -52,11 +56,17 @@ namespace KitchenDesigner.Core
 
         /// <summary>Что подсвечено сейчас (для тестов и повторных наведений).</summary>
         public static bool IsShown(KitchenElement element, EdgeSide side) =>
-            _shownFor == element && _shownFaceIndex < 0 && _shownSide == side && Quads.Count > 0;
+            _shownFor == element && _shownEdgeSide == side && Quads.Count > 0;
 
-        /// <summary>Показана ли ИМЕННО грань (ShowFace), а не сторона под кромку.</summary>
+        /// <summary>Показана ли ИМЕННО грань (ShowFace), без каёмок.</summary>
         public static bool IsFaceShown(KitchenElement element, int faceIndex) =>
-            _shownFor == element && _shownFaceIndex == faceIndex && Quads.Count > 0;
+            _shownFor == element && _shownFaceIndex == faceIndex
+            && !_shownBands && Quads.Count > 0;
+
+        /// <summary>Подсвечена ли сторона с зазором (грань + каёмки).</summary>
+        public static bool IsGapSideShown(KitchenElement element, GapSide side) =>
+            _shownFor == element && _shownEdgeSide == null && _shownBands
+            && _shownFaceIndex == GapSides.FaceIndex(side) && Quads.Count > 0;
 
         /// <summary>Количество накладок: 1 торец + 4 полосы. Меньше — если у
         /// детали не разобран габарит.</summary>
@@ -68,7 +78,9 @@ namespace KitchenDesigner.Core
         /// Первая в списке — торец, остальные четыре — полосы.</summary>
         public static IReadOnlyList<GameObject> QuadObjects => Quads;
 
-        public static void Show(KitchenElement element, EdgeSide side)
+        /// <summary>Сторона под кромку (L1/L2/W1/W2 на схеме кромкования) —
+        /// торец целиком плюс каёмки на соседних гранях.</summary>
+        public static void ShowEdgeSide(KitchenElement element, EdgeSide side)
         {
             Hide();
             if (element == null) return;
@@ -76,29 +88,16 @@ namespace KitchenDesigner.Core
             var layout = EdgeBanding.LayoutOf(element.DimensionsMM);
             if (!layout.IsValid) return;
 
-            // Материал добываем ДО построения накладок: без него квады рисовались
-            // бы стандартным розовым «нет материала», что хуже отсутствия подсветки.
-            if (HighlightMaterial() == null) return;
+            if (!Build(element, layout.FaceIndex(side), bands: true)) return;
+            _shownEdgeSide = side;
+        }
 
-            var faces = element.GetFaces();
-            int endIndex = layout.FaceIndex(side);
-            var end = faces[endIndex];
-
-            // Сам торец — целиком.
-            AddQuad(end, end.size, Vector2.zero);
-
-            // Соседние грани — все, кроме самого торца и противоположного ему.
-            int oppositeIndex = endIndex % 2 == 0 ? endIndex + 1 : endIndex - 1;
-            for (int i = 0; i < faces.Length; i++)
-            {
-                if (i == endIndex || i == oppositeIndex) continue;
-                AddBand(faces[i], end);
-            }
-
-            _shownFor = element;
-            _shownSide = side;
-            _shownFaceIndex = -1;
-            Remember(element);
+        /// <summary>Сторона, у которой свой зазор, — та же подсветка, что у
+        /// кромки: зазор живёт на торце, а торец с одного ракурса не виден.</summary>
+        public static void ShowGapSide(KitchenElement element, GapSide side)
+        {
+            Hide();
+            Build(element, GapSides.FaceIndex(side), bands: true);
         }
 
         /// <summary>Подсветить ОДНУ грань целиком, без каёмок на соседних.
@@ -111,18 +110,49 @@ namespace KitchenDesigner.Core
         public static void ShowFace(KitchenElement element, int faceIndex)
         {
             Hide();
-            if (element == null) return;
-            if (HighlightMaterial() == null) return;
+            Build(element, faceIndex, bands: false);
+        }
+
+        /// <summary>Грань целиком плюс каёмка на каждой из четырёх соседних.</summary>
+        public static void ShowFaceWithBands(KitchenElement element, int faceIndex)
+        {
+            Hide();
+            Build(element, faceIndex, bands: true);
+        }
+
+        /// <summary>Собрать накладки. false — собрать не удалось (нет детали,
+        /// шейдера или такой грани), состояние при этом не меняется.</summary>
+        private static bool Build(KitchenElement element, int faceIndex, bool bands)
+        {
+            if (element == null) return false;
+
+            // Материал добываем ДО построения накладок: без него квады рисовались
+            // бы стандартным розовым «нет материала», что хуже отсутствия подсветки.
+            if (HighlightMaterial() == null) return false;
 
             var faces = element.GetFaces();
-            if (faceIndex < 0 || faceIndex >= faces.Length) return;
+            if (faceIndex < 0 || faceIndex >= faces.Length) return false;
 
             var face = faces[faceIndex];
             AddQuad(face, face.size, Vector2.zero);
 
+            if (bands)
+            {
+                // Соседние грани — все, кроме самой стороны и противоположной ей.
+                int opposite = faceIndex % 2 == 0 ? faceIndex + 1 : faceIndex - 1;
+                for (int i = 0; i < faces.Length; i++)
+                {
+                    if (i == faceIndex || i == opposite) continue;
+                    AddBand(faces[i], face);
+                }
+            }
+
             _shownFor = element;
             _shownFaceIndex = faceIndex;
+            _shownBands = bands;
+            _shownEdgeSide = null;
             Remember(element);
+            return true;
         }
 
         private static void Remember(KitchenElement element)
@@ -150,8 +180,12 @@ namespace KitchenDesigner.Core
             if (t.position == _shownPos && t.rotation == _shownRot
                 && _shownFor.DimensionsMM == _shownDims) return;
 
-            if (_shownFaceIndex >= 0) ShowFace(_shownFor, _shownFaceIndex);
-            else Show(_shownFor, _shownSide);
+            var element = _shownFor;
+            var side = _shownEdgeSide;
+            int faceIndex = _shownFaceIndex;
+            bool bands = _shownBands;
+            Hide();
+            if (Build(element, faceIndex, bands)) _shownEdgeSide = side;
         }
 
         public static void Hide()
@@ -161,6 +195,8 @@ namespace KitchenDesigner.Core
             Quads.Clear();
             _shownFor = null;
             _shownFaceIndex = -1;
+            _shownBands = false;
+            _shownEdgeSide = null;
         }
 
         /// <summary>В рантайме Destroy: DestroyImmediate из колбэка UI-события

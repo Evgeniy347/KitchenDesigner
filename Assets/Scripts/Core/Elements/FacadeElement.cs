@@ -4,55 +4,24 @@ namespace KitchenDesigner.Core
 {
     public class FacadeElement : KitchenElement
     {
-        [Undoable]
-        public int GapLeft
-        {
-            get => Data.GapLeft;
-            set { Data.GapLeft = value; ApplyDimensions(); }
-        }
+        /// <summary>Зазор фасада по умолчанию со всех четырёх сторон, мм.
+        /// Спереди/сзади — ноль: по толщине дверца в проём не утапливается.</summary>
+        public const int DEFAULT_GAP_MM = 2;
 
-        [Undoable]
-        public int GapRight
-        {
-            get => Data.GapRight;
-            set { Data.GapRight = value; ApplyDimensions(); }
-        }
+        /// <summary>Зазор от проёма — то, ради чего фасад и отличается от доски.</summary>
+        public override bool SupportsGaps => true;
 
-        [Undoable]
-        public int GapTop
-        {
-            get => Data.GapTop;
-            set { Data.GapTop = value; ApplyDimensions(); }
-        }
+        // Зазоры и весь габаритный бокс живут в KitchenElement (см. GappedBox).
+        // Фасаду остаётся только его особая поза: у ОТКРЫТОЙ дверцы она
+        // заморожена в _closedPos и за трансформом не идёт — примерка в другую
+        // позицию её геометрию не двигает вовсе. Это ровно прежнее поведение:
+        // запись в transform.position открытую дверцу тоже не сдвигала.
+        protected override Vector3 ValidationPosition => ClosedPosition;
 
-        [Undoable]
-        public int GapBottom
-        {
-            get => Data.GapBottom;
-            set { Data.GapBottom = value; ApplyDimensions(); }
-        }
+        protected override Quaternion ValidationRotation => ClosedRotation;
 
-        public int GapMM => Data.GapMM;
-
-        protected override Vector3 EffectiveScale => GappedBox.EffectiveScale(transform.localScale, Data.Gaps);
-
-        public override Vector3[] GetVertices()
-            => GappedBox.Vertices(transform.localScale, Data.Gaps, ClosedPosition, ClosedRotation);
-
-        public override Face[] GetFaces()
-            => GappedBox.Faces(transform.localScale, Data.Gaps, ClosedPosition, ClosedRotation);
-
-        // У ОТКРЫТОЙ дверцы поза заморожена в _closedPos и за трансформом не
-        // идёт — примерка в другую позицию её геометрию не двигает вовсе.
-        // Это ровно прежнее поведение: запись в transform.position открытую
-        // дверцу тоже не сдвигала.
-        private Vector3 PoseAt(Vector3 position) => IsDoorClosed ? position : _closedPos;
-
-        public override Vector3[] GetVerticesAt(Vector3 position)
-            => GappedBox.Vertices(transform.localScale, Data.Gaps, PoseAt(position), ClosedRotation);
-
-        public override Face[] GetFacesAt(Vector3 position)
-            => GappedBox.Faces(transform.localScale, Data.Gaps, PoseAt(position), ClosedRotation);
+        protected override Vector3 ValidationPositionAt(Vector3 transformPosition)
+            => IsDoorClosed ? transformPosition : _closedPos;
 
         private void CornerUnits(out float minX, out float maxX, out float minY, out float maxY, out float minZ, out float maxZ)
             => GappedBox.CornerUnits(transform.localScale, Data.Gaps,

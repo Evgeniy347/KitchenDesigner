@@ -39,8 +39,8 @@ public class TextureOverlayTests
     {
         TextureOverlayHandles.End();
         TextureOverlayRenderer.ClearAll();
-        EdgeSideHighlighter.Hide();
-        EdgeSideHighlighter.MaterialFactory = null;
+        SideHighlighter.Hide();
+        SideHighlighter.MaterialFactory = null;
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -803,17 +803,17 @@ public class TextureOverlayTests
     public void ShowFace_HighlightsExactlyOneFace_AtItsWorldSize()
     {
         var material = new Material(Shader.Find("Sprites/Default"));
-        EdgeSideHighlighter.MaterialFactory = () => material;
+        SideHighlighter.MaterialFactory = () => material;
         try
         {
             var wall = CreateWall(new Vector3Int(3000, 2500, 100));
-            EdgeSideHighlighter.ShowFace(wall, 4);
+            SideHighlighter.ShowFace(wall, 4);
 
-            Assert.AreEqual(1, EdgeSideHighlighter.QuadCount,
+            Assert.AreEqual(1, SideHighlighter.QuadCount,
                 "подсвечивается ровно одна грань, без каёмок на соседних");
-            Assert.IsTrue(EdgeSideHighlighter.IsFaceShown(wall, 4));
+            Assert.IsTrue(SideHighlighter.IsFaceShown(wall, 4));
 
-            var scale = EdgeSideHighlighter.QuadObjects[0].transform.lossyScale;
+            var scale = SideHighlighter.QuadObjects[0].transform.lossyScale;
             Assert.AreEqual(3000f * AppConstants.MM_TO_UNITS, scale.x, 1e-3f);
             Assert.AreEqual(2500f * AppConstants.MM_TO_UNITS, scale.y, 1e-3f);
         }
@@ -827,14 +827,14 @@ public class TextureOverlayTests
     public void ShowFace_ThenHide_RemovesHighlight()
     {
         var material = new Material(Shader.Find("Sprites/Default"));
-        EdgeSideHighlighter.MaterialFactory = () => material;
+        SideHighlighter.MaterialFactory = () => material;
         try
         {
             var wall = CreateWall(new Vector3Int(3000, 2500, 100));
-            EdgeSideHighlighter.ShowFace(wall, 0);
-            EdgeSideHighlighter.Hide();
-            Assert.AreEqual(0, EdgeSideHighlighter.QuadCount);
-            Assert.IsFalse(EdgeSideHighlighter.IsFaceShown(wall, 0));
+            SideHighlighter.ShowFace(wall, 0);
+            SideHighlighter.Hide();
+            Assert.AreEqual(0, SideHighlighter.QuadCount);
+            Assert.IsFalse(SideHighlighter.IsFaceShown(wall, 0));
         }
         finally
         {

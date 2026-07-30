@@ -17,11 +17,6 @@
       "position": [0, 0]
     },
     {
-      "type": "Label",
-      "text": "Зазоры:",
-      "position": [-80, -2]
-    },
-    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -33,25 +28,6 @@
     },
     {
       "type": "Label",
-      "text": "Слева / справа, мм",
-      "position": [-80, -26]
-    },
-    {
-      "type": "InputField",
-      "label": "gapLeft",
-      "value": "0",
-      "interactable": true,
-      "position": [73, -26]
-    },
-    {
-      "type": "InputField",
-      "label": "gapRight",
-      "value": "0",
-      "interactable": true,
-      "position": [122, -26]
-    },
-    {
-      "type": "Label",
       "text": "Тип",
       "position": [-103, -48]
     },
@@ -60,25 +36,6 @@
       "options": ["Деталь", "Фасад", "Сборный фасад", "Радиусная полка"],
       "selected": 2,
       "position": [65, -48]
-    },
-    {
-      "type": "Label",
-      "text": "Сверху / снизу, мм",
-      "position": [-80, -52]
-    },
-    {
-      "type": "InputField",
-      "label": "gapTop",
-      "value": "0",
-      "interactable": true,
-      "position": [73, -52]
-    },
-    {
-      "type": "InputField",
-      "label": "gapBottom",
-      "value": "0",
-      "interactable": true,
-      "position": [122, -52]
     },
     {
       "type": "Label",
@@ -129,156 +86,161 @@
       "position": [100, -201]
     },
     {
+      "type": "Button",
+      "text": "Зазоры (0)  ►",
+      "position": [0, -232]
+    },
+    {
       "type": "Label",
       "text": "Дверца",
-      "position": [-103, -315]
+      "position": [-103, -267]
     },
     {
       "type": "Dropdown",
       "options": ["< Дверь: слева", "> Дверь: справа", "^ Дверь: сверху", "v Дверь: снизу", "[ Сзади: слева", "] Сзади: справа", "{ Сзади: сверху", "} Сзади: снизу", "( Угол: верх-лево", ") Угол: верх-право", "\\ Угол: низ-лево", "/ Угол: низ-право", "O Ящик: вперёд", "X Ящик: назад", "R Ящик: вправо", "L Ящик: влево", "U Ящик: вверх", "D Ящик: вниз"],
       "selected": 0,
-      "position": [65, -315]
+      "position": [65, -267]
     },
     {
       "type": "Button",
       "text": "Открыть",
-      "position": [0, -350]
+      "position": [0, -302]
     },
     {
       "type": "Label",
       "text": "Заполнение",
-      "position": [-103, -386]
+      "position": [-103, -338]
     },
     {
       "type": "Dropdown",
       "options": ["Глухой (панель)", "Витрина (пусто)", "Стекло"],
       "selected": 0,
-      "position": [65, -386]
+      "position": [65, -338]
     },
     {
       "type": "Label",
       "text": "X, мм",
-      "position": [-110, -446]
+      "position": [-110, -398]
     },
     {
       "type": "Label",
       "text": "Y, мм",
-      "position": [0, -446]
+      "position": [0, -398]
     },
     {
       "type": "Label",
       "text": "Z, мм",
-      "position": [110, -446]
+      "position": [110, -398]
     },
     {
       "type": "InputField",
       "label": "X, мм",
       "value": "3000",
       "interactable": true,
-      "position": [-110, -466]
+      "position": [-110, -418]
     },
     {
       "type": "InputField",
       "label": "Y, мм",
       "value": "350",
       "interactable": true,
-      "position": [0, -466]
+      "position": [0, -418]
     },
     {
       "type": "InputField",
       "label": "Z, мм",
       "value": "0",
       "interactable": true,
-      "position": [110, -466]
+      "position": [110, -418]
     },
     {
       "type": "Label",
       "text": "X, °",
-      "position": [-110, -497]
+      "position": [-110, -449]
     },
     {
       "type": "Label",
       "text": "Y, °",
-      "position": [0, -497]
+      "position": [0, -449]
     },
     {
       "type": "Label",
       "text": "Z, °",
-      "position": [110, -497]
+      "position": [110, -449]
     },
     {
       "type": "InputField",
       "label": "X, °",
       "value": "0,0",
       "interactable": true,
-      "position": [-110, -517]
+      "position": [-110, -469]
     },
     {
       "type": "InputField",
       "label": "Y, °",
       "value": "0,0",
       "interactable": true,
-      "position": [0, -517]
+      "position": [0, -469]
     },
     {
       "type": "InputField",
       "label": "Z, °",
       "value": "0,0",
       "interactable": true,
-      "position": [110, -517]
+      "position": [110, -469]
     },
     {
       "type": "Label",
       "text": "Повернуть на 90°:",
-      "position": [0, -548]
+      "position": [0, -500]
     },
     {
       "type": "Button",
       "text": "X 90°",
-      "position": [-112, -574]
+      "position": [-112, -526]
     },
     {
       "type": "Button",
       "text": "Y 90°",
-      "position": [0, -574]
+      "position": [0, -526]
     },
     {
       "type": "Button",
       "text": "Z 90°",
-      "position": [112, -574]
+      "position": [112, -526]
     },
     {
       "type": "Label",
       "text": "Текстура",
-      "position": [-103, -635]
+      "position": [-103, -587]
     },
     {
       "type": "Dropdown",
       "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Дуб европейский", "Дуб европейский тонированный", "Сосна", "Дуб европейский тонированный 3", "ЛМДФ Белая гладкая (СвиссКроно)", "ЛМДФ Белая гладкая (Kastamonu F)", "ЛМДФ Белый премиум филвуд (W1000 ST38)", "ЛМДФ Лес чёрный филвуд (U998 ST38)", "ЛМДФ Дуб галифакс белый (H1176 ST37)", "ЛМДФ Дуб галифакс натуральный (H1180 ST37)", "ЛМДФ Дуб галифакс олово (H3176 ST37)", "ЛМДФ Дуб галифакс табак (H1181 ST37)", "ЛМДФ Дуб гладстоун песочный (H3309 ST28)", "ЛМДФ Дуб гладстоун табак (H3325 ST28)", "ЛМДФ Дуб давенпорт натуральный светлый (H3359 ST32)", "ЛМДФ Дуб кунео коричневый (H3317 ST28)", "ЛМДФ Дуб каселла каштановый (H1369 ST40)", "ЛМДФ Дуб каселла коричневый (H1386 ST40)", "ЛМДФ Дуб каселла натуральный светлый (H1367 ST40)", "ЛМДФ Дуб каселла натуральный (H1385 ST40)", "ЛМДФ Дуб сакраменто коричневый (H1142 ST36)", "ЛМДФ Дуб чарльстон тёмно-коричневый (H3154 ST36)", "ЛМДФ Дуб шерман антрацит (H1346 ST32)", "ЛМДФ Дуб шерман коньяк коричневый (H1344 ST32)", "ЛМДФ Ясень наварра (H1250 ST36)", "ЛХДФ Дуб сонома шагрень (3025 РЕ, Кроношпан)", "ЛХДФ Антрацит шагрень (164 РЕ, Кроношпан)", "ХДФ Нешлифованная (Кроношпан)", "ЛХДФ Белый (0101 РЕ, Кроношпан)", "ЛХДФ Белый (101 РЕ, Княжпогост)", "ЛХДФ Белая шагрень (101 РЕ, Кроношпан СМ)", "ЛХДФ Бежевый (0522 РЕ, Кроношпан)", "ЛХДФ Серый камень (0112 РЕ, Кроношпан)", "ЛХДФ Чёрный (0190 РЕ, Кроношпан)", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)", "abrikos ba 03 cd", "bambuk horizontal caramel", "buk belyy 99q", "МДФ шлифованная"],
       "selected": 0,
-      "position": [65, -635]
+      "position": [65, -587]
     },
     {
       "type": "Toggle",
       "label": "Прозрачный",
       "isOn": false,
-      "position": [0, -670]
+      "position": [0, -622]
     },
     {
       "type": "Toggle",
       "label": "Закрепить",
       "isOn": false,
-      "position": [0, -703]
+      "position": [0, -655]
     },
     {
       "type": "Button",
       "text": "Дублировать",
-      "position": [-91, -745]
+      "position": [-91, -697]
     },
     {
       "type": "Button",
       "text": "Удалить",
-      "position": [91, -745]
+      "position": [91, -697]
     }
   ]
 }

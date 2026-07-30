@@ -28,8 +28,11 @@ namespace KitchenDesigner.Core
             Instance.CreateWall(dimensionsMM, name, position);
 
         public static GameObject CreateFacade(Vector3Int dimensionsMM, string name, Vector3 position,
-            int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2) =>
-            Instance.CreateFacade(dimensionsMM, name, position, gapLeft, gapRight, gapTop, gapBottom);
+            int gapLeft = FacadeElement.DEFAULT_GAP_MM, int gapRight = FacadeElement.DEFAULT_GAP_MM,
+            int gapTop = FacadeElement.DEFAULT_GAP_MM, int gapBottom = FacadeElement.DEFAULT_GAP_MM,
+            int gapFront = 0, int gapBack = 0) =>
+            Instance.CreateFacade(dimensionsMM, name, position,
+                gapLeft, gapRight, gapTop, gapBottom, gapFront, gapBack);
 
         public static GameObject CreateAssembledFacade(Vector3Int dimensionsMM, string name,
             Vector3 position, AssembledFill fill = AssembledFill.Blind) =>

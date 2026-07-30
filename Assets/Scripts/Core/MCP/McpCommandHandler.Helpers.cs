@@ -115,15 +115,12 @@ namespace KitchenDesigner.Core.MCP
 
         private static Vector3Int GetEffectiveDimMM(KitchenElement el)
         {
-            var facade = el as FacadeElement;
-            if (facade != null)
-            {
-                return new Vector3Int(
-                    el.DimensionsMM.x + facade.GapLeft + facade.GapRight,
-                    el.DimensionsMM.y + facade.GapTop + facade.GapBottom,
-                    el.DimensionsMM.z);
-            }
-            return el.DimensionsMM;
+            if (!el.SupportsGaps || el.GapMM == 0) return el.DimensionsMM;
+            var g = el.Gaps;
+            return new Vector3Int(
+                el.DimensionsMM.x + g.Left + g.Right,
+                el.DimensionsMM.y + g.Top + g.Bottom,
+                el.DimensionsMM.z + g.Front + g.Back);
         }
 
         /// <summary>Глубина пересечения (мм) → категория серьёзности для агента.</summary>

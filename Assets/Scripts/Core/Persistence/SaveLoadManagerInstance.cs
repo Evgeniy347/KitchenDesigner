@@ -299,16 +299,22 @@ namespace KitchenDesigner.Core
 					if (el is FloorElement floorEl && ed.floorPolygonXZ != null && ed.floorPolygonXZ.Length >= 6)
 						floorEl.SetPolygonLocalMm(ed.FloorPolygon());
 
+                    // Зазоры проставляем ЯВНО для любой детали, которая их знает:
+                    // часть фабрик принимает их параметрами, часть (сборный фасад,
+                    // деталь, радиусная полка) — нет, и без этих строк сохранённые
+                    // зазоры терялись бы при загрузке.
+                    if (el.SupportsGaps)
+                    {
+                        el.GapLeft = ed.gapLeft;
+                        el.GapRight = ed.gapRight;
+                        el.GapTop = ed.gapTop;
+                        el.GapBottom = ed.gapBottom;
+                        el.GapFront = ed.gapFront;
+                        el.GapBack = ed.gapBack;
+                    }
+
                     if (ed.isFacade && el is FacadeElement facade)
                     {
-                        // Зазоры проставляем ЯВНО для любого фасада: обычный получает их
-                        // через параметры CreateFacade, но сборный создаётся фабрикой
-                        // CreateAssembledFacade БЕЗ параметров зазоров — без этой строки
-                        // сохранённые зазоры сборного фасада терялись при загрузке (0/0/0/0).
-                        facade.GapLeft = ed.gapLeft;
-                        facade.GapRight = ed.gapRight;
-                        facade.GapTop = ed.gapTop;
-                        facade.GapBottom = ed.gapBottom;
                         facade.Mode = (DoorMode)ed.doorMode;
                         if (ed.doorOpen)
                             facade.SetOpen(true);

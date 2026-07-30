@@ -197,9 +197,9 @@ FloorElement          A floor slab. Create with create_floor / apply_floorplan
                       makes a single rectangular slab.
 BasePlate             The scene's floor anchor singleton (resize_floor). Legacy:
                       real rooms use FloorElement.
-FacadeElement         Door/front with gaps (gap_left/right/top/bottom, MM). It
-                      FLOATS in its opening: a facade with gap > 0 is exempt
-                      from connectivity. Opening mode: edit_elements {mode:..}
+FacadeElement         Door/front, gaps default to 2 MM per side. It FLOATS in
+                      its opening: a facade with gap > 0 is exempt from
+                      connectivity. Opening mode: edit_elements {mode:..}
                       (18 modes, see the facadeMode field).
 AssembledFacadeElement Framed (assembled) facade with real frame geometry.
                       create_elements {type:""assembled_facade"",
@@ -290,8 +290,8 @@ worldDimX/Y/Z         WORLD-axis extents in MM (from AABB). USE THESE when the
 posX/posY/posZ        Center position in METERS (world).
 rotX/rotY/rotZ        Euler angles in DEGREES.
 aabbMin*/aabbMax*     World bounding box in METERS.
-effectiveDim*         dim + facade gaps (facades only). NOT rotation-aware -
-                      prefer worldDim* for world-space reasoning.
+effectiveDim*         dim + gaps (any element that has them). NOT rotation-aware
+                      - prefer worldDim* for world-space reasoning.
 locked                true = move/resize/delete will be rejected (edit_elements
                       {locked:false} unlocks).
 hasViolations         true = this element overlaps something or is disconnected.

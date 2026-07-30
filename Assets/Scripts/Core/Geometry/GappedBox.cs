@@ -6,8 +6,10 @@ namespace KitchenDesigner.Core
     /// работают прилипание, валидация и ручки. Физический меш меньше на зазоры.
     ///
     /// Так устроен фасад (зазор от проёма) и так же — ДВП/ХДФ (технологический
-    /// зазор в пазу): прилипает номинал, а зазор остаётся внутри детали.
-    /// Чистые функции, общие для FacadeElement и PanelElement.</summary>
+    /// зазор в пазу): прилипает номинал, а зазор остаётся внутри детали. Зазоры
+    /// есть у любой детали (см. KitchenElement.SupportsGaps), у обычной они
+    /// нулевые и бокс совпадает с физическим габаритом. Чистые функции: ядро
+    /// геометрии исполняется без Unity.</summary>
     public static class GappedBox
     {
         /// <summary>Границы проёмного бокса в локальных единицах. Зазоры
@@ -20,20 +22,24 @@ namespace KitchenDesigner.Core
             float gr = gaps.Right * AppConstants.MM_TO_UNITS;
             float gt = gaps.Top * AppConstants.MM_TO_UNITS;
             float gb = gaps.Bottom * AppConstants.MM_TO_UNITS;
+            float gf = gaps.Front * AppConstants.MM_TO_UNITS;
+            float gk = gaps.Back * AppConstants.MM_TO_UNITS;
             minX = -physical.x * 0.5f - gl;
             maxX = physical.x * 0.5f + gr;
             minY = -physical.y * 0.5f - gb;
             maxY = physical.y * 0.5f + gt;
-            minZ = -physical.z * 0.5f;
-            maxZ = physical.z * 0.5f;
+            minZ = -physical.z * 0.5f - gk;
+            maxZ = physical.z * 0.5f + gf;
         }
 
-        /// <summary>Размер проёмного бокса (толщина по Z зазорами не меняется).</summary>
+        /// <summary>Размер проёмного бокса: каждая ось растёт на сумму зазоров
+        /// своих двух сторон, толщина в том числе (Front + Back).</summary>
         public static Vector3 EffectiveScale(Vector3 physical, BoxGaps gaps)
         {
             float gapX = (gaps.Left + gaps.Right) * AppConstants.MM_TO_UNITS;
             float gapY = (gaps.Top + gaps.Bottom) * AppConstants.MM_TO_UNITS;
-            return physical + new Vector3(gapX, gapY, 0f);
+            float gapZ = (gaps.Front + gaps.Back) * AppConstants.MM_TO_UNITS;
+            return physical + new Vector3(gapX, gapY, gapZ);
         }
 
         public static Vector3[] Vertices(Vector3 physical, BoxGaps gaps, Vector3 pos, Quaternion rot)

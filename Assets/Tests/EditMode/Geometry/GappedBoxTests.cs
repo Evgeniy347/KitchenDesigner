@@ -37,10 +37,22 @@ public class GappedBoxTests
         Assert.AreEqual(Physical.y + 9f * U, scale.y, 1e-6f, "высота растёт на top+bottom");
     }
 
-    /// <summary>Толщина зазорами не меняется: деталь вкладывается в паз по
-    /// пласти, а не по торцу.</summary>
+    /// <summary>Толщина растёт на зазоры спереди и сзади — так же, как ширина
+    /// на боковые. Раньше эта ось была исключением, и это было НОРМОЙ: зазоров
+    /// по толщине попросту не существовало.</summary>
     [Test]
-    public void EffectiveScale_LeavesThicknessAlone()
+    public void EffectiveScale_GrowsInThicknessToo()
+    {
+        var gaps = new BoxGaps(0, 0, 0, 0, front: 3, back: 4);
+
+        Assert.AreEqual(Physical.z + 7f * U, GappedBox.EffectiveScale(Physical, gaps).z, 1e-6f);
+    }
+
+    /// <summary>Четырёхаргументный конструктор — это «зазоров по толщине нет».
+    /// На нём стоит весь старый код, и молча получить там ненулевой front
+    /// значило бы сдвинуть каждую деталь в проекте.</summary>
+    [Test]
+    public void FourArgGaps_LeaveThicknessAlone()
     {
         var gaps = new BoxGaps(9, 9, 9, 9);
 
@@ -52,7 +64,7 @@ public class GappedBoxTests
     [Test]
     public void CornerUnits_EachGapMovesItsOwnEdge()
     {
-        var gaps = new BoxGaps(left: 2, right: 3, top: 4, bottom: 5);
+        var gaps = new BoxGaps(left: 2, right: 3, top: 4, bottom: 5, front: 6, back: 7);
 
         GappedBox.CornerUnits(Physical, gaps, out var minX, out var maxX,
             out var minY, out var maxY, out var minZ, out var maxZ);
@@ -61,8 +73,8 @@ public class GappedBoxTests
         Assert.AreEqual(Physical.x * 0.5f + 3f * U, maxX, 1e-6f, "правая граница ушла на right");
         Assert.AreEqual(-Physical.y * 0.5f - 5f * U, minY, 1e-6f, "нижняя граница ушла на bottom");
         Assert.AreEqual(Physical.y * 0.5f + 4f * U, maxY, 1e-6f, "верхняя граница ушла на top");
-        Assert.AreEqual(-Physical.z * 0.5f, minZ, 1e-6f, "толщину зазоры не трогают");
-        Assert.AreEqual(Physical.z * 0.5f, maxZ, 1e-6f);
+        Assert.AreEqual(-Physical.z * 0.5f - 7f * U, minZ, 1e-6f, "задняя граница ушла на back");
+        Assert.AreEqual(Physical.z * 0.5f + 6f * U, maxZ, 1e-6f, "передняя граница ушла на front");
     }
 
     [Test]

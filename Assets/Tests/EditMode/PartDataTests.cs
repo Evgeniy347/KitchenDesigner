@@ -136,16 +136,21 @@ public class PartDataTests
         data.GapRight = 3;
         data.GapTop = 4;
         data.GapBottom = 5;
-        Assert.AreEqual(14, data.GapMM);
+        data.GapFront = 6;
+        data.GapBack = 7;
+        Assert.AreEqual(27, data.GapMM);
     }
 
     [Test]
-    public void IsFacade_True_WhenGapsExist()
+    public void SetGap_WritesItsOwnSide()
     {
         var data = new PartData();
-        Assert.IsFalse(data.IsFacade);
-        data.GapLeft = 2;
-        Assert.IsTrue(data.IsFacade);
+
+        foreach (var side in GapSides.All) data.SetGap(side, 0);
+        data.SetGap(GapSide.Front, 5);
+
+        Assert.AreEqual(5, data.GapFront);
+        Assert.AreEqual(5, data.GapMM, "записалась ровно одна сторона");
     }
 
     [Test]

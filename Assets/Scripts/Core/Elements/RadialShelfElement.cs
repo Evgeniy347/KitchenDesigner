@@ -11,10 +11,16 @@ namespace KitchenDesigner.Core
         private Mesh? _ownedMesh;
         private bool _applying;
 
+        // Меш собран в МИРОВЫХ единицах, localScale остаётся единичным (см.
+        // ApplyDimensions), поэтому габарит берётся из размеров.
+        // Зазоры поверх него накладывает база.
         protected override Vector3 EffectiveScale => new Vector3(
             DimensionsMM.x * AppConstants.MM_TO_UNITS,
             DimensionsMM.y * AppConstants.MM_TO_UNITS,
             DimensionsMM.z * AppConstants.MM_TO_UNITS);
+
+        /// <summary>Зазоры есть, хотя пазов радиусная полка не поддерживает.</summary>
+        public override bool SupportsGaps => true;
 
         [Undoable]
         public int CornerRadius

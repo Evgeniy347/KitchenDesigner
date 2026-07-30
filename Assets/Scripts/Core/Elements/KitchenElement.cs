@@ -71,6 +71,73 @@ namespace KitchenDesigner.Core
             set => _data.Transparent = value;
         }
 
+        // ── Зазоры ─────────────────────────────────────────────────────
+        // Зазор — расстояние от физической детали до границы её ГАБАРИТА:
+        // у фасада это отступ от проёма, у ДВП/ХДФ — технологический зазор в
+        // пазу, у обычной детали он обычно нулевой. Механика одна на всех
+        // (см. GappedBox), поэтому и свойства живут здесь, а не в двух
+        // подклассах, как раньше.
+
+        [Undoable]
+        public int GapLeft
+        {
+            get => _data.GapLeft;
+            set { _data.GapLeft = value; ApplyDimensions(); }
+        }
+
+        [Undoable]
+        public int GapRight
+        {
+            get => _data.GapRight;
+            set { _data.GapRight = value; ApplyDimensions(); }
+        }
+
+        [Undoable]
+        public int GapTop
+        {
+            get => _data.GapTop;
+            set { _data.GapTop = value; ApplyDimensions(); }
+        }
+
+        [Undoable]
+        public int GapBottom
+        {
+            get => _data.GapBottom;
+            set { _data.GapBottom = value; ApplyDimensions(); }
+        }
+
+        [Undoable]
+        public int GapFront
+        {
+            get => _data.GapFront;
+            set { _data.GapFront = value; ApplyDimensions(); }
+        }
+
+        [Undoable]
+        public int GapBack
+        {
+            get => _data.GapBack;
+            set { _data.GapBack = value; ApplyDimensions(); }
+        }
+
+        /// <summary>Сумма всех шести зазоров.</summary>
+        public int GapMM => _data.GapMM;
+
+        public BoxGaps Gaps => _data.Gaps;
+
+        public int GapOf(GapSide side) => _data.GapOf(side);
+
+        public void SetGap(GapSide side, int valueMM)
+        {
+            _data.SetGap(side, valueMM);
+            ApplyDimensions();
+        }
+
+        /// <summary>Есть ли у детали зазоры. Стена, подложка и техника их не
+        /// знают: у первых двух габарит — это сама конструкция, у техники он
+        /// задан корпусом прибора.</summary>
+        public virtual bool SupportsGaps => SupportsGrooves;
+
         // ── Пазы ───────────────────────────────────────────────────────
         // Пазы поддерживает только базовая «Деталь»: у фасадов/ящиков/столов и
         // прочих подтипов геометрия своя процедурная, и врезка в неё пласти не
@@ -479,6 +546,12 @@ namespace KitchenDesigner.Core
             DestroyOwnedMesh();
         }
 
+        /// <summary>ФИЗИЧЕСКИЙ габарит детали в юнитах, БЕЗ зазоров. Обычно это
+        /// localScale; переопределяют те, у кого габаритный бокс не совпадает с
+        /// масштабом: радиусная полка (меш в мировых единицах, localScale
+        /// единичный), техника (корпус меньше собственного коллайдера).
+        /// Зазоры поверх него накладывает <see cref="GappedBox"/> — здесь их
+        /// быть не должно, иначе они учтутся дважды.</summary>
         protected virtual Vector3 EffectiveScale => transform.localScale;
 
         /// <summary>Поза, в которой деталь проверяется на коллизии/связность.
@@ -559,24 +632,7 @@ namespace KitchenDesigner.Core
                 pos.y = wall.FullPosition.y;
             }
 
-            var half = size * 0.5f;
-
-            var localCorners = new Vector3[]
-            {
-                new Vector3(-half.x, -half.y, -half.z),
-                new Vector3( half.x, -half.y, -half.z),
-                new Vector3( half.x, -half.y,  half.z),
-                new Vector3(-half.x, -half.y,  half.z),
-                new Vector3(-half.x,  half.y, -half.z),
-                new Vector3( half.x,  half.y, -half.z),
-                new Vector3( half.x,  half.y,  half.z),
-                new Vector3(-half.x,  half.y,  half.z),
-            };
-
-            var result = new Vector3[8];
-            for (int i = 0; i < 8; i++)
-                result[i] = pos + rot * localCorners[i];
-            return result;
+            return GappedBox.Vertices(size, _data.Gaps, pos, rot);
         }
 
         public virtual Face[] GetFaces() => GetFacesAt(transform.position);
@@ -595,63 +651,7 @@ namespace KitchenDesigner.Core
                 pos.y = wall.FullPosition.y;
             }
 
-            var half = size * 0.5f;
-
-            var axes = new Vector3[]
-            {
-                rot * Vector3.right,
-                rot * Vector3.up,
-                rot * Vector3.forward
-            };
-
-            var faceDims = new Vector2[]
-            {
-                new Vector2(size.y, size.z),
-                new Vector2(size.x, size.z),
-                new Vector2(size.x, size.y),
-            };
-
-            var offsets = new Vector3[]
-            {
-                 axes[0] * half.x, -axes[0] * half.x,
-                 axes[1] * half.y, -axes[1] * half.y,
-                 axes[2] * half.z, -axes[2] * half.z,
-            };
-
-            var normals = new Vector3[]
-            {
-                 axes[0], -axes[0],
-                 axes[1], -axes[1],
-                 axes[2], -axes[2],
-            };
-
-            var rightAxis = new Vector3[]
-            {
-                axes[1], axes[1],
-                axes[0], axes[0],
-                axes[0], axes[0],
-            };
-
-            var upAxis = new Vector3[]
-            {
-                axes[2], axes[2],
-                axes[2], axes[2],
-                axes[1], axes[1],
-            };
-
-            var faces = new Face[6];
-            for (int i = 0; i < 6; i++)
-            {
-                int dimIdx = i / 2;
-                faces[i] = new Face(
-                    pos + offsets[i],
-                    normals[i],
-                    faceDims[dimIdx],
-                    rightAxis[i],
-                    upAxis[i]
-                );
-            }
-            return faces;
+            return GappedBox.Faces(size, _data.Gaps, pos, rot);
         }
 
         public void SetDimensionsFromUI(int w, int h, int d)

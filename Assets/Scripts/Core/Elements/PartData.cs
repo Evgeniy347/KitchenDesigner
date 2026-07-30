@@ -17,6 +17,8 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _gapRight;
         [SerializeField] private int _gapTop;
         [SerializeField] private int _gapBottom;
+        [SerializeField] private int _gapFront;
+        [SerializeField] private int _gapBack;
         [SerializeField] private bool _transparent;
         // Кромкование по умолчанию включено: наличие кромки на каждом торце
         // считается автоматически по геометрии, и «выключено» здесь означает
@@ -79,10 +81,39 @@ namespace KitchenDesigner.Core
             set => _gapBottom = Mathf.Max(0, value);
         }
 
+        public int GapFront
+        {
+            get => _gapFront;
+            set => _gapFront = Mathf.Max(0, value);
+        }
+
+        public int GapBack
+        {
+            get => _gapBack;
+            set => _gapBack = Mathf.Max(0, value);
+        }
+
         /// <summary>Зазоры одним значением — то, что от детали нужно
         /// <see cref="GappedBox"/>. Ядро геометрии не видит PartData: он тянет
         /// каталог декоров, а ядро обязано исполняться без Unity.</summary>
-        public BoxGaps Gaps => new BoxGaps(_gapLeft, _gapRight, _gapTop, _gapBottom);
+        public BoxGaps Gaps =>
+            new BoxGaps(_gapLeft, _gapRight, _gapTop, _gapBottom, _gapFront, _gapBack);
+
+        public int GapOf(GapSide side) => Gaps.Of(side);
+
+        public void SetGap(GapSide side, int valueMM)
+        {
+            int v = Mathf.Max(0, valueMM);
+            switch (side)
+            {
+                case GapSide.Left: _gapLeft = v; break;
+                case GapSide.Right: _gapRight = v; break;
+                case GapSide.Top: _gapTop = v; break;
+                case GapSide.Bottom: _gapBottom = v; break;
+                case GapSide.Front: _gapFront = v; break;
+                default: _gapBack = v; break;
+            }
+        }
 
         public bool Transparent
         {
@@ -130,9 +161,8 @@ namespace KitchenDesigner.Core
         public List<TextureOverlaySpec> TextureOverlays =>
             _textureOverlays ??= new List<TextureOverlaySpec>();
 
-        public int GapMM => _gapLeft + _gapRight + _gapTop + _gapBottom;
-
-        public bool IsFacade => GapMM > 0 || _gapLeft > 0 || _gapRight > 0 || _gapTop > 0 || _gapBottom > 0;
+        public int GapMM =>
+            _gapLeft + _gapRight + _gapTop + _gapBottom + _gapFront + _gapBack;
 
         public static Vector3Int ClampDimensions(Vector3Int dims) => new Vector3Int(
             Mathf.Max(1, dims.x),

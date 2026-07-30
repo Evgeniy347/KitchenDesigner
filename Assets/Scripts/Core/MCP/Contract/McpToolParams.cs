@@ -131,11 +131,14 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Material decor id or display name (see list_materials). Omit to keep.")]
         public string? material;
 
-        // Facades (FacadeElement / AssembledFacadeElement).
-        [McpParam("Facade only: left gap in MM. Omit to keep.", Min = 0)] public int? gap_left;
-        [McpParam("Facade only: right gap in MM. Omit to keep.", Min = 0)] public int? gap_right;
-        [McpParam("Facade only: top gap in MM. Omit to keep.", Min = 0)] public int? gap_top;
-        [McpParam("Facade only: bottom gap in MM. Omit to keep.", Min = 0)] public int? gap_bottom;
+        // Gaps — elements that have them: facades, HDF panels, plain parts and
+        // radial shelves. The gap grows the element's BOUNDING box, not its mesh.
+        [McpParam("Gap in MM on the left side. Omit to keep.", Min = 0)] public int? gap_left;
+        [McpParam("Gap in MM on the right side. Omit to keep.", Min = 0)] public int? gap_right;
+        [McpParam("Gap in MM on the top side. Omit to keep.", Min = 0)] public int? gap_top;
+        [McpParam("Gap in MM on the bottom side. Omit to keep.", Min = 0)] public int? gap_bottom;
+        [McpParam("Gap in MM on the front side (+Z). Omit to keep.", Min = 0)] public int? gap_front;
+        [McpParam("Gap in MM on the back side (-Z). Omit to keep.", Min = 0)] public int? gap_back;
         [McpParam("Facade/window/door: opening mode. Facades accept all 18 modes; windows and doors accept front_* only. Omit to keep.",
             Enum = new[] {
                 "front_left", "front_right", "front_top", "front_bottom",

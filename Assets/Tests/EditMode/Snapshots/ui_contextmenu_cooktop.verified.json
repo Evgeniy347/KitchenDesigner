@@ -136,25 +136,8 @@
     },
     {
       "type": "Label",
-      "text": "X, °",
-      "position": [-110, -335]
-    },
-    {
-      "type": "Label",
       "text": "Y, °",
       "position": [0, -335]
-    },
-    {
-      "type": "Label",
-      "text": "Z, °",
-      "position": [110, -335]
-    },
-    {
-      "type": "InputField",
-      "label": "X, °",
-      "value": "0,0",
-      "interactable": true,
-      "position": [-110, -355]
     },
     {
       "type": "InputField",
@@ -164,31 +147,14 @@
       "position": [0, -355]
     },
     {
-      "type": "InputField",
-      "label": "Z, °",
-      "value": "0,0",
-      "interactable": true,
-      "position": [110, -355]
-    },
-    {
       "type": "Label",
       "text": "Повернуть на 90°:",
       "position": [0, -386]
     },
     {
       "type": "Button",
-      "text": "X 90°",
-      "position": [-112, -412]
-    },
-    {
-      "type": "Button",
       "text": "Y 90°",
       "position": [0, -412]
-    },
-    {
-      "type": "Button",
-      "text": "Z 90°",
-      "position": [112, -412]
     },
     {
       "type": "Label",

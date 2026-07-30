@@ -649,8 +649,12 @@ public class ElementConverterTests
         // Счётчик изменений позы: рантайм-состояние для SceneChangeTracker,
         // в сейве его нет и переносить при конвертации нечего.
         "PoseVersion",
+        // Зазоры (KitchenElement): переносятся, пока роль не меняется —
+        // см. Part_To_Facade_* и Assembled_To_Facade_*.
+        "GapLeft", "GapRight", "GapTop", "GapBottom", "GapFront", "GapBack",
+        "GapMM", "Gaps", "SupportsGaps",
         // FacadeElement
-        "GapLeft", "GapRight", "GapTop", "GapBottom", "GapMM", "Mode",
+        "Mode",
         "IsOpen", "DoorProgress", "IsDoorClosed", "ClosedPosition", "ClosedRotation",
         // AssembledFacadeElement
         "Fill", "GrooveCount",

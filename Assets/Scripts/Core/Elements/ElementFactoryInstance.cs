@@ -220,10 +220,8 @@ namespace KitchenDesigner.Core
                     copy.GrooveCount = assembled.GrooveCount;
                     // Фабрика сборного фасада не принимает зазоры — копируем явно,
                     // иначе дубль терял их (обычный фасад получает зазоры в CreateFacade).
-                    copy.GapLeft = assembled.GapLeft;
-                    copy.GapRight = assembled.GapRight;
-                    copy.GapTop = assembled.GapTop;
-                    copy.GapBottom = assembled.GapBottom;
+                    foreach (var side in GapSides.All)
+                        copy.SetGap(side, assembled.GapOf(side));
                 }
                 MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
                 return go;
@@ -233,6 +231,10 @@ namespace KitchenDesigner.Core
             {
                 var go = CreateRadialShelf(dims.x, dims.z, dims.y, radial.CornerRadius, source.PartName, offset);
                 go.transform.rotation = source.transform.rotation;
+                var copyRadial = go.GetComponent<RadialShelfElement>();
+                if (copyRadial != null)
+                    foreach (var side in GapSides.All)
+                        copyRadial.SetGap(side, radial.GapOf(side));
                 MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
                 return go;
             }
@@ -352,7 +354,8 @@ namespace KitchenDesigner.Core
             if (facade != null)
             {
                 var go = CreateFacade(dims, source.PartName, offset,
-                    facade.GapLeft, facade.GapRight, facade.GapTop, facade.GapBottom);
+                    facade.GapLeft, facade.GapRight, facade.GapTop, facade.GapBottom,
+                    facade.GapFront, facade.GapBack);
                 go.transform.rotation = source.transform.rotation;
                 var copyFacade = go.GetComponent<FacadeElement>();
                 if (copyFacade != null)
@@ -376,6 +379,9 @@ namespace KitchenDesigner.Core
             if (copyPart != null)
             {
                 MaterialManager.ApplyById(copyPart, source.MaterialId);
+                if (copyPart.SupportsGaps && source.SupportsGaps)
+                    foreach (var side in GapSides.All)
+                        copyPart.SetGap(side, source.GapOf(side));
                 if (copyPart.SupportsGrooves)
                 {
                     copyPart.SetGrooves(source.Grooves);
@@ -426,7 +432,9 @@ namespace KitchenDesigner.Core
         }
 
         public GameObject CreateFacade(Vector3Int dimensionsMM, string name, Vector3 position,
-            int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2)
+            int gapLeft = FacadeElement.DEFAULT_GAP_MM, int gapRight = FacadeElement.DEFAULT_GAP_MM,
+            int gapTop = FacadeElement.DEFAULT_GAP_MM, int gapBottom = FacadeElement.DEFAULT_GAP_MM,
+            int gapFront = 0, int gapBack = 0)
         {
             var go = _facadePool.Get();
             go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Facade" : name);
@@ -439,6 +447,10 @@ namespace KitchenDesigner.Core
             facade.GapRight = gapRight;
             facade.GapTop = gapTop;
             facade.GapBottom = gapBottom;
+            // Фасад приходит из пула — зазоры по толщине выставляем явно, иначе
+            // дверца унаследовала бы их от прошлой жизни объекта.
+            facade.GapFront = gapFront;
+            facade.GapBack = gapBack;
 
             go.SetActive(true);
             PartRegistry.Register(facade);
@@ -454,7 +466,8 @@ namespace KitchenDesigner.Core
         /// раздаёт KitchenElement.</summary>
         public GameObject CreatePanel(Vector3Int dimensionsMM, string name, Vector3 position,
             int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
-            int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM)
+            int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM,
+            int gapFront = PanelElement.DEFAULT_GAP_MM, int gapBack = PanelElement.DEFAULT_GAP_MM)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "ДВП/ХДФ" : name);
@@ -472,6 +485,8 @@ namespace KitchenDesigner.Core
             panel.GapRight = gapRight;
             panel.GapTop = gapTop;
             panel.GapBottom = gapBottom;
+            panel.GapFront = gapFront;
+            panel.GapBack = gapBack;
 
             MaterialManager.ApplyById(panel, MaterialCatalog.DefaultId);
             PartRegistry.Register(panel);

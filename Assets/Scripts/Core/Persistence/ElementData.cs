@@ -72,6 +72,10 @@ namespace KitchenDesigner.Core
         public int gapRight = 2;
         public int gapTop = 2;
         public int gapBottom = 2;
+        // Зазоры по толщине появились позже остальных: в старых файлах поля нет,
+        // и JsonUtility оставляет ноль — ровно то поведение, что было раньше.
+        public int gapFront = 0;
+        public int gapBack = 0;
         public int groupId = 0;
         public string materialId = MaterialCatalog.DefaultId;
         public string legsMaterialId = MaterialCatalog.DefaultId;
@@ -259,12 +263,17 @@ namespace KitchenDesigner.Core
                 : radiusTable != null ? radiusTable.LegsMaterialId : MaterialCatalog.DefaultId;
             d.cornerRadius = radialShelf != null ? radialShelf.CornerRadius : 0;
 
+            // Зазоры есть у любой детали, которая их поддерживает: фасад, ДВП/ХДФ,
+            // обычная деталь и радиусная полка (см. KitchenElement.SupportsGaps).
+            d.gapLeft = element.SupportsGaps ? element.GapLeft : 0;
+            d.gapRight = element.SupportsGaps ? element.GapRight : 0;
+            d.gapTop = element.SupportsGaps ? element.GapTop : 0;
+            d.gapBottom = element.SupportsGaps ? element.GapBottom : 0;
+            d.gapFront = element.SupportsGaps ? element.GapFront : 0;
+            d.gapBack = element.SupportsGaps ? element.GapBack : 0;
+
             if (facade != null)
             {
-                d.gapLeft = facade.GapLeft;
-                d.gapRight = facade.GapRight;
-                d.gapTop = facade.GapTop;
-                d.gapBottom = facade.GapBottom;
                 d.doorMode = (int)facade.Mode;
                 d.doorOpen = facade.IsOpen;
                 if (facade is AssembledFacadeElement assembled)
@@ -280,25 +289,8 @@ namespace KitchenDesigner.Core
                     d.grooveCount = 0;
                 }
             }
-            else if (panel != null)
-            {
-                // У ДВП/ХДФ зазоры значимы (входят в габарит), но дверцей она не является.
-                d.gapLeft = panel.GapLeft;
-                d.gapRight = panel.GapRight;
-                d.gapTop = panel.GapTop;
-                d.gapBottom = panel.GapBottom;
-                d.doorMode = 0;
-                d.doorOpen = false;
-                d.assembled = false;
-                d.assembledFill = 0;
-                d.grooveCount = 0;
-            }
             else
             {
-                d.gapLeft = 0;
-                d.gapRight = 0;
-                d.gapTop = 0;
-                d.gapBottom = 0;
                 d.doorMode = 0;
                 d.doorOpen = false;
                 d.assembled = false;

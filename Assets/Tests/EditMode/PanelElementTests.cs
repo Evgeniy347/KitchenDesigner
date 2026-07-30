@@ -34,7 +34,7 @@ public class PanelElementTests
         var panel = MakePanel(new Vector3Int(383, 376, 3));
         Assert.AreEqual(1, PanelElement.DEFAULT_GAP_MM);
         Assert.AreEqual(1, panel.GapLeft);
-        Assert.AreEqual(4, panel.GapMM, "сумма четырёх зазоров по 1 мм");
+        Assert.AreEqual(6, panel.GapMM, "сумма шести зазоров по 1 мм");
     }
 
     [Test]
@@ -57,7 +57,7 @@ public class PanelElementTests
     }
 
     [Test]
-    public void Panel_Thickness_IsNotAffectedByGaps()
+    public void Panel_Thickness_GrowsByFrontAndBackGaps()
     {
         var panel = MakePanel(new Vector3Int(383, 376, 3), gap: 5);
         var verts = panel.GetVertices();
@@ -67,8 +67,27 @@ public class PanelElementTests
         {
             minZ = Mathf.Min(minZ, v.z); maxZ = Mathf.Max(maxZ, v.z);
         }
-        Assert.AreEqual(3, (maxZ - minZ) / AppConstants.MM_TO_UNITS, 1e-2f,
-            "зазоры лежат в плоскости панели и толщину не трогают");
+        Assert.AreEqual(3 + 5 + 5, (maxZ - minZ) / AppConstants.MM_TO_UNITS, 1e-2f,
+            "зазор спереди и сзади входит в габарит так же, как боковой");
+    }
+
+    /// <summary>Только боковые зазоры толщину по-прежнему не трогают: панель
+    /// сидит в пазу по пласти, и правка ширины зазора не должна её распирать.</summary>
+    [Test]
+    public void Panel_SideGaps_LeaveThicknessAlone()
+    {
+        var panel = MakePanel(new Vector3Int(383, 376, 3), gap: 0);
+        panel.GapLeft = 5;
+        panel.GapRight = 5;
+        panel.GapTop = 5;
+        panel.GapBottom = 5;
+
+        float minZ = float.MaxValue, maxZ = float.MinValue;
+        foreach (var v in panel.GetVertices())
+        {
+            minZ = Mathf.Min(minZ, v.z); maxZ = Mathf.Max(maxZ, v.z);
+        }
+        Assert.AreEqual(3, (maxZ - minZ) / AppConstants.MM_TO_UNITS, 1e-2f);
     }
 
     [Test]

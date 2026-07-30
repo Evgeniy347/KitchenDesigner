@@ -547,93 +547,96 @@ public class ContextMenuLayoutTests
         Assert.IsFalse(Panel().Find("CtxGrooveAdd").gameObject.activeSelf,
             "меню открывается со свёрнутым списком пазов");
     }
+    // ── Секция зазоров ────────────────────────────────────────────────
+    // Устроена как пазы: свёрнутая раскрывашка со счётчиком, поля — под ней.
+
+    private void ExpandGaps() =>
+        Panel().Find("CtxGaps").GetComponent<Button>().onClick.Invoke();
+
+    private string GapHeaderText() =>
+        Panel().Find("CtxGaps").GetComponentInChildren<TMP_Text>(true).text;
 
     [Test]
-    public void Facade_GapSectionBottomAboveNextRow()
+    public void Facade_GapsCollapsedOnOpen()
     {
-        var facade = MakeFacade("F1");
-        _menu!.Open(facade);
-        var panel = _canvas!.transform.Find("ContextMenu");
-        Assert.NotNull(panel);
+        _menu!.Open(MakeFacade("F1"));
 
-        var gapSection = panel.Find("_GapSection");
-        var xField = panel.Find("F_X, мм");
-        Assert.NotNull(gapSection, "gap section must exist for facade");
-        Assert.NotNull(xField, "X position field must exist");
-
-        var gapRt = gapSection.GetComponent<RectTransform>();
-        var xRt = xField.GetComponent<RectTransform>();
-
-        // Элементы заякорены к верху панели (pivot сверху): anchoredPosition.y —
-        // верхняя кромка, низ = верх − высота.
-        float gapBottom = gapRt.anchoredPosition.y - gapRt.sizeDelta.y;
-        float xTop = xRt.anchoredPosition.y;
-
-        Assert.GreaterOrEqual(gapBottom, xTop,
-            "gap section bottom must be above the first position row");
+        Assert.IsTrue(Panel().Find("CtxGaps").gameObject.activeSelf,
+            "заголовок секции зазоров виден у фасада");
+        Assert.IsFalse(Panel().Find("F_gapLeft").gameObject.activeSelf,
+            "меню открывается со свёрнутой секцией зазоров");
     }
 
     [Test]
-    public void Board_GapSectionInactive_PositionRowsShiftedUp()
+    public void Board_HasGapsSection()
     {
-        var panel = _canvas!.transform.Find("ContextMenu");
-        Assert.NotNull(panel);
-        var gapSection = panel.Find("_GapSection");
-        Assert.NotNull(gapSection);
+        _menu!.Open(MakeBoard("B1"));
 
-        var board = MakeBoard("B1");
-        _menu!.Open(board);
-
-        Assert.IsFalse(gapSection.gameObject.activeSelf,
-            "gap section must be hidden for regular board");
+        Assert.IsTrue(Panel().Find("CtxGaps").gameObject.activeSelf,
+            "зазоры есть и у обычной детали (по умолчанию нулевые)");
+        Assert.IsTrue(GapHeaderText().StartsWith("Зазоры (0)"),
+            $"у детали зазоров нет, а в заголовке «{GapHeaderText()}»");
     }
 
     [Test]
-    public void Facade_NoOverlap_BetweenGapAndNextRow()
+    public void GapHeader_CountsNonZeroSides()
     {
         var facade = MakeFacade("F1");
+        facade.GapLeft = 2;
+        facade.GapRight = 2;
+        facade.GapTop = 2;
+        facade.GapBottom = 0;
         _menu!.Open(facade);
-        var panel = _canvas!.transform.Find("ContextMenu");
 
-        var gapSection = panel.Find("_GapSection");
-        var xInput = panel.Find("F_X, мм");
-        Assert.NotNull(gapSection);
-        Assert.NotNull(xInput);
+        Assert.IsTrue(GapHeaderText().StartsWith("Зазоры (3)"),
+            $"счётчик считает стороны с ненулевым зазором, а в заголовке «{GapHeaderText()}»");
+    }
 
-        var gapRt = gapSection.GetComponent<RectTransform>();
-        var xRt = xInput.GetComponent<RectTransform>();
+    [Test]
+    public void GapsExpanded_ShowsAllSixFields()
+    {
+        _menu!.Open(MakeFacade("F1"));
+        ExpandGaps();
 
-        float gapSectionBottom = gapRt.anchoredPosition.y - gapRt.sizeDelta.y;
+        foreach (var name in new[] { "F_gapLeft", "F_gapRight", "F_gapTop",
+                                     "F_gapBottom", "F_gapFront", "F_gapBack" })
+            Assert.IsTrue(Panel().Find(name).gameObject.activeSelf,
+                $"{name} должно быть видно в раскрытой секции");
+    }
+
+    [Test]
+    public void GapRows_StayAbovePositionRow()
+    {
+        _menu!.Open(MakeFacade("F1"));
+        ExpandGaps();
+        var panel = Panel();
+
+        var xRt = panel.Find("F_X, мм").GetComponent<RectTransform>();
         float xTop = xRt.anchoredPosition.y;
 
-        Assert.GreaterOrEqual(gapSectionBottom, xTop,
-            "gap section bottom must be above the first position row");
-
-        foreach (var childName in new[] { "Gap_LR", "F_gapLeft", "F_gapRight",
-                                          "Gap_TB", "F_gapTop", "F_gapBottom" })
+        foreach (var name in new[] { "CtxGaps", "F_gapLeft", "F_gapFront", "F_gapBack" })
         {
-            var child = gapSection.Find(childName);
-            Assert.NotNull(child, $"missing {childName}");
-            var childRt = child.GetComponent<RectTransform>();
-            // Дети секции тоже с верхним pivot и заякорены к верху секции:
-            // низ в координатах панели = верх_секции + верх_ребёнка − высота.
-            float childBottomPanel = gapRt.anchoredPosition.y + childRt.anchoredPosition.y
-                                     - childRt.sizeDelta.y;
-            Assert.GreaterOrEqual(childBottomPanel, xTop,
-                $"{childName} must not overlap the X position row");
+            var rt = panel.Find(name).GetComponent<RectTransform>();
+            // Верхний pivot: низ строки = верх − высота.
+            float bottom = rt.anchoredPosition.y - rt.sizeDelta.y;
+            Assert.GreaterOrEqual(bottom, xTop,
+                $"{name} наезжает на строку положения");
         }
     }
 
     [Test]
-    public void GapSection_AddNewRow_AdjustsHeightAutomatically()
+    public void Window_HasNoGapsSection()
     {
-        var panel = _canvas!.transform.Find("ContextMenu");
-        var gapSection = panel.Find("_GapSection");
-        var gapRt = gapSection.GetComponent<RectTransform>();
-        float h = gapRt.sizeDelta.y;
+        var go = new GameObject("W1");
+        var win = go.AddComponent<WindowElement>();
+        win.PartName = "W1";
+        win.DimensionsMM = new Vector3Int(800, 1200, 100);
+        _spawned.Add(go);
 
-        Assert.Greater(h, 0);
-        Assert.Less(h, 200, "section should not be unreasonably tall");
+        _menu!.Open(win);
+
+        Assert.IsFalse(Panel().Find("CtxGaps").gameObject.activeSelf,
+            "у окна зазоров нет");
     }
 
     // Позиция и поворот теперь в компактной раскладке 3 колонки:
@@ -715,30 +718,6 @@ public class ContextMenuLayoutTests
             "title top must be below the panel top edge (inside the window)");
     }
 
-    // Секция зазоров должна РЕАЛЬНО вмещать свои строки (иначе поля вылезают
-    // за низ секции и наезжают на следующий блок).
-    [Test]
-    public void Facade_GapSectionContainsItsChildren()
-    {
-        var facade = MakeFacade("F1");
-        _menu!.Open(facade);
-        var panel = _canvas!.transform.Find("ContextMenu");
-        var gapSection = panel.Find("_GapSection");
-        var gapRt = gapSection.GetComponent<RectTransform>();
-
-        // Дети с верхним pivot, заякорены к верху секции: верх = anchoredPosition.y
-        // (0 — верхняя кромка секции), низ = верх − высота, дно секции = −sectionH.
-        float sectionH = gapRt.sizeDelta.y;
-        foreach (var childName in new[] { "CtxGapHdr", "Gap_LR", "F_gapLeft", "F_gapRight",
-                                          "Gap_TB", "F_gapTop", "F_gapBottom" })
-        {
-            var child = gapSection.Find(childName).GetComponent<RectTransform>();
-            float top = child.anchoredPosition.y;
-            float bottom = child.anchoredPosition.y - child.sizeDelta.y;
-            Assert.LessOrEqual(top, 0.5f, $"{childName} spills over section top");
-            Assert.GreaterOrEqual(bottom, -sectionH - 0.5f, $"{childName} spills below section bottom");
-        }
-    }
 
     // Bug A: заголовок стоит вплотную над первой строкой, без большого провала.
     [Test]

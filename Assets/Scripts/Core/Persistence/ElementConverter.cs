@@ -38,15 +38,14 @@ namespace KitchenDesigner.Core
             var materialId = source.MaterialId;
             var transparent = source.Transparent;
 
-            int gapL = 2, gapR = 2, gapT = 2, gapB = 2;
+            // Зазоры источника; фасад отмечаем отдельно — из него они в деталь
+            // не уезжают (отступ от проёма полке ни к чему).
+            var srcGaps = source.SupportsGaps ? source.Gaps : BoxGaps.None;
+            bool srcIsFacade = source is FacadeElement;
             var mode = DoorMode.HingeFrontLeft;
             bool doorOpen = false;
             if (source is FacadeElement facade)
             {
-                gapL = facade.GapLeft;
-                gapR = facade.GapRight;
-                gapT = facade.GapTop;
-                gapB = facade.GapBottom;
                 mode = facade.Mode;
                 doorOpen = facade.IsOpen;
             }
@@ -124,12 +123,25 @@ namespace KitchenDesigner.Core
             result.EdgeThicknessMM = edges.thicknessMM;
             result.EdgeManualMask = edges.manualMask;
 
+            if (result.SupportsGaps)
+            {
+                // Зазоры переносятся, пока «дверца остаётся дверцей», а деталь —
+                // деталью. При смене роли они не имеют смысла: отступ от проёма
+                // полке не нужен, а новая дверца без зазоров упирается в проём,
+                // и это брак, а не выбор — ей ставим умолчание фасада.
+                bool resultIsFacade = result is FacadeElement;
+                var gaps = srcIsFacade == resultIsFacade
+                    ? srcGaps
+                    : resultIsFacade
+                        ? new BoxGaps(FacadeElement.DEFAULT_GAP_MM, FacadeElement.DEFAULT_GAP_MM,
+                            FacadeElement.DEFAULT_GAP_MM, FacadeElement.DEFAULT_GAP_MM)
+                        : BoxGaps.None;
+                foreach (var side in GapSides.All)
+                    result.SetGap(side, gaps.Of(side));
+            }
+
             if (result is FacadeElement newFacade)
             {
-                newFacade.GapLeft = gapL;
-                newFacade.GapRight = gapR;
-                newFacade.GapTop = gapT;
-                newFacade.GapBottom = gapB;
                 newFacade.Mode = mode;
                 if (doorOpen) newFacade.SetOpen(true);
             }

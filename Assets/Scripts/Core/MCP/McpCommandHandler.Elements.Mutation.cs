@@ -30,7 +30,8 @@ namespace KitchenDesigner.Core.MCP
             var e = new List<string>();
             bool IsNot<T>() => !(el is T);
             bool IsFacadeLike() => el is FacadeElement || el is WindowElement || el is DoorElement;
-            if (IsNot<FacadeElement>() && IsNot<AssembledFacadeElement>()) { if (op.gap_left.HasValue) e.Add("gap_left"); if (op.gap_right.HasValue) e.Add("gap_right"); if (op.gap_top.HasValue) e.Add("gap_top"); if (op.gap_bottom.HasValue) e.Add("gap_bottom"); if (op.fill != null) e.Add("fill"); }
+            if (!el.SupportsGaps) { if (op.gap_left.HasValue) e.Add("gap_left"); if (op.gap_right.HasValue) e.Add("gap_right"); if (op.gap_top.HasValue) e.Add("gap_top"); if (op.gap_bottom.HasValue) e.Add("gap_bottom"); if (op.gap_front.HasValue) e.Add("gap_front"); if (op.gap_back.HasValue) e.Add("gap_back"); }
+            if (IsNot<FacadeElement>()) { if (op.fill != null) e.Add("fill"); }
             if (!IsFacadeLike()) { if (op.mode != null) e.Add("mode"); }
             // Откидная дверца духовки открывается тем же is_open, что фасад,
             // окно и дверь: своего инструмента ради одной кнопки не нужно.
@@ -423,12 +424,21 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
+        /// <summary>Зазоры есть не только у фасада (см. KitchenElement.SupportsGaps),
+        /// поэтому они правятся отдельно от дверных свойств.</summary>
+        private static void ApplyGapEdits(EditOp op, KitchenElement el)
+        {
+            if (!el.SupportsGaps) return;
+            if (op.gap_left.HasValue) el.GapLeft = op.gap_left.Value;
+            if (op.gap_right.HasValue) el.GapRight = op.gap_right.Value;
+            if (op.gap_top.HasValue) el.GapTop = op.gap_top.Value;
+            if (op.gap_bottom.HasValue) el.GapBottom = op.gap_bottom.Value;
+            if (op.gap_front.HasValue) el.GapFront = op.gap_front.Value;
+            if (op.gap_back.HasValue) el.GapBack = op.gap_back.Value;
+        }
+
         private static void ApplyFacadeEdits(EditOp op, FacadeElement facade)
         {
-            if (op.gap_left.HasValue) facade.GapLeft = op.gap_left.Value;
-            if (op.gap_right.HasValue) facade.GapRight = op.gap_right.Value;
-            if (op.gap_top.HasValue) facade.GapTop = op.gap_top.Value;
-            if (op.gap_bottom.HasValue) facade.GapBottom = op.gap_bottom.Value;
             if (op.mode != null && TryParseDoorMode(op.mode, out var m)) facade.Mode = m;
             if (op.is_open.HasValue) facade.SetOpen(op.is_open.Value);
         }
@@ -503,6 +513,7 @@ namespace KitchenDesigner.Core.MCP
                 if (op.locked.HasValue) el.Movable = !op.locked.Value;
                 if (mat != null) MaterialManager.Apply(el, mat);
                 if (mat != null) SelectionManager.Instance?.RefreshHighlight(el);
+                ApplyGapEdits(op, el);
                 if (el is FacadeElement facade && !(el is AssembledFacadeElement)) ApplyFacadeEdits(op, facade);
                 if (el is AssembledFacadeElement asmFacade) ApplyAssembledEdits(op, asmFacade);
                 if (el is RadialShelfElement shelf) ApplyRadialShelfEdits(op, shelf);

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
@@ -15,7 +14,7 @@ namespace KitchenDesigner.Core.UI
     /// пункт.
     ///
     /// Нужно это выбору стороны для накладки текстуры: пока курсор стоит на «C»,
-    /// соответствующая грань подсвечивается прямо в сцене (EdgeSideHighlighter.ShowFace) —
+    /// соответствующая грань подсвечивается прямо в сцене (SideHighlighter.ShowFace) —
     /// иначе буква ничего не говорит о том, какая это грань.</summary>
     public class DropdownHover : MonoBehaviour
     {
@@ -76,29 +75,10 @@ namespace KitchenDesigner.Core.UI
             for (int i = 0; i < items.Count; i++)
             {
                 int index = i;
-                var relay = items[i].gameObject.GetComponent<HoverRelay>()
-                    ?? items[i].gameObject.AddComponent<HoverRelay>();
-                relay.Enter = () => _onEnter?.Invoke(index);
-                relay.Exit = () => _onExit?.Invoke();
+                PointerHover.Attach(items[i].gameObject,
+                    () => _onEnter?.Invoke(index),
+                    () => _onExit?.Invoke());
             }
-        }
-
-        /// <summary>Только вход и выход курсора — и НИЧЕГО больше.
-        ///
-        /// Раньше здесь висел <see cref="EventTrigger"/>, и это тихо ломало
-        /// прокрутку: EventTrigger реализует ВСЕ интерфейсы событий, включая
-        /// IScrollHandler, поэтому колесо над пунктом доставалось ему (а он
-        /// ничего с ним не делал) и до ScrollRect списка уже не доходило. При
-        /// списке из трёх десятков декоров это значило «видно семь, остальные
-        /// недоступны».</summary>
-        private sealed class HoverRelay : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
-        {
-            public System.Action? Enter;
-            public System.Action? Exit;
-
-            public void OnPointerEnter(PointerEventData eventData) => Enter?.Invoke();
-
-            public void OnPointerExit(PointerEventData eventData) => Exit?.Invoke();
         }
     }
 }
