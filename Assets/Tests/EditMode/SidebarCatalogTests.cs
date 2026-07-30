@@ -211,4 +211,36 @@ public class SidebarCatalogTests
 
         Assert.IsTrue(lamp.isLightSource, "элемент «Источник света» помечен как источник света");
     }
+
+    /// <summary>Высота кнопки палитры обязана вмещать все строки её названия.
+    /// Пока высота была жёстко 26 px, длинные имена техники переносились по
+    /// словам и рисовались ЗА кнопкой, налезая на соседний пункт.</summary>
+    [Test]
+    public void ItemHeight_FitsEveryCatalogName()
+    {
+        foreach (var g in SidebarCatalog.Build())
+            foreach (var it in g.items)
+            {
+                float need = SidebarUI.ItemLines(it.name) * SidebarUI.ItemFont * DropdownItemFit.LineHeightFactor;
+                Assert.GreaterOrEqual(SidebarUI.ItemHeight(it.name), need,
+                    $"пункт «{it.name}» ниже своего текста — вторая строка вылезет наружу");
+            }
+    }
+
+    [Test]
+    public void ItemHeight_LongApplianceNamesTakeTwoRows()
+    {
+        foreach (var name in SidebarCatalog.Build()[4].items.ConvertAll(it => it.name))
+        {
+            Assert.AreEqual(2, SidebarUI.ItemLines(name), $"«{name}» не влезает в одну строку панели");
+            Assert.Greater(SidebarUI.ItemHeight(name), 26f, $"кнопка «{name}» должна быть выше однострочной");
+        }
+    }
+
+    [Test]
+    public void ItemHeight_ShortNameStaysSingleRow()
+    {
+        Assert.AreEqual(1, SidebarUI.ItemLines("Полка"));
+        Assert.AreEqual(26f, SidebarUI.ItemHeight("Полка"), "короткое имя не делает список выше");
+    }
 }

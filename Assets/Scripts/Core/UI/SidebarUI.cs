@@ -14,6 +14,22 @@ namespace KitchenDesigner.Core.UI
         private const float CollapsedW = 52f;
         private const float TopOffset = 52f; // под верхним тулбаром
 
+        private const float Pad = 8f;
+        private const float HeaderH = 30f;
+        /// <summary>Ширина пункта: панель минус паддинги и отступ вложенности.</summary>
+        public const float ItemW = ExpandedW - 2f * Pad - 14f;
+        /// <summary>Однострочный пункт — высота как была до переноса.</summary>
+        private const float ItemH = 26f;
+        private const float ItemPadH = 8f; // поля текста слева/справа
+        private const float ItemPadV = 8f;
+        private const int ItemMaxLines = 2;
+        public const int ItemFont = UIStyle.FontSmall;
+        /// <summary>Запас в два глифа при оценке ширины: она считается по средней
+        /// букве, а у названия из широких («Ш», «Ж») реальная строка длиннее.
+        /// Без запаса пограничное имя («Духовка Bosch HBA514BB3») считается
+        /// однострочным, а TMP переносит его — и вторая строка обрезается.</summary>
+        private const float ItemGlyphReserve = 2f;
+
         private RectTransform? _panel;
         private GameObject? _fullRoot;
         private GameObject? _miniRoot;
@@ -87,28 +103,63 @@ namespace KitchenDesigner.Core.UI
             return rt.gameObject;
         }
 
+        /// <summary>Высота пункта палитры: длинное название переносится по словам
+        /// (до двух строк), и кнопка растёт под него. Раньше высота была жёстко
+        /// 26 px, а перенос TMP включён по умолчанию — вторая строка рисовалась
+        /// ЗА кнопкой и налезала на соседний пункт («Варочная Bosch PUE611BB5E»).
+        /// Чистая функция: считается без метрик шрифта, см. DropdownItemFit.</summary>
+        public static float ItemHeight(string name)
+        {
+            int lines = ItemLines(name);
+            return Mathf.Max(ItemH, Mathf.Ceil(lines * ItemFont * DropdownItemFit.LineHeightFactor + ItemPadV));
+        }
+
+        /// <summary>Сколько строк займёт название в пункте палитры (не больше двух).</summary>
+        public static int ItemLines(string name)
+        {
+            float textW = ItemW - 2f * ItemPadH - ItemGlyphReserve * ItemFont * DropdownItemFit.GlyphWidthFactor;
+            return DropdownItemFit.LinesFor(name, textW, ItemFont, ItemMaxLines);
+        }
+
         private void BuildFull()
         {
-            const float pad = 8f;
             foreach (var g in SidebarCatalog.Build())
             {
                 var gu = new GroupUI();
                 var header = UIFactory.CreateButton("SbGrp_" + g.title, _fullRoot!.transform, g.title,
-                    Vector2.zero, new Vector2(ExpandedW - 2 * pad, 30f), () => ToggleGroup(gu));
+                    Vector2.zero, new Vector2(ExpandedW - 2 * Pad, HeaderH), () => ToggleGroup(gu));
                 UIFactory.AnchorTopLeft(header.GetComponent<RectTransform>());
                 gu.header = header.GetComponent<RectTransform>();
+
+                var headerLabel = header.GetComponentInChildren<TMP_Text>();
+                if (headerLabel != null)
+                {
+                    headerLabel.enableWordWrapping = false;
+                    headerLabel.overflowMode = TextOverflowModes.Ellipsis;
+                }
 
                 foreach (var it in g.items)
                 {
                     var item = it; // фиксируем для замыкания
                     var btn = UIFactory.CreateButton("SbItem_" + g.title + "_" + it.name, _fullRoot.transform,
-                        it.name, Vector2.zero, new Vector2(ExpandedW - 2 * pad - 14, 26f), () => Spawn(item));
+                        it.name, Vector2.zero, new Vector2(ItemW, ItemHeight(it.name)), () => Spawn(item));
                     UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
                     gu.items.Add(btn.GetComponent<RectTransform>());
 
                     var style = new ItemStyle { button = btn, cat = ItemCategory(item) };
                     style.label = btn.GetComponentInChildren<TMP_Text>();
-                    if (style.label != null) style.baseColor = style.label.color;
+                    if (style.label != null)
+                    {
+                        style.label.fontSize = ItemFont;
+                        style.label.enableWordWrapping = true;
+                        // Страховка: оценка ширины приблизительная, и если TMP
+                        // возьмёт строку сверх расчёта — она обрежется внутри
+                        // кнопки, а не наедет на соседа.
+                        style.label.overflowMode = TextOverflowModes.Truncate;
+                        style.label.margin = new Vector4(ItemPadH, 2f, ItemPadH, 2f);
+                        style.baseColor = style.label.color;
+                    }
+                    TooltipUI.Attach(btn.gameObject, it.name);
                     _itemStyles.Add(style);
                 }
                 _groups.Add(gu);
@@ -140,19 +191,19 @@ namespace KitchenDesigner.Core.UI
 
         private void RelayoutFull()
         {
-            const float pad = 8f;
-            float y = -pad;
+            float y = -Pad;
             foreach (var gu in _groups)
             {
-                gu.header!.anchoredPosition = new Vector2(pad, y);
-                y -= 30f + 4f;
+                gu.header!.anchoredPosition = new Vector2(Pad, y);
+                y -= gu.header.sizeDelta.y + 4f;
                 foreach (var item in gu.items)
                 {
                     item.gameObject.SetActive(gu.open);
                     if (gu.open)
                     {
-                        item.anchoredPosition = new Vector2(pad + 14f, y);
-                        y -= 26f + 3f;
+                        item.anchoredPosition = new Vector2(Pad + 14f, y);
+                        // Шаг — по фактической высоте: у двухстрочного пункта она больше.
+                        y -= item.sizeDelta.y + 3f;
                     }
                 }
             }
