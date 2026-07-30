@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.UI;
 
 namespace KitchenDesigner.Core
 {
@@ -92,6 +93,10 @@ namespace KitchenDesigner.Core
 
         private bool AltHeld => Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
         private bool ShiftHeld => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        private bool CtrlHeld => Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        // Зажат ли Ctrl в прошлом кадре drag: используется для одноразового
+        // уведомления статус-бара при захвате/отпускании Ctrl во время drag.
+        private bool _wasCtrl;
 
         private static bool PointerOverUI =>
             UnityEngine.EventSystems.EventSystem.current != null &&
@@ -328,6 +333,7 @@ namespace KitchenDesigner.Core
             IsDragging = false;
             _wasMoved = false;
             _pressed = false;
+            _wasCtrl = false;
             _movingSet.Clear();
             RefreshHighlights();
         }
@@ -400,7 +406,23 @@ namespace KitchenDesigner.Core
 
             var others = PartRegistry.GetAll();
             if (_moveSet.Count > 1) others.RemoveAll(e => _moveSet.Contains(e));
-            var snap = SnapSystem.TrySnap(_target, others, newPos);
+            // Ctrl инвертирует прилипание: если snap ВКЛ глобально, Ctrl ОТКЛ
+            // на время drag; если snap ВЫКЛ — Ctrl ВКЛ (ad-hoc). Один раз при
+            // захвате/отпускании Ctrl показываем статус-бару что произошло.
+            var settings = KitchenSettings.Instance;
+            bool globalSnap = settings != null && settings.SnapEnabled;
+            bool effectiveSnap = globalSnap ^ CtrlHeld;
+            if (CtrlHeld != _wasCtrl)
+            {
+                bool wasOn = globalSnap;
+                UI.StatusBarUI.Instance?.ShowTransient(
+                    wasOn ? "Прилипание отключено (Ctrl)" : "Прилипание включено (Ctrl)",
+                    UIStyle.TextSecondary);
+                _wasCtrl = CtrlHeld;
+            }
+            var snap = effectiveSnap
+                ? SnapSystem.TrySnap(_target, others, newPos)
+                : default;
             _target.transform.position = WorldBounds.Clamp(snap.snapped ? snap.position : newPos);
 
             // Групповое перемещение: остальные следуют за схваченным на ту же дельту.
@@ -479,6 +501,7 @@ namespace KitchenDesigner.Core
 			RestoreDragMaterial();
 			IsDragging = false;
 			_wasShift = false;
+			_wasCtrl = false;
 			_dragWall = null;
 			_targetIsWallOpening = false;
 			_movingSet.Clear();

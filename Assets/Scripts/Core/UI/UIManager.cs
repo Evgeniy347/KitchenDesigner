@@ -113,8 +113,8 @@ namespace KitchenDesigner.Core.UI
             var toast = gameObject.AddComponent<ToastNotification>();
             toast.Build(_canvas.transform);
 
-            var autoSaveIndicator = gameObject.AddComponent<AutoSaveIndicator>();
-            autoSaveIndicator.Build(_canvas.transform);
+            var statusBar = gameObject.AddComponent<StatusBarUI>();
+            statusBar.Build(_canvas.transform);
 
             var moduleBanner = gameObject.AddComponent<ModuleEditBannerUI>();
             moduleBanner.Build(_canvas.transform);
@@ -424,8 +424,9 @@ namespace KitchenDesigner.Core.UI
                 if (iss.Level != IssueLevel.Error && iss.Level != IssueLevel.Warning) continue;
 
                 ErrorPanelUI.RevealIssue(iss);
-                AutoSaveIndicator.Instance?.ShowMessage(
-                    $"{iss.Code} · {iss.Detail} · {iss.Message}", ErrorPanelUI.LevelColor(iss.Level));
+                StatusBarUI.Instance?.ShowTransient(
+                    $"{iss.Code} · {iss.Detail} · {iss.Message}",
+                    ErrorPanelUI.LevelColor(iss.Level), 3f);
                 return;
             }
         }
@@ -730,12 +731,12 @@ namespace KitchenDesigner.Core.UI
             if (SaveLoadManager.HasLastPath)
             {
                 if (SaveLoadManager.SaveToLastPath())
-                    Toast("Сохранено: " + System.IO.Path.GetFileName(SaveLoadManager.LastPath));
+                    ShowSaved(System.IO.Path.GetFileName(SaveLoadManager.LastPath));
             }
             else if (SaveLoadManager.SaveProject(QuickSaveName))
             {
                 SaveLoadManager.LastPath = SaveLoadManager.PathForName(QuickSaveName);
-                Toast("Сохранено: " + QuickSaveName);
+                ShowSaved(QuickSaveName);
             }
 #endif
         }
@@ -747,7 +748,7 @@ namespace KitchenDesigner.Core.UI
 #if UNITY_WEBGL && !UNITY_EDITOR
             string suggested = WebFileDialog.SuggestedFileName(SaveLoadManager.LastPath);
             WebFileDialog.Save(SaveLoadManager.CaptureCurrentJson(), suggested,
-                name => Toast("Сохранено: " + name));
+                name => ShowSaved(name));
 #else
             string suggested = SaveLoadManager.HasLastPath
                 ? System.IO.Path.GetFileName(SaveLoadManager.LastPath)
@@ -756,7 +757,7 @@ namespace KitchenDesigner.Core.UI
                 suggested, SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return;
             if (SaveLoadManager.SaveToPath(path))
-                Toast("Сохранено: " + System.IO.Path.GetFileName(path));
+                ShowSaved(System.IO.Path.GetFileName(path));
 #endif
         }
 
@@ -791,6 +792,15 @@ namespace KitchenDesigner.Core.UI
         private static void Toast(string msg)
         {
             ToastNotification.ShowIfAvailable(msg);
+        }
+
+        /// <summary>Показать «Сохранено: …» в статус-баре. Зелёный — нейтральный
+        /// «всё хорошо». ToastNotification больше для этого не используется:
+        /// он остался под прочие сообщения («Удалено», «Такой паз уже есть»).</summary>
+        private static void ShowSaved(string name)
+        {
+            StatusBarUI.Instance?.ShowTransient("Сохранено: " + name,
+                new Color(0.45f, 0.85f, 0.45f, 1f), 3f);
         }
 
         public void ToggleHelp()

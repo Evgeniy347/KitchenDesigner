@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.UI;
 
 namespace KitchenDesigner.Core
 {
@@ -61,6 +62,8 @@ namespace KitchenDesigner.Core
         private Quaternion _rotBefore;
         private HandleMode _dragMode;   // режим, в котором начали тянуть
         private HandleMode _builtMode;  // режим, в котором собраны текущие ручки
+        // Зажат ли Ctrl в прошлом кадре drag: для одноразового флэша статус-бару.
+        private bool _wasCtrl;
 
         private void Awake() => Instance = this;
 
@@ -163,6 +166,8 @@ namespace KitchenDesigner.Core
 
         private static bool ShiftHeld => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
+        private static bool CtrlHeld => Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+
         private static bool PointerOverUI() =>
             UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
@@ -258,7 +263,16 @@ namespace KitchenDesigner.Core
 
             float rawDelta = sNow - _sParam0;
             var settings = KitchenSettings.Instance;
-            bool snapEnabled = settings != null && settings.SnapEnabled;
+            bool globalSnap = settings != null && settings.SnapEnabled;
+            // Ctrl инвертирует прилипание: см. ElementMover.UpdateDrag.
+            bool snapEnabled = globalSnap ^ CtrlHeld;
+            if (CtrlHeld != _wasCtrl)
+            {
+                UI.StatusBarUI.Instance?.ShowTransient(
+                    globalSnap ? "Прилипание отключено (Ctrl)" : "Прилипание включено (Ctrl)",
+                    UIStyle.TextSecondary);
+                _wasCtrl = CtrlHeld;
+            }
             float threshold = settings != null ? settings.SnapThreshold * AppConstants.MM_TO_UNITS : 0f;
 
             ResizeMath.Compute(_dimsBefore, _axisIndex, _normal, _faceCenter0, _uAxis, _vAxis, _faceSize,
@@ -286,7 +300,17 @@ namespace KitchenDesigner.Core
             Vector3 newPos = _centerStart + _normal * (sNow - _sParam0);
 
             var settings = KitchenSettings.Instance;
-            if (settings != null && settings.SnapEnabled)
+            bool globalSnap = settings != null && settings.SnapEnabled;
+            // Ctrl инвертирует прилипание: см. ElementMover.UpdateDrag.
+            bool effectiveSnap = globalSnap ^ CtrlHeld;
+            if (CtrlHeld != _wasCtrl)
+            {
+                UI.StatusBarUI.Instance?.ShowTransient(
+                    globalSnap ? "Прилипание отключено (Ctrl)" : "Прилипание включено (Ctrl)",
+                    UIStyle.TextSecondary);
+                _wasCtrl = CtrlHeld;
+            }
+            if (effectiveSnap)
             {
                 var snap = SnapSystem.TrySnap(_target!, PartRegistry.GetAll(), newPos);
                 if (snap.snapped) // берём только составляющую снэпа вдоль оси
@@ -302,6 +326,7 @@ namespace KitchenDesigner.Core
         {
             IsResizing = false;
             _resizingElement = null;
+            _wasCtrl = false;
 
             // Итог обязан лечь на мм-сетку. Снэп ставит грань заподлицо к соседу,
             // а размер тут же округляется до целых мм — на соседе, который сам

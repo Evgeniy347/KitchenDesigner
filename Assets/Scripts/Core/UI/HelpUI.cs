@@ -16,13 +16,13 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("HelpPanel", canvas, Vector2.zero, new Vector2(520, 580));
+            var panel = UIFactory.CreatePanel("HelpPanel", canvas, Vector2.zero, new Vector2(520, 600));
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
 
             UIFactory.CreateLabel("HelpTitle", panel.transform, "Справка", 24,
-                new Vector2(0, 236), new Vector2(480, 36), TextAnchor.MiddleCenter);
+                new Vector2(0, 246), new Vector2(480, 36), TextAnchor.MiddleCenter);
 
             var text = "" +
                 "W A S D  — перемещение камеры (разгон при удержании)\n" +
@@ -36,6 +36,7 @@ namespace KitchenDesigner.Core.UI
                 "\n" +
                 "ЛКМ по детали  — выделение\n" +
                 "Ctrl + ЛКМ  — мультивыделение\n" +
+                "Ctrl + перетаскивание / ресайз  — прилипание наоборот (вкл/выкл)\n" +
                 "Delete  — удалить объект(ы)\n" +
                 "Ctrl + D  — дублировать\n" +
                 "Ctrl + S  — сохранить\n" +
@@ -52,10 +53,10 @@ namespace KitchenDesigner.Core.UI
                 "F9 — логирование / профилировка";
 
             UIFactory.CreateLabel("HelpText", panel.transform, text, 15,
-                new Vector2(0, 10), new Vector2(480, 450), TextAnchor.UpperLeft);
+                new Vector2(0, 10), new Vector2(480, 470), TextAnchor.UpperLeft);
 
             UIFactory.CreateButton("HelpClose", panel.transform, "Закрыть",
-                new Vector2(0, -260), new Vector2(160, 40), Close);
+                new Vector2(0, -270), new Vector2(160, 40), Close);
 
             _root.SetActive(false);
         }

@@ -84,8 +84,9 @@ namespace KitchenDesigner.Core
                 if (SaveActiveTarget())
                 {
                     _lastSavedJson = current;
-                    if (UI.AutoSaveIndicator.Instance != null)
-                        UI.AutoSaveIndicator.Instance.NotifySaved();
+                    UI.StatusBarUI.Instance?.ShowTransient(
+                        "Сохранено: " + System.DateTime.Now.ToString("HH:mm:ss"),
+                        new Color(0.45f, 0.85f, 0.45f, 1f));
                 }
             }
         }
