@@ -16,10 +16,17 @@
     Никакая команда не закрывает редактор сама. Закрыть его можно только явно:
     `stop` или `restart`.
 
-    Что осталось холодным и почему: PlayMode. В живом редакторе прогон виснет на
-    входе в play mode, а эталоны скриншотов сняты холодным batch. Здесь скрипт
-    сам гасит демона, гоняет batch и ПОДНИМАЕТ демона обратно — редактор всё
-    равно остаётся висеть в фоне.
+    PlayMode тоже идёт через мост. Раньше он считался «навсегда холодным» —
+    якобы виснет на входе в play mode. Виснул не play mode, а диагностика:
+    `STATUS` исполнялся в главном потоке, занятом прогоном, клиент не получал
+    ответа и убивал редактор сам. С неблокирующим `PING`/`STATUS` полный
+    IntegrationPlayModeTests в живом демоне занимает 9.7 с против 3.5 минут
+    холодным batch.
+
+    ОДИН клиент за раз: команды берут файловый замок `Library\
+    kd-unity-gateway.lock`. Второй клиент ЖДЁТ и печатает, кто держит очередь.
+    Без замка два агента на одном проекте убивали редактор друг у друга и
+    зацикливались на холодных стартах.
 
     Чем это оплачено: полный EditMode через мост чуть менее «свежий», чем в новом
     процессе (шаг SmoothDamp считается от Time.deltaTime, атлас шрифта переживает
@@ -50,12 +57,14 @@ param(
     [string]$Platform = 'EditMode',
 
     [string]$Filter = '',
+
     [string]$Method = '',
     [string]$ResultPath = '',
     [string]$LogSuffix = '',
 
     # Явный холодный batch: свой процесс Unity на один прогон. Нужен, только
-    # когда тест разошёлся из-за несвежести живого редактора. Демон после него
+    # когда тест разошёлся из-за несвежести живого редактора (шаг SmoothDamp от
+    # Time.deltaTime, переживший прогон атлас шрифта). Демон после него
     # поднимается обратно.
     [switch]$Cold,
 
@@ -67,8 +76,10 @@ param(
     # перезапустить. Молчание на domain reload — секунды, а не минуты.
     [int]$SilenceMinutes = 3,
 
-    # Тайм-аут ожидания результата, минут.
-    [int]$TimeoutMinutes = 40
+    # Тайм-аут ожидания результата, минут. Сорок минут, стоявшие здесь раньше,
+    # сторожем не были: они молча вмещали двадцатидвухминутное зависание.
+    # Бюджет прогона — минута; десять минут это уже авария, а не «долго».
+    [int]$TimeoutMinutes = 10
 )
 
 $ErrorActionPreference = 'Stop'
@@ -81,6 +92,68 @@ $logBase = Join-Path $env:TEMP 'build-kitchen.log'
 $log = if ($LogSuffix) { "$logBase.$LogSuffix.log" } else { $logBase }
 
 if (-not (Test-Path $unity)) { throw "Unity не найден: $unity" }
+
+# ── Очередь за редактором ───────────────────────────────────────────────
+
+<#
+    ОДИН клиент за раз. Второй ЖДЁТ, а не убивает редактор.
+
+    Так было до этого замка: два агента (или человек и агент) звали шлюз
+    одновременно. Сосед компилирует — мост молчит; `Resolve-Bridge` считает
+    молчание зависанием и СНИМАЕТ живой редактор посреди чужого прогона. Тот
+    поднимает новый, и теперь уже он ловит молчание. Двое зацикливаются на
+    холодных стартах по 60–90 с, и «прогон на 10 секунд» превращается в
+    получасовое недоумение с обеих сторон.
+
+    Замок — файл, открытый эксклюзивно НА ЗАПИСЬ, но доступный на ЧТЕНИЕ:
+    держатель пишет туда, кто он и чем занят, а очередь это видит и печатает.
+    Умер держатель — ОС отпускает дескриптор сама, залежавшихся замков не
+    бывает.
+#>
+$lockPath = Join-Path $repo 'Library\kd-unity-gateway.lock'
+$script:lockHandle = $null
+
+function Read-GateHolder {
+    try {
+        $fs = [IO.File]::Open($lockPath, 'Open', 'Read', 'ReadWrite')
+        try { return (New-Object IO.StreamReader($fs)).ReadToEnd().Trim() }
+        finally { $fs.Dispose() }
+    } catch { return '(кто — неизвестно)' }
+}
+
+function Enter-Gate {
+    param([int]$WaitMinutes = 30)
+
+    $deadline = (Get-Date).AddMinutes($WaitMinutes)
+    $announced = $false
+    while ($true) {
+        try {
+            $fs = [IO.File]::Open($lockPath, 'Create', 'Write', 'Read')
+            $who = "pid=$PID cmd=$Command $Platform $Filter начал=$(Get-Date -Format 'HH:mm:ss')"
+            $bytes = [Text.Encoding]::UTF8.GetBytes($who)
+            $fs.Write($bytes, 0, $bytes.Length)
+            $fs.Flush()
+            $script:lockHandle = $fs
+            if ($announced) { Write-Host '  очередь подошла' -ForegroundColor Green }
+            return
+        }
+        catch [IO.IOException] {
+            if (-not $announced) {
+                Write-Host "  редактор занят другим клиентом: $(Read-GateHolder)" -ForegroundColor DarkYellow
+                Write-Host '  жду очереди (редактор НЕ трогаю — иначе мы убьём прогоны друг друга)' -ForegroundColor DarkGray
+                $announced = $true
+            }
+            if ((Get-Date) -gt $deadline) {
+                throw "Не дождался очереди за $WaitMinutes мин. Держит: $(Read-GateHolder)"
+            }
+            Start-Sleep -Seconds 2
+        }
+    }
+}
+
+function Exit-Gate {
+    if ($script:lockHandle) { $script:lockHandle.Dispose(); $script:lockHandle = $null }
+}
 
 # ── Мост ────────────────────────────────────────────────────────────────
 
@@ -171,6 +244,27 @@ function Stop-EditorsForce {
     молчание в течение минут означает не «занят», а «завис» — и ждать его
     десять минут (как было раньше) хуже, чем перезапустить.
 #>
+<#
+    Признак жизни, когда мост ответить НЕ МОЖЕТ.
+
+    На domain reload управляемого кода нет вообще: сокет закрыт, отвечать некому.
+    Поэтому «нет ответа» само по себе не означает ни «работает», ни «завис» — а
+    сторож по одному молчанию сокета ошибался в дорогую сторону. Один такой
+    случай: правка тестового .cs, пересборка сборки на 2000 тестов идёт минуты,
+    сокет молчит законно — сторож счёл это зависанием, снял редактор и заставил
+    прогон начаться заново. 376 секунд вместо сорока.
+
+    Работающий Unity ПИШЕТ В ЛОГ (импорт ассетов, компиляция, перезагрузка
+    домена — каждый шаг оставляет строку). Зависший не пишет. Растущий лог и
+    есть тот признак прогресса, которого не хватало.
+#>
+function Test-LogProgress {
+    param([datetime]$Since)
+    $daemonLog = "$logBase.daemon.log"
+    if (-not (Test-Path $daemonLog)) { return $false }
+    return ((Get-Item $daemonLog).LastWriteTime -gt $Since)
+}
+
 function Wait-Bridge {
     param([int]$Minutes = 0)
     if ($Minutes -le 0) { $Minutes = $SilenceMinutes }
@@ -188,6 +282,20 @@ function Start-Daemon {
     # Второй Unity на том же проекте — это драка за Library, а не «ещё один
     # воркер». Перед стартом двор должен быть пуст.
     if (Test-EditorRunning) { Stop-EditorsForce | Out-Null }
+
+    # Лог предыдущего демона сохраняем.
+    #
+    # Unity открывает -logFile на перезапись, поэтому лог УМЕРШЕГО демона
+    # затирался логом следующего — а именно он и нужен, чтобы понять, почему
+    # тот умер. Один раз это уже стоило целого прогона вслепую.
+    $daemonLog = "$logBase.daemon.log"
+    if (Test-Path $daemonLog) {
+        $stamp = (Get-Item $daemonLog).LastWriteTime.ToString('yyyyMMdd-HHmmss')
+        Move-Item $daemonLog "$logBase.daemon.$stamp.log" -Force -ErrorAction SilentlyContinue
+        Get-ChildItem "$logBase.daemon.*.log" -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending | Select-Object -Skip 5 |
+            Remove-Item -ErrorAction SilentlyContinue
+    }
 
     Write-Host '=== Запуск фонового редактора ===' -ForegroundColor Cyan
     # Без -quit: редактор остаётся жить и обслуживать мост.
@@ -208,18 +316,43 @@ function Start-Daemon {
     throw "Редактор не поднялся за 5 минут, лог: $logBase.daemon.log"
 }
 
+<#
+    Ждать задачу — но не бесконечно и не «пока процесс жив».
+
+    Так однажды ушло 22 минуты: тесты отработали за 228 секунд, а редактор
+    завис ПОСЛЕ прогона (послепрогонный Undo плюс бесконечный 404 от
+    лицензионного клиента). Процесс был жив, поэтому старая проверка «жив ли
+    Unity» считала это работой, а единственный настоящий сторож стоял на
+    -TimeoutMinutes 40. Живой процесс — не признак прогресса.
+
+    Признак прогресса — ОТВЕТ моста. Молчит дольше -SilenceMinutes подряд →
+    это зависание, снимаем и говорим вслух, а не досиживаем до сорока минут.
+#>
 function Wait-Job {
     param([string]$JobId)
 
     $deadline = (Get-Date).AddMinutes($TimeoutMinutes)
+    $lastReply = Get-Date
+    $lastProgress = Get-Date
     while ((Get-Date) -lt $deadline) {
         Start-Sleep -Seconds 2
         $reply = Send-Bridge -Line "STATUS $JobId"
         if (-not $reply) {
-            # domain reload рвёт сокет — это норма, но только пока редактор жив.
+            # domain reload рвёт сокет — это норма, но она длится секунды.
             if (-not (Test-EditorRunning)) { throw 'Редактор умер во время прогона' }
+            if (((Get-Date) - $lastReply).TotalMinutes -gt $SilenceMinutes) {
+                # Растущий лог = работает. См. Test-LogProgress.
+                if (Test-LogProgress -Since $lastProgress) {
+                    $lastProgress = (Get-Item "$logBase.daemon.log").LastWriteTime
+                    $lastReply = Get-Date
+                    continue
+                }
+                Stop-EditorsForce | Out-Null
+                throw "Мост молчит $SilenceMinutes мин И лог не растёт — редактор завис (снят). Лог: $logBase.daemon.log"
+            }
             continue
         }
+        $lastReply = Get-Date
         if ($reply.StartsWith('ERR')) { throw $reply }
 
         $parts = $reply.Substring(3).Split('|')
@@ -274,13 +407,22 @@ function Sync-Editor {
 
     $deadline = (Get-Date).AddMinutes(20)
     $lastReply = Get-Date
+    $lastProgress = Get-Date
     while ((Get-Date) -lt $deadline) {
         Start-Sleep -Milliseconds 500
         $reply = Send-Bridge -Line 'PING' -TimeoutMs 2000
         if (-not $reply) {
             if (-not (Test-EditorRunning)) { return $false }
             if (((Get-Date) - $lastReply).TotalMinutes -gt $SilenceMinutes) {
-                Write-Host "  мост молчит $SilenceMinutes мин на обновлении ассетов" -ForegroundColor DarkYellow
+                # Молчит долго — но пишет ли он в лог? Пишет — значит работает
+                # (импорт, компиляция, domain reload), и убивать его нельзя.
+                if (Test-LogProgress -Since $lastProgress) {
+                    $lastProgress = (Get-Item "$logBase.daemon.log").LastWriteTime
+                    $lastReply = Get-Date
+                    Write-Host '  мост молчит, но лог растёт — идёт обновление ассетов, жду' -ForegroundColor DarkGray
+                    continue
+                }
+                Write-Host "  мост молчит $SilenceMinutes мин И лог не растёт — это зависание" -ForegroundColor DarkYellow
                 return $false
             }
             continue    # идёт domain reload
@@ -334,18 +476,90 @@ function Stop-Editor {
 <#
     Куда отправить прогон.
 
-    Через мост идёт ВСЁ, и полный набор тоже: холодный старт стоит 60–90 секунд
+    Через мост идёт ВСЁ, PlayMode в том числе: холодный старт стоит 60–90 секунд
     на каждый вызов, и платить их за каждую проверку — дороже, чем та неполная
     свежесть, которую даёт живой процесс.
 
-    Два исключения, и оба возвращают редактор в фон после себя:
-      • -Cold   — явная перепроверка теста, который разошёлся из-за несвежести
-                  (шаг SmoothDamp от Time.deltaTime, переживший прогон атлас шрифта);
-      • PlayMode — в живом редакторе прогон виснет на входе в play mode, а
-                  эталоны скриншотов сняты холодным batch.
+    PlayMode раньше считался «навсегда холодным»: в живом редакторе прогон
+    якобы виснет на входе в play mode. Это оказалось иллюзией. Виснул не play
+    mode, а ДИАГНОСТИКА: мост исполнял `STATUS` в главном потоке, а тот занят
+    прогоном, — клиент не получал ответа и через -SilenceMinutes убивал
+    редактор. Когда `PING`/`STATUS` стали отвечать из потока сокета, картина
+    оказалась ровной: `playing` через 5 с, весь IntegrationPlayModeTests за
+    9.7 с против 3.5 минут холодным batch.
+
+    Холодным остался только -Cold: явная перепроверка теста, который разошёлся
+    из-за несвежести живого редактора (шаг SmoothDamp от Time.deltaTime,
+    переживший прогон атлас шрифта). Демона он возвращает в фон после себя.
 #>
 function Invoke-Tests {
-    if ($Cold -or $Platform -eq 'PlayMode') { return (Invoke-ColdTests) }
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    try { return (Invoke-TestsCore) } finally { Report-Time $sw }
+}
+
+<#
+    Сколько это заняло — вслух, всегда.
+
+    Цикл «правка → проверка» разъезжается незаметно: холодный старт, чужой
+    клиент в очереди, застрявший Refresh — каждый добавляет минуты, и ни один
+    себя не называет. Бюджет на прогон — минута; всё, что дольше, печатается
+    отдельной строкой, чтобы деградацию замечали сразу, а не через неделю
+    «почему-то всё стало медленно».
+#>
+$script:BudgetSeconds = 60
+
+function Report-Time {
+    param([Diagnostics.Stopwatch]$Sw)
+    $s = $Sw.Elapsed.TotalSeconds
+    if ($s -gt $script:BudgetSeconds) {
+        Write-Host ("  прогон занял {0:N0} с — БОЛЬШЕ бюджета в {1} с" -f $s, $script:BudgetSeconds) -ForegroundColor Yellow
+    } else {
+        Write-Host ("  прогон занял {0:N1} с" -f $s) -ForegroundColor DarkGray
+    }
+}
+
+<#
+    Классы, которые не ПРОВЕРЯЮТ, а ЗАМЕРЯЮТ и РИСУЮТ.
+
+    Тест сравнивает с эталоном и краснеет — он говорит «сломалось». Эти
+    порождают файл: GIF анимации ящика, обзорный кадр, кадр зазоров, CSV
+    профилировщика. Сломаться они не могут, могут только перезаписать docs/ —
+    и перезаписывают каждый раз, отчего docs/*.png вечно грязные в git status.
+
+    Цена — 160 секунд из 228 у всего набора PlayMode: две трети времени цикла
+    «правка → проверка» уходило на рисование картинок, которые в этот момент
+    никто не смотрит. И ускорить их нельзя, не обесценив: профиль на тридцати
+    кадрах не профиль.
+
+    Отсекает их сам NUnit: классы помечены `[Explicit]`, а такие тесты не едут,
+    пока фильтр не назовёт их прямо. Регуляркой-исключением это НЕ решается —
+    NUnit пускает всех потомков узла, прошедшего фильтр, поэтому
+    `^(?!.*PerfProfileTests).*$` отсекает класс, но узел сборки проходит, и
+    класс всё равно едет (проверено: генераторы отработали вместе с набором).
+
+    Список ниже нужен только для СТРОКИ В ВЫВОДЕ — чтобы пропуск не был
+    молчаливым — и должен совпадать с tools/artifacts.ps1.
+#>
+$script:GeneratorSuites = @(
+    'PerfProfileTests',
+    'DrawerAnimationGifTests',
+    'OverviewScreenshotTests',
+    'GapsScreenshotTests'
+)
+
+function Get-DefaultFilter {
+    if ($Filter) { return $Filter }                       # спросили прицельно — отдаём как есть
+    if ($Platform -ne 'PlayMode') { return '' }
+
+    # Флага «и генераторы тоже» здесь нет намеренно: [Explicit] едет только по
+    # прямому имени, поэтому «всё сразу» — это два разных прогона, а не один
+    # фильтр. Второй прогон и есть tools\artifacts.ps1.
+    Write-Host "  генераторы артефактов пропущены — tools\artifacts.ps1: $($script:GeneratorSuites -join ', ')" -ForegroundColor DarkGray
+    return ''
+}
+
+function Invoke-TestsCore {
+    if ($Cold) { return (Invoke-ColdTests) }
 
     # Одна повторная попытка: зависший на обновлении ассетов редактор чинится
     # перезапуском, а не ожиданием. Второй отказ — уже настоящая проблема.
@@ -357,7 +571,8 @@ function Invoke-Tests {
         Stop-EditorsForce | Out-Null
     }
 
-    $reply = Send-Bridge -Line "RUN $Platform|$Filter|$ResultPath"
+    # Поля через табуляцию: фильтр — регулярка, и '|' в ней разрезал бы строку.
+    $reply = Send-Bridge -Line "RUN $Platform`t$(Get-DefaultFilter)`t$ResultPath"
     if (-not $reply -or $reply.StartsWith('ERR')) { throw "Мост отказал: $reply" }
     $jobId = $reply.Substring(3).Trim()
 
@@ -367,6 +582,20 @@ function Invoke-Tests {
     $total = $parts[1]; $passed = $parts[2]; $failed = $parts[3]
 
     Write-Host ("  Total: {0} | Passed: {1} | Failed: {2}" -f $total, $passed, $failed)
+    Show-Slowest
+    Remove-TestSceneJunk
+
+    # Ноль тестов — это НЕ успех.
+    #
+    # `-Filter SnapCoreTests` (класса с таким именем в проекте нет) давал
+    # «Total: 0 | Failed: 0» и зелёный код возврата. То есть опечатка в фильтре
+    # выглядела как прошедшая проверка — худший вид лжи, какой умеет набор
+    # тестов.
+    if ([int]$total -eq 0) {
+        Write-Host "  ФИЛЬТР НЕ ПОЙМАЛ НИ ОДНОГО ТЕСТА: '$(Get-DefaultFilter)'" -ForegroundColor Red
+        return 1
+    }
+
     if ($state -eq 'failed') {
         Show-Failures
         return 1
@@ -415,11 +644,49 @@ function Invoke-ColdTests {
     $total = $x.'test-run'.total; $passed = $x.'test-run'.passed; $failed = $x.'test-run'.failed
 
     Write-Host ("  Total: {0} | Passed: {1} | Failed: {2}" -f $total, $passed, $failed)
+    Remove-TestSceneJunk
+    if ([int]$total -eq 0) {
+        Write-Host "  ФИЛЬТР НЕ ПОЙМАЛ НИ ОДНОГО ТЕСТА: '$Filter'" -ForegroundColor Red
+        return 1
+    }
     if ([int]$failed -gt 0) {
         Show-Failures
         return 1
     }
     return 0
+}
+
+<#
+    Куда ушло время прогона.
+
+    Отчёт хранит длительность каждого класса; печатаем пять худших. Набор
+    дешевеет не там, где кажется: обычно две-три сцены (кодирование GIF,
+    профилирование) съедают больше, чем все остальные тесты вместе.
+#>
+function Show-Slowest {
+    if (-not (Test-Path $ResultPath)) { return }
+    $x = [xml](Get-Content $ResultPath)
+    $rows = $x.SelectNodes('//slowest/suite')
+    if (-not $rows -or $rows.Count -eq 0) { return }
+    Write-Host '  дольше всех:' -ForegroundColor DarkGray
+    foreach ($r in $rows) {
+        Write-Host ("    {0,6:N1} с  {1}" -f [double]$r.seconds, $r.name) -ForegroundColor DarkGray
+    }
+}
+
+<#
+    Тест-раннер PlayMode кладёт временную сцену прямо в Assets/
+    (`InitTestScene<guid>.unity`) и убирает её сам — но только если прогон
+    дошёл до конца. Оборванный прогон оставляет её лежать, а каждая такая
+    сцена — лишний ассет, который следующий Refresh импортирует заново.
+    Копятся они молча.
+#>
+function Remove-TestSceneJunk {
+    Get-ChildItem (Join-Path $repo 'Assets') -Filter 'InitTestScene*.unity*' -ErrorAction SilentlyContinue |
+        ForEach-Object {
+            Write-Host "  убираю временную сцену $($_.Name)" -ForegroundColor DarkGray
+            Remove-Item $_.FullName -ErrorAction SilentlyContinue
+        }
 }
 
 function Show-Failures {
@@ -452,6 +719,12 @@ function Invoke-Method {
     return 0
 }
 
+# `status` намеренно БЕЗ замка: спросить «чем занят редактор» должно быть можно
+# и посреди чужого прогона — иначе диагностика встаёт в ту же очередь, которую
+# и пришла разглядывать.
+if ($Command -ne 'status') { Enter-Gate }
+
+try {
 switch ($Command) {
     'tests'  { exit (Invoke-Tests) }
     'method' { exit (Invoke-Method) }
@@ -478,6 +751,18 @@ switch ($Command) {
         if ($procs.Count -gt 1) {
             Write-Host "  ВНИМАНИЕ: процессов $($procs.Count) — они дерутся за Library, нужен restart" -ForegroundColor Red
         }
+
+        # Кто сейчас в очереди за редактором. Без этой строки чужой прогон
+        # выглядит как «у меня всё тормозит без причины».
+        try {
+            $probe = [IO.File]::Open($lockPath, 'OpenOrCreate', 'Write', 'Read')
+            $probe.Dispose()
+            Write-Host 'шлюз свободен'
+        } catch {
+            Write-Host "шлюз ЗАНЯТ: $(Read-GateHolder)" -ForegroundColor Yellow
+        }
         exit 0
     }
 }
+}
+finally { Exit-Gate }

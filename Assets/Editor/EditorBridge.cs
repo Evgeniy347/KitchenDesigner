@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -49,11 +50,28 @@ public static class EditorBridge
 
     private static readonly Queue<Action> _mainThreadQueue = new Queue<Action>();
 
+    /// <summary>Зеркало состояния задач для ответов БЕЗ главного потока:
+    /// jobId → "state|counts|error". Пишется из главного потока (SetJob),
+    /// читается из потока сокета.</summary>
+    private static readonly ConcurrentDictionary<string, string> _jobs =
+        new ConcurrentDictionary<string, string>();
+
+    /// <summary>Заготовленный ответ на PING и время последнего тика главного
+    /// потока. Оба обновляются в <see cref="Pump"/>.</summary>
+    private static volatile string _pingInfo = "starting|?|?";
+    private static long _lastPumpTicks = DateTime.UtcNow.Ticks;
+
+    private static readonly string _projectName = Path.GetFileName(Directory.GetCurrentDirectory());
+    private static readonly string _unityVersion = Application.unityVersion;
+
     static EditorBridge()
     {
         EditorApplication.update += Pump;
         AssemblyReloadEvents.beforeAssemblyReload += Stop;
         EditorApplication.quitting += Stop;
+
+        RestoreJobMirror();
+        LogLifecycle();
 
         // Колбэки регистрируются заново на каждый domain reload: прогон его
         // переживает, а подписка — нет.
@@ -71,30 +89,77 @@ public static class EditorBridge
         Debug.Log($"[EditorBridge] daemon ready on port {Port}");
     }
 
+    /// <summary>Вернуть в зеркало состояние текущей задачи после domain reload.
+    ///
+    /// Зеркало живёт в статике и умирает вместе с доменом, а domain reload
+    /// случается ПОСРЕДИ прогона всегда: на перекомпиляции и на входе в play
+    /// mode. Без восстановления клиент после reload получал бы «unknown job» на
+    /// задачу, которая на самом деле идёт.</summary>
+    private static void RestoreJobMirror()
+    {
+        string jobId = SessionState.GetString("EditorBridge.currentJob", "");
+        if (string.IsNullOrEmpty(jobId)) return;
+
+        string state = SessionState.GetString(JobPrefix + jobId + ".state", "");
+        if (string.IsNullOrEmpty(state)) return;
+
+        _jobs[jobId] = $"{state}|{SessionState.GetString(JobPrefix + jobId + ".counts", "")}"
+                     + $"|{SessionState.GetString(JobPrefix + jobId + ".error", "")}";
+    }
+
+    /// <summary>Метки в лог обо всём, что рвёт связь с клиентом: перезагрузка
+    /// домена, вход и выход из play mode. Без них падение демона на PlayMode
+    /// выглядит как «мост просто замолчал» и не диагностируется.</summary>
+    private static void LogLifecycle()
+    {
+        Debug.Log("[EditorBridge] domain loaded");
+        AssemblyReloadEvents.beforeAssemblyReload += () => Debug.Log("[EditorBridge] beforeAssemblyReload");
+        EditorApplication.quitting += () => Debug.Log("[EditorBridge] editor quitting");
+        EditorApplication.playModeStateChanged += s => Debug.Log($"[EditorBridge] playMode: {s}");
+    }
+
     // ── Сокет ───────────────────────────────────────────────────────────
 
+    /// <summary>Поднять слушателя. Привязка к порту повторяется В СВОЁМ ПОТОКЕ,
+    /// пока не удастся.
+    ///
+    /// Порт часто занят в первую секунду: предыдущий слушатель отпустил его
+    /// только что (domain reload закрывает сокет), и он ещё в TIME_WAIT.
+    /// Раньше повтор жил в <see cref="Pump"/>, то есть в
+    /// `EditorApplication.update`, — и это ломалось ровно там, где было нужнее
+    /// всего: на входе в PLAY MODE. Домен перезагружается, привязка не удаётся,
+    /// а до Pump в batch-редакторе очередь не доходит — мост молчит весь
+    /// play-сеанс. Полный набор PlayMode из-за этого выглядел как зависание,
+    /// хотя тесты честно отрабатывали до конца (в логе есть и
+    /// ExitingPlayMode, и EnteredEditMode).</summary>
     private static void Start()
     {
-        if (_listener != null) return;
-        // Флаг снимается ДО попытки: иначе одна неудачная привязка (порт ещё в
-        // TIME_WAIT) навсегда отключала бы повторные попытки из Pump.
+        if (_thread != null && _thread.IsAlive) return;
         _stopping = false;
-        try
+        _thread = new Thread(BindAndAccept) { IsBackground = true, Name = "EditorBridge" };
+        _thread.Start();
+    }
+
+    private static void BindAndAccept()
+    {
+        while (!_stopping)
         {
-            _listener = new TcpListener(IPAddress.Loopback, Port);
-            _listener.Start();
-            _thread = new Thread(Accept) { IsBackground = true, Name = "EditorBridge" };
-            _thread.Start();
+            try
+            {
+                var listener = new TcpListener(IPAddress.Loopback, Port);
+                listener.Start();
+                _listener = listener;
+                break;
+            }
+            catch (SocketException)
+            {
+                // Порт ещё не отпущен (или рядом поднимается второй редактор —
+                // от этого защищает замок в шлюзе). Ждём и пробуем снова.
+                Thread.Sleep(250);
+            }
         }
-        catch (SocketException)
-        {
-            // Порт занят. Две причины, и обе временные: предыдущий редактор ещё
-            // не отпустил сокет (TIME_WAIT после kill) или рядом поднимается
-            // второй экземпляр. Молча пробуем снова из Pump — разовая попытка
-            // в статическом конструкторе оставляла мост мёртвым до перезапуска
-            // редактора, хотя порт освобождался через пару секунд.
-            _listener = null;
-        }
+        if (_stopping) return;
+        Accept();
     }
 
     private static void Stop()
@@ -112,9 +177,22 @@ public static class EditorBridge
             TcpClient client;
             try { client = _listener!.AcceptTcpClient(); }
             catch (Exception) { return; } // Stop() или reload — выходим тихо
-            try { Handle(client); }
-            catch (Exception e) { Debug.LogWarning($"[EditorBridge] {e.Message}"); }
-            finally { client.Close(); }
+
+            // Соединение — на свой поток.
+            //
+            // Раньше Handle звался прямо здесь, и приём стоял, пока команда не
+            // ответит. А команда может ждать главный поток минутами (REFRESH с
+            // перекомпиляцией, сборка плеера). Тогда `PING` не получал даже
+            // шанса быть принятым — клиент видел мёртвый мост и убивал живой
+            // редактор в разгар работы. Неблокирующий ответ на PING бесполезен,
+            // пока его соединение не берут в руки.
+            var worker = new Thread(() =>
+            {
+                try { Handle(client); }
+                catch (Exception e) { Debug.LogWarning($"[EditorBridge] {e.Message}"); }
+                finally { client.Close(); }
+            }) { IsBackground = true, Name = "EditorBridge.client" };
+            worker.Start();
         }
     }
 
@@ -128,10 +206,47 @@ public static class EditorBridge
         if (string.IsNullOrEmpty(line)) return;
 
         string reply;
-        try { reply = OnMainThread(() => Execute(line!)); }
+        try
+        {
+            // PING и STATUS отвечают ПРЯМО ЗДЕСЬ, по зеркалу состояния.
+            //
+            // Раньше они, как и всё остальное, вставали в очередь главного
+            // потока — и пока тот занят (вход в play mode, сборка, длинный
+            // тест), клиент не получал ответа вообще. Скрипт-шлюз считает
+            // молчание сокета зависанием и через -SilenceMinutes УБИВАЕТ живой
+            // редактор посреди работы. То есть самая частая команда «как там
+            // дела» ломала ровно то, о чём спрашивала.
+            reply = Fast(line!) ?? OnMainThread(() => Execute(line!));
+        }
         catch (Exception e) { reply = "ERR " + e.Message.Replace('\n', ' '); }
 
         writer.WriteLine(reply);
+    }
+
+    /// <summary>Команды, которым главный поток не нужен: ответ собирается из
+    /// зеркала. Возвращает null, если команда не из этих — тогда она пойдёт
+    /// обычным путём.</summary>
+    private static string? Fast(string line)
+    {
+        int sp = line.IndexOf(' ');
+        string cmd = (sp < 0 ? line : line.Substring(0, sp)).Trim().ToUpperInvariant();
+        string arg = sp < 0 ? "" : line.Substring(sp + 1).Trim();
+
+        switch (cmd)
+        {
+            case "PING":
+                // age — сколько секунд назад главный поток тикал в последний
+                // раз. Это и есть разница между «занят» и «завис»: клиенту
+                // больше не нужно гадать по молчанию сокета.
+                double age = (DateTime.UtcNow - new DateTime(Interlocked.Read(ref _lastPumpTicks))).TotalSeconds;
+                return $"OK {_pingInfo}|age={age.ToString("F1", CultureInfo.InvariantCulture)}";
+
+            case "STATUS":
+                return _jobs.TryGetValue(arg, out var s) ? "OK " + s : "ERR unknown job";
+
+            default:
+                return null;
+        }
     }
 
     /// <summary>Выполнить работу в главном потоке и дождаться ответа: почти всё
@@ -157,16 +272,18 @@ public static class EditorBridge
         return result;
     }
 
-    private static double _nextBindAttempt;
-
     private static void Pump()
     {
-        if (_listener == null && !_stopping && EditorApplication.timeSinceStartup > _nextBindAttempt)
-        {
-            _nextBindAttempt = EditorApplication.timeSinceStartup + 2.0;
-            Start();
-        }
+        // Зеркало для PING: собрать здесь, в главном потоке, чтобы поток сокета
+        // мог отвечать не трогая API редактора.
+        Interlocked.Exchange(ref _lastPumpTicks, DateTime.UtcNow.Ticks);
+        _pingInfo = $"{_projectName}|{_unityVersion}|"
+                  + (EditorApplication.isCompiling ? "compiling"
+                     : EditorApplication.isPlaying ? "playing" : "idle");
 
+        // Привязку к порту Pump больше не двигает — она живёт в своём потоке
+        // (см. BindAndAccept). Здесь остаётся только очередь работы для
+        // главного потока.
         while (true)
         {
             Action action;
@@ -219,7 +336,15 @@ public static class EditorBridge
     /// необязательны.</summary>
     private static string StartRun(string arg)
     {
-        var parts = arg.Split('|');
+        // Разделитель — ТАБУЛЯЦИЯ, а не '|'.
+        //
+        // Фильтр уходит в NUnit как регулярка по имени, а в регулярке '|' —
+        // обычный символ: исключение вида `^(?!.*(A|B)).*$` резалось протоколом
+        // пополам, до NUnit доезжало `^(?!.*(A`, и тот падал на КАЖДОМ тесте
+        // с «Not enough )'s». Прогон при этом не заканчивался никогда — десять
+        // минут до сторожа. Табуляции в именах классов и в путях не бывает.
+        var parts = arg.Split('\t');
+        if (parts.Length == 1) parts = arg.Split('|');   // старые вызовы без фильтра
         string platform = parts.Length > 0 ? parts[0].Trim() : "EditMode";
         string filter = parts.Length > 1 ? parts[1].Trim() : "";
         string resultPath = parts.Length > 2 ? parts[2].Trim() : "";
@@ -290,15 +415,13 @@ public static class EditorBridge
         {
             method.Invoke(null, null);
             int code = BuildProject.LastExitCode;
+            if (code != 0) SetJobError(jobId, $"exit code {code}");
             SetJob(jobId, code == 0 ? "done" : "failed", $"0|0|{code}");
-            if (code != 0)
-                SessionState.SetString(JobPrefix + jobId + ".error", $"exit code {code}");
         }
         catch (Exception e)
         {
+            SetJobError(jobId, (e.InnerException ?? e).Message.Replace('\n', ' '));
             SetJob(jobId, "failed", "0|0|1");
-            SessionState.SetString(JobPrefix + jobId + ".error",
-                (e.InnerException ?? e).Message.Replace('\n', ' '));
         }
         finally
         {
@@ -340,6 +463,16 @@ public static class EditorBridge
     {
         SessionState.SetString(JobPrefix + jobId + ".state", state);
         SessionState.SetString(JobPrefix + jobId + ".counts", counts);
+        // SessionState переживает domain reload, зеркало — нет; зато зеркало
+        // читается без главного потока. Нужны оба, поэтому пишем в оба.
+        _jobs[jobId] = $"{state}|{counts}|{SessionState.GetString(JobPrefix + jobId + ".error", "")}";
+    }
+
+    /// <summary>Причина падения. Пишется ДО <see cref="SetJob"/>: клиент,
+    /// увидевший «failed», должен сразу видеть и текст, а не пустую строку.</summary>
+    private static void SetJobError(string jobId, string error)
+    {
+        SessionState.SetString(JobPrefix + jobId + ".error", error);
     }
 
     // ── Колбэки тестового раннера ───────────────────────────────────────
@@ -393,7 +526,53 @@ public static class EditorBridge
         w.WriteAttributeString("duration",
             result.Duration.ToString("F3", CultureInfo.InvariantCulture));
         WriteProblems(w, result);
+        WriteSlowest(w, result);
         w.WriteEndElement();
+    }
+
+    /// <summary>Пять самых долгих классов прогона.
+    ///
+    /// Набор дешевеет не там, где кажется: почти всё время съедают два-три
+    /// класса (кодирование GIF, профилирование), а остальные семьдесят тестов
+    /// идут фоном. Без этого списка «набор стал медленным» обсуждается на
+    /// ощупь, и оптимизируют не тот класс.</summary>
+    private static void WriteSlowest(XmlWriter w, ITestResultAdaptor root)
+    {
+        var byClass = new Dictionary<string, double>();
+        CollectDurations(root, byClass);
+
+        var top = new List<KeyValuePair<string, double>>(byClass);
+        top.Sort((a, b) => b.Value.CompareTo(a.Value));
+
+        w.WriteStartElement("slowest");
+        for (int i = 0; i < Math.Min(5, top.Count); i++)
+        {
+            w.WriteStartElement("suite");
+            w.WriteAttributeString("name", top[i].Key);
+            w.WriteAttributeString("seconds", top[i].Value.ToString("F1", CultureInfo.InvariantCulture));
+            w.WriteEndElement();
+        }
+        w.WriteEndElement();
+    }
+
+    private static void CollectDurations(ITestResultAdaptor node, Dictionary<string, double> byClass)
+    {
+        if (node.HasChildren)
+        {
+            foreach (var child in node.Children) CollectDurations(child, byClass);
+            return;
+        }
+
+        // FullName листа — "Class.Method" (или "Ns.Class.Method(args)"); класс
+        // берём как всё до последней точки перед именем метода.
+        string full = node.FullName ?? "";
+        int paren = full.IndexOf('(');
+        if (paren > 0) full = full.Substring(0, paren);
+        int dot = full.LastIndexOf('.');
+        string cls = dot > 0 ? full.Substring(0, dot) : full;
+
+        byClass.TryGetValue(cls, out double sum);
+        byClass[cls] = sum + node.Duration;
     }
 
     private static void WriteProblems(XmlWriter w, ITestResultAdaptor node)
