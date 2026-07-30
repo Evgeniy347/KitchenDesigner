@@ -100,6 +100,7 @@ namespace KitchenDesigner.Core.MCP
 		public RadiusTableInfo? radiusTable; // свойства радиусного стола, только для RadiusTableElement
 		public PillarInfo? pillar; // свойства опоры, только для PillarElement
 		public CooktopInfo? cooktop; // свойства варочной, только для CooktopElement
+		public OvenInfo? oven; // свойства духовки, только для OvenElement
 		public WindowInfo? window; // свойства окна, только для WindowElement
 		public DoorInfo? door; // свойства двери, только для DoorElement
     }
@@ -323,6 +324,25 @@ namespace KitchenDesigner.Core.MCP
 		public string attachedPartName = string.Empty;
 		public int offsetXMM;
 		public int offsetYMM;
+	}
+
+	/// <summary>Духовой шкаф. dimX/dimY/dimZ — габарит целиком (фасад плюс
+	/// корпус), здесь — разбивка на фасад и корпус в нише. Всё фиксировано
+	/// моделью: edit_elements отклоняет любую правку размера.</summary>
+	[Serializable]
+	public class OvenInfo
+	{
+		public string model = string.Empty;
+		public bool fixedSize;
+		public float facadeThicknessMM;
+		public int bodyWidthMM;
+		public int bodyDepthMM;
+		public int bodyHeightMM;
+		public int controlPanelHeightMM;
+		public int glassHeightMM;
+		/// <summary>Ручка выступает ВПЕРЁД за габаритную коробку: коробка
+		/// описывает то, что встаёт в нишу колонны.</summary>
+		public int handleProtrusionMM;
 	}
 
 	[Serializable]

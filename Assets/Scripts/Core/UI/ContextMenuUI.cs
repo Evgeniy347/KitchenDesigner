@@ -1298,6 +1298,9 @@ namespace KitchenDesigner.Core.UI
 				_currentTypeName = element is CooktopElement fixedCooktop && fixedCooktop.HasFixedSize
 						? fixedCooktop.Model
 						: element is CooktopElement ? "Варочная"
+					// Духовка — всегда готовая модель, поэтому в заголовке она
+					// сама: «Духовка» умолчала бы о том, что размеры залочены.
+					: element is OvenElement ? OvenElement.MODEL
 					: element is SinkElement ? "Мойка"
 					: element is LightSourceElement ? "Источник света"
 					: isPillar ? "Опора"
@@ -2744,7 +2747,7 @@ namespace KitchenDesigner.Core.UI
             if (e is TableElement || e is RadiusTableElement || e is PillarElement
                 || e is WindowElement || e is DoorElement || e is PanelElement
                 || e is LightSourceElement || e is FloorElement
-                || e is SinkElement || e is CooktopElement) return TypeGroup.None;
+                || e is SinkElement || e is CooktopElement || e is OvenElement) return TypeGroup.None;
             if (e.GetComponent<Wall>() != null || e.GetComponent<BasePlate>() != null) return TypeGroup.None;
             // AssembledFacade — подкласс Facade; порядок проверок не важен, обе → структурная.
             if (e is AssembledFacadeElement || e is RadialShelfElement || e is FacadeElement)

@@ -798,6 +798,16 @@ namespace KitchenDesigner.Core.MCP
             });
         }
 
+        /// <summary>Модель прибора принадлежит именно этому типу элемента.
+        /// Новый прибор дописывает сюда одну строку — иначе его модель, будучи
+        /// известной, применилась бы к чужому типу.</summary>
+        private static bool ModelFitsType(string elementType, string model) => elementType switch
+        {
+            "cooktop" => CooktopElement.IsKnownModel(model),
+            "oven" => model == OvenElement.MODEL,
+            _ => false,
+        };
+
         /// <summary>Batch create: atomically create one or MANY elements. Whole batch is ONE undo step.</summary>
         private McpResponse HandleCreateElements(McpRequest req)
         {
@@ -823,8 +833,13 @@ namespace KitchenDesigner.Core.MCP
                 var elementType = (item.type ?? "board").Trim().ToLowerInvariant();
                 // Неизвестная модель молча дала бы свободный прибор «почти того»
                 // размера — отказываем, пока клиент не назовёт модель из списка.
-                if (!string.IsNullOrEmpty(item.model) && !CooktopElement.IsKnownModel(item.model))
+                if (!string.IsNullOrEmpty(item.model) && !ApplianceModels.IsKnown(item.model))
                 { errors.Add($"Unknown appliance model '{item.model}' for '{item.name}'"); continue; }
+                // Известная, но ЧУЖАЯ для этого типа модель молча дала бы прибор
+                // «почти того» размера: варочная с моделью духовки осталась бы
+                // свободной панелью 590×520.
+                if (!string.IsNullOrEmpty(item.model) && !ModelFitsType(elementType, item.model!))
+                { errors.Add($"Model '{item.model}' does not belong to type '{elementType}' ('{item.name}')"); continue; }
                 var pos = new Vector3(item.x, item.y, item.z);
                 GameObject go = null!;
 
@@ -870,6 +885,11 @@ namespace KitchenDesigner.Core.MCP
                         break;
                     case "cooktop":
                         go = ElementFactory.CreateCooktop(item.name, pos, item.model ?? "");
+                        break;
+                    case "oven":
+                        // Габариты у духовки от модели — width/height/depth здесь
+                        // не участвуют (их отклоняет и edit_elements).
+                        go = ElementFactory.CreateOven(item.name, pos);
                         break;
                     case "window":
                         go = ElementFactory.CreateWindow(new Vector3Int(item.width ?? 900, item.height ?? 1200, item.depth ?? 100),

@@ -234,6 +234,7 @@ namespace KitchenDesigner.Core.MCP
             var door = el as DoorElement;
             var pillar = el as PillarElement;
             var cooktop = el as CooktopElement;
+            var oven = el as OvenElement;
             FacadeValidationData? facadeValidation = includeFacadeValidation && el is FacadeElement fe && allElements != null
                 ? ComputeFacadeValidation(fe, allElements)
                 : (FacadeValidationData?)null;
@@ -317,6 +318,18 @@ namespace KitchenDesigner.Core.MCP
                     attachedPartName = cooktop.AttachedPartName,
                     offsetXMM = cooktop.OffsetXMM,
                     offsetYMM = cooktop.OffsetYMM
+                } : null,
+                oven = oven != null ? new OvenInfo
+                {
+                    model = OvenElement.MODEL,
+                    fixedSize = oven.HasFixedSize,
+                    facadeThicknessMM = OvenElement.FACADE_THICKNESS_MM,
+                    bodyWidthMM = OvenElement.BODY_WIDTH_MM,
+                    bodyDepthMM = OvenElement.BODY_DEPTH_MM,
+                    bodyHeightMM = OvenElement.BODY_HEIGHT_MM,
+                    controlPanelHeightMM = OvenElement.CONTROL_PANEL_HEIGHT_MM,
+                    glassHeightMM = OvenElement.GLASS_HEIGHT_MM,
+                    handleProtrusionMM = OvenElement.HANDLE_PROTRUSION_MM
                 } : null,
                 window = window != null ? new WindowInfo
                 {

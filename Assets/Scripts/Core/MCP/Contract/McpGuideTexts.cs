@@ -228,6 +228,15 @@ SinkElement / CooktopElement
                       appliance: 592x522 glass, 51 total height, 560x490 cutout.
                       Its size and cutout come from the manufacturer — width,
                       height, depth and cutout_* are REJECTED by edit_elements.
+OvenElement           Built-in electric oven (type:""oven""), one model only:
+                      Bosch HBA514BB3. NOT recessed — it needs no host board and
+                      cuts no hole; it just stands in a column like a carcass
+                      part. Bounding box 594x595x568: a 594x595x19.5 front
+                      (control strip 96 high on top, black door glass 499 below)
+                      plus a 570x548x535 body behind it. The handle sticks out
+                      50 mm IN FRONT of that box on purpose. Everything is fixed
+                      by the manufacturer — width/height/depth are REJECTED by
+                      edit_elements.
 WindowElement / DoorElement
                       Openings. Prefer add_opening / apply_floorplan: they
                       attach the opening to a wall and cut the hole. Creating

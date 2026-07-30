@@ -214,6 +214,11 @@ namespace KitchenDesigner.Core.UI
                 UIManager.Instance.SpawnCooktop(item.name, item.applianceModel);
                 return;
             }
+            if (item.isOven)
+            {
+                UIManager.Instance.SpawnOven(item.name);
+                return;
+            }
             if (item.isDrawer)
                 UIManager.Instance.SpawnDrawer(item.drawerType, item.drawerLength, item.drawerColor, item.drawerWidth, item.name,
                     item.drawerSystem == "movento" ? DrawerSystem.Movento : DrawerSystem.Gtv);

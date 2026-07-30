@@ -63,6 +63,9 @@ namespace KitchenDesigner.Core
 		public static GameObject CreateCooktop(string name, Vector3 position, string model = "") =>
 			Instance.CreateCooktop(name, position, model);
 
+		public static GameObject CreateOven(string name, Vector3 position) =>
+			Instance.CreateOven(name, position);
+
 		public static GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50) =>
             Instance.CreateWindow(dimensionsMM, name, position, tint, sillProtrusionMM);

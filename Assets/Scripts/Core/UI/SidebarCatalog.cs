@@ -25,6 +25,7 @@ namespace KitchenDesigner.Core.UI
             public bool isLightSource;
             public bool isSink;           // врезная мойка (садится на деталь-столешницу)
             public bool isCooktop;        // варочная поверхность (садится на деталь-столешницу без выреза)
+            public bool isOven;           // духовой шкаф (отдельно стоящий, встраивается в колонну)
             public bool isPanel;          // ДВП/ХДФ — вкладная панель с зазорами
             /// <summary>Готовая модель встраиваемой техники (группа «Техника»):
             /// габариты берутся у производителя и не редактируются. Пусто —
@@ -50,6 +51,7 @@ namespace KitchenDesigner.Core.UI
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
                 isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false; isDoor = false;
                 isPillar = false; isFloor = false; isLightSource = false; isSink = false; isCooktop = false;
+                isOven = false;
                 isPanel = false; applianceModel = ""; pillarMidHeightMM = 75;
                 drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400; drawerSystem = "gtv";
@@ -158,13 +160,26 @@ namespace KitchenDesigner.Core.UI
         /// поля Ш/В/Г в окне свойств серые, ручек ресайза нет.
         ///
         /// Как добавить прибор: положить сюда ещё один Item со своим флагом типа
-        /// (по образцу <see cref="CooktopModelItem"/>) и развести его в
-        /// SidebarUI.Spawn. Порядок пунктов — варочная, духовка, посудомойка.</summary>
+        /// (по образцу <see cref="CooktopModelItem"/> или <see cref="OvenItem"/>),
+        /// развести его в SidebarUI.Spawn и дописать модель в
+        /// <see cref="ApplianceModels.All"/>. Порядок пунктов — варочная,
+        /// духовка, посудомойка.</summary>
         private static Group ApplianceGroup()
         {
             var cooktop = CooktopModelItem("Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E,
                 CooktopElement.MODEL_BOSCH_PUE611BB5E);
-            return new Group { title = "Техника", shortLabel = "Т", items = new List<Item> { cooktop } };
+            var oven = OvenItem("Духовка " + OvenElement.MODEL);
+            return new Group { title = "Техника", shortLabel = "Т", items = new List<Item> { cooktop, oven } };
+        }
+
+        /// <summary>Духовой шкаф: размеры берутся из OvenElement, а не из
+        /// каталога, — модель у него одна и правке не подлежит.</summary>
+        private static Item OvenItem(string name)
+        {
+            var item = new Item(name, OvenElement.ModelDimensionsMM);
+            item.isOven = true;
+            item.applianceModel = OvenElement.MODEL;
+            return item;
         }
 
         /// <summary>Варочная поверхность готовой модели: размеры берутся из её

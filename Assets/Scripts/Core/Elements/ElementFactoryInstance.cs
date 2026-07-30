@@ -277,6 +277,15 @@ namespace KitchenDesigner.Core
 				return go;
 			}
 
+			// Духовка целиком описывается своей моделью — копии достаточно
+			// повторить тип: габариты, вырезы и цвета у неё производные.
+			if (source is OvenElement)
+			{
+				var go = CreateOven(source.PartName, offset);
+				go.transform.rotation = source.transform.rotation;
+				return go;
+			}
+
 			if (source is PillarElement srcPillar)
 			{
 				var go = CreatePillar(srcPillar.MidHeightMM, source.PartName, offset);
@@ -728,6 +737,32 @@ namespace KitchenDesigner.Core
 			cooktop.Movable = true;
 
 			PartRegistry.Register(cooktop);
+
+			if (ElementHighlighter.Instance != null)
+				ElementHighlighter.Instance.RefreshHighlights();
+
+			return go;
+		}
+
+		/// <summary>Духовой шкаф: корневой масштаб единичный, вся геометрия —
+		/// дочерние коробки, коллайдер по габариту ставит сам OvenElement в
+		/// ApplyDimensions. Размеры не параметр: их даёт модель.</summary>
+		public GameObject CreateOven(string name, Vector3 position)
+		{
+			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Духовка" : name));
+			go.tag = "KitchenElement";
+			go.transform.position = position;
+
+			var rb = go.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
+
+			var oven = go.AddComponent<OvenElement>();
+			oven.PartName = go.name;
+			oven.DimensionsMM = OvenElement.ModelDimensionsMM;
+			oven.Movable = true;
+
+			PartRegistry.Register(oven);
 
 			if (ElementHighlighter.Instance != null)
 				ElementHighlighter.Instance.RefreshHighlights();

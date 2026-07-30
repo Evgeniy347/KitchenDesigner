@@ -24,4 +24,27 @@ namespace KitchenDesigner.Core
         public static bool IsFixed(object? element) =>
             element is IFixedSizeElement fixedSize && fixedSize.HasFixedSize;
     }
+
+    /// <summary>Реестр готовых моделей встраиваемой техники — ОДНО место, где
+    /// строка модели (из MCP или из сейва) проверяется на «такой прибор у нас
+    /// есть». Новый прибор дописывает сюда одну строку; без этого его модель
+    /// молча отвергалась бы как чужая.</summary>
+    public static class ApplianceModels
+    {
+        /// <summary>Все модели из группы «Техника» одним списком — на нём же
+        /// стоит перечисление в MCP-контракте (<c>CreateItem.model</c>).</summary>
+        public static readonly string[] All =
+        {
+            CooktopElement.MODEL_BOSCH_PUE611BB5E,
+            OvenElement.MODEL,
+        };
+
+        public static bool IsKnown(string? model)
+        {
+            if (string.IsNullOrEmpty(model)) return false;
+            foreach (var known in All)
+                if (known == model) return true;
+            return false;
+        }
+    }
 }

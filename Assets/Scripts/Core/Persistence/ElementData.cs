@@ -150,6 +150,10 @@ namespace KitchenDesigner.Core
 		public int cooktopOffsetYMM = 0;
 		public int cooktopCutoutWidthMM = 0;
 		public int cooktopCutoutDepthMM = 0;
+		// Духовой шкаф (OvenElement.MODEL). Модель у него одна, а габариты —
+		// её производные, поэтому в файле хранится только сам факт типа: всё
+		// остальное восстанавливает фабрика. false во всех старых проектах.
+		public bool isOven = false;
 		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
 		// Накладки текстур (стена, пол); в старых файлах поля нет — пустой массив.
@@ -348,6 +352,7 @@ namespace KitchenDesigner.Core
 				d.cooktopCutoutWidthMM = cooktopEl.CutoutWidthMM;
 				d.cooktopCutoutDepthMM = cooktopEl.CutoutDepthMM;
 			}
+			d.isOven = element is OvenElement;
 			d.isFloor = element is FloorElement;
 			if (element is FloorElement floor && floor.PolygonLocalMm.Count >= 3)
 			{

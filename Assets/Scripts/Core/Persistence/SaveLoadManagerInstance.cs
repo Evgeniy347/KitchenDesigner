@@ -217,6 +217,8 @@ namespace KitchenDesigner.Core
 						? ElementFactory.Instance.CreateSink(ed.name, ed.Position)
 						: ed.isCooktop
 							? ElementFactory.Instance.CreateCooktop(ed.name, ed.Position, ed.cooktopModel)
+						: ed.isOven
+							? ElementFactory.Instance.CreateOven(ed.name, ed.Position)
 						: ed.isPillar
 							? ElementFactory.Instance.CreatePillar(ed.midHeightMM, ed.name, ed.Position)
 							: ed.isTable

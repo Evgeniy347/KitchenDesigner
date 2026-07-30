@@ -652,6 +652,19 @@ namespace KitchenDesigner.Core.UI
             BeginPlacement(go);
         }
 
+        /// <summary>Духовка встраивается в колонну и ни к чему не прилипает —
+        /// ставим её на пол (центр по высоте = половина габарита), дальше её
+        /// поднимает пользователь обычным перетаскиванием.</summary>
+        public void SpawnOven(string name)
+        {
+            Vector3 pos = GroundPointInFrontOfCamera();
+            pos = GridManager.SnapToGrid(pos);
+            pos.y = OvenElement.ModelDimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS;
+
+            var go = ElementFactory.CreateOven(name, pos);
+            BeginPlacement(go);
+        }
+
         public void SpawnLightSource(string name)
         {
             Vector3 pos = GroundPointInFrontOfCamera();

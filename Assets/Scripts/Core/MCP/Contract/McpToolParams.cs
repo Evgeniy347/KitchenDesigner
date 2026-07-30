@@ -264,7 +264,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "table", "radius_table", "pillar", "window", "door" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "table", "radius_table", "pillar", "window", "door", "cooktop", "oven" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;
@@ -279,8 +279,9 @@ namespace KitchenDesigner.Core.MCP.Contract
         public int? depth;
 
         [McpParam("Appliance model for a built-in appliance (type cooktop). Its size and cutout come from the " +
-                  "manufacturer and cannot be edited afterwards; width/height/depth are ignored. Omit for a free-size appliance.",
-            Enum = new[] { "Bosch PUE611BB5E" })]
+                  "manufacturer and cannot be edited afterwards; width/height/depth are ignored. Omit for a free-size appliance. " +
+                  "type oven has exactly one model and needs no value here.",
+            Enum = new[] { "Bosch PUE611BB5E", "Bosch HBA514BB3" })]
         public string? model;
     }
 

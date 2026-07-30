@@ -20,6 +20,8 @@ namespace KitchenDesigner.Core
             if (currentType == TargetType.Window || targetType == TargetType.Window) return source;
             if (currentType == TargetType.Door || targetType == TargetType.Door) return source;
             if (source is CooktopElement) return source;
+            // Готовая техника: модель — это и есть тип, конвертировать нечего.
+            if (source is OvenElement) return source;
 
             var go = source.gameObject;
 
