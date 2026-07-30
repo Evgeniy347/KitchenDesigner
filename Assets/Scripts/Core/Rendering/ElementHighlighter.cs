@@ -160,14 +160,14 @@ namespace KitchenDesigner.Core
             // визуальный сигнал «заблокировано».
             if (ModuleEditMode.IsActive && !ModuleEditMode.IsEditable(element))
             {
-                PaintFlat(renderer, _dimmedMaterial!);
+                PaintFlat(element, renderer, _dimmedMaterial!);
                 ElementOutline.For(element)?.Hide();
                 return;
             }
 
             if (PhotoMode.ResolveTransparent(element.Transparent))
             {
-                PaintFlat(renderer, isValid ? _validTransparentMaterial! : _invalidTransparentMaterial!);
+                PaintFlat(element, renderer, isValid ? _validTransparentMaterial! : _invalidTransparentMaterial!);
                 ElementOutline.Ensure(element)?.Show(selected: false);
             }
             else if (ownDecorOnly)
@@ -189,19 +189,31 @@ namespace KitchenDesigner.Core
             }
             else
             {
-                PaintFlat(renderer, isValid ? _validMaterial! : _invalidMaterial!);
+                PaintFlat(element, renderer, isValid ? _validMaterial! : _invalidMaterial!,
+                    keepAux: true);
                 ElementOutline.For(element)?.Hide();
             }
         }
 
-        /// <summary>Залить деталь одним материалом — по одному на КАЖДЫЙ сабмеш.
+        /// <summary>Залить ТЕЛО детали одним материалом (тонировка, затемнение,
+        /// прозрачность), оставив служебные сабмеши при своих материалах.
         ///
         /// У детали их бывает несколько: пазы и некромкованные торцы живут
-        /// отдельными сабмешами (см. GrooveMesh.Build). Простое
-        /// <c>renderer.material = x</c> оставляет в рендерере ровно один материал,
-        /// а сабмеш без материала Unity не рисует вовсе — на месте паза и торца
-        /// получалась дыра насквозь.</summary>
-        private static void PaintFlat(MeshRenderer renderer, Material material)
+        /// отдельными сабмешами (см. GrooveMesh.Build). Двух ошибок тут надо
+        /// избежать сразу. Простое <c>renderer.material = x</c> оставляет в
+        /// рендерере ровно один материал, а сабмеш без материала Unity не рисует
+        /// вовсе — на месте паза и торца получалась дыра насквозь. Залить же
+        /// тонировкой ВСЕ сабмеши значит стереть и паз, и подложку: у детали без
+        /// выбранного декора (materialId «default») это ровно тот случай, когда
+        /// тонировка включена всегда, — голого торца не было видно никогда.</summary>
+        /// <param name="keepAux">Оставить пазу и торцам их материалы. Для
+        /// валидационной тонировки — да: она сообщает «деталь в порядке», а не
+        /// «деталь такого цвета», и голый торец при ней виден. Для прозрачности и
+        /// затемнения — нет: сквозная деталь с непрозрачным торцом перестаёт быть
+        /// сквозной, а белый торец на затемнённой детали ломает сам сигнал
+        /// «вне редактируемого модуля».</param>
+        private static void PaintFlat(KitchenElement element, MeshRenderer renderer,
+            Material material, bool keepAux = false)
         {
             var filter = renderer.GetComponent<MeshFilter>();
             var mesh = filter != null ? filter.sharedMesh : null;
@@ -217,6 +229,8 @@ namespace KitchenDesigner.Core
             var slots = new Material[count];
             for (int i = 0; i < count; i++) slots[i] = material;
             renderer.sharedMaterials = slots;
+            // Служебные сабмеши возвращают себе свои материалы поверх заливки.
+            if (keepAux) element.RefreshSubmeshMaterials();
         }
     }
 }

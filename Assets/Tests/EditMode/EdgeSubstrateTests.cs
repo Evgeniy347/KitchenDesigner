@@ -200,39 +200,45 @@ public class EdgeSubstrateTests
     // --- Каталог: чем именно красится торец ---
 
     [Test]
-    public void Substrate_ProjectCatalog_HasTheSandedMdfDecor()
+    public void Substrate_ByDefault_IsPlainWhite()
     {
-        // Запись живёт в StreamingAssets/Textures/index.json; исчезнет она —
-        // торцы молча побелеют, и заметить это будет уже не на чем.
-        var def = EdgeSubstrate.Decor();
-        Assert.IsNotNull(def, $"в каталоге нет декора «{EdgeSubstrate.DecorName}»");
-        Assert.AreEqual(EdgeSubstrate.DecorName, def!.displayName);
+        // Белый по умолчанию — сознательное решение: фотографическая текстура
+        // плиты по тону сливалась и с бежевым декором, и с валидационной
+        // заливкой, и торец перестал читаться как торец. В каталоге проекта
+        // декора с именем DecorName нет — и быть не должно.
+        Assert.IsNull(EdgeSubstrate.Decor(),
+            $"в каталоге завёлся декор «{EdgeSubstrate.DecorName}» — торцы перестали быть белыми");
+
+        var mat = EdgeSubstrate.Material();
+        Assert.IsNotNull(mat);
+        Assert.AreEqual(Color.white, mat!.color);
+        Assert.IsNull(mat.mainTexture, "белая подложка картинки не носит");
     }
 
     [Test]
-    public void Substrate_Material_ShowsTheDecorItself_NotTheWhiteFallback()
+    public void Substrate_CatalogDecorWithTheName_OverridesWhite()
     {
-        // Материал подложки — это материал декора из каталога со своей картинкой.
-        // Белый тут значил бы, что декор не нашёлся и торцы молча побелели.
-        var mat = EdgeSubstrate.Material();
-        Assert.IsNotNull(mat);
-        Assert.IsNotNull(mat!.mainTexture, "картинка «МДФ шлифованная» не доехала до материала");
-        Assert.AreEqual(MaterialManager.GetSharedMaterial(EdgeSubstrate.Decor()!), mat,
+        // Точка расширения: завёл декор с этим именем — подложкой стал он.
+        // Так же включается назад картинка «МДФ шлифованная».
+        var custom = new MaterialDef("edge_substrate_test", EdgeSubstrate.DecorName,
+            "МДФ", new Color(0.8f, 0.7f, 0.6f));
+        MaterialCatalog.Load(new[]
+        {
+            new MaterialDef(MaterialCatalog.DefaultId, "Серый", "ЛДСП", Color.gray),
+            custom,
+        });
+
+        Assert.AreEqual(custom, EdgeSubstrate.Decor());
+        Assert.AreEqual(MaterialManager.GetSharedMaterial(custom), EdgeSubstrate.Material(),
             "подложка обязана делить материал с декором — иначе лишний батч на деталь");
     }
 
     [Test]
-    public void Substrate_WithoutTheDecor_FallsBackToPlainWhite()
+    public void Substrate_SandedMdfDecor_StaysInTheCatalogAsAnOrdinaryOne()
     {
-        MaterialCatalog.Load(new[]
-        {
-            new MaterialDef(MaterialCatalog.DefaultId, "Серый", "ЛДСП", Color.gray),
-        });
-
-        Assert.IsNull(EdgeSubstrate.Decor());
-        var mat = EdgeSubstrate.Material();
-        Assert.IsNotNull(mat, "без декора подложка обязана остаться белой, а не пропасть");
-        Assert.AreEqual(Color.white, mat!.color);
+        // Картинку никто не выбрасывал: она осталась обычным декором, её можно
+        // назначить детали руками и ею же переопределить подложку.
+        Assert.AreEqual("МДФ шлифованная", MaterialCatalog.Get("mdf_shlifovannaya").displayName);
     }
 
     // --- Деталь целиком: маска правит сабмеши и материалы ---
@@ -277,6 +283,31 @@ public class EdgeSubstrateTests
         e.ApplyDimensions();
 
         Assert.AreEqual(2, e.GetComponent<MeshRenderer>().sharedMaterials.Length);
+    }
+
+    [Test]
+    public void Part_WithoutOwnDecor_KeepsTheSubstrateUnderTheValidationTint()
+    {
+        // Деталь на декоре «default» (так стоит Countertop_A в проекте) заливалась
+        // валидационной тонировкой ЦЕЛИКОМ, вместе с сабмешем торцов, — голой
+        // плиты не было видно никогда. Тонировка сообщает «деталь в порядке», а
+        // не «деталь такого цвета», поэтому торец из-под неё обязан остаться.
+        var e = MakePart(new Vector3Int(600, 18, 500));
+        e.EdgeBandingEnabled = false;
+        Assert.IsFalse(MaterialManager.HasCustomDecor(e), "декор у детали — дефолтный");
+
+        var host = new GameObject("Highlighter");
+        _spawned.Add(host);
+        var highlighter = host.AddComponent<ElementHighlighter>();
+        highlighter.CreateMaterials();
+        ElementHighlighter.TintEnabled = true;
+
+        highlighter.ApplyForElement(e);
+
+        var mats = e.GetComponent<MeshRenderer>().sharedMaterials;
+        Assert.AreEqual(2, mats.Length, "сабмеш торцов не должен исчезнуть под тонировкой");
+        Assert.AreEqual(EdgeSubstrate.Material(), mats[1], "торец остался подложкой");
+        Assert.AreNotEqual(mats[0], mats[1], "тело затонировано, торец нет");
     }
 
     // --- Настоящий проект ---
