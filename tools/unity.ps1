@@ -1,38 +1,49 @@
 ﻿<#
 .SYNOPSIS
-    Единая точка входа в Unity: живой редактор, если он открыт, иначе batch.
+    Единая точка входа в Unity: ОДИН фоновый редактор, который живёт между вызовами.
 
 .DESCRIPTION
-    Логика одна для ВСЕХ скриптов проекта:
+    Правило одно для ВСЕХ скриптов проекта:
 
-      редактор открыт  → команда уходит в него через мост (Assets/Editor/EditorBridge.cs)
-      редактор закрыт  → холодный `Unity.exe -batchMode`, как раньше
+      редактор жив     → команда уходит в него через мост (Assets/Editor/EditorBridge.cs)
+      редактора нет    → он поднимается ОДИН раз и остаётся жить дальше
 
-    Смысл в цене запуска. Холодный batch платит фиксированные 60–90 секунд
-    (лицензия, Asset Pipeline Refresh ~12 с, три domain reload) ДО первого теста.
-    Прогон одного тестового класса стоит из-за этого 2 минуты вместо 20 секунд.
-    Через мост платится только компиляция изменённых скриптов и сами тесты.
+    Холодного прогона по умолчанию больше нет. Он платил фиксированные 60–90
+    секунд (лицензия, Asset Pipeline Refresh ~12 с, три domain reload) ДО первого
+    теста, и платил их КАЖДЫЙ раз. Через мост платится только компиляция
+    изменённых скриптов и сами тесты.
 
-    Побочно снимается вторая беда: проект держит эксклюзивный лок, и раньше
-    открытый вручную редактор просто не давал batch-скриптам стартовать.
+    Никакая команда не закрывает редактор сама. Закрыть его можно только явно:
+    `stop` или `restart`.
+
+    Что осталось холодным и почему: PlayMode. В живом редакторе прогон виснет на
+    входе в play mode, а эталоны скриншотов сняты холодным batch. Здесь скрипт
+    сам гасит демона, гоняет batch и ПОДНИМАЕТ демона обратно — редактор всё
+    равно остаётся висеть в фоне.
+
+    Чем это оплачено: полный EditMode через мост чуть менее «свежий», чем в новом
+    процессе (шаг SmoothDamp считается от Time.deltaTime, атлас шрифта переживает
+    прогон). Если тест разошёлся именно на этом — перепроверьте его `-Cold`.
 
 .PARAMETER Command
     tests   — прогон тестов (-Platform, -Filter)
     method  — статический метод редактора (-Method), например BuildProject.Build
-    start   — поднять фоновый редактор (batch, без -quit) и дождаться готовности
+    start   — поднять фоновый редактор и дождаться готовности
     stop    — попросить живой редактор закрыться
-    status  — где сейчас исполняются команды
+    restart — убить всё, что держит проект, и поднять чистого демона
+    status  — жив ли редактор и чем занят
 
 .EXAMPLE
     .\tools\unity.ps1 tests -Platform EditMode -Filter SnapCoreTests
+    .\tools\unity.ps1 tests -Platform EditMode          # полный набор, тоже через мост
     .\tools\unity.ps1 tests -Platform PlayMode
     .\tools\unity.ps1 method -Method BuildProject.Build -LogSuffix win
-    .\tools\unity.ps1 start
+    .\tools\unity.ps1 restart                            # если редактор завис
 #>
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('tests', 'method', 'start', 'stop', 'status')]
+    [ValidateSet('tests', 'method', 'start', 'stop', 'restart', 'status')]
     [string]$Command = 'status',
 
     [ValidateSet('EditMode', 'PlayMode')]
@@ -43,12 +54,18 @@ param(
     [string]$ResultPath = '',
     [string]$LogSuffix = '',
 
-    # Не поднимать редактор ради одной команды — уйти в холодный batch.
-    [switch]$NoDaemon,
+    # Явный холодный batch: свой процесс Unity на один прогон. Нужен, только
+    # когда тест разошёлся из-за несвежести живого редактора. Демон после него
+    # поднимается обратно.
+    [switch]$Cold,
 
-    # Полный прогон через живой редактор: быстрее, но чуть менее верно (см.
-    # Invoke-Tests). Для финальной проверки перед коммитом не использовать.
+    # Совместимость со старыми вызовами: раньше -Live означал «полный набор через
+    # мост». Теперь это поведение по умолчанию, флаг ничего не меняет.
     [switch]$Live,
+
+    # Сколько ждать молчащий редактор, прежде чем счесть его зависшим и
+    # перезапустить. Молчание на domain reload — секунды, а не минуты.
+    [int]$SilenceMinutes = 3,
 
     # Тайм-аут ожидания результата, минут.
     [int]$TimeoutMinutes = 40
@@ -110,19 +127,53 @@ function Test-Bridge {
     Lock-файл сам по себе не годится: после аварийного завершения он остаётся
     лежать.
 #>
-function Test-EditorRunning {
+function Get-EditorProcesses {
+    $found = @()
     foreach ($p in (Get-Process Unity -ErrorAction SilentlyContinue)) {
         try {
             $cmdline = (Get-CimInstance Win32_Process -Filter "ProcessId = $($p.Id)").CommandLine
-            if ($cmdline -and $cmdline -match [regex]::Escape($repo)) { return $true }
+            if ($cmdline -and $cmdline -match [regex]::Escape($repo)) { $found += $p }
         } catch { }
     }
-    return $false
+    return $found
 }
 
-<#  Дождаться, пока редактор снова начнёт отвечать (после перекомпиляции). #>
+function Test-EditorRunning {
+    return ((Get-EditorProcesses).Count -gt 0)
+}
+
+<#
+    Убить ВСЁ, что держит этот проект.
+
+    Нужно ровно для одного случая: процесс жив, но мост не отвечает дольше
+    разумного — редактор завис или это осиротевший batch от убитого скрипта.
+    Такой процесс не отпустит Library и превращает каждую следующую команду в
+    многоминутное ожидание. Мягко его не закрыть: QUIT идёт через тот же мост,
+    который и молчит.
+#>
+function Stop-EditorsForce {
+    $procs = Get-EditorProcesses
+    if ($procs.Count -eq 0) { return $false }
+    foreach ($p in $procs) {
+        Write-Host "  снимаю зависший Unity (pid $($p.Id))" -ForegroundColor DarkYellow
+        Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+    }
+    # Дать ОС отпустить лок Library, иначе новый редактор упрётся в него.
+    $deadline = (Get-Date).AddSeconds(30)
+    while ((Get-Date) -lt $deadline -and (Test-EditorRunning)) { Start-Sleep -Seconds 1 }
+    return $true
+}
+
+<#
+    Дождаться, пока редактор снова начнёт отвечать (после перекомпиляции).
+
+    Тайм-аут короткий НАМЕРЕННО. Молчание на domain reload длится секунды;
+    молчание в течение минут означает не «занят», а «завис» — и ждать его
+    десять минут (как было раньше) хуже, чем перезапустить.
+#>
 function Wait-Bridge {
-    param([int]$Minutes = 10)
+    param([int]$Minutes = 0)
+    if ($Minutes -le 0) { $Minutes = $SilenceMinutes }
 
     $deadline = (Get-Date).AddMinutes($Minutes)
     while ((Get-Date) -lt $deadline) {
@@ -134,6 +185,10 @@ function Wait-Bridge {
 }
 
 function Start-Daemon {
+    # Второй Unity на том же проекте — это драка за Library, а не «ещё один
+    # воркер». Перед стартом двор должен быть пуст.
+    if (Test-EditorRunning) { Stop-EditorsForce | Out-Null }
+
     Write-Host '=== Запуск фонового редактора ===' -ForegroundColor Cyan
     # Без -quit: редактор остаётся жить и обслуживать мост.
     Start-Process -FilePath $unity -ArgumentList @(
@@ -177,15 +232,26 @@ function Wait-Job {
 
 # ── Команды ─────────────────────────────────────────────────────────────
 
+<#
+    Получить рабочий мост — любой ценой, но НИКОГДА не двумя редакторами сразу.
+
+    Три состояния и три ответа:
+      отвечает          → работаем;
+      жив, но молчит    → ждём $SilenceMinutes (domain reload — это секунды);
+                          не дождались — считаем зависшим, снимаем и поднимаем
+                          заново, а не ждём вечно и не ставим второй поверх;
+      процесса нет      → поднимаем демона, он останется жить после команды.
+#>
 function Resolve-Bridge {
-    if ($NoDaemon) {
-        if (Test-EditorRunning) { throw 'Редактор открыт — batch не стартует. Закройте Unity или уберите -NoDaemon' }
-        return $false
-    }
     if (Test-Bridge) { return $true }
-    # Процесс жив, но молчит — идёт компиляция или domain reload. Ждём его, а
-    # НЕ поднимаем второй редактор поверх того же проекта.
-    if (Test-EditorRunning) { return (Wait-Bridge) }
+
+    if (Test-EditorRunning) {
+        Write-Host '  редактор молчит (компиляция или domain reload) — жду' -ForegroundColor DarkGray
+        if (Wait-Bridge) { return $true }
+        Write-Host "  не ответил за $SilenceMinutes мин — перезапускаю" -ForegroundColor DarkYellow
+        Stop-EditorsForce | Out-Null
+    }
+
     return (Start-Daemon)
 }
 
@@ -196,21 +262,34 @@ function Resolve-Bridge {
     явного Refresh он гоняет тесты по коду, скомпилированному при старте. Это
     не «медленнее», это НЕВЕРНО — зелёный прогон на старом коде хуже красного.
     Ждём конца компиляции: она даёт domain reload, и сокет на это время молчит.
+
+    Меряем НЕПРЕРЫВНОЕ молчание, а не общее время. Компиляция сама по себе может
+    идти минуты и при этом мост отвечает «compiling» — это работа. А вот сокет,
+    молчащий $SilenceMinutes подряд, означает зависший Refresh: наблюдалось после
+    подмены файла скрипта прямо во время обновления ассетов. Возвращаем $false,
+    и вызывающий перезапускает редактора вместо десятиминутного ожидания.
 #>
 function Sync-Editor {
     Send-Bridge -Line 'REFRESH' | Out-Null
 
-    $deadline = (Get-Date).AddMinutes(10)
+    $deadline = (Get-Date).AddMinutes(20)
+    $lastReply = Get-Date
     while ((Get-Date) -lt $deadline) {
         Start-Sleep -Milliseconds 500
         $reply = Send-Bridge -Line 'PING' -TimeoutMs 2000
         if (-not $reply) {
-            if (-not (Test-EditorRunning)) { throw 'Редактор умер на компиляции' }
+            if (-not (Test-EditorRunning)) { return $false }
+            if (((Get-Date) - $lastReply).TotalMinutes -gt $SilenceMinutes) {
+                Write-Host "  мост молчит $SilenceMinutes мин на обновлении ассетов" -ForegroundColor DarkYellow
+                return $false
+            }
             continue    # идёт domain reload
         }
-        if ($reply -notmatch 'compiling') { return }
+        $lastReply = Get-Date
+        if ($reply -notmatch 'compiling') { return $true }
     }
-    throw 'Компиляция не закончилась за 10 минут'
+    Write-Host '  компиляция не закончилась за 20 минут' -ForegroundColor DarkYellow
+    return $false
 }
 
 <#
@@ -232,7 +311,7 @@ function Stop-Editor {
     $kind = Get-EditorKind
     if ($kind -eq 'none') { return $false }
     if ($kind -eq 'gui') {
-        throw 'Открыт редактор Unity, а холодному прогону нужен эксклюзивный проект. Закройте его или добавьте -Live (быстрее, но чуть менее верно)'
+        throw 'Открыт редактор Unity из Hub, а холодному прогону нужен эксклюзивный проект. Закройте его вручную'
     }
 
     Write-Host '  закрываю редактор (нужен холодный batch)' -ForegroundColor DarkGray
@@ -243,52 +322,49 @@ function Stop-Editor {
         Start-Sleep -Seconds 2
         if (-not (Test-EditorRunning)) { return $true }
     }
-    throw 'Редактор не закрылся за 2 минуты'
+
+    # QUIT идёт по мосту, а зависший (или осиротевший) редактор по мосту не
+    # отвечает — просить его бесполезно, снимаем.
+    Write-Host '  не закрылся по-хорошему' -ForegroundColor DarkYellow
+    Stop-EditorsForce | Out-Null
+    if (Test-EditorRunning) { throw 'Не удалось освободить проект от Unity' }
+    return $true
 }
 
 <#
     Куда отправить прогон.
 
-    Мост — для ИТЕРАЦИЙ: фильтр по классу отрабатывает за секунды вместо двух
-    минут. Полный прогон по умолчанию идёт холодным batch, потому что живой
-    редактор не даёт полной верности: пара тестов зависит от свежести процесса
-    (шаг SmoothDamp считается от Time.deltaTime, атлас шрифта переживает
-    прогон). Два полных прогона подряд в одной сессии разошлись на этих двух —
-    цифра, на которой коммитят, должна получаться тем же способом, что и раньше.
+    Через мост идёт ВСЁ, и полный набор тоже: холодный старт стоит 60–90 секунд
+    на каждый вызов, и платить их за каждую проверку — дороже, чем та неполная
+    свежесть, которую даёт живой процесс.
 
-    -Live заставляет гнать полный набор через мост: 2.5 минуты вместо 6-7,
-    когда нужна скорость, а не финальная верность.
-
-    PlayMode не идёт через мост никогда: в живом редакторе прогон виснет на
-    входе в play mode, а эталоны скриншотов сняты холодным batch.
+    Два исключения, и оба возвращают редактор в фон после себя:
+      • -Cold   — явная перепроверка теста, который разошёлся из-за несвежести
+                  (шаг SmoothDamp от Time.deltaTime, переживший прогон атлас шрифта);
+      • PlayMode — в живом редакторе прогон виснет на входе в play mode, а
+                  эталоны скриншотов сняты холодным batch.
 #>
 function Invoke-Tests {
-    $cold = ($Platform -eq 'PlayMode') -or (-not $Filter -and -not $Live)
+    if ($Cold -or $Platform -eq 'PlayMode') { return (Invoke-ColdTests) }
 
-    if ($cold) {
-        # Демон после холодного прогона НЕ поднимаем: следующая команда, которой
-        # он нужен, поднимет его сама. Иначе связка `-RunTests -RunPlayMode`
-        # платила бы за два лишних старта редактора между прогонами.
-        Stop-Editor | Out-Null
-        return (Invoke-ColdTests)
+    # Одна повторная попытка: зависший на обновлении ассетов редактор чинится
+    # перезапуском, а не ожиданием. Второй отказ — уже настоящая проблема.
+    foreach ($attempt in 1..2) {
+        if (-not (Resolve-Bridge)) { throw 'Не удалось получить рабочий редактор' }
+        if (Sync-Editor) { break }
+        if ($attempt -eq 2) { throw 'Редактор не отдаёт обновлённые ассеты даже после перезапуска' }
+        Write-Host '  перезапускаю редактора и пробую ещё раз' -ForegroundColor DarkYellow
+        Stop-EditorsForce | Out-Null
     }
 
-    $viaBridge = Resolve-Bridge
+    $reply = Send-Bridge -Line "RUN $Platform|$Filter|$ResultPath"
+    if (-not $reply -or $reply.StartsWith('ERR')) { throw "Мост отказал: $reply" }
+    $jobId = $reply.Substring(3).Trim()
 
-    if ($viaBridge) {
-        Sync-Editor
-        $reply = Send-Bridge -Line "RUN $Platform|$Filter|$ResultPath"
-        if (-not $reply -or $reply.StartsWith('ERR')) { throw "Мост отказал: $reply" }
-        $jobId = $reply.Substring(3).Trim()
-
-        # STATUS отвечает плоско: state|total|passed|failed|error
-        $parts = Wait-Job -JobId $jobId
-        $state = $parts[0]
-        $total = $parts[1]; $passed = $parts[2]; $failed = $parts[3]
-    }
-    else {
-        return (Invoke-ColdTests)
-    }
+    # STATUS отвечает плоско: state|total|passed|failed|error
+    $parts = Wait-Job -JobId $jobId
+    $state = $parts[0]
+    $total = $parts[1]; $passed = $parts[2]; $failed = $parts[3]
 
     Write-Host ("  Total: {0} | Passed: {1} | Failed: {2}" -f $total, $passed, $failed)
     if ($state -eq 'failed') {
@@ -298,15 +374,41 @@ function Invoke-Tests {
     return 0
 }
 
-<#  Старый путь: свой процесс Unity на прогон. #>
+<#
+    Свой процесс Unity на один прогон — для PlayMode и -Cold.
+
+    Две обязанности сверх самого прогона:
+      • освободить проект (Stop-Editor) — batch не стартует поверх живого;
+      • вернуть демона в фон, чем бы прогон ни кончился. Иначе связка
+        `-RunTests -RunPlayMode` оставляла бы после себя пустой двор, и
+        следующая команда снова платила бы за холодный старт.
+
+    Процесс запускается с -PassThru и снимается в finally: убитый скрипт не
+    должен оставлять осиротевший Unity, держащий Library (именно такой сирота
+    превращал каждую следующую команду в многоминутное ожидание).
+#>
 function Invoke-ColdTests {
+    Stop-Editor | Out-Null
+
     $unityArgs = @(
         '-runTests', '-batchMode', '-projectPath', $repo,
         '-testResults', $ResultPath, '-testPlatform', $Platform,
         '-logFile', $log
     )
     if ($Filter) { $unityArgs += @('-testFilter', $Filter) }
-    Start-Process -FilePath $unity -ArgumentList $unityArgs -Wait | Out-Null
+
+    $proc = $null
+    try {
+        $proc = Start-Process -FilePath $unity -ArgumentList $unityArgs -PassThru
+        $proc.WaitForExit()
+    }
+    finally {
+        if ($proc -and -not $proc.HasExited) {
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+        }
+        Start-Daemon | Out-Null
+    }
+
     if (-not (Test-Path $ResultPath)) { throw "Нет отчёта: $ResultPath (лог: $log)" }
 
     $x = [xml](Get-Content $ResultPath)
@@ -353,11 +455,29 @@ function Invoke-Method {
 switch ($Command) {
     'tests'  { exit (Invoke-Tests) }
     'method' { exit (Invoke-Method) }
-    'start'  { if (Test-EditorRunning) { Write-Host 'редактор уже открыт'; Wait-Bridge | Out-Null } else { Start-Daemon | Out-Null }; exit 0 }
-    'stop'   { if (Test-Bridge) { Send-Bridge -Line 'QUIT' | Out-Null; Write-Host 'редактор закрывается' } else { Write-Host 'редактор не открыт' }; exit 0 }
+    'start'  { Resolve-Bridge | Out-Null; Write-Host 'редактор готов' -ForegroundColor Green; exit 0 }
+    'stop'   {
+        if (Test-EditorRunning) { Stop-Editor | Out-Null; Write-Host 'редактор закрыт' }
+        else { Write-Host 'редактор не открыт' }
+        exit 0
+    }
+    'restart' { Stop-EditorsForce | Out-Null; Start-Daemon | Out-Null; exit 0 }
     'status' {
+        $procs = Get-EditorProcesses
         $reply = Send-Bridge -Line 'PING' -TimeoutMs 1500
-        if ($reply) { Write-Host "мост: $reply" } else { Write-Host 'мост не отвечает — команды пойдут холодным batch' }
+        if ($reply) {
+            Write-Host "редактор жив (pid $($procs.Id -join ', ')), мост: $reply" -ForegroundColor Green
+        }
+        elseif ($procs.Count -gt 0) {
+            Write-Host "процесс есть (pid $($procs.Id -join ', ')), но мост молчит — компиляция, domain reload или зависание" -ForegroundColor Yellow
+            Write-Host '  если это надолго: .\tools\unity.ps1 restart'
+        }
+        else {
+            Write-Host 'редактора нет — первая же команда поднимет его и оставит в фоне'
+        }
+        if ($procs.Count -gt 1) {
+            Write-Host "  ВНИМАНИЕ: процессов $($procs.Count) — они дерутся за Library, нужен restart" -ForegroundColor Red
+        }
         exit 0
     }
 }
