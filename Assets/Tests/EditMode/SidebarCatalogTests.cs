@@ -111,7 +111,7 @@ public class SidebarCatalogTests
         var it = groups[3].items.Find(i => i.name == "Варочная поверхность");
         Assert.IsNotNull(it, "в FurnitureGroup должен быть элемент «Варочная поверхность»");
         Assert.IsTrue(it.isCooktop, "элемент «Варочная поверхность» помечен как isCooktop");
-        Assert.AreEqual(new Vector3Int(CooktopElement.WIDTH_MM, CooktopElement.TOTAL_HEIGHT_MM, CooktopElement.DEPTH_MM), it.dims);
+        Assert.AreEqual(new Vector3Int(CooktopElement.DEFAULT_WIDTH_MM, CooktopElement.DEFAULT_HEIGHT_MM, CooktopElement.DEFAULT_DEPTH_MM), it.dims);
     }
 
     [Test]

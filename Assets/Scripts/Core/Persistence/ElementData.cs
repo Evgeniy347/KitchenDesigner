@@ -137,11 +137,15 @@ namespace KitchenDesigner.Core
 		public string sinkAttachedPartName = "";
 		public int sinkOffsetXMM = 0;
 		public int sinkOffsetYMM = 0;
-		// Варочная поверхность: привязка к столешнице без выреза.
+		// Варочная поверхность: привязка к столешнице и размер выреза. Габариты
+		// плиты лежат в общем dimensionsMM; вырез — здесь. 0 в старых проектах
+		// (поля тогда не было) читается как «дефолтный вырез».
 		public bool isCooktop = false;
 		public string cooktopAttachedPartName = "";
 		public int cooktopOffsetXMM = 0;
 		public int cooktopOffsetYMM = 0;
+		public int cooktopCutoutWidthMM = 0;
+		public int cooktopCutoutDepthMM = 0;
 		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
 		// Накладки текстур (стена, пол); в старых файлах поля нет — пустой массив.
@@ -336,6 +340,8 @@ namespace KitchenDesigner.Core
 				d.cooktopAttachedPartName = cooktopEl.AttachedPartName ?? "";
 				d.cooktopOffsetXMM = cooktopEl.OffsetXMM;
 				d.cooktopOffsetYMM = cooktopEl.OffsetYMM;
+				d.cooktopCutoutWidthMM = cooktopEl.CutoutWidthMM;
+				d.cooktopCutoutDepthMM = cooktopEl.CutoutDepthMM;
 			}
 			d.isFloor = element is FloorElement;
 			if (element is FloorElement floor && floor.PolygonLocalMm.Count >= 3)

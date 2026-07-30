@@ -23,18 +23,32 @@ namespace KitchenDesigner.Core
             // двери (AttachedWallName). Ядру имена не нужны: оно получает уже
             // разрешённый индекс.
             Dictionary<string, int>? wallIndexByName = null;
+            // Хозяин врезной техники ищется по PartName (так на него ссылается
+            // сама техника). Словарь строим только когда врезка в сцене есть.
+            Dictionary<string, int>? partIndexByName = null;
+            bool hasRecessed = false;
             for (int i = 0; i < elements.Count; i++)
             {
                 var e = elements[i];
-                if (e != null && e.GetComponent<Wall>() != null)
+                if (e == null) continue;
+                if (e.GetComponent<Wall>() != null)
                     (wallIndexByName ??= new Dictionary<string, int>())[e.gameObject.name] = i;
+                if (e is CooktopElement) hasRecessed = true;
+            }
+
+            if (hasRecessed)
+            {
+                partIndexByName = new Dictionary<string, int>();
+                for (int i = 0; i < elements.Count; i++)
+                    if (elements[i] != null) partIndexByName[elements[i].PartName] = i;
             }
 
             foreach (var e in elements)
-                into.Add(Build(e, wallIndexByName));
+                into.Add(Build(e, wallIndexByName, partIndexByName));
         }
 
-        private static ValidationElement Build(KitchenElement e, Dictionary<string, int>? wallIndexByName)
+        private static ValidationElement Build(KitchenElement e, Dictionary<string, int>? wallIndexByName,
+            Dictionary<string, int>? partIndexByName = null)
         {
             var wall = e.GetComponent<Wall>();
             var kind = KindOf(e, wall);
@@ -52,6 +66,22 @@ namespace KitchenDesigner.Core
                 && wallIndexByName.TryGetValue(attachedWallName!, out int found))
                 wallIndex = found;
 
+            // Короб выреза варочной: он уходит В столешницу и в габарит бортика
+            // не входит, поэтому едет в снимок отдельной коробкой. Пока варочная
+            // не врезана, короба нет — «вглубь детали» ещё ничего не значит.
+            var recessedBody = default(ElementGeometry);
+            bool hasRecessedBody = false;
+            int hostIndex = -1;
+            if (e is CooktopElement cooktop && cooktop.IsAttached)
+            {
+                recessedBody = ElementGeometry.Box(e.PartName + "/body",
+                    cooktop.BodyCenter, cooktop.BodySize, cooktop.transform.rotation);
+                hasRecessedBody = true;
+                if (partIndexByName != null && !string.IsNullOrEmpty(cooktop.AttachedPartName)
+                    && partIndexByName.TryGetValue(cooktop.AttachedPartName, out int host))
+                    hostIndex = host;
+            }
+
             return new ValidationElement(
                 e.ToGeometry(),
                 e.GetVertices(),
@@ -59,7 +89,10 @@ namespace KitchenDesigner.Core
                 e.GroupId,
                 (e as DrawerElement)?.PairedDrawerName,
                 heightSpan,
-                wallIndex);
+                wallIndex,
+                recessedBody,
+                hasRecessedBody,
+                hostIndex);
         }
 
         private static ElementKind KindOf(KitchenElement e, Wall? wall)
@@ -78,7 +111,11 @@ namespace KitchenDesigner.Core
             if (e is DrawerElement) kind |= ElementKind.Drawer;
             if (e is LightSourceElement) kind |= ElementKind.Decor;
             if (e is SinkElement || e is CooktopElement) kind |= ElementKind.Recessed;
-            if (e is FacadeElement fe && fe.GapMM > 0) kind |= ElementKind.FloatingFacade;
+            if (e is FacadeElement fe)
+            {
+                kind |= ElementKind.Facade;
+                if (fe.GapMM > 0) kind |= ElementKind.FloatingFacade;
+            }
 
             return kind;
         }

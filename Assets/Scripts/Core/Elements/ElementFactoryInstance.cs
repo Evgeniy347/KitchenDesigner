@@ -110,8 +110,8 @@ namespace KitchenDesigner.Core
             el.Movable = true;
             el.GroupId = 0;
             // Вернуть встроенный куб и один материал: иначе следующая деталь из
-            // пула досталась бы с чужими пазами и проёмом под мойку.
-            el.ClearSinks();
+            // пула досталась бы с чужими пазами и проёмом под врезную технику.
+            el.ClearCutouts();
             el.ClearGrooves();
             el.EdgeBandingEnabled = true;
             el.EdgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
@@ -261,10 +261,19 @@ namespace KitchenDesigner.Core
 				return go;
 			}
 
-			if (source is CooktopElement)
+			if (source is CooktopElement srcCooktop)
 			{
+				// Как и у мойки, привязку копия найдёт сама (SnapToPart) — имя
+				// хозяина не переносим. А вот габариты и вырез редактируемые,
+				// поэтому копия обязана унаследовать их, иначе «дублировать»
+				// молча возвращало бы дефолтную панель.
 				var go = CreateCooktop(source.PartName, offset);
 				go.transform.rotation = source.transform.rotation;
+				var copy = go.GetComponent<CooktopElement>();
+				copy.DimensionsMM = srcCooktop.DimensionsMM;
+				copy.CutoutWidthMM = srcCooktop.CutoutWidthMM;
+				copy.CutoutDepthMM = srcCooktop.CutoutDepthMM;
+				MaterialManager.ApplyById(copy, source.MaterialId);
 				return go;
 			}
 
@@ -709,7 +718,7 @@ namespace KitchenDesigner.Core
 			var cooktop = go.AddComponent<CooktopElement>();
 			cooktop.PartName = go.name;
 			cooktop.DimensionsMM = new Vector3Int(
-				CooktopElement.WIDTH_MM, CooktopElement.TOTAL_HEIGHT_MM, CooktopElement.DEPTH_MM);
+				CooktopElement.DEFAULT_WIDTH_MM, CooktopElement.DEFAULT_HEIGHT_MM, CooktopElement.DEFAULT_DEPTH_MM);
 			cooktop.Movable = true;
 
 			PartRegistry.Register(cooktop);

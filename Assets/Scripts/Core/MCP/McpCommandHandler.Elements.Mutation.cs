@@ -34,6 +34,7 @@ namespace KitchenDesigner.Core.MCP
             if (!IsFacadeLike()) { if (op.mode != null) e.Add("mode"); }
             if (IsNot<FacadeElement>() && IsNot<WindowElement>() && IsNot<DoorElement>()) { if (op.is_open.HasValue) e.Add("is_open"); }
             if (IsNot<RadialShelfElement>()) { if (op.corner_radius.HasValue) e.Add("corner_radius"); }
+            if (IsNot<CooktopElement>()) { if (op.cutout_width.HasValue) e.Add("cutout_width"); if (op.cutout_depth.HasValue) e.Add("cutout_depth"); }
             if (IsNot<DrawerElement>()) { if (op.drawer_type != null) e.Add("drawer_type"); if (op.drawer_length.HasValue) e.Add("drawer_length"); if (op.drawer_color != null) e.Add("drawer_color"); if (op.internal_width.HasValue) e.Add("internal_width"); if (op.is_double.HasValue) e.Add("is_double"); if (op.is_upper.HasValue) e.Add("is_upper"); if (op.paired_drawer_name != null) e.Add("paired_drawer_name"); if (op.attached_facade_name != null) e.Add("attached_facade_name"); }
             if (IsNot<TableElement>() && IsNot<RadiusTableElement>()) { if (op.leg_inset_mm.HasValue) e.Add("leg_inset_mm"); if (op.tabletop_material != null) e.Add("tabletop_material"); if (op.legs_material != null) e.Add("legs_material"); }
             if (IsNot<PillarElement>()) { if (op.mid_height_mm.HasValue) e.Add("mid_height_mm"); }
@@ -413,6 +414,14 @@ namespace KitchenDesigner.Core.MCP
         }
         private static void ApplyAssembledEdits(EditOp op, AssembledFacadeElement asm) { ApplyFacadeEdits(op, asm); if (op.fill != null) asm.Fill = ParseFill(op.fill); }
         private static void ApplyRadialShelfEdits(EditOp op, RadialShelfElement shelf) { if (op.corner_radius.HasValue) shelf.CornerRadius = op.corner_radius.Value; }
+        private static void ApplyCooktopEdits(EditOp op, CooktopElement cooktop)
+        {
+            if (op.cutout_width.HasValue) cooktop.CutoutWidthMM = op.cutout_width.Value;
+            if (op.cutout_depth.HasValue) cooktop.CutoutDepthMM = op.cutout_depth.Value;
+            // Проём в столешнице режется по свежему вырезу — и позу, и меш
+            // хозяина обновляет сама привязка.
+            if (op.cutout_width.HasValue || op.cutout_depth.HasValue) cooktop.SnapToPart();
+        }
         private static void ApplyDrawerEdits(EditOp op, DrawerElement drawer)
         {
             if (op.drawer_system != null) drawer.System = ParseDrawerSystem(op.drawer_system);
@@ -463,6 +472,7 @@ namespace KitchenDesigner.Core.MCP
                 if (el is FacadeElement facade && !(el is AssembledFacadeElement)) ApplyFacadeEdits(op, facade);
                 if (el is AssembledFacadeElement asmFacade) ApplyAssembledEdits(op, asmFacade);
                 if (el is RadialShelfElement shelf) ApplyRadialShelfEdits(op, shelf);
+                if (el is CooktopElement cooktopEl) ApplyCooktopEdits(op, cooktopEl);
                 // Набор пазов задаётся целиком; строка уже проверена в ValidateEditOpFields.
                 if (op.grooves != null && el.SupportsGrooves
                     && TryParseGrooves(op.grooves, out var parsedGrooves, out _))

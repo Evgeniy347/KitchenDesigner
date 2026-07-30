@@ -4,32 +4,73 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     /// <summary>
-    /// Варочная поверхность: простой параллелепипед 550×550×65 мм, садится на
-    /// столешницу сверху (выступ 5 мм, 60 мм вглубь) и прилипает к ней тем же
-    /// магнитом, что и мойка. Вырез в столешнице не делает — лежит на пласти.
-    /// Коллизия со столешницей подавлена (как у мойки), с боковинами и ящиками
-    /// под столешницей — ошибка.
+    /// Варочная поверхность: ДВА параллелепипеда.
+    ///   • верхняя плита толщиной <see cref="RIM_HEIGHT_MM"/> — она и выступает
+    ///     над столешницей, её габарит и есть «ширина × глубина» в свойствах;
+    ///   • короб выреза — уходит в столешницу, стоит по центру плиты, а его
+    ///     габарит задаётся отдельно («ширина/глубина выреза»); высота короба =
+    ///     общая высота − толщина плиты.
+    ///
+    /// Короб режет в столешнице сквозной проём (как чаша мойки): деталь ведёт
+    /// список врезной техники сама, см. <see cref="KitchenElement.RegisterCutout"/>.
+    ///
+    /// Живёт только на ДЕТАЛИ с горизонтальной пластью: прилипает к её верхней
+    /// грани и хранит смещение от центра детали в ЛОКАЛЬНЫХ мм — поэтому деталь
+    /// двигают и растягивают, а варочная едет с ней сама.
+    ///
+    /// Под столешницей вырез магнитится к боковинам и фасадам (край выреза
+    /// заподлицо с их гранью), но НЕ упирается в них: наезд на корпусную деталь
+    /// разрешён движением и подсвечивается ошибкой валидации.
+    ///
+    /// Геометрия строится в мировых единицах при единичном масштабе корня — как
+    /// у мойки и окна, иначе дети масштабируются дважды.
     /// </summary>
-    public class CooktopElement : KitchenElement
+    public class CooktopElement : KitchenElement, IPartCutout
     {
-        public const int WIDTH_MM = 550;
-        public const int DEPTH_MM = 550;
-        public const int TOTAL_HEIGHT_MM = 65;
-        public const int RIM_HEIGHT_MM = 5;          // выступ над столешницей
-        public const int BODY_DEPTH_MM = 60;         // глубина тела под столешницей
-        public const int MIN_EDGE_MM = 30;           // остаток столешницы за телом
+        // ── Габариты (мм) ───────────────────────────────────────────────
+        public const int RIM_HEIGHT_MM = 5;          // толщина верхней плиты (над столешницей)
+
+        // Дефолт — полноразмерная 4-конфорочная панель под модуль 60 см:
+        // стекло ≈590×520, ниша врезки 560×490 (см. appliances/hob/
+        // final-selection-60cm.md — этот размер у 10 моделей из 18).
+        public const int DEFAULT_WIDTH_MM = 590;
+        public const int DEFAULT_DEPTH_MM = 520;
+        public const int DEFAULT_HEIGHT_MM = 65;     // 5 плита + 60 короб
+        public const int DEFAULT_CUTOUT_WIDTH_MM = 560;
+        public const int DEFAULT_CUTOUT_DEPTH_MM = 490;
+
+        /// <summary>Борт обязан перекрыть срез столешницы — вырез уже плиты как
+        /// минимум на столько с каждой стороны.</summary>
+        public const int MIN_RIM_OVERLAP_MM = 5;
+        public const int MIN_SIDE_MM = 100;
+        public const int MAX_SIDE_MM = 2000;
+        public const int MIN_CUTOUT_MM = 50;
+        public const int MIN_BODY_HEIGHT_MM = 10;
+        public const int MAX_HEIGHT_MM = 600;
+
+        /// <summary>Остаток столешницы за вырезом. 20 мм — именно столько даёт
+        /// штатная ниша 560 мм в столешнице модуля 600; порог строже отказал бы
+        /// самой типовой врезке.</summary>
+        public const int MIN_EDGE_MM = 20;
 
         public const int SNAP_CATCH_MM = 100;
         public const int SNAP_RELEASE_MM = 60;
 
+        /// <summary>Магнит выреза к грани боковины/фасада под столешницей.</summary>
+        public const int SNAP_PLANE_MM = 20;
+
         [SerializeField] private string _attachedPartName = "";
         [SerializeField] private int _offsetXMM;
         [SerializeField] private int _offsetYMM;
+        [SerializeField] private int _cutoutWidthMM = DEFAULT_CUTOUT_WIDTH_MM;
+        [SerializeField] private int _cutoutDepthMM = DEFAULT_CUTOUT_DEPTH_MM;
 
         private readonly List<GameObject> _children = new List<GameObject>();
         private KitchenElement? _lastHost;
         private int _lastOffsetXMM = int.MinValue;
         private int _lastOffsetYMM = int.MinValue;
+        private int _lastCutoutWidthMM = int.MinValue;
+        private int _lastCutoutDepthMM = int.MinValue;
 
         private float _freeHeightMM;
         private Vector3 _appliedPos;
@@ -41,15 +82,83 @@ namespace KitchenDesigner.Core
         public int OffsetYMM { get => _offsetYMM; set => _offsetYMM = value; }
         public bool IsAttached => _lastHost != null;
 
+        // ── Редактируемые размеры ───────────────────────────────────────
+        // Ширина/глубина/высота живут в общем DimensionsMM (их правит обычное
+        // окно свойств и ResizeCommand) и клампятся в ApplyDimensions — через
+        // него проходит любой путь правки. Вырез живёт в своих полях и
+        // подрезается по плите на ЧТЕНИИ (см. ниже).
+
+        public int WidthMM
+        {
+            get => DimensionsMM.x;
+            set => DimensionsMM = new Vector3Int(value, DimensionsMM.y, DimensionsMM.z);
+        }
+
+        public int DepthMM
+        {
+            get => DimensionsMM.z;
+            set => DimensionsMM = new Vector3Int(DimensionsMM.x, DimensionsMM.y, value);
+        }
+
+        /// <summary>ОБЩАЯ высота: плита 5 мм + короб выреза.</summary>
+        public int HeightMM
+        {
+            get => DimensionsMM.y;
+            set => DimensionsMM = new Vector3Int(DimensionsMM.x, value, DimensionsMM.z);
+        }
+
+        /// <summary>Высота короба, уходящего в столешницу.</summary>
+        public int BodyHeightMM => Mathf.Max(MIN_BODY_HEIGHT_MM, DimensionsMM.y - RIM_HEIGHT_MM);
+
+        // Поля хранят НАМЕРЕНИЕ пользователя, а под текущую плиту вырез
+        // подрезается на чтении. Разрушающий кламп здесь стоил бы дорого:
+        // AddComponent вызывает Awake на заготовке PartData (толщина 18 мм), и
+        // вырез схлопывался до минимума ещё до того, как фабрика выставит
+        // настоящий габарит, — обратно он бы уже не вырос.
+        public int CutoutWidthMM
+        {
+            get => ClampCutout(_cutoutWidthMM, DimensionsMM.x);
+            set
+            {
+                _cutoutWidthMM = Mathf.Clamp(value, MIN_CUTOUT_MM, MAX_SIDE_MM);
+                ApplyDimensions();
+            }
+        }
+
+        public int CutoutDepthMM
+        {
+            get => ClampCutout(_cutoutDepthMM, DimensionsMM.z);
+            set
+            {
+                _cutoutDepthMM = Mathf.Clamp(value, MIN_CUTOUT_MM, MAX_SIDE_MM);
+                ApplyDimensions();
+            }
+        }
+
+        public static int ClampSide(int mm) => Mathf.Clamp(mm, MIN_SIDE_MM, MAX_SIDE_MM);
+
+        public static int ClampHeight(int mm) =>
+            Mathf.Clamp(mm, RIM_HEIGHT_MM + MIN_BODY_HEIGHT_MM, MAX_HEIGHT_MM);
+
+        /// <summary>Вырез не шире плиты за вычетом перекрытия борта с двух
+        /// сторон — иначе срез столешницы остался бы открытым.</summary>
+        public static int ClampCutout(int mm, int outerMM) =>
+            Mathf.Clamp(mm, MIN_CUTOUT_MM, Mathf.Max(MIN_CUTOUT_MM, outerMM - 2 * MIN_RIM_OVERLAP_MM));
+
+        /// <summary>Минимальные габариты детали, в которую вырез помещается с
+        /// запасом по краям.</summary>
+        public int MinPartWidthMM => CutoutWidthMM + 2 * MIN_EDGE_MM;
+        public int MinPartDepthMM => CutoutDepthMM + 2 * MIN_EDGE_MM;
+
         protected override Vector3 EffectiveScale => new Vector3(
-            WIDTH_MM * AppConstants.MM_TO_UNITS,
+            DimensionsMM.x * AppConstants.MM_TO_UNITS,
             RIM_HEIGHT_MM * AppConstants.MM_TO_UNITS,
-            DEPTH_MM * AppConstants.MM_TO_UNITS);
+            DimensionsMM.z * AppConstants.MM_TO_UNITS);
 
         protected override Vector3 ValidationPosition => ValidationPositionAt(transform.position);
 
-        // Бортик приподнят над плоскостью врезки — сдвиг обязан ехать вместе с
-        // примеряемой позицией, иначе снэп считает панель на полбортика ниже.
+        // Плита приподнята над плоскостью врезки — сдвиг обязан ехать вместе с
+        // примеряемой позицией, иначе снэп считает панель на полплиты ниже.
         protected override Vector3 ValidationPositionAt(Vector3 transformPosition) =>
             transformPosition + transform.rotation *
                 new Vector3(0f, RIM_HEIGHT_MM * 0.5f * AppConstants.MM_TO_UNITS, 0f);
@@ -58,8 +167,6 @@ namespace KitchenDesigner.Core
         {
             SnapToPart();
         }
-
-        private int _lastPoseVersion;
 
         private bool HostMoved =>
             _lastHost != null &&
@@ -77,11 +184,30 @@ namespace KitchenDesigner.Core
         public override void ApplyDimensions()
         {
             transform.localScale = Vector3.one;
-            Data.DimensionsMM = new Vector3Int(WIDTH_MM, TOTAL_HEIGHT_MM, DEPTH_MM);
+
+            var dims = Data.DimensionsMM;
+            int w = ClampSide(dims.x <= 0 ? DEFAULT_WIDTH_MM : dims.x);
+            int d = ClampSide(dims.z <= 0 ? DEFAULT_DEPTH_MM : dims.z);
+            int h = ClampHeight(dims.y <= 0 ? DEFAULT_HEIGHT_MM : dims.y);
+            Data.DimensionsMM = new Vector3Int(w, h, d);
+
             UpdateCollider();
+            if (SuppressVisualRebuild) return;
             EnsureChildren();
             RebuildGeometry();
+
+            // Проём в столешнице считается от размеров выреза — сменили их,
+            // значит меш детали устарел.
+            if (_lastHost != null &&
+                (_lastCutoutWidthMM != CutoutWidthMM || _lastCutoutDepthMM != CutoutDepthMM))
+            {
+                _lastCutoutWidthMM = CutoutWidthMM;
+                _lastCutoutDepthMM = CutoutDepthMM;
+                _lastHost.RebuildGrooveMesh();
+            }
         }
+
+        // ── Привязка к детали ───────────────────────────────────────────
 
         public void SnapToPart()
         {
@@ -92,24 +218,34 @@ namespace KitchenDesigner.Core
             if (host == null) host = FindCatchingPart();
             if (host == null) return;
 
-            if (host.PartName != _attachedPartName)
+            if (host.PartName != _attachedPartName || !host.HasCutout(this))
+            {
+                // Проверяем фактическое членство, а не только имя: после загрузки
+                // сцены имя уже восстановлено из сейва, но деталь варочную ещё не
+                // знает — без регистрации проём не режется.
+                UnregisterFromPart();
                 _attachedPartName = host.PartName;
-
+                host.RegisterCutout(this);
+            }
             AlignToPart(host);
         }
 
         public void AttachToPart(KitchenElement part)
         {
             if (part == null || !IsSuitableHost(part)) return;
+            UnregisterFromPart();
             _attachedPartName = part.PartName;
+            part.RegisterCutout(this);
             _freeHeightMM = 0f;
             AlignToPart(part);
         }
 
         internal void UnregisterFromPart()
         {
+            var part = FindAttachedPart();
             _attachedPartName = "";
             _lastHost = null;
+            if (part != null) part.UnregisterCutout(this);
         }
 
         private void ReleaseFrom(KitchenElement host)
@@ -166,11 +302,15 @@ namespace KitchenDesigner.Core
             _ => (2, 1),
         };
 
+        public int HoleAxisIn(KitchenElement part) => UpAxisOf(part).axis;
+
         private bool StillHolds(KitchenElement host) =>
             IsSuitableHost(host) &&
             _freeHeightMM >= -SNAP_RELEASE_MM && _freeHeightMM <= SNAP_CATCH_MM;
 
-        public static bool IsSuitableHost(KitchenElement part)
+        /// <summary>Деталь годится под варочную: базовая «Деталь» с горизонтальной
+        /// пластью, в которую вырез помещается с запасом по краям.</summary>
+        public bool IsSuitableHost(KitchenElement part)
         {
             if (part == null || !part.SupportsGrooves) return false;
             var (up, _) = UpAxisOf(part);
@@ -180,9 +320,6 @@ namespace KitchenDesigner.Core
             var dims = part.DimensionsMM;
             return dims[a] >= MinPartWidthMM && dims[b] >= MinPartDepthMM;
         }
-
-        public static int MinPartWidthMM => WIDTH_MM + 2 * MIN_EDGE_MM;
-        public static int MinPartDepthMM => DEPTH_MM + 2 * MIN_EDGE_MM;
 
         private static bool IsOverFootprint(KitchenElement part, int offX, int offY)
         {
@@ -204,9 +341,6 @@ namespace KitchenDesigner.Core
                 if (heightMM > SNAP_CATCH_MM || heightMM < -SNAP_RELEASE_MM) continue;
                 if (!IsOverFootprint(el, offX, offY)) continue;
 
-                ClampOffsets(el, ref offX, ref offY);
-                if (BodyBlocked(el, offX, offY)) continue;
-
                 float h = Mathf.Abs(heightMM);
                 if (h >= bestHeight) continue;
                 bestHeight = h;
@@ -216,6 +350,7 @@ namespace KitchenDesigner.Core
             }
             if (best == null) return null;
 
+            ClampOffsets(best, ref bestX, ref bestY);
             _offsetXMM = bestX;
             _offsetYMM = bestY;
             _freeHeightMM = 0f;
@@ -233,12 +368,12 @@ namespace KitchenDesigner.Core
             return (Mathf.RoundToInt(local[a] / toU), Mathf.RoundToInt(local[b] / toU), height);
         }
 
-        private static void ClampOffsets(KitchenElement part, ref int offX, ref int offY)
+        private void ClampOffsets(KitchenElement part, ref int offX, ref int offY)
         {
             var (a, b) = PlaneAxes(UpAxisOf(part).axis);
             var dims = part.DimensionsMM;
-            int maxX = (dims[a] - WIDTH_MM) / 2 - MIN_EDGE_MM;
-            int maxY = (dims[b] - DEPTH_MM) / 2 - MIN_EDGE_MM;
+            int maxX = (dims[a] - CutoutWidthMM) / 2 - MIN_EDGE_MM;
+            int maxY = (dims[b] - CutoutDepthMM) / 2 - MIN_EDGE_MM;
             offX = Mathf.Clamp(offX, -maxX, maxX);
             offY = Mathf.Clamp(offY, -maxY, maxY);
         }
@@ -258,6 +393,10 @@ namespace KitchenDesigner.Core
                    $"blocker={FirstBlocker(part, cx, cy) ?? "-"}";
         }
 
+        /// <summary>Что коробу выреза действительно мешает — КОРПУСНЫЕ детали:
+        /// боковины, перегородки, стойки, полки. Всё, что висит на коробе снаружи
+        /// или выезжает из него (фасад, дверца, ящик, ДВП), помехой не считается —
+        /// но магнитом для выреза служит (см. <see cref="IsSnapTarget"/>).</summary>
         private static bool IsObstacle(KitchenElement el)
         {
             if (el is FacadeElement || el is DoorElement || el is WindowElement) return false;
@@ -266,44 +405,139 @@ namespace KitchenDesigner.Core
             return el.GetComponent<BasePlate>() == null;
         }
 
+        /// <summary>К чему вырез прилипает под столешницей: и к корпусным деталям,
+        /// и к фасадам с ящиками — по их плоскости выравнивают технику вручную.</summary>
+        private static bool IsSnapTarget(KitchenElement el)
+        {
+            if (el is SinkElement || el is CooktopElement || el is LightSourceElement
+                || el is FloorElement || el is WindowElement) return false;
+            return el.GetComponent<BasePlate>() == null;
+        }
+
         public string? FirstBlocker(KitchenElement part, int offX, int offY)
         {
-            float toU = AppConstants.MM_TO_UNITS;
-            var pt = part.transform;
-            var dims = part.DimensionsMM;
-
-            var (up, sign) = UpAxisOf(part);
-            var (a, b) = PlaneAxes(up);
-            float x0 = (offX - WIDTH_MM * 0.5f) * toU, x1 = (offX + WIDTH_MM * 0.5f) * toU;
-            float y0 = (offY - DEPTH_MM * 0.5f) * toU, y1 = (offY + DEPTH_MM * 0.5f) * toU;
-            float halfT = dims[up] * 0.5f * toU;
-            float body = BODY_DEPTH_MM * toU;
-            float z0 = sign > 0f ? halfT - body : -halfT;
-            float z1 = sign > 0f ? halfT : -halfT + body;
-
-            var inv = Quaternion.Inverse(pt.rotation);
             foreach (var el in PartRegistry.All)
             {
                 if (el == null || el == this || el == part || !IsObstacle(el)) continue;
-
-                var verts = el.GetVertices();
-                if (verts.Length == 0) continue;
-                var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-                var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
-                foreach (var w in verts)
-                {
-                    Vector3 l = inv * (w - pt.position);
-                    min = Vector3.Min(min, l);
-                    max = Vector3.Max(max, l);
-                }
-
-                float eps = Tolerance.EpsilonUnits;
-                if (max[a] <= x0 + eps || min[a] >= x1 - eps) continue;
-                if (max[b] <= y0 + eps || min[b] >= y1 - eps) continue;
-                if (max[up] <= z0 + eps || min[up] >= z1 - eps) continue;
-                return el.PartName;
+                if (BodyOverlaps(part, offX, offY, el)) return el.PartName;
             }
             return null;
+        }
+
+        /// <summary>Габарит короба выреза в осях детали (мм по её плоскости и по
+        /// её «вертикали»), плюс слой, который короб занимает в толще детали.</summary>
+        private (float x0, float x1, float y0, float y1, float z0, float z1) BodyBoxIn(
+            KitchenElement part, int offX, int offY)
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            var dims = part.DimensionsMM;
+            var (up, sign) = UpAxisOf(part);
+
+            float x0 = (offX - CutoutWidthMM * 0.5f) * toU, x1 = (offX + CutoutWidthMM * 0.5f) * toU;
+            float y0 = (offY - CutoutDepthMM * 0.5f) * toU, y1 = (offY + CutoutDepthMM * 0.5f) * toU;
+            float halfT = dims[up] * 0.5f * toU;
+            float body = BodyHeightMM * toU;
+            // Слой короба: от ВЕРХНЕЙ грани детали вглубь на высоту короба (он
+            // может быть и толще детали — тогда выходит под неё).
+            float z0 = sign > 0f ? halfT - body : -halfT;
+            float z1 = sign > 0f ? halfT : -halfT + body;
+            return (x0, x1, y0, y1, z0, z1);
+        }
+
+        /// <summary>Габарит чужой детали в осях детали-хозяина.</summary>
+        private static bool LocalBounds(KitchenElement part, KitchenElement other,
+            out Vector3 min, out Vector3 max)
+        {
+            min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+            max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+
+            var verts = other.GetVertices();
+            if (verts.Length == 0) return false;
+
+            var inv = Quaternion.Inverse(part.transform.rotation);
+            foreach (var w in verts)
+            {
+                Vector3 l = inv * (w - part.transform.position);
+                min = Vector3.Min(min, l);
+                max = Vector3.Max(max, l);
+            }
+            return true;
+        }
+
+        private bool BodyOverlaps(KitchenElement part, int offX, int offY, KitchenElement other)
+        {
+            if (!LocalBounds(part, other, out var min, out var max)) return false;
+
+            var (up, _) = UpAxisOf(part);
+            var (a, b) = PlaneAxes(up);
+            var box = BodyBoxIn(part, offX, offY);
+
+            // Касание кромкой не мешает — считается только реальное наложение.
+            float eps = Tolerance.EpsilonUnits;
+            if (max[a] <= box.x0 + eps || min[a] >= box.x1 - eps) return false;
+            if (max[b] <= box.y0 + eps || min[b] >= box.y1 - eps) return false;
+            if (max[up] <= box.z0 + eps || min[up] >= box.z1 - eps) return false;
+            return true;
+        }
+
+        // ── Магнит выреза к боковинам и фасадам ─────────────────────────
+
+        /// <summary>Подтянуть смещения так, чтобы край выреза встал заподлицо с
+        /// гранью боковины или фасада под столешницей. Кандидат берётся только
+        /// из деталей, которые действительно лежат в слое короба и перекрывают
+        /// вырез по второй оси — иначе магнитила бы любая деталь кухни.</summary>
+        private void SnapToNeighbours(KitchenElement part, ref int offX, ref int offY)
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            var (up, _) = UpAxisOf(part);
+            var (a, b) = PlaneAxes(up);
+            var box = BodyBoxIn(part, offX, offY);
+
+            int bestXOff = offX, bestYOff = offY;
+            float bestXDist = SNAP_PLANE_MM + 1f, bestYDist = SNAP_PLANE_MM + 1f;
+
+            foreach (var el in PartRegistry.All)
+            {
+                if (el == null || el == this || el == part || !IsSnapTarget(el)) continue;
+                if (!LocalBounds(part, el, out var min, out var max)) continue;
+
+                // Деталь должна попадать в слой короба — иначе это сосед сверху
+                // или снизу, к нему вырез не выравнивают.
+                if (max[up] <= box.z0 || min[up] >= box.z1) continue;
+
+                TrySnapAxis(min[a], max[a], CutoutWidthMM, offX,
+                    min[b], max[b], box.y0, box.y1, toU, ref bestXOff, ref bestXDist);
+                TrySnapAxis(min[b], max[b], CutoutDepthMM, offY,
+                    min[a], max[a], box.x0, box.x1, toU, ref bestYOff, ref bestYDist);
+            }
+
+            if (bestXDist <= SNAP_PLANE_MM) offX = bestXOff;
+            if (bestYDist <= SNAP_PLANE_MM) offY = bestYOff;
+        }
+
+        /// <summary>Кандидат «край выреза заподлицо с гранью» по одной оси.
+        /// crossMin/crossMax — габарит соседа по ВТОРОЙ оси; он обязан
+        /// перекрывать вырез, иначе сосед стоит в стороне и не мешает.</summary>
+        private static void TrySnapAxis(float nearMin, float nearMax, int cutoutMM, int currentOff,
+            float crossMin, float crossMax, float crossLo, float crossHi, float toU,
+            ref int bestOff, ref float bestDist)
+        {
+            if (crossMax <= crossLo || crossMin >= crossHi) return;
+
+            float half = cutoutMM * 0.5f;
+            // Вырез справа от соседа (его max = левый край выреза) и слева от него.
+            SnapCandidate(nearMax / toU + half, currentOff, ref bestOff, ref bestDist);
+            SnapCandidate(nearMin / toU - half, currentOff, ref bestOff, ref bestDist);
+        }
+
+        private static void SnapCandidate(float candidateOff, int currentOff,
+            ref int bestOff, ref float bestDist)
+        {
+            int rounded = Mathf.RoundToInt(candidateOff);
+            float dist = Mathf.Abs(rounded - currentOff);
+            if (dist >= bestDist) return;
+            bestDist = dist;
+            bestOff = rounded;
         }
 
         private void AlignToPart(KitchenElement part)
@@ -320,21 +554,11 @@ namespace KitchenDesigner.Core
             Quaternion targetRot = Quaternion.LookRotation(pt.rotation * fwdLocal, pt.rotation * upLocal);
 
             int offX = _offsetXMM, offY = _offsetYMM;
+            // Магнит ДО клампа: подтянутое к боковине смещение всё равно обязано
+            // остаться в пределах детали.
+            SnapToNeighbours(part, ref offX, ref offY);
             ClampOffsets(part, ref offX, ref offY);
 
-            bool hasPrev = _lastHost == part && _lastOffsetXMM != int.MinValue;
-            if (hasPrev && BodyBlocked(part, offX, offY))
-            {
-                if (!BodyBlocked(part, offX, _lastOffsetYMM))
-                    offY = _lastOffsetYMM;
-                else if (!BodyBlocked(part, _lastOffsetXMM, offY))
-                    offX = _lastOffsetXMM;
-                else
-                {
-                    offX = _lastOffsetXMM;
-                    offY = _lastOffsetYMM;
-                }
-            }
             _offsetXMM = offX;
             _offsetYMM = offY;
 
@@ -348,12 +572,17 @@ namespace KitchenDesigner.Core
                 transform.SetPositionAndRotation(targetPos, targetRot);
             _appliedPos = transform.position;
 
-            if (_lastHost != part || _lastOffsetXMM != _offsetXMM || _lastOffsetYMM != _offsetYMM)
+            // Проём перестраиваем только когда он реально изменился.
+            if (_lastHost != part || _lastOffsetXMM != _offsetXMM || _lastOffsetYMM != _offsetYMM
+                || _lastCutoutWidthMM != CutoutWidthMM || _lastCutoutDepthMM != CutoutDepthMM)
             {
                 _lastHost = part;
                 _lastOffsetXMM = _offsetXMM;
                 _lastOffsetYMM = _offsetYMM;
+                _lastCutoutWidthMM = CutoutWidthMM;
+                _lastCutoutDepthMM = CutoutDepthMM;
                 _lastHostPosition = part.transform.position;
+                part.RebuildGrooveMesh();
             }
         }
 
@@ -366,6 +595,41 @@ namespace KitchenDesigner.Core
             return null;
         }
 
+        /// <summary>Проём варочной в нормализованных координатах плоскости, в
+        /// которой его режет GrooveMesh. Доли — от ТЕКУЩИХ габаритов детали,
+        /// поэтому её ресайз двигает и перемасштабирует вырез сам.</summary>
+        public GrooveMesh.Rect2 CutoutRectIn(KitchenElement part)
+        {
+            if (part == null) return default;
+            var (a, b) = PlaneAxes(UpAxisOf(part).axis);
+            var dims = part.DimensionsMM;
+            if (dims[a] <= 0 || dims[b] <= 0) return default;
+
+            float halfW = CutoutWidthMM * 0.5f;
+            float halfD = CutoutDepthMM * 0.5f;
+            return new GrooveMesh.Rect2
+            {
+                xMin = (_offsetXMM - halfW) / dims[a],
+                xMax = (_offsetXMM + halfW) / dims[a],
+                yMin = (_offsetYMM - halfD) / dims[b],
+                yMax = (_offsetYMM + halfD) / dims[b],
+            };
+        }
+
+        // ── Геометрия короба для валидации ──────────────────────────────
+
+        /// <summary>Центр короба выреза в мировых координатах. Плита стоит на
+        /// пласти, короб уходит от неё вниз на свою высоту.</summary>
+        public Vector3 BodyCenter =>
+            transform.position - transform.rotation *
+                new Vector3(0f, BodyHeightMM * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+
+        /// <summary>Габарит короба выреза (мировые единицы, оси — локальные).</summary>
+        public Vector3 BodySize => new Vector3(
+            CutoutWidthMM * AppConstants.MM_TO_UNITS,
+            BodyHeightMM * AppConstants.MM_TO_UNITS,
+            CutoutDepthMM * AppConstants.MM_TO_UNITS);
+
         // ── Геометрия ───────────────────────────────────────────────────
 
         private void UpdateCollider()
@@ -376,11 +640,15 @@ namespace KitchenDesigner.Core
             var box = GetComponent<BoxCollider>();
             if (box == null) box = gameObject.AddComponent<BoxCollider>();
             float toU = AppConstants.MM_TO_UNITS;
-            box.size = new Vector3(WIDTH_MM * toU, TOTAL_HEIGHT_MM * toU, DEPTH_MM * toU);
-            box.center = new Vector3(0f, (RIM_HEIGHT_MM - TOTAL_HEIGHT_MM) * 0.5f * toU, 0f);
+            var dims = Data.DimensionsMM;
+            box.size = new Vector3(dims.x * toU, dims.y * toU, dims.z * toU);
+            box.center = new Vector3(0f, (RIM_HEIGHT_MM - dims.y) * 0.5f * toU, 0f);
         }
 
-        private const int ChildCount = 1;
+        // 0 — верхняя плита, 1 — короб выреза.
+        private const int ChildCount = 2;
+
+        private static string ChildName(int idx) => idx == 0 ? "Top" : "Body";
 
         private void EnsureChildren()
         {
@@ -388,7 +656,7 @@ namespace KitchenDesigner.Core
             {
                 int idx = _children.Count;
                 var child = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                child.name = "Body";
+                child.name = ChildName(idx);
                 var col = child.GetComponent<BoxCollider>();
                 if (col != null) Object.DestroyImmediate(col);
                 child.transform.SetParent(transform, false);
@@ -400,13 +668,30 @@ namespace KitchenDesigner.Core
         {
             if (_children.Count < ChildCount) return;
             float toU = AppConstants.MM_TO_UNITS;
+            var dims = Data.DimensionsMM;
 
-            float centerY = (RIM_HEIGHT_MM - TOTAL_HEIGHT_MM) * 0.5f * toU;
-            _children[0].transform.localPosition = new Vector3(0f, centerY, 0f);
-            _children[0].transform.localRotation = Quaternion.identity;
-            _children[0].transform.localScale = new Vector3(WIDTH_MM * toU, TOTAL_HEIGHT_MM * toU, DEPTH_MM * toU);
+            float rimH = RIM_HEIGHT_MM * toU;
+            float bodyH = BodyHeightMM * toU;
+
+            // Плита: её верх выступает над пластью на всю толщину.
+            Cube(0, new Vector3(0f, rimH * 0.5f, 0f),
+                new Vector3(dims.x * toU, rimH, dims.z * toU));
+            // Короб: по центру плиты, уходит вниз от пласти.
+            Cube(1, new Vector3(0f, -bodyH * 0.5f, 0f),
+                new Vector3(CutoutWidthMM * toU, bodyH, CutoutDepthMM * toU));
 
             ApplyMaterials();
+            // Размер изменился — «вырез» декора надо пересчитать, иначе рисунок
+            // растягивается вместо того, чтобы повторяться в своём масштабе.
+            MaterialManager.RefreshTiling(this);
+        }
+
+        private void Cube(int idx, Vector3 localPos, Vector3 localScale)
+        {
+            var go = _children[idx];
+            go.transform.localPosition = localPos;
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale = localScale;
         }
 
         private static Material? _surfaceMat;
@@ -425,11 +710,25 @@ namespace KitchenDesigner.Core
             return _surfaceMat!;
         }
 
-        private void ApplyMaterials()
+        /// <summary>Материал обеих коробок. Источник истины — MaterialId самой
+        /// варочной: выбранный декор обязан пережить любую пересборку геометрии
+        /// (ресайз, загрузка проекта), иначе после перезапуска текстура молча
+        /// заменялась бы штатным чёрным стеклом.</summary>
+        public void ApplyMaterials()
         {
             if (_children.Count < ChildCount) return;
-            var mr = _children[0].GetComponent<MeshRenderer>();
-            if (mr != null) mr.sharedMaterial = SurfaceMaterial();
+
+            Material? mat = null;
+            if (MaterialManager.HasCustomDecor(this))
+                mat = MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
+            mat ??= SurfaceMaterial();
+
+            foreach (var child in _children)
+            {
+                if (child == null) continue;
+                var mr = child.GetComponent<MeshRenderer>();
+                if (mr != null) mr.sharedMaterial = mat;
+            }
         }
 
         public void DestroyChildren()

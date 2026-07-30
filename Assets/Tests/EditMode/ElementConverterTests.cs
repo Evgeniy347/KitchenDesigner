@@ -475,13 +475,13 @@ public class ElementConverterTests
         var sinkGo = new GameObject("Sink");
         var sink = sinkGo.AddComponent<SinkElement>();
         sink.PartName = "Sink";
-        src.RegisterSink(sink);
-        Assert.AreEqual(1, src.AttachedSinks.Count);
+        src.RegisterCutout(sink);
+        Assert.AreEqual(1, src.AttachedCutouts.Count);
 
         var result = ElementConverter.Convert(src, ElementConverter.TargetType.Facade);
 
-        Assert.AreEqual(0, result.AttachedSinks.Count, "у фасада проёма под мойку нет");
-        Assert.AreEqual(2, result.SinkHoleAxis, "без моек ось выреза каноническая");
+        Assert.AreEqual(0, result.AttachedCutouts.Count, "у фасада проёма под мойку нет");
+        Assert.AreEqual(2, result.CutoutHoleAxis, "без моек ось выреза каноническая");
         Object.DestroyImmediate(sinkGo);
     }
 
@@ -633,7 +633,7 @@ public class ElementConverterTests
     {
         // KitchenElement
         "PartName", "DimensionsMM", "Movable", "GroupId", "MaterialId", "Transparent", "Data",
-        "SupportsGrooves", "Grooves", "AttachedSinks", "SinkHoleAxis",
+        "SupportsGrooves", "Grooves", "AttachedCutouts", "CutoutHoleAxis",
         "SupportsEdges", "EdgeBandingEnabled", "EdgeThicknessMM", "EdgeManualMask",
         // Накладки текстур принадлежат стене и полу, а конвертация ходит только
         // между структурными типами (деталь ↔ фасад ↔ полка) — переносить их

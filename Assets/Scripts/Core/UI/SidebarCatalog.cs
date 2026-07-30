@@ -151,7 +151,7 @@ namespace KitchenDesigner.Core.UI
         private static Item CooktopItem(string name)
         {
             var item = new Item(name, new Vector3Int(
-                CooktopElement.WIDTH_MM, CooktopElement.TOTAL_HEIGHT_MM, CooktopElement.DEPTH_MM));
+                CooktopElement.DEFAULT_WIDTH_MM, CooktopElement.DEFAULT_HEIGHT_MM, CooktopElement.DEFAULT_DEPTH_MM));
             item.isCooktop = true;
             return item;
         }

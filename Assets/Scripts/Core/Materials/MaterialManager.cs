@@ -134,8 +134,19 @@ namespace KitchenDesigner.Core
             return false;
         }
 
+        /// <summary>Надеть декор по id из сейва. Если такого декора в каталоге
+        /// пока нет (индекс текстур ещё не приехал — WebGL; папку временно
+        /// подменили), показываем дефолтный серый, но ЗАПОМНЕННЫЙ id не теряем:
+        /// иначе перезапуск молча стирал бы выбранную текстуру, а следующее
+        /// сохранение записывало бы вместо неё «default».</summary>
         public static void ApplyById(KitchenElement element, string materialId)
-            => Apply(element, MaterialCatalog.Get(materialId));
+        {
+            if (element == null) return;
+            var def = MaterialCatalog.Get(materialId);
+            Apply(element, def);
+            if (!string.IsNullOrEmpty(materialId) && def.id != materialId)
+                element.MaterialId = materialId;
+        }
 
         /// <summary>Надеть декор на конкретный слот элемента. У обычной детали
         /// слот один («Текстура»), у стола их три — щит, столешница и ножки.</summary>
@@ -249,6 +260,17 @@ namespace KitchenDesigner.Core
                 return;
             }
 
+            // У варочной две коробки (плита и короб выреза) — красить надо обе,
+            // а GetComponentInChildren нашёл бы только первую. Материал она
+            // выводит из своего же MaterialId, поэтому декор переживает и
+            // пересборку геометрии.
+            if (element is CooktopElement cooktop)
+            {
+                cooktop.ApplyMaterials();
+                RefreshTiling(element, def);
+                return;
+            }
+
             var r = element.GetComponentInChildren<MeshRenderer>();
             if (r == null) return;
 
@@ -275,12 +297,29 @@ namespace KitchenDesigner.Core
         public static void RefreshTiling(KitchenElement element, MaterialDef def)
         {
             if (element == null || def == null) return;
+
+            var tile = TileMM(def);
+            var st = ComputeTileST(element.DimensionsMM, tile.x, tile.y);
+
+            // У варочной две коробки, и «вырез» декора нужен обеим: на одной
+            // плите он оставил бы короб выреза с нерастянутой плиткой.
+            if (element is CooktopElement)
+            {
+                foreach (var cr in element.GetComponentsInChildren<MeshRenderer>())
+                {
+                    if (cr == null) continue;
+                    cr.GetPropertyBlock(_mpb);
+                    _mpb.SetVector(BaseMapST, st);
+                    cr.SetPropertyBlock(_mpb);
+                }
+                return;
+            }
+
             var r = element.GetComponentInChildren<MeshRenderer>();
             if (r == null) return;
 
-            var tile = TileMM(def);
             r.GetPropertyBlock(_mpb);
-            _mpb.SetVector(BaseMapST, ComputeTileST(element.DimensionsMM, tile.x, tile.y));
+            _mpb.SetVector(BaseMapST, st);
             r.SetPropertyBlock(_mpb);
         }
 

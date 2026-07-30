@@ -351,6 +351,15 @@ namespace KitchenDesigner.Core
                         cooktopEl.AttachedPartName = ed.cooktopAttachedPartName;
                         cooktopEl.OffsetXMM = ed.cooktopOffsetXMM;
                         cooktopEl.OffsetYMM = ed.cooktopOffsetYMM;
+                        // Габариты плиты фабрика ставит дефолтные — свои
+                        // восстанавливаем явно (у варочной они редактируемые).
+                        if (ed.Dimensions.x > 0 && ed.Dimensions.z > 0)
+                            cooktopEl.DimensionsMM = ed.Dimensions;
+                        // Вырез: 0 — проект старее этого поля, там дефолт.
+                        if (ed.cooktopCutoutWidthMM > 0)
+                            cooktopEl.CutoutWidthMM = ed.cooktopCutoutWidthMM;
+                        if (ed.cooktopCutoutDepthMM > 0)
+                            cooktopEl.CutoutDepthMM = ed.cooktopCutoutDepthMM;
                     }
 
                     if (ed.isLightSource && el is LightSourceElement lightEl)

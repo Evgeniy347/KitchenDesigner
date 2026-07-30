@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core
     /// Геометрия строится в мировых единицах при единичном масштабе корня — как
     /// у WindowElement/PillarElement, иначе дети масштабируются дважды.
     /// </summary>
-    public class SinkElement : KitchenElement
+    public class SinkElement : KitchenElement, IPartCutout
     {
         // ── Габариты (мм) ───────────────────────────────────────────────
         // Мойка НЕ равна модулю: из 600 мм ширины тумбы боковины съедают по 18 мм,
@@ -143,14 +143,14 @@ namespace KitchenDesigner.Core
             if (host == null) host = FindCatchingPart();
             if (host == null) return;
 
-            if (host.PartName != _attachedPartName || !host.HasSink(this))
+            if (host.PartName != _attachedPartName || !host.HasCutout(this))
             {
                 // Проверяем фактическое членство, а не только имя: после загрузки
                 // сцены имя уже восстановлено из сейва, но деталь мойку ещё не
                 // знает — без регистрации проём не строится.
                 UnregisterFromPart();
                 _attachedPartName = host.PartName;
-                host.RegisterSink(this);
+                host.RegisterCutout(this);
             }
             AlignToPart(host);
         }
@@ -160,7 +160,7 @@ namespace KitchenDesigner.Core
             if (part == null || !IsSuitableHost(part)) return;
             UnregisterFromPart();
             _attachedPartName = part.PartName;
-            part.RegisterSink(this);
+            part.RegisterCutout(this);
             _freeHeightMM = 0f;
             AlignToPart(part);
         }
@@ -170,7 +170,7 @@ namespace KitchenDesigner.Core
             var part = FindAttachedPart();
             _attachedPartName = "";
             _lastHost = null;
-            if (part != null) part.UnregisterSink(this);
+            if (part != null) part.UnregisterCutout(this);
         }
 
         /// <summary>Отлипнуть и догнать курсор: пока мойка сидела на пласти, её
@@ -238,6 +238,8 @@ namespace KitchenDesigner.Core
 
         /// <summary>Ось, поперёк которой режется проём в этой детали.</summary>
         public static int HoleAxisFor(KitchenElement part) => UpAxisOf(part).axis;
+
+        public int HoleAxisIn(KitchenElement part) => HoleAxisFor(part);
 
         /// <summary>Две оси плоскости столешницы в том порядке, в каком их ждёт
         /// строитель меша: первая ложится на его X, вторая — на Y (см.

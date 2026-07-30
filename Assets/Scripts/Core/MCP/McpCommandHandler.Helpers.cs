@@ -233,6 +233,7 @@ namespace KitchenDesigner.Core.MCP
             var window = el as WindowElement;
             var door = el as DoorElement;
             var pillar = el as PillarElement;
+            var cooktop = el as CooktopElement;
             FacadeValidationData? facadeValidation = includeFacadeValidation && el is FacadeElement fe && allElements != null
                 ? ComputeFacadeValidation(fe, allElements)
                 : (FacadeValidationData?)null;
@@ -304,6 +305,16 @@ namespace KitchenDesigner.Core.MCP
                 pillar = pillar != null ? new PillarInfo
                 {
                     midHeightMM = pillar.MidHeightMM
+                } : null,
+                cooktop = cooktop != null ? new CooktopInfo
+                {
+                    cutoutWidthMM = cooktop.CutoutWidthMM,
+                    cutoutDepthMM = cooktop.CutoutDepthMM,
+                    plateHeightMM = CooktopElement.RIM_HEIGHT_MM,
+                    bodyHeightMM = cooktop.BodyHeightMM,
+                    attachedPartName = cooktop.AttachedPartName,
+                    offsetXMM = cooktop.OffsetXMM,
+                    offsetYMM = cooktop.OffsetYMM
                 } : null,
                 window = window != null ? new WindowInfo
                 {

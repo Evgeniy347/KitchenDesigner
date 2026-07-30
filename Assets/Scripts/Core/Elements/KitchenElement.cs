@@ -141,52 +141,67 @@ namespace KitchenDesigner.Core
 
         public void SetEdgeManual(EdgeSide side, bool manual) => _data.SetEdgeManual(side, manual);
 
-        // ── Врезанные мойки ────────────────────────────────────────────
-        // Мойка живёт отдельным элементом, но её проём — часть геометрии
-        // ДЕТАЛИ (как окно и стена). Список ведётся деталью, чтобы меш
-        // пересобирался из одного места: и при добавлении мойки, и при
-        // ресайзе детали (доля проёма считается от её размеров).
-        private readonly List<SinkElement> _sinks = new List<SinkElement>();
+        // ── Врезная техника (мойка, варочная) ──────────────────────────
+        // Мойка и варочная живут отдельными элементами, но их проёмы — часть
+        // геометрии ДЕТАЛИ (как окно и стена). Список ведётся деталью, чтобы меш
+        // пересобирался из одного места: и при врезке, и при ресайзе детали
+        // (доля проёма считается от её размеров).
+        private readonly List<IPartCutout> _cutouts = new List<IPartCutout>();
 
-        public IReadOnlyList<SinkElement> AttachedSinks => _sinks;
+        public IReadOnlyList<IPartCutout> AttachedCutouts => _cutouts;
 
-        public bool HasSink(SinkElement sink) => sink != null && _sinks.Contains(sink);
+        public bool HasCutout(IPartCutout cutout) => !IsGone(cutout) && _cutouts.Contains(cutout);
 
-        public void RegisterSink(SinkElement sink)
+        public void RegisterCutout(IPartCutout cutout)
         {
-            if (sink == null || !SupportsGrooves || _sinks.Contains(sink)) return;
-            _sinks.Add(sink);
+            if (IsGone(cutout) || !SupportsGrooves || _cutouts.Contains(cutout)) return;
+            _cutouts.Add(cutout);
             RebuildGrooveMesh();
         }
 
-        public void UnregisterSink(SinkElement sink)
+        public void UnregisterCutout(IPartCutout cutout)
         {
-            if (sink == null) return;
-            if (_sinks.Remove(sink)) RebuildGrooveMesh();
+            if (cutout == null) return;
+            if (_cutouts.Remove(cutout)) RebuildGrooveMesh();
         }
 
-        /// <summary>Снять все мойки (возврат детали в пул).</summary>
-        public void ClearSinks()
+        /// <summary>Снять всю врезную технику (возврат детали в пул).</summary>
+        public void ClearCutouts()
         {
-            if (_sinks.Count == 0) return;
-            _sinks.Clear();
+            if (_cutouts.Count == 0) return;
+            _cutouts.Clear();
             RebuildGrooveMesh();
         }
 
-        /// <summary>Ось, ПОПЕРЁК которой режутся проёмы моек: та локальная ось
-        /// детали, что смотрит вверх. У повёрнутой доски это Z (пласть), у
-        /// столешницы-короба — Y (толщина). Без мойки — канонический Z.</summary>
-        public int SinkHoleAxis => _sinks.Count > 0 ? SinkElement.HoleAxisFor(this) : 2;
+        /// <summary>Уничтоженный MonoBehaviour за интерфейсной ссылкой: обычное
+        /// <c>== null</c> здесь не срабатывает (подменённое сравнение Unity
+        /// работает только для её собственных типов).</summary>
+        private static bool IsGone(IPartCutout? cutout) =>
+            cutout == null || (cutout is Object obj && obj == null);
 
-        /// <summary>Проёмы врезанных моек в нормализованных координатах той
-        /// плоскости, в которой их режет GrooveMesh (см. SinkHoleAxis).</summary>
-        public List<GrooveMesh.Rect2> SinkHoleRects()
+        /// <summary>Ось, ПОПЕРЁК которой режутся проёмы врезной техники: та
+        /// локальная ось детали, что смотрит вверх. У повёрнутой доски это Z
+        /// (пласть), у столешницы-короба — Y (толщина). Без врезки —
+        /// канонический Z.</summary>
+        public int CutoutHoleAxis
+        {
+            get
+            {
+                foreach (var cutout in _cutouts)
+                    if (!IsGone(cutout)) return cutout.HoleAxisIn(this);
+                return 2;
+            }
+        }
+
+        /// <summary>Проёмы врезной техники в нормализованных координатах той
+        /// плоскости, в которой их режет GrooveMesh (см. CutoutHoleAxis).</summary>
+        public List<GrooveMesh.Rect2> CutoutHoleRects()
         {
             var result = new List<GrooveMesh.Rect2>();
-            foreach (var sink in _sinks)
+            foreach (var cutout in _cutouts)
             {
-                if (sink == null) continue;
-                var rect = sink.CutoutRectIn(this);
+                if (IsGone(cutout)) continue;
+                var rect = cutout.CutoutRectIn(this);
                 if (rect.IsValid) result.Add(rect);
             }
             return result;
@@ -247,9 +262,9 @@ namespace KitchenDesigner.Core
             var decor = mats != null && mats.Length > 0 && mats[0] != null
                 ? mats[0] : meshRenderer.sharedMaterial;
 
-            var holes = SinkHoleRects();
+            var holes = CutoutHoleRects();
 
-            var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves, holes, SinkHoleAxis);
+            var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves, holes, CutoutHoleAxis);
             DestroyOwnedMesh();
             _ownedMesh = mesh;
             _meshDims = _data.DimensionsMM;

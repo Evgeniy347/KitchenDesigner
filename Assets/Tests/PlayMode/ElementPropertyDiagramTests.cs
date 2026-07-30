@@ -336,6 +336,19 @@ public class ElementPropertyDiagramTests
             () => { ContextMenuUI.Instance?.Close(); });
     }
 
+    /// <summary>Варочная: ширина/глубина/высота описывают верхнюю плиту (высота —
+    /// общая), плюс две строки выреза — короба, уходящего в столешницу.</summary>
+    [UnityTest]
+    public IEnumerator ContextMenu_Cooktop_SavesPng()
+    {
+        var go = ElementFactory.CreateCooktop("Варочная", new Vector3(0f, 0.9f, 0f));
+        var el = go.GetComponent<KitchenElement>();
+        Assert.IsNotNull(el);
+        yield return CapturePanel("ContextMenu", "contextmenu_cooktop.png",
+            () => { ContextMenuUI.Instance!.Open(el); },
+            () => { ContextMenuUI.Instance?.Close(); });
+    }
+
     /// <summary>Окно свойств замера: обе точки в мм, длина и красная «Удалить».
     /// Открывается выбором отрезка в MeasureStore, как это делает рулетка.</summary>
     [UnityTest]

@@ -197,18 +197,27 @@ public class SnapMutationTests
                 TestExistingPairAttraction(moved, target, savedPos, savedDims, ref totalSnapOk);
             ticksP0 += sw.ElapsedTicks;
 
+            // Врезную технику за грань не тянут (ручек ресайза у неё нет, размеры
+            // правятся в окне свойств), и её габаритная коробка — только бортик
+            // на пласти: «высота» в свойствах описывает и то, что ушло внутрь
+            // столешницы. Гнать по ней ресайз-фазы значит проверять сценарий,
+            // которого в приложении нет. Перенос проверяем как у всех.
+            bool resizable = ResizeHandleManager.SupportsHandleResize(moved);
+
             // ── Phase 1: +200 мм с каждой из 6 граней ──
             sw.Restart();
-            for (int face = 0; face < 6; face++)
-                TestResizeFromFace(moved, others, savedPos, savedDims, savedRot, face, +BigStepMm,
-                    threshold, ref totalBigResizeOk, "GROW");
+            if (resizable)
+                for (int face = 0; face < 6; face++)
+                    TestResizeFromFace(moved, others, savedPos, savedDims, savedRot, face, +BigStepMm,
+                        threshold, ref totalBigResizeOk, "GROW");
             ticksP1 += sw.ElapsedTicks;
 
             // ── Phase 2: -200 мм с каждой из 6 граней ──
             sw.Restart();
-            for (int face = 0; face < 6; face++)
-                TestResizeFromFace(moved, others, savedPos, savedDims, savedRot, face, -BigStepMm,
-                    threshold, ref totalBigResizeOk, "SHRINK");
+            if (resizable)
+                for (int face = 0; face < 6; face++)
+                    TestResizeFromFace(moved, others, savedPos, savedDims, savedRot, face, -BigStepMm,
+                        threshold, ref totalBigResizeOk, "SHRINK");
             ticksP2 += sw.ElapsedTicks;
 
             // ── Phase 3: перемещение на 200 мм в 6 направлениях ──
@@ -220,10 +229,11 @@ public class SnapMutationTests
 
             // ── Phase 4: покадровый (1 мм) ресайз ──
             sw.Restart();
-            for (int face = 0; face < 6; face++)
-                SweepResizeFromFace(moved, others, savedPos, savedDims, savedRot, face,
-                    SweepMaxMm, SweepStepMm, threshold, ref totalSweepSnapEvents,
-                    ref totalSweepCompetitionWarnings);
+            if (resizable)
+                for (int face = 0; face < 6; face++)
+                    SweepResizeFromFace(moved, others, savedPos, savedDims, savedRot, face,
+                        SweepMaxMm, SweepStepMm, threshold, ref totalSweepSnapEvents,
+                        ref totalSweepCompetitionWarnings);
             ticksP4 += sw.ElapsedTicks;
 
             // ── Phase 5: покадровый (1 мм) перенос ──

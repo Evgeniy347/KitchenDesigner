@@ -51,6 +51,11 @@ namespace KitchenDesigner.Core
         /// <summary>Фасад с зазором: плавает в проёме и соседей не касается —
         /// отсутствие face-контакта для него штатно.</summary>
         FloatingFacade = 1 << 6,
+
+        /// <summary>Фасад (любой, с зазором и без). Навесная деталь: короб
+        /// врезной техники уходит ЗА неё, и такое пересечение ошибкой не
+        /// считается — в отличие от боковины.</summary>
+        Facade = 1 << 7,
     }
 
     /// <summary>Отрезок по вертикали (мировые единицы) — габарит по высоте для
@@ -100,8 +105,24 @@ namespace KitchenDesigner.Core
         /// −1 — стены нет или она не найдена.</summary>
         public readonly int AttachedWallIndex;
 
+        /// <summary>Короб врезной техники — та её часть, что уходит В деталь
+        /// (чаша мойки, короб выреза варочной). Габарит самого элемента этого
+        /// объёма не описывает: он равен только бортику на пласти.</summary>
+        public readonly ElementGeometry RecessedBody;
+
+        /// <summary>Короб задан и его пересечения надо проверять. У неврезанной
+        /// техники ложь: пока она висит в воздухе, «вглубь детали» не значит
+        /// ничего.</summary>
+        public readonly bool HasRecessedBody;
+
+        /// <summary>Индекс детали, в которую врезана техника (её столешница), в
+        /// том же списке; −1 — не врезана. Пересечение короба с НЕЙ штатно: для
+        /// того проём и режется.</summary>
+        public readonly int HostIndex;
+
         public ValidationElement(ElementGeometry geometry, Vector3[] vertices, ElementKind kind,
-            int groupId, string? pairedName, Span heightSpan, int attachedWallIndex)
+            int groupId, string? pairedName, Span heightSpan, int attachedWallIndex,
+            ElementGeometry recessedBody = default, bool hasRecessedBody = false, int hostIndex = -1)
         {
             Geometry = geometry;
             Vertices = vertices;
@@ -110,6 +131,9 @@ namespace KitchenDesigner.Core
             PairedName = pairedName;
             HeightSpan = heightSpan;
             AttachedWallIndex = attachedWallIndex;
+            RecessedBody = recessedBody;
+            HasRecessedBody = hasRecessedBody;
+            HostIndex = hostIndex;
         }
 
         public string Name => Geometry.Name;
@@ -297,9 +321,19 @@ namespace KitchenDesigner.Core
             for (int k = 0; k < n; k++)
             {
                 var g = all![k].Geometry;
-                int cx0 = CellFloor(g.Min.x - contactDist), cx1 = CellFloor(g.Max.x + contactDist);
-                int cy0 = CellFloor(g.Min.y - contactDist), cy1 = CellFloor(g.Max.y + contactDist);
-                int cz0 = CellFloor(g.Min.z - contactDist), cz1 = CellFloor(g.Max.z + contactDist);
+                var min = g.Min;
+                var max = g.Max;
+                // Короб врезной техники уходит вглубь детали и в габарит бортика
+                // не входит — без него боковина под столешницей не попала бы с
+                // варочной в одну ячейку, и пересечение осталось бы незамеченным.
+                if (all[k].HasRecessedBody)
+                {
+                    min = Vector3.Min(min, all[k].RecessedBody.Min);
+                    max = Vector3.Max(max, all[k].RecessedBody.Max);
+                }
+                int cx0 = CellFloor(min.x - contactDist), cx1 = CellFloor(max.x + contactDist);
+                int cy0 = CellFloor(min.y - contactDist), cy1 = CellFloor(max.y + contactDist);
+                int cz0 = CellFloor(min.z - contactDist), cz1 = CellFloor(max.z + contactDist);
                 for (int cx = cx0; cx <= cx1; cx++)
                     for (int cy = cy0; cy <= cy1; cy++)
                         for (int cz = cz0; cz <= cz1; cz++)
@@ -362,8 +396,14 @@ namespace KitchenDesigner.Core
 
             // Светильник — декор: не создаёт ни пересечений, ни несущих контактов.
             // Мойка/варочная по определению «пересекают» столешницу — они в неё
-            // врезаны, и проём в детали как раз это и оформляет.
-            if (a.IgnoredInPairs || b.IgnoredInPairs) return;
+            // врезаны, и проём в детали как раз это и оформляет. Но их КОРОБ под
+            // столешницей на боковину налезать не вправе — это и проверяем.
+            if (a.IgnoredInPairs || b.IgnoredInPairs)
+            {
+                CheckRecessedBody(a, aIdx, b, bIdx, contactDist, result);
+                CheckRecessedBody(b, bIdx, a, aIdx, contactDist, result);
+                return;
+            }
 
             if (AABBsIntersect(a.Geometry, b.Geometry, contactDist))
             {
@@ -409,6 +449,30 @@ namespace KitchenDesigner.Core
 
             CheckPair(aIdx, bIdx, a.Faces, b.Faces, contactDist, result);
         }
+
+        /// <summary>Короб врезной техники (чаша мойки, короб выреза варочной)
+        /// налез на КОРПУСНУЮ деталь — боковину, перегородку, полку. Своя
+        /// столешница исключена (в ней для короба и режется проём), навесное —
+        /// фасад, дверца, ящик, ДВП — тоже: короб уходит за них.</summary>
+        private static void CheckRecessedBody(in ValidationElement rec, int recIdx,
+            in ValidationElement other, int otherIdx, float contactDist, CoreValidationResult result)
+        {
+            if (!rec.HasRecessedBody || rec.HostIndex == otherIdx) return;
+            if (!IsCarcass(other)) return;
+            if (!AABBsIntersect(rec.RecessedBody, other.Geometry, contactDist)) return;
+
+            MarkOverlapping(recIdx);
+            MarkOverlapping(otherIdx);
+            result.AddDiagnostic(recIdx, otherIdx, ViolationKind.Overlap);
+        }
+
+        /// <summary>Корпусная деталь: боковина, перегородка, стойка, полка,
+        /// столешница. Всё остальное — якоря (пол, стена, проём), внутренности
+        /// (ящик), навесное (фасад), декор и сама врезная техника.</summary>
+        private static bool IsCarcass(in ValidationElement e) =>
+            !e.Is(ElementKind.Anchor | ElementKind.Opening | ElementKind.Drawer
+                  | ElementKind.Decor | ElementKind.Recessed | ElementKind.Facade)
+            && !e.IsPanel;
 
         private static bool IsPairedWith(in ValidationElement a, in ValidationElement b) =>
             !string.IsNullOrEmpty(a.PairedName) && a.PairedName == b.Name;

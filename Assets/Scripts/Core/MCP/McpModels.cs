@@ -99,6 +99,7 @@ namespace KitchenDesigner.Core.MCP
         public TableInfo? table; // свойства стола, только для TableElement
 		public RadiusTableInfo? radiusTable; // свойства радиусного стола, только для RadiusTableElement
 		public PillarInfo? pillar; // свойства опоры, только для PillarElement
+		public CooktopInfo? cooktop; // свойства варочной, только для CooktopElement
 		public WindowInfo? window; // свойства окна, только для WindowElement
 		public DoorInfo? door; // свойства двери, только для DoorElement
     }
@@ -303,6 +304,21 @@ namespace KitchenDesigner.Core.MCP
 	public class PillarInfo
 	{
 		public int midHeightMM;
+	}
+
+	/// <summary>Варочная поверхность. dimX/dimY/dimZ — верхняя плита (dimY —
+	/// ОБЩАЯ высота: плита 5 мм + короб), здесь — короб, уходящий в столешницу,
+	/// и деталь, в которую он врезан.</summary>
+	[Serializable]
+	public class CooktopInfo
+	{
+		public int cutoutWidthMM;
+		public int cutoutDepthMM;
+		public int plateHeightMM;
+		public int bodyHeightMM;
+		public string attachedPartName = string.Empty;
+		public int offsetXMM;
+		public int offsetYMM;
 	}
 
 	[Serializable]

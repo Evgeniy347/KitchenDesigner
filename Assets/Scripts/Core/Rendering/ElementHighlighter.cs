@@ -124,6 +124,18 @@ namespace KitchenDesigner.Core
 
         private void ApplyMaterial(KitchenElement element, bool isValid)
         {
+            // Варочная собрана из двух дочерних коробок, на корне рендерера нет —
+            // без этой ветки она не могла бы покраснеть вообще, и наезд её выреза
+            // на боковину был бы виден только по самой боковине.
+            if (element is CooktopElement cooktop)
+            {
+                if (isValid) cooktop.ApplyMaterials();
+                else
+                    foreach (var mr in cooktop.GetComponentsInChildren<MeshRenderer>())
+                        if (mr != null) mr.sharedMaterial = _invalidMaterial!;
+                return;
+            }
+
             var renderer = element.GetComponent<MeshRenderer>();
             if (renderer == null) return;
 

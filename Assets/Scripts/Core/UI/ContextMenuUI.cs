@@ -15,6 +15,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _titleLabel;
 
 		private TMP_InputField? _name, _w, _h, _d, _radius,
+			_cutoutW, _cutoutD,
 			_gapLeft, _gapRight, _gapTop, _gapBottom,
 			_x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight,
 			_lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam,
@@ -201,6 +202,10 @@ namespace KitchenDesigner.Core.UI
             _h = Row(panel.transform, "Высота");
             _d = Row(panel.transform, "Глубина");
             _radius = RadialRow(panel.transform, "Радиус угла");
+            // Вырез варочной: ширина/глубина/высота выше описывают верхнюю плиту,
+            // а эти две строки — короб, уходящий в столешницу.
+            _cutoutW = CooktopRow(panel.transform, "Ширина выреза");
+            _cutoutD = CooktopRow(panel.transform, "Глубина выреза");
 
             // ── Пазы (только «деталь») ──────────────────────────────────
             // Кнопка-раскрывашка «Пазы (N) ▼» на всю ширину. В раскрытом виде —
@@ -453,7 +458,7 @@ namespace KitchenDesigner.Core.UI
             _rz = TriField(panel.transform, "Z, °", TriCol3);
             TriEndRow(hideForWindow: true);
 
-			foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam }) f!.contentType = TMP_InputField.ContentType.Custom;
+			foreach (var f in new[] { _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam }) f!.contentType = TMP_InputField.ContentType.Custom;
 			foreach (var f in LightExtraFields()) f!.contentType = TMP_InputField.ContentType.Custom;
             foreach (var f in new[] { _gapLeft, _gapRight, _gapTop, _gapBottom }) f!.contentType = TMP_InputField.ContentType.Custom;
             // Позиция — целые мм; углы — десятичные градусы.
@@ -461,7 +466,7 @@ namespace KitchenDesigner.Core.UI
             foreach (var f in new[] { _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.Custom;
 
             // Арифметика: разрешаем + - * / (пробелы допускаются, удаляются при вычислении).
-            foreach (var f in new[] { _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z })
+            foreach (var f in new[] { _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z })
                 if (f != null) f.onValidateInput = (text, idx, ch) => ExpressionParser.IsValidDimensionChar(ch) ? ch : '\0';
             foreach (var f in LightExtraFields())
                 if (f != null) f.onValidateInput = (text, idx, ch) => ExpressionParser.IsValidDimensionChar(ch) ? ch : '\0';
@@ -658,6 +663,18 @@ namespace KitchenDesigner.Core.UI
             var field = UIFactory.CreateNumberField("F_" + label, parent, "",
                 new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
             AddRadialRow(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
+            return field;
+        }
+
+        /// <summary>Строка, видимая только у варочной поверхности.</summary>
+        private TMP_InputField CooktopRow(Transform parent, string label, string unit = "мм")
+        {
+            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
+                new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
+            var field = UIFactory.CreateNumberField("F_" + label, parent, "",
+                new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
+            AddRow(RowH, RowGap, () => _target is CooktopElement,
+                lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
 
@@ -1121,7 +1138,7 @@ namespace KitchenDesigner.Core.UI
 
         private bool IsAnyFieldFocused()
         {
-			foreach (var f in new[] { _name, _w, _h, _d, _radius, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _edgeThickness, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z, _rx, _ry, _rz })
+			foreach (var f in new[] { _name, _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _edgeThickness, _gapLeft, _gapRight, _gapTop, _gapBottom, _x, _y, _z, _rx, _ry, _rz })
                 if (f != null && f.isFocused) return true;
             return false;
         }
@@ -1151,6 +1168,12 @@ namespace KitchenDesigner.Core.UI
             var radial = _target as RadialShelfElement;
             if (radial != null)
                 MaybeRefresh(_radius, radial.CornerRadius.ToString());
+
+            if (_target is CooktopElement cooktopRefresh)
+            {
+                MaybeRefresh(_cutoutW, cooktopRefresh.CutoutWidthMM.ToString());
+                MaybeRefresh(_cutoutD, cooktopRefresh.CutoutDepthMM.ToString());
+            }
 
             var drawerRef = _target as DrawerElement;
             if (drawerRef != null && _drawerWidth != null)
@@ -1296,6 +1319,12 @@ namespace KitchenDesigner.Core.UI
                 _radius!.text = radial != null
                     ? radial.CornerRadius.ToString()
                     : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT.ToString();
+
+                var cooktopEl = element as CooktopElement;
+                _cutoutW!.text = (cooktopEl != null
+                    ? cooktopEl.CutoutWidthMM : CooktopElement.DEFAULT_CUTOUT_WIDTH_MM).ToString();
+                _cutoutD!.text = (cooktopEl != null
+                    ? cooktopEl.CutoutDepthMM : CooktopElement.DEFAULT_CUTOUT_DEPTH_MM).ToString();
 
                 var facade = element as FacadeElement;
                 if (facade != null)
@@ -1531,6 +1560,23 @@ namespace KitchenDesigner.Core.UI
                     ParseIntField(_w, oldDims.x),
                     ParseIntField(_h, oldDims.y),
                     target is WindowElement || target is DoorElement ? oldDims.z : ParseIntField(_d, oldDims.z));
+            }
+
+            // Вырез варочной — отдельной командой: он не часть габарита детали,
+            // и складывать его в ResizeCommand нечестно по отношению к откату.
+            // Считаем ПОСЛЕ размеров плиты: вырез клампится по её ширине.
+            var cooktopApply = target as CooktopElement;
+            if (cooktopApply != null && _cutoutW != null && _cutoutD != null)
+            {
+                var cutBefore = SetCooktopCutoutCommand.Snapshot(cooktopApply);
+                var cutAfter = new Vector2Int(
+                    ParseIntField(_cutoutW, cutBefore.x),
+                    ParseIntField(_cutoutD, cutBefore.y));
+                if (cutAfter != cutBefore)
+                    CommandStack.Execute(new SetCooktopCutoutCommand(cooktopApply, cutBefore, cutAfter));
+                // Показываем применённый (склампленный) вырез, а не введённый.
+                _cutoutW.text = cooktopApply.CutoutWidthMM.ToString();
+                _cutoutD.text = cooktopApply.CutoutDepthMM.ToString();
             }
 
             if (table != null && _legInset != null)

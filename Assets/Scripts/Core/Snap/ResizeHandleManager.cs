@@ -369,6 +369,17 @@ namespace KitchenDesigner.Core
             return (b * eW - dW) / denom;
         }
 
+        /// <summary>Деталь тянут за грань. Врезная техника — нет:
+        ///   • мойка покупная, её габарит фиксирован моделью;
+        ///   • у варочной габаритная коробка — только плита 5 мм, а «высота» в
+        ///     свойствах ОБЩАЯ (плита + короб выреза). Грань за ручку сдвинулась
+        ///     бы не туда, куда метил снэп, поэтому размеры правятся только в
+        ///     окне свойств.
+        /// Тот же признак использует мутационный свип прилипания: тянуть за грань
+        /// то, что в приложении не тянут, — проверка несуществующего сценария.</summary>
+        public static bool SupportsHandleResize(KitchenElement? element) =>
+            element != null && !(element is SinkElement) && !(element is CooktopElement);
+
         // --- Ручки ---
 
         private void BuildHandles()
@@ -384,10 +395,7 @@ namespace KitchenDesigner.Core
             // У окна ось Z (глубина) бессмысленна: двигать поперёк стены нельзя
             // (снап вернёт), а толщину диктует стена — ручки Z не создаём.
             bool skipDepth = _target is WindowElement || _target is DoorElement;
-            // Мойка — покупное изделие фиксированного размера (её ApplyDimensions
-            // возвращает габарит на место), тянуть у неё нечего: ручки ресайза
-            // только вводили бы в заблуждение. Перемещать её можно.
-            if (Mode == HandleMode.Resize && (_target is SinkElement || _target is CooktopElement)) return;
+            if (Mode == HandleMode.Resize && !SupportsHandleResize(_target)) return;
             var faces = _target!.GetFaces();
             for (int i = 0; i < faces.Length; i++)
             {

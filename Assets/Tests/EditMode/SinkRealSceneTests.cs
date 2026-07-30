@@ -55,7 +55,7 @@ public class SinkRealSceneTests
         // Сцена восстановлена — в игре это делает Start(); в EditMode зовём руками.
         sink!.SnapToPart();
 
-        var host = elements.FirstOrDefault(e => e != null && e.HasSink(sink));
+        var host = elements.FirstOrDefault(e => e != null && e.HasCutout(sink));
         Assert.IsNotNull(host, Diagnose(elements, sink));
         Assert.AreEqual("Countertop_B", host!.PartName);
 

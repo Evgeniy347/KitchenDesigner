@@ -564,7 +564,7 @@ public class IsoScreenshotTests
         sink!.SnapToPart();
         yield return null;
 
-        Assert.IsTrue(top.HasSink(sink), "мойка врезана в столешницу");
+        Assert.IsTrue(top.HasCutout(sink), "мойка врезана в столешницу");
 
         Vector3 size = MmToUnits(new Vector3Int(topDims.x, 600, topDims.y));
         var (camGo, cam) = CreateIsoCamera(topPos, size, 1.4f);

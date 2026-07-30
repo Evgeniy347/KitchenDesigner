@@ -116,7 +116,7 @@ public class SinkElementTests
         Assert.IsTrue(SinkElement.IsSuitableHost(top), "столешница модуля 600 годится под мойку");
 
         var sink = CreateSeatedSink(top);
-        Assert.IsTrue(top.HasSink(sink), "на столешнице одного модуля мойка врезается");
+        Assert.IsTrue(top.HasCutout(sink), "на столешнице одного модуля мойка врезается");
     }
 
     // ── Реальный проект (docs/example.save.json) ────────────────────────
@@ -147,7 +147,7 @@ public class SinkElementTests
         sink.SnapToPart();
 
         Assert.IsTrue(sink.IsAttached, "мойка садится на столешницу");
-        Assert.IsTrue(top.HasSink(sink));
+        Assert.IsTrue(top.HasCutout(sink));
         // Верх столешницы 840 + 20 = 860 мм — ровно там, где мойка и стояла.
         Assert.AreEqual(0.860f, sink.transform.position.y, 1e-4f);
 
@@ -171,7 +171,7 @@ public class SinkElementTests
         sink.SnapToPart();
 
         Assert.IsFalse(sink.IsAttached, "над столешницей мойка просто висит");
-        Assert.AreEqual(0, top.AttachedSinks.Count, "проём не режется");
+        Assert.AreEqual(0, top.AttachedCutouts.Count, "проём не режется");
     }
 
     [Test]
@@ -194,7 +194,7 @@ public class SinkElementTests
         Assert.Greater(attachedAtStep, 0, "спускаясь сверху, мойка обязана прилипнуть");
         Assert.AreEqual(TopY, sink.transform.position.y, 1e-4f,
             "борт сел ровно на пласть");
-        Assert.IsTrue(top.HasSink(sink), "проём прорезан");
+        Assert.IsTrue(top.HasCutout(sink), "проём прорезан");
         Assert.Greater(top.GetComponent<MeshFilter>().sharedMesh.vertexCount, 24);
 
         // Продолжаем тянуть вниз — мойка держится, пока не пройден порог отрыва.
@@ -208,7 +208,7 @@ public class SinkElementTests
 
         Assert.IsFalse(sink.IsAttached, "протащили ниже порога — мойка отлипла");
         Assert.Less(sink.transform.position.y, TopY, "и ушла ниже пласти");
-        Assert.AreEqual(0, top.AttachedSinks.Count, "проём закрылся");
+        Assert.AreEqual(0, top.AttachedCutouts.Count, "проём закрылся");
         Assert.AreEqual(24, top.GetComponent<MeshFilter>().sharedMesh.vertexCount,
             "меш снова простая коробка");
 
@@ -370,9 +370,9 @@ public class SinkElementTests
         var sink = CreateSeatedSink(top);
         Assert.Greater(top.GetComponent<MeshFilter>().sharedMesh.vertexCount, 24);
 
-        top.UnregisterSink(sink);
+        top.UnregisterCutout(sink);
 
-        Assert.IsFalse(top.HasSink(sink));
+        Assert.IsFalse(top.HasCutout(sink));
         Assert.AreEqual(24, top.GetComponent<MeshFilter>().sharedMesh.vertexCount,
             "без мойки и пазов деталь возвращается на простую коробку");
     }

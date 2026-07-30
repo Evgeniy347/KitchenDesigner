@@ -153,6 +153,14 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Radial shelf only: corner rounding radius in MM (clamped to 1..min(width, depth)). Omit to keep.", Min = 1)]
         public int? corner_radius;
 
+        // Cooktop.
+        [McpParam("Cooktop only: cutout width in MM — the box that goes INTO the countertop " +
+                  "(width/height/depth describe the 5 mm plate on top; height is the total). " +
+                  "Clamped to 50..width-10. Omit to keep.", Min = 50)]
+        public int? cutout_width;
+        [McpParam("Cooktop only: cutout depth in MM. Clamped to 50..depth-10. Omit to keep.", Min = 50)]
+        public int? cutout_depth;
+
         // Grooves (plain board only).
         [McpParam("Plain board only: REPLACES the whole set of grooves. Comma-separated \"kind:side\" pairs, " +
                   "kind = through|blind, side = top|bottom|left|right (side names the edge the groove runs along, " +

@@ -215,6 +215,15 @@ TableElement          Table (tabletop + 4 legs), type:""table"". leg_inset_mm an
                       materials via edit_elements.
 RadiusTableElement    Capsule-shaped table (type:""radius_table"").
 PillarElement         Pillar (type:""pillar"", mid_height_mm).
+SinkElement / CooktopElement
+                      Recessed appliances (type:""sink"" / ""cooktop""). They sit
+                      on a plain board with a horizontal face (the countertop),
+                      snap to it and cut a hole in it. The cooktop is TWO boxes:
+                      width/depth are the 5 mm plate on top, height is the TOTAL
+                      (plate + the box inside the countertop), and the box itself
+                      is cutout_width/cutout_depth via edit_elements. Its cutout
+                      magnets flush to sides and facades under the countertop;
+                      overlapping a carcass board there is a violation.
 WindowElement / DoorElement
                       Openings. Prefer add_opening / apply_floorplan: they
                       attach the opening to a wall and cut the hole. Creating
