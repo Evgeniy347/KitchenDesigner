@@ -334,7 +334,14 @@ namespace KitchenDesigner.Core
                     // пристёгнутый фасад после загрузки был бы просто дверцей,
                     // стоящей рядом.
                     if (ed.isDishwasher && el is DishwasherElement dishwasherEl)
+                    {
                         dishwasherEl.AttachedFacadeName = ed.dishwasherAttachedFacadeName;
+                        // Откинутая дверца машины живёт в общем doorOpen. Имя
+                        // фасада присвоено ВЫШЕ не случайно: SetOpen тянет за
+                        // собой пристёгнутый фасад, а найти его можно только по
+                        // уже восстановленной ссылке.
+                        if (ed.doorOpen) dishwasherEl.SetOpen(true);
+                    }
 
                     if (ed.isWindow && el is WindowElement winEl)
                     {

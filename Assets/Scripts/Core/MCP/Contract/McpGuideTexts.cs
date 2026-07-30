@@ -253,9 +253,19 @@ DishwasherElement     Fully integrated dishwasher (type:""dishwasher""), one
                       is 600 wide and 655..725 high (720 nominal); its height
                       sets the plinth (body height minus facade, 90..220).
                       A facade outside that range is reported by get_violations
-                      as DWH-03, NOT rejected. Size is fixed by the
-                      manufacturer — width/height/depth are REJECTED by
-                      edit_elements.
+                      as DWH-03, NOT rejected. That facade hangs on BRACKETS, so
+                      it counts as attached while it is up to 5 mm away from the
+                      appliance front (dishwasher.facadeMountGapMM) — a drawer
+                      front, screwed on flush, still requires real contact.
+                      COLLISIONS SKIP THE BOTTOM 89 mm (plinthNicheMM): that
+                      band is the plinth niche, the appliance stands there on
+                      four adjustable feet, and plinth boards and module legs
+                      belong in it.
+                      The door drops DOWN around its bottom edge and takes the
+                      attached facade with it: edit_elements {is_open:true};
+                      state in element.dishwasher.isOpen.
+                      Size is fixed by the manufacturer — width/height/depth are
+                      REJECTED by edit_elements.
 WindowElement / DoorElement
                       Openings. Prefer add_opening / apply_floorplan: they
                       attach the opening to a wall and cut the hole. Creating

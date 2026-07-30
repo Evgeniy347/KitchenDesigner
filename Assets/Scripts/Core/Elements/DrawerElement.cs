@@ -149,6 +149,11 @@ namespace KitchenDesigner.Core
             set => _attachedFacadeName = value;
         }
 
+        /// <summary>Фронт ящика и фасад стянуты винтами ЗАПОДЛИЦО — монтажного
+        /// зазора у этой навески нет, и проверка контакта остаётся строгой (см.
+        /// <see cref="IFacadeHost.FacadeMountGapMm"/>).</summary>
+        public float FacadeMountGapMm => 0f;
+
         // Семантика состояний (по подписям кнопок плана):
         //   Closed     — оба закрыты
         //   BothOpen   — оба открыты

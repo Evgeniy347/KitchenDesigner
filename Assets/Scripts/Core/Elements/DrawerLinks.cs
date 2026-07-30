@@ -102,16 +102,21 @@ namespace KitchenDesigner.Core
         /// алфавиту (при коллизии — суффикс «_1», «_2»…). См. ElementNaming.</summary>
         public static string UniqueName(string baseName) => ElementNaming.Normalize(baseName);
 
-        /// <summary>Контакт «хозяин фасада ↔ фасад» для любого
-        /// <see cref="IFacadeHost"/>. У ящика проверка идёт по ЗАКРЫТОЙ позе
-        /// (перегрузка ниже), у неподвижного хозяина — по текущей: посудомойка
-        /// не выдвигается, и подменять ей позу нечем.</summary>
+        /// <summary>Фасад НАВЕШЕН на своего хозяина (<see cref="IFacadeHost"/>).
+        /// У ящика проверка идёт по ЗАКРЫТОЙ позе (перегрузка ниже), у
+        /// неподвижного хозяина — по текущей: посудомойка не выдвигается, и
+        /// подменять ей позу нечем.
+        ///
+        /// Порог берётся у самого хозяина (<see cref="IFacadeHost.FacadeMountGapMm"/>):
+        /// фронт ящика прикручен заподлицо и требует прямого контакта, фасад
+        /// посудомойки висит на кронштейнах с монтажным зазором. Общего «допуска
+        /// касания» на оба случая нет и быть не может — это разный крепёж.</summary>
         public static bool IsFacadeInContact(IFacadeHost host, FacadeElement facade)
         {
             if (host == null || facade == null) return false;
             if (host is DrawerElement drawer) return IsFacadeInContact(drawer, facade);
             if (!(host is KitchenElement element)) return false;
-            return ConstraintValidator.AreInFaceToFaceContact(element, facade);
+            return ConstraintValidator.AreFacadeMountable(element, facade, host.FacadeMountGapMm);
         }
 
         public static bool IsFacadeInContact(DrawerElement drawer, FacadeElement facade)
@@ -123,7 +128,11 @@ namespace KitchenDesigner.Core
             {
                 drawer.transform.position = drawer.ClosedPosition;
                 drawer.transform.rotation = drawer.ClosedRotation;
-                return ConstraintValidator.AreInFaceToFaceContact(drawer, facade);
+                // FacadeMountGapMm ящика — ноль, так что это ровно прежний
+                // строгий контакт; путь один и тот же на обоих хозяев, чтобы
+                // ослабление допуска нельзя было внести только в одну ветку.
+                return ConstraintValidator.AreFacadeMountable(drawer, facade,
+                    drawer.FacadeMountGapMm);
             }
             finally
             {

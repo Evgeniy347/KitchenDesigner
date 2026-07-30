@@ -31,6 +31,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _doorButtonLabel;
         private TMP_Text? _winDoorButtonLabel;
         private TMP_Text? _ovenDoorLabel;
+        private TMP_Text? _dishwasherDoorLabel;
         private TMP_Dropdown? _modeDropdown;
         private TMP_Dropdown? _fillDropdown;
         private TMP_Dropdown? _materialDropdown;
@@ -327,6 +328,15 @@ namespace KitchenDesigner.Core.UI
             _ovenDoorLabel = ovenDoorButton.GetComponentInChildren<TMP_Text>();
             AddRow(BtnH, ActionGap, () => _target is OvenElement,
                 ovenDoorButton.GetComponent<RectTransform>());
+
+            // Откидная дверца посудомоечной машины — та же кнопка, что у
+            // духовки, но своя: подпись у машины упоминает фасад, который едет
+            // вместе с дверцей, и путать эти два прибора одной строкой нельзя.
+            var dwDoorButton = UIFactory.CreateButton("CtxDishwasherDoor", panel.transform, "Открыть дверцу",
+                new Vector2(0, 0), new Vector2(332, BtnH), ToggleDishwasherDoor);
+            _dishwasherDoorLabel = dwDoorButton.GetComponentInChildren<TMP_Text>();
+            AddRow(BtnH, ActionGap, () => _target is DishwasherElement,
+                dwDoorButton.GetComponent<RectTransform>());
 
             // Центр сборного фасада (только для сборного): Глухой / Витрина / Стекло.
             var fillOptions = new List<string> { "Глухой (панель)", "Витрина (пусто)", "Стекло" };
@@ -1434,6 +1444,7 @@ namespace KitchenDesigner.Core.UI
                 }
 
                 if (element is OvenElement ovenEl) UpdateOvenDoorButton(ovenEl);
+                if (element is DishwasherElement dwEl) UpdateDishwasherDoorButton(dwEl);
 
                 // Пристёгнутый фасад — общая строка ящика и посудомойки.
                 var facadeHost = element as IFacadeHost;
@@ -3011,6 +3022,21 @@ namespace KitchenDesigner.Core.UI
             _ovenDoorLabel.text = oven.IsOpen ? "Закрыть дверцу" : "Открыть дверцу";
         }
 
+        private void ToggleDishwasherDoor()
+        {
+            if (_target is DishwasherElement dw)
+            {
+                dw.ToggleOpen();
+                UpdateDishwasherDoorButton(dw);
+            }
+        }
+
+        private void UpdateDishwasherDoorButton(DishwasherElement dw)
+        {
+            if (_dishwasherDoorLabel == null || dw == null) return;
+            _dishwasherDoorLabel.text = dw.IsOpen ? "Закрыть дверцу" : "Открыть дверцу";
+        }
+
         private void UpdateDrawerAnimButton(DrawerElement d)
         {
             if (_drawerAnimLabel == null || d == null) return;
@@ -3026,6 +3052,7 @@ namespace KitchenDesigner.Core.UI
             if (_target is FacadeElement f) UpdateDoorButton(f);
             else if (_target is DrawerElement d) UpdateDrawerAnimButton(d);
             else if (_target is OvenElement o) UpdateOvenDoorButton(o);
+            else if (_target is DishwasherElement dw) UpdateDishwasherDoorButton(dw);
         }
 
         // ── Фасад ящика ───────────────────────────────────────────────

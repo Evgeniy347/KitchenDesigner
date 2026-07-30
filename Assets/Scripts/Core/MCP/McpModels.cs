@@ -378,6 +378,15 @@ namespace KitchenDesigner.Core.MCP
 		public int plinthMaxMM;
 		/// <summary>Цоколь утоплен под фасад на столько мм.</summary>
 		public int plinthSetbackMM;
+		/// <summary>Высота ниши под цоколь. Эта нижняя полоса габарита ПУСТАЯ и
+		/// в проверку коллизий не входит: там стоят цоколь и ножки модулей.</summary>
+		public int plinthNicheMM;
+		/// <summary>Монтажный зазор навески фасада, мм: фасад на кронштейнах
+		/// считается пристёгнутым, даже если отстоит от прибора на столько.</summary>
+		public float facadeMountGapMM;
+		/// <summary>Дверца откинута (edit_elements {is_open}). Откидывается вниз
+		/// вокруг нижней кромки, вместе с пристёгнутым фасадом.</summary>
+		public bool isOpen;
 	}
 
 	[Serializable]

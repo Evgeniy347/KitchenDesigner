@@ -24,6 +24,8 @@ public class DishwasherElementTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private McpCommandHandler? _handler;
+    private Canvas? _canvas;
+    private ContextMenuUI? _menu;
 
     [SetUp]
     public void SetUp()
@@ -45,6 +47,11 @@ public class DishwasherElementTests
             Object.DestroyImmediate(go);
         }
         _spawned.Clear();
+
+        if (_menu != null) Object.DestroyImmediate(_menu.gameObject);
+        _menu = null;
+        if (_canvas != null) Object.DestroyImmediate(_canvas.gameObject);
+        _canvas = null;
 
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null) Object.DestroyImmediate(e.gameObject);
@@ -211,11 +218,12 @@ public class DishwasherElementTests
 
     // ── Модель ──────────────────────────────────────────────────────────
 
-    /// <summary>Ровно две коробки: корпус и полоса панели. Фасада среди детей
-    /// БЫТЬ НЕ ДОЛЖНО — он отдельный элемент, и вторая передняя плоскость
-    /// поверх пристёгнутой была бы браком.</summary>
+    /// <summary>Семь коробок: полый бак из пяти стенок плюс дверца с полосой
+    /// панели. МЕБЕЛЬНОГО ФАСАДА среди детей БЫТЬ НЕ ДОЛЖНО — он отдельный
+    /// элемент, и вторая передняя плоскость поверх пристёгнутой была бы
+    /// браком; собственная дверца прибора («Door») — это не он.</summary>
     [Test]
-    public void Dishwasher_IsTwoBoxesAndCarriesNoFacadeOfItsOwn()
+    public void Dishwasher_IsSevenBoxesAndCarriesNoFacadeOfItsOwn()
     {
         var dw = Make();
 
@@ -223,19 +231,15 @@ public class DishwasherElementTests
         foreach (Transform child in dw.transform)
             if (child.gameObject.activeSelf) names.Add(child.name);
 
-        CollectionAssert.AreEquivalent(new[] { "Body", "ControlPanel" }, names);
-    }
-
-    [Test]
-    public void Body_FillsTheWholeBox()
-    {
-        var dw = Make();
-        var (center, size) = BoxMM(dw, "Body");
-
-        Assert.AreEqual(Vector3.zero, center);
-        Assert.AreEqual(598f, size.x, 0.01f);
-        Assert.AreEqual(815f, size.y, 0.01f);
-        Assert.AreEqual(550f, size.z, 0.01f);
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                "BodyBottom", "BodyTop", "BodyLeft", "BodyRight", "BodyBack",
+                "Door", "ControlPanel",
+            }, names,
+            "полый бак из пяти стенок плюс дверца с панелью управления");
+        CollectionAssert.DoesNotContain(names, "Facade",
+            "своей фасадной панели у полновстраиваемой машины нет");
     }
 
     [Test]
@@ -498,7 +502,7 @@ public class DishwasherElementTests
         Assert.IsNotNull(restored, "машина восстановилась своим типом, а не деталью");
         Assert.AreEqual(new Vector3Int(598, 815, 550), restored!.DimensionsMM);
         Assert.IsTrue(restored.HasFixedSize);
-        Assert.AreEqual(2, restored.transform.childCount, "модель собрана заново");
+        Assert.AreEqual(7, restored.transform.childCount, "бак и дверца собраны заново целиком");
         Assert.AreEqual("DW_rt_front", restored.AttachedFacadeName, "привязка фасада пережила сохранение");
         Assert.IsNotNull(restored.FindAttachedFacade(), "и фасад по этому имени действительно находится");
     }
@@ -662,5 +666,547 @@ public class DishwasherElementTests
         var dw = Make("DW-sel");
 
         Assert.AreEqual("dishwasher", ElementSelector.TypeOf(dw));
+    }
+
+    // ── Навеска фасада на кронштейнах ───────────────────────────────────
+    // Фасад полновстраиваемой машины держат кронштейны, а не винты через
+    // фронт: он ОБЯЗАН стоять с монтажным зазором, иначе дверь не откинется.
+    // Ящик — противоположный случай, и послабление к нему не относится.
+
+    /// <summary>Тот же MakeFacadeFor, но фасад отодвинут от фронта прибора на
+    /// gapMM — ровно то, что делает монтажный кронштейн.</summary>
+    private FacadeElement MakeFacadeAtGap(DishwasherElement dw, string name, float gapMM,
+        int heightMM = DishwasherElement.FACADE_NOMINAL_HEIGHT_MM)
+    {
+        var facade = MakeFacadeFor(dw, name, heightMM);
+        facade.transform.position += new Vector3(0f, 0f, gapMM * AppConstants.MM_TO_UNITS);
+        return facade;
+    }
+
+    private DrawerElement MakeDrawerWithFacadeAtGap(string name, float gapMM,
+        out FacadeElement facade)
+    {
+        float toU = AppConstants.MM_TO_UNITS;
+        var drawerGo = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite,
+            400, name, new Vector3(0f, 0.043f, 0f));
+        _spawned.Add(drawerGo);
+        // Задняя грань фасада ровно на фронте ящика — плюс проверяемый зазор.
+        var facadeGo = ElementFactory.CreateFacade(new Vector3Int(400, 86, 18), name + "_front",
+            new Vector3(0f, 0.043f, 0.184f + gapMM * toU), 2, 2, 2, 2);
+        _spawned.Add(facadeGo);
+        facade = facadeGo.GetComponent<FacadeElement>();
+        return drawerGo.GetComponent<DrawerElement>();
+    }
+
+    /// <summary>ИСХОДНЫЙ СИМПТОМ ДОСЛОВНО. В проекте пользователя фасад
+    /// B3_door стоит в 2 мм от посудомойки — это нормальная навеска на
+    /// кронштейнах, а не ошибка. Раньше контакта «не было», список фасадов в
+    /// окне свойств оказывался пустым и крепить было нечего.
+    ///
+    /// Второй половиной теста заперт ящик: у него фронт стянут с фасадом
+    /// винтами заподлицо, и те же 2 мм обязаны остаться отрывом.</summary>
+    [Test]
+    public void FacadeTwoMillimetresAway_AttachesToTheDishwasher_ButNotToADrawer()
+    {
+        var dw = Make("DW-2mm");
+        var dwFacade = MakeFacadeAtGap(dw, "DW_2mm_front", 2f);
+
+        Assert.IsTrue(DrawerLinks.IsFacadeInContact(dw, dwFacade),
+            "фасад на кронштейнах в 2 мм — это навешенный фасад");
+
+        var drawer = MakeDrawerWithFacadeAtGap("Yaschik2mm", 2f, out var drawerFacade);
+
+        Assert.IsFalse(DrawerLinks.IsFacadeInContact(drawer, drawerFacade),
+            "фронт ящика прикручен заподлицо: 2 мм у него — это отрыв");
+    }
+
+    [Test]
+    public void MountGap_IsFiveMillimetresForTheDishwasherAndZeroForTheDrawer()
+    {
+        var dw = Make("DW-gapconst");
+        var drawerGo = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite,
+            400, "Yaschik-gapconst", Vector3.zero);
+        _spawned.Add(drawerGo);
+
+        Assert.AreEqual(5f, DishwasherElement.FACADE_MOUNT_GAP_MM, 1e-4f);
+        Assert.AreEqual(5f, dw.FacadeMountGapMm, 1e-4f);
+        Assert.AreEqual(0f, drawerGo.GetComponent<DrawerElement>().FacadeMountGapMm, 1e-4f,
+            "у ящика монтажного зазора нет — проверка остаётся строгой");
+    }
+
+    /// <summary>Допуск конечный: фасад дальше него — уже не навеска, а
+    /// отдельная деталь рядом. Иначе «пристёгнут» перестало бы что-либо
+    /// значить.</summary>
+    [Test]
+    public void FacadeBeyondTheMountGap_IsNotAttached()
+    {
+        var dw = Make("DW-far");
+        var facade = MakeFacadeAtGap(dw, "DW_far_front",
+            DishwasherElement.FACADE_MOUNT_GAP_MM + 3f);
+
+        Assert.IsFalse(DrawerLinks.IsFacadeInContact(dw, facade));
+    }
+
+    /// <summary>Допуск меряет зазор ПО НОРМАЛИ и требует перекрытия — сдвиг
+    /// фасада вбок его не обманывает.</summary>
+    [Test]
+    public void FacadeSlidSideways_IsNotAttachedEvenWithinTheGap()
+    {
+        var dw = Make("DW-side");
+        var facade = MakeFacadeAtGap(dw, "DW_side_front", 2f);
+
+        facade.transform.position += new Vector3(0.9f, 0f, 0f);
+
+        Assert.IsFalse(DrawerLinks.IsFacadeInContact(dw, facade));
+    }
+
+    /// <summary>Вся цепочка, а не только выпадающий список: окно свойств
+    /// предлагает фасад, не красит подпись красным, а анализатор не выдаёт
+    /// DWH-02. Все трое зовут один IsFacadeInContact — тест сторожит, что они
+    /// согласны.</summary>
+    [Test]
+    public void FacadeOnBrackets_IsOfferedNotOrphanedAndRaisesNoDwh02()
+    {
+        var panel = BuildMenu();
+        var dw = Make("DW-chain");
+        var facade = MakeFacadeAtGap(dw, "DW_chain_front", 2f);
+        dw.AttachedFacadeName = facade.PartName;
+
+        _menu!.Open(dw);
+        var dropdown = panel.GetComponentInChildren<TMPro.TMP_Dropdown>(true);
+
+        var names = new List<string>();
+        foreach (var o in FacadeDropdown(panel).options) names.Add(o.text);
+        CollectionAssert.Contains(names, "DW_chain_front",
+            "фасад в 2 мм обязан попадать в список окна свойств");
+
+        Assert.AreNotEqual(Color.red, FacadeDropdown(panel).captionText.color,
+            "подпись не красная — фасад не оторван");
+
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-02"),
+            "правильно навешенный фасад — не оторвавшийся");
+        Assert.IsNotNull(dropdown);
+    }
+
+    /// <summary>Монтажный зазор навески — не недожатый снэп: GAP-01 на паре
+    /// «машина ↔ ЕЁ фасад» больше не выдаётся. Чужой фасад в тех же двух
+    /// миллиметрах его по-прежнему получает.</summary>
+    [Test]
+    public void MountedFacade_RaisesNoGap01_ButAStrangerFacadeStillDoes()
+    {
+        var dw = Make("DW-gap01");
+        var facade = MakeFacadeAtGap(dw, "DW_gap01_front", 2f);
+
+        dw.AttachedFacadeName = facade.PartName;
+        CollectionAssert.IsEmpty(PairsWithCode("GAP-01", dw, facade),
+            "зазор навески задан схемой прибора");
+
+        dw.AttachedFacadeName = "";
+        CollectionAssert.IsNotEmpty(PairsWithCode("GAP-01", dw, facade),
+            "непристёгнутый фасад в 2 мм — обычное почти-касание");
+    }
+
+    private static List<AnalysisIssue> PairsWithCode(string code, KitchenElement a, KitchenElement b)
+    {
+        var found = new List<AnalysisIssue>();
+        foreach (var i in IssuesWithCode(code))
+            if ((i.Target == a && i.Secondary == b) || (i.Target == b && i.Secondary == a))
+                found.Add(i);
+        return found;
+    }
+
+    // ── Полый бак и ниша цоколя ─────────────────────────────────────────
+
+    /// <summary>Габарит (центр, размер) в мм по вершинам ВАЛИДАЦИИ — то, чем
+    /// машина участвует в коллизиях и прилипании.</summary>
+    private static (Vector3 center, Vector3 size) ValidationBoxMM(DishwasherElement dw)
+    {
+        float toU = AppConstants.MM_TO_UNITS;
+        var v = dw.GetVertices();
+        var min = v[0];
+        var max = v[0];
+        foreach (var p in v) { min = Vector3.Min(min, p); max = Vector3.Max(max, p); }
+        return ((min + max) * 0.5f / toU, (max - min) / toU);
+    }
+
+    private KitchenElement Board(string name, Vector3 centerMM, Vector3Int dimsMM)
+    {
+        float toU = AppConstants.MM_TO_UNITS;
+        var go = ElementFactory.CreatePart(dimsMM, name, centerMM * toU);
+        _spawned.Add(go);
+        return go.GetComponent<KitchenElement>();
+    }
+
+    private static List<KitchenElement> OverlapPartners(KitchenElement el)
+    {
+        var result = new List<KitchenElement>();
+        var r = ConstraintValidator.Validate(PartRegistry.GetAll());
+        if (r.diagnostics == null) return result;
+        foreach (var v in r.diagnostics)
+        {
+            if (v.kind != ViolationKind.Overlap) continue;
+            if (v.element == el && v.other != null) result.Add(v.other);
+            else if (v.other == el) result.Add(v.element);
+        }
+        return result;
+    }
+
+    /// <summary>Бак — 598 × 726 × 550 и стоит НАД нишей цоколя. Пять стенок
+    /// обязаны сложиться ровно в этот габарит и оставить внутри пустоту.</summary>
+    [Test]
+    public void Body_IsAHollowBoxAboveThePlinthNiche()
+    {
+        var dw = Make();
+
+        var walls = new[] { "BodyBottom", "BodyTop", "BodyLeft", "BodyRight", "BodyBack" };
+        var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+        var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+        foreach (var wall in walls)
+        {
+            var (c, s) = BoxMM(dw, wall);
+            min = Vector3.Min(min, c - s * 0.5f);
+            max = Vector3.Max(max, c + s * 0.5f);
+        }
+
+        Assert.AreEqual(598f, max.x - min.x, 0.01f, "ширина бака");
+        Assert.AreEqual(726f, max.y - min.y, 0.01f, "высота бака = 815 − 89");
+        Assert.AreEqual(407.5f, max.y, 0.01f, "верх бака — верх габарита");
+        Assert.AreEqual(-407.5f + 89f, min.y, 0.01f, "низ бака — потолок ниши цоколя");
+        // Передний проём отдан дверце, поэтому стенки не доходят до переда.
+        Assert.AreEqual(-275f, min.z, 0.01f);
+        Assert.AreEqual(275f - DishwasherElement.DOOR_THICKNESS_MM, max.z, 0.01f);
+
+        // Внутри пусто: ни одна стенка не заходит в камеру.
+        float t = DishwasherElement.BODY_WALL_MM;
+        foreach (var wall in walls)
+        {
+            var (c, s) = BoxMM(dw, wall);
+            bool insideX = c.x - s.x * 0.5f > min.x + t - 0.01f && c.x + s.x * 0.5f < max.x - t + 0.01f;
+            bool insideY = c.y - s.y * 0.5f > min.y + t - 0.01f && c.y + s.y * 0.5f < max.y - t + 0.01f;
+            bool insideZ = c.z - s.z * 0.5f > min.z + t - 0.01f && c.z + s.z * 0.5f < max.z - t + 0.01f;
+            Assert.IsFalse(insideX && insideY && insideZ, wall + " стоит в камере — короб не полый");
+        }
+    }
+
+    [Test]
+    public void ValidationVolume_IsTheTankWithoutThePlinthNiche()
+    {
+        var dw = Make();
+        var (center, size) = ValidationBoxMM(dw);
+
+        Assert.AreEqual(598f, size.x, 0.01f);
+        Assert.AreEqual(726f, size.y, 0.01f, "в коллизии идёт бак, а не габарит 815");
+        Assert.AreEqual(550f, size.z, 0.01f);
+        Assert.AreEqual(0f, center.x, 0.01f);
+        Assert.AreEqual(44.5f, center.y, 0.01f, "бак поднят на полвысоты ниши цоколя");
+        Assert.AreEqual(0f, center.z, 0.01f);
+    }
+
+    /// <summary>Примерка в другую позицию обязана давать то же самое, что
+    /// настоящий переезд, — иначе снэп и валидация разойдутся.</summary>
+    [Test]
+    public void ValidationVolume_FollowsAHypotheticalPosition()
+    {
+        var dw = Make();
+        var probe = new Vector3(1.5f, 0.4f, -2f);
+
+        var tried = dw.GetVerticesAt(probe);
+        dw.transform.position = probe;
+        var actual = dw.GetVertices();
+
+        for (int i = 0; i < 8; i++)
+            Assert.AreEqual(0f, (tried[i] - actual[i]).magnitude, 1e-5f, "вершина " + i);
+    }
+
+    /// <summary>ИСХОДНЫЙ СИМПТОМ: COL-01 «Leg ↔ Posudomoyka». Ножка стоит в
+    /// нише цоколя — там, где у настоящей машины пустота, — и пересечением
+    /// это быть не может.</summary>
+    [Test]
+    public void LegInThePlinthNiche_ProducesNoOverlap()
+    {
+        var dw = Make("Posudomoyka");
+        // Ножка целиком в нижней полосе габарита (низ −407.5, ниша до −318.5).
+        Board("Leg", new Vector3(0f, -407.5f + 44.5f, 200f), new Vector3Int(50, 89, 50));
+
+        var partners = OverlapPartners(dw);
+
+        CollectionAssert.IsEmpty(partners,
+            "машина «наезжает» на: " + string.Join(", ", partners.ConvertAll(p => p.PartName)));
+    }
+
+    /// <summary>А НАСТОЯЩЕЕ пересечение бака ловиться обязано — иначе «нет
+    /// коллизий» означало бы «проверка не работает».</summary>
+    [Test]
+    public void BoardInsideTheTank_IsStillAnOverlap()
+    {
+        var dw = Make("Posudomoyka");
+        Board("intruder", new Vector3(0f, 44.5f, 0f), new Vector3Int(300, 300, 300));
+
+        var partners = OverlapPartners(dw);
+
+        Assert.AreEqual(1, partners.Count, "деталь в баке машины — это COL-01");
+        Assert.AreEqual("intruder", partners[0].PartName);
+    }
+
+    [Test]
+    public void Collider_CoversTheWholeBox_WhileValidationDoesNot()
+    {
+        var dw = Make();
+        float toU = AppConstants.MM_TO_UNITS;
+        var box = dw.GetComponent<BoxCollider>();
+
+        Assert.AreEqual(815f, box!.size.y / toU, 0.01f, "клик по нише цоколя обязан выделять машину");
+        Assert.AreEqual(726f, ValidationBoxMM(dw).size.y, 0.01f);
+    }
+
+    // ── Дверца ──────────────────────────────────────────────────────────
+
+    private static Transform Child(DishwasherElement dw, string name)
+    {
+        var t = dw.transform.Find(name);
+        Assert.IsNotNull(t, "нет дочерней коробки «" + name + "»");
+        return t!;
+    }
+
+    [Test]
+    public void Door_IsClosedByDefault()
+    {
+        var dw = Make();
+
+        Assert.IsFalse(dw.IsOpen);
+        Assert.AreEqual(0f, dw.DoorProgress, 1e-4f);
+        Assert.AreEqual(0f, Quaternion.Angle(Quaternion.identity,
+            Child(dw, "Door").localRotation), 0.01f);
+    }
+
+    /// <summary>Откидная дверца: поворот вокруг НИЖНЕЙ кромки на 90°. Верх
+    /// уезжает вперёд на всю высоту двери и опускается к петле.</summary>
+    [Test]
+    public void Door_DropsDownAroundItsBottomEdge()
+    {
+        var dw = Make();
+        float toU = AppConstants.MM_TO_UNITS;
+
+        Vector3 Edge(Transform d, float sign) => d.localPosition + d.localRotation * new Vector3(
+            0f,
+            sign * DishwasherElement.TANK_HEIGHT_MM * 0.5f * toU,
+            -DishwasherElement.DOOR_THICKNESS_MM * 0.5f * toU);
+
+        var closedHinge = Edge(Child(dw, "Door"), -1f);
+        Assert.AreEqual(0f, (closedHinge - DishwasherElement.HingeLocalMM * toU).magnitude, 1e-5f,
+            "закрытая дверца стоит на своей же оси петли");
+
+        dw.SetOpen(true);
+        dw.StepDoor(10f);
+
+        Assert.IsTrue(dw.IsOpen);
+        Assert.AreEqual(1f, dw.DoorProgress, 1e-4f);
+
+        var door = Child(dw, "Door");
+        Assert.AreEqual(90f, Quaternion.Angle(Quaternion.identity, door.localRotation), 0.01f,
+            "дверца раскрыта ровно в горизонталь");
+        Assert.AreEqual(0f, (Edge(door, -1f) - closedHinge).magnitude, 1e-5f,
+            "нижняя кромка не сдвинулась");
+
+        var openTop = Edge(door, 1f);
+        Assert.AreEqual(closedHinge.z / toU + DishwasherElement.TANK_HEIGHT_MM, openTop.z / toU, 0.01f,
+            "верх дверцы вынесло вперёд на её высоту");
+        Assert.AreEqual(closedHinge.y, openTop.y, 1e-5f, "и опустился на уровень петли");
+    }
+
+    [Test]
+    public void Door_ClosesBack()
+    {
+        var dw = Make();
+        dw.SetOpen(true);
+        dw.StepDoor(10f);
+
+        dw.SetOpen(false);
+        dw.StepDoor(10f);
+
+        Assert.IsFalse(dw.IsOpen);
+        Assert.AreEqual(0f, dw.DoorProgress, 1e-4f);
+        Assert.AreEqual(0f, Quaternion.Angle(Quaternion.identity,
+            Child(dw, "Door").localRotation), 0.01f);
+    }
+
+    [Test]
+    public void ForceClose_SlamsTheDoorInstantly()
+    {
+        var dw = Make();
+        dw.SetOpen(true);
+        dw.StepDoor(10f);
+
+        dw.ForceClose();
+
+        Assert.IsFalse(dw.IsOpen);
+        Assert.AreEqual(0f, dw.DoorProgress, 1e-4f);
+    }
+
+    /// <summary>Открывание — транзитная анимация: корень не двигается вовсе,
+    /// поэтому откинутая дверца не может породить COL-01 (её в объёме
+    /// валидации нет и в закрытом виде).</summary>
+    [Test]
+    public void OpenDoor_ProducesNoOverlap()
+    {
+        var dw = Make("Posudomoyka");
+        Board("side_L", new Vector3(-308f, 44.5f, 0f), new Vector3Int(18, 726, 550));
+        Board("side_R", new Vector3(308f, 44.5f, 0f), new Vector3Int(18, 726, 550));
+        var before = dw.GetVertices();
+
+        dw.SetOpen(true);
+        dw.StepDoor(10f);
+
+        var partners = OverlapPartners(dw);
+        CollectionAssert.IsEmpty(partners,
+            "откинутая дверца пересекается с: "
+            + string.Join(", ", partners.ConvertAll(p => p.PartName)));
+
+        var after = dw.GetVertices();
+        for (int i = 0; i < 8; i++)
+            Assert.AreEqual(0f, (before[i] - after[i]).magnitude, 1e-6f,
+                "поза валидации при открывании не двигается");
+    }
+
+    /// <summary>Фасад прикручен к дверце и обязан откидываться ВМЕСТЕ с ней —
+    /// ровно так же, как фасад ящика выезжает вместе с коробом.</summary>
+    [Test]
+    public void AttachedFacade_OpensAndClosesWithTheDoor()
+    {
+        var dw = Make("DW-open");
+        var facade = MakeFacadeAtGap(dw, "DW_open_front", 2f);
+        facade.Mode = DoorMode.HingeFrontBottom;
+        dw.AttachedFacadeName = facade.PartName;
+
+        dw.SetOpen(true);
+        Assert.IsTrue(facade.IsOpen, "фасад откидывается вместе с дверцей");
+
+        dw.SetOpen(false);
+        Assert.IsFalse(facade.IsOpen);
+    }
+
+    [Test]
+    public void ForceClose_TakesTheFacadeWithIt()
+    {
+        var dw = Make("DW-slam");
+        var facade = MakeFacadeAtGap(dw, "DW_slam_front", 2f);
+        facade.Mode = DoorMode.HingeFrontBottom;
+        dw.AttachedFacadeName = facade.PartName;
+        dw.SetOpen(true);
+        dw.StepDoor(10f);
+
+        dw.ForceClose();
+
+        Assert.IsFalse(dw.IsOpen);
+        Assert.IsFalse(facade.IsOpen);
+    }
+
+    [Test]
+    public void OpenDoor_SurvivesSaveLoadRoundTrip()
+    {
+        var dw = Make("DW-rt-open");
+        var facade = MakeFacadeAtGap(dw, "DW_rt_open_front", 2f);
+        facade.Mode = DoorMode.HingeFrontBottom;
+        dw.AttachedFacadeName = facade.PartName;
+        dw.SetOpen(true);
+        dw.StepDoor(10f);
+
+        var path = Path.Combine(Application.temporaryCachePath,
+            $"rt_dwdoor_{System.Guid.NewGuid():N}.json");
+        SaveLoadManager.SaveToFile(path,
+            SaveLoadManager.CaptureScene(new List<KitchenElement> { dw, facade }));
+
+        foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
+        _spawned.Clear();
+        PartRegistry.Clear();
+
+        var loaded = SaveLoadManager.LoadFromFile(path);
+        Assert.IsNotNull(loaded);
+        SaveLoadManager.RestoreScene(loaded!);
+        File.Delete(path);
+
+        var restored = Object.FindFirstObjectByType<DishwasherElement>();
+        Assert.IsNotNull(restored);
+        Assert.IsTrue(restored!.IsOpen, "откинутая дверца обязана пережить сохранение");
+        Assert.AreEqual("DW_rt_open_front", restored.AttachedFacadeName,
+            "и привязка фасада вместе с ней");
+        Assert.IsNotNull(restored.FindAttachedFacade());
+        Assert.IsTrue(restored.FindAttachedFacade()!.IsOpen, "фасад восстановился откинутым");
+    }
+
+    [Test]
+    public void Mcp_OpensAndClosesTheDishwasherDoor()
+    {
+        var dw = Make("DW-door-mcp");
+
+        var open = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "DW-door-mcp", is_open = true } }
+        }));
+        Assert.AreEqual("result", open.type, open.type == "error" ? ErrorMessage(open) : "");
+        Assert.IsTrue(dw.IsOpen);
+
+        var info = _handler.Handle(MakeReq("get_elements", new { filter = "DW-door-mcp" }));
+        var dish = Payload(info)["elements"]![0]!["dishwasher"]!;
+        Assert.IsTrue(dish["isOpen"]!.Value<bool>());
+        Assert.AreEqual(89, dish["plinthNicheMM"]!.Value<int>());
+        Assert.AreEqual(5f, dish["facadeMountGapMM"]!.Value<float>(), 1e-4f);
+
+        _handler.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "DW-door-mcp", is_open = false } }
+        }));
+        Assert.IsFalse(dw.IsOpen);
+    }
+
+    // ── Окно свойств ────────────────────────────────────────────────────
+
+    private Transform BuildMenu()
+    {
+        UIFactory.EnsureEventSystem();
+        _canvas = UIFactory.CreateCanvas("TestCanvas");
+        var go = new GameObject("CtxMenu");
+        _menu = go.AddComponent<ContextMenuUI>();
+        _menu!.Build(_canvas!.transform);
+        var panel = _canvas!.transform.Find("ContextMenu");
+        Assert.IsNotNull(panel);
+        return panel!;
+    }
+
+    private static TMPro.TMP_Dropdown FacadeDropdown(Transform panel)
+    {
+        foreach (var dd in panel.GetComponentsInChildren<TMPro.TMP_Dropdown>(true))
+            if (dd.name.Contains("Фасад") || dd.name.Contains("Facade")) return dd;
+        foreach (var dd in panel.GetComponentsInChildren<TMPro.TMP_Dropdown>(true))
+            foreach (var o in dd.options)
+                if (o.text == "(нет фасада)") return dd;
+        Assert.Fail("в окне свойств нет списка фасадов");
+        return null!;
+    }
+
+    /// <summary>Кнопка «Открыть дверцу» — по образцу духовки: видна только у
+    /// машины и переключает подпись по состоянию.</summary>
+    [Test]
+    public void ContextMenu_ShowsTheDoorButtonForTheDishwasherOnly()
+    {
+        var panel = BuildMenu();
+        var dw = Make("DW-ui");
+        var boardGo = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "Board", Vector3.zero);
+        _spawned.Add(boardGo);
+
+        _menu!.Open(dw);
+        var button = panel.Find("CtxDishwasherDoor");
+        Assert.IsNotNull(button, "у машины должна быть кнопка открывания");
+        Assert.IsTrue(button!.gameObject.activeSelf);
+        Assert.AreEqual("Открыть дверцу",
+            button.GetComponentInChildren<TMPro.TMP_Text>().text);
+
+        dw.SetOpen(true);
+        _menu!.Open(dw);
+        Assert.AreEqual("Закрыть дверцу",
+            button.GetComponentInChildren<TMPro.TMP_Text>().text);
+
+        _menu!.Open(boardGo.GetComponent<KitchenElement>());
+        Assert.IsFalse(button.gameObject.activeSelf, "обычной детали дверца не положена");
     }
 }

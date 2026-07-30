@@ -34,7 +34,7 @@ namespace KitchenDesigner.Core.MCP
             if (!IsFacadeLike()) { if (op.mode != null) e.Add("mode"); }
             // Откидная дверца духовки открывается тем же is_open, что фасад,
             // окно и дверь: своего инструмента ради одной кнопки не нужно.
-            if (IsNot<FacadeElement>() && IsNot<WindowElement>() && IsNot<DoorElement>() && IsNot<OvenElement>()) { if (op.is_open.HasValue) e.Add("is_open"); }
+            if (IsNot<FacadeElement>() && IsNot<WindowElement>() && IsNot<DoorElement>() && IsNot<OvenElement>() && IsNot<DishwasherElement>()) { if (op.is_open.HasValue) e.Add("is_open"); }
             if (IsNot<RadialShelfElement>()) { if (op.corner_radius.HasValue) e.Add("corner_radius"); }
             if (IsNot<CooktopElement>()) { if (op.cutout_width.HasValue) e.Add("cutout_width"); if (op.cutout_depth.HasValue) e.Add("cutout_depth"); }
             if (IsNot<DrawerElement>()) { if (op.drawer_type != null) e.Add("drawer_type"); if (op.drawer_length.HasValue) e.Add("drawer_length"); if (op.drawer_color != null) e.Add("drawer_color"); if (op.internal_width.HasValue) e.Add("internal_width"); if (op.is_double.HasValue) e.Add("is_double"); if (op.is_upper.HasValue) e.Add("is_upper"); if (op.paired_drawer_name != null) e.Add("paired_drawer_name"); }
@@ -460,6 +460,9 @@ namespace KitchenDesigner.Core.MCP
         {
             if (op.attached_facade_name != null)
                 dishwasher.AttachedFacadeName = op.attached_facade_name == "" ? "" : op.attached_facade_name;
+            // Откидная дверца машины открывается тем же is_open, что фасад,
+            // окно, дверь и духовка.
+            if (op.is_open.HasValue) dishwasher.SetOpen(op.is_open.Value);
         }
         private static void ApplyTableEdits(EditOp op, TableElement table)
         {

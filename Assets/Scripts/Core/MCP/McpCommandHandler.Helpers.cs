@@ -354,7 +354,10 @@ namespace KitchenDesigner.Core.MCP
                         : 0,
                     plinthMinMM = DishwasherElement.PLINTH_MIN_MM,
                     plinthMaxMM = DishwasherElement.PLINTH_MAX_MM,
-                    plinthSetbackMM = DishwasherElement.PLINTH_SETBACK_MM
+                    plinthSetbackMM = DishwasherElement.PLINTH_SETBACK_MM,
+                    plinthNicheMM = DishwasherElement.PLINTH_NICHE_MM,
+                    facadeMountGapMM = DishwasherElement.FACADE_MOUNT_GAP_MM,
+                    isOpen = dishwasher.IsOpen
                 } : null,
                 window = window != null ? new WindowInfo
                 {

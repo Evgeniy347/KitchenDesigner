@@ -370,7 +370,12 @@ namespace KitchenDesigner.Core
 				d.doorOpen = ovenEl.IsOpen;
 			d.isDishwasher = element is DishwasherElement;
 			if (element is DishwasherElement dishwasherEl)
+			{
 				d.dishwasherAttachedFacadeName = dishwasherEl.AttachedFacadeName ?? "";
+				// Откинутая дверца машины хранится в общем doorOpen — там же, где
+				// откинутая дверца духовки и открытый фасад.
+				d.doorOpen = dishwasherEl.IsOpen;
+			}
 			d.isFloor = element is FloorElement;
 			if (element is FloorElement floor && floor.PolygonLocalMm.Count >= 3)
 			{

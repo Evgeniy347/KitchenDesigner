@@ -146,7 +146,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Assembled facade only: center fill — blind (panel), glass (vitrine), open (empty). Omit to keep.",
             Enum = new[] { "blind", "glass", "open" })]
         public string? fill;
-        [McpParam("Facade/window/door/oven: true = open, false = close (the oven door drops DOWN around its bottom edge). Omit to keep. For drawers use cycle_drawer_animation.")]
+        [McpParam("Facade/window/door/oven/dishwasher: true = open, false = close (the oven and dishwasher doors drop DOWN around their bottom edge; the dishwasher takes its attached furniture facade with it). Omit to keep. For drawers use cycle_drawer_animation.")]
         public bool? is_open;
 
         // Radial shelf.

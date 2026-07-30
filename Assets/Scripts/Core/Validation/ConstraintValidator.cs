@@ -127,6 +127,28 @@ namespace KitchenDesigner.Core
             ValidationCore.AreInFaceToFaceContact(a.GetFaces(), b.GetFaces(),
                 Tolerance.ContactMm * AppConstants.MM_TO_UNITS);
 
+        /// <summary>Фасад НАВЕШЕН на хозяина: либо стоит с ним гранью к грани,
+        /// либо параллелен ему и так же хорошо перекрыт, но отстоит на монтажный
+        /// зазор не больше <paramref name="mountGapMm"/> (см.
+        /// <see cref="IFacadeHost.FacadeMountGapMm"/>).
+        ///
+        /// Третьей геометрии здесь нет: зазор меряет
+        /// <see cref="ValidationCore.MinParallelGap"/> — та же функция, что
+        /// кормит GAP-01, и те же гейты (параллельность, перекрытие не хуже
+        /// несущего). При mountGapMm = 0 условие вырождается ровно в
+        /// <see cref="AreInFaceToFaceContact"/>, поэтому ящик остаётся на
+        /// прежней строгой проверке.</summary>
+        public static bool AreFacadeMountable(KitchenElement host, KitchenElement facade,
+            float mountGapMm)
+        {
+            if (host == null || facade == null) return false;
+            if (AreInFaceToFaceContact(host, facade)) return true;
+            if (mountGapMm <= Tolerance.ContactMm) return false;
+            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            return ValidationCore.MinParallelGap(host.GetFaces(), facade.GetFaces(),
+                contactDist, mountGapMm * AppConstants.MM_TO_UNITS) > 0f;
+        }
+
         /// <summary>Пара деталей, которые ПОЧТИ касаются: их грани параллельны и
         /// хорошо перекрыты в плоскости, но между ними зазор чуть больше допуска
         /// касания.</summary>
@@ -185,6 +207,12 @@ namespace KitchenDesigner.Core
                     // (SEAT-01), а не GAP-01. Иначе полностью посаженная панель
                     // ложно краснела бы как «почти касается».
                     if (PanelEngagesGroove(all[i], all[j]) || PanelEngagesGroove(all[j], all[i])) continue;
+                    // Фасад, ВИСЯЩИЙ НА КРОНШТЕЙНАХ своего прибора: монтажный
+                    // зазор задан схемой прибора, это не недожатый снэп. Без
+                    // этой строки правильно навешенный фасад посудомойки вечно
+                    // светил бы GAP-01 — тем самым, из-за которого его и не
+                    // удавалось выбрать в окне свойств.
+                    if (IsMountedFacade(all[i], all[j]) || IsMountedFacade(all[j], all[i])) continue;
 
                     float gap = ValidationCore.MinParallelGap(geo[i].Faces, geo[j].Faces, contactDist, maxGap);
                     if (gap > 0f)
@@ -275,6 +303,19 @@ namespace KitchenDesigner.Core
                 if (ValidationCore.PanelEngagesSeat(pverts, seat, depthUnits, engageMargin, contactDist, out _))
                     return true;
             return false;
+        }
+
+        /// <summary>Пара «хозяин фасада ↔ ЕГО ПРИСТЁГНУТЫЙ фасад», стоящая в
+        /// пределах монтажного зазора навески. Проверяется именно связь по
+        /// имени: чужой фасад, случайно оказавшийся в трёх миллиметрах, обязан
+        /// давать GAP-01 как и раньше.</summary>
+        private static bool IsMountedFacade(KitchenElement host, KitchenElement facade)
+        {
+            if (!(host is IFacadeHost h) || !(facade is FacadeElement f)) return false;
+            if (h.FacadeMountGapMm <= Tolerance.ContactMm) return false;
+            if (string.IsNullOrEmpty(h.AttachedFacadeName)
+                || h.AttachedFacadeName != f.PartName) return false;
+            return AreFacadeMountable(host, facade, h.FacadeMountGapMm);
         }
 
         private static float GrooveDepthUnits(KitchenElement board) =>
