@@ -364,6 +364,7 @@ namespace KitchenDesigner.Core
                         cooktopEl.AttachedPartName = ed.cooktopAttachedPartName;
                         cooktopEl.OffsetXMM = ed.cooktopOffsetXMM;
                         cooktopEl.OffsetYMM = ed.cooktopOffsetYMM;
+                        cooktopEl.YawDeg = ed.cooktopYawDeg;
                         // Габариты плиты фабрика ставит дефолтные — свои
                         // восстанавливаем явно (у варочной они редактируемые).
                         if (ed.Dimensions.x > 0 && ed.Dimensions.z > 0)

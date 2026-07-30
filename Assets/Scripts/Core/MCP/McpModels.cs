@@ -325,6 +325,9 @@ namespace KitchenDesigner.Core.MCP
 		public string attachedPartName = string.Empty;
 		public int offsetXMM;
 		public int offsetYMM;
+		/// <summary>Разворот панели вокруг нормали столешницы (°). Ставится через
+		/// rot_y; rot_x/rot_z у техники отклоняются.</summary>
+		public float yawDeg;
 	}
 
 	/// <summary>Духовой шкаф. dimX/dimY/dimZ — габарит целиком (фасад плюс

@@ -150,6 +150,10 @@ namespace KitchenDesigner.Core
 		public int cooktopOffsetYMM = 0;
 		public int cooktopCutoutWidthMM = 0;
 		public int cooktopCutoutDepthMM = 0;
+		// Собственный разворот панели вокруг нормали столешницы (°). Из позы его
+		// не вывести дешевле: врезка выставляет поворот сама, и без этого поля
+		// загруженная варочная встала бы по осям детали. 0 в старых проектах.
+		public float cooktopYawDeg = 0f;
 		// Духовой шкаф (OvenElement.MODEL). Модель у него одна, а габариты —
 		// её производные, поэтому в файле хранится только сам факт типа: всё
 		// остальное восстанавливает фабрика. false во всех старых проектах.
@@ -357,6 +361,7 @@ namespace KitchenDesigner.Core
 				d.cooktopOffsetYMM = cooktopEl.OffsetYMM;
 				d.cooktopCutoutWidthMM = cooktopEl.CutoutWidthMM;
 				d.cooktopCutoutDepthMM = cooktopEl.CutoutDepthMM;
+				d.cooktopYawDeg = cooktopEl.YawDeg;
 			}
 			d.isOven = element is OvenElement;
 			d.isDishwasher = element is DishwasherElement;

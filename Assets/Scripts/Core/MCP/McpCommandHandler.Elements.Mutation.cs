@@ -54,6 +54,11 @@ namespace KitchenDesigner.Core.MCP
                 if (op.cutout_width.HasValue || op.cutout_depth.HasValue)
                     e.Add("cutout_width/cutout_depth not settable on a fixed appliance model");
             }
+            // Встраиваемая техника поворачивается ТОЛЬКО вокруг вертикали. Отказ,
+            // а не тихое игнорирование: клиент, пославший rot_x, иначе решил бы,
+            // что прибор лёг на бок, и продолжил бы считать от этой позы.
+            if (FixedSize.IsYawOnly(el) && (op.rot_x.HasValue || op.rot_z.HasValue))
+                e.Add("rot_x/rot_z not settable on a built-in appliance (only rot_y — rotation about the vertical axis)");
 
             // Пазы принимает только базовая «деталь»: у фасада/полки/ящика своя
             // процедурная геометрия, врезка в неё не определена.

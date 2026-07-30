@@ -16,7 +16,10 @@ namespace KitchenDesigner.Core
     ///
     /// Живёт только на ДЕТАЛИ с горизонтальной пластью: прилипает к её верхней
     /// грани и хранит смещение от центра детали в ЛОКАЛЬНЫХ мм — поэтому деталь
-    /// двигают и растягивают, а варочная едет с ней сама.
+    /// двигают и растягивают, а варочная едет с ней сама. Там же живёт и её
+    /// СОБСТВЕННЫЙ разворот вокруг нормали детали (<see cref="YawDeg"/>): позу
+    /// целиком диктует хозяин, и без отдельного поля любой поворот пользователя
+    /// стирался бы следующим же кадром.
     ///
     /// Под столешницей вырез магнитится к боковинам и фасадам (край выреза
     /// заподлицо с их гранью), но НЕ упирается в них: наезд на корпусную деталь
@@ -99,6 +102,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _offsetYMM;
         [SerializeField] private int _cutoutWidthMM = DEFAULT_CUTOUT_WIDTH_MM;
         [SerializeField] private int _cutoutDepthMM = DEFAULT_CUTOUT_DEPTH_MM;
+        [SerializeField] private float _yawDeg;
 
         private readonly List<GameObject> _children = new List<GameObject>();
         private KitchenElement? _lastHost;
@@ -106,10 +110,13 @@ namespace KitchenDesigner.Core
         private int _lastOffsetYMM = int.MinValue;
         private int _lastCutoutWidthMM = int.MinValue;
         private int _lastCutoutDepthMM = int.MinValue;
+        private float _lastYawDeg = float.MinValue;
 
         private float _freeHeightMM;
         private Vector3 _appliedPos;
         private bool _hasAppliedPos;
+        private Quaternion _appliedRot = Quaternion.identity;
+        private bool _hasAppliedRot;
         private Vector3 _lastHostPosition;
 
         /// <summary>Идентификатор готовой модели («Bosch PUE611BB5E») или пусто —
@@ -138,6 +145,36 @@ namespace KitchenDesigner.Core
         [NotUndoable("см. OffsetXMM")]
         public int OffsetYMM { get => _offsetYMM; set => _offsetYMM = value; }
         public bool IsAttached => _lastHost != null;
+
+        /// <summary>СОБСТВЕННЫЙ разворот панели вокруг нормали столешницы (°,
+        /// 0..360). Без него варочная поворотов не знала бы вовсе: поза целиком
+        /// диктуется деталью-хозяином (см. AlignToPart), и любой поворот
+        /// пользователя стирался бы на следующем же кадре — «повернулась и
+        /// вернулась». Отсчёт — как у смещений: от базиса ДЕТАЛИ, поэтому
+        /// повёрнутая столешница везёт панель вместе с собой.</summary>
+        [NotUndoable("производная transform.rotation: копится в TrackRotation, откатывается вместе с позой (MoveCommand/ResizeCommand)")]
+        public float YawDeg
+        {
+            get => _yawDeg;
+            set => _yawDeg = Mathf.Repeat(value, 360f);
+        }
+
+        /// <summary>Габарит ниши в осях ДЕТАЛИ с учётом <see cref="YawDeg"/>: на
+        /// четверть оборота ширина и глубина меняются местами. По нему считается
+        /// ВСЁ, что живёт в осях детали, — проём, магниты, кламп смещений и
+        /// пригодность самой детали.
+        ///
+        /// Разворот округляется до БЛИЖАЙШЕЙ четверти оборота, и это не лень:
+        /// решётка <see cref="GrooveMesh"/> режет только прямоугольники по осям
+        /// детали, а описанный прямоугольник ниши, повёрнутой на 30°, шире её
+        /// самой в полтора раза — такой проём и столешницу продырявил бы насквозь,
+        /// и панель выбило бы из врезки как «не помещается». Прямой угол — и
+        /// единственный представимый здесь, и единственный осмысленный: врезают
+        /// прибор вдоль или поперёк столешницы.</summary>
+        public (int widthMM, int depthMM) CutoutExtentsMM =>
+            (Mathf.RoundToInt(_yawDeg / 90f) & 1) == 0
+                ? (CutoutWidthMM, CutoutDepthMM)
+                : (CutoutDepthMM, CutoutWidthMM);
 
         // ── Редактируемые размеры ───────────────────────────────────────
         // Ширина/глубина/высота живут в общем DimensionsMM (их правит обычное
@@ -217,9 +254,10 @@ namespace KitchenDesigner.Core
             Mathf.Clamp(mm, MIN_CUTOUT_MM, Mathf.Max(MIN_CUTOUT_MM, outerMM - 2 * MIN_RIM_OVERLAP_MM));
 
         /// <summary>Минимальные габариты детали, в которую вырез помещается с
-        /// запасом по краям.</summary>
-        public int MinPartWidthMM => CutoutWidthMM + 2 * MIN_EDGE_MM;
-        public int MinPartDepthMM => CutoutDepthMM + 2 * MIN_EDGE_MM;
+        /// запасом по краям. Считаются по ПОВЁРНУТОМУ вырезу: у панели,
+        /// развёрнутой на 90°, ширина и глубина ниши меняются местами.</summary>
+        public int MinPartWidthMM => CutoutExtentsMM.widthMM + 2 * MIN_EDGE_MM;
+        public int MinPartDepthMM => CutoutExtentsMM.depthMM + 2 * MIN_EDGE_MM;
 
         protected override Vector3 EffectiveScale => new Vector3(
             DimensionsMM.x * AppConstants.MM_TO_UNITS,
@@ -306,6 +344,7 @@ namespace KitchenDesigner.Core
         {
             var host = _lastHost != null ? _lastHost : FindAttachedPart();
             TrackDrift(host);
+            TrackRotation(host);
 
             if (host != null && !StillHolds(host)) { ReleaseFrom(host); host = null; }
             if (host == null) host = FindCatchingPart();
@@ -330,6 +369,7 @@ namespace KitchenDesigner.Core
             _attachedPartName = part.PartName;
             part.RegisterCutout(this);
             _freeHeightMM = 0f;
+            _yawDeg = YawRelativeTo(part);
             AlignToPart(part);
         }
 
@@ -353,6 +393,7 @@ namespace KitchenDesigner.Core
             _freeHeightMM = 0f;
             _lastOffsetXMM = int.MinValue;
             _lastOffsetYMM = int.MinValue;
+            _lastYawDeg = float.MinValue;
         }
 
         private void TrackDrift(KitchenElement? host)
@@ -370,6 +411,41 @@ namespace KitchenDesigner.Core
             _offsetXMM += Mathf.RoundToInt(local[a] / toU);
             _offsetYMM += Mathf.RoundToInt(local[b] / toU);
             _freeHeightMM += local[up] / toU * sign;
+        }
+
+        /// <summary>То же, что <see cref="TrackDrift"/>, но для ПОВОРОТА: разницу
+        /// между текущей позой и последней применённой раскладываем на компоненту
+        /// вокруг нормали детали и копим в <see cref="YawDeg"/>. Наклон (всё, что
+        /// не вокруг нормали) отбрасывается сам собой — панель лежит в пласти, и
+        /// AlignToPart тут же вернёт её туда.</summary>
+        private void TrackRotation(KitchenElement? host)
+        {
+            if (!_hasAppliedRot) { _appliedRot = transform.rotation; _hasAppliedRot = true; return; }
+            Quaternion delta = transform.rotation * Quaternion.Inverse(_appliedRot);
+            _appliedRot = transform.rotation;
+            if (host == null || Quaternion.Angle(delta, Quaternion.identity) < 0.01f) return;
+
+            var (up, sign) = UpAxisOf(host);
+            Vector3 axis = host.transform.rotation * (AxisVector(up) * sign);
+            _yawDeg = Mathf.Repeat(_yawDeg + TwistAngle(delta, axis), 360f);
+        }
+
+        /// <summary>Компонента поворота ВОКРУГ оси (твист), градусы со знаком.
+        /// Разложение swing-twist: мнимая часть кватерниона проецируется на ось,
+        /// остаток — наклон, он нас не касается.</summary>
+        private static float TwistAngle(Quaternion delta, Vector3 axis)
+        {
+            axis = axis.normalized;
+            Vector3 proj = Vector3.Project(new Vector3(delta.x, delta.y, delta.z), axis);
+            var twist = new Quaternion(proj.x, proj.y, proj.z, delta.w);
+            float len = twist.x * twist.x + twist.y * twist.y + twist.z * twist.z + twist.w * twist.w;
+            // Поворот ровно на 180° поперёк оси — твист вырождается в ноль.
+            if (len < 1e-8f) return 0f;
+            len = Mathf.Sqrt(len);
+            twist = new Quaternion(twist.x / len, twist.y / len, twist.z / len, twist.w / len);
+            twist.ToAngleAxis(out float angle, out Vector3 twistAxis);
+            if (angle > 180f) angle -= 360f;
+            return Vector3.Dot(twistAxis, axis) < 0f ? -angle : angle;
         }
 
         private static Vector3 AxisVector(int axis) =>
@@ -443,6 +519,9 @@ namespace KitchenDesigner.Core
             }
             if (best == null) return null;
 
+            // Разворот берём из ТЕКУЩЕЙ позы: панель, повёрнутую на весу, врезка
+            // не должна выкручивать обратно по осям столешницы.
+            _yawDeg = YawRelativeTo(best);
             ClampOffsets(best, ref bestX, ref bestY);
             _offsetXMM = bestX;
             _offsetYMM = bestY;
@@ -465,8 +544,9 @@ namespace KitchenDesigner.Core
         {
             var (a, b) = PlaneAxes(UpAxisOf(part).axis);
             var dims = part.DimensionsMM;
-            int maxX = (dims[a] - CutoutWidthMM) / 2 - MIN_EDGE_MM;
-            int maxY = (dims[b] - CutoutDepthMM) / 2 - MIN_EDGE_MM;
+            var (cutW, cutD) = CutoutExtentsMM;
+            int maxX = (dims[a] - cutW) / 2 - MIN_EDGE_MM;
+            int maxY = (dims[b] - cutD) / 2 - MIN_EDGE_MM;
             offX = Mathf.Clamp(offX, -maxX, maxX);
             offY = Mathf.Clamp(offY, -maxY, maxY);
         }
@@ -526,8 +606,9 @@ namespace KitchenDesigner.Core
             var dims = part.DimensionsMM;
             var (up, sign) = UpAxisOf(part);
 
-            float x0 = (offX - CutoutWidthMM * 0.5f) * toU, x1 = (offX + CutoutWidthMM * 0.5f) * toU;
-            float y0 = (offY - CutoutDepthMM * 0.5f) * toU, y1 = (offY + CutoutDepthMM * 0.5f) * toU;
+            var (cutW, cutD) = CutoutExtentsMM;
+            float x0 = (offX - cutW * 0.5f) * toU, x1 = (offX + cutW * 0.5f) * toU;
+            float y0 = (offY - cutD * 0.5f) * toU, y1 = (offY + cutD * 0.5f) * toU;
             float halfT = dims[up] * 0.5f * toU;
             float body = BodyHeightMM * toU;
             // Слой короба: от ВЕРХНЕЙ грани детали вглубь на высоту короба (он
@@ -578,12 +659,17 @@ namespace KitchenDesigner.Core
         /// <summary>Подтянуть смещения так, чтобы край выреза встал заподлицо с
         /// гранью боковины или фасада под столешницей. Кандидат берётся только
         /// из деталей, которые действительно лежат в слое короба и перекрывают
-        /// вырез по второй оси — иначе магнитила бы любая деталь кухни.</summary>
+        /// вырез по второй оси — иначе магнитила бы любая деталь кухни.
+        ///
+        /// Габарит берётся из <see cref="CutoutExtentsMM"/> — того же, по которому
+        /// режется проём: повёрнутая панель магнитится кромкой СВОЕГО выреза, и
+        /// магнит с проёмом не расходятся.</summary>
         private void SnapToNeighbours(KitchenElement part, ref int offX, ref int offY)
         {
             float toU = AppConstants.MM_TO_UNITS;
             var (up, _) = UpAxisOf(part);
             var (a, b) = PlaneAxes(up);
+            var (cutW, cutD) = CutoutExtentsMM;
             var box = BodyBoxIn(part, offX, offY);
 
             int bestXOff = offX, bestYOff = offY;
@@ -598,9 +684,9 @@ namespace KitchenDesigner.Core
                 // или снизу, к нему вырез не выравнивают.
                 if (max[up] <= box.z0 || min[up] >= box.z1) continue;
 
-                TrySnapAxis(min[a], max[a], CutoutWidthMM, offX,
+                TrySnapAxis(min[a], max[a], cutW, offX,
                     min[b], max[b], box.y0, box.y1, toU, ref bestXOff, ref bestXDist);
-                TrySnapAxis(min[b], max[b], CutoutDepthMM, offY,
+                TrySnapAxis(min[b], max[b], cutD, offY,
                     min[a], max[a], box.x0, box.x1, toU, ref bestYOff, ref bestYDist);
             }
 
@@ -633,6 +719,29 @@ namespace KitchenDesigner.Core
             bestOff = rounded;
         }
 
+        /// <summary>Поза панели с НУЛЕВЫМ собственным разворотом: оси детали,
+        /// «вверх» — её нормаль. Разворот пользователя накручивается поверх.</summary>
+        private static Quaternion BaseRotationOn(KitchenElement part)
+        {
+            var (up, sign) = UpAxisOf(part);
+            var (a, _) = PlaneAxes(up);
+            Vector3 upLocal = AxisVector(up) * sign;
+            Vector3 fwdLocal = Vector3.Cross(AxisVector(a), upLocal);
+            var rot = part.transform.rotation;
+            return Quaternion.LookRotation(rot * fwdLocal, rot * upLocal);
+        }
+
+        /// <summary>Разворот, который панель УЖЕ имеет относительно базиса детали.
+        /// Нужен при захвате новой детали: повёрнутую на столе панель врезка не
+        /// должна разворачивать обратно.</summary>
+        private float YawRelativeTo(KitchenElement part)
+        {
+            var (up, sign) = UpAxisOf(part);
+            Vector3 upWorld = part.transform.rotation * (AxisVector(up) * sign);
+            Quaternion delta = transform.rotation * Quaternion.Inverse(BaseRotationOn(part));
+            return Mathf.Repeat(TwistAngle(delta, upWorld), 360f);
+        }
+
         private void AlignToPart(KitchenElement part)
         {
             var pt = part.transform;
@@ -643,8 +752,8 @@ namespace KitchenDesigner.Core
             var (a, b) = PlaneAxes(up);
 
             Vector3 upLocal = AxisVector(up) * sign;
-            Vector3 fwdLocal = Vector3.Cross(AxisVector(a), upLocal);
-            Quaternion targetRot = Quaternion.LookRotation(pt.rotation * fwdLocal, pt.rotation * upLocal);
+            Quaternion targetRot =
+                Quaternion.AngleAxis(_yawDeg, pt.rotation * upLocal) * BaseRotationOn(part);
 
             int offX = _offsetXMM, offY = _offsetYMM;
             // Магнит ДО клампа: подтянутое к боковине смещение всё равно обязано
@@ -664,16 +773,21 @@ namespace KitchenDesigner.Core
                 Quaternion.Angle(targetRot, transform.rotation) > 0.05f)
                 transform.SetPositionAndRotation(targetPos, targetRot);
             _appliedPos = transform.position;
+            _appliedRot = transform.rotation;
+            _hasAppliedRot = true;
 
-            // Проём перестраиваем только когда он реально изменился.
+            // Проём перестраиваем только когда он реально изменился. Поворот
+            // панели меняет и его: вырез разворачивается вместе с ней.
             if (_lastHost != part || _lastOffsetXMM != _offsetXMM || _lastOffsetYMM != _offsetYMM
-                || _lastCutoutWidthMM != CutoutWidthMM || _lastCutoutDepthMM != CutoutDepthMM)
+                || _lastCutoutWidthMM != CutoutWidthMM || _lastCutoutDepthMM != CutoutDepthMM
+                || !Mathf.Approximately(_lastYawDeg, _yawDeg))
             {
                 _lastHost = part;
                 _lastOffsetXMM = _offsetXMM;
                 _lastOffsetYMM = _offsetYMM;
                 _lastCutoutWidthMM = CutoutWidthMM;
                 _lastCutoutDepthMM = CutoutDepthMM;
+                _lastYawDeg = _yawDeg;
                 _lastHostPosition = part.transform.position;
                 part.RebuildGrooveMesh();
             }
@@ -690,7 +804,8 @@ namespace KitchenDesigner.Core
 
         /// <summary>Проём варочной в нормализованных координатах плоскости, в
         /// которой его режет GrooveMesh. Доли — от ТЕКУЩИХ габаритов детали,
-        /// поэтому её ресайз двигает и перемасштабирует вырез сам.</summary>
+        /// поэтому её ресайз двигает и перемасштабирует вырез сам. Разворот
+        /// панели проём тоже учитывает — через <see cref="CutoutExtentsMM"/>.</summary>
         public GrooveMesh.Rect2 CutoutRectIn(KitchenElement part)
         {
             if (part == null) return default;
@@ -698,8 +813,9 @@ namespace KitchenDesigner.Core
             var dims = part.DimensionsMM;
             if (dims[a] <= 0 || dims[b] <= 0) return default;
 
-            float halfW = CutoutWidthMM * 0.5f;
-            float halfD = CutoutDepthMM * 0.5f;
+            var (cutW, cutD) = CutoutExtentsMM;
+            float halfW = cutW * 0.5f;
+            float halfD = cutD * 0.5f;
             return new GrooveMesh.Rect2
             {
                 xMin = (_offsetXMM - halfW) / dims[a],

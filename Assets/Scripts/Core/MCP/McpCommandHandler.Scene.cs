@@ -177,6 +177,15 @@ namespace KitchenDesigner.Core.MCP
                 if (string.IsNullOrEmpty(op.object_path)) { errors.Add("op missing object_path"); continue; }
                 var go = FindGameObject(op.object_path);
                 if (go == null) { errors.Add($"Object not found: {op.object_path}"); continue; }
+                // Встраиваемая техника крутится только вокруг вертикали (см.
+                // FixedSize.IsYawOnly). Отказываем, а не молча правим ось: то же
+                // правило и та же формулировка, что в edit_elements.
+                if (FixedSize.IsYawOnly(go.GetComponent<KitchenElement>())
+                    && (op.x.HasValue || op.z.HasValue))
+                {
+                    errors.Add($"'{op.object_path}': x/z rotation not settable on a built-in appliance (only y — rotation about the vertical axis)");
+                    continue;
+                }
                 var v = ResolveVec(op.x, op.y, op.z, go.transform.eulerAngles);
                 go.transform.eulerAngles = v;
                 results.Add(new { object_path = op.object_path, ok = true, rotation = new { x = v.x, y = v.y, z = v.z } });

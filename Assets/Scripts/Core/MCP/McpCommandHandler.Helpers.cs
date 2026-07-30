@@ -318,7 +318,8 @@ namespace KitchenDesigner.Core.MCP
                     bodyHeightMM = cooktop.BodyHeightMM,
                     attachedPartName = cooktop.AttachedPartName,
                     offsetXMM = cooktop.OffsetXMM,
-                    offsetYMM = cooktop.OffsetYMM
+                    offsetYMM = cooktop.OffsetYMM,
+                    yawDeg = cooktop.YawDeg
                 } : null,
                 oven = oven != null ? new OvenInfo
                 {

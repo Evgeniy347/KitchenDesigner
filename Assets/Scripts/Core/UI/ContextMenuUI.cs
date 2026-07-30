@@ -135,6 +135,12 @@ namespace KitchenDesigner.Core.UI
         private readonly List<RectTransform> _triLabels = new();
         private readonly List<RectTransform> _triFields = new();
 
+        /// <summary>Подписи, поля и кнопки поворота вокруг X и Z. У встраиваемой
+        /// техники (<see cref="FixedSize.IsYawOnly"/>) они не показываются вовсе —
+        /// не гасятся, а убираются, чтобы в панели не оставалось дырок. Прячутся
+        /// точечно, поштучно: строка общая с поворотом по Y, а он техникe нужен.</summary>
+        private readonly List<RectTransform> _rotXZ = new();
+
         // Геометрия
         private const float LabelW = 140f;     // ширина колонки подписей (вмещает «Ширина короба, мм» почти без переноса)
         private const float LabelX = -80f;     // центр подписи (панель 364px → края ±182)
@@ -471,6 +477,9 @@ namespace KitchenDesigner.Core.UI
             _rx = TriField(panel.transform, "X, °", TriCol1);
             _ry = TriField(panel.transform, "Y, °", TriCol2);
             _rz = TriField(panel.transform, "Z, °", TriCol3);
+            // Подписи и поля X/Z — их прячет техника (только поворот по Y).
+            _rotXZ.Add(_triLabels[0]); _rotXZ.Add(_triLabels[2]);
+            _rotXZ.Add(_triFields[0]); _rotXZ.Add(_triFields[2]);
             TriEndRow(hideForWindow: true);
 
 			foreach (var f in new[] { _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam }) f!.contentType = TMP_InputField.ContentType.Custom;
@@ -511,6 +520,8 @@ namespace KitchenDesigner.Core.UI
                 rotX.GetComponent<RectTransform>(),
                 rotY.GetComponent<RectTransform>(),
                 rotZ.GetComponent<RectTransform>());
+            _rotXZ.Add(rotX.GetComponent<RectTransform>());
+            _rotXZ.Add(rotZ.GetComponent<RectTransform>());
 
             var rotY180 = UIFactory.CreateButton("CtxRotY180", panel.transform, "Y 180°",
                 new Vector2(0, 0), new Vector2(332, BtnH), () => RotateAxis(Vector3.up, 180f));
@@ -1116,6 +1127,14 @@ namespace KitchenDesigner.Core.UI
                 contentBottom = cursor + row.height;
                 cursor = contentBottom + row.gapAfter;
             }
+
+            // Поворот по X и Z у техники не показываем совсем: прибор стоит в нише
+            // корпуса, «на боку» его не ставят. Точечно, поверх строк: поворот по Y
+            // технике нужен, а живёт он в той же строке. Высоту строк это не
+            // меняет — их держит оставшаяся колонка Y, дырок в панели не будет.
+            bool yawOnly = FixedSize.IsYawOnly(_target);
+            foreach (var rt in _rotXZ)
+                if (rt != null) rt.gameObject.SetActive(!isWindow && !yawOnly);
 
             if (_panelRt != null)
                 _panelRt.sizeDelta = new Vector2(_panelRt.sizeDelta.x, contentBottom + BottomPad);
@@ -1768,11 +1787,14 @@ namespace KitchenDesigner.Core.UI
             // У окна поля поворота скрыты (ориентацию диктует стена) — не трогаем.
             if (!(target is WindowElement) && !(target is DoorElement))
             {
+                // У техники поля X/Z скрыты (только разворот вокруг вертикали) —
+                // берём их из текущей позы, а не из невидимого поля.
+                bool yawOnly = FixedSize.IsYawOnly(target);
                 var euler = oldRot.eulerAngles;
                 target.transform.rotation = Quaternion.Euler(
-                    ParseAngle(_rx, euler.x),
+                    yawOnly ? euler.x : ParseAngle(_rx, euler.x),
                     ParseAngle(_ry, euler.y),
-                    ParseAngle(_rz, euler.z));
+                    yawOnly ? euler.z : ParseAngle(_rz, euler.z));
             }
 
             // Окно живёт только на стене — сразу возвращаем его на стену,
@@ -1854,6 +1876,10 @@ namespace KitchenDesigner.Core.UI
         private void RotateAxis(Vector3 axis, float angle = 90f)
         {
             if (_target == null) return;
+            // Кнопки X 90° / Z 90° у техники скрыты; страховка на случай вызова
+            // мимо панели — «на боку» встраиваемый прибор не стоит.
+            if (FixedSize.IsYawOnly(_target) && Mathf.Abs(Vector3.Dot(axis.normalized, Vector3.up)) < 0.99f)
+                return;
             var oldRot = _target.transform.rotation;
             _target.RotateAroundAxis(axis, angle);
             if (_target is WindowElement win) win.SnapToWall();
