@@ -28,7 +28,13 @@ using KitchenDesigner.Core;
 /// </summary>
 public class ValidationInvariantTests
 {
-    private const string SaveFileName = "example.save.json";
+    /// <summary>Сцена берётся из ЗАМОРОЖЕННОЙ копии, а не из
+    /// <c>docs/example.save.json</c>: тот файл живой — его перезаписывает
+    /// автосохранение десктопа и PlayMode-прогон (см. комментарий в
+    /// <c>PlayModeTestConfig</c>). Один такой прогон менял в нём режим окна, и
+    /// инвариант краснел на −7 контактов, хотя код валидации никто не трогал.
+    /// Baseline обязан стоять на неподвижном входе.</summary>
+    private const string SaveFileName = "Fixtures/validation-scene.save.json";
     private const string ReportFileName = "validation-invariant.log";
 
     /// <summary>Пять с лишним чисел, которые обязаны совпасть. Порядок — как в
@@ -58,7 +64,7 @@ public class ValidationInvariantTests
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        var fullPath = Path.Combine(Application.dataPath, "../docs", SaveFileName);
+        var fullPath = Path.Combine(Application.dataPath, "Tests/EditMode", SaveFileName);
         Assert.IsTrue(File.Exists(fullPath), $"Save file not found: {fullPath}");
         _json = File.ReadAllText(fullPath);
         Assert.IsNotEmpty(_json);
