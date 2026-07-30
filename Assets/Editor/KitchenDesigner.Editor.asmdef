@@ -5,7 +5,9 @@
 		"KitchenDesigner.Runtime",
 		"Unity.RenderPipelines.Universal.Runtime",
 		"Unity.RenderPipelines.Core.Runtime",
-		"Unity.TextMeshPro"
+		"Unity.TextMeshPro",
+		"UnityEditor.TestRunner",
+		"UnityEngine.TestRunner"
 	],
 	"includePlatforms": [
 		"Editor"

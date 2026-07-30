@@ -49,7 +49,7 @@ public static class BuildProject
         else
             LogBuildFailure(report);
 
-        EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
+        FinishBuild(report.summary.result == BuildResult.Succeeded ? 0 : 1);
     }
 
     // ── WebGL Release ──────────────────────────────────────
@@ -86,7 +86,7 @@ public static class BuildProject
         else
             LogBuildFailure(report);
 
-        EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
+        FinishBuild(report.summary.result == BuildResult.Succeeded ? 0 : 1);
     }
 
     // ── WebGL Debug (fast iteration) ───────────────────────
@@ -123,7 +123,7 @@ public static class BuildProject
         else
             LogBuildFailure(report);
 
-        EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
+        FinishBuild(report.summary.result == BuildResult.Succeeded ? 0 : 1);
     }
 
     // ── Configuration ──────────────────────────────────────
@@ -214,16 +214,34 @@ public static class BuildProject
         if (report.summary.result == BuildResult.Succeeded)
         {
             Debug.Log($"[BuildProject] BUILD OK: {location} ({report.summary.totalSize / 1048576.0:F1} MB) in {sw.Elapsed.TotalSeconds:F0}s");
-            EditorApplication.Exit(0);
+            FinishBuild(0);
         }
         else
         {
             LogBuildFailure(report);
-            EditorApplication.Exit(1);
+            FinishBuild(1);
         }
     }
 
     // ── Helpers ────────────────────────────────────────────
+
+    /// <summary>Сборка, запущенная через `-executeMethod`, ОБЯЗАНА закрыть
+    /// редактор кодом возврата — иначе batch-процесс висит вечно. Та же сборка,
+    /// запущенная через мост в ЖИВОМ редакторе, закрывать его не должна: демон
+    /// умирал бы после каждой сборки, и следующая команда снова платила бы
+    /// полную минуту холодного старта.</summary>
+    internal static bool KeepEditorAlive;
+
+    /// <summary>Код возврата последней сборки — для вызова через мост, где
+    /// выхода из процесса не происходит.</summary>
+    internal static int LastExitCode;
+
+    private static void FinishBuild(int code)
+    {
+        LastExitCode = code;
+        if (KeepEditorAlive) return;
+        EditorApplication.Exit(code);
+    }
 
     private static void LogBuildFailure(BuildReport report)
     {
