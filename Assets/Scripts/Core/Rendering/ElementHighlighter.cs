@@ -154,14 +154,14 @@ namespace KitchenDesigner.Core
             // визуальный сигнал «заблокировано».
             if (ModuleEditMode.IsActive && !ModuleEditMode.IsEditable(element))
             {
-                renderer.material = _dimmedMaterial!;
+                PaintFlat(renderer, _dimmedMaterial!);
                 ElementOutline.For(element)?.Hide();
                 return;
             }
 
             if (PhotoMode.ResolveTransparent(element.Transparent))
             {
-                renderer.material = isValid ? _validTransparentMaterial! : _invalidTransparentMaterial!;
+                PaintFlat(renderer, isValid ? _validTransparentMaterial! : _invalidTransparentMaterial!);
                 ElementOutline.Ensure(element)?.Show(selected: false);
             }
             else if (ownDecorOnly)
@@ -183,9 +183,34 @@ namespace KitchenDesigner.Core
             }
             else
             {
-                renderer.material = isValid ? _validMaterial! : _invalidMaterial!;
+                PaintFlat(renderer, isValid ? _validMaterial! : _invalidMaterial!);
                 ElementOutline.For(element)?.Hide();
             }
+        }
+
+        /// <summary>Залить деталь одним материалом — по одному на КАЖДЫЙ сабмеш.
+        ///
+        /// У детали их бывает несколько: пазы и некромкованные торцы живут
+        /// отдельными сабмешами (см. GrooveMesh.Build). Простое
+        /// <c>renderer.material = x</c> оставляет в рендерере ровно один материал,
+        /// а сабмеш без материала Unity не рисует вовсе — на месте паза и торца
+        /// получалась дыра насквозь.</summary>
+        private static void PaintFlat(MeshRenderer renderer, Material material)
+        {
+            var filter = renderer.GetComponent<MeshFilter>();
+            var mesh = filter != null ? filter.sharedMesh : null;
+            int count = mesh != null ? mesh.subMeshCount : 1;
+            if (count <= 1)
+            {
+                renderer.material = material;
+                return;
+            }
+
+            // sharedMaterials, а не materials: последний склонировал бы тонировку
+            // на каждый сабмеш каждой детали, а править её поштучно некому.
+            var slots = new Material[count];
+            for (int i = 0; i < count; i++) slots[i] = material;
+            renderer.sharedMaterials = slots;
         }
     }
 }

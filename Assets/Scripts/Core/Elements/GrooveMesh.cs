@@ -107,8 +107,24 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        /// <summary>Меш детали с ДВУМЯ сабмешами: 0 — тело (декор), 1 — пазы
-        /// (тёмный материал). Пустой список пазов даёт обычную коробку.
+        /// <summary>Индексы сабмешей построенного меша. Сабмеш 0 — всегда тело
+        /// (декор); остальные заводятся только когда в них есть треугольники,
+        /// поэтому их номера заранее не известны. −1 — сабмеша нет.</summary>
+        public readonly struct SubmeshLayout
+        {
+            public readonly int Grooves;
+            public readonly int BareEnds;
+
+            public SubmeshLayout(int grooves, int bareEnds)
+            {
+                Grooves = grooves;
+                BareEnds = bareEnds;
+            }
+        }
+
+        /// <summary>Меш детали с сабмешами: 0 — тело (декор), далее пазы (тёмный
+        /// материал) и некромкованные торцы (подложка) — каждый, если есть что в
+        /// него класть. Пустой список пазов даёт обычную коробку.
         /// holes — сквозные вырезы; их стенки идут в сабмеш тела, чтобы деталь
         /// с одним лишь вырезом не требовала второго материала.
         ///
@@ -119,18 +135,35 @@ namespace KitchenDesigner.Core
         /// канонической системе и переставляется по осям, как это делает
         /// WallMeshBuilder для стены, повёрнутой длиной вдоль Z.</summary>
         public static Mesh Build(Vector3Int dims, IReadOnlyList<GrooveSpec>? grooves,
-            IReadOnlyList<Rect2>? holes = null, int holeAxis = 2)
+            IReadOnlyList<Rect2>? holes = null, int holeAxis = 2, int bareEndAxis = -1)
+            => Build(dims, grooves, holes, holeAxis, bareEndAxis, out _);
+
+        /// <summary>Как выше, но сообщает, какие сабмеши получились.
+        ///
+        /// bareEndAxis — ось ТОЛЩИНЫ детали, торцы которой рисуются подложкой
+        /// (см. <see cref="EdgeSubstrate"/>); −1 — вся деталь одним декором.
+        /// Торцы — это четыре грани, перпендикулярные двум ОСТАЛЬНЫМ осям:
+        /// у листа толщиной по Z ими оказываются ±X и ±Y, у столешницы-короба
+        /// толщиной по Y — ±X и ±Z. Ось задаётся в осях ДЕТАЛИ; перестановку
+        /// под holeAxis Build делает сам.</summary>
+        public static Mesh Build(Vector3Int dims, IReadOnlyList<GrooveSpec>? grooves,
+            IReadOnlyList<Rect2>? holes, int holeAxis, int bareEndAxis,
+            out SubmeshLayout layout)
         {
             if (holeAxis != 2)
             {
                 // Пазы живут только в пласти ±Z, и перестановка увела бы их с неё.
                 // Деталь со сквозным вырезом поперёк другой оси — это столешница,
                 // пазов в ней нет.
-                var permuted = BuildAlongZ(dims, null, holes, holeAxis);
+                //
+                // Перестановка ходит в обе стороны (FinalAxis сам себе обратная),
+                // поэтому ось толщины переводится в каноническую тем же вызовом.
+                var permuted = BuildAlongZ(dims, null, holes, holeAxis,
+                    bareEndAxis < 0 ? -1 : FinalAxis(bareEndAxis, holeAxis), out layout);
                 Permute(permuted, holeAxis);
                 return permuted;
             }
-            return BuildAlongZ(dims, grooves, holes, 2);
+            return BuildAlongZ(dims, grooves, holes, 2, bareEndAxis, out layout);
         }
 
         /// <summary>Меняет местами ось выреза и Z. Обе перестановки — зеркальные,
@@ -158,8 +191,11 @@ namespace KitchenDesigner.Core
             mesh.RecalculateBounds();
         }
 
+        /// <summary>bareThickAxis — ось толщины в КАНОНИЧЕСКИХ осях меша (Build
+        /// переводит её туда сам); −1 — подложки нет.</summary>
         private static Mesh BuildAlongZ(Vector3Int dims, IReadOnlyList<GrooveSpec>? grooves,
-            IReadOnlyList<Rect2>? holes, int holeAxis)
+            IReadOnlyList<Rect2>? holes, int holeAxis, int bareThickAxis,
+            out SubmeshLayout layout)
         {
             var rects = ComputeRects(dims, grooves);
             var holeRects = ClampHoles(holes);
@@ -189,6 +225,13 @@ namespace KitchenDesigner.Core
             var uvs = new List<Vector2>();
             var body = new List<int>();
             var cut = new List<int>();
+            var ends = new List<int>();
+
+            // Куда уходит наружная грань с нормалью вдоль оси axis: некромкованный
+            // торец — в подложку, всё остальное — в декор. Внутренние поверхности
+            // (дно и стенки пазов, стенки сквозных вырезов) сюда не попадают:
+            // паз режется по своему материалу, а стенка выреза скрыта врезкой.
+            List<int> Outer(int axis) => bareThickAxis >= 0 && axis != bareThickAxis ? ends : body;
 
             // Лицевая грань: клетки вне пазов — на пласти, внутри — на дне кармана.
             for (int i = 0; i < nx; i++)
@@ -201,7 +244,7 @@ namespace KitchenDesigner.Core
                         AddQuad(verts, uvs, cut, UvPlane.XY,
                             V(x0, y0, gz), V(x1, y0, gz), V(x1, y1, gz), V(x0, y1, gz));
                     else
-                        AddQuad(verts, uvs, body, UvPlane.XY,
+                        AddQuad(verts, uvs, Outer(2), UvPlane.XY,
                             V(x0, y0, zf), V(x1, y0, zf), V(x1, y1, zf), V(x0, y1, zf));
                 }
             }
@@ -210,7 +253,7 @@ namespace KitchenDesigner.Core
             // вырезов она остаётся одним квадом; с ними — нарезается по решётке.
             if (holeRects.Count == 0)
             {
-                AddQuad(verts, uvs, body, UvPlane.XY,
+                AddQuad(verts, uvs, Outer(2), UvPlane.XY,
                     V(0.5f, -0.5f, zb), V(-0.5f, -0.5f, zb), V(-0.5f, 0.5f, zb), V(0.5f, 0.5f, zb));
             }
             else
@@ -220,7 +263,7 @@ namespace KitchenDesigner.Core
                     {
                         if (hole[i, j]) continue;
                         float x0 = xs[i], x1 = xs[i + 1], y0 = ys[j], y1 = ys[j + 1];
-                        AddQuad(verts, uvs, body, UvPlane.XY,
+                        AddQuad(verts, uvs, Outer(2), UvPlane.XY,
                             V(x1, y0, zb), V(x0, y0, zb), V(x0, y1, zb), V(x1, y1, zb));
                     }
             }
@@ -300,13 +343,13 @@ namespace KitchenDesigner.Core
                 if (!hole[0, j])
                 {
                     float zl = inside[0, j] ? gz : zf;
-                    AddQuad(verts, uvs, body, UvPlane.ZY,
+                    AddQuad(verts, uvs, Outer(0), UvPlane.ZY,
                         V(-0.5f, y0, zb), V(-0.5f, y0, zl), V(-0.5f, y1, zl), V(-0.5f, y1, zb));
                 }
                 if (!hole[nx - 1, j])
                 {
                     float zr = inside[nx - 1, j] ? gz : zf;
-                    AddQuad(verts, uvs, body, UvPlane.ZY,
+                    AddQuad(verts, uvs, Outer(0), UvPlane.ZY,
                         V(0.5f, y0, zr), V(0.5f, y0, zb), V(0.5f, y1, zb), V(0.5f, y1, zr));
                 }
             }
@@ -316,13 +359,13 @@ namespace KitchenDesigner.Core
                 if (!hole[i, 0])
                 {
                     float zd = inside[i, 0] ? gz : zf;
-                    AddQuad(verts, uvs, body, UvPlane.XZ,
+                    AddQuad(verts, uvs, Outer(1), UvPlane.XZ,
                         V(x0, -0.5f, zb), V(x1, -0.5f, zb), V(x1, -0.5f, zd), V(x0, -0.5f, zd));
                 }
                 if (!hole[i, ny - 1])
                 {
                     float zu = inside[i, ny - 1] ? gz : zf;
-                    AddQuad(verts, uvs, body, UvPlane.XZ,
+                    AddQuad(verts, uvs, Outer(1), UvPlane.XZ,
                         V(x0, 0.5f, zu), V(x1, 0.5f, zu), V(x1, 0.5f, zb), V(x0, 0.5f, zb));
                 }
             }
@@ -330,11 +373,19 @@ namespace KitchenDesigner.Core
             var mesh = new Mesh { name = "PartWithGrooves" };
             mesh.SetVertices(verts);
             mesh.SetUVs(0, uvs);
-            // Второй сабмеш заводим только когда есть что в него класть: у детали
-            // без пазов это обычная коробка с одним материалом.
-            mesh.subMeshCount = cut.Count > 0 ? 2 : 1;
+            // Дополнительные сабмеши заводим только когда есть что в них класть:
+            // у кромкованной детали без пазов это обычная коробка с одним
+            // материалом. Пустой сабмеш стоил бы лишнего материала в рендерере.
+            int extra = (cut.Count > 0 ? 1 : 0) + (ends.Count > 0 ? 1 : 0);
+            int next = 1;
+            layout = new SubmeshLayout(
+                cut.Count > 0 ? next++ : -1,
+                ends.Count > 0 ? next++ : -1);
+
+            mesh.subMeshCount = 1 + extra;
             mesh.SetTriangles(body, 0);
-            if (cut.Count > 0) mesh.SetTriangles(cut, 1);
+            if (layout.Grooves >= 0) mesh.SetTriangles(cut, layout.Grooves);
+            if (layout.BareEnds >= 0) mesh.SetTriangles(ends, layout.BareEnds);
             mesh.RecalculateNormals();
             ScaleUvToDecor(mesh, dims, holeAxis);
             mesh.RecalculateBounds();

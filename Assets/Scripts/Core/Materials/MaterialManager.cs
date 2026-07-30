@@ -281,6 +281,9 @@ namespace KitchenDesigner.Core
             {
                 mats[0] = mat;
                 r.sharedMaterials = mats;
+                // Служебные сабмеши детали (паз, некромкованный торец) могли быть
+                // затёрты тонировкой — декор возвращается вместе с ними.
+                element.RefreshSubmeshMaterials();
             }
             else
             {

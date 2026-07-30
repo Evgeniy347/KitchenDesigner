@@ -83,6 +83,14 @@ namespace KitchenDesigner.Core
         // а повторный вызов с теми же размерами — нет.
         private Vector3Int _meshDims;
 
+        // Ось толщины, под которую в _ownedMesh заведён сабмеш некромкованных
+        // торцов (−1 — сабмеша нет). Сравнением с текущей ловится и выключатель
+        // кромкования, и ресайз, после которого деталь перестала быть листом.
+        private int _meshBareEndAxis = -1;
+
+        // Номера служебных сабмешей в _ownedMesh (см. GrooveMesh.SubmeshLayout).
+        private GrooveMesh.SubmeshLayout _meshLayout = new GrooveMesh.SubmeshLayout(-1, -1);
+
         public bool SupportsGrooves =>
             GetType() == typeof(KitchenElement)
             && GetComponent<Wall>() == null
@@ -129,7 +137,14 @@ namespace KitchenDesigner.Core
         public bool EdgeBandingEnabled
         {
             get => SupportsEdges && _data.EdgeBanding;
-            set => _data.EdgeBanding = value;
+            set
+            {
+                if (_data.EdgeBanding == value) return;
+                _data.EdgeBanding = value;
+                // Кромка закрывает торец, а без неё видна голая плита — это
+                // РАЗНЫЕ материалы и разный набор сабмешей (см. BareEndAxis).
+                if (!SuppressVisualRebuild) RebuildGrooveMesh();
+            }
         }
 
         [NotUndoable("см. EdgeBandingEnabled — SetEdgeBandingCommand")]
@@ -274,18 +289,63 @@ namespace KitchenDesigner.Core
                 ? mats[0] : meshRenderer.sharedMaterial;
 
             var holes = CutoutHoleRects();
+            int bareEnds = BareEndAxis;
 
-            var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves, holes, CutoutHoleAxis);
+            var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves, holes,
+                CutoutHoleAxis, bareEnds, out var layout);
             DestroyOwnedMesh();
             _ownedMesh = mesh;
             _meshDims = _data.DimensionsMM;
+            _meshBareEndAxis = bareEnds;
+            _meshLayout = layout;
             filter.sharedMesh = mesh;
-            // Сабмеш 0 — декор (им управляет MaterialManager), 1 — пазы; у детали
-            // без пазов второго сабмеша нет и второй материал ей не нужен.
-            meshRenderer.sharedMaterials = mesh.subMeshCount > 1 && decor != null
-                ? new[] { decor, GrooveMesh.GrooveMaterial() }
-                : new[] { decor! };
+
+            // Сабмеш 0 — декор (им управляет MaterialManager), дальше пазы и
+            // некромкованные торцы — по факту наличия (см. GrooveMesh.Build).
+            var slots = new Material[mesh.subMeshCount];
+            slots[0] = decor!;
+            meshRenderer.sharedMaterials = slots;
+            RefreshSubmeshMaterials();
         }
+
+        /// <summary>Поставить на место материалы СЛУЖЕБНЫХ сабмешей — пазов и
+        /// некромкованных торцов. Сабмеш 0 (декор) не трогается.
+        ///
+        /// Нужно не только после пересборки меша: валидационная тонировка и режим
+        /// редактирования модуля заливают деталь одним материалом на все сабмеши
+        /// (ElementHighlighter.PaintFlat), и возврат декора чинит только нулевой
+        /// слот — паз оставался цвета тонировки, а торец терял подложку.</summary>
+        public void RefreshSubmeshMaterials()
+        {
+            if (!SupportsGrooves || _ownedMesh == null) return;
+            var meshRenderer = GetComponent<MeshRenderer>();
+            if (meshRenderer == null) return;
+
+            var slots = meshRenderer.sharedMaterials;
+            if (slots == null || slots.Length != _ownedMesh.subMeshCount) return;
+
+            if (_meshLayout.Grooves >= 0)
+                slots[_meshLayout.Grooves] = GrooveMesh.GrooveMaterial();
+            // Без шейдера подложки торец остаётся на декоре: дыра в материалах
+            // рендерера дала бы несуществующую грань.
+            if (_meshLayout.BareEnds >= 0)
+                slots[_meshLayout.BareEnds] = EdgeSubstrate.Material() ?? slots[0];
+            meshRenderer.sharedMaterials = slots;
+        }
+
+        /// <summary>Ось толщины детали, торцы которой рисуются подложкой, или −1.
+        ///
+        /// Подложка — это голая плита на торце, а закрывает её кромка (см.
+        /// <see cref="EdgeSubstrate"/>). Смотрим только на выключатель кромкования,
+        /// а не на посторонность каждого торца: кромки нет ровно на тех торцах,
+        /// которые чем-то ЗАКРЫТЫ (см. EdgeBanding.Coverage), а закрытый торец и
+        /// так не виден. Иначе пришлось бы пересобирать меш детали каждый раз,
+        /// когда двинули соседа, — O(n²) на весь проект вместо булева поля.
+        ///
+        /// У бруска и куба торец не определён, ThinAxis отвечает −1 — и подложки
+        /// у них не бывает.</summary>
+        private int BareEndAxis =>
+            EdgeBandingEnabled ? -1 : EdgeBanding.ThinAxis(_data.DimensionsMM);
 
         private void DestroyOwnedMesh()
         {
@@ -455,7 +515,8 @@ namespace KitchenDesigner.Core
             // Доли паза и проёма мойки считаются от размеров детали, а UV — от её
             // пропорций: при ресайзе меш надо пересобрать, иначе и то и другое
             // растянется вместе с localScale.
-            if (_meshDims != _data.DimensionsMM || _ownedMesh == null) RebuildGrooveMesh();
+            if (_meshDims != _data.DimensionsMM || _ownedMesh == null
+                || _meshBareEndAxis != BareEndAxis) RebuildGrooveMesh();
 
             // localScale тянет UV вместе с деталью, поэтому «вырез» декора надо
             // пересчитать под новый размер — иначе рисунок растягивается вместо
