@@ -233,10 +233,17 @@ OvenElement           Built-in electric oven (type:""oven""), one model only:
                       cuts no hole; it just stands in a column like a carcass
                       part. Bounding box 594x595x568: a 594x595x19.5 front
                       (control strip 96 high on top, black door glass 499 below)
-                      plus a 570x548x535 body behind it. The handle sticks out
-                      50 mm IN FRONT of that box on purpose. Everything is fixed
-                      by the manufacturer — width/height/depth are REJECTED by
-                      edit_elements.
+                      plus a 560x548x570 hollow body behind it. The handle
+                      sticks out 50 mm IN FRONT of that box on purpose.
+                      COLLISIONS ARE CHECKED AGAINST THE BODY ONLY (560x548x570,
+                      recessed behind the front and 25 mm below its top): the
+                      594 wide front is wider than any 600-module opening by
+                      design and lies OVER the side panels — counting it would
+                      make every normal installation a COL-01.
+                      The door drops DOWN around its bottom edge:
+                      edit_elements {is_open:true}; state in element.oven.isOpen.
+                      Everything else is fixed by the manufacturer —
+                      width/height/depth are REJECTED by edit_elements.
 DishwasherElement     Fully integrated dishwasher (type:""dishwasher""), one
                       model only: Bosch SMV25EX02E. Bounding box 598x815x550 —
                       the appliance itself, niche 600 wide. It has NO front

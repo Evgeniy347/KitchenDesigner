@@ -32,7 +32,9 @@ namespace KitchenDesigner.Core.MCP
             bool IsFacadeLike() => el is FacadeElement || el is WindowElement || el is DoorElement;
             if (IsNot<FacadeElement>() && IsNot<AssembledFacadeElement>()) { if (op.gap_left.HasValue) e.Add("gap_left"); if (op.gap_right.HasValue) e.Add("gap_right"); if (op.gap_top.HasValue) e.Add("gap_top"); if (op.gap_bottom.HasValue) e.Add("gap_bottom"); if (op.fill != null) e.Add("fill"); }
             if (!IsFacadeLike()) { if (op.mode != null) e.Add("mode"); }
-            if (IsNot<FacadeElement>() && IsNot<WindowElement>() && IsNot<DoorElement>()) { if (op.is_open.HasValue) e.Add("is_open"); }
+            // Откидная дверца духовки открывается тем же is_open, что фасад,
+            // окно и дверь: своего инструмента ради одной кнопки не нужно.
+            if (IsNot<FacadeElement>() && IsNot<WindowElement>() && IsNot<DoorElement>() && IsNot<OvenElement>()) { if (op.is_open.HasValue) e.Add("is_open"); }
             if (IsNot<RadialShelfElement>()) { if (op.corner_radius.HasValue) e.Add("corner_radius"); }
             if (IsNot<CooktopElement>()) { if (op.cutout_width.HasValue) e.Add("cutout_width"); if (op.cutout_depth.HasValue) e.Add("cutout_depth"); }
             if (IsNot<DrawerElement>()) { if (op.drawer_type != null) e.Add("drawer_type"); if (op.drawer_length.HasValue) e.Add("drawer_length"); if (op.drawer_color != null) e.Add("drawer_color"); if (op.internal_width.HasValue) e.Add("internal_width"); if (op.is_double.HasValue) e.Add("is_double"); if (op.is_upper.HasValue) e.Add("is_upper"); if (op.paired_drawer_name != null) e.Add("paired_drawer_name"); }
@@ -479,6 +481,10 @@ namespace KitchenDesigner.Core.MCP
             if (op.mode != null && TryParseDoorMode(op.mode, out var m)) window.Mode = m;
             if (op.is_open.HasValue) window.SetOpen(op.is_open.Value);
         }
+        private static void ApplyOvenEdits(EditOp op, OvenElement oven)
+        {
+            if (op.is_open.HasValue) oven.SetOpen(op.is_open.Value);
+        }
         private static void ApplyDoorEdits(EditOp op, DoorElement door)
         {
             if (op.sash_type != null) door.SashType = ParseDoorSashType(op.sash_type);
@@ -523,6 +529,7 @@ namespace KitchenDesigner.Core.MCP
                 if (el is PillarElement pillar) ApplyPillarEdits(op, pillar);
                 if (el is WindowElement window) ApplyWindowEdits(op, window);
                 if (el is DoorElement door) ApplyDoorEdits(op, door);
+                if (el is OvenElement oven) ApplyOvenEdits(op, oven);
                 // Через DrawerLinks: переименование обязано увести за собой связи
                 // по имени (пара ящика, фасад ящика), иначе они станут битыми.
                 if (op.new_name != null && op.new_name != el.PartName)

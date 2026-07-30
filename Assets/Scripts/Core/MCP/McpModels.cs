@@ -347,6 +347,9 @@ namespace KitchenDesigner.Core.MCP
 		/// <summary>Ручка выступает ВПЕРЁД за габаритную коробку: коробка
 		/// описывает то, что встаёт в нишу колонны.</summary>
 		public int handleProtrusionMM;
+		/// <summary>Дверца откинута (edit_elements {is_open}). Откидывается вниз
+		/// вокруг нижней кромки фасада.</summary>
+		public bool isOpen;
 	}
 
 	/// <summary>Полновстраиваемая посудомоечная машина. dimX/dimY/dimZ — сам

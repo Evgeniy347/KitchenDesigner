@@ -331,7 +331,8 @@ namespace KitchenDesigner.Core.MCP
                     bodyHeightMM = OvenElement.BODY_HEIGHT_MM,
                     controlPanelHeightMM = OvenElement.CONTROL_PANEL_HEIGHT_MM,
                     glassHeightMM = OvenElement.GLASS_HEIGHT_MM,
-                    handleProtrusionMM = OvenElement.HANDLE_PROTRUSION_MM
+                    handleProtrusionMM = OvenElement.HANDLE_PROTRUSION_MM,
+                    isOpen = oven.IsOpen
                 } : null,
                 dishwasher = dishwasher != null ? new DishwasherInfo
                 {

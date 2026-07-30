@@ -30,6 +30,7 @@ namespace KitchenDesigner.Core.UI
         private RectTransform? _panelRt;
         private TMP_Text? _doorButtonLabel;
         private TMP_Text? _winDoorButtonLabel;
+        private TMP_Text? _ovenDoorLabel;
         private TMP_Dropdown? _modeDropdown;
         private TMP_Dropdown? _fillDropdown;
         private TMP_Dropdown? _materialDropdown;
@@ -317,6 +318,15 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, 0), new Vector2(332, BtnH), ToggleDoor);
             _doorButtonLabel = doorButton.GetComponentInChildren<TMP_Text>();
             AddFacadeRow(BtnH, ActionGap, doorButton.GetComponent<RectTransform>());
+
+            // Откидная дверца духовки — по образцу «Открыть ящик»: одна кнопка,
+            // подпись переключается по состоянию. Отдельного флага в LayoutRow
+            // не заводим — духовка одна, visibleWhen уже умеет ровно это.
+            var ovenDoorButton = UIFactory.CreateButton("CtxOvenDoor", panel.transform, "Открыть дверцу",
+                new Vector2(0, 0), new Vector2(332, BtnH), ToggleOvenDoor);
+            _ovenDoorLabel = ovenDoorButton.GetComponentInChildren<TMP_Text>();
+            AddRow(BtnH, ActionGap, () => _target is OvenElement,
+                ovenDoorButton.GetComponent<RectTransform>());
 
             // Центр сборного фасада (только для сборного): Глухой / Витрина / Стекло.
             var fillOptions = new List<string> { "Глухой (панель)", "Витрина (пусто)", "Стекло" };
@@ -1422,6 +1432,8 @@ namespace KitchenDesigner.Core.UI
                             System.Array.IndexOf(DrawerConstants.ValidLengths, upperDrawer.NominalLength));
                     UpdateDrawerAnimButton(drawer);
                 }
+
+                if (element is OvenElement ovenEl) UpdateOvenDoorButton(ovenEl);
 
                 // Пристёгнутый фасад — общая строка ящика и посудомойки.
                 var facadeHost = element as IFacadeHost;
@@ -2984,6 +2996,21 @@ namespace KitchenDesigner.Core.UI
                 f.textComponent.color = editable ? _dimsTextColor : disabled;
         }
 
+        private void ToggleOvenDoor()
+        {
+            if (_target is OvenElement oven)
+            {
+                oven.ToggleOpen();
+                UpdateOvenDoorButton(oven);
+            }
+        }
+
+        private void UpdateOvenDoorButton(OvenElement oven)
+        {
+            if (_ovenDoorLabel == null || oven == null) return;
+            _ovenDoorLabel.text = oven.IsOpen ? "Закрыть дверцу" : "Открыть дверцу";
+        }
+
         private void UpdateDrawerAnimButton(DrawerElement d)
         {
             if (_drawerAnimLabel == null || d == null) return;
@@ -2998,6 +3025,7 @@ namespace KitchenDesigner.Core.UI
             if (_root == null || !_root.activeSelf || _target == null) return;
             if (_target is FacadeElement f) UpdateDoorButton(f);
             else if (_target is DrawerElement d) UpdateDrawerAnimButton(d);
+            else if (_target is OvenElement o) UpdateOvenDoorButton(o);
         }
 
         // ── Фасад ящика ───────────────────────────────────────────────

@@ -364,6 +364,10 @@ namespace KitchenDesigner.Core
 				d.cooktopYawDeg = cooktopEl.YawDeg;
 			}
 			d.isOven = element is OvenElement;
+			// Откинутая дверца духовки хранится в общем doorOpen — там же, где
+			// открытый фасад и выдвинутый одиночный ящик.
+			if (element is OvenElement ovenEl)
+				d.doorOpen = ovenEl.IsOpen;
 			d.isDishwasher = element is DishwasherElement;
 			if (element is DishwasherElement dishwasherEl)
 				d.dishwasherAttachedFacadeName = dishwasherEl.AttachedFacadeName ?? "";

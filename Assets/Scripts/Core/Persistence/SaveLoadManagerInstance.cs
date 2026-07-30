@@ -326,6 +326,10 @@ namespace KitchenDesigner.Core
                             drawerEl.SetOpen(true);
                     }
 
+                    // Откинутая дверца духовки живёт в общем doorOpen.
+                    if (ed.isOven && el is OvenElement ovenEl && ed.doorOpen)
+                        ovenEl.SetOpen(true);
+
                     // Своей фасадной панели у машины нет: без этой строки
                     // пристёгнутый фасад после загрузки был бы просто дверцей,
                     // стоящей рядом.
