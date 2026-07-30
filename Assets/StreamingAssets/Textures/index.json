@@ -392,6 +392,15 @@
       "tileWidthMM": 100,
       "tileHeightMM": 100,
       "color": "#D6B69D"
+    },
+    {
+      "id": "mdf_shlifovannaya",
+      "name": "МДФ шлифованная",
+      "kind": "МДФ",
+      "file": "mdf_shlifovannaya.jpg",
+      "tileWidthMM": 400,
+      "tileHeightMM": 400,
+      "color": "#C3B1A7"
     }
   ]
 }
