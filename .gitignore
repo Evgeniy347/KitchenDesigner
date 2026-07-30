@@ -155,3 +155,7 @@ server/.env
 # Удалённые файлы уезжают сюда, а не стираются (CONVENTIONS.md)
 _trash/
 /server/KitchenServer.Tests/TestResults
+
+# Мусор пакета Performance Testing: перезаписывается каждым прогоном PlayMode
+/Assets/Resources/PerformanceTestRunInfo.json*
+/Assets/Resources/PerformanceTestRunSettings.json*
