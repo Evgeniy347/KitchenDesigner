@@ -10,12 +10,16 @@ namespace KitchenDesigner.Core
 
         public PartData Data => _data;
 
+        [Undoable]
         public string PartName
         {
             get => _data.PartName;
             set => _data.PartName = value;
         }
 
+        // Габарит откатывается ПЕРВЫМ: по нему клампятся вырез варочной, кромка
+        // и высота опоры — вернуть их по старой плите значило бы подрезать.
+        [Undoable(Order = -100)]
         public Vector3Int DimensionsMM
         {
             get => _data.DimensionsMM;
@@ -26,6 +30,7 @@ namespace KitchenDesigner.Core
             }
         }
 
+        [Undoable]
         public bool Movable
         {
             get => _data.Movable;
@@ -45,18 +50,21 @@ namespace KitchenDesigner.Core
         /// геометрии молча разъезжается с логической позой.</summary>
         public bool Transformable => Movable && PoseFollowsTransform;
 
+        [NotUndoable("группировка идёт своей командой SetGroupCommand")]
         public int GroupId
         {
             get => _data.GroupId;
             set => _data.GroupId = value;
         }
 
+        [NotUndoable("декор ставится через SetMaterialCommand — одной записи в поле мало, нужен MaterialManager")]
         public string MaterialId
         {
             get => _data.MaterialId;
             set => _data.MaterialId = value;
         }
 
+        [Undoable]
         public bool Transparent
         {
             get => _data.Transparent;
@@ -117,12 +125,14 @@ namespace KitchenDesigner.Core
 
         /// <summary>Клеить ли кромку на открытые торцы. У детали, которая
         /// кромкование не поддерживает, всегда false.</summary>
+        [NotUndoable("кромка целиком идёт через SetEdgeBandingCommand: три поля одним шагом")]
         public bool EdgeBandingEnabled
         {
             get => SupportsEdges && _data.EdgeBanding;
             set => _data.EdgeBanding = value;
         }
 
+        [NotUndoable("см. EdgeBandingEnabled — SetEdgeBandingCommand")]
         public float EdgeThicknessMM
         {
             get => _data.EdgeThicknessMM;
@@ -131,6 +141,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Стороны с ручной кромкой (маска по <see cref="EdgeSide"/>):
         /// пользователь взял их на себя, автоматическая проверка на них молчит.</summary>
+        [NotUndoable("см. EdgeBandingEnabled — SetEdgeBandingCommand")]
         public int EdgeManualMask
         {
             get => _data.EdgeManualMask;

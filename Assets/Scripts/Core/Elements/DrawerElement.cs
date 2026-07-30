@@ -37,6 +37,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Система выдвижения. Меняет раскрой видимого короба и способ
         /// попадания в спецификацию (GTV — строкой, Movento — деталями).</summary>
+        [Undoable]
         public DrawerSystem System
         {
             get => _system;
@@ -54,12 +55,14 @@ namespace KitchenDesigner.Core
             }
         }
 
+        [Undoable]
         public DrawerType Type
         {
             get => _type;
             set { _type = value; ApplyDimensions(); }
         }
 
+        [Undoable]
         public int NominalLength
         {
             get => _nominalLength;
@@ -71,6 +74,7 @@ namespace KitchenDesigner.Core
             }
         }
 
+        [Undoable]
         public DrawerColor Color
         {
             get => _color;
@@ -89,6 +93,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>LW — ширина проёма корпуса «в свету», мм. Все размеры панелей
         /// считаются от неё по формулам каталога (дно LW−75, задник LW−87).</summary>
+        [Undoable]
         public int InternalWidth
         {
             get => _internalWidth;
@@ -113,24 +118,28 @@ namespace KitchenDesigner.Core
                 ? _internalWidth - DrawerConstants.MOVENTO_WIDTH_INSET
                 : _internalWidth;
 
+        [NotUndoable("структура пары: ставится при создании/удалении второй коробки, откатывается Create/DeleteCommand")]
         public bool IsDouble
         {
             get => _isDouble;
             set => _isDouble = value;
         }
 
+        [NotUndoable("см. IsDouble — роль в паре, а не правка свойств")]
         public bool IsUpperDrawer
         {
             get => _isUpperDrawer;
             set => _isUpperDrawer = value;
         }
 
+        [NotUndoable("обратная ссылка пары, ведёт DrawerLinks")]
         public string PairedDrawerName
         {
             get => _pairedDrawerName;
             set => _pairedDrawerName = value;
         }
 
+        [NotUndoable("обратная ссылка на фасад, ведёт DrawerLinks")]
         public string AttachedFacadeName
         {
             get => _attachedFacadeName;
@@ -142,6 +151,7 @@ namespace KitchenDesigner.Core
         //   BothOpen   — оба открыты
         //   LowerOnly  — верхний закрыт, открыт только нижний («Закрыть верхний» из BothOpen)
         // Поэтому верхний ящик открыт ТОЛЬКО в BothOpen, нижний — во всех состояниях, кроме Closed.
+        [NotUndoable("показ анимации выдвижения, а не правка документа")]
         public DoubleDrawerState DoubleState
         {
             get => _doubleState;

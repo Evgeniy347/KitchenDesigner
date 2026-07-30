@@ -15,6 +15,7 @@ namespace KitchenDesigner.Core
 
 		[SerializeField] private int _midHeightMM = MidHeightMM_Default;
 
+		[Undoable]
 		public int MidHeightMM
 		{
 			get => _midHeightMM;

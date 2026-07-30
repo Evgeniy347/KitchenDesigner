@@ -77,8 +77,13 @@ namespace KitchenDesigner.Core
         private bool _hasAppliedPos;
         private Vector3 _lastHostPosition;
 
+        [NotUndoable("служебная привязка к детали, вычисляется SnapToPart")]
         public string AttachedPartName { get => _attachedPartName; set => _attachedPartName = value ?? ""; }
+
+        [NotUndoable("смещение от центра детали — производная позиции, откатывается MoveCommand")]
         public int OffsetXMM { get => _offsetXMM; set => _offsetXMM = value; }
+
+        [NotUndoable("см. OffsetXMM")]
         public int OffsetYMM { get => _offsetYMM; set => _offsetYMM = value; }
         public bool IsAttached => _lastHost != null;
 
@@ -88,12 +93,14 @@ namespace KitchenDesigner.Core
         // него проходит любой путь правки. Вырез живёт в своих полях и
         // подрезается по плите на ЧТЕНИИ (см. ниже).
 
+        [NotUndoable("проекция DimensionsMM.x — откатывается вместе с габаритом")]
         public int WidthMM
         {
             get => DimensionsMM.x;
             set => DimensionsMM = new Vector3Int(value, DimensionsMM.y, DimensionsMM.z);
         }
 
+        [NotUndoable("проекция DimensionsMM.z — откатывается вместе с габаритом")]
         public int DepthMM
         {
             get => DimensionsMM.z;
@@ -101,6 +108,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>ОБЩАЯ высота: плита 5 мм + короб выреза.</summary>
+        [NotUndoable("проекция DimensionsMM.y — откатывается вместе с габаритом")]
         public int HeightMM
         {
             get => DimensionsMM.y;
@@ -115,6 +123,10 @@ namespace KitchenDesigner.Core
         // AddComponent вызывает Awake на заготовке PartData (толщина 18 мм), и
         // вырез схлопывался до минимума ещё до того, как фабрика выставит
         // настоящий габарит, — обратно он бы уже не вырос.
+        // Не в общем снимке: геттер отдаёт значение, ПОДРЕЗАННОЕ по текущей плите,
+        // а поле хранит намерение пользователя — снимок с чтения потерял бы его.
+        // Вырез целиком ведёт SetCooktopCutoutCommand (он же зовёт SnapToPart).
+        [NotUndoable("своя команда SetCooktopCutoutCommand: геттер клампится по плите, снимок был бы лоссовым")]
         public int CutoutWidthMM
         {
             get => ClampCutout(_cutoutWidthMM, DimensionsMM.x);
@@ -125,6 +137,7 @@ namespace KitchenDesigner.Core
             }
         }
 
+        [NotUndoable("см. CutoutWidthMM — SetCooktopCutoutCommand")]
         public int CutoutDepthMM
         {
             get => ClampCutout(_cutoutDepthMM, DimensionsMM.z);

@@ -15,24 +15,28 @@ namespace KitchenDesigner.Core
         /// <summary>Технологический зазор по умолчанию, мм.</summary>
         public const int DEFAULT_GAP_MM = 1;
 
+        [Undoable]
         public int GapLeft
         {
             get => Data.GapLeft;
             set { Data.GapLeft = value; ApplyDimensions(); }
         }
 
+        [Undoable]
         public int GapRight
         {
             get => Data.GapRight;
             set { Data.GapRight = value; ApplyDimensions(); }
         }
 
+        [Undoable]
         public int GapTop
         {
             get => Data.GapTop;
             set { Data.GapTop = value; ApplyDimensions(); }
         }
 
+        [Undoable]
         public int GapBottom
         {
             get => Data.GapBottom;

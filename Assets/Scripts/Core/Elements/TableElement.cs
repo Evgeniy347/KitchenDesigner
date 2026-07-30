@@ -16,24 +16,28 @@ namespace KitchenDesigner.Core
         [SerializeField] private string _tabletopMaterialId = MaterialCatalog.DefaultId;
         [SerializeField] private string _legsMaterialId = MaterialCatalog.DefaultId;
 
+        [Undoable]
         public int LegInsetMM
         {
             get => _legInsetMM;
             set { _legInsetMM = Mathf.Max(0, value); ApplyDimensions(); }
         }
 
+        [NotUndoable("декор ставится через SetMaterialCommand (MaterialSlot.Tabletop)")]
         public string TabletopMaterialId
         {
             get => _tabletopMaterialId;
             set { _tabletopMaterialId = value ?? MaterialCatalog.DefaultId; ApplyMaterial(); }
         }
 
+        [NotUndoable("декор ставится через SetMaterialCommand (MaterialSlot.Legs)")]
         public string LegsMaterialId
         {
             get => _legsMaterialId;
             set { _legsMaterialId = value ?? MaterialCatalog.DefaultId; ApplyMaterial(); }
         }
 
+        [NotUndoable("псевдоним TabletopMaterialId — см. его причину")]
         public new string MaterialId
         {
             get => TabletopMaterialId;

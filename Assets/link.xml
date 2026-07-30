@@ -1,4 +1,11 @@
 <linker>
+  <!-- Свойства элементов читаются и пишутся ОТРАЖЕНИЕМ (UndoableProperties:
+       общий снимок для отмены). Линкер вызовов не видит, а managedStrippingLevel
+       для WebGL стоит High — без этой строки геттеры/сеттеры вырежет, и в
+       собранном плеере «Отменить» тихо перестанет возвращать свойства. -->
+  <assembly fullname="KitchenDesigner.Runtime">
+    <type fullname="KitchenDesigner.Core.*" preserve="all" />
+  </assembly>
   <assembly fullname="Unity.TextMeshPro" preserve="all" />
   <assembly fullname="UnityEngine.CoreModule">
     <type fullname="UnityEngine.Font" preserve="all" />

@@ -129,6 +129,7 @@ namespace KitchenDesigner.Core
         public Light? UpLight => _upLight;
 
         /// <summary>Цветовая температура, K (тёплый ↔ холодный).</summary>
+        [Undoable]
         public int TemperatureK
         {
             get => _temperatureK;
@@ -136,6 +137,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Мощность лампы, Вт (LED). Определяет яркость.</summary>
+        [Undoable]
         public int PowerW
         {
             get => _powerW;
@@ -143,6 +145,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Рассеивание, % — как широко свет расходится (радиус).</summary>
+        [Undoable]
         public int DiffusionPct
         {
             get => _diffusionPct;
@@ -151,6 +154,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Свет вверх, % — доля потока, уходящая на подсветку потолка
         /// (утечка сквозь глухой купол). 0 = весь свет вниз.</summary>
+        [Undoable]
         public int UpLightPct
         {
             get => _upLightPct;
@@ -159,6 +163,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Угол пучка (радиус рассеивания), ° — ширина конуса света.
         /// Влияет и на нижний прожектор, и на верхнюю подсветку.</summary>
+        [Undoable]
         public int BeamAngleDeg
         {
             get => _beamAngleDeg;
@@ -167,6 +172,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Мягкость края пучка, %: 0 — резкая граница пятна,
         /// 100 — свет плавно гаснет от центра к краю конуса.</summary>
+        [Undoable]
         public int SoftnessPct
         {
             get => _softnessPct;
@@ -174,6 +180,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Радиус при рассеивании 0 %, мм.</summary>
+        [Undoable]
         public int RangeMinMM
         {
             get => _rangeMinMM;
@@ -181,6 +188,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Радиус при рассеивании 100 %, мм.</summary>
+        [Undoable]
         public int RangeMaxMM
         {
             get => _rangeMaxMM;
@@ -188,6 +196,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Отступ источника вниз от центра плафона, мм.</summary>
+        [Undoable]
         public int DropMM
         {
             get => _dropMM;
@@ -195,6 +204,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Верхний конус, % от нижнего.</summary>
+        [Undoable]
         public int UpConePct
         {
             get => _upConePct;
@@ -202,6 +212,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Радиус верхней подсветки, % от нижнего.</summary>
+        [Undoable]
         public int UpRangePct
         {
             get => _upRangePct;
@@ -209,6 +220,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Светоотдача лампы, лм/Вт.</summary>
+        [Undoable]
         public int EfficacyLmPerW
         {
             get => _efficacyLmPerW;
@@ -217,6 +229,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Калибровка: сколько люменов приходится на единицу
         /// интенсивности Unity. Больше значение — тусклее вся сцена.</summary>
+        [Undoable]
         public int LumensPerUnit
         {
             get => _lumensPerUnit;
@@ -224,6 +237,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Свечение плафона, % — насколько ярко светится сам корпус.</summary>
+        [Undoable]
         public int GlowPct
         {
             get => _glowPct;
@@ -231,6 +245,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Сила тени от лампы, % (при включённых тенях).</summary>
+        [Undoable]
         public int ShadowStrengthPct
         {
             get => _shadowStrengthPct;
@@ -239,6 +254,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Форма потока: плафон (вниз + утечка вверх) или шар (во все
         /// стороны). Шар даёт самый мягкий и равномерный свет.</summary>
+        [Undoable]
         public LampShape Shape
         {
             get => _shape;
@@ -246,6 +262,7 @@ namespace KitchenDesigner.Core
         }
 
         /// <summary>Тени от этой лампы: нет / жёсткие / мягкие.</summary>
+        [Undoable]
         public LampShadow Shadow
         {
             get => _shadow;

@@ -37,12 +37,14 @@ namespace KitchenDesigner.Core
         private Vector3 _sashHalfExtents;
         private Vector3 _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
 
+        [Undoable]
         public DoorSashType SashType
         {
             get => _sashType;
             set { _sashType = value; ApplySashType(); }
         }
 
+        [Undoable]
         public DoorMode Mode
         {
             get => _mode;
@@ -51,6 +53,8 @@ namespace KitchenDesigner.Core
 
         public bool IsOpen => _isOpen;
         public float DoorProgress => _openT;
+
+        [NotUndoable("служебная привязка к стене, вычисляется SnapToWall")]
         public string AttachedWallName { get => _attachedWallName; set => _attachedWallName = value ?? ""; }
 
         public Vector3 ClosedPosition => transform.position;

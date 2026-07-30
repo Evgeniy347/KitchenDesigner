@@ -20,12 +20,14 @@ namespace KitchenDesigner.Core
         private Mesh? _ownedMesh;
         private Transform? _glassInsert;
 
+        [Undoable]
         public AssembledFill Fill
         {
             get => _fill;
             set { _fill = value; RebuildMesh(); }
         }
 
+        [Undoable]
         public int GrooveCount
         {
             get => _grooveCount;

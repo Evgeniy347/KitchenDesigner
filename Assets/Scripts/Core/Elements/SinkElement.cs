@@ -76,8 +76,13 @@ namespace KitchenDesigner.Core
         private Vector3 _appliedPos;
         private bool _hasAppliedPos;
 
+        [NotUndoable("служебная привязка к детали, вычисляется SnapToPart")]
         public string AttachedPartName { get => _attachedPartName; set => _attachedPartName = value ?? ""; }
+
+        [NotUndoable("смещение от центра детали — производная позиции, откатывается MoveCommand")]
         public int OffsetXMM { get => _offsetXMM; set => _offsetXMM = value; }
+
+        [NotUndoable("см. OffsetXMM")]
         public int OffsetYMM { get => _offsetYMM; set => _offsetYMM = value; }
         public bool IsAttached => _lastHost != null;
 

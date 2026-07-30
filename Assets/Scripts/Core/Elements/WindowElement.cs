@@ -44,18 +44,21 @@ namespace KitchenDesigner.Core
         // Позиция, для которой в последний раз перестраивался вырез в стене.
         private Vector3 _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
 
+        [Undoable]
         public GlassTint Tint
         {
             get => _tint;
             set { _tint = value; ApplyTint(); }
         }
 
+        [Undoable]
         public int SillProtrusionMM
         {
             get => _sillProtrusionMM;
             set { _sillProtrusionMM = Mathf.Clamp(value, 0, 200); ApplyDimensions(); }
         }
 
+        [Undoable]
         public DoorMode Mode
         {
             get => _mode;
@@ -64,6 +67,8 @@ namespace KitchenDesigner.Core
 
         public bool IsOpen => _isOpen;
         public float DoorProgress => _openT;
+
+        [NotUndoable("служебная привязка к стене, вычисляется SnapToWall")]
         public string AttachedWallName { get => _attachedWallName; set => _attachedWallName = value ?? ""; }
 
         // Корень окна при открывании не двигается (поворачивается только створка),

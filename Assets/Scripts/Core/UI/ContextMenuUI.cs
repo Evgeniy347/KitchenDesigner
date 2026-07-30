@@ -1492,10 +1492,43 @@ namespace KitchenDesigner.Core.UI
             if (_root != null) _root.SetActive(false);
         }
 
+        /// <summary>
+        /// Применить содержимое полей к элементу ОДНИМ шагом отмены.
+        ///
+        /// Правило «undo на всё» здесь держится не перечислением полей, а двумя
+        /// механизмами сразу:
+        ///   • снимок всех свойств, помеченных <see cref="UndoableAttribute"/>,
+        ///     до и после — разница уезжает в <see cref="SetPropertiesCommand"/>,
+        ///     поэтому НОВОЕ свойство откатывается само, без правок этого файла;
+        ///   • BeginCapture/EndCapture — команды, которые применение выдало по
+        ///     дороге (размер, вырез, кромка), склеиваются в одну составную,
+        ///     иначе одна правка стоила бы пользователю нескольких Ctrl+Z.
+        /// </summary>
         private void Apply()
         {
             if (_target == null) return;
             var target = _target;
+            var propsBefore = UndoableProperties.Capture(target);
+
+            CommandStack.BeginCapture();
+            try
+            {
+                ApplyFields(target);
+                // Снимок «после» — до перерисовки полей: она читает уже применённое.
+                var propsAfter = UndoableProperties.Capture(target);
+                var propsCommand = SetPropertiesCommand.TryCreate(target, propsBefore, propsAfter);
+                if (propsCommand != null) CommandStack.Execute(propsCommand);
+            }
+            finally
+            {
+                CommandStack.EndCapture($"Свойства {target.PartName}", commit: true);
+            }
+
+            RefreshAfterApply(target);
+        }
+
+        private void ApplyFields(KitchenElement target)
+        {
             _errorFields.Clear(); // ошибки прошлого применения сняты новым вводом
             // Правки размеров/позиции применяем к закрытой (логической) позе.
             if (target is FacadeElement fac) { fac.ForceClose(); UpdateDoorButton(fac); }
@@ -1710,6 +1743,18 @@ namespace KitchenDesigner.Core.UI
                     oldPos, target.transform.position,
                     oldRot, target.transform.rotation));
             }
+        }
+
+        /// <summary>Показать в полях то, что РЕАЛЬНО применилось (значения могли
+        /// склампиться). Идёт после EndCapture: тот откатывает и заново
+        /// проигрывает команды, и до него состояние элемента промежуточное.</summary>
+        private void RefreshAfterApply(KitchenElement target)
+        {
+            var pillar = target as PillarElement;
+            var radial = target as RadialShelfElement;
+            var table = target as TableElement;
+            var radiusTable = target as RadiusTableElement;
+            var facade = target as FacadeElement;
 
             var newDims = target.DimensionsMM;
             _w!.text = newDims.x.ToString();
@@ -1721,13 +1766,13 @@ namespace KitchenDesigner.Core.UI
             if (table != null && _legInset != null)
                 _legInset.text = table.LegInsetMM.ToString();
 
-			if (radiusTable != null && _legInset != null)
-				_legInset.text = radiusTable.LegInsetMM.ToString();
+            if (radiusTable != null && _legInset != null)
+                _legInset.text = radiusTable.LegInsetMM.ToString();
 
-			if (pillar != null && _midHeight != null)
-				_midHeight.text = pillar.MidHeightMM.ToString();
+            if (pillar != null && _midHeight != null)
+                _midHeight.text = pillar.MidHeightMM.ToString();
 
-			if (facade != null)
+            if (facade != null)
             {
                 _gapLeft!.text = facade.GapLeft.ToString();
                 _gapRight!.text = facade.GapRight.ToString();

@@ -4,24 +4,28 @@ namespace KitchenDesigner.Core
 {
     public class FacadeElement : KitchenElement
     {
+        [Undoable]
         public int GapLeft
         {
             get => Data.GapLeft;
             set { Data.GapLeft = value; ApplyDimensions(); }
         }
 
+        [Undoable]
         public int GapRight
         {
             get => Data.GapRight;
             set { Data.GapRight = value; ApplyDimensions(); }
         }
 
+        [Undoable]
         public int GapTop
         {
             get => Data.GapTop;
             set { Data.GapTop = value; ApplyDimensions(); }
         }
 
+        [Undoable]
         public int GapBottom
         {
             get => Data.GapBottom;
@@ -92,6 +96,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Режим открывания (4 ребра или ящик). Смена на лету
         /// перерисовывает уже открытый фасад.</summary>
+        [Undoable]
         public DoorMode Mode
         {
             get => _mode;

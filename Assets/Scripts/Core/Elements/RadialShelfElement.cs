@@ -16,6 +16,7 @@ namespace KitchenDesigner.Core
             DimensionsMM.y * AppConstants.MM_TO_UNITS,
             DimensionsMM.z * AppConstants.MM_TO_UNITS);
 
+        [Undoable]
         public int CornerRadius
         {
             get => _cornerRadius;
