@@ -210,8 +210,7 @@ namespace KitchenDesigner.Core.UI
 
             if (SpecificationExport.SaveToFile(result, path))
             {
-                if (ToastNotification.Instance != null)
-                    ToastNotification.Instance.Show("CSV сохранён", 2f);
+                ToastNotification.ShowIfAvailable("CSV сохранён", 2f);
             }
             else
             {

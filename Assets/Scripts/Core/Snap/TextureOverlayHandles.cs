@@ -76,7 +76,7 @@ namespace KitchenDesigner.Core
             // тянуть область не за что. Сторону надо сперва выбрать конкретную.
             if (element.TextureOverlays[index].side == OverlaySide.All)
             {
-                UI.ToastNotification.Instance?.Show("Область правится только у одной стороны");
+                UI.ToastNotification.ShowIfAvailable("Область правится только у одной стороны");
                 return;
             }
 

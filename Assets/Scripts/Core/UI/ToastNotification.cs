@@ -21,6 +21,28 @@ namespace KitchenDesigner.Core.UI
             Instance = this;
         }
 
+        private void OnDestroy()
+        {
+            // Без этого статик навсегда держит ссылку на уничтоженный объект —
+            // после смены сцены или загрузки другого проекта первый же тост
+            // падает с MissingReferenceException. ReferenceEquals, а не ==:
+            // новый экземпляр не должен обнулять себя, когда умирает старый.
+            if (ReferenceEquals(Instance, this)) Instance = null;
+        }
+
+        /// <summary>Единственный безопасный способ показать тост из чужого кода.
+        /// Писать `Instance?.Show(...)` нельзя: Unity перегружает `==` так, что
+        /// уничтоженный объект равен null, но `?.` эту перегрузку обходит и
+        /// проверяет настоящую C#-ссылку — она не нулевая, и вызов летит на
+        /// мёртвый объект.</summary>
+        public static void ShowIfAvailable(string message, float duration = 2f,
+            string? actionLabel = null, System.Action? action = null)
+        {
+            var toast = Instance;
+            if (toast == null) return; // перегруженный Unity `==` ловит и уничтоженный объект
+            toast.Show(message, duration, actionLabel, action);
+        }
+
         public void Build(Transform canvasTransform)
         {
             var panel = UIFactory.CreatePanel("ToastPanel", canvasTransform,

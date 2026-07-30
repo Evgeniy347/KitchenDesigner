@@ -1972,12 +1972,12 @@ namespace KitchenDesigner.Core.UI
             var after = new List<GrooveSpec>(_target.Grooves);
             if (after.Contains(spec))
             {
-                ToastNotification.Instance?.Show("Такой паз уже есть");
+                ToastNotification.ShowIfAvailable("Такой паз уже есть");
                 return;
             }
             if (after.Count >= AppConstants.GROOVE_MAX_PER_PART)
             {
-                ToastNotification.Instance?.Show($"Не больше {AppConstants.GROOVE_MAX_PER_PART} пазов на деталь");
+                ToastNotification.ShowIfAvailable($"Не больше {AppConstants.GROOVE_MAX_PER_PART} пазов на деталь");
                 return;
             }
             after.Add(spec);
@@ -2009,7 +2009,7 @@ namespace KitchenDesigner.Core.UI
             for (int i = 0; i < after.Count; i++)
                 if (i != index && after[i].Equals(spec))
                 {
-                    ToastNotification.Instance?.Show("Такой паз уже есть");
+                    ToastNotification.ShowIfAvailable("Такой паз уже есть");
                     RefreshGrooveUI(); // вернуть дропдауны к фактическому набору
                     return;
                 }
@@ -2219,7 +2219,7 @@ namespace KitchenDesigner.Core.UI
             var after = new List<TextureOverlaySpec>(_target.TextureOverlays);
             if (after.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT)
             {
-                ToastNotification.Instance?.Show(
+                ToastNotification.ShowIfAvailable(
                     $"Не больше {TextureOverlayGeometry.MAX_PER_ELEMENT} текстур на элемент");
                 return;
             }
@@ -3132,7 +3132,7 @@ namespace KitchenDesigner.Core.UI
             // Подтверждения нет намеренно: удаление обратимо на месте — тост
             // с «Отменить» (правило 3 UI-GUIDELINES).
             string expected = $"Delete {deletedName}";
-            ToastNotification.Instance?.Show($"Удалено: {deletedName}", 5f, "Отменить", () =>
+            ToastNotification.ShowIfAvailable($"Удалено: {deletedName}", 5f, "Отменить", () =>
             {
                 // Отменяем только если удаление всё ещё наверху стека — иначе
                 // Ctrl+Z-семантика тоста откатила бы чужое действие.

@@ -790,8 +790,7 @@ namespace KitchenDesigner.Core.UI
 
         private static void Toast(string msg)
         {
-            if (ToastNotification.Instance != null)
-                ToastNotification.Instance.Show(msg);
+            ToastNotification.ShowIfAvailable(msg);
         }
 
         public void ToggleHelp()
