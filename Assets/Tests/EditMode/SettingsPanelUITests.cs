@@ -386,6 +386,53 @@ public class SettingsPanelUITests
         AssertToggleValue(view, "Скрыть источники света", s.NormalView.hideLightSources);
     }
 
+    /// <summary>Панель строится ОДИН раз при старте, а проект грузится позже и
+    /// приносит свои настройки. Открытие обязано перечитать их: без этого
+    /// выключенная в проекте привязка показывалась включённым тумблером, и
+    /// «прилипание не работает» выглядело как поломка снэпа, хотя
+    /// SnapSystem.TrySnap честно отключён настройкой.</summary>
+    [Test]
+    public void Open_RereadsSettings_ChangedAfterBuild()
+    {
+        var s = KitchenSettings.Instance;
+        bool prevSnap = s.SnapEnabled;
+        bool prevGrid = s.GridEnabled;
+        float prevThreshold = s.SnapThreshold;
+        float prevWasd = s.WasdSpeed;
+
+        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var control = _canvas!.transform.Find("SettingsPanel/Tab_Control");
+        Assert.IsTrue(ToggleOf(project, "Привязка к деталям").isOn, "на старте привязка включена");
+
+        try
+        {
+            // Так выглядит загрузка проекта: KitchenSettings.FromData пишет
+            // прямо в настройки, мимо UI.
+            s.SnapEnabled = false;
+            s.GridEnabled = false;
+            s.SnapThreshold = 33f;
+            s.WasdSpeed = 2.5f;
+
+            _ui!.SetVisible(true);
+
+            Assert.IsFalse(ToggleOf(project, "Привязка к деталям").isOn,
+                "тумблер показывает состояние загруженного проекта");
+            Assert.IsFalse(ToggleOf(project, "Сетка").isOn);
+            AssertFieldValue(project, "Порог привязки", "33");
+            Assert.AreEqual(2.5f, SliderOf(control, "Скорость WASD").value, 0.001f);
+        }
+        finally
+        {
+            // Настройки глобальные: упавший ассерт не должен утащить за собой
+            // соседние тесты.
+            _ui!.SetVisible(false);
+            s.SnapEnabled = prevSnap;
+            s.GridEnabled = prevGrid;
+            s.SnapThreshold = prevThreshold;
+            s.WasdSpeed = prevWasd;
+        }
+    }
+
     // ── Вложенность подопций ────────────────────────────────
 
     [Test]

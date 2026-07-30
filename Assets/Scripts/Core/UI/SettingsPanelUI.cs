@@ -11,6 +11,15 @@ namespace KitchenDesigner.Core.UI
         private GameObject? _root;
         private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
 
+        /// <summary>Панель строится ОДИН раз при старте, а настройки приезжают
+        /// позже — вместе с проектом (<see cref="KitchenSettings.FromData"/>).
+        /// Без пересчёта тумблеры показывали значения на момент старта: проект
+        /// с выключенной привязкой открывался с виду включённым тумблером
+        /// «Привязка к деталям», и «прилипание не работает» выглядело как
+        /// поломка снэпа. Каждая строка кладёт сюда «как перечитать себя»,
+        /// открытие панели прогоняет список.</summary>
+        private readonly List<Action> _syncFromSettings = new();
+
         private readonly List<GameObject> _tabPages = new();
         private readonly List<Button> _tabButtons = new();
         private int _activeTab;
@@ -133,7 +142,7 @@ namespace KitchenDesigner.Core.UI
             float y = ContentTopY;
 
             AddToggleRow(t, ref y, "Сетка", s.GridEnabled,
-                v => { s.GridEnabled = v; UpdateDependentStates(); });
+                v => { s.GridEnabled = v; UpdateDependentStates(); }, read: () => s.GridEnabled);
 
             // Зависимое поле: с отступом и неактивно при выключенном родителе.
             _gridStepField = AddInputRow(t, ref y, "Шаг сетки", s.GridStep.ToString(),
@@ -142,11 +151,11 @@ namespace KitchenDesigner.Core.UI
                 {
                     var val = ExpressionParser.EvaluateInt(f.text) ?? (int.TryParse(f.text, out int parsed) ? parsed : s.GridStep);
                     s.GridStep = val; f.text = s.GridStep.ToString();
-                }, s.GridStep.ToString(), unit: "мм", indent: true);
+                }, s.GridStep.ToString(), unit: "мм", indent: true, read: () => s.GridStep.ToString());
 
             y -= 6;
             AddToggleRow(t, ref y, "Привязка к деталям", s.SnapEnabled,
-                v => { s.SnapEnabled = v; UpdateDependentStates(); });
+                v => { s.SnapEnabled = v; UpdateDependentStates(); }, read: () => s.SnapEnabled);
 
             _snapThresholdField = AddInputRow(t, ref y, "Порог привязки", s.SnapThreshold.ToString("F0"),
                 TMP_InputField.ContentType.DecimalNumber,
@@ -154,14 +163,15 @@ namespace KitchenDesigner.Core.UI
                 {
                     var val = ExpressionParser.EvaluateFloat(f.text) ?? (float.TryParse(f.text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float parsed) ? parsed : s.SnapThreshold);
                     s.SnapThreshold = val; f.text = s.SnapThreshold.ToString("F0");
-                }, s.SnapThreshold.ToString("F0"), unit: "мм", indent: true);
+                }, s.SnapThreshold.ToString("F0"), unit: "мм", indent: true,
+                read: () => s.SnapThreshold.ToString("F0"));
 
             y -= 6;
             AddToggleRow(t, ref y, "Блокировать недопустимые изменения", s.BlockOnViolation,
-                v => { s.BlockOnViolation = v; });
+                v => { s.BlockOnViolation = v; }, read: () => s.BlockOnViolation);
 
             AddToggleRow(t, ref y, "Автосохранение", s.AutoSave,
-                v => { s.AutoSave = v; UpdateDependentStates(); });
+                v => { s.AutoSave = v; UpdateDependentStates(); }, read: () => s.AutoSave);
 
             _autoSaveIntervalField = AddInputRow(t, ref y, "Интервал автосохранения", s.AutoSaveInterval.ToString(),
                 TMP_InputField.ContentType.IntegerNumber,
@@ -169,11 +179,12 @@ namespace KitchenDesigner.Core.UI
                 {
                     var val = ExpressionParser.EvaluateInt(f.text) ?? (int.TryParse(f.text, out int parsed) ? parsed : s.AutoSaveInterval);
                     s.AutoSaveInterval = val; f.text = s.AutoSaveInterval.ToString();
-                }, s.AutoSaveInterval.ToString(), unit: "с", indent: true);
+                }, s.AutoSaveInterval.ToString(), unit: "с", indent: true,
+                read: () => s.AutoSaveInterval.ToString());
 
             y -= GapPx;
             AddToggleRow(t, ref y, "Пространственная сетка", s.SpatialGrid,
-                v => { s.SpatialGrid = v; });
+                v => { s.SpatialGrid = v; }, read: () => s.SpatialGrid);
 
             // Ниже этого процента наезд соседа на торец не считается ошибкой
             // EDG-01 (планка, царга — нормальная конструкция).
@@ -186,13 +197,14 @@ namespace KitchenDesigner.Core.UI
                         ?? (int.TryParse(f.text, out int parsed) ? parsed : s.EdgePartialThresholdPct);
                     s.EdgePartialThresholdPct = val;
                     f.text = s.EdgePartialThresholdPct.ToString();
-                }, s.EdgePartialThresholdPct.ToString(), unit: "%");
+                }, s.EdgePartialThresholdPct.ToString(), unit: "%",
+                read: () => s.EdgePartialThresholdPct.ToString());
 
             // «Объекты» и их контур переехали на вкладку «Вид»: они часть пресета
             // режима, а не правил работы с деталями.
             y -= GapPx;
             AddToggleRow(t, ref y, "Свободное панорамирование", s.CameraPanFree,
-                v => { s.CameraPanFree = v; });
+                v => { s.CameraPanFree = v; }, read: () => s.CameraPanFree);
         }
 
         // ── Tab: Вид ────────────────────────────────────────
@@ -303,11 +315,11 @@ namespace KitchenDesigner.Core.UI
             float y = ContentTopY;
 
             AddSliderRow(t, ref y, "Чувствительность мыши", s.MouseSensitivity,
-                v => s.MouseSensitivity = v);
+                v => s.MouseSensitivity = v, read: () => s.MouseSensitivity);
             AddSliderRow(t, ref y, "Скорость WASD", s.WasdSpeed,
-                v => s.WasdSpeed = v);
+                v => s.WasdSpeed = v, read: () => s.WasdSpeed);
             AddSliderRow(t, ref y, "Скорость ←→↑↓", s.ArrowSpeed,
-                v => s.ArrowSpeed = v);
+                v => s.ArrowSpeed = v, read: () => s.ArrowSpeed);
         }
 
         // ── Tab: Фото режим ─────────────────────────────────
@@ -349,21 +361,28 @@ namespace KitchenDesigner.Core.UI
             // Тумблеры, привязанные к пресету: ручное изменение любого переводит
             // пресет в «Свои настройки» (или в совпавший именованный).
             y -= 6;
-            AddLinkedToggle(t, ref y, "Тени", s.PhotoShadows, v => s.PhotoShadows = v);
-            AddLinkedToggle(t, ref y, "Мягкие тени", s.PhotoSoftShadows, v => s.PhotoSoftShadows = v);
-            AddLinkedToggle(t, ref y, "Сглаживание", s.PhotoAntiAliasing, v => s.PhotoAntiAliasing = v);
-            AddLinkedToggle(t, ref y, "Суперсэмплинг", s.PhotoSupersampling, v => s.PhotoSupersampling = v);
-            AddLinkedToggle(t, ref y, "Ambient occlusion", s.PhotoAmbientOcclusion, v => s.PhotoAmbientOcclusion = v);
-            AddLinkedToggle(t, ref y, "Свечение (bloom)", s.PhotoBloom, v => s.PhotoBloom = v);
-            AddLinkedToggle(t, ref y, "Виньетка", s.PhotoVignette, v => s.PhotoVignette = v);
+            AddLinkedToggle(t, ref y, "Тени", s.PhotoShadows, v => s.PhotoShadows = v,
+                () => s.PhotoShadows);
+            AddLinkedToggle(t, ref y, "Мягкие тени", s.PhotoSoftShadows, v => s.PhotoSoftShadows = v,
+                () => s.PhotoSoftShadows);
+            AddLinkedToggle(t, ref y, "Сглаживание", s.PhotoAntiAliasing, v => s.PhotoAntiAliasing = v,
+                () => s.PhotoAntiAliasing);
+            AddLinkedToggle(t, ref y, "Суперсэмплинг", s.PhotoSupersampling, v => s.PhotoSupersampling = v,
+                () => s.PhotoSupersampling);
+            AddLinkedToggle(t, ref y, "Ambient occlusion", s.PhotoAmbientOcclusion, v => s.PhotoAmbientOcclusion = v,
+                () => s.PhotoAmbientOcclusion);
+            AddLinkedToggle(t, ref y, "Свечение (bloom)", s.PhotoBloom, v => s.PhotoBloom = v,
+                () => s.PhotoBloom);
+            AddLinkedToggle(t, ref y, "Виньетка", s.PhotoVignette, v => s.PhotoVignette = v,
+                () => s.PhotoVignette);
 
             // Сцена/эксперимент — к пресету не привязаны.
             y -= 6;
             AddToggleRow(t, ref y, "Потолок по стенам", s.PhotoCeiling,
-                v => { s.PhotoCeiling = v; PhotoMode.RefreshIfActive(); });
+                v => { s.PhotoCeiling = v; PhotoMode.RefreshIfActive(); }, read: () => s.PhotoCeiling);
 
             _photoSSGIToggle = AddToggleRow(t, ref y, "Отражённый свет (SSGI)", s.PhotoSSGI,
-                v => { s.PhotoSSGI = v; PhotoMode.RefreshIfActive(); });
+                v => { s.PhotoSSGI = v; PhotoMode.RefreshIfActive(); }, read: () => s.PhotoSSGI);
 
 #if UNITY_WEBGL
             SetToggleEnabled(_photoSSGIToggle, "Отражённый свет (SSGI)", false);
@@ -391,9 +410,11 @@ namespace KitchenDesigner.Core.UI
 
         private readonly Dictionary<string, Toggle> _photoLinkedToggles = new();
 
-        private void AddLinkedToggle(Transform t, ref float y, string label, bool value, Action<bool> setter)
+        private void AddLinkedToggle(Transform t, ref float y, string label, bool value, Action<bool> setter,
+            Func<bool>? read = null)
         {
-            var toggle = AddToggleRow(t, ref y, label, value, v => { setter(v); OnLinkedToggleChanged(); });
+            var toggle = AddToggleRow(t, ref y, label, value, v => { setter(v); OnLinkedToggleChanged(); },
+                read: read);
             _photoLinkedToggles[label] = toggle;
         }
 
@@ -479,47 +500,57 @@ namespace KitchenDesigner.Core.UI
 
             AddHeaderRow(t, ref y, "Заполняющий свет");
             AddIntSliderRow(t, ref y, "Окружающий свет", 0, KitchenSettings.PHOTO_AMBIENT_MAX_PCT,
-                s.PhotoAmbientPct, Pct, v => { s.PhotoAmbientPct = v; PhotoMode.RefreshIfActive(); });
+                s.PhotoAmbientPct, Pct, v => { s.PhotoAmbientPct = v; PhotoMode.RefreshIfActive(); },
+                () => s.PhotoAmbientPct);
             AddIntSliderRow(t, ref y, "Отскок от пола", 0, KitchenSettings.PHOTO_FLOOR_BOUNCE_MAX_PCT,
-                s.PhotoFloorBouncePct, Pct, v => { s.PhotoFloorBouncePct = v; PhotoMode.RefreshIfActive(); });
+                s.PhotoFloorBouncePct, Pct, v => { s.PhotoFloorBouncePct = v; PhotoMode.RefreshIfActive(); },
+                () => s.PhotoFloorBouncePct);
 
             y -= 6;
             AddHeaderRow(t, ref y, "Экспозиция и тон");
             AddIntSliderRow(t, ref y, "Экспозиция",
                 KitchenSettings.PHOTO_EXPOSURE_MIN_PCT, KitchenSettings.PHOTO_EXPOSURE_MAX_PCT,
-                s.PhotoExposurePct, Ev, v => { s.PhotoExposurePct = v; PhotoMode.RefreshIfActive(); });
+                s.PhotoExposurePct, Ev, v => { s.PhotoExposurePct = v; PhotoMode.RefreshIfActive(); },
+                () => s.PhotoExposurePct);
             AddIntSliderRow(t, ref y, "Контраст",
                 KitchenSettings.PHOTO_COLOR_MIN_PCT, KitchenSettings.PHOTO_COLOR_MAX_PCT,
-                s.PhotoContrastPct, Pct, v => { s.PhotoContrastPct = v; PhotoMode.RefreshIfActive(); });
+                s.PhotoContrastPct, Pct, v => { s.PhotoContrastPct = v; PhotoMode.RefreshIfActive(); },
+                () => s.PhotoContrastPct);
             AddIntSliderRow(t, ref y, "Насыщенность",
                 KitchenSettings.PHOTO_COLOR_MIN_PCT, KitchenSettings.PHOTO_COLOR_MAX_PCT,
-                s.PhotoSaturationPct, Pct, v => { s.PhotoSaturationPct = v; PhotoMode.RefreshIfActive(); });
+                s.PhotoSaturationPct, Pct, v => { s.PhotoSaturationPct = v; PhotoMode.RefreshIfActive(); },
+                () => s.PhotoSaturationPct);
 
             y -= 6;
             AddHeaderRow(t, ref y, "Эффекты");
             AddIntSliderRow(t, ref y, "Сила свечения", 0, KitchenSettings.PHOTO_BLOOM_MAX_PCT,
-                s.PhotoBloomPct, Pct, v => { s.PhotoBloomPct = v; PhotoMode.RefreshIfActive(); });
+                s.PhotoBloomPct, Pct, v => { s.PhotoBloomPct = v; PhotoMode.RefreshIfActive(); },
+                () => s.PhotoBloomPct);
             AddIntSliderRow(t, ref y, "Порог свечения", 0, KitchenSettings.PHOTO_BLOOM_THRESHOLD_MAX_PCT,
-                s.PhotoBloomThresholdPct, Pct, v => { s.PhotoBloomThresholdPct = v; PhotoMode.RefreshIfActive(); });
+                s.PhotoBloomThresholdPct, Pct, v => { s.PhotoBloomThresholdPct = v; PhotoMode.RefreshIfActive(); },
+                () => s.PhotoBloomThresholdPct);
             AddIntSliderRow(t, ref y, "Сила виньетки", 0, 100,
-                s.PhotoVignettePct, Pct, v => { s.PhotoVignettePct = v; PhotoMode.RefreshIfActive(); });
+                s.PhotoVignettePct, Pct, v => { s.PhotoVignettePct = v; PhotoMode.RefreshIfActive(); },
+                () => s.PhotoVignettePct);
 
             y -= 6;
             // Подпись отличается от одноимённого тумблера на вкладке «Фото
             // режим»: имена объектов сцены обязаны быть уникальными.
             AddHeaderRow(t, ref y, "Тени сцены");
             AddIntSliderRow(t, ref y, "Сила теней солнца", 0, 100,
-                s.PhotoSunShadowStrengthPct, Pct, v => { s.PhotoSunShadowStrengthPct = v; PhotoMode.RefreshIfActive(); });
+                s.PhotoSunShadowStrengthPct, Pct, v => { s.PhotoSunShadowStrengthPct = v; PhotoMode.RefreshIfActive(); },
+                () => s.PhotoSunShadowStrengthPct);
             AddIntSliderRow(t, ref y, "Дальность теней",
                 KitchenSettings.PHOTO_SHADOW_DISTANCE_MIN_M, KitchenSettings.PHOTO_SHADOW_DISTANCE_MAX_M,
-                s.PhotoShadowDistanceM, Meters, v => { s.PhotoShadowDistanceM = v; PhotoMode.RefreshIfActive(); });
+                s.PhotoShadowDistanceM, Meters, v => { s.PhotoShadowDistanceM = v; PhotoMode.RefreshIfActive(); },
+                () => s.PhotoShadowDistanceM);
             AddToggleRow(t, ref y, "Тени от ламп", s.PhotoLampShadows,
                 v =>
                 {
                     s.PhotoLampShadows = v;
                     LightSourceElement.RefreshAll();   // режим тени у каждой лампы свой
                     PhotoMode.RefreshIfActive();
-                });
+                }, read: () => s.PhotoLampShadows);
         }
 
         private static string Pct(int v) => v + " %";
@@ -531,7 +562,8 @@ namespace KitchenDesigner.Core.UI
         /// измерения справа. В отличие от <see cref="AddSliderRow"/> диапазон
         /// задаётся вызывающим — множители скорости тут ни при чём.</summary>
         private Slider AddIntSliderRow(Transform parent, ref float y, string label,
-            int min, int max, int value, Func<int, string> format, Action<int> onChanged)
+            int min, int max, int value, Func<int, string> format, Action<int> onChanged,
+            Func<int>? read = null)
         {
             var rowRect = UIFactory.CreateRect("RowSld_" + label, parent);
             rowRect.sizeDelta = new Vector2(ContentW, RowH);
@@ -555,6 +587,14 @@ namespace KitchenDesigner.Core.UI
                     if (valueLabel != null) valueLabel.text = format(iv);
                 });
             slider.wholeNumbers = true;
+            if (read != null)
+                _syncFromSettings.Add(() =>
+                {
+                    if (slider == null) return;
+                    int v = read();
+                    slider.SetValueWithoutNotify(v);
+                    if (valueLabel != null) valueLabel.text = format(v);
+                });
 
             y -= RowStep;
             return slider;
@@ -582,7 +622,7 @@ namespace KitchenDesigner.Core.UI
         /// повторяется у разных родителей («Контур» у стен и у объектов):
         /// имена объектов сцены обязаны оставаться уникальными.</summary>
         private Toggle AddToggleRow(Transform parent, ref float y, string label, bool value,
-            Action<bool> onChanged, string? id = null, int indentLevel = 0)
+            Action<bool> onChanged, string? id = null, int indentLevel = 0, Func<bool>? read = null)
         {
             string key = id ?? label;
             var rowRect = UIFactory.CreateRect("RowTgl_" + key, parent);
@@ -595,6 +635,11 @@ namespace KitchenDesigner.Core.UI
             _rowLabels[key] = lbl;
 
             var toggle = CreateRightToggle("Tgl_" + key, rowRect, value, onChanged);
+            if (read != null)
+                _syncFromSettings.Add(() =>
+                {
+                    if (toggle != null) toggle.SetIsOnWithoutNotify(read());
+                });
 
             y -= RowStep;
             return toggle;
@@ -616,7 +661,7 @@ namespace KitchenDesigner.Core.UI
         /// <summary>Строка-ползунок: подпись, сам ползунок и текущее значение
         /// множителя справа («1.0×»), чтобы цифра была видна без перетаскивания.</summary>
         private Slider AddSliderRow(Transform parent, ref float y, string label,
-            float value, Action<float> onChanged)
+            float value, Action<float> onChanged, Func<float>? read = null)
         {
             var rowRect = UIFactory.CreateRect("RowSld_" + label, parent);
             rowRect.sizeDelta = new Vector2(ContentW, RowH);
@@ -634,6 +679,14 @@ namespace KitchenDesigner.Core.UI
                 v =>
                 {
                     onChanged(v);
+                    if (valueLabel != null) valueLabel.text = FormatMultiplier(v);
+                });
+            if (read != null)
+                _syncFromSettings.Add(() =>
+                {
+                    if (slider == null) return;
+                    float v = read();
+                    slider.SetValueWithoutNotify(v);
                     if (valueLabel != null) valueLabel.text = FormatMultiplier(v);
                 });
 
@@ -667,7 +720,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_InputField AddInputRow(Transform parent, ref float y, string label,
             string initial, TMP_InputField.ContentType contentType,
             Action<TMP_InputField> onEndEdit, string cleanValue,
-            string? unit = null, bool indent = false)
+            string? unit = null, bool indent = false, Func<string>? read = null)
         {
             var rowRect = UIFactory.CreateRect("RowFld_" + label, parent);
             rowRect.sizeDelta = new Vector2(ContentW, RowH);
@@ -693,6 +746,17 @@ namespace KitchenDesigner.Core.UI
                 onEndEdit?.Invoke(field);
                 UpdateFieldHighlight(field);
             });
+            if (read != null)
+                _syncFromSettings.Add(() =>
+                {
+                    if (field == null) return;
+                    string text = read();
+                    field.SetTextWithoutNotify(text);
+                    // Значение приехало из настроек, а не набрано руками —
+                    // подсветка «изменено» должна погаснуть вместе с ним.
+                    _cleanValues[field] = text;
+                    UpdateFieldHighlight(field);
+                });
 
             y -= RowStep;
             return field;
@@ -715,6 +779,15 @@ namespace KitchenDesigner.Core.UI
         private readonly List<Button> _viewPresetButtons = new();
         private readonly Dictionary<ViewField, Toggle> _viewToggles = new();
         private readonly Dictionary<ViewField, string> _viewToggleKeys = new();
+
+        /// <summary>Перечитывает КАЖДУЮ строку из текущих настроек. Публично —
+        /// тесты открывают панель без сцены и проверяют, что загруженный проект
+        /// виден в тумблерах.</summary>
+        internal void SyncFromSettings()
+        {
+            foreach (var sync in _syncFromSettings) sync();
+            UpdatePresetLabel();
+        }
 
         private void UpdateDependentStates()
         {
@@ -807,6 +880,7 @@ namespace KitchenDesigner.Core.UI
             if (_root != null) _root.SetActive(visible);
             if (visible)
             {
+                SyncFromSettings();
                 SyncPhotoActiveToggle();
                 UpdateDependentStates();
             }
