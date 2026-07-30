@@ -2,12 +2,12 @@
 
 **Дата:** 13.08.2026
 **Unity:** 6000.4.3f1
-**Статус:** этапы 1–4, 6 и 7 выполнены, 5 частично (см. §6.1–6.3)
+**Статус:** все этапы выполнены (0 снят как потерявший смысл — см. §6.4)
 
 | Метрика | Было | Стало |
 |---|---|---|
-| Тесты ядра под `dotnet` | — | **140 за 155 мс** |
-| Mutation score ядра | — | **58.4%** (порог 53 в `tools/mutation-test.ps1`) |
+| Тесты ядра под `dotnet` | — | **187 за 143 мс** |
+| Mutation score ядра | — | **71.5%** (порог 66 в `tools/mutation-test.ps1`) |
 | `SnapMutationTests` | 160.9 с | **124.6 с** |
 | Инвариант снэпа | — | совпал во всех прогонах, кроме одного пойманного бага |
 
@@ -244,7 +244,7 @@ public readonly struct ElementGeometry
 | 2* | Остаток стадии 2, съехавший на этап 3: `GrooveMath` (расщепление `GrooveMesh`), `GappedBox`, `EdgeBanding`, `FaceContact`. Причина — они тянут `PartData`, а тот через `MaterialCatalog` тянет загрузку текстур; развязывается это тем же снимком, что и этап 3 | — | — |
 | 3 | ✅ **Сделано.** `ElementGeometry` + `BoxGaps` + `ToGeometry()`; `ResizeSnap`, `ResizeMath`, `GappedBox` → ядро на снимках. Адаптеры не понадобились: вызовов оказалось 8, переписаны напрямую | 8–12 | Ресайз-математика не видит сцену; инвариант цел. Mutation score временно упал до 21%: тесты перевезённого кода ещё в Unity-части — это работа этапа 5 |
 | 4 | ✅ **Сделано.** Запись в `transform` убрана (`GetFacesAt`/`GetVerticesAt`/`ValidationPositionAt` во всех шести классах со своей геометрией); `Collect`, `TryPickCandidate`, `FacesOverlap`, `GetFaceRect`, `BestEdgeDelta` переехали в `SnapCore`. `SnapSystem` остался адаптером сцены (настройки, снимки, `Diagnose`, логи) | 16–24 | Ядро снэпа собирается и тестируется под `dotnet`. Тест: **160.9 → 124.6s**; `TrySnap` 79.6→51.8s, `Diagnose` 82→26s, `ResizeMath` 22.6→3.7s |
-| 5 | 🔶 **Частично.** Перенесены `ResizeSnapTests`, `ResizeMathTests`, `SnapPostEdgeDetentTests`, `SnapKnownLimitationTests`; заведена база `SnapCoreTestBase` с поддержкой поворотов; дописаны `GappedBoxTests` и `ElementGeometryTests`. Осталось: ветки пазов в `ResizeSnap`/`SnapCore` (нужны снимки с дном и стенками паза) и файлы, завязанные на `ConstraintValidator`/`Diagnose` | 8–10 | 101 тест ядра за 91 мс |
+| 5 | ✅ **Сделано.** Сначала `ResizeSnapTests`, `ResizeMathTests`, `SnapPostEdgeDetentTests`, `SnapKnownLimitationTests` + база `SnapCoreTestBase`; затем ветки пазов (`GroovedGeometry`) и переносы `SnapCoreEdgeCase/LineContact/ExistingContact` — см. §6.4 | 8–10 | 187 тестов ядра за 143 мс; `SnapCore` 33.7 → 64.1%, `ResizeSnap` 35.1 → 69.1%, `ResizeMath` 65.8 → 94.7% |
 | 6 | ✅ **Сделано.** `tools/mutation-test.ps1`: тесты ядра + Stryker с порогом (`--break-at`), проверен в обе стороны — при 45 проходит, при 95 роняет прогон | 4–6 | Порог как gate; baseline **48.9%** |
 | 7 | ✅ **Сделано.** Инвариант валидации (10 чисел, §6.2), `ElementKind` + `ValidationElement`, ядро `ValidationCore`; `ConstraintValidator` стал адаптером сцены | 16–24 | Валидация исполняется под `dotnet` и мутируется. Тестов ядра **101 → 140** (155 мс); mutation score **48.9 → 58.4%**, по самому `ValidationCore` — **71%** (465 мутантов, 12 без покрытия) |
 
@@ -335,26 +335,53 @@ scratch-буферы и словарь broad-phase сетки; если их ч�
 
 **Этапы 1–6: 48–68 ч.**
 
-### 6.4. Что осталось: этап 5
+### 6.4. Этап 5: перенос тестов в ядро
 
-Единственный незакрытый этап. Правила снэпа УЖЕ в ядре (этап 4), а тесты на них
-— всё ещё в Unity: ~150 тестов в 15 файлах (`SnapEdgeCaseTests`,
-`OpeningCollisionTests`, `GroovePanelBoxTests`, `SnapDiagnoseTests`,
-`GrooveSnapTests`, `SnapSystemTests`…). Ровно это и видно в мутационном отчёте:
+Правила снэпа переехали в ядро ещё на этапе 4, а тесты на них оставались в
+Unity — Stryker их не видел, и `SnapCore` показывал 33.7% при формально
+покрытом коде. Перенесено на снимки:
 
-| Файл ядра | Score | Выжило | Без покрытия |
-|---|---|---|---|
-| `SnapCore.cs` | 33.7% | 170 | 46 |
-| `ResizeSnap.cs` | 35.1% | 17 | 44 |
-| `ValidationCore.cs` | 71% | 123 | 12 |
-| `Tolerance.cs`, `AppConstants.cs` | 100% | 0 | 0 |
+| Файл ядра | Что закрыто | Score: было → стало |
+|---|---|---|
+| `ResizeSnap.cs` | `ResizeSnapGrooveTests` — дно паза (посадка вкладной панели) и стенки паза (разметочные детенты, двусторонние) | 35.1% → **69.1%** |
+| `SnapCore.cs` | `SnapCoreGrooveTests`, `SnapCoreEdgeCaseTests`, `SnapCoreLineContactTests`, `SnapCoreExistingContactTests` | 33.7% → **64.1%** |
+| `ResizeMath.cs` | `DimAlong`, `CenterForAppliedDims` (зажатый размер) | 65.8% → **94.7%** |
 
-170 выживших на `SnapCore` — это не «плохие тесты», а тесты, которые Stryker не
-видит: они гоняют ядро через сцену. Перенос сценовых снэп-тестов на снимки —
-самый дешёвый способ поднять общий score дальше; работы там на 8–10 ч.
+Снимки с пазами строит `GroovedGeometry` — тестовый двойник
+`GetGrooveSeatFacesAt`/`GetGrooveWallFacesAt`: дно и стенки задаются числами,
+без разбора `GrooveMesh`. Без него ветки пазов были недостижимы — это и был
+главный блокер этапа.
+
+Повороты в ядре собираются вручную (`RotX`/`RotY`/`RotZ`/`Euler` в
+`SnapCoreTestBase`): `Quaternion.Euler` — вызов в нативный движок и под
+CoreCLR падает.
+
+**В Unity осталось намеренно:** чтение `KitchenSettings` (порог, вкл/выкл),
+отключённые `SetActive(false)` детали и всё, что проверяет АДАПТЕР, а не
+правила. Сценовые двойники перенесённых наборов оставлены как проверка пути
+через сцену.
+
+**Что не добито.** У `SnapCore` и `ValidationCore` остаётся ~110 и ~120
+выживших мутантов. Заметная их часть неубиваема по построению: упаковка ключа
+ячейки broad-phase, размер ячейки сетки, порядок дедупа пар (результат от них
+не зависит — только скорость) и строки verbose-логов. Дальнейший рост score
+здесь стоит дороже, чем даёт.
 
 Этап 0 (ручная проверка сигнала на 40–60 курируемых мутациях) смысл потерял:
 он обосновывал объём работ, а работы уже сделаны и обоснованы результатом.
+
+### 6.5. Ловушка: вход инварианта обязан быть неподвижным
+
+`ValidationInvariantTests` сначала читал `docs/example.save.json` — и покраснел
+на −7 контактов при полностью нетронутом коде валидации. Причина: этот файл
+ЖИВОЙ, его перезаписывает автосохранение десктопа и PlayMode-прогон (о том же
+предупреждает комментарий в `PlayModeTestConfig`). Один прогон поменял в нём
+режим окна — и baseline поехал.
+
+Инвариант переведён на замороженную копию
+`Assets/Tests/EditMode/Fixtures/validation-scene.save.json`. `SaveValidationTests`
+по-прежнему читает `docs/example.save.json` намеренно: его задача — проверять
+ТЕКУЩИЙ файл проекта, а не эталон.
 
 ---
 
@@ -407,7 +434,7 @@ Sweep snap events: 320835 | competition warnings: 0
 .\build.cmd -RunTests                       # ~6 мин
 
 # ночью
-.\tools\mutation-test.ps1 -ThresholdBreak 53
+.\tools\mutation-test.ps1 -ThresholdBreak 66
 .\build.cmd -RunPlayMode
 ```
 
