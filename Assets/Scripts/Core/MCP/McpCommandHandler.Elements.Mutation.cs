@@ -35,7 +35,10 @@ namespace KitchenDesigner.Core.MCP
             if (IsNot<FacadeElement>() && IsNot<WindowElement>() && IsNot<DoorElement>()) { if (op.is_open.HasValue) e.Add("is_open"); }
             if (IsNot<RadialShelfElement>()) { if (op.corner_radius.HasValue) e.Add("corner_radius"); }
             if (IsNot<CooktopElement>()) { if (op.cutout_width.HasValue) e.Add("cutout_width"); if (op.cutout_depth.HasValue) e.Add("cutout_depth"); }
-            if (IsNot<DrawerElement>()) { if (op.drawer_type != null) e.Add("drawer_type"); if (op.drawer_length.HasValue) e.Add("drawer_length"); if (op.drawer_color != null) e.Add("drawer_color"); if (op.internal_width.HasValue) e.Add("internal_width"); if (op.is_double.HasValue) e.Add("is_double"); if (op.is_upper.HasValue) e.Add("is_upper"); if (op.paired_drawer_name != null) e.Add("paired_drawer_name"); if (op.attached_facade_name != null) e.Add("attached_facade_name"); }
+            if (IsNot<DrawerElement>()) { if (op.drawer_type != null) e.Add("drawer_type"); if (op.drawer_length.HasValue) e.Add("drawer_length"); if (op.drawer_color != null) e.Add("drawer_color"); if (op.internal_width.HasValue) e.Add("internal_width"); if (op.is_double.HasValue) e.Add("is_double"); if (op.is_upper.HasValue) e.Add("is_upper"); if (op.paired_drawer_name != null) e.Add("paired_drawer_name"); }
+            // Пристёгнутый фасад есть и у посудомойки — своей фасадной панели у
+            // неё нет, и это её ЕДИНСТВЕННОЕ настраиваемое свойство.
+            if (IsNot<DrawerElement>() && IsNot<DishwasherElement>()) { if (op.attached_facade_name != null) e.Add("attached_facade_name"); }
             if (IsNot<TableElement>() && IsNot<RadiusTableElement>()) { if (op.leg_inset_mm.HasValue) e.Add("leg_inset_mm"); if (op.tabletop_material != null) e.Add("tabletop_material"); if (op.legs_material != null) e.Add("legs_material"); }
             if (IsNot<PillarElement>()) { if (op.mid_height_mm.HasValue) e.Add("mid_height_mm"); }
             if (IsNot<WindowElement>()) { if (op.tint != null) e.Add("tint"); if (op.sill_protrusion_mm.HasValue) e.Add("sill_protrusion_mm"); }
@@ -444,6 +447,13 @@ namespace KitchenDesigner.Core.MCP
             if (op.paired_drawer_name != null) drawer.PairedDrawerName = op.paired_drawer_name == "" ? "" : op.paired_drawer_name;
             if (op.attached_facade_name != null) drawer.AttachedFacadeName = op.attached_facade_name == "" ? "" : op.attached_facade_name;
         }
+        /// <summary>У посудомойки правится ровно одно свойство — имя
+        /// пристёгнутого фасада (габариты фиксированы моделью).</summary>
+        private static void ApplyDishwasherEdits(EditOp op, DishwasherElement dishwasher)
+        {
+            if (op.attached_facade_name != null)
+                dishwasher.AttachedFacadeName = op.attached_facade_name == "" ? "" : op.attached_facade_name;
+        }
         private static void ApplyTableEdits(EditOp op, TableElement table)
         {
             if (op.leg_inset_mm.HasValue) table.LegInsetMM = op.leg_inset_mm.Value;
@@ -502,6 +512,7 @@ namespace KitchenDesigner.Core.MCP
                         el.EdgeManualMask = op.edge_skip_validation.Value ? EdgeManual.AllMask : 0;
                 }
                 if (el is DrawerElement drawer) ApplyDrawerEdits(op, drawer);
+                if (el is DishwasherElement dishwasher) ApplyDishwasherEdits(op, dishwasher);
                 if (el is TableElement table) ApplyTableEdits(op, table);
                 if (el is RadiusTableElement rt) ApplyRadiusTableEdits(op, rt);
                 if (el is PillarElement pillar) ApplyPillarEdits(op, pillar);
@@ -805,6 +816,7 @@ namespace KitchenDesigner.Core.MCP
         {
             "cooktop" => CooktopElement.IsKnownModel(model),
             "oven" => model == OvenElement.MODEL,
+            "dishwasher" => model == DishwasherElement.MODEL,
             _ => false,
         };
 
@@ -890,6 +902,11 @@ namespace KitchenDesigner.Core.MCP
                         // Габариты у духовки от модели — width/height/depth здесь
                         // не участвуют (их отклоняет и edit_elements).
                         go = ElementFactory.CreateOven(item.name, pos);
+                        break;
+                    case "dishwasher":
+                        // То же самое; свой фасад машине пристёгивают потом —
+                        // edit_elements attached_facade_name.
+                        go = ElementFactory.CreateDishwasher(item.name, pos);
                         break;
                     case "window":
                         go = ElementFactory.CreateWindow(new Vector3Int(item.width ?? 900, item.height ?? 1200, item.depth ?? 100),

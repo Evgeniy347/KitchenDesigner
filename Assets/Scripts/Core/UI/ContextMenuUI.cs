@@ -41,7 +41,14 @@ namespace KitchenDesigner.Core.UI
         private TMP_InputField? _drawerWidth;
         private TMP_Text? _drawerAnimLabel;
         private TMP_Dropdown? _drawerFacadeDropdown;
+        private TMP_Text? _drawerFacadeLabel;
         private Color _drawerFacadeNormalColor;
+
+        /// <summary>Подпись строки пристёгнутого фасада: у ящика она уточняет
+        /// «ящика» (в панели ящика рядом стоят и другие «фасадные» строки), у
+        /// посудомойки уточнять нечего — фасад у неё один.</summary>
+        private const string DrawerFacadeLabelText = "Фасад ящика";
+        private const string HostFacadeLabelText = "Фасад";
         private TMP_Dropdown? _tintDropdown;
         private TMP_Dropdown? _sashTypeDropdown;
         private TMP_InputField? _sillProtrusion;
@@ -354,25 +361,33 @@ namespace KitchenDesigner.Core.UI
             _drawerAnimLabel = drawerAnimBtn.GetComponentInChildren<TMP_Text>();
             AddDrawerRow(BtnH, ActionGap, drawerAnimBtn.GetComponent<RectTransform>());
 
-            // Фасад ящика: выбор из существующих (создание/настройка — через сам фасад).
-            _drawerFacadeDropdown = LabeledDropdownRow(panel.transform, "Фасад ящика",
-                new List<string> { "(нет фасада)" }, OnDrawerFacadeSelected, AddDrawerRow, "CtxDrawerFacade");
+            // Пристёгнутый фасад: выбор из существующих (создание/настройка —
+            // через сам фасад). Строку делят ящик и посудомоечная машина — оба
+            // IFacadeHost; подпись меняется в Open() под конкретного хозяина,
+            // а порядок строк остаётся прежним (у ящика панель не сдвинулась).
+            _drawerFacadeLabel = UIFactory.CreateLabel("L_Фасад ящика", panel.transform, DrawerFacadeLabelText,
+                15, new Vector2(-103, 0), new Vector2(126, LabelH));
+            _drawerFacadeDropdown = UIFactory.CreateDropdown("CtxDrawerFacade", panel.transform,
+                new List<string> { "(нет фасада)" }, new Vector2(65, 0), new Vector2(202, 28),
+                OnDrawerFacadeSelected);
+            AddFacadeHostRow(28f, RowGap, _drawerFacadeLabel.rectTransform,
+                _drawerFacadeDropdown.GetComponent<RectTransform>());
             _drawerFacadeNormalColor = _drawerFacadeDropdown.captionText.color;
             // Хук: при раскрытии дропдауна обновляем список фасадов.
             var drawerFacadeHook = _drawerFacadeDropdown.template.gameObject.AddComponent<DropdownOpenHook>();
             drawerFacadeHook.OnOpen = () =>
             {
                 RebuildDrawerFacadeOptions();
-                SetDrawerFacadeValue(((_target as DrawerElement)?.AttachedFacadeName) ?? "");
+                SetDrawerFacadeValue(((_target as IFacadeHost)?.AttachedFacadeName) ?? "");
             };
             drawerFacadeHook.OnAfterShow = () =>
             {
                 var dd = _drawerFacadeDropdown;
-                var drawer = _target as DrawerElement;
-                if (dd == null || drawer == null) return;
-                var attachedName = drawer.AttachedFacadeName;
+                var host = _target as IFacadeHost;
+                if (dd == null || host == null) return;
+                var attachedName = host.AttachedFacadeName;
                 if (string.IsNullOrEmpty(attachedName)) return;
-                if (!IsDrawerFacadeOrphaned(attachedName, drawer)) return;
+                if (!IsDrawerFacadeOrphaned(attachedName, host)) return;
                 ColorOrphanedDrawerFacadeItem(dd, attachedName, Color.red);
             };
 
@@ -787,6 +802,20 @@ namespace KitchenDesigner.Core.UI
             foreach (var rt in rects)
                 if (rt != null) AnchorTop(rt);
             _layout.Add(new LayoutRow { rects = rects, height = height, gapAfter = gapAfter, drawerOnly = true });
+        }
+
+        // Строка, видимая у любого хозяина пристёгнутого фасада (ящик,
+        // посудомойка). Отдельного флага в LayoutRow не заводим: visibleWhen
+        // уже умеет ровно это, и Layout гасит такую строку сам.
+        private void AddFacadeHostRow(float height, float gapAfter, params RectTransform[] rects)
+        {
+            foreach (var rt in rects)
+                if (rt != null) AnchorTop(rt);
+            _layout.Add(new LayoutRow
+            {
+                rects = rects, height = height, gapAfter = gapAfter,
+                visibleWhen = () => _target is IFacadeHost,
+            });
         }
 
         // Drawer-строка с доп. условием видимости (например, «только когда есть пара»).
@@ -1301,6 +1330,8 @@ namespace KitchenDesigner.Core.UI
 					// Духовка — всегда готовая модель, поэтому в заголовке она
 					// сама: «Духовка» умолчала бы о том, что размеры залочены.
 					: element is OvenElement ? OvenElement.MODEL
+					// Посудомойка — тоже всегда готовая модель.
+					: element is DishwasherElement ? DishwasherElement.MODEL
 					: element is SinkElement ? "Мойка"
 					: element is LightSourceElement ? "Источник света"
 					: isPillar ? "Опора"
@@ -1371,8 +1402,16 @@ namespace KitchenDesigner.Core.UI
                         _drawerUpperLenDropdown.SetValueWithoutNotify(
                             System.Array.IndexOf(DrawerConstants.ValidLengths, upperDrawer.NominalLength));
                     UpdateDrawerAnimButton(drawer);
+                }
+
+                // Пристёгнутый фасад — общая строка ящика и посудомойки.
+                var facadeHost = element as IFacadeHost;
+                if (facadeHost != null)
+                {
+                    if (_drawerFacadeLabel != null)
+                        _drawerFacadeLabel.text = isDrawer ? DrawerFacadeLabelText : HostFacadeLabelText;
                     RebuildDrawerFacadeOptions();
-                    SetDrawerFacadeValue(drawer.AttachedFacadeName);
+                    SetDrawerFacadeValue(facadeHost.AttachedFacadeName);
                 }
 
                 var table = element as TableElement;
@@ -2747,7 +2786,8 @@ namespace KitchenDesigner.Core.UI
             if (e is TableElement || e is RadiusTableElement || e is PillarElement
                 || e is WindowElement || e is DoorElement || e is PanelElement
                 || e is LightSourceElement || e is FloorElement
-                || e is SinkElement || e is CooktopElement || e is OvenElement) return TypeGroup.None;
+                || e is SinkElement || e is CooktopElement || e is OvenElement
+                || e is DishwasherElement) return TypeGroup.None;
             if (e.GetComponent<Wall>() != null || e.GetComponent<BasePlate>() != null) return TypeGroup.None;
             // AssembledFacade — подкласс Facade; порядок проверок не важен, обе → структурная.
             if (e is AssembledFacadeElement || e is RadialShelfElement || e is FacadeElement)
@@ -2942,14 +2982,14 @@ namespace KitchenDesigner.Core.UI
         {
             if (_drawerFacadeDropdown == null) return;
             var opts = new List<TMP_Dropdown.OptionData> { new TMP_Dropdown.OptionData("(нет фасада)") };
-            var drawer = _target as DrawerElement;
-            var attachedName = drawer?.AttachedFacadeName ?? "";
+            var host = _target as IFacadeHost;
+            var attachedName = host?.AttachedFacadeName ?? "";
             var names = new HashSet<string>();
             foreach (var el in PartRegistry.GetAll())
             {
                 if (!(el is FacadeElement fe) || string.IsNullOrEmpty(fe.PartName)) continue;
                 bool isAttached = !string.IsNullOrEmpty(attachedName) && fe.PartName == attachedName;
-                bool inContact = drawer != null && DrawerLinks.IsFacadeInContact(drawer, fe);
+                bool inContact = host != null && DrawerLinks.IsFacadeInContact(host, fe);
                 if (!isAttached && !inContact) continue;
                 opts.Add(new TMP_Dropdown.OptionData(fe.PartName));
                 names.Add(fe.PartName);
@@ -2982,23 +3022,23 @@ namespace KitchenDesigner.Core.UI
         private void UpdateDrawerFacadeCaptionColor()
         {
             if (_drawerFacadeDropdown?.captionText == null) return;
-            var drawer = _target as DrawerElement;
-            var attachedName = drawer?.AttachedFacadeName ?? "";
+            var host = _target as IFacadeHost;
+            var attachedName = host?.AttachedFacadeName ?? "";
             if (string.IsNullOrEmpty(attachedName))
             {
                 _drawerFacadeDropdown.captionText.color = _drawerFacadeNormalColor;
                 return;
             }
-            bool orphaned = IsDrawerFacadeOrphaned(attachedName, drawer!);
+            bool orphaned = IsDrawerFacadeOrphaned(attachedName, host!);
             _drawerFacadeDropdown.captionText.color = orphaned ? Color.red : _drawerFacadeNormalColor;
         }
 
-        private static bool IsDrawerFacadeOrphaned(string facadeName, DrawerElement drawer)
+        private static bool IsDrawerFacadeOrphaned(string facadeName, IFacadeHost host)
         {
             foreach (var el in PartRegistry.GetAll())
             {
                 if (el is FacadeElement fe && fe.PartName == facadeName)
-                    return !DrawerLinks.IsFacadeInContact(drawer, fe);
+                    return !DrawerLinks.IsFacadeInContact(host, fe);
             }
             return true; // фасад не найден в реестре
         }
@@ -3017,7 +3057,7 @@ namespace KitchenDesigner.Core.UI
 
         private void OnDrawerFacadeSelected(int index)
         {
-            if (!(_target is DrawerElement d)) return;
+            if (!(_target is IFacadeHost d)) return;
             if (index <= 0 || _drawerFacadeDropdown == null) { d.AttachedFacadeName = ""; UpdateDrawerFacadeCaptionColor(); SceneRevision.Bump(); return; }
             d.AttachedFacadeName = _drawerFacadeDropdown.options[index].text;
             UpdateDrawerFacadeCaptionColor();

@@ -26,6 +26,7 @@ namespace KitchenDesigner.Core.UI
             public bool isSink;           // врезная мойка (садится на деталь-столешницу)
             public bool isCooktop;        // варочная поверхность (садится на деталь-столешницу без выреза)
             public bool isOven;           // духовой шкаф (отдельно стоящий, встраивается в колонну)
+            public bool isDishwasher;     // посудомоечная машина (фасад пристёгивается отдельно)
             public bool isPanel;          // ДВП/ХДФ — вкладная панель с зазорами
             /// <summary>Готовая модель встраиваемой техники (группа «Техника»):
             /// габариты берутся у производителя и не редактируются. Пусто —
@@ -51,7 +52,7 @@ namespace KitchenDesigner.Core.UI
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
                 isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false; isDoor = false;
                 isPillar = false; isFloor = false; isLightSource = false; isSink = false; isCooktop = false;
-                isOven = false;
+                isOven = false; isDishwasher = false;
                 isPanel = false; applianceModel = ""; pillarMidHeightMM = 75;
                 drawerType = "A"; drawerLength = 350;
                 drawerColor = "Anthracite"; drawerWidth = 400; drawerSystem = "gtv";
@@ -169,7 +170,23 @@ namespace KitchenDesigner.Core.UI
             var cooktop = CooktopModelItem("Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E,
                 CooktopElement.MODEL_BOSCH_PUE611BB5E);
             var oven = OvenItem("Духовка " + OvenElement.MODEL);
-            return new Group { title = "Техника", shortLabel = "Т", items = new List<Item> { cooktop, oven } };
+            var dishwasher = DishwasherItem("Посудомойка " + DishwasherElement.MODEL);
+            return new Group
+            {
+                title = "Техника", shortLabel = "Т",
+                items = new List<Item> { cooktop, oven, dishwasher },
+            };
+        }
+
+        /// <summary>Посудомоечная машина: размеры берутся из DishwasherElement.
+        /// Фасад в каталоге не заводится — его пользователь ставит сам и
+        /// пристёгивает к машине в окне свойств.</summary>
+        private static Item DishwasherItem(string name)
+        {
+            var item = new Item(name, DishwasherElement.ModelDimensionsMM);
+            item.isDishwasher = true;
+            item.applianceModel = DishwasherElement.MODEL;
+            return item;
         }
 
         /// <summary>Духовой шкаф: размеры берутся из OvenElement, а не из

@@ -30,6 +30,7 @@ namespace KitchenDesigner.Core.Analysis
             CollectPanelSeating(all, issues);
             CollectFacadeGaps(all, issues);
             CollectDrawerFacadeLinks(all, issues);
+            CollectDishwasherFacadeLinks(all, issues);
             return issues;
         }
 
@@ -138,6 +139,43 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
+        // ── Warning: фасад посудомоечной машины ──────────────────────────
+        // Машина полновстраиваемая: без пристёгнутого фасада на кухне зияет
+        // дыра, а фасад не той высоты не сходится с цоколем. Всё это
+        // ПРЕДУПРЕЖДЕНИЯ, а не запреты: пользователь вправе собирать кухню в
+        // любом порядке и доводить размеры потом — отказ на полпути сборки
+        // только мешал бы (так же ведут себя зазоры фасада, FAC-01).
+        private static void CollectDishwasherFacadeLinks(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var e in all)
+            {
+                if (!(e is DishwasherElement dw)) continue;
+                if (string.IsNullOrEmpty(dw.AttachedFacadeName))
+                {
+                    issues.Add(IssueCatalog.DishwasherNoFacade(dw));
+                    continue;
+                }
+
+                var facade = FindFacade(all, dw.AttachedFacadeName);
+                if (facade == null)
+                {
+                    // Фасад удалили, а имя осталось. У ящика этот случай
+                    // молчал (DRW-02 требует найденный фасад) — здесь он
+                    // сообщается: у машины фасад один и он обязателен, так что
+                    // «ссылка есть, фасада нет» это уже дефект сборки.
+                    issues.Add(IssueCatalog.DishwasherFacadeMissing(dw, dw.AttachedFacadeName));
+                    continue;
+                }
+
+                if (!DrawerLinks.IsFacadeInContact(dw, facade))
+                    issues.Add(IssueCatalog.DishwasherFacadeOrphaned(dw, facade));
+
+                int facadeHeight = facade.DimensionsMM.y;
+                if (!DishwasherElement.IsFacadeHeightValid(facadeHeight))
+                    issues.Add(IssueCatalog.DishwasherFacadeHeight(dw, facade, facadeHeight));
+            }
+        }
+
         private static FacadeElement? FindFacade(List<KitchenElement> all, string name)
         {
             foreach (var e in all)
@@ -150,7 +188,7 @@ namespace KitchenDesigner.Core.Analysis
     /// <summary>Каталог кодов: единственный источник «причина → код + уровень +
     /// текст». Коды стабильны (на них завязан фильтр по кодам) — только добавляются.
     /// Errors: COL-xx (коллизии). Warnings: GAP-xx (зазор), FAC-xx (фасад),
-    /// DRW-xx (ящик).</summary>
+    /// DRW-xx (ящик), DWH-xx (посудомоечная машина).</summary>
     public static class IssueCatalog
     {
         // Коллизии геометрии (ConstraintValidator).
@@ -164,6 +202,9 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeFacadeGap = "FAC-01";
         public const string CodeDrawerNoFacade = "DRW-01";
         public const string CodeDrawerFacadeOrphaned = "DRW-02";
+        public const string CodeDishwasherNoFacade = "DWH-01";
+        public const string CodeDishwasherFacadeOrphaned = "DWH-02";
+        public const string CodeDishwasherFacadeHeight = "DWH-03";
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {
@@ -229,6 +270,34 @@ namespace KitchenDesigner.Core.Analysis
                 PairDetail(drawer, facade),
                 $"Фасад ящика не на месте — {Name(drawer)} и {Name(facade)} не в контакте",
                 drawer, facade);
+
+        public static AnalysisIssue DishwasherNoFacade(KitchenElement dishwasher) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeDishwasherNoFacade,
+                Name(dishwasher), "Посудомойка без фасада — прибор полновстраиваемый, лица у него нет",
+                dishwasher);
+
+        /// <summary>Имя фасада есть, а самого фасада в сцене нет — его удалили.
+        /// Пара для отчёта здесь одна: показывать нечего, кроме машины.</summary>
+        public static AnalysisIssue DishwasherFacadeMissing(KitchenElement dishwasher, string facadeName) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeDishwasherFacadeOrphaned,
+                Name(dishwasher), $"Фасад «{facadeName}» удалён — посудомойка осталась без лица",
+                dishwasher);
+
+        public static AnalysisIssue DishwasherFacadeOrphaned(KitchenElement dishwasher, KitchenElement? facade) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeDishwasherFacadeOrphaned,
+                PairDetail(dishwasher, facade),
+                $"Фасад посудомойки не на месте — {Name(dishwasher)} и {Name(facade)} не в контакте",
+                dishwasher, facade);
+
+        public static AnalysisIssue DishwasherFacadeHeight(KitchenElement dishwasher,
+            KitchenElement? facade, int facadeHeightMM) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeDishwasherFacadeHeight,
+                PairDetail(dishwasher, facade),
+                $"Высота фасада {facadeHeightMM} мм вне диапазона "
+                + $"{DishwasherElement.FACADE_MIN_HEIGHT_MM}–{DishwasherElement.FACADE_MAX_HEIGHT_MM} мм: "
+                + $"цоколь получится {DishwasherElement.PlinthForFacade(facadeHeightMM)} мм "
+                + $"(допустимо {DishwasherElement.PLINTH_MIN_MM}–{DishwasherElement.PLINTH_MAX_MM})",
+                dishwasher, facade);
 
         private static string Name(KitchenElement? e) =>
             e != null && !string.IsNullOrEmpty(e.PartName) ? e.PartName : "—";

@@ -212,7 +212,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public bool? is_upper;
         [McpParam("Double drawer only: exact name of the paired drawer element (link both ways). Empty string detaches. Omit to keep.")]
         public string? paired_drawer_name;
-        [McpParam("Drawer only: exact name of the facade acting as this drawer's front. Empty string detaches. Omit to keep.")]
+        [McpParam("Drawer and dishwasher only: exact name of the facade acting as this element's front. Empty string detaches. Omit to keep.")]
         public string? attached_facade_name;
 
         // Tables (TableElement / RadiusTableElement).
@@ -264,7 +264,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "table", "radius_table", "pillar", "window", "door", "cooktop", "oven" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "table", "radius_table", "pillar", "window", "door", "cooktop", "oven", "dishwasher" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;
@@ -280,8 +280,8 @@ namespace KitchenDesigner.Core.MCP.Contract
 
         [McpParam("Appliance model for a built-in appliance (type cooktop). Its size and cutout come from the " +
                   "manufacturer and cannot be edited afterwards; width/height/depth are ignored. Omit for a free-size appliance. " +
-                  "type oven has exactly one model and needs no value here.",
-            Enum = new[] { "Bosch PUE611BB5E", "Bosch HBA514BB3" })]
+                  "types oven and dishwasher have exactly one model each and need no value here.",
+            Enum = new[] { "Bosch PUE611BB5E", "Bosch HBA514BB3", "Bosch SMV25EX02E" })]
         public string? model;
     }
 

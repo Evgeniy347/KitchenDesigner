@@ -154,6 +154,12 @@ namespace KitchenDesigner.Core
 		// её производные, поэтому в файле хранится только сам факт типа: всё
 		// остальное восстанавливает фабрика. false во всех старых проектах.
 		public bool isOven = false;
+		// Посудомоечная машина (DishwasherElement.MODEL). Габариты — производные
+		// модели, поэтому в файле только факт типа; а вот ПРИСТЁГНУТЫЙ ФАСАД —
+		// настоящее свойство: своей фасадной панели у машины нет, и без этого
+		// имени она после загрузки осталась бы голым ящиком-корпусом.
+		public bool isDishwasher = false;
+		public string dishwasherAttachedFacadeName = "";
 		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
 		// Накладки текстур (стена, пол); в старых файлах поля нет — пустой массив.
@@ -353,6 +359,9 @@ namespace KitchenDesigner.Core
 				d.cooktopCutoutDepthMM = cooktopEl.CutoutDepthMM;
 			}
 			d.isOven = element is OvenElement;
+			d.isDishwasher = element is DishwasherElement;
+			if (element is DishwasherElement dishwasherEl)
+				d.dishwasherAttachedFacadeName = dishwasherEl.AttachedFacadeName ?? "";
 			d.isFloor = element is FloorElement;
 			if (element is FloorElement floor && floor.PolygonLocalMm.Count >= 3)
 			{

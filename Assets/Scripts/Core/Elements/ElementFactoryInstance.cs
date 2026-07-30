@@ -286,6 +286,17 @@ namespace KitchenDesigner.Core
 				return go;
 			}
 
+			// Посудомойка — то же самое, но фасад копии НЕ достаётся: он
+			// пристёгнут к оригиналу и физически один. Скопировав имя, мы
+			// получили бы две машины, спорящие за одну дверцу (так же ведёт
+			// себя дубль ящика — см. DrawerFactoryTests).
+			if (source is DishwasherElement)
+			{
+				var go = CreateDishwasher(source.PartName, offset);
+				go.transform.rotation = source.transform.rotation;
+				return go;
+			}
+
 			if (source is PillarElement srcPillar)
 			{
 				var go = CreatePillar(srcPillar.MidHeightMM, source.PartName, offset);
@@ -763,6 +774,33 @@ namespace KitchenDesigner.Core
 			oven.Movable = true;
 
 			PartRegistry.Register(oven);
+
+			if (ElementHighlighter.Instance != null)
+				ElementHighlighter.Instance.RefreshHighlights();
+
+			return go;
+		}
+
+		/// <summary>Посудомоечная машина: корневой масштаб единичный, вся
+		/// геометрия — дочерние коробки, коллайдер по габариту ставит сам
+		/// DishwasherElement в ApplyDimensions. Фасад НЕ создаётся: он
+		/// пристёгивается отдельным элементом по имени.</summary>
+		public GameObject CreateDishwasher(string name, Vector3 position)
+		{
+			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Посудомойка" : name));
+			go.tag = "KitchenElement";
+			go.transform.position = position;
+
+			var rb = go.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
+
+			var dishwasher = go.AddComponent<DishwasherElement>();
+			dishwasher.PartName = go.name;
+			dishwasher.DimensionsMM = DishwasherElement.ModelDimensionsMM;
+			dishwasher.Movable = true;
+
+			PartRegistry.Register(dishwasher);
 
 			if (ElementHighlighter.Instance != null)
 				ElementHighlighter.Instance.RefreshHighlights();

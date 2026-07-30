@@ -1,0 +1,666 @@
+using System.Collections.Generic;
+using System.IO;
+using NUnit.Framework;
+using UnityEngine;
+using Newtonsoft.Json.Linq;
+using KitchenDesigner.Core;
+using KitchenDesigner.Core.Analysis;
+using KitchenDesigner.Core.Bulk;
+using KitchenDesigner.Core.MCP;
+using KitchenDesigner.Core.UI;
+
+/// <summary>
+/// Встраиваемая посудомоечная машина Bosch SMV25EX02E — третья готовая модель
+/// группы «Техника» (docs/APPLIANCES-BRIEF.md §3).
+///
+/// От духовки её отличает ГЛАВНОЕ: своей фасадной панели у машины нет, лицо ей
+/// делает обычный мебельный фасад, ПРИСТЁГНУТЫЙ по имени. Поэтому здесь, кроме
+/// обычного для техники «размер не поддаётся правке ни одним путём», проверяется
+/// вся жизнь этой ссылки: сохранение, переименование фасада, его удаление,
+/// дублирование машины — и диапазон высоты фасада, который обязан ПРЕДУПРЕЖДАТЬ,
+/// а не запрещать.
+/// </summary>
+public class DishwasherElementTests
+{
+    private readonly List<GameObject> _spawned = new List<GameObject>();
+    private McpCommandHandler? _handler;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _handler = new McpCommandHandler();
+        PartRegistry.Clear();
+        GroupManager.Clear();
+        CommandStack.Clear();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        foreach (var go in _spawned)
+        {
+            if (go == null) continue;
+            var el = go.GetComponent<KitchenElement>();
+            if (el != null) PartRegistry.Unregister(el);
+            Object.DestroyImmediate(go);
+        }
+        _spawned.Clear();
+
+        foreach (var e in Object.FindObjectsByType<KitchenElement>())
+            if (e != null) Object.DestroyImmediate(e.gameObject);
+
+        PartRegistry.Clear();
+        GroupManager.Clear();
+        CommandStack.Clear();
+        ElementFactory.ClearPools();
+        MaterialManager.ClearCache();
+    }
+
+    private DishwasherElement Make(string name = "Dishwasher")
+    {
+        var go = ElementFactory.CreateDishwasher(name, Vector3.zero);
+        _spawned.Add(go);
+        return go.GetComponent<DishwasherElement>();
+    }
+
+    /// <summary>Фасад машины: 600 × высота × 18, прижат лицом к переду прибора
+    /// (перёд — +Z), низ фасада — на высоте цоколя. Именно так его ставит
+    /// пользователь, и только так проверка контакта имеет смысл.</summary>
+    private FacadeElement MakeFacadeFor(DishwasherElement dw, string name,
+        int heightMM = DishwasherElement.FACADE_NOMINAL_HEIGHT_MM, int thicknessMM = 18)
+    {
+        float toU = AppConstants.MM_TO_UNITS;
+        var dims = new Vector3Int(DishwasherElement.FACADE_WIDTH_MM, heightMM, thicknessMM);
+        var dwPos = dw.transform.position;
+        // Перед машины + полтолщины фасада: грани сходятся вплотную.
+        float z = dwPos.z + (DishwasherElement.BODY_DEPTH_MM * 0.5f + thicknessMM * 0.5f) * toU;
+        // Верх фасада — по верху корпуса; остаток снизу и есть цоколь.
+        float top = dwPos.y + DishwasherElement.BODY_HEIGHT_MM * 0.5f * toU;
+        float y = top - heightMM * 0.5f * toU;
+
+        var go = ElementFactory.CreateFacade(dims, name, new Vector3(dwPos.x, y, z), 0, 0, 0, 0);
+        _spawned.Add(go);
+        return go.GetComponent<FacadeElement>();
+    }
+
+    private static (Vector3 center, Vector3 size) BoxMM(DishwasherElement dw, string name)
+    {
+        float toU = AppConstants.MM_TO_UNITS;
+        var t = dw.transform.Find(name);
+        Assert.IsNotNull(t, "нет дочерней коробки «" + name + "»");
+        return (t!.localPosition / toU, t.localScale / toU);
+    }
+
+    private static List<AnalysisIssue> IssuesWithCode(string code)
+    {
+        var found = new List<AnalysisIssue>();
+        foreach (var i in SceneAnalyzer.Analyze())
+            if (i.Code == code) found.Add(i);
+        return found;
+    }
+
+    // ── Габариты производителя ──────────────────────────────────────────
+
+    [Test]
+    public void Dishwasher_HasManufacturerDimensions()
+    {
+        var dw = Make();
+
+        Assert.AreEqual(new Vector3Int(598, 815, 550), dw.DimensionsMM);
+        Assert.AreEqual(600, DishwasherElement.NICHE_WIDTH_MM, "ниша шире корпуса — в габарит не входит");
+    }
+
+    /// <summary>Почему номинал именно 815, а не любое число из 815–875.
+    ///
+    /// Фасад стоит от верха цоколя до верха корпуса, значит цоколь = высота
+    /// корпуса − высота фасада. На границах диапазонов брифа это даёт РОВНО
+    /// заявленные пределы цоколя — то есть 655–725 (фасад) и 90–220 (цоколь)
+    /// это один и тот же диапазон, пересчитанный через корпус, и 815 стоит на
+    /// его нижнем конце. Если хоть одно из шести чисел брифа поедет, красным
+    /// станет этот тест, а не геометрия.</summary>
+    [Test]
+    public void NominalHeight_TiesTheFacadeRangeToThePlinthRange()
+    {
+        Assert.AreEqual(DishwasherElement.HEIGHT_MIN_MM, DishwasherElement.BODY_HEIGHT_MM,
+            "номинал = нижняя граница: ножки завинчены до упора");
+
+        Assert.AreEqual(DishwasherElement.PLINTH_MIN_MM,
+            DishwasherElement.HEIGHT_MIN_MM - DishwasherElement.FACADE_MAX_HEIGHT_MM,
+            "815 − 725 = 90 — минимальный цоколь");
+        Assert.AreEqual(DishwasherElement.PLINTH_MAX_MM,
+            DishwasherElement.HEIGHT_MAX_MM - DishwasherElement.FACADE_MIN_HEIGHT_MM,
+            "875 − 655 = 220 — максимальный цоколь");
+
+        // Номинальный фасад 720 даёт цоколь 95, а НЕ минимальные 90: под
+        // столешницей 820 остаётся 5 мм зазора, как и нужно встраиваемой технике.
+        Assert.AreEqual(95, DishwasherElement.PlinthForFacade(
+            DishwasherElement.FACADE_NOMINAL_HEIGHT_MM));
+        Assert.AreEqual(820, DishwasherElement.FACADE_NOMINAL_HEIGHT_MM
+            + DishwasherElement.PlinthForFacade(DishwasherElement.FACADE_NOMINAL_HEIGHT_MM) + 5);
+    }
+
+    /// <summary>РАСХОЖДЕНИЕ В БРИФЕ: одна и та же схема подписывает нишу под
+    /// цоколь 89 мм, а сам цоколь — «min 90». Ограничением взят цоколь, а не
+    /// его ниша; расхождение ровно в 1 мм и зафиксировано здесь, чтобы молча
+    /// не превратиться в 89 при следующей правке.</summary>
+    [Test]
+    public void PlinthNiche_IsOneMmShorterThanTheMinimalPlinth()
+    {
+        Assert.AreEqual(1, DishwasherElement.PLINTH_MIN_MM - DishwasherElement.PLINTH_NICHE_MM);
+    }
+
+    [Test]
+    public void Dishwasher_IsFixedSize()
+    {
+        var dw = Make();
+
+        Assert.IsTrue(dw.HasFixedSize);
+        Assert.IsTrue(FixedSize.IsFixed(dw), "общий признак техники видит посудомойку");
+    }
+
+    [Test]
+    public void Dishwasher_ModelIsRegisteredInTheApplianceCatalog()
+    {
+        Assert.IsTrue(ApplianceModels.IsKnown(DishwasherElement.MODEL));
+        Assert.IsFalse(ApplianceModels.IsKnown("Bosch SMV00NOSUCH"));
+    }
+
+    // ── Правка запрещена любым путём ────────────────────────────────────
+
+    [Test]
+    public void Dishwasher_ResizeIsIgnored()
+    {
+        var dw = Make();
+
+        dw.DimensionsMM = new Vector3Int(800, 900, 700);
+
+        Assert.AreEqual(new Vector3Int(598, 815, 550), dw.DimensionsMM,
+            "габарит производителя возвращается на место в ApplyDimensions");
+    }
+
+    [Test]
+    public void Dishwasher_HasNoResizeHandles()
+    {
+        var dw = Make();
+
+        Assert.IsFalse(ResizeHandleManager.SupportsHandleResize(dw), "мышь не обходит окно свойств");
+    }
+
+    [Test]
+    public void RootScaleStaysUnit()
+    {
+        var dw = Make();
+
+        Assert.AreEqual(Vector3.one, dw.transform.localScale,
+            "корень единичный — иначе дети масштабируются дважды");
+    }
+
+    [Test]
+    public void Dishwasher_ColliderCoversTheWholeBox()
+    {
+        var dw = Make();
+        float toU = AppConstants.MM_TO_UNITS;
+
+        var box = dw.GetComponent<BoxCollider>();
+        Assert.IsNotNull(box, "клик по машине ловит коллайдер корня");
+        Assert.AreEqual(598f, box!.size.x / toU, 0.01f);
+        Assert.AreEqual(815f, box.size.y / toU, 0.01f);
+        Assert.AreEqual(550f, box.size.z / toU, 0.01f);
+        Assert.AreEqual(Vector3.zero, box.center);
+    }
+
+    // ── Модель ──────────────────────────────────────────────────────────
+
+    /// <summary>Ровно две коробки: корпус и полоса панели. Фасада среди детей
+    /// БЫТЬ НЕ ДОЛЖНО — он отдельный элемент, и вторая передняя плоскость
+    /// поверх пристёгнутой была бы браком.</summary>
+    [Test]
+    public void Dishwasher_IsTwoBoxesAndCarriesNoFacadeOfItsOwn()
+    {
+        var dw = Make();
+
+        var names = new List<string>();
+        foreach (Transform child in dw.transform)
+            if (child.gameObject.activeSelf) names.Add(child.name);
+
+        CollectionAssert.AreEquivalent(new[] { "Body", "ControlPanel" }, names);
+    }
+
+    [Test]
+    public void Body_FillsTheWholeBox()
+    {
+        var dw = Make();
+        var (center, size) = BoxMM(dw, "Body");
+
+        Assert.AreEqual(Vector3.zero, center);
+        Assert.AreEqual(598f, size.x, 0.01f);
+        Assert.AreEqual(815f, size.y, 0.01f);
+        Assert.AreEqual(550f, size.z, 0.01f);
+    }
+
+    [Test]
+    public void ControlPanel_IsTheTopStripOfTheFront()
+    {
+        var dw = Make();
+        var (center, size) = BoxMM(dw, "ControlPanel");
+
+        Assert.AreEqual(598f, size.x, 0.01f, "полоса на всю ширину прибора");
+        Assert.AreEqual(DishwasherElement.CONTROL_PANEL_HEIGHT_MM, size.y, 0.01f);
+        Assert.AreEqual(815f * 0.5f, center.y + size.y * 0.5f, 0.01f, "прижата к верху корпуса");
+        Assert.AreEqual(550f * 0.5f, center.z + size.z * 0.5f, 0.01f, "заподлицо с передом");
+    }
+
+    [Test]
+    public void EveryPart_StaysInsideTheBox()
+    {
+        var dw = Make();
+        float halfW = 598f * 0.5f, halfH = 815f * 0.5f, halfD = 550f * 0.5f;
+
+        foreach (Transform child in dw.transform)
+        {
+            var (center, size) = BoxMM(dw, child.name);
+            Assert.LessOrEqual(Mathf.Abs(center.x) + size.x * 0.5f, halfW + 0.01f, child.name + " по ширине");
+            Assert.LessOrEqual(Mathf.Abs(center.y) + size.y * 0.5f, halfH + 0.01f, child.name + " по высоте");
+            Assert.LessOrEqual(Mathf.Abs(center.z) + size.z * 0.5f, halfD + 0.01f, child.name + " по глубине");
+        }
+    }
+
+    // ── Пристёгнутый фасад ──────────────────────────────────────────────
+
+    [Test]
+    public void Dishwasher_HasNoFacadeByDefault()
+    {
+        var dw = Make();
+
+        Assert.IsEmpty(dw.AttachedFacadeName);
+        Assert.IsNull(dw.FindAttachedFacade());
+    }
+
+    [Test]
+    public void Dishwasher_IsAFacadeHost()
+    {
+        var dw = Make();
+
+        Assert.IsInstanceOf<IFacadeHost>(dw, "фасад пристёгивается тем же механизмом, что у ящика");
+    }
+
+    [Test]
+    public void AttachedFacade_IsFoundByName()
+    {
+        var dw = Make("DW1");
+        var facade = MakeFacadeFor(dw, "DW1_front");
+
+        dw.AttachedFacadeName = facade.PartName;
+
+        Assert.AreSame(facade, dw.FindAttachedFacade());
+    }
+
+    /// <summary>Фасад, поставленный вплотную к переду машины, обязан считаться
+    /// «в контакте» — на этом стоит и список в окне свойств, и DWH-02.</summary>
+    [Test]
+    public void AttachedFacade_InFrontOfTheMachine_CountsAsContact()
+    {
+        var dw = Make("DW2");
+        var facade = MakeFacadeFor(dw, "DW2_front");
+
+        Assert.IsTrue(DrawerLinks.IsFacadeInContact(dw, facade));
+    }
+
+    [Test]
+    public void FacadeMovedAway_IsNoLongerInContact()
+    {
+        var dw = Make("DW3");
+        var facade = MakeFacadeFor(dw, "DW3_front");
+
+        facade.transform.position += new Vector3(0f, 0f, 0.3f);
+
+        Assert.IsFalse(DrawerLinks.IsFacadeInContact(dw, facade));
+    }
+
+    /// <summary>Переименование фасада НЕ рвёт связь: DrawerLinks.Rename чинит
+    /// обратные ссылки всех хозяев фасада, а не только ящиков.</summary>
+    [Test]
+    public void RenamingTheFacade_KeepsTheDishwasherLink()
+    {
+        var dw = Make("DW4");
+        var facade = MakeFacadeFor(dw, "DW4_front");
+        dw.AttachedFacadeName = facade.PartName;
+
+        DrawerLinks.Rename(facade, "Fasad_DW");
+
+        Assert.AreEqual("Fasad_DW", facade.PartName);
+        Assert.AreEqual("Fasad_DW", dw.AttachedFacadeName, "ссылка машины на фасад обновлена");
+        Assert.AreSame(facade, dw.FindAttachedFacade());
+    }
+
+    /// <summary>Удаление фасада не оставляет висячей ссылки на объект: имя
+    /// перестаёт находиться, и это ловит валидация (см. DWH-02 ниже).</summary>
+    [Test]
+    public void DeletingTheFacade_LeavesNoDanglingReference()
+    {
+        var dw = Make("DW5");
+        var facade = MakeFacadeFor(dw, "DW5_front");
+        dw.AttachedFacadeName = facade.PartName;
+
+        CommandStack.Execute(new DeleteCommand(facade.gameObject));
+
+        Assert.IsNull(dw.FindAttachedFacade(), "удалённый фасад больше не находится");
+
+        CommandStack.Undo();
+        Assert.AreSame(facade, dw.FindAttachedFacade(), "и возвращается вместе с undo");
+    }
+
+    [Test]
+    public void Duplicate_DoesNotStealTheFacade()
+    {
+        var dw = Make("DW6");
+        var facade = MakeFacadeFor(dw, "DW6_front");
+        dw.AttachedFacadeName = facade.PartName;
+
+        var copyGo = ElementFactory.Duplicate(dw);
+        _spawned.Add(copyGo);
+
+        var copy = copyGo.GetComponent<DishwasherElement>();
+        Assert.IsNotNull(copy, "копия посудомойки — посудомойка, а не голая деталь");
+        Assert.AreEqual(new Vector3Int(598, 815, 550), copy!.DimensionsMM);
+        Assert.IsEmpty(copy.AttachedFacadeName, "копия не крадёт чужой фасад");
+    }
+
+    // ── Валидация фасада: ПРЕДУПРЕЖДЕНИЯ, а не отказы ───────────────────
+
+    [Test]
+    public void NoFacade_IsReportedAsDwh01()
+    {
+        Make("DW7");
+
+        var issues = IssuesWithCode(IssueCatalog.CodeDishwasherNoFacade);
+
+        Assert.AreEqual(1, issues.Count, "полновстраиваемая машина без фасада — дефект сборки");
+        Assert.AreEqual(IssueLevel.Warning, issues[0].Level, "предупреждение, а не ошибка");
+    }
+
+    [Test]
+    public void FacadeAttached_ClearsDwh01()
+    {
+        var dw = Make("DW8");
+        var facade = MakeFacadeFor(dw, "DW8_front");
+        dw.AttachedFacadeName = facade.PartName;
+
+        Assert.IsEmpty(IssuesWithCode(IssueCatalog.CodeDishwasherNoFacade));
+        Assert.IsEmpty(IssuesWithCode(IssueCatalog.CodeDishwasherFacadeOrphaned));
+        Assert.IsEmpty(IssuesWithCode(IssueCatalog.CodeDishwasherFacadeHeight));
+    }
+
+    [Test]
+    public void FacadeMovedAway_IsReportedAsDwh02()
+    {
+        var dw = Make("DW9");
+        var facade = MakeFacadeFor(dw, "DW9_front");
+        dw.AttachedFacadeName = facade.PartName;
+
+        facade.transform.position += new Vector3(0f, 0f, 0.3f);
+
+        Assert.AreEqual(1, IssuesWithCode(IssueCatalog.CodeDishwasherFacadeOrphaned).Count);
+    }
+
+    [Test]
+    public void DeletedFacade_IsReportedAsDwh02()
+    {
+        var dw = Make("DW10");
+        var facade = MakeFacadeFor(dw, "DW10_front");
+        dw.AttachedFacadeName = facade.PartName;
+
+        CommandStack.Execute(new DeleteCommand(facade.gameObject));
+
+        var issues = IssuesWithCode(IssueCatalog.CodeDishwasherFacadeOrphaned);
+        Assert.AreEqual(1, issues.Count, "имя есть, фасада нет — это должно быть СЛЫШНО");
+        StringAssert.Contains("DW10_front", issues[0].Message);
+    }
+
+    /// <summary>Фасад вне 655–725 — повод СООБЩИТЬ, а не отказать: пристегнуть
+    /// его получается, и элемент остаётся связанным.</summary>
+    [Test]
+    public void FacadeOutOfHeightRange_WarnsButStaysAttached()
+    {
+        var dw = Make("DW11");
+        var facade = MakeFacadeFor(dw, "DW11_front", heightMM: 600);
+        dw.AttachedFacadeName = facade.PartName;
+
+        var issues = IssuesWithCode(IssueCatalog.CodeDishwasherFacadeHeight);
+
+        Assert.AreEqual(1, issues.Count);
+        Assert.AreEqual(IssueLevel.Warning, issues[0].Level);
+        StringAssert.Contains("655", issues[0].Message);
+        Assert.AreSame(facade, dw.FindAttachedFacade(), "связь не разорвана");
+    }
+
+    [Test]
+    public void FacadeHeightRange_IsInclusiveAtBothEnds()
+    {
+        Assert.IsTrue(DishwasherElement.IsFacadeHeightValid(DishwasherElement.FACADE_MIN_HEIGHT_MM));
+        Assert.IsTrue(DishwasherElement.IsFacadeHeightValid(DishwasherElement.FACADE_MAX_HEIGHT_MM));
+        Assert.IsFalse(DishwasherElement.IsFacadeHeightValid(DishwasherElement.FACADE_MIN_HEIGHT_MM - 1));
+        Assert.IsFalse(DishwasherElement.IsFacadeHeightValid(DishwasherElement.FACADE_MAX_HEIGHT_MM + 1));
+    }
+
+    // ── Каталог ─────────────────────────────────────────────────────────
+
+    [Test]
+    public void Catalog_ApplianceGroup_HasDishwasherThird()
+    {
+        var group = SidebarCatalog.Build().Find(g => g.title == "Техника");
+
+        Assert.AreEqual(3, group.items.Count, "варочная, духовка, посудомойка");
+        var dw = group.items[2];
+        Assert.IsTrue(dw.isDishwasher, "посудомойка — третий пункт «Техники»");
+        Assert.AreEqual(DishwasherElement.MODEL, dw.applianceModel);
+        Assert.AreEqual(new Vector3Int(598, 815, 550), dw.dims);
+        Assert.IsFalse(dw.isOven, "иначе SidebarUI.Spawn ушёл бы не туда");
+        Assert.IsFalse(dw.isCooktop);
+    }
+
+    // ── Сериализация ────────────────────────────────────────────────────
+
+    [Test]
+    public void ElementData_MarksTheDishwasher()
+    {
+        var dw = Make();
+
+        var data = ElementData.FromElement(dw);
+
+        Assert.IsTrue(data.isDishwasher);
+        Assert.IsFalse(data.isOven);
+        Assert.IsFalse(data.isCooktop);
+    }
+
+    [Test]
+    public void Dishwasher_SurvivesSaveLoadRoundTripWithItsFacade()
+    {
+        var dw = Make("DW_rt");
+        dw.transform.position = new Vector3(1f, 0.4075f, 2f);
+        var facade = MakeFacadeFor(dw, "DW_rt_front");
+        dw.AttachedFacadeName = facade.PartName;
+
+        var path = Path.Combine(Application.temporaryCachePath, $"rt_dw_{System.Guid.NewGuid():N}.json");
+        var saved = SaveLoadManager.CaptureScene(new List<KitchenElement> { dw, facade });
+        SaveLoadManager.SaveToFile(path, saved);
+
+        foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
+        _spawned.Clear();
+        PartRegistry.Clear();
+
+        var loaded = SaveLoadManager.LoadFromFile(path);
+        Assert.IsNotNull(loaded);
+        SaveLoadManager.RestoreScene(loaded!);
+        File.Delete(path);
+
+        var restored = Object.FindFirstObjectByType<DishwasherElement>();
+        Assert.IsNotNull(restored, "машина восстановилась своим типом, а не деталью");
+        Assert.AreEqual(new Vector3Int(598, 815, 550), restored!.DimensionsMM);
+        Assert.IsTrue(restored.HasFixedSize);
+        Assert.AreEqual(2, restored.transform.childCount, "модель собрана заново");
+        Assert.AreEqual("DW_rt_front", restored.AttachedFacadeName, "привязка фасада пережила сохранение");
+        Assert.IsNotNull(restored.FindAttachedFacade(), "и фасад по этому имени действительно находится");
+    }
+
+    /// <summary>Загрузка переименовывает элементы при коллизии имён; ссылка на
+    /// фасад обязана поехать вместе с ним (тот же Remap, что у ящика).</summary>
+    [Test]
+    public void Loading_RemapsTheFacadeLinkWhenTheFacadeIsRenamed()
+    {
+        ElementData Data(string name) => new ElementData
+        {
+            name = name,
+            dimensionsMM = new[] { 600, 720, 18 },
+            position = new[] { 0f, 0f, 0f },
+            rotation = new[] { 0f, 0f, 0f, 1f },
+        };
+
+        var facadeData = Data("Фасад 600");
+        facadeData.isFacade = true;
+
+        var dwData = Data("Posudomojka");
+        dwData.isDishwasher = true;
+        dwData.dishwasherAttachedFacadeName = "Фасад 600";
+
+        var mgr = new SaveLoadManagerInstance();
+        var created = mgr.RestoreScene(new ProjectData { elements = new[] { facadeData, dwData } });
+        foreach (var go in created) _spawned.Add(go);
+
+        var dw = created[1].GetComponent<DishwasherElement>();
+        Assert.IsNotNull(dw);
+        Assert.AreEqual("Fasad_600", dw!.AttachedFacadeName,
+            "имя фасада нормализовано — ссылка поехала за ним");
+        Assert.IsNotNull(dw.FindAttachedFacade());
+    }
+
+    // ── MCP ─────────────────────────────────────────────────────────────
+
+    private McpRequest MakeReq(string method, object data)
+    {
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+        return new McpRequest { id = "test", method = method, Params = JObject.Parse(json) };
+    }
+
+    private static JObject Payload(McpResponse resp) => JObject.FromObject(resp.data!);
+
+    private static string ErrorMessage(McpResponse resp) =>
+        Payload(resp)["message"]!.Value<string>()!;
+
+    [Test]
+    public void Mcp_CreatesDishwasherWithManufacturerSize()
+    {
+        var resp = _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new object[]
+            {
+                new { name = "DW-mcp", type = "dishwasher", x = 0f, y = 0f, z = 0f, width = 900 }
+            }
+        }));
+
+        Assert.AreEqual("result", resp.type, resp.type == "error" ? ErrorMessage(resp) : "");
+        var dw = Object.FindFirstObjectByType<DishwasherElement>();
+        Assert.IsNotNull(dw);
+        Assert.AreEqual(new Vector3Int(598, 815, 550), dw!.DimensionsMM,
+            "width из запроса на готовую модель не влияет");
+    }
+
+    [Test]
+    public void Mcp_RejectsResizingTheDishwasher()
+    {
+        _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new object[] { new { name = "DW-fix", type = "dishwasher", x = 0f, y = 0f, z = 0f } }
+        }));
+
+        var resp = _handler.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "DW-fix", height = 700 } }
+        }));
+
+        Assert.AreEqual("error", resp.type, "правка размера готовой модели обязана быть ОТКАЗОМ");
+        StringAssert.Contains("fixed appliance", ErrorMessage(resp));
+    }
+
+    [Test]
+    public void Mcp_RejectsAModelFromAnotherAppliance()
+    {
+        var resp = _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new object[]
+            {
+                new { name = "Oven-wrong", type = "oven", x = 0f, y = 0f, z = 0f,
+                      model = DishwasherElement.MODEL }
+            }
+        }));
+
+        Assert.AreEqual("error", resp.type, "модель посудомойки не делает духовку посудомойкой");
+        StringAssert.Contains("does not belong to type", ErrorMessage(resp));
+    }
+
+    [Test]
+    public void Mcp_AttachesAndDetachesTheFacade()
+    {
+        var dw = Make("DW-mcp2");
+        var facade = MakeFacadeFor(dw, "DW_mcp2_front");
+
+        var attach = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = dw.PartName, attached_facade_name = facade.PartName } }
+        }));
+        Assert.AreEqual("result", attach.type, attach.type == "error" ? ErrorMessage(attach) : "");
+        Assert.AreEqual(facade.PartName, dw.AttachedFacadeName);
+
+        var detach = _handler.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = dw.PartName, attached_facade_name = "" } }
+        }));
+        Assert.AreEqual("result", detach.type);
+        Assert.IsEmpty(dw.AttachedFacadeName);
+    }
+
+    /// <summary>Чужому типу поле фасада по-прежнему не положено — иначе
+    /// обобщение проверки съело бы её смысл.</summary>
+    [Test]
+    public void Mcp_RejectsAttachedFacadeOnAPlainBoard()
+    {
+        var go = ElementFactory.CreatePart(new Vector3Int(600, 18, 500), "Board1", Vector3.zero);
+        _spawned.Add(go);
+
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "Board1", attached_facade_name = "whatever" } }
+        }));
+
+        Assert.AreEqual("error", resp.type);
+        StringAssert.Contains("attached_facade_name", ErrorMessage(resp));
+    }
+
+    [Test]
+    public void Mcp_ReportsTheDishwasherBreakdown()
+    {
+        var dw = Make("DW-info");
+        var facade = MakeFacadeFor(dw, "DW_info_front");
+        dw.AttachedFacadeName = facade.PartName;
+
+        var resp = _handler!.Handle(MakeReq("get_elements", new { filter = "DW-info" }));
+
+        Assert.AreEqual("result", resp.type);
+        var info = Payload(resp)["elements"]![0]!["dishwasher"]!;
+        Assert.AreEqual(DishwasherElement.MODEL, info["model"]!.Value<string>());
+        Assert.IsTrue(info["fixedSize"]!.Value<bool>());
+        Assert.AreEqual("DW_info_front", info["attachedFacadeName"]!.Value<string>());
+        Assert.AreEqual(600, info["nicheWidthMM"]!.Value<int>());
+        Assert.AreEqual(720, info["facadeNominalHeightMM"]!.Value<int>());
+        Assert.AreEqual(95, info["plinthMM"]!.Value<int>(),
+            "цоколь под номинальным фасадом 720 при корпусе 815");
+    }
+
+    [Test]
+    public void Selector_NamesTheDishwasherType()
+    {
+        var dw = Make("DW-sel");
+
+        Assert.AreEqual("dishwasher", ElementSelector.TypeOf(dw));
+    }
+}

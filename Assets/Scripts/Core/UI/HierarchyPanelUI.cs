@@ -203,8 +203,8 @@ namespace KitchenDesigner.Core.UI
                     if (e == null) continue;
                     h = h * 31 + e.PartName.GetHashCode();
                     h = h * 31 + e.GroupId;
-                    if (e is DrawerElement d && !string.IsNullOrEmpty(d.AttachedFacadeName))
-                        h = h * 31 + d.AttachedFacadeName.GetHashCode();
+                    if (e is IFacadeHost host && !string.IsNullOrEmpty(host.AttachedFacadeName))
+                        h = h * 31 + host.AttachedFacadeName.GetHashCode();
                 }
                 foreach (var g in GroupManager.AllGroups())
                 {

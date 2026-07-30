@@ -219,6 +219,8 @@ namespace KitchenDesigner.Core
 							? ElementFactory.Instance.CreateCooktop(ed.name, ed.Position, ed.cooktopModel)
 						: ed.isOven
 							? ElementFactory.Instance.CreateOven(ed.name, ed.Position)
+						: ed.isDishwasher
+							? ElementFactory.Instance.CreateDishwasher(ed.name, ed.Position)
 						: ed.isPillar
 							? ElementFactory.Instance.CreatePillar(ed.midHeightMM, ed.name, ed.Position)
 							: ed.isTable
@@ -323,6 +325,12 @@ namespace KitchenDesigner.Core
                         if (ed.doorOpen && !drawerEl.IsOpen)
                             drawerEl.SetOpen(true);
                     }
+
+                    // Своей фасадной панели у машины нет: без этой строки
+                    // пристёгнутый фасад после загрузки был бы просто дверцей,
+                    // стоящей рядом.
+                    if (ed.isDishwasher && el is DishwasherElement dishwasherEl)
+                        dishwasherEl.AttachedFacadeName = ed.dishwasherAttachedFacadeName;
 
                     if (ed.isWindow && el is WindowElement winEl)
                     {
@@ -481,6 +489,7 @@ namespace KitchenDesigner.Core
                 if (ed == null) continue;
                 ed.drawerPairedName = Remap(map, ed.drawerPairedName);
                 ed.drawerAttachedFacadeName = Remap(map, ed.drawerAttachedFacadeName);
+                ed.dishwasherAttachedFacadeName = Remap(map, ed.dishwasherAttachedFacadeName);
                 ed.windowAttachedWallName = Remap(map, ed.windowAttachedWallName);
                 ed.doorAttachedWallName = Remap(map, ed.doorAttachedWallName);
             }

@@ -185,7 +185,7 @@ namespace KitchenDesigner.Core
         /// дверцей не является и торец закрывает как обычная деталь.</summary>
         private static bool IsTransparentToEdges(KitchenElement other) =>
             other is LightSourceElement || other is SinkElement || other is CooktopElement
-            || other is OvenElement || other is PillarElement
+            || other is OvenElement || other is DishwasherElement || other is PillarElement
             || other is FacadeElement || other is DrawerElement;
 
         /// <summary>Доля перекрытия каждого торца детали соседями. others —

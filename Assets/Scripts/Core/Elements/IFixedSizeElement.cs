@@ -37,6 +37,7 @@ namespace KitchenDesigner.Core
         {
             CooktopElement.MODEL_BOSCH_PUE611BB5E,
             OvenElement.MODEL,
+            DishwasherElement.MODEL,
         };
 
         public static bool IsKnown(string? model)

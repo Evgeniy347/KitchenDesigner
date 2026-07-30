@@ -150,6 +150,7 @@ namespace KitchenDesigner.Core.Bulk
             if (e is SinkElement) return "sink";
             if (e is CooktopElement) return "cooktop";
             if (e is OvenElement) return "oven";
+            if (e is DishwasherElement) return "dishwasher";
             if (e is FloorElement) return "floor";
             if (e.GetComponent<Wall>() != null) return "wall";
             return "board";

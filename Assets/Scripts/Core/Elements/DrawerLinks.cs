@@ -87,9 +87,12 @@ namespace KitchenDesigner.Core
             }
             else if (element is FacadeElement)
             {
+                // Хозяев фасада двое — ящик и посудомоечная машина; спрашиваем
+                // их одним интерфейсом, иначе третий тип пришлось бы дописывать
+                // сюда отдельной веткой и однажды бы забыли.
                 foreach (var e in PartRegistry.All)
-                    if (e is DrawerElement d && d.AttachedFacadeName == oldName)
-                        d.AttachedFacadeName = newName;
+                    if (e is IFacadeHost host && host.AttachedFacadeName == oldName)
+                        host.AttachedFacadeName = newName;
             }
 
             element.PartName = newName;
@@ -98,6 +101,18 @@ namespace KitchenDesigner.Core
         /// <summary>Имя, свободное в PartRegistry и приведённое к допустимому
         /// алфавиту (при коллизии — суффикс «_1», «_2»…). См. ElementNaming.</summary>
         public static string UniqueName(string baseName) => ElementNaming.Normalize(baseName);
+
+        /// <summary>Контакт «хозяин фасада ↔ фасад» для любого
+        /// <see cref="IFacadeHost"/>. У ящика проверка идёт по ЗАКРЫТОЙ позе
+        /// (перегрузка ниже), у неподвижного хозяина — по текущей: посудомойка
+        /// не выдвигается, и подменять ей позу нечем.</summary>
+        public static bool IsFacadeInContact(IFacadeHost host, FacadeElement facade)
+        {
+            if (host == null || facade == null) return false;
+            if (host is DrawerElement drawer) return IsFacadeInContact(drawer, facade);
+            if (!(host is KitchenElement element)) return false;
+            return ConstraintValidator.AreInFaceToFaceContact(element, facade);
+        }
 
         public static bool IsFacadeInContact(DrawerElement drawer, FacadeElement facade)
         {

@@ -665,6 +665,18 @@ namespace KitchenDesigner.Core.UI
             BeginPlacement(go);
         }
 
+        /// <summary>Посудомойка стоит на полу на своих ножках — ставим её
+        /// центром на половину высоты, дальше двигает пользователь.</summary>
+        public void SpawnDishwasher(string name)
+        {
+            Vector3 pos = GroundPointInFrontOfCamera();
+            pos = GridManager.SnapToGrid(pos);
+            pos.y = DishwasherElement.ModelDimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS;
+
+            var go = ElementFactory.CreateDishwasher(name, pos);
+            BeginPlacement(go);
+        }
+
         public void SpawnLightSource(string name)
         {
             Vector3 pos = GroundPointInFrontOfCamera();

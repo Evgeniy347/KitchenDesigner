@@ -235,6 +235,7 @@ namespace KitchenDesigner.Core.MCP
             var pillar = el as PillarElement;
             var cooktop = el as CooktopElement;
             var oven = el as OvenElement;
+            var dishwasher = el as DishwasherElement;
             FacadeValidationData? facadeValidation = includeFacadeValidation && el is FacadeElement fe && allElements != null
                 ? ComputeFacadeValidation(fe, allElements)
                 : (FacadeValidationData?)null;
@@ -330,6 +331,28 @@ namespace KitchenDesigner.Core.MCP
                     controlPanelHeightMM = OvenElement.CONTROL_PANEL_HEIGHT_MM,
                     glassHeightMM = OvenElement.GLASS_HEIGHT_MM,
                     handleProtrusionMM = OvenElement.HANDLE_PROTRUSION_MM
+                } : null,
+                dishwasher = dishwasher != null ? new DishwasherInfo
+                {
+                    model = DishwasherElement.MODEL,
+                    fixedSize = dishwasher.HasFixedSize,
+                    attachedFacadeName = dishwasher.AttachedFacadeName ?? "",
+                    nicheWidthMM = DishwasherElement.NICHE_WIDTH_MM,
+                    nicheMinDepthMM = DishwasherElement.NICHE_MIN_DEPTH_MM,
+                    heightMinMM = DishwasherElement.HEIGHT_MIN_MM,
+                    heightMaxMM = DishwasherElement.HEIGHT_MAX_MM,
+                    facadeWidthMM = DishwasherElement.FACADE_WIDTH_MM,
+                    facadeMinHeightMM = DishwasherElement.FACADE_MIN_HEIGHT_MM,
+                    facadeMaxHeightMM = DishwasherElement.FACADE_MAX_HEIGHT_MM,
+                    facadeNominalHeightMM = DishwasherElement.FACADE_NOMINAL_HEIGHT_MM,
+                    // Цоколь считается по ПРИСТЁГНУТОМУ фасаду: без него высота
+                    // цоколя ещё не определена, и выдумывать номинал нечестно.
+                    plinthMM = dishwasher.FindAttachedFacade() is FacadeElement dwFacade
+                        ? DishwasherElement.PlinthForFacade(dwFacade.DimensionsMM.y)
+                        : 0,
+                    plinthMinMM = DishwasherElement.PLINTH_MIN_MM,
+                    plinthMaxMM = DishwasherElement.PLINTH_MAX_MM,
+                    plinthSetbackMM = DishwasherElement.PLINTH_SETBACK_MM
                 } : null,
                 window = window != null ? new WindowInfo
                 {

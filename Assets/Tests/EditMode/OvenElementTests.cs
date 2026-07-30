@@ -300,7 +300,7 @@ public class OvenElementTests
     {
         var group = SidebarCatalog.Build().Find(g => g.title == "Техника");
 
-        Assert.AreEqual(2, group.items.Count, "варочная и духовка");
+        Assert.AreEqual(3, group.items.Count, "варочная, духовка, посудомойка");
         var oven = group.items[1];
         Assert.IsTrue(oven.isOven, "духовка — второй пункт «Техники»");
         Assert.AreEqual(OvenElement.MODEL, oven.applianceModel);

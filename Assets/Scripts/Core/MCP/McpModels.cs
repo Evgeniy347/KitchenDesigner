@@ -101,6 +101,7 @@ namespace KitchenDesigner.Core.MCP
 		public PillarInfo? pillar; // свойства опоры, только для PillarElement
 		public CooktopInfo? cooktop; // свойства варочной, только для CooktopElement
 		public OvenInfo? oven; // свойства духовки, только для OvenElement
+		public DishwasherInfo? dishwasher; // свойства посудомойки, только для DishwasherElement
 		public WindowInfo? window; // свойства окна, только для WindowElement
 		public DoorInfo? door; // свойства двери, только для DoorElement
     }
@@ -343,6 +344,34 @@ namespace KitchenDesigner.Core.MCP
 		/// <summary>Ручка выступает ВПЕРЁД за габаритную коробку: коробка
 		/// описывает то, что встаёт в нишу колонны.</summary>
 		public int handleProtrusionMM;
+	}
+
+	/// <summary>Полновстраиваемая посудомоечная машина. dimX/dimY/dimZ — сам
+	/// прибор; ниша и мебельный фасад в габарит НЕ входят — фасад отдельный
+	/// элемент, пристёгнутый по имени (attachedFacadeName). Всё фиксировано
+	/// моделью: edit_elements отклоняет любую правку размера.</summary>
+	[Serializable]
+	public class DishwasherInfo
+	{
+		public string model = string.Empty;
+		public bool fixedSize;
+		/// <summary>Имя пристёгнутого мебельного фасада; пусто — фасада нет.</summary>
+		public string attachedFacadeName = string.Empty;
+		public int nicheWidthMM;
+		public int nicheMinDepthMM;
+		public int heightMinMM;
+		public int heightMaxMM;
+		public int facadeWidthMM;
+		public int facadeMinHeightMM;
+		public int facadeMaxHeightMM;
+		public int facadeNominalHeightMM;
+		/// <summary>Высота цоколя, которую оставляет ПРИСТЁГНУТЫЙ фасад
+		/// (высота корпуса минус его высота); 0 — фасада нет.</summary>
+		public int plinthMM;
+		public int plinthMinMM;
+		public int plinthMaxMM;
+		/// <summary>Цоколь утоплен под фасад на столько мм.</summary>
+		public int plinthSetbackMM;
 	}
 
 	[Serializable]

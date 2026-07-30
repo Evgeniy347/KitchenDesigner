@@ -30,6 +30,10 @@ namespace KitchenDesigner.Core
 		/// <summary>Духовой шкаф <see cref="OvenElement.MODEL"/>: габариты
 		/// фиксированы моделью, поэтому размеров в параметрах нет.</summary>
 		GameObject CreateOven(string name, Vector3 position);
+		/// <summary>Посудомоечная машина <see cref="DishwasherElement.MODEL"/>:
+		/// габариты фиксированы моделью, а мебельный фасад пристёгивается
+		/// отдельным элементом — поэтому в параметрах нет ни размеров, ни фасада.</summary>
+		GameObject CreateDishwasher(string name, Vector3 position);
 		GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50);
         GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position,

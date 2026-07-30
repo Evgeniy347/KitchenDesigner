@@ -11,7 +11,10 @@ namespace KitchenDesigner.Core
     /// автоматический). Фасад — отдельный элемент. Габариты элемента
     /// (DimensionsMM/localScale/коллайдер) — КОНТУРНЫЙ бокс проёма корпуса
     /// LW × минПроём × NL: по нему рисуются чёрные рёбра и работает снэп.</summary>
-    public class DrawerElement : KitchenElement
+    // IFacadeHost: фасад ящику пристёгивается по имени. Тот же интерфейс носит
+    // посудомоечная машина — на нём стоят DrawerLinks.Rename, строка «Фасад» в
+    // окне свойств и дерево сцены.
+    public class DrawerElement : KitchenElement, IFacadeHost
     {
         private const float OpenSeconds = DrawerConstants.DRAWER_ANIM_DURATION;
         private const float DrawerSlideMeters = DrawerConstants.DRAWER_SLIDE_METERS;

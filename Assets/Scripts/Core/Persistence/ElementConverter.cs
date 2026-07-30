@@ -22,6 +22,7 @@ namespace KitchenDesigner.Core
             if (source is CooktopElement) return source;
             // Готовая техника: модель — это и есть тип, конвертировать нечего.
             if (source is OvenElement) return source;
+            if (source is DishwasherElement) return source;
 
             var go = source.gameObject;
 

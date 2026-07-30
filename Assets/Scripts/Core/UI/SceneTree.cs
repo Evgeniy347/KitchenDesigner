@@ -37,14 +37,14 @@ namespace KitchenDesigner.Core.UI
             var nodes = new List<Node>();
             var collapsed = collapsedGroupIds ?? new HashSet<int>();
 
-            // Фасады, прикреплённые к ящикам, показываются ПОД своим ящиком,
-            // а не на своём обычном месте.
-            var attachedFacades = new Dictionary<KitchenElement, KitchenElement>(); // facade -> drawer
+            // Пристёгнутые фасады показываются ПОД своим хозяином (ящиком или
+            // посудомойкой), а не на своём обычном месте.
+            var attachedFacades = new Dictionary<KitchenElement, KitchenElement>(); // facade -> host
             foreach (var e in all)
             {
-                if (e is DrawerElement drawer && !string.IsNullOrEmpty(drawer.AttachedFacadeName))
+                if (e is IFacadeHost host && !string.IsNullOrEmpty(host.AttachedFacadeName))
                 {
-                    var facade = FindByName(all, drawer.AttachedFacadeName);
+                    var facade = FindByName(all, host.AttachedFacadeName);
                     if (facade is FacadeElement)
                         attachedFacades[facade] = e;
                 }
@@ -93,9 +93,9 @@ namespace KitchenDesigner.Core.UI
             KitchenElement e, int depth, Dictionary<KitchenElement, KitchenElement> attachedFacades)
         {
             KitchenElement? child = null;
-            if (e is DrawerElement drawer && !string.IsNullOrEmpty(drawer.AttachedFacadeName))
+            if (e is IFacadeHost host && !string.IsNullOrEmpty(host.AttachedFacadeName))
             {
-                var facade = FindByName(all, drawer.AttachedFacadeName);
+                var facade = FindByName(all, host.AttachedFacadeName);
                 if (facade is FacadeElement) child = facade;
             }
 

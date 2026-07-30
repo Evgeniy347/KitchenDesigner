@@ -237,6 +237,18 @@ OvenElement           Built-in electric oven (type:""oven""), one model only:
                       50 mm IN FRONT of that box on purpose. Everything is fixed
                       by the manufacturer — width/height/depth are REJECTED by
                       edit_elements.
+DishwasherElement     Fully integrated dishwasher (type:""dishwasher""), one
+                      model only: Bosch SMV25EX02E. Bounding box 598x815x550 —
+                      the appliance itself, niche 600 wide. It has NO front
+                      panel of its own: the furniture facade is a SEPARATE
+                      element attached by name via edit_elements
+                      attached_facade_name, exactly like a drawer. That facade
+                      is 600 wide and 655..725 high (720 nominal); its height
+                      sets the plinth (body height minus facade, 90..220).
+                      A facade outside that range is reported by get_violations
+                      as DWH-03, NOT rejected. Size is fixed by the
+                      manufacturer — width/height/depth are REJECTED by
+                      edit_elements.
 WindowElement / DoorElement
                       Openings. Prefer add_opening / apply_floorplan: they
                       attach the opening to a wall and cut the hole. Creating
