@@ -52,6 +52,25 @@ public abstract class SnapCoreTestBase
         return new Quaternion(0f, (float)System.Math.Sin(half), 0f, (float)System.Math.Cos(half));
     }
 
+    /// <summary>Поворот вокруг X — тем же ручным способом, что и RotY.</summary>
+    protected static Quaternion RotX(float degrees)
+    {
+        double half = degrees * System.Math.PI / 360.0;
+        return new Quaternion((float)System.Math.Sin(half), 0f, 0f, (float)System.Math.Cos(half));
+    }
+
+    /// <summary>Поворот вокруг Z.</summary>
+    protected static Quaternion RotZ(float degrees)
+    {
+        double half = degrees * System.Math.PI / 360.0;
+        return new Quaternion(0f, 0f, (float)System.Math.Sin(half), (float)System.Math.Cos(half));
+    }
+
+    /// <summary>Замена запрещённого в ядре <c>Quaternion.Euler</c>: Unity
+    /// применяет углы в порядке Z→X→Y, то есть q = Y·X·Z.</summary>
+    protected static Quaternion Euler(float x, float y, float z)
+        => RotY(y) * RotX(x) * RotZ(z);
+
     /// <summary>Стандартная деталь 800×400×18.</summary>
     protected static Box MakeStd(string name, Quaternion? rotation = null)
         => Make(name, new Vector3Int(800, 400, 18), rotation);

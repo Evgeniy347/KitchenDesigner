@@ -136,4 +136,48 @@ public class ResizeMathTests
         Assert.IsFalse(snapped, "пол слишком далеко — свободное растягивание");
         Assert.AreEqual(2600, newDims.y); // 2500 + 100 мм
     }
+
+    // ── Габарит вдоль оси и центр по ПРИНЯТОМУ размеру ──────────────────
+
+    [Test]
+    public void DimAlong_PicksComponentByAxis()
+    {
+        var dims = new Vector3Int(800, 400, 18);
+
+        Assert.AreEqual(800, ResizeMath.DimAlong(dims, 0));
+        Assert.AreEqual(400, ResizeMath.DimAlong(dims, 1));
+        Assert.AreEqual(18, ResizeMath.DimAlong(dims, 2));
+    }
+
+    /// <summary>Деталь вправе зажать запрошенный размер (у опоры высота
+    /// ограничена 80..130 мм). Тогда центр из <c>Compute</c> посчитан для
+    /// размера, которого нет: противоположная грань уезжает, деталь повисает
+    /// в воздухе. Пересчёт от ПРИНЯТОГО размера оставляет её на месте.</summary>
+    [Test]
+    public void CenterForAppliedDims_KeepsOppositeFaceInPlace()
+    {
+        var start = new Vector3(0f, 0.5f, 0f);
+        float sizeStart = 100f * AppConstants.MM_TO_UNITS;   // высота была 100 мм
+        var applied = new Vector3Int(800, 130, 18);          // приняли 130, а не 200
+
+        var center = ResizeMath.CenterForAppliedDims(start, Vector3.up, sizeStart, applied, 1);
+
+        // Верх уехал на 30 мм, значит центр — на 15 мм.
+        Assert.AreEqual(0.515f, center.y, 1e-5f);
+        // Низ (противоположная грань) остался на месте: 0.5 − 0.05 = 0.515 − 0.065.
+        Assert.AreEqual(start.y - sizeStart * 0.5f,
+            center.y - applied.y * AppConstants.MM_TO_UNITS * 0.5f, 1e-5f);
+    }
+
+    [Test]
+    public void CenterForAppliedDims_ShrinkMovesCenterBack()
+    {
+        var start = new Vector3(0f, 0.5f, 0f);
+        float sizeStart = 200f * AppConstants.MM_TO_UNITS;
+        var applied = new Vector3Int(800, 80, 18);           // зажали до минимума
+
+        var center = ResizeMath.CenterForAppliedDims(start, Vector3.up, sizeStart, applied, 1);
+
+        Assert.AreEqual(0.44f, center.y, 1e-5f, "размер уменьшился на 120 мм → центр на 60 мм вниз");
+    }
 }
