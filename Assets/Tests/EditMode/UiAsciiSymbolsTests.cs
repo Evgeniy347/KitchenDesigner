@@ -14,18 +14,26 @@ using TMPro;
 public class UiAsciiSymbolsTests
 {
     /// <summary>
-    /// Проверяет глиф, НЕ трогая ассет. `TryAddCharacters` вместо вопроса
-    /// мутирует динамический атлас общего шрифта — а атлас живёт весь прогон
-    /// и меняется всеми тестами, которые рисуют текст;
-    /// заодно он грузит шрифт в статический FontEngine. Отсюда и мерцание:
-    /// глиф в ttf есть, а ответ «нет». `HasCharacters` только читает таблицу
-    /// символов ассета (× ▼ ► в неё запечены при генерации).
+    /// Проверяет глиф в динамическом атласе. `HasCharacters(string)` только
+    /// читает таблицу символов ассета — для свежесозданного Dynamic-атласа
+    /// (а у нас именно такой: <c>LiberationSans SDF.asset</c> хранится в Dynamic
+    /// режиме с пустыми <c>m_GlyphTable</c>/<c>m_CharacterTable</c>) таблица
+    /// пустая, и ответ «нет» при том что глиф в ttf есть. Это и есть то
+    /// «мерцание», которое было раньше: зависит от того, успел ли предыдущий
+    /// тест отрендерить ×.
+    ///
+    /// Перегрузка `HasCharacter(char, tryAddCharacter: true)` для Dynamic
+    /// атласа сама вытаскивает глиф из исходного ttf и кладёт в атлас — ровно
+    /// то же делает TMP при каждом рендере текста. Поэтому «мутация» тут не
+    /// побочный эффект, а сам проверяемый факт: «TMP СМОЖЕТ это отрендерить».
     /// </summary>
     private static bool FontHasGlyph(string s)
     {
         var font = UIFactory.FontAsset;
         Assert.IsNotNull(font, "TMP font asset should be available");
-        return font!.HasCharacters(s);
+        foreach (var c in s)
+            if (!font!.HasCharacter(c, false, true)) return false;
+        return true;
     }
 
     [Test]
