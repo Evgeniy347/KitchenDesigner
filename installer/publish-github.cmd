@@ -73,8 +73,10 @@ if not exist "!SETUP!" (
     if not exist "!SETUP!" ( echo [FAIL] still no setup after build & exit /b 1 )
 )
 
-REM ---- slug репозитория из origin ----
-for /f "usebackq delims=" %%S in (`gh repo view -C "%root%" --json nameWithOwner -q ".nameWithOwner"`) do set "SLUG=%%S"
+REM ---- slug репозитория из origin (gh определяет репо по текущему каталогу) ----
+pushd "%root%"
+for /f "usebackq delims=" %%S in (`gh repo view --json nameWithOwner -q ".nameWithOwner"`) do set "SLUG=%%S"
+popd
 if not defined SLUG ( echo [FAIL] cannot resolve repo slug (gh repo view) & exit /b 1 )
 echo repo: !SLUG!
 
