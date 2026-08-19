@@ -1885,11 +1885,7 @@ namespace KitchenDesigner.Core.UI
             if (_target is FacadeElement f)
             {
                 var drawer = FindDrawerForFacade(f);
-                if (drawer != null)
-                {
-                    if (drawer.FindPaired() != null) drawer.CycleDoubleState();
-                    else drawer.ToggleOpen();
-                }
+                if (drawer != null) CameraController.ToggleDrawerFor(drawer);
                 else
                 {
                     // Фасад может быть пристёгнут к посудомойке — там анимацией
@@ -1897,7 +1893,7 @@ namespace KitchenDesigner.Core.UI
                     // осталось только перенаправить вызов на хост.
                     var dw = FindDishwasherForFacade(f);
                     if (dw != null) dw.ToggleOpen();
-                    else f.ToggleDoor();
+                    else f.ToggleOpen();
                 }
                 UpdateDoorButton(f);
             }

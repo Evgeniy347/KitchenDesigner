@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core
     /// напрямую). Геометрия строится в мировых единицах при единичном масштабе
     /// корня.
     /// </summary>
-    public class DoorElement : KitchenElement
+    public class DoorElement : KitchenElement, IOpenable
     {
         private const float OpenSeconds = 0.4f;
 

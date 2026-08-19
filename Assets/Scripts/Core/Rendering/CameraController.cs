@@ -286,33 +286,33 @@ namespace KitchenDesigner.Core
             if (sel == null) return;
             foreach (var el in sel.SelectedElements)
             {
-                if (el is DoorElement d) d.ToggleOpen();
-                else if (el is WindowElement w) w.ToggleOpen();
-                else if (el is DrawerElement dr)
-                {
-                    if (dr.FindPaired() != null) dr.CycleDoubleState();
-                    else dr.ToggleOpen();
-                }
-                else if (el is FacadeElement f)
+                if (el is FacadeElement f)
                 {
                     var drawer = UI.ContextMenuUI.FindDrawerForFacade(f);
-                    if (drawer != null)
-                    {
-                        if (drawer.FindPaired() != null) drawer.CycleDoubleState();
-                        else drawer.ToggleOpen();
-                    }
-                    else
-                    {
-                        f.ToggleDoor();
-                    }
+                    if (drawer != null) ToggleDrawerFor(drawer);
+                    else f.ToggleOpen();
                 }
-                else if (el is OvenElement oven)
+                else if (el is DrawerElement dr)
                 {
-                    oven.ToggleOpen();
+                    ToggleDrawerFor(dr);
+                }
+                else if (el is IOpenable openable)
+                {
+                    openable.ToggleOpen();
                 }
             }
 
             UI.ContextMenuUI.Instance?.SyncOpenLabels();
+        }
+
+        /// <summary>Поведение «открыть» для ящика: сдвоенный цикл, одиночный —
+        /// обычный <see cref="IOpenable.ToggleOpen"/>. Точка, в которой сходятся
+        /// «E» на выделенном ящике, «E» на фасаде с пристёгнутым ящиком и кнопка
+        /// «Открыть» в контекстном меню фасада.</summary>
+        internal static void ToggleDrawerFor(DrawerElement dr)
+        {
+            if (dr.FindPaired() != null) dr.CycleDoubleState();
+            else dr.ToggleOpen();
         }
 
         public void UpdateFloorVisibility()

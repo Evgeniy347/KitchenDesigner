@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core
     /// детали не привязана, проёмов не режет — обычный корпусный элемент со
     /// штатными снапами и валидацией.
     /// </summary>
-    public class DishwasherElement : KitchenElement, IFixedSizeElement, IFacadeHost
+    public class DishwasherElement : KitchenElement, IFixedSizeElement, IFacadeHost, IOpenable
     {
         /// <summary>Единственная модель — см. <see cref="ApplianceModels.All"/>.</summary>
         public const string MODEL = "Bosch SMV25EX02E";

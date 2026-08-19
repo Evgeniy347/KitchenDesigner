@@ -41,7 +41,7 @@ namespace KitchenDesigner.Core
     /// Все размеры — из docs/APPLIANCES-BRIEF.md §2 (монтажная схема Bosch).
     /// О расхождении брифа см. HANDLE_TOP_MM.
     /// </summary>
-    public class OvenElement : KitchenElement, IFixedSizeElement
+    public class OvenElement : KitchenElement, IFixedSizeElement, IOpenable
     {
         /// <summary>Единственная модель. Второй духовке хватило бы таблицы
         /// «модель → размеры», как у <see cref="CooktopElement.ModelDimensionsMM"/>;

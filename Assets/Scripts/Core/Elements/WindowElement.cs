@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core
     /// Геометрия строится в мировых единицах при единичном масштабе корня —
     /// как у PillarElement/RadialShelfElement, иначе дети масштабируются дважды.
     /// </summary>
-    public class WindowElement : KitchenElement
+    public class WindowElement : KitchenElement, IOpenable
     {
         private const float OpenSeconds = 0.4f;
 

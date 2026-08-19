@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core
     // IFacadeHost: фасад ящику пристёгивается по имени. Тот же интерфейс носит
     // посудомоечная машина — на нём стоят DrawerLinks.Rename, строка «Фасад» в
     // окне свойств и дерево сцены.
-    public class DrawerElement : KitchenElement, IFacadeHost
+    public class DrawerElement : KitchenElement, IFacadeHost, IOpenable
     {
         private const float OpenSeconds = DrawerConstants.DRAWER_ANIM_DURATION;
         private const float DrawerSlideMeters = DrawerConstants.DRAWER_SLIDE_METERS;

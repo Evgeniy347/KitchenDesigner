@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class FacadeElement : KitchenElement
+    public class FacadeElement : KitchenElement, IOpenable
     {
         /// <summary>Зазор фасада по умолчанию со всех четырёх сторон, мм.
         /// Спереди/сзади — ноль: по толщине дверца в проём не утапливается.</summary>
@@ -132,7 +132,7 @@ namespace KitchenDesigner.Core
         public Vector3 ClosedPosition => IsDoorClosed ? transform.position : _closedPos;
         public Quaternion ClosedRotation => IsDoorClosed ? transform.rotation : _closedRot;
 
-        public void ToggleDoor() => SetOpen(!_open);
+        public void ToggleOpen() => SetOpen(!_open);
 
         public void SetOpen(bool open)
         {

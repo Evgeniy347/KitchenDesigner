@@ -722,6 +722,13 @@ public class CameraControllerTests
         return go.GetComponent<OvenElement>();
     }
 
+    private DishwasherElement MakeDishwasher(string name)
+    {
+        var go = ElementFactory.CreateDishwasher(name, Vector3.zero);
+        _openableSpawned.Add(go);
+        return go.GetComponent<DishwasherElement>();
+    }
+
     [TearDown]
     public void TearDownOpenables()
     {
@@ -806,5 +813,20 @@ public class CameraControllerTests
 
         _controller!.ToggleSelectedOpenables();
         Assert.False(oven.IsOpen, "E закрывает дверцу духовки обратно");
+    }
+
+    [Test]
+    public void ToggleSelectedOpenables_OpensDishwasher()
+    {
+        var sel = EnsureSelection();
+        var dw = MakeDishwasher("test_dishwasher");
+        sel.Select(dw);
+
+        Assert.False(dw.IsOpen, "посудомойка закрыта");
+        _controller!.ToggleSelectedOpenables();
+        Assert.True(dw.IsOpen, "E открывает дверцу посудомойки");
+
+        _controller!.ToggleSelectedOpenables();
+        Assert.False(dw.IsOpen, "E закрывает дверцу посудомойки обратно");
     }
 }

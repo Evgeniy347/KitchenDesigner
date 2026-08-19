@@ -476,9 +476,9 @@ public class FacadeDoorAnimationTests
     public void Toggle_Flips_State()
     {
         var f = MakeFacade();
-        f.ToggleDoor();
+        f.ToggleOpen();
         Assert.IsTrue(f.IsOpen);
-        f.ToggleDoor();
+        f.ToggleOpen();
         Assert.IsFalse(f.IsOpen);
     }
 
