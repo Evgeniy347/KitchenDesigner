@@ -1075,6 +1075,79 @@ public class DishwasherElementTests
         Assert.AreEqual(closedRot.w, facade.transform.rotation.w, 1e-4f);
     }
 
+    /// <summary>«E» на выделенном фасаде, пристёгнутом к посудомойке, идёт
+    /// через <c>dw.ToggleOpen()</c> — а не через <c>f.ToggleOpen()</c> (фасад
+    /// пассажир, его собственная анимация выключена). Защита от регрессии:
+    /// <see cref="Rendering.CameraController.ToggleSelectedOpenables"/> обязан
+    /// найти хост-посудомойку по фасаду и открыть именно её.</summary>
+    [Test]
+    public void AttachedFacade_HotkeyGoesThroughDishwasher()
+    {
+        var dw = Make("DW-hotkey");
+        var facade = MakeFacadeFor(dw, "DW_hotkey_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+
+        // Имитируем выбор фасада + «E»: путь один и тот же, что в
+        // CameraController.ToggleSelectedOpenables — открыть хост, не фасад.
+        var host = KitchenDesigner.Core.UI.ContextMenuUI.FindDishwasherForFacade(facade);
+        Assert.IsNotNull(host, "фасад обязан находиться среди хостов посудомойки");
+        host!.ToggleOpen();
+
+        Assert.IsTrue(dw.IsOpen, "посудомойка открыта — хост-ветка отработала");
+        Assert.IsTrue(facade.IsOpen, "состояние фасада синхронизировано с хостом");
+        Assert.AreEqual(0f, facade.DoorProgress, 0.001f,
+            "фасад-пассажир не крутит собственную анимацию");
+    }
+
+    /// <summary>При перетаскивании фасада ручками <c>ValidationPosition</c>
+    /// должна идти за <c>transform.position</c> — иначе валидация/коллизия
+    /// «залипает» на старой <c>_closedPos</c> и считает фасад там, где его
+    /// давно нет. Это было критично для посудомойки: пользователь тащит фасад,
+    /// а SceneAnalyzer/ConstraintValidator ругаются на старый зазор с соседом.
+    /// Проверяется через <see cref="FacadeElement.GetOpenBounds"/>: для пассажира
+    /// он строится от текущего трансформа, а не от <c>_closedPos</c>.</summary>
+    [Test]
+    public void AttachedFacade_ValidationFollowsTransform()
+    {
+        var dw = Make("DW-move");
+        var facade = MakeFacadeFor(dw, "DW_move_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+        dw.ApplyDoorPose();
+
+        Assert.IsTrue(facade.IsPassenger, "фасад — пассажир посудомойки");
+
+        var (beforeMin, beforeMax) = facade.GetOpenBounds(0f);
+        var beforeCenterX = (beforeMin.x + beforeMax.x) * 0.5f;
+
+        // Имитируем перетаскивание ручкой: пользователь сдвинул фасад.
+        var delta = new Vector3(0.3f, 0f, 0f);
+        facade.transform.position += delta;
+
+        var (afterMin, afterMax) = facade.GetOpenBounds(0f);
+        var afterCenterX = (afterMin.x + afterMax.x) * 0.5f;
+        Assert.AreEqual(delta.x, afterCenterX - beforeCenterX, 1e-4f,
+            "центр AABB фасада (GetOpenBounds) сдвинулся ровно на дельту — " +
+            "валидация следует за transform, а не за _closedPos");
+
+        // Round-trip «закрыт → открыт → закрыт» с НОВОГО места: опорная точка
+        // петли дверцы теперь там, куда тащили фасад, не на исходной _closedPos.
+        dw.SetOpen(true);
+        dw.ApplyDoorPose();
+        var openedPos = facade.transform.position;
+        Assert.AreNotEqual(facade.transform.position - delta, openedPos,
+            "на открытой дверце фасад сдвинулся петлёй — он едет от новой опорной точки");
+
+        dw.SetOpen(false);
+        dw.ApplyDoorPose();
+        // Опорная точка петли — там, куда тащили: фасад вернулся в newPos.
+        Assert.AreEqual(beforeCenterX + delta.x,
+            (facade.GetOpenBounds(0f).min.x + facade.GetOpenBounds(0f).max.x) * 0.5f,
+            1e-4f,
+            "закрытие возвращает фасад в newPos, откуда его тащили");
+    }
+
     // ── Полый бак и ниша цоколя ─────────────────────────────────────────
 
     /// <summary>Габарит (центр, размер) в мм по вершинам ВАЛИДАЦИИ — то, чем

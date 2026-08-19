@@ -288,9 +288,17 @@ namespace KitchenDesigner.Core
             {
                 if (el is FacadeElement f)
                 {
+                    // Фасад может быть пристёгнут к ящику или к посудомойке —
+                    // у каждого своя кнопка-«Открыть» (см. ContextMenuUI.ToggleDoor),
+                    // и здесь та же логика: открываем хост, а не сам фасад.
                     var drawer = UI.ContextMenuUI.FindDrawerForFacade(f);
                     if (drawer != null) ToggleDrawerFor(drawer);
-                    else f.ToggleOpen();
+                    else
+                    {
+                        var dw = UI.ContextMenuUI.FindDishwasherForFacade(f);
+                        if (dw != null) dw.ToggleOpen();
+                        else f.ToggleOpen();
+                    }
                 }
                 else if (el is DrawerElement dr)
                 {
