@@ -815,6 +815,145 @@ public class DishwasherElementTests
         return found;
     }
 
+    // ── Фасад пристёгнут: анимация хоста, фасад — пассажир ─────────────
+
+    /// <summary>Пристёгнутый фасад становится пассажиром дверцы: своей
+    /// анимации больше нет, трансформом владеет посудомойка.</summary>
+    [Test]
+    public void AttachedFacade_BecomesPassenger()
+    {
+        var dw = Make("DW-pass1");
+        var facade = MakeFacadeFor(dw, "DW_pass1_front");
+
+        Assert.IsFalse(facade.IsPassenger, "до пристёгивания фасад — самостоятельная дверца");
+
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+
+        Assert.IsTrue(facade.IsPassenger, "после пристёгивания фасад — пассажир дверцы");
+    }
+
+    /// <summary>Отстёгнутый фасад перестаёт быть пассажиром: его собственная
+    /// анимация (та же, что была до пристёгивания) снова включается.</summary>
+    [Test]
+    public void DetachingFacade_RestoresSelfAnimation()
+    {
+        var dw = Make("DW-pass2");
+        var facade = MakeFacadeFor(dw, "DW_pass2_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+        Assert.IsTrue(facade.IsPassenger);
+
+        var prev = dw.FindAttachedFacade();
+        dw.AttachedFacadeName = "";
+        dw.OnAttachedFacadeChanged(prev, null);
+
+        Assert.IsFalse(facade.IsPassenger, "отстёгнутый фасад снова анимируется сам");
+    }
+
+    /// <summary>Открытие посудомойки НЕ двигает фасад по его собственной петле
+    /// (раньше именно это и происходило: <c>SyncAttachedFacade</c> звал
+    /// <c>f.SetOpen</c>, и фасад крутил свой <c>DoorMode.HingeFrontLeft</c>).
+    /// Сейчас фасад — пассажир, его собственный прогресс анимации остаётся 0.</summary>
+    [Test]
+    public void AttachedFacade_DoesNotAnimateOnItsOwn()
+    {
+        var dw = Make("DW-pass3");
+        var facade = MakeFacadeFor(dw, "DW_pass3_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+
+        dw.SetOpen(true);
+        for (int i = 0; i < 10; i++) dw.StepDoor(0.1f);
+
+        Assert.IsTrue(facade.IsOpen, "состояние синхронизируется");
+        Assert.AreEqual(0f, facade.DoorProgress, 0.001f,
+            "собственная анимация фасада выключена — прогресс 0");
+    }
+
+    /// <summary>Поза фасада-пассажира при любом прогрессе дверцы совпадает с
+    /// расчётом «закрытая поза фасада, повёрнутая вокруг петли дверцы на тот
+    /// же угол». Именно так крышка и фасад остаются склеенными.</summary>
+    [Test]
+    public void AttachedFacade_FollowsDoorHingeAtEveryProgress()
+    {
+        var dw = Make("DW-pass4");
+        var facade = MakeFacadeFor(dw, "DW_pass4_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+
+        float toU = AppConstants.MM_TO_UNITS;
+        var hingeLocal = DishwasherElement.HingeLocalMM * toU;
+
+        for (float p = 0f; p <= 1.0001f; p += 0.1f)
+        {
+            dw.SetOpen(p > 0f);
+            dw.StepDoor(0.6f); // больше, чем OpenSeconds → _t выходит на target
+            dw.ApplyDoorPose();
+
+            var doorRot = DishwasherElement.DoorLocalRotation(dw.DoorProgress);
+            var facadeLocal = dw.transform.InverseTransformPoint(facade.ClosedPosition);
+            var facadeLocalRot = Quaternion.Inverse(dw.transform.rotation) * facade.ClosedRotation;
+            var expectedLocal = hingeLocal + doorRot * (facadeLocal - hingeLocal);
+            var expectedWorld = dw.transform.TransformPoint(expectedLocal);
+            var expectedRotWorld = dw.transform.rotation * (doorRot * facadeLocalRot);
+
+            Assert.AreEqual(expectedWorld.x, facade.transform.position.x, 1e-4f,
+                $"прогресс {p:F2}: X фасада совпадает с расчётом через петлю дверцы");
+            Assert.AreEqual(expectedWorld.y, facade.transform.position.y, 1e-4f,
+                $"прогресс {p:F2}: Y фасада совпадает с расчётом через петлю дверцы");
+            Assert.AreEqual(expectedWorld.z, facade.transform.position.z, 1e-4f,
+                $"прогресс {p:F2}: Z фасада совпадает с расчётом через петлю дверцы");
+            Assert.AreEqual(expectedRotWorld.x, facade.transform.rotation.x, 1e-4f,
+                $"прогресс {p:F2}: поворот фасада совпадает с расчётом");
+            Assert.AreEqual(expectedRotWorld.y, facade.transform.rotation.y, 1e-4f);
+            Assert.AreEqual(expectedRotWorld.z, facade.transform.rotation.z, 1e-4f);
+            Assert.AreEqual(expectedRotWorld.w, facade.transform.rotation.w, 1e-4f);
+        }
+    }
+
+    /// <summary>AABB открытого состояния посудомойки учитывает фасад через
+    /// ПЕТЛЮ ДВЕРЦЫ, а не собственную петлю фасада. Раньше вызов
+    /// <c>facade.GetOpenBounds</c> использовал <c>FacadeDoor.Pose</c> с модой
+    /// фасада по умолчанию, и проверка коллизий ловила призрак — фасад ехал
+    /// вбок, пока дверца шла вниз.</summary>
+    [Test]
+    public void GetOpenBounds_AttachedFacade_UsesDishwasherHinge()
+    {
+        var dw = Make("DW-pass5");
+        var facade = MakeFacadeFor(dw, "DW_pass5_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+
+        // Полностью открытая дверца: фасад ложится горизонтально перед ней.
+        dw.SetOpen(true);
+        dw.StepDoor(0.6f);
+        dw.ApplyDoorPose();
+
+        var (min, max) = dw.GetOpenBounds(1f);
+        var half = facade.transform.localScale * 0.5f;
+        // Все 8 углов текущего AABB фасада должны входить в AABB открытого
+        // состояния — именно это и есть «фасад посчитан через петлю дверцы».
+        // Если бы фасад считали по своей петле, его углы уехали бы вбок и
+        // часть из них выпала бы из GetOpenBounds.
+        const float eps = 1e-4f;
+        var corners = new Vector3[8];
+        for (int i = 0; i < 8; i++)
+            corners[i] = facade.transform.position + facade.transform.rotation * new Vector3(
+                (i & 1) == 0 ? -half.x : half.x,
+                (i & 2) == 0 ? -half.y : half.y,
+                (i & 4) == 0 ? -half.z : half.z);
+        foreach (var c in corners)
+        {
+            Assert.GreaterOrEqual(c.x, min.x - eps, $"угол {c} внутри AABB по X");
+            Assert.LessOrEqual(c.x, max.x + eps, $"угол {c} внутри AABB по X");
+            Assert.GreaterOrEqual(c.y, min.y - eps, $"угол {c} внутри AABB по Y");
+            Assert.LessOrEqual(c.y, max.y + eps, $"угол {c} внутри AABB по Y");
+            Assert.GreaterOrEqual(c.z, min.z - eps, $"угол {c} внутри AABB по Z");
+            Assert.LessOrEqual(c.z, max.z + eps, $"угол {c} внутри AABB по Z");
+        }
+    }
+
     // ── Полый бак и ниша цоколя ─────────────────────────────────────────
 
     /// <summary>Габарит (центр, размер) в мм по вершинам ВАЛИДАЦИИ — то, чем

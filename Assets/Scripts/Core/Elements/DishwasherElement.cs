@@ -20,9 +20,10 @@ namespace KitchenDesigner.Core
     /// ДВЕРЦА ОТКИДНАЯ, как у духовки (см. OvenElement): поворот вокруг НИЖНЕЙ
     /// горизонтальной кромки, 0° → 90°. Поворачивается не корень, а две дочерние
     /// коробки — поза валидации при открывании не двигается вовсе. ПРИСТЁГНУТЫЙ
-    /// ФАСАД едет вместе с дверцей: он к ней и прикручен, а механика та же, что
-    /// у ящика — синхронизируется целевое состояние (SyncAttachedFacade), а
-    /// анимацию фасад крутит свою (DoorMode.HingeFrontBottom).
+    /// ФАСАД едет вместе с дверцей: он к ней и прикручен, и той же петлёй
+    /// приводится в движение — фасад становится «пассажиром» (IsPassenger), его
+    /// собственная анимация выключена, а <see cref="ApplyFacadePose"/> каждый
+    /// кадр ставит его в позу, которую даёт вращение вокруг <see cref="HingeLocalMM"/>.
     ///
     /// НИША ЦОКОЛЯ: низ прибора — не сплошной, там ниша под цоколь высотой
     /// PLINTH_NICHE_MM. Она выведена и из модели, и из объёма валидации, см.
@@ -207,6 +208,25 @@ namespace KitchenDesigner.Core
 
         /// <summary>Монтажный зазор навески — см. <see cref="FACADE_MOUNT_GAP_MM"/>.</summary>
         public float FacadeMountGapMm => FACADE_MOUNT_GAP_MM;
+
+        /// <summary>При пристёгивании фасада к посудомойке — ВКЛЮЧИТЬ ему
+        /// пассажирский режим (трансформом владеет дверца машины, своей анимации
+        /// быть не должно). При отстёгивании — СНЯТЬ пассажира, чтобы фасад
+        /// снова мог открываться по своей петле как обычная дверца.
+        ///
+        /// Дополнительно: захватываем текущую позу фасада как «закрытую» —
+        /// петля дверцы будет крутить фасад вокруг той точки, в которой его
+        /// поставил пользователь (он стоит лицом к переду машины), а не вокруг
+        /// мирового нуля.</summary>
+        public void OnAttachedFacadeChanged(FacadeElement? oldFacade, FacadeElement? newFacade)
+        {
+            if (oldFacade != null && oldFacade.IsPassenger) oldFacade.IsPassenger = false;
+            if (newFacade != null)
+            {
+                newFacade.CaptureClosedPose();
+                newFacade.IsPassenger = true;
+            }
+        }
 
         /// <summary>Дверца откинута (или едет туда). Читается окном свойств,
         /// MCP и сейвом; правится через <see cref="SetOpen"/> — как у ящика,
@@ -411,7 +431,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Поставить дверцу по текущему прогрессу. Корень при этом не
         /// двигается вовсе — открывание живёт целиком в дочерних трансформах.</summary>
-        private void ApplyDoorPose()
+        internal void ApplyDoorPose()
         {
             if (_children.Count < ChildCount) return;
 
@@ -429,6 +449,40 @@ namespace KitchenDesigner.Core
                 go.transform.localRotation = rot;
                 go.transform.localScale = parts[i].sizeMM * toU;
             }
+
+            // Фасад — лицо дверцы: после того, как дверца встала в текущую позу,
+            // пристёгнутый фасад-пассажир едет по ТОЙ ЖЕ петле, иначе его
+            // собственная кинематика (другая петля, другой режим) уведёт его
+            // мимо дверцы.
+            ApplyFacadePose(rot, hinge);
+        }
+
+        /// <summary>Поставить фасад-пассажир в позу, которую даёт вращение
+        /// дверцы вокруг её петли. Закрытая поза фасада (<see cref="FacadeElement.ClosedPosition"/>/
+        /// <see cref="FacadeElement.ClosedRotation"/>) берётся за основу, а
+        /// поворачивается она тем же <paramref name="doorRot"/> вокруг того же
+        /// <paramref name="hingeLocal"/>, что и сама дверца — так они остаются
+        /// склеенными на любом <c>_t</c>.</summary>
+        private void ApplyFacadePose(Quaternion doorRot, Vector3 hingeLocal)
+        {
+            var f = FindAttachedFacade();
+            if (f == null) return;
+
+            // Закрытая поза фасада в МИРОВЫХ координатах: для пассажира его
+            // трансформ и есть закрытая поза (хост её не двигает между кадрами,
+            // а сам фасад не анимируется).
+            var closedPos = f.ClosedPosition;
+            var closedRot = f.ClosedRotation;
+
+            var facadeLocal = transform.InverseTransformPoint(closedPos);
+            var facadeLocalRot = Quaternion.Inverse(transform.rotation) * closedRot;
+
+            var rotatedLocal = hingeLocal + doorRot * (facadeLocal - hingeLocal);
+            var rotatedLocalRot = doorRot * facadeLocalRot;
+
+            var worldPos = transform.TransformPoint(rotatedLocal);
+            var worldRot = transform.rotation * rotatedLocalRot;
+            f.transform.SetPositionAndRotation(worldPos, worldRot);
         }
 
         /// <summary>Поставить дочернюю коробку: позиция и размер — в ЛОКАЛЬНЫХ мм.</summary>
@@ -458,7 +512,12 @@ namespace KitchenDesigner.Core
 
         public void ToggleOpen() => SetOpen(!_open);
 
-        /// <summary>Мгновенно захлопнуть — вместе с фасадом, как у ящика.</summary>
+        /// <summary>Мгновенно захлопнуть. Для пассажира его
+        /// <see cref="FacadeElement.ForceClose"/> — no-op (трансформ вернёт
+        /// <see cref="ApplyDoorPose"/> при нулевом прогрессе); для не-пассажира
+        /// это единственный способ погасить его собственную анимацию. Зовём
+        /// всегда: хуже не будет, а пропуск ломает совместимость с фасадами,
+        /// пристёгнутыми до включения пассажирского режима.</summary>
         public void ForceClose()
         {
             var f = FindAttachedFacade();
@@ -469,14 +528,14 @@ namespace KitchenDesigner.Core
             ApplyDoorPose();
         }
 
-        /// <summary>Фасад — лицо дверцы: едет вместе с ней. Достаточно
-        /// синхронизировать целевое состояние, дальше фасад крутит свою
-        /// анимацию (для машины это DoorMode.HingeFrontBottom — откидывание
-        /// вниз вокруг нижней кромки, ровно как у самой дверцы).</summary>
+        /// <summary>Фасад-пассажир: трансформом владеет дверца, поэтому
+        /// достаточно синхронизировать ЦЕЛЕВОЕ СОСТОЯНИЕ (для IsOpen и кнопки
+        /// в окне свойств), а анимацию фасад не крутит — её каждый кадр делает
+        /// <see cref="ApplyFacadePose"/> через петлю дверцы.</summary>
         private void SyncAttachedFacade()
         {
             var f = FindAttachedFacade();
-            if (f != null && f.IsOpen != _open) f.SetOpen(_open);
+            if (f != null) f.SetOpen(_open);
         }
 
         /// <summary>Internal: Unity зовёт Update независимо от видимости, а тесты
@@ -504,7 +563,11 @@ namespace KitchenDesigner.Core
 
         /// <summary>Мировые границы (AABB) ОТКИНУТОЙ ДВЕРЦЫ при заданном
         /// прогрессе [0..1], вместе с пристёгнутым фасадом. Бак сюда не входит:
-        /// он не движется, и его касание соседей — не помеха открыванию.</summary>
+        /// он не движется, и его касание соседей — не помеха открыванию.
+        ///
+        /// Фасад считается ТОЙ ЖЕ петлёй, что и дверца: иначе его собственная
+        /// кинематика (другая петля, другой режим) разъедется с дверцей и
+        /// коллизия будет ловить призрак.</summary>
         public (Vector3 min, Vector3 max) GetOpenBounds(float progress)
         {
             float toU = AppConstants.MM_TO_UNITS;
@@ -535,11 +598,42 @@ namespace KitchenDesigner.Core
             var facade = FindAttachedFacade();
             if (facade != null)
             {
-                var (fMin, fMax) = facade.GetOpenBounds(progress);
+                var (fMin, fMax) = FacadeOpenBoundsOnDoor(facade, localRot, hinge);
                 min = Vector3.Min(min, fMin);
                 max = Vector3.Max(max, fMax);
             }
             return (min, max);
+        }
+
+        /// <summary>AABB фасада при том же вращении вокруг той же петли, что
+        /// дверца. Использует <see cref="FacadeElement.ClosedPosition"/> и
+        /// <see cref="FacadeElement.ClosedRotation"/> (для пассажира это и есть
+        /// его текущая мировая поза) и его локальные half-extents.</summary>
+        private (Vector3 min, Vector3 max) FacadeOpenBoundsOnDoor(
+            FacadeElement facade, Quaternion doorRot, Vector3 hingeLocal)
+        {
+            var closedPos = facade.ClosedPosition;
+            var closedRot = facade.ClosedRotation;
+
+            var facadeLocal = transform.InverseTransformPoint(closedPos);
+            var facadeLocalRot = Quaternion.Inverse(transform.rotation) * closedRot;
+
+            var rotatedLocal = hingeLocal + doorRot * (facadeLocal - hingeLocal);
+            var rotatedLocalRot = doorRot * facadeLocalRot;
+
+            var worldPos = transform.TransformPoint(rotatedLocal);
+            var worldRot = transform.rotation * rotatedLocalRot;
+
+            var half = facade.transform.localScale * 0.5f;
+            var corners = new Vector3[8];
+            for (int i = 0; i < 8; i++)
+            {
+                corners[i] = worldPos + worldRot * new Vector3(
+                    (i & 1) == 0 ? -half.x : half.x,
+                    (i & 2) == 0 ? -half.y : half.y,
+                    (i & 4) == 0 ? -half.z : half.z);
+            }
+            return OpeningCollision.MinMax(corners);
         }
 
         // ── Материалы ───────────────────────────────────────────────────

@@ -462,14 +462,23 @@ namespace KitchenDesigner.Core.MCP
             if (op.is_double.HasValue) drawer.IsDouble = op.is_double.Value;
             if (op.is_upper.HasValue) drawer.IsUpperDrawer = op.is_upper.Value;
             if (op.paired_drawer_name != null) drawer.PairedDrawerName = op.paired_drawer_name == "" ? "" : op.paired_drawer_name;
-            if (op.attached_facade_name != null) drawer.AttachedFacadeName = op.attached_facade_name == "" ? "" : op.attached_facade_name;
+            if (op.attached_facade_name != null)
+            {
+                var prev = drawer.FindAttachedFacade();
+                drawer.AttachedFacadeName = op.attached_facade_name == "" ? "" : op.attached_facade_name;
+                drawer.OnAttachedFacadeChanged(prev, drawer.FindAttachedFacade());
+            }
         }
         /// <summary>У посудомойки правится ровно одно свойство — имя
         /// пристёгнутого фасада (габариты фиксированы моделью).</summary>
         private static void ApplyDishwasherEdits(EditOp op, DishwasherElement dishwasher)
         {
             if (op.attached_facade_name != null)
+            {
+                var prev = dishwasher.FindAttachedFacade();
                 dishwasher.AttachedFacadeName = op.attached_facade_name == "" ? "" : op.attached_facade_name;
+                dishwasher.OnAttachedFacadeChanged(prev, dishwasher.FindAttachedFacade());
+            }
             // Откидная дверца машины открывается тем же is_open, что фасад,
             // окно, дверь и духовка.
             if (op.is_open.HasValue) dishwasher.SetOpen(op.is_open.Value);

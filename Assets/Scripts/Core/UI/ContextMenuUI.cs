@@ -1394,6 +1394,7 @@ namespace KitchenDesigner.Core.UI
                 WriteGapFields(element);
                 UpdateDoorButton(facade);
                 UpdateModeDropdown(facade);
+                UpdateModeDropdownEnabled(facade);
 
                 var assembled = element as AssembledFacadeElement;
                 if (assembled != null && _fillDropdown != null)
@@ -1891,7 +1892,12 @@ namespace KitchenDesigner.Core.UI
                 }
                 else
                 {
-                    f.ToggleDoor();
+                    // Фасад может быть пристёгнут к посудомойке — там анимацией
+                    // владеет дверца, а у самой фасадной кнопки-«Открыть»
+                    // осталось только перенаправить вызов на хост.
+                    var dw = FindDishwasherForFacade(f);
+                    if (dw != null) dw.ToggleOpen();
+                    else f.ToggleDoor();
                 }
                 UpdateDoorButton(f);
             }
@@ -3140,8 +3146,12 @@ namespace KitchenDesigner.Core.UI
         private void OnDrawerFacadeSelected(int index)
         {
             if (!(_target is IFacadeHost d)) return;
-            if (index <= 0 || _drawerFacadeDropdown == null) { d.AttachedFacadeName = ""; UpdateDrawerFacadeCaptionColor(); SceneRevision.Bump(); return; }
-            d.AttachedFacadeName = _drawerFacadeDropdown.options[index].text;
+            var prev = d.FindAttachedFacade();
+            string newName = (index <= 0 || _drawerFacadeDropdown == null) ? "" : _drawerFacadeDropdown.options[index].text;
+            d.AttachedFacadeName = newName;
+            // Хук смены пристёгнутого фасада: посудомойка здесь включает
+            // пассажирский режим на новом фасаде и снимает со старого.
+            d.OnAttachedFacadeChanged(prev, string.IsNullOrEmpty(newName) ? null : d.FindAttachedFacade());
             UpdateDrawerFacadeCaptionColor();
             SceneRevision.Bump();
         }
@@ -3160,8 +3170,30 @@ namespace KitchenDesigner.Core.UI
             }
             else
             {
-                _doorButtonLabel.text = facade.IsOpen ? "Закрыть" : "Открыть";
+                var dw = FindDishwasherForFacade(facade);
+                if (dw != null)
+                {
+                    _doorButtonLabel.text = dw.IsOpen ? "Закрыть дверцу" : "Открыть дверцу";
+                }
+                else
+                {
+                    _doorButtonLabel.text = facade.IsOpen ? "Закрыть" : "Открыть";
+                }
             }
+        }
+
+        /// <summary>У пассажира (фасад пристёгнут к посудомойке) собственного
+        /// режима открывания нет — кинематику диктует хост. Дропдаун
+        /// «Открывание» в этом случае бесполезен, и его проще скрыть, чем
+        /// держать серым с пояснением.</summary>
+        private void UpdateModeDropdownEnabled(FacadeElement? facade)
+        {
+            if (_modeDropdown == null) return;
+            var row = _modeDropdown.transform.parent;
+            if (row == null) return;
+            bool hostable = facade != null && (
+                FindDrawerForFacade(facade) != null || FindDishwasherForFacade(facade) == null);
+            row.gameObject.SetActive(hostable);
         }
 
         internal static DrawerElement? FindDrawerForFacade(FacadeElement facade)
@@ -3169,6 +3201,14 @@ namespace KitchenDesigner.Core.UI
             if (string.IsNullOrEmpty(facade.PartName)) return null;
             foreach (var e in PartRegistry.GetAll())
                 if (e is DrawerElement d && d.AttachedFacadeName == facade.PartName) return d;
+            return null;
+        }
+
+        internal static DishwasherElement? FindDishwasherForFacade(FacadeElement facade)
+        {
+            if (string.IsNullOrEmpty(facade.PartName)) return null;
+            foreach (var e in PartRegistry.GetAll())
+                if (e is DishwasherElement dw && dw.AttachedFacadeName == facade.PartName) return dw;
             return null;
         }
 

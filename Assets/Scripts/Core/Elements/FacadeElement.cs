@@ -27,9 +27,28 @@ namespace KitchenDesigner.Core
             => GappedBox.CornerUnits(transform.localScale, Data.Gaps,
                 out minX, out maxX, out minY, out maxY, out minZ, out maxZ);
 
-        /// <summary>Мировые границы фасада (AABB) при заданном прогрессе открывания [0..1].</summary>
+        /// <summary>Мировые границы фасада (AABB) при заданном прогрессе открывания [0..1].
+        /// Для пассажира трансформ уже повёрнут хостом по СВОЕЙ петле —
+        /// возвращаем AABB текущего трансформа, без своей кинематики.</summary>
         public (Vector3 min, Vector3 max) GetOpenBounds(float progress)
         {
+            if (_isPassenger)
+            {
+                var half = transform.localScale * 0.5f;
+                var c = transform.position;
+                var r = transform.rotation;
+                var corners = new Vector3[8];
+                int n = 0;
+                for (int i = 0; i < 8; i++)
+                {
+                    corners[n++] = c + r * new Vector3(
+                        (i & 1) == 0 ? -half.x : half.x,
+                        (i & 2) == 0 ? -half.y : half.y,
+                        (i & 4) == 0 ? -half.z : half.z);
+                }
+                return OpeningCollision.MinMax(corners);
+            }
+
             var cp = IsDoorClosed ? transform.position : _closedPos;
             var cr = IsDoorClosed ? transform.rotation : _closedRot;
             var halfExtents = transform.localScale * 0.5f;
@@ -58,10 +77,30 @@ namespace KitchenDesigner.Core
         private const float OpenSeconds = 0.4f;
 
         [SerializeField] private DoorMode _mode = DoorMode.HingeFrontLeft;
+        [SerializeField] private bool _isPassenger;
         private bool _open;                              // целевое состояние
         private float _t;                                // прогресс 0..1 (линейный по времени)
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
+
+        /// <summary>Фасад пристёгнут к хозяину, который САМ двигает его трансформом
+        /// (сейчас — только полновстраиваемая посудомойка, откидная дверца которой
+        /// едет по своей петле, и та же петля должна везти фасад). В этом режиме
+        /// собственная анимация фасада выключена: <see cref="StepDoor"/> и
+        /// <see cref="ApplyDoor"/> — no-op, <see cref="SetOpen"/> только
+        /// обновляет <see cref="IsOpen"/>, <see cref="ForceClose"/> — тоже.
+        /// Трансформ фасада = его текущая поза, и им распоряжается хост.
+        ///
+        /// Атрибут <c>NotUndoable</c>: ставится/снимается хостом
+        /// (<see cref="IFacadeHost.OnAttachedFacadeChanged"/>) при пристёгивании
+        /// и отстёгивании, а откатывается Create/DeleteCommand самого фасада —
+        /// отдельной записи в стек отмены не нужно.</summary>
+        [NotUndoable("режим пассажира — ставится хостом при пристёгивании")]
+        public bool IsPassenger
+        {
+            get => _isPassenger;
+            set => _isPassenger = value;
+        }
 
         /// <summary>Режим открывания (4 ребра или ящик). Смена на лету
         /// перерисовывает уже открытый фасад.</summary>
@@ -80,8 +119,9 @@ namespace KitchenDesigner.Core
         public bool IsDoorClosed => !_open && _t <= 0f;
 
         /// <summary>Открытая (или анимируемая) дверца берёт геометрию от _closedPos,
-        /// а не от трансформа, — двигать и растягивать её нельзя, пока не закрыта.</summary>
-        public override bool PoseFollowsTransform => IsDoorClosed;
+        /// а не от трансформа, — двигать и растягивать её нельзя, пока не закрыта.
+        /// Пассажир не анимируется сам: трансформ = его текущая поза.</summary>
+        public override bool PoseFollowsTransform => _isPassenger || IsDoorClosed;
 
         /// <summary>Логическая ЗАКРЫТАЯ поза — ИСТОЧНИК ИСТИНЫ для сохранения.
         /// Открытая/анимируемая поза вычисляется из неё каждый кадр, поэтому в
@@ -96,6 +136,13 @@ namespace KitchenDesigner.Core
 
         public void SetOpen(bool open)
         {
+            if (_isPassenger)
+            {
+                // Трансформом владеет хост; анимации нет — только синхронизируем
+                // состояние, чтобы IsOpen возвращал правду.
+                _open = open;
+                return;
+            }
             if (open && _t <= 0f) CaptureClosed();
             _open = open;
             // Держим активный FPS, пока дверь будет анимироваться.
@@ -103,9 +150,12 @@ namespace KitchenDesigner.Core
                 FrameRateManager.KeepAwake(OpenSeconds + 0.2f);
         }
 
-        /// <summary>Мгновенно вернуть закрытую позу (перед правкой размеров/позиции/поворота).</summary>
+        /// <summary>Мгновенно вернуть закрытую позу (перед правкой размеров/позиции/поворота).
+        /// Для пассажира — no-op: трансформом владеет хост, и он же вернёт фасад
+        /// в закрытую позу, когда приведёт свою дверцу.</summary>
         public void ForceClose()
         {
+            if (_isPassenger) return;
             if (_t <= 0f && !_open) return;
             _open = false;
             _t = 0f;
@@ -127,12 +177,19 @@ namespace KitchenDesigner.Core
             _closedRot = transform.rotation;
         }
 
+        /// <summary>Захватить текущую мировую позу как «закрытую» — хост
+        /// (посудомойка) зовёт при пристёгивании, чтобы петля дверцы крутила
+        /// фасад вокруг той точки, в которой пользователь его поставил, а не
+        /// вокруг мирового нуля.</summary>
+        internal void CaptureClosedPose() => CaptureClosed();
+
         private void Update() => StepDoor(Time.deltaTime);
 
         /// <summary>Один шаг анимации. Вынесен из Update, т.к. Update не зовётся
         /// в EditMode-тестах — так поведение двери можно проверять напрямую.</summary>
         public void StepDoor(float dt)
         {
+            if (_isPassenger) return;
             using var _ = PerfMarkers.FacadeStepDoor.Auto();
             float target = _open ? 1f : 0f;
             if (Mathf.Approximately(_t, target))
@@ -168,6 +225,7 @@ namespace KitchenDesigner.Core
 
         private void ApplyDoor()
         {
+            if (_isPassenger) return;
             var half = transform.localScale * 0.5f;
             FacadeDoor.Pose(_closedPos, _closedRot, half, _mode, _t, out var pos, out var rot);
             transform.SetPositionAndRotation(pos, rot);

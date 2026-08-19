@@ -656,6 +656,10 @@ public class ElementConverterTests
         // FacadeElement
         "Mode",
         "IsOpen", "DoorProgress", "IsDoorClosed", "ClosedPosition", "ClosedRotation",
+        // Пассажирский режим ставится хостом при пристёгивании, в сейв не пишется:
+        // после загрузки SaveLoadManagerInstance зовёт OnAttachedFacadeChanged,
+        // который и восстанавливает флаг.
+        "IsPassenger",
         // AssembledFacadeElement
         "Fill", "GrooveCount",
         // RadialShelfElement

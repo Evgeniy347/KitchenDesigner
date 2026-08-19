@@ -325,7 +325,9 @@ namespace KitchenDesigner.Core
                         drawerEl.IsDouble = ed.drawerIsDouble;
                         drawerEl.IsUpperDrawer = ed.drawerIsUpper;
                         drawerEl.PairedDrawerName = ed.drawerPairedName;
+                        var prevDrawer = drawerEl.FindAttachedFacade();
                         drawerEl.AttachedFacadeName = ed.drawerAttachedFacadeName;
+                        drawerEl.OnAttachedFacadeChanged(prevDrawer, drawerEl.FindAttachedFacade());
                         drawerEl.DoubleState = (DoubleDrawerState)ed.doubleDrawerState;
                         // Одиночный ящик открыт по doorOpen (DoubleState его не описывает).
                         if (ed.doorOpen && !drawerEl.IsOpen)
@@ -341,7 +343,9 @@ namespace KitchenDesigner.Core
                     // стоящей рядом.
                     if (ed.isDishwasher && el is DishwasherElement dishwasherEl)
                     {
+                        var prevDw = dishwasherEl.FindAttachedFacade();
                         dishwasherEl.AttachedFacadeName = ed.dishwasherAttachedFacadeName;
+                        dishwasherEl.OnAttachedFacadeChanged(prevDw, dishwasherEl.FindAttachedFacade());
                         // Откинутая дверца машины живёт в общем doorOpen. Имя
                         // фасада присвоено ВЫШЕ не случайно: SetOpen тянет за
                         // собой пристёгнутый фасад, а найти его можно только по

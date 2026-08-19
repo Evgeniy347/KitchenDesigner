@@ -154,6 +154,15 @@ namespace KitchenDesigner.Core
         /// <see cref="IFacadeHost.FacadeMountGapMm"/>).</summary>
         public float FacadeMountGapMm => 0f;
 
+        /// <summary>Ящик анимирует фасад по той же кинематике, что у самого
+        /// ящика (линейное выдвижение по нормали), — режим «пассажир» здесь
+        /// не нужен. Снимаем пассажира со СТАРОГО фасада на случай, если он
+        /// раньше висел на посудомойке, и оставляем новый фасад как был.</summary>
+        public void OnAttachedFacadeChanged(FacadeElement? oldFacade, FacadeElement? newFacade)
+        {
+            if (oldFacade != null && oldFacade.IsPassenger) oldFacade.IsPassenger = false;
+        }
+
         // Семантика состояний (по подписям кнопок плана):
         //   Closed     — оба закрыты
         //   BothOpen   — оба открыты
