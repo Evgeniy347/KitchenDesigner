@@ -16,12 +16,12 @@ namespace KitchenDesigner.Core
         // заморожена в _closedPos и за трансформом не идёт — примерка в другую
         // позицию её геометрию не двигает вовсе. Это ровно прежнее поведение:
         // запись в transform.position открытую дверцу тоже не сдвигала.
-        protected override Vector3 ValidationPosition => ClosedPosition;
+        protected override Vector3 ValidationPosition => _isPassenger ? transform.position : ClosedPosition;
 
-        protected override Quaternion ValidationRotation => ClosedRotation;
+        protected override Quaternion ValidationRotation => _isPassenger ? transform.rotation : ClosedRotation;
 
         protected override Vector3 ValidationPositionAt(Vector3 transformPosition)
-            => _isPassenger ? _closedPos : (IsDoorClosed ? transformPosition : _closedPos);
+            => _isPassenger ? transformPosition : (IsDoorClosed ? transformPosition : _closedPos);
 
         private void CornerUnits(out float minX, out float maxX, out float minY, out float maxY, out float minZ, out float maxZ)
             => GappedBox.CornerUnits(transform.localScale, Data.Gaps,
@@ -144,8 +144,13 @@ namespace KitchenDesigner.Core
         {
             if (_isPassenger)
             {
-                // Трансформом владеет хост; анимации нет — только синхронизируем
-                // состояние, чтобы IsOpen возвращал правду.
+                // Захватываем текущую позу ДО ApplyFacadePose: тот использует
+                // _closedPos как опорную точку петли дверцы, и если бы брал
+                // transform.position после ApplyFacadePose — это была бы рекурсия
+                // (фасад уже сдвинут петлёй). Захват на открытии покрывает и
+                // случай, когда пользователь двигал фасад ручками между
+                // закрытиями: следующее открытие крутит его уже от НОВОЙ позы.
+                if (open && IsDoorClosed) CaptureClosed();
                 _open = open;
                 return;
             }
