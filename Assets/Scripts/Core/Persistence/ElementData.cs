@@ -98,6 +98,9 @@ namespace KitchenDesigner.Core
 		public bool drawerIsUpper = false;
 		public string drawerPairedName = "";
 		public string drawerAttachedFacadeName = "";
+		// Имя детали/фасада, к которой прикреплена эта деталь (см. AttachLinks).
+		// Пусто — не прикреплена.
+		public string attachedToName = "";
 		public int doubleDrawerState = 0;
 		public bool isWindow = false;
 		public int windowTint = 0;
@@ -228,22 +231,26 @@ namespace KitchenDesigner.Core
             //    иначе после загрузки она «утонет»;
             //  • открытая дверца отведена от петли → берём ЗАКРЫТУЮ позу, иначе
             //    после загрузки она отводится ещё раз и «уезжает».
+            //  • деталь, прикреплённая к открытому фасаду, уехала вместе с ним →
+            //    берём её позу покоя (AttachRestPosition), иначе проект
+            //    сохранился бы с разъехавшейся сборкой.
             var p = wall != null ? wall.FullPosition
                   : windowEl != null ? windowEl.ClosedPosition
                   : doorEl != null ? doorEl.ClosedPosition
                   : facade != null ? facade.ClosedPosition
                   : drawer != null ? drawer.ClosedPosition
-                  : element.transform.position;
+                  : element.AttachRestPosition;
             d.position = new[] { p.x, p.y, p.z };
 
             var r = windowEl != null ? windowEl.ClosedRotation
                   : doorEl != null ? doorEl.ClosedRotation
                   : facade != null ? facade.ClosedRotation
                   : drawer != null ? drawer.ClosedRotation
-                  : element.transform.rotation;
+                  : element.AttachRestRotation;
             d.rotation = new[] { r.x, r.y, r.z, r.w };
 
             d.movable = element.Movable;
+            d.attachedToName = element.AttachedToName ?? "";
             d.isWall = wall != null;
             d.wallKind = wall != null ? wall.Kind : "";
             if (wall != null)

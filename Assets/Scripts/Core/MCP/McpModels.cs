@@ -87,6 +87,11 @@ namespace KitchenDesigner.Core.MCP
         public float? edgeThicknessMM;   // толщина кромочной ленты, мм
         public bool? edgeSkipValidation; // не выдавать EDG-01 по этой детали
         public string? edges;            // торцы с кромкой, вычислено: "L1,W1"
+        // Прикрепление к другой детали/фасаду (AttachLinks): деталь едет за
+        // родителем при переносе, повороте и открывании. null — не прикреплена.
+        public string? attachedToName;
+        // true — связь есть, а контакта нет: сборка разъехалась (ошибка ATT-01).
+        public bool? attachDetached;
 
         // ── Фасадная валидация (только для FacadeElement / AssembledFacadeElement;
         //    null-поля опускаются сериализатором — обычные детали их не несут) ──

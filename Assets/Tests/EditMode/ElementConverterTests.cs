@@ -121,6 +121,32 @@ public class ElementConverterTests
         AssertCommon(src, result);
     }
 
+    // Прикрепление к родителю (AttachLinks) — свойство детали, а не её типа:
+    // «деталь → полка» его сохраняет, «деталь → фасад» обязана снять (фасад ни
+    // к чему не прикрепляется), иначе связь осталась бы висеть невидимой.
+
+    [Test]
+    public void Part_To_RadialShelf_KeepsAttachment()
+    {
+        var parent = Make<KitchenElement>("Dno", new Vector3Int(600, 18, 500), Vector3.zero);
+        var src = Make<KitchenElement>("Src", new Vector3Int(600, 400, 18), Vector3.zero);
+        src.AttachedToName = parent.PartName;
+
+        var result = ElementConverter.Convert(src, ElementConverter.TargetType.RadialShelf);
+        Assert.AreEqual("Dno", result.AttachedToName);
+    }
+
+    [Test]
+    public void Part_To_Facade_DropsAttachment()
+    {
+        var parent = Make<KitchenElement>("Dno", new Vector3Int(600, 18, 500), Vector3.zero);
+        var src = Make<KitchenElement>("Src", new Vector3Int(600, 400, 18), Vector3.zero);
+        src.AttachedToName = parent.PartName;
+
+        var result = ElementConverter.Convert(src, ElementConverter.TargetType.Facade);
+        Assert.AreEqual(string.Empty, result.AttachedToName);
+    }
+
     [Test]
     public void Part_To_Facade_HasDefaultGaps()
     {
@@ -633,6 +659,12 @@ public class ElementConverterTests
     {
         // KitchenElement
         "PartName", "DimensionsMM", "Movable", "GroupId", "MaterialId", "Transparent", "Data",
+        // Прикрепление к родителю: переносится, пока новый тип может быть
+        // ребёнком — см. Part_To_RadialShelf_KeepsAttachment / Part_To_Facade_DropsAttachment.
+        "AttachedToName",
+        // Езда за анимацией родителя — рантайм-состояние (AttachRider): в сейве
+        // его нет, после конвертации ближайший кадр выставит его заново.
+        "IsAttachRidden", "AttachRestPosition", "AttachRestRotation",
         "SupportsGrooves", "Grooves", "AttachedCutouts", "CutoutHoleAxis",
         "SupportsEdges", "EdgeBandingEnabled", "EdgeThicknessMM", "EdgeManualMask",
         // Накладки текстур принадлежат стене и полу, а конвертация ходит только

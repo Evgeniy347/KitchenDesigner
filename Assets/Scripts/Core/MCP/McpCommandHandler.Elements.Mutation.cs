@@ -42,6 +42,19 @@ namespace KitchenDesigner.Core.MCP
             // Пристёгнутый фасад есть и у посудомойки — своей фасадной панели у
             // неё нет, и это её ЕДИНСТВЕННОЕ настраиваемое свойство.
             if (IsNot<DrawerElement>() && IsNot<DishwasherElement>()) { if (op.attached_facade_name != null) e.Add("attached_facade_name"); }
+            // Прикрепить можно только обычную «дощечку» — у фасада, ящика и
+            // техники своя кинематика (AttachLinks.CanBeChild).
+            if (op.attached_to_name != null)
+            {
+                if (!AttachLinks.CanBeChild(el)) e.Add("attached_to_name (this element type cannot be attached: it has its own kinematics or host)");
+                else if (op.attached_to_name != "")
+                {
+                    var parent = FindElementByName(op.attached_to_name);
+                    if (parent == null) e.Add($"attached_to_name: element not found: {op.attached_to_name}");
+                    else if (!AttachLinks.CanBeParent(parent)) e.Add("attached_to_name (parent must be a board or a facade)");
+                    else if (AttachLinks.WouldCycle(el, parent)) e.Add("attached_to_name would create a cycle");
+                }
+            }
             if (IsNot<TableElement>() && IsNot<RadiusTableElement>()) { if (op.leg_inset_mm.HasValue) e.Add("leg_inset_mm"); if (op.tabletop_material != null) e.Add("tabletop_material"); if (op.legs_material != null) e.Add("legs_material"); }
             if (IsNot<PillarElement>()) { if (op.mid_height_mm.HasValue) e.Add("mid_height_mm"); }
             if (IsNot<WindowElement>()) { if (op.tint != null) e.Add("tint"); if (op.sill_protrusion_mm.HasValue) e.Add("sill_protrusion_mm"); }
@@ -545,6 +558,10 @@ namespace KitchenDesigner.Core.MCP
                     if (op.edge_skip_validation.HasValue)
                         el.EdgeManualMask = op.edge_skip_validation.Value ? EdgeManual.AllMask : 0;
                 }
+                // Прикрепление к другой детали/фасаду (AttachLinks): связь по
+                // имени, пустая строка — отцепить.
+                if (op.attached_to_name != null && AttachLinks.CanBeChild(el))
+                    el.AttachedToName = op.attached_to_name;
                 if (el is DrawerElement drawer) ApplyDrawerEdits(op, drawer);
                 if (el is DishwasherElement dishwasher) ApplyDishwasherEdits(op, dishwasher);
                 if (el is TableElement table) ApplyTableEdits(op, table);
@@ -650,6 +667,9 @@ namespace KitchenDesigner.Core.MCP
                     commands.Add(new ResizeCommand(el, el.DimensionsMM, dimsAfter, posBefore, posAfter, rotBefore, rotAfter));
                 }
                 else commands.Add(new MoveCommand(el, posBefore, posAfter, rotBefore, rotAfter));
+                // Прикреплённые детали едут за родителем; ресайз им не
+                // передаётся — только перенос и поворот (AttachLinks).
+                AttachMove.AppendFollowers(commands, el, posBefore, rotBefore, posAfter, rotAfter);
             }
             var composite = new CompositeCommand($"MCP edit_elements ({resolved.Count} ops)", commands);
             if (p.dry_run)
@@ -753,7 +773,9 @@ namespace KitchenDesigner.Core.MCP
                 // грань выравниваемой детали ставим на целый миллиметр (MmGrid).
                 after[axis] += delta;
                 after = MmGrid.SnapPosition(element, after);
-                commands.Add(new MoveCommand(element, before, after, element.transform.rotation, element.transform.rotation));
+                var alignRot = element.transform.rotation;
+                commands.Add(new MoveCommand(element, before, after, alignRot, alignRot));
+                AttachMove.AppendFollowers(commands, element, before, alignRot, after, alignRot);
             }
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1, "align_elements rejected: " + string.Join(" | ", errors));
@@ -816,6 +838,7 @@ namespace KitchenDesigner.Core.MCP
                 after = MmGrid.SnapPosition(el, after);
                 var rot = el.transform.rotation;
                 commands.Add(new MoveCommand(el, before, after, rot, rot));
+                AttachMove.AppendFollowers(commands, el, before, rot, after, rot, resolved);
             }
             CommandStack.Execute(new CompositeCommand($"MCP distribute {resolved.Count} elements", commands));
             RefreshElementHighlights();

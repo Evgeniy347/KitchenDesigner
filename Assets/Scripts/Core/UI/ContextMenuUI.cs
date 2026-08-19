@@ -45,12 +45,17 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _drawerFacadeDropdown;
         private TMP_Text? _drawerFacadeLabel;
         private Color _drawerFacadeNormalColor;
+        private TMP_Dropdown? _attachToDropdown;
+        private TMP_Text? _attachToLabel;
+        private Color _attachToNormalColor;
 
         /// <summary>Подпись строки пристёгнутого фасада: у ящика она уточняет
         /// «ящика» (в панели ящика рядом стоят и другие «фасадные» строки), у
         /// посудомойки уточнять нечего — фасад у неё один.</summary>
         private const string DrawerFacadeLabelText = "Фасад ящика";
         private const string HostFacadeLabelText = "Фасад";
+        private const string AttachToLabelText = "Прикрепить к";
+        private const string AttachToNoneText = "(не прикреплено)";
         private TMP_Dropdown? _tintDropdown;
         private TMP_Dropdown? _sashTypeDropdown;
         private TMP_InputField? _sillProtrusion;
@@ -431,6 +436,35 @@ namespace KitchenDesigner.Core.UI
                 if (string.IsNullOrEmpty(attachedName)) return;
                 if (!IsDrawerFacadeOrphaned(attachedName, host)) return;
                 ColorOrphanedDrawerFacadeItem(dd, attachedName, Color.red);
+            };
+
+            // Прикрепление к другой детали или к фасаду: деталь едет за
+            // родителем и при перетаскивании, и при открывании (AttachLinks).
+            // Строка живёт у обычной «дощечки» — фасад, ящик и техника
+            // прикрепить нельзя.
+            _attachToLabel = UIFactory.CreateLabel("L_Прикрепить к", panel.transform, AttachToLabelText,
+                15, new Vector2(-103, 0), new Vector2(126, LabelH));
+            _attachToDropdown = UIFactory.CreateDropdown("CtxAttachTo", panel.transform,
+                new List<string> { AttachToNoneText }, new Vector2(65, 0), new Vector2(202, 28),
+                OnAttachToSelected);
+            AddRow(28f, RowGap, () => AttachLinks.CanBeChild(_target),
+                _attachToLabel.rectTransform,
+                _attachToDropdown.GetComponent<RectTransform>());
+            _attachToNormalColor = _attachToDropdown.captionText.color;
+            // Список кандидатов зависит от геометрии сцены — пересобираем на
+            // каждом раскрытии, как и у фасада ящика.
+            var attachHook = _attachToDropdown.template.gameObject.AddComponent<DropdownOpenHook>();
+            attachHook.OnOpen = () =>
+            {
+                RebuildAttachToOptions();
+                SetAttachToValue(_target != null ? _target.AttachedToName : "");
+            };
+            attachHook.OnAfterShow = () =>
+            {
+                var dd = _attachToDropdown;
+                if (dd == null || _target == null) return;
+                if (!AttachLinks.IsDetached(_target)) return;
+                ColorOrphanedDrawerFacadeItem(dd, _target.AttachedToName, Color.red);
             };
 
             // Окно: тонировка стекла и выступ подоконника.
@@ -1217,6 +1251,10 @@ namespace KitchenDesigner.Core.UI
             MaybeRefresh(_y, ToMM(pos.y));
             MaybeRefresh(_z, ToMM(pos.z));
 
+            // Связь могла разъехаться прямо сейчас (деталь двигают мышью) —
+            // подпись краснеет в реальном времени, как и у фасада ящика.
+            if (AttachLinks.CanBeChild(_target)) UpdateAttachToCaptionColor();
+
             var eu = _target.transform.eulerAngles;
             MaybeRefresh(_rx, eu.x.ToString("F1"));
             MaybeRefresh(_ry, eu.y.ToString("F1"));
@@ -1421,6 +1459,13 @@ namespace KitchenDesigner.Core.UI
                 if (element is OvenElement ovenEl) UpdateOvenDoorButton(ovenEl);
                 if (element is DishwasherElement dwEl) UpdateDishwasherDoorButton(dwEl);
 
+                // Прикрепление к другой детали — только у обычной дощечки.
+                if (AttachLinks.CanBeChild(element))
+                {
+                    RebuildAttachToOptions();
+                    SetAttachToValue(element.AttachedToName);
+                }
+
                 // Пристёгнутый фасад — общая строка ящика и посудомойки.
                 var facadeHost = element as IFacadeHost;
                 if (facadeHost != null)
@@ -1602,6 +1647,9 @@ namespace KitchenDesigner.Core.UI
             if (target is DrawerElement dr) { dr.ForceClose(); UpdateDrawerAnimButton(dr); }
             if (target is WindowElement win) { win.ForceClose(); if (_winDoorButtonLabel != null) _winDoorButtonLabel.text = "Открыть"; }
             if (target is DoorElement doorElApp) { doorElApp.ForceClose(); if (_winDoorButtonLabel != null) _winDoorButtonLabel.text = "Открыть"; }
+            // Деталь может ехать за ОТКРЫТЫМ родителем (нестандартный ящик):
+            // правки идут в позу покоя, поэтому предков сперва захлопываем.
+            AttachLinks.ForceRest(target);
 
             var oldDims = target.DimensionsMM;
             var oldPos = target.transform.position;
@@ -1807,6 +1855,14 @@ namespace KitchenDesigner.Core.UI
                     oldDims, target.DimensionsMM,
                     oldPos, target.transform.position,
                     oldRot, target.transform.rotation));
+
+                // Прикреплённые детали едут за родителем. Ресайз им не
+                // передаётся вовсе (у каждой свой габарит) — только перенос и
+                // поворот. Apply идёт внутри BeginCapture, так что это тот же
+                // один шаг отмены.
+                var followers = AttachMove.FollowersCommand(target,
+                    oldPos, oldRot, target.transform.position, target.transform.rotation);
+                if (followers != null) CommandStack.Execute(followers);
             }
         }
 
@@ -1871,9 +1927,19 @@ namespace KitchenDesigner.Core.UI
             _target.RotateAroundAxis(axis, angle);
             if (_target is WindowElement win) win.SnapToWall();
             if (_target is DoorElement doorRot) doorRot.SnapToWall();
-            CommandStack.Execute(new MoveCommand(_target,
-                _target.transform.position, _target.transform.position,
-                oldRot, _target.transform.rotation));
+            var rotCmds = new List<IUndoCommand>
+            {
+                new MoveCommand(_target, _target.transform.position, _target.transform.position,
+                    oldRot, _target.transform.rotation)
+            };
+            // Прикреплённые детали разворачиваются ВОКРУГ родителя, а не вокруг
+            // своих центров: связка жёсткая, иначе поворот фасада оставил бы
+            // короб стоять как стоял.
+            AttachMove.AppendFollowers(rotCmds, _target, _target.transform.position,
+                oldRot, _target.transform.position, _target.transform.rotation);
+            CommandStack.Execute(rotCmds.Count == 1
+                ? rotCmds[0]
+                : new CompositeCommand("Поворот " + _target.PartName, rotCmds));
             RefreshTransformFields();
             RefreshHighlights();
         }
@@ -3149,6 +3215,81 @@ namespace KitchenDesigner.Core.UI
             // пассажирский режим на новом фасаде и снимает со старого.
             d.OnAttachedFacadeChanged(prev, string.IsNullOrEmpty(newName) ? null : d.FindAttachedFacade());
             UpdateDrawerFacadeCaptionColor();
+            SceneRevision.Bump();
+        }
+
+        // ── Прикрепление к другой детали ───────────────────────────────
+        // Тот же приём, что и у фасада ящика: в списке только то, к чему
+        // деталь РЕАЛЬНО прилегает (плюс текущий родитель, даже если сборка
+        // разъехалась), а разъехавшаяся связь горит красным.
+
+        private void RebuildAttachToOptions()
+        {
+            if (_attachToDropdown == null) return;
+            var opts = new List<TMP_Dropdown.OptionData> { new TMP_Dropdown.OptionData(AttachToNoneText) };
+            var target = _target;
+            var attachedName = target != null ? target.AttachedToName : "";
+            var names = new HashSet<string>();
+            if (target != null && AttachLinks.CanBeChild(target))
+            {
+                foreach (var el in PartRegistry.GetAll())
+                {
+                    if (el == null || el == target || string.IsNullOrEmpty(el.PartName)) continue;
+                    if (!AttachLinks.CanAttach(target, el)) continue;
+                    bool isAttached = !string.IsNullOrEmpty(attachedName) && el.PartName == attachedName;
+                    if (!isAttached && !AttachLinks.InContact(target, el)) continue;
+                    opts.Add(new TMP_Dropdown.OptionData(el.PartName));
+                    names.Add(el.PartName);
+                }
+            }
+            // Родителя удалили, а имя осталось — показываем его, иначе список
+            // молча сбросился бы на «(не прикреплено)» и связь пропала бы при
+            // первом же выборе.
+            if (!string.IsNullOrEmpty(attachedName) && !names.Contains(attachedName))
+                opts.Add(new TMP_Dropdown.OptionData(attachedName));
+            _attachToDropdown.options = opts;
+        }
+
+        private int AttachToIndex(string name)
+        {
+            if (string.IsNullOrEmpty(name) || _attachToDropdown == null) return 0;
+            var opts = _attachToDropdown.options;
+            for (int i = 1; i < opts.Count; i++)
+                if (opts[i].text == name) return i;
+            return 0;
+        }
+
+        private void SetAttachToValue(string name)
+        {
+            if (_attachToDropdown == null) return;
+            _attachToDropdown.SetValueWithoutNotify(AttachToIndex(name));
+            _attachToDropdown.RefreshShownValue();
+            UpdateAttachToCaptionColor();
+        }
+
+        private void UpdateAttachToCaptionColor()
+        {
+            if (_attachToDropdown?.captionText == null) return;
+            _attachToDropdown.captionText.color =
+                AttachLinks.IsDetached(_target) ? Color.red : _attachToNormalColor;
+        }
+
+        private void OnAttachToSelected(int index)
+        {
+            var target = _target;
+            if (target == null || !AttachLinks.CanBeChild(target) || _attachToDropdown == null) return;
+            string newName = index <= 0 ? "" : _attachToDropdown.options[index].text;
+            if (newName == target.AttachedToName) return;
+
+            // Отмена: AttachedToName помечено [Undoable], но выбор в списке идёт
+            // мимо «Применить» — снимок до/после снимаем здесь сами.
+            var before = UndoableProperties.Capture(target);
+            target.AttachedToName = newName;
+            var after = UndoableProperties.Capture(target);
+            var cmd = SetPropertiesCommand.TryCreate(target, before, after);
+            if (cmd != null) CommandStack.Execute(cmd);
+
+            UpdateAttachToCaptionColor();
             SceneRevision.Bump();
         }
 

@@ -39,6 +39,7 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<SelectionManager>() == null) gameObject.AddComponent<SelectionManager>();
             if (FindAnyObjectByType<ElementMover>() == null) gameObject.AddComponent<ElementMover>();
             if (FindAnyObjectByType<ElementHighlighter>() == null) gameObject.AddComponent<ElementHighlighter>();
+            if (FindAnyObjectByType<AttachRider>() == null) gameObject.AddComponent<AttachRider>();
             if (FindAnyObjectByType<UI.UIManager>() == null) gameObject.AddComponent<UI.UIManager>();
             if (FindAnyObjectByType<AutoSaveManager>() == null) gameObject.AddComponent<AutoSaveManager>();
             if (FindAnyObjectByType<FrameRateManager>() == null)

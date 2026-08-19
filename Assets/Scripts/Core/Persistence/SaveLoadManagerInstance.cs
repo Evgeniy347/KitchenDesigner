@@ -242,6 +242,7 @@ namespace KitchenDesigner.Core
                 if (el != null)
                 {
                     el.Movable = ed.movable;
+                    el.AttachedToName = ed.attachedToName ?? "";
                     el.GroupId = ed.groupId;
                     el.Transparent = ed.transparent;
                     MaterialManager.ApplyById(el, ed.materialId);
@@ -512,6 +513,7 @@ namespace KitchenDesigner.Core
                 ed.drawerPairedName = Remap(map, ed.drawerPairedName);
                 ed.drawerAttachedFacadeName = Remap(map, ed.drawerAttachedFacadeName);
                 ed.dishwasherAttachedFacadeName = Remap(map, ed.dishwasherAttachedFacadeName);
+                ed.attachedToName = Remap(map, ed.attachedToName);
                 ed.windowAttachedWallName = Remap(map, ed.windowAttachedWallName);
                 ed.doorAttachedWallName = Remap(map, ed.doorAttachedWallName);
             }

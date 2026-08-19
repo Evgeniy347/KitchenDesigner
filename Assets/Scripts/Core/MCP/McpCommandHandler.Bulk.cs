@@ -72,6 +72,8 @@ namespace KitchenDesigner.Core.MCP
                 var before = e.transform.position;
                 var rot = e.transform.rotation;
                 commands.Add(new MoveCommand(e, before, before + delta, rot, rot));
+                // Прикреплённые детали едут за родителем (AttachLinks).
+                AttachMove.AppendFollowers(commands, e, before, rot, before + delta, rot, matched);
             }
 
             if (commands.Count > 0)
@@ -195,7 +197,9 @@ namespace KitchenDesigner.Core.MCP
                 foreach (var e in unit)
                 {
                     var before = e.transform.position; var after = before; after[axis] += delta;
-                    commands.Add(new MoveCommand(e, before, after, e.transform.rotation, e.transform.rotation));
+                    var rot = e.transform.rotation;
+                    commands.Add(new MoveCommand(e, before, after, rot, rot));
+                    AttachMove.AppendFollowers(commands, e, before, rot, after, rot, unit);
                 }
             }
             CommandStack.Execute(new CompositeCommand($"MCP align x{units.Count} units", commands));

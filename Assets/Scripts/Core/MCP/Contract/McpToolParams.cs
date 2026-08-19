@@ -217,6 +217,8 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string? paired_drawer_name;
         [McpParam("Drawer and dishwasher only: exact name of the facade acting as this element's front. Empty string detaches. Omit to keep.")]
         public string? attached_facade_name;
+        [McpParam("Static parts only (board, panel, shelf, table, pillar): exact name of the board or facade this element is ATTACHED to. An attached board follows its parent when the parent is moved, rotated or opened; resizing is never propagated. A facade cannot be attached to anything. Empty string detaches. Omit to keep.")]
+        public string? attached_to_name;
 
         // Tables (TableElement / RadiusTableElement).
         [McpParam("Table only: inward offset of legs from corners along X and Z, in MM. Omit to keep.", Min = 0)]

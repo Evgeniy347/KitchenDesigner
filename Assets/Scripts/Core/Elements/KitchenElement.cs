@@ -43,7 +43,7 @@ namespace KitchenDesigner.Core
         /// Запись в transform.position тогда коробку не двигает — она лишь растёт
         /// симметрично от старого центра, тянущаяся грань уходит на половину дельты,
         /// снэп мажет, а при закрытии деталь прыгает на исходное место.</summary>
-        public virtual bool PoseFollowsTransform => true;
+        public virtual bool PoseFollowsTransform => !_attachRidden;
 
         /// <summary>Деталь можно двигать и растягивать прямо сейчас. Кроме флага
         /// «подвижна» требует, чтобы поза шла за трансформом — иначе правка
@@ -70,6 +70,47 @@ namespace KitchenDesigner.Core
             get => _data.Transparent;
             set => _data.Transparent = value;
         }
+
+        // ── Прикрепление к другой детали ────────────────────────────────
+        // Односторонняя связь по имени: родитель тащит детей за собой, ребёнок
+        // родителя — никогда. Механика целиком живёт в AttachLinks; здесь только
+        // поле и поза покоя, которую у едущей детали спрашивает валидация.
+
+        /// <summary>Имя детали или фасада, к которой эта деталь прикреплена;
+        /// пусто — ни к чему. См. <see cref="AttachLinks"/>.</summary>
+        [Undoable]
+        public string AttachedToName
+        {
+            get => _data.AttachedToName;
+            set => _data.AttachedToName = value;
+        }
+
+        private Vector3 _attachRestPos;
+        private Quaternion _attachRestRot = Quaternion.identity;
+        private bool _attachRidden;
+
+        /// <summary>Деталь ПРЯМО СЕЙЧАС едет за анимацией родителя: её трансформ
+        /// принадлежит <see cref="AttachRider"/>, а не пользователю.</summary>
+        public bool IsAttachRidden => _attachRidden;
+
+        /// <summary>Поза ПОКОЯ — та, в которой деталь стоит при закрытом
+        /// родителе. Это она пишется в проект и по ней считается геометрия;
+        /// пока деталь не едет, это просто её трансформ.</summary>
+        public Vector3 AttachRestPosition => _attachRidden ? _attachRestPos : transform.position;
+        public Quaternion AttachRestRotation => _attachRidden ? _attachRestRot : transform.rotation;
+
+        /// <summary>Начать езду за родителем, запомнив позу покоя (зовёт
+        /// <see cref="AttachRider"/>, больше никто).</summary>
+        internal void BeginAttachRide(Vector3 restPos, Quaternion restRot)
+        {
+            _attachRestPos = restPos;
+            _attachRestRot = restRot;
+            _attachRidden = true;
+        }
+
+        /// <summary>Родитель вернулся в покой: трансформ снова принадлежит
+        /// детали.</summary>
+        internal void EndAttachRide() => _attachRidden = false;
 
         // ── Зазоры ─────────────────────────────────────────────────────
         // Зазор — расстояние от физической детали до границы её ГАБАРИТА:
@@ -558,9 +599,11 @@ namespace KitchenDesigner.Core
         /// По умолчанию — текущий трансформ. Ящик/фасад переопределяют на
         /// ЗАКРЫТУЮ позу: открывание — транзитная анимация, её коллизии гасит
         /// OpeningCollision, и она не должна порождать нарушения в статической
-        /// проверке (иначе открытый ящик «пересекает» свой же фасад).</summary>
-        protected virtual Vector3 ValidationPosition => transform.position;
-        protected virtual Quaternion ValidationRotation => transform.rotation;
+        /// проверке (иначе открытый ящик «пересекает» свой же фасад). Деталь,
+        /// едущая за прикреплённым родителем, — тот же случай: её поза покоя
+        /// стоит на месте, пока трансформ уехал вместе с фасадом.</summary>
+        protected virtual Vector3 ValidationPosition => AttachRestPosition;
+        protected virtual Quaternion ValidationRotation => AttachRestRotation;
 
         /// <summary>Та же <see cref="ValidationPosition"/>, но для ГИПОТЕТИЧЕСКОЙ
         /// позиции трансформа. Кто сдвигает позу валидации относительно трансформа
@@ -568,7 +611,7 @@ namespace KitchenDesigner.Core
         /// её (выдвинутый ящик), обязан переопределить и это — иначе примерка
         /// детали в другую позицию разойдётся с тем, что даёт настоящий сдвиг.</summary>
         protected virtual Vector3 ValidationPositionAt(Vector3 transformPosition)
-            => transformPosition;
+            => _attachRidden ? _attachRestPos : transformPosition;
 
         /// <summary>Не пересобирать меш и материалы в <see cref="ApplyDimensions"/>.
         /// Размер, поза и логические ограничения применяются как обычно — гасится

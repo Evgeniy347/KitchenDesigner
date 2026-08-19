@@ -245,6 +245,8 @@ namespace KitchenDesigner.Core.MCP
                 rotX = t.eulerAngles.x, rotY = t.eulerAngles.y, rotZ = t.eulerAngles.z,
                 active = el.gameObject.activeInHierarchy,
                 locked = !el.Movable,
+                attachedToName = string.IsNullOrEmpty(el.AttachedToName) ? null : el.AttachedToName,
+                attachDetached = string.IsNullOrEmpty(el.AttachedToName) ? (bool?)null : AttachLinks.IsDetached(el),
                 moduleId = group != null ? group.id : 0,
                 moduleName = group != null ? group.name : null,
                 materialId = el.MaterialId,

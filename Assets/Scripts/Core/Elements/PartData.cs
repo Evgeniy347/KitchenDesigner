@@ -20,6 +20,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _gapFront;
         [SerializeField] private int _gapBack;
         [SerializeField] private bool _transparent;
+        [SerializeField] private string _attachedToName = "";
         // Кромкование по умолчанию включено: наличие кромки на каждом торце
         // считается автоматически по геометрии, и «выключено» здесь означает
         // не «ещё не посчитано», а сознательный отказ от кромки на этой детали.
@@ -119,6 +120,15 @@ namespace KitchenDesigner.Core
         {
             get => _transparent;
             set => _transparent = value;
+        }
+
+        /// <summary>Имя детали (или фасада), к которой эта деталь ПРИКРЕПЛЕНА:
+        /// она едет за ней при перемещении и при открывании. Пусто — не
+        /// прикреплена. Связь по имени, см. <see cref="AttachLinks"/>.</summary>
+        public string AttachedToName
+        {
+            get => _attachedToName;
+            set => _attachedToName = value ?? "";
         }
 
         /// <summary>Клеить ли кромку на открытые торцы детали.</summary>

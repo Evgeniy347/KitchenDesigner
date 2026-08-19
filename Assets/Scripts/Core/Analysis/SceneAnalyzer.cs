@@ -46,6 +46,7 @@ namespace KitchenDesigner.Core.Analysis
             CollectPanelSeating(all, issues);
             CollectFacadeGaps(all, issues);
             CollectDrawerFacadeLinks(all, issues);
+            CollectAttachLinks(all, issues);
             CollectDishwasherFacadeLinks(all, issues);
             return issues;
         }
@@ -221,6 +222,27 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
+        // ── Error: прикреплённая деталь отошла от родителя ───────────────
+        // Прикрепление означает «стоят вплотную»: дно прикручено к фасаду,
+        // задняя стенка — ко дну. Появился зазор — сборка разъехалась, и
+        // анимация открывания растащит её ещё дальше. Это ОШИБКА, а не
+        // предупреждение: связь объявил сам пользователь, и геометрия ей
+        // противоречит.
+        //
+        // Пропавший родитель ошибкой НЕ считается: удаление родителя отцепляет
+        // детей (см. AttachLinks.Parent), и жаловаться там не на что.
+        private static void CollectAttachLinks(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var e in all)
+            {
+                if (e == null || string.IsNullOrEmpty(e.AttachedToName)) continue;
+                var parent = AttachLinks.Parent(e);
+                if (parent == null) continue;
+                if (!AttachLinks.InContact(e, parent))
+                    issues.Add(IssueCatalog.AttachDetached(e, parent));
+            }
+        }
+
         private static FacadeElement? FindFacade(List<KitchenElement> all, string name)
         {
             foreach (var e in all)
@@ -255,6 +277,11 @@ namespace KitchenDesigner.Core.Analysis
         /// <summary>Единственный DWH с уровнем Error: «не на чем стоять» — это
         /// не недоделанная сборка, а неверная геометрия.</summary>
         public const string CodeDishwasherNoSupport = "DWH-05";
+
+        /// <summary>Прикреплённая деталь отошла от родителя (см.
+        /// <see cref="AttachLinks"/>).</summary>
+        public const string CodeAttachDetached = "ATT-01";
+
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {
@@ -381,6 +408,13 @@ namespace KitchenDesigner.Core.Analysis
                 + $"цоколь получится {DishwasherElement.PlinthForFacade(facadeHeightMM)} мм "
                 + $"(допустимо {DishwasherElement.PLINTH_MIN_MM}–{DishwasherElement.PLINTH_MAX_MM})",
                 dishwasher, facade);
+
+        /// <summary>Связь есть, контакта нет — деталь и её родитель разъехались.</summary>
+        public static AnalysisIssue AttachDetached(KitchenElement child, KitchenElement parent) =>
+            new AnalysisIssue(IssueLevel.Error, CodeAttachDetached,
+                PairDetail(child, parent),
+                $"Прикреплённая деталь отошла от родителя — {Name(child)} и {Name(parent)} не в контакте",
+                child, parent);
 
         private static string Name(KitchenElement? e) =>
             e != null && !string.IsNullOrEmpty(e.PartName) ? e.PartName : "—";

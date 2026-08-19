@@ -95,6 +95,13 @@ namespace KitchenDesigner.Core
                         host.AttachedFacadeName = newName;
             }
 
+            // Прикрепление (AttachLinks) — связь по имени у ЛЮБОГО элемента:
+            // переименовали фасад — дно нестандартного ящика обязано поехать за
+            // новым именем, иначе связь тихо порвалась бы.
+            foreach (var e in PartRegistry.All)
+                if (e != null && e != element && e.AttachedToName == oldName)
+                    e.AttachedToName = newName;
+
             element.PartName = newName;
         }
 

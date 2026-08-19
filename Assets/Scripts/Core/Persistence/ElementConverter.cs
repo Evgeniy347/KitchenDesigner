@@ -37,6 +37,7 @@ namespace KitchenDesigner.Core
             var groupId = source.GroupId;
             var materialId = source.MaterialId;
             var transparent = source.Transparent;
+            var attachedToName = source.AttachedToName;
 
             // Зазоры источника; фасад отмечаем отдельно — из него они в деталь
             // не уезжают (отступ от проёма полке ни к чему).
@@ -104,6 +105,12 @@ namespace KitchenDesigner.Core
             result.GroupId = groupId;
             result.MaterialId = materialId;
             result.Transparent = transparent;
+            // Прикрепление к родителю переживает конвертацию — но только пока
+            // новый тип вообще может быть ребёнком: фасад ни к чему не
+            // прикрепляется (AttachLinks.CanBeChild), и связь снимается.
+            // Дети САМОЙ детали не теряются никогда: они ссылаются на имя, а
+            // имя конвертация сохраняет.
+            result.AttachedToName = AttachLinks.CanBeChild(result) ? attachedToName : "";
 
             // Размеры сохраняются как есть; для радиусной полки дополнительно
             // задаётся радиус угла (клампится к min(ширина, глубина)).

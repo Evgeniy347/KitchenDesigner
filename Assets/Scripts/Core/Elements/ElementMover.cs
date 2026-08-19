@@ -184,6 +184,12 @@ namespace KitchenDesigner.Core
             if (_moveSet.Count == 0)
                 _moveSet.Add(_target!);
 
+            // Прикреплённые детали едут за родителем — и в ту же запись отмены
+            // (набор целиком уходит в BuildMoveCommand). Подвижность ребёнка тут
+            // не спрашиваем: он и заблокированный обязан следовать за своим
+            // фасадом, иначе сборка разъедется от одного перетаскивания.
+            AttachMove.ExpandWithDescendants(_moveSet);
+
             foreach (var e in _moveSet) _moveStart.Add(GrabStart(e));
 
             _movingSet.Clear();

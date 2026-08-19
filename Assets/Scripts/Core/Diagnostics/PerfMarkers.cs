@@ -44,6 +44,7 @@ namespace KitchenDesigner.Core
         public static readonly ProfilerMarker DoorSnapToWall = Reg("DoorElement.SnapToWall");
         public static readonly ProfilerMarker WindowSnapToWall = Reg("WindowElement.SnapToWall");
         public static readonly ProfilerMarker FacadeStepDoor = Reg("FacadeElement.StepDoor");
+        public static readonly ProfilerMarker AttachRiderStep = Reg("AttachRider.Step");
 
         // ── Рендер поверх сцены ──────────────────────────────────────────
         public static readonly ProfilerMarker ElementOutlineLateUpdate = Reg("ElementOutline.LateUpdate");

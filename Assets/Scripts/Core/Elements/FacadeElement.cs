@@ -4,6 +4,10 @@ namespace KitchenDesigner.Core
 {
     public class FacadeElement : KitchenElement, IOpenable
     {
+        // Фасад ни к чему не ПРИКРЕПЛЯЕТСЯ (AttachLinks.CanBeChild): он сам —
+        // корень сборки, и своя кинематика открывания у него уже есть. Зато к
+        // нему прикрепляют — ради этого механика и заведена.
+
         /// <summary>Зазор фасада по умолчанию со всех четырёх сторон, мм.
         /// Спереди/сзади — ноль: по толщине дверца в проём не утапливается.</summary>
         public const int DEFAULT_GAP_MM = 2;
@@ -227,6 +231,11 @@ namespace KitchenDesigner.Core
                         break;
                     }
                 }
+                // Прикреплённые детали (нестандартный ящик: дно, стенки,
+                // боковины) едут вместе с фасадом — препятствием они быть не
+                // могут. Иначе фасад упирался бы в собственный короб и
+                // останавливал анимацию на первом же миллиметре.
+                exclude.AddRange(AttachLinks.Descendants(this));
                 float safe = OpeningCollision.FindMaxProgress(this, GetOpenBounds, exclude);
                 if (safe < _t) _t = Mathf.Max(_t - step, safe);
             }
