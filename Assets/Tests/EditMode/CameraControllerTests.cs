@@ -715,6 +715,13 @@ public class CameraControllerTests
         return d;
     }
 
+    private OvenElement MakeOven(string name)
+    {
+        var go = ElementFactory.CreateOven(name, Vector3.zero);
+        _openableSpawned.Add(go);
+        return go.GetComponent<OvenElement>();
+    }
+
     [TearDown]
     public void TearDownOpenables()
     {
@@ -784,5 +791,20 @@ public class CameraControllerTests
         _controller!.ToggleSelectedOpenables();
         Assert.AreNotEqual(DoubleDrawerState.Closed, lower.DoubleState,
             "E циклирует двойной ящик");
+    }
+
+    [Test]
+    public void ToggleSelectedOpenables_OpensOven()
+    {
+        var sel = EnsureSelection();
+        var oven = MakeOven("test_oven");
+        sel.Select(oven);
+
+        Assert.False(oven.IsOpen, "духовка закрыта");
+        _controller!.ToggleSelectedOpenables();
+        Assert.True(oven.IsOpen, "E открывает дверцу духовки");
+
+        _controller!.ToggleSelectedOpenables();
+        Assert.False(oven.IsOpen, "E закрывает дверцу духовки обратно");
     }
 }

@@ -306,6 +306,10 @@ namespace KitchenDesigner.Core
                         f.ToggleDoor();
                     }
                 }
+                else if (el is OvenElement oven)
+                {
+                    oven.ToggleOpen();
+                }
             }
 
             UI.ContextMenuUI.Instance?.SyncOpenLabels();
