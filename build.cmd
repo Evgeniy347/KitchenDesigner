@@ -3,8 +3,9 @@ setlocal enabledelayedexpansion
 
 REM ---------------------------------------------------------------------------
 REM  Единая логика для всех скриптов проекта: любая команда к Unity уходит через
-REM  tools\unity.ps1. Редактор открыт — команда идёт в него (тесты за секунды),
-REM  закрыт — поднимается фоновый и дальше работает он.
+REM  tools\unity.ps1, и каждая поднимает СВОЙ холодный Unity -batchMode. Фоновый
+REM  редактор между вызовами больше не живёт: он экономил старт, но постоянно
+REM  отваливался, и разбор его отказов стоил дороже сэкономленного.
 REM
 REM  ВАЖНО: -RunTests и -RunPlayMode БОЛЬШЕ НЕ СОБИРАЮТ плеер. Раньше сборка шла
 REM  следом всегда и добавляла 7-8 минут к каждой проверке тестов. Нужен плеер —
@@ -19,7 +20,6 @@ set "FLAG_WEBGL="
 set "FLAG_WEBGL_DEBUG="
 set "FLAG_WIN_DEBUG="
 set "FILTER="
-set "LIVE="
 
 :parse_args
 if "%~1"=="" goto :args_done
@@ -30,7 +30,6 @@ if /i "%~1"=="-BuildOnly" set "FLAG_BUILD=1"
 if /i "%~1"=="-WebGL" set "FLAG_WEBGL=1"
 if /i "%~1"=="-WebGLDebug" set "FLAG_WEBGL_DEBUG=1"
 if /i "%~1"=="-WinDebug" set "FLAG_WIN_DEBUG=1"
-if /i "%~1"=="-Live" set "LIVE=-Live"
 REM Через goto, а не через if-блок: в скобках %~1 раскрывается ДО shift,
 REM и значение фильтра теряется.
 if /i "%~1"=="-Filter" goto :take_filter
@@ -59,9 +58,9 @@ REM ---- Tests ----
 if defined FLAG_TESTS (
     echo === EditMode Tests ===
     if defined FILTER (
-        %gate% tests -Platform EditMode -Filter "!FILTER!" !LIVE!
+        %gate% tests -Platform EditMode -Filter "!FILTER!"
     ) else (
-        %gate% tests -Platform EditMode !LIVE!
+        %gate% tests -Platform EditMode
     )
     if !errorlevel! neq 0 goto :tests_failed
 )
