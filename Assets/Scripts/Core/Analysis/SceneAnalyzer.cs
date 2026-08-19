@@ -4,7 +4,8 @@ namespace KitchenDesigner.Core.Analysis
 {
     /// <summary>
     /// Сборщик проблем сцены для окна анализа ошибок и MCP. Errors — коллизии
-    /// (<see cref="ConstraintValidator"/>). Warnings — потенциальные дефекты
+    /// (<see cref="ConstraintValidator"/>) и неверная геометрия установки
+    /// (DWH-05: посудомойке не на чем стоять). Warnings — потенциальные дефекты
     /// сборки: почти-касания (недожатый снэп), зазоры фасада, ящик без фасада.
     /// Новый источник = новый Collect-метод + коды в <see cref="IssueCatalog"/>.
     /// Предупреждения НЕ подсвечиваются на сцене — только этот список.
@@ -41,6 +42,7 @@ namespace KitchenDesigner.Core.Analysis
             CollectEdgeCover(all, issues);
             CollectNearContacts(all, issues);
             CollectDishwasherFacadeBackGaps(all, issues);
+            CollectDishwasherSupport(all, issues);
             CollectPanelSeating(all, issues);
             CollectFacadeGaps(all, issues);
             CollectDrawerFacadeLinks(all, issues);
@@ -124,6 +126,19 @@ namespace KitchenDesigner.Core.Analysis
         {
             foreach (var d in ConstraintValidator.FindDishwasherFacadeBackGaps(all))
                 issues.Add(IssueCatalog.DishwasherFacadeBackGap(d.dishwasher, d.facade, d.gapMm));
+        }
+
+        // ── Error: посудомойке не на чем стоять ─────────────────────────
+        // Прибор обязан опираться подошвой на пол, цоколь или любую деталь.
+        // Общий COL-02 «висит в воздухе» его не ловит: объём валидации машины
+        // начинается выше подошвы (цокольная полоса отдана мебели), поэтому и
+        // «висит», и «провалилась в пол» проходили молча.
+        private static void CollectDishwasherSupport(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var s in ConstraintValidator.FindDishwasherSupportIssues(all))
+                issues.Add(s.blocker != null
+                    ? IssueCatalog.DishwasherSunk(s.dishwasher, s.blocker, s.sinkMm)
+                    : IssueCatalog.DishwasherNoSupport(s.dishwasher));
         }
 
         // ── Warning: вкладная панель (ДВП) не дошла до дна паза ──────────
@@ -237,6 +252,9 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeDishwasherFacadeOrphaned = "DWH-02";
         public const string CodeDishwasherFacadeHeight = "DWH-03";
         public const string CodeDishwasherBackGap = "DWH-04";
+        /// <summary>Единственный DWH с уровнем Error: «не на чем стоять» — это
+        /// не недоделанная сборка, а неверная геометрия.</summary>
+        public const string CodeDishwasherNoSupport = "DWH-05";
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {
@@ -337,6 +355,22 @@ namespace KitchenDesigner.Core.Analysis
                 PairDetail(dishwasher, facade),
                 $"Фасад посудомойки не на месте — {Name(dishwasher)} и {Name(facade)} не в контакте",
                 dishwasher, facade);
+
+        /// <summary>Под подошвой прибора пусто — машина стоит в воздухе.</summary>
+        public static AnalysisIssue DishwasherNoSupport(KitchenElement dishwasher) =>
+            new AnalysisIssue(IssueLevel.Error, CodeDishwasherNoSupport,
+                Name(dishwasher),
+                "Посудомойке не на чем стоять — под низом нужен пол, цоколь или опорная деталь",
+                dishwasher);
+
+        /// <summary>Подошва прибора ушла ВНУТРЬ опоры — машина провалилась в
+        /// пол (или в ту деталь, на которой должна стоять).</summary>
+        public static AnalysisIssue DishwasherSunk(KitchenElement dishwasher, KitchenElement? blocker,
+            float sinkMm) =>
+            new AnalysisIssue(IssueLevel.Error, CodeDishwasherNoSupport,
+                PairDetail(dishwasher, blocker),
+                $"Посудомойка утоплена в {Name(blocker)} на {sinkMm:F0} мм — низ прибора должен стоять на опоре",
+                dishwasher, blocker);
 
         public static AnalysisIssue DishwasherFacadeHeight(KitchenElement dishwasher,
             KitchenElement? facade, int facadeHeightMM) =>

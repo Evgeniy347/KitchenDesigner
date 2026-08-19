@@ -306,7 +306,11 @@ namespace KitchenDesigner.Core
 
                 // Суммируем зазоры по ВСТРЕЧНЫМ граням в диапазоне (0, mountMm].
                 // Если сумма < mountMm — фасад прижат ближе, чем схема требует.
-                float sum = ValidationCore.SumParallelGaps(e.GetFaces(), facade.GetFaces(), contactDist, maxGap);
+                // Меряем по ЗАКРЫТОЙ позе фасада: у откинутой дверцы он уехал
+                // вместе с ней, и монтажный зазор по нему не считается (та же
+                // причина, что у DWH-02, см. DrawerLinks.WithFacadeClosed).
+                float sum = DrawerLinks.WithFacadeClosed(facade, DrawerLinks.IsFacadeDisplacedBy(dw),
+                    () => ValidationCore.SumParallelGaps(e.GetFaces(), facade.GetFaces(), contactDist, maxGap));
                 float sumMm = sum * toMm;
                 if (sumMm <= 0f) continue;
                 // Эпсилон 0.01мм — float-шум позиции и граней (см. тест
@@ -316,6 +320,102 @@ namespace KitchenDesigner.Core
                 // посудомойке.
                 if (sumMm + 0.01f < mountMm)
                     result.Add(new DishwasherBackGapIssue(dw, facade, sumMm));
+            }
+            return result;
+        }
+
+        /// <summary>Посудомойка стоит не на своём месте по ВЫСОТЕ: либо под её
+        /// подошвой нет ничего (висит), либо подошва провалилась внутрь опоры
+        /// (утоплена в пол). <see cref="blocker"/> заполнен только во втором
+        /// случае — это та деталь, в которую машина въехала.</summary>
+        public readonly struct DishwasherSupportIssue
+        {
+            public readonly DishwasherElement dishwasher;
+            public readonly KitchenElement? blocker;
+            public readonly float sinkMm;
+            public DishwasherSupportIssue(DishwasherElement dishwasher, KitchenElement? blocker, float sinkMm)
+            {
+                this.dishwasher = dishwasher;
+                this.blocker = blocker;
+                this.sinkMm = sinkMm;
+            }
+        }
+
+        /// <summary>Посудомойки, у которых под подошвой НЕТ опоры — DWH-05.
+        ///
+        /// Зачем отдельное правило, а не общий COL-01/COL-02. Объём валидации
+        /// машины — только бак, он начинается на <c>BASE_HEIGHT_MM</c> выше
+        /// подошвы (см. <see cref="DishwasherElement.EffectiveScale"/>), и эта
+        /// полоса отдана мебели специально: туда встают цоколь и ножки модулей.
+        /// Поэтому пол коробку валидации не касается — «висит в воздухе» на
+        /// машину не срабатывает, а провалиться в пол она может целиком на 90 мм
+        /// и ни одной ошибки не получить. Ровно на это и жаловались.
+        ///
+        /// Правило поэтому меряет ПОДОШВУ, а не объём: любая деталь, чей верх
+        /// лежит под подошвой и перекрывается с прибором в плане, — законная
+        /// опора (пол, цоколь, поддон, доска — всё равно). Пересёк подошву
+        /// насквозь — машина в него утоплена.
+        ///
+        /// ЗАЗОР ДО ОПОРЫ допускается до <see cref="DishwasherElement.FEET_ADJUST_MM"/>
+        /// (60 мм) — это не допуск «на глазок», а ход регулируемых ножек:
+        /// паспортная высота 815–875 набирается именно ими, а ножек в модели
+        /// нет. Реальная кухня из docs/example.save.json ровно это и делает:
+        /// верх машины подведён под столешницу 820, и корпус висит на 4.5 мм —
+        /// физически он стоит на выкрученных ножках. Выше хода ножек висеть уже
+        /// не на чем.</summary>
+        public static List<DishwasherSupportIssue> FindDishwasherSupportIssues(List<KitchenElement> all)
+        {
+            var result = new List<DishwasherSupportIssue>();
+            if (all == null) return result;
+
+            float eps = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            float toMm = 1f / AppConstants.MM_TO_UNITS;
+            float reach = DishwasherElement.FEET_ADJUST_MM * AppConstants.MM_TO_UNITS;
+
+            foreach (var e in all)
+            {
+                if (!(e is DishwasherElement dw)) continue;
+
+                float soleY = dw.SoleCenterWorld.y;
+                var dwGeo = dw.ToGeometry();
+                var facade = dw.FindAttachedFacade();
+
+                KitchenElement? blocker = null;
+                float deepest = 0f;
+                bool supported = false;
+
+                foreach (var other in all)
+                {
+                    if (other == null || ReferenceEquals(other, e)) continue;
+                    // Свой фасад висит на кронштейнах перед прибором и опорой
+                    // ему не является; светильник — декор без физики.
+                    if (ReferenceEquals(other, facade)) continue;
+                    if (other is LightSourceElement) continue;
+
+                    var g = other.ToGeometry();
+                    // Перекрытие В ПЛАНЕ: соседний шкаф касается прибора боком,
+                    // но под ним не стоит — касание опорой не считается.
+                    if (g.Min.x >= dwGeo.Max.x - eps || g.Max.x <= dwGeo.Min.x + eps) continue;
+                    if (g.Min.z >= dwGeo.Max.z - eps || g.Max.z <= dwGeo.Min.z + eps) continue;
+
+                    // Опора: верх детали от подошвы до хода ножек ниже неё.
+                    if (g.Max.y <= soleY + eps && g.Max.y >= soleY - reach - eps)
+                    {
+                        supported = true;
+                        break;
+                    }
+
+                    // Деталь пересекает плоскость подошвы насквозь — прибор в
+                    // неё утоплен. Берём самое глубокое погружение.
+                    if (g.Min.y < soleY - eps && g.Max.y > soleY + eps)
+                    {
+                        float sink = (g.Max.y - soleY) * toMm;
+                        if (sink > deepest) { deepest = sink; blocker = other; }
+                    }
+                }
+
+                if (supported) continue;
+                result.Add(new DishwasherSupportIssue(dw, blocker, deepest));
             }
             return result;
         }

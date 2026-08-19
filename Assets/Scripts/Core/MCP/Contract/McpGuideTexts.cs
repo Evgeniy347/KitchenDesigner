@@ -257,10 +257,14 @@ DishwasherElement     Fully integrated dishwasher (type:""dishwasher""), one
                       it counts as attached while it is up to 5 mm away from the
                       appliance front (dishwasher.facadeMountGapMM) — a drawer
                       front, screwed on flush, still requires real contact.
-                      COLLISIONS SKIP THE BOTTOM 89 mm (plinthNicheMM): that
-                      band is the plinth niche, the appliance stands there on
-                      four adjustable feet, and plinth boards and module legs
-                      belong in it.
+                      The bottom 90 mm (baseHeightMM) is the appliance's own
+                      BASE, recessed 100 mm (baseSetbackMM) so toes fit under
+                      the facade; the 725 mm above it is the door. COLLISIONS
+                      SKIP that bottom band — plinth boards and module legs
+                      belong in the niche in front of the base — so standing on
+                      something is checked separately: get_violations reports
+                      DWH-05 when nothing is under the sole or the appliance is
+                      sunk into the floor.
                       The door drops DOWN around its bottom edge and takes the
                       attached facade with it: edit_elements {is_open:true};
                       state in element.dishwasher.isOpen.

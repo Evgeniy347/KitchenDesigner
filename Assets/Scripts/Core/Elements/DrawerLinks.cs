@@ -103,9 +103,9 @@ namespace KitchenDesigner.Core
         public static string UniqueName(string baseName) => ElementNaming.Normalize(baseName);
 
         /// <summary>Фасад НАВЕШЕН на своего хозяина (<see cref="IFacadeHost"/>).
-        /// У ящика проверка идёт по ЗАКРЫТОЙ позе (перегрузка ниже), у
-        /// неподвижного хозяина — по текущей: посудомойка не выдвигается, и
-        /// подменять ей позу нечем.
+        /// Проверка ВСЕГДА идёт по ЗАКРЫТОЙ позе: у ящика двигается сам короб
+        /// (перегрузка ниже), у посудомойки короб стоит, а вместе с дверцей
+        /// уезжает ФАСАД-ПАССАЖИР — и то и другое обязано меряться захлопнутым.
         ///
         /// Порог берётся у самого хозяина (<see cref="IFacadeHost.FacadeMountGapMm"/>):
         /// фронт ящика прикручен заподлицо и требует прямого контакта, фасад
@@ -116,7 +116,50 @@ namespace KitchenDesigner.Core
             if (host == null || facade == null) return false;
             if (host is DrawerElement drawer) return IsFacadeInContact(drawer, facade);
             if (!(host is KitchenElement element)) return false;
-            return ConstraintValidator.AreFacadeMountable(element, facade, host.FacadeMountGapMm);
+            return WithFacadeClosed(facade, IsFacadeDisplacedBy(host),
+                () => ConstraintValidator.AreFacadeMountable(element, facade, host.FacadeMountGapMm));
+        }
+
+        /// <summary>Хозяин ПРЯМО СЕЙЧАС держит фасад не в закрытой позе. Только
+        /// у посудомойки: она везёт фасад на своей дверце.</summary>
+        public static bool IsFacadeDisplacedBy(IFacadeHost host) =>
+            host is DishwasherElement dw && dw.DoorProgress > 0f;
+
+        /// <summary>Позвать проверку над фасадом, временно вернув его в ЗАКРЫТУЮ
+        /// позу.
+        ///
+        /// СИМПТОМ, ради которого это есть: у открытой посудомойки светилось
+        /// DWH-02 «фасад не на месте», а стоило захлопнуть дверцу — исчезало.
+        /// Фасад машины — ПАССАЖИР: его трансформом владеет дверца
+        /// (<see cref="DishwasherElement.ApplyFacadePose"/>), и у откинутой
+        /// дверцы он честно лежит горизонтально в метре от корпуса. Мерить по
+        /// нему «навешен ли фасад» бессмысленно — навеска не меняется от того,
+        /// открыли машину или нет. Закрытую позу пассажир хранит сам
+        /// (<see cref="FacadeElement.ClosedPosition"/> = захваченная при
+        /// пристёгивании), её и подставляем.
+        ///
+        /// Подменяем ТОЛЬКО пока дверца реально сдвинута (<paramref name="displaced"/>).
+        /// У закрытой машины закрытая поза — это и есть текущий трансформ, а
+        /// хранимый <c>_closedPos</c> мог устареть: фасад перетащили мышью, и
+        /// пассажир перезахватывает позу лишь на следующем открывании. Подставь
+        /// мы её всегда — «фасад оторвали» перестало бы находиться вовсе.
+        ///
+        /// Не-пассажир своей позой не двигает вовсе: у него ValidationPosition
+        /// уже берёт закрытую позу, подмена была бы холостой.</summary>
+        public static T WithFacadeClosed<T>(FacadeElement facade, bool displaced, System.Func<T> check)
+        {
+            if (facade == null || !displaced || !facade.IsPassenger) return check();
+            var savedPos = facade.transform.position;
+            var savedRot = facade.transform.rotation;
+            try
+            {
+                facade.transform.SetPositionAndRotation(facade.ClosedPosition, facade.ClosedRotation);
+                return check();
+            }
+            finally
+            {
+                facade.transform.SetPositionAndRotation(savedPos, savedRot);
+            }
         }
 
         public static bool IsFacadeInContact(DrawerElement drawer, FacadeElement facade)

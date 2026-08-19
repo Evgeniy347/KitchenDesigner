@@ -218,12 +218,12 @@ public class DishwasherElementTests
 
     // ── Модель ──────────────────────────────────────────────────────────
 
-    /// <summary>Семь коробок: полый бак из пяти стенок плюс дверца с полосой
-    /// панели. МЕБЕЛЬНОГО ФАСАДА среди детей БЫТЬ НЕ ДОЛЖНО — он отдельный
-    /// элемент, и вторая передняя плоскость поверх пристёгнутой была бы
-    /// браком; собственная дверца прибора («Door») — это не он.</summary>
+    /// <summary>Восемь коробок: полый бак из пяти стенок, основание под ним и
+    /// дверца с полосой панели. МЕБЕЛЬНОГО ФАСАДА среди детей БЫТЬ НЕ ДОЛЖНО —
+    /// он отдельный элемент, и вторая передняя плоскость поверх пристёгнутой
+    /// была бы браком; собственная дверца прибора («Door») — это не он.</summary>
     [Test]
-    public void Dishwasher_IsSevenBoxesAndCarriesNoFacadeOfItsOwn()
+    public void Dishwasher_IsEightBoxesAndCarriesNoFacadeOfItsOwn()
     {
         var dw = Make();
 
@@ -235,11 +235,56 @@ public class DishwasherElementTests
             new[]
             {
                 "BodyBottom", "BodyTop", "BodyLeft", "BodyRight", "BodyBack",
-                "Door", "ControlPanel",
+                "Base", "Door", "ControlPanel",
             }, names,
-            "полый бак из пяти стенок плюс дверца с панелью управления");
+            "полый бак из пяти стенок, основание и дверца с панелью управления");
         CollectionAssert.DoesNotContain(names, "Facade",
             "своей фасадной панели у полновстраиваемой машины нет");
+    }
+
+    /// <summary>ИСХОДНЫЙ СИМПТОМ: «в UI высота 815, а низа не видно». Низ
+    /// прибора не рисовался вовсе — вся нижняя полоса считалась пустой нишей.
+    ///
+    /// Разбивка по высоте, которую задаёт производитель:
+    ///   725 — дверца (она же бак), закрывается самым высоким фасадом;
+    ///    90 — основание, УТОПЛЕННОЕ вглубь на 100 мм под носки обуви;
+    ///   815 — сумма, паспортный габарит.</summary>
+    [Test]
+    public void Base_IsTheBottomBlockRecessedForToes()
+    {
+        var dw = Make();
+        var (center, size) = BoxMM(dw, "Base");
+
+        Assert.AreEqual(725, DishwasherElement.TANK_HEIGHT_MM, "дверца — 725");
+        Assert.AreEqual(90, DishwasherElement.BASE_HEIGHT_MM, "основание — 90");
+        Assert.AreEqual(815, DishwasherElement.TANK_HEIGHT_MM + DishwasherElement.BASE_HEIGHT_MM,
+            "725 + 90 = 815 — общая высота");
+
+        Assert.AreEqual(598f, size.x, 0.01f, "основание во всю ширину прибора");
+        Assert.AreEqual(90f, size.y, 0.01f);
+        Assert.AreEqual(450f, size.z, 0.01f, "550 − 100 утопления");
+        Assert.AreEqual(-815f * 0.5f, center.y - size.y * 0.5f, 0.01f,
+            "подошва — низ габарита: на ней машина и стоит");
+        Assert.AreEqual(-550f * 0.5f, center.z - size.z * 0.5f, 0.01f,
+            "тыл основания — по тылу прибора");
+        Assert.AreEqual(550f * 0.5f - 100f, center.z + size.z * 0.5f, 0.01f,
+            "перёд утоплен ровно на 100 мм — там ниша цоколя и место для ног");
+    }
+
+    /// <summary>Дверца стоит НА основании и доходит до верха: между ними ни
+    /// щели, ни нахлёста, иначе 725 + 90 = 815 разошлось бы с моделью.</summary>
+    [Test]
+    public void Door_StandsOnTheBaseAndReachesTheTop()
+    {
+        var dw = Make();
+        var (baseC, baseS) = BoxMM(dw, "Base");
+        var (doorC, doorS) = BoxMM(dw, "Door");
+
+        Assert.AreEqual(DishwasherElement.FACADE_MAX_HEIGHT_MM, doorS.y, 0.01f,
+            "высота дверцы = самый высокий допустимый фасад");
+        Assert.AreEqual(baseC.y + baseS.y * 0.5f, doorC.y - doorS.y * 0.5f, 0.01f,
+            "низ дверцы — верх основания");
+        Assert.AreEqual(815f * 0.5f, doorC.y + doorS.y * 0.5f, 0.01f, "верх дверцы — верх габарита");
     }
 
     [Test]
@@ -502,7 +547,7 @@ public class DishwasherElementTests
         Assert.IsNotNull(restored, "машина восстановилась своим типом, а не деталью");
         Assert.AreEqual(new Vector3Int(598, 815, 550), restored!.DimensionsMM);
         Assert.IsTrue(restored.HasFixedSize);
-        Assert.AreEqual(7, restored.transform.childCount, "бак и дверца собраны заново целиком");
+        Assert.AreEqual(8, restored.transform.childCount, "бак, основание и дверца собраны заново целиком");
         Assert.AreEqual("DW_rt_front", restored.AttachedFacadeName, "привязка фасада пережила сохранение");
         Assert.IsNotNull(restored.FindAttachedFacade(), "и фасад по этому имени действительно находится");
     }
@@ -885,6 +930,58 @@ public class DishwasherElementTests
             "у машины нет фасада — DWH-01, своя отдельная ветка");
     }
 
+    // ── Открывание не отвинчивает фасад (DWH-02/DWH-04) ───────────────
+
+    /// <summary>СИМПТОМ: стоит ОТКРЫТЬ посудомойку — загорается DWH-02 «фасад
+    /// не на месте», закрыть — гаснет. Навеска от открывания не меняется:
+    /// фасад-пассажир едет вместе с дверцей, и контакт с прибором обязан
+    /// меряться по ЗАКРЫТОЙ позе, а не по той, в которой фасад лежит
+    /// горизонтально в полуметре от корпуса.</summary>
+    [Test]
+    public void OpenDoor_KeepsTheAttachedFacadeMounted()
+    {
+        var dw = Make("DW-open-link");
+        var facade = MakeFacadeAtGap(dw, "DW_open_link_front", 5f);
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+
+        Assert.IsTrue(DrawerLinks.IsFacadeInContact(dw, facade), "закрытая машина: фасад навешен");
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-02"));
+
+        var closedPos = facade.transform.position;
+        dw.SetOpen(true);
+        dw.StepDoor(10f);
+
+        Assert.AreEqual(1f, dw.DoorProgress, 1e-4f, "дверца действительно откинута");
+        Assert.Greater((facade.transform.position - closedPos).magnitude, 0.1f,
+            "и фасад действительно уехал вместе с ней — иначе проверка ниже холостая");
+
+        Assert.IsTrue(DrawerLinks.IsFacadeInContact(dw, facade),
+            "открывание не отвинчивает фасад от кронштейнов");
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-02"),
+            "DWH-02 у открытой машины — это и был баг");
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-04"),
+            "монтажный зазор тоже меряется по закрытой позе");
+    }
+
+    /// <summary>Обратная сторона: подмена позы НЕ должна прятать настоящий
+    /// отрыв. Фасад, оттащенный от ЗАКРЫТОЙ машины, обязан дать DWH-02.</summary>
+    [Test]
+    public void FacadeDraggedAwayFromAClosedDishwasher_StillFiresDwh02()
+    {
+        var dw = Make("DW-open-link2");
+        var facade = MakeFacadeAtGap(dw, "DW_open_link2_front", 5f);
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-02"));
+
+        facade.transform.position += new Vector3(0f, 0f, 0.3f);
+
+        Assert.IsFalse(DrawerLinks.IsFacadeInContact(dw, facade));
+        Assert.IsNotEmpty(PairsWithCode("DWH-02", dw, facade),
+            "фасад в 300мм от прибора — он оторван, и это обязано быть видно");
+    }
+
     private static List<AnalysisIssue> PairsWithCode(string code, KitchenElement a, KitchenElement b)
     {
         var found = new List<AnalysisIssue>();
@@ -1184,10 +1281,10 @@ public class DishwasherElementTests
         return result;
     }
 
-    /// <summary>Бак — 598 × 726 × 550 и стоит НАД нишей цоколя. Пять стенок
+    /// <summary>Бак — 598 × 725 × 550 и стоит НА основании. Пять стенок
     /// обязаны сложиться ровно в этот габарит и оставить внутри пустоту.</summary>
     [Test]
-    public void Body_IsAHollowBoxAboveThePlinthNiche()
+    public void Body_IsAHollowBoxAboveTheBase()
     {
         var dw = Make();
 
@@ -1202,9 +1299,9 @@ public class DishwasherElementTests
         }
 
         Assert.AreEqual(598f, max.x - min.x, 0.01f, "ширина бака");
-        Assert.AreEqual(726f, max.y - min.y, 0.01f, "высота бака = 815 − 89");
+        Assert.AreEqual(725f, max.y - min.y, 0.01f, "высота бака = 815 − 90");
         Assert.AreEqual(407.5f, max.y, 0.01f, "верх бака — верх габарита");
-        Assert.AreEqual(-407.5f + 89f, min.y, 0.01f, "низ бака — потолок ниши цоколя");
+        Assert.AreEqual(-407.5f + 90f, min.y, 0.01f, "низ бака — верх основания");
         // Передний проём отдан дверце, поэтому стенки не доходят до переда.
         Assert.AreEqual(-275f, min.z, 0.01f);
         Assert.AreEqual(275f - DishwasherElement.DOOR_THICKNESS_MM, max.z, 0.01f);
@@ -1222,17 +1319,139 @@ public class DishwasherElementTests
     }
 
     [Test]
-    public void ValidationVolume_IsTheTankWithoutThePlinthNiche()
+    public void ValidationVolume_IsTheTankWithoutTheBase()
     {
         var dw = Make();
         var (center, size) = ValidationBoxMM(dw);
 
         Assert.AreEqual(598f, size.x, 0.01f);
-        Assert.AreEqual(726f, size.y, 0.01f, "в коллизии идёт бак, а не габарит 815");
+        Assert.AreEqual(725f, size.y, 0.01f, "в коллизии идёт бак, а не габарит 815");
         Assert.AreEqual(550f, size.z, 0.01f);
         Assert.AreEqual(0f, center.x, 0.01f);
-        Assert.AreEqual(44.5f, center.y, 0.01f, "бак поднят на полвысоты ниши цоколя");
+        Assert.AreEqual(45f, center.y, 0.01f, "бак поднят на полвысоты основания");
         Assert.AreEqual(0f, center.z, 0.01f);
+    }
+
+    // ── Опора под прибором (DWH-05) ─────────────────────────────────────
+    //
+    // ИСХОДНЫЙ СИМПТОМ: посудомойка проваливалась в пол без единой ошибки.
+    // Объём валидации начинается на 90 мм выше подошвы (цокольная полоса отдана
+    // мебели), поэтому ни COL-01, ни COL-02 низ прибора не видят вовсе.
+
+    /// <summary>Пол под подошвой: верх плиты пола совпадает с низом прибора.</summary>
+    private KitchenElement FloorUnder(DishwasherElement dw, int thicknessMM = 100)
+    {
+        float toU = AppConstants.MM_TO_UNITS;
+        float topMM = dw.SoleCenterWorld.y / toU;
+        var go = ElementFactory.CreateFloor(new Vector3Int(4000, thicknessMM, 4000), "Pol",
+            new Vector3(0f, (topMM - thicknessMM * 0.5f) * toU, 0f));
+        _spawned.Add(go);
+        return go.GetComponent<KitchenElement>();
+    }
+
+    [Test]
+    public void Dishwasher_StandingOnTheFloor_HasNoSupportIssue()
+    {
+        var dw = Make("Posudomoyka");
+        FloorUnder(dw);
+
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-05"),
+            "машина стоит на полу — опора есть");
+    }
+
+    [Test]
+    public void Dishwasher_WithNothingUnderneath_FiresDwh05()
+    {
+        var dw = Make("Posudomoyka");
+
+        var issues = IssuesWithCode("DWH-05");
+        Assert.IsNotEmpty(issues, "под подошвой пусто — прибору не на чем стоять");
+        Assert.AreEqual(IssueLevel.Error, issues[0].Level, "это ошибка, а не предупреждение");
+        Assert.AreSame(dw, issues[0].Target);
+        StringAssert.Contains("не на чем стоять", issues[0].Message);
+    }
+
+    /// <summary>Ровно то, на что жаловались: машину утопили в пол — и тишина.
+    /// Подошва ушла ВНУТРЬ плиты пола, это обязано быть ошибкой.</summary>
+    [Test]
+    public void Dishwasher_SunkIntoTheFloor_FiresDwh05()
+    {
+        var dw = Make("Posudomoyka");
+        var floor = FloorUnder(dw);
+
+        // Опускаем прибор на 40 мм — подошва внутри плиты.
+        dw.transform.position += new Vector3(0f, -40f * AppConstants.MM_TO_UNITS, 0f);
+
+        var issues = IssuesWithCode("DWH-05");
+        Assert.IsNotEmpty(issues, "прибор провалился в пол");
+        Assert.AreSame(floor, issues[0].Secondary, "виновник — та деталь, в которую утоплен");
+        StringAssert.Contains("утоплена", issues[0].Message);
+        StringAssert.Contains("40", issues[0].Message, "и на сколько именно");
+    }
+
+    /// <summary>Ножки регулируемые: паспортные 815–875 набираются именно ими, а
+    /// в модели их нет. Значит корпус вправе висеть над полом на их ход — ровно
+    /// так и стоит машина в docs/example.save.json: верх подведён под столешницу
+    /// 820, корпус на 4.5 мм выше пола, ножки выкручены.</summary>
+    [Test]
+    public void Dishwasher_RaisedWithinTheFeetTravel_IsStillSupported()
+    {
+        var dw = Make("Posudomoyka");
+        FloorUnder(dw);
+        float toU = AppConstants.MM_TO_UNITS;
+
+        dw.transform.position += new Vector3(0f, 4.5f * toU, 0f);
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-05"), "4.5 мм — ножки выкручены на 4.5");
+
+        dw.transform.position += new Vector3(0f, (DishwasherElement.FEET_ADJUST_MM - 4.5f) * toU, 0f);
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-05"), "60 мм — ножки выкручены до упора");
+
+        dw.transform.position += new Vector3(0f, 10f * toU, 0f);
+        Assert.IsNotEmpty(IssuesWithCode("DWH-05"), "70 мм — ножки столько не дают, машина висит");
+    }
+
+    /// <summary>Опорой считается ЛЮБАЯ деталь под подошвой — пол, цоколь,
+    /// подставка. Пользователь вправе собирать это чем угодно.</summary>
+    [Test]
+    public void Dishwasher_OnASupportBoard_IsSupported()
+    {
+        var dw = Make("Posudomoyka");
+        // Доска 20мм ровно под подошвой (низ габарита −407.5).
+        Board("Podstavka", new Vector3(0f, -407.5f - 10f, 0f), new Vector3Int(598, 20, 550));
+
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-05"),
+            "деталь под низом — законная опора, не обязательно пол");
+    }
+
+    /// <summary>Сосед СБОКУ опорой не является: он касается прибора, но под ним
+    /// не стоит. Иначе «не на чем стоять» гасил бы любой шкаф рядом.</summary>
+    [Test]
+    public void Dishwasher_NeighbourBeside_IsNotSupport()
+    {
+        var dw = Make("Posudomoyka");
+        // Боковина вплотную справа, во всю высоту — под прибором её нет.
+        Board("side_R", new Vector3(308f, 0f, 0f), new Vector3Int(18, 815, 550));
+
+        Assert.IsNotEmpty(IssuesWithCode("DWH-05"),
+            "касание боком — не опора");
+    }
+
+    /// <summary>Мебельный цоколь стоит В НИШЕ, ПЕРЕД основанием, а не под ним —
+    /// опорой он не считается, и «утопленной» машину не делает. Ровно ради
+    /// этого основание и утоплено на 100 мм.</summary>
+    [Test]
+    public void PlinthInFrontOfTheBase_IsNeitherSupportNorCollision()
+    {
+        var dw = Make("Posudomoyka");
+        FloorUnder(dw);
+        // Цоколь 89мм в передней полосе: от подошвы вверх, перед основанием.
+        Board("Cokol", new Vector3(0f, -407.5f + 44.5f, 275f - 50f), new Vector3Int(598, 89, 100));
+
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-05"),
+            "опору даёт пол; цоколь перед основанием ничего не ломает");
+        var partners = OverlapPartners(dw);
+        CollectionAssert.IsEmpty(partners,
+            "цоколь в нише — не пересечение: " + string.Join(", ", partners.ConvertAll(p => p.PartName)));
     }
 
     /// <summary>Примерка в другую позицию обязана давать то же самое, что
@@ -1289,7 +1508,7 @@ public class DishwasherElementTests
         var box = dw.GetComponent<BoxCollider>();
 
         Assert.AreEqual(815f, box!.size.y / toU, 0.01f, "клик по нише цоколя обязан выделять машину");
-        Assert.AreEqual(726f, ValidationBoxMM(dw).size.y, 0.01f);
+        Assert.AreEqual(725f, ValidationBoxMM(dw).size.y, 0.01f);
     }
 
     // ── Дверца ──────────────────────────────────────────────────────────
@@ -1483,6 +1702,8 @@ public class DishwasherElementTests
         var dish = Payload(info)["elements"]![0]!["dishwasher"]!;
         Assert.IsTrue(dish["isOpen"]!.Value<bool>());
         Assert.AreEqual(89, dish["plinthNicheMM"]!.Value<int>());
+        Assert.AreEqual(90, dish["baseHeightMM"]!.Value<int>(), "собственное основание прибора");
+        Assert.AreEqual(100, dish["baseSetbackMM"]!.Value<int>(), "утопление основания вглубь");
         Assert.AreEqual(5f, dish["facadeMountGapMM"]!.Value<float>(), 1e-4f);
 
         _handler.Handle(MakeReq("edit_elements", new
