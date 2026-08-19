@@ -13,8 +13,8 @@ using KitchenDesigner.Core.UI;
 ///
 /// Проверяется ровно то, что отличает готовую модель от свободного элемента:
 /// размеры не поддаются правке НИ ОДНИМ путём, ручки ресайза не строятся,
-/// модель переживает сохранение и дублирование, а обычная «Варочная
-/// поверхность» из группы «Мебель» осталась полностью редактируемой.
+/// модель переживает сохранение и дублирование, а общая «Варочная
+/// поверхность» из группы «Техника» осталась полностью редактируемой.
 /// </summary>
 public class FixedApplianceTests
 {
@@ -229,12 +229,14 @@ public class FixedApplianceTests
     }
 
     [Test]
-    public void Catalog_FurnitureCooktop_HasNoModel()
+    public void Catalog_ApplianceGroup_HasGenericCooktop()
     {
-        var group = SidebarCatalog.Build().Find(g => g.title == "Мебель");
+        var group = SidebarCatalog.Build().Find(g => g.title == "Техника");
         var item = group.items.Find(i => i.name == "Варочная поверхность");
 
-        Assert.AreEqual("", item.applianceModel, "старая варочная моделью не привязана");
+        Assert.IsNotNull(item, "общая варочная переехала из «Мебели» в «Технику»");
+        Assert.IsTrue(item.isCooktop, "общая варочная помечена как isCooktop");
+        Assert.AreEqual("", item.applianceModel, "у общей варочной нет модели — модель только у Bosch-пункта");
     }
 
     // ── Сериализация ────────────────────────────────────────────────────

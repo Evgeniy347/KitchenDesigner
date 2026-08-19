@@ -450,13 +450,13 @@ public class DishwasherElementTests
     // ── Каталог ─────────────────────────────────────────────────────────
 
     [Test]
-    public void Catalog_ApplianceGroup_HasDishwasherThird()
+    public void Catalog_ApplianceGroup_HasDishwasherFourth()
     {
         var group = SidebarCatalog.Build().Find(g => g.title == "Техника");
 
-        Assert.AreEqual(3, group.items.Count, "варочная, духовка, посудомойка");
-        var dw = group.items[2];
-        Assert.IsTrue(dw.isDishwasher, "посудомойка — третий пункт «Техники»");
+        Assert.AreEqual(4, group.items.Count, "общая варочная, модельная варочная, духовка, посудомойка");
+        var dw = group.items[3];
+        Assert.IsTrue(dw.isDishwasher, "посудомойка — четвёртый пункт «Техники»");
         Assert.AreEqual(DishwasherElement.MODEL, dw.applianceModel);
         Assert.AreEqual(new Vector3Int(598, 815, 550), dw.dims);
         Assert.IsFalse(dw.isOven, "иначе SidebarUI.Spawn ушёл бы не туда");

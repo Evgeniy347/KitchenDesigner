@@ -152,8 +152,7 @@ namespace KitchenDesigner.Core.UI
             radiusTable.isRadiusTable = true;
             var pillar = PillarItem("Ножка", PillarElement.MidHeightMM_Default);
             var sink = SinkItem("Мойка");
-            var cooktop = CooktopItem("Варочная поверхность");
-            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, pillar, sink, cooktop } };
+            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, pillar, sink } };
         }
 
         /// <summary>Встраиваемая техника — готовые модели производителя. Габариты
@@ -163,18 +162,19 @@ namespace KitchenDesigner.Core.UI
         /// Как добавить прибор: положить сюда ещё один Item со своим флагом типа
         /// (по образцу <see cref="CooktopModelItem"/> или <see cref="OvenItem"/>),
         /// развести его в SidebarUI.Spawn и дописать модель в
-        /// <see cref="ApplianceModels.All"/>. Порядок пунктов — варочная,
-        /// духовка, посудомойка.</summary>
+        /// <see cref="ApplianceModels.All"/>. Порядок пунктов — варочная
+        /// свободного размера, варочная модельная, духовка, посудомойка.</summary>
         private static Group ApplianceGroup()
         {
-            var cooktop = CooktopModelItem("Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E,
+            var genericCooktop = CooktopItem("Варочная поверхность");
+            var modelCooktop = CooktopModelItem("Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E,
                 CooktopElement.MODEL_BOSCH_PUE611BB5E);
             var oven = OvenItem("Духовка " + OvenElement.MODEL);
             var dishwasher = DishwasherItem("Посудомойка " + DishwasherElement.MODEL);
             return new Group
             {
                 title = "Техника", shortLabel = "Т",
-                items = new List<Item> { cooktop, oven, dishwasher },
+                items = new List<Item> { genericCooktop, modelCooktop, oven, dishwasher },
             };
         }
 

@@ -41,7 +41,9 @@ namespace KitchenDesigner.Core.UI
 
         private class GroupUI
         {
+            public string title = "";
             public RectTransform? header;
+            public TMP_Text? headerLabel;
             public readonly List<RectTransform> items = new List<RectTransform>();
             public bool open = true;
         }
@@ -125,7 +127,7 @@ namespace KitchenDesigner.Core.UI
         {
             foreach (var g in SidebarCatalog.Build())
             {
-                var gu = new GroupUI();
+                var gu = new GroupUI { title = g.title };
                 var header = UIFactory.CreateButton("SbGrp_" + g.title, _fullRoot!.transform, g.title,
                     Vector2.zero, new Vector2(ExpandedW - 2 * Pad, HeaderH), () => ToggleGroup(gu));
                 UIFactory.AnchorTopLeft(header.GetComponent<RectTransform>());
@@ -134,8 +136,12 @@ namespace KitchenDesigner.Core.UI
                 var headerLabel = header.GetComponentInChildren<TMP_Text>();
                 if (headerLabel != null)
                 {
+                    headerLabel.alignment = TextAlignmentOptions.Left;
+                    headerLabel.margin = new Vector4(Pad, 2f, Pad, 2f);
                     headerLabel.enableWordWrapping = false;
                     headerLabel.overflowMode = TextOverflowModes.Ellipsis;
+                    gu.headerLabel = headerLabel;
+                    SetGroupHeaderText(gu, g.title);
                 }
 
                 foreach (var it in g.items)
@@ -151,6 +157,7 @@ namespace KitchenDesigner.Core.UI
                     if (style.label != null)
                     {
                         style.label.fontSize = ItemFont;
+                        style.label.alignment = TextAlignmentOptions.Left;
                         style.label.enableWordWrapping = true;
                         // Страховка: оценка ширины приблизительная, и если TMP
                         // возьмёт строку сверх расчёта — она обрежется внутри
@@ -165,6 +172,16 @@ namespace KitchenDesigner.Core.UI
                 _groups.Add(gu);
             }
             RelayoutFull();
+        }
+
+        /// <summary>Текст заголовка группы: глиф раскрытия + два пробела + название.
+        /// Глиф слева, чтобы визуально отделить «это раскрывашка» от самого
+        /// названия, а заголовок и пункты сайдбара имели единый левый край.</summary>
+        private static void SetGroupHeaderText(GroupUI gu, string title)
+        {
+            if (gu.headerLabel == null) return;
+            string glyph = gu.open ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed;
+            gu.headerLabel.text = $"{glyph}  {title}";
         }
 
         /// <summary>Категория пункта каталога для режима редактора: стена/пол —
@@ -229,6 +246,7 @@ namespace KitchenDesigner.Core.UI
         private void ToggleGroup(GroupUI gu)
         {
             gu.open = !gu.open;
+            SetGroupHeaderText(gu, gu.title);
             RelayoutFull();
         }
 
@@ -237,7 +255,9 @@ namespace KitchenDesigner.Core.UI
             SetExpanded(true);
             if (index >= 0 && index < _groups.Count)
             {
-                _groups[index].open = true;
+                var gu = _groups[index];
+                gu.open = true;
+                SetGroupHeaderText(gu, gu.title);
                 RelayoutFull();
             }
         }

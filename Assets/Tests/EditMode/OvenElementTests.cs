@@ -583,13 +583,13 @@ public class OvenElementTests
     // ── Каталог ─────────────────────────────────────────────────────────
 
     [Test]
-    public void Catalog_ApplianceGroup_HasOvenSecond()
+    public void Catalog_ApplianceGroup_HasOvenThird()
     {
         var group = SidebarCatalog.Build().Find(g => g.title == "Техника");
 
-        Assert.AreEqual(3, group.items.Count, "варочная, духовка, посудомойка");
-        var oven = group.items[1];
-        Assert.IsTrue(oven.isOven, "духовка — второй пункт «Техники»");
+        Assert.AreEqual(4, group.items.Count, "общая варочная, модельная варочная, духовка, посудомойка");
+        var oven = group.items[2];
+        Assert.IsTrue(oven.isOven, "духовка — третий пункт «Техники»");
         Assert.AreEqual(OvenElement.MODEL, oven.applianceModel);
         Assert.AreEqual(new Vector3Int(594, 595, 568), oven.dims, "в каталоге размеры производителя");
         Assert.IsFalse(oven.isCooktop, "духовка не варочная — иначе SidebarUI.Spawn ушёл бы не туда");

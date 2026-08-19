@@ -109,7 +109,7 @@ public class SidebarCatalogTests
     public void FurnitureGroup_HasTable()
     {
         var groups = SidebarCatalog.Build();
-        Assert.AreEqual(5, groups[3].items.Count);
+        Assert.AreEqual(4, groups[3].items.Count);
         var it = groups[3].items.Find(i => i.name == "Прямоугольный стол");
         Assert.IsNotNull(it);
         Assert.IsTrue(it.isFurniture);
@@ -117,13 +117,11 @@ public class SidebarCatalogTests
     }
 
     [Test]
-    public void FurnitureGroup_HasCooktop()
+    public void FurnitureGroup_HasNoCooktop()
     {
         var groups = SidebarCatalog.Build();
-        var it = groups[3].items.Find(i => i.name == "Варочная поверхность");
-        Assert.IsNotNull(it, "в FurnitureGroup должен быть элемент «Варочная поверхность»");
-        Assert.IsTrue(it.isCooktop, "элемент «Варочная поверхность» помечен как isCooktop");
-        Assert.AreEqual(new Vector3Int(CooktopElement.DEFAULT_WIDTH_MM, CooktopElement.DEFAULT_HEIGHT_MM, CooktopElement.DEFAULT_DEPTH_MM), it.dims);
+        Assert.IsFalse(groups[3].items.Exists(i => i.name == "Варочная поверхность"),
+            "варочная переехала в «Технику» — в «Мебели» её быть не должно");
     }
 
     [Test]
@@ -230,10 +228,21 @@ public class SidebarCatalogTests
     [Test]
     public void ItemHeight_LongApplianceNamesTakeTwoRows()
     {
+        // Имена с моделью (Bosch) длинные и обязаны переноситься и быть выше
+        // однострочных; общая «Варочная поверхность» помещается в одну строку.
         foreach (var name in SidebarCatalog.Build()[4].items.ConvertAll(it => it.name))
         {
-            Assert.AreEqual(2, SidebarUI.ItemLines(name), $"«{name}» не влезает в одну строку панели");
-            Assert.Greater(SidebarUI.ItemHeight(name), 26f, $"кнопка «{name}» должна быть выше однострочной");
+            bool longName = name.Length > 20;
+            if (longName)
+            {
+                Assert.AreEqual(2, SidebarUI.ItemLines(name), $"«{name}» не влезает в одну строку панели");
+                Assert.Greater(SidebarUI.ItemHeight(name), 26f, $"кнопка «{name}» должна быть выше однострочной");
+            }
+            else
+            {
+                Assert.AreEqual(1, SidebarUI.ItemLines(name), $"короткое «{name}» в одну строку");
+                Assert.AreEqual(26f, SidebarUI.ItemHeight(name), $"короткая кнопка «{name}» однострочная");
+            }
         }
     }
 
