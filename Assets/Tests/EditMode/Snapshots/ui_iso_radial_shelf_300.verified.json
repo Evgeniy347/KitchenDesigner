@@ -7,11 +7,6 @@
       "position": [4, 0]
     },
     {
-      "type": "Label",
-      "text": "Автосохранение вкл",
-      "position": [5, 0]
-    },
-    {
       "type": "Button",
       "text": "BasePlate",
       "position": [20, 0]
@@ -138,7 +133,7 @@
     },
     {
       "type": "Button",
-      "text": "детали",
+      "text": "▼  детали",
       "position": [8, -8]
     },
     {
@@ -171,7 +166,7 @@
     },
     {
       "type": "Button",
-      "text": "Фасады",
+      "text": "▼  Фасады",
       "position": [8, -129]
     },
     {
@@ -186,7 +181,7 @@
     },
     {
       "type": "Button",
-      "text": "Ящики",
+      "text": "▼  Ящики",
       "position": [8, -221]
     },
     {
@@ -201,7 +196,7 @@
     },
     {
       "type": "Button",
-      "text": "Мебель",
+      "text": "▼  Мебель",
       "position": [8, -313]
     },
     {
@@ -226,13 +221,13 @@
     },
     {
       "type": "Button",
-      "text": "Варочная поверхность",
-      "position": [22, -463]
+      "text": "▼  Техника",
+      "position": [8, -463]
     },
     {
       "type": "Button",
-      "text": "Техника",
-      "position": [8, -492]
+      "text": "Варочная поверхность",
+      "position": [22, -497]
     },
     {
       "type": "Button",
@@ -242,47 +237,47 @@
     {
       "type": "Button",
       "text": "Духовка Bosch HBA514BB3",
-      "position": [22, -555]
+      "position": [22, -571]
     },
     {
       "type": "Button",
       "text": "Посудомойка Bosch SMV25EX02E",
-      "position": [22, -584]
+      "position": [22, -616]
     },
     {
       "type": "Button",
-      "text": "Помещение",
-      "position": [8, -613]
+      "text": "▼  Помещение",
+      "position": [8, -661]
     },
     {
       "type": "Button",
       "text": "Короб",
-      "position": [22, -647]
+      "position": [22, -695]
     },
     {
       "type": "Button",
       "text": "Стена",
-      "position": [22, -676]
+      "position": [22, -724]
     },
     {
       "type": "Button",
       "text": "Окно",
-      "position": [22, -705]
+      "position": [22, -753]
     },
     {
       "type": "Button",
       "text": "Дверь",
-      "position": [22, -734]
+      "position": [22, -782]
     },
     {
       "type": "Button",
       "text": "Пол",
-      "position": [22, -763]
+      "position": [22, -811]
     },
     {
       "type": "Button",
       "text": "Источник света",
-      "position": [22, -792]
+      "position": [22, -840]
     }
   ]
 }
