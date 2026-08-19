@@ -133,6 +133,13 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<MCP.UnityTcpBridge>() == null) gameObject.AddComponent<MCP.UnityTcpBridge>();
 #endif
             MCP.ConsoleLogCapture.Initialize();
+
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+            // Автообновление — только в собранном Windows-плеере (в редакторе и
+            // тестах не создаётся, на WebGL не компилируется).
+            if (FindAnyObjectByType<Update.UpdateService>() == null)
+                gameObject.AddComponent<Update.UpdateService>();
+#endif
         }
 
         private void OnDestroy()

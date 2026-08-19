@@ -23,6 +23,9 @@ public static class PlayModeTestConfig
     {
 #if !UNITY_WEBGL
         UnityTcpBridge.TestPort = TestMcpPort;
+        // Даже если тест случайно создаст UpdateService — проверка обновлений
+        // (сеть на GitHub) не должна запускаться.
+        KitchenDesigner.Core.Update.UpdateService.StartupCheckEnabled = false;
 #endif
     }
 }

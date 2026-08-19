@@ -96,6 +96,10 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; \
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; \
   Flags: nowait postinstall skipifsilent
+; Автообновление: приложение запускает этот же setup с /RELAUNCH и тихо ставит
+; новую версию; по завершении Inno поднимает новую версию сам (без диалогов).
+Filename: "{app}\{#AppExe}"; WorkingDir: "{app}"; Flags: nowait; \
+  Check: RelaunchRequested
 
 [Code]
 // Разбирает "MAJOR.MINOR.BUILD" (лишние части = 0) в три числа.
@@ -162,4 +166,12 @@ begin
                 'сохранёнными проектами. Продолжить?', mbConfirmation, MB_YESNO) = IDNO then
         Result := 'Setup aborted by user: newer version already installed.';
   end;
+end;
+
+// True, если установщик запущен с ключом /RELAUNCH (так зовёт автообновление).
+// GetCmdTail возвращает всю командную строку после имени setup — ключи видны и в
+// тихом режиме. Обычная установка/удаление ключ не передают -> перезапуска нет.
+function RelaunchRequested: Boolean;
+begin
+  Result := Pos('/RELAUNCH', GetCmdTail) > 0;
 end;
