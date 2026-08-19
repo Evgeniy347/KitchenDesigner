@@ -159,3 +159,8 @@ _trash/
 # Мусор пакета Performance Testing: перезаписывается каждым прогоном PlayMode
 /Assets/Resources/PerformanceTestRunInfo.json*
 /Assets/Resources/PerformanceTestRunSettings.json*
+
+# ===========================
+# Installer build output
+# ===========================
+/installer/output/
