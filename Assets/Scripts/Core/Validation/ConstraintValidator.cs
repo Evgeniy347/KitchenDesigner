@@ -149,32 +149,54 @@ namespace KitchenDesigner.Core
                 contactDist, mountGapMm * AppConstants.MM_TO_UNITS) > 0f;
         }
 
-        /// <summary>Пара деталей, которые ПОЧТИ касаются: их грани параллельны и
-        /// хорошо перекрыты в плоскости, но между ними зазор чуть больше допуска
-        /// касания.</summary>
+        /// <summary>Пара деталей с «почти-касанием» по общему правилу [min, max].
+        /// Зазор меряется СУММОЙ по парам встречных граней: торцевая грань фасада
+        /// с одной стороны может касаться (0 мм), а с другой — висеть на
+        /// миллиметры, и тогда пара «в целом» недожата или чрезмерно разнесена.
+        /// <see cref="kind"/> отличает маленький зазор (GAP-01) от большого (GAP-02).</summary>
         public readonly struct NearContact
         {
             public readonly KitchenElement a;
             public readonly KitchenElement b;
             public readonly float gapMm;
-            public NearContact(KitchenElement a, KitchenElement b, float gapMm)
+            public readonly NearContactKind kind;
+            public NearContact(KitchenElement a, KitchenElement b, float gapMm, NearContactKind kind)
             {
-                this.a = a; this.b = b; this.gapMm = gapMm;
+                this.a = a; this.b = b; this.gapMm = gapMm; this.kind = kind;
             }
         }
 
-        /// <summary>Найти пары деталей с зазором в (ContactMm, maxGapMm]: грани
-        /// параллельны, перекрыты в плоскости не хуже face-to-face, а между ними
-        /// щель, которую пользователю визуально трудно заметить (недожатый снэп).
+        public enum NearContactKind
+        {
+            /// <summary>Сумма зазоров по оси меньше минимума — снап не дожат.</summary>
+            TooSmall,
+            /// <summary>Сумма зазоров по оси больше максимума — снап не сработал.</summary>
+            TooLarge,
+        }
+
+        /// <summary>Найти пары деталей, у которых сумма зазоров по оси ВЫХОДИТ
+        /// за диапазон [minGapMm, maxGapMm]:
+        /// • TooSmall → GAP-01 «требуется ≥2мм»;
+        /// • TooLarge → GAP-02 «слишком большой зазор».
+        /// Внутри [min, max] — зелёная зона, в отчёт не идёт.
         /// НЕ горячий путь: O(n²), вызывается окном анализа/MCP по требованию.
-        /// Пары, уже стоящие face-to-face (реально соприкасаются), пропускаются.</summary>
-        public static List<NearContact> FindNearContacts(List<KitchenElement> all, float maxGapMm)
+        /// Пары, уже стоящие face-to-face, отсекаются broad-фазой
+        /// (AABBsIntersect с −BroadPhaseMm). Пара «прибор ↔ ЕГО фасад» для
+        /// посудомойки пропускается: у неё своё правило (≥5мм, см.
+        /// <see cref="FindDishwasherFacadeBackGaps"/>).</summary>
+        public static List<NearContact> FindNearContacts(List<KitchenElement> all,
+            float minGapMm, float maxGapMm)
         {
             var result = new List<NearContact>();
             if (all == null || all.Count < 2) return result;
 
             float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-            float maxGap = maxGapMm * AppConstants.MM_TO_UNITS;
+            // Broad-phase радиус шире допустимого диапазона: нужно ловить и
+            // GAP-02 (gap > maxGapMm), иначе снап «не сработал на 5мм» выпал бы
+            // из кандидатов. Старый порог 8мм покрывает все «визуально мелкие
+            // недолёты», при которых снап вообще мог ошибиться.
+            float broadPhaseMm = Mathf.Max(maxGapMm, 8f);
+            float broadPhase = broadPhaseMm * AppConstants.MM_TO_UNITS;
             float toMm = 1f / AppConstants.MM_TO_UNITS;
 
             int n = all.Count;
@@ -194,30 +216,106 @@ namespace KitchenDesigner.Core
                 for (int j = i + 1; j < n; j++)
                 {
                     if (!ok[j]) continue;
-                    // Broad-phase: коробки в пределах maxGap друг от друга. margin
-                    // в AABBsIntersect СУЖАЕТ перекрытие, поэтому расширяем
-                    // отрицательным (−maxGap) — так в кандидаты попадают и не
-                    // пересекающиеся, но близкие пары.
-                    if (!ValidationCore.AABBsIntersect(geo[i], geo[j], -maxGap)) continue;
+                    // Broad-phase: коробки в пределах broadPhase друг от друга.
+                    // margin в AABBsIntersect СУЖАЕТ перекрытие, поэтому
+                    // расширяем отрицательным (−broadPhase) — так в кандидаты
+                    // попадают и не пересекающиеся, но близкие пары.
+                    if (!ValidationCore.AABBsIntersect(geo[i], geo[j], -broadPhase)) continue;
                     // Реально касаются гранями — это не «почти», а контакт.
                     if (ValidationCore.AreInFaceToFaceContact(geo[i].Faces, geo[j].Faces, contactDist)) continue;
                     // Вкладная ДВП, зашедшая в паз соседней детали: зазор между
                     // ГАБАРИТАМИ равен глубине захода в паз и НЕ является «почти
                     // касанием» — эту пару обслуживает логика посадки в паз
-                    // (SEAT-01), а не GAP-01. Иначе полностью посаженная панель
-                    // ложно краснела бы как «почти касается».
+                    // (SEAT-01), а не GAP-01/02. Иначе полностью посаженная панель
+                    // ложно краснела бы.
                     if (PanelEngagesGroove(all[i], all[j]) || PanelEngagesGroove(all[j], all[i])) continue;
-                    // Фасад, ВИСЯЩИЙ НА КРОНШТЕЙНАХ своего прибора: монтажный
-                    // зазор задан схемой прибора, это не недожатый снэп. Без
-                    // этой строки правильно навешенный фасад посудомойки вечно
-                    // светил бы GAP-01 — тем самым, из-за которого его и не
-                    // удавалось выбрать в окне свойств.
-                    if (IsMountedFacade(all[i], all[j]) || IsMountedFacade(all[j], all[i])) continue;
+                    // Пара «фасад посудомойки ↔ сам прибор» — отдельное правило
+                    // (≥5мм, см. FindDishwasherFacadeBackGaps). ИНАЧЕ сумма по
+                    // оси с зазором 5мм дала бы GAP-02, а пользователь этот
+                    // зазор требует сам и светить «слишком большой» на нём —
+                    // ложь.
+                    if (IsDishwasherFacadePair(all[i], all[j])) continue;
 
-                    float gap = ValidationCore.MinParallelGap(geo[i].Faces, geo[j].Faces, contactDist, maxGap);
-                    if (gap > 0f)
-                        result.Add(new NearContact(all[i], all[j], gap * toMm));
+                    float sum = ValidationCore.SumParallelGaps(geo[i].Faces, geo[j].Faces, contactDist, broadPhase);
+                    if (sum <= 0f) continue;
+                    float sumMm = sum * toMm;
+                    // Эпсилон 0.01мм: позиция и нормали в float дают шум ~1e-5,
+                    // на 5мм-позициях это 0.000005мм — без него идеально
+                    // выставленные границы [2..4] ложно сваливаются в GAP.
+                    if (sumMm + 0.01f < minGapMm)
+                        result.Add(new NearContact(all[i], all[j], sumMm, NearContactKind.TooSmall));
+                    else if (sumMm > maxGapMm + 0.01f)
+                        result.Add(new NearContact(all[i], all[j], sumMm, NearContactKind.TooLarge));
                 }
+            }
+            return result;
+        }
+
+        /// <summary>Пара «посудомойка ↔ ЕЁ пристёгнутый фасад», подлежащая
+        /// отдельной проверке «зазор сзади ≥ 5мм». Возвращает true только если
+        /// один из элементов — DishwasherElement, второй — его FacadeElement по
+        /// имени; чужой фасад рядом с прибором сюда не попадает.</summary>
+        private static bool IsDishwasherFacadePair(KitchenElement a, KitchenElement b)
+        {
+            KitchenElement? dishwasher = null;
+            KitchenElement? facade = null;
+            if (a is DishwasherElement && b is FacadeElement) { dishwasher = a; facade = b; }
+            else if (b is DishwasherElement && a is FacadeElement) { dishwasher = b; facade = a; }
+            if (dishwasher == null || facade == null) return false;
+            return !string.IsNullOrEmpty(((DishwasherElement)dishwasher).AttachedFacadeName)
+                && ((DishwasherElement)dishwasher).AttachedFacadeName == ((FacadeElement)facade).PartName;
+        }
+
+        /// <summary>Результат проверки заднего зазора навесного фасада прибора.
+        /// Возвращается только когда фасад есть и зазор меньше монтажного
+        /// минимума — пара «фасад оторвался от монтажа».</summary>
+        public readonly struct DishwasherBackGapIssue
+        {
+            public readonly DishwasherElement dishwasher;
+            public readonly FacadeElement facade;
+            public readonly float gapMm;
+            public DishwasherBackGapIssue(DishwasherElement dishwasher, FacadeElement facade, float gapMm)
+            {
+                this.dishwasher = dishwasher;
+                this.facade = facade;
+                this.gapMm = gapMm;
+            }
+        }
+
+        /// <summary>Для каждой посудомойки с ПРИСТЁГНУТЫМ фасадом: зазор между
+        /// передней гранью бака и тыльной гранью фасада должен быть не меньше
+        /// монтажного (<see cref="DishwasherElement.FACADE_MOUNT_GAP_MM"/>). Если
+        /// меньше — фасад фактически прижат к прибору, а должен висеть на
+        /// кронштейнах с зазором. Общий GAP-01/02 к этой паре не применяется —
+        /// правило своё, отменяет зелёную зону [2,4].</summary>
+        public static List<DishwasherBackGapIssue> FindDishwasherFacadeBackGaps(List<KitchenElement> all)
+        {
+            var result = new List<DishwasherBackGapIssue>();
+            if (all == null) return result;
+
+            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            float mountMm = DishwasherElement.FACADE_MOUNT_GAP_MM;
+            float maxGap = mountMm * AppConstants.MM_TO_UNITS;
+            float toMm = 1f / AppConstants.MM_TO_UNITS;
+
+            foreach (var e in all)
+            {
+                if (!(e is DishwasherElement dw)) continue;
+                var facade = dw.FindAttachedFacade();
+                if (facade == null) continue;
+
+                // Суммируем зазоры по ВСТРЕЧНЫМ граням в диапазоне (0, mountMm].
+                // Если сумма < mountMm — фасад прижат ближе, чем схема требует.
+                float sum = ValidationCore.SumParallelGaps(e.GetFaces(), facade.GetFaces(), contactDist, maxGap);
+                float sumMm = sum * toMm;
+                if (sumMm <= 0f) continue;
+                // Эпсилон 0.01мм — float-шум позиции и граней (см. тест
+                // DishwasherFacadeBackGap_AtFive: идеальная 5мм позиция
+                // SumParallelGaps отдаёт как 4.999995). Без него нижняя граница
+                // 5мм по схеме светила бы DWH-04 при идеально выставленной
+                // посудомойке.
+                if (sumMm + 0.01f < mountMm)
+                    result.Add(new DishwasherBackGapIssue(dw, facade, sumMm));
             }
             return result;
         }
@@ -303,19 +401,6 @@ namespace KitchenDesigner.Core
                 if (ValidationCore.PanelEngagesSeat(pverts, seat, depthUnits, engageMargin, contactDist, out _))
                     return true;
             return false;
-        }
-
-        /// <summary>Пара «хозяин фасада ↔ ЕГО ПРИСТЁГНУТЫЙ фасад», стоящая в
-        /// пределах монтажного зазора навески. Проверяется именно связь по
-        /// имени: чужой фасад, случайно оказавшийся в трёх миллиметрах, обязан
-        /// давать GAP-01 как и раньше.</summary>
-        private static bool IsMountedFacade(KitchenElement host, KitchenElement facade)
-        {
-            if (!(host is IFacadeHost h) || !(facade is FacadeElement f)) return false;
-            if (h.FacadeMountGapMm <= Tolerance.ContactMm) return false;
-            if (string.IsNullOrEmpty(h.AttachedFacadeName)
-                || h.AttachedFacadeName != f.PartName) return false;
-            return AreFacadeMountable(host, facade, h.FacadeMountGapMm);
         }
 
         private static float GrooveDepthUnits(KitchenElement board) =>

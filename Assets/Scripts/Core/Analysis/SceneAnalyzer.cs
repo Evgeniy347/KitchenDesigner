@@ -11,9 +11,22 @@ namespace KitchenDesigner.Core.Analysis
     /// </summary>
     public static class SceneAnalyzer
     {
-        /// <summary>Порог «почти касания», мм: зазор ≤ этого визуально трудно
-        /// заметить и вероятно означает недожатый снэп.</summary>
-        public const float NearContactMaxGapMm = 8f;
+        /// <summary>Минимум «общего зазора по оси» (мм): сумма зазоров по
+        /// встречным граням меньше этого — GAP-01 «требуется ≥2мм». Пара
+        /// «прибор ↔ фасад» для посудомойки проверяется своим правилом, см.
+        /// <see cref="DishwasherBackGapMinMm"/>.</summary>
+        public const float NearContactMinGapMm = 2f;
+
+        /// <summary>Максимум «общего зазора по оси» (мм): сумма зазоров по
+        /// встречным граням больше этого — GAP-02 «слишком большой». 4мм
+        /// совпадает с верхней границей монтажного зазора обычных навесок
+        /// (ящик, фасад); свыше — снап не дотянул.</summary>
+        public const float NearContactMaxGapMm = 4f;
+
+        /// <summary>Минимальный монтажный зазор сзади между корпусом посудомойки
+        /// и пристёгнутым к ней фасадом, мм. Соответствует
+        /// <see cref="DishwasherElement.FACADE_MOUNT_GAP_MM"/>.</summary>
+        public const float DishwasherBackGapMinMm = 5f;
 
         /// <summary>Минимальный технологический зазор фасада с каждой стороны, мм.</summary>
         public const int FacadeMinGapMm = 1;
@@ -27,6 +40,7 @@ namespace KitchenDesigner.Core.Analysis
             CollectCollisions(all, issues);
             CollectEdgeCover(all, issues);
             CollectNearContacts(all, issues);
+            CollectDishwasherFacadeBackGaps(all, issues);
             CollectPanelSeating(all, issues);
             CollectFacadeGaps(all, issues);
             CollectDrawerFacadeLinks(all, issues);
@@ -89,11 +103,27 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
-        // ── Warning: почти касание (зазор ≤ порога) ──────────────────────
+        // ── Warning: почти касание (общий зазор по оси вне [2..4]) ───────
         private static void CollectNearContacts(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
-            foreach (var nc in ConstraintValidator.FindNearContacts(all, NearContactMaxGapMm))
-                issues.Add(IssueCatalog.NearContact(nc.a, nc.b, nc.gapMm));
+            foreach (var nc in ConstraintValidator.FindNearContacts(all, NearContactMinGapMm, NearContactMaxGapMm))
+            {
+                if (nc.kind == ConstraintValidator.NearContactKind.TooSmall)
+                    issues.Add(IssueCatalog.NearContact(nc.a, nc.b, nc.gapMm));
+                else
+                    issues.Add(IssueCatalog.NearContactFar(nc.a, nc.b, nc.gapMm));
+            }
+        }
+
+        // ── Warning: задний зазор фасада посудомойки меньше 5мм ─────────
+        // Пара «посудомойка ↔ ЕЁ фасад» из общего правила GAP-01/02
+        // исключена (FindNearContacts пропускает её), а здесь проверяется
+        // отдельно: монтажный минимум 5мм обязателен, иначе кронштейны
+        // схемы прибора не работают (дверца не откинется).
+        private static void CollectDishwasherFacadeBackGaps(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var d in ConstraintValidator.FindDishwasherFacadeBackGaps(all))
+                issues.Add(IssueCatalog.DishwasherFacadeBackGap(d.dishwasher, d.facade, d.gapMm));
         }
 
         // ── Warning: вкладная панель (ДВП) не дошла до дна паза ──────────
@@ -198,6 +228,7 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeEdgePartialCover = "EDG-01";
         // Предупреждения.
         public const string CodeNearContact = "GAP-01";
+        public const string CodeNearContactFar = "GAP-02";
         public const string CodePanelNotSeated = "SEAT-01";
         public const string CodeFacadeGap = "FAC-01";
         public const string CodeDrawerNoFacade = "DRW-01";
@@ -205,6 +236,7 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeDishwasherNoFacade = "DWH-01";
         public const string CodeDishwasherFacadeOrphaned = "DWH-02";
         public const string CodeDishwasherFacadeHeight = "DWH-03";
+        public const string CodeDishwasherBackGap = "DWH-04";
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {
@@ -246,8 +278,25 @@ namespace KitchenDesigner.Core.Analysis
 
         public static AnalysisIssue NearContact(KitchenElement a, KitchenElement b, float gapMm) =>
             new AnalysisIssue(IssueLevel.Warning, CodeNearContact,
-                PairDetail(a, b), $"Почти касается, зазор {gapMm:F1} мм (нет прямого контакта)",
+                PairDetail(a, b),
+                $"Зазор по оси {gapMm:F1} мм — требуется ≥{SceneAnalyzer.NearContactMinGapMm:F0} мм (нет прямого контакта)",
                 a, b);
+
+        public static AnalysisIssue NearContactFar(KitchenElement a, KitchenElement b, float gapMm) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeNearContactFar,
+                PairDetail(a, b),
+                $"Зазор по оси {gapMm:F1} мм — слишком большой (допустимо ≤{SceneAnalyzer.NearContactMaxGapMm:F0} мм)",
+                a, b);
+
+        /// <summary>Задний зазор между фасадом и корпусом посудомойки меньше
+        /// монтажного минимума: фасад прижат к прибору, а должен висеть на
+        /// кронштейнах. Свой код DWH-04, GAP-01/02 к этой паре не относится.</summary>
+        public static AnalysisIssue DishwasherFacadeBackGap(KitchenElement dishwasher, KitchenElement facade,
+            float gapMm) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeDishwasherBackGap,
+                PairDetail(dishwasher, facade),
+                $"Задний зазор фасада {gapMm:F1} мм — требуется ≥{SceneAnalyzer.DishwasherBackGapMinMm:F0} мм",
+                dishwasher, facade);
 
         public static AnalysisIssue PanelNotSeated(KitchenElement panel, KitchenElement board,
             float insertionMm, float depthMm) =>

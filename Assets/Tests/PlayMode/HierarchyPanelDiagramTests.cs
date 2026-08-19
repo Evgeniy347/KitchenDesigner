@@ -251,8 +251,8 @@ public class HierarchyPanelDiagramTests
     }
 
     /// <summary>Наполнить сцену деталями, дающими смесь ошибок и предупреждений:
-    /// ящик без фасада (DRW-01), фасад с нулевым зазором (FAC-01), две полки почти
-    /// вплотную (GAP-01). Для окна «Ошибки».</summary>
+    /// ящик без фасада (DRW-01), фасад с нулевым зазором (FAC-01), две полки
+    /// сильно разнесены (зазор ~5мм по Z) → GAP-02. Для окна «Ошибки».</summary>
     private static void SpawnIssueShowcase()
     {
         // Ящик без прикреплённого фасада → DRW-01.
@@ -263,7 +263,7 @@ public class HierarchyPanelDiagramTests
         ElementFactory.CreateFacade(new Vector3Int(560, 720, 18), "Фасад без зазора",
             new Vector3(1.2f, 0.55f, 0f), 0, 2, 2, 2);
 
-        // Две полки почти вплотную (зазор ~5 мм по Z) → GAP-01.
+        // Две полки разнесены на 5мм по Z → GAP-02 (общий зазор по оси > 4мм).
         ElementFactory.CreatePart(new Vector3Int(600, 400, 18), "Полка A",
             new Vector3(2.4f, 0.8f, 0f));
         ElementFactory.CreatePart(new Vector3Int(600, 400, 18), "Полка B",

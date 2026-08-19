@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Analysis;
 
 /// <summary>
 /// ДВП должна входить в пазы корпуса до дна. Если панель «приклеилась снаружи
@@ -108,10 +109,11 @@ public class PanelSeatingTests
 
     // Пара «ДВП ↔ доска с пазом», в которую панель зашла: между их ГАБАРИТАМИ зазор
     // равен глубине захода в паз. Это обслуживает логика посадки (SEAT-01), поэтому
-    // near-contact (GAP-01) для таких пар выдаваться НЕ должен.
+    // near-contact (GAP-01/02) для таких пар выдаваться НЕ должен.
     private static bool DvpInAnyNearContact(PanelElement dvp)
     {
-        foreach (var nc in ConstraintValidator.FindNearContacts(PartRegistry.GetAll(), 8f))
+        foreach (var nc in ConstraintValidator.FindNearContacts(PartRegistry.GetAll(),
+            SceneAnalyzer.NearContactMinGapMm, SceneAnalyzer.NearContactMaxGapMm))
             if (nc.a == dvp || nc.b == dvp) return true;
         return false;
     }

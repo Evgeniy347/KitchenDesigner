@@ -68,26 +68,71 @@ public class SceneAnalyzerTests
     private static bool Has(List<AnalysisIssue> issues, string code) =>
         issues.Exists(i => i.Code == code);
 
-    // ── Почти касание ────────────────────────────────────────────────
+    // ── Почти касание (общий зазор по оси) ────────────────────────────
 
+    /// <summary>Сумма зазоров по оси < 2мм — снап не дожат → GAP-01.</summary>
     [Test]
-    public void NearContact_SmallGap_Warns()
+    public void NearContact_BelowMin_WarnsGap01()
     {
-        // Две пласти 600×400 разнесены по Z на 5 мм (тонкая щель).
+        // Две пласти 600×400: центр b смещён на 1мм по Z (зазор 1мм).
+        const float boardDim = 18f; // мм
         MakeBoard("a", new Vector3Int(600, 400, 18), Vector3.zero);
-        MakeBoard("b", new Vector3Int(600, 400, 18), new Vector3(0, 0, 0.023f)); // 9+5+9 мм
+        MakeBoard("b", new Vector3Int(600, 400, 18),
+            new Vector3(0, 0, (boardDim + 1f) * AppConstants.MM_TO_UNITS));
 
-        Assert.IsTrue(Has(SceneAnalyzer.Analyze(), IssueCatalog.CodeNearContact));
+        var issues = SceneAnalyzer.Analyze();
+        Assert.IsTrue(Has(issues, IssueCatalog.CodeNearContact),
+            "1мм < 2мм — снап не дожат, GAP-01");
+        Assert.IsFalse(Has(issues, IssueCatalog.CodeNearContactFar),
+            "GAP-02 только для слишком большого зазора");
     }
 
+    /// <summary>Сумма зазоров по оси в [2..4] — зелёная зона, никаких GAP.</summary>
     [Test]
-    public void NearContact_LargeGap_NoWarning()
+    public void NearContact_GreenZone_NoWarning()
     {
-        // Зазор 12 мм — визуально заметен, не предупреждаем (порог 8 мм).
+        const float boardDim = 18f;
         MakeBoard("a", new Vector3Int(600, 400, 18), Vector3.zero);
-        MakeBoard("b", new Vector3Int(600, 400, 18), new Vector3(0, 0, 0.030f)); // 9+12+9 мм
+        MakeBoard("b", new Vector3Int(600, 400, 18),
+            new Vector3(0, 0, (boardDim + 3f) * AppConstants.MM_TO_UNITS));
 
-        Assert.IsFalse(Has(SceneAnalyzer.Analyze(), IssueCatalog.CodeNearContact));
+        var issues = SceneAnalyzer.Analyze();
+        Assert.IsFalse(Has(issues, IssueCatalog.CodeNearContact),
+            "3мм в зелёной зоне — GAP-01 не светится");
+        Assert.IsFalse(Has(issues, IssueCatalog.CodeNearContactFar),
+            "3мм в зелёной зоне — GAP-02 не светится");
+    }
+
+    /// <summary>Сумма зазоров по оси > 4мм — снап не сработал → GAP-02.</summary>
+    [Test]
+    public void NearContact_AboveMax_WarnsGap02()
+    {
+        const float boardDim = 18f;
+        MakeBoard("a", new Vector3Int(600, 400, 18), Vector3.zero);
+        MakeBoard("b", new Vector3Int(600, 400, 18),
+            new Vector3(0, 0, (boardDim + 5f) * AppConstants.MM_TO_UNITS));
+
+        var issues = SceneAnalyzer.Analyze();
+        Assert.IsTrue(Has(issues, IssueCatalog.CodeNearContactFar),
+            "5мм > 4мм — снап не сработал, GAP-02");
+        Assert.IsFalse(Has(issues, IssueCatalog.CodeNearContact),
+            "GAP-01 только для недожатых");
+    }
+
+    /// <summary>Зазор > 8мм — broad-phase (8мм) выбрасывает пару, GAP-02 не
+    /// возникает: визуально слишком явно для «недолёта снапа».</summary>
+    [Test]
+    public void NearContact_VeryLargeGap_NoWarning()
+    {
+        const float boardDim = 18f;
+        MakeBoard("a", new Vector3Int(600, 400, 18), Vector3.zero);
+        MakeBoard("b", new Vector3Int(600, 400, 18),
+            new Vector3(0, 0, (boardDim + 12f) * AppConstants.MM_TO_UNITS));
+
+        var issues = SceneAnalyzer.Analyze();
+        Assert.IsFalse(Has(issues, IssueCatalog.CodeNearContact));
+        Assert.IsFalse(Has(issues, IssueCatalog.CodeNearContactFar),
+            "12мм > 8мм — broad-phase, GAP-02 не выдаётся");
     }
 
     // ── Зазоры фасада ────────────────────────────────────────────────

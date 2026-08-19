@@ -763,13 +763,14 @@ public class DishwasherElementTests
     /// <summary>Вся цепочка, а не только выпадающий список: окно свойств
     /// предлагает фасад, не красит подпись красным, а анализатор не выдаёт
     /// DWH-02. Все трое зовут один IsFacadeInContact — тест сторожит, что они
-    /// согласны.</summary>
+    /// согласны. Фасад стоит на 5мм (нижняя граница монтажного зазора),
+    /// чтобы DWH-04 не вмешивался.</summary>
     [Test]
     public void FacadeOnBrackets_IsOfferedNotOrphanedAndRaisesNoDwh02()
     {
         var panel = BuildMenu();
         var dw = Make("DW-chain");
-        var facade = MakeFacadeAtGap(dw, "DW_chain_front", 2f);
+        var facade = MakeFacadeAtGap(dw, "DW_chain_front", 5f);
         dw.AttachedFacadeName = facade.PartName;
 
         _menu!.Open(dw);
@@ -778,32 +779,110 @@ public class DishwasherElementTests
         var names = new List<string>();
         foreach (var o in FacadeDropdown(panel).options) names.Add(o.text);
         CollectionAssert.Contains(names, "DW_chain_front",
-            "фасад в 2 мм обязан попадать в список окна свойств");
+            "фасад на 5мм обязан попадать в список окна свойств");
 
         Assert.AreNotEqual(Color.red, FacadeDropdown(panel).captionText.color,
             "подпись не красная — фасад не оторван");
 
         CollectionAssert.IsEmpty(IssuesWithCode("DWH-02"),
             "правильно навешенный фасад — не оторвавшийся");
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-04"),
+            "5мм — нижняя граница монтажного зазора, DWH-04 не светится");
         Assert.IsNotNull(dropdown);
     }
 
-    /// <summary>Монтажный зазор навески — не недожатый снэп: GAP-01 на паре
-    /// «машина ↔ ЕЁ фасад» больше не выдаётся. Чужой фасад в тех же двух
-    /// миллиметрах его по-прежнему получает.</summary>
+    /// <summary>Пара «посудомойка ↔ её фасад» проверяется правилом «зазор сзади
+    /// ≥5мм», а не общим GAP-01/02. Чужой фасад в тех же координатах подчиняется
+    /// общему правилу [2..4]: 1мм даёт GAP-01 (снап не дожат), 3мм — зелёная
+    /// зона, 5мм — GAP-02 (снап не сработал).</summary>
     [Test]
-    public void MountedFacade_RaisesNoGap01_ButAStrangerFacadeStillDoes()
+    public void AttachedFacade_FollowsFiveMmRule_StrangerFollowsGeneralRule()
     {
         var dw = Make("DW-gap01");
         var facade = MakeFacadeAtGap(dw, "DW_gap01_front", 2f);
 
+        // ── Свой фасад пристёгнут: 2мм < 5мм → DWH-04, общее правило не
+        //    применяется (FindNearContacts пропускает пару).
         dw.AttachedFacadeName = facade.PartName;
         CollectionAssert.IsEmpty(PairsWithCode("GAP-01", dw, facade),
-            "зазор навески задан схемой прибора");
+            "общее правило GAP-01 для пристёгнутого фасада не действует");
+        CollectionAssert.IsEmpty(PairsWithCode("GAP-02", dw, facade),
+            "общее правило GAP-02 для пристёгнутого фасада не действует");
+        Assert.IsNotEmpty(PairsWithCode("DWH-04", dw, facade),
+            "2мм < 5мм — фасад прижат к прибору, нужен зазор по схеме");
 
+        // ── Тот же фасад на 5мм (ровно монтажный минимум): ошибок нет.
+        var ok = MakeFacadeAtGap(dw, "DW_ok_front", 5f);
+        dw.AttachedFacadeName = ok.PartName;
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-04"),
+            "ровно 5мм — нижняя граница монтажного зазора, ОК");
+        CollectionAssert.IsEmpty(PairsWithCode("GAP-01", dw, ok));
+        CollectionAssert.IsEmpty(PairsWithCode("GAP-02", dw, ok));
+
+        // ── Отстёгнутый фасад в 3мм: зелёная зона [2..4], ошибок нет.
         dw.AttachedFacadeName = "";
-        CollectionAssert.IsNotEmpty(PairsWithCode("GAP-01", dw, facade),
-            "непристёгнутый фасад в 2 мм — обычное почти-касание");
+        CollectionAssert.IsEmpty(PairsWithCode("GAP-01", dw, facade),
+            "3мм в зелёной зоне — отстёгнутый фасад не светится");
+        CollectionAssert.IsEmpty(PairsWithCode("GAP-02", dw, facade));
+
+        // ── Отстёгнутый фасад на 1мм: снап не дожат → GAP-01.
+        var near = MakeFacadeAtGap(dw, "DW_1mm_front", 1f);
+        Assert.IsNotEmpty(PairsWithCode("GAP-01", dw, near),
+            "1мм < 2мм — снап не дожат, GAP-01");
+
+        // ── Отстёгнутый фасад на 5мм: снап не сработал → GAP-02.
+        var far = MakeFacadeAtGap(dw, "DW_5mm_front", 5f);
+        Assert.IsNotEmpty(PairsWithCode("GAP-02", dw, far),
+            "5мм > 4мм — снап не сработал, GAP-02");
+    }
+
+    // ── Задний зазор фасада посудомойки ≥ 5мм (DWH-04) ────────────────
+
+    [Test]
+    public void DishwasherFacadeBackGap_BelowFive_FiresDwh04()
+    {
+        var dw = Make("DW-bg-small");
+        var facade = MakeFacadeAtGap(dw, "DW_bg_small_front", 3f);
+        dw.AttachedFacadeName = facade.PartName;
+
+        Assert.IsNotEmpty(PairsWithCode("DWH-04", dw, facade),
+            "3мм < 5мм — фасад прижат к прибору, DWH-04");
+    }
+
+    [Test]
+    public void DishwasherFacadeBackGap_AtFive_NoDwh04()
+    {
+        var dw = Make("DW-bg-ok");
+        var facade = MakeFacadeAtGap(dw, "DW_bg_ok_front", 5f);
+        dw.AttachedFacadeName = facade.PartName;
+
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-04"),
+            "ровно 5мм — нижняя граница, ОК");
+    }
+
+    [Test]
+    public void DishwasherFacadeBackGap_AboveFive_NoDwh04NoGapRules()
+    {
+        var dw = Make("DW-bg-far");
+        var facade = MakeFacadeAtGap(dw, "DW_bg_far_front", 8f);
+        dw.AttachedFacadeName = facade.PartName;
+
+        // Пара «прибор ↔ фасад» исключена из общего правила, и своё правило
+        // 5мм тоже выполнено — никаких ошибок.
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-04"));
+        CollectionAssert.IsEmpty(PairsWithCode("GAP-01", dw, facade));
+        CollectionAssert.IsEmpty(PairsWithCode("GAP-02", dw, facade));
+    }
+
+    [Test]
+    public void DishwasherFacadeBackGap_NoAttachedFacade_NoDwh04()
+    {
+        // Без фасада — DWH-04 не выдаётся (там нечему мерить), а DWH-01
+        // срабатывает на отсутствие фасада.
+        var dw = Make("DW-bg-none");
+        CollectionAssert.IsEmpty(IssuesWithCode("DWH-04"));
+        Assert.IsNotEmpty(IssuesWithCode("DWH-01"),
+            "у машины нет фасада — DWH-01, своя отдельная ветка");
     }
 
     private static List<AnalysisIssue> PairsWithCode(string code, KitchenElement a, KitchenElement b)

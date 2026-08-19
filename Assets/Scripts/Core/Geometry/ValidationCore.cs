@@ -786,6 +786,40 @@ namespace KitchenDesigner.Core
             return best;
         }
 
+        /// <summary>Сумма зазоров по парам граней с ПРОТИВОПОЛОЖНЫМИ нормалями
+        /// в диапазоне (contactDist, maxGap]. Использовать вместо MIN, когда
+        /// критерий — «общий зазор по оси»: торцевая грань фасада с одной стороны
+        /// может касаться соседа (0 мм), а с другой — висеть на 2 мм, и тогда
+        /// пара «в целом» недожата (MIN=0 → касание = штатно) или наоборот
+        /// чрезмерно разнесена (SUМ=5 → > 4).
+        ///
+        /// Считаются только пары граней, направленных ДРУГ НА ДРУГА (dot ≤ -0.999):
+        /// грани с одной нормалью физически не встречаются, их зазор — не
+        /// «между ними», а расстояние между плоскостями в пустоте, и в общий
+        /// зазор по оси не входит.</summary>
+        public static float SumParallelGaps(Face[] fa, Face[] fb, float contactDist, float maxGap)
+        {
+            float sum = 0f;
+            for (int a = 0; a < 6; a++)
+            {
+                for (int b = 0; b < 6; b++)
+                {
+                    float dot = Vector3.Dot(fa[a].normal, fb[b].normal);
+                    if (dot > -Tolerance.ParallelDot) continue;
+
+                    Vector3 offset = fb[b].center - fa[a].center;
+                    float planeDist = Mathf.Abs(Vector3.Dot(offset, fa[a].normal));
+                    if (planeDist <= contactDist || planeDist > maxGap) continue;
+
+                    if (!FacesOverlap(fa[a], fb[b], out _, out float ratio)) continue;
+                    if (ratio < FaceToFaceOverlap) continue;
+
+                    sum += planeDist;
+                }
+            }
+            return sum;
+        }
+
         public static bool FacesOverlap(Face a, Face b, out float overlapArea, out float overlapRatio)
         {
             Vector3 u = a.rightAxis;

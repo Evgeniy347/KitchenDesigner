@@ -471,6 +471,81 @@ public class ValidationCoreTests
         Assert.AreEqual(0f, ValidationCore.MinParallelGap(a.Faces, b.Faces, contactDist, 5f * MM));
     }
 
+    // ── SumParallelGaps: сумма зазоров по встречным граням ─────────────
+
+    [Test]
+    public void SumParallelGaps_SumsOpposingFacesOnly()
+    {
+        // Две пласти 800×400 разнесены по Y на 2мм: одна пара встречных граней
+        // даёт 2мм, остальные в этом диапазоне не лежат.
+        var a = ElementGeometry.Box("A", Vector3.zero, new Vector3(0.8f, 0.018f, 0.4f));
+        var b = ElementGeometry.Box("B", new Vector3(0, 0.020f, 0), new Vector3(0.8f, 0.018f, 0.4f));
+
+        float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+        float sum = ValidationCore.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM);
+
+        Assert.AreEqual(2f * MM, sum, 1e-6f);
+    }
+
+    [Test]
+    public void SumParallelGaps_AddsTwoOpposingPair_GapAboveBand()
+    {
+        // Противоположно смещённые face-пары по двум осям одновременно для
+        // прямоугольных коробок СУММАРНО дают 0: чуть смести B по Y — Z-пары
+        // расходятся (нет перекрытия), смести по Z — рассогласуются Y-пары.
+        // Реальный сценарий «общего зазора по оси» — одна плоскость разделения
+        // с двумя гранями (см. тест выше). Сама же SUM с одним ненулевым
+        // слагаемым уже отвечает «0+2=2 → ОК».
+        var a = ElementGeometry.Box("A", Vector3.zero, new Vector3(0.8f, 0.018f, 0.4f));
+        var b = ElementGeometry.Box("B", new Vector3(0, 0.020f, 0.205f),
+            new Vector3(0.8f, 0.018f, 0.004f));
+
+        float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+        float sum = ValidationCore.SumParallelGaps(a.Faces, b.Faces, contactDist, 8f * MM);
+
+        Assert.AreEqual(0f, sum, 1e-6f,
+            "две коробки по разным осям не дают two-pair сумму — нет перекрывающихся пар");
+    }
+
+    [Test]
+    public void SumParallelGaps_ZeroWhenNoOpposingFace()
+    {
+        // 100мм по Y — face-пар в полосе (0..5мм] нет, сумма = 0.
+        var a = ElementGeometry.Box("A", Vector3.zero, new Vector3(0.8f, 0.018f, 0.4f));
+        var b = ElementGeometry.Box("B", new Vector3(0, 0.100f, 0), new Vector3(0.8f, 0.018f, 0.4f));
+
+        float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+        Assert.AreEqual(0f, ValidationCore.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM));
+    }
+
+    [Test]
+    public void SumParallelGaps_IgnoresSameDirectionFaces()
+    {
+        // Две пласти лежат одна над другой, обращённые в одну сторону (+Y): их
+        // верхние грани смотрят вверх и друг другу НЕ встречаются. У нижней
+        // пласти верхняя грань, у верхней — нижняя. Пары с одной нормалью
+        // (нижняя A + верхняя B, обе +Y) не считаются.
+        var a = ElementGeometry.Box("A", Vector3.zero, new Vector3(0.8f, 0.018f, 0.4f));
+        var b = ElementGeometry.Box("B", new Vector3(0, 0.020f, 0), new Vector3(0.8f, 0.018f, 0.4f));
+
+        float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+        // У A лицо +Y смотрит вверх, у B лицо +Y тоже вверх. Грань −Y у A
+        // смотрит вниз, +Y у B — вверх: они навстречу, расстояние 2мм.
+        float sum = ValidationCore.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM);
+        Assert.AreEqual(2f * MM, sum, 1e-6f, "только встречные грани с разными нормалями");
+    }
+
+    [Test]
+    public void SumParallelGaps_IgnoresGapsOutsideBand()
+    {
+        // Зазор 100мм — за пределами диапазона, в сумму не идёт.
+        var a = ElementGeometry.Box("A", Vector3.zero, new Vector3(0.8f, 0.018f, 0.4f));
+        var b = ElementGeometry.Box("B", new Vector3(0, 0.100f, 0), new Vector3(0.8f, 0.018f, 0.4f));
+
+        float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+        Assert.AreEqual(0f, ValidationCore.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM));
+    }
+
     [Test]
     public void AreInFaceToFaceContact_RequiresSupportingOverlap()
     {
