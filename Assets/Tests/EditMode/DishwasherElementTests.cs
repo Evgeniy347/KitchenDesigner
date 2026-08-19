@@ -954,6 +954,48 @@ public class DishwasherElementTests
         }
     }
 
+    /// <summary>Round-trip «открыть → закрыть» возвращает фасад РОВНО в ту
+    /// позу, в которой его поставил пользователь перед пристёгиванием. Раньше
+    /// <c>ClosedPosition</c> для пассажира возвращал <c>transform.position</c>
+    /// после открытия — и закрытие закрепляло фасад в позиции, до которой его
+    /// довезла петля дверцы, а не там, где он стоял изначально.</summary>
+    [Test]
+    public void AttachedFacade_OpenThenClose_ReturnsToOriginalPose()
+    {
+        var dw = Make("DW-rt");
+        var facade = MakeFacadeFor(dw, "DW_rt_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+        dw.ApplyDoorPose();
+
+        var closedPos = facade.transform.position;
+        var closedRot = facade.transform.rotation;
+
+        // Полностью открыть.
+        dw.SetOpen(true);
+        for (int i = 0; i < 10; i++) dw.StepDoor(0.1f);
+        dw.ApplyDoorPose();
+        Assert.AreNotEqual(closedPos, facade.transform.position,
+            "на открытой дверце фасад должен уехать из закрытой позы");
+
+        // Полностью закрыть.
+        dw.SetOpen(false);
+        for (int i = 0; i < 10; i++) dw.StepDoor(0.1f);
+        dw.ApplyDoorPose();
+
+        Assert.AreEqual(closedPos.x, facade.transform.position.x, 1e-4f,
+            "закрытие возвращает фасад в исходную позицию по X");
+        Assert.AreEqual(closedPos.y, facade.transform.position.y, 1e-4f,
+            "закрытие возвращает фасад в исходную позицию по Y");
+        Assert.AreEqual(closedPos.z, facade.transform.position.z, 1e-4f,
+            "закрытие возвращает фасад в исходную позицию по Z");
+        Assert.AreEqual(closedRot.x, facade.transform.rotation.x, 1e-4f,
+            "закрытие возвращает фасад в исходный поворот");
+        Assert.AreEqual(closedRot.y, facade.transform.rotation.y, 1e-4f);
+        Assert.AreEqual(closedRot.z, facade.transform.rotation.z, 1e-4f);
+        Assert.AreEqual(closedRot.w, facade.transform.rotation.w, 1e-4f);
+    }
+
     // ── Полый бак и ниша цоколя ─────────────────────────────────────────
 
     /// <summary>Габарит (центр, размер) в мм по вершинам ВАЛИДАЦИИ — то, чем

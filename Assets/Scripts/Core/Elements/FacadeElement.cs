@@ -21,7 +21,7 @@ namespace KitchenDesigner.Core
         protected override Quaternion ValidationRotation => ClosedRotation;
 
         protected override Vector3 ValidationPositionAt(Vector3 transformPosition)
-            => IsDoorClosed ? transformPosition : _closedPos;
+            => _isPassenger ? _closedPos : (IsDoorClosed ? transformPosition : _closedPos);
 
         private void CornerUnits(out float minX, out float maxX, out float minY, out float maxY, out float minZ, out float maxZ)
             => GappedBox.CornerUnits(transform.localScale, Data.Gaps,
@@ -128,9 +128,15 @@ namespace KitchenDesigner.Core
         /// проект нужно писать именно её, а не текущий (смещённый) трансформ —
         /// иначе после перезагрузки дверца «уезжает». Когда дверца полностью
         /// закрыта, трансформ и есть закрытая поза (её база ещё могла не
-        /// захватиться до первого Update — берём трансформ напрямую).</summary>
-        public Vector3 ClosedPosition => IsDoorClosed ? transform.position : _closedPos;
-        public Quaternion ClosedRotation => IsDoorClosed ? transform.rotation : _closedRot;
+        /// захватиться до первого Update — берём трансформ напрямую).
+        ///
+        /// Пассажир — особый случай: его «закрытая» поза ВСЕГДА
+        /// <c>_closedPos</c> (захвачена хостом при пристёгивании через
+        /// <see cref="CaptureClosedPose"/>). Брать <c>transform.position</c>,
+        /// когда дверца открыта, нельзя — трансформ уже повёрнут петлёй
+        /// дверцы и при закрытии вернёт фасад не туда, откуда его взяли.</summary>
+        public Vector3 ClosedPosition => _isPassenger ? _closedPos : (IsDoorClosed ? transform.position : _closedPos);
+        public Quaternion ClosedRotation => _isPassenger ? _closedRot : (IsDoorClosed ? transform.rotation : _closedRot);
 
         public void ToggleOpen() => SetOpen(!_open);
 
