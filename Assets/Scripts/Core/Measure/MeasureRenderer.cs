@@ -125,6 +125,14 @@ namespace KitchenDesigner.Core.Measure
                     GL.Color(UIStyle.MeasureHint);
                     DrawPoint(cam, ctrl.Hint.Value);
                 }
+                if (ctrl.PlaneHint.HasValue)
+                {
+                    // Точка хита луча в деталь/стену/пол — того же цвета, что и
+                    // вершинная подсказка: оба типа привязки равноправны и
+                    // пользователь не должен различать их по цвету.
+                    GL.Color(UIStyle.MeasureHint);
+                    DrawPoint(cam, ctrl.PlaneHint.Value);
+                }
             }
             GL.End();
         }

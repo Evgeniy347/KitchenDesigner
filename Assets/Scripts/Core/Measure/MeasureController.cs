@@ -21,11 +21,16 @@ namespace KitchenDesigner.Core.Measure
 
         /// <summary>Вершина под курсором (розовая точка) — null, если далеко.</summary>
         public Vector3? Hint { get; private set; }
+        /// <summary>Точка, в которую луч упёрся в деталь/стену/пол (без
+        /// привязки к вершине). Розовая подсказка того же цвета, что и Hint;
+        /// на ЛКМ первый клик ставит сюда якорь, второй — фиксирует как
+        /// второй конец (через осевую проекцию от якоря).</summary>
+        public Vector3? PlaneHint { get; internal set; }
         /// <summary>Зафиксированный первый конец замера (красная точка).</summary>
-        public Vector3? Anchor { get; private set; }
+        public Vector3? Anchor { get; internal set; }
         /// <summary>Второй конец предпросмотра: либо предложенная вершина, либо
-        /// проекция курсора на одну ось.</summary>
-        public Vector3? PreviewEnd { get; private set; }
+        /// проекция хита луча на одну ось, либо проекция курсора на одну ось.</summary>
+        public Vector3? PreviewEnd { get; internal set; }
         /// <summary>Отрезок под курсором (светло-жёлтая подсветка).</summary>
         public MeasureSegment? Hovered { get; private set; }
 
@@ -60,6 +65,7 @@ namespace KitchenDesigner.Core.Measure
             Vector2 mouse = Input.mousePosition;
             CollectVertices(cam);
             UpdateHint(mouse);
+            UpdatePlaneHit(cam, mouse);
             UpdatePreview(cam, mouse);
             UpdateHover(cam, mouse);
 
@@ -117,8 +123,10 @@ namespace KitchenDesigner.Core.Measure
 
         // Есть предложенная вершина — отрезок идёт к ней НАПРЯМУЮ (в том числе
         // по диагонали). Курсор увели — предложение пропадает, и отрезок снова
-        // строится строго по одной оси.
-        private void UpdatePreview(Camera cam, Vector2 mouse)
+        // строится строго по одной оси. Если вершины рядом нет, но луч попал в
+        // деталь/стену/пол — берём осевую проекцию точки хита, чтобы пунктир
+        // остался строго по одной оси (замер не «диагональный»).
+        internal void UpdatePreview(Camera cam, Vector2 mouse)
         {
             if (!Anchor.HasValue)
             {
@@ -132,7 +140,30 @@ namespace KitchenDesigner.Core.Measure
                 return;
             }
 
+            if (PlaneHint.HasValue)
+            {
+                // Точка хита на стене — пользователь видит, куда упёрся луч
+                // (маркер PlaneHint на самой поверхности), а пунктир идёт к её
+                // проекции на доминирующую ось от якоря: так подпись остаётся
+                // «N мм» без глифа ∠.
+                PreviewEnd = MeasureGeometry.ProjectOnDominantAxis(Anchor.Value, PlaneHint.Value);
+                return;
+            }
+
             PreviewEnd = FreeEnd(cam, mouse, Anchor.Value);
+        }
+
+        // Луч из мыши в сцену. Хиты по деталям/стенам/полам становятся PlaneHint
+        // и равноправны с вершинной подсказкой: первый ЛКМ ставит туда якорь,
+        // второй — фиксирует осевую проекцию от якоря. Опорная плита
+        // исключается — это техническая подложка без собственной геометрии.
+        internal void UpdatePlaneHit(Camera cam, Vector2 mouse)
+        {
+            PlaneHint = null;
+            Ray ray = cam.ScreenPointToRay(mouse);
+            if (!Physics.Raycast(ray, out RaycastHit hit)) return;
+            if (hit.collider.GetComponentInParent<BasePlate>() != null) return;
+            PlaneHint = hit.point;
         }
 
         // Свободный конец: курсор проецируется на плоскость через якорь,
@@ -146,12 +177,14 @@ namespace KitchenDesigner.Core.Measure
             return MeasureGeometry.ProjectOnDominantAxis(anchor, ray.GetPoint(enter));
         }
 
-        // Пока курсор у вершины, выбор отрезка не предлагаем: постановка точки
-        // важнее, иначе замер вдоль детали невозможно было бы начать.
+        // Пока курсор у вершины или луч упёрся в плоскость — выбор отрезка не
+        // предлагаем: постановка точки важнее, иначе замер вдоль детали
+        // невозможно было бы начать (и при равноправии PlaneHint с Hint —
+        // кликом в стену должен ставиться якорь, а не выбираться чужой отрезок).
         private void UpdateHover(Camera cam, Vector2 mouse)
         {
             Hovered = null;
-            if (Hint.HasValue || Anchor.HasValue) return;
+            if (Hint.HasValue || PlaneHint.HasValue || Anchor.HasValue) return;
 
             float best = SegmentPickRadiusPx;
             foreach (var seg in MeasureStore.Segments)
@@ -170,12 +203,17 @@ namespace KitchenDesigner.Core.Measure
             }
         }
 
-        private void HandleClick()
+        internal void HandleClick()
         {
             if (Anchor.HasValue)
             {
-                // Второй конец ставится только на вершину; клик мимо — отмена.
-                if (Hint.HasValue) MeasureStore.Add(new MeasureSegment(Anchor.Value, Hint.Value));
+                // Второй конец: вершина → к ней; хит в плоскость → к осевой
+                // проекции хита (PreviewEnd уже посчитан в UpdatePreview);
+                // клик мимо — отмена.
+                if (Hint.HasValue)
+                    MeasureStore.Add(new MeasureSegment(Anchor.Value, Hint.Value));
+                else if (PlaneHint.HasValue && PreviewEnd.HasValue)
+                    MeasureStore.Add(new MeasureSegment(Anchor.Value, PreviewEnd.Value));
                 Anchor = null;
                 PreviewEnd = null;
                 return;
@@ -188,12 +226,22 @@ namespace KitchenDesigner.Core.Measure
                 return;
             }
 
+            // Луч упёрся в деталь/стену/пол без близкой вершины — якорь
+            // ставится в саму точку хита (куда ткнул, туда и закрепилось).
+            if (PlaneHint.HasValue)
+            {
+                Anchor = PlaneHint;
+                MeasureStore.Select(null);
+                return;
+            }
+
             MeasureStore.Select(Hovered); // null — клик в пустоту снимает выбор
         }
 
         private void ResetState()
         {
             Hint = null;
+            PlaneHint = null;
             Anchor = null;
             PreviewEnd = null;
             Hovered = null;
