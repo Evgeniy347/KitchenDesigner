@@ -24,6 +24,7 @@ namespace KitchenDesigner.Core.UI
         private ProjectInstructionsPanelUI? _projectInstructionsPanel;
         private HelpUI? _help;
         private PlacementController? _placement;
+        private ElementSpawner? _spawner;
         private Button? _undoButton;
         private Button? _redoButton;
         private Button? _specButton;
@@ -125,26 +126,8 @@ namespace KitchenDesigner.Core.UI
             _placement = gameObject.AddComponent<PlacementController>();
         }
 
-        // Новый объект не ставим сразу — отдаём в режим размещения: он висит на
-        // курсоре, ЛКМ ставит, ПКМ/клик по UI отменяют (PlacementController).
-        private void BeginPlacement(GameObject go)
-        {
-            var element = go.GetComponent<KitchenElement>();
-            if (element == null) return;
-            if (_placement != null)
-                _placement.Begin(element);
-            else
-                CommitImmediate(go);
-        }
-
-        // Немедленно зафиксировать создание объекта (в стек отмены) и выделить.
-        private static void CommitImmediate(GameObject go)
-        {
-            var element = go.GetComponent<KitchenElement>();
-            if (element == null) return;
-            CommandStack.Execute(new CreateCommand(go));
-            SelectionManager.Instance?.Select(element);
-        }
+        private ElementSpawner Spawner =>
+            _spawner ??= new ElementSpawner(GroundPointInFrontOfCamera, () => _placement);
 
         private void BuildToolbar()
         {
@@ -456,147 +439,43 @@ namespace KitchenDesigner.Core.UI
                 ElementHighlighter.Instance.RefreshHighlights();
         }
 
-        // Быстрый пресет — немедленное добавление (без режима размещения):
-        // деталь сразу встаёт перед камерой и выделяется.
-        public void SpawnPreset(int index)
-        {
-            if (index < 0 || index >= AppConstants.PRESET_DIMENSIONS_MM.Length) return;
-            var dims = AppConstants.PRESET_DIMENSIONS_MM[index];
-            CommitImmediate(CreateBoardGo(dims, $"Board {dims.x}x{dims.y}x{dims.z}"));
-        }
+        public void SpawnPreset(int index) => Spawner.SpawnPreset(index);
 
         public void SpawnBoard(Vector3Int dims) =>
             SpawnBoard(dims, $"Board {dims.x}x{dims.y}x{dims.z}");
 
-        public void SpawnBoard(Vector3Int dims, string name) =>
-            BeginPlacement(CreateBoardGo(dims, name));
-
-        private GameObject CreateBoardGo(Vector3Int dims, string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS; // на полу
-            pos = GridManager.SnapToGrid(pos);
-            return ElementFactory.CreatePart(dims, name, pos);
-        }
+        public void SpawnBoard(Vector3Int dims, string name) => Spawner.SpawnBoard(dims, name);
 
         public void SpawnFacade(Vector3Int dims, string name,
-            int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
-            pos = GridManager.SnapToGrid(pos);
-
-            var go = ElementFactory.CreateFacade(dims, name, pos, gapLeft, gapRight, gapTop, gapBottom);
-            BeginPlacement(go);
-        }
+            int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2) =>
+            Spawner.SpawnFacade(dims, name, gapLeft, gapRight, gapTop, gapBottom);
 
         public void SpawnAssembledFacade(Vector3Int dims, string name,
-            AssembledFill fill = AssembledFill.Blind)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
-            pos = GridManager.SnapToGrid(pos);
+            AssembledFill fill = AssembledFill.Blind) =>
+            Spawner.SpawnAssembledFacade(dims, name, fill);
 
-            var go = ElementFactory.CreateAssembledFacade(dims, name, pos, fill);
-            BeginPlacement(go);
-        }
-
-        public void SpawnWall(Vector3Int dims, string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS; // на полу
-            pos = GridManager.SnapToGrid(pos);
-
-            var go = ElementFactory.CreateWall(dims, name, pos);
-            BeginPlacement(go);
-        }
+        public void SpawnWall(Vector3Int dims, string name) => Spawner.SpawnWall(dims, name);
 
         public void SpawnDrawer(string drawerType, int length, string colorName, int width, string name,
-            DrawerSystem system = DrawerSystem.Gtv)
-        {
-            var type = drawerType switch { "B" => DrawerType.B, "C" => DrawerType.C, "D" => DrawerType.D, _ => DrawerType.A };
-            var color = colorName.ToLowerInvariant() switch { "white" => DrawerColor.White, "black" => DrawerColor.Black, _ => DrawerColor.Anthracite };
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = DrawerConstants.GetMinOpeningHeight(type) * 0.5f * AppConstants.MM_TO_UNITS;
-            pos = GridManager.SnapToGrid(pos);
+            DrawerSystem system = DrawerSystem.Gtv) =>
+            Spawner.SpawnDrawer(drawerType, length, colorName, width, name, system);
 
-            var go = ElementFactory.CreateDrawer(type, length, color, width, DrawerLinks.UniqueName(name), pos, system);
-            BeginPlacement(go);
-        }
+        public void SpawnTable(Vector3Int dims, string name) => Spawner.SpawnTable(dims, name);
 
-        public void SpawnTable(Vector3Int dims, string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
-            pos = GridManager.SnapToGrid(pos);
-
-            var go = ElementFactory.CreateTable(dims, name, pos);
-            BeginPlacement(go);
-        }
-
-        public void SpawnRadiusTable(Vector3Int dims, string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
-            pos = GridManager.SnapToGrid(pos);
-
-            var go = ElementFactory.CreateRadiusTable(dims, name, pos);
-            BeginPlacement(go);
-        }
+        public void SpawnRadiusTable(Vector3Int dims, string name) => Spawner.SpawnRadiusTable(dims, name);
 
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
-            int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
-            pos = GridManager.SnapToGrid(pos);
+            int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM) =>
+            Spawner.SpawnPanel(dims, name, gapLeft, gapRight, gapTop, gapBottom);
 
-            var go = ElementFactory.Instance.CreatePanel(dims, name, pos, gapLeft, gapRight, gapTop, gapBottom);
-            BeginPlacement(go);
-        }
+        public void SpawnRadialShelf(Vector3Int dims, string name) => Spawner.SpawnRadialShelf(dims, name);
 
-        public void SpawnRadialShelf(Vector3Int dims, string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
-            pos = GridManager.SnapToGrid(pos);
+        public void SpawnWindow(Vector3Int dims, string name) => Spawner.SpawnWindow(dims, name);
 
-            var go = ElementFactory.CreateRadialShelf(dims.x, dims.z, dims.y,
-                AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, name, pos);
-            BeginPlacement(go);
-        }
+        public void SpawnDoor(Vector3Int dims, string name) => Spawner.SpawnDoor(dims, name);
 
-        public void SpawnWindow(Vector3Int dims, string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
-            pos = GridManager.SnapToGrid(pos);
-
-            var go = ElementFactory.CreateWindow(dims, name, pos);
-            BeginPlacement(go);
-        }
-
-        public void SpawnDoor(Vector3Int dims, string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
-            pos = GridManager.SnapToGrid(pos);
-
-            var go = ElementFactory.CreateDoor(dims, name, pos);
-            BeginPlacement(go);
-        }
-
-        public void SpawnPillar(int midHeightMM, string name)
-        {
-            int totalH = PillarElement.TopHeightMM + midHeightMM + PillarElement.BottomHeightMM;
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos.y = totalH * 0.5f * AppConstants.MM_TO_UNITS;
-            pos = GridManager.SnapToGrid(pos);
-
-            var go = ElementFactory.CreatePillar(midHeightMM, name, pos);
-            BeginPlacement(go);
-        }
+        public void SpawnPillar(int midHeightMM, string name) => Spawner.SpawnPillar(midHeightMM, name);
 
         private Vector3 GroundPointInFrontOfCamera()
         {
@@ -617,77 +496,17 @@ namespace KitchenDesigner.Core.UI
                 _contextMenu.Open(element);
         }
 
-        public void SpawnFloor(Vector3Int dims, string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos = GridManager.SnapToGrid(pos);
-            // Верхняя плоскость пола ровно на уровне земли (y = 0) — детали
-            // встают на него с face-контактом и заземляются.
-            pos.y = -dims.y * 0.5f * AppConstants.MM_TO_UNITS;
+        public void SpawnFloor(Vector3Int dims, string name) => Spawner.SpawnFloor(dims, name);
 
-            var go = ElementFactory.CreateFloor(dims, name, pos);
-            BeginPlacement(go);
-        }
+        public void SpawnSink(string name) => Spawner.SpawnSink(name);
 
-        /// <summary>Мойка ставится на высоте столешницы: оттуда она сама прилипнет
-        /// к ближайшей подходящей детали (SinkElement.SnapToPart).</summary>
-        public void SpawnSink(string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos = GridManager.SnapToGrid(pos);
-            pos.y = 0.9f; // ~900 мм — типовая высота рабочей поверхности
+        public void SpawnCooktop(string name, string model = "") => Spawner.SpawnCooktop(name, model);
 
-            var go = ElementFactory.CreateSink(name, pos);
-            BeginPlacement(go);
-        }
+        public void SpawnOven(string name) => Spawner.SpawnOven(name);
 
-        /// <param name="model">Готовая модель из группы «Техника» (габариты
-        /// фиксированы) либо пусто — свободная варочная из группы «Мебель».</param>
-        public void SpawnCooktop(string name, string model = "")
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos = GridManager.SnapToGrid(pos);
-            pos.y = 0.9f; // ~900 мм — типовая высота рабочей поверхности
+        public void SpawnDishwasher(string name) => Spawner.SpawnDishwasher(name);
 
-            var go = ElementFactory.CreateCooktop(name, pos, model);
-            BeginPlacement(go);
-        }
-
-        /// <summary>Духовка встраивается в колонну и ни к чему не прилипает —
-        /// ставим её на пол (центр по высоте = половина габарита), дальше её
-        /// поднимает пользователь обычным перетаскиванием.</summary>
-        public void SpawnOven(string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos = GridManager.SnapToGrid(pos);
-            pos.y = OvenElement.ModelDimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS;
-
-            var go = ElementFactory.CreateOven(name, pos);
-            BeginPlacement(go);
-        }
-
-        /// <summary>Посудомойка стоит на полу на своих ножках — ставим её
-        /// центром на половину высоты, дальше двигает пользователь.</summary>
-        public void SpawnDishwasher(string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos = GridManager.SnapToGrid(pos);
-            pos.y = DishwasherElement.ModelDimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS;
-
-            var go = ElementFactory.CreateDishwasher(name, pos);
-            BeginPlacement(go);
-        }
-
-        public void SpawnLightSource(string name)
-        {
-            Vector3 pos = GroundPointInFrontOfCamera();
-            pos = GridManager.SnapToGrid(pos);
-            pos.y = 2.2f; // подвес на высоте ~2200 мм, как люстра
-
-            var go = ElementFactory.CreateLightSource(name, pos);
-            BeginPlacement(go);
-        }
-
+        public void SpawnLightSource(string name) => Spawner.SpawnLightSource(name);
         /// <summary>Открыть меню группы (вызывается из CameraController по ПКМ-клику).</summary>
         public void OpenGroupMenu(KitchenElement element)
         {
