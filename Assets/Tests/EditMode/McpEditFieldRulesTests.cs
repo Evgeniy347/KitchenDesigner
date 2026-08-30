@@ -108,6 +108,55 @@ public class McpEditFieldRulesTests
     }
 
     [Test]
+    public void EditElements_DrawerSystemOnAPlainBoard_IsRejectedInItsContractPosition()
+    {
+        MakeBoard("Shelf", new Vector3Int(800, 18, 400));
+
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[]
+            {
+                new { name = "Shelf", corner_radius = 50, drawer_system = "movento", drawer_type = "B", leg_inset_mm = 30 }
+            }
+        }));
+
+        Assert.AreEqual("error", resp.type,
+            "смена системы выдвижения у элемента, который её не поддерживает, раньше молча " +
+            "проглатывалась: клиент получал ok и считал правку применённой");
+        Assert.AreEqual(
+            "edit_elements rejected, NOTHING was applied: "
+            + "Invalid field for 'Shelf': corner_radius | "
+            + "Invalid field for 'Shelf': drawer_system | "
+            + "Invalid field for 'Shelf': drawer_type | "
+            + "Invalid field for 'Shelf': leg_inset_mm",
+            ErrorMessage(resp),
+            "порядок склеенных сообщений — часть контракта: drawer_system открывает блок ящика, " +
+            "ровно как и в EditOp, и стоит между corner_radius и drawer_type");
+    }
+
+    [Test]
+    public void EditElements_DrawerSystemOnADrawer_SwitchesTheRunnerSystem()
+    {
+        var created = _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new object[] { new { name = "Box", type = "drawer", x = 0f, y = 0f, z = 0f } }
+        }));
+        Assert.AreEqual("result", created.type, created.type == "error" ? ErrorMessage(created) : "");
+        var drawer = PartRegistry.GetAll().Find(e => e.PartName == "Box") as DrawerElement;
+        Assert.NotNull(drawer);
+        Assert.AreEqual(DrawerSystem.Gtv, drawer!.System, "type=drawer создаёт ящик GTV");
+
+        var resp = _handler.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "Box", drawer_system = "movento" } }
+        }));
+
+        Assert.AreEqual("result", resp.type, resp.type == "error" ? ErrorMessage(resp) : "");
+        Assert.AreEqual(DrawerSystem.Movento, drawer.System,
+            "у ящика поле принимается — отказ выше касается только элементов без системы выдвижения");
+    }
+
+    [Test]
     public void EditElements_RejectedBatch_ReportsEveryBadFieldAtOnce()
     {
         MakeBoard("Shelf", new Vector3Int(800, 18, 400));

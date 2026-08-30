@@ -48,6 +48,7 @@ namespace KitchenDesigner.Core.MCP
             Unsupported("cutout_width", o => o.cutout_width.HasValue, el => el is CooktopElement),
             Unsupported("cutout_depth", o => o.cutout_depth.HasValue, el => el is CooktopElement),
 
+            Unsupported("drawer_system", o => o.drawer_system != null, IsDrawer),
             Unsupported("drawer_type", o => o.drawer_type != null, IsDrawer),
             Unsupported("drawer_length", o => o.drawer_length.HasValue, IsDrawer),
             Unsupported("drawer_color", o => o.drawer_color != null, IsDrawer),
