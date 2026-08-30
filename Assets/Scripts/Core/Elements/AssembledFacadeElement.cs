@@ -79,7 +79,7 @@ namespace KitchenDesigner.Core
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "__Glass";
             var col = go.GetComponent<Collider>();
-            if (col != null) DestroyImmediate(col); // не перехватывать клики
+            if (col != null) DestroyImmediate(col);
             var mr = go.GetComponent<MeshRenderer>();
             mr.sharedMaterial = GlassMaterial();
             mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;

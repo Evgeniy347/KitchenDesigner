@@ -109,8 +109,8 @@ namespace KitchenDesigner.Core
 
         [SerializeField] private DoorMode _mode = DoorMode.HingeFrontLeft;
         [SerializeField] private bool _isPassenger;
-        private bool _open;                              // целевое состояние
-        private float _t;                                // прогресс 0..1 (линейный по времени)
+        private bool _openTarget;
+        private float _doorProgress;
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
 
@@ -125,42 +125,42 @@ namespace KitchenDesigner.Core
         public DoorMode Mode
         {
             get => _mode;
-            set { _mode = value; if (_t > 0f) ApplyDoor(); }
+            set { _mode = value; if (_doorProgress > 0f) ApplyDoor(); }
         }
 
         public void CycleMode() => Mode = FacadeDoor.Next(_mode);
 
-        public bool IsOpen => _open;
-        public float DoorProgress => _t;
-        public bool IsDoorClosed => !_open && _t <= 0f;
+        public bool IsOpen => _openTarget;
+        public float DoorProgress => _doorProgress;
+        public bool IsDoorClosed => !_openTarget && _doorProgress <= 0f;
 
         public override bool PoseFollowsTransform => _isPassenger || IsDoorClosed;
 
         public Vector3 ClosedPosition => _isPassenger ? _closedPos : (IsDoorClosed ? transform.position : _closedPos);
         public Quaternion ClosedRotation => _isPassenger ? _closedRot : (IsDoorClosed ? transform.rotation : _closedRot);
 
-        public void ToggleOpen() => SetOpen(!_open);
+        public void ToggleOpen() => SetOpen(!_openTarget);
 
         public void SetOpen(bool open)
         {
             if (_isPassenger)
             {
                 if (open && IsDoorClosed) CaptureClosed();
-                _open = open;
+                _openTarget = open;
                 return;
             }
-            if (open && _t <= 0f) CaptureClosed();
-            _open = open;
-            if (!Mathf.Approximately(_t, open ? 1f : 0f))
+            if (open && _doorProgress <= 0f) CaptureClosed();
+            _openTarget = open;
+            if (!Mathf.Approximately(_doorProgress, open ? 1f : 0f))
                 FrameRateManager.KeepAwake(OpenSeconds + 0.2f);
         }
 
         public void ForceClose()
         {
             if (_isPassenger) return;
-            if (_t <= 0f && !_open) return;
-            _open = false;
-            _t = 0f;
+            if (_doorProgress <= 0f && !_openTarget) return;
+            _openTarget = false;
+            _doorProgress = 0f;
             transform.SetPositionAndRotation(_closedPos, _closedRot);
 
             foreach (var el in PartRegistry.All)
@@ -185,16 +185,16 @@ namespace KitchenDesigner.Core
         {
             if (_isPassenger) return;
             using var _ = PerfMarkers.FacadeStepDoor.Auto();
-            float target = _open ? 1f : 0f;
-            if (Mathf.Approximately(_t, target))
+            float target = _openTarget ? 1f : 0f;
+            if (Mathf.Approximately(_doorProgress, target))
             {
-                if (_t <= 0f) CaptureClosed();
+                if (_doorProgress <= 0f) CaptureClosed();
                 return;
             }
             float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
-            _t = Mathf.MoveTowards(_t, target, step);
+            _doorProgress = Mathf.MoveTowards(_doorProgress, target, step);
 
-            if (_open && _t > 0f)
+            if (_openTarget && _doorProgress > 0f)
             {
                 var exclude = new System.Collections.Generic.List<KitchenElement>();
                 foreach (var el in PartRegistry.All)
@@ -209,7 +209,7 @@ namespace KitchenDesigner.Core
                 }
                 exclude.AddRange(AttachLinks.Descendants(this));
                 float safe = OpeningCollision.FindMaxProgress(this, GetOpenBounds, exclude);
-                if (safe < _t) _t = Mathf.Max(_t - step, safe);
+                if (safe < _doorProgress) _doorProgress = Mathf.Max(_doorProgress - step, safe);
             }
 
             ApplyDoor();
@@ -219,7 +219,7 @@ namespace KitchenDesigner.Core
         {
             if (_isPassenger) return;
             var half = transform.localScale * 0.5f;
-            FacadeDoor.Pose(_closedPos, _closedRot, half, _mode, _t, out var pos, out var rot);
+            FacadeDoor.Pose(_closedPos, _closedRot, half, _mode, _doorProgress, out var pos, out var rot);
             transform.SetPositionAndRotation(pos, rot);
         }
 

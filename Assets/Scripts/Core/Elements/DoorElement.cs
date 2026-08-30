@@ -33,8 +33,8 @@ namespace KitchenDesigner.Core
         private GameObject? _frameTop, _frameBottom, _frameLeft, _frameRight;
         private GameObject? _glassPane;
         private GameObject? _sashLeft, _sashRight, _sashTop, _sashBottom;
-        private Transform? _staticGroup; // коробка — не двигается
-        private Transform? _sashGroup;   // створка (обвязка + стекло) — поворачивается на петле
+        private Transform? _staticGroup;
+        private Transform? _sashGroup;
 
         private float _openT;
         private Vector3 _sashClosedLocal;
@@ -459,7 +459,7 @@ namespace KitchenDesigner.Core
             }
 
             ApplyDoorPose();
-            ApplySashType(); // устанавливает и материал, и масштаб панели (толщина зависит от _sashType)
+            ApplySashType();
             ApplyMaterialFrame();
         }
 
