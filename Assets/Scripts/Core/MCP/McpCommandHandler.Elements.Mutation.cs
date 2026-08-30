@@ -358,18 +358,15 @@ namespace KitchenDesigner.Core.MCP
             });
         }
 
-        /// <summary>Модель прибора принадлежит именно этому типу элемента.
-        /// Новый прибор дописывает сюда одну строку — иначе его модель, будучи
-        /// известной, применилась бы к чужому типу.</summary>
-        private static bool ModelFitsType(string elementType, string model) => elementType switch
+        private static void SnapOpeningsOnceEveryWallOfTheBatchIsRegistered(List<KitchenElement> created)
         {
-            "cooktop" => CooktopElement.IsKnownModel(model),
-            "oven" => model == OvenElement.MODEL,
-            "dishwasher" => model == DishwasherElement.MODEL,
-            _ => false,
-        };
+            foreach (var el in created)
+            {
+                if (el is WindowElement window) window.SnapToWall();
+                else if (el is DoorElement door) door.SnapToWall();
+            }
+        }
 
-        /// <summary>Batch create: atomically create one or MANY elements. Whole batch is ONE undo step.</summary>
         private McpResponse HandleCreateElements(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsCreateElements>();
@@ -392,95 +389,15 @@ namespace KitchenDesigner.Core.MCP
                 if (existing != null) { errors.Add($"Element '{item.name}' already exists"); continue; }
 
                 var elementType = (item.type ?? "board").Trim().ToLowerInvariant();
-                // Неизвестная модель молча дала бы свободный прибор «почти того»
-                // размера — отказываем, пока клиент не назовёт модель из списка.
-                if (!string.IsNullOrEmpty(item.model) && !ApplianceModels.IsKnown(item.model))
-                { errors.Add($"Unknown appliance model '{item.model}' for '{item.name}'"); continue; }
-                // Известная, но ЧУЖАЯ для этого типа модель молча дала бы прибор
-                // «почти того» размера: варочная с моделью духовки осталась бы
-                // свободной панелью 590×520.
-                if (!string.IsNullOrEmpty(item.model) && !ModelFitsType(elementType, item.model!))
-                { errors.Add($"Model '{item.model}' does not belong to type '{elementType}' ('{item.name}')"); continue; }
-                var pos = new Vector3(item.x, item.y, item.z);
-                GameObject go = null!;
-
-                switch (elementType)
+                if (!string.IsNullOrEmpty(item.model))
                 {
-                    case "floor":
-                        // Настоящий пол нужного размера/позиции (FloorElement), а НЕ
-                        // BasePlate-синглтон: планировке нужны отдельные полы комнат,
-                        // которые можно двигать/растягивать (баг v1: floor→доска/якорь).
-                        go = ElementFactory.CreateFloor(new Vector3Int(
-                            item.width ?? FloorElement.DEFAULT_SIZE_MM,
-                            item.height ?? FloorElement.DEFAULT_THICKNESS_MM,
-                            item.depth ?? FloorElement.DEFAULT_SIZE_MM), item.name, pos);
-                        break;
-                    case "assembled_facade":
-                        go = ElementFactory.CreateAssembledFacade(new Vector3Int(item.width ?? 450, item.height ?? 700, item.depth ?? 18), item.name, pos, AssembledFill.Blind);
-                        break;
-                    case "radial_shelf":
-                        int rw = item.width ?? 600, rd = item.depth ?? 400;
-                        go = ElementFactory.CreateRadialShelf(rw, rd, item.height ?? AppConstants.BOARD_THICKNESS_DEFAULT,
-                            AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, item.name, pos);
-                        break;
-                    case "panel":
-                        // ДВП/ХДФ: тонкая вкладная панель, зазоры входят в габарит.
-                        go = ElementFactory.Instance.CreatePanel(
-                            new Vector3Int(item.width ?? 600, item.height ?? 400, item.depth ?? 3),
-                            item.name, pos);
-                        break;
-                    case "drawer":
-                        go = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400, item.name, pos, DrawerSystem.Gtv);
-                        break;
-                    case "movento_drawer":
-                        go = ElementFactory.CreateDrawer(DrawerType.A, 500, DrawerColor.Anthracite, item.width ?? 568, item.name, pos, DrawerSystem.Movento);
-                        break;
-                    case "table":
-                        go = ElementFactory.CreateTable(new Vector3Int(item.width ?? 2000, item.height ?? 750, item.depth ?? 1000), item.name, pos);
-                        break;
-                    case "radius_table":
-                        go = ElementFactory.CreateRadiusTable(new Vector3Int(item.width ?? 2000, item.height ?? 750, item.depth ?? 1000), item.name, pos);
-                        break;
-                    case "pillar":
-                        go = ElementFactory.CreatePillar(item.height ?? PillarElement.MidHeightMM_Default, item.name, pos);
-                        break;
-                    case "cooktop":
-                        go = ElementFactory.CreateCooktop(item.name, pos, item.model ?? "");
-                        break;
-                    case "oven":
-                        // Габариты у духовки от модели — width/height/depth здесь
-                        // не участвуют (их отклоняет и edit_elements).
-                        go = ElementFactory.CreateOven(item.name, pos);
-                        break;
-                    case "dishwasher":
-                        // То же самое; свой фасад машине пристёгивают потом —
-                        // edit_elements attached_facade_name.
-                        go = ElementFactory.CreateDishwasher(item.name, pos);
-                        break;
-                    case "window":
-                        go = ElementFactory.CreateWindow(new Vector3Int(item.width ?? 900, item.height ?? 1200, item.depth ?? 100),
-                            item.name, pos, GlassTint.Clear, 50);
-                        break;
-                    case "door":
-                        go = ElementFactory.CreateDoor(new Vector3Int(item.width ?? 900, item.height ?? 2000, item.depth ?? 100),
-                            item.name, pos, DoorSashType.Glass);
-                        break;
-                    default:
-                    {
-                        var dims = new Vector3Int(item.width ?? 800, item.height ?? 400, item.depth ?? 18);
-                        go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        go.name = item.name;
-                        if (elementType == "facade")
-                        {
-                            var facade = go.AddComponent<FacadeElement>();
-                            facade.PartName = item.name; facade.DimensionsMM = dims;
-                        }
-                        else { var el = go.AddComponent<KitchenElement>(); el.PartName = item.name; el.DimensionsMM = dims; }
-                        if (elementType == "wall") go.AddComponent<Wall>();
-                        go.transform.position = pos;
-                        break;
-                    }
+                    if (!ApplianceModels.IsKnown(item.model))
+                    { errors.Add($"Unknown appliance model '{item.model}' for '{item.name}'"); continue; }
+                    if (!ElementSpawners.ModelBelongsToType(elementType, item.model!))
+                    { errors.Add($"Model '{item.model}' does not belong to type '{elementType}' ('{item.name}')"); continue; }
                 }
+
+                var go = ElementSpawners.Spawn(elementType, item, new Vector3(item.x, item.y, item.z));
                 if (go == null) { errors.Add($"Failed to create '{item.name}'"); continue; }
                 commands.Add(new CreateCommand(go));
                 created.Add(go.GetComponent<KitchenElement>());
@@ -491,16 +408,7 @@ namespace KitchenDesigner.Core.MCP
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP create_elements x{commands.Count}", commands));
 
-            // Окна/двери должны прилипнуть к ближайшей стене и прорезать проём —
-            // как при перетаскивании мышью. При MCP-создании это раньше не
-            // вызывалось, поэтому проём не резался (баг v1). Делаем ПОСЛЕ Execute,
-            // когда все стены батча уже зарегистрированы.
-            foreach (var el in created)
-            {
-                if (el is WindowElement w) w.SnapToWall();
-                else if (el is DoorElement d) d.SnapToWall();
-            }
-
+            SnapOpeningsOnceEveryWallOfTheBatchIsRegistered(created);
             RefreshElementHighlights();
             var all = PartRegistry.GetAll();
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
