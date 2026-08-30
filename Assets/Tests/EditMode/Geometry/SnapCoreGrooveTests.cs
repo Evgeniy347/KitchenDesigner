@@ -105,7 +105,7 @@ public class SnapCoreGrooveTests : SnapCoreTestBase
         var panel = ElementGeometry.Box("Panel", new Vector3(0, -42f, 8f) * MM,
             new Vector3(600, 300, 4) * MM, isPanel: true);
 
-        Assert.IsTrue(SnapCore.SeatSupersedesFace(panel.Faces[5], board.Faces[4],
+        Assert.IsTrue(GrooveSeating.SeatSupersedesFace(panel.Faces[5], board.Faces[4],
             board.GrooveSeatFaces), "над пазом материала нет — контактом служит дно");
     }
 
@@ -116,7 +116,7 @@ public class SnapCoreGrooveTests : SnapCoreTestBase
         var panel = ElementGeometry.Box("Panel", new Vector3(0, 400f, 8f) * MM,
             new Vector3(600, 300, 4) * MM, isPanel: true);
 
-        Assert.IsFalse(SnapCore.SeatSupersedesFace(panel.Faces[5], board.Faces[4],
+        Assert.IsFalse(GrooveSeating.SeatSupersedesFace(panel.Faces[5], board.Faces[4],
             board.GrooveSeatFaces));
     }
 
@@ -128,7 +128,7 @@ public class SnapCoreGrooveTests : SnapCoreTestBase
         var panel = ElementGeometry.Box("Panel", new Vector3(0, -42f, 8f) * MM,
             new Vector3(600, 300, 4) * MM, isPanel: true);
 
-        Assert.IsFalse(SnapCore.SeatSupersedesFace(panel.Faces[5], board.Faces[5],
+        Assert.IsFalse(GrooveSeating.SeatSupersedesFace(panel.Faces[5], board.Faces[5],
             board.GrooveSeatFaces));
     }
 
@@ -139,7 +139,7 @@ public class SnapCoreGrooveTests : SnapCoreTestBase
         var panel = ElementGeometry.Box("Panel", new Vector3(0, -42f, 8f) * MM,
             new Vector3(600, 300, 4) * MM, isPanel: true);
 
-        Assert.IsFalse(SnapCore.SeatSupersedesFace(panel.Faces[5], board.Faces[4],
+        Assert.IsFalse(GrooveSeating.SeatSupersedesFace(panel.Faces[5], board.Faces[4],
             board.GrooveSeatFaces));
     }
 }

@@ -8,6 +8,18 @@ namespace KitchenDesigner.Core
 
         public const float MinSeatCoverageRatio = 0.5f;
 
+        public static bool SeatSupersedesFace(Face movedFace, Face otherFace, Face[] seatFaces)
+        {
+            foreach (var seat in seatFaces)
+            {
+                if (Vector3.Dot(seat.normal, otherFace.normal) < Tolerance.ParallelDot) continue;
+                if (FaceContacts.OverlapAllowingEdgeTouch(movedFace, seat, out float ratio, out _)
+                    && ratio > 0f)
+                    return true;
+            }
+            return false;
+        }
+
         public static bool IsSeatedInGroove(in ValidationElement panel, in ValidationElement board,
             out Face seatFace)
         {

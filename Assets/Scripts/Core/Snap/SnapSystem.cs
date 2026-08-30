@@ -159,11 +159,11 @@ namespace KitchenDesigner.Core
 
                         var mf = movedFaces[i];
                         // Над пазом материала нет — как и в Collect.
-                        if (!isGroove && SnapCore.SeatSupersedesFace(mf, of, seatFaces)) continue;
+                        if (!isGroove && GrooveSeating.SeatSupersedesFace(mf, of, seatFaces)) continue;
                         n.hasFacingFaces = true;
 
                         float gap = Mathf.Abs(Vector3.Dot(of.center - mf.center, mf.normal));
-                        bool hasOverlap = SnapCore.FacesOverlap(mf, of, out float ratio, out _);
+                        bool hasOverlap = FaceContacts.OverlapAllowingEdgeTouch(mf, of, out float ratio, out _);
                         bool within = gap <= maxDist;
                         bool enough = hasOverlap && ratio >= Tolerance.MinSupportOverlap;
 
