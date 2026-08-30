@@ -33,7 +33,7 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("SpecTitle", panel.transform, "Спецификация", 24,
+            UIFactory.CreateLabel("SpecTitle", panel.transform, "Спецификация", UIStyle.FontWindowTitle,
                 new Vector2(0, 290), new Vector2(ContentWidth, 36), TextAnchor.MiddleCenter);
 
             BuildStaticHeaders(panel.transform);

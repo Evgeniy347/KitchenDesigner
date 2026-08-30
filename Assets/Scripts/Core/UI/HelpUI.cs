@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,6 +7,8 @@ namespace KitchenDesigner.Core.UI
     public class HelpUI : MonoBehaviour
     {
         public static HelpUI? Instance { get; private set; }
+
+        public const float PanelWidth = 520f;
 
         private GameObject? _root;
 
@@ -16,47 +19,40 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("HelpPanel", canvas, Vector2.zero, new Vector2(520, 600));
+            var panel = UIFactory.CreatePanel("HelpPanel", canvas, Vector2.zero, Vector2.zero);
             UIFactory.AnchorCenter(panel.rectTransform);
-            panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
 
-            UIFactory.CreateLabel("HelpTitle", panel.transform, "Справка", 24,
-                new Vector2(0, 246), new Vector2(480, 36), TextAnchor.MiddleCenter);
+            float contentWidth = PanelWidth - 2f * UIStyle.WindowPad;
 
-            var text = "" +
-                "W A S D  — перемещение камеры (разгон при удержании)\n" +
-                "Shift + W A S D  — разгон сразу\n" +
-                "< ^ > v  — поворот камеры\n" +
-                "+ / -    — вперёд / назад\n" +
-                "\n" +
-                "ПКМ + движение  — поворот камеры на месте\n" +
-                "СКМ / ЛКМ + пусто  — панорамирование\n" +
-                "Колёсико мыши  — вперёд / назад\n" +
-                "\n" +
-                "ЛКМ по детали  — выделение\n" +
-                "Ctrl + ЛКМ  — мультивыделение\n" +
-                "Ctrl + перетаскивание / ресайз  — прилипание наоборот (вкл/выкл)\n" +
-                "Delete  — удалить объект(ы)\n" +
-                "Ctrl + D  — дублировать\n" +
-                "Ctrl + S  — сохранить\n" +
-                "Ctrl + Z  — отмена\n" +
-                "Ctrl + Y / Ctrl+Shift+Z  — повтор\n" +
-                "Escape  — отменить перетаскивание / закрыть меню\n" +
-                "E  — открыть/закрыть дверь/окно/фасад\n" +
-                "\n" +
-                "F  — фокус камеры на выделенном объекте\n" +
-                "1  — вид сверху\n" +
-                "2  — вид сбоку\n" +
-                "3  — вид спереди\n" +
-                "F1 — эта справка\n" +
-                "F9 — логирование / профилировка";
+            var title = UIFactory.CreateLabel("HelpTitle", panel.transform, "Справка",
+                UIStyle.FontWindowTitle, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
+            var body = UIFactory.CreateLabel("HelpText", panel.transform, BodyText,
+                UIStyle.FontSection, Vector2.zero, Vector2.zero, TextAnchor.UpperLeft);
+            var close = UIFactory.CreateButton("HelpClose", panel.transform, "Закрыть",
+                Vector2.zero, Vector2.zero, Close);
 
-            UIFactory.CreateLabel("HelpText", panel.transform, text, 15,
-                new Vector2(0, 10), new Vector2(480, 470), TextAnchor.UpperLeft);
+            float titleHeight = FitToPreferredWidth(title, contentWidth);
+            float bodyHeight = FitToPreferredWidth(body, contentWidth);
 
-            UIFactory.CreateButton("HelpClose", panel.transform, "Закрыть",
-                new Vector2(0, -270), new Vector2(160, 40), Close);
+            var closeRect = close.GetComponent<RectTransform>();
+            var closeLabel = close.GetComponentInChildren<TextMeshProUGUI>();
+            var closeText = closeLabel.GetPreferredValues();
+            float closeWidth = closeText.x + 2f * UIStyle.GapSection;
+            float closeHeight = Mathf.Max(UIStyle.HitTarget, closeText.y + 2f * UIStyle.GapInner);
+            closeRect.sizeDelta = new Vector2(closeWidth, closeHeight);
+
+            float panelHeight = 2f * UIStyle.WindowPad + titleHeight + UIStyle.GapSection
+                + bodyHeight + UIStyle.GapSection + closeHeight;
+            panel.rectTransform.sizeDelta = new Vector2(PanelWidth, panelHeight);
+
+            float half = panelHeight * 0.5f;
+            title.rectTransform.anchoredPosition =
+                new Vector2(0f, half - UIStyle.WindowPad - titleHeight * 0.5f);
+            body.rectTransform.anchoredPosition =
+                new Vector2(0f, half - UIStyle.WindowPad - titleHeight - UIStyle.GapSection - bodyHeight * 0.5f);
+            closeRect.anchoredPosition =
+                new Vector2(0f, -half + UIStyle.WindowPad + closeHeight * 0.5f);
 
             _root.SetActive(false);
         }
@@ -71,5 +67,40 @@ namespace KitchenDesigner.Core.UI
         {
             if (_root != null) _root.SetActive(false);
         }
+
+        private static float FitToPreferredWidth(TextMeshProUGUI label, float width)
+        {
+            float height = label.GetPreferredValues(width, 0f).y;
+            label.rectTransform.sizeDelta = new Vector2(width, height);
+            return height;
+        }
+
+        private const string BodyText = "" +
+            "W A S D  — перемещение камеры (разгон при удержании)\n" +
+            "Shift + W A S D  — разгон сразу\n" +
+            "< ^ > v  — поворот камеры\n" +
+            "+ / -    — вперёд / назад\n" +
+            "\n" +
+            "ПКМ + движение  — поворот камеры на месте\n" +
+            "СКМ / ЛКМ + пусто  — панорамирование\n" +
+            "Колёсико мыши  — вперёд / назад\n" +
+            "\n" +
+            "ЛКМ по детали  — выделение\n" +
+            "Ctrl + ЛКМ  — мультивыделение\n" +
+            "Ctrl + перетаскивание / ресайз  — прилипание наоборот (вкл/выкл)\n" +
+            "Delete  — удалить объект(ы)\n" +
+            "Ctrl + D  — дублировать\n" +
+            "Ctrl + S  — сохранить\n" +
+            "Ctrl + Z  — отмена\n" +
+            "Ctrl + Y / Ctrl+Shift+Z  — повтор\n" +
+            "Escape  — отменить перетаскивание / закрыть меню\n" +
+            "E  — открыть/закрыть дверь/окно/фасад\n" +
+            "\n" +
+            "F  — фокус камеры на выделенном объекте\n" +
+            "1  — вид сверху\n" +
+            "2  — вид сбоку\n" +
+            "3  — вид спереди\n" +
+            "F1 — эта справка\n" +
+            "F9 — логирование / профилировка";
     }
 }

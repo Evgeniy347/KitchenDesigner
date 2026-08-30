@@ -66,7 +66,7 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, 40f);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("HierTitle", panel.transform, "Сцена", 20,
+            UIFactory.CreateLabel("HierTitle", panel.transform, "Сцена", UIStyle.FontWindowTitle,
                 new Vector2(14, -6), new Vector2(120, 28), TextAnchor.MiddleLeft)
                 .rectTransform.SetAnchor(new Vector2(0, 1), new Vector2(14, -6));
 

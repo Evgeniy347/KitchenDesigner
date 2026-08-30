@@ -25,7 +25,7 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("PiTitle", panel.transform, "Инструкции проекта", 24,
+            UIFactory.CreateLabel("PiTitle", panel.transform, "Инструкции проекта", UIStyle.FontWindowTitle,
                 new Vector2(0, 245), new Vector2(590, 34), TextAnchor.MiddleCenter);
             UIFactory.CreateLabel("PiHint", panel.transform,
                 "Соглашения для пользователя и агента. Числа для геометрии задавайте строками " +

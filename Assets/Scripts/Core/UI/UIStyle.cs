@@ -72,6 +72,7 @@ namespace KitchenDesigner.Core.UI
 
         // ── Шрифты ─────────────────────────────────────────────────────
         public const int FontTitle = 20;
+        public const int FontWindowTitle = 24;
         public const int FontSection = 15;
         public const int FontBody = 16;
         public const int FontSmall = 14;

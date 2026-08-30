@@ -60,7 +60,7 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("SetTitle", panel.transform, "Настройки", 24,
+            UIFactory.CreateLabel("SetTitle", panel.transform, "Настройки", UIStyle.FontWindowTitle,
                 new Vector2(0, TitleY), new Vector2(PanelW - 40, 36), TextAnchor.MiddleCenter);
 
             var s = KitchenSettings.Instance;
