@@ -195,4 +195,124 @@ public class SaveRestoreContractTests
         Assert.IsFalse(LightSourceElement.GlobalOn,
             "выключатель света — тоже часть проекта, а не рантайм-состояние");
     }
+
+    [Test]
+    public void Capture_PartRidingAnOpenFacade_StoresItsRestingPose_NotTheOffsetOne()
+    {
+        var facade = (FacadeElement)Register(ElementFactory.CreateFacade(
+            new Vector3Int(450, 700, 18), "RideFacade", Vector3.zero));
+        var board = Register(ElementFactory.CreatePart(
+            new Vector3Int(400, 18, 300), "RideBoard", new Vector3(0f, -0.35f, 0.25f)));
+        board.AttachedToName = facade.PartName;
+        var restPosition = board.transform.position;
+
+        facade.SetOpen(true);
+        facade.StepDoor(1f);
+        AttachRider.Step();
+        Assert.AreNotEqual(restPosition, board.transform.position,
+            "деталь обязана уехать вместе с фасадом — иначе тесту нечего проверять");
+
+        var data = ElementData.FromElement(board);
+
+        Assert.AreEqual(restPosition.x, data.Position.x, 1e-4f,
+            "в файл идёт поза покоя: сохранив уехавший трансформ, проект открылся бы "
+            + "с разъехавшейся сборкой");
+        Assert.AreEqual(restPosition.y, data.Position.y, 1e-4f, "то же по вертикали");
+        Assert.AreEqual(restPosition.z, data.Position.z, 1e-4f, "то же по глубине");
+    }
+
+    [Test]
+    public void OldSaveWithoutTheNewerFields_ReadsBackWithSafeDefaults()
+    {
+        string json = "{\"version\":" + AppConstants.SAVE_FORMAT_VERSION
+            + ",\"elements\":[{\"name\":\"Old\",\"dimensionsMM\":[600,18,500],"
+            + "\"position\":[0,0.5,0],\"rotation\":[0,0,0,1]}]}";
+
+        var data = SaveLoadManager.Deserialize(json);
+        Assert.IsNotNull(data, "старый проект обязан читаться");
+        var element = data!.elements[0];
+
+        Assert.AreEqual(0, element.gapFront,
+            "зазоры по толщине появились позже остальных: их отсутствие читается как ноль, "
+            + "то есть ровно как было до их появления");
+        Assert.IsTrue(element.edgeBanding, "кромка «из коробки» включена");
+        Assert.AreEqual(AppConstants.EDGE_THICKNESS_DEFAULT_MM, element.edgeThicknessMM, 1e-4f,
+            "толщина ленты берётся из умолчания, а не из нуля");
+        Assert.AreEqual(AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, element.cornerRadius,
+            "радиус скругления — из умолчания");
+        Assert.IsEmpty(element.grooves, "пазов в старом файле нет — пустой список, не null");
+        Assert.IsEmpty(element.textureOverlays, "накладок тоже нет");
+        Assert.AreEqual(LightSourceElement.DEFAULT_TEMPERATURE_K, element.lightTemperatureK,
+            "параметры лампы берутся из её умолчаний");
+        Assert.AreEqual("", element.cooktopModel, "варочная старого проекта — свободная");
+        Assert.AreEqual(0f, element.cooktopYawDeg, 1e-4f, "своего разворота у неё тогда не было");
+        Assert.IsFalse(element.isOven, "духовки в старых проектах не бывает");
+        Assert.IsFalse(element.isDishwasher, "и посудомойки тоже");
+
+        Assert.IsTrue(data.tintEnabled, "тумблеры вида — из умолчаний приложения");
+        Assert.IsTrue(data.lightsOn, "свет включён");
+        Assert.IsEmpty(data.windows, "окна проекта остаются на местах по умолчанию");
+        Assert.AreEqual("", data.projectInstructions, "инструкций проекта тогда не было");
+        Assert.IsFalse(data.basePlateValid,
+            "иначе JsonUtility отдал бы пустой ElementData вместо null и подложка обнулилась бы");
+        Assert.IsEmpty(data.undoHistory, "истории нет — пустой массив");
+        Assert.AreEqual("Resize", data.handleMode, "режим ручек по умолчанию");
+    }
+
+    [Test]
+    public void SaveProject_ArchivesThePreviousFile_OnlyWhenAskedTo()
+    {
+        string name = "backup_probe_" + System.Guid.NewGuid().ToString("N").Substring(0, 8);
+        string backups = System.IO.Path.Combine(SaveLoadManager.SavesDirectory, "backups");
+
+        Assert.IsTrue(SaveLoadManager.SaveProject(name), "первый файл записан");
+        Assert.IsTrue(SaveLoadManager.SaveProject(name), "второй раз поверх — с архивацией");
+        Assert.AreEqual(1, ZipsFor(backups, name), "прежняя версия уехала в zip");
+
+        Assert.IsTrue(SaveLoadManager.SaveProject(name, backup: false), "автосохранение — без архива");
+        Assert.AreEqual(1, ZipsFor(backups, name),
+            "автосохранение идёт каждую минуту: с архивацией zip'ы плодились бы бесконечно");
+
+        System.IO.File.Delete(SaveLoadManager.PathForName(name));
+        foreach (var zip in ZipPaths(backups, name)) System.IO.File.Delete(zip);
+    }
+
+    private static string[] ZipPaths(string backups, string name) =>
+        System.IO.Directory.Exists(backups)
+            ? System.IO.Directory.GetFiles(backups, name + "_*.zip")
+            : new string[0];
+
+    private static int ZipsFor(string backups, string name) => ZipPaths(backups, name).Length;
+
+    [Test]
+    public void OldSaveWithoutASettingsBlock_KeepsSnapGridAndAutosaveOn()
+    {
+        string json = "{\"version\":" + AppConstants.SAVE_FORMAT_VERSION + ",\"elements\":[]}";
+
+        var data = SaveLoadManager.Deserialize(json);
+        Assert.IsNotNull(data!.settings,
+            "JsonUtility создаёт вложенный объект даже когда его нет в JSON — «настроек "
+            + "нет» здесь неотличимо от «настройки нулевые», и защищают только "
+            + "инициализаторы полей");
+
+        var settings = data.settings!;
+        Assert.AreEqual(18, settings.gridStep, "шаг сетки — как «из коробки», а не 0");
+        Assert.IsTrue(settings.gridEnabled, "сетка остаётся включённой");
+        Assert.IsTrue(settings.snapEnabled,
+            "проект, сохранённый до появления блока настроек, не имеет права выключить "
+            + "пользователю привязку");
+        Assert.AreEqual(50f, settings.snapThreshold, 1e-4f, "порог привязки — умолчание, не 1 мм");
+        Assert.IsTrue(settings.blockOnViolation, "блокировка по нарушениям остаётся");
+        Assert.IsTrue(settings.autoSave, "автосохранение остаётся включённым");
+        Assert.AreEqual(60, settings.autoSaveInterval, "интервал автосохранения — минута, не 10 с");
+        Assert.IsTrue(settings.windowedMode, "оконный режим остаётся");
+
+        KitchenSettings.Instance.ResetToDefaults();
+        SaveLoadManager.RestoreScene(data);
+
+        Assert.IsTrue(KitchenSettings.Instance.SnapEnabled,
+            "и то же самое после реальной загрузки: старый проект открывается с рабочей "
+            + "привязкой, а не с молча выключенной");
+        Assert.IsTrue(KitchenSettings.Instance.AutoSave, "и с работающим автосохранением");
+    }
 }

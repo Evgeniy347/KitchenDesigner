@@ -12,37 +12,22 @@ namespace KitchenDesigner.Core
         public FloorplanScopeData[] floorplans = new FloorplanScopeData[0];
         public CameraState camera = new CameraState();
 
-        // Режим ручек выделенного элемента (Resize / Move).
         public string handleMode = "Resize";
 
-        /// <summary>Свободный текст «инструкции проекта» (соглашения: толщины
-        /// несущих/перегородок, толщина ЛДСП, зазоры и т.п.). Пусто у старых сейвов.</summary>
         public string projectInstructions = "";
 
-        /// <summary>true если поле basePlate сохранено (иначе JsonUtility сериализует
-        /// null-ссылку как {} с нулями, и десериализация даёт new ElementData(), а не null).</summary>
         public bool basePlateValid = false;
 
-        /// <summary>Пол (BasePlate): позиция, размеры, поворот.</summary>
         public ElementData? basePlate = null;
 
-        // История отмены/повтора. elementIndex в записях ссылается на позицию в
-        // массиве elements. Старые сейвы без истории → пустые массивы.
         public CommandRecord[] undoHistory = new CommandRecord[0];
         public CommandRecord[] redoHistory = new CommandRecord[0];
 
-        /// <summary>Настройки кухни (сетка, снап, автосейв, графика…).
-        /// null у старых сейвов — тогда настройки берутся из умолчаний ScriptableObject.</summary>
         public KitchenSettingsData? settings = null;
 
-        /// <summary>Тумблеры вида из тулбара. Инициализаторы = дефолты приложения:
-        /// у старых сейвов этих полей в JSON нет, и JsonUtility оставит их как есть.</summary>
         public bool tintEnabled = true;
         public bool lightsOn = true;
 
-        /// <summary>Окна проекта (спецификация, сцена, ошибки, настройки,
-        /// инструкции, день/ночь): положение и открыто/закрыто. Пусто у старых
-        /// сейвов — окна остаются на своих местах по умолчанию.</summary>
         public WindowStateData[] windows = new WindowStateData[0];
 
         public ProjectData() { }
@@ -53,8 +38,6 @@ namespace KitchenDesigner.Core
         }
     }
 
-    /// <summary>Состояние одного окна проекта: где стоит и открыто ли.
-    /// height = 0 у окон с фиксированной высотой.</summary>
     [System.Serializable]
     public class WindowStateData
     {
@@ -82,7 +65,6 @@ namespace KitchenDesigner.Core
         public string floor = "";
         public string[] walls = System.Array.Empty<string>();
         public string[] openings = System.Array.Empty<string>();
-        // World X,Z polygon pairs in MM, used to classify modules/furniture.
         public int[] polygonXZ = System.Array.Empty<int>();
     }
 
@@ -93,46 +75,37 @@ namespace KitchenDesigner.Core
         public string[] elements = System.Array.Empty<string>();
     }
 
-    /// <summary>Сериализуемое состояние камеры. valid=false у старых сейвов без камеры.</summary>
     [System.Serializable]
     public struct CameraState
     {
         public bool valid;
         public float targetX, targetY, targetZ;
         public float angleX, angleY, distance;
-        public float photoDistance; // отдельный зум фоторежима (0 у старых сейвов)
-        // Независимые позиция и угол фоторежима (0 у старых сейвов → fallback на обычные).
+        public float photoDistance;
         public float photoTargetX, photoTargetY, photoTargetZ;
         public float photoAngleX, photoAngleY;
     }
 
-    /// <summary>Сериализуемые настройки кухни (сетка, снап, автосейв, графика…).</summary>
     [System.Serializable]
     public class KitchenSettingsData
     {
-        public int gridStep;
-        public bool gridEnabled;
-        public bool snapEnabled;
-        public float snapThreshold;
-        public bool blockOnViolation;
-        public bool autoSave;
-        public int autoSaveInterval;
-        public bool spatialGrid;
-        public bool windowedMode;
-        public bool cameraPanFree;
+        public int gridStep = 18;
+        public bool gridEnabled = true;
+        public bool snapEnabled = true;
+        public float snapThreshold = 50f;
+        public bool blockOnViolation = true;
+        public bool autoSave = true;
+        public int autoSaveInterval = 60;
+        public bool spatialGrid = false;
+        public bool windowedMode = true;
+        public bool cameraPanFree = false;
 
-        /// <summary>Версия формата настроек вида. 0 — плоские поля ниже, один
-        /// набор на все режимы; 1 — пресеты viewNormal/viewRoom. Отличить
-        /// «поля нет» от «поле false» иначе нельзя: JsonUtility не различает.</summary>
         public const int CURRENT_VIEW_SCHEMA = 1;
         public int viewSchema = 0;
 
         public ViewPreset? viewNormal;
         public ViewPreset? viewRoom;
 
-        // Плоские поля вида — только чтение старых проектов (viewSchema = 0).
-        // Инициализаторы задают дефолты для проектов, где полей ещё нет в JSON
-        // (см. комментарий про JsonUtility ниже).
         public bool edgeOutline = true;
         public bool wallsEnabled = true;
         public bool lowerNearWalls = true;
@@ -140,16 +113,11 @@ namespace KitchenDesigner.Core
         public bool hideOpeningsOnLoweredWalls = false;
         public bool objectsVisible = true;
         public bool hideLightSources = false;
-        // Нижний порог EDG-01, %: в старых проектах поля нет → инициализатор
-        // даёт то же значение, что и «из коробки».
         public int edgePartialThresholdPct = KitchenSettings.EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT;
         public float mouseSensitivity = 1f;
         public float wasdSpeed = 1f;
         public float arrowSpeed = 1f;
 
-        // Фоторежим. Инициализаторы задают дефолты для старых проектов, где этих
-        // полей нет в JSON: JsonUtility.FromJson создаёт объект (инициализаторы
-        // срабатывают), затем перезаписывает только присутствующие поля.
         public int photoQuality = (int)PhotoQualityPreset.High;
         public bool photoShadows = true;
         public bool photoSoftShadows = true;
@@ -161,8 +129,6 @@ namespace KitchenDesigner.Core
         public bool photoCeiling = true;
         public bool photoSSGI = true;
 
-        // Свет фоторежима. Инициализаторы = прежние зашитые значения, поэтому
-        // проект, сохранённый до появления этих полей, открывается как раньше.
         public int photoAmbientPct = KitchenSettings.PHOTO_AMBIENT_DEFAULT_PCT;
         public int photoFloorBouncePct = KitchenSettings.PHOTO_FLOOR_BOUNCE_DEFAULT_PCT;
         public int photoExposurePct = KitchenSettings.PHOTO_EXPOSURE_DEFAULT_PCT;
