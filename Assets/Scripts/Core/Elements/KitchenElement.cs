@@ -181,6 +181,8 @@ namespace KitchenDesigner.Core
 
         public virtual string DisplayTypeName => "Деталь";
 
+        public virtual KitchenElement InspectedElement => this;
+
         // ── Пазы ───────────────────────────────────────────────────────
         // Пазы поддерживает только базовая «Деталь»: у фасадов/ящиков/столов и
         // прочих подтипов геометрия своя процедурная, и врезка в неё пласти не

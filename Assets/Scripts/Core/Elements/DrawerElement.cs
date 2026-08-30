@@ -19,6 +19,9 @@ namespace KitchenDesigner.Core
 
         public override string DisplayTypeName => DrawerConstants.GetDefaultName(System);
 
+        public override KitchenElement InspectedElement =>
+            IsUpperDrawer ? (KitchenElement?)FindPaired() ?? this : this;
+
         public bool IsClosedPose => !IsOpen && !IsAnimating;
 
         public string OpenActionLabel => FindPaired() != null

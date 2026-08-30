@@ -18,10 +18,6 @@ namespace KitchenDesigner.Core.UI
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
-        private TMP_Dropdown? _modeDropdown;
-        private TMP_Dropdown? _fillDropdown;
-        private TMP_Dropdown? _drawerTypeDropdown, _drawerLengthDropdown, _drawerColorDropdown;
-        private TMP_Dropdown? _drawerUpperLenDropdown;
 
         private const string DrawerFacadeLabelText = "Фасад ящика";
         private const string HostFacadeLabelText = "Фасад";
@@ -31,9 +27,6 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _drawerFacadeLabel;
         private NameDropdownBinder _attachedFacade = null!;
         private NameDropdownBinder _attachedTo = null!;
-        private TMP_Dropdown? _tintDropdown;
-        private TMP_Dropdown? _sashTypeDropdown;
-        private TMP_Dropdown? _winModeDropdown;
         private bool _openInProgress;
         private ElementFacet _facets;
 
@@ -52,6 +45,8 @@ namespace KitchenDesigner.Core.UI
         private readonly PillarFieldsEditor _pillarFields;
         private readonly TableLegFieldsEditor _tableFields;
         private readonly WallOpeningFieldsEditor _openingFields;
+        private readonly FacadeFieldsEditor _facadeFields;
+        private readonly AssembledFacadeFieldsEditor _assembledFields;
         private readonly ElementFieldsEditor[] _editors;
         private readonly DimensionFields _size = new();
         private ContextMenuRowFactory _rows = null!;
@@ -69,14 +64,17 @@ namespace KitchenDesigner.Core.UI
             _lights = new LightFieldsEditor(this);
             _radialFields = new RadialFieldsEditor(this);
             _cooktopFields = new CooktopCutoutFieldsEditor(this);
-            _drawerFields = new DrawerBoxFieldsEditor(this);
+            _drawerFields = new DrawerBoxFieldsEditor(this, Open);
             _pillarFields = new PillarFieldsEditor(this);
             _tableFields = new TableLegFieldsEditor(this);
             _openingFields = new WallOpeningFieldsEditor(this);
+            _facadeFields = new FacadeFieldsEditor(this);
+            _assembledFields = new AssembledFacadeFieldsEditor(this);
             _editors = new ElementFieldsEditor[]
             {
                 _radialFields, _cooktopFields, _drawerFields, _pillarFields,
                 _tableFields, _openingFields, _lights,
+                _assembledFields, _facadeFields,
             };
         }
 
@@ -180,56 +178,20 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildFacadeSection()
         {
-            var facadeOnly = RowVisibility.For(ElementFacet.Facade);
+            _facadeFields.Build();
 
-            var modeOptions = new List<string>();
-            for (int i = 0; i < FacadeDoor.Count; i++)
-                modeOptions.Add(FacadeDoor.Label((DoorMode)i));
-            _modeDropdown = _rows.Dropdown("Дверца", modeOptions, OnModeSelected, facadeOnly, "CtxMode");
-
-            OpenButton("CtxDoor", OpenLabels.Open, facadeOnly);
+            OpenButton("CtxDoor", OpenLabels.Open, RowVisibility.For(ElementFacet.Facade));
             OpenButton("CtxOvenDoor", OpenLabels.OpenDoor, RowVisibility.For(ElementFacet.Oven));
             OpenButton("CtxDishwasherDoor", OpenLabels.OpenDoor,
                 RowVisibility.For(ElementFacet.Dishwasher));
 
-            var fillOptions = new List<string> { "Глухой (панель)", "Витрина (пусто)", "Стекло" };
-            _fillDropdown = _rows.Dropdown("Заполнение", fillOptions, OnFillSelected,
-                RowVisibility.For(ElementFacet.Assembled), "CtxFill");
+            _assembledFields.Build();
         }
 
         private void BuildDrawerSection()
         {
-            var drawerOnly = RowVisibility.For(ElementFacet.Drawer);
-
-            var typeNames = new List<string>
-                { "A — борт 86 мм", "B — борт 120 мм", "C — борт 168 мм", "D — борт 200 мм" };
-            _drawerTypeDropdown = _rows.Dropdown("Тип ящика", typeNames, OnDrawerTypeChanged,
-                drawerOnly, "CtxDrawerType");
-
-            var lengthNames = new List<string>();
-            foreach (var l in DrawerConstants.ValidLengths) lengthNames.Add($"{l} мм");
-            _drawerLengthDropdown = _rows.Dropdown("Длина", lengthNames, OnDrawerLengthChanged,
-                drawerOnly, "CtxDrawerLen");
-
-            var colorNames = new List<string> { "Антрацит", "Белый", "Чёрный" };
-            _drawerColorDropdown = _rows.Dropdown("Цвет", colorNames, OnDrawerColorChanged,
-                drawerOnly, "CtxDrawerColor");
-
             _drawerFields.Build();
-
-            _rows.WideButton("CtxDrawerDouble", "Двойной ящик", CreatePairedDrawer,
-                RowVisibility.For(ElementFacet.Drawer, CanCreateDoubleDrawer), ActionGap);
-
-            var upperLenNames = new List<string>();
-            foreach (var l in DrawerConstants.ValidLengths) upperLenNames.Add($"{l} мм");
-            (_, _drawerUpperLenDropdown) = _rows.NamedDropdown("CtxDrawerUpperLen", "Верхний ящик",
-                upperLenNames, OnDrawerUpperLengthChanged,
-                RowVisibility.For(ElementFacet.Drawer, HasUpperDrawer));
-
-            _rows.WideButton("CtxDrawerRemoveUpper", "Убрать верхний ящик", RemoveUpperDrawer,
-                RowVisibility.For(ElementFacet.Drawer, HasUpperDrawer), ActionGap);
-
-            OpenButton("CtxDrawerAnim", OpenLabels.Open, drawerOnly);
+            OpenButton("CtxDrawerAnim", OpenLabels.Open, RowVisibility.For(ElementFacet.Drawer));
         }
 
         private void BuildAttachmentSection()
@@ -254,9 +216,9 @@ namespace KitchenDesigner.Core.UI
             var host = _target as IFacadeHost;
             if (host == null) yield break;
             var attachedName = host.AttachedFacadeName;
-            foreach (var el in PartRegistry.GetAll())
+            foreach (var facade in FacadeLinks.All())
             {
-                if (!(el is FacadeElement facade) || string.IsNullOrEmpty(facade.PartName)) continue;
+                if (string.IsNullOrEmpty(facade.PartName)) continue;
                 bool isAttached = !string.IsNullOrEmpty(attachedName) && facade.PartName == attachedName;
                 if (!isAttached && !DrawerLinks.IsFacadeInContact(host, facade)) continue;
                 yield return facade.PartName;
@@ -269,9 +231,8 @@ namespace KitchenDesigner.Core.UI
             if (host == null) return false;
             var attachedName = host.AttachedFacadeName;
             if (string.IsNullOrEmpty(attachedName)) return false;
-            foreach (var el in PartRegistry.GetAll())
-                if (el is FacadeElement facade && facade.PartName == attachedName)
-                    return !DrawerLinks.IsFacadeInContact(host, facade);
+            var attached = FacadeLinks.FindByName(attachedName);
+            if (attached != null) return !DrawerLinks.IsFacadeInContact(host, attached);
             return true;
         }
 
@@ -314,25 +275,8 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildWindowSection()
         {
-            var windowOnly = RowVisibility.For(ElementFacet.Window);
-            var notDoor = RowVisibility.ForExcept(ElementFacet.Window, ElementFacet.Door);
-
-            _tintDropdown = _rows.Dropdown("Стекло", new List<string> { "Прозрачное", "Тонированное" },
-                OnTintSelected, notDoor, "CtxTint");
             _openingFields.Build();
-            _sashTypeDropdown = _rows.Dropdown("Створка", new List<string> { "Стекло", "Глухая" },
-                OnSashTypeSelected, RowVisibility.For(ElementFacet.Door), "CtxSashType");
-
-            var winModeOptions = new List<string>
-            {
-                FacadeDoor.Label(DoorMode.HingeFrontLeft),
-                FacadeDoor.Label(DoorMode.HingeFrontRight),
-                FacadeDoor.Label(DoorMode.HingeFrontTop),
-                FacadeDoor.Label(DoorMode.HingeFrontBottom),
-            };
-            _winModeDropdown = _rows.Dropdown("Открывание", winModeOptions, OnWindowModeSelected,
-                windowOnly, "CtxWinMode");
-            OpenButton("CtxWinDoor", OpenLabels.Open, windowOnly);
+            OpenButton("CtxWinDoor", OpenLabels.Open, RowVisibility.For(ElementFacet.Window));
         }
 
         private void BuildFurnitureSection()
@@ -552,11 +496,7 @@ namespace KitchenDesigner.Core.UI
 
             SideHighlighter.Hide();
 
-            if (element is DrawerElement upper && upper.IsUpperDrawer)
-            {
-                var lower = upper.FindPaired();
-                if (lower != null) element = lower;
-            }
+            element = element.InspectedElement;
 
             _openInProgress = true;
             try
@@ -573,7 +513,6 @@ namespace KitchenDesigner.Core.UI
                     SelectionManager.Instance.Select(element);
 
                 _facets = ElementFacets.Of(element);
-                bool isDrawer = _facets.Has(ElementFacet.Drawer);
                 RefreshTitle();
                 _types.ShowFor(element);
 
@@ -584,29 +523,7 @@ namespace KitchenDesigner.Core.UI
                 _d!.text = dims.z.ToString();
                 foreach (var editor in _editors) editor.Show(element);
 
-                var facade = element as FacadeElement;
                 _gaps.WriteFrom(element);
-                UpdateModeDropdown(facade);
-
-                var assembled = element as AssembledFacadeElement;
-                if (assembled != null && _fillDropdown != null)
-                    _fillDropdown.SetValueWithoutNotify(FillToIndex(assembled.Fill));
-
-                var drawer = element as DrawerElement;
-                if (drawer != null)
-                {
-                    if (_drawerTypeDropdown != null)
-                        _drawerTypeDropdown.SetValueWithoutNotify(DrawerConstants.TypeIndex(drawer.Type));
-                    if (_drawerLengthDropdown != null)
-                        _drawerLengthDropdown.SetValueWithoutNotify(System.Array.IndexOf(DrawerConstants.ValidLengths, drawer.NominalLength));
-                    if (_drawerColorDropdown != null)
-                        _drawerColorDropdown.SetValueWithoutNotify((int)drawer.Color);
-                    var upperDrawer = drawer.FindPaired();
-                    if (_drawerUpperLenDropdown != null && upperDrawer != null)
-                        _drawerUpperLenDropdown.SetValueWithoutNotify(
-                            System.Array.IndexOf(DrawerConstants.ValidLengths, upperDrawer.NominalLength));
-                }
-
                 RefreshOpenButtons();
 
                 if (AttachLinks.CanBeChild(element))
@@ -619,27 +536,10 @@ namespace KitchenDesigner.Core.UI
                 if (facadeHost != null)
                 {
                     if (_drawerFacadeLabel != null)
-                        _drawerFacadeLabel.text = isDrawer ? DrawerFacadeLabelText : HostFacadeLabelText;
+                        _drawerFacadeLabel.text = _facets.Has(ElementFacet.Drawer)
+                            ? DrawerFacadeLabelText : HostFacadeLabelText;
                     _attachedFacade.Rebuild();
                     _attachedFacade.SetValue(facadeHost.AttachedFacadeName);
-                }
-
-                var window = element as WindowElement;
-                if (window != null)
-                {
-                    if (_tintDropdown != null)
-                        _tintDropdown.SetValueWithoutNotify((int)window.Tint);
-                    if (_winModeDropdown != null)
-                        _winModeDropdown.SetValueWithoutNotify((int)window.Mode);
-                }
-
-                var door = element as DoorElement;
-                if (door != null)
-                {
-                    if (_sashTypeDropdown != null)
-                        _sashTypeDropdown.SetValueWithoutNotify((int)door.SashType);
-                    if (_winModeDropdown != null)
-                        _winModeDropdown.SetValueWithoutNotify((int)door.Mode);
                 }
 
                 ShowDimensionLocks(element);
@@ -719,7 +619,6 @@ namespace KitchenDesigner.Core.UI
 
             _materials.ApplyLegsChoice(target);
 
-            var facade = target as FacadeElement;
             _gaps.ApplyTo(target);
 
             _edges.ApplyThickness(target);
@@ -811,52 +710,6 @@ namespace KitchenDesigner.Core.UI
             RefreshHighlights();
         }
 
-        private void OnModeSelected(int index)
-        {
-            if (_target is FacadeElement f)
-                f.Mode = (DoorMode)index;
-        }
-
-        private void OnTintSelected(int index)
-        {
-            if (_target is WindowElement w)
-                w.Tint = (GlassTint)index;
-        }
-
-        private void OnSashTypeSelected(int index)
-        {
-            if (_target is DoorElement d)
-                d.SashType = (DoorSashType)index;
-        }
-
-        private void OnWindowModeSelected(int index)
-        {
-            if (_target is WindowElement w)
-                w.Mode = (DoorMode)index;
-            else if (_target is DoorElement d)
-                d.Mode = (DoorMode)index;
-        }
-
-        private static readonly AssembledFill[] FillOrder =
-            { AssembledFill.Blind, AssembledFill.Open, AssembledFill.Glass };
-
-        private static int FillToIndex(AssembledFill fill)
-        {
-            for (int i = 0; i < FillOrder.Length; i++)
-                if (FillOrder[i] == fill) return i;
-            return 0;
-        }
-
-        private void OnFillSelected(int index)
-        {
-            if (_target is AssembledFacadeElement a && index >= 0 && index < FillOrder.Length)
-            {
-                a.Fill = FillOrder[index];
-                if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.RefreshHighlight(a);
-            }
-        }
-
         private void RelayoutForTarget()
         {
             if (_target == null) return;
@@ -871,63 +724,6 @@ namespace KitchenDesigner.Core.UI
             float contentBottom = _layout.Apply(facets, showRotationXZ, TopPad);
             if (_panelRt != null)
                 _panelRt.sizeDelta = new Vector2(_panelRt.sizeDelta.x, contentBottom + BottomPad);
-        }
-
-        private void OnDrawerTypeChanged(int index)
-        {
-            if (_target is DrawerElement d)
-                d.Type = DrawerConstants.TypeFromIndex(index);
-        }
-
-        private void OnDrawerLengthChanged(int index)
-        {
-            if (_target is DrawerElement d && index >= 0 && index < DrawerConstants.ValidLengths.Length)
-                d.NominalLength = DrawerConstants.ValidLengths[index];
-        }
-
-        private void OnDrawerColorChanged(int index)
-        {
-            if (_target is DrawerElement d && index >= 0 && index <= 2)
-                d.Color = (DrawerColor)index;
-        }
-
-        private bool HasUpperDrawer() =>
-            _target is DrawerElement d && !d.IsUpperDrawer && d.FindPaired() != null;
-
-        private bool CanCreateDoubleDrawer()
-        {
-            if (!(_target is DrawerElement d) || d.IsUpperDrawer || d.FindPaired() != null)
-                return false;
-            float freeMM = DrawerValidator.FreeHeightAboveMM(d, PartRegistry.GetAll());
-            return freeMM >= DrawerConstants.GetMinOpeningHeight(DrawerConstants.UPPER_DRAWER_TYPE);
-        }
-
-        private void CreatePairedDrawer()
-        {
-            if (!(_target is DrawerElement d)) return;
-            var pair = DrawerLinks.CreatePair(d);
-            if (pair == null) return;
-            CommandStack.Execute(new CreateCommand(pair.gameObject));
-            RefreshHighlights();
-            Open(d);
-        }
-
-        private void RemoveUpperDrawer()
-        {
-            if (!(_target is DrawerElement d)) return;
-            var upperGo = DrawerLinks.DetachPair(d);
-            if (upperGo != null)
-                CommandStack.Execute(new DeleteCommand(upperGo));
-            RefreshHighlights();
-            Open(d);
-        }
-
-        private void OnDrawerUpperLengthChanged(int index)
-        {
-            if (!(_target is DrawerElement d)) return;
-            if (index < 0 || index >= DrawerConstants.ValidLengths.Length) return;
-            var upper = d.FindPaired();
-            if (upper != null) upper.NominalLength = DrawerConstants.ValidLengths[index];
         }
 
         private ElementFieldsEditor? EditorFor(KitchenElement element)
@@ -976,17 +772,10 @@ namespace KitchenDesigner.Core.UI
         }
 
         internal static DrawerElement? FindDrawerForFacade(FacadeElement facade) =>
-            FacadeHosts.FindDrawer(facade);
+            FacadeLinks.FindDrawer(facade);
 
         internal static DishwasherElement? FindDishwasherForFacade(FacadeElement facade) =>
-            FacadeHosts.FindDishwasher(facade);
-
-        private void UpdateModeDropdown(FacadeElement? facade)
-        {
-            if (_modeDropdown == null) return;
-            _modeDropdown.SetValueWithoutNotify(facade != null ? (int)facade.Mode : 0);
-            _modeDropdown.RefreshShownValue();
-        }
+            FacadeLinks.FindDishwasher(facade);
 
         private void Duplicate()
         {
@@ -1007,11 +796,8 @@ namespace KitchenDesigner.Core.UI
             var go = _target.gameObject;
             string deletedName = _target.PartName;
 
-            if (_target is DrawerElement d && !d.IsUpperDrawer)
-            {
-                var upperGo = DrawerLinks.DetachPair(d);
-                if (upperGo != null) CommandStack.Execute(new DeleteCommand(upperGo));
-            }
+            var upperGo = DrawerLinks.DetachPairedUpper(_target);
+            if (upperGo != null) CommandStack.Execute(new DeleteCommand(upperGo));
 
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.Deselect();
