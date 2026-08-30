@@ -25,95 +25,6 @@ namespace KitchenDesigner.Core.MCP
             return null;
         }
 
-        private static List<string> ValidateEditOpFields(EditOp op, KitchenElement el)
-        {
-            var e = new List<string>();
-            bool IsNot<T>() => !(el is T);
-            bool IsFacadeLike() => el is FacadeElement || el is WindowElement || el is DoorElement;
-            if (!el.SupportsGaps) { if (op.gap_left.HasValue) e.Add("gap_left"); if (op.gap_right.HasValue) e.Add("gap_right"); if (op.gap_top.HasValue) e.Add("gap_top"); if (op.gap_bottom.HasValue) e.Add("gap_bottom"); if (op.gap_front.HasValue) e.Add("gap_front"); if (op.gap_back.HasValue) e.Add("gap_back"); }
-            if (IsNot<FacadeElement>()) { if (op.fill != null) e.Add("fill"); }
-            if (!IsFacadeLike()) { if (op.mode != null) e.Add("mode"); }
-            // Откидная дверца духовки открывается тем же is_open, что фасад,
-            // окно и дверь: своего инструмента ради одной кнопки не нужно.
-            if (IsNot<FacadeElement>() && IsNot<WindowElement>() && IsNot<DoorElement>() && IsNot<OvenElement>() && IsNot<DishwasherElement>()) { if (op.is_open.HasValue) e.Add("is_open"); }
-            if (IsNot<RadialShelfElement>()) { if (op.corner_radius.HasValue) e.Add("corner_radius"); }
-            if (IsNot<CooktopElement>()) { if (op.cutout_width.HasValue) e.Add("cutout_width"); if (op.cutout_depth.HasValue) e.Add("cutout_depth"); }
-            if (IsNot<DrawerElement>()) { if (op.drawer_type != null) e.Add("drawer_type"); if (op.drawer_length.HasValue) e.Add("drawer_length"); if (op.drawer_color != null) e.Add("drawer_color"); if (op.internal_width.HasValue) e.Add("internal_width"); if (op.is_double.HasValue) e.Add("is_double"); if (op.is_upper.HasValue) e.Add("is_upper"); if (op.paired_drawer_name != null) e.Add("paired_drawer_name"); }
-            // Пристёгнутый фасад есть и у посудомойки — своей фасадной панели у
-            // неё нет, и это её ЕДИНСТВЕННОЕ настраиваемое свойство.
-            if (IsNot<DrawerElement>() && IsNot<DishwasherElement>()) { if (op.attached_facade_name != null) e.Add("attached_facade_name"); }
-            // Прикрепить можно только обычную «дощечку» — у фасада, ящика и
-            // техники своя кинематика (AttachLinks.CanBeChild).
-            if (op.attached_to_name != null)
-            {
-                if (!AttachLinks.CanBeChild(el)) e.Add("attached_to_name (this element type cannot be attached: it has its own kinematics or host)");
-                else if (op.attached_to_name != "")
-                {
-                    var parent = FindElementByName(op.attached_to_name);
-                    if (parent == null) e.Add($"attached_to_name: element not found: {op.attached_to_name}");
-                    else if (!AttachLinks.CanBeParent(parent)) e.Add("attached_to_name (parent must be a board or a facade)");
-                    else if (AttachLinks.WouldCycle(el, parent)) e.Add("attached_to_name would create a cycle");
-                }
-            }
-            if (IsNot<TableElement>() && IsNot<RadiusTableElement>()) { if (op.leg_inset_mm.HasValue) e.Add("leg_inset_mm"); if (op.tabletop_material != null) e.Add("tabletop_material"); if (op.legs_material != null) e.Add("legs_material"); }
-            if (IsNot<PillarElement>()) { if (op.mid_height_mm.HasValue) e.Add("mid_height_mm"); }
-            if (IsNot<WindowElement>()) { if (op.tint != null) e.Add("tint"); if (op.sill_protrusion_mm.HasValue) e.Add("sill_protrusion_mm"); }
-            if (IsNot<DoorElement>()) { if (op.sash_type != null) e.Add("sash_type"); }
-            if (el is DrawerElement && (op.width.HasValue || op.height.HasValue || op.depth.HasValue)) e.Add("width/height/depth not settable on drawers (size is parametric)");
-            // Готовая техника: габарит и ниша врезки заданы производителем.
-            // Молча игнорировать правку хуже, чем отказать: клиент решил бы, что
-            // размер применён.
-            if (FixedSize.IsFixed(el))
-            {
-                if (op.width.HasValue || op.height.HasValue || op.depth.HasValue)
-                    e.Add("width/height/depth not settable on a fixed appliance model (size is set by the manufacturer)");
-                if (op.cutout_width.HasValue || op.cutout_depth.HasValue)
-                    e.Add("cutout_width/cutout_depth not settable on a fixed appliance model");
-            }
-            // Встраиваемая техника поворачивается ТОЛЬКО вокруг вертикали. Отказ,
-            // а не тихое игнорирование: клиент, пославший rot_x, иначе решил бы,
-            // что прибор лёг на бок, и продолжил бы считать от этой позы.
-            if (FixedSize.IsYawOnly(el) && (op.rot_x.HasValue || op.rot_z.HasValue))
-                e.Add("rot_x/rot_z not settable on a built-in appliance (only rot_y — rotation about the vertical axis)");
-
-            // Пазы принимает только базовая «деталь»: у фасада/полки/ящика своя
-            // процедурная геометрия, врезка в неё не определена.
-            if (op.grooves != null)
-            {
-                if (!el.SupportsGrooves)
-                    e.Add("grooves (plain boards only)");
-                else if (!McpSpecCodec.TryParseGrooves(op.grooves, out _, out string grooveError))
-                    e.Add($"grooves: {grooveError}");
-            }
-
-            // Накладки текстур принимают только стена и пол — у остальных типов
-            // декор задаётся на весь элемент полем material.
-            if (op.texture_overlays != null)
-            {
-                if (!el.SupportsTextureOverlays)
-                    e.Add("texture_overlays (walls and floors only)");
-                else if (!McpSpecCodec.TryParseTextureOverlays(op.texture_overlays, out _, out string overlayError))
-                    e.Add($"texture_overlays: {overlayError}");
-            }
-
-            // Кромкование — свойство той же базовой «детали», что и пазы.
-            // «Лист ли она» проверять здесь рано: размеры могут меняться этой же
-            // операцией, и не-лист просто не отдаёт кромок при чтении.
-            if (!el.SupportsGrooves)
-            {
-                if (op.edge_banding.HasValue) e.Add("edge_banding (plain boards only)");
-                if (op.edge_thickness_mm.HasValue) e.Add("edge_thickness_mm (plain boards only)");
-                if (op.edge_skip_validation.HasValue) e.Add("edge_skip_validation (plain boards only)");
-            }
-            else if (op.edge_thickness_mm.HasValue
-                && (op.edge_thickness_mm.Value < AppConstants.EDGE_THICKNESS_MIN_MM
-                    || op.edge_thickness_mm.Value > AppConstants.EDGE_THICKNESS_MAX_MM))
-            {
-                e.Add($"edge_thickness_mm: out of range " +
-                      $"({AppConstants.EDGE_THICKNESS_MIN_MM}..{AppConstants.EDGE_THICKNESS_MAX_MM} mm)");
-            }
-            return e;
-        }
         /// <summary>Зазоры есть не только у фасада (см. KitchenElement.SupportsGaps),
         /// поэтому они правятся отдельно от дверных свойств.</summary>
         private static void ApplyGapEdits(EditOp op, KitchenElement el)
@@ -303,7 +214,7 @@ namespace KitchenDesigner.Core.MCP
                     || op.rot_x.HasValue || op.rot_y.HasValue || op.rot_z.HasValue;
                 if (geometry && !el.Movable && op.locked != false)
                 { errors.Add($"Element '{op.name}' is LOCKED"); continue; }
-                foreach (var err in ValidateEditOpFields(op, el))
+                foreach (var err in EditFieldRules.Reject(op, el, FindElementByName))
                     errors.Add($"Invalid field for '{op.name}': {err}");
                 if (op.new_name != null && op.new_name != op.name)
                 {
