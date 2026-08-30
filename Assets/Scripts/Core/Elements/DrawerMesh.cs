@@ -3,19 +3,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Процедурная геометрия ящика GTV AXIS PRO: 2 металлические боковины
-    /// (14 мм), дно и задник (плита 16 мм). Раскрой — версия 1 каталога (брошюра
-    /// «Преимущества», стр. 8): задник во всю высоту (до низа), дно упирается в него.
-    /// Фасад НЕ входит — он отдельный элемент.
-    ///
-    /// Меш строится в НОРМАЛИЗОВАННОМ кубе [−0.5,0.5] и масштабируется localScale
-    /// элемента = КОНТУРНЫЙ бокс LW × минПроём × NL (зазоры направляющих 37.5 мм
-    /// на сторону и подъём короба входят в бокс). Поэтому контур (чёрные рёбра),
-    /// снэп и коллайдер работают по проёму корпуса, а видимый короб — внутри него.</summary>
     public static class DrawerMesh
     {
-        /// <summary>Панель короба: позиция и размер в мм от левого-нижнего-ЗАДНЕГО
-        /// угла контурного бокса (ящик выезжает в +Z, перед — z = NL).</summary>
         public struct Box
         {
             public string name;
@@ -23,7 +12,6 @@ namespace KitchenDesigner.Core
             public Vector3 sizeMM;
         }
 
-        /// <summary>Раскладка короба на 4 панели по формулам каталога.</summary>
         public static List<Box> ComputeBoxes(int lwMM, DrawerType type, int nlMM)
         {
             float w = lwMM, d = nlMM;
@@ -40,7 +28,6 @@ namespace KitchenDesigner.Core
 
             return new List<Box>
             {
-                // Боковины: внутренняя грань на 37.5 от стенки проёма, растут наружу.
                 new Box
                 {
                     name = "Боковина L",
@@ -53,15 +40,12 @@ namespace KitchenDesigner.Core
                     minMM = new Vector3(w - clr, lift, 0f),
                     sizeMM = new Vector3(side, h, d),
                 },
-                // Дно: (LW−75) × (NL−24), заподлицо с передним торцом боковин,
-                // сзади упирается в задник.
                 new Box
                 {
                     name = "Дно",
                     minMM = new Vector3(clr, lift, d - bottomD),
                     sizeMM = new Vector3(bottomW, panel, bottomD),
                 },
-                // Задник: (LW−87), до низа короба, задняя грань на 8 мм от торца.
                 new Box
                 {
                     name = "Задник",
@@ -71,7 +55,6 @@ namespace KitchenDesigner.Core
             };
         }
 
-        /// <summary>Меш короба (один сабмеш — цвет GTV через MaterialManager).</summary>
         public static Mesh Build(int lwMM, DrawerType type, int nlMM)
         {
             var dims = new Vector3(
@@ -81,10 +64,6 @@ namespace KitchenDesigner.Core
             return BuildFromBoxes(ComputeBoxes(lwMM, type, nlMM), dims);
         }
 
-        /// <summary>Собрать меш из панелей короба. Панели заданы в мм от угла
-        /// контурного бокса; меш строится в нормализованном кубе [−0.5,0.5] и
-        /// масштабируется localScale элемента = контурный бокс. Переиспользуется
-        /// раскроем GTV и Movento — геометрия панелей у них разная, сборка одна.</summary>
         public static Mesh BuildFromBoxes(List<Box> boxes, Vector3 contourDimsMM)
         {
             var dims = new Vector3(
@@ -98,7 +77,6 @@ namespace KitchenDesigner.Core
 
             foreach (var box in boxes)
             {
-                // мм → нормализованные координаты контурного бокса.
                 Vector3 center = box.minMM + box.sizeMM * 0.5f;
                 Vector3 c = new Vector3(
                     center.x / dims.x - 0.5f,
@@ -120,7 +98,6 @@ namespace KitchenDesigner.Core
             return mesh;
         }
 
-        /// <summary>Коробка с плоскими гранями (как AssembledFacadeMesh.AddBox).</summary>
         private static void AddBox(List<Vector3> verts, List<Vector2> uvs, List<int> tris,
             Vector3 center, Vector3 size)
         {
@@ -128,33 +105,25 @@ namespace KitchenDesigner.Core
             float y0 = center.y - size.y * 0.5f, y1 = center.y + size.y * 0.5f;
             float z0 = center.z - size.z * 0.5f, z1 = center.z + size.z * 0.5f;
 
-            // Декор ложится как на полку: UV = позиция в контурном боксе
-            // ([−0.5,0.5] → [0,1]), проекция плоская по грани (как у фасада).
             void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d,
                 Vector2 ua, Vector2 ub, Vector2 uc, Vector2 ud) =>
                 AddQuad(verts, uvs, tris, a, b, c, d, ua, ub, uc, ud);
 
-            // +Z
             Quad(V(x0, y0, z1), V(x1, y0, z1), V(x1, y1, z1), V(x0, y1, z1),
                 new Vector2(x0 + 0.5f, y0 + 0.5f), new Vector2(x1 + 0.5f, y0 + 0.5f),
                 new Vector2(x1 + 0.5f, y1 + 0.5f), new Vector2(x0 + 0.5f, y1 + 0.5f));
-            // −Z
             Quad(V(x1, y0, z0), V(x0, y0, z0), V(x0, y1, z0), V(x1, y1, z0),
                 new Vector2(x1 + 0.5f, y0 + 0.5f), new Vector2(x0 + 0.5f, y0 + 0.5f),
                 new Vector2(x0 + 0.5f, y1 + 0.5f), new Vector2(x1 + 0.5f, y1 + 0.5f));
-            // +X
             Quad(V(x1, y0, z1), V(x1, y0, z0), V(x1, y1, z0), V(x1, y1, z1),
                 new Vector2(z1 + 0.5f, y0 + 0.5f), new Vector2(z0 + 0.5f, y0 + 0.5f),
                 new Vector2(z0 + 0.5f, y1 + 0.5f), new Vector2(z1 + 0.5f, y1 + 0.5f));
-            // −X
             Quad(V(x0, y0, z0), V(x0, y0, z1), V(x0, y1, z1), V(x0, y1, z0),
                 new Vector2(z0 + 0.5f, y0 + 0.5f), new Vector2(z1 + 0.5f, y0 + 0.5f),
                 new Vector2(z1 + 0.5f, y1 + 0.5f), new Vector2(z0 + 0.5f, y1 + 0.5f));
-            // +Y
             Quad(V(x0, y1, z1), V(x1, y1, z1), V(x1, y1, z0), V(x0, y1, z0),
                 new Vector2(x0 + 0.5f, z1 + 0.5f), new Vector2(x1 + 0.5f, z1 + 0.5f),
                 new Vector2(x1 + 0.5f, z0 + 0.5f), new Vector2(x0 + 0.5f, z0 + 0.5f));
-            // −Y
             Quad(V(x0, y0, z0), V(x1, y0, z0), V(x1, y0, z1), V(x0, y0, z1),
                 new Vector2(x0 + 0.5f, z0 + 0.5f), new Vector2(x1 + 0.5f, z0 + 0.5f),
                 new Vector2(x1 + 0.5f, z1 + 0.5f), new Vector2(x0 + 0.5f, z1 + 0.5f));

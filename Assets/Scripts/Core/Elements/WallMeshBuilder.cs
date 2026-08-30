@@ -5,11 +5,6 @@ namespace KitchenDesigner.Core
 {
     public static class WallMeshBuilder
     {
-        /// <summary>Минимальный размер ячейки в нормализованных координатах
-        /// (единичный куб). Разделители ближе этого порога схлопываются в одну
-        /// границу (см. CollapseNearDuplicates): иначе между ними остаётся
-        /// ячейка-волосок, которую отбрасывали целиком — вместе с гранями и
-        /// откосом, — оставляя сквозную щель со светом у краёв проёма.</summary>
         public const float MinCellNorm = 0.001f;
 
         public struct WindowCutout
@@ -26,10 +21,6 @@ namespace KitchenDesigner.Core
             { startFront = -0.5f, startBack = -0.5f, endFront = 0.5f, endBack = 0.5f };
         }
 
-        /// <summary>Единичный куб стены с сквозными вырезами под окна.
-        /// Вырезы задаются в плоскости «ширина × высота»; по умолчанию ширина —
-        /// локальная X (толщина по Z). Для стен, повёрнутых длиной вдоль Z,
-        /// передайте thicknessAlongX = true — оси X и Z меняются местами.</summary>
         public static Mesh Build(List<WindowCutout> cutouts, bool thicknessAlongX = false,
             EndShape? endShape = null)
         {
@@ -41,8 +32,6 @@ namespace KitchenDesigner.Core
 
             if (thicknessAlongX)
             {
-                // Свап X↔Z зеркалит меш — разворачиваем обход треугольников,
-                // чтобы нормали остались наружными.
                 for (int i = 0; i < verts.Count; i++)
                     verts[i] = new Vector3(verts[i].z, verts[i].y, verts[i].x);
                 for (int t = 0; t < tris.Count; t += 3)
@@ -97,9 +86,6 @@ namespace KitchenDesigner.Core
             }
 
             AddFaceWithCutoutsNorm(verts, tris, x0, x1, y0, y1, z1, z0, true, cutouts);
-            // Диапазон X обязан быть возрастающим (fx0 < fx1), иначе сплиты
-            // вырезов не попадают в грань и дыра растягивается на всю ширину;
-            // обратный обход задней грани обеспечивает флаг frontFace = false.
             AddFaceWithCutoutsNorm(verts, tris, x0, x1, y0, y1, z0, z1, false, cutouts);
 
             AddQuad(verts, tris, V(x1, y0, z1), V(x1, y0, z0), V(x1, y1, z0), V(x1, y1, z1));
@@ -130,10 +116,6 @@ namespace KitchenDesigner.Core
             xSplits.Sort();
             ySplits.Sort();
 
-            // Сливаем почти совпадающие края окон в одну границу до нарезки
-            // ячеек. Без этого пара окон «на одной высоте» (Y отличается на
-            // доли мм) даёт ячейку тоньше порога, которую отбрасывали вместе
-            // с откосом — сквозная полоса света у верха и низа проёма.
             CollapseNearDuplicates(xSplits, MinCellNorm);
             CollapseNearDuplicates(ySplits, MinCellNorm);
 
@@ -148,7 +130,7 @@ namespace KitchenDesigner.Core
 
                     float cx = (xs + xe) * 0.5f, cy = (ys + ye) * 0.5f;
                     int insideCount = CountInside(cutouts, cx, cy);
-                    if (insideCount > 1) continue; // overlap — без геометрии
+                    if (insideCount > 1) continue;
 
                     if (insideCount == 0)
                     {
@@ -159,24 +141,17 @@ namespace KitchenDesigner.Core
                     }
                     else if (frontFace)
                     {
-                        // Reveal-квады строим только на внешних рёбрах проёма.
-                        // Проверяем центр соседней ячейки по индексу. Если сосед — стена
-                        // (insideCount == 0) или за пределами сетки, ребро внешнее.
                         int nxBot = j > 0 ? CountInside(cutouts, cx, (ySplits[j - 1] + ys) * 0.5f) : 0;
                         int nxTop = j < ySplits.Count - 2 ? CountInside(cutouts, cx, (ye + ySplits[j + 2]) * 0.5f) : 0;
                         int nxLft = i > 0 ? CountInside(cutouts, (xSplits[i - 1] + xs) * 0.5f, cy) : 0;
                         int nxRgt = i < xSplits.Count - 2 ? CountInside(cutouts, (xe + xSplits[i + 2]) * 0.5f, cy) : 0;
 
-                        // Bottom ребро (y = ys)
                         if (nxBot == 0)
                             AddQuad(verts, tris, V(xs, ys, zBack), V(xe, ys, zBack), V(xe, ys, zFront), V(xs, ys, zFront));
-                        // Top ребро (y = ye)
                         if (nxTop == 0)
                             AddQuad(verts, tris, V(xs, ye, zFront), V(xe, ye, zFront), V(xe, ye, zBack), V(xs, ye, zBack));
-                        // Left ребро (x = xs)
                         if (nxLft == 0)
                             AddQuad(verts, tris, V(xs, ys, zFront), V(xs, ys, zBack), V(xs, ye, zBack), V(xs, ye, zFront));
-                        // Right ребро (x = xe)
                         if (nxRgt == 0)
                             AddQuad(verts, tris, V(xe, ys, zBack), V(xe, ys, zFront), V(xe, ye, zFront), V(xe, ye, zBack));
                     }
@@ -184,25 +159,16 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Схлопывает отсортированные разделители, отстоящие менее чем
-        /// на minGap, в одну границу. Крайние значения (границы самой грани)
-        /// сохраняются всегда, поэтому на выходе не меньше двух точек и ни один
-        /// промежуток не тоньше порога — ячеек-волосков не возникает.
-        ///
-        /// internal и с порогом-параметром, потому что тем же приёмом режет свою
-        /// плоскость <see cref="PlaneWithHolesMesh"/> — только там координаты в
-        /// миллиметрах, а не нормализованные.</summary>
         internal static void CollapseNearDuplicates(List<float> splits, float minGap)
         {
             float hi = splits[splits.Count - 1];
-            int w = 1; // splits[0] (ближний край грани) всегда остаётся
+            int w = 1;
             for (int r = 1; r < splits.Count; r++)
             {
-                // Не поглощаем дальний край и не оставляем промежуток тоньше порога.
                 if (splits[r] - splits[w - 1] >= minGap && hi - splits[r] >= minGap)
                     splits[w++] = splits[r];
             }
-            splits[w++] = hi; // дальний край грани обязан уцелеть
+            splits[w++] = hi;
             splits.RemoveRange(w, splits.Count - w);
         }
 
@@ -217,7 +183,7 @@ namespace KitchenDesigner.Core
                     py < co.centerNorm.y + co.halfSizeNorm.y)
                 {
                     count++;
-                    if (count > 1) break; // достаточно — overlap, дальше не интересно
+                    if (count > 1) break;
                 }
             }
             return count;
