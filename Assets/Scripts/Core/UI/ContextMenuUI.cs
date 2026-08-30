@@ -17,7 +17,6 @@ namespace KitchenDesigner.Core.UI
 
         private TMP_InputField? _name, _w, _h, _d, _radius,
             _cutoutW, _cutoutD,
-            _gapLeft, _gapRight, _gapTop, _gapBottom, _gapFront, _gapBack,
             _x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight,
             _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam,
             _lightSoftness, _lightGlow, _lightShadowStrength, _lightDrop,
@@ -61,12 +60,6 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _sashTypeDropdown;
         private TMP_InputField? _sillProtrusion;
         private TMP_Dropdown? _winModeDropdown;
-        // ── Зазоры ─────────────────────────────────────────────────────
-        // Устроены как пазы: раскрывашка со счётчиком (сколько сторон получили
-        // ненулевой зазор) и строки полей под ней.
-        private TMP_Text? _gapCountLabel;
-        private bool _gapsExpanded;
-
         private bool _openInProgress;
         private bool _currentIsTable;
         private bool _currentIsDoor;
@@ -77,6 +70,7 @@ namespace KitchenDesigner.Core.UI
         private readonly ContextMenuFieldTracker _fields;
         private readonly ContextMenuEdgeSection _edges;
         private readonly ContextMenuGrooveSection _grooves;
+        private readonly ContextMenuGapSection _gaps;
         private ContextMenuRowFactory _rows = null!;
 
         public ContextMenuUI()
@@ -85,6 +79,7 @@ namespace KitchenDesigner.Core.UI
             _fields = new ContextMenuFieldTracker(Apply);
             _edges = new ContextMenuEdgeSection(this);
             _grooves = new ContextMenuGrooveSection(this);
+            _gaps = new ContextMenuGapSection(this);
         }
 
         KitchenElement? IContextMenuHost.Target => _target;
@@ -104,6 +99,8 @@ namespace KitchenDesigner.Core.UI
         internal ContextMenuTextureSection Textures => _textures;
 
         internal ContextMenuGrooveSection Grooves => _grooves;
+
+        internal ContextMenuGapSection Gaps => _gaps;
 
         private void Awake()
         {
@@ -125,7 +122,7 @@ namespace KitchenDesigner.Core.UI
             BuildDimensions();
             _grooves.Build(panel.transform);
             _edges.Build(panel.transform);
-            BuildGapSection(panel.transform);
+            _gaps.Build(panel.transform);
             BuildFacadeSection();
             BuildDrawerSection();
             BuildAttachmentSection();
@@ -173,19 +170,6 @@ namespace KitchenDesigner.Core.UI
             var cooktopOnly = RowVisibility.When(() => _target is CooktopElement);
             _cutoutW = _rows.NumberField("Ширина выреза", cooktopOnly);
             _cutoutD = _rows.NumberField("Глубина выреза", cooktopOnly);
-        }
-
-        private void BuildGapSection(Transform parent)
-        {
-            _gapCountLabel = _rows.WideButton("CtxGaps", "Зазоры (0)", ToggleGaps,
-                RowVisibility.When(GapsEligible), RowGap);
-
-            CreateGapRow(parent, "Слева / справа, мм", GapSide.Left, GapSide.Right,
-                out _gapLeft, out _gapRight);
-            CreateGapRow(parent, "Сверху / снизу, мм", GapSide.Top, GapSide.Bottom,
-                out _gapTop, out _gapBottom);
-            CreateGapRow(parent, "Спереди / сзади, мм", GapSide.Front, GapSide.Back,
-                out _gapFront, out _gapBack);
         }
 
         private void BuildFacadeSection()
@@ -467,7 +451,6 @@ namespace KitchenDesigner.Core.UI
                 _x, _y, _z,
             };
             fields.AddRange(LightExtraFields());
-            fields.AddRange(GapFields());
             return fields.ToArray();
         }
 
@@ -510,42 +493,6 @@ namespace KitchenDesigner.Core.UI
 
         /// <summary>Строка секции зазоров: подпись и пара полей — по одному на
         /// противоположные стороны. Наведение на поле подсвечивает СВОЮ сторону
-        /// прямо на детали (SideHighlighter) — иначе «слева» ничего не говорит о
-        /// том, где это в сцене у повёрнутой детали.</summary>
-        private void CreateGapRow(Transform parent, string label, GapSide first, GapSide second,
-            out TMP_InputField? firstField, out TMP_InputField? secondField)
-        {
-            const float smallFieldW = 45f;
-            const float fieldGap = 4f;
-            const float gapFieldX = FieldX - 27f;
-
-            var lbl = UIFactory.CreateLabel($"L_Gap_{first}{second}", parent, label, 13,
-                new Vector2(LabelX, 0), new Vector2(140, 20), TextAnchor.MiddleLeft);
-            firstField = CreateGapField(parent, first, gapFieldX, smallFieldW);
-            secondField = CreateGapField(parent, second, gapFieldX + smallFieldW + fieldGap, smallFieldW);
-
-            _layout.AddWhen(GapsExpanded, FieldH, 4f, lbl.rectTransform,
-                firstField.GetComponent<RectTransform>(),
-                secondField.GetComponent<RectTransform>());
-        }
-
-        private TMP_InputField CreateGapField(Transform parent, GapSide side, float x, float width)
-        {
-            var field = UIFactory.CreateInputField($"F_gap{side}", parent, "0",
-                new Vector2(x, 0), new Vector2(width, 22));
-            PointerHover.Attach(field.gameObject,
-                () => OnGapSideHover(side, true), () => OnGapSideHover(side, false));
-            return field;
-        }
-
-        /// <summary>Наведение на поле зазора — подсветить его сторону так же,
-        /// как это делает схема кромок: торец плюс каёмки на соседних гранях.</summary>
-        private void OnGapSideHover(GapSide side, bool entered)
-        {
-            if (_target == null || !_target.SupportsGaps) return;
-            if (entered) SideHighlighter.ShowGapSide(_target, side);
-            else SideHighlighter.Hide();
-        }
 
         private void ToggleLightAdvanced()
         {
@@ -642,12 +589,11 @@ namespace KitchenDesigner.Core.UI
         {
             foreach (var f in new[] { _name, _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _edges.ThicknessField, _x, _y, _z, _rx, _ry, _rz })
                 if (f != null && f.isFocused) return true;
-            foreach (var f in GapFields())
-                if (f != null && f.isFocused) return true;
+            if (_gaps.AnyFieldFocused()) return true;
             return false;
         }
 
-        private void RefreshTransformFields()
+        internal void RefreshTransformFields()
         {
             if (_target == null) return;
             if (_target is FacadeElement f && !f.IsDoorClosed) return;
@@ -690,13 +636,7 @@ namespace KitchenDesigner.Core.UI
             _fields.RefreshUnfocused(_name, _target.PartName);
             RefreshTitle();
 
-            if (_target.SupportsGaps)
-            {
-                var fields = GapFields();
-                for (int i = 0; i < GapSides.All.Length; i++)
-                    _fields.RefreshUnfocused(fields[i], _target.GapOf(GapSides.All[i]).ToString());
-            }
-            RefreshGapUI();
+            _gaps.RefreshFromTarget();
 
             var table = _target as TableElement;
             if (table != null && _legInset != null)
@@ -765,7 +705,7 @@ namespace KitchenDesigner.Core.UI
                 _target = element;
                 _grooves.Collapse();
                 _textures.Collapse();
-                _gapsExpanded = false;     // и зазоры
+                _gaps.Collapse();
                 _lightAdvancedExpanded = false; // калибровка лампы — тоже
                 UpdateLightAdvancedLabel();
                 // Ручки области принадлежали прошлому элементу.
@@ -828,7 +768,7 @@ namespace KitchenDesigner.Core.UI
                     ? cooktopEl.CutoutDepthMM : CooktopElement.DEFAULT_CUTOUT_DEPTH_MM).ToString();
 
                 var facade = element as FacadeElement;
-                WriteGapFields(element);
+                _gaps.WriteFrom(element);
                 UpdateDoorButton(facade);
                 UpdateModeDropdown(facade);
                 UpdateModeDropdownEnabled(facade);
@@ -1194,15 +1134,7 @@ namespace KitchenDesigner.Core.UI
             }
 
             var facade = target as FacadeElement;
-            if (target.SupportsGaps)
-            {
-                var gapFields = GapFields();
-                for (int i = 0; i < GapSides.All.Length; i++)
-                {
-                    var side = GapSides.All[i];
-                    target.SetGap(side, _fields.ParseInt(gapFields[i], target.GapOf(side)));
-                }
-            }
+            _gaps.ApplyTo(target);
 
             _edges.ApplyThickness(target);
 
@@ -1280,7 +1212,7 @@ namespace KitchenDesigner.Core.UI
             if (pillar != null && _midHeight != null)
                 _midHeight.text = pillar.MidHeightMM.ToString();
 
-            WriteGapFields(_target);
+            _gaps.WriteFrom(_target);
 
             RefreshTitle();
             _edges.Refresh();
@@ -1412,55 +1344,6 @@ namespace KitchenDesigner.Core.UI
                 if (SelectionManager.Instance != null)
                     SelectionManager.Instance.RefreshHighlight(a);
             }
-        }
-
-        // ── Зазоры ────────────────────────────────────────────────────
-        // Значения читаются и пишутся общими Open/Apply (свойства помечены
-        // [Undoable], откат приезжает сам). Здесь — только раскрывашка и счётчик.
-
-        private bool GapsEligible() => _target != null && _target.SupportsGaps;
-
-        private bool GapsExpanded() => _gapsExpanded && GapsEligible();
-
-        private void ToggleGaps()
-        {
-            _gapsExpanded = !_gapsExpanded;
-            RefreshGapUI();
-            RelayoutForTarget();
-        }
-
-        /// <summary>Заголовок секции: число сторон с ненулевым зазором и глиф
-        /// состояния. Считаем по ПОЛЯМ, а не по детали: пока курсор в поле,
-        /// введённое значение ещё не применено, а счётчик должен идти за ним.</summary>
-        private void RefreshGapUI()
-        {
-            if (_gapCountLabel == null) return;
-            int filled = 0;
-            foreach (var f in GapFields())
-                if (f != null && _fields.ParseInt(f, 0) != 0) filled++;
-            _gapCountLabel.text =
-                $"Зазоры ({filled})  {(_gapsExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
-        }
-
-        /// <summary>Поля зазоров в порядке <see cref="GapSides.All"/>.</summary>
-        private TMP_InputField?[] GapFields() => new[]
-        {
-            _gapLeft, _gapRight, _gapTop, _gapBottom, _gapFront, _gapBack,
-        };
-
-        /// <summary>Заполнить поля значениями детали (у детали без зазоров —
-        /// нулями) и пересчитать счётчик в заголовке.</summary>
-        private void WriteGapFields(KitchenElement? element)
-        {
-            var fields = GapFields();
-            for (int i = 0; i < GapSides.All.Length; i++)
-            {
-                if (fields[i] == null) continue;
-                fields[i]!.text = element != null && element.SupportsGaps
-                    ? element.GapOf(GapSides.All[i]).ToString()
-                    : "0";
-            }
-            RefreshGapUI();
         }
 
         // ── Пазы детали ───────────────────────────────────────────────
@@ -2159,10 +2042,7 @@ namespace KitchenDesigner.Core.UI
             _fields.Track(_radius, radial != null
                 ? radial.CornerRadius.ToString()
                 : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT.ToString());
-            var gapTrackFields = GapFields();
-            for (int i = 0; i < GapSides.All.Length; i++)
-                _fields.Track(gapTrackFields[i], _target.SupportsGaps
-                    ? _target.GapOf(GapSides.All[i]).ToString() : "0");
+            _gaps.Track();
             var drawerEl2 = _target as DrawerElement;
             _fields.Track(_drawerWidth, drawerEl2 != null ? drawerEl2.BoxWidth.ToString() : "400");
             var windowEl2 = _target as WindowElement;

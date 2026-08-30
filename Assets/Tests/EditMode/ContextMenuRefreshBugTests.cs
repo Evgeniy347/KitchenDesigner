@@ -68,18 +68,18 @@ public class ContextMenuRefreshBugTests
         _element!.DimensionsMM = new Vector3Int(800, 600, 18);
         CallRefreshTransformFields();
 
-        Assert.AreEqual("800", FieldText("_w"),
-            $"BUG: width stays '{FieldText("_w")}' instead of '800' after external resize");
-        Assert.AreEqual("600", FieldText("_h"),
-            $"BUG: height stays '{FieldText("_h")}' instead of '600' after external resize");
+        Assert.AreEqual("800", FieldText("F_Ширина"),
+            $"BUG: width stays '{FieldText("F_Ширина")}' instead of '800' after external resize");
+        Assert.AreEqual("600", FieldText("F_Высота"),
+            $"BUG: height stays '{FieldText("F_Высота")}' instead of '600' after external resize");
     }
 
     [Test]
     public void Dimensions_InitiallyCorrectAfterOpen()
     {
-        Assert.AreEqual("400", FieldText("_w"), "initial width");
-        Assert.AreEqual("400", FieldText("_h"), "initial height");
-        Assert.AreEqual("18", FieldText("_d"), "initial depth");
+        Assert.AreEqual("400", FieldText("F_Ширина"), "initial width");
+        Assert.AreEqual("400", FieldText("F_Высота"), "initial height");
+        Assert.AreEqual("18", FieldText("F_Глубина"), "initial depth");
     }
 
     [Test]
@@ -89,12 +89,12 @@ public class ContextMenuRefreshBugTests
         CallRefreshTransformFields();
 
         // Позиция показывается в мм (правило 1 UI-GUIDELINES): 1,5 м = 1500 мм.
-        Assert.AreEqual(1500, int.Parse(FieldText("_x")),
-            $"x field: expected 1500 мм, got '{FieldText("_x")}'");
-        Assert.AreEqual(2500, int.Parse(FieldText("_y")),
-            $"y field: expected 2500 мм, got '{FieldText("_y")}'");
-        Assert.AreEqual(3500, int.Parse(FieldText("_z")),
-            $"z field: expected 3500 мм, got '{FieldText("_z")}'");
+        Assert.AreEqual(1500, int.Parse(FieldText("F_X, мм")),
+            $"x field: expected 1500 мм, got '{FieldText("F_X, мм")}'");
+        Assert.AreEqual(2500, int.Parse(FieldText("F_Y, мм")),
+            $"y field: expected 2500 мм, got '{FieldText("F_Y, мм")}'");
+        Assert.AreEqual(3500, int.Parse(FieldText("F_Z, мм")),
+            $"z field: expected 3500 мм, got '{FieldText("F_Z, мм")}'");
     }
 
     [Test]
@@ -103,8 +103,8 @@ public class ContextMenuRefreshBugTests
         _element!.PartName = "NewName";
         CallRefreshTransformFields();
 
-        Assert.AreEqual("NewName", FieldText("_name"),
-            $"BUG: name stays '{FieldText("_name")}' instead of 'NewName' after rename");
+        Assert.AreEqual("NewName", FieldText("F_Название"),
+            $"BUG: name stays '{FieldText("F_Название")}' instead of 'NewName' after rename");
     }
 
     [Test]
@@ -118,13 +118,13 @@ public class ContextMenuRefreshBugTests
         var shelf = shelfGo.GetComponent<RadialShelfElement>();
         _ctx!.Open(shelf);
 
-        Assert.AreEqual("200", FieldText("_radius"), "initial corner radius");
+        Assert.AreEqual("200", FieldText("F_Радиус угла"), "initial corner radius");
 
         shelf.CornerRadius = 350;
         CallRefreshTransformFields();
 
-        Assert.AreEqual("350", FieldText("_radius"),
-            $"BUG: corner radius stays '{FieldText("_radius")}' instead of '350'");
+        Assert.AreEqual("350", FieldText("F_Радиус угла"),
+            $"BUG: corner radius stays '{FieldText("F_Радиус угла")}' instead of '350'");
     }
 
     [Test]
@@ -146,14 +146,14 @@ public class ContextMenuRefreshBugTests
         facade.GapBottom = 40;
         CallRefreshTransformFields();
 
-        Assert.AreEqual("10", FieldText("_gapLeft"),
-            $"BUG: gapLeft stays '{FieldText("_gapLeft")}' instead of '10'");
-        Assert.AreEqual("20", FieldText("_gapRight"),
-            $"BUG: gapRight stays '{FieldText("_gapRight")}' instead of '20'");
-        Assert.AreEqual("30", FieldText("_gapTop"),
-            $"BUG: gapTop stays '{FieldText("_gapTop")}' instead of '30'");
-        Assert.AreEqual("40", FieldText("_gapBottom"),
-            $"BUG: gapBottom stays '{FieldText("_gapBottom")}' instead of '40'");
+        Assert.AreEqual("10", FieldText("F_gapLeft"),
+            $"BUG: gapLeft stays '{FieldText("F_gapLeft")}' instead of '10'");
+        Assert.AreEqual("20", FieldText("F_gapRight"),
+            $"BUG: gapRight stays '{FieldText("F_gapRight")}' instead of '20'");
+        Assert.AreEqual("30", FieldText("F_gapTop"),
+            $"BUG: gapTop stays '{FieldText("F_gapTop")}' instead of '30'");
+        Assert.AreEqual("40", FieldText("F_gapBottom"),
+            $"BUG: gapBottom stays '{FieldText("F_gapBottom")}' instead of '40'");
     }
 
     // ── БАГ: список фасадов ящика не обновляется при открытии дропдауна ──
@@ -325,24 +325,15 @@ public class ContextMenuRefreshBugTests
 
     // ── helpers (existing) ──────────────────────────────────────────────
 
-    private void CallRefreshTransformFields()
-    {
-        var method = typeof(ContextMenuUI).GetMethod("RefreshTransformFields",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(method, "RefreshTransformFields method should exist");
-        method.Invoke(_ctx, null);
-    }
+    private void CallRefreshTransformFields() => _ctx!.RefreshTransformFields();
 
-    private string FieldText(string fieldName)
+    private string FieldText(string nodeName)
     {
-        var field = typeof(ContextMenuUI).GetField(fieldName,
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(field, $"Field '{fieldName}' should exist");
-        var inputField = field.GetValue(_ctx) as TMP_InputField;
-        Assert.IsNotNull(inputField, $"Field '{fieldName}' should be a TMP_InputField");
-        // TMP_InputField.text содержит служебный zero-width space (U+200B) —
-        // приложение читает «чистое» значение отдельно, тесты сравнивают видимый текст.
-        return inputField!.text.Replace("\u200b", "");
+        var node = _canvasGo!.transform.Find("ContextMenu")!.Find(nodeName);
+        Assert.IsNotNull(node, $"виджет {nodeName} должен существовать в панели");
+        var inputField = node!.GetComponent<TMP_InputField>();
+        Assert.IsNotNull(inputField, $"{nodeName} должен быть полем ввода");
+        return inputField!.text.Replace("200b", "");
     }
 
     private KitchenElement CreateBoard(string name, Vector3Int dims, Vector3 pos)
@@ -384,12 +375,9 @@ public class ContextMenuRefreshBugTests
 
     private TMP_Dropdown GetDrawerFacadeDropdown()
     {
-        var field = typeof(ContextMenuUI).GetField("_drawerFacadeDropdown",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(field, "_drawerFacadeDropdown field should exist");
-        var dd = field.GetValue(_ctx) as TMP_Dropdown;
-        Assert.IsNotNull(dd, "_drawerFacadeDropdown should be a TMP_Dropdown");
-        return dd!;
+        var node = _canvasGo!.transform.Find("ContextMenu")!.Find("CtxDrawerFacade");
+        Assert.IsNotNull(node, "дропдаун фасада ищется по имени CtxDrawerFacade");
+        return node!.GetComponent<TMP_Dropdown>();
     }
 
     private void CallRebuildDrawerFacadeOptions()
