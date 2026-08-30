@@ -25,8 +25,16 @@ namespace KitchenDesigner.Core.UI
         /// <summary>Оранжевый уровня «предупреждение»: бейдж «Ошибки (N)», значок
         /// перехода к проблеме, строка проблемы в статус-баре и таблица окна ошибок.</summary>
         public static readonly Color HighlightWarning = new Color(1f, 0.55f, 0.1f, 1f);
+        /// <summary>Зелёный «всё хорошо»: «Сохранено: …» в статус-баре.</summary>
+        public static readonly Color HighlightOk = new Color(0.45f, 0.85f, 0.45f, 1f);
         /// <summary>Фон нажатого тоггла тулбара / активной вкладки.</summary>
         public static readonly Color SurfaceActive = new Color(0.28f, 0.33f, 0.42f, 1f);
+        /// <summary>Фон невыбранной вкладки — темнее панели, чтобы активная
+        /// читалась как приподнятая.</summary>
+        public static readonly Color SurfaceInactive = new Color(0.15f, 0.16f, 0.20f, 1f);
+        /// <summary>Выделенная строка списка: один оттенок во всех таблицах
+        /// (сцена, ошибки, спецификация).</summary>
+        public static readonly Color RowSelected = new Color(0.45f, 0.40f, 0.15f, 1f);
         public static readonly Color Separator = new Color(0.35f, 0.37f, 0.42f, 1f);
 
         // ── Схема кромок детали ────────────────────────────────────────
