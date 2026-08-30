@@ -315,75 +315,8 @@ namespace KitchenDesigner.Core
             if (wall != null) wall.UnregisterDoor(this);
         }
 
-        private int ComputeHiddenSides()
-        {
-            int hidden = 0;
-            var wall = FindAttachedWall();
-            if (wall == null) return hidden;
-
-            var wallEl = wall.GetComponent<KitchenElement>();
-            if (wallEl == null) return hidden;
-
-            var dims = DimensionsMM;
-            float toU = AppConstants.MM_TO_UNITS;
-            float halfW = dims.x * 0.5f * toU;
-            float halfH = dims.y * 0.5f * toU;
-
-            var wallT = wall.transform;
-            Vector3 localPos = wallT.InverseTransformPoint(transform.position);
-            float lxMin = localPos.x - halfW, lxMax = localPos.x + halfW;
-            float lyMin = localPos.y - halfH, lyMax = localPos.y + halfH;
-
-            foreach (var other in wall.AttachedWindows)
-            {
-                if (other == null || other == this) continue;
-                var oDims = other.DimensionsMM;
-                var oLocalPos = wallT.InverseTransformPoint(other.transform.position);
-                float oHalfW = oDims.x * 0.5f * toU;
-                float oHalfH = oDims.y * 0.5f * toU;
-                float olxMin = oLocalPos.x - oHalfW, olxMax = oLocalPos.x + oHalfW;
-                float olyMin = oLocalPos.y - oHalfH, olyMax = oLocalPos.y + oHalfH;
-
-                bool yOverlap = lyMax > olyMin && lyMin < olyMax;
-                bool xOverlap = lxMax > olxMin && lxMin < olxMax;
-
-                if (yOverlap && !xOverlap)
-                {
-                    if (olxMax >= lxMin && olxMax <= lxMax) hidden |= 1;
-                    if (olxMin >= lxMin && olxMin <= lxMax) hidden |= 2;
-                }
-                if (xOverlap && !yOverlap)
-                {
-                    if (olyMax >= lyMin && olyMax <= lyMax) hidden |= 4;
-                    if (olyMin >= lyMin && olyMin <= lyMax) hidden |= 8;
-                }
-            }
-            foreach (var other in wall.AttachedDoors)
-            {
-                if (other == null || other == this) continue;
-                var oDims = other.DimensionsMM;
-                var oLocalPos = wallT.InverseTransformPoint(other.transform.position);
-                float oHalfW = oDims.x * 0.5f * toU;
-                float oHalfH = oDims.y * 0.5f * toU;
-                float olxMin = oLocalPos.x - oHalfW, olxMax = oLocalPos.x + oHalfW;
-                float olyMin = oLocalPos.y - oHalfH, olyMax = oLocalPos.y + oHalfH;
-
-                bool yOverlap = lyMax > olyMin && lyMin < olyMax;
-                bool xOverlap = lxMax > olxMin && lxMin < olxMax;
-
-                if (yOverlap && !xOverlap)
-                {
-                    if (olxMax >= lxMin && olxMax <= lxMax) hidden |= 1;
-                    if (olxMin >= lxMin && olxMin <= lxMax) hidden |= 2;
-                }
-                if (xOverlap && !yOverlap)
-                {
-                    if (olyMax >= lyMin && olyMax <= lyMax) hidden |= 4;
-                    if (olyMin >= lyMin && olyMin <= lyMax) hidden |= 8;
-                }
-            }
-            return hidden;
-        }
+        private int ComputeHiddenSides() =>
+            OpeningNeighbourSides.HiddenSidesOf(this, FindAttachedWall());
 
         private void UpdateCollider()
         {

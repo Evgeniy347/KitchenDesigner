@@ -5,18 +5,9 @@ namespace KitchenDesigner.Core
 {
     public enum GlassTint { Clear = 0, Tinted = 1 }
 
-    /// <summary>
-    /// Окно: неподвижная коробка (рама на всю толщину стены, подоконник, отлив,
-    /// откосы) + поворотная створка (обвязка со стеклом). Окно живёт только на
-    /// стене: каждый кадр прилипает к ближайшей стене, встаёт в её срединную
-    /// плоскость и наследует её толщину (глубина окна не редактируется напрямую).
-    /// Геометрия строится в мировых единицах при единичном масштабе корня —
-    /// как у PillarElement/RadialShelfElement, иначе дети масштабируются дважды.
-    /// </summary>
     public class WindowElement : KitchenElement, IOpenable, IWallMounted
     {
         public override bool CanFollowAnAttachParent => false;
-
 
         public override string DisplayTypeName => "Окно";
 
@@ -47,13 +38,12 @@ namespace KitchenDesigner.Core
         private GameObject? _dripObj;
         private GameObject? _slopeTop, _slopeBottom, _slopeLeft, _slopeRight;
         private GameObject? _sashLeft, _sashRight, _sashTop, _sashBottom;
-        private Transform? _staticGroup; // коробка/подоконник/отлив/откосы — не двигаются
-        private Transform? _sashGroup;   // створка (обвязка + стекло) — поворачивается на петле
+        private Transform? _staticGroup;
+        private Transform? _sashGroup;
 
         private float _openT;
         private Vector3 _sashClosedLocal;
         private Vector3 _sashHalfExtents;
-        // Позиция, для которой в последний раз перестраивался вырез в стене.
         private Vector3 _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
 
         [Undoable]
@@ -83,8 +73,6 @@ namespace KitchenDesigner.Core
         [NotUndoable("служебная привязка к стене, вычисляется SnapToWall")]
         public string AttachedWallName { get => _attachedWallName; set => _attachedWallName = value ?? ""; }
 
-        // Корень окна при открывании не двигается (поворачивается только створка),
-        // поэтому закрытая поза всегда совпадает с текущей.
         public Vector3 ClosedPosition => transform.position;
         public Quaternion ClosedRotation => transform.rotation;
         public bool IsDoorClosed => !_isOpen && _openT <= 0f;
@@ -106,13 +94,10 @@ namespace KitchenDesigner.Core
             EnsureChildren();
             RebuildGeometry();
 
-            // Вырез в стене зависит от габаритов окна.
             var wall = FindAttachedWall();
             if (wall != null) wall.RebuildMesh();
         }
 
-        /// <summary>Перестроить геометрию без изменения размеров (вызов при изменении
-        /// списка соседних окон на стене).</summary>
         public void RefreshGeometry()
         {
             RebuildGeometry();
@@ -172,7 +157,6 @@ namespace KitchenDesigner.Core
             ApplyDoorPose();
         }
 
-        /// <summary>Мировые границы створки (AABB) при заданном прогрессе открывания [0..1].</summary>
         public (Vector3 min, Vector3 max) GetOpenBounds(float progress)
         {
             if (_sashGroup == null || _sashHalfExtents.sqrMagnitude < 1e-12f)
@@ -198,10 +182,6 @@ namespace KitchenDesigner.Core
             return OpeningCollision.MinMax(world);
         }
 
-        // ── Привязка к стене ────────────────────────────────────────────
-
-        /// <summary>Прилипание к ближайшей стене: регистрация, поворот вдоль стены,
-        /// центрирование в срединной плоскости и наследование толщины стены.</summary>
         public void SnapToWall()
         {
             using var _ = PerfMarkers.WindowSnapToWall.Auto();
@@ -223,9 +203,6 @@ namespace KitchenDesigner.Core
         {
             var best = FindNearestWall();
             if (best == null) return null;
-            // Проверяем фактическое членство, а не только имя: после загрузки
-            // сцены имя уже восстановлено из сейва, но стена окно ещё не знает —
-            // без регистрации вырез в стене не строится.
             if (best.gameObject.name != _attachedWallName || !best.HasWindow(this))
             {
                 UnregisterFromWall();
@@ -236,13 +213,8 @@ namespace KitchenDesigner.Core
             return best;
         }
 
-        // Гистерезис смены стены: на стыке двух стен расстояния почти равны и
-        // дрожат (float, опускание стен камерой) — без запаса окно скачет.
-        private const float WallSwitchHysteresisU = 0.05f; // 50 мм
+        private const float WallSwitchHysteresisU = 0.05f;
 
-        /// <summary>Ближайшая стена по расстоянию до её бокса (а не до центра —
-        /// иначе у длинных стен выигрывает не та, на которой стоит окно).
-        /// Текущая стена удерживается, пока другая не станет ближе на гистерезис.</summary>
         private Wall? FindNearestWall()
         {
             float bestDist = float.MaxValue;
@@ -264,9 +236,6 @@ namespace KitchenDesigner.Core
             return bestWall;
         }
 
-        /// <summary>Расстояние от центра окна до бокса стены. Опущенная камерой
-        /// стена (WallCutaway) считается по ПОЛНОЙ высоте — иначе привязка
-        /// зависела бы от положения камеры.</summary>
         private float DistanceToWall(Wall wall)
         {
             var t = wall.transform;
@@ -290,12 +259,9 @@ namespace KitchenDesigner.Core
             var wt = wall.transform;
             var wallDims = wallEl.DimensionsMM;
 
-            // Толщина стены — меньший из горизонтальных габаритов.
             bool thickAlongX = wallDims.x <= wallDims.z;
             int thicknessMM = Mathf.Min(wallDims.x, wallDims.z);
 
-            // Локальная Z окна (глубина) — вдоль оси толщины стены; знак — ближе
-            // к текущему развороту окна, чтобы не «перещёлкивало» на 180°.
             Vector3 dir = thickAlongX ? wt.right : wt.forward;
             dir.y = 0f;
             if (dir.sqrMagnitude < 1e-8f) return;
@@ -303,8 +269,6 @@ namespace KitchenDesigner.Core
             if (Vector3.Dot(transform.forward, dir) < 0f) dir = -dir;
             Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
 
-            // Центр окна — в срединную плоскость стены (обнуляем компоненту
-            // вдоль толщины, остальные проходят без изменений).
             Vector3 local = wt.InverseTransformPoint(transform.position);
             if (thickAlongX) local.x = 0f; else local.z = 0f;
             Vector3 targetPos = wt.TransformPoint(local);
@@ -313,8 +277,6 @@ namespace KitchenDesigner.Core
                 Quaternion.Angle(targetRot, transform.rotation) > 0.05f)
                 transform.SetPositionAndRotation(targetPos, targetRot);
 
-            // Сначала обрезаем позицию Y (до смены размеров — тогда RebuildMesh
-            // вызывается ровно один раз, с финальными размерами и позицией).
             if (wallDims.y <= 0) return;
             int targetY = Mathf.Min(DimensionsMM.y, wallDims.y);
             int targetZ = thicknessMM;
@@ -331,14 +293,12 @@ namespace KitchenDesigner.Core
                 _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
             }
 
-            // Размеры — после позиции: ApplyDimensions() → RebuildMesh один раз.
             if (DimensionsMM.y != targetY || DimensionsMM.z != targetZ)
             {
                 DimensionsMM = new Vector3Int(DimensionsMM.x, targetY, targetZ);
                 _lastCutoutPos = transform.position;
             }
 
-            // Вырез в стене — только если позиция изменилась.
             if (float.IsNaN(_lastCutoutPos.x) ||
                 (transform.position - _lastCutoutPos).sqrMagnitude > Tolerance.EpsilonSqr)
             {
@@ -367,85 +327,8 @@ namespace KitchenDesigner.Core
             if (wall != null) wall.UnregisterWindow(this);
         }
 
-        // ── Геометрия ───────────────────────────────────────────────────
-
-        /// <summary>Проверяет соседние окна на той же стене и возвращает набор
-        /// скрытых сторон frame (битовая маска: 1=left, 2=right, 4=top, 8=bottom).
-        /// Сторона скрывается, если другое окно перекрывается с текущим в этой
-        /// области — иначе frame одного окна виден в проёме другого (полоса).</summary>
-        private int ComputeHiddenSides()
-        {
-            int hidden = 0;
-            var wall = FindAttachedWall();
-            if (wall == null) return hidden;
-
-            var wallEl = wall.GetComponent<KitchenElement>();
-            if (wallEl == null) return hidden;
-
-            var dims = DimensionsMM;
-            float toU = AppConstants.MM_TO_UNITS;
-            float halfW = dims.x * 0.5f * toU;
-            float halfH = dims.y * 0.5f * toU;
-
-            // Локальные координаты текущего окна относительно стены
-            var wallT = wall.transform;
-            Vector3 localPos = wallT.InverseTransformPoint(transform.position);
-            float lxMin = localPos.x - halfW, lxMax = localPos.x + halfW;
-            float lyMin = localPos.y - halfH, lyMax = localPos.y + halfH;
-
-            foreach (var other in wall.AttachedWindows)
-            {
-                if (other == null || other == this) continue;
-                var oDims = other.DimensionsMM;
-                var oLocalPos = wallT.InverseTransformPoint(other.transform.position);
-                float oHalfW = oDims.x * 0.5f * toU;
-                float oHalfH = oDims.y * 0.5f * toU;
-                float olxMin = oLocalPos.x - oHalfW, olxMax = oLocalPos.x + oHalfW;
-                float olyMin = oLocalPos.y - oHalfH, olyMax = oLocalPos.y + oHalfH;
-
-                // Перекрытие по локальным координатам
-                bool yOverlap = lyMax > olyMin && lyMin < olyMax;
-                bool xOverlap = lxMax > olxMin && lxMin < olxMax;
-
-                // Если окна перекрываются по Y (локальному), но не по X → скрыть left/right
-                if (yOverlap && !xOverlap)
-                {
-                    if (olxMax >= lxMin && olxMax <= lxMax) hidden |= 1; // left
-                    if (olxMin >= lxMin && olxMin <= lxMax) hidden |= 2; // right
-                }
-                // Если окна перекрываются по X (локальному), но не по Y → скрыть top/bottom
-                if (xOverlap && !yOverlap)
-                {
-                    if (olyMax >= lyMin && olyMax <= lyMax) hidden |= 4; // top
-                    if (olyMin >= lyMin && olyMin <= lyMax) hidden |= 8; // bottom
-                }
-            }
-            foreach (var other in wall.AttachedDoors)
-            {
-                if (other == null) continue;
-                var oDims = other.DimensionsMM;
-                var oLocalPos = wallT.InverseTransformPoint(other.transform.position);
-                float oHalfW = oDims.x * 0.5f * toU;
-                float oHalfH = oDims.y * 0.5f * toU;
-                float olxMin = oLocalPos.x - oHalfW, olxMax = oLocalPos.x + oHalfW;
-                float olyMin = oLocalPos.y - oHalfH, olyMax = oLocalPos.y + oHalfH;
-
-                bool yOverlap = lyMax > olyMin && lyMin < olyMax;
-                bool xOverlap = lxMax > olxMin && lxMin < olxMax;
-
-                if (yOverlap && !xOverlap)
-                {
-                    if (olxMax >= lxMin && olxMax <= lxMax) hidden |= 1;
-                    if (olxMin >= lxMin && olxMin <= lxMax) hidden |= 2;
-                }
-                if (xOverlap && !yOverlap)
-                {
-                    if (olyMax >= lyMin && olyMax <= lyMax) hidden |= 4;
-                    if (olyMin >= lyMin && olyMin <= lyMax) hidden |= 8;
-                }
-            }
-            return hidden;
-        }
+        private int ComputeHiddenSides() =>
+            OpeningNeighbourSides.HiddenSidesOf(this, FindAttachedWall());
 
         private void UpdateCollider()
         {
@@ -503,7 +386,6 @@ namespace KitchenDesigner.Core
             _sashBottom  = _children[14];
         }
 
-        // Створка = стекло (4) + обвязка (11-14); остальное — неподвижная коробка.
         private static bool IsSashChild(int idx) => idx == 4 || idx >= 11;
 
         private string GetChildName(int idx) => idx switch
@@ -533,7 +415,6 @@ namespace KitchenDesigner.Core
             float innerW = totalW - 2f * frameU;
             float innerH = totalH - 2f * frameU;
 
-            // Определяем скрытые стороны frame из-за соседних окон
             int hidden = ComputeHiddenSides();
 
             if (_frameLeft != null)
@@ -561,7 +442,6 @@ namespace KitchenDesigner.Core
                 _frameBottom.SetActive((hidden & 8) == 0);
             }
 
-            // Створка: коробчатая обвязка по центру коробки по глубине.
             float sashU = AppConstants.WINDOW_SASH_MM * toU;
             float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, totalD);
             _sashClosedLocal = new Vector3(0f, 0f, 0f);
@@ -598,8 +478,6 @@ namespace KitchenDesigner.Core
                 _glassPane.SetActive(true);
             }
 
-            // Подоконник: плита постоянной толщины, вылет — горизонтально от
-            // плоскости стены; верх плиты вровень с верхом нижнего бруса коробки.
             if (_sillObj != null)
             {
                 float sillProt = _sillProtrusionMM * toU;
