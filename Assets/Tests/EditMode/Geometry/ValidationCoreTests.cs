@@ -373,7 +373,7 @@ public class ValidationCoreTests
     // ── Посадка панели в паз: критерий «относится к этому пазу» ─────────
 
     private const float SeatDepthMm = 8f;
-    private const float EngageMargin = ValidationCore.PanelEngageMarginMm * MM;
+    private const float EngageMargin = GrooveSeating.PanelEngageMarginMm * MM;
     private static readonly float ContactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
 
     /// <summary>Дно паза 600×500 в плоскости z = 0, нормаль +Z, устье на
@@ -382,7 +382,7 @@ public class ValidationCoreTests
         new Vector2(600 * MM, 500 * MM), Vector3.right, Vector3.up);
 
     private static bool Engages(Vector3 panelCenterMm, Vector3 panelSizeMm, out float minAlong) =>
-        ValidationCore.PanelEngagesSeat(Corners(panelCenterMm * MM, panelSizeMm * MM), Seat(),
+        GrooveSeating.PanelEngagesSeat(Corners(panelCenterMm * MM, panelSizeMm * MM), Seat(),
             SeatDepthMm * MM, EngageMargin, ContactDist, out minAlong);
 
     [Test]
@@ -443,7 +443,7 @@ public class ValidationCoreTests
     public void PanelEngagesSeat_DegenerateSeat_IsNotEngaged()
     {
         var flat = new Face(Vector3.zero, Vector3.forward, Vector2.zero, Vector3.right, Vector3.up);
-        Assert.IsFalse(ValidationCore.PanelEngagesSeat(Corners(Vector3.zero, Vector3.one * MM),
+        Assert.IsFalse(GrooveSeating.PanelEngagesSeat(Corners(Vector3.zero, Vector3.one * MM),
             flat, SeatDepthMm * MM, EngageMargin, ContactDist, out _));
     }
 
@@ -456,7 +456,7 @@ public class ValidationCoreTests
         var b = ElementGeometry.Box("B", new Vector3(0, 0.020f, 0), new Vector3(0.8f, 0.018f, 0.4f));
 
         float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-        float gap = ValidationCore.MinParallelGap(a.Faces, b.Faces, contactDist, 5f * MM);
+        float gap = FaceContacts.MinParallelGap(a.Faces, b.Faces, contactDist, 5f * MM);
 
         Assert.AreEqual(2f * MM, gap, 1e-6f, "Зазор 2 мм между пластями");
     }
@@ -468,7 +468,7 @@ public class ValidationCoreTests
         var b = ElementGeometry.Box("B", new Vector3(0, 0.100f, 0), new Vector3(0.8f, 0.018f, 0.4f));
 
         float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-        Assert.AreEqual(0f, ValidationCore.MinParallelGap(a.Faces, b.Faces, contactDist, 5f * MM));
+        Assert.AreEqual(0f, FaceContacts.MinParallelGap(a.Faces, b.Faces, contactDist, 5f * MM));
     }
 
     // ── SumParallelGaps: сумма зазоров по встречным граням ─────────────
@@ -482,7 +482,7 @@ public class ValidationCoreTests
         var b = ElementGeometry.Box("B", new Vector3(0, 0.020f, 0), new Vector3(0.8f, 0.018f, 0.4f));
 
         float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-        float sum = ValidationCore.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM);
+        float sum = FaceContacts.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM);
 
         Assert.AreEqual(2f * MM, sum, 1e-6f);
     }
@@ -501,7 +501,7 @@ public class ValidationCoreTests
             new Vector3(0.8f, 0.018f, 0.004f));
 
         float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-        float sum = ValidationCore.SumParallelGaps(a.Faces, b.Faces, contactDist, 8f * MM);
+        float sum = FaceContacts.SumParallelGaps(a.Faces, b.Faces, contactDist, 8f * MM);
 
         Assert.AreEqual(0f, sum, 1e-6f,
             "две коробки по разным осям не дают two-pair сумму — нет перекрывающихся пар");
@@ -515,7 +515,7 @@ public class ValidationCoreTests
         var b = ElementGeometry.Box("B", new Vector3(0, 0.100f, 0), new Vector3(0.8f, 0.018f, 0.4f));
 
         float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-        Assert.AreEqual(0f, ValidationCore.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM));
+        Assert.AreEqual(0f, FaceContacts.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM));
     }
 
     [Test]
@@ -531,7 +531,7 @@ public class ValidationCoreTests
         float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
         // У A лицо +Y смотрит вверх, у B лицо +Y тоже вверх. Грань −Y у A
         // смотрит вниз, +Y у B — вверх: они навстречу, расстояние 2мм.
-        float sum = ValidationCore.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM);
+        float sum = FaceContacts.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM);
         Assert.AreEqual(2f * MM, sum, 1e-6f, "только встречные грани с разными нормалями");
     }
 
@@ -543,7 +543,7 @@ public class ValidationCoreTests
         var b = ElementGeometry.Box("B", new Vector3(0, 0.100f, 0), new Vector3(0.8f, 0.018f, 0.4f));
 
         float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-        Assert.AreEqual(0f, ValidationCore.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM));
+        Assert.AreEqual(0f, FaceContacts.SumParallelGaps(a.Faces, b.Faces, contactDist, 5f * MM));
     }
 
     [Test]
@@ -553,11 +553,11 @@ public class ValidationCoreTests
         var a = ElementGeometry.Box("A", Vector3.zero, new Vector3(0.8f, 0.018f, 0.4f));
 
         var stacked = ElementGeometry.Box("B", new Vector3(0, 0.018f, 0), new Vector3(0.8f, 0.018f, 0.4f));
-        Assert.IsTrue(ValidationCore.AreInFaceToFaceContact(a.Faces, stacked.Faces, contactDist));
+        Assert.IsTrue(FaceContacts.AreInFaceToFaceContact(a.Faces, stacked.Faces, contactDist));
 
         // Сдвинута так, что перекрытие — узкая полоска: касание есть, опоры нет.
         var sliver = ElementGeometry.Box("C", new Vector3(0.79f, 0.018f, 0), new Vector3(0.8f, 0.018f, 0.4f));
-        Assert.IsFalse(ValidationCore.AreInFaceToFaceContact(a.Faces, sliver.Faces, contactDist));
+        Assert.IsFalse(FaceContacts.AreInFaceToFaceContact(a.Faces, sliver.Faces, contactDist));
     }
 
     [Test]
@@ -568,7 +568,7 @@ public class ValidationCoreTests
         var narrow = ElementGeometry.Box("N", Vector3.zero, new Vector3(0.018f, 0.4f, 0.018f));
         var wide = ElementGeometry.Box("W", new Vector3(0, 0.4f, 0), new Vector3(0.018f, 0.4f, 1.2f));
 
-        Assert.IsTrue(ValidationCore.FacesOverlap(narrow.Faces[2], wide.Faces[3], out _, out float ratio));
+        Assert.IsTrue(FaceContacts.FacesOverlap(narrow.Faces[2], wide.Faces[3], out _, out float ratio));
         Assert.GreaterOrEqual(ratio, Tolerance.MinSupportOverlap);
     }
 
@@ -613,5 +613,48 @@ public class ValidationCoreTests
 
         Assert.IsTrue(r.IsValid);
         Assert.AreEqual(0, r.Contacts.Count);
+    }
+
+    [Test]
+    public void Diagnostics_AreNotAllocated_WhileTheSceneIsValid()
+    {
+        var r = Validate(Floor(), OnFloor("A"), OnFloor("B", 900));
+
+        Assert.IsTrue(r.IsValid);
+        Assert.IsNull(r.Diagnostics,
+            "валидация идёт КАЖДЫЙ кадр перетаскивания: на валидной сцене список диагностик "
+            + "не заводится вовсе, иначе каждый кадр стоит аллокации в GC");
+    }
+
+    [Test]
+    public void Diagnostics_AppearAsSoonAsSomethingIsWrong()
+    {
+        var r = Validate(Floor(), Part("Air", new Vector3(0, 1000, 0), new Vector3(800, 18, 400)));
+
+        Assert.IsNotNull(r.Diagnostics,
+            "положительный контроль к ленивой аллокации: как только нарушение есть, "
+            + "список обязан появиться");
+    }
+
+    [Test]
+    public void Opening_IsMeasuredAgainstTheWallsDeclaredSpan_NotItsGeometry()
+    {
+        // Стена бывает визуально подрезана (режим разреза), и её ГЕОМЕТРИЯ тогда
+        // ниже настоящей. Высоту проёма меряют по HeightSpan, который приходит от
+        // ЛОГИЧЕСКОЙ позы стены, — иначе каждое окно в подрезанной стене краснело бы.
+        var wallGeometry = ElementGeometry.Box("Wall", new Vector3(0, 0.5f, 0),
+            new Vector3(3f, 1f, 0.1f));
+        var wall = new ValidationElement(wallGeometry, Corners(new Vector3(0, 0.5f, 0),
+                new Vector3(3f, 1f, 0.1f)), ElementKind.Anchor, 0, null,
+            new Span(0f, 2.5f), -1);
+
+        var window = Part("Win", new Vector3(0, 1500, 0), new Vector3(900, 1200, 100),
+            ElementKind.Anchor | ElementKind.Opening, attachedWallIndex: 1);
+
+        var r = Validate(Floor(), wall, window);
+
+        Assert.AreEqual(0, Count(r, ViolationKind.OutOfWallBounds),
+            "окно на 0.9…2.1 м стоит внутри ЛОГИЧЕСКОЙ стены (0…2.5 м), хотя её геометрия "
+            + "обрезана до 1 м — проверять полагается объявленный HeightSpan");
     }
 }

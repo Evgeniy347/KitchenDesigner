@@ -16,6 +16,8 @@ namespace KitchenDesigner.Core
     /// MonoBehaviour в любую чистую функцию.</summary>
     public struct Face
     {
+        public const int BoxFaceCount = 6;
+
         public Vector3 center;
         public Vector3 normal;
         public Vector2 size;

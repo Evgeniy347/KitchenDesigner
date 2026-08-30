@@ -124,7 +124,7 @@ namespace KitchenDesigner.Core
         }
 
         public static bool AreInFaceToFaceContact(KitchenElement a, KitchenElement b) =>
-            ValidationCore.AreInFaceToFaceContact(a.GetFaces(), b.GetFaces(),
+            FaceContacts.AreInFaceToFaceContact(a.GetFaces(), b.GetFaces(),
                 Tolerance.ContactMm * AppConstants.MM_TO_UNITS);
 
         /// <summary>Фасад НАВЕШЕН на хозяина: либо стоит с ним гранью к грани,
@@ -133,7 +133,7 @@ namespace KitchenDesigner.Core
         /// <see cref="IFacadeHost.FacadeMountGapMm"/>).
         ///
         /// Третьей геометрии здесь нет: зазор меряет
-        /// <see cref="ValidationCore.MinParallelGap"/> — та же функция, что
+        /// <see cref="FaceContacts.MinParallelGap"/> — та же функция, что
         /// кормит GAP-01, и те же гейты (параллельность, перекрытие не хуже
         /// несущего). При mountGapMm = 0 условие вырождается ровно в
         /// <see cref="AreInFaceToFaceContact"/>, поэтому ящик остаётся на
@@ -145,7 +145,7 @@ namespace KitchenDesigner.Core
             if (AreInFaceToFaceContact(host, facade)) return true;
             if (mountGapMm <= Tolerance.ContactMm) return false;
             float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-            return ValidationCore.MinParallelGap(host.GetFaces(), facade.GetFaces(),
+            return FaceContacts.MinParallelGap(host.GetFaces(), facade.GetFaces(),
                 contactDist, mountGapMm * AppConstants.MM_TO_UNITS) > 0f;
         }
 
@@ -220,9 +220,9 @@ namespace KitchenDesigner.Core
                     // margin в AABBsIntersect СУЖАЕТ перекрытие, поэтому
                     // расширяем отрицательным (−broadPhase) — так в кандидаты
                     // попадают и не пересекающиеся, но близкие пары.
-                    if (!ValidationCore.AABBsIntersect(geo[i], geo[j], -broadPhase)) continue;
+                    if (!FaceContacts.AABBsIntersect(geo[i], geo[j], -broadPhase)) continue;
                     // Реально касаются гранями — это не «почти», а контакт.
-                    if (ValidationCore.AreInFaceToFaceContact(geo[i].Faces, geo[j].Faces, contactDist)) continue;
+                    if (FaceContacts.AreInFaceToFaceContact(geo[i].Faces, geo[j].Faces, contactDist)) continue;
                     // Вкладная ДВП, зашедшая в паз соседней детали: зазор между
                     // ГАБАРИТАМИ равен глубине захода в паз и НЕ является «почти
                     // касанием» — эту пару обслуживает логика посадки в паз
@@ -236,7 +236,7 @@ namespace KitchenDesigner.Core
                     // ложь.
                     if (IsDishwasherFacadePair(all[i], all[j])) continue;
 
-                    float sum = ValidationCore.SumParallelGaps(geo[i].Faces, geo[j].Faces, contactDist, broadPhase);
+                    float sum = FaceContacts.SumParallelGaps(geo[i].Faces, geo[j].Faces, contactDist, broadPhase);
                     if (sum <= 0f) continue;
                     float sumMm = sum * toMm;
                     // Эпсилон 0.01мм: позиция и нормали в float дают шум ~1e-5,
@@ -310,7 +310,7 @@ namespace KitchenDesigner.Core
                 // вместе с ней, и монтажный зазор по нему не считается (та же
                 // причина, что у DWH-02, см. DrawerLinks.WithFacadeClosed).
                 float sum = DrawerLinks.WithFacadeClosed(facade, DrawerLinks.IsFacadeDisplacedBy(dw),
-                    () => ValidationCore.SumParallelGaps(e.GetFaces(), facade.GetFaces(), contactDist, maxGap));
+                    () => FaceContacts.SumParallelGaps(e.GetFaces(), facade.GetFaces(), contactDist, maxGap));
                 float sumMm = sum * toMm;
                 if (sumMm <= 0f) continue;
                 // Эпсилон 0.01мм — float-шум позиции и граней (см. тест
@@ -445,7 +445,7 @@ namespace KitchenDesigner.Core
             if (all == null || all.Count < 2) return result;
 
             float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-            float engageMargin = ValidationCore.PanelEngageMarginMm * AppConstants.MM_TO_UNITS;
+            float engageMargin = GrooveSeating.PanelEngageMarginMm * AppConstants.MM_TO_UNITS;
             float toMm = 1f / AppConstants.MM_TO_UNITS;
 
             foreach (var p in all)
@@ -464,7 +464,7 @@ namespace KitchenDesigner.Core
 
                     foreach (var seat in seats)
                     {
-                        if (!ValidationCore.PanelEngagesSeat(pverts, seat, depthUnits, engageMargin,
+                        if (!GrooveSeating.PanelEngagesSeat(pverts, seat, depthUnits, engageMargin,
                                 contactDist, out float minAlong))
                             continue;
 
@@ -480,7 +480,7 @@ namespace KitchenDesigner.Core
 
         /// <summary>Панель-ДВП <paramref name="panel"/> зашла (хотя бы устьем) в один
         /// из пазов детали <paramref name="board"/>. Критерий тот же, что у SEAT-01
-        /// (<see cref="ValidationCore.PanelEngagesSeat"/>): такую пару нельзя выдавать
+        /// (<see cref="GrooveSeating.PanelEngagesSeat"/>): такую пару нельзя выдавать
         /// как near-contact/GAP-01 — зазор между их габаритами равен глубине захода в
         /// паз, а недосадку до дна отдельно ловит SEAT-01.</summary>
         private static bool PanelEngagesGroove(KitchenElement panel, KitchenElement board)
@@ -494,11 +494,11 @@ namespace KitchenDesigner.Core
             if (depthUnits <= 0f) return false;
 
             float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-            float engageMargin = ValidationCore.PanelEngageMarginMm * AppConstants.MM_TO_UNITS;
+            float engageMargin = GrooveSeating.PanelEngageMarginMm * AppConstants.MM_TO_UNITS;
 
             var pverts = panel.GetVertices();
             foreach (var seat in seats)
-                if (ValidationCore.PanelEngagesSeat(pverts, seat, depthUnits, engageMargin, contactDist, out _))
+                if (GrooveSeating.PanelEngagesSeat(pverts, seat, depthUnits, engageMargin, contactDist, out _))
                     return true;
             return false;
         }
