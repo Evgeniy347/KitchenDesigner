@@ -12,21 +12,37 @@
       * the gap to the previous commit is random, 1-10 min, shrunk automatically when a day
         holds too many commits to fit the window
       * seconds are always 01-59, so round times like 19:00:00 never appear
+      * no stamp is ever later than -NotAfter (the real clock by default); when a day's
+        evening window has not happened yet, the day spills into a window starting at
+        midnight instead of being pushed into the future
 
     Each commit keeps its original DATE. The date only moves forward when the original date
     is earlier than a parent's - ordering wins over date preservation.
 
-    The rewrite changes every hash. Make a backup branch first.
+    The rewrite changes every hash in the selected range. Make a backup branch first.
+    -Since narrows the rewrite to <ref>..<branch>, which is what keeps already-pushed
+    commits (and their hashes) untouched.
 
 .EXAMPLE
     .\tools\git-fix-commit-times.ps1 -DryRun
 
 .EXAMPLE
     .\tools\git-fix-commit-times.ps1 -Branch HEAD
+
+.EXAMPLE
+    .\tools\git-fix-commit-times.ps1 -Since origin/develop -Branch HEAD -DryRun
 #>
 [CmdletBinding()]
 param(
     [string] $Branch = 'HEAD',
+
+    # Rewrite only <ref>..<branch>. The commits at and below <ref> keep their timestamps and
+    # act as the base, so already-pushed history is left untouched.
+    [string] $Since,
+
+    # No stamp may be later than this moment. Defaults to the real clock, which is what stops
+    # the rewrite from re-creating the future timestamps it was called to remove.
+    [Nullable[datetime]] $NotAfter,
 
     # Report the planned timestamps without touching the repository.
     [switch] $DryRun,
@@ -43,23 +59,37 @@ $WeekdayStart = 19 * 3600            # 19:00:00
 $WeekdayEnd = 24 * 3600 - 1          # 23:59:59
 $WeekendStart = 8 * 3600             # 08:00:00
 $WeekendEnd = 24 * 3600 - 1          # 23:59:59
+if ($null -eq $NotAfter) { $NotAfter = Get-Date }
 
 $repoRoot = (git rev-parse --show-toplevel 2>$null)
 if (-not $repoRoot) { throw 'Not inside a git repository.' }
 Set-Location $repoRoot
 
+# filter-branch updates the refs named in its rev-list arguments. A literal HEAD would
+# update whichever worktree it runs in, so resolve it to the branch name once, up front.
+if ($Branch -eq 'HEAD') {
+    $named = (git symbolic-ref --quiet --short HEAD 2>$null)
+    if ($named) { $Branch = $named }
+}
+$Range = if ($Since) { "$Since..$Branch" } else { $Branch }
+
 function Test-Weekend([datetime] $t) {
     $t.DayOfWeek -eq [DayOfWeek]::Saturday -or $t.DayOfWeek -eq [DayOfWeek]::Sunday
 }
 
-function Get-WindowStart([datetime] $day) {
-    if (Test-Weekend $day) { return $day.Date.AddSeconds($WeekendStart) }
-    return $day.Date.AddSeconds($WeekdayStart)
+# The day's window, never reaching past the real clock. When the evening window of the
+# current day has not happened yet, the day spills to a window that starts at midnight:
+# a daytime stamp breaks the cosmetic 19:00 rule, a future stamp breaks a fact.
+function Get-WindowEnd([datetime] $day) {
+    $end = if (Test-Weekend $day) { $day.Date.AddSeconds($WeekendEnd) } else { $day.Date.AddSeconds($WeekdayEnd) }
+    if ($end -gt $NotAfter) { return $NotAfter }
+    return $end
 }
 
-function Get-WindowEnd([datetime] $day) {
-    if (Test-Weekend $day) { return $day.Date.AddSeconds($WeekendEnd) }
-    return $day.Date.AddSeconds($WeekdayEnd)
+function Get-WindowStart([datetime] $day) {
+    $start = if (Test-Weekend $day) { $day.Date.AddSeconds($WeekendStart) } else { $day.Date.AddSeconds($WeekdayStart) }
+    if ($start -gt (Get-WindowEnd $day)) { return $day.Date.AddSeconds(1) }
+    return $start
 }
 
 function Set-NonRoundSeconds([datetime] $t) {
@@ -71,12 +101,12 @@ function Set-NonRoundSeconds([datetime] $t) {
 # Read the DAG
 # ---------------------------------------------------------------------------------------
 
-$order = @(git rev-list --reverse --topo-order $Branch)
-if ($order.Count -eq 0) { throw "No commits reachable from $Branch." }
+$order = @(git rev-list --reverse --topo-order $Range)
+if ($order.Count -eq 0) { throw "No commits selected by $Range." }
 
 $parents = @{}
 $origDate = @{}
-foreach ($line in git rev-list $Branch --pretty=format:'%H%x09%P%x09%ad' --date=format:'%Y-%m-%d') {
+foreach ($line in git rev-list $Range --pretty=format:'%H%x09%P%x09%ad' --date=format:'%Y-%m-%d') {
     if ($line -like 'commit *') { continue }
     $f = $line -split "`t"
     $parents[$f[0]] = if ($f[1]) { $f[1].Trim() -split '\s+' } else { @() }
@@ -105,6 +135,17 @@ foreach ($key in $perDay.Keys) {
 
 $assigned = @{}
 $dateMoved = 0
+
+# A parent outside the selected range keeps its real timestamp and becomes the base the
+# first rewritten commit has to beat.
+foreach ($sha in $order) {
+    foreach ($p in $parents[$sha]) {
+        if ($origDate.ContainsKey($p) -or $assigned.ContainsKey($p)) { continue }
+        $epoch = (git log -1 --format=%at $p 2>$null)
+        if (-not $epoch) { continue }
+        $assigned[$p] = [DateTimeOffset]::FromUnixTimeSeconds([int64] $epoch).ToOffset([TimeSpan]::FromHours(5)).DateTime
+    }
+}
 
 foreach ($sha in $order) {
     $day = $origDate[$sha]
@@ -152,7 +193,10 @@ $problems = @()
 foreach ($sha in $order) {
     $t = $assigned[$sha]
     if ($t.Second -eq 0) { $problems += "$($sha.Substring(0,8)): round seconds $t" }
-    if (-not (Test-Weekend $t) -and $t.Hour -lt 19) { $problems += "$($sha.Substring(0,8)): weekday $t outside 19:00-23:59" }
+    if ($t -gt $NotAfter) { $problems += "$($sha.Substring(0,8)): $t is later than the clock ($NotAfter)" }
+    if ($t -lt (Get-WindowStart $t) -or $t -gt (Get-WindowEnd $t)) {
+        $problems += "$($sha.Substring(0,8)): $t outside its day's window"
+    }
     foreach ($p in $parents[$sha]) {
         if ($assigned.ContainsKey($p) -and $assigned[$p] -ge $t) {
             $problems += "$($sha.Substring(0,8)): $t not after parent $($p.Substring(0,8)) $($assigned[$p])"
@@ -200,8 +244,35 @@ fi
 "@
 
 $env:FILTER_BRANCH_SQUELCH_WARNING = '1'
-git filter-branch -f --env-filter $envFilter --tag-name-filter cat -- $Branch
-if ($LASTEXITCODE -ne 0) { throw 'git filter-branch failed.' }
+
+# filter-branch refuses to run while the working tree is dirty, and this repository is
+# permanently dirty by design (docs/example.save.json is the user's live project and must
+# never be reverted or stashed). A throw-away detached worktree gives filter-branch the
+# clean tree it insists on; refs and objects are shared, so the rewrite still lands on the
+# real branch, and the main worktree keeps its uncommitted file.
+$dirty = @(git status --porcelain)
+$workRoot = $repoRoot
+$scratch = $null
+if ($dirty.Count -gt 0) {
+    $scratch = Join-Path ([System.IO.Path]::GetTempPath()) ("kd-retime-" + [guid]::NewGuid().ToString('N').Substring(0, 8))
+    Write-Host "working tree is dirty - rewriting from a scratch worktree: $scratch"
+    git worktree add --detach $scratch $Branch | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw 'git worktree add failed.' }
+    $workRoot = $scratch
+}
+
+try {
+    Push-Location $workRoot
+    git filter-branch -f --env-filter $envFilter --tag-name-filter cat -- $Range
+    $filterExit = $LASTEXITCODE
+    Pop-Location
+    if ($filterExit -ne 0) { throw 'git filter-branch failed.' }
+} finally {
+    if ($scratch) {
+        git worktree remove --force $scratch 2>&1 | Out-Null
+        git worktree prune | Out-Null
+    }
+}
 
 Write-Host ''
 git log -15 --pretty=format:'%h %ad %s' --date=format:'%Y-%m-%d %H:%M:%S %a'
