@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core
     /// напрямую). Геометрия строится в мировых единицах при единичном масштабе
     /// корня.
     /// </summary>
-    public class DoorElement : KitchenElement, IOpenable
+    public class DoorElement : KitchenElement, IOpenable, IWallMounted
     {
 
         public override string DisplayTypeName => "Дверь";

@@ -729,7 +729,7 @@ namespace KitchenDesigner.Core.UI
                 _fields.ParseMillimetresAsMetres(_y, oldPos.y),
                 _fields.ParseMillimetresAsMetres(_z, oldPos.z));
 
-            if (!(target is WindowElement) && !(target is DoorElement))
+            if (!(target is IWallMounted))
             {
                 bool yawOnly = FixedSize.IsYawOnly(target);
                 var euler = oldRot.eulerAngles;
@@ -739,8 +739,7 @@ namespace KitchenDesigner.Core.UI
                     yawOnly ? euler.z : _fields.ParseAngle(_rz, euler.z));
             }
 
-            if (target is WindowElement winSnap) winSnap.SnapToWall();
-            if (target is DoorElement doorSnap) doorSnap.SnapToWall();
+            if (target is IWallMounted wallMounted) wallMounted.SnapToWall();
 
             if (KitchenSettings.Instance.BlockOnViolation && WouldCauseViolation())
             {
@@ -797,8 +796,7 @@ namespace KitchenDesigner.Core.UI
                 return;
             var oldRot = _target.transform.rotation;
             _target.RotateAroundAxis(axis, angle);
-            if (_target is WindowElement win) win.SnapToWall();
-            if (_target is DoorElement doorRot) doorRot.SnapToWall();
+            if (_target is IWallMounted wallMounted) wallMounted.SnapToWall();
             var rotCmds = new List<IUndoCommand>
             {
                 new MoveCommand(_target, _target.transform.position, _target.transform.position,

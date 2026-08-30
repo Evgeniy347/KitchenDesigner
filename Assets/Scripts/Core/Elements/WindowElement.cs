@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core
     /// Геометрия строится в мировых единицах при единичном масштабе корня —
     /// как у PillarElement/RadialShelfElement, иначе дети масштабируются дважды.
     /// </summary>
-    public class WindowElement : KitchenElement, IOpenable
+    public class WindowElement : KitchenElement, IOpenable, IWallMounted
     {
 
         public override string DisplayTypeName => "Окно";
