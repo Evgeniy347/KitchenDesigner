@@ -11,8 +11,6 @@ namespace KitchenDesigner.Core.MCP
 {
     public partial class McpCommandHandler
     {
-        // ── Поиск объектов и элементов ───────────────────────────────────
-
         private static KitchenElement? FindElementByName(string name)
         {
             foreach (var el in PartRegistry.All)
@@ -60,7 +58,6 @@ namespace KitchenDesigner.Core.MCP
             return go.GetComponent<BasePlate>();
         }
 
-        /// <summary>Модуль по id или имени (без учёта регистра).</summary>
         private static LinkGroup? FindModule(string module)
         {
             if (string.IsNullOrEmpty(module)) return null;
@@ -74,16 +71,9 @@ namespace KitchenDesigner.Core.MCP
             return null;
         }
 
-        // ── Векторы и геометрия ─────────────────────────────────────────
-
-        /// <summary>Собрать вектор из nullable-полей, беря текущее значение для
-        /// отсутствующих осей (омитить = «не менять эту ось»).</summary>
         private static Vector3 ResolveVec(float? x, float? y, float? z, Vector3 current)
             => new Vector3(x ?? current.x, y ?? current.y, z ?? current.z);
 
-        /// <summary>Собрать размеры (мм) из nullable-полей. Приоритет: width/height/depth,
-        /// затем алиасы dimX/dimY/dimZ, затем текущий размер. Отсутствующее измерение =
-        /// «не менять». Каждое измерение не меньше 1 мм.</summary>
         private static Vector3Int ResolveDims(int? width, int? height, int? depth,
             int? dimX, int? dimY, int? dimZ, Vector3Int current)
         {
@@ -172,8 +162,6 @@ namespace KitchenDesigner.Core.MCP
             return results;
         }
 
-        // ── Модули ──────────────────────────────────────────────────────
-
         private static ModuleInfo BuildModuleInfo(LinkGroup g)
         {
             return BuildModuleInfo(g, null);
@@ -216,10 +204,6 @@ namespace KitchenDesigner.Core.MCP
             return info;
         }
 
-        // ── ETag / фильтр имён ─────────────────────────────────────────
-
-        /// <summary>SHA256 хеш от JSON-представления списка для ETag. Использует
-        /// McpJson (округление до 0.1 мм) — хеш не меняется от суб-миллиметрового дрейфа.</summary>
         private static string ComputeEtag(List<ElementInfo> list)
         {
             var json = McpJson.Serialize(list);
@@ -231,7 +215,6 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
-        /// <summary>Совпадение имени с фильтром: подстрока или wildcard '*', без учёта регистра.</summary>
         private static bool NameMatchesFilter(string name, string filter)
         {
             if (filter.IndexOf('*') < 0)
@@ -240,8 +223,6 @@ namespace KitchenDesigner.Core.MCP
             return System.Text.RegularExpressions.Regex.IsMatch(name, pattern,
                 System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         }
-
-        // ── Scene helpers ──────────────────────────────────────────────
 
         private HierarchyNode BuildHierarchyNode(GameObject go)
         {
@@ -298,11 +279,6 @@ namespace KitchenDesigner.Core.MCP
             };
         }
 
-        // ── Мутация: блокировка, подсветка, нарушения ──────────────────
-
-        /// <summary>Единая проверка блокировки для мутирующих команд: null — можно
-        /// менять; иначе готовый Error с единым текстом (один источник сообщения для
-        /// модели во всех move/resize/rotate/delete).</summary>
         private static McpResponse? RequireMovable(KitchenElement element, string name, string reqId)
         {
             if (element.Movable) return null;
@@ -311,8 +287,6 @@ namespace KitchenDesigner.Core.MCP
                 "Unlock it with set_element_lock {locked:false} — but ONLY if the user explicitly allowed editing this element.");
         }
 
-        /// <summary>Обновить подсветку (зелёная/красная) после мутации. Все пути мутации
-        /// (MCP, UI, drag, undo/redo) должны вызывать это, иначе визуал устаревает.</summary>
         private static void RefreshElementHighlights()
         {
             var hl = Object.FindAnyObjectByType<ElementHighlighter>();
@@ -320,7 +294,6 @@ namespace KitchenDesigner.Core.MCP
                 hl.RefreshHighlights();
         }
 
-        /// <summary>Есть ли у элемента нарушения (пересечение / нет связности) в текущей сцене.</summary>
         private static bool HasViolations(KitchenElement element)
         {
             var all = PartRegistry.GetAll();
@@ -329,9 +302,6 @@ namespace KitchenDesigner.Core.MCP
             return vr != null && vr.violations.Contains(element);
         }
 
-        /// <summary>Нарушения ИМЕННО этого элемента: пересечения (kind=overlap, с severity),
-        /// оторванность от структуры, фасадные проблемы, ошибки ящика.
-        /// Пустой список = элемент чист.</summary>
         private static List<object> BuildElementViolations(KitchenElement el, List<KitchenElement>? all, ValidationResult? vr)
         {
             var list = new List<object>();
@@ -387,9 +357,6 @@ namespace KitchenDesigner.Core.MCP
             return list;
         }
 
-        /// <summary>Единый конверт ответа ВСЕХ мутаций: ok + полный ElementInfo +
-        /// нарушения этого элемента + счётчик структурных нарушений по сцене.
-        /// Модель видит результат и проблемы сразу, без второго запроса.</summary>
         private static object BuildMutationResult(KitchenElement el)
         {
             var all = PartRegistry.GetAll();

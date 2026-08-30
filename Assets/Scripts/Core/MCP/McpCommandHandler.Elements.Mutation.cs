@@ -68,8 +68,6 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
-        /// <summary>Состояние элементов батча после (или в dry-run — «как если бы»)
-        /// применения: позиция/размер/нарушения на каждый op + счётчик по сцене.</summary>
         private static (List<object> results, int sceneViolationCount) DescribeBatch(
             List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)> resolved)
         {
@@ -93,11 +91,6 @@ namespace KitchenDesigner.Core.MCP
             return (results, vr != null ? vr.violations.Count : 0);
         }
 
-        // ── Mutation handlers ────────────────────────────────────────────
-
-        /// <summary>Транзакционный батч изменений: либо применяются ВСЕ операции
-        /// (одной CompositeCommand = один шаг undo), либо ни одна. dry_run —
-        /// применить, посчитать нарушения по каждому op и откатить.</summary>
         private McpResponse HandleEditElements(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsEditElements>();
@@ -158,8 +151,6 @@ namespace KitchenDesigner.Core.MCP
                     commands.Add(new ResizeCommand(el, el.DimensionsMM, dimsAfter, posBefore, posAfter, rotBefore, rotAfter));
                 }
                 else commands.Add(new MoveCommand(el, posBefore, posAfter, rotBefore, rotAfter));
-                // Прикреплённые детали едут за родителем; ресайз им не
-                // передаётся — только перенос и поворот (AttachLinks).
                 AttachMove.AppendFollowers(commands, el, posBefore, rotBefore, posAfter, rotAfter);
             }
             var composite = new CompositeCommand($"MCP edit_elements ({resolved.Count} ops)", commands);
@@ -178,7 +169,6 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, dryRun = false, applied = true, results, sceneViolationCount = sceneCount });
         }
 
-        /// <summary>Batch clone: atomically clone one or MANY elements. Whole batch is ONE undo step.</summary>
         private McpResponse HandleCloneElements(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsCloneElements>();
@@ -201,9 +191,6 @@ namespace KitchenDesigner.Core.MCP
                     var go = ElementFactory.Duplicate(source);
                     if (go == null) { errors.Add($"Failed to duplicate '{op.name}'"); break; }
                     var el = go.GetComponent<KitchenElement>();
-                    // Имя клона выдаёт ElementNaming (суффикс «_1», «_2», …) — оно
-                    // уже проставлено фабрикой в Duplicate, здесь только синхронизируем
-                    // имя GameObject.
                     go.name = el.PartName;
                     go.transform.position = basePos + offset * i;
                     commands.Add(new CreateCommand(go));
@@ -224,7 +211,6 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, created, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }
 
-        /// <summary>Batch align: move boards face-to-face against targets. Applied IN ORDER. Whole batch is ONE undo step.</summary>
         private McpResponse HandleAlignElements(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsAlignElements>();
@@ -260,8 +246,6 @@ namespace KitchenDesigner.Core.MCP
                 float delta = desired - myCoord;
                 var before = element.transform.position;
                 var after = before;
-                // gap_mm — float, да и полугабариты цели могут быть нечётными:
-                // грань выравниваемой детали ставим на целый миллиметр (MmGrid).
                 after[axis] += delta;
                 after = MmGrid.SnapPosition(element, after);
                 var alignRot = element.transform.rotation;
@@ -287,8 +271,6 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, aligned = results.Count, results, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }
 
-        /// <summary>Равномерно распределить 3+ детали по оси: крайние стоят,
-        /// середина двигается. Один шаг undo.</summary>
         private McpResponse HandleDistributeEvenly(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsDistributeEvenly>();
@@ -322,9 +304,6 @@ namespace KitchenDesigner.Core.MCP
                 var el = resolved[i];
                 var before = el.transform.position;
                 var after = before;
-                // Пролёт делится нацело далеко не всегда: три детали на нечётном
-                // пролёте дают ровно 0.5 мм, семь — бесконечную дробь. Ставим
-                // грань на целый миллиметр (MmGrid).
                 after[axis] = first + spacing * i;
                 after = MmGrid.SnapPosition(el, after);
                 var rot = el.transform.rotation;
@@ -419,7 +398,6 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, created = createdNames, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }
 
-        /// <summary>Batch convert: change type of one or MANY elements. Atomic. NOT undoable.</summary>
         private McpResponse HandleConvertElements(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsConvertElements>();
@@ -455,7 +433,6 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, converted = names, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }
 
-        /// <summary>Batch delete: atomically delete one or MANY elements. Whole batch is ONE undo step.</summary>
         private McpResponse HandleDeleteElements(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsNames>();
@@ -484,7 +461,6 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, deleted = deletedNames, sceneViolationCount = vrAfter != null ? vrAfter.violations.Count : 0 });
         }
 
-        /// <summary>Batch select: highlight one or MANY elements (visual only).</summary>
         private McpResponse HandleSelectElements(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsNames>();
