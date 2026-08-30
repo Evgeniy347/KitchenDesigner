@@ -45,7 +45,7 @@ namespace KitchenDesigner.Core.UI
                 if (e is IFacadeHost host && !string.IsNullOrEmpty(host.AttachedFacadeName))
                 {
                     var facade = FindByName(all, host.AttachedFacadeName);
-                    if (facade is FacadeElement)
+                    if (facade != null && ElementFacets.Of(facade).Has(ElementFacet.Facade))
                         attachedFacades[facade] = e;
                 }
             }
@@ -96,7 +96,7 @@ namespace KitchenDesigner.Core.UI
             if (e is IFacadeHost host && !string.IsNullOrEmpty(host.AttachedFacadeName))
             {
                 var facade = FindByName(all, host.AttachedFacadeName);
-                if (facade is FacadeElement) child = facade;
+                if (facade != null && ElementFacets.Of(facade).Has(ElementFacet.Facade)) child = facade;
             }
 
             nodes.Add(new Node { element = e, depth = depth, hasChildren = child != null });

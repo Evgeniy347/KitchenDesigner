@@ -48,9 +48,6 @@ namespace KitchenDesigner.Core
             return pair;
         }
 
-        /// <summary>Убрать верхний ящик пары и снять с нижнего пометку двойного.
-        /// Возвращает GameObject верхнего (удаление — на вызывающем, чтобы он
-        /// мог провести его через CommandStack).</summary>
         public static GameObject? DetachPairedUpper(KitchenElement? element) =>
             element is DrawerElement drawer ? DetachPair(drawer) : null;
 

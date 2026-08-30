@@ -44,31 +44,21 @@ namespace KitchenDesigner.Core.UI
         {
             Show(_base, element.MaterialId);
 
-            var table = element as TableElement;
-            var radiusTable = element as RadiusTableElement;
-            if (table == null && radiusTable == null) return;
+            if (!(element is ITabletop tabletop)) return;
 
-            Show(_tabletop, table != null ? table.TabletopMaterialId : radiusTable!.TabletopMaterialId);
-            Show(_legs, table != null ? table.LegsMaterialId : radiusTable!.LegsMaterialId);
+            Show(_tabletop, tabletop.TabletopMaterialId);
+            Show(_legs, tabletop.LegsMaterialId);
         }
 
         public void ApplyLegsChoice(KitchenElement target)
         {
-            if (_legs == null || !_host.TargetFacets.Has(ElementFacet.Table)) return;
+            if (_legs == null || !(target is ITabletop tabletop)) return;
             var all = MaterialCatalog.All;
             if (_legs.value < 0 || _legs.value >= all.Count) return;
             var def = all[_legs.value];
 
-            if (target is TableElement table)
-            {
-                table.LegsMaterialId = def.id;
-                MaterialManager.ApplyLegs(table, def);
-            }
-            else if (target is RadiusTableElement radiusTable)
-            {
-                radiusTable.LegsMaterialId = def.id;
-                MaterialManager.ApplyLegs(radiusTable, def);
-            }
+            tabletop.LegsMaterialId = def.id;
+            MaterialManager.ApplyLegs(tabletop, def);
         }
 
         internal void Choose(MaterialSlot requested, int index)

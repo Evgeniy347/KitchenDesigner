@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class TableElement : KitchenElement
+    public class TableElement : KitchenElement, ITabletop
     {
 
         public override string DisplayTypeName => "Стол";
