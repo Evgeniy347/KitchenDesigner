@@ -220,10 +220,10 @@ namespace KitchenDesigner.Core.UI
             {
                 if (iss.Level != IssueLevel.Error && iss.Level != IssueLevel.Warning) continue;
 
-                ErrorPanelUI.RevealIssue(iss);
+                IssueDisplay.RevealIssue(iss);
                 StatusBarUI.Instance?.ShowTransient(
                     $"{iss.Code} · {iss.Detail} · {iss.Message}",
-                    ErrorPanelUI.LevelColor(iss.Level), 3f);
+                    IssueDisplay.LevelColor(iss.Level), 3f);
                 return;
             }
         }

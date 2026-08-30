@@ -125,7 +125,7 @@ public class ErrorPanelSelectionTests
         string[] cols = clip.Split('\t');
         Assert.AreEqual(4, cols.Length,
             $"одна строка = 4 колонки (Level\\tCode\\tDetail\\tMessage), получено: '{clip}'");
-        Assert.AreEqual(ErrorPanelUI.LevelName(issues[0].Level), cols[0]);
+        Assert.AreEqual(IssueDisplay.LevelName(issues[0].Level), cols[0]);
         Assert.AreEqual(issues[0].Code, cols[1]);
         Assert.AreEqual(issues[0].Detail, cols[2]);
         Assert.AreEqual(issues[0].Message, cols[3]);
