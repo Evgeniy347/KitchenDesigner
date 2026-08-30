@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core.MCP
             MaterialDef? material = null;
             if (!string.IsNullOrEmpty(p.material))
             {
-                material = ResolveMaterial(p.material!);
+                material = MaterialCatalog.Find(p.material!);
                 if (material == null)
                     return McpResponse.Error(req.id, -32602, $"Unknown material '{p.material}'");
             }

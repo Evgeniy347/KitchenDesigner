@@ -144,5 +144,16 @@ namespace KitchenDesigner.Core
                 if (d.id == DefaultId) return d;
             return _fallback;
         }
+
+        public static MaterialDef? Find(string? idOrDisplayName)
+        {
+            if (string.IsNullOrEmpty(idOrDisplayName)) return null;
+            EnsureLoaded();
+            foreach (var d in _defs)
+                if (string.Equals(d.id, idOrDisplayName, System.StringComparison.OrdinalIgnoreCase)) return d;
+            foreach (var d in _defs)
+                if (string.Equals(d.displayName, idOrDisplayName, System.StringComparison.OrdinalIgnoreCase)) return d;
+            return null;
+        }
     }
 }

@@ -13,20 +13,6 @@ namespace KitchenDesigner.Core.MCP
 {
     public partial class McpCommandHandler
     {
-        // ── Edit helpers ─────────────────────────────────────────────────
-
-        private static MaterialDef? ResolveMaterial(string key)
-        {
-            if (string.IsNullOrEmpty(key)) return null;
-            foreach (var d in MaterialCatalog.All)
-                if (string.Equals(d.id, key, StringComparison.OrdinalIgnoreCase)) return d;
-            foreach (var d in MaterialCatalog.All)
-                if (string.Equals(d.displayName, key, StringComparison.OrdinalIgnoreCase)) return d;
-            return null;
-        }
-
-        /// <summary>Зазоры есть не только у фасада (см. KitchenElement.SupportsGaps),
-        /// поэтому они правятся отдельно от дверных свойств.</summary>
         private static void ApplyGapEdits(EditOp op, KitchenElement el)
         {
             if (!el.SupportsGaps) return;
@@ -38,81 +24,23 @@ namespace KitchenDesigner.Core.MCP
             if (op.gap_back.HasValue) el.GapBack = op.gap_back.Value;
         }
 
-        private static void ApplyFacadeEdits(EditOp op, FacadeElement facade)
+        private static void ApplyWholeSetEdits(EditOp op, KitchenElement el)
         {
-            if (op.mode != null && McpWireEnums.TryParseDoorMode(op.mode, out var m)) facade.Mode = m;
-            if (op.is_open.HasValue) facade.SetOpen(op.is_open.Value);
+            if (op.grooves != null && el.SupportsGrooves
+                && McpSpecCodec.TryParseGrooves(op.grooves, out var parsedGrooves, out _))
+                el.SetGrooves(parsedGrooves);
+            if (op.texture_overlays != null && el.SupportsTextureOverlays
+                && McpSpecCodec.TryParseTextureOverlays(op.texture_overlays, out var parsedOverlays, out _))
+                el.SetTextureOverlays(parsedOverlays);
         }
-        private static void ApplyAssembledEdits(EditOp op, AssembledFacadeElement asm) { ApplyFacadeEdits(op, asm); if (op.fill != null) asm.Fill = McpWireEnums.ParseFill(op.fill); }
-        private static void ApplyRadialShelfEdits(EditOp op, RadialShelfElement shelf) { if (op.corner_radius.HasValue) shelf.CornerRadius = op.corner_radius.Value; }
-        private static void ApplyCooktopEdits(EditOp op, CooktopElement cooktop)
+
+        private static void ApplyEdgeEdits(EditOp op, KitchenElement el)
         {
-            if (op.cutout_width.HasValue) cooktop.CutoutWidthMM = op.cutout_width.Value;
-            if (op.cutout_depth.HasValue) cooktop.CutoutDepthMM = op.cutout_depth.Value;
-            // Проём в столешнице режется по свежему вырезу — и позу, и меш
-            // хозяина обновляет сама привязка.
-            if (op.cutout_width.HasValue || op.cutout_depth.HasValue) cooktop.SnapToPart();
-        }
-        private static void ApplyDrawerEdits(EditOp op, DrawerElement drawer)
-        {
-            if (op.drawer_system != null) drawer.System = McpWireEnums.ParseDrawerSystem(op.drawer_system);
-            if (op.drawer_type != null) drawer.Type = McpWireEnums.ParseDrawerType(op.drawer_type);
-            if (op.drawer_length.HasValue) drawer.NominalLength = op.drawer_length.Value;
-            if (op.drawer_color != null) drawer.Color = McpWireEnums.ParseDrawerColor(op.drawer_color);
-            if (op.internal_width.HasValue) drawer.InternalWidth = op.internal_width.Value;
-            if (op.is_double.HasValue) drawer.IsDouble = op.is_double.Value;
-            if (op.is_upper.HasValue) drawer.IsUpperDrawer = op.is_upper.Value;
-            if (op.paired_drawer_name != null) drawer.PairedDrawerName = op.paired_drawer_name == "" ? "" : op.paired_drawer_name;
-            if (op.attached_facade_name != null)
-            {
-                var prev = drawer.FindAttachedFacade();
-                drawer.AttachedFacadeName = op.attached_facade_name == "" ? "" : op.attached_facade_name;
-                drawer.OnAttachedFacadeChanged(prev, drawer.FindAttachedFacade());
-            }
-        }
-        /// <summary>У посудомойки правится ровно одно свойство — имя
-        /// пристёгнутого фасада (габариты фиксированы моделью).</summary>
-        private static void ApplyDishwasherEdits(EditOp op, DishwasherElement dishwasher)
-        {
-            if (op.attached_facade_name != null)
-            {
-                var prev = dishwasher.FindAttachedFacade();
-                dishwasher.AttachedFacadeName = op.attached_facade_name == "" ? "" : op.attached_facade_name;
-                dishwasher.OnAttachedFacadeChanged(prev, dishwasher.FindAttachedFacade());
-            }
-            // Откидная дверца машины открывается тем же is_open, что фасад,
-            // окно, дверь и духовка.
-            if (op.is_open.HasValue) dishwasher.SetOpen(op.is_open.Value);
-        }
-        private static void ApplyTableEdits(EditOp op, TableElement table)
-        {
-            if (op.leg_inset_mm.HasValue) table.LegInsetMM = op.leg_inset_mm.Value;
-            if (op.tabletop_material != null) { var d = ResolveMaterial(op.tabletop_material); if (d != null) MaterialManager.ApplyTabletop(table, d); }
-            if (op.legs_material != null) { var d = ResolveMaterial(op.legs_material); if (d != null) MaterialManager.ApplyLegs(table, d); }
-        }
-        private static void ApplyRadiusTableEdits(EditOp op, RadiusTableElement rt)
-        {
-            if (op.leg_inset_mm.HasValue) rt.LegInsetMM = op.leg_inset_mm.Value;
-            if (op.tabletop_material != null) { var d = ResolveMaterial(op.tabletop_material); if (d != null) MaterialManager.ApplyTabletop(rt, d); }
-            if (op.legs_material != null) { var d = ResolveMaterial(op.legs_material); if (d != null) MaterialManager.ApplyLegs(rt, d); }
-        }
-        private static void ApplyPillarEdits(EditOp op, PillarElement pillar) { if (op.mid_height_mm.HasValue) pillar.MidHeightMM = op.mid_height_mm.Value; }
-        private static void ApplyWindowEdits(EditOp op, WindowElement window)
-        {
-            if (op.tint != null) window.Tint = McpWireEnums.ParseGlassTint(op.tint);
-            if (op.sill_protrusion_mm.HasValue) window.SillProtrusionMM = op.sill_protrusion_mm.Value;
-            if (op.mode != null && McpWireEnums.TryParseDoorMode(op.mode, out var m)) window.Mode = m;
-            if (op.is_open.HasValue) window.SetOpen(op.is_open.Value);
-        }
-        private static void ApplyOvenEdits(EditOp op, OvenElement oven)
-        {
-            if (op.is_open.HasValue) oven.SetOpen(op.is_open.Value);
-        }
-        private static void ApplyDoorEdits(EditOp op, DoorElement door)
-        {
-            if (op.sash_type != null) door.SashType = McpWireEnums.ParseDoorSashType(op.sash_type);
-            if (op.mode != null && McpWireEnums.TryParseDoorMode(op.mode, out var m)) door.Mode = m;
-            if (op.is_open.HasValue) door.SetOpen(op.is_open.Value);
+            if (!el.SupportsGrooves) return;
+            if (op.edge_banding.HasValue) el.EdgeBandingEnabled = op.edge_banding.Value;
+            if (op.edge_thickness_mm.HasValue) el.EdgeThicknessMM = op.edge_thickness_mm.Value;
+            if (op.edge_skip_validation.HasValue)
+                el.EdgeManualMask = op.edge_skip_validation.Value ? EdgeManual.AllMask : 0;
         }
 
         private void ApplyNonGeometryEdits(
@@ -121,47 +49,22 @@ namespace KitchenDesigner.Core.MCP
             foreach (var (op, el, mat, _) in resolved)
             {
                 if (op.locked.HasValue) el.Movable = !op.locked.Value;
-                if (mat != null) MaterialManager.Apply(el, mat);
-                if (mat != null) SelectionManager.Instance?.RefreshHighlight(el);
-                ApplyGapEdits(op, el);
-                if (el is FacadeElement facade && !(el is AssembledFacadeElement)) ApplyFacadeEdits(op, facade);
-                if (el is AssembledFacadeElement asmFacade) ApplyAssembledEdits(op, asmFacade);
-                if (el is RadialShelfElement shelf) ApplyRadialShelfEdits(op, shelf);
-                if (el is CooktopElement cooktopEl) ApplyCooktopEdits(op, cooktopEl);
-                // Набор пазов задаётся целиком; строка уже проверена в ValidateEditOpFields.
-                if (op.grooves != null && el.SupportsGrooves
-                    && McpSpecCodec.TryParseGrooves(op.grooves, out var parsedGrooves, out _))
-                    el.SetGrooves(parsedGrooves);
-                // Набор накладок тоже задаётся целиком; строка проверена там же.
-                if (op.texture_overlays != null && el.SupportsTextureOverlays
-                    && McpSpecCodec.TryParseTextureOverlays(op.texture_overlays, out var parsedOverlays, out _))
-                    el.SetTextureOverlays(parsedOverlays);
-                if (el.SupportsGrooves)
+                if (mat != null)
                 {
-                    if (op.edge_banding.HasValue) el.EdgeBandingEnabled = op.edge_banding.Value;
-                    if (op.edge_thickness_mm.HasValue) el.EdgeThicknessMM = op.edge_thickness_mm.Value;
-                    // Кромки правятся по сторонам (EdgeManualMask), но в контракте
-                    // MCP осталось прежнее поле на всю деталь: оно означает
-                    // «все четыре стороны ручные».
-                    if (op.edge_skip_validation.HasValue)
-                        el.EdgeManualMask = op.edge_skip_validation.Value ? EdgeManual.AllMask : 0;
+                    MaterialManager.Apply(el, mat);
+                    SelectionManager.Instance?.RefreshHighlight(el);
                 }
-                // Прикрепление к другой детали/фасаду (AttachLinks): связь по
-                // имени, пустая строка — отцепить.
+                ApplyGapEdits(op, el);
+                ApplyWholeSetEdits(op, el);
+                ApplyEdgeEdits(op, el);
                 if (op.attached_to_name != null && AttachLinks.CanBeChild(el))
                     el.AttachedToName = op.attached_to_name;
-                if (el is DrawerElement drawer) ApplyDrawerEdits(op, drawer);
-                if (el is DishwasherElement dishwasher) ApplyDishwasherEdits(op, dishwasher);
-                if (el is TableElement table) ApplyTableEdits(op, table);
-                if (el is RadiusTableElement rt) ApplyRadiusTableEdits(op, rt);
-                if (el is PillarElement pillar) ApplyPillarEdits(op, pillar);
-                if (el is WindowElement window) ApplyWindowEdits(op, window);
-                if (el is DoorElement door) ApplyDoorEdits(op, door);
-                if (el is OvenElement oven) ApplyOvenEdits(op, oven);
-                // Через DrawerLinks: переименование обязано увести за собой связи
-                // по имени (пара ящика, фасад ящика), иначе они станут битыми.
+                ElementEditAppliers.ApplyTypeSpecific(op, el);
                 if (op.new_name != null && op.new_name != el.PartName)
-                { DrawerLinks.Rename(el, op.new_name); el.gameObject.name = el.PartName; }
+                {
+                    DrawerLinks.Rename(el, op.new_name);
+                    el.gameObject.name = el.PartName;
+                }
             }
         }
 
@@ -227,7 +130,7 @@ namespace KitchenDesigner.Core.MCP
                 MaterialDef? mat = null;
                 if (!string.IsNullOrEmpty(op.material))
                 {
-                    mat = ResolveMaterial(op.material!);
+                    mat = MaterialCatalog.Find(op.material!);
                     if (mat == null) errors.Add($"Unknown material '{op.material}' for '{op.name}' (see list_materials)");
                 }
                 resolved.Add((op, el, mat, new List<string>()));
