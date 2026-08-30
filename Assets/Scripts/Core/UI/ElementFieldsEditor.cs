@@ -32,6 +32,8 @@ namespace KitchenDesigner.Core.UI
 
         public virtual bool DepthEditable => true;
 
+        public virtual bool HeightShownFromDimensions => true;
+
         public virtual void Show(KitchenElement element) { }
 
         public virtual void Apply(KitchenElement element) { }

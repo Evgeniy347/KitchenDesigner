@@ -15,9 +15,7 @@ namespace KitchenDesigner.Core.UI
         private KitchenElement? _target;
         private TMP_Text? _titleLabel;
 
-        private TMP_InputField? _name, _w, _h, _d, _radius,
-            _cutoutW, _cutoutD,
-            _x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight;
+        private TMP_InputField? _name, _w, _h, _d, _x, _y, _z, _rx, _ry, _rz;
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
@@ -29,7 +27,6 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _fillDropdown;
         private TMP_Dropdown? _drawerTypeDropdown, _drawerLengthDropdown, _drawerColorDropdown;
         private TMP_Dropdown? _drawerUpperLenDropdown;
-        private TMP_InputField? _drawerWidth;
         private TMP_Text? _drawerAnimLabel;
 
         /// <summary>Подпись строки пристёгнутого фасада: у ящика она уточняет
@@ -45,7 +42,6 @@ namespace KitchenDesigner.Core.UI
         private NameDropdownBinder _attachedTo = null!;
         private TMP_Dropdown? _tintDropdown;
         private TMP_Dropdown? _sashTypeDropdown;
-        private TMP_InputField? _sillProtrusion;
         private TMP_Dropdown? _winModeDropdown;
         private bool _openInProgress;
         private bool _currentIsTable;
@@ -61,6 +57,14 @@ namespace KitchenDesigner.Core.UI
         private readonly ContextMenuMaterialSection _materials;
         private readonly ElementTypeConverter _types;
         private readonly LightFieldsEditor _lights;
+        private readonly RadialFieldsEditor _radialFields;
+        private readonly CooktopCutoutFieldsEditor _cooktopFields;
+        private readonly DrawerBoxFieldsEditor _drawerFields;
+        private readonly PillarFieldsEditor _pillarFields;
+        private readonly TableLegFieldsEditor _tableFields;
+        private readonly WallOpeningFieldsEditor _openingFields;
+        private readonly ElementFieldsEditor[] _editors;
+        private readonly DimensionFields _size = new();
         private ContextMenuRowFactory _rows = null!;
 
         public ContextMenuUI()
@@ -73,6 +77,17 @@ namespace KitchenDesigner.Core.UI
             _materials = new ContextMenuMaterialSection(this);
             _types = new ElementTypeConverter(this, Open);
             _lights = new LightFieldsEditor(this);
+            _radialFields = new RadialFieldsEditor(this);
+            _cooktopFields = new CooktopCutoutFieldsEditor(this);
+            _drawerFields = new DrawerBoxFieldsEditor(this);
+            _pillarFields = new PillarFieldsEditor(this);
+            _tableFields = new TableLegFieldsEditor(this);
+            _openingFields = new WallOpeningFieldsEditor(this);
+            _editors = new ElementFieldsEditor[]
+            {
+                _radialFields, _cooktopFields, _drawerFields, _pillarFields,
+                _tableFields, _openingFields, _lights,
+            };
         }
 
         KitchenElement? IContextMenuHost.Target => _target;
@@ -90,6 +105,10 @@ namespace KitchenDesigner.Core.UI
         public bool MaterialPreviewActive => _materials.PreviewActive;
 
         bool IContextMenuHost.TargetIsTable => _currentIsTable;
+
+        bool IContextMenuHost.TargetIsDoor => _currentIsDoor;
+
+        DimensionFields IContextMenuHost.SizeFields => _size;
 
         public void ToggleTextures() => _textures.Toggle();
 
@@ -164,13 +183,11 @@ namespace KitchenDesigner.Core.UI
         {
             _name = _rows.NameField();
             _rows.SectionHeader("CtxSecDims", "Размеры");
-            _w = _rows.NumberField("Ширина", RowVisibility.Always);
-            _h = _rows.NumberField("Высота", RowVisibility.Always);
-            _d = _rows.NumberField("Глубина", RowVisibility.Always);
-            _radius = _rows.NumberField("Радиус угла", RowVisibility.For(ElementFacet.Radial));
-            var cooktopOnly = RowVisibility.When(() => _target is CooktopElement);
-            _cutoutW = _rows.NumberField("Ширина выреза", cooktopOnly);
-            _cutoutD = _rows.NumberField("Глубина выреза", cooktopOnly);
+            _w = _size.Width = _rows.NumberField("Ширина", RowVisibility.Always);
+            _h = _size.Height = _rows.NumberField("Высота", RowVisibility.Always);
+            _d = _size.Depth = _rows.NumberField("Глубина", RowVisibility.Always);
+            _radialFields.Build();
+            _cooktopFields.Build();
         }
 
         private void BuildFacadeSection()
@@ -211,7 +228,7 @@ namespace KitchenDesigner.Core.UI
             _drawerColorDropdown = _rows.Dropdown("Цвет", colorNames, OnDrawerColorChanged,
                 drawerOnly, "CtxDrawerColor");
 
-            _drawerWidth = _rows.NumberField("Ширина короба", drawerOnly);
+            _drawerFields.Build();
 
             _rows.WideButton("CtxDrawerDouble", "Двойной ящик", CreatePairedDrawer,
                 RowVisibility.For(ElementFacet.Drawer, CanCreateDoubleDrawer), ActionGap);
@@ -316,7 +333,7 @@ namespace KitchenDesigner.Core.UI
 
             _tintDropdown = _rows.Dropdown("Стекло", new List<string> { "Прозрачное", "Тонированное" },
                 OnTintSelected, notDoor, "CtxTint");
-            _sillProtrusion = _rows.NumberField("Подоконник", notDoor);
+            _openingFields.Build();
             _sashTypeDropdown = _rows.Dropdown("Створка", new List<string> { "Стекло", "Глухая" },
                 OnSashTypeSelected, RowVisibility.For(ElementFacet.Door), "CtxSashType");
 
@@ -335,8 +352,8 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildFurnitureSection()
         {
-            _legInset = _rows.NumberField("Сдвиг опор", RowVisibility.For(ElementFacet.Table));
-            _midHeight = _rows.NumberField("Средняя секция", RowVisibility.For(ElementFacet.Pillar));
+            _tableFields.Build();
+            _pillarFields.Build();
         }
 
         private void BuildPositionSection(Transform parent)
@@ -432,10 +449,9 @@ namespace KitchenDesigner.Core.UI
         {
             var fields = new List<TMP_InputField?>
             {
-                _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight,
-                _sillProtrusion, _x, _y, _z,
+                _w, _h, _d, _x, _y, _z,
             };
-            fields.AddRange(_lights.ArithmeticFields());
+            foreach (var editor in _editors) fields.AddRange(editor.ArithmeticFields());
             return fields.ToArray();
         }
 
@@ -514,7 +530,9 @@ namespace KitchenDesigner.Core.UI
 
         private bool IsAnyFieldFocused()
         {
-            foreach (var f in new[] { _name, _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _edges.ThicknessField, _x, _y, _z, _rx, _ry, _rz })
+            foreach (var f in ArithmeticIntFields())
+                if (f != null && f.isFocused) return true;
+            foreach (var f in new[] { _name, _edges.ThicknessField, _rx, _ry, _rz })
                 if (f != null && f.isFocused) return true;
             if (_gaps.AnyFieldFocused()) return true;
             return false;
@@ -540,49 +558,15 @@ namespace KitchenDesigner.Core.UI
             _fields.RefreshUnfocused(_rx, eu.x.ToString("F1"));
             _fields.RefreshUnfocused(_ry, eu.y.ToString("F1"));
             _fields.RefreshUnfocused(_rz, eu.z.ToString("F1"));
-
-            // Размеры, имя, радиус угла, зазоры — тоже обновляем в реальном времени
             var dims = _target.DimensionsMM;
             _fields.RefreshUnfocused(_w, dims.x.ToString());
             _fields.RefreshUnfocused(_h, dims.y.ToString());
             _fields.RefreshUnfocused(_d, dims.z.ToString());
-            var radial = _target as RadialShelfElement;
-            if (radial != null)
-                _fields.RefreshUnfocused(_radius, radial.CornerRadius.ToString());
-
-            if (_target is CooktopElement cooktopRefresh)
-            {
-                _fields.RefreshUnfocused(_cutoutW, cooktopRefresh.CutoutWidthMM.ToString());
-                _fields.RefreshUnfocused(_cutoutD, cooktopRefresh.CutoutDepthMM.ToString());
-            }
-
-            var drawerRef = _target as DrawerElement;
-            if (drawerRef != null && _drawerWidth != null)
-                _fields.RefreshUnfocused(_drawerWidth, drawerRef.BoxWidth.ToString());
-
             _fields.RefreshUnfocused(_name, _target.PartName);
             RefreshTitle();
 
             _gaps.RefreshFromTarget();
-
-            var table = _target as TableElement;
-            if (table != null && _legInset != null)
-                _fields.RefreshUnfocused(_legInset, table.LegInsetMM.ToString());
-
-            var radiusTable = _target as RadiusTableElement;
-            if (radiusTable != null && _legInset != null)
-                _fields.RefreshUnfocused(_legInset, radiusTable.LegInsetMM.ToString());
-
-            var pillar = _target as PillarElement;
-            if (pillar != null && _midHeight != null)
-                _fields.RefreshUnfocused(_midHeight, pillar.MidHeightMM.ToString());
-
-            _lights.Refresh(_target);
-
-
-            var window = _target as WindowElement;
-            if (window != null && _sillProtrusion != null)
-                _fields.RefreshUnfocused(_sillProtrusion, window.SillProtrusionMM.ToString());
+            foreach (var editor in _editors) editor.Refresh(_target);
         }
 
         /// <summary>Позиция в мм: единый формат чисел UI (правило 1).</summary>
@@ -671,16 +655,7 @@ namespace KitchenDesigner.Core.UI
                 _w!.text = dims.x.ToString();
                 _h!.text = dims.y.ToString();
                 _d!.text = dims.z.ToString();
-                var radial = element as RadialShelfElement;
-                _radius!.text = radial != null
-                    ? radial.CornerRadius.ToString()
-                    : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT.ToString();
-
-                var cooktopEl = element as CooktopElement;
-                _cutoutW!.text = (cooktopEl != null
-                    ? cooktopEl.CutoutWidthMM : CooktopElement.DEFAULT_CUTOUT_WIDTH_MM).ToString();
-                _cutoutD!.text = (cooktopEl != null
-                    ? cooktopEl.CutoutDepthMM : CooktopElement.DEFAULT_CUTOUT_DEPTH_MM).ToString();
+                foreach (var editor in _editors) editor.Show(element);
 
                 var facade = element as FacadeElement;
                 _gaps.WriteFrom(element);
@@ -701,8 +676,6 @@ namespace KitchenDesigner.Core.UI
                         _drawerLengthDropdown.SetValueWithoutNotify(System.Array.IndexOf(DrawerConstants.ValidLengths, drawer.NominalLength));
                     if (_drawerColorDropdown != null)
                         _drawerColorDropdown.SetValueWithoutNotify((int)drawer.Color);
-                    if (_drawerWidth != null)
-                        _drawerWidth.text = drawer.BoxWidth.ToString();
                     var upperDrawer = drawer.FindPaired();
                     if (_drawerUpperLenDropdown != null && upperDrawer != null)
                         _drawerUpperLenDropdown.SetValueWithoutNotify(
@@ -730,27 +703,11 @@ namespace KitchenDesigner.Core.UI
                     _attachedFacade.SetValue(facadeHost.AttachedFacadeName);
                 }
 
-                var table = element as TableElement;
-                if (table != null && _legInset != null)
-                    _legInset.text = table.LegInsetMM.ToString();
-
-                var radiusTable = element as RadiusTableElement;
-                if (radiusTable != null && _legInset != null)
-                    _legInset.text = radiusTable.LegInsetMM.ToString();
-
-                var pillar = element as PillarElement;
-                if (pillar != null && _midHeight != null)
-                    _midHeight.text = pillar.MidHeightMM.ToString();
-
-                _lights.Show(element);
-
                 var window = element as WindowElement;
                 if (window != null)
                 {
                     if (_tintDropdown != null)
                         _tintDropdown.SetValueWithoutNotify((int)window.Tint);
-                    if (_sillProtrusion != null)
-                        _sillProtrusion.text = window.SillProtrusionMM.ToString();
                     if (_winDoorButtonLabel != null)
                         _winDoorButtonLabel.text = window.IsOpen ? "Закрыть" : "Открыть";
                     if (_winModeDropdown != null)
@@ -768,17 +725,7 @@ namespace KitchenDesigner.Core.UI
                         _winModeDropdown.SetValueWithoutNotify((int)door.Mode);
                 }
 
-                // Габариты ящика (контурный бокс) вычисляются из типа/длины/ширины —
-                // прямое редактирование недоступно, поля затемняются. У готовой
-                // техники размеры и ниша врезки заданы производителем — тоже серые.
-                bool fixedSize = FixedSize.IsFixed(element);
-                SetDimensionFieldsEditable(!isDrawer && !fixedSize);
-                SetDimensionFieldEditable(_cutoutW, !fixedSize);
-                SetDimensionFieldEditable(_cutoutD, !fixedSize);
-                // Глубину окна диктует толщина стены — поле только для чтения.
-                if (isWindow || isDoor) SetDimensionFieldEditable(_d, false);
-                // Ширина и глубина опоры фиксированы — только для чтения.
-                if (isPillar) { SetDimensionFieldEditable(_w, false); SetDimensionFieldEditable(_d, false); }
+                ShowDimensionLocks(element);
 
                 _materials.ShowFor(element);
 
@@ -881,83 +828,8 @@ namespace KitchenDesigner.Core.UI
             DrawerLinks.Rename(target, string.IsNullOrWhiteSpace(_name!.text) ? "Board" : _name!.text);
             target.gameObject.name = target.PartName;
 
-            var radial = target as RadialShelfElement;
-            var drawer = target as DrawerElement;
-            var pillar = target as PillarElement;
-            var table = target as TableElement;
-            var radiusTable = target as RadiusTableElement;
-            if (radial != null)
-            {
-                target.DimensionsMM = new Vector3Int(
-                    _fields.ParseInt(_w, oldDims.x),
-                    _fields.ParseInt(_h, oldDims.y),
-                    _fields.ParseInt(_d, oldDims.z));
-                radial.CornerRadius = _fields.ParseInt(_radius, radial.CornerRadius);
-            }
-            else if (drawer != null)
-            {
-                if (_drawerWidth != null)
-                {
-                    int boxW = _fields.ParseInt(_drawerWidth, drawer.BoxWidth);
-                    int inset = drawer.System == DrawerSystem.Movento ? DrawerConstants.MOVENTO_WIDTH_INSET : 0;
-                    drawer.InternalWidth = Mathf.Max(100, boxW + inset);
-                }
-            }
-            else if (pillar != null)
-            {
-                int newTotalH = _fields.ParseInt(_h, oldDims.y);
-                if (newTotalH != oldDims.y)
-                {
-                    int newMidH = Mathf.Clamp(
-                        newTotalH - PillarElement.TopHeightMM - PillarElement.BottomHeightMM,
-                        PillarElement.MidHeightMM_Min, PillarElement.MidHeightMM_Max);
-                    pillar.MidHeightMM = newMidH;
-                    if (_midHeight != null) _midHeight.text = newMidH.ToString();
-                }
-                else if (_midHeight != null)
-                {
-                    pillar.MidHeightMM = _fields.ParseInt(_midHeight, pillar.MidHeightMM);
-                    _midHeight.text = pillar.MidHeightMM.ToString();
-                }
-                _h!.text = pillar.TotalHeightMM.ToString();
-            }
-            else
-            {
-                // Глубину окна диктует стена — поле Г игнорируется.
-                target.DimensionsMM = new Vector3Int(
-                    _fields.ParseInt(_w, oldDims.x),
-                    _fields.ParseInt(_h, oldDims.y),
-                    target is WindowElement || target is DoorElement ? oldDims.z : _fields.ParseInt(_d, oldDims.z));
-            }
-
-            // Вырез варочной — отдельной командой: он не часть габарита детали,
-            // и складывать его в ResizeCommand нечестно по отношению к откату.
-            // Считаем ПОСЛЕ размеров плиты: вырез клампится по её ширине.
-            var cooktopApply = target as CooktopElement;
-            if (cooktopApply != null && _cutoutW != null && _cutoutD != null)
-            {
-                var cutBefore = SetCooktopCutoutCommand.Snapshot(cooktopApply);
-                var cutAfter = new Vector2Int(
-                    _fields.ParseInt(_cutoutW, cutBefore.x),
-                    _fields.ParseInt(_cutoutD, cutBefore.y));
-                if (cutAfter != cutBefore)
-                    CommandStack.Execute(new SetCooktopCutoutCommand(cooktopApply, cutBefore, cutAfter));
-                // Показываем применённый (склампленный) вырез, а не введённый.
-                _cutoutW.text = cooktopApply.CutoutWidthMM.ToString();
-                _cutoutD.text = cooktopApply.CutoutDepthMM.ToString();
-            }
-
-            if (table != null && _legInset != null)
-                table.LegInsetMM = _fields.ParseInt(_legInset, table.LegInsetMM);
-
-            if (radiusTable != null && _legInset != null)
-                radiusTable.LegInsetMM = _fields.ParseInt(_legInset, radiusTable.LegInsetMM);
-
-            var windowEl = target as WindowElement;
-            if (windowEl != null && _sillProtrusion != null)
-                windowEl.SillProtrusionMM = _fields.ParseInt(_sillProtrusion, windowEl.SillProtrusionMM);
-
-            _lights.Apply(target);
+            ApplyDimensionFields(target, oldDims);
+            foreach (var editor in _editors) editor.Apply(target);
 
             _materials.ApplyLegsChoice(target);
 
@@ -1018,27 +890,12 @@ namespace KitchenDesigner.Core.UI
         /// проигрывает команды, и до него состояние элемента промежуточное.</summary>
         private void RefreshAfterApply(KitchenElement target)
         {
-            var pillar = target as PillarElement;
-            var radial = target as RadialShelfElement;
-            var table = target as TableElement;
-            var radiusTable = target as RadiusTableElement;
-            var facade = target as FacadeElement;
-
             var newDims = target.DimensionsMM;
             _w!.text = newDims.x.ToString();
-            if (pillar == null) _h!.text = newDims.y.ToString();
+            if (EditorFor(target)?.HeightShownFromDimensions ?? true)
+                _h!.text = newDims.y.ToString();
             _d!.text = newDims.z.ToString();
-            if (radial != null)
-                _radius!.text = radial.CornerRadius.ToString();
-
-            if (table != null && _legInset != null)
-                _legInset.text = table.LegInsetMM.ToString();
-
-            if (radiusTable != null && _legInset != null)
-                _legInset.text = radiusTable.LegInsetMM.ToString();
-
-            if (pillar != null && _midHeight != null)
-                _midHeight.text = pillar.MidHeightMM.ToString();
+            foreach (var editor in _editors) editor.AfterApply(target);
 
             _gaps.WriteFrom(_target);
 
@@ -1282,24 +1139,31 @@ namespace KitchenDesigner.Core.UI
             if (upper != null) upper.NominalLength = DrawerConstants.ValidLengths[index];
         }
 
-        // Затемнить/вернуть поля Ш/В/Г: у ящика они вычисляемые (только чтение).
-        private Color _dimsTextColor = Color.clear;
-
-        private void SetDimensionFieldsEditable(bool editable)
+        private ElementFieldsEditor? EditorFor(KitchenElement element)
         {
-            foreach (var f in new[] { _w, _h, _d })
-                SetDimensionFieldEditable(f, editable);
+            foreach (var editor in _editors)
+                if (editor.Handles(element)) return editor;
+            return null;
         }
 
-        private void SetDimensionFieldEditable(TMP_InputField? f, bool editable)
+        private void ApplyDimensionFields(KitchenElement target, Vector3Int oldDims)
         {
-            if (f == null) return;
-            var disabled = new Color(0.55f, 0.55f, 0.55f, 1f);
-            if (_dimsTextColor == Color.clear && f.textComponent != null)
-                _dimsTextColor = f.textComponent.color;
-            f.interactable = editable;
-            if (f.textComponent != null)
-                f.textComponent.color = editable ? _dimsTextColor : disabled;
+            var policy = EditorFor(target)?.Dimensions ?? DimensionPolicy.FromFields;
+            if (policy == DimensionPolicy.Computed) return;
+
+            target.DimensionsMM = new Vector3Int(
+                _fields.ParseInt(_w, oldDims.x),
+                _fields.ParseInt(_h, oldDims.y),
+                policy == DimensionPolicy.KeepDepth ? oldDims.z : _fields.ParseInt(_d, oldDims.z));
+        }
+
+        private void ShowDimensionLocks(KitchenElement element)
+        {
+            var editor = EditorFor(element);
+            bool unlocked = !FixedSize.IsFixed(element);
+            _size.SetEditable(_w, unlocked && (editor?.WidthEditable ?? true));
+            _size.SetEditable(_h, unlocked && (editor?.HeightEditable ?? true));
+            _size.SetEditable(_d, unlocked && (editor?.DepthEditable ?? true));
         }
 
         private void ToggleOvenDoor()
@@ -1474,21 +1338,8 @@ namespace KitchenDesigner.Core.UI
             _fields.Track(_w, dims.x.ToString());
             _fields.Track(_h, dims.y.ToString());
             _fields.Track(_d, dims.z.ToString());
-            var radial = _target as RadialShelfElement;
-            _fields.Track(_radius, radial != null
-                ? radial.CornerRadius.ToString()
-                : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT.ToString());
             _gaps.Track();
-            var drawerEl2 = _target as DrawerElement;
-            _fields.Track(_drawerWidth, drawerEl2 != null ? drawerEl2.BoxWidth.ToString() : "400");
-            var windowEl2 = _target as WindowElement;
-            _fields.Track(_sillProtrusion, windowEl2 != null ? windowEl2.SillProtrusionMM.ToString() : "50");
-            var tableEl2 = _target as TableElement;
-            var radiusTableEl2 = _target as RadiusTableElement;
-            _fields.Track(_legInset, tableEl2 != null ? tableEl2.LegInsetMM.ToString() : (radiusTableEl2 != null ? radiusTableEl2.LegInsetMM.ToString() : "100"));
-            var pillarEl = _target as PillarElement;
-            _fields.Track(_midHeight, pillarEl != null ? pillarEl.MidHeightMM.ToString() : PillarElement.MidHeightMM_Default.ToString());
-            _lights.Track(_target);
+            foreach (var editor in _editors) editor.Track(_target);
             _edges.Track();
             var pos = _target.transform.position;
             _fields.Track(_x, ToMM(pos.x));

@@ -12,6 +12,10 @@ namespace KitchenDesigner.Core.UI
 
         bool TargetIsTable { get; }
 
+        bool TargetIsDoor { get; }
+
+        DimensionFields SizeFields { get; }
+
         void Relayout();
     }
 }
