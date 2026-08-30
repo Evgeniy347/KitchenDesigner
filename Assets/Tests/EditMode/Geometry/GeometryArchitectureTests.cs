@@ -1,16 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 
 namespace KitchenDesigner.Tests.Geometry
 {
     /// <summary>Сторож границы ядра. KitchenDesigner.Geometry собирается ДВАЖДЫ:
-    /// Unity по asmdef и dotnet по geometry/Geometry.csproj. Unity проглотит
+    /// Unity по asmdef и dotnet по geometry/core/Geometry.csproj. Unity проглотит
     /// любой вызов движка, а под CoreCLR он упадёт в РАНТАЙМЕ на
     /// «SecurityException: ECall methods must be packaged into a system module».
     /// Ловим на этапе тестов, а не в ночном прогоне Stryker.
+    ///
+    /// Тесты ядра (Assets/Tests/EditMode/Geometry) собираются той же второй
+    /// сборкой — geometry/tests/Geometry.Tests.csproj глобит этот каталог целиком.
+    /// Поэтому запрет на сцену действует и там, и проверяется тем же списком.
     ///
     /// Путь к исходникам ищем обходом вверх от каталога сборки: Application.dataPath
     /// сам по себе extern и под dotnet недоступен.</summary>
@@ -32,12 +37,18 @@ namespace KitchenDesigner.Tests.Geometry
             (@"\bMatrix4x4\b",              "ECall"),
         };
 
-        /// <summary>Каталог исходников ядра. Ищем вверх от нескольких точек, потому
-        /// что у двух раннеров они разные: под dotnet test AppContext.BaseDirectory
-        /// лежит внутри проекта, а в Unity это каталог УСТАНОВКИ редактора. Зато
-        /// сама тестовая сборка в Unity лежит в Library/ScriptAssemblies проекта,
-        /// откуда подъём вверх приводит куда нужно.</summary>
-        private static string GeometrySourceDir()
+        /// <summary>Файлы, которым НАЗЫВАТЬ запрещённые символы можно, с причиной.
+        /// Причина обязательна: без неё через полгода не отличить осознанное
+        /// исключение от недосмотра. Существование каждого файла проверяет
+        /// <see cref="AllowList_NamesOnlyFilesThatExist"/> — иначе запись переживёт
+        /// свой файл и начнёт молча освобождать следующий, занявший это имя.</summary>
+        private static readonly (string file, string why)[] Allowed =
+        {
+            ("GeometryArchitectureTests.cs",
+                "сам сторож: запрещённые символы лежат в его таблице как строки-шаблоны"),
+        };
+
+        private static string RepoSubdir(params string[] parts)
         {
             var roots = new[]
             {
@@ -53,28 +64,42 @@ namespace KitchenDesigner.Tests.Geometry
                 var dir = new DirectoryInfo(root);
                 while (dir != null)
                 {
-                    var candidate = Path.Combine(dir.FullName, "Assets", "Scripts", "Core", "Geometry");
+                    var candidate = Path.Combine(new[] { dir.FullName }.Concat(parts).ToArray());
                     if (Directory.Exists(candidate)) return candidate;
                     dir = dir.Parent;
                 }
             }
 
             throw new DirectoryNotFoundException(
-                "Не найден Assets/Scripts/Core/Geometry ни от одной из точек: "
+                "Не найден " + string.Join("/", parts) + " ни от одной из точек: "
                 + string.Join(", ", roots));
         }
 
-        [Test]
-        public void CoreSources_DoNotTouchTheEngine()
-        {
-            var dir = GeometrySourceDir();
-            var files = Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories);
-            Assert.IsNotEmpty(files, $"в {dir} нет исходников — тест бесполезен");
+        /// <summary>Каталог исходников ядра. Ищем вверх от нескольких точек, потому
+        /// что у двух раннеров они разные: под dotnet test AppContext.BaseDirectory
+        /// лежит внутри проекта, а в Unity это каталог УСТАНОВКИ редактора. Зато
+        /// сама тестовая сборка в Unity лежит в Library/ScriptAssemblies проекта,
+        /// откуда подъём вверх приводит куда нужно.</summary>
+        private static string GeometrySourceDir() =>
+            RepoSubdir("Assets", "Scripts", "Core", "Geometry");
 
+        private static string GeometryTestSourceDir() =>
+            RepoSubdir("Assets", "Tests", "EditMode", "Geometry");
+
+        private static string[] ScannedFiles(string dir) =>
+            Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories);
+
+        private static string[] ScannedFileNames(string dir) =>
+            Array.ConvertAll(ScannedFiles(dir), f => Path.GetFileName(f) ?? string.Empty);
+
+        private static List<string> EngineReferences(IEnumerable<string> files)
+        {
             var violations = new List<string>();
 
             foreach (var file in files)
             {
+                if (Array.Exists(Allowed, a => a.file == Path.GetFileName(file))) continue;
+
                 var lines = File.ReadAllLines(file);
                 for (int i = 0; i < lines.Length; i++)
                 {
@@ -89,20 +114,71 @@ namespace KitchenDesigner.Tests.Geometry
                     foreach (var (pattern, why) in Banned)
                         if (Regex.IsMatch(line, pattern))
                             violations.Add(
-                                $"{Path.GetFileName(file)}:{i + 1} — {pattern.Trim('\\', 'b')} ({why})\n    {trimmed}");
+                                Path.GetFileName(file) + ":" + (i + 1) + " — "
+                                + pattern.Trim('\\', 'b') + " (" + why + ")\n    " + trimmed);
                 }
             }
 
+            return violations;
+        }
+
+        [Test]
+        public void CoreSources_DoNotTouchTheEngine()
+        {
+            var dir = GeometrySourceDir();
+            var files = ScannedFiles(dir);
+            Assert.IsNotEmpty(files, "в " + dir + " нет исходников — тест бесполезен");
+
+            var violations = EngineReferences(files);
             Assert.IsEmpty(violations,
                 "Ядро обязано исполняться вне Unity. Найдено:\n" + string.Join("\n", violations));
         }
 
         [Test]
+        public void CoreTestSources_DoNotTouchTheEngine()
+        {
+            var dir = GeometryTestSourceDir();
+            var files = ScannedFiles(dir);
+            Assert.IsNotEmpty(files, "в " + dir + " нет тестов — тест бесполезен");
+
+            var violations = EngineReferences(files);
+            Assert.IsEmpty(violations,
+                "geometry/tests/Geometry.Tests.csproj глобит этот каталог целиком: сценовый тест "
+                + "здесь ломает СБОРКУ второго прогона, и dotnet test со Stryker умирают на CS0246, "
+                + "оставаясь зелёными для Unity. Такому тесту место в Assets/Tests/EditMode. Найдено:\n"
+                + string.Join("\n", violations));
+        }
+
+        [Test]
         public void CoreSources_AreActuallyPresent()
         {
-            var files = Directory.GetFiles(GeometrySourceDir(), "*.cs", SearchOption.AllDirectories);
-            CollectionAssert.Contains(
-                Array.ConvertAll(files, Path.GetFileName), "Tolerance.cs");
+            CollectionAssert.Contains(ScannedFileNames(GeometrySourceDir()), "Tolerance.cs");
+        }
+
+        [Test]
+        public void CoreTestSources_AreActuallyScanned_AndNotBlanketExempted()
+        {
+            var names = ScannedFileNames(GeometryTestSourceDir());
+            CollectionAssert.Contains(names, "SnapCoreTestBase.cs",
+                "скан каталога тестов ядра должен видеть его файлы — грепу по несуществующему "
+                + "пути нечего найти, и он зеленеет, ничего не проверив");
+            CollectionAssert.DoesNotContain(Array.ConvertAll(Allowed, a => a.file), "SnapCoreTestBase.cs",
+                "белый список не вправе освобождать обычный тест ядра");
+        }
+
+        [Test]
+        public void AllowList_NamesOnlyFilesThatExist()
+        {
+            var names = new HashSet<string>(ScannedFileNames(GeometrySourceDir()));
+            names.UnionWith(ScannedFileNames(GeometryTestSourceDir()));
+
+            foreach (var (file, why) in Allowed)
+            {
+                Assert.IsTrue(names.Contains(file),
+                    "белый список освобождает " + file + " (" + why + "), но такого файла больше "
+                    + "нет — запись переживёт свой файл и начнёт освобождать следующий с этим именем");
+                Assert.IsNotEmpty(why, "у записи " + file + " нет причины");
+            }
         }
     }
 }
