@@ -97,6 +97,23 @@ function Get-WindowStart([datetime] $day) {
     return $day.Date.AddHours(19)
 }
 
+# A timestamp strictly inside (previous, cap] with non-round seconds. The usual 60-600 s
+# gap is honoured whenever the remaining room allows it and shrunk only when it does not.
+# Returns $null when there is not even one second of room left.
+function Get-TimeWithin([datetime] $previous, [datetime] $cap) {
+    $room = [int][math]::Floor(($cap - $previous).TotalSeconds)
+    if ($room -lt 1) { return $null }
+    $maxGap = [math]::Min($room, 600)
+    $minGap = [math]::Min($maxGap, 60)
+    for ($attempt = 0; $attempt -lt 64; $attempt++) {
+        $t = $previous.AddSeconds((Get-Random -Minimum $minGap -Maximum ($maxGap + 1)))
+        if ($t.Second -ne 0) { return $t }
+    }
+    $t = $previous.AddSeconds($maxGap)
+    if ($t.Second -eq 0 -and $maxGap -gt $minGap) { $t = $t.AddSeconds(-1) }
+    return $t
+}
+
 # --------------------------------------------------------------------------------------
 # Pick the time
 # --------------------------------------------------------------------------------------
@@ -143,7 +160,25 @@ if ($null -eq $prev) {
     }
 }
 
-$formatted = '{0} {1}' -f $stamp.ToString('yyyy-MM-ddTHH:mm:ss'), $Offset
+# Rule precedence, hard: strict ordering > never later than the real clock > the evening
+# window. A weekday daytime run whose yesterday-evening session is already full has no
+# legal slot left, and rolling forward lands in TODAY's 19:00 window - in the future. That
+# is how 39 commits ended up stamped 19:23-22:47 while the clock said 13:51. A daytime
+# stamp is wrong only cosmetically; a future stamp is wrong as a fact, so the window yields.
+if ($stamp -gt $now) {
+    $floor = if ($null -eq $prev) { $now.Date } else { $prev }
+    $clamped = Get-TimeWithin $floor $now
+    if ($null -ne $clamped) {
+        Write-Warning ("The evening window is exhausted - stamping the real moment " +
+            "($($clamped.ToString('HH:mm:ss'))) instead of the future.")
+        $stamp = $clamped
+    } else {
+        Write-Warning ("History already runs ahead of the real clock (HEAD is $prev) - " +
+            "this stamp stays in the future. Re-time the branch with tools\git-fix-commit-times.ps1.")
+    }
+}
+
+$formatted ='{0} {1}' -f $stamp.ToString('yyyy-MM-ddTHH:mm:ss'), $Offset
 Write-Host "timestamp: $formatted ($($stamp.DayOfWeek))"
 
 if ($DryRun) {
