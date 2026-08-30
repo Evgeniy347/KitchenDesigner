@@ -90,20 +90,20 @@ namespace KitchenDesigner.Core.UI
         private const int EdgeRefreshFrames = 15;
         private int _edgeRefreshCountdown;
 
-        // ── Подсветка изменённых полей ──────────────────────────────────
-        private readonly Dictionary<TMP_InputField, string> _cleanValues = new();
-        // Поля, чей последний ввод не был принят (красная рамка до следующей правки).
-        private readonly List<TMP_InputField> _errorFields = new();
-        private int _applyFrame = -1;  // защита от двойного Apply
-        private bool _opening;  // защита от OnSelectionChanged → Close() внутри Open()
-        private bool _currentIsTable;  // true когда текущий элемент — стол
-        private bool _currentIsDoor;   // true когда текущий элемент — дверь
-        private string _currentTypeName = "Деталь"; // для заголовка «Тип — Имя»
+        private bool _openInProgress;
+        private bool _currentIsTable;
+        private bool _currentIsDoor;
+        private string _currentTypeName = "Деталь";
 
         private readonly ContextMenuLayout _layout = new();
         private readonly ContextMenuTextureSection _textures;
+        private readonly ContextMenuFieldTracker _fields;
 
-        public ContextMenuUI() => _textures = new ContextMenuTextureSection(this);
+        public ContextMenuUI()
+        {
+            _textures = new ContextMenuTextureSection(this);
+            _fields = new ContextMenuFieldTracker(Apply);
+        }
 
         KitchenElement? IContextMenuHost.Target => _target;
 
@@ -620,7 +620,7 @@ namespace KitchenDesigner.Core.UI
 
         private void OnSelectionChanged(KitchenElement? element)
         {
-            if (_opening) return;
+            if (_openInProgress) return;
             if (_root == null || !_root.activeSelf) return;
             if (element == null)
             {
@@ -938,78 +938,78 @@ namespace KitchenDesigner.Core.UI
             if (_target is DoorElement d && !d.IsDoorClosed) return;
 
             var pos = _target.transform.position;
-            MaybeRefresh(_x, ToMM(pos.x));
-            MaybeRefresh(_y, ToMM(pos.y));
-            MaybeRefresh(_z, ToMM(pos.z));
+            _fields.RefreshUnfocused(_x, ToMM(pos.x));
+            _fields.RefreshUnfocused(_y, ToMM(pos.y));
+            _fields.RefreshUnfocused(_z, ToMM(pos.z));
 
             // Связь могла разъехаться прямо сейчас (деталь двигают мышью) —
             // подпись краснеет в реальном времени, как и у фасада ящика.
             if (AttachLinks.CanBeChild(_target)) UpdateAttachToCaptionColor();
 
             var eu = _target.transform.eulerAngles;
-            MaybeRefresh(_rx, eu.x.ToString("F1"));
-            MaybeRefresh(_ry, eu.y.ToString("F1"));
-            MaybeRefresh(_rz, eu.z.ToString("F1"));
+            _fields.RefreshUnfocused(_rx, eu.x.ToString("F1"));
+            _fields.RefreshUnfocused(_ry, eu.y.ToString("F1"));
+            _fields.RefreshUnfocused(_rz, eu.z.ToString("F1"));
 
             // Размеры, имя, радиус угла, зазоры — тоже обновляем в реальном времени
             var dims = _target.DimensionsMM;
-            MaybeRefresh(_w, dims.x.ToString());
-            MaybeRefresh(_h, dims.y.ToString());
-            MaybeRefresh(_d, dims.z.ToString());
+            _fields.RefreshUnfocused(_w, dims.x.ToString());
+            _fields.RefreshUnfocused(_h, dims.y.ToString());
+            _fields.RefreshUnfocused(_d, dims.z.ToString());
             var radial = _target as RadialShelfElement;
             if (radial != null)
-                MaybeRefresh(_radius, radial.CornerRadius.ToString());
+                _fields.RefreshUnfocused(_radius, radial.CornerRadius.ToString());
 
             if (_target is CooktopElement cooktopRefresh)
             {
-                MaybeRefresh(_cutoutW, cooktopRefresh.CutoutWidthMM.ToString());
-                MaybeRefresh(_cutoutD, cooktopRefresh.CutoutDepthMM.ToString());
+                _fields.RefreshUnfocused(_cutoutW, cooktopRefresh.CutoutWidthMM.ToString());
+                _fields.RefreshUnfocused(_cutoutD, cooktopRefresh.CutoutDepthMM.ToString());
             }
 
             var drawerRef = _target as DrawerElement;
             if (drawerRef != null && _drawerWidth != null)
-                MaybeRefresh(_drawerWidth, drawerRef.BoxWidth.ToString());
+                _fields.RefreshUnfocused(_drawerWidth, drawerRef.BoxWidth.ToString());
 
-            MaybeRefresh(_name, _target.PartName);
+            _fields.RefreshUnfocused(_name, _target.PartName);
             RefreshTitle();
 
             if (_target.SupportsGaps)
             {
                 var fields = GapFields();
                 for (int i = 0; i < GapSides.All.Length; i++)
-                    MaybeRefresh(fields[i], _target.GapOf(GapSides.All[i]).ToString());
+                    _fields.RefreshUnfocused(fields[i], _target.GapOf(GapSides.All[i]).ToString());
             }
             RefreshGapUI();
 
             var table = _target as TableElement;
             if (table != null && _legInset != null)
-                MaybeRefresh(_legInset, table.LegInsetMM.ToString());
+                _fields.RefreshUnfocused(_legInset, table.LegInsetMM.ToString());
 
 			var radiusTable = _target as RadiusTableElement;
 			if (radiusTable != null && _legInset != null)
-				MaybeRefresh(_legInset, radiusTable.LegInsetMM.ToString());
+				_fields.RefreshUnfocused(_legInset, radiusTable.LegInsetMM.ToString());
 
 			var pillar = _target as PillarElement;
 			if (pillar != null && _midHeight != null)
-				MaybeRefresh(_midHeight, pillar.MidHeightMM.ToString());
+				_fields.RefreshUnfocused(_midHeight, pillar.MidHeightMM.ToString());
 
 			var lightRt = _target as LightSourceElement;
 			if (lightRt != null)
 			{
-				if (_lightTemp != null) MaybeRefresh(_lightTemp, lightRt.TemperatureK.ToString());
-				if (_lightPower != null) MaybeRefresh(_lightPower, lightRt.PowerW.ToString());
-				if (_lightDiffusion != null) MaybeRefresh(_lightDiffusion, lightRt.DiffusionPct.ToString());
-				if (_lightBeam != null) MaybeRefresh(_lightBeam, lightRt.BeamAngleDeg.ToString());
-				if (_lightUp != null) MaybeRefresh(_lightUp, lightRt.UpLightPct.ToString());
+				if (_lightTemp != null) _fields.RefreshUnfocused(_lightTemp, lightRt.TemperatureK.ToString());
+				if (_lightPower != null) _fields.RefreshUnfocused(_lightPower, lightRt.PowerW.ToString());
+				if (_lightDiffusion != null) _fields.RefreshUnfocused(_lightDiffusion, lightRt.DiffusionPct.ToString());
+				if (_lightBeam != null) _fields.RefreshUnfocused(_lightBeam, lightRt.BeamAngleDeg.ToString());
+				if (_lightUp != null) _fields.RefreshUnfocused(_lightUp, lightRt.UpLightPct.ToString());
 				foreach (var b in LightExtraBindings())
-					if (b.field != null) MaybeRefresh(b.field, b.get(lightRt).ToString());
+					if (b.field != null) _fields.RefreshUnfocused(b.field, b.get(lightRt).ToString());
 				if (_lightShapeDropdown != null) _lightShapeDropdown.SetValueWithoutNotify((int)lightRt.Shape);
 				if (_lightShadowDropdown != null) _lightShadowDropdown.SetValueWithoutNotify((int)lightRt.Shadow);
 			}
 
 			var window = _target as WindowElement;
             if (window != null && _sillProtrusion != null)
-                MaybeRefresh(_sillProtrusion, window.SillProtrusionMM.ToString());
+                _fields.RefreshUnfocused(_sillProtrusion, window.SillProtrusionMM.ToString());
         }
 
         /// <summary>Позиция в мм: единый формат чисел UI (правило 1).</summary>
@@ -1021,15 +1021,6 @@ namespace KitchenDesigner.Core.UI
         {
             if (_titleLabel == null || _target == null) return;
             _titleLabel.text = $"{_currentTypeName} — {_target.PartName}";
-        }
-
-        /// <summary>Обновить поле, если оно не в фокусе (юзер не редактирует).
-        /// Также синхронизирует _cleanValues, чтобы подсветка не сбивалась.</summary>
-        private void MaybeRefresh(TMP_InputField? field, string newValue)
-        {
-            if (field == null || field.isFocused) return;
-            field.SetTextWithoutNotify(newValue);
-            _cleanValues[field] = newValue;
         }
 
         public void Open(KitchenElement element)
@@ -1047,7 +1038,7 @@ namespace KitchenDesigner.Core.UI
                 if (lower != null) element = lower;
             }
 
-            _opening = true;
+            _openInProgress = true;
             try
             {
                 // Предпросмотр принадлежал прошлому элементу — снимаем ДО смены
@@ -1265,7 +1256,7 @@ namespace KitchenDesigner.Core.UI
                 _transparentToggle!.SetIsOnWithoutNotify(element.Transparent);
                 _lockToggle!.SetIsOnWithoutNotify(!element.Movable);
 
-                ClearAllHighlights();
+                _fields.ClearHighlights();
                 TrackAllFields();
 
                 _root!.transform.SetAsLastSibling();
@@ -1273,7 +1264,7 @@ namespace KitchenDesigner.Core.UI
             }
             finally
             {
-                _opening = false;
+                _openInProgress = false;
             }
         }
 
@@ -1332,7 +1323,7 @@ namespace KitchenDesigner.Core.UI
 
         private void ApplyFields(KitchenElement target)
         {
-            _errorFields.Clear(); // ошибки прошлого применения сняты новым вводом
+            _fields.ForgetRejections();
             // Правки размеров/позиции применяем к закрытой (логической) позе.
             if (target is FacadeElement fac) { fac.ForceClose(); UpdateDoorButton(fac); }
             if (target is DrawerElement dr) { dr.ForceClose(); UpdateDrawerAnimButton(dr); }
@@ -1360,23 +1351,23 @@ namespace KitchenDesigner.Core.UI
 			if (radial != null)
             {
                 target.DimensionsMM = new Vector3Int(
-                    ParseIntField(_w, oldDims.x),
-                    ParseIntField(_h, oldDims.y),
-                    ParseIntField(_d, oldDims.z));
-                radial.CornerRadius = ParseIntField(_radius, radial.CornerRadius);
+                    _fields.ParseInt(_w, oldDims.x),
+                    _fields.ParseInt(_h, oldDims.y),
+                    _fields.ParseInt(_d, oldDims.z));
+                radial.CornerRadius = _fields.ParseInt(_radius, radial.CornerRadius);
             }
             else if (drawer != null)
             {
                 if (_drawerWidth != null)
                 {
-                    int boxW = ParseIntField(_drawerWidth, drawer.BoxWidth);
+                    int boxW = _fields.ParseInt(_drawerWidth, drawer.BoxWidth);
                     int inset = drawer.System == DrawerSystem.Movento ? DrawerConstants.MOVENTO_WIDTH_INSET : 0;
                     drawer.InternalWidth = Mathf.Max(100, boxW + inset);
                 }
             }
             else if (pillar != null)
             {
-                int newTotalH = ParseIntField(_h, oldDims.y);
+                int newTotalH = _fields.ParseInt(_h, oldDims.y);
                 if (newTotalH != oldDims.y)
                 {
                     int newMidH = Mathf.Clamp(
@@ -1387,7 +1378,7 @@ namespace KitchenDesigner.Core.UI
                 }
                 else if (_midHeight != null)
                 {
-                    pillar.MidHeightMM = ParseIntField(_midHeight, pillar.MidHeightMM);
+                    pillar.MidHeightMM = _fields.ParseInt(_midHeight, pillar.MidHeightMM);
                     _midHeight.text = pillar.MidHeightMM.ToString();
                 }
                 _h!.text = pillar.TotalHeightMM.ToString();
@@ -1396,9 +1387,9 @@ namespace KitchenDesigner.Core.UI
             {
                 // Глубину окна диктует стена — поле Г игнорируется.
                 target.DimensionsMM = new Vector3Int(
-                    ParseIntField(_w, oldDims.x),
-                    ParseIntField(_h, oldDims.y),
-                    target is WindowElement || target is DoorElement ? oldDims.z : ParseIntField(_d, oldDims.z));
+                    _fields.ParseInt(_w, oldDims.x),
+                    _fields.ParseInt(_h, oldDims.y),
+                    target is WindowElement || target is DoorElement ? oldDims.z : _fields.ParseInt(_d, oldDims.z));
             }
 
             // Вырез варочной — отдельной командой: он не часть габарита детали,
@@ -1409,8 +1400,8 @@ namespace KitchenDesigner.Core.UI
             {
                 var cutBefore = SetCooktopCutoutCommand.Snapshot(cooktopApply);
                 var cutAfter = new Vector2Int(
-                    ParseIntField(_cutoutW, cutBefore.x),
-                    ParseIntField(_cutoutD, cutBefore.y));
+                    _fields.ParseInt(_cutoutW, cutBefore.x),
+                    _fields.ParseInt(_cutoutD, cutBefore.y));
                 if (cutAfter != cutBefore)
                     CommandStack.Execute(new SetCooktopCutoutCommand(cooktopApply, cutBefore, cutAfter));
                 // Показываем применённый (склампленный) вырез, а не введённый.
@@ -1419,47 +1410,47 @@ namespace KitchenDesigner.Core.UI
             }
 
             if (table != null && _legInset != null)
-                table.LegInsetMM = ParseIntField(_legInset, table.LegInsetMM);
+                table.LegInsetMM = _fields.ParseInt(_legInset, table.LegInsetMM);
 
 			if (radiusTable != null && _legInset != null)
-				radiusTable.LegInsetMM = ParseIntField(_legInset, radiusTable.LegInsetMM);
+				radiusTable.LegInsetMM = _fields.ParseInt(_legInset, radiusTable.LegInsetMM);
 
 			var windowEl = target as WindowElement;
             if (windowEl != null && _sillProtrusion != null)
-                windowEl.SillProtrusionMM = ParseIntField(_sillProtrusion, windowEl.SillProtrusionMM);
+                windowEl.SillProtrusionMM = _fields.ParseInt(_sillProtrusion, windowEl.SillProtrusionMM);
 
 			var lightApp = target as LightSourceElement;
 			if (lightApp != null)
 			{
 				if (_lightTemp != null)
 				{
-					lightApp.TemperatureK = ParseIntField(_lightTemp, lightApp.TemperatureK);
+					lightApp.TemperatureK = _fields.ParseInt(_lightTemp, lightApp.TemperatureK);
 					_lightTemp.text = lightApp.TemperatureK.ToString();
 				}
 				if (_lightPower != null)
 				{
-					lightApp.PowerW = ParseIntField(_lightPower, lightApp.PowerW);
+					lightApp.PowerW = _fields.ParseInt(_lightPower, lightApp.PowerW);
 					_lightPower.text = lightApp.PowerW.ToString();
 				}
 				if (_lightDiffusion != null)
 				{
-					lightApp.DiffusionPct = ParseIntField(_lightDiffusion, lightApp.DiffusionPct);
+					lightApp.DiffusionPct = _fields.ParseInt(_lightDiffusion, lightApp.DiffusionPct);
 					_lightDiffusion.text = lightApp.DiffusionPct.ToString();
 				}
 				if (_lightBeam != null)
 				{
-					lightApp.BeamAngleDeg = ParseIntField(_lightBeam, lightApp.BeamAngleDeg);
+					lightApp.BeamAngleDeg = _fields.ParseInt(_lightBeam, lightApp.BeamAngleDeg);
 					_lightBeam.text = lightApp.BeamAngleDeg.ToString();
 				}
 				if (_lightUp != null)
 				{
-					lightApp.UpLightPct = ParseIntField(_lightUp, lightApp.UpLightPct);
+					lightApp.UpLightPct = _fields.ParseInt(_lightUp, lightApp.UpLightPct);
 					_lightUp.text = lightApp.UpLightPct.ToString();
 				}
 				foreach (var b in LightExtraBindings())
 				{
 					if (b.field == null) continue;
-					b.set(lightApp, ParseIntField(b.field, b.get(lightApp)));
+					b.set(lightApp, _fields.ParseInt(b.field, b.get(lightApp)));
 					b.field.text = b.get(lightApp).ToString();  // показать применённый clamp
 				}
 			}
@@ -1492,7 +1483,7 @@ namespace KitchenDesigner.Core.UI
                 for (int i = 0; i < GapSides.All.Length; i++)
                 {
                     var side = GapSides.All[i];
-                    target.SetGap(side, ParseIntField(gapFields[i], target.GapOf(side)));
+                    target.SetGap(side, _fields.ParseInt(gapFields[i], target.GapOf(side)));
                 }
             }
 
@@ -1512,9 +1503,9 @@ namespace KitchenDesigner.Core.UI
 
             // Поля позиции — целые мм; внутренняя модель остаётся в метрах.
             target.transform.position = new Vector3(
-                ParseMM(_x, oldPos.x),
-                ParseMM(_y, oldPos.y),
-                ParseMM(_z, oldPos.z));
+                _fields.ParseMillimetresAsMetres(_x, oldPos.x),
+                _fields.ParseMillimetresAsMetres(_y, oldPos.y),
+                _fields.ParseMillimetresAsMetres(_z, oldPos.z));
 
             // У окна поля поворота скрыты (ориентацию диктует стена) — не трогаем.
             if (!(target is WindowElement) && !(target is DoorElement))
@@ -1524,9 +1515,9 @@ namespace KitchenDesigner.Core.UI
                 bool yawOnly = FixedSize.IsYawOnly(target);
                 var euler = oldRot.eulerAngles;
                 target.transform.rotation = Quaternion.Euler(
-                    yawOnly ? euler.x : ParseAngle(_rx, euler.x),
-                    ParseAngle(_ry, euler.y),
-                    yawOnly ? euler.z : ParseAngle(_rz, euler.z));
+                    yawOnly ? euler.x : _fields.ParseAngle(_rx, euler.x),
+                    _fields.ParseAngle(_ry, euler.y),
+                    yawOnly ? euler.z : _fields.ParseAngle(_rz, euler.z));
             }
 
             // Окно живёт только на стене — сразу возвращаем его на стену,
@@ -1590,13 +1581,10 @@ namespace KitchenDesigner.Core.UI
             RefreshEdgeUI();
             RefreshHighlights();
 
-            ClearAllHighlights();
+            _fields.ClearHighlights();
             TrackAllFields();
 
-            // Красные рамки непринятых значений — после сброса жёлтых подсветок,
-            // чтобы пользователь видел, какое именно поле не применилось.
-            foreach (var f in _errorFields)
-                UIFactory.SetErrorHighlight(f);
+            _fields.ShowRejections();
         }
 
         private bool WouldCauseViolation()
@@ -1744,7 +1732,7 @@ namespace KitchenDesigner.Core.UI
             if (_gapCountLabel == null) return;
             int filled = 0;
             foreach (var f in GapFields())
-                if (f != null && ParseIntField(f, 0) != 0) filled++;
+                if (f != null && _fields.ParseInt(f, 0) != 0) filled++;
             _gapCountLabel.text =
                 $"Зазоры ({filled})  {(_gapsExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
         }
@@ -2016,7 +2004,7 @@ namespace KitchenDesigner.Core.UI
             if (_target == null || !_target.SupportsEdges) return;
 
             _edgeToggle?.SetIsOnWithoutNotify(_target.EdgeBandingEnabled);
-            MaybeRefresh(_edgeThickness, EdgeBanding.FormatThickness(_target.EdgeThicknessMM));
+            _fields.RefreshUnfocused(_edgeThickness, EdgeBanding.FormatThickness(_target.EdgeThicknessMM));
 
             if (!_target.EdgeBandingEnabled) return;
 
@@ -2041,23 +2029,9 @@ namespace KitchenDesigner.Core.UI
                 : UIStyle.EdgeAbsent;
         }
 
-        /// <summary>Толщина кромки из поля: дробное число в мм. Значение вне
-        /// допустимого диапазона не молча клампится, а помечается ошибкой.</summary>
-        private float ParseEdgeThickness(TMP_InputField? f, float fallback)
-        {
-            if (f == null) return fallback;
-            // Запятая как разделитель: пользователь набирает «0,5» на русской
-            // раскладке, а формат вывода — всегда с точкой.
-            var text = f.text.Replace(',', '.');
-            if (float.TryParse(text, System.Globalization.NumberStyles.Float,
-                    System.Globalization.CultureInfo.InvariantCulture, out float v)
-                && v >= AppConstants.EDGE_THICKNESS_MIN_MM
-                && v <= AppConstants.EDGE_THICKNESS_MAX_MM)
-                return v;
-
-            MarkError(f);
-            return fallback;
-        }
+        private float ParseEdgeThickness(TMP_InputField? f, float fallback) =>
+            _fields.ParseDecimalInRange(f, fallback,
+                AppConstants.EDGE_THICKNESS_MIN_MM, AppConstants.EDGE_THICKNESS_MAX_MM);
 
         private void RelayoutForTarget()
         {
@@ -2741,156 +2715,48 @@ namespace KitchenDesigner.Core.UI
                 ElementHighlighter.Instance.RefreshHighlights();
         }
 
-        // ── Парсинг полей ───────────────────────────────────────────────
-        // Невалидный ввод не откатывается молча: поле помечается красной
-        // рамкой (правило 2 UI-GUIDELINES), значение остаётся прежним.
-
-        private int ParseIntField(TMP_InputField? f, int fallback)
-        {
-            if (f == null) return fallback;
-            var expr = f.text;
-            if (expr.Contains('+') || expr.Contains('-'))
-            {
-                var result = ExpressionParser.EvaluateInt(expr);
-                if (result.HasValue)
-                {
-                    f.text = result.Value.ToString();
-                    return result.Value;
-                }
-            }
-            if (int.TryParse(expr, out int v)) return v;
-            MarkError(f);
-            return fallback;
-        }
-
-        private float ParseAngle(TMP_InputField? f, float fallback)
-        {
-            if (f == null) return fallback;
-            var expr = f.text;
-            if (expr.Contains('+') || expr.Contains('-'))
-            {
-                var result = ExpressionParser.EvaluateFloat(expr);
-                if (result.HasValue)
-                {
-                    f.text = result.Value.ToString("F1");
-                    return result.Value;
-                }
-            }
-            if (float.TryParse(expr, out float v)) return v;
-            MarkError(f);
-            return fallback;
-        }
-
-        /// <summary>Поле в мм → метры внутренней модели.</summary>
-        private float ParseMM(TMP_InputField? f, float fallbackMeters)
-        {
-            if (f == null) return fallbackMeters;
-            var expr = f.text;
-            if (expr.Contains('+') || expr.Contains('-'))
-            {
-                var result = ExpressionParser.EvaluateInt(expr);
-                if (result.HasValue)
-                {
-                    f.text = result.Value.ToString();
-                    return result.Value * AppConstants.MM_TO_UNITS;
-                }
-            }
-            if (int.TryParse(expr, out int mm)) return mm * AppConstants.MM_TO_UNITS;
-            MarkError(f);
-            return fallbackMeters;
-        }
-
-        private void MarkError(TMP_InputField f)
-        {
-            if (!_errorFields.Contains(f)) _errorFields.Add(f);
-        }
-
-        // ── Подсветка изменённых полей ──────────────────────────────────
-
-        private void TrackField(TMP_InputField? field, string cleanValue)
-        {
-            if (field == null) return;
-            _cleanValues[field] = cleanValue;
-            field.onValueChanged.RemoveAllListeners();
-            field.onValueChanged.AddListener(_ => UpdateFieldHighlight(field));
-            field.onEndEdit.RemoveAllListeners();
-            field.onEndEdit.AddListener(_ => ApplyFromField());
-        }
-
-        /// <summary>Apply по Enter/focus-loss. Защита от двойного срабатывания
-        /// (кнопка Apply тоже зовёт Apply, а перед этим поле теряет фокус).</summary>
-        private void ApplyFromField()
-        {
-            if (Time.frameCount == _applyFrame) return;
-            _applyFrame = Time.frameCount;
-            Apply();
-        }
-
-        private void UpdateFieldHighlight(TMP_InputField field)
-        {
-            if (field == null) return;
-            var clean = _cleanValues.TryGetValue(field, out var v) ? v : field.text;
-            UIFactory.SetHighlight(field, field.text != clean);
-        }
-
-        private void UpdateAllHighlights()
-        {
-            foreach (var kv in _cleanValues)
-                UpdateFieldHighlight(kv.Key);
-        }
-
-        private void ClearAllHighlights()
-        {
-            foreach (var kv in _cleanValues)
-            {
-                UIFactory.SetHighlight(kv.Key, false);
-                kv.Key.onValueChanged.RemoveAllListeners();
-            }
-            _cleanValues.Clear();
-        }
-
         private void TrackAllFields()
         {
             if (_target == null) return;
-            TrackField(_name, _target.PartName);
+            _fields.Track(_name, _target.PartName);
             var dims = _target.DimensionsMM;
-            TrackField(_w, dims.x.ToString());
-            TrackField(_h, dims.y.ToString());
-            TrackField(_d, dims.z.ToString());
+            _fields.Track(_w, dims.x.ToString());
+            _fields.Track(_h, dims.y.ToString());
+            _fields.Track(_d, dims.z.ToString());
             var radial = _target as RadialShelfElement;
-            TrackField(_radius, radial != null
+            _fields.Track(_radius, radial != null
                 ? radial.CornerRadius.ToString()
                 : AppConstants.RADIAL_CORNER_RADIUS_DEFAULT.ToString());
             var gapTrackFields = GapFields();
             for (int i = 0; i < GapSides.All.Length; i++)
-                TrackField(gapTrackFields[i], _target.SupportsGaps
+                _fields.Track(gapTrackFields[i], _target.SupportsGaps
                     ? _target.GapOf(GapSides.All[i]).ToString() : "0");
             var drawerEl2 = _target as DrawerElement;
-            TrackField(_drawerWidth, drawerEl2 != null ? drawerEl2.BoxWidth.ToString() : "400");
+            _fields.Track(_drawerWidth, drawerEl2 != null ? drawerEl2.BoxWidth.ToString() : "400");
 			var windowEl2 = _target as WindowElement;
-			TrackField(_sillProtrusion, windowEl2 != null ? windowEl2.SillProtrusionMM.ToString() : "50");
+			_fields.Track(_sillProtrusion, windowEl2 != null ? windowEl2.SillProtrusionMM.ToString() : "50");
 			var tableEl2 = _target as TableElement;
 			var radiusTableEl2 = _target as RadiusTableElement;
-			TrackField(_legInset, tableEl2 != null ? tableEl2.LegInsetMM.ToString() : (radiusTableEl2 != null ? radiusTableEl2.LegInsetMM.ToString() : "100"));
+			_fields.Track(_legInset, tableEl2 != null ? tableEl2.LegInsetMM.ToString() : (radiusTableEl2 != null ? radiusTableEl2.LegInsetMM.ToString() : "100"));
 			var pillarEl = _target as PillarElement;
-			TrackField(_midHeight, pillarEl != null ? pillarEl.MidHeightMM.ToString() : PillarElement.MidHeightMM_Default.ToString());
+			_fields.Track(_midHeight, pillarEl != null ? pillarEl.MidHeightMM.ToString() : PillarElement.MidHeightMM_Default.ToString());
 			var lightTrack = _target as LightSourceElement;
-			TrackField(_lightTemp, lightTrack != null ? lightTrack.TemperatureK.ToString() : LightSourceElement.DEFAULT_TEMPERATURE_K.ToString());
-			TrackField(_lightPower, lightTrack != null ? lightTrack.PowerW.ToString() : LightSourceElement.DEFAULT_POWER_W.ToString());
-			TrackField(_lightDiffusion, lightTrack != null ? lightTrack.DiffusionPct.ToString() : LightSourceElement.DEFAULT_DIFFUSION_PCT.ToString());
-			TrackField(_lightBeam, lightTrack != null ? lightTrack.BeamAngleDeg.ToString() : LightSourceElement.DEFAULT_BEAM_DEG.ToString());
-			TrackField(_lightUp, lightTrack != null ? lightTrack.UpLightPct.ToString() : LightSourceElement.DEFAULT_UP_PCT.ToString());
+			_fields.Track(_lightTemp, lightTrack != null ? lightTrack.TemperatureK.ToString() : LightSourceElement.DEFAULT_TEMPERATURE_K.ToString());
+			_fields.Track(_lightPower, lightTrack != null ? lightTrack.PowerW.ToString() : LightSourceElement.DEFAULT_POWER_W.ToString());
+			_fields.Track(_lightDiffusion, lightTrack != null ? lightTrack.DiffusionPct.ToString() : LightSourceElement.DEFAULT_DIFFUSION_PCT.ToString());
+			_fields.Track(_lightBeam, lightTrack != null ? lightTrack.BeamAngleDeg.ToString() : LightSourceElement.DEFAULT_BEAM_DEG.ToString());
+			_fields.Track(_lightUp, lightTrack != null ? lightTrack.UpLightPct.ToString() : LightSourceElement.DEFAULT_UP_PCT.ToString());
 			foreach (var b in LightExtraBindings())
-				TrackField(b.field, lightTrack != null ? b.get(lightTrack).ToString() : b.def.ToString());
-			TrackField(_edgeThickness, EdgeBanding.FormatThickness(_target.EdgeThicknessMM));
+				_fields.Track(b.field, lightTrack != null ? b.get(lightTrack).ToString() : b.def.ToString());
+			_fields.Track(_edgeThickness, EdgeBanding.FormatThickness(_target.EdgeThicknessMM));
             var pos = _target.transform.position;
-            TrackField(_x, ToMM(pos.x));
-            TrackField(_y, ToMM(pos.y));
-            TrackField(_z, ToMM(pos.z));
+            _fields.Track(_x, ToMM(pos.x));
+            _fields.Track(_y, ToMM(pos.y));
+            _fields.Track(_z, ToMM(pos.z));
             var e = _target.transform.eulerAngles;
-            TrackField(_rx, e.x.ToString("F1"));
-            TrackField(_ry, e.y.ToString("F1"));
-            TrackField(_rz, e.z.ToString("F1"));
+            _fields.Track(_rx, e.x.ToString("F1"));
+            _fields.Track(_ry, e.y.ToString("F1"));
+            _fields.Track(_rz, e.z.ToString("F1"));
         }
 
         private class DropdownOpenHook : MonoBehaviour
