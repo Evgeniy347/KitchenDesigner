@@ -3,34 +3,10 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Плоский прямоугольник с прямоугольными дырами — геометрия одной
-    /// накладки текстуры. Дыры это проёмы окон и дверей: накладка на стене с
-    /// окном обязана иметь в этом месте дырку, иначе она затягивает проём
-    /// плёнкой.
-    ///
-    /// Работает в системе координат ГРАНИ: миллиметры от левого нижнего угла,
-    /// ось X = <c>Face.rightAxis</c>, ось Y = <c>Face.upAxis</c>. Меш выдаётся в
-    /// юнитах и центрирован на середине области, поэтому объект-носитель ставится
-    /// в центр области с поворотом <c>LookRotation(face.normal, face.upAxis)</c>
-    /// и единичным масштабом.
-    ///
-    /// UV привязаны к НАЧАЛУ ГРАНИ, а не к области: <c>uv = мм / плитка_мм</c>.
-    /// Из-за этого перемещение и растяжение области двигают «окно» по неподвижному
-    /// рисунку — ровно то, что значит «изменение области отображения текстуры,
-    /// а не ресайз картинки». Картинка при этом повторяется и обрезается, как
-    /// обычный декор (см. MaterialManager.ComputeTileST).</summary>
     public static class PlaneWithHolesMesh
     {
-        /// <summary>Ячейка тоньше этого просто не строится. Полмиллиметра — общий
-        /// геометрический эпсилон проекта: меньше любого осмысленного размера и
-        /// заведомо больше ошибки float на масштабе комнаты.</summary>
         public const float MinCellMM = 0.5f;
 
-        /// <summary>Прямоугольник области в мм, дыры в тех же координатах грани.
-        /// tileMM — физический размер плитки декора (0 и меньше → 1, чтобы UV не
-        /// улетели в бесконечность на чисто цветовом декоре).
-        /// Возвращает null, если рисовать нечего (пустая область или она целиком
-        /// накрыта проёмом).</summary>
         public static Mesh? Build(RectInt rectMM, IReadOnlyList<RectInt>? holesMM, Vector2Int tileMM)
         {
             if (rectMM.width < MinCellMM || rectMM.height < MinCellMM) return null;
@@ -52,8 +28,6 @@ namespace KitchenDesigner.Core
 
             xSplits.Sort();
             ySplits.Sort();
-            // Тот же приём, что у стены: почти совпадающие границы проёмов
-            // сливаются ДО нарезки, иначе между ними остаётся ячейка-волосок.
             WallMeshBuilder.CollapseNearDuplicates(xSplits, MinCellMM);
             WallMeshBuilder.CollapseNearDuplicates(ySplits, MinCellMM);
 
@@ -100,7 +74,6 @@ namespace KitchenDesigner.Core
             return mesh;
         }
 
-        /// <summary>Вершина в юнитах от центра области + UV от начала грани.</summary>
         private static void AddVertex(List<Vector3> verts, List<Vector2> uvs,
             float xMM, float yMM, float cxMM, float cyMM, float tileW, float tileH)
         {

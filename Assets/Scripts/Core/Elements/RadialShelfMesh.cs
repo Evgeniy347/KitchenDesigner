@@ -3,22 +3,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Построитель меша для радиусной полки — прямоугольная доска
-    /// в плоскости XZ с одним скруглённым углом. Меш центрирован относительно
-    /// pivot: x ∈ [−W/2, +W/2], z ∈ [−D/2, +D/2], y ∈ [−t/2, +t/2] — так AABB
-    /// (позиция ± габарит/2) точно охватывает деталь, и контур/прилипание
-    /// работают по реальному габариту. Скруглён угол (x=+W/2, z=+D/2).
-    ///
-    /// UV кладутся в ЕДИНОМ масштабе: u = смещение вдоль куска / ширину,
-    /// v = смещение поперёк / толщину. Полка держит декор на общем для всей
-    /// детали _BaseMap_ST = (Ш/плитка, толщина/плитка) — DimensionsMM полки это
-    /// (Ш, толщина, Г), см. MaterialManager.ComputeTileST. Нормировать каждый
-    /// кусок в 0..1 нельзя: на пласти рисунок растянулся бы с толщины на всю
-    /// глубину, а торцы разной длины получили бы разный масштаб.</summary>
     public static class RadialShelfMesh
     {
-        /// <summary>Число сегментов дуги. Публично — по нему тест считает,
-        /// какая часть дуги приходится на выбранные вершины.</summary>
         public const int Segments = 16;
         private const float Eps = 1e-5f;
 
@@ -33,15 +19,12 @@ namespace KitchenDesigner.Core
             var triangles = new List<int>();
 
             float half = thickness * 0.5f;
-            // Знаменатели UV: ими MaterialManager масштабирует декор.
             var uvScale = new Vector2(Mathf.Max(Eps, width), Mathf.Max(Eps, thickness));
             AddCap(vertices, normals, uvs, triangles, width, depth, cornerRadius, -half, Vector3.down, uvScale);
             AddCap(vertices, normals, uvs, triangles, width, depth, cornerRadius, half, Vector3.up, uvScale);
             AddCurvedSide(vertices, normals, uvs, triangles, width, depth, cornerRadius, half, uvScale);
             AddFlatSides(vertices, normals, uvs, triangles, width, depth, cornerRadius, half, uvScale);
 
-            // Геометрия строится в угловых координатах (0..W, 0..D) — сдвигаем
-            // к центру, чтобы pivot совпал с центром габарита.
             var toCenter = new Vector3(width * 0.5f, 0f, depth * 0.5f);
             for (int i = 0; i < vertices.Count; i++)
                 vertices[i] -= toCenter;
@@ -54,9 +37,6 @@ namespace KitchenDesigner.Core
             return mesh;
         }
 
-        /// <summary>Крышка (top/bottom): прямоугольник W×D минус квадрат угла,
-        /// плюс веер четверти круга. Разбиение: прямоугольник A (x 0..W−R по всей
-        /// глубине), прямоугольник B (x W−R..W, z 0..D−R), веер от центра дуги.</summary>
         private static void AddCap(List<Vector3> vertices, List<Vector3> normals, List<Vector2> uvs,
             List<int> triangles, float width, float depth, float r, float y, Vector3 normal,
             Vector2 uvScale)
@@ -70,8 +50,6 @@ namespace KitchenDesigner.Core
             if (cz > Eps)
                 AddCapQuad(vertices, normals, uvs, triangles, cx, 0, width, cz, y, normal, uvScale, up);
 
-            // Веер четверти круга: центр дуги + точки дуги от (width, depth−R)
-            // до (width−R, depth).
             int centerIdx = vertices.Count;
             vertices.Add(new Vector3(cx, y, cz));
             normals.Add(normal);
@@ -122,7 +100,6 @@ namespace KitchenDesigner.Core
                 uvs.Add(new Vector2(c.x / uvScale.x, c.z / uvScale.y));
             }
 
-            // p00=start, p10=start+1, p01=start+2, p11=start+3.
             if (up)
             {
                 triangles.Add(start); triangles.Add(start + 2); triangles.Add(start + 3);
@@ -135,7 +112,6 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Скруглённая боковая стенка вдоль дуги угла.</summary>
         private static void AddCurvedSide(List<Vector3> vertices, List<Vector3> normals, List<Vector2> uvs,
             List<int> triangles, float width, float depth, float r, float half, Vector2 uvScale)
         {
@@ -148,8 +124,6 @@ namespace KitchenDesigner.Core
                 float angle = i * Mathf.PI * 0.5f / Segments;
                 var n = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
                 var p = new Vector3(cx + n.x * r, 0, cz + n.z * r);
-                // Развёртка дуги: по горизонтали — пройденная длина дуги, а не
-                // доля сегментов, иначе рисунок на скруглении сжат/растянут.
                 float u = angle * r / uvScale.x;
 
                 vertices.Add(new Vector3(p.x, -half, p.z));
@@ -163,9 +137,9 @@ namespace KitchenDesigner.Core
 
             for (int i = 0; i < Segments; i++)
             {
-                int a = start + i * 2;       // низ i
-                int b = start + i * 2 + 1;   // верх i
-                int c = start + (i + 1) * 2; // низ i+1
+                int a = start + i * 2;
+                int b = start + i * 2 + 1;
+                int c = start + (i + 1) * 2;
                 int d = start + (i + 1) * 2 + 1;
 
                 triangles.Add(a);
@@ -178,61 +152,53 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Четыре плоские боковые стенки (укороченные у скруглённого угла).</summary>
         private static void AddFlatSides(List<Vector3> vertices, List<Vector3> normals, List<Vector2> uvs,
             List<int> triangles, float width, float depth, float r, float half, Vector2 uvScale)
         {
             float cx = width - r;
             float cz = depth - r;
 
-            // z = 0: полная ширина, нормаль −Z.
             AddWall(vertices, normals, uvs, triangles,
                 new Vector3(0, 0, 0), new Vector3(width, 0, 0), half, -Vector3.forward, uvScale);
 
-            // x = width: до начала дуги, нормаль +X.
             if (cz > Eps)
                 AddWall(vertices, normals, uvs, triangles,
                     new Vector3(width, 0, 0), new Vector3(width, 0, cz), half, Vector3.right, uvScale);
 
-            // z = depth: от конца дуги до x=0, нормаль +Z.
             if (cx > Eps)
                 AddWall(vertices, normals, uvs, triangles,
                     new Vector3(cx, 0, depth), new Vector3(0, 0, depth), half, Vector3.forward, uvScale);
 
-            // x = 0: полная глубина, нормаль −X.
             AddWall(vertices, normals, uvs, triangles,
                 new Vector3(0, 0, depth), new Vector3(0, 0, 0), half, -Vector3.right, uvScale);
         }
 
-        /// <summary>Вертикальная стенка от pA до pB (y ±half). Порядок pA→pB
-        /// выбирается так, чтобы up×(pB−pA) совпадал с наружной нормалью.</summary>
         private static void AddWall(List<Vector3> vertices, List<Vector3> normals, List<Vector2> uvs,
             List<int> triangles, Vector3 pA, Vector3 pB, float half, Vector3 normal, Vector2 uvScale)
         {
             int start = vertices.Count;
-            // Торцы у полки разной длины, а ST на всю деталь один — длину несёт UV.
             float u = (pB - pA).magnitude / uvScale.x;
 
-            vertices.Add(new Vector3(pA.x, -half, pA.z)); // bl
+            vertices.Add(new Vector3(pA.x, -half, pA.z));
             normals.Add(normal);
             uvs.Add(Vector2.zero);
-            vertices.Add(new Vector3(pA.x, half, pA.z));  // tl
+            vertices.Add(new Vector3(pA.x, half, pA.z));
             normals.Add(normal);
             uvs.Add(Vector2.up);
-            vertices.Add(new Vector3(pB.x, -half, pB.z)); // br
+            vertices.Add(new Vector3(pB.x, -half, pB.z));
             normals.Add(normal);
             uvs.Add(new Vector2(u, 0f));
-            vertices.Add(new Vector3(pB.x, half, pB.z));  // tr
+            vertices.Add(new Vector3(pB.x, half, pB.z));
             normals.Add(normal);
             uvs.Add(new Vector2(u, 1f));
 
-            triangles.Add(start);     // bl
-            triangles.Add(start + 1); // tl
-            triangles.Add(start + 2); // br
+            triangles.Add(start);
+            triangles.Add(start + 1);
+            triangles.Add(start + 2);
 
-            triangles.Add(start + 2); // br
-            triangles.Add(start + 1); // tl
-            triangles.Add(start + 3); // tr
+            triangles.Add(start + 2);
+            triangles.Add(start + 1);
+            triangles.Add(start + 3);
         }
     }
 }
