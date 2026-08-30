@@ -76,20 +76,6 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _gapCountLabel;
         private bool _gapsExpanded;
 
-        // ── Кромки ─────────────────────────────────────────────────────
-        // Схема детали со сторонами L1/L2/W1/W2: зелёная сторона — кромка есть,
-        // светло-серая — торец упирается в соседа. Размер схемы фиксирован и от
-        // габарита детали не зависит — это условная схема, а не чертёж.
-        private Toggle? _edgeToggle;
-        private TMP_InputField? _edgeThickness;
-        private RectTransform? _edgeDiagram;
-        private Image? _edgeStripL1, _edgeStripL2, _edgeStripW1, _edgeStripW2;
-        private TMP_Text? _edgeLengthLabel, _edgeWidthLabel;
-        // Кромки пересчитываются по всей сцене, поэтому в Update это делается
-        // не каждый кадр: соседи двигаются заметно медленнее 60 Гц.
-        private const int EdgeRefreshFrames = 15;
-        private int _edgeRefreshCountdown;
-
         private bool _openInProgress;
         private bool _currentIsTable;
         private bool _currentIsDoor;
@@ -98,17 +84,23 @@ namespace KitchenDesigner.Core.UI
         private readonly ContextMenuLayout _layout = new();
         private readonly ContextMenuTextureSection _textures;
         private readonly ContextMenuFieldTracker _fields;
+        private readonly ContextMenuEdgeSection _edges;
         private ContextMenuRowFactory _rows = null!;
 
         public ContextMenuUI()
         {
             _textures = new ContextMenuTextureSection(this);
             _fields = new ContextMenuFieldTracker(Apply);
+            _edges = new ContextMenuEdgeSection(this);
         }
 
         KitchenElement? IContextMenuHost.Target => _target;
 
         ContextMenuLayout IContextMenuHost.Layout => _layout;
+
+        ContextMenuRowFactory IContextMenuHost.Rows => _rows;
+
+        ContextMenuFieldTracker IContextMenuHost.Fields => _fields;
 
         void IContextMenuHost.Relayout() => RelayoutForTarget();
 
@@ -137,7 +129,7 @@ namespace KitchenDesigner.Core.UI
             BuildTitleAndType(panel.transform);
             BuildDimensions();
             BuildGrooveSection(panel.transform);
-            BuildEdgeSection(panel.transform);
+            _edges.Build(panel.transform);
             BuildGapSection(panel.transform);
             BuildFacadeSection();
             BuildDrawerSection();
@@ -232,20 +224,6 @@ namespace KitchenDesigner.Core.UI
                 addBtn.GetComponent<RectTransform>());
         }
 
-        private void BuildEdgeSection(Transform parent)
-        {
-            var shown = RowVisibility.For(ElementFacet.Part, EdgesShown);
-
-            _edgeToggle = _rows.Toggle("CtxEdges", "Кромки", true, OnEdgeBandingToggled,
-                RowVisibility.For(ElementFacet.Part, EdgesEligible), RowGap);
-
-            _edgeDiagram = BuildEdgeDiagram(parent, out float edgeDiagramH);
-            _layout.AddFor(ElementFacet.Part, EdgesShown, edgeDiagramH, RowGap, _edgeDiagram);
-
-            _edgeThickness = _rows.NumberField("Толщина кромки", shown, "мм", "EdgeThickness");
-            _rows.Hint("CtxEdgeHint", "Клик по стороне — кромка вручную", 20f, ActionGap, shown,
-                TextAnchor.MiddleCenter);
-        }
 
         private void BuildGapSection(Transform parent)
         {
@@ -697,11 +675,7 @@ namespace KitchenDesigner.Core.UI
                     RelayoutForTarget();
                 }
 
-                // Кромки зависят от соседей, а не только от самой детали:
-                // отодвинули полку от боковины — торец открылся. Опрашиваем
-                // сцену редко (см. EdgeRefreshFrames), это не горячий путь.
-                if (_target.SupportsEdges && --_edgeRefreshCountdown <= 0)
-                    RefreshEdgeUI();
+                _edges.Tick();
 
                 if (!_textures.PreviewActive && _textures.ChangedOutsideTheMenu())
                 {
@@ -718,7 +692,7 @@ namespace KitchenDesigner.Core.UI
 
         private bool IsAnyFieldFocused()
         {
-            foreach (var f in new[] { _name, _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _edgeThickness, _x, _y, _z, _rx, _ry, _rz })
+            foreach (var f in new[] { _name, _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _edges.ThicknessField, _x, _y, _z, _rx, _ry, _rz })
                 if (f != null && f.isFocused) return true;
             foreach (var f in GapFields())
                 if (f != null && f.isFocused) return true;
@@ -1042,7 +1016,7 @@ namespace KitchenDesigner.Core.UI
                 // Пересчитываем раскладку под режим: секция зазоров показывается
                 // только для фасадов, радиус — только для радиусной полки, сдвиг опор — только для столов (включая радиусные), пазы — только для базовой детали, панель сама подгоняется по высоте.
             RefreshGrooveUI();
-            RefreshEdgeUI();
+            _edges.Refresh();
             if (element.SupportsTextureOverlays) _textures.RebuildMaterialOptions();
             _textures.Refresh();
             RelayoutForTarget();
@@ -1282,19 +1256,7 @@ namespace KitchenDesigner.Core.UI
                 }
             }
 
-            // Толщина кромки — отдельной командой: она не часть геометрии
-            // детали, и складывать её в ResizeCommand нечестно по отношению
-            // к откату («Ctrl+Z вернул размер, а толщину — нет»).
-            if (target.SupportsEdges && _edgeThickness != null)
-            {
-                var edgesBefore = EdgeBandingState.Of(target);
-                var edgesAfter = new EdgeBandingState(edgesBefore.enabled,
-                    ParseEdgeThickness(_edgeThickness, edgesBefore.thicknessMM),
-                    edgesBefore.manualMask);
-                if (!edgesAfter.Equals(edgesBefore))
-                    CommandStack.Execute(new SetEdgeBandingCommand(target, edgesBefore, edgesAfter));
-                _edgeThickness.text = EdgeBanding.FormatThickness(target.EdgeThicknessMM);
-            }
+            _edges.ApplyThickness(target);
 
             // Поля позиции — целые мм; внутренняя модель остаётся в метрах.
             target.transform.position = new Vector3(
@@ -1373,7 +1335,7 @@ namespace KitchenDesigner.Core.UI
             WriteGapFields(_target);
 
             RefreshTitle();
-            RefreshEdgeUI();
+            _edges.Refresh();
             RefreshHighlights();
 
             _fields.ClearHighlights();
@@ -1668,165 +1630,6 @@ namespace KitchenDesigner.Core.UI
                 return h;
             }
         }
-
-
-        // ── Кромки детали ─────────────────────────────────────────────
-        // Кромка на конкретном торце не хранится и не редактируется: она
-        // вычисляется из геометрии (открытый торец → кромка). Пользователь
-        // правит только выключатель, толщину ленты и отказ от валидации —
-        // все три через одну команду, чтобы Ctrl+Z возвращал блок целиком.
-
-        /// <summary>Деталь вообще может кромковаться (лист с ровно одной
-        /// стороной тоньше 50 мм).</summary>
-        private bool EdgesEligible() => _target != null && _target.SupportsEdges;
-
-        /// <summary>Показывать схему и параметры кромки.</summary>
-        private bool EdgesShown() => EdgesEligible() && _target!.EdgeBandingEnabled;
-
-        /// <summary>Схема детали: пласть с четырьмя торцами-полосами и подписи
-        /// длины/ширины. Размер фиксирован — под габарит детали не подгоняется.</summary>
-        private RectTransform BuildEdgeDiagram(Transform parent, out float height)
-        {
-            const float boardW = 200f, boardH = 110f, strip = 10f;
-            const float boardX = -50f, boardY = -10f;
-            height = 140f;
-
-            var root = UIFactory.CreateRect("CtxEdgeDiagram", parent);
-            root.sizeDelta = new Vector2(332f, height);
-
-            UIFactory.CreatePanel("CtxEdgeBoard", root, new Vector2(boardX, boardY),
-                new Vector2(boardW, boardH), UIStyle.EdgeBoard);
-
-            // Полосы-торцы. L1/W1 — стороны по положительному направлению осей
-            // детали (верх и право), L2/W2 — по отрицательному.
-            _edgeStripL1 = UIFactory.CreatePanel("CtxEdgeL1", root,
-                new Vector2(boardX, boardY + (boardH - strip) * 0.5f),
-                new Vector2(boardW, strip), UIStyle.EdgeAbsent);
-            _edgeStripL2 = UIFactory.CreatePanel("CtxEdgeL2", root,
-                new Vector2(boardX, boardY - (boardH - strip) * 0.5f),
-                new Vector2(boardW, strip), UIStyle.EdgeAbsent);
-            _edgeStripW1 = UIFactory.CreatePanel("CtxEdgeW1", root,
-                new Vector2(boardX + (boardW - strip) * 0.5f, boardY),
-                new Vector2(strip, boardH), UIStyle.EdgeAbsent);
-            _edgeStripW2 = UIFactory.CreatePanel("CtxEdgeW2", root,
-                new Vector2(boardX - (boardW - strip) * 0.5f, boardY),
-                new Vector2(strip, boardH), UIStyle.EdgeAbsent);
-
-            MakeEdgeStripInteractive(_edgeStripL1, EdgeSide.L1);
-            MakeEdgeStripInteractive(_edgeStripL2, EdgeSide.L2);
-            MakeEdgeStripInteractive(_edgeStripW1, EdgeSide.W1);
-            MakeEdgeStripInteractive(_edgeStripW2, EdgeSide.W2);
-
-            // Подписи сторон — те же имена, что и колонки CSV.
-            EdgeSideLabel(root, "CtxEdgeLblL1", "L1", new Vector2(boardX, boardY + 36f));
-            EdgeSideLabel(root, "CtxEdgeLblL2", "L2", new Vector2(boardX, boardY - 36f));
-            EdgeSideLabel(root, "CtxEdgeLblW1", "W1", new Vector2(boardX + 76f, boardY));
-            EdgeSideLabel(root, "CtxEdgeLblW2", "W2", new Vector2(boardX - 76f, boardY));
-
-            _edgeLengthLabel = UIFactory.CreateLabel("CtxEdgeLen", root, "", 12,
-                new Vector2(boardX, boardY + boardH * 0.5f + 11f), new Vector2(120, 18),
-                TextAnchor.MiddleCenter);
-            _edgeLengthLabel.color = UIStyle.TextSecondary;
-            _edgeWidthLabel = UIFactory.CreateLabel("CtxEdgeWid", root, "", 12,
-                new Vector2(boardX + boardW * 0.5f + 43f, boardY), new Vector2(70, 18),
-                TextAnchor.MiddleLeft);
-            _edgeWidthLabel.color = UIStyle.TextSecondary;
-
-            return root;
-        }
-
-        /// <summary>Полоса-торец на схеме: клик переключает полуручной режим,
-        /// наведение подсвечивает эту сторону на самой детали.</summary>
-        private void MakeEdgeStripInteractive(Image? strip, EdgeSide side)
-        {
-            if (strip == null) return;
-            strip.raycastTarget = true;
-
-            var button = strip.gameObject.AddComponent<Button>();
-            button.transition = Selectable.Transition.None; // цвет полосы задаёт состояние кромки
-            button.onClick.AddListener(() => OnEdgeStripClicked(side));
-
-            PointerHover.Attach(strip.gameObject,
-                () => OnEdgeStripHover(side, true), () => OnEdgeStripHover(side, false));
-        }
-
-        private static void EdgeSideLabel(Transform parent, string name, string text, Vector2 pos)
-        {
-            var lbl = UIFactory.CreateLabel(name, parent, text, 11, pos, new Vector2(30, 14),
-                TextAnchor.MiddleCenter);
-            lbl.color = UIStyle.TextSecondary;
-            lbl.raycastTarget = false;
-        }
-
-        private void OnEdgeBandingToggled(bool on)
-        {
-            if (_target == null || !_target.SupportsEdges) return;
-            var before = EdgeBandingState.Of(_target);
-            ApplyEdgeState(before, new EdgeBandingState(on, before.thicknessMM, before.manualMask));
-        }
-
-        /// <summary>Клик по полосе на схеме — полуручной режим этой стороны:
-        /// кромку на ней назначает человек, автоматическая проверка «торец
-        /// перекрыт частично» на неё больше не смотрит.</summary>
-        private void OnEdgeStripClicked(EdgeSide side)
-        {
-            if (_target == null || !_target.SupportsEdges) return;
-            var before = EdgeBandingState.Of(_target);
-            ApplyEdgeState(before, before.WithManual(side, !_target.IsEdgeManual(side)));
-        }
-
-        /// <summary>Наведение на полосу — подсветить сторону на самой детали,
-        /// чтобы с любого ракурса было видно, о какой стороне речь.</summary>
-        private void OnEdgeStripHover(EdgeSide side, bool entered)
-        {
-            if (_target == null || !_target.SupportsEdges) return;
-            if (entered) SideHighlighter.ShowEdgeSide(_target, side);
-            else SideHighlighter.Hide();
-        }
-
-        private void ApplyEdgeState(EdgeBandingState before, EdgeBandingState after)
-        {
-            if (_target == null || after.Equals(before)) return;
-            CommandStack.Execute(new SetEdgeBandingCommand(_target, before, after));
-            RefreshEdgeUI();
-            RelayoutForTarget();
-        }
-
-        /// <summary>Обновить схему кромок и параметры под текущую геометрию.</summary>
-        private void RefreshEdgeUI()
-        {
-            _edgeRefreshCountdown = EdgeRefreshFrames;
-            if (_target == null || !_target.SupportsEdges) return;
-
-            _edgeToggle?.SetIsOnWithoutNotify(_target.EdgeBandingEnabled);
-            _fields.RefreshUnfocused(_edgeThickness, EdgeBanding.FormatThickness(_target.EdgeThicknessMM));
-
-            if (!_target.EdgeBandingEnabled) return;
-
-            var layout = EdgeBanding.LayoutOf(_target.DimensionsMM);
-            if (_edgeLengthLabel != null) _edgeLengthLabel.text = $"{layout.LengthMM} мм";
-            if (_edgeWidthLabel != null) _edgeWidthLabel.text = $"{layout.WidthMM} мм";
-
-            var coverage = EdgeBanding.Coverage(_target, PartRegistry.GetAll());
-            PaintEdgeStrip(_edgeStripL1, coverage, EdgeSide.L1);
-            PaintEdgeStrip(_edgeStripL2, coverage, EdgeSide.L2);
-            PaintEdgeStrip(_edgeStripW1, coverage, EdgeSide.W1);
-            PaintEdgeStrip(_edgeStripW2, coverage, EdgeSide.W2);
-        }
-
-        /// <summary>Жёлтый — сторона в полуручном режиме (перекрывает вычисленное
-        /// состояние: именно на неё пользователь и переключился).</summary>
-        private void PaintEdgeStrip(Image? strip, EdgeCoverage coverage, EdgeSide side)
-        {
-            if (strip == null || _target == null) return;
-            strip.color = _target.IsEdgeManual(side) ? UIStyle.EdgeManualSide
-                : coverage.HasEdge(side) ? UIStyle.EdgePresent
-                : UIStyle.EdgeAbsent;
-        }
-
-        private float ParseEdgeThickness(TMP_InputField? f, float fallback) =>
-            _fields.ParseDecimalInRange(f, fallback,
-                AppConstants.EDGE_THICKNESS_MIN_MM, AppConstants.EDGE_THICKNESS_MAX_MM);
 
         private void RelayoutForTarget()
         {
@@ -2543,7 +2346,7 @@ namespace KitchenDesigner.Core.UI
             _fields.Track(_lightUp, lightTrack != null ? lightTrack.UpLightPct.ToString() : LightSourceElement.DEFAULT_UP_PCT.ToString());
             foreach (var b in LightExtraBindings())
                 _fields.Track(b.field, lightTrack != null ? b.get(lightTrack).ToString() : b.def.ToString());
-            _fields.Track(_edgeThickness, EdgeBanding.FormatThickness(_target.EdgeThicknessMM));
+            _edges.Track();
             var pos = _target.transform.position;
             _fields.Track(_x, ToMM(pos.x));
             _fields.Track(_y, ToMM(pos.y));

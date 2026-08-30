@@ -6,6 +6,10 @@ namespace KitchenDesigner.Core.UI
 
         ContextMenuLayout Layout { get; }
 
+        ContextMenuRowFactory Rows { get; }
+
+        ContextMenuFieldTracker Fields { get; }
+
         void Relayout();
     }
 }
