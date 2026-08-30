@@ -21,7 +21,6 @@ namespace KitchenDesigner.Core
         private readonly List<DoorElement> _attachedDoors = new List<DoorElement>();
         private MeshFilter? _meshFilter;
         private Mesh? _customMesh;
-        // Снимок геометрии стены на момент последней сборки меша.
         private Vector3 _syncPos;
         private Quaternion _syncRot = Quaternion.identity;
         private Vector3 _syncScale;
@@ -121,10 +120,6 @@ namespace KitchenDesigner.Core
                 if (d != null) d.RefreshGeometry();
         }
 
-        /// <summary>Пересобирает меш, если сама стена сдвинулась, повернулась или
-        /// изменила размеры. Вырезы хранятся в НОРМАЛИЗОВАННЫХ координатах стены,
-        /// поэтому без пересборки дыра едет вместе со стеной, а окно остаётся на
-        /// месте — «окно отдельно, проём отдельно».</summary>
         public void SyncOpeningsIfChanged()
         {
             using var _ = PerfMarkers.WallSyncOpenings.Auto();
@@ -135,9 +130,6 @@ namespace KitchenDesigner.Core
 
         private void LateUpdate() => SyncOpeningsIfChanged();
 
-        /// <summary>Позиция/поворот/размеры стены в ПОЛНОМ виде: опускание стены
-        /// камерой (WallCutaway) меняет transform, но не геометрию проёмов —
-        /// иначе меш пересобирался бы каждый кадр в режиме обзора.</summary>
         private (Vector3 pos, Quaternion rot, Vector3 scale, Vector3Int dims) CurrentGeometry()
         {
             var scale = transform.localScale;
@@ -167,7 +159,6 @@ namespace KitchenDesigner.Core
             var el = GetComponent<KitchenElement>();
             var dims = el != null ? el.DimensionsMM : new Vector3Int(100, 2500, 2000);
 
-            // Толщина стены — меньший горизонтальный габарит; вырез идёт сквозь неё.
             bool thickAlongX = dims.x <= dims.z;
             float wallW = (thickAlongX ? dims.z : dims.x) * 0.001f;
             float wallH = FullScaleY > 0.001f ? FullScaleY : dims.y * 0.001f;

@@ -124,10 +124,6 @@ namespace KitchenDesigner.Core
 				rot * Vector3.forward
 			};
 
-			// Порядок граней — контракт базового GetFaces: +X,-X,+Y,-Y,+Z,-Z.
-			// Индекс грани делится на 2 и становится осью (ResizeHandleManager,
-			// ResizeMath, тесты). Раньше опора отдавала грани в порядке Y,X,Z —
-			// и ручка верхней грани опоры растягивала её по X вместо высоты.
 			return new Face[]
 			{
 				new Face(pos + axes[0] * hw,  axes[0], new Vector2(h, w), axes[1], axes[2]),

@@ -2,9 +2,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Радиусная полка — прямоугольная доска с одним скруглённым углом.
-    /// Размеры: x = ширина, y = толщина, z = глубина; меш центрирован на pivot,
-    /// скруглён угол (+X, +Z) радиусом CornerRadius (1..min(ширина, глубина)).</summary>
     public class RadialShelfElement : KitchenElement
     {
 
@@ -13,15 +10,11 @@ namespace KitchenDesigner.Core
         private Mesh? _ownedMesh;
         private bool _applying;
 
-        // Меш собран в МИРОВЫХ единицах, localScale остаётся единичным (см.
-        // ApplyDimensions), поэтому габарит берётся из размеров.
-        // Зазоры поверх него накладывает база.
         protected override Vector3 EffectiveScale => new Vector3(
             DimensionsMM.x * AppConstants.MM_TO_UNITS,
             DimensionsMM.y * AppConstants.MM_TO_UNITS,
             DimensionsMM.z * AppConstants.MM_TO_UNITS);
 
-        /// <summary>Зазоры есть, хотя пазов радиусная полка не поддерживает.</summary>
         public override bool SupportsGaps => true;
 
         [Undoable]
@@ -50,17 +43,11 @@ namespace KitchenDesigner.Core
             _applying = true;
             try
             {
-                // Ширина/толщина/глубина хранятся раздельно; радиус угла лишь
-                // клампится, чтобы дуга помещалась в доску.
                 _cornerRadius = ClampCornerRadius(_cornerRadius);
 
-                // Меш строится в мировых единицах — localScale остаётся единичным.
                 transform.localScale = Vector3.one;
                 RebuildMesh();
 
-                // base.ApplyDimensions() здесь не зовём (он ставит localScale по
-                // габаритам), поэтому «вырез» декора под новый размер приходится
-                // пересчитывать явно — иначе после ресайза он остаётся от старого.
                 MaterialManager.RefreshTiling(this);
             }
             finally

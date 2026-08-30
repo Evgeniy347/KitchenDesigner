@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Extrudes a simple XZ polygon into a unit-height floor mesh.</summary>
     public static class FloorPolygonMesh
     {
         public static Mesh Build(IReadOnlyList<Vector2Int> localPointsMm, Vector2Int sizeMm)

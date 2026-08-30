@@ -3,10 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Сборный (рамочный) фасад: рамка A=100 мм + центр (панель/стекло/пусто)
-    /// и вертикальные фрезеровки. Наследует открывание двери/ящика от FacadeElement.
-    /// Меш процедурный (см. AssembledFacadeMesh) и пересобирается при изменении размера;
-    /// localScale остаётся полным коробом, поэтому коллайдер/ручки/выделение не меняются.</summary>
     public class AssembledFacadeElement : FacadeElement, ISpecificationParts
     {
 
@@ -42,7 +38,6 @@ namespace KitchenDesigner.Core
             RebuildMesh();
         }
 
-        /// <summary>Пересобрать процедурный меш рамки и обновить стеклянную вставку.</summary>
         public void RebuildMesh()
         {
             if (_filter == null) _filter = GetComponent<MeshFilter>();
@@ -55,7 +50,6 @@ namespace KitchenDesigner.Core
             _ownedMesh = mesh;
             _filter.sharedMesh = mesh;
 
-            // Два сабмеша: [0] декор рамки (им управляет MaterialManager), [1] фрезеровки.
             var mats = _renderer.sharedMaterials;
             Material decor = mats != null && mats.Length > 0 && mats[0] != null
                 ? mats[0] : _renderer.sharedMaterial;
@@ -71,7 +65,6 @@ namespace KitchenDesigner.Core
                 if (_glassInsert == null) BuildGlassInsert();
                 float fx = AssembledFacadeMesh.Fraction(DimensionsMM.x, AppConstants.ASSEMBLED_FRAME_MM);
                 float fy = AssembledFacadeMesh.Fraction(DimensionsMM.y, AppConstants.ASSEMBLED_FRAME_MM);
-                // Дочерний масштаб * localScale детали = размер проёма (B×C) и тонкое стекло.
                 _glassInsert!.localScale = new Vector3(1f - 2f * fx, 1f - 2f * fy, 0.05f);
                 _glassInsert.gameObject.SetActive(true);
             }
@@ -110,7 +103,6 @@ namespace KitchenDesigner.Core
             }
         }
 
-        // ── Спецификация: раскладка на детали ──────────────────────────
         public IEnumerable<AssembledFacadeMesh.Part> GetSpecParts()
             => AssembledFacadeMesh.ComputeParts(DimensionsMM, _fill,
                 AppConstants.ASSEMBLED_FRAME_MM, AppConstants.ASSEMBLED_GLASS_DEDUCT_MM);

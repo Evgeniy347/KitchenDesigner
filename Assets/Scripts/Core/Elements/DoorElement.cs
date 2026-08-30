@@ -5,14 +5,6 @@ namespace KitchenDesigner.Core
 {
     public enum DoorSashType { Glass = 0, Blind = 1 }
 
-    /// <summary>
-    /// Дверь: неподвижная коробка (рама на всю толщину стены) + поворотная
-    /// створка (обвязка со стеклом или глухой панелью). Дверь живёт только на
-    /// стене: каждый кадр прилипает к ближайшей стене, встаёт в её срединную
-    /// плоскость и наследует её толщину (глубина двери не редактируется
-    /// напрямую). Геометрия строится в мировых единицах при единичном масштабе
-    /// корня.
-    /// </summary>
     public class DoorElement : KitchenElement, IOpenable, IWallMounted
     {
 
@@ -117,7 +109,6 @@ namespace KitchenDesigner.Core
         private void ApplyDoorPose()
         {
             if (_sashGroup == null) return;
-            // Дверь помещения — обычные накладные петли: поворот вокруг ребра створки.
             FacadeDoor.Pose(_sashClosedLocal, Quaternion.identity, _sashHalfExtents,
                 _mode, _openT, out var pos, out var rot, HingeKinematics.EdgePivot);
             _sashGroup.localPosition = pos;
@@ -152,7 +143,6 @@ namespace KitchenDesigner.Core
             ApplyDoorPose();
         }
 
-        /// <summary>Мировые границы створки (AABB) при заданном прогрессе открывания [0..1].</summary>
         public (Vector3 min, Vector3 max) GetOpenBounds(float progress)
         {
             if (_sashGroup == null || _sashHalfExtents.sqrMagnitude < 1e-12f)
@@ -177,8 +167,6 @@ namespace KitchenDesigner.Core
                 world[i] = worldPos + worldRot * localCorners[i];
             return OpeningCollision.MinMax(world);
         }
-
-        // ── Привязка к стене ────────────────────────────────────────────
 
         public void SnapToWall()
         {
@@ -324,8 +312,6 @@ namespace KitchenDesigner.Core
             _attachedWallName = "";
             if (wall != null) wall.UnregisterDoor(this);
         }
-
-        // ── Геометрия ───────────────────────────────────────────────────
 
         private int ComputeHiddenSides()
         {
@@ -571,19 +557,23 @@ namespace KitchenDesigner.Core
                 mr.sharedMaterial = _glassMat;
             }
 
-            // Пересчитываем масштаб панели: при смене типа толщина меняется.
-            {
-                var dims = DimensionsMM;
-                float toU = AppConstants.MM_TO_UNITS;
-                float frameU = AppConstants.WINDOW_FRAME_MM * toU;
-                float sashU = AppConstants.WINDOW_SASH_MM * toU;
-                float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, dims.z * toU);
-                float glassThick = AppConstants.WINDOW_GLASS_THICKNESS_MM * toU;
-                float innerW = dims.x * toU - 2f * frameU;
-                float innerH = dims.y * toU - 2f * frameU;
-                float paneThick = _sashType == DoorSashType.Blind ? sashD : glassThick;
-                _glassPane.transform.localScale = new Vector3(innerW - 2f * sashU, innerH - 2f * sashU, paneThick);
-            }
+            ResizePaneForSashType();
+        }
+
+        private void ResizePaneForSashType()
+        {
+            if (_glassPane == null) return;
+            var dims = DimensionsMM;
+            float toU = AppConstants.MM_TO_UNITS;
+            float frameU = AppConstants.WINDOW_FRAME_MM * toU;
+            float sashU = AppConstants.WINDOW_SASH_MM * toU;
+            float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, dims.z * toU);
+            float glassThick = AppConstants.WINDOW_GLASS_THICKNESS_MM * toU;
+            float innerW = dims.x * toU - 2f * frameU;
+            float innerH = dims.y * toU - 2f * frameU;
+            float paneThick = _sashType == DoorSashType.Blind ? sashD : glassThick;
+            _glassPane.transform.localScale =
+                new Vector3(innerW - 2f * sashU, innerH - 2f * sashU, paneThick);
         }
 
         private void ApplyMaterialFrame()
