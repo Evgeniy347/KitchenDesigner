@@ -346,18 +346,12 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
-        private McpResponse HandleCreateElements(McpRequest req)
+        private List<(CreateItem item, string type)> AcceptCreateItems(CreateItem[] items, List<string> errors)
         {
-            var p = req.Params?.ToObjectStrict<ParamsCreateElements>();
-            if (p == null || p.items == null || p.items.Length == 0)
-                return McpResponse.Error(req.id, -32602, "items required (non-empty array)");
-
-            var commands = new List<IUndoCommand>();
-            var created = new List<KitchenElement>();
-            var errors = new List<string>();
+            var accepted = new List<(CreateItem item, string type)>();
             var namesSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var item in p.items)
+            foreach (var item in items)
             {
                 if (string.IsNullOrEmpty(item.name)) { errors.Add("an item is missing 'name'"); continue; }
                 if (!ElementNaming.IsValid(item.name))
@@ -368,6 +362,12 @@ namespace KitchenDesigner.Core.MCP
                 if (existing != null) { errors.Add($"Element '{item.name}' already exists"); continue; }
 
                 var elementType = (item.type ?? "board").Trim().ToLowerInvariant();
+                if (!ElementSpawners.CanSpawn(elementType))
+                {
+                    errors.Add($"Unknown type '{elementType}' for '{item.name}' "
+                        + $"(allowed: {string.Join(", ", ElementSpawners.SpawnableTypes)})");
+                    continue;
+                }
                 if (!string.IsNullOrEmpty(item.model))
                 {
                     if (!ApplianceModels.IsKnown(item.model))
@@ -376,13 +376,31 @@ namespace KitchenDesigner.Core.MCP
                     { errors.Add($"Model '{item.model}' does not belong to type '{elementType}' ('{item.name}')"); continue; }
                 }
 
+                accepted.Add((item, elementType));
+            }
+            return accepted;
+        }
+
+        private McpResponse HandleCreateElements(McpRequest req)
+        {
+            var p = req.Params?.ToObjectStrict<ParamsCreateElements>();
+            if (p == null || p.items == null || p.items.Length == 0)
+                return McpResponse.Error(req.id, -32602, "items required (non-empty array)");
+
+            var errors = new List<string>();
+            var accepted = AcceptCreateItems(p.items, errors);
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "create_elements rejected, NOTHING was created: " + string.Join(" | ", errors));
+
+            var commands = new List<IUndoCommand>();
+            var created = new List<KitchenElement>();
+            foreach (var (item, elementType) in accepted)
+            {
                 var go = ElementSpawners.Spawn(elementType, item, new Vector3(item.x, item.y, item.z));
-                if (go == null) { errors.Add($"Failed to create '{item.name}'"); continue; }
                 commands.Add(new CreateCommand(go));
                 created.Add(go.GetComponent<KitchenElement>());
             }
-            if (errors.Count > 0)
-                return McpResponse.Error(req.id, -1, "create_elements rejected: " + string.Join(" | ", errors));
 
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP create_elements x{commands.Count}", commands));

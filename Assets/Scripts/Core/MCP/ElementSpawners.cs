@@ -95,6 +95,11 @@ namespace KitchenDesigner.Core.MCP
 
         internal static readonly IReadOnlyList<string> SpawnableTypes = CollectSpawnableTypes();
 
+        private static readonly HashSet<string> SpawnableTypeSet =
+            new HashSet<string>(SpawnableTypes, StringComparer.Ordinal);
+
+        internal static bool CanSpawn(string elementType) => SpawnableTypeSet.Contains(elementType);
+
         private static List<string> CollectSpawnableTypes()
         {
             var types = new List<string>(PlainCubeTypes);

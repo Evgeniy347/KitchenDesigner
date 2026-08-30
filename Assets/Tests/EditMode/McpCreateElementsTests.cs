@@ -77,22 +77,27 @@ public class McpCreateElementsTests
     }
 
     [Test]
-    public void CreateElements_UnknownType_FallsBackToAPlainBoard()
+    public void CreateElements_UnknownType_IsRejectedInsteadOfSilentlyMakingAPlainBoard()
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name = "Odd", type = "no-such-type", x = 0f, y = 0f, z = 0f } }
+            items = new object[]
+            {
+                new { name = "Typo", type = "movnto_drawer", x = 0f, y = 0f, z = 0f },
+                new { name = "Good", type = "panel", x = 0f, y = 0f, z = 0f },
+            }
         }));
 
-        Assert.AreEqual("result", resp.type, resp.type == "error" ? ErrorMessage(resp) : "");
-        var element = Find<KitchenElement>("Odd");
-        Assert.NotNull(element, "неизвестный тип даёт обычную деталь, а не отказ");
-        Assert.AreEqual(typeof(KitchenElement), element!.GetType());
-        Assert.AreEqual(
-            new Vector3Int(ElementSpawners.BOARD_DEFAULT_WIDTH_MM,
-                ElementSpawners.BOARD_DEFAULT_HEIGHT_MM,
-                ElementSpawners.BOARD_DEFAULT_THICKNESS_MM),
-            element.DimensionsMM);
+        Assert.AreEqual("error", resp.type,
+            "опечатка в типе раньше молча давала обычную деталь 800x400x18 и ok — " +
+            "клиент считал, что получил ящик Movento");
+        StringAssert.Contains("Unknown type 'movnto_drawer' for 'Typo'", ErrorMessage(resp));
+        StringAssert.Contains("movento_drawer", ErrorMessage(resp),
+            "в отказе перечислены допустимые типы: список статичен и короток, " +
+            "отдельного инструмента-справочника для него нет, поэтому опечатка чинится за один вызов");
+        Assert.IsNull(Find<KitchenElement>("Typo"), "ничего не создано");
+        Assert.IsNull(Find<KitchenElement>("Good"),
+            "батч атомарен: исправный элемент того же батча тоже не создан");
     }
 
     [Test]

@@ -268,7 +268,7 @@ namespace KitchenDesigner.Core.MCP.Contract
             Required = true)]
         public string name = string.Empty;
 
-        [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position.",
+        [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
             Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "pillar", "window", "door", "cooktop", "oven", "dishwasher" })]
         public string? type;
 
