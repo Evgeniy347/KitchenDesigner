@@ -3,21 +3,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>
-    /// РЕДАКТИРУЮЩЕЕ перемещение прикреплённого поддерева: родителя сдвинули или
-    /// повернули мышью, полями панели или через MCP — дети обязаны поехать за
-    /// ним и попасть в ТУ ЖЕ запись отмены. (Анимация — другая история, её
-    /// ведёт <see cref="AttachRider"/> и в стек отмены она не пишет.)
-    ///
-    /// Один помощник на все точки правки, а не копия математики в каждой:
-    /// поворот вокруг родителя легко «почти правильно» повторить по-разному, и
-    /// расхождение вылезло бы как разъехавшаяся сборка после Ctrl+Z.
-    /// </summary>
     public static class AttachMove
     {
-        /// <summary>Новая поза ребёнка при переносе родителя из позы «до» в позу
-        /// «после»: жёсткая связка — ребёнок хранит смещение и разворот
-        /// ОТНОСИТЕЛЬНО родителя.</summary>
         public static void Follow(Vector3 childPos, Quaternion childRot,
             Vector3 posBefore, Quaternion rotBefore, Vector3 posAfter, Quaternion rotAfter,
             out Vector3 newPos, out Quaternion newRot)
@@ -27,9 +14,6 @@ namespace KitchenDesigner.Core
             newRot = delta * childRot;
         }
 
-        /// <summary>Дополнить набор перемещаемых элементов их поддеревьями.
-        /// Дубли не добавляются: в мультивыделении родитель и ребёнок вполне
-        /// могут быть выбраны оба, и второй сдвиг увёз бы ребёнка вдвое.</summary>
         public static void ExpandWithDescendants(List<KitchenElement> set)
         {
             if (set == null || set.Count == 0) return;
@@ -44,10 +28,6 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Команды, увозящие поддерево <paramref name="root"/> вслед за
-        /// его переносом. Команды НЕ выполняются — их выполняет вызывающий (там
-        /// же, где и свою собственную), поэтому позы считаются от ТЕКУЩИХ
-        /// (ещё не сдвинутых) поз детей.</summary>
         public static void AppendFollowers(List<IUndoCommand> commands, KitchenElement root,
             Vector3 posBefore, Quaternion rotBefore, Vector3 posAfter, Quaternion rotAfter,
             ICollection<KitchenElement>? skip = null)
@@ -59,8 +39,6 @@ namespace KitchenDesigner.Core
             foreach (var child in AttachLinks.Descendants(root))
             {
                 if (child == null || (skip != null && skip.Contains(child))) continue;
-                // Поза покоя, а не трансформ: ребёнок мог в этот момент ехать за
-                // открытым родителем, и сдвигать надо именно покой.
                 var childPos = child.AttachRestPosition;
                 var childRot = child.AttachRestRotation;
                 Follow(childPos, childRot, posBefore, rotBefore, posAfter, rotAfter,
@@ -69,8 +47,6 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Та же операция одной командой (или null, если двигать
-        /// нечего) — для точек, где вызывающий кладёт в стек ровно одну.</summary>
         public static IUndoCommand? FollowersCommand(KitchenElement root,
             Vector3 posBefore, Quaternion rotBefore, Vector3 posAfter, Quaternion rotAfter)
         {
