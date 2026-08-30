@@ -6,7 +6,6 @@ using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Контекстное меню по клику ЛКМ на детали: размеры, позиция, поворот, действия.</summary>
     public class ContextMenuUI : MonoBehaviour, IContextMenuHost
     {
         public static ContextMenuUI? Instance { get; private set; }
@@ -29,9 +28,6 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _drawerUpperLenDropdown;
         private TMP_Text? _drawerAnimLabel;
 
-        /// <summary>Подпись строки пристёгнутого фасада: у ящика она уточняет
-        /// «ящика» (в панели ящика рядом стоят и другие «фасадные» строки), у
-        /// посудомойки уточнять нечего — фасад у неё один.</summary>
         private const string DrawerFacadeLabelText = "Фасад ящика";
         private const string HostFacadeLabelText = "Фасад";
         private const string AttachToLabelText = "Прикрепить к";
@@ -396,7 +392,6 @@ namespace KitchenDesigner.Core.UI
             _layout.AddFor(ElementFacet.Window, BtnH, ActionGap, rotY180.GetComponent<RectTransform>());
         }
 
-
         private void BuildPropertySection()
         {
             _transparentToggle = _rows.Toggle("CtxTransparent", "Прозрачный", false, v =>
@@ -461,15 +456,9 @@ namespace KitchenDesigner.Core.UI
                 SelectionManager.Instance.OnSelectionChanged -= OnSelectionChanged;
         }
 
-        // ── Отложенное закрытие меню ──────────────────────────────────
-        // Когда SelectionManager.Select() вызывает DeselectAll(),
-        // OnSelectionChanged(null) приходит ПЕРЕД OnSelectionChanged(newElement).
-        // Чтобы меню не закрылось и тут же не открылось заново — откладываем
-        // закрытие на конец кадра. Если в том же кадре пришёл новый элемент —
-        // отмена отложенного закрытия и обновление меню.
         private int _deferCloseFrame = -1;
 
-        private void OnSelectionChanged(KitchenElement? element)
+        internal void OnSelectionChanged(KitchenElement? element)
         {
             if (_openInProgress) return;
             if (_root == null || !_root.activeSelf) return;
@@ -483,7 +472,7 @@ namespace KitchenDesigner.Core.UI
                 Open(element);
         }
 
-        private void ProcessDeferredClose()
+        internal void ProcessDeferredClose()
         {
             if (_deferCloseFrame >= 0 && _deferCloseFrame < Time.frameCount)
             {
@@ -491,9 +480,6 @@ namespace KitchenDesigner.Core.UI
                 Close();
             }
         }
-
-        /// <summary>Строка секции зазоров: подпись и пара полей — по одному на
-        /// противоположные стороны. Наведение на поле подсвечивает СВОЮ сторону
 
         private void Update()
         {
@@ -522,9 +508,6 @@ namespace KitchenDesigner.Core.UI
                 }
             }
 
-            // Накладки подсветки стороны живут в мировых координатах и своего
-            // апдейта не имеют: деталь могли сдвинуть, изменить или удалить
-            // (undo, MCP) прямо во время наведения.
             SideHighlighter.Sync();
         }
 
@@ -550,8 +533,6 @@ namespace KitchenDesigner.Core.UI
             _fields.RefreshUnfocused(_y, ToMM(pos.y));
             _fields.RefreshUnfocused(_z, ToMM(pos.z));
 
-            // Связь могла разъехаться прямо сейчас (деталь двигают мышью) —
-            // подпись краснеет в реальном времени, как и у фасада ящика.
             if (AttachLinks.CanBeChild(_target)) _attachedTo.UpdateCaptionColor();
 
             var eu = _target.transform.eulerAngles;
@@ -569,11 +550,9 @@ namespace KitchenDesigner.Core.UI
             foreach (var editor in _editors) editor.Refresh(_target);
         }
 
-        /// <summary>Позиция в мм: единый формат чисел UI (правило 1).</summary>
         private static string ToMM(float meters) =>
             Mathf.RoundToInt(meters / AppConstants.MM_TO_UNITS).ToString();
 
-        /// <summary>Заголовок «Тип — Имя» (обновляется при открытии и переименовании).</summary>
         private void RefreshTitle()
         {
             if (_titleLabel == null || _target == null) return;
@@ -584,11 +563,8 @@ namespace KitchenDesigner.Core.UI
         {
             if (element == null) return;
 
-            // Подсветка стороны принадлежит ПРЕДЫДУЩЕЙ детали: схема кромок под
-            // курсором пересобирается, PointerExit по старой полосе не придёт.
             SideHighlighter.Hide();
 
-            // Верхний ящик пары своего окна свойств не имеет — открываем нижний.
             if (element is DrawerElement upper && upper.IsUpperDrawer)
             {
                 var lower = upper.FindPaired();
@@ -598,8 +574,6 @@ namespace KitchenDesigner.Core.UI
             _openInProgress = true;
             try
             {
-                // Предпросмотр принадлежал прошлому элементу — снимаем ДО смены
-                // цели, иначе показанная накладка осталась бы на нём насовсем.
                 _textures.EndPreview();
                 _materials.EndPreview();
                 _target = element;
@@ -607,7 +581,6 @@ namespace KitchenDesigner.Core.UI
                 _textures.Collapse();
                 _gaps.Collapse();
                 _lights.Collapse();
-                // Ручки области принадлежали прошлому элементу.
                 TextureOverlayHandles.End();
                 if (SelectionManager.Instance != null)
                     SelectionManager.Instance.Select(element);
@@ -622,17 +595,10 @@ namespace KitchenDesigner.Core.UI
                 bool isDoor = element is DoorElement;
             _currentIsTable = isTable || isRadiusTable;
             _currentIsDoor = isDoor;
-                // Заголовок различает и подтипы («Сборный фасад» ≠ «Фасад») и
-                // конкретный элемент (имя после тире).
-                // У готовой модели в заголовке стоит она сама — «Варочная» ничего
-                // не сказало бы о том, что размеры залочены производителем.
                 _currentTypeName = element is CooktopElement fixedCooktop && fixedCooktop.HasFixedSize
                         ? fixedCooktop.Model
                         : element is CooktopElement ? "Варочная"
-                    // Духовка — всегда готовая модель, поэтому в заголовке она
-                    // сама: «Духовка» умолчала бы о том, что размеры залочены.
                     : element is OvenElement ? OvenElement.MODEL
-                    // Посудомойка — тоже всегда готовая модель.
                     : element is DishwasherElement ? DishwasherElement.MODEL
                     : element is SinkElement ? "Мойка"
                     : element is LightSourceElement ? "Источник света"
@@ -686,14 +652,12 @@ namespace KitchenDesigner.Core.UI
                 if (element is OvenElement ovenEl) UpdateOvenDoorButton(ovenEl);
                 if (element is DishwasherElement dwEl) UpdateDishwasherDoorButton(dwEl);
 
-                // Прикрепление к другой детали — только у обычной дощечки.
                 if (AttachLinks.CanBeChild(element))
                 {
                     _attachedTo.Rebuild();
                     _attachedTo.SetValue(element.AttachedToName);
                 }
 
-                // Пристёгнутый фасад — общая строка ящика и посудомойки.
                 var facadeHost = element as IFacadeHost;
                 if (facadeHost != null)
                 {
@@ -729,8 +693,6 @@ namespace KitchenDesigner.Core.UI
 
                 _materials.ShowFor(element);
 
-                // Пересчитываем раскладку под режим: секция зазоров показывается
-                // только для фасадов, радиус — только для радиусной полки, сдвиг опор — только для столов (включая радиусные), пазы — только для базовой детали, панель сама подгоняется по высоте.
             _grooves.Refresh();
             _edges.Refresh();
             if (element.SupportsTextureOverlays) _textures.RebuildMaterialOptions();
@@ -755,34 +717,14 @@ namespace KitchenDesigner.Core.UI
 
         public void Close()
         {
-            // Панель гаснет без PointerExit по полосе кромки — подсветку стороны
-            // снимаем сами, иначе накладки остаются висеть на детали.
             SideHighlighter.Hide();
-            // Панель закрыли с раскрытым списком декора — показанная накладка не
-            // должна пережить закрытие, как и подсветка стороны.
             _textures.EndPreview();
-            // …и показанный наведением декор тоже: список закрылся вместе с
-            // панелью, onExit по нему уже не придёт.
             _materials.EndPreview();
-            // Ручки области жили только пока открыто меню: без него их нечем
-            // выключить, и они перехватывали бы клики по сцене.
             TextureOverlayHandles.End();
             _target = null;
             if (_root != null) _root.SetActive(false);
         }
 
-        /// <summary>
-        /// Применить содержимое полей к элементу ОДНИМ шагом отмены.
-        ///
-        /// Правило «undo на всё» здесь держится не перечислением полей, а двумя
-        /// механизмами сразу:
-        ///   • снимок всех свойств, помеченных <see cref="UndoableAttribute"/>,
-        ///     до и после — разница уезжает в <see cref="SetPropertiesCommand"/>,
-        ///     поэтому НОВОЕ свойство откатывается само, без правок этого файла;
-        ///   • BeginCapture/EndCapture — команды, которые применение выдало по
-        ///     дороге (размер, вырез, кромка), склеиваются в одну составную,
-        ///     иначе одна правка стоила бы пользователю нескольких Ctrl+Z.
-        /// </summary>
         private void Apply()
         {
             if (_target == null) return;
@@ -793,7 +735,6 @@ namespace KitchenDesigner.Core.UI
             try
             {
                 ApplyFields(target);
-                // Снимок «после» — до перерисовки полей: она читает уже применённое.
                 var propsAfter = UndoableProperties.Capture(target);
                 var propsCommand = SetPropertiesCommand.TryCreate(target, propsBefore, propsAfter);
                 if (propsCommand != null) CommandStack.Execute(propsCommand);
@@ -809,22 +750,16 @@ namespace KitchenDesigner.Core.UI
         private void ApplyFields(KitchenElement target)
         {
             _fields.ForgetRejections();
-            // Правки размеров/позиции применяем к закрытой (логической) позе.
             if (target is FacadeElement fac) { fac.ForceClose(); UpdateDoorButton(fac); }
             if (target is DrawerElement dr) { dr.ForceClose(); UpdateDrawerAnimButton(dr); }
             if (target is WindowElement win) { win.ForceClose(); if (_winDoorButtonLabel != null) _winDoorButtonLabel.text = "Открыть"; }
             if (target is DoorElement doorElApp) { doorElApp.ForceClose(); if (_winDoorButtonLabel != null) _winDoorButtonLabel.text = "Открыть"; }
-            // Деталь может ехать за ОТКРЫТЫМ родителем (нестандартный ящик):
-            // правки идут в позу покоя, поэтому предков сперва захлопываем.
             AttachLinks.ForceRest(target);
 
             var oldDims = target.DimensionsMM;
             var oldPos = target.transform.position;
             var oldRot = target.transform.rotation;
 
-            // Через DrawerLinks: переименование обновляет обратные ссылки
-            // (PairedDrawerName пары, AttachedFacadeName ящиков с этим фасадом)
-            // и само чистит имя/разрешает коллизию суффиксом «_N».
             DrawerLinks.Rename(target, string.IsNullOrWhiteSpace(_name!.text) ? "Board" : _name!.text);
             target.gameObject.name = target.PartName;
 
@@ -838,17 +773,13 @@ namespace KitchenDesigner.Core.UI
 
             _edges.ApplyThickness(target);
 
-            // Поля позиции — целые мм; внутренняя модель остаётся в метрах.
             target.transform.position = new Vector3(
                 _fields.ParseMillimetresAsMetres(_x, oldPos.x),
                 _fields.ParseMillimetresAsMetres(_y, oldPos.y),
                 _fields.ParseMillimetresAsMetres(_z, oldPos.z));
 
-            // У окна поля поворота скрыты (ориентацию диктует стена) — не трогаем.
             if (!(target is WindowElement) && !(target is DoorElement))
             {
-                // У техники поля X/Z скрыты (только разворот вокруг вертикали) —
-                // берём их из текущей позы, а не из невидимого поля.
                 bool yawOnly = FixedSize.IsYawOnly(target);
                 var euler = oldRot.eulerAngles;
                 target.transform.rotation = Quaternion.Euler(
@@ -857,8 +788,6 @@ namespace KitchenDesigner.Core.UI
                     yawOnly ? euler.z : _fields.ParseAngle(_rz, euler.z));
             }
 
-            // Окно живёт только на стене — сразу возвращаем его на стену,
-            // чтобы команда в стеке хранила уже «прилипшую» позу.
             if (target is WindowElement winSnap) winSnap.SnapToWall();
             if (target is DoorElement doorSnap) doorSnap.SnapToWall();
 
@@ -875,19 +804,12 @@ namespace KitchenDesigner.Core.UI
                     oldPos, target.transform.position,
                     oldRot, target.transform.rotation));
 
-                // Прикреплённые детали едут за родителем. Ресайз им не
-                // передаётся вовсе (у каждой свой габарит) — только перенос и
-                // поворот. Apply идёт внутри BeginCapture, так что это тот же
-                // один шаг отмены.
                 var followers = AttachMove.FollowersCommand(target,
                     oldPos, oldRot, target.transform.position, target.transform.rotation);
                 if (followers != null) CommandStack.Execute(followers);
             }
         }
 
-        /// <summary>Показать в полях то, что РЕАЛЬНО применилось (значения могли
-        /// склампиться). Идёт после EndCapture: тот откатывает и заново
-        /// проигрывает команды, и до него состояние элемента промежуточное.</summary>
         private void RefreshAfterApply(KitchenElement target)
         {
             var newDims = target.DimensionsMM;
@@ -920,8 +842,6 @@ namespace KitchenDesigner.Core.UI
         private void RotateAxis(Vector3 axis, float angle = 90f)
         {
             if (_target == null) return;
-            // Кнопки X 90° / Z 90° у техники скрыты; страховка на случай вызова
-            // мимо панели — «на боку» встраиваемый прибор не стоит.
             if (FixedSize.IsYawOnly(_target) && Mathf.Abs(Vector3.Dot(axis.normalized, Vector3.up)) < 0.99f)
                 return;
             var oldRot = _target.transform.rotation;
@@ -933,9 +853,6 @@ namespace KitchenDesigner.Core.UI
                 new MoveCommand(_target, _target.transform.position, _target.transform.position,
                     oldRot, _target.transform.rotation)
             };
-            // Прикреплённые детали разворачиваются ВОКРУГ родителя, а не вокруг
-            // своих центров: связка жёсткая, иначе поворот фасада оставил бы
-            // короб стоять как стоял.
             AttachMove.AppendFollowers(rotCmds, _target, _target.transform.position,
                 oldRot, _target.transform.position, _target.transform.rotation);
             CommandStack.Execute(rotCmds.Count == 1
@@ -945,8 +862,6 @@ namespace KitchenDesigner.Core.UI
             RefreshHighlights();
         }
 
-        // ── Открывание дверцы (только фасад) ───────────────────────────
-
         private void ToggleDoor()
         {
             if (_target is FacadeElement f)
@@ -955,9 +870,6 @@ namespace KitchenDesigner.Core.UI
                 if (drawer != null) CameraController.ToggleDrawerFor(drawer);
                 else
                 {
-                    // Фасад может быть пристёгнут к посудомойке — там анимацией
-                    // владеет дверца, а у самой фасадной кнопки-«Открыть»
-                    // осталось только перенаправить вызов на хост.
                     var dw = FindDishwasherForFacade(f);
                     if (dw != null) dw.ToggleOpen();
                     else f.ToggleOpen();
@@ -971,8 +883,6 @@ namespace KitchenDesigner.Core.UI
             if (_target is FacadeElement f)
                 f.Mode = (DoorMode)index;
         }
-
-        // ── Открывание окна ─────────────────────────────────────────
 
         private void ToggleWindowDoor()
         {
@@ -1010,7 +920,6 @@ namespace KitchenDesigner.Core.UI
                 d.Mode = (DoorMode)index;
         }
 
-        // Порядок пунктов списка центра: 0=Глухой, 1=Витрина(пусто), 2=Стекло.
         private static readonly AssembledFill[] FillOrder =
             { AssembledFill.Blind, AssembledFill.Open, AssembledFill.Glass };
 
@@ -1031,8 +940,6 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        // ── Пазы детали ───────────────────────────────────────────────
-        // Все правки набора пазов идут через SetGroovesCommand: Ctrl+Z обязан
         private void RelayoutForTarget()
         {
             if (_target == null) return;
@@ -1064,10 +971,8 @@ namespace KitchenDesigner.Core.UI
             return facets;
         }
 
-
         private void OnDrawerTypeChanged(int index)
         {
-            // Значения enum DrawerType — высоты в мм; индекс дропдауна кастовать нельзя.
             if (_target is DrawerElement d)
                 d.Type = DrawerConstants.TypeFromIndex(index);
         }
@@ -1088,17 +993,11 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target is DrawerElement d)
             {
-                // Цикл трёх состояний — только при живой паре; флаг IsDouble без
-                // пары (битые ссылки, старые сцены) ведёт себя как одиночный.
                 if (d.FindPaired() != null) d.CycleDoubleState();
                 else d.ToggleOpen();
                 UpdateDrawerAnimButton(d);
             }
         }
-
-        // ── Двойной ящик ─────────────────────────────────────────────
-        // Верхний внутренний ящик (тип A) жёстко привязан к нижнему: своего окна
-        // свойств не имеет, из окна нижнего настраивается только его длина.
 
         private bool HasUpperDrawer() =>
             _target is DrawerElement d && !d.IsUpperDrawer && d.FindPaired() != null;
@@ -1118,7 +1017,7 @@ namespace KitchenDesigner.Core.UI
             if (pair == null) return;
             CommandStack.Execute(new CreateCommand(pair.gameObject));
             RefreshHighlights();
-            Open(d); // перестроить строки пары и подпись кнопки анимации
+            Open(d);
         }
 
         private void RemoveUpperDrawer()
@@ -1240,10 +1139,6 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        /// <summary>У пассажира (фасад пристёгнут к посудомойке) собственного
-        /// режима открывания нет — кинематику диктует хост. Дропдаун
-        /// «Открывание» в этом случае бесполезен, и его проще скрыть, чем
-        /// держать серым с пояснением.</summary>
         private void UpdateModeDropdownEnabled(FacadeElement? facade)
         {
             if (_modeDropdown == null) return;
@@ -1296,7 +1191,6 @@ namespace KitchenDesigner.Core.UI
             var go = _target.gameObject;
             string deletedName = _target.PartName;
 
-            // Верхний ящик пары жёстко привязан — удаляется вместе с нижним.
             if (_target is DrawerElement d && !d.IsUpperDrawer)
             {
                 var upperGo = DrawerLinks.DetachPair(d);
@@ -1309,13 +1203,9 @@ namespace KitchenDesigner.Core.UI
             CommandStack.Execute(new DeleteCommand(go));
             RefreshHighlights();
 
-            // Подтверждения нет намеренно: удаление обратимо на месте — тост
-            // с «Отменить» (правило 3 UI-GUIDELINES).
             string expected = $"Delete {deletedName}";
             ToastNotification.ShowIfAvailable($"Удалено: {deletedName}", 5f, "Отменить", () =>
             {
-                // Отменяем только если удаление всё ещё наверху стека — иначе
-                // Ctrl+Z-семантика тоста откатила бы чужое действие.
                 if (CommandStack.CanUndo && CommandStack.PeekUndoDescription() == expected)
                 {
                     CommandStack.Undo();
