@@ -66,9 +66,8 @@ namespace KitchenDesigner.Core.Update
                 return false;
             }
 
-            // Ищем x64-установщик: в имени есть «Setup», «x64», и оно кончается на «.exe».
-            // GitHub отдаёт ассеты в своём порядке — берём первый подходящий, но
-            // предпочитаем тот, у кого имя совпадает с тегом (защита от leftover-артефактов).
+            string version = release.tag_name.TrimStart('v', 'V');
+
             GhAsset? best = null;
             if (release.assets != null)
             {
@@ -77,21 +76,21 @@ namespace KitchenDesigner.Core.Update
                     if (a == null || string.IsNullOrEmpty(a.name) ||
                         string.IsNullOrEmpty(a.browser_download_url)) continue;
                     if (!IsSetupAsset(a.name)) continue;
-                    if (best == null) best = a;
-                    else if (a.name.IndexOf(release.tag_name.TrimStart('v'), StringComparison.Ordinal) >= 0)
-                        best = a; // совпадает по версии — надёжнее
+                    if (!CarriesVersion(a.name, version)) continue;
+                    best = a;
+                    break;
                 }
             }
 
             if (best == null)
             {
-                error = "В релизе нет установщика x64";
+                error = "В релизе нет установщика x64 для версии " + version;
                 return false;
             }
 
             manifest = new ReleaseManifest
             {
-                Version = release.tag_name.TrimStart('v', 'V'),
+                Version = version,
                 DownloadUrl = best.browser_download_url,
                 FileName = best.name,
             };
@@ -103,6 +102,11 @@ namespace KitchenDesigner.Core.Update
             return name.IndexOf("Setup", StringComparison.OrdinalIgnoreCase) >= 0
                 && name.IndexOf("x64", StringComparison.OrdinalIgnoreCase) >= 0
                 && name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool CarriesVersion(string name, string version)
+        {
+            return name.IndexOf("-" + version + "-", StringComparison.Ordinal) >= 0;
         }
     }
 }

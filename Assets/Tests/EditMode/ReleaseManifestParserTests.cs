@@ -40,6 +40,36 @@ public class ReleaseManifestParserTests
     }
 
     [Test]
+    public void Parse_OnlyAssetIsFromAnotherVersion_Fails()
+    {
+        const string json = @"{
+            ""tag_name"": ""v0.700"",
+            ""assets"": [
+                { ""name"": ""KitchenDesigner-Setup-0.662-x64.exe"", ""browser_download_url"": ""old"" }
+            ]
+        }";
+        Assert.IsFalse(ReleaseManifestParser.TryParse(json, out _, out var err),
+            "Ассет от чужой версии брать нельзя: publish-github.cmd умел догрузить старый setup " +
+            "в новый релиз, и тогда апдейтер ставил бы 0.662 по тегу v0.700 — после перезапуска " +
+            "версия остаётся старой и обновление предлагается снова, бесконечно.");
+        Assert.That(err, Does.Contain("0.700"),
+            "Ошибка должна называть версию, для которой установщика не нашлось.");
+    }
+
+    [Test]
+    public void Parse_AssetOfALongerVersion_DoesNotPassForItsPrefix()
+    {
+        const string json = @"{
+            ""tag_name"": ""v0.70"",
+            ""assets"": [
+                { ""name"": ""KitchenDesigner-Setup-0.700-x64.exe"", ""browser_download_url"": ""x"" }
+            ]
+        }";
+        Assert.IsFalse(ReleaseManifestParser.TryParse(json, out _, out _),
+            "«0.70» — префикс «0.700»; сравнение подстрокой без разделителей приняло бы чужой ассет.");
+    }
+
+    [Test]
     public void Parse_IgnoresNonSetupAssets()
     {
         const string json = @"{
