@@ -3,9 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Торец листовой детали в обозначениях раскроя: L1/L2 — длинные
-    /// стороны прямоугольника (полоса кромки длиной L), W1/W2 — короткие.
-    /// Номер 1 — сторона по положительному направлению оси детали.</summary>
     public enum EdgeSide
     {
         L1,
@@ -14,16 +11,10 @@ namespace KitchenDesigner.Core
         W2,
     }
 
-    /// <summary>Маска «ручных» сторон: пользователь сам решил, есть ли кромка на
-    /// этой стороне, и снял с неё автоматическую проверку. Маска, а не четыре
-    /// поля, — чтобы состояние ехало через сохранение, команды и конвертацию
-    /// одним числом, как и остальные флаги детали.</summary>
     public static class EdgeManual
     {
         public static int Bit(EdgeSide side) => 1 << (int)side;
 
-        /// <summary>Все четыре стороны разом — сюда мигрирует старый флажок
-        /// «не проверять кромки», который стоял на всю деталь.</summary>
         public const int AllMask = 0b1111;
 
         public static bool Has(int mask, EdgeSide side) => (mask & Bit(side)) != 0;
@@ -32,16 +23,10 @@ namespace KitchenDesigner.Core
             manual ? mask | Bit(side) : mask & ~Bit(side);
     }
 
-    /// <summary>Разбор габарита листовой детали на «толщина / длина / ширина» и
-    /// соответствие сторон L1/L2/W1/W2 индексам граней <see cref="KitchenElement.GetFaces"/>.
-    /// Порядок граней — контракт: index/2 = ось (0=X, 1=Y, 2=Z), чётный индекс —
-    /// положительное направление.</summary>
     public readonly struct EdgeLayout
     {
         public readonly bool IsValid;
-        /// <summary>Ось толщины плиты (сторона тоньше EDGE_MAX_SIDE_MM).</summary>
         public readonly int ThicknessAxis;
-        /// <summary>Ось длинной стороны прямоугольника (её размер = LengthMM).</summary>
         public readonly int LengthAxis;
         public readonly int WidthAxis;
         public readonly int LengthMM;
@@ -60,9 +45,6 @@ namespace KitchenDesigner.Core
             ThicknessMM = thicknessMM;
         }
 
-        /// <summary>Индекс грани-торца для стороны. Полоса кромки длиной L лежит
-        /// на грани, ПЕРПЕНДИКУЛЯРНОЙ короткой оси (её размеры — L × толщина),
-        /// поэтому L-стороны берут ось ширины, а W-стороны — ось длины.</summary>
         public int FaceIndex(EdgeSide side) => side switch
         {
             EdgeSide.L1 => WidthAxis * 2,
@@ -71,13 +53,10 @@ namespace KitchenDesigner.Core
             _ => LengthAxis * 2 + 1,
         };
 
-        /// <summary>Длина полосы кромки на этой стороне, мм.</summary>
         public int SideLengthMM(EdgeSide side) =>
             side == EdgeSide.L1 || side == EdgeSide.L2 ? LengthMM : WidthMM;
     }
 
-    /// <summary>Доля перекрытия каждого торца соседями (0 — открыт, 1 — закрыт).
-    /// Кромка есть там, где торец НЕ перекрыт целиком.</summary>
     public readonly struct EdgeCoverage
     {
         private readonly float _l1, _l2, _w1, _w2;
@@ -95,15 +74,10 @@ namespace KitchenDesigner.Core
             _ => _w2,
         };
 
-        /// <summary>Торец перекрыт целиком (упирается в соседа/стену/пол) —
-        /// кромка не нужна.</summary>
         public bool IsCovered(EdgeSide side) => Ratio(side) >= 1f - EdgeBanding.CoverEpsilon;
 
-        /// <summary>Есть кромка: торец открыт хотя бы частично.</summary>
         public bool HasEdge(EdgeSide side) => !IsCovered(side);
 
-        /// <summary>Торец перекрыт ЧАСТИЧНО — конструктивная ошибка: кромку
-        /// клеить придётся, но соседняя деталь на неё наезжает.</summary>
         public bool IsPartial(EdgeSide side)
         {
             float r = Ratio(side);
@@ -111,16 +85,8 @@ namespace KitchenDesigner.Core
         }
     }
 
-    /// <summary>Слепок сцены для расчёта перекрытий: грани каждой детали и её
-    /// габаритная сфера, посчитанные ОДИН раз.
-    ///
-    /// Нужен потому, что <see cref="KitchenElement.GetFaces"/> каждый раз строит
-    /// новый массив из шести Face, а перекрытие торцов — задача попарная: без
-    /// слепка проход по сцене из n деталей звал его n² раз. Сфера поверх этого
-    /// отсекает заведомо далёких соседей до всякой работы с гранями.</summary>
     public sealed class SceneFaces
     {
-        /// <summary>Габаритная сфера детали в мировых координатах.</summary>
         public readonly struct Sphere
         {
             public readonly Vector3 Center;
@@ -132,8 +98,6 @@ namespace KitchenDesigner.Core
                 Radius = radius;
             }
 
-            /// <summary>Сферы могут касаться с точностью до допуска контакта.
-            /// Сравнение квадратов — без корня.</summary>
             public bool Touches(in Sphere other, float slack)
             {
                 float reach = Radius + other.Radius + slack;
@@ -165,8 +129,6 @@ namespace KitchenDesigner.Core
         public Face[] FacesAt(int i) => _faces[i];
         public Sphere SphereAt(int i) => _spheres[i];
 
-        /// <summary>Сфера детали из слепка, а если её там нет — посчитанная на
-        /// месте (деталь могли создать уже после снятия слепка).</summary>
         public Sphere SphereOf(KitchenElement element)
         {
             for (int i = 0; i < _elements.Count; i++)
@@ -174,61 +136,37 @@ namespace KitchenDesigner.Core
             return BoundingSphere(element, element.GetFaces());
         }
 
-        /// <summary>Сфера СТРОГО по граням, а не по DimensionsMM: у опоры и
-        /// стола грани считаются от собственных размеров, и сфера по габариту
-        /// детали оказалась бы меньше настоящей — широкая фаза начала бы терять
-        /// соседей.</summary>
         private static Sphere BoundingSphere(KitchenElement element, Face[] faces)
         {
             var center = element.transform.position;
             float radius = 0f;
             foreach (var f in faces)
             {
-                // Дальний угол грани от центра детали: до её середины плюс
-                // половина диагонали самой грани.
-                float half = 0.5f * Mathf.Sqrt(f.size.x * f.size.x + f.size.y * f.size.y);
-                radius = Mathf.Max(radius, (f.center - center).magnitude + half);
+                float halfFaceDiagonal = 0.5f * Mathf.Sqrt(f.size.x * f.size.x + f.size.y * f.size.y);
+                radius = Mathf.Max(radius, (f.center - center).magnitude + halfFaceDiagonal);
             }
             return new Sphere(center, radius);
         }
     }
 
-    /// <summary>
-    /// Кромкование торцов: какие торцы детали открыты (кромка есть), а какие
-    /// упираются в соседей (кромки нет). Считается ПОЛНОСТЬЮ автоматически по
-    /// геометрии сцены — вручную кромка не назначается.
-    ///
-    /// Перекрытие меряется площадью: собираем прямоугольники встречных граней
-    /// соседей, проецируем на плоскость торца и берём площадь их объединения.
-    /// Именно объединения, а не «есть контакт с кем-то»: торец, закрытый двумя
-    /// деталями пополам, перекрыт целиком, и кромки на нём нет.
-    /// </summary>
     public static class EdgeBanding
     {
-        /// <summary>Допуск по доле перекрытия. 0.1 % площади торца — заведомо
-        /// больше ошибки float и заведомо меньше касания любой реальной детали
-        /// (18 мм на торце 500×18 — это 3.6 %).</summary>
         public const float CoverEpsilon = 0.001f;
 
-        /// <summary>Деталь — лист: ровно одна сторона тоньше порога. У бруска
-        /// (две и более тонких стороны) торец не определён.</summary>
         public static bool IsSheet(Vector3Int dimsMM) => ThinAxis(dimsMM) >= 0;
 
-        /// <summary>Индекс единственной тонкой оси или −1.</summary>
         public static int ThinAxis(Vector3Int dimsMM)
         {
             int axis = -1;
             for (int i = 0; i < 3; i++)
             {
                 if (dimsMM[i] >= AppConstants.EDGE_MAX_SIDE_MM) continue;
-                if (axis >= 0) return -1; // тонких сторон больше одной
+                if (axis >= 0) return -1;
                 axis = i;
             }
             return axis;
         }
 
-        /// <summary>Разбор габарита на толщину/длину/ширину. При равных сторонах
-        /// длинной считается ось с меньшим индексом — раскладка детерминирована.</summary>
         public static EdgeLayout LayoutOf(Vector3Int dimsMM)
         {
             int thick = ThinAxis(dimsMM);
@@ -244,41 +182,17 @@ namespace KitchenDesigner.Core
                 dimsMM[lengthAxis], dimsMM[widthAxis], dimsMM[thick]);
         }
 
-        /// <summary>Строка для CSV: толщина кромки с округлением до десятых.
-        /// Разделитель — точка (файл читают станки и Excel с любой локалью).</summary>
         public static string FormatThickness(float thicknessMM) =>
             thicknessMM.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
 
-        /// <summary>Сосед, который торец НЕ закрывает и кромку с него не снимает.
-        ///
-        /// Лампа — декор, мойка врезана в столешницу: ни та, ни другая торец не
-        /// закрывают (те же исключения, что у ConstraintValidator). Опора
-        /// подпирает деталь снизу точечно: торец над ней остаётся видимым и
-        /// кромкуется целиком, иначе каждая деталь на опорах ловила ложную
-        /// EDG-01 на 2–9 %.
-        ///
-        /// Фасад и ящик ОТКРЫВАЮТСЯ: торец за ними виден в открытом состоянии и
-        /// кромкуется. Считать их перекрытием нельзя — передние торцы всего
-        /// корпуса уходили в раскрой без кромки, а фасад с зазорами (GappedBox
-        /// уменьшает габарит) накрывал торец частично и давал ложную EDG-01.
-        /// Грани фасада к тому же берутся от ЗАКРЫТОЙ позы, так что от анимации
-        /// это не зависит. AssembledFacadeElement наследует FacadeElement и
-        /// попадает сюда же; PanelElement (ХДФ, задняя стенка, дно ящика)
-        /// дверцей не является и торец закрывает как обычная деталь.</summary>
         private static bool IsTransparentToEdges(KitchenElement other) =>
             other is LightSourceElement || other is SinkElement || other is CooktopElement
             || other is OvenElement || other is DishwasherElement || other is PillarElement
             || other is FacadeElement || other is DrawerElement;
 
-        /// <summary>Доля перекрытия каждого торца детали соседями. others —
-        /// вся сцена (пол и стены тоже перекрывают торец и снимают кромку).</summary>
         public static EdgeCoverage Coverage(KitchenElement element, IReadOnlyList<KitchenElement> others)
             => Coverage(element, SceneFaces.Of(others));
 
-        /// <summary>То же по ГОТОВОМУ слепку сцены. Слепок стоит одного вызова
-        /// GetFaces на деталь, а без него каждая пара деталей звала его заново:
-        /// на проекте в 275 деталей проход по всей сцене занимал 154 мс, из них
-        /// почти всё — 75 тысяч аллокаций массива граней.</summary>
         public static EdgeCoverage Coverage(KitchenElement element, SceneFaces scene)
         {
             if (element == null || scene == null) return default;
@@ -294,9 +208,6 @@ namespace KitchenDesigner.Core
                 faces[layout.FaceIndex(EdgeSide.W2)],
             };
 
-            // Прямоугольники-перекрытия собираются ЗА ОДИН проход по сцене:
-            // грани соседа считаются один раз на все четыре торца, а не по разу
-            // на каждый (на проекте в 200+ деталей это разница в 4 раза).
             var covers = new List<Rect>[4];
             for (int i = 0; i < 4; i++) covers[i] = new List<Rect>();
 
@@ -308,7 +219,6 @@ namespace KitchenDesigner.Core
                 if (other == null || other == element) continue;
                 if (!other.gameObject.activeInHierarchy) continue;
                 if (IsTransparentToEdges(other)) continue;
-                // Широкая фаза: деталь на другом конце кухни торец не закроет.
                 if (!sphere.Touches(scene.SphereAt(k), contactDist)) continue;
 
                 var otherFaces = scene.FacesAt(k);
@@ -320,7 +230,6 @@ namespace KitchenDesigner.Core
 
                     foreach (var of in otherFaces)
                     {
-                        // Перекрывает только ВСТРЕЧНАЯ грань вплотную (dot ≈ −1).
                         if (Vector3.Dot(face.normal, of.normal) > -Tolerance.ParallelDot) continue;
                         if (Mathf.Abs(Vector3.Dot(of.center - face.center, face.normal)) > contactDist) continue;
 
@@ -340,14 +249,6 @@ namespace KitchenDesigner.Core
                 CoveredRatio(ends[3], covers[3]));
         }
 
-        /// <summary>Деталь, которая закрывает торец больше остальных (по площади
-        /// перекрытия), или null. Нужна, чтобы ошибка «торец перекрыт частично»
-        /// называла ВИНОВНИКА и подсвечивала его в сцене, а не только саму деталь.
-        ///
-        /// Отдельный проход, а не побочный результат <see cref="Coverage"/>:
-        /// Coverage — горячий путь O(n²) на всю сцену, а частично перекрытые
-        /// торцы редки, и точечный доп. проход по ним дешевле, чем таскать
-        /// ссылки на детали через каждый вызов.</summary>
         public static KitchenElement? DominantCoverer(KitchenElement element,
             IReadOnlyList<KitchenElement> others, EdgeSide side, out float coveredArea)
         {
@@ -368,8 +269,6 @@ namespace KitchenDesigner.Core
                 if (!other.gameObject.activeInHierarchy) continue;
                 if (IsTransparentToEdges(other)) continue;
 
-                // Сосед может прилегать несколькими гранями — берём их объединение,
-                // иначе деталь, накрывшая торец «уголком», недосчитает площадь.
                 var rects = new List<Rect>();
                 foreach (var of in other.GetFaces())
                 {
@@ -392,7 +291,6 @@ namespace KitchenDesigner.Core
             return best;
         }
 
-        /// <summary>Доля площади грани, накрытая собранными прямоугольниками.</summary>
         private static float CoveredRatio(in Face face, List<Rect> covers)
         {
             float area = face.size.x * face.size.y;
@@ -400,9 +298,6 @@ namespace KitchenDesigner.Core
             return Mathf.Clamp01(UnionArea(covers) / area);
         }
 
-        /// <summary>Площадь объединения прямоугольников: сжатие координат в
-        /// сетку и суммирование занятых ячеек. Прямоугольников единицы, поэтому
-        /// O(n³) здесь дешевле любой заметающей прямой.</summary>
         private static float UnionArea(List<Rect> rects)
         {
             var xs = new List<float>();
@@ -439,9 +334,6 @@ namespace KitchenDesigner.Core
             return total;
         }
 
-        /// <summary>Габарит грани в координатах (u, v) — та же проекция, что в
-        /// ConstraintValidator: у повёрнутой детали грань остаётся прямоугольной
-        /// только в собственных осях, поэтому берётся её описанный прямоугольник.</summary>
         private static Rect FaceRect(in Face face, Vector3 u, Vector3 v)
         {
             float cu = Vector3.Dot(face.center, u);
