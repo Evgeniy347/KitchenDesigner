@@ -122,4 +122,26 @@ public class MmGridTests
         Assert.AreEqual(before, e.transform.position, "примерка не должна двигать деталь");
         Assert.AreEqual(1.2010f, snapped.z, 1e-5f, "0.5 мм вверх → грани на 1193/1209");
     }
+
+    [Test]
+    public void LoweredWall_IsLeftAlone_SoTheGridDoesNotSinkIt()
+    {
+        var go = ElementFactory.CreateWall(
+            new Vector3Int(100, 2700, 3000), "GridWall", new Vector3(0.0002f, 1.35f, 0f));
+        _spawned.Add(go);
+        var element = go.GetComponent<KitchenElement>();
+        var wall = go.GetComponent<Wall>();
+
+        Assert.IsTrue(MmGrid.Snap(element),
+            "стена в полный рост мимо сетки выравнивается — положительный контроль");
+
+        go.transform.position = new Vector3(0.0002f, 1.35f, 0f);
+        wall.SetLowered(true, 0.1f);
+        var before = go.transform.position;
+
+        Assert.IsFalse(MmGrid.Snap(element),
+            "у опущенной стены вершины считаются от ПОЛНОЙ геометрии, и правка позиции "
+            + "по ним увела бы стену вниз вместе с опусканием");
+        Assert.AreEqual(before, go.transform.position, "позицию не тронули");
+    }
 }

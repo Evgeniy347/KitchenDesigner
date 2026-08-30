@@ -2,15 +2,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Кто чем владеет по видимости в сцене:
-    /// стены и их окна/двери — <see cref="WallManager"/>, полы — CameraController,
-    /// всё остальное («объекты») — этот менеджер. Разделение важно: два
-    /// компонента, гасящих один и тот же рендерер, дают мигание.</summary>
     public static class SceneVisibility
     {
-        /// <summary>Гасит/включает рендеры элемента вместе с потомками — у окна,
-        /// двери, ящика геометрия собрана из дочерних объектов, и одного
-        /// MeshRenderer на корне недостаточно.</summary>
         public static void SetRenderersEnabled(KitchenElement element, bool enabled)
         {
             if (element == null) return;
@@ -19,9 +12,6 @@ namespace KitchenDesigner.Core
                 if (renderers[i] != null) renderers[i].enabled = enabled;
         }
 
-        /// <summary>Виден ли элемент сейчас. У окна/двери/ящика геометрия в
-        /// потомках, поэтому одного рендерера на корне мало; отсутствие
-        /// рендереров вовсе считаем «виден» — гасить нечего.</summary>
         public static bool AnyRendererEnabled(KitchenElement element)
         {
             if (element == null) return false;
@@ -32,8 +22,6 @@ namespace KitchenDesigner.Core
             return false;
         }
 
-        /// <summary>«Объект» — всё, что не относится к конструкции помещения
-        /// (стена, пол) и не является окном или дверью.</summary>
         public static bool IsObject(KitchenElement element)
         {
             if (element == null) return false;
@@ -44,11 +32,6 @@ namespace KitchenDesigner.Core
             return true;
         }
 
-        /// <summary>Должен ли «объект» быть виден при данном состоянии вида.
-        /// Про режим здесь не знают: что фоторежим показывает всё, а помещение —
-        /// нет, уже учтено в <see cref="ViewResolver"/>. Вызывать только после
-        /// <see cref="IsObject"/> — для стен, полов, окон и дверей ответ не имеет
-        /// смысла, ими владеют другие менеджеры.</summary>
         public static bool ShouldBeVisible(KitchenElement element, in ViewState view)
         {
             if (element is LightSourceElement && view.HideLightSources) return false;
@@ -56,25 +39,18 @@ namespace KitchenDesigner.Core
         }
     }
 
-    /// <summary>Применяет настройки «Объекты» и «Скрыть источники света»
-    /// к сцене каждый кадр — по тем же правилам, что WallManager для стен.
-    /// Перебор пропускается, пока настройки не менялись и элементы не добавлялись/удалялись.</summary>
     public class SceneVisibilityManager : MonoBehaviour
     {
         private static int _appliedHash = -1;
 
         public void LateUpdate() => Apply();
 
-        /// <summary>Заказать переприменение видимости на следующем кадре — вызывается
-        /// при добавлении/удалении элемента или смене настроек.</summary>
         public static void Invalidate() => _appliedHash = -1;
 
         public static void Apply()
         {
             using var _ = PerfMarkers.SceneVisibilityApply.Auto();
             var view = ViewResolver.Current;
-            // Хеш по ЭФФЕКТИВНЫМ значениям: в фоторежиме они не меняются, сколько
-            // бы тумблеров ни трогали, и лишнего прохода по сцене не будет.
             int hash = (view.ObjectsVisible ? 1 : 0) | (view.HideLightSources ? 2 : 0);
             if (hash == _appliedHash) return;
             _appliedHash = hash;

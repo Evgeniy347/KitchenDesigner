@@ -2,17 +2,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Управляет стенами: показ/скрытие (настройка WallsEnabled) и опускание
-    /// ближних стён до 100 мм в режиме обзора (LowerNearWalls, логика The Sims).
-    /// Опускание сохраняется и во время перетаскивания объектов (чтобы стены не
-    /// «выскакивали» при движении), кроме самой перемещаемой стены — её не опускаем,
-    /// иначе опускание дралось бы с drag за позицию по Y.
-    /// В режиме «помещение» опускание принудительно выключено: там правят саму
-    /// конструкцию, и обрезанные стены мешали бы. Что именно форсирует режим —
-    /// решает <see cref="ViewResolver"/>, здесь только применение.
-    /// Окна и двери опущенных стен прячутся отдельной настройкой
-    /// (HideOpeningsOnLoweredWalls) — вырез в стене при этом сохраняется, потому
-    /// что он часть меша стены, а не окна.</summary>
     public class WallManager : MonoBehaviour
     {
         private const float LoweredHeightMM = 100f;
@@ -27,14 +16,13 @@ namespace KitchenDesigner.Core
         public void LateUpdate()
         {
             using var _ = PerfMarkers.WallManagerLateUpdate.Auto();
-            // Что режим форсирует, а что берётся из пресета — знает ViewResolver.
             var view = ViewResolver.Current;
             bool show = view.WallsEnabled;
             bool lowerMode = view.LowerNearWalls;
             bool hideOpenings = lowerMode && view.HideOpeningsOnLoweredWalls;
 
             Vector3 camF = _cachedCamera != null ? _cachedCamera.transform.forward : Vector3.forward;
-            Vector3 sceneCenter = Vector3.zero; // центр пола
+            Vector3 sceneCenter = Vector3.zero;
             float loweredUnits = LoweredHeightMM * AppConstants.MM_TO_UNITS;
 
             foreach (var e in PartRegistry.All)
@@ -46,14 +34,9 @@ namespace KitchenDesigner.Core
                 var renderer = e.GetComponent<MeshRenderer>();
                 if (renderer != null) renderer.enabled = show;
 
-                // Кликабельность считается отдельно от видимости: в режиме
-                // «помещение» правят саму конструкцию, и стена должна ловить клик
-                // даже с выключенным показом стен.
                 var collider = e.GetComponent<Collider>();
                 if (collider != null) collider.enabled = show || RoomMode;
 
-                // Стена скрыта — прячем и её окна с дверями, иначе рама висит
-                // в воздухе там, где стены уже нет.
                 if (!show)
                 {
                     wall.RestoreFull();
@@ -61,8 +44,6 @@ namespace KitchenDesigner.Core
                     continue;
                 }
 
-                // Стену, которую сейчас перетаскивают или ресайзят, держим на полной
-                // высоте (иначе изменение геометрии ломает drag/прилипание к полу).
                 if (ElementMover.IsMoving(e) || ResizeHandleManager.IsResizingElement(e))
                 {
                     wall.RestoreFull();
@@ -76,8 +57,6 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Режим «помещение»: стены всегда в полный рост независимо от
-        /// настройки «опускать ближние стены».</summary>
         public static bool RoomMode => EditModeManager.Mode == EditMode.Room;
 
         private static void ApplyOpeningVisibility(Wall wall, bool hidden)

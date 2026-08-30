@@ -3,11 +3,6 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>
-    /// Реализация <see cref="IGroupService"/>. Хранит реестр групп; принадлежность
-    /// элемента группе — это его GroupId, состав группы выводится из PartRegistry
-    /// (как и раньше в GroupManager).
-    /// </summary>
     public class GroupServiceInstance : IGroupService
     {
         private readonly Dictionary<int, LinkGroup> _groups = new Dictionary<int, LinkGroup>();
@@ -39,7 +34,7 @@ namespace KitchenDesigner.Core
         public void Unlink(LinkGroup g)
         {
             if (g == null || !_groups.ContainsKey(g.id)) return;
-            if (ModuleEditMode.Active == g) ModuleEditMode.Exit(); // роспуск редактируемого модуля
+            if (ModuleEditMode.Active == g) ModuleEditMode.Exit();
             foreach (var m in MembersOf(g))
                 m.GroupId = 0;
             _groups.Remove(g.id);
@@ -68,7 +63,6 @@ namespace KitchenDesigner.Core
             if (g == null || e == null || !_groups.ContainsKey(g.id)) return;
             if (e.GroupId == g.id) return;
             e.GroupId = g.id;
-            // Подвижность группы распространяется на нового участника.
             e.Movable = g.movable;
             RaiseChanged();
         }
@@ -114,7 +108,7 @@ namespace KitchenDesigner.Core
 
         public void Clear()
         {
-            ModuleEditMode.Exit(); // сцена перезагружается — режим не переживает загрузку
+            ModuleEditMode.Exit();
             _groups.Clear();
             _nextId = 1;
             RaiseChanged();

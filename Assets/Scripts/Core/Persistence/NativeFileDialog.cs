@@ -7,13 +7,6 @@ using System.Runtime.InteropServices;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>
-    /// Системный диалог открытия/сохранения файла.
-    ///   • В редакторе — UnityEditor.EditorUtility (надёжно).
-    ///   • В Windows-плеере — comdlg32 (GetOpenFileName/GetSaveFileName).
-    ///   • На прочих платформах / при сбое — null (вызывающий код делает fallback).
-    /// Возвращает полный путь к файлу или null, если отменено.
-    /// </summary>
     public static class NativeFileDialog
     {
         private const string JsonFilter = "Проект кухни (*.json)\0*.json\0Все файлы (*.*)\0*.*\0\0";
@@ -72,8 +65,6 @@ namespace KitchenDesigner.Core
         }
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
-        // Класс маршалится как указатель; строковые поля с CharSet.Auto сохраняют
-        // встроенные \0 фильтра (длина управляемой строки учитывает их).
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
         private class OpenFileName
         {
@@ -138,7 +129,7 @@ namespace KitchenDesigner.Core
                     : (OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR);
 
                 bool ok = save ? GetSaveFileName(ofn) : GetOpenFileName(ofn);
-                if (!ok) return null; // отмена или ошибка
+                if (!ok) return null;
                 return string.IsNullOrEmpty(ofn.file) ? null : ofn.file.TrimEnd('\0');
             }
             catch (Exception ex)

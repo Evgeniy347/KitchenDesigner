@@ -3,11 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>
-    /// Автосохранение в проект "autosave" с интервалом из настроек
-    /// (`KitchenSettings.AutoSaveInterval`, сек), только если сцена изменилась с
-    /// прошлого автосохранения (сравнение сериализованного состояния).
-    /// </summary>
     public class AutoSaveManager : MonoBehaviour
     {
         public const string AutoSaveName = "autosave";
@@ -20,29 +15,19 @@ namespace KitchenDesigner.Core
             StartCoroutine(AutoSaveLoop());
         }
 
-        /// <summary>При закрытии программы, если включено автосохранение —
-        /// гарантированно пишем текущую сцену в файл (корутина могла не успеть).</summary>
         private void OnApplicationQuit()
         {
             SaveOnQuit();
         }
 
-        /// <summary>Сохранить при выходе, если включена настройка AutoSave.
-        /// Возвращает true, если файл записан. Чистый метод — тестируется без
-        /// жизненного цикла MonoBehaviour.</summary>
         public static bool SaveOnQuit()
         {
             var settings = KitchenSettings.Instance;
             if (settings == null || !settings.AutoSave) return false;
-            return SaveActiveTarget();
+            return SaveIntoTheOpenProjectOrAutosave();
         }
 
-        /// <summary>Записать текущую сцену в АКТИВНУЮ цель сохранения: открытый
-        /// пользователем файл (его и грузит <see cref="SaveLoadManager.LoadLastSession"/>
-        /// при старте), иначе — в проект автосохранения. Без этого правки при
-        /// закрытии уходили в отдельный autosave-файл и не подхватывались при
-        /// следующем запуске (грузился исходный открытый файл).</summary>
-        private static bool SaveActiveTarget()
+        private static bool SaveIntoTheOpenProjectOrAutosave()
         {
 #if UNITY_WEBGL
             var api = Object.FindAnyObjectByType<Networking.ProjectApiClient>();
@@ -52,7 +37,6 @@ namespace KitchenDesigner.Core
                 api.SaveCurrent(json, () => { }, _ => { });
                 return true;
             }
-            // Server save disabled or no project — fall back to local persistent save.
             if (SaveLoadManager.HasLastPath)
                 return SaveLoadManager.SaveToLastPath();
             return SaveLoadManager.SaveProject(AutoSaveName, backup: false);
@@ -63,25 +47,25 @@ namespace KitchenDesigner.Core
 #endif
         }
 
+        private static float IntervalSecondsRightNow()
+        {
+            var settings = KitchenSettings.Instance;
+            return settings != null ? Mathf.Max(1f, settings.AutoSaveInterval) : 60f;
+        }
+
         private IEnumerator AutoSaveLoop()
         {
             while (true)
             {
-                // Интервал перечитывается каждую итерацию — изменения настройки
-                // применяются на лету.
-                var settings = KitchenSettings.Instance;
-                float interval = settings != null ? Mathf.Max(1f, settings.AutoSaveInterval) : 60f;
-                yield return new WaitForSeconds(interval);
+                yield return new WaitForSeconds(IntervalSecondsRightNow());
 
-                settings = KitchenSettings.Instance;
+                var settings = KitchenSettings.Instance;
                 if (settings == null || !settings.AutoSave) continue;
 
                 string current = SaveLoadManager.CaptureCurrentJson();
-                if (current == _lastSavedJson) continue; // нет изменений
+                if (current == _lastSavedJson) continue;
 
-                // Пишем в открытый файл (его грузит старт), иначе — в проект
-                // автосохранения. Без архивации (иначе zip плодились бы постоянно).
-                if (SaveActiveTarget())
+                if (SaveIntoTheOpenProjectOrAutosave())
                 {
                     _lastSavedJson = current;
                     UI.StatusBarUI.Instance?.ShowTransient(

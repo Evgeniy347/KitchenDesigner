@@ -3,9 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Паз в файле проекта. Отдельный сериализуемый класс (а не сам
-    /// GrooveSpec): формат файла не должен зависеть от того, что enum'ы —
-    /// перечисления, а поля хранятся как int.</summary>
     [System.Serializable]
     public class GrooveEntry
     {
@@ -23,9 +20,6 @@ namespace KitchenDesigner.Core
         public GrooveSpec ToSpec() => new GrooveSpec((GrooveKind)kind, (GrooveSide)side);
     }
 
-    /// <summary>Накладка текстуры в файле проекта. Как и GrooveEntry — отдельный
-    /// класс, чтобы формат файла не зависел от внутреннего представления.
-    /// Нулевые width/height означают «во всю грань» (см. TextureOverlaySpec).</summary>
     [System.Serializable]
     public class TextureOverlayEntry
     {
@@ -72,8 +66,6 @@ namespace KitchenDesigner.Core
         public int gapRight = 2;
         public int gapTop = 2;
         public int gapBottom = 2;
-        // Зазоры по толщине появились позже остальных: в старых файлах поля нет,
-        // и JsonUtility оставляет ноль — ровно то поведение, что было раньше.
         public int gapFront = 0;
         public int gapBack = 0;
         public int groupId = 0;
@@ -86,11 +78,9 @@ namespace KitchenDesigner.Core
         public bool assembled = false;
         public int assembledFill = 0;
         public int grooveCount = AppConstants.ASSEMBLED_DEFAULT_GROOVES;
-        // Радиус скругления угла радиусной полки; в файлах без этого поля
-        // JsonUtility оставит дефолт.
         public int cornerRadius = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
 		public bool isDrawer = false;
-		public int drawerSystem = 0;   // 0 = GTV, 1 = Movento (DrawerSystem)
+		public int drawerSystem = 0;
 		public int drawerType = 0;
 		public int drawerNominalLength = 350;
 		public int drawerColor = 0;
@@ -99,8 +89,6 @@ namespace KitchenDesigner.Core
 		public bool drawerIsUpper = false;
 		public string drawerPairedName = "";
 		public string drawerAttachedFacadeName = "";
-		// Имя детали/фасада, к которой прикреплена эта деталь (см. AttachLinks).
-		// Пусто — не прикреплена.
 		public string attachedToName = "";
 		public int doubleDrawerState = 0;
 		public bool isWindow = false;
@@ -117,10 +105,8 @@ namespace KitchenDesigner.Core
 		public bool isPillar = false;
 		public int midHeightMM = 75;
 		public bool isFloor = false;
-		// Floor polygon as local X,Z pairs in MM. Empty = legacy rectangular floor.
 		public int[] floorPolygonXZ = System.Array.Empty<int>();
 		public bool isLightSource = false;
-		// Параметры лампы. Инициализаторы = дефолты для старых сейвов без этих полей.
 		public int lightTemperatureK = LightSourceElement.DEFAULT_TEMPERATURE_K;
 		public int lightPowerW = LightSourceElement.DEFAULT_POWER_W;
 		public int lightDiffusionPct = LightSourceElement.DEFAULT_DIFFUSION_PCT;
@@ -140,57 +126,29 @@ namespace KitchenDesigner.Core
 		public int lightShadow = (int)LightSourceElement.DEFAULT_SHADOW;
 		public bool isPanel = false;
 		public bool isSink = false;
-		// Привязка мойки: имя детали-столешницы и смещение от её центра в
-		// ЛОКАЛЬНЫХ мм. Проём восстанавливается из них, а не хранится в детали.
 		public string sinkAttachedPartName = "";
 		public int sinkOffsetXMM = 0;
 		public int sinkOffsetYMM = 0;
-		// Варочная поверхность: привязка к столешнице и размер выреза. Габариты
-		// плиты лежат в общем dimensionsMM; вырез — здесь. 0 в старых проектах
-		// (поля тогда не было) читается как «дефолтный вырез».
 		public bool isCooktop = false;
-		// Готовая модель («Bosch PUE611BB5E») — у неё габариты и вырез
-		// восстанавливаются из таблицы модели, а не из файла. Пусто = свободная
-		// варочная (в том числе во всех проектах старше этого поля).
 		public string cooktopModel = "";
 		public string cooktopAttachedPartName = "";
 		public int cooktopOffsetXMM = 0;
 		public int cooktopOffsetYMM = 0;
 		public int cooktopCutoutWidthMM = 0;
 		public int cooktopCutoutDepthMM = 0;
-		// Собственный разворот панели вокруг нормали столешницы (°). Из позы его
-		// не вывести дешевле: врезка выставляет поворот сама, и без этого поля
-		// загруженная варочная встала бы по осям детали. 0 в старых проектах.
 		public float cooktopYawDeg = 0f;
-		// Духовой шкаф (OvenElement.MODEL). Модель у него одна, а габариты —
-		// её производные, поэтому в файле хранится только сам факт типа: всё
-		// остальное восстанавливает фабрика. false во всех старых проектах.
 		public bool isOven = false;
-		// Посудомоечная машина (DishwasherElement.MODEL). Габариты — производные
-		// модели, поэтому в файле только факт типа; а вот ПРИСТЁГНУТЫЙ ФАСАД —
-		// настоящее свойство: своей фасадной панели у машины нет, и без этого
-		// имени она после загрузки осталась бы голым ящиком-корпусом.
 		public bool isDishwasher = false;
 		public string dishwasherAttachedFacadeName = "";
-		// Пазы детали; в файлах без этого поля JsonUtility оставит пустой массив.
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
-		// Накладки текстур (стена, пол); в старых файлах поля нет — пустой массив.
 		public TextureOverlayEntry[] textureOverlays = System.Array.Empty<TextureOverlayEntry>();
-		// Кромкование. Инициализаторы = дефолты для старых сейвов: кромка
-		// включена, толщина ленты стандартная.
 		public bool edgeBanding = true;
 		public float edgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
-		/// <summary>УСТАРЕЛО: общий отказ от проверки кромок на всю деталь.
-		/// Заменён на edgeManualMask (стороны по отдельности). Читается ради
-		/// старых проектов и пишется как «ручными помечены все четыре» — чтобы
-		/// файл, сохранённый новой версией, не терял смысл в старой.</summary>
 		public bool edgeSkipValidation = false;
-		/// <summary>Битовая маска сторон с ручной кромкой (см. EdgeManual).</summary>
 		public int edgeManualMask = 0;
 
         public ElementData() { }
 
-        /// <summary>Пазы из файла в виде спецификаций (устойчиво к null/мусору).</summary>
         public List<GrooveSpec> GrooveSpecs()
         {
             var result = new List<GrooveSpec>();
@@ -200,7 +158,6 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        /// <summary>Накладки текстур из файла (устойчиво к null/мусору).</summary>
         public List<TextureOverlaySpec> TextureOverlaySpecs()
         {
             var result = new List<TextureOverlaySpec>();
@@ -227,14 +184,6 @@ namespace KitchenDesigner.Core
 			var pillar = element as PillarElement;
 			var panel = element as PanelElement;
 
-            // Позицию/поворот пишем как ЛОГИЧЕСКУЮ, а не текущую (смещённую) позу:
-            //  • полускрытая стена временно опущена вниз → берём FullPosition,
-            //    иначе после загрузки она «утонет»;
-            //  • открытая дверца отведена от петли → берём ЗАКРЫТУЮ позу, иначе
-            //    после загрузки она отводится ещё раз и «уезжает».
-            //  • деталь, прикреплённая к открытому фасаду, уехала вместе с ним →
-            //    берём её позу покоя (AttachRestPosition), иначе проект
-            //    сохранился бы с разъехавшейся сборкой.
             var p = wall != null ? wall.FullPosition
                   : windowEl != null ? windowEl.ClosedPosition
                   : doorEl != null ? doorEl.ClosedPosition
@@ -273,8 +222,6 @@ namespace KitchenDesigner.Core
                 : radiusTable != null ? radiusTable.TabletopMaterialId : MaterialCatalog.DefaultId;
             d.cornerRadius = radialShelf != null ? radialShelf.CornerRadius : 0;
 
-            // Зазоры есть у любой детали, которая их поддерживает: фасад, ДВП/ХДФ,
-            // обычная деталь и радиусная полка (см. KitchenElement.SupportsGaps).
             d.gapLeft = element.SupportsGaps ? element.GapLeft : 0;
             d.gapRight = element.SupportsGaps ? element.GapRight : 0;
             d.gapTop = element.SupportsGaps ? element.GapTop : 0;
@@ -321,8 +268,6 @@ namespace KitchenDesigner.Core
                 d.drawerPairedName = drawer.PairedDrawerName ?? "";
                 d.drawerAttachedFacadeName = drawer.AttachedFacadeName ?? "";
                 d.doubleDrawerState = (int)drawer.DoubleState;
-                // Одиночный ящик хранит открытость в doorOpen (как фасад);
-                // у двойного состояние целиком описывает doubleDrawerState.
                 d.doorOpen = drawer.IsOpen;
             }
 
@@ -366,16 +311,12 @@ namespace KitchenDesigner.Core
 				d.cooktopYawDeg = cooktopEl.YawDeg;
 			}
 			d.isOven = element is OvenElement;
-			// Откинутая дверца духовки хранится в общем doorOpen — там же, где
-			// открытый фасад и выдвинутый одиночный ящик.
 			if (element is OvenElement ovenEl)
 				d.doorOpen = ovenEl.IsOpen;
 			d.isDishwasher = element is DishwasherElement;
 			if (element is DishwasherElement dishwasherEl)
 			{
 				d.dishwasherAttachedFacadeName = dishwasherEl.AttachedFacadeName ?? "";
-				// Откинутая дверца машины хранится в общем doorOpen — там же, где
-				// откинутая дверца духовки и открытый фасад.
 				d.doorOpen = dishwasherEl.IsOpen;
 			}
 			d.isFloor = element is FloorElement;
@@ -411,20 +352,16 @@ namespace KitchenDesigner.Core
 			}
 			d.midHeightMM = pillar != null ? pillar.MidHeightMM : PillarElement.MidHeightMM_Default;
 
-			// Пазы есть только у базовой «Детали» — у остальных типов список пуст.
 			var grooveSpecs = element.Grooves;
 			d.grooves = new GrooveEntry[grooveSpecs.Count];
 			for (int i = 0; i < grooveSpecs.Count; i++)
 				d.grooves[i] = new GrooveEntry(grooveSpecs[i]);
 
-			// Накладки текстур есть только у стены и пола — у прочих список пуст.
 			var overlaySpecs = element.TextureOverlays;
 			d.textureOverlays = new TextureOverlayEntry[overlaySpecs.Count];
 			for (int i = 0; i < overlaySpecs.Count; i++)
 				d.textureOverlays[i] = new TextureOverlayEntry(overlaySpecs[i]);
 
-			// Кромкование, как и пазы, живёт только у базовой «Детали»; у прочих
-			// типов пишутся дефолты и при загрузке отбрасываются.
 			d.edgeBanding = element.Data.EdgeBanding;
 			d.edgeThicknessMM = element.Data.EdgeThicknessMM;
 			d.edgeManualMask = element.Data.EdgeManualMask;
@@ -436,8 +373,6 @@ namespace KitchenDesigner.Core
             return d;
         }
 
-        // Геттеры устойчивы к повреждённому/неполному JSON (не кидают исключение,
-        // а возвращают безопасные значения по умолчанию).
         public Vector3Int Dimensions =>
             dimensionsMM != null && dimensionsMM.Length >= 3
                 ? new Vector3Int(dimensionsMM[0], dimensionsMM[1], dimensionsMM[2])

@@ -13,14 +13,10 @@ namespace KitchenDesigner.Core
             var currentType = GetElementType(source);
             if (currentType == targetType) return source;
 
-            // Ящик GTV — самостоятельный тип со собственной геометрией/состоянием: он не
-            // участвует в конвертации ни в одну сторону (план §10.1). Выпадающий список типа
-            // в контекстном меню отражает «Ящик GTV» как индикатор, но конвертация — no-op.
             if (currentType == TargetType.Drawer || targetType == TargetType.Drawer) return source;
             if (currentType == TargetType.Window || targetType == TargetType.Window) return source;
             if (currentType == TargetType.Door || targetType == TargetType.Door) return source;
             if (source is CooktopElement) return source;
-            // Готовая техника: модель — это и есть тип, конвертировать нечего.
             if (source is OvenElement) return source;
             if (source is DishwasherElement) return source;
 
@@ -39,8 +35,6 @@ namespace KitchenDesigner.Core
             var transparent = source.Transparent;
             var attachedToName = source.AttachedToName;
 
-            // Зазоры источника; фасад отмечаем отдельно — из него они в деталь
-            // не уезжают (отступ от проёма полке ни к чему).
             var srcGaps = source.SupportsGaps ? source.Gaps : BoxGaps.None;
             bool srcIsFacade = source is FacadeElement;
             var mode = DoorMode.HingeFrontLeft;
@@ -63,9 +57,6 @@ namespace KitchenDesigner.Core
             if (source is RadialShelfElement radial)
                 cornerRadius = radial.CornerRadius;
 
-            // Пазы снимаем ДО удаления компонента: ClearGrooves возвращает
-            // встроенный куб и один материал. Иначе новый тип унаследовал бы от
-            // детали меш с пазами — причём уже уничтоженный в OnDestroy.
             var grooves = new System.Collections.Generic.List<GrooveSpec>(source.Grooves);
             var edges = EdgeBandingState.Of(source);
             source.ClearGrooves();
@@ -98,44 +89,26 @@ namespace KitchenDesigner.Core
             go.transform.localScale = scale;
             go.name = goName;
 
-            // Старый компонент уже снят с учёта в PartRegistry, поэтому его имя
-            // свободно и элемент сохраняет его при конвертации типа.
             result.PartName = ElementNaming.Normalize(partName, result);
             result.Movable = movable;
             result.GroupId = groupId;
             result.MaterialId = materialId;
             result.Transparent = transparent;
-            // Прикрепление к родителю переживает конвертацию — но только пока
-            // новый тип вообще может быть ребёнком: фасад ни к чему не
-            // прикрепляется (AttachLinks.CanBeChild), и связь снимается.
-            // Дети САМОЙ детали не теряются никогда: они ссылаются на имя, а
-            // имя конвертация сохраняет.
             result.AttachedToName = AttachLinks.CanBeChild(result) ? attachedToName : "";
 
-            // Размеры сохраняются как есть; для радиусной полки дополнительно
-            // задаётся радиус угла (клампится к min(ширина, глубина)).
             result.DimensionsMM = dims;
             if (result is RadialShelfElement newRadial)
                 newRadial.CornerRadius = cornerRadius;
 
-            // Пазы переносятся только между типами, которые их поддерживают
-            // (сейчас — базовая «деталь»); в фасад/полку они не уезжают.
             if (result.SupportsGrooves && grooves.Count > 0)
                 result.SetGrooves(grooves);
 
-            // Параметры кромкования переносятся ВСЕГДА, даже в фасад, который
-            // их не показывает: иначе конвертация «деталь → фасад → деталь»
-            // молча возвращала бы настройки к умолчанию.
             result.EdgeBandingEnabled = edges.enabled;
             result.EdgeThicknessMM = edges.thicknessMM;
             result.EdgeManualMask = edges.manualMask;
 
             if (result.SupportsGaps)
             {
-                // Зазоры переносятся, пока «дверца остаётся дверцей», а деталь —
-                // деталью. При смене роли они не имеют смысла: отступ от проёма
-                // полке не нужен, а новая дверца без зазоров упирается в проём,
-                // и это брак, а не выбор — ей ставим умолчание фасада.
                 bool resultIsFacade = result is FacadeElement;
                 var gaps = srcIsFacade == resultIsFacade
                     ? srcGaps

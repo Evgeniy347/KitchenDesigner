@@ -9,9 +9,6 @@ namespace KitchenDesigner.Core
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private static int _getAllCalls;
 
-        /// <summary>Сколько раз вызвали <see cref="GetAll"/> с прошлого опроса, и сброс.
-        /// Каждый вызов — копия всего списка, так что счётчик показывает масштаб
-        /// покадрового перебора сцены.</summary>
         public static int TakeGetAllCalls()
         {
             int n = _getAllCalls;

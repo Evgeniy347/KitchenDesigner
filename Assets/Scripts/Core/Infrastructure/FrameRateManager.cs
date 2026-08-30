@@ -5,28 +5,14 @@ using System.Runtime.InteropServices;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>
-    /// Динамический FPS: пока есть активность (ввод мыши/клавиатуры/касаний или
-    /// идёт анимация двери/ящика) — держим активный FPS; в простое роняем до
-    /// «почти нуля» (idle FPS), экономя CPU/батарею.
-    ///
-    /// Мгновенное пробуждение из простоя на WebGL обеспечивает FrameRateWake.jslib:
-    /// он ловит события браузера и синхронно зовёт <see cref="OnBrowserActivity"/>,
-    /// поэтому первый клик/движение после простоя не «залипает». На остальных
-    /// платформах JS-хука нет, поэтому idle FPS там выше (пробуждение по опросу ввода).
-    /// </summary>
     public class FrameRateManager : MonoBehaviour
     {
         public static FrameRateManager? Instance { get; private set; }
 
-        /// <summary>FPS при активности. WebGL — 30 (как было), иначе без ограничения.</summary>
         public int ActiveFps = DefaultActiveFps();
 
-        /// <summary>FPS в простое. WebGL-плеер ~1 (есть мгновенное пробуждение),
-        /// иначе умереннее (~10), т.к. пробуждение только по опросу ввода.</summary>
         public int IdleFps = DefaultIdleFps();
 
-        /// <summary>Сколько ещё держать активный FPS после последней активности.</summary>
         public float IdleGraceSeconds = 0.7f;
 
         private float _wakeUntil;
@@ -38,23 +24,19 @@ namespace KitchenDesigner.Core
 #if UNITY_WEBGL
             return 30;
 #else
-            return -1; // платформенный дефолт (обычно vsync)
+            return -1;
 #endif
         }
 
         private static int DefaultIdleFps()
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
-            return 1;   // мгновенное пробуждение через JS-хук
+            return 1;
 #else
-            return 10;  // без хука — пробуждение ~100 мс по опросу ввода
+            return 10;
 #endif
         }
 
-        // ── Чистая логика «окна бодрствования» (тестируется без Unity-времени) ──
-
-        /// <summary>Отметить активность в момент <paramref name="now"/>: держать
-        /// активный FPS ещё <paramref name="graceSeconds"/> секунд.</summary>
         public void MarkActive(float now, float graceSeconds)
         {
             float until = now + Mathf.Max(0f, graceSeconds);
@@ -65,10 +47,6 @@ namespace KitchenDesigner.Core
 
         public int TargetFpsAt(float now) => IsAwake(now) ? ActiveFps : IdleFps;
 
-        // ── Публичное API для остального кода ──────────────────────────────
-
-        /// <summary>Не давать заснуть ещё <paramref name="seconds"/> секунд
-        /// (анимации, MCP-команды агента и т.п.). Безопасно, если менеджера нет.</summary>
         public static void KeepAwake(float seconds)
         {
             if (Instance != null) Instance.WakeFor(seconds);
@@ -77,13 +55,10 @@ namespace KitchenDesigner.Core
         private void WakeFor(float seconds)
         {
             MarkActive(Time.unscaledTime, seconds);
-            Apply(ActiveFps); // поднять FPS сразу, не дожидаясь следующего Update
+            Apply(ActiveFps);
         }
 
-        /// <summary>Вызывается из FrameRateWake.jslib при активности в браузере.</summary>
         public void OnBrowserActivity() => WakeFor(IdleGraceSeconds);
-
-        // ── Жизненный цикл ─────────────────────────────────────────────────
 
         private void Awake()
         {
@@ -111,7 +86,7 @@ namespace KitchenDesigner.Core
         private bool DetectInput()
         {
             using var _ = PerfMarkers.FrameRateDetectInput.Auto();
-            if (Input.anyKey) return true;            // включает кнопки мыши
+            if (Input.anyKey) return true;
             if (Input.touchCount > 0) return true;
             if (Input.mouseScrollDelta.sqrMagnitude > 0f) return true;
             var m = Input.mousePosition;

@@ -3,35 +3,15 @@ using System.Text;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>
-    /// Единая политика имён элементов: допустимый алфавит и глобальная
-    /// уникальность в пределах проекта.
-    ///
-    /// Имя разрешено только из латиницы, цифр, дефиса и подчёркивания:
-    ///     ^[A-Za-z0-9_-]+$
-    ///
-    /// Имя — это ещё и КЛЮЧ СВЯЗЕЙ (DrawerElement.PairedDrawerName /
-    /// AttachedFacadeName, WindowElement/DoorElement.AttachedWallName), поэтому
-    /// нормализация никогда не делается «молча в сеттере» PartName: тот, кто
-    /// переименовывает, обязан либо провести правку через DrawerLinks.Rename,
-    /// либо (при загрузке) перенести ссылки по карте старое→новое имя.
-    /// </summary>
     public static class ElementNaming
     {
-        /// <summary>Регулярка допустимого имени — для сообщений об ошибках и схемы MCP.</summary>
         public const string Pattern = "^[A-Za-z0-9_-]+$";
 
-        /// <summary>Человекочитаемое правило — идёт в текст ошибки MCP.</summary>
         public const string Rule =
             "only latin letters, digits, '-' and '_' are allowed (regex: " + Pattern + "); no spaces, no cyrillic";
 
-        /// <summary>Имя для элемента, у которого после чистки не осталось ни одного
-        /// допустимого символа (например, имя из одних пробелов).</summary>
         public const string Fallback = "Element";
 
-        // Имена сравниваются БЕЗ учёта регистра: «Facade» и «facade» на глаз
-        // неразличимы, а MCP уже ищет элементы OrdinalIgnoreCase — коллизия
-        // регистров приводила бы к тому, что инструмент находит не тот элемент.
         private static readonly System.StringComparer Cmp = System.StringComparer.OrdinalIgnoreCase;
 
         public static bool IsValid(string? name)
@@ -46,13 +26,6 @@ namespace KitchenDesigner.Core
             (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
             (c >= '0' && c <= '9') || c == '_' || c == '-';
 
-        /// <summary>
-        /// Привести имя к допустимому алфавиту. Кириллица ТРАНСЛИТЕРИРУЕТСЯ
-        /// («Фасад_600x400» → «Fasad_600x400»), а не выбрасывается: в проектах
-        /// имена русские и осмысленные, а глухая замена на «_» схлопнула бы их
-        /// в неразличимые «______600x400». Всё остальное недопустимое (пробелы,
-        /// скобки, точки…) становится «_», повторы «_» схлопываются.
-        /// </summary>
         public static string Sanitize(string? name)
         {
             if (string.IsNullOrEmpty(name)) return Fallback;
@@ -65,27 +38,16 @@ namespace KitchenDesigner.Core
                 var latin = Transliterate(c);
                 if (latin.Length > 0) { sb.Append(latin); continue; }
 
-                // Мягкий/твёрдый знак транслитерируются в пустоту — «_» за них
-                // не ставим, иначе «Дверь» дала бы «Dver_».
                 if (IsDroppedCyrillic(c)) continue;
 
-                if (sb.Length > 0 && sb[sb.Length - 1] == '_') continue; // схлопываем повторы
+                if (sb.Length > 0 && sb[sb.Length - 1] == '_') continue;
                 sb.Append('_');
             }
 
-            // Ведущие/замыкающие «_» — мусор от отброшенных символов по краям.
             var result = sb.ToString().Trim('_');
             return result.Length == 0 ? Fallback : result;
         }
 
-        /// <summary>
-        /// Свободное имя: если <paramref name="desired"/> занято — добавляется
-        /// суффикс «_1», «_2», … до первого свободного.
-        /// </summary>
-        /// <param name="except">Элемент, чьё собственное имя занятым не считается
-        /// (переименование самого себя в тот же регистр).</param>
-        /// <param name="reserved">Дополнительно занятые имена — используется при
-        /// пакетной загрузке, когда элементы ещё не созданы и в реестре их нет.</param>
         public static string MakeUnique(string desired, KitchenElement? except = null,
             ICollection<string>? reserved = null)
         {
@@ -129,7 +91,6 @@ namespace KitchenDesigner.Core
             return (name.Substring(0, lastUnderscore), num);
         }
 
-        /// <summary>Чистка + уникальность одним вызовом — основная точка входа.</summary>
         public static string Normalize(string? desired, KitchenElement? except = null,
             ICollection<string>? reserved = null) =>
             MakeUnique(Sanitize(desired), except, reserved);
@@ -151,7 +112,6 @@ namespace KitchenDesigner.Core
             return false;
         }
 
-        /// <summary>Набор имён для пакетной нормализации, посеянный текущей сценой.</summary>
         public static HashSet<string> ReservedFromScene()
         {
             var set = new HashSet<string>(Cmp);
@@ -165,8 +125,6 @@ namespace KitchenDesigner.Core
 
         private static bool IsDroppedCyrillic(char c) => c == 'ь' || c == 'ъ' || c == 'Ь' || c == 'Ъ';
 
-        /// <summary>Транслитерация одного символа; пустая строка — символ не кириллица
-        /// (или это ь/ъ, которые исчезают).</summary>
         private static string Transliterate(char c)
         {
             switch (c)

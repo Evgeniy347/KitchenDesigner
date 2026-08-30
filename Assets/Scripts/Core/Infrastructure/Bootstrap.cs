@@ -9,27 +9,24 @@ namespace KitchenDesigner.Core
         private void Awake()
         {
             Application.runInBackground = true;
-            // Инфо-логи (Debug.Log, в т.ч. каждый «[MCP] …») не должны тащить
-            // полный стек-трейс в Player.log/консоль — это замусоривало лог
-            // (~10 строк стека на каждый информационный лог). Стек оставляем
-            // только для предупреждений и ошибок, где он реально нужен.
-            Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
-            // Ограничение FPS теперь динамическое — им управляет FrameRateManager
-            // (активный FPS при активности, «почти ноль» в простое).
+            KeepStackTracesOutOfInfoLogs();
             GameContext.InitializeWithDefaults();
-            // Настройки загружаются вместе с проектом через SaveLoadManager.LoadLastSession().
             DisplaySettings.ApplyWindowMode();
         }
 
-        // Каталог декоров должен быть прочитан ДО восстановления сцены, иначе
-        // сохранённые materialId не найдут свой декор. На десктопе это обычное
-        // чтение файла, в WebGL — запрос, поэтому старт живёт в корутине.
+        internal static void KeepStackTracesOutOfInfoLogs() =>
+            Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
+
         private IEnumerator Start()
+        {
+            yield return LoadDecorCatalogBeforeAnyProjectIsRestored();
+            SetupScene();
+        }
+
+        private static IEnumerator LoadDecorCatalogBeforeAnyProjectIsRestored()
         {
             if (!TextureLibrary.TryLoadIndexSync())
                 yield return TextureLibrary.LoadIndexAsync();
-
-            SetupScene();
         }
 
         private void SetupScene()
@@ -104,7 +101,6 @@ namespace KitchenDesigner.Core
                         return;
                     }
                 }
-                // Server save disabled or no current project — fall back to local.
             GameContext.Services!.SaveLoadManager.LoadLastSession();
                 TextureLibrary.PrefetchScene();
             });
@@ -135,8 +131,6 @@ namespace KitchenDesigner.Core
             MCP.ConsoleLogCapture.Initialize();
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
-            // Автообновление — только в собранном Windows-плеере (в редакторе и
-            // тестах не создаётся, на WebGL не компилируется).
             if (FindAnyObjectByType<Update.UpdateService>() == null)
                 gameObject.AddComponent<Update.UpdateService>();
 #endif

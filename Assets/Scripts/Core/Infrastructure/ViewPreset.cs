@@ -2,7 +2,6 @@ using System;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Тумблер вида — адресация для UI и таблицы блокировок.</summary>
     public enum ViewField
     {
         Walls,
@@ -14,12 +13,6 @@ namespace KitchenDesigner.Core
         HideLightSources,
     }
 
-    /// <summary>Набор «что показывать» для одного режима работы. Пресетов два —
-    /// «обычный» и «помещение»; в каком режиме пользователь погасил стены, там
-    /// они и остаются погашенными, и переключение режима ничего не затирает.
-    /// Инициализаторы полей задают значения «из коробки» и одновременно служат
-    /// дефолтами для старых проектов: JsonUtility создаёт объект (инициализаторы
-    /// срабатывают), а потом перезаписывает только присутствующие в JSON поля.</summary>
     [Serializable]
     public class ViewPreset
     {
@@ -56,16 +49,12 @@ namespace KitchenDesigner.Core
             }
         }
 
+        public static readonly ViewField[] AllFields = (ViewField[])Enum.GetValues(typeof(ViewField));
+
         public void CopyFrom(ViewPreset? other)
         {
             if (other == null) return;
-            wallsEnabled = other.wallsEnabled;
-            wallOutline = other.wallOutline;
-            lowerNearWalls = other.lowerNearWalls;
-            hideOpeningsOnLoweredWalls = other.hideOpeningsOnLoweredWalls;
-            objectsVisible = other.objectsVisible;
-            edgeOutline = other.edgeOutline;
-            hideLightSources = other.hideLightSources;
+            foreach (var field in AllFields) Set(field, other.Get(field));
         }
 
         public ViewPreset Clone()
@@ -78,10 +67,6 @@ namespace KitchenDesigner.Core
         public void ResetToDefaults() => CopyFrom(new ViewPreset());
     }
 
-    /// <summary>Что реально применяется к сцене прямо сейчас: значения плюс
-    /// пометка «поле форсировано режимом и не редактируется». Значения и
-    /// блокировки считаются одной таблицей (<see cref="ViewResolver"/>), чтобы
-    /// UI не мог разрешить то, что рендер всё равно проигнорирует.</summary>
     public readonly struct ViewState
     {
         public readonly bool WallsEnabled;
@@ -119,30 +104,16 @@ namespace KitchenDesigner.Core
             _ => HideLightSources,
         };
 
-        /// <summary>Поле форсировано режимом: показываем значение, но менять нельзя.</summary>
         public bool IsLocked(ViewField field) => (_locked & (1 << (int)field)) != 0;
 
-        /// <summary>Биты видимости для дешёвой проверки «настройки не менялись».</summary>
         public int VisibilityHash =>
             (WallsEnabled ? 1 : 0) | (LowerNearWalls ? 2 : 0)
             | (HideOpeningsOnLoweredWalls ? 4 : 0) | (ObjectsVisible ? 8 : 0)
             | (EdgeOutline ? 16 : 0) | (WallOutline ? 32 : 0) | (HideLightSources ? 64 : 0);
     }
 
-    /// <summary>Единственное место, где закодировано «какой режим что показывает».
-    /// И рендер (<see cref="WallManager"/>, <see cref="SceneVisibilityManager"/>,
-    /// <see cref="EdgeOutlineRenderer"/>), и панель настроек читают отсюда —
-    /// раньше эта таблица была размазана по трём файлам и они разъезжались.
-    ///
-    /// Фоторежим собственного пресета не имеет: комната цельная, всё видно,
-    /// прятать в кадре нечего. Контуры — исключение: это чисто визуальная
-    /// опция, а не сокрытие геометрии, поэтому в фото они берутся из пресета
-    /// обычного режима (менять их на ходу всё равно нельзя — в фото
-    /// заблокировано всё).</summary>
     public static class ViewResolver
     {
-        // Настройки могут быть не загружены (тесты без Resources) — тогда
-        // работаем по значениям «из коробки». Мутировать этот экземпляр нельзя.
         private static readonly ViewPreset Fallback = new ViewPreset();
 
         private const int RoomLocked =
@@ -155,8 +126,6 @@ namespace KitchenDesigner.Core
             | (1 << (int)ViewField.Objects)
             | (1 << (int)ViewField.HideLightSources);
 
-        /// <summary>Пресет, который редактируется в этом режиме. Фоторежим правит
-        /// пресет обычного — он и есть «обычный + фоторендер».</summary>
         public static ViewPreset PresetFor(EditMode mode, KitchenSettings? s)
         {
             if (s == null) return Fallback;
@@ -173,8 +142,6 @@ namespace KitchenDesigner.Core
             switch (mode)
             {
                 case EditMode.Room:
-                    // Правят саму конструкцию: стены целые и на месте, обрезанные
-                    // мешали бы. Объекты и свет — на усмотрение пользователя.
                     return new ViewState(
                         wallsEnabled: true,
                         wallOutline: p.wallOutline,
@@ -209,19 +176,12 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Можно ли менять тумблер: пресет режима <paramref name="presetMode"/>
-        /// открыт на вкладке, а редактор сейчас в режиме <paramref name="currentMode"/>.
-        /// В фоторежиме заблокировано всё — там смотрят картинку, а не правят сцену.</summary>
         public static bool IsEditable(EditMode currentMode, EditMode presetMode, ViewField field)
         {
             if (currentMode == EditMode.Photo) return false;
             return !Resolve(presetMode).IsLocked(field);
         }
 
-        /// <summary>Подопция без включённого родителя бессмысленна (правило дерева
-        /// из UI-GUIDELINES): контур стен — при выключенных стенах, «скрывать окна
-        /// и двери» — при выключенном опускании, контур объектов — при выключенных
-        /// объектах.</summary>
         public static ViewField? ParentOf(ViewField field) => field switch
         {
             ViewField.WallOutline => ViewField.Walls,

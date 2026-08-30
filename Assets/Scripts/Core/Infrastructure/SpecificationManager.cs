@@ -5,34 +5,26 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Элемент, который в спецификации раскладывается на несколько деталей
-    /// (напр. сборный фасад → стойки/перекладины/вставка), а не одной строкой.</summary>
     public interface ISpecificationParts
     {
         IEnumerable<AssembledFacadeMesh.Part> GetSpecParts();
     }
 
-    /// <summary>Строка спецификации: группа одинаковых деталей.</summary>
     public struct SpecLine
     {
         public string name;
         public Vector3Int dimensionsMM;
         public int count;
-        public float areaPerBoardM2;   // площадь поверхности одной детали, м²
-        public float totalAreaM2;      // count * areaPerBoardM2
-        public string material;        // декор материала (для заказа раскроя)
-        public string grooves;         // пазы через запятую, напр. «Сквозной 16*4*7:Верх»
-        // Толщина кромки по торцам «0.5»; пустая строка — кромки на этой
-        // стороне нет. Именно пустая, а не «0»: ноль в ведомости раскроя
-        // читается как «кромка 0 мм», то есть как ошибка ввода.
+        public float areaPerBoardM2;
+        public float totalAreaM2;
+        public string material;
+        public string grooves;
         public string edgeL1;
         public string edgeL2;
         public string edgeW1;
         public string edgeW2;
     }
 
-    /// <summary>Колонки кромок одной строки спецификации. Пустая строка =
-    /// кромки на этой стороне нет.</summary>
     public readonly struct EdgeColumns
     {
         public readonly string l1, l2, w1, w2;
@@ -42,11 +34,8 @@ namespace KitchenDesigner.Core
             this.l1 = l1; this.l2 = l2; this.w1 = w1; this.w2 = w2;
         }
 
-        /// <summary>Часть ключа группировки раскроя.</summary>
         public string Key => $"{l1}/{l2}/{w1}/{w2}";
 
-        /// <summary>Кромки детали по фактической геометрии сцены. Пусто, если
-        /// деталь кромкование не поддерживает или галочка снята.</summary>
         public static EdgeColumns For(KitchenElement element, IReadOnlyList<KitchenElement> all)
         {
             if (element == null || !element.EdgeBandingEnabled) return default;
@@ -73,7 +62,6 @@ namespace KitchenDesigner.Core
         public static string ToCsv(SpecResult result)
         {
             var sb = new StringBuilder();
-            // Кромки — последними колонками (порядок прежних 9 колонок сохранён).
             sb.AppendLine("Name;Width_mm;Height_mm;Depth_mm;Count;AreaPerBoard_m2;TotalArea_m2;Material;Grooves;" +
                 "Кромка L1;Кромка L2;Кромка W1;Кромка W2");
             foreach (var line in result.lines)
@@ -84,8 +72,6 @@ namespace KitchenDesigner.Core
                     $"{line.edgeL1};{line.edgeL2};{line.edgeW1};{line.edgeW2}");
             }
             sb.AppendLine();
-            // 13 колонок: ...;TotalArea(7-я);Material(8-я);Grooves(9-я);кромки(10..13).
-            // Итог: count в Count (5-я), площадь в TotalArea (7-я), остальные пусты.
             sb.AppendLine($"Total;;;;{result.totalCount};;{result.totalAreaM2:F4};;;;;;");
             return sb.ToString();
         }
@@ -118,10 +104,6 @@ namespace KitchenDesigner.Core
 
     public static class SpecificationManager
     {
-        /// <summary>
-        /// Площадь поверхности детали (все 6 граней), м².
-        /// 2*(Ш*В + Ш*Г + В*Г), размеры из мм в метры.
-        /// </summary>
         public static float SurfaceAreaM2(Vector3Int dimsMM)
         {
             float w = dimsMM.x * AppConstants.MM_TO_UNITS;
@@ -130,15 +112,11 @@ namespace KitchenDesigner.Core
             return 2f * (w * h + w * d + h * d);
         }
 
-        /// <summary>Группирует детали по (размер, материал, пазы) — имя в ключ не
-        /// входит, см. Accumulate. BasePlate исключается.</summary>
         public static SpecResult Build(IEnumerable<KitchenElement> elements)
         {
             var order = new List<string>();
             var groups = new Dictionary<string, SpecLine>();
 
-            // Наличие кромки считается по соседям, поэтому список нужен целиком,
-            // а не по одному элементу за раз.
             var all = new List<KitchenElement>(elements);
 
             foreach (var e in all)
@@ -146,7 +124,6 @@ namespace KitchenDesigner.Core
                 if (e == null) continue;
                 if (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null) continue;
 
-                // Сборный фасад и т.п. — раскладываем на детали (стойки/перекладины/вставка).
                 if (e is ISpecificationParts composite)
                 {
                     string decor = MaterialCatalog.Get(e.MaterialId).displayName;
@@ -156,9 +133,6 @@ namespace KitchenDesigner.Core
                     continue;
                 }
 
-                // Ящик Movento — деревянный короб: в спецификацию отдельными деталями
-                // (боковины, перед, задник, дно), суффикс отличает их в раскрое.
-                // Ящик GTV (покупной металлический короб) остаётся одной строкой ниже.
                 if (e is DrawerElement drawer && drawer.System == DrawerSystem.Movento)
                 {
                     string decor = MaterialCatalog.Get(e.MaterialId).displayName;
@@ -184,8 +158,6 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        /// <summary>Пазы детали одной строкой для спецификации: «Сквозной 16*4*7:Верх,
-        /// Глухой 16*4*7:Лево». Пусто, если пазов нет.</summary>
         public static string GroovesLabel(KitchenElement element)
         {
             if (element == null) return "";
@@ -201,20 +173,9 @@ namespace KitchenDesigner.Core
             return sb.ToString();
         }
 
-        /// <summary>Добавить одну деталь в группировку по (размер, материал, пазы).
-        /// Пазы в ключе: детали с разной врезкой — разные позиции раскроя.
-        ///
-        /// Название в ключ НЕ входит: имена элементов уникальны в рамках проекта
-        /// (ElementNaming добавляет суффикс «_N»), поэтому две одинаковые боковины
-        /// зовутся «Bokovina» и «Bokovina_1» — по имени они бы никогда не сошлись,
-        /// и ведомость раскроя выродилась бы в список строк по одной штуке.
-        /// В строке показывается имя ПЕРВОЙ детали группы.</summary>
         private static void Accumulate(Dictionary<string, SpecLine> groups, List<string> order,
             string name, Vector3Int dims, string material, string grooves, EdgeColumns edges)
         {
-            // Кромки — часть ключа: две одинаковые полки, одна из которых
-            // кромкуется с трёх сторон, а другая с одной, это РАЗНЫЕ позиции
-            // раскроя, и склеивать их в одну строку нельзя.
             string key = $"{dims.x}x{dims.y}x{dims.z}|{material}|{grooves}|{edges.Key}";
             if (!groups.TryGetValue(key, out var line))
             {
