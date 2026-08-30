@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    // Локальная структура AABB, чтобы не зависеть от MCP-моделей.
     internal readonly struct AABB
     {
         public readonly float minX, minY, minZ;
@@ -15,41 +14,20 @@ namespace KitchenDesigner.Core
             this.maxX = maxX; this.maxY = maxY; this.maxZ = maxZ;
         }
     }
-    /// <summary>
-    /// Проверки фасадов, связанные с ориентацией и открыванием:
-    /// - направление лицевой стороны,
-    /// - «лицом внутрь» модуля,
-    /// - препятствия перед лицевой гранью,
-    /// - столкновения при открывании (дверца/ящик).
-    /// </summary>
     public static class FacadeValidator
     {
-        /// <summary>Глубина проверки перед лицевой гранью по умолчанию, мм.</summary>
         public const float DefaultMaxFaceObstructionDepthMm = 100f;
 
-        /// <summary>Число дискретных шагов траектории открывания.</summary>
         public const int DefaultOpeningTrajectorySteps = 12;
 
-        /// <summary>Минимальное перекрытие (мм), которое считается реальным
-        /// препятствием/столкновением. Всё меньше — погрешность float от деталей,
-        /// стоящих вплотную (в трассах встречались «коллизии» в 0.0002 мм).</summary>
         public const float MinOverlapMm = Tolerance.ContactMm;
 
-        /// <summary>
-        /// Мировая нормаль лицевой грани фасада. Локально лицевая сторона фасада
-        /// смотрит в +Z (Unity-конвенция forward), поэтому мировая нормаль =
-        /// rotation * forward.
-        /// </summary>
         public static Vector3 GetFaceNormal(FacadeElement facade)
         {
             if (facade == null) return Vector3.zero;
             return facade.transform.rotation * Vector3.forward;
         }
 
-        /// <summary>
-        /// Возвращает true, если лицевая сторона фасада направлена внутрь модуля.
-        /// Эвристика: центр остальных деталей модуля лежит перед лицевой гранью.
-        /// </summary>
         public static bool IsFacingInward(FacadeElement facade)
         {
             if (facade == null) return false;
@@ -72,11 +50,6 @@ namespace KitchenDesigner.Core
             return Vector3.Dot(toOthers, GetFaceNormal(facade)) > 0.001f;
         }
 
-        /// <summary>
-        /// Ищет элементы, расположенные вплотную перед лицевой гранью фасада
-        /// (в полупространстве faceNormal) на расстоянии не более maxDepthMm.
-        /// Исключаются сам фасад, его потомки и элементы того же модуля.
-        /// </summary>
         public static List<FaceObstruction> FindFaceObstructions(
             FacadeElement facade,
             List<KitchenElement> all,
@@ -99,7 +72,6 @@ namespace KitchenDesigner.Core
                 if (!ProjectedOverlap(face, otherAabb, out float overlapWidthUnits, out float overlapHeightUnits)) continue;
 
                 float toMm = 1f / AppConstants.MM_TO_UNITS;
-                // Слайверы тоньше MinOverlapMm — числовой шум, не препятствие.
                 if (overlapWidthUnits * toMm < MinOverlapMm || overlapHeightUnits * toMm < MinOverlapMm) continue;
 
                 result.Add(new FaceObstruction
@@ -114,11 +86,6 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        /// <summary>
-        /// Ищет столкновения траектории открывания фасада с другими элементами.
-        /// Для дверей — дискретная дуга 0..110°, для ящиков — дискретный сдвиг.
-        /// Исключаются сам фасад, его потомки и элементы того же модуля.
-        /// </summary>
         public static List<OpeningViolation> FindOpeningViolations(
             FacadeElement facade,
             List<KitchenElement> all,
@@ -154,8 +121,6 @@ namespace KitchenDesigner.Core
                     if (!AABBsOverlap(sweptAabb, otherAabb)) continue;
 
                     float overlap = AABBOverlapVolume(sweptAabb, otherAabb);
-                    // Перекрытие меньше MinOverlapMm — погрешность float у деталей,
-                    // стоящих вплотную к траектории, а не реальное столкновение.
                     if (overlap * toMm < MinOverlapMm) continue;
 
                     result.Add(new OpeningViolation
@@ -165,7 +130,6 @@ namespace KitchenDesigner.Core
                         collisionAtProgress = progress,
                         collisionOverlapMm = overlap * toMm
                     });
-                    // Достаточно первого столкновения для данного соседа.
                     others.Remove(other);
                     break;
                 }
@@ -174,8 +138,6 @@ namespace KitchenDesigner.Core
 
             return result;
         }
-
-        // ── Внутренние структуры ─────────────────────────────────────────
 
         public struct FrontFace
         {
@@ -202,12 +164,9 @@ namespace KitchenDesigner.Core
             public float collisionOverlapMm;
         }
 
-        // ── Вспомогательные методы ────────────────────────────────────────
-
         private static FrontFace GetFrontFace(FacadeElement facade)
         {
             var t = facade.transform;
-            // Лицевая грань фасада — локально +Z (индекс 4 в KitchenElement.GetFaces).
             var face = facade.GetFaces()[4];
             return new FrontFace
             {
@@ -224,14 +183,12 @@ namespace KitchenDesigner.Core
             var set = new HashSet<KitchenElement>();
             if (facade == null) return set;
 
-            // Элементы того же модуля (короб) исключаем: они штатно позади фасада.
             var module = GroupManager.GroupOf(facade);
             if (module != null)
                 foreach (var m in GroupManager.MembersOf(module))
                     if (m != null && m != facade)
                         set.Add(m);
 
-            // Потомки фасада (стекла, ручки и т.п.) не должны мешать самому фасаду.
             foreach (Transform child in facade.transform)
             {
                 var childEl = child.GetComponent<KitchenElement>();
@@ -376,16 +333,11 @@ namespace KitchenDesigner.Core
             float oy = Mathf.Min(a.maxY, b.maxY) - Mathf.Max(a.minY, b.minY);
             float oz = Mathf.Min(a.maxZ, b.maxZ) - Mathf.Max(a.minZ, b.minZ);
             if (ox <= 0f || oy <= 0f || oz <= 0f) return 0f;
-            // Для оценки пересечения используем минимальную проекцию —
-            // она коррелирует с "серьёзностью" столкновения лучше объёма
-            // при пересечении тонкого фасада с другой деталью.
             return Mathf.Min(ox, oy, oz);
         }
 
         private static string ModeSymbol(DoorMode mode)
         {
-            // Проводное имя ("front_left", "drawer_out", …) — тот же словарь, что у
-            // set_facade_mode; ASCII-символы UI ("<", ">") агенту непонятны.
             return FacadeDoor.WireName(mode);
         }
     }
