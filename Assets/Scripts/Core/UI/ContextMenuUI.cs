@@ -61,15 +61,6 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _sashTypeDropdown;
         private TMP_InputField? _sillProtrusion;
         private TMP_Dropdown? _winModeDropdown;
-        private TMP_Text? _grooveCountLabel;
-        private TMP_Dropdown? _grooveSideDropdown, _grooveKindDropdown;
-        // Строки-слоты пазов: сторона и тип редактируются на месте (правка =
-        // прямое действие, отдельного режима «редактирования» нет).
-        private readonly TMP_Dropdown?[] _grooveRowSide = new TMP_Dropdown?[AppConstants.GROOVE_MAX_PER_PART];
-        private readonly TMP_Dropdown?[] _grooveRowKind = new TMP_Dropdown?[AppConstants.GROOVE_MAX_PER_PART];
-        private bool _groovesExpanded;  // раскрыт ли список пазов
-        private int _grooveFingerprint; // отлов изменений пазов извне (undo/MCP)
-
         // ── Зазоры ─────────────────────────────────────────────────────
         // Устроены как пазы: раскрывашка со счётчиком (сколько сторон получили
         // ненулевой зазор) и строки полей под ней.
@@ -85,6 +76,7 @@ namespace KitchenDesigner.Core.UI
         private readonly ContextMenuTextureSection _textures;
         private readonly ContextMenuFieldTracker _fields;
         private readonly ContextMenuEdgeSection _edges;
+        private readonly ContextMenuGrooveSection _grooves;
         private ContextMenuRowFactory _rows = null!;
 
         public ContextMenuUI()
@@ -92,6 +84,7 @@ namespace KitchenDesigner.Core.UI
             _textures = new ContextMenuTextureSection(this);
             _fields = new ContextMenuFieldTracker(Apply);
             _edges = new ContextMenuEdgeSection(this);
+            _grooves = new ContextMenuGrooveSection(this);
         }
 
         KitchenElement? IContextMenuHost.Target => _target;
@@ -109,6 +102,8 @@ namespace KitchenDesigner.Core.UI
         public void ToggleTextures() => _textures.Toggle();
 
         internal ContextMenuTextureSection Textures => _textures;
+
+        internal ContextMenuGrooveSection Grooves => _grooves;
 
         private void Awake()
         {
@@ -128,7 +123,7 @@ namespace KitchenDesigner.Core.UI
 
             BuildTitleAndType(panel.transform);
             BuildDimensions();
-            BuildGrooveSection(panel.transform);
+            _grooves.Build(panel.transform);
             _edges.Build(panel.transform);
             BuildGapSection(panel.transform);
             BuildFacadeSection();
@@ -179,51 +174,6 @@ namespace KitchenDesigner.Core.UI
             _cutoutW = _rows.NumberField("Ширина выреза", cooktopOnly);
             _cutoutD = _rows.NumberField("Глубина выреза", cooktopOnly);
         }
-
-        private void BuildGrooveSection(Transform parent)
-        {
-            var partOnly = RowVisibility.For(ElementFacet.Part);
-            var expanded = RowVisibility.For(ElementFacet.Part, () => _groovesExpanded);
-
-            _grooveCountLabel = _rows.WideButton("CtxGrooves", "Пазы (0)", ToggleGrooves, partOnly, RowGap);
-            _rows.Hint("CtxGrooveHint",
-                $"Паз: ширина {AppConstants.GROOVE_WIDTH_MM} мм, глубина {AppConstants.GROOVE_DEPTH_MM} мм, отступ от кромки {AppConstants.GROOVE_OFFSET_MM} мм",
-                16f, 4f, expanded);
-
-            var sideOptions = new List<string> { "Верх", "Низ", "Лево", "Право" };
-            var kindOptions = new List<string> { "Сквозной", "Глухой" };
-
-            for (int i = 0; i < AppConstants.GROOVE_MAX_PER_PART; i++)
-            {
-                int index = i;
-                var sideDd = UIFactory.CreateDropdown($"CtxGrooveSide{i}", parent,
-                    new List<string>(sideOptions), new Vector2(-114, 0), new Vector2(104, 28),
-                    _ => EditGroove(index));
-                var kindDd = UIFactory.CreateDropdown($"CtxGrooveKind{i}", parent,
-                    new List<string>(kindOptions), new Vector2(26, 0), new Vector2(168, 28),
-                    _ => EditGroove(index));
-                var delBtn = UIFactory.CreateConfirmDeleteButton($"CtxGrooveDel{i}", parent,
-                    UIStyle.GlyphClose, new Vector2(148, 0), new Vector2(28, 28), () => RemoveGroove(index));
-                _grooveRowSide[i] = sideDd;
-                _grooveRowKind[i] = kindDd;
-                _layout.AddFor(ElementFacet.Part, () => _groovesExpanded && GrooveCount() > index, 28f, 4f,
-                    sideDd.GetComponent<RectTransform>(),
-                    kindDd.GetComponent<RectTransform>(),
-                    delBtn.GetComponent<RectTransform>());
-            }
-
-            _grooveSideDropdown = UIFactory.CreateDropdown("CtxGrooveSide", parent,
-                new List<string>(sideOptions), new Vector2(-114, 0), new Vector2(104, 28), _ => { });
-            _grooveKindDropdown = UIFactory.CreateDropdown("CtxGrooveKind", parent,
-                new List<string>(kindOptions), new Vector2(0, 0), new Vector2(116, 28), _ => { });
-            var addBtn = UIFactory.CreateButton("CtxGrooveAdd", parent, "Добавить",
-                new Vector2(116, 0), new Vector2(100, 28), AddGrooveFromUI);
-            _layout.AddFor(ElementFacet.Part, () => _groovesExpanded, 28f, ActionGap,
-                _grooveSideDropdown.GetComponent<RectTransform>(),
-                _grooveKindDropdown.GetComponent<RectTransform>(),
-                addBtn.GetComponent<RectTransform>());
-        }
-
 
         private void BuildGapSection(Transform parent)
         {
@@ -667,11 +617,9 @@ namespace KitchenDesigner.Core.UI
             {
                 RefreshTransformFields();
 
-                // Пазы могли измениться мимо меню (undo/redo, MCP-команды).
-                if (_target.SupportsGrooves
-                    && GrooveFingerprint(_target.Grooves) != _grooveFingerprint)
+                if (_grooves.ChangedOutsideTheMenu())
                 {
-                    RefreshGrooveUI();
+                    _grooves.Refresh();
                     RelayoutForTarget();
                 }
 
@@ -815,7 +763,7 @@ namespace KitchenDesigner.Core.UI
                 _textures.EndPreview();
                 EndMaterialPreview();
                 _target = element;
-                _groovesExpanded = false; // список пазов открывается свёрнутым
+                _grooves.Collapse();
                 _textures.Collapse();
                 _gapsExpanded = false;     // и зазоры
                 _lightAdvancedExpanded = false; // калибровка лампы — тоже
@@ -1015,7 +963,7 @@ namespace KitchenDesigner.Core.UI
 
                 // Пересчитываем раскладку под режим: секция зазоров показывается
                 // только для фасадов, радиус — только для радиусной полки, сдвиг опор — только для столов (включая радиусные), пазы — только для базовой детали, панель сама подгоняется по высоте.
-            RefreshGrooveUI();
+            _grooves.Refresh();
             _edges.Refresh();
             if (element.SupportsTextureOverlays) _textures.RebuildMaterialOptions();
             _textures.Refresh();
@@ -1517,120 +1465,6 @@ namespace KitchenDesigner.Core.UI
 
         // ── Пазы детали ───────────────────────────────────────────────
         // Все правки набора пазов идут через SetGroovesCommand: Ctrl+Z обязан
-        // работать для любой мутации (правило 2 UI-GUIDELINES).
-
-        private int GrooveCount() => _target != null ? _target.Grooves.Count : 0;
-
-        private void ToggleGrooves()
-        {
-            _groovesExpanded = !_groovesExpanded;
-            RefreshGrooveUI();
-            RelayoutForTarget();
-        }
-
-        private void AddGrooveFromUI()
-        {
-            if (_target == null || _grooveSideDropdown == null || _grooveKindDropdown == null) return;
-            var spec = new GrooveSpec((GrooveKind)_grooveKindDropdown.value,
-                (GrooveSide)_grooveSideDropdown.value);
-
-            var after = new List<GrooveSpec>(_target.Grooves);
-            if (after.Contains(spec))
-            {
-                ToastNotification.ShowIfAvailable("Такой паз уже есть");
-                return;
-            }
-            if (after.Count >= AppConstants.GROOVE_MAX_PER_PART)
-            {
-                ToastNotification.ShowIfAvailable($"Не больше {AppConstants.GROOVE_MAX_PER_PART} пазов на деталь");
-                return;
-            }
-            after.Add(spec);
-            ApplyGrooves(after);
-            _groovesExpanded = true;
-            AfterGroovesChanged();
-        }
-
-        private void RemoveGroove(int index)
-        {
-            if (_target == null || index < 0 || index >= _target.Grooves.Count) return;
-            var after = new List<GrooveSpec>(_target.Grooves);
-            after.RemoveAt(index);
-            ApplyGrooves(after);
-            AfterGroovesChanged();
-        }
-
-        /// <summary>Правка паза на месте: сторона/тип берутся из дропдаунов строки.</summary>
-        private void EditGroove(int index)
-        {
-            if (_target == null || index < 0 || index >= _target.Grooves.Count) return;
-            var sideDd = _grooveRowSide[index];
-            var kindDd = _grooveRowKind[index];
-            if (sideDd == null || kindDd == null) return;
-
-            var spec = new GrooveSpec((GrooveKind)kindDd.value, (GrooveSide)sideDd.value);
-            var after = new List<GrooveSpec>(_target.Grooves);
-            if (after[index].Equals(spec)) return;
-            for (int i = 0; i < after.Count; i++)
-                if (i != index && after[i].Equals(spec))
-                {
-                    ToastNotification.ShowIfAvailable("Такой паз уже есть");
-                    RefreshGrooveUI(); // вернуть дропдауны к фактическому набору
-                    return;
-                }
-            after[index] = spec;
-            ApplyGrooves(after);
-            AfterGroovesChanged();
-        }
-
-        private void ApplyGrooves(List<GrooveSpec> after)
-        {
-            if (_target == null) return;
-            CommandStack.Execute(new SetGroovesCommand(_target, _target.Grooves, after));
-        }
-
-        private void AfterGroovesChanged()
-        {
-            RefreshGrooveUI();
-            RelayoutForTarget();
-            RefreshHighlights();
-        }
-
-        /// <summary>Обновить кнопку-раскрывашку и строки пазов.</summary>
-        private void RefreshGrooveUI()
-        {
-            // Набор под кнопками поменялся — взведённое удаление спрашивало бы
-            // уже про другую строку.
-            ConfirmDeleteButton.DisarmAll();
-            if (_grooveCountLabel != null)
-                _grooveCountLabel.text =
-                    $"Пазы ({GrooveCount()})  {(_groovesExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
-
-            IReadOnlyList<GrooveSpec>? grooves = _target != null ? _target.Grooves : null;
-            _grooveFingerprint = GrooveFingerprint(grooves);
-            for (int i = 0; i < _grooveRowSide.Length; i++)
-            {
-                if (grooves == null || i >= grooves.Count) continue;
-                _grooveRowSide[i]?.SetValueWithoutNotify((int)grooves[i].side);
-                _grooveRowSide[i]?.RefreshShownValue();
-                _grooveRowKind[i]?.SetValueWithoutNotify((int)grooves[i].kind);
-                _grooveRowKind[i]?.RefreshShownValue();
-            }
-        }
-
-        /// <summary>Дешёвый отпечаток набора пазов: ловим изменения мимо меню
-        /// (undo/redo, MCP), чтобы строки не показывали устаревший набор.</summary>
-        private static int GrooveFingerprint(IReadOnlyList<GrooveSpec>? grooves)
-        {
-            if (grooves == null) return 0;
-            unchecked
-            {
-                int h = 17;
-                foreach (var g in grooves) h = h * 31 + g.GetHashCode();
-                return h;
-            }
-        }
-
         private void RelayoutForTarget()
         {
             if (_target == null) return;
