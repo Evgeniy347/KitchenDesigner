@@ -69,6 +69,34 @@ public class ApplianceChildGeometryTests
     }
 
     [Test]
+    public void Dishwasher_Base_WearsTheDarkDoorColour_NotTheLightTankOne()
+    {
+        var dishwasher = Spawn<DishwasherElement>();
+        var basePlateRenderer = dishwasher.transform.Find("Base")!.GetComponent<MeshRenderer>();
+        var doorRenderer = dishwasher.transform.Find("Door")!.GetComponent<MeshRenderer>();
+        var tankRenderer = dishwasher.transform.Find("BodyBack")!.GetComponent<MeshRenderer>();
+
+        Assert.AreSame(doorRenderer.sharedMaterial, basePlateRenderer.sharedMaterial,
+            "основание у настоящей машины тёмное (чёрный поддон): светлая нержавейка бака "
+            + "под фасадом смотрелась бы полкой");
+        Assert.AreNotSame(tankRenderer.sharedMaterial, basePlateRenderer.sharedMaterial);
+    }
+
+    [Test]
+    public void Dishwasher_OnlyTheRootCarriesACollider()
+    {
+        var dishwasher = Spawn<DishwasherElement>();
+        AssertOnlyTheRootIsClickable(dishwasher);
+    }
+
+    [Test]
+    public void Oven_OnlyTheRootCarriesACollider()
+    {
+        var oven = Spawn<OvenElement>();
+        AssertOnlyTheRootIsClickable(oven);
+    }
+
+    [Test]
     public void FreeCooktop_HasNoBurners_TheyBelongToAModelNotToAnyGlassRectangle()
     {
         var free = Spawn<CooktopElement>();

@@ -48,6 +48,16 @@ public class ApplianceMaterialsTests
     }
 
     [Test]
+    public void DishwasherTank_IsLighterThanTheDoor_OrTheHollowBoxSlidesIntoItself()
+    {
+        float tank = ApplianceMaterials.DishwasherTank.color.grayscale;
+        float door = ApplianceMaterials.DishwasherDoor.color.grayscale;
+        Assert.Greater(tank, door,
+            "у настоящей машины камера стальная: тёмный полый короб сливался бы сам с собой "
+            + "и с тёмной дверцей — ровно та же причина, что у серого корпуса духовки");
+    }
+
+    [Test]
     public void SinkBowlBottom_IsDarkerThanTheSteel_OrTheBowlReadsAsAFlatFill()
     {
         float steel = ApplianceMaterials.SinkSteel.color.grayscale;
