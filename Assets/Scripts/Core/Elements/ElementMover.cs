@@ -8,7 +8,6 @@ namespace KitchenDesigner.Core
     {
         public static bool IsDragging { get; private set; }
 
-        // Объекты, перемещаемые прямо сейчас (для WallManager: двигаемую стену не опускаем).
         private static readonly HashSet<KitchenElement> _movingSet = new HashSet<KitchenElement>();
         public static bool IsMoving(KitchenElement e) => e != null && _movingSet.Contains(e);
 
@@ -19,28 +18,14 @@ namespace KitchenDesigner.Core
         private bool _wasMoved;
         private bool _wasShift;
         private float _vOffset;
-        // Текущая «удерживаемая» высота при горизонтальном перетаскивании.
-        // Берётся из старта (и из Shift-подъёма), а НЕ из позиции прошлого кадра:
-        // иначе Y прошлого снэпа заново округлялся сеткой каждый кадр (шаг 18 мм),
-        // контакт с полом рвался, и снэп чинил вертикаль вместо прилипания к соседу.
-        private float _dragY;
-        private AxisLock _axisLock = AxisLock.None;
+        private float _heldDragY;
+        private DragAxisLock _axisLock = DragAxisLock.None;
         private Wall? _dragWall;
         private bool _targetIsWallOpening;
 
-        // ЛКМ нажата на детали, но ещё не решено клик это или drag.
         private bool _pressed;
         private Vector2 _pressMouse;
         private float _pressTime;
-        // Пока курсор не сместится дальше этого порога (в пикселях) — это клик
-        // (выделение), а не перетаскивание. Только после порога
-        // включается drag с зелёной/красной тонировкой.
-        private const float DragStartPixels = 6f;
-        // Задержка (сек) перед активацией перетаскивания: защита от ложных
-        // срабатываний при клике (дрожание мыши на момент нажатия кнопки).
-        private const float DragStartSeconds = 0.15f;
-
-        private enum AxisLock { None, X, Z }
 
         private Material? _dragOriginalMaterial;
         private Material? _dragTintMaterial;
@@ -51,7 +36,6 @@ namespace KitchenDesigner.Core
         private Quaternion _ghostRotation;
         private bool _showGhost;
 
-        // Набор объектов, перемещаемых вместе (мультивыделение): элементы + старты.
         private readonly List<KitchenElement> _moveSet = new List<KitchenElement>();
         private readonly List<Vector3> _moveStart = new List<Vector3>();
 
@@ -94,16 +78,12 @@ namespace KitchenDesigner.Core
         private bool AltHeld => Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
         private bool ShiftHeld => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         private bool CtrlHeld => Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-        // Зажат ли Ctrl в прошлом кадре drag: используется для одноразового
-        // уведомления статус-бара при захвате/отпускании Ctrl во время drag.
         private bool _wasCtrl;
 
         private static bool PointerOverUI =>
             UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
 
-        // ЛКМ нажата: если попали по детали — запоминаем «нажатие» (кандидат на клик
-        // или drag). Сам drag и тонировка НЕ включаются, пока курсор не сдвинется.
         private void TryBeginPress()
         {
             _pressed = false;
@@ -113,9 +93,9 @@ namespace KitchenDesigner.Core
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             var element = SelectionManager.RaycastTransparentAware(ray, ShiftHeld);
             if (element == null) return;
-            if (element.GetComponent<BasePlate>() != null) return; // пол не таскаем
-            if (!ModuleEditMode.IsEditable(element)) return; // вне активного модуля — заблокировано
-            if (!EditModeManager.IsInteractable(element)) return; // режим редактора блокирует
+            if (element.GetComponent<BasePlate>() != null) return;
+            if (!ModuleEditMode.IsEditable(element)) return;
+            if (!EditModeManager.IsInteractable(element)) return;
 
             _target = element;
             _pressed = true;
@@ -134,26 +114,19 @@ namespace KitchenDesigner.Core
                 : Vector3.zero;
         }
 
-        private bool PressMovedEnough()
-        {
-            if (Time.unscaledTime - _pressTime < DragStartSeconds) return false;
-            Vector2 now = Input.mousePosition;
-            return (now - _pressMouse).magnitude > DragStartPixels;
-        }
+        private bool PressMovedEnough() => DragGesture.PressBecameDrag(
+            _pressMouse, _pressTime, Input.mousePosition, Time.unscaledTime);
 
-        // Курсор сдвинулся достаточно — это перетаскивание, а не клик.
         private void BeginDrag()
         {
             if (_target == null) return;
             IsDragging = true;
             _wasMoved = true;
             BuildMoveSet();
-            // Стартовая точка и offset пересчитываются на ПОЛНОЙ геометрии (BuildMoveSet
-            // мог вернуть опущенную стену на полную высоту → позиция изменилась).
             _startPosition = _target.transform.position;
-            _dragY = _startPosition.y;
+            _heldDragY = _startPosition.y;
             RecomputeOffset();
-            SaveDragMaterial(); // зелёная/красная тонировка появляется только здесь
+            SaveDragMaterial();
         }
 
         private void RecomputeOffset()
@@ -166,9 +139,6 @@ namespace KitchenDesigner.Core
                 : Vector3.zero;
         }
 
-        // Если схвачен элемент мультивыделения — двигаем всю выборку (подвижные),
-        // иначе только схваченный объект. Полускрытые стены возвращаются на полную
-        // высоту (GrabStart) ДО взятия стартовых позиций — иначе объект «прыгает».
         private void BuildMoveSet()
         {
             _moveSet.Clear();
@@ -184,10 +154,6 @@ namespace KitchenDesigner.Core
             if (_moveSet.Count == 0)
                 _moveSet.Add(_target!);
 
-            // Прикреплённые детали едут за родителем — и в ту же запись отмены
-            // (набор целиком уходит в BuildMoveCommand). Подвижность ребёнка тут
-            // не спрашиваем: он и заблокированный обязан следовать за своим
-            // фасадом, иначе сборка разъедется от одного перетаскивания.
             AttachMove.ExpandWithDescendants(_moveSet);
 
             foreach (var e in _moveSet) _moveStart.Add(GrabStart(e));
@@ -196,9 +162,6 @@ namespace KitchenDesigner.Core
             foreach (var e in _moveSet) _movingSet.Add(e);
         }
 
-        /// <summary>Стартовая точка перемещения при захвате. Полускрытую (опущенную)
-        /// стену сначала возвращаем на полную высоту, ИНАЧЕ старт берётся в опущенном
-        /// состоянии, стена тут же восстанавливается (WallManager) и «прыгает».</summary>
         public static Vector3 GrabStart(KitchenElement e)
         {
             if (e == null) return Vector3.zero;
@@ -207,7 +170,6 @@ namespace KitchenDesigner.Core
             return e.transform.position;
         }
 
-        /// <summary>Сдвигает все элементы набора на delta от их стартовых позиций.</summary>
         public static void ApplyDelta(IList<KitchenElement> members, IList<Vector3> starts, Vector3 delta)
         {
             for (int i = 0; i < members.Count; i++)
@@ -226,18 +188,12 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
-            // Идёт размещение нового объекта — мышь принадлежит PlacementController.
             if (PlacementController.IsActive)
                 return;
 
-            // В режиме инструмента (рулетка, пипетка) детали не двигаются и не
-            // удаляются с клавиатуры: мышь целиком принадлежит инструменту.
             if (Tools.ToolMode.MouseCaptured)
                 return;
 
-            // Набор текста в поле ввода не должен работать как горячие клавиши
-            // сцены: Delete стирал символ И удалял выделенный элемент, Ctrl+D
-            // посреди имени плодил дубль.
             if (!CameraController.IsTypingInInputField())
             {
                 HandleDuplicate();
@@ -256,8 +212,6 @@ namespace KitchenDesigner.Core
                 var newElement = dup != null ? dup.GetComponent<KitchenElement>() : null;
                 if (newElement != null)
                 {
-                    // В режиме редактирования модуля дубль остаётся в модуле —
-                    // иначе новая деталь оказалась бы заблокированной (вне модуля).
                     if (ModuleEditMode.IsActive)
                         newElement.GroupId = ModuleEditMode.Active!.id;
                     CommandStack.Execute(new CreateCommand(dup!));
@@ -275,7 +229,6 @@ namespace KitchenDesigner.Core
             var sel = SelectionManager.Instance;
             if (sel == null) return;
 
-            // Удаляем все выделенные элементы.
             var list = sel.SelectedElements;
             if (list == null || list.Count == 0) return;
 
@@ -293,11 +246,7 @@ namespace KitchenDesigner.Core
 
         private void HandleDragInput()
         {
-            // Идёт ресайз ручкой — перемещение объекта не запускаем.
             if (ResizeHandleManager.IsResizing) return;
-            // Правится область накладки: клик по её ручке не должен утаскивать
-            // саму стену. Ручка не ребёнок элемента, поэтому TryBeginPress о ней
-            // сам не знает — спрашиваем явно.
             if (TextureOverlayHandles.Active && TextureOverlayHandles.PointerOverHandle()) return;
 
             if (Input.GetKeyDown(KeyCode.Escape) && IsDragging)
@@ -314,7 +263,7 @@ namespace KitchenDesigner.Core
                 if (!IsDragging && PressMovedEnough())
                 {
                     if (_target != null && _target.Transformable) BeginDrag();
-                    else _pressed = false; // перемещение запрещено (или дверца открыта) — не двигаем
+                    else _pressed = false;
                 }
                 if (IsDragging)
                     UpdateDrag();
@@ -331,7 +280,7 @@ namespace KitchenDesigner.Core
         private void CancelDrag()
         {
             _showGhost = false;
-            _axisLock = AxisLock.None;
+            _axisLock = DragAxisLock.None;
             _dragWall = null;
             _targetIsWallOpening = false;
             RevertMoveSet();
@@ -352,8 +301,6 @@ namespace KitchenDesigner.Core
 
             if (ShiftHeld)
             {
-                // Плоскость, обращённая к камере и содержащая мировую вертикаль —
-                // иначе при взгляде вдоль оси перемещение «убегает» от мыши.
                 Vector3 viewDir = Camera.main.transform.forward;
                 viewDir.y = 0f;
                 if (viewDir.sqrMagnitude < 1e-4f) viewDir = Vector3.forward;
@@ -374,7 +321,7 @@ namespace KitchenDesigner.Core
                     float y = ray.GetPoint(enter).y + _vOffset;
                     Vector3 t = new Vector3(_target.transform.position.x, y, _target.transform.position.z);
                     newPos = new Vector3(t.x, GridManager.SnapToGrid(t).y, t.z);
-                    _dragY = newPos.y; // после Shift-подъёма горизонтальный drag держит новую высоту
+                    _heldDragY = newPos.y;
                     computed = true;
                 }
             }
@@ -387,10 +334,7 @@ namespace KitchenDesigner.Core
                     Vector3 point = ray.GetPoint(enter) + _offset;
                     if (!_targetIsWallOpening)
                     {
-                        // Горизонтальный drag: высота фиксирована (_dragY), сетка
-                        // применяется только к X/Z. Округление Y здесь ломало бы
-                        // контакт с полом каждый кадр (см. комментарий у _dragY).
-                        point.y = _dragY;
+                        point.y = _heldDragY;
                         newPos = GridManager.SnapToGridXZ(point);
                     }
                     else
@@ -403,21 +347,18 @@ namespace KitchenDesigner.Core
 
             if (!computed) return;
 
-            if (_dragTintMaterial == null) SaveDragMaterial(); // на случай, если drag начат не из BeginDrag
+            if (_dragTintMaterial == null) SaveDragMaterial();
 
-            if (Input.GetKeyDown(KeyCode.X)) _axisLock = _axisLock == AxisLock.X ? AxisLock.None : AxisLock.X;
-            if (Input.GetKeyDown(KeyCode.Z)) _axisLock = _axisLock == AxisLock.Z ? AxisLock.None : AxisLock.Z;
-            if (_axisLock == AxisLock.X) { newPos.z = _startPosition.z; if (!_targetIsWallOpening) newPos.y = _dragY; }
-            else if (_axisLock == AxisLock.Z) { newPos.x = _startPosition.x; if (!_targetIsWallOpening) newPos.y = _dragY; }
+            if (Input.GetKeyDown(KeyCode.X)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.X);
+            if (Input.GetKeyDown(KeyCode.Z)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.Z);
+            newPos = DragGesture.ApplyAxisLock(newPos, _axisLock, _startPosition, _heldDragY,
+                keepsItsOwnHeight: !_targetIsWallOpening);
 
             var others = PartRegistry.GetAll();
             if (_moveSet.Count > 1) others.RemoveAll(e => _moveSet.Contains(e));
-            // Ctrl инвертирует прилипание: если snap ВКЛ глобально, Ctrl ОТКЛ
-            // на время drag; если snap ВЫКЛ — Ctrl ВКЛ (ad-hoc). Один раз при
-            // захвате/отпускании Ctrl показываем статус-бару что произошло.
             var settings = KitchenSettings.Instance;
             bool globalSnap = settings != null && settings.SnapEnabled;
-            bool effectiveSnap = globalSnap ^ CtrlHeld;
+            bool effectiveSnap = DragGesture.SnapAppliesTo(globalSnap, CtrlHeld);
             if (CtrlHeld != _wasCtrl)
             {
                 bool wasOn = globalSnap;
@@ -431,19 +372,10 @@ namespace KitchenDesigner.Core
                 : default;
             _target.transform.position = WorldBounds.Clamp(snap.snapped ? snap.position : newPos);
 
-            // Групповое перемещение: остальные следуют за схваченным на ту же дельту.
-            // При вертикальном перетаскивании окна по стене все элементы группы
-            // получат тот же сдвиг по Y — это намеренное поведение; мультивыделение
-            // движется как единое целое.
             if (_moveSet.Count > 1)
                 ApplyDelta(_moveSet, _moveStart, _target.transform.position - _startPosition);
 
-            // Ghost-preview: деталь стоит в позиции снэпа, а полупрозрачный призрак
-            // показывает «свободную» позицию под курсором — видно, что и куда
-            // притянуло. Сравнивать надо именно snap.position с newPos: старое
-            // сравнение с transform.position всегда было ложным (позиция уже
-            // установлена в snap.position строкой выше) — призрак не появлялся никогда.
-            if (snap.snapped && (snap.position - newPos).sqrMagnitude > Tolerance.EpsilonSqr)
+            if (DragGesture.GhostIsWorthShowing(snap.snapped, snap.position, newPos))
             {
                 _showGhost = true;
                 _ghostPosition = newPos;
@@ -478,14 +410,9 @@ namespace KitchenDesigner.Core
 					pillarMidBefore = pillarBefore.MidHeightMM;
 				}
 
-				AutoAdjustPillar();
+				if (_target is PillarElement pillarToSeat)
+					PillarAutoFit.Seat(pillarToSeat, PartRegistry.GetAll());
 
-				// Итог перетаскивания обязан лечь на мм-сетку. Сетка GridManager
-				// применяется только к сырому положению мыши и с шагом 18 мм, а
-				// снэп её намеренно перезаписывает точной геометрией соседа — на
-				// соседе с дробной гранью перетаскиваемая деталь наследовала эту
-				// дробь. Выравниваем ДО сборки MoveCommand, чтобы undo хранил уже
-				// выровненное значение.
 				foreach (var m in _moveSet)
 					if (m != null) MmGrid.Snap(m);
 
@@ -503,7 +430,7 @@ namespace KitchenDesigner.Core
 				RevertMoveSet();
 			}
 
-			_axisLock = AxisLock.None;
+			_axisLock = DragAxisLock.None;
 			RestoreDragMaterial();
 			IsDragging = false;
 			_wasShift = false;
@@ -514,97 +441,6 @@ namespace KitchenDesigner.Core
 			RefreshHighlights();
 		}
 
-		private void AutoAdjustPillar()
-		{
-			if (!(_target is PillarElement pillar)) return;
-			float toU = AppConstants.MM_TO_UNITS;
-			Vector3 pillarCenter = _target.transform.position;
-
-			float floorY = FindFloorY(pillarCenter);
-			if (floorY < -999f) return;
-
-			float pillarBottomY = floorY;
-			pillar.transform.position = new Vector3(pillarCenter.x,
-				pillarBottomY + pillar.TotalHeightMM * 0.5f * toU, pillarCenter.z);
-			pillarCenter = _target.transform.position;
-
-			float minAbove = pillarBottomY + 80f * toU;
-			float maxAbove = pillarBottomY + 130f * toU;
-			KitchenElement? bestAbove = null;
-			float bestAboveBottom = float.MaxValue;
-			foreach (var el in PartRegistry.GetAll())
-			{
-				if (el == null || el == _target) continue;
-				var aabb = ComputeElementAABB(el);
-				if (aabb.minY >= minAbove && aabb.minY <= maxAbove)
-				{
-					if (IsOverlappingXZ(pillarCenter, aabb, 0.05f))
-					{
-						if (aabb.minY < bestAboveBottom)
-						{
-							bestAboveBottom = aabb.minY;
-							bestAbove = el;
-						}
-					}
-				}
-			}
-			if (bestAbove == null) return;
-			float gapUnits = bestAboveBottom - pillarBottomY;
-			// Округление ВНИЗ (с допуском на float-шум): RoundToInt мог удлинить
-			// пилон на ≤0.5 мм СКВОЗЬ деталь сверху — невидимое пересечение,
-			// красная подсветка и откат всего перемещения при BlockOnViolation.
-			int gapMM = Mathf.FloorToInt(gapUnits / toU + Tolerance.ClearanceMm);
-			int neededMid = gapMM - PillarElement.TopHeightMM - PillarElement.BottomHeightMM;
-			neededMid = Mathf.Clamp(neededMid, PillarElement.MidHeightMM_Min, PillarElement.MidHeightMM_Max);
-			float bottomY = pillar.transform.position.y - pillar.TotalHeightMM * 0.5f * toU;
-			pillar.MidHeightMM = neededMid;
-			float newTotalHeight = pillar.TotalHeightMM * toU;
-			pillar.transform.position = new Vector3(pillar.transform.position.x, bottomY + newTotalHeight * 0.5f, pillar.transform.position.z);
-		}
-
-		private static float FindFloorY(Vector3 pillarCenter)
-		{
-			float bestY = float.MinValue;
-			foreach (var el in PartRegistry.GetAll())
-			{
-				if (el == null) continue;
-				var aabb = ComputeElementAABB(el);
-				if (aabb.maxY > pillarCenter.y - 0.01f) continue;
-				if (IsOverlappingXZ(pillarCenter, aabb, 0.05f) && aabb.maxY > bestY)
-					bestY = aabb.maxY;
-			}
-			if (bestY >= pillarCenter.y - 1f) return bestY;
-			return -1000f;
-		}
-
-		private static bool IsOverlappingXZ(Vector3 point, (float minX, float maxX, float minY, float maxY, float minZ, float maxZ) aabb, float margin)
-		{
-			return point.x >= aabb.minX - margin && point.x <= aabb.maxX + margin
-				&& point.z >= aabb.minZ - margin && point.z <= aabb.maxZ + margin;
-		}
-
-		private static (float minX, float maxX, float minY, float maxY, float minZ, float maxZ) ComputeElementAABB(KitchenElement el)
-		{
-			var verts = el.GetVertices();
-			float minX = float.MaxValue, maxX = float.MinValue;
-			float minY = float.MaxValue, maxY = float.MinValue;
-			float minZ = float.MaxValue, maxZ = float.MinValue;
-			foreach (var v in verts)
-			{
-				if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x;
-				if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
-				if (v.z < minZ) minZ = v.z; if (v.z > maxZ) maxZ = v.z;
-			}
-			return (minX, maxX, minY, maxY, minZ, maxZ);
-		}
-
-        // Проверяет, есть ли нарушения среди перемещаемого набора и его соседей
-        // (AABB в радиусе snapThreshold * 2). Это предотвращает ситуацию, когда
-        // движение детали B разрывает связь детали A с полом — и это остаётся
-        // незамеченным. При этом чужая ошибка вдали не блокирует перемещение.
-        // Близость меряется по ГАБАРИТАМ (HasViolationNear), а не по центрам:
-        // у крупных деталей центры соседей всегда дальше радиуса, и проверка
-        // по центрам пропускала нарушения вплотную к перемещаемой детали.
         private bool MoveSetCausesViolation()
         {
             var result = ConstraintValidator.Validate(PartRegistry.GetAll());
@@ -662,7 +498,7 @@ namespace KitchenDesigner.Core
             _dragTintMaterial.SetFloat("_Surface", 1);
             _dragTintMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             _dragTintMaterial.renderQueue = 3000;
-            _dragTintMaterial.color = new Color(0f, 1f, 0f, 0.3f);
+            _dragTintMaterial.color = DragGesture.AllowedTint;
             renderer.material = _dragTintMaterial;
         }
 
@@ -670,12 +506,7 @@ namespace KitchenDesigner.Core
         {
             if (_dragTintMaterial == null || _target == null) return;
 
-            // Красный = деталь нарушает правила (пересекается с другой или повисла в
-            // воздухе) и при включённой блокировке не встанет, а откатится на старт.
-            // Зелёный = размещение допустимо. Так цвет совпадает с реальным исходом.
-            _dragTintMaterial.color = MoveSetCausesViolation()
-                ? new Color(1f, 0f, 0f, 0.3f)
-                : new Color(0f, 1f, 0f, 0.3f);
+            _dragTintMaterial.color = DragGesture.TintFor(MoveSetCausesViolation());
         }
 
         private void RestoreDragMaterial()

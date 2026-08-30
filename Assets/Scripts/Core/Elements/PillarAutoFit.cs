@@ -1,0 +1,113 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace KitchenDesigner.Core
+{
+    public static class PillarAutoFit
+    {
+        public const float OverlapMarginUnits = 0.05f;
+        public const int MinGapAboveMM = 80;
+        public const int MaxGapAboveMM = 130;
+        public const float NoFloorFound = -1000f;
+        private const float FloorSearchDepthUnits = 1f;
+        private const float BelowCentreUnits = 0.01f;
+
+        public static void Seat(PillarElement pillar, IReadOnlyList<KitchenElement> scene)
+        {
+            if (pillar == null || scene == null) return;
+
+            float floorY = FloorUnder(pillar.transform.position, scene);
+            if (floorY <= NoFloorFound + 1f) return;
+
+            StandOn(pillar, floorY);
+
+            var above = NearestBoardAbove(pillar, floorY, scene);
+            if (above == null) return;
+
+            int gapMM = GapMM(above.Value - floorY);
+            pillar.MidHeightMM = MidHeightForGapMM(gapMM);
+            StandOn(pillar, floorY);
+        }
+
+        public static float FloorUnder(Vector3 pillarCenter, IReadOnlyList<KitchenElement> scene)
+        {
+            float bestY = float.MinValue;
+            foreach (var el in scene)
+            {
+                if (el == null) continue;
+                var aabb = AabbOf(el);
+                if (aabb.maxY > pillarCenter.y - BelowCentreUnits) continue;
+                if (OverlapsInXZ(pillarCenter, aabb, OverlapMarginUnits) && aabb.maxY > bestY)
+                    bestY = aabb.maxY;
+            }
+            return bestY >= pillarCenter.y - FloorSearchDepthUnits ? bestY : NoFloorFound;
+        }
+
+        public static int GapMM(float gapUnits) =>
+            Mathf.FloorToInt(gapUnits / AppConstants.MM_TO_UNITS + Tolerance.ClearanceMm);
+
+        public static int MidHeightForGapMM(int gapMM) => Mathf.Clamp(
+            gapMM - PillarElement.TopHeightMM - PillarElement.BottomHeightMM,
+            PillarElement.MidHeightMM_Min, PillarElement.MidHeightMM_Max);
+
+        private static void StandOn(PillarElement pillar, float floorY)
+        {
+            var p = pillar.transform.position;
+            pillar.transform.position = new Vector3(p.x,
+                floorY + pillar.TotalHeightMM * 0.5f * AppConstants.MM_TO_UNITS, p.z);
+        }
+
+        private static float? NearestBoardAbove(PillarElement pillar, float floorY,
+            IReadOnlyList<KitchenElement> scene)
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            float minAbove = floorY + MinGapAboveMM * toU;
+            float maxAbove = floorY + MaxGapAboveMM * toU;
+            var center = pillar.transform.position;
+
+            float best = float.MaxValue;
+            bool found = false;
+            foreach (var el in scene)
+            {
+                if (el == null || el == (KitchenElement)pillar) continue;
+                var aabb = AabbOf(el);
+                if (aabb.minY < minAbove || aabb.minY > maxAbove) continue;
+                if (!OverlapsInXZ(center, aabb, OverlapMarginUnits)) continue;
+                if (aabb.minY >= best) continue;
+                best = aabb.minY;
+                found = true;
+            }
+            return found ? best : (float?)null;
+        }
+
+        private static bool OverlapsInXZ(Vector3 point, Aabb aabb, float margin) =>
+            point.x >= aabb.minX - margin && point.x <= aabb.maxX + margin
+            && point.z >= aabb.minZ - margin && point.z <= aabb.maxZ + margin;
+
+        public readonly struct Aabb
+        {
+            public readonly float minX, maxX, minY, maxY, minZ, maxZ;
+
+            public Aabb(float minX, float maxX, float minY, float maxY, float minZ, float maxZ)
+            {
+                this.minX = minX; this.maxX = maxX;
+                this.minY = minY; this.maxY = maxY;
+                this.minZ = minZ; this.maxZ = maxZ;
+            }
+        }
+
+        public static Aabb AabbOf(KitchenElement el)
+        {
+            float minX = float.MaxValue, maxX = float.MinValue;
+            float minY = float.MaxValue, maxY = float.MinValue;
+            float minZ = float.MaxValue, maxZ = float.MinValue;
+            foreach (var v in el.GetVertices())
+            {
+                if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x;
+                if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
+                if (v.z < minZ) minZ = v.z; if (v.z > maxZ) maxZ = v.z;
+            }
+            return new Aabb(minX, maxX, minY, maxY, minZ, maxZ);
+        }
+    }
+}

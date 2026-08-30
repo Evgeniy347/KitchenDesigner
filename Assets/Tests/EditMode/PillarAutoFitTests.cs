@@ -1,0 +1,157 @@
+using System.Collections.Generic;
+using NUnit.Framework;
+using UnityEngine;
+using KitchenDesigner.Core;
+
+/// <summary>Автоподгонка опоры после перетаскивания: сесть на пол под собой и
+/// дорастить ногу до детали сверху.
+///
+/// Раньше это жило приватным методом внутри ElementMover, и проверить его было
+/// нечем: тесты в PillarElementTests повторяли арифметику руками и настоящий код
+/// не звали ни разу.</summary>
+public class PillarAutoFitTests
+{
+    private const float U = AppConstants.MM_TO_UNITS;
+
+    private readonly List<GameObject> _spawned = new List<GameObject>();
+
+    [SetUp]
+    public void SetUp() => PartRegistry.Clear();
+
+    [TearDown]
+    public void TearDown()
+    {
+        foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
+        _spawned.Clear();
+        PartRegistry.Clear();
+    }
+
+    private KitchenElement Board(Vector3 pos, Vector3Int dims)
+    {
+        var go = new GameObject("Board");
+        _spawned.Add(go);
+        go.transform.position = pos;
+        var e = go.AddComponent<KitchenElement>();
+        e.DimensionsMM = dims;
+        e.ApplyDimensions();
+        return e;
+    }
+
+    private PillarElement Pillar(Vector3 pos, int midHeightMM)
+    {
+        var go = ElementFactory.CreatePillar(midHeightMM, "Опора", pos);
+        _spawned.Add(go);
+        return go.GetComponent<PillarElement>();
+    }
+
+    private static List<KitchenElement> Scene(params KitchenElement[] elements)
+        => new List<KitchenElement>(elements);
+
+    private static float BottomOf(KitchenElement e)
+    {
+        float min = float.MaxValue;
+        foreach (var v in e.GetVertices()) if (v.y < min) min = v.y;
+        return min;
+    }
+
+    private static float TopOf(KitchenElement e)
+    {
+        float max = float.MinValue;
+        foreach (var v in e.GetVertices()) if (v.y > max) max = v.y;
+        return max;
+    }
+
+    [Test]
+    public void FloorUnder_TakesTheHighestSurfaceBelowTheCentre()
+    {
+        var floor = Board(new Vector3(0f, -0.009f, 0f), new Vector3Int(3000, 18, 3000));
+        var podium = Board(new Vector3(0f, 0.01f, 0f), new Vector3Int(600, 20, 600));
+        var pillar = Pillar(new Vector3(0f, 0.08f, 0f), 75);
+
+        float floorY = PillarAutoFit.FloorUnder(pillar.transform.position, Scene(floor, podium, pillar));
+
+        Assert.AreEqual(TopOf(podium), floorY, 1e-5f,
+            "опора садится на ближайшую поверхность под собой, а не на самый низ сцены");
+    }
+
+    [Test]
+    public void FloorUnder_WithNothingBelow_ReportsNoFloor()
+    {
+        var pillar = Pillar(new Vector3(0f, 2f, 0f), 75);
+        var farBelow = Board(new Vector3(0f, -0.009f, 0f), new Vector3Int(3000, 18, 3000));
+
+        Assert.AreEqual(PillarAutoFit.NoFloorFound,
+            PillarAutoFit.FloorUnder(pillar.transform.position, Scene(farBelow, pillar)), 1e-3f,
+            "пол в метре под опорой — не её пол: висящую в воздухе опору автоподгонка не трогает");
+    }
+
+    [Test]
+    public void Seat_PutsThePillarOnTheFloor_AndGrowsItUpToTheBoardAbove()
+    {
+        var floor = Board(new Vector3(0f, -0.009f, 0f), new Vector3Int(3000, 18, 3000));
+        var board = Board(new Vector3(0f, 0.108f, 0f), new Vector3Int(540, 16, 564));
+        var pillar = Pillar(new Vector3(0f, 0.09f, 0f), 75);
+        float floorTop = TopOf(floor);
+        float boardBottom = BottomOf(board);
+
+        PillarAutoFit.Seat(pillar, Scene(floor, board, pillar));
+
+        Assert.AreEqual(floorTop, BottomOf(pillar), 1e-4f, "низ опоры — на полу");
+        Assert.LessOrEqual(TopOf(pillar), boardBottom + 1e-4f,
+            "верх опоры не должен пройти СКВОЗЬ деталь над ней");
+        Assert.Greater(TopOf(pillar), boardBottom - 1.5f * U,
+            "и не должен не достать до неё больше чем на миллиметр");
+    }
+
+    [Test]
+    public void Seat_WithNothingAbove_JustStandsOnTheFloor()
+    {
+        var floor = Board(new Vector3(0f, -0.009f, 0f), new Vector3Int(3000, 18, 3000));
+        var pillar = Pillar(new Vector3(0f, 0.09f, 0f), 75);
+        int midBefore = pillar.MidHeightMM;
+
+        PillarAutoFit.Seat(pillar, Scene(floor, pillar));
+
+        Assert.AreEqual(TopOf(floor), BottomOf(pillar), 1e-4f);
+        Assert.AreEqual(midBefore, pillar.MidHeightMM,
+            "подпирать нечего — высота ноги остаётся пользовательской");
+    }
+
+    [Test]
+    public void Seat_IgnoresABoardBeyondTheReachOfTheLeg()
+    {
+        var floor = Board(new Vector3(0f, -0.009f, 0f), new Vector3Int(3000, 18, 3000));
+        var tooHigh = Board(new Vector3(0f, 0.4f, 0f), new Vector3Int(540, 16, 564));
+        var pillar = Pillar(new Vector3(0f, 0.09f, 0f), 75);
+        int midBefore = pillar.MidHeightMM;
+
+        PillarAutoFit.Seat(pillar, Scene(floor, tooHigh, pillar));
+
+        Assert.AreEqual(midBefore, pillar.MidHeightMM,
+            $"нога тянется только на {PillarAutoFit.MinGapAboveMM}..{PillarAutoFit.MaxGapAboveMM} мм "
+            + "над полом — столешницу под потолком опора подпирать не пытается");
+    }
+
+    [Test]
+    public void GapMM_RoundsDown_SoTheLegNeverGrowsThroughTheBoardAbove()
+    {
+        Assert.AreEqual(107, PillarAutoFit.GapMM(107.6f * U),
+            "округление ВВЕРХ удлинило бы опору на пол-миллиметра СКВОЗЬ деталь: "
+            + "невидимое пересечение, красная подсветка и откат всего перемещения");
+        Assert.AreEqual(107, PillarAutoFit.GapMM(107f * U),
+            "точное значение округление вниз портить не должно");
+        Assert.AreEqual(108, PillarAutoFit.GapMM(107.95f * U),
+            $"допуск {Tolerance.ClearanceMm} мм съедает float-шум, иначе 108 мм читались бы как 107");
+    }
+
+    [Test]
+    public void MidHeightForGapMM_SubtractsTheFixedHeadAndFoot_AndStaysInRange()
+    {
+        int gap = 105;
+        Assert.AreEqual(gap - PillarElement.TopHeightMM - PillarElement.BottomHeightMM,
+            PillarAutoFit.MidHeightForGapMM(gap), "нога занимает зазор минус пятка и шляпка");
+
+        Assert.AreEqual(PillarElement.MidHeightMM_Min, PillarAutoFit.MidHeightForGapMM(0));
+        Assert.AreEqual(PillarElement.MidHeightMM_Max, PillarAutoFit.MidHeightForGapMM(10000));
+    }
+}
