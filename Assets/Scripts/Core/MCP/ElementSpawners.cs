@@ -91,6 +91,17 @@ namespace KitchenDesigner.Core.MCP
                     item.name, pos, DoorSashType.Glass),
             };
 
+        private static readonly string[] PlainCubeTypes = { "board", "wall", "facade" };
+
+        internal static readonly IReadOnlyList<string> SpawnableTypes = CollectSpawnableTypes();
+
+        private static List<string> CollectSpawnableTypes()
+        {
+            var types = new List<string>(PlainCubeTypes);
+            types.AddRange(ByType.Keys);
+            return types;
+        }
+
         public static GameObject Spawn(string elementType, CreateItem item, Vector3 pos)
             => ByType.TryGetValue(elementType, out var spawn)
                 ? spawn(item, pos)

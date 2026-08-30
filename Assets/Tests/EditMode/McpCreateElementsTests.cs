@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
+using KitchenDesigner.Core.MCP.Contract;
 
 /// <summary>create_elements: реестр ElementSpawners (тип → фабрика) и то, что
 /// происходит вокруг него — отказ по модели прибора и привязка проёмов после
@@ -110,6 +112,41 @@ public class McpCreateElementsTests
             "type=facade даёт FacadeElement, иначе у дверцы не будет ни петель, ни зазоров");
         Assert.NotNull(Find<KitchenElement>("Wall1")!.GetComponent<Wall>(),
             "type=wall — обычная деталь ПЛЮС компонент Wall: он делает её несущей");
+    }
+
+    [Test]
+    public void CreateElements_MoventoDrawer_GetsTheMoventoRunnerSystem()
+    {
+        var resp = _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new object[] { new { name = "Movento1", type = "movento_drawer", x = 0f, y = 0f, z = 0f } }
+        }));
+
+        Assert.AreEqual("result", resp.type, resp.type == "error" ? ErrorMessage(resp) : "");
+        var drawer = Find<DrawerElement>("Movento1");
+        Assert.NotNull(drawer,
+            "ящик Movento — не отдельный класс, а тот же DrawerElement под другой системой выдвижения");
+        Assert.AreEqual(DrawerSystem.Movento, drawer!.System,
+            "именно система выдвижения отличает Movento от GTV: она решает, уйдёт ящик в " +
+            "спецификацию одной покупной строкой или раскладкой деревянных деталей");
+        Assert.AreEqual(ElementSpawners.MOVENTO_DRAWER_DEFAULT_LENGTH_MM, drawer.NominalLength);
+        Assert.AreEqual(ElementSpawners.MOVENTO_DRAWER_DEFAULT_INTERNAL_WIDTH_MM, drawer.InternalWidth);
+    }
+
+    [Test]
+    public void CreateElements_TypeListInTheContract_MatchesTheSpawnerRegistry()
+    {
+        var contract = McpContractEnums.Of(typeof(CreateItem), nameof(CreateItem.type));
+        var spawnable = ElementSpawners.SpawnableTypes;
+        var contractOnly = contract.Except(spawnable).ToList();
+        var registryOnly = spawnable.Except(contract).ToList();
+
+        CollectionAssert.AreEquivalent(spawnable, contract,
+            "список типов создания живёт в двух местах и обязан совпадать: тип, который умеет " +
+            "ElementSpawners, но контракт не объявляет, клиенту недоступен; тип, объявленный в " +
+            "контракте без фабрики, молча даёт обычную деталь вместо отказа. " +
+            $"только в контракте: [{string.Join(", ", contractOnly)}]; " +
+            $"только в реестре: [{string.Join(", ", registryOnly)}]");
     }
 
     [Test]
