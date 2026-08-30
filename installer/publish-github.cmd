@@ -19,6 +19,7 @@ set "DRYRUN="
 set "NOBUILD="
 set "VER_OVERRIDE="
 set "NOTESFILE="
+set "PRERELEASE="
 
 REM Script dir from the FULL path of %0, captured BEFORE arg parsing: `shift`
 REM in this environment also rotates %0, so %~f0 after the loop is unreliable.
@@ -32,6 +33,7 @@ set "getver=%installerDir%get-version.ps1"
 if "%~1"=="" goto :args_done
 if /i "%~1"=="-DryRun"    set "DRYRUN=1"  & shift & goto :args
 if /i "%~1"=="-NoBuild"   set "NOBUILD=1" & shift & goto :args
+if /i "%~1"=="-PreRelease" set "PRERELEASE=1" & shift & goto :args
 if /i "%~1"=="-Version"   goto :take_version
 if /i "%~1"=="-NotesFile" goto :take_notesfile
 echo [FAIL] Unknown argument: %~1 & exit /b 1
@@ -51,13 +53,33 @@ REM ---- gh доступен? ----
 where gh >nul 2>nul
 if errorlevel 1 ( echo [FAIL] gh CLI not found on PATH & exit /b 1 )
 
+REM Опечатка в пути к чанджлогу раньше проходила молча: make-release-notes лишь предупреждал
+REM и подставлял заглушку, а релиз уходил с «Список изменений не заполнен».
+if defined NOTESFILE if not exist "%NOTESFILE%" ( echo [FAIL] -NotesFile not found: %NOTESFILE% & exit /b 1 )
+
 REM ---- версия ----
+REM Авторитет - BuildInfo (то, что реально вшито в собранный плеер), а НЕ output\version.txt:
+REM version.txt переживает любую пересборку и остаётся от прошлого установщика. Раньше он
+REM читался первым, поэтому publish -NoBuild после нового билда молча брал старый номер,
+REM находил старый setup рядом и догружал ассет в УЖЕ выпущенный релиз.
 set "VER=%VER_OVERRIDE%"
-if not defined VER if exist "%outDir%\version.txt" set /p "VER="<"%outDir%\version.txt"
 if not defined VER for /f "usebackq delims=" %%V in (`powershell -NoProfile -ExecutionPolicy Bypass -File "%getver%" -RootPath "%root%"`) do set "VER=%%V"
+if not defined VER if exist "%outDir%\version.txt" set /p "VER="<"%outDir%\version.txt"
 if not defined VER ( echo [FAIL] cannot determine version & exit /b 1 )
 REM съесть возможные пробелы/CRLF
 for /f "tokens=1" %%V in ("!VER!") do set "VER=%%V"
+
+REM ---- собранный установщик отстал от плеера? ----
+if not defined VER_OVERRIDE if exist "%outDir%\version.txt" (
+    set "PKGVER="
+    set /p "PKGVER="<"%outDir%\version.txt"
+    for /f "tokens=1" %%V in ("!PKGVER!") do set "PKGVER=%%V"
+    if not "!PKGVER!"=="!VER!" (
+        echo [FAIL] output\version.txt = !PKGVER!, а в сборке !VER! - установщик устарел.
+        echo        Пересоберите: installer\build-installer.cmd  ^(или задайте -Version явно^)
+        exit /b 1
+    )
+)
 
 set "SETUP=%outDir%\KitchenDesigner-Setup-!VER!-x64.exe"
 set "TAG=v!VER!"
@@ -68,6 +90,7 @@ echo  Kitchen Designer -^> GitHub Release
 echo  Version : !VER!
 echo  Tag     : !TAG!
 echo  Setup   : !SETUP!
+if defined PRERELEASE echo  Channel : PRERELEASE ^(releases/latest НЕ будет указывать на него^)
 if defined DRYRUN echo  MODE    : DRY RUN
 echo ========================================
 echo.
@@ -108,14 +131,21 @@ if errorlevel 1 (
     git -C "%root%" push origin !TAG! >nul 2>nul
 )
 
-REM ---- релиз (create или upload, идемпотентно) ----
+set "GHFLAGS="
+if defined PRERELEASE set "GHFLAGS=--prerelease"
+
+REM ---- релиз (create или edit+upload, идемпотентно) ----
 gh release view "!TAG!" -R "!SLUG!" >nul 2>nul
 if errorlevel 1 (
     echo === [3/4] Creating release !TAG! ===
-    gh release create "!TAG!" "!SETUP!" -R "!SLUG!" --title "Kitchen Designer !VER!" --notes-file "!NOTES!"
+    gh release create "!TAG!" "!SETUP!" -R "!SLUG!" --title "Kitchen Designer !VER!" --notes-file "!NOTES!" !GHFLAGS!
     if errorlevel 1 ( echo [FAIL] gh release create failed & exit /b 1 )
 ) else (
-    echo === [3/4] Uploading asset to existing release !TAG! ===
+    echo === [3/4] Updating existing release !TAG! ===
+    REM Раньше повторный запуск догружал только ассет, а тело релиза оставалось от первой
+    REM публикации: исправленный чанджлог молча никуда не попадал.
+    gh release edit "!TAG!" -R "!SLUG!" --title "Kitchen Designer !VER!" --notes-file "!NOTES!" !GHFLAGS!
+    if errorlevel 1 ( echo [FAIL] gh release edit failed & exit /b 1 )
     gh release upload "!TAG!" "!SETUP!" -R "!SLUG!" --clobber
     if errorlevel 1 ( echo [FAIL] gh release upload failed & exit /b 1 )
 )
@@ -123,8 +153,14 @@ del "!NOTES!" >nul 2>nul
 
 echo === [4/4] Done ===
 echo.
-echo Download (stable link):
-echo   https://github.com/!SLUG!/releases/latest/download/KitchenDesigner-Setup-!VER!-x64.exe
+if defined PRERELEASE (
+    echo Download ^(prerelease - только по тегу^):
+    echo   https://github.com/!SLUG!/releases/download/!TAG!/KitchenDesigner-Setup-!VER!-x64.exe
+    echo   ВНИМАНИЕ: releases/latest и автообновление в приложении prerelease НЕ видят.
+) else (
+    echo Download ^(stable link^):
+    echo   https://github.com/!SLUG!/releases/latest/download/KitchenDesigner-Setup-!VER!-x64.exe
+)
 echo Release page:
 echo   https://github.com/!SLUG!/releases/tag/!TAG!
 endlocal
@@ -134,7 +170,21 @@ exit /b 0
 echo [dry] would build/installer if missing: "!SETUP!"
 if defined NOTESFILE (echo [dry] changelog from: !NOTESFILE!) else (echo [dry] NO -NotesFile: «Что нового» будет заглушкой!)
 echo [dry] tag !TAG! + push origin
-echo [dry] gh release create !TAG! "!SETUP!" --title "Kitchen Designer !VER!"  (upload --clobber if exists)
-echo [dry] download would be: https://github.com/.../releases/latest/download/KitchenDesigner-Setup-!VER!-x64.exe
+if defined PRERELEASE (
+    echo [dry] gh release create !TAG! "!SETUP!" --title "Kitchen Designer !VER!" --prerelease  ^(edit+upload if exists^)
+    echo [dry] download would be: https://github.com/.../releases/download/!TAG!/KitchenDesigner-Setup-!VER!-x64.exe
+    echo [dry] releases/latest и автообновление prerelease НЕ увидят.
+) else (
+    echo [dry] gh release create !TAG! "!SETUP!" --title "Kitchen Designer !VER!"  ^(edit+upload if exists^)
+    echo [dry] download would be: https://github.com/.../releases/latest/download/KitchenDesigner-Setup-!VER!-x64.exe
+)
+REM PUBLISH.md обещает, что -DryRun показывает тело релиза; раньше он его не собирал.
+set "NOTES=%TEMP%\kd-release-notes.!TAG!.dryrun.md"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%installerDir%make-release-notes.ps1" -Version "!VER!" -SetupName "KitchenDesigner-Setup-!VER!-x64.exe" -ChangelogFile "!NOTESFILE!" -OutFile "!NOTES!"
+if errorlevel 1 ( echo [FAIL] make-release-notes failed & exit /b 1 )
+echo.
+echo ---- release body ^(!NOTES!^) ----
+powershell -NoProfile -Command "Get-Content -LiteralPath $env:NOTES -Encoding UTF8"
+echo ---- end of body ----
 endlocal
 exit /b 0
