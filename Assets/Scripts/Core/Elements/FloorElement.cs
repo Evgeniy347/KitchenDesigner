@@ -60,6 +60,7 @@ namespace KitchenDesigner.Core
 
         private void OnDestroy()
         {
+            PartRegistry.Unregister(this);
             if (_polygonMesh == null) return;
             if (Application.isPlaying) Destroy(_polygonMesh); else DestroyImmediate(_polygonMesh);
             _polygonMesh = null;

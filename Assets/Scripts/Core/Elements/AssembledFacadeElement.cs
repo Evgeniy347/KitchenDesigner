@@ -91,6 +91,7 @@ namespace KitchenDesigner.Core
 
         private void OnDestroy()
         {
+            PartRegistry.Unregister(this);
             if (_ownedMesh != null)
             {
                 DestroyImmediate(_ownedMesh);
