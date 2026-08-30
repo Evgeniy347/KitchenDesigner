@@ -51,6 +51,7 @@ namespace KitchenDesigner.Core.Update
             req.timeout = _timeoutSeconds;
             req.chunkedTransfer = false;
             _active = req;
+            req.SendWebRequest();
 
             UnityWebRequest.Result result;
             string err;
