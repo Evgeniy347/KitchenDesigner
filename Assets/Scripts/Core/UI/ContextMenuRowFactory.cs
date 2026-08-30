@@ -10,33 +10,33 @@ namespace KitchenDesigner.Core.UI
     internal readonly struct RowVisibility
     {
         private readonly ElementFacet _facet;
+        private readonly ElementFacet _except;
         private readonly Func<bool>? _when;
 
-        private RowVisibility(ElementFacet facet, Func<bool>? when)
+        private RowVisibility(ElementFacet facet, ElementFacet except, Func<bool>? when)
         {
             _facet = facet;
+            _except = except;
             _when = when;
         }
 
-        public static RowVisibility Always => new(ElementFacet.None, null);
+        public static RowVisibility Always => new(ElementFacet.None, ElementFacet.None, null);
 
-        public static RowVisibility When(Func<bool> when) => new(ElementFacet.None, when);
+        public static RowVisibility When(Func<bool> when) =>
+            new(ElementFacet.None, ElementFacet.None, when);
 
-        public static RowVisibility For(ElementFacet facet) => new(facet, null);
+        public static RowVisibility For(ElementFacet facet) =>
+            new(facet, ElementFacet.None, null);
 
-        public static RowVisibility For(ElementFacet facet, Func<bool> when) => new(facet, when);
+        public static RowVisibility For(ElementFacet facet, Func<bool> when) =>
+            new(facet, ElementFacet.None, when);
+
+        public static RowVisibility ForExcept(ElementFacet facet, ElementFacet except) =>
+            new(facet, except, null);
 
         public void Register(ContextMenuLayout layout, float height, float gapAfter,
-            params RectTransform[] rects)
-        {
-            if (_facet == ElementFacet.None)
-            {
-                if (_when == null) layout.Add(height, gapAfter, rects);
-                else layout.AddWhen(_when, height, gapAfter, rects);
-            }
-            else if (_when == null) layout.AddFor(_facet, height, gapAfter, rects);
-            else layout.AddFor(_facet, _when, height, gapAfter, rects);
-        }
+            params RectTransform[] rects) =>
+            layout.Register(height, gapAfter, _facet, _except, _when, rects);
     }
 
     internal sealed class ContextMenuRowFactory

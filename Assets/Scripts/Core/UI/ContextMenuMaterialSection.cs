@@ -25,7 +25,7 @@ namespace KitchenDesigner.Core.UI
 
             var options = MaterialOptions.DisplayNames();
             _base = _host.Rows.Dropdown("Текстура", options, index => Choose(MaterialSlot.Base, index),
-                RowVisibility.When(() => !_host.TargetIsTable), "CtxMaterial");
+                RowVisibility.When(() => !_host.TargetFacets.Has(ElementFacet.Table)), "CtxMaterial");
             _tabletop = _host.Rows.Dropdown("Столешница", new List<string>(options),
                 index => Choose(MaterialSlot.Base, index),
                 RowVisibility.For(ElementFacet.Table), "CtxTableTop");
@@ -54,7 +54,7 @@ namespace KitchenDesigner.Core.UI
 
         public void ApplyLegsChoice(KitchenElement target)
         {
-            if (_legs == null || !_host.TargetIsTable) return;
+            if (_legs == null || !_host.TargetFacets.Has(ElementFacet.Table)) return;
             var all = MaterialCatalog.All;
             if (_legs.value < 0 || _legs.value >= all.Count) return;
             var def = all[_legs.value];
@@ -110,7 +110,7 @@ namespace KitchenDesigner.Core.UI
         }
 
         private MaterialSlot SlotFor(MaterialSlot requested) =>
-            requested == MaterialSlot.Base && _host.TargetIsTable
+            requested == MaterialSlot.Base && _host.TargetFacets.Has(ElementFacet.Table)
                 ? MaterialSlot.Tabletop
                 : requested;
 

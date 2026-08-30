@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core.UI
 
         public override void Build() =>
             _sillProtrusion = Rows.NumberField("Подоконник",
-                RowVisibility.For(ElementFacet.Window, () => !Host.TargetIsDoor));
+                RowVisibility.ForExcept(ElementFacet.Window, ElementFacet.Door));
 
         public override IEnumerable<TMP_InputField?> ArithmeticFields()
         {

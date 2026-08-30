@@ -18,6 +18,8 @@ namespace KitchenDesigner.Core.UI
         Door = 1 << 7,
         Part = 1 << 8,
         Light = 1 << 9,
+        Oven = 1 << 10,
+        Dishwasher = 1 << 11,
     }
 
     internal sealed class ContextMenuLayout
@@ -133,7 +135,7 @@ namespace KitchenDesigner.Core.UI
             return topPadding + contentBottom;
         }
 
-        private void Register(float height, float gapAfter, ElementFacet showFor, ElementFacet hideFor,
+        public void Register(float height, float gapAfter, ElementFacet showFor, ElementFacet hideFor,
             Func<bool>? visibleWhen, RectTransform[] rects)
         {
             foreach (var rt in rects)

@@ -40,8 +40,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _sashTypeDropdown;
         private TMP_Dropdown? _winModeDropdown;
         private bool _openInProgress;
-        private bool _currentIsTable;
-        private bool _currentIsDoor;
+        private ElementFacet _facets;
 
         private readonly ContextMenuLayout _layout = new();
         private readonly ContextMenuTextureSection _textures;
@@ -99,9 +98,7 @@ namespace KitchenDesigner.Core.UI
 
         public bool MaterialPreviewActive => _materials.PreviewActive;
 
-        bool IContextMenuHost.TargetIsTable => _currentIsTable;
-
-        bool IContextMenuHost.TargetIsDoor => _currentIsDoor;
+        ElementFacet IContextMenuHost.TargetFacets => _facets;
 
         DimensionFields IContextMenuHost.SizeFields => _size;
 
@@ -196,9 +193,9 @@ namespace KitchenDesigner.Core.UI
 
             _doorButtonLabel = _rows.WideButton("CtxDoor", "Открыть", ToggleDoor, facadeOnly, ActionGap);
             _ovenDoorLabel = _rows.WideButton("CtxOvenDoor", "Открыть дверцу", ToggleOvenDoor,
-                RowVisibility.When(() => _target is OvenElement), ActionGap);
+                RowVisibility.For(ElementFacet.Oven), ActionGap);
             _dishwasherDoorLabel = _rows.WideButton("CtxDishwasherDoor", "Открыть дверцу",
-                ToggleDishwasherDoor, RowVisibility.When(() => _target is DishwasherElement), ActionGap);
+                ToggleDishwasherDoor, RowVisibility.For(ElementFacet.Dishwasher), ActionGap);
 
             var fillOptions = new List<string> { "Глухой (панель)", "Витрина (пусто)", "Стекло" };
             _fillDropdown = _rows.Dropdown("Заполнение", fillOptions, OnFillSelected,
@@ -324,7 +321,7 @@ namespace KitchenDesigner.Core.UI
         private void BuildWindowSection()
         {
             var windowOnly = RowVisibility.For(ElementFacet.Window);
-            var notDoor = RowVisibility.For(ElementFacet.Window, () => !_currentIsDoor);
+            var notDoor = RowVisibility.ForExcept(ElementFacet.Window, ElementFacet.Door);
 
             _tintDropdown = _rows.Dropdown("Стекло", new List<string> { "Прозрачное", "Тонированное" },
                 OnTintSelected, notDoor, "CtxTint");
@@ -584,9 +581,8 @@ namespace KitchenDesigner.Core.UI
                 if (SelectionManager.Instance != null)
                     SelectionManager.Instance.Select(element);
 
-                bool isDrawer = element is DrawerElement;
-                _currentIsTable = element is TableElement || element is RadiusTableElement;
-                _currentIsDoor = element is DoorElement;
+                _facets = ElementFacets.Of(element);
+                bool isDrawer = _facets.Has(ElementFacet.Drawer);
                 RefreshTitle();
                 _types.ShowFor(element);
 
@@ -917,7 +913,8 @@ namespace KitchenDesigner.Core.UI
         private void RelayoutForTarget()
         {
             if (_target == null) return;
-            ApplyLayout(FacetsOf(_target));
+            _facets = ElementFacets.Of(_target);
+            ApplyLayout(_facets);
         }
 
         private void ApplyLayout(ElementFacet facets)
@@ -927,22 +924,6 @@ namespace KitchenDesigner.Core.UI
             float contentBottom = _layout.Apply(facets, showRotationXZ, TopPad);
             if (_panelRt != null)
                 _panelRt.sizeDelta = new Vector2(_panelRt.sizeDelta.x, contentBottom + BottomPad);
-        }
-
-        private static ElementFacet FacetsOf(KitchenElement element)
-        {
-            var facets = ElementFacet.None;
-            if (element is FacadeElement) facets |= ElementFacet.Facade;
-            if (element is AssembledFacadeElement) facets |= ElementFacet.Assembled;
-            if (element is RadialShelfElement) facets |= ElementFacet.Radial;
-            if (element is DrawerElement) facets |= ElementFacet.Drawer;
-            if (element is TableElement || element is RadiusTableElement) facets |= ElementFacet.Table;
-            if (element is PillarElement) facets |= ElementFacet.Pillar;
-            if (element is WindowElement || element is DoorElement) facets |= ElementFacet.Window;
-            if (element is DoorElement) facets |= ElementFacet.Door;
-            if (element is LightSourceElement) facets |= ElementFacet.Light;
-            if (element.SupportsGrooves) facets |= ElementFacet.Part;
-            return facets;
         }
 
         private void OnDrawerTypeChanged(int index)

@@ -10,9 +10,7 @@ namespace KitchenDesigner.Core.UI
 
         ContextMenuFieldTracker Fields { get; }
 
-        bool TargetIsTable { get; }
-
-        bool TargetIsDoor { get; }
+        ElementFacet TargetFacets { get; }
 
         DimensionFields SizeFields { get; }
 
