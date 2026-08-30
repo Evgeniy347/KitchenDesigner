@@ -34,7 +34,6 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _dishwasherDoorLabel;
         private TMP_Dropdown? _modeDropdown;
         private TMP_Dropdown? _fillDropdown;
-        private TMP_Dropdown? _typeDropdown;
         private TMP_Dropdown? _drawerTypeDropdown, _drawerLengthDropdown, _drawerColorDropdown;
         private TMP_Dropdown? _drawerUpperLenDropdown;
         private TMP_InputField? _drawerWidth;
@@ -67,6 +66,7 @@ namespace KitchenDesigner.Core.UI
         private readonly ContextMenuGrooveSection _grooves;
         private readonly ContextMenuGapSection _gaps;
         private readonly ContextMenuMaterialSection _materials;
+        private readonly ElementTypeConverter _types;
         private ContextMenuRowFactory _rows = null!;
 
         public ContextMenuUI()
@@ -77,6 +77,7 @@ namespace KitchenDesigner.Core.UI
             _grooves = new ContextMenuGrooveSection(this);
             _gaps = new ContextMenuGapSection(this);
             _materials = new ContextMenuMaterialSection(this);
+            _types = new ElementTypeConverter(this, Open);
         }
 
         KitchenElement? IContextMenuHost.Target => _target;
@@ -108,6 +109,8 @@ namespace KitchenDesigner.Core.UI
         internal NameDropdownBinder AttachedFacade => _attachedFacade;
 
         internal NameDropdownBinder AttachedTo => _attachedTo;
+
+        internal ElementTypeConverter Types => _types;
 
         private void Awake()
         {
@@ -159,11 +162,7 @@ namespace KitchenDesigner.Core.UI
             _titleLabel.enableWordWrapping = false;
             _layout.Add(TitleH, TitleGap, _titleLabel.rectTransform);
 
-            var typeOptions = new List<string>();
-            foreach (var (_, label) in StructuralChoices) typeOptions.Add(label);
-            _typeDropdown = _rows.Dropdown("Тип", typeOptions, OnTypeSelected,
-                RowVisibility.When(() => _target != null && GroupOf(_target) != TypeGroup.None),
-                "CtxType");
+            _types.Build();
         }
 
         private void BuildDimensions()
@@ -773,7 +772,7 @@ namespace KitchenDesigner.Core.UI
                     : isFacade ? "Фасад"
                     : "Деталь";
                 RefreshTitle();
-                RefreshTypeDropdown(element);
+                _types.ShowFor(element);
 
                 var dims = element.DimensionsMM;
                 _name!.text = element.PartName;
@@ -1362,114 +1361,6 @@ namespace KitchenDesigner.Core.UI
             return facets;
         }
 
-        // ── Тип: родственные группы конвертации ─────────────────────────
-        private enum TypeGroup { None, Structural, Drawer }
-
-        private enum TypeChoice { Part, Facade, AssembledFacade, RadialShelf, DrawerGtv, DrawerMovento }
-
-        private static readonly (TypeChoice choice, string label)[] StructuralChoices =
-        {
-            (TypeChoice.Part, "Деталь"),
-            (TypeChoice.Facade, "Фасад"),
-            (TypeChoice.AssembledFacade, "Сборный фасад"),
-            (TypeChoice.RadialShelf, "Радиусная полка"),
-        };
-
-        private static readonly (TypeChoice choice, string label)[] DrawerChoices =
-        {
-            (TypeChoice.DrawerGtv, "Ящик GTV"),
-            (TypeChoice.DrawerMovento, "Ящик Movento"),
-        };
-
-        // Выбор, соответствующий индексу текущего списка (наполняется в RefreshTypeDropdown).
-        private readonly List<TypeChoice> _typeChoices = new();
-
-        /// <summary>Родственная группа элемента для конвертации типа. None → строка «Тип»
-        /// скрыта (окно/дверь/стол/опора/ДВП/свет/стена/пол — своя роль, конвертации нет).</summary>
-        private static TypeGroup GroupOf(KitchenElement e)
-        {
-            if (e == null) return TypeGroup.None;
-            if (e is DrawerElement) return TypeGroup.Drawer;
-            if (e is TableElement || e is RadiusTableElement || e is PillarElement
-                || e is WindowElement || e is DoorElement || e is PanelElement
-                || e is LightSourceElement || e is FloorElement
-                || e is SinkElement || e is CooktopElement || e is OvenElement
-                || e is DishwasherElement) return TypeGroup.None;
-            if (e.GetComponent<Wall>() != null || e.GetComponent<BasePlate>() != null) return TypeGroup.None;
-            // AssembledFacade — подкласс Facade; порядок проверок не важен, обе → структурная.
-            if (e is AssembledFacadeElement || e is RadialShelfElement || e is FacadeElement)
-                return TypeGroup.Structural;
-            if (e.GetType() == typeof(KitchenElement)) return TypeGroup.Structural; // голая «Деталь»
-            return TypeGroup.None;
-        }
-
-        private static TypeChoice CurrentChoice(KitchenElement e)
-        {
-            if (e is DrawerElement d)
-                return d.System == DrawerSystem.Movento ? TypeChoice.DrawerMovento : TypeChoice.DrawerGtv;
-            if (e is AssembledFacadeElement) return TypeChoice.AssembledFacade;
-            if (e is RadialShelfElement) return TypeChoice.RadialShelf;
-            if (e is FacadeElement) return TypeChoice.Facade;
-            return TypeChoice.Part;
-        }
-
-        /// <summary>Наполнить список «Тип» опциями родственной группы элемента и
-        /// выставить текущее значение. Для группы None список пуст (строку гасит Layout).</summary>
-        private void RefreshTypeDropdown(KitchenElement element)
-        {
-            if (_typeDropdown == null) return;
-            _typeChoices.Clear();
-            _typeDropdown.ClearOptions();
-
-            var group = GroupOf(element);
-            if (group == TypeGroup.None) return;
-
-            var set = group == TypeGroup.Drawer ? DrawerChoices : StructuralChoices;
-            var labels = new List<string>(set.Length);
-            foreach (var (choice, label) in set) { _typeChoices.Add(choice); labels.Add(label); }
-            _typeDropdown.AddOptions(labels);
-
-            int idx = _typeChoices.IndexOf(CurrentChoice(element));
-            _typeDropdown.SetValueWithoutNotify(idx < 0 ? 0 : idx);
-            _typeDropdown.RefreshShownValue();
-        }
-
-        private void OnTypeSelected(int index)
-        {
-            if (_target == null || index < 0 || index >= _typeChoices.Count) return;
-            var choice = _typeChoices[index];
-
-            // Ящик: смена системы выдвижения — тот же элемент, пересобираем меш и меню.
-            if (choice == TypeChoice.DrawerGtv || choice == TypeChoice.DrawerMovento)
-            {
-                if (_target is DrawerElement drawer)
-                {
-                    var sys = choice == TypeChoice.DrawerMovento ? DrawerSystem.Movento : DrawerSystem.Gtv;
-                    if (drawer.System != sys)
-                    {
-                        drawer.System = sys;
-                        Open(drawer); // обновить заголовок, значение и спецификацию
-                        RefreshHighlights();
-                    }
-                }
-                return;
-            }
-
-            // Родственные структурные типы: конвертация пересоздаёт элемент.
-            var targetType = choice switch
-            {
-                TypeChoice.Facade => ElementConverter.TargetType.Facade,
-                TypeChoice.AssembledFacade => ElementConverter.TargetType.AssembledFacade,
-                TypeChoice.RadialShelf => ElementConverter.TargetType.RadialShelf,
-                _ => ElementConverter.TargetType.Part,
-            };
-            if (ElementConverter.GetElementType(_target) == targetType) return;
-
-            var converted = ElementConverter.Convert(_target, targetType);
-            if (converted != null)
-                Open(converted);
-            RefreshHighlights();
-        }
 
         private void OnDrawerTypeChanged(int index)
         {
