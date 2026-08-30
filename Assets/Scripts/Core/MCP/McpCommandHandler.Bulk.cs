@@ -149,10 +149,10 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsAlignSelection>();
             if (p == null || string.IsNullOrWhiteSpace(p.selector) || string.IsNullOrWhiteSpace(p.target))
                 return McpResponse.Error(req.id, -32602, "selector and target required");
-            if (!TryParseFace(p.face, out int axis, out bool maxSide))
+            if (!McpWireEnums.TryParseFace(p.face, out int axis, out bool maxSide))
                 return McpResponse.Error(req.id, -32602, $"Unknown face '{p.face}'");
             string targetFace = string.IsNullOrEmpty(p.target_face) ? OppositeFace(p.face) : p.target_face;
-            if (!TryParseFace(targetFace, out int targetAxis, out bool targetMax) || targetAxis != axis)
+            if (!McpWireEnums.TryParseFace(targetFace, out int targetAxis, out bool targetMax) || targetAxis != axis)
                 return McpResponse.Error(req.id, -32602, "face and target_face must be opposite/same-axis faces");
             var target = FindElementByName(p.target);
             if (target == null) return McpResponse.Error(req.id, -32602, $"Target not found: {p.target}");

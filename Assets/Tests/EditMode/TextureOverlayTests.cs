@@ -753,7 +753,7 @@ public class TextureOverlayTests
     [Test]
     public void Mcp_ParsesSideAndOptionalArea()
     {
-        Assert.IsTrue(KitchenDesigner.Core.MCP.McpCommandHandler.TryParseTextureOverlays(
+        Assert.IsTrue(KitchenDesigner.Core.MCP.McpSpecCodec.TryParseTextureOverlays(
             "a:oak; f:white@100,200+800x600", out var parsed, out string error), error);
 
         Assert.AreEqual(2, parsed.Count);
@@ -764,7 +764,7 @@ public class TextureOverlayTests
     [Test]
     public void Mcp_EmptyStringClearsOverlays()
     {
-        Assert.IsTrue(KitchenDesigner.Core.MCP.McpCommandHandler.TryParseTextureOverlays(
+        Assert.IsTrue(KitchenDesigner.Core.MCP.McpSpecCodec.TryParseTextureOverlays(
             "", out var parsed, out _));
         Assert.AreEqual(0, parsed.Count);
     }
@@ -772,11 +772,11 @@ public class TextureOverlayTests
     [Test]
     public void Mcp_RejectsUnknownSideAndBrokenArea()
     {
-        Assert.IsFalse(KitchenDesigner.Core.MCP.McpCommandHandler.TryParseTextureOverlays(
+        Assert.IsFalse(KitchenDesigner.Core.MCP.McpSpecCodec.TryParseTextureOverlays(
             "z:oak", out _, out string sideError));
         StringAssert.Contains("unknown side", sideError);
 
-        Assert.IsFalse(KitchenDesigner.Core.MCP.McpCommandHandler.TryParseTextureOverlays(
+        Assert.IsFalse(KitchenDesigner.Core.MCP.McpSpecCodec.TryParseTextureOverlays(
             "a:oak@100-200", out _, out string rectError));
         StringAssert.Contains("area", rectError);
     }
@@ -791,8 +791,8 @@ public class TextureOverlayTests
             new TextureOverlaySpec(OverlaySide.B, "white", 100, 200, 800, 600),
         });
 
-        string text = KitchenDesigner.Core.MCP.McpCommandHandler.FormatTextureOverlays(wall);
-        Assert.IsTrue(KitchenDesigner.Core.MCP.McpCommandHandler.TryParseTextureOverlays(
+        string text = KitchenDesigner.Core.MCP.McpSpecCodec.FormatTextureOverlays(wall);
+        Assert.IsTrue(KitchenDesigner.Core.MCP.McpSpecCodec.TryParseTextureOverlays(
             text, out var parsed, out string error), error);
         CollectionAssert.AreEqual(new List<TextureOverlaySpec>(wall.TextureOverlays), parsed);
     }

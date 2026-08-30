@@ -259,8 +259,8 @@ namespace KitchenDesigner.Core.MCP
                 effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z,
                 faceGaps = gaps,
                 cornerRadius = radial != null ? radial.CornerRadius : 0,
-                grooves = el.Grooves.Count > 0 ? FormatGrooves(el) : null,
-                textureOverlays = el.TextureOverlays.Count > 0 ? FormatTextureOverlays(el) : null,
+                grooves = el.Grooves.Count > 0 ? McpSpecCodec.FormatGrooves(el) : null,
+                textureOverlays = el.TextureOverlays.Count > 0 ? McpSpecCodec.FormatTextureOverlays(el) : null,
                 edgeBanding = el.SupportsEdges ? el.EdgeBandingEnabled : (bool?)null,
                 edgeThicknessMM = el.SupportsEdges ? el.EdgeThicknessMM : (float?)null,
                 // Поле контракта — на всю деталь: true, когда ручными помечены
@@ -268,7 +268,7 @@ namespace KitchenDesigner.Core.MCP
                 edgeSkipValidation = el.SupportsEdges && el.EdgeManualMask == EdgeManual.AllMask
                     ? true : (bool?)null,
                 edges = el.EdgeBandingEnabled && allElements != null
-                    ? FormatEdges(el, allElements) : null,
+                    ? McpSpecCodec.FormatBandedEdgesRecomputedFromScene(el, allElements) : null,
                 facadeMode = el is FacadeElement feMode ? FacadeDoor.WireName(feMode.Mode) : null,
                 faceNormalX = facadeValidation?.normal.x,
                 faceNormalY = facadeValidation?.normal.y,
@@ -278,16 +278,16 @@ namespace KitchenDesigner.Core.MCP
                 openingViolations = facadeValidation?.openingViolations,
                 drawer = drawer != null ? new DrawerInfo
                 {
-                    system = drawer.System == DrawerSystem.Movento ? "movento" : "gtv",
+                    system = McpWireEnums.Name(drawer.System),
                     drawerType = drawer.Type.ToString(),
                     drawerLength = drawer.NominalLength,
-                    drawerColor = WireName(drawer.Color),
+                    drawerColor = McpWireEnums.Name(drawer.Color),
                     internalWidth = drawer.InternalWidth,
                     isDouble = drawer.IsDouble,
                     isUpper = drawer.IsUpperDrawer,
                     pairedDrawerName = drawer.PairedDrawerName,
                     attachedFacadeName = drawer.AttachedFacadeName,
-                    doubleState = WireName(drawer.DoubleState),
+                    doubleState = McpWireEnums.Name(drawer.DoubleState),
                     isOpen = drawer.IsOpen
                 } : null,
                 table = table != null ? new TableInfo
@@ -362,7 +362,7 @@ namespace KitchenDesigner.Core.MCP
                 } : null,
                 window = window != null ? new WindowInfo
                 {
-                    tint = WireName(window.Tint),
+                    tint = McpWireEnums.Name(window.Tint),
                     sillProtrusionMM = window.SillProtrusionMM,
                     mode = FacadeDoor.WireName(window.Mode),
                     isOpen = window.IsOpen,
@@ -370,7 +370,7 @@ namespace KitchenDesigner.Core.MCP
                 } : null,
                 door = door != null ? new DoorInfo
                 {
-                    sashType = WireName(door.SashType),
+                    sashType = McpWireEnums.Name(door.SashType),
                     mode = FacadeDoor.WireName(door.Mode),
                     isOpen = door.IsOpen,
                     attachedWallName = door.AttachedWallName
@@ -635,23 +635,6 @@ namespace KitchenDesigner.Core.MCP
             };
         }
 
-        // ── Face parsing ───────────────────────────────────────────────
-
-        /// <summary>"left"/"right"/"bottom"/"top"/"back"/"front" → ось (0/1/2) и сторона.</summary>
-        private static bool TryParseFace(string s, out int axis, out bool maxSide)
-        {
-            axis = 0; maxSide = false;
-            switch ((s ?? "").Trim().ToLowerInvariant())
-            {
-                case "left":   axis = 0; maxSide = false; return true;
-                case "right":  axis = 0; maxSide = true;  return true;
-                case "bottom": axis = 1; maxSide = false; return true;
-                case "top":    axis = 1; maxSide = true;  return true;
-                case "back":   axis = 2; maxSide = false; return true;
-                case "front":  axis = 2; maxSide = true;  return true;
-                default: return false;
-            }
-        }
 
         private static float AabbSide(AabbInfo aabb, int axis, bool maxSide)
         {

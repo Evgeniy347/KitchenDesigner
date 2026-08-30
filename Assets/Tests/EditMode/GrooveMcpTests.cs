@@ -8,7 +8,7 @@ using KitchenDesigner.Core.MCP;
 public class GrooveMcpTests
 {
     private static bool Parse(string spec, out List<GrooveSpec> result, out string error)
-        => McpCommandHandler.TryParseGrooves(spec, out result, out error);
+        => McpSpecCodec.TryParseGrooves(spec, out result, out error);
 
     [Test]
     public void EmptyString_ClearsAllGrooves()
@@ -74,7 +74,7 @@ public class GrooveMcpTests
             el.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Top));
             el.AddGroove(new GrooveSpec(GrooveKind.Blind, GrooveSide.Right));
 
-            string formatted = McpCommandHandler.FormatGrooves(el);
+            string formatted = McpSpecCodec.FormatGrooves(el);
             Assert.AreEqual("through:top, blind:right", formatted);
 
             Assert.IsTrue(Parse(formatted, out var reparsed, out var err), err);

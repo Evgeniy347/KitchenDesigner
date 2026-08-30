@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (!el.SupportsGrooves)
                     e.Add("grooves (plain boards only)");
-                else if (!TryParseGrooves(op.grooves, out _, out string grooveError))
+                else if (!McpSpecCodec.TryParseGrooves(op.grooves, out _, out string grooveError))
                     e.Add($"grooves: {grooveError}");
             }
 
@@ -92,7 +92,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (!el.SupportsTextureOverlays)
                     e.Add("texture_overlays (walls and floors only)");
-                else if (!TryParseTextureOverlays(op.texture_overlays, out _, out string overlayError))
+                else if (!McpSpecCodec.TryParseTextureOverlays(op.texture_overlays, out _, out string overlayError))
                     e.Add($"texture_overlays: {overlayError}");
             }
 
@@ -114,329 +114,6 @@ namespace KitchenDesigner.Core.MCP
             }
             return e;
         }
-
-        /// <summary>Разбор списка пазов вида "through:top, blind:left". Пустая
-        /// строка — пустой набор (снять все пазы). Ошибки описательные: инструмент
-        /// вызывается вслепую, и «invalid» без деталей бесполезно.</summary>
-        public static bool TryParseGrooves(string spec, out List<GrooveSpec> result, out string error)
-        {
-            result = new List<GrooveSpec>();
-            error = string.Empty;
-
-            if (string.IsNullOrWhiteSpace(spec)) return true;
-
-            foreach (var rawItem in spec.Split(','))
-            {
-                var item = rawItem.Trim();
-                if (item.Length == 0) continue;
-
-                var parts = item.Split(':');
-                if (parts.Length != 2)
-                {
-                    error = $"'{item}' is not \"kind:side\" (e.g. \"through:top\")";
-                    return false;
-                }
-
-                GrooveKind kind;
-                switch (parts[0].Trim().ToLowerInvariant())
-                {
-                    case "through": kind = GrooveKind.Through; break;
-                    case "blind": kind = GrooveKind.Blind; break;
-                    default:
-                        error = $"unknown kind '{parts[0].Trim()}' in '{item}' (expected through|blind)";
-                        return false;
-                }
-
-                GrooveSide side;
-                switch (parts[1].Trim().ToLowerInvariant())
-                {
-                    case "top": side = GrooveSide.Top; break;
-                    case "bottom": side = GrooveSide.Bottom; break;
-                    case "left": side = GrooveSide.Left; break;
-                    case "right": side = GrooveSide.Right; break;
-                    default:
-                        error = $"unknown side '{parts[1].Trim()}' in '{item}' (expected top|bottom|left|right)";
-                        return false;
-                }
-
-                var groove = new GrooveSpec(kind, side);
-                if (result.Contains(groove))
-                {
-                    error = $"duplicate groove '{item}' — offset is fixed, a second one would land on the first";
-                    return false;
-                }
-                if (result.Count >= AppConstants.GROOVE_MAX_PER_PART)
-                {
-                    error = $"too many grooves (max {AppConstants.GROOVE_MAX_PER_PART})";
-                    return false;
-                }
-                result.Add(groove);
-            }
-            return true;
-        }
-
-        /// <summary>Разбор накладок текстур вида
-        /// "a:oak; b:white@100,200+800x600". Разделитель элементов — точка с
-        /// запятой, потому что внутри области запятая уже занята координатами.
-        /// Область необязательна: без неё накладка занимает грань целиком.
-        /// Пустая строка — снять все накладки.</summary>
-        public static bool TryParseTextureOverlays(string spec,
-            out List<TextureOverlaySpec> result, out string error)
-        {
-            result = new List<TextureOverlaySpec>();
-            error = string.Empty;
-
-            if (string.IsNullOrWhiteSpace(spec)) return true;
-
-            foreach (var rawItem in spec.Split(';'))
-            {
-                var item = rawItem.Trim();
-                if (item.Length == 0) continue;
-
-                string body = item;
-                int u0 = 0, v0 = 0, w = 0, h = 0;
-                int at = body.IndexOf('@');
-                if (at >= 0)
-                {
-                    if (!TryParseOverlayRect(body.Substring(at + 1), item, ref u0, ref v0, ref w, ref h, ref error))
-                        return false;
-                    body = body.Substring(0, at);
-                }
-
-                var parts = body.Split(':');
-                if (parts.Length != 2)
-                {
-                    error = $"'{item}' is not \"side:materialId\" (e.g. \"a:oak\")";
-                    return false;
-                }
-
-                string sideText = parts[0].Trim().ToLowerInvariant();
-                OverlaySide side;
-                switch (sideText)
-                {
-                    case "a": side = OverlaySide.A; break;
-                    case "b": side = OverlaySide.B; break;
-                    case "c": side = OverlaySide.C; break;
-                    case "d": side = OverlaySide.D; break;
-                    case "e": side = OverlaySide.E; break;
-                    case "f": side = OverlaySide.F; break;
-                    case "all": side = OverlaySide.All; break;
-                    default:
-                        error = $"unknown side '{parts[0].Trim()}' in '{item}' (expected a|b|c|d|e|f|all)";
-                        return false;
-                }
-
-                string materialId = parts[1].Trim();
-                if (materialId.Length == 0)
-                {
-                    error = $"'{item}' has no material id";
-                    return false;
-                }
-
-                if (result.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT)
-                {
-                    error = $"too many texture overlays (max {TextureOverlayGeometry.MAX_PER_ELEMENT})";
-                    return false;
-                }
-                result.Add(new TextureOverlaySpec(side, materialId, u0, v0, w, h));
-            }
-            return true;
-        }
-
-        /// <summary>Область накладки: "u,v+WxH" — левый нижний угол и размер, мм.</summary>
-        private static bool TryParseOverlayRect(string rect, string item,
-            ref int u0, ref int v0, ref int w, ref int h, ref string error)
-        {
-            int plus = rect.IndexOf('+');
-            int cross = rect.IndexOf('x');
-            int comma = rect.IndexOf(',');
-            if (plus < 0 || cross < plus || comma < 0 || comma > plus)
-            {
-                error = $"'{item}' has a bad area — expected \"@u,v+WxH\" (mm)";
-                return false;
-            }
-
-            bool ok = int.TryParse(rect.Substring(0, comma).Trim(), out u0)
-                & int.TryParse(rect.Substring(comma + 1, plus - comma - 1).Trim(), out v0)
-                & int.TryParse(rect.Substring(plus + 1, cross - plus - 1).Trim(), out w)
-                & int.TryParse(rect.Substring(cross + 1).Trim(), out h);
-            if (!ok)
-            {
-                error = $"'{item}' has non-integer area numbers (mm are whole)";
-                return false;
-            }
-            if (w < TextureOverlaySpec.MIN_SIZE_MM || h < TextureOverlaySpec.MIN_SIZE_MM)
-            {
-                error = $"'{item}': area is smaller than {TextureOverlaySpec.MIN_SIZE_MM} mm";
-                return false;
-            }
-            return true;
-        }
-
-        /// <summary>Обратное представление для get_elements.</summary>
-        public static string FormatTextureOverlays(KitchenElement el)
-        {
-            var overlays = el.TextureOverlays;
-            if (overlays.Count == 0) return string.Empty;
-
-            var parts = new List<string>(overlays.Count);
-            foreach (var o in overlays)
-            {
-                string side = o.side == OverlaySide.All
-                    ? "all"
-                    : TextureOverlaySpec.SideLabel(o.side).ToLowerInvariant();
-                parts.Add(o.IsFullFace
-                    ? $"{side}:{o.MaterialId}"
-                    : $"{side}:{o.MaterialId}@{o.u0MM},{o.v0MM}+{o.widthMM}x{o.heightMM}");
-            }
-            return string.Join("; ", parts);
-        }
-
-        /// <summary>Открытые торцы детали для get_elements: "L1,W1,W2". Пустая
-        /// строка — все торцы упираются в соседей, кромки нет ни на одном.
-        /// Наличие кромки вычисляется, а не хранится, поэтому и отдаётся
-        /// вычисленным по текущей сцене.</summary>
-        public static string FormatEdges(KitchenElement el, List<KitchenElement> all)
-        {
-            if (!el.EdgeBandingEnabled) return string.Empty;
-
-            var coverage = EdgeBanding.Coverage(el, all);
-            var sides = new List<string>(4);
-            foreach (EdgeSide side in System.Enum.GetValues(typeof(EdgeSide)))
-                if (coverage.HasEdge(side)) sides.Add(side.ToString());
-            return string.Join(",", sides);
-        }
-
-        /// <summary>Обратное представление для get_elements: "through:top, blind:left".</summary>
-        public static string FormatGrooves(KitchenElement el)
-        {
-            var grooves = el.Grooves;
-            if (grooves.Count == 0) return string.Empty;
-
-            var parts = new List<string>(grooves.Count);
-            foreach (var g in grooves)
-            {
-                string kind = g.kind == GrooveKind.Blind ? "blind" : "through";
-                string side = g.side switch
-                {
-                    GrooveSide.Top => "top",
-                    GrooveSide.Bottom => "bottom",
-                    GrooveSide.Left => "left",
-                    _ => "right",
-                };
-                parts.Add($"{kind}:{side}");
-            }
-            return string.Join(", ", parts);
-        }
-
-        private static bool TryParseDoorMode(string s, out DoorMode mode)
-        {
-            mode = DoorMode.HingeFrontLeft;
-            switch ((s ?? "").Trim().ToLowerInvariant())
-            {
-                case "front_left": mode = DoorMode.HingeFrontLeft; return true;
-                case "front_right": mode = DoorMode.HingeFrontRight; return true;
-                case "front_top": mode = DoorMode.HingeFrontTop; return true;
-                case "front_bottom": mode = DoorMode.HingeFrontBottom; return true;
-                case "back_left": mode = DoorMode.HingeBackLeft; return true;
-                case "back_right": mode = DoorMode.HingeBackRight; return true;
-                case "back_top": mode = DoorMode.HingeBackTop; return true;
-                case "back_bottom": mode = DoorMode.HingeBackBottom; return true;
-                case "edge_top_left": mode = DoorMode.HingeEdgeTopLeft; return true;
-                case "edge_top_right": mode = DoorMode.HingeEdgeTopRight; return true;
-                case "edge_bottom_left": mode = DoorMode.HingeEdgeBottomLeft; return true;
-                case "edge_bottom_right": mode = DoorMode.HingeEdgeBottomRight; return true;
-                case "drawer_out": mode = DoorMode.DrawerOut; return true;
-                case "drawer_in": mode = DoorMode.DrawerIn; return true;
-                case "drawer_right": mode = DoorMode.DrawerRight; return true;
-                case "drawer_left": mode = DoorMode.DrawerLeft; return true;
-                case "drawer_up": mode = DoorMode.DrawerUp; return true;
-                case "drawer_down": mode = DoorMode.DrawerDown; return true;
-                default: return false;
-            }
-        }
-
-        private static string WireName(DrawerColor c) => c switch { DrawerColor.Anthracite => "anthracite", DrawerColor.White => "white", DrawerColor.Black => "black", _ => "anthracite" };
-        private static string WireName(DoubleDrawerState s) => s switch { DoubleDrawerState.Closed => "closed", DoubleDrawerState.BothOpen => "bothopen", DoubleDrawerState.LowerOnly => "loweronly", _ => "closed" };
-        private static string WireName(GlassTint t) => t switch { GlassTint.Clear => "clear", GlassTint.Tinted => "tinted", _ => "clear" };
-        private static string WireName(DoorSashType t) => t switch { DoorSashType.Glass => "glass", DoorSashType.Blind => "blind", _ => "glass" };
-
-        private static AssembledFill ParseFill(string s)
-        {
-            if (string.IsNullOrEmpty(s)) return AssembledFill.Blind;
-            switch (s.Trim().ToLowerInvariant())
-            {
-                case "glass": case "стекло": return AssembledFill.Glass;
-                case "open": case "empty": case "витрина": return AssembledFill.Open;
-                default: return AssembledFill.Blind;
-            }
-        }
-
-        private static DrawerType ParseDrawerType(string s)
-        {
-            switch ((s ?? "").Trim().ToUpperInvariant())
-            {
-                case "B": return DrawerType.B;
-                case "C": return DrawerType.C;
-                case "D": return DrawerType.D;
-                default: return DrawerType.A;
-            }
-        }
-
-        private static DrawerColor ParseDrawerColor(string s)
-        {
-            switch ((s ?? "").Trim().ToLowerInvariant())
-            {
-                case "white": case "белый": return DrawerColor.White;
-                case "black": case "чёрный": case "черный": return DrawerColor.Black;
-                default: return DrawerColor.Anthracite;
-            }
-        }
-
-        private static DrawerSystem ParseDrawerSystem(string s)
-        {
-            switch ((s ?? "").Trim().ToLowerInvariant())
-            {
-                case "movento": return DrawerSystem.Movento;
-                default: return DrawerSystem.Gtv;
-            }
-        }
-
-        private static GlassTint ParseGlassTint(string s)
-        {
-            switch ((s ?? "").Trim().ToLowerInvariant())
-            {
-                case "tinted": case "тонированное": return GlassTint.Tinted;
-                default: return GlassTint.Clear;
-            }
-        }
-
-        private static DoorSashType ParseDoorSashType(string s)
-        {
-            switch ((s ?? "").Trim().ToLowerInvariant())
-            {
-                case "blind": case "глухое": case "глухая": return DoorSashType.Blind;
-                default: return DoorSashType.Glass;
-            }
-        }
-
-        private static bool TryParseTarget(string s, out ElementConverter.TargetType target)
-        {
-            switch ((s ?? "").Trim().ToLowerInvariant())
-            {
-                case "part": case "board": case "деталь":
-                    target = ElementConverter.TargetType.Part; return true;
-                case "facade": case "дверца": case "фасад":
-                    target = ElementConverter.TargetType.Facade; return true;
-                case "assembled_facade": case "assembled": case "assembledfacade": case "сборный":
-                    target = ElementConverter.TargetType.AssembledFacade; return true;
-                case "radial_shelf": case "radial": case "radialshelf": case "радиусная": case "полка":
-                    target = ElementConverter.TargetType.RadialShelf; return true;
-                default:
-                    target = ElementConverter.TargetType.Part; return false;
-            }
-        }
-
         /// <summary>Зазоры есть не только у фасада (см. KitchenElement.SupportsGaps),
         /// поэтому они правятся отдельно от дверных свойств.</summary>
         private static void ApplyGapEdits(EditOp op, KitchenElement el)
@@ -452,10 +129,10 @@ namespace KitchenDesigner.Core.MCP
 
         private static void ApplyFacadeEdits(EditOp op, FacadeElement facade)
         {
-            if (op.mode != null && TryParseDoorMode(op.mode, out var m)) facade.Mode = m;
+            if (op.mode != null && McpWireEnums.TryParseDoorMode(op.mode, out var m)) facade.Mode = m;
             if (op.is_open.HasValue) facade.SetOpen(op.is_open.Value);
         }
-        private static void ApplyAssembledEdits(EditOp op, AssembledFacadeElement asm) { ApplyFacadeEdits(op, asm); if (op.fill != null) asm.Fill = ParseFill(op.fill); }
+        private static void ApplyAssembledEdits(EditOp op, AssembledFacadeElement asm) { ApplyFacadeEdits(op, asm); if (op.fill != null) asm.Fill = McpWireEnums.ParseFill(op.fill); }
         private static void ApplyRadialShelfEdits(EditOp op, RadialShelfElement shelf) { if (op.corner_radius.HasValue) shelf.CornerRadius = op.corner_radius.Value; }
         private static void ApplyCooktopEdits(EditOp op, CooktopElement cooktop)
         {
@@ -467,10 +144,10 @@ namespace KitchenDesigner.Core.MCP
         }
         private static void ApplyDrawerEdits(EditOp op, DrawerElement drawer)
         {
-            if (op.drawer_system != null) drawer.System = ParseDrawerSystem(op.drawer_system);
-            if (op.drawer_type != null) drawer.Type = ParseDrawerType(op.drawer_type);
+            if (op.drawer_system != null) drawer.System = McpWireEnums.ParseDrawerSystem(op.drawer_system);
+            if (op.drawer_type != null) drawer.Type = McpWireEnums.ParseDrawerType(op.drawer_type);
             if (op.drawer_length.HasValue) drawer.NominalLength = op.drawer_length.Value;
-            if (op.drawer_color != null) drawer.Color = ParseDrawerColor(op.drawer_color);
+            if (op.drawer_color != null) drawer.Color = McpWireEnums.ParseDrawerColor(op.drawer_color);
             if (op.internal_width.HasValue) drawer.InternalWidth = op.internal_width.Value;
             if (op.is_double.HasValue) drawer.IsDouble = op.is_double.Value;
             if (op.is_upper.HasValue) drawer.IsUpperDrawer = op.is_upper.Value;
@@ -511,9 +188,9 @@ namespace KitchenDesigner.Core.MCP
         private static void ApplyPillarEdits(EditOp op, PillarElement pillar) { if (op.mid_height_mm.HasValue) pillar.MidHeightMM = op.mid_height_mm.Value; }
         private static void ApplyWindowEdits(EditOp op, WindowElement window)
         {
-            if (op.tint != null) window.Tint = ParseGlassTint(op.tint);
+            if (op.tint != null) window.Tint = McpWireEnums.ParseGlassTint(op.tint);
             if (op.sill_protrusion_mm.HasValue) window.SillProtrusionMM = op.sill_protrusion_mm.Value;
-            if (op.mode != null && TryParseDoorMode(op.mode, out var m)) window.Mode = m;
+            if (op.mode != null && McpWireEnums.TryParseDoorMode(op.mode, out var m)) window.Mode = m;
             if (op.is_open.HasValue) window.SetOpen(op.is_open.Value);
         }
         private static void ApplyOvenEdits(EditOp op, OvenElement oven)
@@ -522,8 +199,8 @@ namespace KitchenDesigner.Core.MCP
         }
         private static void ApplyDoorEdits(EditOp op, DoorElement door)
         {
-            if (op.sash_type != null) door.SashType = ParseDoorSashType(op.sash_type);
-            if (op.mode != null && TryParseDoorMode(op.mode, out var m)) door.Mode = m;
+            if (op.sash_type != null) door.SashType = McpWireEnums.ParseDoorSashType(op.sash_type);
+            if (op.mode != null && McpWireEnums.TryParseDoorMode(op.mode, out var m)) door.Mode = m;
             if (op.is_open.HasValue) door.SetOpen(op.is_open.Value);
         }
 
@@ -542,11 +219,11 @@ namespace KitchenDesigner.Core.MCP
                 if (el is CooktopElement cooktopEl) ApplyCooktopEdits(op, cooktopEl);
                 // Набор пазов задаётся целиком; строка уже проверена в ValidateEditOpFields.
                 if (op.grooves != null && el.SupportsGrooves
-                    && TryParseGrooves(op.grooves, out var parsedGrooves, out _))
+                    && McpSpecCodec.TryParseGrooves(op.grooves, out var parsedGrooves, out _))
                     el.SetGrooves(parsedGrooves);
                 // Набор накладок тоже задаётся целиком; строка проверена там же.
                 if (op.texture_overlays != null && el.SupportsTextureOverlays
-                    && TryParseTextureOverlays(op.texture_overlays, out var parsedOverlays, out _))
+                    && McpSpecCodec.TryParseTextureOverlays(op.texture_overlays, out var parsedOverlays, out _))
                     el.SetTextureOverlays(parsedOverlays);
                 if (el.SupportsGrooves)
                 {
@@ -746,9 +423,9 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (string.IsNullOrEmpty(op.name) || string.IsNullOrEmpty(op.target))
                 { errors.Add("op missing name or target"); continue; }
-                if (!TryParseFace(op.face, out int axis, out bool maxSide))
+                if (!McpWireEnums.TryParseFace(op.face, out int axis, out bool maxSide))
                 { errors.Add($"Unknown face '{op.face}' for '{op.name}'"); continue; }
-                if (!TryParseFace(op.target_face, out int tAxis, out bool tMaxSide))
+                if (!McpWireEnums.TryParseFace(op.target_face, out int tAxis, out bool tMaxSide))
                 { errors.Add($"Unknown target_face '{op.target_face}' for '{op.target}'"); continue; }
                 if (axis != tAxis)
                 { errors.Add($"face '{op.face}' and target_face '{op.target_face}' on different axes"); continue; }
@@ -1032,7 +709,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var op in p.ops)
             {
                 if (string.IsNullOrEmpty(op.name)) { errors.Add("op missing name"); continue; }
-                if (!TryParseTarget(op.target, out var target))
+                if (!McpWireEnums.TryParseConvertTarget(op.target, out var target))
                 { errors.Add($"Unknown target '{op.target}' for '{op.name}'"); continue; }
                 var element = FindElementByName(op.name);
                 if (element == null) { errors.Add($"Element not found: {op.name}"); continue; }
@@ -1040,7 +717,7 @@ namespace KitchenDesigner.Core.MCP
                 if (lockErr != null) { errors.Add($"'{op.name}' is LOCKED"); continue; }
                 var converted = ElementConverter.Convert(element, target);
                 if (converted is AssembledFacadeElement assembled && !string.IsNullOrEmpty(op.fill))
-                    assembled.Fill = ParseFill(op.fill);
+                    assembled.Fill = McpWireEnums.ParseFill(op.fill);
                 results.Add(converted);
             }
             if (errors.Count > 0)
