@@ -10,6 +10,8 @@ namespace KitchenDesigner.Core.UI
 
         ContextMenuFieldTracker Fields { get; }
 
+        bool TargetIsTable { get; }
+
         void Relayout();
     }
 }

@@ -172,7 +172,7 @@ public class MaterialPreviewTests
     [Test]
     public void MaterialDropdown_KeepsOneLineRows_AndWidensTheList()
     {
-        var dd = Dropdown("_materialDropdown");
+        var dd = Dropdown("CtxMaterial");
 
         Assert.IsTrue(dd.itemText.enableWordWrapping,
             "BUG: в пункте выключен перенос — совсем длинное название обрежется");
@@ -187,7 +187,7 @@ public class MaterialPreviewTests
     [Test]
     public void MaterialDropdown_ShowsSevenItemsWithoutScrolling()
     {
-        var dd = Dropdown("_materialDropdown");
+        var dd = Dropdown("CtxMaterial");
         float visible = dd.template.rect.height / ItemRect(dd).sizeDelta.y;
 
         Assert.GreaterOrEqual(visible, 7f,
@@ -202,7 +202,7 @@ public class MaterialPreviewTests
     [Test]
     public void MaterialDropdown_EveryOptionFitsItem_ByRealTextMetrics()
     {
-        var dd = Dropdown("_materialDropdown");
+        var dd = Dropdown("CtxMaterial");
         var label = dd.itemText;
         float textWidth = ListWidth(dd)
             - UIFactory.DropdownItemLabelLeft - UIFactory.DropdownItemLabelRight;
@@ -225,7 +225,7 @@ public class MaterialPreviewTests
     public void MaterialDropdown_Caption_StaysSingleLine()
     {
         // Свёрнутая строка — фиксированной высоты: там перенос ломал бы раскладку.
-        var caption = Dropdown("_materialDropdown").captionText;
+        var caption = Dropdown("CtxMaterial").captionText;
         Assert.IsFalse(caption.enableWordWrapping);
         Assert.AreEqual(TextOverflowModes.Ellipsis, caption.overflowMode);
     }
@@ -388,6 +388,40 @@ public class MaterialPreviewTests
         Assert.AreEqual("white", table.LegsMaterialId, "BUG: декор ножек не вернулся");
     }
 
+    [Test]
+    public void Table_BaseSlotChoice_LandsOnTheTabletop()
+    {
+        IgnoreMaterialLeakLog();
+        _ctx!.Close();
+        var tableGo = ElementFactory.CreateTable(new Vector3Int(1200, 750, 700), "Стол2", Vector3.zero);
+        tableGo.transform.SetParent(_canvasGo!.transform);
+        var table = tableGo.GetComponent<TableElement>();
+        MaterialManager.ApplyTabletop(table, MaterialCatalog.Get("white"));
+        MaterialManager.ApplyLegs(table, MaterialCatalog.Get("white"));
+        _ctx!.Open(table);
+
+        Choose(legs: false, id: "oak");
+
+        Assert.AreEqual("oak", table.TabletopMaterialId,
+            "у стола строка «Текстура» скрыта, а её список правит СТОЛЕШНИЦУ: базовый слот "
+            + "у стола ничего не красит, и выбор ушёл бы в никуда");
+        Assert.AreEqual("white", table.LegsMaterialId, "ножки этот список не трогает");
+    }
+
+    [Test]
+    public void Choice_IsUndoable()
+    {
+        IgnoreMaterialLeakLog();
+        CommandStack.Clear();
+        Choose(legs: false, id: "wenge");
+        Assume.That(_element!.MaterialId, Is.EqualTo("wenge"));
+
+        CommandStack.Undo();
+
+        Assert.AreEqual("white", _element!.MaterialId,
+            "смена декора обязана отменяться Ctrl+Z (правило 2 UI-GUIDELINES)");
+    }
+
     // ── helpers ────────────────────────────────────────────────────────
 
     /// <summary>Подсветка выделения зовёт renderer.material — в EditMode Unity
@@ -420,34 +454,21 @@ public class MaterialPreviewTests
         return -1;
     }
 
-    private void Preview(bool legs, string id) => Invoke("PreviewMaterial", legs, IndexOfMaterial(id));
+    private static MaterialSlot SlotOf(bool legs) => legs ? MaterialSlot.Legs : MaterialSlot.Base;
 
-    private void Choose(bool legs, string id) => Invoke("ApplyMaterialChoice", legs, IndexOfMaterial(id));
+    private void Preview(bool legs, string id) =>
+        _ctx!.Materials.Preview(SlotOf(legs), IndexOfMaterial(id));
 
-    private void EndPreview()
+    private void Choose(bool legs, string id) =>
+        _ctx!.Materials.Choose(SlotOf(legs), IndexOfMaterial(id));
+
+    private void EndPreview() => _ctx!.Materials.EndPreview();
+
+    private TMP_Dropdown Dropdown(string nodeName)
     {
-        var method = typeof(ContextMenuUI).GetMethod("EndMaterialPreview",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(method, "EndMaterialPreview должен существовать");
-        method!.Invoke(_ctx, null);
-    }
-
-    private void Invoke(string name, bool legs, int index)
-    {
-        var method = typeof(ContextMenuUI).GetMethod(name,
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(method, $"{name} должен существовать");
-        method!.Invoke(_ctx, new object[] { legs, index });
-    }
-
-    private TMP_Dropdown Dropdown(string fieldName)
-    {
-        var field = typeof(ContextMenuUI).GetField(fieldName,
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(field, $"поле {fieldName} должно существовать");
-        var dd = field!.GetValue(_ctx) as TMP_Dropdown;
-        Assert.IsNotNull(dd, $"{fieldName} должен быть TMP_Dropdown");
-        return dd!;
+        var node = _canvasGo!.transform.Find("ContextMenu")!.Find(nodeName);
+        Assert.IsNotNull(node, $"дропдаун {nodeName} должен существовать в панели");
+        return node!.GetComponent<TMP_Dropdown>();
     }
 
     private static RectTransform ItemRect(TMP_Dropdown dd)
