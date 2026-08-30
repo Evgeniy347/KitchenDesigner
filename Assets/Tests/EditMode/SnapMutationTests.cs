@@ -330,7 +330,15 @@ public class SnapMutationTests
 
     /// <summary>Для пары деталей из исходной сцены проверяет, что встречные грани
     /// в пределах порога действительно прилипают, а краевой контакт при достаточном
-    /// перекрытии тоже даёт снэп.</summary>
+    /// перекрытии тоже даёт снэп.
+    ///
+    /// Пробная позиция ВЫВОДИТСЯ из замеренного зазора, поэтому обязана остаться
+    /// там, где ожидаемое поведение вообще определено. На паре, стоящей почти
+    /// вплотную к порогу, отвод зажимался в 1 мм и уносил деталь ЗА порог
+    /// (зазор 51 при пороге 50) — после чего свип требовал прилипания, которого
+    /// быть не должно. Отказ кода правильный и закреплён в
+    /// `SnapCoreEdgeCaseTests.Threshold_51mm_NoSnap`; ошибкой был сам свип.
+    /// Пара, у которой отвод выносит за порог, пропускается.</summary>
     private void TestExistingPairAttraction(KitchenElement moved, KitchenElement target,
         Vector3 savedPos, Vector3Int savedDims, ref int snapOk)
     {
@@ -353,6 +361,7 @@ public class SnapMutationTests
             {
                 float maxOff = Mathf.Max(1f, snapThreshold - r.gapMM - 1f);
                 float moveAwayMm = Mathf.Clamp(r.gapMM * 0.5f + 5f, 5f, maxOff);
+                if (r.gapMM + moveAwayMm > snapThreshold) continue;
                 Vector3 awayPos = savedPos - normal * (moveAwayMm * 0.001f);
 
                 var snapRes = SnapSystem.TrySnap(moved, new List<KitchenElement> { target }, awayPos);
