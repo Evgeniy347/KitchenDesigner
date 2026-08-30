@@ -1,4 +1,3 @@
-using System.Reflection;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
@@ -380,27 +379,9 @@ public class ContextMenuRefreshBugTests
         return node!.GetComponent<TMP_Dropdown>();
     }
 
-    private void CallRebuildDrawerFacadeOptions()
-    {
-        var method = typeof(ContextMenuUI).GetMethod("RebuildDrawerFacadeOptions",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(method, "RebuildDrawerFacadeOptions method should exist");
-        method.Invoke(_ctx, null);
-    }
+    private void CallRebuildDrawerFacadeOptions() => _ctx!.AttachedFacade.Rebuild();
 
-    private void CallSetDrawerFacadeValue(string name)
-    {
-        var method = typeof(ContextMenuUI).GetMethod("SetDrawerFacadeValue",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(method, "SetDrawerFacadeValue method should exist");
-        method.Invoke(_ctx, new object[] { name });
-    }
+    private void CallSetDrawerFacadeValue(string name) => _ctx!.AttachedFacade.SetValue(name);
 
-    private void CallOnDrawerFacadeSelected(int index)
-    {
-        var method = typeof(ContextMenuUI).GetMethod("OnDrawerFacadeSelected",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(method, "OnDrawerFacadeSelected method should exist");
-        method.Invoke(_ctx, new object[] { index });
-    }
+    private void CallOnDrawerFacadeSelected(int index) => _ctx!.AttachedFacade.Select(index);
 }

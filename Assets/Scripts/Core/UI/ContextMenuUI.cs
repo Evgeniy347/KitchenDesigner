@@ -39,12 +39,6 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _drawerUpperLenDropdown;
         private TMP_InputField? _drawerWidth;
         private TMP_Text? _drawerAnimLabel;
-        private TMP_Dropdown? _drawerFacadeDropdown;
-        private TMP_Text? _drawerFacadeLabel;
-        private Color _drawerFacadeNormalColor;
-        private TMP_Dropdown? _attachToDropdown;
-        private TMP_Text? _attachToLabel;
-        private Color _attachToNormalColor;
 
         /// <summary>Подпись строки пристёгнутого фасада: у ящика она уточняет
         /// «ящика» (в панели ящика рядом стоят и другие «фасадные» строки), у
@@ -53,6 +47,10 @@ namespace KitchenDesigner.Core.UI
         private const string HostFacadeLabelText = "Фасад";
         private const string AttachToLabelText = "Прикрепить к";
         private const string AttachToNoneText = "(не прикреплено)";
+        private const string FacadeNoneText = "(нет фасада)";
+        private TMP_Text? _drawerFacadeLabel;
+        private NameDropdownBinder _attachedFacade = null!;
+        private NameDropdownBinder _attachedTo = null!;
         private TMP_Dropdown? _tintDropdown;
         private TMP_Dropdown? _sashTypeDropdown;
         private TMP_InputField? _sillProtrusion;
@@ -106,6 +104,10 @@ namespace KitchenDesigner.Core.UI
         internal ContextMenuGapSection Gaps => _gaps;
 
         internal ContextMenuMaterialSection Materials => _materials;
+
+        internal NameDropdownBinder AttachedFacade => _attachedFacade;
+
+        internal NameDropdownBinder AttachedTo => _attachedTo;
 
         private void Awake()
         {
@@ -235,44 +237,82 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildAttachmentSection()
         {
-            (_drawerFacadeLabel, _drawerFacadeDropdown) = _rows.NamedDropdown("CtxDrawerFacade",
-                DrawerFacadeLabelText, new List<string> { "(нет фасада)" }, OnDrawerFacadeSelected,
+            (_drawerFacadeLabel, var facadeDropdown) = _rows.NamedDropdown("CtxDrawerFacade",
+                DrawerFacadeLabelText, new List<string> { FacadeNoneText }, _ => { },
                 RowVisibility.When(() => _target is IFacadeHost));
-            _drawerFacadeNormalColor = _drawerFacadeDropdown.captionText.color;
-            var facadeHook = _drawerFacadeDropdown.template.gameObject.AddComponent<DropdownOpenHook>();
-            facadeHook.OnOpen = () =>
-            {
-                RebuildDrawerFacadeOptions();
-                SetDrawerFacadeValue(((_target as IFacadeHost)?.AttachedFacadeName) ?? "");
-            };
-            facadeHook.OnAfterShow = () =>
-            {
-                var dd = _drawerFacadeDropdown;
-                var host = _target as IFacadeHost;
-                if (dd == null || host == null) return;
-                var attachedName = host.AttachedFacadeName;
-                if (string.IsNullOrEmpty(attachedName)) return;
-                if (!IsDrawerFacadeOrphaned(attachedName, host)) return;
-                ColorOrphanedDrawerFacadeItem(dd, attachedName, Color.red);
-            };
+            _attachedFacade = new NameDropdownBinder(facadeDropdown, FacadeNoneText,
+                () => (_target as IFacadeHost)?.AttachedFacadeName ?? "",
+                AttachableFacadeNames, AttachedFacadeIsDetached, CommitAttachedFacade);
 
-            (_attachToLabel, _attachToDropdown) = _rows.NamedDropdown("CtxAttachTo", AttachToLabelText,
-                new List<string> { AttachToNoneText }, OnAttachToSelected,
+            (_, var attachToDropdown) = _rows.NamedDropdown("CtxAttachTo", AttachToLabelText,
+                new List<string> { AttachToNoneText }, _ => { },
                 RowVisibility.When(() => AttachLinks.CanBeChild(_target)));
-            _attachToNormalColor = _attachToDropdown.captionText.color;
-            var attachHook = _attachToDropdown.template.gameObject.AddComponent<DropdownOpenHook>();
-            attachHook.OnOpen = () =>
+            _attachedTo = new NameDropdownBinder(attachToDropdown, AttachToNoneText,
+                () => _target != null ? _target.AttachedToName : "",
+                AttachToCandidateNames, () => AttachLinks.IsDetached(_target), CommitAttachedTo);
+        }
+
+        private IEnumerable<string> AttachableFacadeNames()
+        {
+            var host = _target as IFacadeHost;
+            if (host == null) yield break;
+            var attachedName = host.AttachedFacadeName;
+            foreach (var el in PartRegistry.GetAll())
             {
-                RebuildAttachToOptions();
-                SetAttachToValue(_target != null ? _target.AttachedToName : "");
-            };
-            attachHook.OnAfterShow = () =>
+                if (!(el is FacadeElement facade) || string.IsNullOrEmpty(facade.PartName)) continue;
+                bool isAttached = !string.IsNullOrEmpty(attachedName) && facade.PartName == attachedName;
+                if (!isAttached && !DrawerLinks.IsFacadeInContact(host, facade)) continue;
+                yield return facade.PartName;
+            }
+        }
+
+        private bool AttachedFacadeIsDetached()
+        {
+            var host = _target as IFacadeHost;
+            if (host == null) return false;
+            var attachedName = host.AttachedFacadeName;
+            if (string.IsNullOrEmpty(attachedName)) return false;
+            foreach (var el in PartRegistry.GetAll())
+                if (el is FacadeElement facade && facade.PartName == attachedName)
+                    return !DrawerLinks.IsFacadeInContact(host, facade);
+            return true;
+        }
+
+        private void CommitAttachedFacade(string name)
+        {
+            if (!(_target is IFacadeHost host)) return;
+            var previous = host.FindAttachedFacade();
+            host.AttachedFacadeName = name;
+            host.OnAttachedFacadeChanged(previous,
+                string.IsNullOrEmpty(name) ? null : host.FindAttachedFacade());
+        }
+
+        private IEnumerable<string> AttachToCandidateNames()
+        {
+            var target = _target;
+            if (target == null || !AttachLinks.CanBeChild(target)) yield break;
+            var attachedName = target.AttachedToName;
+            foreach (var el in PartRegistry.GetAll())
             {
-                var dd = _attachToDropdown;
-                if (dd == null || _target == null) return;
-                if (!AttachLinks.IsDetached(_target)) return;
-                ColorOrphanedDrawerFacadeItem(dd, _target.AttachedToName, Color.red);
-            };
+                if (el == null || el == target || string.IsNullOrEmpty(el.PartName)) continue;
+                if (!AttachLinks.CanAttach(target, el)) continue;
+                bool isAttached = !string.IsNullOrEmpty(attachedName) && el.PartName == attachedName;
+                if (!isAttached && !AttachLinks.InContact(target, el)) continue;
+                yield return el.PartName;
+            }
+        }
+
+        private void CommitAttachedTo(string name)
+        {
+            var target = _target;
+            if (target == null || !AttachLinks.CanBeChild(target)) return;
+            if (name == target.AttachedToName) return;
+
+            var before = UndoableProperties.Capture(target);
+            target.AttachedToName = name;
+            var after = UndoableProperties.Capture(target);
+            var command = SetPropertiesCommand.TryCreate(target, before, after);
+            if (command != null) CommandStack.Execute(command);
         }
 
         private void BuildWindowSection()
@@ -591,7 +631,7 @@ namespace KitchenDesigner.Core.UI
 
             // Связь могла разъехаться прямо сейчас (деталь двигают мышью) —
             // подпись краснеет в реальном времени, как и у фасада ящика.
-            if (AttachLinks.CanBeChild(_target)) UpdateAttachToCaptionColor();
+            if (AttachLinks.CanBeChild(_target)) _attachedTo.UpdateCaptionColor();
 
             var eu = _target.transform.eulerAngles;
             _fields.RefreshUnfocused(_rx, eu.x.ToString("F1"));
@@ -785,8 +825,8 @@ namespace KitchenDesigner.Core.UI
                 // Прикрепление к другой детали — только у обычной дощечки.
                 if (AttachLinks.CanBeChild(element))
                 {
-                    RebuildAttachToOptions();
-                    SetAttachToValue(element.AttachedToName);
+                    _attachedTo.Rebuild();
+                    _attachedTo.SetValue(element.AttachedToName);
                 }
 
                 // Пристёгнутый фасад — общая строка ящика и посудомойки.
@@ -795,8 +835,8 @@ namespace KitchenDesigner.Core.UI
                 {
                     if (_drawerFacadeLabel != null)
                         _drawerFacadeLabel.text = isDrawer ? DrawerFacadeLabelText : HostFacadeLabelText;
-                    RebuildDrawerFacadeOptions();
-                    SetDrawerFacadeValue(facadeHost.AttachedFacadeName);
+                    _attachedFacade.Rebuild();
+                    _attachedFacade.SetValue(facadeHost.AttachedFacadeName);
                 }
 
                 var table = element as TableElement;
@@ -1573,175 +1613,6 @@ namespace KitchenDesigner.Core.UI
             else if (_target is DishwasherElement dw) UpdateDishwasherDoorButton(dw);
         }
 
-        // ── Фасад ящика ───────────────────────────────────────────────
-        // Фасад — отдельный элемент: его можно выбрать из существующих, создать
-        // (фронт ящика, линейное открывание) или перейти к его настройке.
-
-        private void RebuildDrawerFacadeOptions()
-        {
-            if (_drawerFacadeDropdown == null) return;
-            var opts = new List<TMP_Dropdown.OptionData> { new TMP_Dropdown.OptionData("(нет фасада)") };
-            var host = _target as IFacadeHost;
-            var attachedName = host?.AttachedFacadeName ?? "";
-            var names = new HashSet<string>();
-            foreach (var el in PartRegistry.GetAll())
-            {
-                if (!(el is FacadeElement fe) || string.IsNullOrEmpty(fe.PartName)) continue;
-                bool isAttached = !string.IsNullOrEmpty(attachedName) && fe.PartName == attachedName;
-                bool inContact = host != null && DrawerLinks.IsFacadeInContact(host, fe);
-                if (!isAttached && !inContact) continue;
-                opts.Add(new TMP_Dropdown.OptionData(fe.PartName));
-                names.Add(fe.PartName);
-            }
-            // Если прикреплённый фасад отсутствует в реестре — добавить принудительно.
-            if (!string.IsNullOrEmpty(attachedName) && !names.Contains(attachedName))
-            {
-                opts.Add(new TMP_Dropdown.OptionData(attachedName));
-            }
-            _drawerFacadeDropdown.options = opts;
-        }
-
-        private int DrawerFacadeIndex(string name)
-        {
-            if (string.IsNullOrEmpty(name) || _drawerFacadeDropdown == null) return 0;
-            var opts = _drawerFacadeDropdown.options;
-            for (int i = 1; i < opts.Count; i++)
-                if (opts[i].text == name) return i;
-            return 0;
-        }
-
-        private void SetDrawerFacadeValue(string name)
-        {
-            if (_drawerFacadeDropdown == null) return;
-            _drawerFacadeDropdown.SetValueWithoutNotify(DrawerFacadeIndex(name));
-            _drawerFacadeDropdown.RefreshShownValue();
-            UpdateDrawerFacadeCaptionColor();
-        }
-
-        private void UpdateDrawerFacadeCaptionColor()
-        {
-            if (_drawerFacadeDropdown?.captionText == null) return;
-            var host = _target as IFacadeHost;
-            var attachedName = host?.AttachedFacadeName ?? "";
-            if (string.IsNullOrEmpty(attachedName))
-            {
-                _drawerFacadeDropdown.captionText.color = _drawerFacadeNormalColor;
-                return;
-            }
-            bool orphaned = IsDrawerFacadeOrphaned(attachedName, host!);
-            _drawerFacadeDropdown.captionText.color = orphaned ? Color.red : _drawerFacadeNormalColor;
-        }
-
-        private static bool IsDrawerFacadeOrphaned(string facadeName, IFacadeHost host)
-        {
-            foreach (var el in PartRegistry.GetAll())
-            {
-                if (el is FacadeElement fe && fe.PartName == facadeName)
-                    return !DrawerLinks.IsFacadeInContact(host, fe);
-            }
-            return true; // фасад не найден в реестре
-        }
-
-        private static void ColorOrphanedDrawerFacadeItem(TMP_Dropdown dd, string name, Color color)
-        {
-            var content = dd.template.Find("Viewport/Content");
-            if (content == null) return;
-            foreach (Transform child in content)
-            {
-                var label = child.GetComponentInChildren<TMP_Text>();
-                if (label != null && label.text == name)
-                    label.color = color;
-            }
-        }
-
-        private void OnDrawerFacadeSelected(int index)
-        {
-            if (!(_target is IFacadeHost d)) return;
-            var prev = d.FindAttachedFacade();
-            string newName = (index <= 0 || _drawerFacadeDropdown == null) ? "" : _drawerFacadeDropdown.options[index].text;
-            d.AttachedFacadeName = newName;
-            // Хук смены пристёгнутого фасада: посудомойка здесь включает
-            // пассажирский режим на новом фасаде и снимает со старого.
-            d.OnAttachedFacadeChanged(prev, string.IsNullOrEmpty(newName) ? null : d.FindAttachedFacade());
-            UpdateDrawerFacadeCaptionColor();
-            SceneRevision.Bump();
-        }
-
-        // ── Прикрепление к другой детали ───────────────────────────────
-        // Тот же приём, что и у фасада ящика: в списке только то, к чему
-        // деталь РЕАЛЬНО прилегает (плюс текущий родитель, даже если сборка
-        // разъехалась), а разъехавшаяся связь горит красным.
-
-        private void RebuildAttachToOptions()
-        {
-            if (_attachToDropdown == null) return;
-            var opts = new List<TMP_Dropdown.OptionData> { new TMP_Dropdown.OptionData(AttachToNoneText) };
-            var target = _target;
-            var attachedName = target != null ? target.AttachedToName : "";
-            var names = new HashSet<string>();
-            if (target != null && AttachLinks.CanBeChild(target))
-            {
-                foreach (var el in PartRegistry.GetAll())
-                {
-                    if (el == null || el == target || string.IsNullOrEmpty(el.PartName)) continue;
-                    if (!AttachLinks.CanAttach(target, el)) continue;
-                    bool isAttached = !string.IsNullOrEmpty(attachedName) && el.PartName == attachedName;
-                    if (!isAttached && !AttachLinks.InContact(target, el)) continue;
-                    opts.Add(new TMP_Dropdown.OptionData(el.PartName));
-                    names.Add(el.PartName);
-                }
-            }
-            // Родителя удалили, а имя осталось — показываем его, иначе список
-            // молча сбросился бы на «(не прикреплено)» и связь пропала бы при
-            // первом же выборе.
-            if (!string.IsNullOrEmpty(attachedName) && !names.Contains(attachedName))
-                opts.Add(new TMP_Dropdown.OptionData(attachedName));
-            _attachToDropdown.options = opts;
-        }
-
-        private int AttachToIndex(string name)
-        {
-            if (string.IsNullOrEmpty(name) || _attachToDropdown == null) return 0;
-            var opts = _attachToDropdown.options;
-            for (int i = 1; i < opts.Count; i++)
-                if (opts[i].text == name) return i;
-            return 0;
-        }
-
-        private void SetAttachToValue(string name)
-        {
-            if (_attachToDropdown == null) return;
-            _attachToDropdown.SetValueWithoutNotify(AttachToIndex(name));
-            _attachToDropdown.RefreshShownValue();
-            UpdateAttachToCaptionColor();
-        }
-
-        private void UpdateAttachToCaptionColor()
-        {
-            if (_attachToDropdown?.captionText == null) return;
-            _attachToDropdown.captionText.color =
-                AttachLinks.IsDetached(_target) ? Color.red : _attachToNormalColor;
-        }
-
-        private void OnAttachToSelected(int index)
-        {
-            var target = _target;
-            if (target == null || !AttachLinks.CanBeChild(target) || _attachToDropdown == null) return;
-            string newName = index <= 0 ? "" : _attachToDropdown.options[index].text;
-            if (newName == target.AttachedToName) return;
-
-            // Отмена: AttachedToName помечено [Undoable], но выбор в списке идёт
-            // мимо «Применить» — снимок до/после снимаем здесь сами.
-            var before = UndoableProperties.Capture(target);
-            target.AttachedToName = newName;
-            var after = UndoableProperties.Capture(target);
-            var cmd = SetPropertiesCommand.TryCreate(target, before, after);
-            if (cmd != null) CommandStack.Execute(cmd);
-
-            UpdateAttachToCaptionColor();
-            SceneRevision.Bump();
-        }
-
         private void UpdateDoorButton(FacadeElement? facade)
         {
             if (_doorButtonLabel == null) return;
@@ -1897,22 +1768,6 @@ namespace KitchenDesigner.Core.UI
             _fields.Track(_rx, e.x.ToString("F1"));
             _fields.Track(_ry, e.y.ToString("F1"));
             _fields.Track(_rz, e.z.ToString("F1"));
-        }
-
-        private class DropdownOpenHook : MonoBehaviour
-        {
-            public System.Action? OnOpen;
-            public System.Action? OnAfterShow;
-            private void OnEnable()
-            {
-                OnOpen?.Invoke();
-                StartCoroutine(DelayedAfterShow());
-            }
-            private System.Collections.IEnumerator DelayedAfterShow()
-            {
-                yield return null;
-                OnAfterShow?.Invoke();
-            }
         }
     }
 }
