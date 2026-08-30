@@ -8,6 +8,8 @@
     "autoSaveInterval": 60,
     "spatialGrid": false,
     "windowedMode": true,
+    "cameraPanFree": false,
+    "viewSchema": 1,
     "viewNormal": {
         "wallsEnabled": true,
         "wallOutline": true,
@@ -26,7 +28,13 @@
         "edgeOutline": true,
         "hideLightSources": false
     },
-    "cameraPanFree": false,
+    "edgeOutline": true,
+    "wallsEnabled": true,
+    "lowerNearWalls": true,
+    "wallOutline": true,
+    "hideOpeningsOnLoweredWalls": false,
+    "objectsVisible": true,
+    "hideLightSources": false,
     "edgePartialThresholdPct": 5,
     "mouseSensitivity": 1.0,
     "wasdSpeed": 1.0,

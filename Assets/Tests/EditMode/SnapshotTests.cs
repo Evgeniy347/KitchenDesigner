@@ -382,7 +382,7 @@ public class SnapshotTests
         gs.MouseSensitivity = 1f; gs.WasdSpeed = 1f; gs.ArrowSpeed = 1f;
         SetPhotoDefaults(gs);
 
-        var json = gs.GetSettingsJson();
+        var json = JsonUtility.ToJson(gs.ToData(), true);
         Snapshot.Match(json, "settings_default");
     }
 
@@ -404,7 +404,7 @@ public class SnapshotTests
         gs.MouseSensitivity = 2f; gs.WasdSpeed = 0.5f; gs.ArrowSpeed = 1.5f;
         SetPhotoDefaults(gs);
 
-        var json = gs.GetSettingsJson();
+        var json = JsonUtility.ToJson(gs.ToData(), true);
         Snapshot.Match(json, "settings_custom");
     }
 

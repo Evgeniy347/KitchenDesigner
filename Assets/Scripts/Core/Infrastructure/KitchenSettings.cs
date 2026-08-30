@@ -2,19 +2,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Пресет качества фоторежима. Определяет тяжесть эффектов
-    /// (тени, MSAA, render scale) — от «Низкое» для слабого железа до
-    /// «Высокое» для дискретных карт уровня GTX 1060.</summary>
-    public enum PhotoQualityPreset
-    {
-        Low = 0,
-        Medium = 1,
-        High = 2,
-        // «Свои настройки»: комбинация тумблеров не совпадает ни с одним пресетом.
-        // Встаёт автоматически, когда пользователь меняет опцию вручную.
-        Custom = 3
-    }
-
     [CreateAssetMenu(fileName = "KitchenSettings", menuName = "KitchenDesigner/KitchenSettings")]
     public class KitchenSettings : ScriptableObject
     {
@@ -38,19 +25,11 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _autoSaveInterval = 60;
         [SerializeField] private bool _spatialGrid = false;
         [SerializeField] private bool _windowedMode = true;
-        // Что показывать — своё для каждого режима работы: погашенные в обычном
-        // режиме стены не должны мешать правке помещения и наоборот. Читать эти
-        // пресеты напрямую нельзя: режим часть значений форсирует, поэтому и
-        // рендер, и UI ходят через ViewResolver.
         [SerializeField] private ViewPreset? _normalView = new ViewPreset();
         [SerializeField] private ViewPreset? _roomView = new ViewPreset();
         [SerializeField] private bool _cameraPanFree = false;
-        // Ниже этого процента перекрытие торца соседом считается технологическим
-        // (планка, царга, наезд на пару миллиметров) и ошибкой EDG-01 не является.
         [SerializeField] private int _edgePartialThresholdPct = EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT;
 
-        // ── Управление ─────────────────────────────────────
-        // Множители к базовым скоростям камеры (1 = как было до настройки).
         [SerializeField] private float _mouseSensitivity = 1f;
         [SerializeField] private float _wasdSpeed = 1f;
         [SerializeField] private float _arrowSpeed = 1f;
@@ -58,9 +37,6 @@ namespace KitchenDesigner.Core
         public const float MIN_INPUT_SPEED = 0.1f;
         public const float MAX_INPUT_SPEED = 3f;
 
-        // ── Фоторежим ──────────────────────────────────────
-        // Активность фоторежима — рантайм-состояние (PhotoMode.Active), НЕ хранится:
-        // проект открывается в обычном рабочем режиме. Здесь только настройки качества.
         [SerializeField] private PhotoQualityPreset _photoQuality = PhotoQualityPreset.High;
         [SerializeField] private bool _photoShadows = true;
         [SerializeField] private bool _photoSoftShadows = true;
@@ -72,9 +48,6 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _photoCeiling = true;
         [SerializeField] private bool _photoSSGI = true;
 
-        // ── Свет фоторежима ────────────────────────────────
-        // Всё, что раньше было зашито в PhotoQualityController. Дефолты равны
-        // прежним константам, поэтому картинка «из коробки» не меняется.
         [SerializeField] private int _photoAmbientPct = PHOTO_AMBIENT_DEFAULT_PCT;
         [SerializeField] private int _photoFloorBouncePct = PHOTO_FLOOR_BOUNCE_DEFAULT_PCT;
         [SerializeField] private int _photoExposurePct = PHOTO_EXPOSURE_DEFAULT_PCT;
@@ -87,12 +60,10 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _photoShadowDistanceM = PHOTO_SHADOW_DISTANCE_DEFAULT_M;
         [SerializeField] private bool _photoLampShadows = true;
 
-        // Границы «крутилок» света — они же диапазоны ползунков в настройках.
         public const int PHOTO_AMBIENT_DEFAULT_PCT = 100;
         public const int PHOTO_AMBIENT_MAX_PCT = 400;
         public const int PHOTO_FLOOR_BOUNCE_DEFAULT_PCT = 100;
         public const int PHOTO_FLOOR_BOUNCE_MAX_PCT = 300;
-        // Экспозиция в сотых EV: −300 = −3 EV (темнее), +300 = +3 EV (светлее).
         public const int PHOTO_EXPOSURE_DEFAULT_PCT = 0;
         public const int PHOTO_EXPOSURE_MIN_PCT = -300;
         public const int PHOTO_EXPOSURE_MAX_PCT = 300;
@@ -164,18 +135,10 @@ namespace KitchenDesigner.Core
             set => _windowedMode = value;
         }
 
-        /// <summary>Пресет вида обычного режима. Фоторежим правит его же —
-        /// он «обычный + фоторендер». Эффективные значения — через
-        /// <see cref="ViewResolver"/>, здесь лежит «что хотел пользователь».</summary>
         public ViewPreset NormalView => _normalView ??= new ViewPreset();
 
-        /// <summary>Пресет вида режима «помещение».</summary>
         public ViewPreset RoomView => _roomView ??= new ViewPreset();
 
-        /// <summary>Нижний порог «частичного перекрытия» торца, %. Кромку клеят на
-        /// весь торец, поэтому наехавший сосед — ошибка (EDG-01); но планка или
-        /// царга, задевающая торец на пару процентов, — нормальная конструкция, и
-        /// без порога такой шум забивал отчёт. 0 — сообщать о любом наезде.</summary>
         public const int EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT = 5;
         public const int EDGE_PARTIAL_THRESHOLD_MAX_PCT = 50;
 
@@ -191,21 +154,18 @@ namespace KitchenDesigner.Core
             set => _cameraPanFree = value;
         }
 
-        /// <summary>Чувствительность мыши (орбита и панорамирование), множитель.</summary>
         public float MouseSensitivity
         {
             get => _mouseSensitivity;
             set => _mouseSensitivity = Mathf.Clamp(value, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
         }
 
-        /// <summary>Скорость перемещения камеры на WASD, множитель.</summary>
         public float WasdSpeed
         {
             get => _wasdSpeed;
             set => _wasdSpeed = Mathf.Clamp(value, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
         }
 
-        /// <summary>Скорость орбиты на стрелках ←→↑↓, множитель.</summary>
         public float ArrowSpeed
         {
             get => _arrowSpeed;
@@ -266,100 +226,78 @@ namespace KitchenDesigner.Core
             set => _photoCeiling = value;
         }
 
-        /// <summary>Экранное непрямое освещение (SSGI) в фоторежиме.</summary>
         public bool PhotoSSGI
         {
             get => _photoSSGI;
             set => _photoSSGI = value;
         }
 
-        /// <summary>Окружающий (заполняющий) свет, % — множитель к ambient.
-        /// 0 = только прямой свет и глухая тень, 200 % = мягкая «пасмурная»
-        /// подсветка без чёрных провалов.</summary>
         public int PhotoAmbientPct
         {
             get => _photoAmbientPct;
             set => _photoAmbientPct = Mathf.Clamp(value, 0, PHOTO_AMBIENT_MAX_PCT);
         }
 
-        /// <summary>Отскок от пола, % — насколько цвет пола подсвечивает низ
-        /// полок и столешниц.</summary>
         public int PhotoFloorBouncePct
         {
             get => _photoFloorBouncePct;
             set => _photoFloorBouncePct = Mathf.Clamp(value, 0, PHOTO_FLOOR_BOUNCE_MAX_PCT);
         }
 
-        /// <summary>Экспозиция кадра в сотых EV (−300…+300 = −3…+3 EV).</summary>
         public int PhotoExposurePct
         {
             get => _photoExposurePct;
             set => _photoExposurePct = Mathf.Clamp(value, PHOTO_EXPOSURE_MIN_PCT, PHOTO_EXPOSURE_MAX_PCT);
         }
 
-        /// <summary>Контраст пост-обработки, %.</summary>
         public int PhotoContrastPct
         {
             get => _photoContrastPct;
             set => _photoContrastPct = Mathf.Clamp(value, PHOTO_COLOR_MIN_PCT, PHOTO_COLOR_MAX_PCT);
         }
 
-        /// <summary>Насыщенность пост-обработки, %.</summary>
         public int PhotoSaturationPct
         {
             get => _photoSaturationPct;
             set => _photoSaturationPct = Mathf.Clamp(value, PHOTO_COLOR_MIN_PCT, PHOTO_COLOR_MAX_PCT);
         }
 
-        /// <summary>Сила свечения (bloom), %.</summary>
         public int PhotoBloomPct
         {
             get => _photoBloomPct;
             set => _photoBloomPct = Mathf.Clamp(value, 0, PHOTO_BLOOM_MAX_PCT);
         }
 
-        /// <summary>Порог свечения, % яркости: ниже него bloom не появляется.</summary>
         public int PhotoBloomThresholdPct
         {
             get => _photoBloomThresholdPct;
             set => _photoBloomThresholdPct = Mathf.Clamp(value, 0, PHOTO_BLOOM_THRESHOLD_MAX_PCT);
         }
 
-        /// <summary>Сила виньетки, %.</summary>
         public int PhotoVignettePct
         {
             get => _photoVignettePct;
             set => _photoVignettePct = Mathf.Clamp(value, 0, 100);
         }
 
-        /// <summary>Сила тени от солнца, %. Меньше — мягче и «воздушнее».</summary>
         public int PhotoSunShadowStrengthPct
         {
             get => _photoSunShadowStrengthPct;
             set => _photoSunShadowStrengthPct = Mathf.Clamp(value, 0, 100);
         }
 
-        /// <summary>Дальность прорисовки теней, м.</summary>
         public int PhotoShadowDistanceM
         {
             get => _photoShadowDistanceM;
             set => _photoShadowDistanceM = Mathf.Clamp(value, PHOTO_SHADOW_DISTANCE_MIN_M, PHOTO_SHADOW_DISTANCE_MAX_M);
         }
 
-        /// <summary>Разрешены ли тени от ламп. Режим тени задаётся у каждой
-        /// лампы отдельно, а этот тумблер запрещает их всем разом: тени
-        /// точечных источников — самая дорогая часть кадра.</summary>
         public bool PhotoLampShadows
         {
             get => _photoLampShadows;
             set => _photoLampShadows = value;
         }
 
-        /// <summary>Значения «из коробки» — те же, что в инициализаторах полей.
-        /// Инициализаторы срабатывают только при СОЗДАНИИ ассета, а Instance
-        /// грузится из Resources с уже сохранённым состоянием, поэтому сброс
-        /// нужен явный. Настройки — глобальный синглтон, и тест, который их
-        /// правит, обязан начинать с известного состояния и возвращать прежнее.</summary>
         public void ResetToDefaults()
         {
             _gridStep = 18;
@@ -417,9 +355,6 @@ namespace KitchenDesigner.Core
                 viewSchema = KitchenSettingsData.CURRENT_VIEW_SCHEMA,
                 viewNormal = NormalView.Clone(),
                 viewRoom = RoomView.Clone(),
-                // Плоские поля больше не читаются, но пишутся из «обычного»
-                // пресета: сборка без пресетов откроет такой проект осмысленно,
-                // а не с чужими значениями инициализаторов.
                 wallsEnabled = NormalView.wallsEnabled,
                 wallOutline = NormalView.wallOutline,
                 lowerNearWalls = NormalView.lowerNearWalls,
@@ -497,9 +432,6 @@ namespace KitchenDesigner.Core
             _photoLampShadows = data.photoLampShadows;
         }
 
-        /// <summary>Пресеты вида появились позже плоских флагов. У старого проекта
-        /// (viewSchema = 0) единственный набор флагов был общим на все режимы —
-        /// кладём его в «обычный», а «помещение» получает значения из коробки.</summary>
         private void ApplyViewPresets(KitchenSettingsData data)
         {
             if (data.viewSchema < KitchenSettingsData.CURRENT_VIEW_SCHEMA)
@@ -520,95 +452,6 @@ namespace KitchenDesigner.Core
 
             NormalView.CopyFrom(data.viewNormal);
             RoomView.CopyFrom(data.viewRoom);
-        }
-
-        /// <summary>Возвращает текущий JSON настроек (для снапшот-тестов).</summary>
-        public string GetSettingsJson()
-        {
-            var data = new SettingsData
-            {
-                gridStep = _gridStep,
-                gridEnabled = _gridEnabled,
-                snapEnabled = _snapEnabled,
-                snapThreshold = _snapThreshold,
-                blockOnViolation = _blockOnViolation,
-                autoSave = _autoSave,
-                autoSaveInterval = _autoSaveInterval,
-                spatialGrid = _spatialGrid,
-                windowedMode = _windowedMode,
-                viewNormal = NormalView.Clone(),
-                viewRoom = RoomView.Clone(),
-                cameraPanFree = _cameraPanFree,
-                edgePartialThresholdPct = _edgePartialThresholdPct,
-                mouseSensitivity = _mouseSensitivity,
-                wasdSpeed = _wasdSpeed,
-                arrowSpeed = _arrowSpeed,
-                photoQuality = (int)_photoQuality,
-                photoShadows = _photoShadows,
-                photoSoftShadows = _photoSoftShadows,
-                photoAntiAliasing = _photoAntiAliasing,
-                photoSupersampling = _photoSupersampling,
-                photoAmbientOcclusion = _photoAmbientOcclusion,
-                photoBloom = _photoBloom,
-                photoVignette = _photoVignette,
-                photoCeiling = _photoCeiling,
-                photoSSGI = _photoSSGI,
-                photoAmbientPct = _photoAmbientPct,
-                photoFloorBouncePct = _photoFloorBouncePct,
-                photoExposurePct = _photoExposurePct,
-                photoContrastPct = _photoContrastPct,
-                photoSaturationPct = _photoSaturationPct,
-                photoBloomPct = _photoBloomPct,
-                photoBloomThresholdPct = _photoBloomThresholdPct,
-                photoVignettePct = _photoVignettePct,
-                photoSunShadowStrengthPct = _photoSunShadowStrengthPct,
-                photoShadowDistanceM = _photoShadowDistanceM,
-                photoLampShadows = _photoLampShadows
-            };
-            return JsonUtility.ToJson(data, true);
-        }
-
-        [System.Serializable]
-        private struct SettingsData
-        {
-            public int gridStep;
-            public bool gridEnabled;
-            public bool snapEnabled;
-            public float snapThreshold;
-            public bool blockOnViolation;
-            public bool autoSave;
-            public int autoSaveInterval;
-            public bool spatialGrid;
-            public bool windowedMode;
-            // Пресеты вида — по одному на режим («обычный», «помещение»).
-            public ViewPreset? viewNormal;
-            public ViewPreset? viewRoom;
-            public bool cameraPanFree;
-            public int edgePartialThresholdPct;
-            public float mouseSensitivity;
-            public float wasdSpeed;
-            public float arrowSpeed;
-            public int photoQuality;
-            public bool photoShadows;
-            public bool photoSoftShadows;
-            public bool photoAntiAliasing;
-            public bool photoSupersampling;
-            public bool photoAmbientOcclusion;
-            public bool photoBloom;
-            public bool photoVignette;
-            public bool photoCeiling;
-            public bool photoSSGI;
-            public int photoAmbientPct;
-            public int photoFloorBouncePct;
-            public int photoExposurePct;
-            public int photoContrastPct;
-            public int photoSaturationPct;
-            public int photoBloomPct;
-            public int photoBloomThresholdPct;
-            public int photoVignettePct;
-            public int photoSunShadowStrengthPct;
-            public int photoShadowDistanceM;
-            public bool photoLampShadows;
         }
     }
 }
