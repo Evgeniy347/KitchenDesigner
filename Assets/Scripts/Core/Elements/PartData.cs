@@ -21,9 +21,6 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _gapBack;
         [SerializeField] private bool _transparent;
         [SerializeField] private string _attachedToName = "";
-        // Кромкование по умолчанию включено: наличие кромки на каждом торце
-        // считается автоматически по геометрии, и «выключено» здесь означает
-        // не «ещё не посчитано», а сознательный отказ от кромки на этой детали.
         [SerializeField] private bool _edgeBanding = true;
         [SerializeField] private float _edgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
         [SerializeField] private int _edgeManualMask;
@@ -94,9 +91,6 @@ namespace KitchenDesigner.Core
             set => _gapBack = Mathf.Max(0, value);
         }
 
-        /// <summary>Зазоры одним значением — то, что от детали нужно
-        /// <see cref="GappedBox"/>. Ядро геометрии не видит PartData: он тянет
-        /// каталог декоров, а ядро обязано исполняться без Unity.</summary>
         public BoxGaps Gaps =>
             new BoxGaps(_gapLeft, _gapRight, _gapTop, _gapBottom, _gapFront, _gapBack);
 
@@ -122,23 +116,18 @@ namespace KitchenDesigner.Core
             set => _transparent = value;
         }
 
-        /// <summary>Имя детали (или фасада), к которой эта деталь ПРИКРЕПЛЕНА:
-        /// она едет за ней при перемещении и при открывании. Пусто — не
-        /// прикреплена. Связь по имени, см. <see cref="AttachLinks"/>.</summary>
         public string AttachedToName
         {
             get => _attachedToName;
             set => _attachedToName = value ?? "";
         }
 
-        /// <summary>Клеить ли кромку на открытые торцы детали.</summary>
         public bool EdgeBanding
         {
             get => _edgeBanding;
             set => _edgeBanding = value;
         }
 
-        /// <summary>Толщина кромочной ленты, мм.</summary>
         public float EdgeThicknessMM
         {
             get => _edgeThicknessMM <= 0f ? AppConstants.EDGE_THICKNESS_DEFAULT_MM : _edgeThicknessMM;
@@ -146,11 +135,6 @@ namespace KitchenDesigner.Core
                 AppConstants.EDGE_THICKNESS_MIN_MM, AppConstants.EDGE_THICKNESS_MAX_MM);
         }
 
-        /// <summary>Стороны, кромку которых пользователь проставил ВРУЧНУЮ
-        /// (битовая маска по <see cref="EdgeSide"/>). Обычно кромка выводится из
-        /// геометрии — открытый торец кромкуется, закрытый нет. Но геометрия не
-        /// знает всего: деталь может стоять вплотную к чему-то, чего в проекте
-        /// нет. Ручная сторона перестаёт проверяться на «перекрыт частично».</summary>
         public int EdgeManualMask
         {
             get => _edgeManualMask;
@@ -162,12 +146,8 @@ namespace KitchenDesigner.Core
         public void SetEdgeManual(EdgeSide side, bool manual) =>
             _edgeManualMask = EdgeManual.With(_edgeManualMask, side, manual);
 
-        /// <summary>Пазы детали. Список живой — правится через KitchenElement,
-        /// который пересобирает меш.</summary>
         public List<GrooveSpec> Grooves => _grooves ??= new List<GrooveSpec>();
 
-        /// <summary>Накладки текстур (стена, пол). Список живой — правится через
-        /// KitchenElement, который дёргает пересборку накладок в сцене.</summary>
         public List<TextureOverlaySpec> TextureOverlays =>
             _textureOverlays ??= new List<TextureOverlaySpec>();
 

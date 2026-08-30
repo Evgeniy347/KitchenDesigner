@@ -6,9 +6,6 @@ namespace KitchenDesigner.Core
     public static class DrawerValidator
     {
         public const float MIN_WALL_THICKNESS_MM = 16f;
-        // AABB ящика — контурный бокс проёма: зазор направляющих 37.5 мм на сторону
-        // уже ВНУТРИ бокса. Правильная установка — контур вплотную к боковинам
-        // корпуса; допускаем люфт до 12.5 мм (реальный зазор до короба 37.5–50 мм).
         public const float MAX_CLEARANCE_PER_SIDE_MM = 12.5f;
         public const float MIN_CLEARANCE_PER_SIDE_MM = 0f;
 
@@ -52,8 +49,6 @@ namespace KitchenDesigner.Core
 
                 if (wallThicknessX < minWallThicknessUnits - Tolerance.EpsilonUnits) continue;
 
-                // Стенка обязана перекрывать ящик по высоте и глубине — иначе любой
-                // элемент слева/справа в другом конце сцены считался бы «стенкой».
                 if (!OverlapsYZ(otherAabb, drawerAabb)) continue;
 
                 if (otherAabb.maxX <= drawerAabb.minX)
@@ -108,10 +103,6 @@ namespace KitchenDesigner.Core
             if (drawer == null || allElements == null) return result;
             if (!drawer.IsDouble) return result;
 
-            // AABB двойного ящика считаем по паре (PairedDrawerName), а НЕ по группе
-            // GroupManager: ящик штатно живёт в группе модуля вместе с корпусом, и
-            // групповая AABB совпала бы с самим корпусом — валидация сравнивала бы
-            // корпус сам с собой.
             var drawerGroupMembers = new List<KitchenElement> { drawer };
             if (!string.IsNullOrEmpty(drawer.PairedDrawerName))
             {
@@ -145,7 +136,6 @@ namespace KitchenDesigner.Core
                 if (el == null || drawerGroupMembers.Contains(el)) continue;
                 var aabb = ComputeAABB(el.GetVertices());
 
-                // Верх/дно корпуса обязаны перекрывать ящик в плане (X/Z).
                 if (!OverlapsXZ(aabb, groupAabb)) continue;
 
                 if (aabb.minY >= groupAabb.maxY - Tolerance.EpsilonUnits && aabb.minY < topY)
@@ -172,9 +162,6 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        /// <summary>Свободная высота над контуром ящика до ближайшей панели, мм.
-        /// Панель учитывается, если перекрывает ящик в плане (X/Z) и лежит не ниже
-        /// верха контура. Если сверху ничего нет — float.MaxValue (места достаточно).</summary>
         public static float FreeHeightAboveMM(DrawerElement drawer, List<KitchenElement> allElements)
         {
             if (drawer == null || allElements == null) return 0f;
