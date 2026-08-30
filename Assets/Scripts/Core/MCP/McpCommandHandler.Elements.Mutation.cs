@@ -219,7 +219,7 @@ namespace KitchenDesigner.Core.MCP
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
             var created = new List<string>();
             var elements = new List<ElementInfo>();
-            foreach (var el in allClones) { created.Add(el.PartName); elements.Add(BuildElementInfo(el, all, false, vr)); }
+            foreach (var el in allClones) { created.Add(el.PartName); elements.Add(ElementInfoBuilder.Build(el, all, false, vr)); }
             Debug.Log($"[MCP] Clone batch: {p.ops.Length} sources → {allClones.Count} clones");
             return McpResponse.Result(req.id, new { ok = true, created, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }
@@ -251,10 +251,10 @@ namespace KitchenDesigner.Core.MCP
                 var lockErr = RequireMovable(element, op.name, req.id);
                 if (lockErr != null) { errors.Add($"'{op.name}' is LOCKED"); continue; }
 
-                var elAabb = ComputeAABB(element.GetVertices());
-                var tAabb = ComputeAABB(target.GetVertices());
-                float myCoord = AabbSide(elAabb, axis, maxSide);
-                float targetCoord = AabbSide(tAabb, axis, tMaxSide);
+                var elAabb = McpAabb.Of(element.GetVertices());
+                var tAabb = McpAabb.Of(target.GetVertices());
+                float myCoord = McpAabb.Side(elAabb, axis, maxSide);
+                float targetCoord = McpAabb.Side(tAabb, axis, tMaxSide);
                 float gapUnits = op.gap_mm * AppConstants.MM_TO_UNITS;
                 float desired = maxSide ? targetCoord - gapUnits : targetCoord + gapUnits;
                 float delta = desired - myCoord;
@@ -414,7 +414,7 @@ namespace KitchenDesigner.Core.MCP
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
             var elements = new List<ElementInfo>();
             var createdNames = new List<string>();
-            foreach (var el in created) { createdNames.Add(el.PartName); elements.Add(BuildElementInfo(el, all, false, vr)); }
+            foreach (var el in created) { createdNames.Add(el.PartName); elements.Add(ElementInfoBuilder.Build(el, all, false, vr)); }
             Debug.Log($"[MCP] Created {created.Count} elements: {string.Join(", ", createdNames)}");
             return McpResponse.Result(req.id, new { ok = true, created = createdNames, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }
@@ -450,7 +450,7 @@ namespace KitchenDesigner.Core.MCP
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
             var elements = new List<ElementInfo>();
             var names = new List<string>();
-            foreach (var el in results) { names.Add(el.PartName); elements.Add(BuildElementInfo(el, all, false, vr)); }
+            foreach (var el in results) { names.Add(el.PartName); elements.Add(ElementInfoBuilder.Build(el, all, false, vr)); }
             Debug.Log($"[MCP] Converted {results.Count} elements");
             return McpResponse.Result(req.id, new { ok = true, converted = names, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }

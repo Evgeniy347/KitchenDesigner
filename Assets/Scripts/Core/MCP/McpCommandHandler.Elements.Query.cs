@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var el in elements)
             {
                 if (el == null) continue;
-                list.Add(BuildElementInfo(el, elements, false, vr));
+                list.Add(ElementInfoBuilder.Build(el, elements, false, vr));
             }
 
             var etag = ComputeEtag(list);
@@ -91,7 +91,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 var list = new List<ElementInfo>();
                 foreach (var el in matched)
-                    list.Add(BuildElementInfo(el, all, false, vr));
+                    list.Add(ElementInfoBuilder.Build(el, all, false, vr));
                 elements = list;
             }
 
@@ -133,7 +133,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 var el = FindElementByName(name);
                 if (el == null) { missing.Add(name); continue; }
-                var gaps = all != null ? ComputeAxisGaps(el, all) : new List<AxisGapInfo>();
+                var gaps = all != null ? McpAabb.AxisGaps(el, all) : new List<AxisGapInfo>();
                 results.Add(new ElementGapsResult { name = el.PartName, gaps = gaps });
             }
             return McpResponse.Result(req.id, new { count = results.Count, results, missing = missing.Count > 0 ? missing : null });
@@ -296,8 +296,8 @@ namespace KitchenDesigner.Core.MCP
             var elB = FindElementByName(p.between[1]);
             if (elB == null) return McpResponse.Error(req.id, -1, $"Element not found: {p.between[1]}");
 
-            var a = ComputeAABB(elA.GetVertices());
-            var b = ComputeAABB(elB.GetVertices());
+            var a = McpAabb.Of(elA.GetVertices());
+            var b = McpAabb.Of(elB.GetVertices());
             float[] aMin = { a.minX, a.minY, a.minZ }, aMax = { a.maxX, a.maxY, a.maxZ };
             float[] bMin = { b.minX, b.minY, b.minZ }, bMax = { b.maxX, b.maxY, b.maxZ };
 
@@ -342,7 +342,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var other in PartRegistry.GetAll())
             {
                 if (other == null || other == elA || other == elB) continue;
-                var o = ComputeAABB(other.GetVertices());
+                var o = McpAabb.Of(other.GetVertices());
                 bool intersects =
                     Tolerance.IntervalsOverlap(o.minX, o.maxX, box.minX, box.maxX) &&
                     Tolerance.IntervalsOverlap(o.minY, o.maxY, box.minY, box.maxY) &&

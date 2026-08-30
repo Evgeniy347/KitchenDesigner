@@ -93,350 +93,13 @@ namespace KitchenDesigner.Core.MCP
             return new Vector3Int(Mathf.Max(1, w), Mathf.Max(1, h), Mathf.Max(1, d));
         }
 
-        private static AabbInfo ComputeAABB(Vector3[] vertices)
-        {
-            float minX = float.MaxValue, minY = float.MaxValue, minZ = float.MaxValue;
-            float maxX = float.MinValue, maxY = float.MinValue, maxZ = float.MinValue;
-            foreach (var v in vertices)
-            {
-                if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x;
-                if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
-                if (v.z < minZ) minZ = v.z; if (v.z > maxZ) maxZ = v.z;
-            }
-            return new AabbInfo { minX = minX, minY = minY, minZ = minZ, maxX = maxX, maxY = maxY, maxZ = maxZ };
-        }
-
-        private static bool AABBsOverlap(AabbInfo a, AabbInfo b)
-        {
-            return a.minX < b.maxX && a.maxX > b.minX &&
-                   a.minY < b.maxY && a.maxY > b.minY &&
-                   a.minZ < b.maxZ && a.maxZ > b.minZ;
-        }
-
-        private static Vector3Int GetEffectiveDimMM(KitchenElement el)
-        {
-            if (!el.SupportsGaps || el.GapMM == 0) return el.DimensionsMM;
-            var g = el.Gaps;
-            return new Vector3Int(
-                el.DimensionsMM.x + g.Left + g.Right,
-                el.DimensionsMM.y + g.Top + g.Bottom,
-                el.DimensionsMM.z + g.Front + g.Back);
-        }
-
-        /// <summary>Глубина пересечения (мм) → категория серьёзности для агента.</summary>
-        private static string ClassifyOverlapMm(float mm) =>
-            Tolerance.IsNoiseMm(mm) ? "touching"
-            : mm < 2f ? "minor_overlap"
-            : mm < 10f ? "overlap"
-            : "deep_penetration";
-
-        /// <summary>Проекции AABB на две оси, КРОМЕ указанной, пересекаются (с допуском).
-        /// Без этого «ближайшим по Y» может оказаться деталь из другого угла сцены.</summary>
-        private static bool ProjectionsOverlapExceptAxis(AabbInfo a, AabbInfo b, int axis)
-        {
-            if (axis != 0 && !Tolerance.IntervalsOverlap(a.minX, a.maxX, b.minX, b.maxX)) return false;
-            if (axis != 1 && !Tolerance.IntervalsOverlap(a.minY, a.maxY, b.minY, b.maxY)) return false;
-            if (axis != 2 && !Tolerance.IntervalsOverlap(a.minZ, a.maxZ, b.minZ, b.maxZ)) return false;
-            return true;
-        }
-
-        private static List<AxisGapInfo> ComputeAxisGaps(KitchenElement element, List<KitchenElement> allElements)
-        {
-            var elAabb = ComputeAABB(element.GetVertices());
-            var gaps = new List<AxisGapInfo>();
-            string[] axisNames = { "x", "y", "z" };
-            float[] aMin = { elAabb.minX, elAabb.minY, elAabb.minZ };
-            float[] aMax = { elAabb.maxX, elAabb.maxY, elAabb.maxZ };
-
-            var others = new List<(KitchenElement el, AabbInfo aabb)>(allElements.Count);
-            foreach (var other in allElements)
-                if (other != null && other != element)
-                    others.Add((other, ComputeAABB(other.GetVertices())));
-
-            for (int axis = 0; axis < 3; axis++)
-            {
-                float bestGapUnits = float.MaxValue;
-                string? bestNeighbor = null;
-                float am = aMin[axis], ax = aMax[axis];
-
-                foreach (var (other, oAabb) in others)
-                {
-                    if (!ProjectionsOverlapExceptAxis(elAabb, oAabb, axis)) continue;
-
-                    float bMin = 0, bMax = 0;
-                    if (axis == 0) { bMin = oAabb.minX; bMax = oAabb.maxX; }
-                    else if (axis == 1) { bMin = oAabb.minY; bMax = oAabb.maxY; }
-                    else { bMin = oAabb.minZ; bMax = oAabb.maxZ; }
-
-                    float gap;
-                    if (ax <= bMin) gap = bMin - ax;
-                    else if (bMax <= am) gap = am - bMax;
-                    else gap = -(Mathf.Min(ax, bMax) - Mathf.Max(am, bMin));
-
-                    if (Mathf.Abs(gap) < Mathf.Abs(bestGapUnits))
-                    {
-                        bestGapUnits = gap;
-                        bestNeighbor = other.PartName;
-                    }
-                }
-
-                if (bestNeighbor == null) continue;
-
-                float gapMM = bestGapUnits / AppConstants.MM_TO_UNITS;
-                bool touching = Tolerance.IsNoiseMm(gapMM);
-                gaps.Add(new AxisGapInfo
-                {
-                    axis = axisNames[axis],
-                    neighbor = bestNeighbor,
-                    gapMM = touching ? 0f : gapMM,
-                    touching = touching,
-                    isOverlap = !touching && gapMM < 0
-                });
-            }
-            return gaps;
-        }
-
-        // ── ElementInfo builder ──────────────────────────────────────────
-
-        /// <summary>Инфо об элементе, включая принадлежность модулю (группе) —
-        /// чтобы через MCP была видна конфигурация сцены.</summary>
-        private static ElementInfo BuildElementInfo(KitchenElement el)
-        {
-            return BuildElementInfo(el, null, false);
-        }
-
-        private static ElementInfo BuildElementInfo(KitchenElement el, List<KitchenElement>? allElements,
-            bool includeFacadeValidation = false, ValidationResult? validation = null)
-        {
-            var t = el.transform;
-            var group = GroupManager.GroupOf(el);
-            var wall = el.GetComponent<Wall>();
-            Vector3 pos = wall != null ? wall.FullPosition : t.position;
-
-            bool hasViolations = false;
-            if (allElements != null && allElements.Count > 0)
-            {
-                var vr = validation ?? ConstraintValidator.Validate(allElements);
-                hasViolations = vr.violations.Contains(el);
-            }
-
-            var aabb = ComputeAABB(el.GetVertices());
-            var effDim = GetEffectiveDimMM(el);
-            var gaps = allElements != null ? ComputeAxisGaps(el, allElements) : null;
-            var radial = el as RadialShelfElement;
-            var drawer = el as DrawerElement;
-            var table = el as TableElement;
-            var radiusTable = el as RadiusTableElement;
-            var window = el as WindowElement;
-            var door = el as DoorElement;
-            var pillar = el as PillarElement;
-            var cooktop = el as CooktopElement;
-            var oven = el as OvenElement;
-            var dishwasher = el as DishwasherElement;
-            FacadeValidationData? facadeValidation = includeFacadeValidation && el is FacadeElement fe && allElements != null
-                ? ComputeFacadeValidation(fe, allElements)
-                : (FacadeValidationData?)null;
-
-            return new ElementInfo
-            {
-                name = el.PartName, type = el.GetType().Name,
-                dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
-                posX = pos.x, posY = pos.y, posZ = pos.z,
-                rotX = t.eulerAngles.x, rotY = t.eulerAngles.y, rotZ = t.eulerAngles.z,
-                active = el.gameObject.activeInHierarchy,
-                locked = !el.Movable,
-                attachedToName = string.IsNullOrEmpty(el.AttachedToName) ? null : el.AttachedToName,
-                attachDetached = string.IsNullOrEmpty(el.AttachedToName) ? (bool?)null : AttachLinks.IsDetached(el),
-                moduleId = group != null ? group.id : 0,
-                moduleName = group != null ? group.name : null,
-                materialId = el.MaterialId,
-                hasViolations = hasViolations,
-                aabbMinX = aabb.minX, aabbMinY = aabb.minY, aabbMinZ = aabb.minZ,
-                aabbMaxX = aabb.maxX, aabbMaxY = aabb.maxY, aabbMaxZ = aabb.maxZ,
-                worldDimX = Mathf.RoundToInt((aabb.maxX - aabb.minX) / AppConstants.MM_TO_UNITS),
-                worldDimY = Mathf.RoundToInt((aabb.maxY - aabb.minY) / AppConstants.MM_TO_UNITS),
-                worldDimZ = Mathf.RoundToInt((aabb.maxZ - aabb.minZ) / AppConstants.MM_TO_UNITS),
-                effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z,
-                faceGaps = gaps,
-                cornerRadius = radial != null ? radial.CornerRadius : 0,
-                grooves = el.Grooves.Count > 0 ? McpSpecCodec.FormatGrooves(el) : null,
-                textureOverlays = el.TextureOverlays.Count > 0 ? McpSpecCodec.FormatTextureOverlays(el) : null,
-                edgeBanding = el.SupportsEdges ? el.EdgeBandingEnabled : (bool?)null,
-                edgeThicknessMM = el.SupportsEdges ? el.EdgeThicknessMM : (float?)null,
-                // Поле контракта — на всю деталь: true, когда ручными помечены
-                // все четыре стороны (частичный набор в MCP не выводится).
-                edgeSkipValidation = el.SupportsEdges && el.EdgeManualMask == EdgeManual.AllMask
-                    ? true : (bool?)null,
-                edges = el.EdgeBandingEnabled && allElements != null
-                    ? McpSpecCodec.FormatBandedEdgesRecomputedFromScene(el, allElements) : null,
-                facadeMode = el is FacadeElement feMode ? FacadeDoor.WireName(feMode.Mode) : null,
-                faceNormalX = facadeValidation?.normal.x,
-                faceNormalY = facadeValidation?.normal.y,
-                faceNormalZ = facadeValidation?.normal.z,
-                faceInward = facadeValidation != null ? facadeValidation.Value.faceInward : (bool?)null,
-                faceObstructions = facadeValidation?.obstructions,
-                openingViolations = facadeValidation?.openingViolations,
-                drawer = drawer != null ? new DrawerInfo
-                {
-                    system = McpWireEnums.Name(drawer.System),
-                    drawerType = drawer.Type.ToString(),
-                    drawerLength = drawer.NominalLength,
-                    drawerColor = McpWireEnums.Name(drawer.Color),
-                    internalWidth = drawer.InternalWidth,
-                    isDouble = drawer.IsDouble,
-                    isUpper = drawer.IsUpperDrawer,
-                    pairedDrawerName = drawer.PairedDrawerName,
-                    attachedFacadeName = drawer.AttachedFacadeName,
-                    doubleState = McpWireEnums.Name(drawer.DoubleState),
-                    isOpen = drawer.IsOpen
-                } : null,
-                table = table != null ? new TableInfo
-                {
-                    legInsetMM = table.LegInsetMM,
-                    tabletopMaterialId = table.TabletopMaterialId,
-                    legsMaterialId = table.LegsMaterialId
-                } : null,
-                radiusTable = radiusTable != null ? new RadiusTableInfo
-                {
-                    legInsetMM = radiusTable.LegInsetMM,
-                    shape = "capsule",
-                    tabletopMaterialId = radiusTable.TabletopMaterialId,
-                    legsMaterialId = radiusTable.LegsMaterialId
-                } : null,
-                pillar = pillar != null ? new PillarInfo
-                {
-                    midHeightMM = pillar.MidHeightMM
-                } : null,
-                cooktop = cooktop != null ? new CooktopInfo
-                {
-                    model = cooktop.Model,
-                    fixedSize = cooktop.HasFixedSize,
-                    cutoutWidthMM = cooktop.CutoutWidthMM,
-                    cutoutDepthMM = cooktop.CutoutDepthMM,
-                    plateHeightMM = CooktopElement.RIM_HEIGHT_MM,
-                    bodyHeightMM = cooktop.BodyHeightMM,
-                    attachedPartName = cooktop.AttachedPartName,
-                    offsetXMM = cooktop.OffsetXMM,
-                    offsetYMM = cooktop.OffsetYMM,
-                    yawDeg = cooktop.YawDeg
-                } : null,
-                oven = oven != null ? new OvenInfo
-                {
-                    model = OvenElement.MODEL,
-                    fixedSize = oven.HasFixedSize,
-                    facadeThicknessMM = OvenElement.FACADE_THICKNESS_MM,
-                    bodyWidthMM = OvenElement.BODY_WIDTH_MM,
-                    bodyDepthMM = OvenElement.BODY_DEPTH_MM,
-                    bodyHeightMM = OvenElement.BODY_HEIGHT_MM,
-                    controlPanelHeightMM = OvenElement.CONTROL_PANEL_HEIGHT_MM,
-                    glassHeightMM = OvenElement.GLASS_HEIGHT_MM,
-                    handleProtrusionMM = OvenElement.HANDLE_PROTRUSION_MM,
-                    isOpen = oven.IsOpen
-                } : null,
-                dishwasher = dishwasher != null ? new DishwasherInfo
-                {
-                    model = DishwasherElement.MODEL,
-                    fixedSize = dishwasher.HasFixedSize,
-                    attachedFacadeName = dishwasher.AttachedFacadeName ?? "",
-                    nicheWidthMM = DishwasherElement.NICHE_WIDTH_MM,
-                    nicheMinDepthMM = DishwasherElement.NICHE_MIN_DEPTH_MM,
-                    heightMinMM = DishwasherElement.HEIGHT_MIN_MM,
-                    heightMaxMM = DishwasherElement.HEIGHT_MAX_MM,
-                    facadeWidthMM = DishwasherElement.FACADE_WIDTH_MM,
-                    facadeMinHeightMM = DishwasherElement.FACADE_MIN_HEIGHT_MM,
-                    facadeMaxHeightMM = DishwasherElement.FACADE_MAX_HEIGHT_MM,
-                    facadeNominalHeightMM = DishwasherElement.FACADE_NOMINAL_HEIGHT_MM,
-                    // Цоколь считается по ПРИСТЁГНУТОМУ фасаду: без него высота
-                    // цоколя ещё не определена, и выдумывать номинал нечестно.
-                    plinthMM = dishwasher.FindAttachedFacade() is FacadeElement dwFacade
-                        ? DishwasherElement.PlinthForFacade(dwFacade.DimensionsMM.y)
-                        : 0,
-                    plinthMinMM = DishwasherElement.PLINTH_MIN_MM,
-                    plinthMaxMM = DishwasherElement.PLINTH_MAX_MM,
-                    plinthSetbackMM = DishwasherElement.PLINTH_SETBACK_MM,
-                    plinthNicheMM = DishwasherElement.PLINTH_NICHE_MM,
-                    baseHeightMM = DishwasherElement.BASE_HEIGHT_MM,
-                    baseSetbackMM = DishwasherElement.BASE_SETBACK_MM,
-                    facadeMountGapMM = DishwasherElement.FACADE_MOUNT_GAP_MM,
-                    isOpen = dishwasher.IsOpen
-                } : null,
-                window = window != null ? new WindowInfo
-                {
-                    tint = McpWireEnums.Name(window.Tint),
-                    sillProtrusionMM = window.SillProtrusionMM,
-                    mode = FacadeDoor.WireName(window.Mode),
-                    isOpen = window.IsOpen,
-                    attachedWallName = window.AttachedWallName
-                } : null,
-                door = door != null ? new DoorInfo
-                {
-                    sashType = McpWireEnums.Name(door.SashType),
-                    mode = FacadeDoor.WireName(door.Mode),
-                    isOpen = door.IsOpen,
-                    attachedWallName = door.AttachedWallName
-                } : null
-            };
-        }
-
-        private readonly struct FacadeValidationData
-        {
-            public readonly Vector3 normal;
-            public readonly bool faceInward;
-            public readonly List<FaceObstructionInfo> obstructions;
-            public readonly List<OpeningViolationInfo> openingViolations;
-
-            public FacadeValidationData(Vector3 normal, bool faceInward,
-                List<FaceObstructionInfo> obstructions,
-                List<OpeningViolationInfo> openingViolations)
-            {
-                this.normal = normal;
-                this.faceInward = faceInward;
-                this.obstructions = obstructions;
-                this.openingViolations = openingViolations;
-            }
-        }
-
-        private static FacadeValidationData ComputeFacadeValidation(FacadeElement facade, List<KitchenElement> allElements)
-        {
-            var normal = FacadeValidator.GetFaceNormal(facade);
-            bool faceInward = FacadeValidator.IsFacingInward(facade);
-
-            var rawObstructions = FacadeValidator.FindFaceObstructions(facade, allElements);
-            var obstructions = new List<FaceObstructionInfo>(rawObstructions.Count);
-            foreach (var o in rawObstructions)
-            {
-                obstructions.Add(new FaceObstructionInfo
-                {
-                    neighbor = o.neighbor,
-                    distanceFromFaceMm = o.distanceFromFaceMm,
-                    overlapWidthMm = o.overlapWidthMm,
-                    overlapHeightMm = o.overlapHeightMm
-                });
-            }
-
-            var rawOpening = FacadeValidator.FindOpeningViolations(facade, allElements);
-            var opening = new List<OpeningViolationInfo>(rawOpening.Count);
-            foreach (var v in rawOpening)
-            {
-                opening.Add(new OpeningViolationInfo
-                {
-                    neighbor = v.neighbor,
-                    openingMode = v.openingMode,
-                    collisionAtProgress = v.collisionAtProgress,
-                    collisionOverlapMm = v.collisionOverlapMm
-                });
-            }
-
-            return new FacadeValidationData(normal, faceInward, obstructions, opening);
-        }
-
         private static (object? faceNormal, bool faceInward, object? faceObstructions, object? openingViolations)
             BuildFacadeResponseFields(KitchenElement element)
         {
             if (!(element is FacadeElement facade))
                 return (null, false, null, null);
 
-            var data = ComputeFacadeValidation(facade, PartRegistry.GetAll());
+            var data = McpFacadeIssues.Of(facade, PartRegistry.GetAll());
             var normal = new { x = data.normal.x, y = data.normal.y, z = data.normal.z };
             return (normal, data.faceInward, data.obstructions, data.openingViolations);
         }
@@ -481,13 +144,13 @@ namespace KitchenDesigner.Core.MCP
 
         private static List<object> ComputeViolationOverlaps(KitchenElement el, List<KitchenElement> all)
         {
-            var elAabb = ComputeAABB(el.GetVertices());
+            var elAabb = McpAabb.Of(el.GetVertices());
             var results = new List<object>();
             foreach (var other in all)
             {
                 if (other == el || other == null) continue;
-                var otherAabb = ComputeAABB(other.GetVertices());
-                if (!AABBsOverlap(elAabb, otherAabb)) continue;
+                var otherAabb = McpAabb.Of(other.GetVertices());
+                if (!McpAabb.Overlap(elAabb, otherAabb)) continue;
 
                 float overlapX = Mathf.Min(elAabb.maxX, otherAabb.maxX) - Mathf.Max(elAabb.minX, otherAabb.minX);
                 float overlapY = Mathf.Min(elAabb.maxY, otherAabb.maxY) - Mathf.Max(elAabb.minY, otherAabb.minY);
@@ -499,7 +162,7 @@ namespace KitchenDesigner.Core.MCP
                 results.Add(new {
                     kind = "overlap",
                     neighbor = other.PartName,
-                    severity = ClassifyOverlapMm(depthMm),
+                    severity = McpAabb.ClassifyOverlapMm(depthMm),
                     penetrationMm = Mathf.Round(depthMm * 10f) / 10f,
                     overlapXmm = Mathf.Round(overlapX * toMm * 10f) / 10f,
                     overlapYmm = Mathf.Round(overlapY * toMm * 10f) / 10f,
@@ -535,7 +198,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var el in members)
             {
                 if (el == null) continue;
-                info.elements.Add(BuildElementInfo(el, allElements, false, validation));
+                info.elements.Add(ElementInfoBuilder.Build(el, allElements, false, validation));
                 foreach (var v in el.GetVertices())
                 {
                     min = Vector3.Min(min, v);
@@ -610,7 +273,7 @@ namespace KitchenDesigner.Core.MCP
         private static ElementDebugInfo BuildElementDebugInfo(KitchenElement el)
         {
             var verts = el.GetVertices();
-            var aabb = ComputeAABB(verts);
+            var aabb = McpAabb.Of(verts);
             var srcFaces = el.GetFaces();
             var faces = new FaceInfo[srcFaces.Length];
             for (int i = 0; i < srcFaces.Length; i++)
@@ -625,7 +288,7 @@ namespace KitchenDesigner.Core.MCP
             var vertices = new VertexInfo[verts.Length];
             for (int i = 0; i < verts.Length; i++)
                 vertices[i] = new VertexInfo { x = verts[i].x, y = verts[i].y, z = verts[i].z };
-            var effDim = GetEffectiveDimMM(el);
+            var effDim = McpAabb.EffectiveDimMM(el);
             return new ElementDebugInfo
             {
                 name = el.PartName, type = el.GetType().Name,
@@ -633,14 +296,6 @@ namespace KitchenDesigner.Core.MCP
                 dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
                 effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z
             };
-        }
-
-
-        private static float AabbSide(AabbInfo aabb, int axis, bool maxSide)
-        {
-            if (axis == 0) return maxSide ? aabb.maxX : aabb.minX;
-            if (axis == 1) return maxSide ? aabb.maxY : aabb.minY;
-            return maxSide ? aabb.maxZ : aabb.minZ;
         }
 
         // ── Мутация: блокировка, подсветка, нарушения ──────────────────
@@ -694,7 +349,7 @@ namespace KitchenDesigner.Core.MCP
 
             if (el is FacadeElement facade)
             {
-                var data = ComputeFacadeValidation(facade, all);
+                var data = McpFacadeIssues.Of(facade, all);
                 if (data.faceInward)
                     list.Add(new
                     {
@@ -742,7 +397,7 @@ namespace KitchenDesigner.Core.MCP
             return new
             {
                 ok = true,
-                element = BuildElementInfo(el, all, includeFacadeValidation: false, validation: vr),
+                element = ElementInfoBuilder.Build(el, all, includeFacadeValidation: false, validation: vr),
                 violations = BuildElementViolations(el, all, vr),
                 sceneViolationCount = vr != null ? vr.violations.Count : 0
             };

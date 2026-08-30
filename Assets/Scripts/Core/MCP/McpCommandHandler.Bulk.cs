@@ -182,16 +182,16 @@ namespace KitchenDesigner.Core.MCP
                     if (!e.Movable) return McpResponse.Error(req.id, -1,
                         $"align rejected, NOTHING moved: element '{e.PartName}' is LOCKED");
 
-            var targetAabb = ComputeAABB(target.GetVertices());
-            float targetCoord = AabbSide(targetAabb, targetAxis, targetMax);
+            var targetAabb = McpAabb.Of(target.GetVertices());
+            float targetCoord = McpAabb.Side(targetAabb, targetAxis, targetMax);
             float gap = p.gap_mm * AppConstants.MM_TO_UNITS;
             var commands = new List<IUndoCommand>();
             foreach (var unit in units)
             {
                 var vertices = new List<Vector3>();
                 foreach (var e in unit) vertices.AddRange(e.GetVertices());
-                var bounds = ComputeAABB(vertices.ToArray());
-                float movingCoord = AabbSide(bounds, axis, maxSide);
+                var bounds = McpAabb.Of(vertices.ToArray());
+                float movingCoord = McpAabb.Side(bounds, axis, maxSide);
                 float desired = maxSide ? targetCoord - gap : targetCoord + gap;
                 float delta = desired - movingCoord;
                 foreach (var e in unit)
@@ -338,7 +338,7 @@ namespace KitchenDesigner.Core.MCP
                 // on whichever corner the rotation happens to send there: at rotY=90
                 // that is the element's MAXIMUM Z, which read as a 900 mm error on a
                 // window and broke corner-anchored reasoning.
-                var aabb = ComputeAABB(e.GetVertices());
+                var aabb = McpAabb.Of(e.GetVertices());
                 Vector3 anchor = new Vector3(aabb.minX, aabb.minY, aabb.minZ);
                 if (fields.Contains("name")) row["name"] = e.PartName;
                 if (fields.Contains("kind")) row["kind"] = ElementSelector.TypeOf(e);
