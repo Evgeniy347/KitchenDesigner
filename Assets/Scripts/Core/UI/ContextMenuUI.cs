@@ -17,14 +17,7 @@ namespace KitchenDesigner.Core.UI
 
         private TMP_InputField? _name, _w, _h, _d, _radius,
             _cutoutW, _cutoutD,
-            _x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight,
-            _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam,
-            _lightSoftness, _lightGlow, _lightShadowStrength, _lightDrop,
-            _lightUpCone, _lightUpRange, _lightRangeMin, _lightRangeMax,
-            _lightEfficacy, _lightLumens;
-        private TMP_Dropdown? _lightShapeDropdown, _lightShadowDropdown;
-        private TMP_Text? _lightAdvancedLabel;
-        private bool _lightAdvancedExpanded;  // раскрыта ли калибровка лампы
+            _x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight;
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
@@ -67,6 +60,7 @@ namespace KitchenDesigner.Core.UI
         private readonly ContextMenuGapSection _gaps;
         private readonly ContextMenuMaterialSection _materials;
         private readonly ElementTypeConverter _types;
+        private readonly LightFieldsEditor _lights;
         private ContextMenuRowFactory _rows = null!;
 
         public ContextMenuUI()
@@ -78,6 +72,7 @@ namespace KitchenDesigner.Core.UI
             _gaps = new ContextMenuGapSection(this);
             _materials = new ContextMenuMaterialSection(this);
             _types = new ElementTypeConverter(this, Open);
+            _lights = new LightFieldsEditor(this);
         }
 
         KitchenElement? IContextMenuHost.Target => _target;
@@ -138,7 +133,7 @@ namespace KitchenDesigner.Core.UI
             BuildAttachmentSection();
             BuildWindowSection();
             BuildFurnitureSection();
-            BuildLightSection();
+            _lights.Build();
             BuildPositionSection(panel.transform);
             _textures.Build(panel.transform, _materials.Build());
             BuildPropertySection();
@@ -344,38 +339,6 @@ namespace KitchenDesigner.Core.UI
             _midHeight = _rows.NumberField("Средняя секция", RowVisibility.For(ElementFacet.Pillar));
         }
 
-        private void BuildLightSection()
-        {
-            var lightOnly = RowVisibility.For(ElementFacet.Light);
-            var advanced = RowVisibility.For(ElementFacet.Light, () => _lightAdvancedExpanded);
-
-            _lightTemp = _rows.NumberField("Температура", lightOnly, "K");
-            _lightPower = _rows.NumberField("Мощность", lightOnly, "Вт");
-            _lightDiffusion = _rows.NumberField("Рассеивание", lightOnly, "%");
-            _lightBeam = _rows.NumberField("Угол пучка", lightOnly, "°");
-            _lightSoftness = _rows.NumberField("Мягкость края", lightOnly, "%");
-            _lightUp = _rows.NumberField("Свет вверх", lightOnly, "%");
-
-            _lightShapeDropdown = _rows.Dropdown("Форма потока", new List<string> { "Плафон", "Шар" },
-                OnLightShapeSelected, lightOnly, "CtxLightShape");
-            _lightShadowDropdown = _rows.Dropdown("Тени лампы",
-                new List<string> { "Нет", "Жёсткие", "Мягкие" }, OnLightShadowSelected,
-                lightOnly, "CtxLightShadow");
-            _lightShadowStrength = _rows.NumberField("Сила тени", lightOnly, "%");
-
-            _lightAdvancedLabel = _rows.WideButton("CtxLightAdv",
-                $"Тонкая настройка  {UIStyle.GlyphCollapsed}", ToggleLightAdvanced, lightOnly, RowGap);
-
-            _lightGlow = _rows.NumberField("Свечение плафона", advanced, "%");
-            _lightDrop = _rows.NumberField("Отступ вниз", advanced, "мм");
-            _lightUpCone = _rows.NumberField("Верхний конус", advanced, "%");
-            _lightUpRange = _rows.NumberField("Верхний радиус", advanced, "%");
-            _lightRangeMin = _rows.NumberField("Радиус при 0 %", advanced, "мм");
-            _lightRangeMax = _rows.NumberField("Радиус при 100 %", advanced, "мм");
-            _lightEfficacy = _rows.NumberField("Светоотдача", advanced, "лм/Вт");
-            _lightLumens = _rows.NumberField("Калибровка", advanced, "лм/ед");
-        }
-
         private void BuildPositionSection(Transform parent)
         {
             _rows.SectionHeader("CtxSecPos", "Положение");
@@ -470,10 +433,9 @@ namespace KitchenDesigner.Core.UI
             var fields = new List<TMP_InputField?>
             {
                 _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight,
-                _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam,
-                _x, _y, _z,
+                _sillProtrusion, _x, _y, _z,
             };
-            fields.AddRange(LightExtraFields());
+            fields.AddRange(_lights.ArithmeticFields());
             return fields.ToArray();
         }
 
@@ -516,64 +478,6 @@ namespace KitchenDesigner.Core.UI
 
         /// <summary>Строка секции зазоров: подпись и пара полей — по одному на
         /// противоположные стороны. Наведение на поле подсвечивает СВОЮ сторону
-
-        private void ToggleLightAdvanced()
-        {
-            _lightAdvancedExpanded = !_lightAdvancedExpanded;
-            UpdateLightAdvancedLabel();
-            RelayoutForTarget();
-        }
-
-        private void UpdateLightAdvancedLabel()
-        {
-            if (_lightAdvancedLabel != null)
-                _lightAdvancedLabel.text =
-                    $"Тонкая настройка  {(_lightAdvancedExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
-        }
-
-        /// <summary>Тонкие параметры лампы: поле ↔ свойство ↔ значение «из
-        /// коробки». Их полтора десятка, и каждый нужен в четырёх местах
-        /// (Open, Apply, обновление извне, подсветка правок) — таблица держит
-        /// их синхронными вместо четырёх одинаковых простыней.</summary>
-        private (TMP_InputField? field, System.Func<LightSourceElement, int> get,
-            System.Action<LightSourceElement, int> set, int def)[] LightExtraBindings()
-        {
-            System.Func<LightSourceElement, int> G(System.Func<LightSourceElement, int> f) => f;
-            System.Action<LightSourceElement, int> S(System.Action<LightSourceElement, int> f) => f;
-            return new[]
-            {
-                (_lightSoftness, G(l => l.SoftnessPct), S((l, v) => l.SoftnessPct = v), LightSourceElement.DEFAULT_SOFTNESS_PCT),
-                (_lightShadowStrength, G(l => l.ShadowStrengthPct), S((l, v) => l.ShadowStrengthPct = v), LightSourceElement.DEFAULT_SHADOW_STRENGTH_PCT),
-                (_lightGlow, G(l => l.GlowPct), S((l, v) => l.GlowPct = v), LightSourceElement.DEFAULT_GLOW_PCT),
-                (_lightDrop, G(l => l.DropMM), S((l, v) => l.DropMM = v), LightSourceElement.DEFAULT_DROP_MM),
-                (_lightUpCone, G(l => l.UpConePct), S((l, v) => l.UpConePct = v), LightSourceElement.DEFAULT_UP_CONE_PCT),
-                (_lightUpRange, G(l => l.UpRangePct), S((l, v) => l.UpRangePct = v), LightSourceElement.DEFAULT_UP_RANGE_PCT),
-                (_lightRangeMin, G(l => l.RangeMinMM), S((l, v) => l.RangeMinMM = v), LightSourceElement.DEFAULT_RANGE_MIN_MM),
-                (_lightRangeMax, G(l => l.RangeMaxMM), S((l, v) => l.RangeMaxMM = v), LightSourceElement.DEFAULT_RANGE_MAX_MM),
-                (_lightEfficacy, G(l => l.EfficacyLmPerW), S((l, v) => l.EfficacyLmPerW = v), LightSourceElement.DEFAULT_EFFICACY_LM_PER_W),
-                (_lightLumens, G(l => l.LumensPerUnit), S((l, v) => l.LumensPerUnit = v), LightSourceElement.DEFAULT_LUMENS_PER_UNIT),
-            };
-        }
-
-        private TMP_InputField?[] LightExtraFields()
-        {
-            var bindings = LightExtraBindings();
-            var fields = new TMP_InputField?[bindings.Length];
-            for (int i = 0; i < bindings.Length; i++) fields[i] = bindings[i].field;
-            return fields;
-        }
-
-        private void OnLightShapeSelected(int index)
-        {
-            if (_target is LightSourceElement ls)
-                ls.Shape = index == 1 ? LampShape.Sphere : LampShape.Plafond;
-        }
-
-        private void OnLightShadowSelected(int index)
-        {
-            if (_target is LightSourceElement ls)
-                ls.Shadow = (LampShadow)Mathf.Clamp(index, 0, 2);
-        }
 
         private void Update()
         {
@@ -673,19 +577,8 @@ namespace KitchenDesigner.Core.UI
             if (pillar != null && _midHeight != null)
                 _fields.RefreshUnfocused(_midHeight, pillar.MidHeightMM.ToString());
 
-            var lightRt = _target as LightSourceElement;
-            if (lightRt != null)
-            {
-                if (_lightTemp != null) _fields.RefreshUnfocused(_lightTemp, lightRt.TemperatureK.ToString());
-                if (_lightPower != null) _fields.RefreshUnfocused(_lightPower, lightRt.PowerW.ToString());
-                if (_lightDiffusion != null) _fields.RefreshUnfocused(_lightDiffusion, lightRt.DiffusionPct.ToString());
-                if (_lightBeam != null) _fields.RefreshUnfocused(_lightBeam, lightRt.BeamAngleDeg.ToString());
-                if (_lightUp != null) _fields.RefreshUnfocused(_lightUp, lightRt.UpLightPct.ToString());
-                foreach (var b in LightExtraBindings())
-                    if (b.field != null) _fields.RefreshUnfocused(b.field, b.get(lightRt).ToString());
-                if (_lightShapeDropdown != null) _lightShapeDropdown.SetValueWithoutNotify((int)lightRt.Shape);
-                if (_lightShadowDropdown != null) _lightShadowDropdown.SetValueWithoutNotify((int)lightRt.Shadow);
-            }
+            _lights.Refresh(_target);
+
 
             var window = _target as WindowElement;
             if (window != null && _sillProtrusion != null)
@@ -729,8 +622,7 @@ namespace KitchenDesigner.Core.UI
                 _grooves.Collapse();
                 _textures.Collapse();
                 _gaps.Collapse();
-                _lightAdvancedExpanded = false; // калибровка лампы — тоже
-                UpdateLightAdvancedLabel();
+                _lights.Collapse();
                 // Ручки области принадлежали прошлому элементу.
                 TextureOverlayHandles.End();
                 if (SelectionManager.Instance != null)
@@ -850,19 +742,7 @@ namespace KitchenDesigner.Core.UI
                 if (pillar != null && _midHeight != null)
                     _midHeight.text = pillar.MidHeightMM.ToString();
 
-                var lightEl = element as LightSourceElement;
-                if (lightEl != null)
-                {
-                    if (_lightTemp != null) _lightTemp.text = lightEl.TemperatureK.ToString();
-                    if (_lightPower != null) _lightPower.text = lightEl.PowerW.ToString();
-                    if (_lightDiffusion != null) _lightDiffusion.text = lightEl.DiffusionPct.ToString();
-                    if (_lightBeam != null) _lightBeam.text = lightEl.BeamAngleDeg.ToString();
-                    if (_lightUp != null) _lightUp.text = lightEl.UpLightPct.ToString();
-                    foreach (var b in LightExtraBindings())
-                        if (b.field != null) b.field.text = b.get(lightEl).ToString();
-                    if (_lightShapeDropdown != null) _lightShapeDropdown.SetValueWithoutNotify((int)lightEl.Shape);
-                    if (_lightShadowDropdown != null) _lightShadowDropdown.SetValueWithoutNotify((int)lightEl.Shadow);
-                }
+                _lights.Show(element);
 
                 var window = element as WindowElement;
                 if (window != null)
@@ -1077,41 +957,7 @@ namespace KitchenDesigner.Core.UI
             if (windowEl != null && _sillProtrusion != null)
                 windowEl.SillProtrusionMM = _fields.ParseInt(_sillProtrusion, windowEl.SillProtrusionMM);
 
-            var lightApp = target as LightSourceElement;
-            if (lightApp != null)
-            {
-                if (_lightTemp != null)
-                {
-                    lightApp.TemperatureK = _fields.ParseInt(_lightTemp, lightApp.TemperatureK);
-                    _lightTemp.text = lightApp.TemperatureK.ToString();
-                }
-                if (_lightPower != null)
-                {
-                    lightApp.PowerW = _fields.ParseInt(_lightPower, lightApp.PowerW);
-                    _lightPower.text = lightApp.PowerW.ToString();
-                }
-                if (_lightDiffusion != null)
-                {
-                    lightApp.DiffusionPct = _fields.ParseInt(_lightDiffusion, lightApp.DiffusionPct);
-                    _lightDiffusion.text = lightApp.DiffusionPct.ToString();
-                }
-                if (_lightBeam != null)
-                {
-                    lightApp.BeamAngleDeg = _fields.ParseInt(_lightBeam, lightApp.BeamAngleDeg);
-                    _lightBeam.text = lightApp.BeamAngleDeg.ToString();
-                }
-                if (_lightUp != null)
-                {
-                    lightApp.UpLightPct = _fields.ParseInt(_lightUp, lightApp.UpLightPct);
-                    _lightUp.text = lightApp.UpLightPct.ToString();
-                }
-                foreach (var b in LightExtraBindings())
-                {
-                    if (b.field == null) continue;
-                    b.set(lightApp, _fields.ParseInt(b.field, b.get(lightApp)));
-                    b.field.text = b.get(lightApp).ToString();  // показать применённый clamp
-                }
-            }
+            _lights.Apply(target);
 
             _materials.ApplyLegsChoice(target);
 
@@ -1642,14 +1488,7 @@ namespace KitchenDesigner.Core.UI
             _fields.Track(_legInset, tableEl2 != null ? tableEl2.LegInsetMM.ToString() : (radiusTableEl2 != null ? radiusTableEl2.LegInsetMM.ToString() : "100"));
             var pillarEl = _target as PillarElement;
             _fields.Track(_midHeight, pillarEl != null ? pillarEl.MidHeightMM.ToString() : PillarElement.MidHeightMM_Default.ToString());
-            var lightTrack = _target as LightSourceElement;
-            _fields.Track(_lightTemp, lightTrack != null ? lightTrack.TemperatureK.ToString() : LightSourceElement.DEFAULT_TEMPERATURE_K.ToString());
-            _fields.Track(_lightPower, lightTrack != null ? lightTrack.PowerW.ToString() : LightSourceElement.DEFAULT_POWER_W.ToString());
-            _fields.Track(_lightDiffusion, lightTrack != null ? lightTrack.DiffusionPct.ToString() : LightSourceElement.DEFAULT_DIFFUSION_PCT.ToString());
-            _fields.Track(_lightBeam, lightTrack != null ? lightTrack.BeamAngleDeg.ToString() : LightSourceElement.DEFAULT_BEAM_DEG.ToString());
-            _fields.Track(_lightUp, lightTrack != null ? lightTrack.UpLightPct.ToString() : LightSourceElement.DEFAULT_UP_PCT.ToString());
-            foreach (var b in LightExtraBindings())
-                _fields.Track(b.field, lightTrack != null ? b.get(lightTrack).ToString() : b.def.ToString());
+            _lights.Track(_target);
             _edges.Track();
             var pos = _target.transform.position;
             _fields.Track(_x, ToMM(pos.x));
