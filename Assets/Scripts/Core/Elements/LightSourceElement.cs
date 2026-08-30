@@ -29,6 +29,8 @@ namespace KitchenDesigner.Core
     /// не той. Значения по умолчанию повторяют прежнее зашитое поведение.</summary>
     public class LightSourceElement : KitchenElement
     {
+
+        public override string DisplayTypeName => "Источник света";
         public const int DEFAULT_SIZE_MM = 150;
 
         // Параметры лампы по умолчанию: тёплый LED ~ «60 Вт лампы накаливания».

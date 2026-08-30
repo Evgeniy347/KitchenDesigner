@@ -57,6 +57,8 @@ namespace KitchenDesigner.Core
     /// </summary>
     public class DishwasherElement : KitchenElement, IFixedSizeElement, IFacadeHost, IOpenable
     {
+
+        public override string DisplayTypeName => MODEL;
         /// <summary>Единственная модель — см. <see cref="ApplianceModels.All"/>.</summary>
         public const string MODEL = "Bosch SMV25EX02E";
 

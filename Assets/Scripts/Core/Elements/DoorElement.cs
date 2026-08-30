@@ -15,6 +15,8 @@ namespace KitchenDesigner.Core
     /// </summary>
     public class DoorElement : KitchenElement, IOpenable
     {
+
+        public override string DisplayTypeName => "Дверь";
         private const float OpenSeconds = 0.4f;
 
         [SerializeField] private DoorSashType _sashType = DoorSashType.Glass;

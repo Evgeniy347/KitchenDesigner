@@ -4,6 +4,8 @@ namespace KitchenDesigner.Core
 {
     public class FacadeElement : KitchenElement, IOpenable
     {
+
+        public override string DisplayTypeName => "Фасад";
         // Фасад ни к чему не ПРИКРЕПЛЯЕТСЯ (AttachLinks.CanBeChild): он сам —
         // корень сборки, и своя кинематика открывания у него уже есть. Зато к
         // нему прикрепляют — ради этого механика и заведена.

@@ -179,6 +179,8 @@ namespace KitchenDesigner.Core
         /// задан корпусом прибора.</summary>
         public virtual bool SupportsGaps => SupportsGrooves;
 
+        public virtual string DisplayTypeName => "Деталь";
+
         // ── Пазы ───────────────────────────────────────────────────────
         // Пазы поддерживает только базовая «Деталь»: у фасадов/ящиков/столов и
         // прочих подтипов геометрия своя процедурная, и врезка в неё пласти не

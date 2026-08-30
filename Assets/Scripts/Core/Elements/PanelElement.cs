@@ -14,6 +14,8 @@ namespace KitchenDesigner.Core
     /// открывается.</summary>
     public class PanelElement : KitchenElement
     {
+
+        public override string DisplayTypeName => "ДВП/ХДФ";
         /// <summary>Технологический зазор по умолчанию, мм.</summary>
         public const int DEFAULT_GAP_MM = 1;
 

@@ -36,6 +36,8 @@ namespace KitchenDesigner.Core
     /// </summary>
     public class CooktopElement : KitchenElement, IPartCutout, IFixedSizeElement
     {
+
+        public override string DisplayTypeName => HasFixedSize ? Model : "Варочная";
         // ── Габариты (мм) ───────────────────────────────────────────────
         public const int RIM_HEIGHT_MM = 5;          // толщина верхней плиты (над столешницей)
 

@@ -9,6 +9,8 @@ namespace KitchenDesigner.Core
     /// localScale остаётся полным коробом, поэтому коллайдер/ручки/выделение не меняются.</summary>
     public class AssembledFacadeElement : FacadeElement, ISpecificationParts
     {
+
+        public override string DisplayTypeName => "Сборный фасад";
         private static Material? _grooveMat;
         private static Material? _glassMat;
 

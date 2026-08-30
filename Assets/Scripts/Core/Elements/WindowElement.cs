@@ -15,6 +15,8 @@ namespace KitchenDesigner.Core
     /// </summary>
     public class WindowElement : KitchenElement, IOpenable
     {
+
+        public override string DisplayTypeName => "Окно";
         private const float OpenSeconds = 0.4f;
 
         [SerializeField] private GlassTint _tint = GlassTint.Clear;

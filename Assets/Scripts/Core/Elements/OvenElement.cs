@@ -43,6 +43,8 @@ namespace KitchenDesigner.Core
     /// </summary>
     public class OvenElement : KitchenElement, IFixedSizeElement, IOpenable
     {
+
+        public override string DisplayTypeName => MODEL;
         /// <summary>Единственная модель. Второй духовке хватило бы таблицы
         /// «модель → размеры», как у <see cref="CooktopElement.ModelDimensionsMM"/>;
         /// заводить её ради одной строки — лишний слой.</summary>

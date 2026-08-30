@@ -5,6 +5,8 @@ namespace KitchenDesigner.Core
 {
     public class RadiusTableElement : KitchenElement
     {
+
+        public override string DisplayTypeName => "Радиусный стол";
         public const int LegCrossSectionMM = 50;
         public const int TabletopThicknessMM = 30;
 

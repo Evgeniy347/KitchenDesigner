@@ -5,6 +5,8 @@ namespace KitchenDesigner.Core
 {
     public class TableElement : KitchenElement
     {
+
+        public override string DisplayTypeName => "Стол";
         public const int LegCrossSectionMM = 50;
         public const int TabletopThicknessMM = 30;
 

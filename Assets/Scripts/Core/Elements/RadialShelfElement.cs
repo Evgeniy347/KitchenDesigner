@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
     /// скруглён угол (+X, +Z) радиусом CornerRadius (1..min(ширина, глубина)).</summary>
     public class RadialShelfElement : KitchenElement
     {
+
+        public override string DisplayTypeName => "Радиусная полка";
         [SerializeField] private int _cornerRadius = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
         private Mesh? _ownedMesh;
         private bool _applying;

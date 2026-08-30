@@ -16,6 +16,8 @@ namespace KitchenDesigner.Core
     // окне свойств и дерево сцены.
     public class DrawerElement : KitchenElement, IFacadeHost, IOpenable
     {
+
+        public override string DisplayTypeName => DrawerConstants.GetDefaultName(System);
         private const float OpenSeconds = DrawerConstants.DRAWER_ANIM_DURATION;
         private const float DrawerSlideMeters = DrawerConstants.DRAWER_SLIDE_METERS;
 

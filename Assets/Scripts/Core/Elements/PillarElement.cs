@@ -4,6 +4,8 @@ namespace KitchenDesigner.Core
 {
 	public class PillarElement : KitchenElement
 	{
+
+        public override string DisplayTypeName => "Опора";
 		public const int TopDiameterMM = 50;
 		public const int TopHeightMM = 20;
 		public const int MidDiameterMM = 20;

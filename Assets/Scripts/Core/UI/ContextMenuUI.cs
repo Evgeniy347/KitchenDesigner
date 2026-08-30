@@ -42,7 +42,6 @@ namespace KitchenDesigner.Core.UI
         private bool _openInProgress;
         private bool _currentIsTable;
         private bool _currentIsDoor;
-        private string _currentTypeName = "Деталь";
 
         private readonly ContextMenuLayout _layout = new();
         private readonly ContextMenuTextureSection _textures;
@@ -556,7 +555,7 @@ namespace KitchenDesigner.Core.UI
         private void RefreshTitle()
         {
             if (_titleLabel == null || _target == null) return;
-            _titleLabel.text = $"{_currentTypeName} — {_target.PartName}";
+            _titleLabel.text = $"{_target.DisplayTypeName} — {_target.PartName}";
         }
 
         public void Open(KitchenElement element)
@@ -585,34 +584,9 @@ namespace KitchenDesigner.Core.UI
                 if (SelectionManager.Instance != null)
                     SelectionManager.Instance.Select(element);
 
-                bool isFacade = element is FacadeElement;
-                bool isRadial = element is RadialShelfElement;
                 bool isDrawer = element is DrawerElement;
-                bool isTable = element is TableElement;
-                bool isRadiusTable = element is RadiusTableElement;
-                bool isPillar = element is PillarElement;
-                bool isWindow = element is WindowElement;
-                bool isDoor = element is DoorElement;
-            _currentIsTable = isTable || isRadiusTable;
-            _currentIsDoor = isDoor;
-                _currentTypeName = element is CooktopElement fixedCooktop && fixedCooktop.HasFixedSize
-                        ? fixedCooktop.Model
-                        : element is CooktopElement ? "Варочная"
-                    : element is OvenElement ? OvenElement.MODEL
-                    : element is DishwasherElement ? DishwasherElement.MODEL
-                    : element is SinkElement ? "Мойка"
-                    : element is LightSourceElement ? "Источник света"
-                    : isPillar ? "Опора"
-                    : isRadiusTable ? "Радиусный стол"
-                    : isTable ? "Стол"
-                    : isDrawer ? DrawerConstants.GetDefaultName(((DrawerElement)element).System)
-                    : isWindow ? "Окно"
-                    : isDoor ? "Дверь"
-                    : element is PanelElement ? "ДВП/ХДФ"
-                    : isRadial ? "Радиусная полка"
-                    : element is AssembledFacadeElement ? "Сборный фасад"
-                    : isFacade ? "Фасад"
-                    : "Деталь";
+                _currentIsTable = element is TableElement || element is RadiusTableElement;
+                _currentIsDoor = element is DoorElement;
                 RefreshTitle();
                 _types.ShowFor(element);
 

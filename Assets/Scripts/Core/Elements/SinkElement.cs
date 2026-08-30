@@ -19,6 +19,8 @@ namespace KitchenDesigner.Core
     /// </summary>
     public class SinkElement : KitchenElement, IPartCutout
     {
+
+        public override string DisplayTypeName => "Мойка";
         // ── Габариты (мм) ───────────────────────────────────────────────
         // Мойка НЕ равна модулю: из 600 мм ширины тумбы боковины съедают по 18 мм,
         // ещё запас нужен на крепёж и на кромку столешницы, поэтому стандартная
