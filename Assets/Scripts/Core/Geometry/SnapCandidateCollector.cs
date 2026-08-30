@@ -168,7 +168,7 @@ namespace KitchenDesigner.Core
                 : null;
 
             if (Mathf.Abs(planeShift) <= ZeroShiftEpsilon)
-                RecordExistingFlushContact(part, result, log, hasLineContact, mf.normal, into);
+                RecordExistingFlushContact(part, result, log, mf.normal, into);
 
             if (dist > ZeroShiftEpsilon)
             {
@@ -189,12 +189,10 @@ namespace KitchenDesigner.Core
         }
 
         private static void RecordExistingFlushContact(in MovedPart part, SnapResult result,
-            string? log, bool hasLineContact, Vector3 normal, SnapCandidates into)
+            string? log, Vector3 normal, SnapCandidates into)
         {
             into.ZeroShiftNormals.Add(normal);
             if (!part.IsPrimaryPass) return;
-
-            if (!hasLineContact) into.HasFullAreaContactAlready = true;
 
             if (into.ConfirmedContact.snapped) return;
 

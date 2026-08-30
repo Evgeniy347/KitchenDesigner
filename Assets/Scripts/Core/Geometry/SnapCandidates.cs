@@ -11,7 +11,6 @@ namespace KitchenDesigner.Core
 
         public SnapResult ConfirmedContact;
         public string? ConfirmedContactLog;
-        public bool HasFullAreaContactAlready;
 
         public void ClearForRefill()
         {

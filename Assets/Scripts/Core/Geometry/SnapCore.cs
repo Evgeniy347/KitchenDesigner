@@ -30,8 +30,8 @@ namespace KitchenDesigner.Core
             Vector3 pos = testPosition;
             SnapResult primary = default;
             string? primaryLog = null;
-            bool primaryIsLineContact = false;
             var locked = new List<Vector3>(collected.ZeroShiftNormals);
+            bool primaryBreaksAlignment = false;
 
             for (int pass = 0; pass < FillInPasses; pass++)
             {
@@ -53,7 +53,8 @@ namespace KitchenDesigner.Core
                 {
                     primary = picked.result;
                     primaryLog = picked.log;
-                    primaryIsLineContact = picked.hasLineContact;
+                    primaryBreaksAlignment = picked.hasLineContact && SnapCandidatePicker
+                        .BreaksAnAlignedAxis(picked, collected.AlreadyAlignedNormals);
                 }
                 primary.position = pos;
                 locked.Add(picked.normal);
@@ -62,7 +63,7 @@ namespace KitchenDesigner.Core
                 if (Mathf.Abs(picked.dv) > ZeroShiftEpsilon) locked.Add(picked.v);
             }
 
-            if (primary.snapped && !(primaryIsLineContact && collected.HasFullAreaContactAlready))
+            if (primary.snapped && !(primaryBreaksAlignment && collected.ConfirmedContact.snapped))
             {
                 if (primaryLog != null) logSink?.Invoke(primaryLog);
                 return primary;

@@ -21,7 +21,8 @@ namespace KitchenDesigner.Core
             foreach (var c in candidates)
             {
                 if (!primaryPass && c.hasLineContact
-                    && !MayFillInAlongThisEdge(c, initialLineContacts, alignedNormals)) continue;
+                    && (!initialLineContacts.Contains(c.TargetFaceKey)
+                        || BreaksAnAlignedAxis(c, alignedNormals))) continue;
 
                 float du = c.du, dv = c.dv;
                 if (!primaryPass) { du = 0f; dv = 0f; }
@@ -51,15 +52,11 @@ namespace KitchenDesigner.Core
             return found;
         }
 
-        private static bool MayFillInAlongThisEdge(in SnapCandidate c,
-            HashSet<string> initialLineContacts, List<Vector3> alignedNormals)
+        public static bool BreaksAnAlignedAxis(in SnapCandidate c, List<Vector3> alignedNormals)
         {
-            if (!initialLineContacts.Contains(c.TargetFaceKey)) return false;
-
             foreach (var n in alignedNormals)
-                if (Mathf.Abs(c.planeShift * Vector3.Dot(c.normal, n)) > ZeroShiftEpsilon)
-                    return false;
-            return true;
+                if (Mathf.Abs(c.planeShift * Vector3.Dot(c.normal, n)) > ZeroShiftEpsilon) return true;
+            return false;
         }
 
         private static bool BreaksALockedAxis(in SnapCandidate c, List<Vector3> locked,
