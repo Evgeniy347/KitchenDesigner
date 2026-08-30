@@ -16,7 +16,6 @@ namespace KitchenDesigner.Core
         public IReadOnlyList<KitchenElement> SelectedElements => _selectedElements;
         public event System.Action<KitchenElement?>? OnSelectionChanged;
 
-        /// <summary>Только для тестов: есть ли сохранённый материал у элемента.</summary>
         public bool HasSavedMaterialFor(KitchenElement element) => _savedMaterials.ContainsKey(element);
 
         private struct SavedMaterial
@@ -32,28 +31,21 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
-            // Идёт размещение нового объекта — мышь принадлежит PlacementController.
             if (PlacementController.IsActive)
                 return;
 
-            // В режиме инструмента ЛКМ принадлежит ему (рулетка ставит точки
-            // замера, пипетка красит), а не выделению.
             if (Tools.ToolMode.MouseCaptured)
                 return;
 
-            // Началось перетаскивание — клик отменён, выделение не сжимаем.
             if (ElementMover.IsDragging)
             {
                 _collapseCandidate = null;
                 return;
             }
 
-            // Отпускание ЛКМ обрабатываем ДО прочих ранних выходов: клик мог
-            // начаться на детали, а курсор к моменту отпускания уйти на UI.
             if (Input.GetMouseButtonUp(0))
                 HandleClickRelease();
 
-            // Esc в режиме редактирования модуля — выход из режима.
             if (ModuleEditMode.IsActive && Input.GetKeyDown(KeyCode.Escape))
             {
                 ModuleEditMode.Exit();
@@ -61,8 +53,6 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            // Клик по ручке ресайза не должен менять/снимать выделение. Ручки
-            // области накладки живут отдельной системой, но правило то же.
             if (ResizeHandleManager.IsResizing || ResizeHandleManager.PointerOverHandle()
                 || TextureOverlayHandles.PointerOverHandle())
                 return;
@@ -88,8 +78,6 @@ namespace KitchenDesigner.Core
             }
         }
 
-        // --- Двойной клик по группе (вход в режим редактирования модуля) ---
-
         private const float DoubleClickSeconds = 0.35f;
         private float _lastClickTime = -10f;
         private int _lastClickGroupId;
@@ -106,17 +94,12 @@ namespace KitchenDesigner.Core
             _lastClickGroupId = group != null ? group.id : 0;
         }
 
-        /// <summary>Обработать клик по элементу (ключая BasePlate и null — клик в пустоту).
-        /// Вынесено из Update() для тестирования.</summary>
         public void HandleClickOnElement(KitchenElement? element, bool ctrlHeld)
         {
             _collapseCandidate = null;
 
-            // Пол (BasePlate) не выделяется — клик по нему снимает выделение.
             if (element != null && element.GetComponent<BasePlate>() == null)
             {
-                // Режим редактора запрещает выделять часть объектов мышью
-                // (напр. стены/пол в «обычном»). Программный Select — без ограничений.
                 if (!EditModeManager.IsInteractable(element))
                 {
                     if (!ctrlHeld)
@@ -126,8 +109,6 @@ namespace KitchenDesigner.Core
 
                 var group = GroupManager.GroupOf(element);
 
-                // Режим редактирования модуля: детали активного модуля
-                // выделяются ПОШТУЧНО, всё вне модуля заблокировано.
                 if (ModuleEditMode.IsActive)
                 {
                     if (!ModuleEditMode.IsEditable(element)) return;
@@ -140,20 +121,16 @@ namespace KitchenDesigner.Core
                     ToggleInSelection(element);
                 else if (group != null)
                 {
-                    // Двойной клик по модулю — вход в режим редактирования.
                     if (IsDoubleClickOnGroup(group))
                     {
                         ModuleEditMode.Enter(group);
                         Select(element);
                     }
                     else
-                        SelectOnly(GroupManager.MembersOf(group)); // группа целиком
+                        SelectOnly(GroupManager.MembersOf(group));
                 }
                 else if (_selectedElements.Count > 1 && _selectedElements.Contains(element))
                 {
-                    // Часть мультивыделения: на нажатии выборку не трогаем — иначе
-                    // пропадёт групповой drag. Если drag так и не начнётся,
-                    // HandleClickRelease оставит выделенной одну эту деталь.
                     _selected = element;
                     _collapseCandidate = element;
                 }
@@ -168,11 +145,8 @@ namespace KitchenDesigner.Core
                 DeselectAll();
         }
 
-        // Деталь, по которой кликнули внутри мультивыделения. Ждёт отпускания ЛКМ.
         private KitchenElement? _collapseCandidate;
 
-        /// <summary>Отпускание ЛКМ без перетаскивания. Клик без Ctrl по детали из
-        /// мультивыделения оставляет выделенной только её. Публично для тестов.</summary>
         public void HandleClickRelease()
         {
             var candidate = _collapseCandidate;
@@ -203,8 +177,6 @@ namespace KitchenDesigner.Core
         public static KitchenElement? RaycastTransparentAware(Ray ray, bool shiftHeld)
             => RaycastTransparentAware(ray, shiftHeld, out _);
 
-        /// <summary>Тот же поиск, но отдаёт и само попадание: пипетке нужна точка
-        /// на поверхности, чтобы понять, в какую накладку текстуры пришёл клик.</summary>
         public static KitchenElement? RaycastTransparentAware(Ray ray, bool shiftHeld, out RaycastHit hit)
         {
             hit = default;
@@ -289,7 +261,6 @@ namespace KitchenDesigner.Core
             OnSelectionChanged?.Invoke(_selected);
         }
 
-        /// <summary>Выделить ровно указанный набор элементов (связанная группа).</summary>
         public void SelectOnly(IList<KitchenElement> elements)
         {
             DeselectAll();
@@ -349,31 +320,19 @@ namespace KitchenDesigner.Core
             return _selectedElements.Contains(element);
         }
 
-        // ── Временное снятие подсветки (предпросмотр декора) ───────────
-        // Жёлтая заливка выделения перекрашивает деталь, и текстуру под ней
-        // оценить нельзя. На время показа декора наведением подсветку снимаем,
-        // но САМО выделение оставляем: пользователь ничего не выбирал заново,
-        // и меню свойств обязано остаться открытым на том же элементе.
-
         private KitchenElement? _highlightSuppressed;
 
         public bool IsHighlightSuppressed(KitchenElement element)
             => element != null && _highlightSuppressed == element;
 
-        /// <summary>Снять подсветку с выделенного элемента, не снимая выделения.
-        /// Повторный вызов — не ошибка.</summary>
         public void SuppressHighlight(KitchenElement element)
         {
             if (element == null || _highlightSuppressed == element) return;
             if (!_selectedElements.Contains(element)) return;
-            // Флаг ставим ДО восстановления: ApplyForElement по дороге зовёт
-            // RefreshHighlight (у стены и пола), и без флага подсветка тут же
-            // вернулась бы обратно.
             _highlightSuppressed = element;
             RestoreMaterial(element);
         }
 
-        /// <summary>Вернуть подсветку, снятую <see cref="SuppressHighlight"/>.</summary>
         public void ResumeHighlight(KitchenElement element)
         {
             if (element == null || _highlightSuppressed != element) return;
@@ -434,9 +393,6 @@ namespace KitchenDesigner.Core
             }
             _savedMaterials.Remove(element);
 
-            // Элемент вышел из выделения — снятая подсветка больше не «снята
-            // на время», возвращать нечего. Сам предпросмотр этой веткой не
-            // задет: там элемент остаётся выделенным.
             if (_highlightSuppressed == element && !_selectedElements.Contains(element))
                 _highlightSuppressed = null;
 
