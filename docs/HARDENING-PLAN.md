@@ -294,21 +294,30 @@ In rough value order. Each is one agent, one directory, the shape the campaign h
    `SnapCandidateCollector` and `ResizeSnap`. The failure mode is "Diagnose says one thing,
    TrySnap does another", and one such case is already described in its comments.
 
-## Known defects recorded but NOT fixed
+## Snap defects — both FIXED
 
-Both need a decision before anyone touches them, and they are ordered: the first blocks the second.
+Recorded here as open; closed in `4c69fe6b`, `bcaec410`, `cf3ffb18`. Kept for the reasoning.
 
-1. **`SnapMutationTests` fails on pairs sitting exactly at the threshold** — the sweep moves the
-   part 1 mm past the threshold and then asserts it snaps. This is a defect of the test, not of
-   `TrySnap`; `Threshold_51mm_NoSnap` pins the correct behaviour. Proposed fix: skip a pair when
-   `gap >= threshold - 2`. Not done, because inverting a test is not free (`CONVENTIONS.md`) and
-   the file belonged to another agent's zone.
-2. **Snap loses face-to-face contact between rotated parts.** The "centre inside the neighbour's
-   bounds" check misfires at 45°, where the AABB is wider than the body: two 800×400×18 panels
-   20 mm apart do not snap, while the same pair unrotated does. Pinned by
-   `SnapKnownLimitationTests` (limitation plus positive control). The real fix is an OBB test
-   instead of AABB — a behaviour change, and it cannot be accepted while `SnapMutationTests` is
-   red for reason 1.
+1. **`SnapMutationTests` demanded a snap past its own threshold** — the sweep derived a probe
+   position from the measured gap, and on a pair sitting at the threshold the clamp pushed the
+   part 1 mm BEYOND it, then asserted it snapped. A defect of the test. Fixed: the pair is
+   skipped when the derived position leaves the range where the behaviour is defined.
+2. **Snap lost face-to-face contact between rotated parts.** `git log -S` recovered a deleted
+   comment showing the "centre inside" check was made a POINT test on purpose, precisely to
+   avoid the fat AABB at 45°. The bug was narrower than it looked: the rotation of the MOVING
+   part was accounted for and the neighbour's was not. The check now takes the sign against the
+   neighbour's six faces — identical results for an unrotated neighbour.
+
+**The "0.5 mm artefact" belongs to neither.** It was recalled as the reason the centre check had
+been abandoned; `git log -S` places it in `f72f1099` instead — `ResizeMath` rounded the size to
+whole millimetres and could overshoot THROUGH the neighbour's plane, and horizontal dragging
+re-rounded Y to the grid. Rounding, not the centre check. The resize half was already covered;
+the drag half was not, and now is.
+
+Two claims from the earlier survey were also wrong: `ResizeSnap` never carried this check (resize
+does not drive a centre inside a neighbour), and `SnapSystem.Diagnose` does not produce
+positions at all — it ranks pairs as a deliberately independent oracle for the sweep and must
+NOT be merged into the collector.
 
 ---
 
