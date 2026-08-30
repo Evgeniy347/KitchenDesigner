@@ -389,4 +389,119 @@ public class TableElementTests
 
         Object.DestroyImmediate(go);
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  Меш радиусного стола: winding должен смотреть наружу
+    // ═══════════════════════════════════════════════════════════════
+
+    [Test]
+    public void RadiusTable_Mesh_Winding_FacesOutward()
+    {
+        var dims = new Vector3Int(2000, 750, 1000);
+        var go = ElementFactory.CreateRadiusTable(dims, "RadWind", Vector3.zero);
+        var table = go.GetComponent<RadiusTableElement>();
+        Assert.IsNotNull(table);
+
+        var mesh = table.GetComponent<MeshFilter>().sharedMesh;
+        Assert.IsNotNull(mesh, "у радиусного стола должен быть меш столешницы");
+
+        var verts = mesh.vertices;
+        var normals = mesh.normals;
+        var tris = mesh.triangles;
+        Assert.Greater(tris.Length, 0);
+
+        for (int t = 0; t < tris.Length; t += 3)
+        {
+            var a = verts[tris[t]];
+            var b = verts[tris[t + 1]];
+            var c = verts[tris[t + 2]];
+            var winding = Vector3.Cross(b - a, c - a);
+            // Стыки профиля дают вырожденные треугольники (две точки совпадают),
+            // а их normalized — прецизионный мусор; отбрасываем по площади.
+            if (winding.sqrMagnitude < 1e-8f) continue;
+
+            var attr = normals[tris[t]];
+            // Вершины, добавленные вырожденной парой профиля, несут нулевую
+            // нормаль и попадают в соседние грани; они не про видимость.
+            if (attr.sqrMagnitude < 0.5f) continue;
+
+            Assert.Greater(Vector3.Dot(winding.normalized, attr), 0f,
+                $"треугольник {t / 3}: winding смотрит против атрибутной нормали — " +
+                "верхняя крышка отсекается и стол выглядит как стакан без верха");
+        }
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  Текстура столешницы должна переживать сохранение и загрузку
+    // ═══════════════════════════════════════════════════════════════
+
+    [Test]
+    public void Table_SaveLoad_TabletopMaterial_RoundTrip()
+    {
+        var dims = new Vector3Int(1200, 750, 700);
+        var go = ElementFactory.CreateTable(dims, "TblTopMtl", Vector3.zero);
+        var table = go.GetComponent<TableElement>();
+        Assert.IsNotNull(table);
+
+        var oak = MaterialCatalog.Get("oak");
+        var wenge = MaterialCatalog.Get("wenge");
+        Assert.IsNotNull(oak, "декор 'oak' должен быть в каталоге");
+        Assert.IsNotNull(wenge, "декор 'wenge' должен быть в каталоге");
+
+        MaterialManager.ApplyTabletop(table, oak);
+        MaterialManager.ApplyLegs(table, wenge);
+
+        var data = ElementData.FromElement(table);
+        Assert.AreEqual("oak", data.tabletopMaterialId,
+            "столешница обязана сохраняться в tabletopMaterialId");
+        Assert.AreEqual("wenge", data.legsMaterialId);
+
+        var restored = SaveLoadManager.RestoreScene(new ProjectData(new[] { data }));
+        Assert.AreEqual(1, restored.Count);
+        var rt = restored[0].GetComponent<TableElement>();
+        Assert.IsNotNull(rt);
+        Assert.AreEqual("oak", rt.TabletopMaterialId,
+            "столешница обязана восстанавливаться из файла");
+        Assert.AreEqual("wenge", rt.LegsMaterialId);
+
+        foreach (var o in restored)
+            if (o != null) Object.DestroyImmediate(o);
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void RadiusTable_SaveLoad_TabletopMaterial_RoundTrip()
+    {
+        var dims = new Vector3Int(1200, 750, 700);
+        var go = ElementFactory.CreateRadiusTable(dims, "RadTopMtl", Vector3.zero);
+        var table = go.GetComponent<RadiusTableElement>();
+        Assert.IsNotNull(table);
+
+        var oak = MaterialCatalog.Get("oak");
+        var wenge = MaterialCatalog.Get("wenge");
+        Assert.IsNotNull(oak, "декор 'oak' должен быть в каталоге");
+        Assert.IsNotNull(wenge, "декор 'wenge' должен быть в каталоге");
+
+        MaterialManager.ApplyTabletop(table, oak);
+        MaterialManager.ApplyLegs(table, wenge);
+
+        var data = ElementData.FromElement(table);
+        Assert.AreEqual("oak", data.tabletopMaterialId,
+            "столешница обязана сохраняться в tabletopMaterialId");
+        Assert.AreEqual("wenge", data.legsMaterialId);
+
+        var restored = SaveLoadManager.RestoreScene(new ProjectData(new[] { data }));
+        Assert.AreEqual(1, restored.Count);
+        var rt = restored[0].GetComponent<RadiusTableElement>();
+        Assert.IsNotNull(rt);
+        Assert.AreEqual("oak", rt.TabletopMaterialId,
+            "столешница обязана восстанавливаться из файла");
+        Assert.AreEqual("wenge", rt.LegsMaterialId);
+
+        foreach (var o in restored)
+            if (o != null) Object.DestroyImmediate(o);
+        Object.DestroyImmediate(go);
+    }
 }

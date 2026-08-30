@@ -251,6 +251,10 @@ namespace KitchenDesigner.Core
                         MaterialManager.ApplyLegs(tableEl2, MaterialCatalog.Get(ed.legsMaterialId));
                     if (el is RadiusTableElement rTableEl2 && !string.IsNullOrEmpty(ed.legsMaterialId))
                         MaterialManager.ApplyLegs(rTableEl2, MaterialCatalog.Get(ed.legsMaterialId));
+                    if (el is TableElement topTableEl && !string.IsNullOrEmpty(ed.tabletopMaterialId))
+                        MaterialManager.ApplyTabletop(topTableEl, MaterialCatalog.Get(ed.tabletopMaterialId));
+                    if (el is RadiusTableElement topRadiusEl && !string.IsNullOrEmpty(ed.tabletopMaterialId))
+                        MaterialManager.ApplyTabletop(topRadiusEl, MaterialCatalog.Get(ed.tabletopMaterialId));
 
 					if (el is TableElement tEl)
 						tEl.LegInsetMM = ed.legInsetMM;

@@ -109,8 +109,8 @@ namespace KitchenDesigner.Core
             {
                 int next = (i + 1) % profile.Count;
                 triangles.Add(centerIdx);
-                triangles.Add(start + i);
                 triangles.Add(start + next);
+                triangles.Add(start + i);
             }
         }
 
@@ -138,8 +138,8 @@ namespace KitchenDesigner.Core
             {
                 int next = (i + 1) % profile.Count;
                 triangles.Add(centerIdx);
-                triangles.Add(start + next);
                 triangles.Add(start + i);
+                triangles.Add(start + next);
             }
         }
 
@@ -174,11 +174,11 @@ namespace KitchenDesigner.Core
                 int d = start + next * 2 + 1;
 
                 triangles.Add(a);
-                triangles.Add(c);
                 triangles.Add(b);
+                triangles.Add(c);
 
-                triangles.Add(b);
                 triangles.Add(c);
+                triangles.Add(b);
                 triangles.Add(d);
             }
         }

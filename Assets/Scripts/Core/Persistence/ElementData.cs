@@ -79,6 +79,7 @@ namespace KitchenDesigner.Core
         public int groupId = 0;
         public string materialId = MaterialCatalog.DefaultId;
         public string legsMaterialId = MaterialCatalog.DefaultId;
+        public string tabletopMaterialId = MaterialCatalog.DefaultId;
         public bool transparent = false;
         public int doorMode = 0;
         public bool doorOpen = false;
@@ -268,6 +269,8 @@ namespace KitchenDesigner.Core
                 d.legInsetMM = radiusTable.LegInsetMM;
             d.legsMaterialId = tableEl2 != null ? tableEl2.LegsMaterialId
                 : radiusTable != null ? radiusTable.LegsMaterialId : MaterialCatalog.DefaultId;
+            d.tabletopMaterialId = tableEl2 != null ? tableEl2.TabletopMaterialId
+                : radiusTable != null ? radiusTable.TabletopMaterialId : MaterialCatalog.DefaultId;
             d.cornerRadius = radialShelf != null ? radialShelf.CornerRadius : 0;
 
             // Зазоры есть у любой детали, которая их поддерживает: фасад, ДВП/ХДФ,
