@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
 
         public override string DisplayTypeName => "Фасад";
 
+        public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.AlignsCutout;
+
         public bool IsClosedPose => IsDoorClosed;
 
         public IOpenable OpenTarget()

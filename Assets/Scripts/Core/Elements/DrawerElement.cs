@@ -19,6 +19,8 @@ namespace KitchenDesigner.Core
 
         public override string DisplayTypeName => DrawerConstants.GetDefaultName(System);
 
+        public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.AlignsCutout;
+
         public override KitchenElement InspectedElement =>
             IsUpperDrawer ? (KitchenElement?)FindPaired() ?? this : this;
 

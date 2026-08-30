@@ -21,6 +21,8 @@ namespace KitchenDesigner.Core
     {
 
         public override string DisplayTypeName => "Мойка";
+
+        public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
         // ── Габариты (мм) ───────────────────────────────────────────────
         // Мойка НЕ равна модулю: из 600 мм ширины тумбы боковины съедают по 18 мм,
         // ещё запас нужен на крепёж и на кромку столешницы, поэтому стандартная
@@ -370,23 +372,6 @@ namespace KitchenDesigner.Core
                    $"blocker={FirstBlocker(part, cx, cy) ?? "-"}";
         }
 
-        /// <summary>Что мойке действительно мешает — КОРПУСНЫЕ детали: боковины,
-        /// перегородки, стойки, полки, стены. Всё, что висит на коробе снаружи
-        /// или выезжает из него, помехой не считается:
-        ///   • фасад и дверца стоят перед коробом, чаша уходит ЗА них — иначе
-        ///     фасад тумбы, пересекающий проём на 8 мм, запрещал мойку целиком
-        ///     (ровно это и происходило на реальном проекте);
-        ///   • ящик выдвигается, его короб не капитальный;
-        ///   • ДВП/ХДФ — тонкая задняя стенка;
-        ///   • лампа, пол, подложка и другие мойки — не конструктив.</summary>
-        private static bool IsObstacle(KitchenElement el)
-        {
-            if (el is FacadeElement || el is DoorElement || el is WindowElement) return false;
-            if (el is DrawerElement || el is PanelElement) return false;
-            if (el is SinkElement || el is LightSourceElement || el is FloorElement) return false;
-            return el.GetComponent<BasePlate>() == null;
-        }
-
         /// <summary>Первая деталь, мешающая проёму в этом месте (или null).
         /// Отдельным методом — чтобы в диагностике было видно имя виновника,
         /// а не только факт «нельзя».</summary>
@@ -409,7 +394,7 @@ namespace KitchenDesigner.Core
             var inv = Quaternion.Inverse(pt.rotation);
             foreach (var el in PartRegistry.All)
             {
-                if (el == null || el == this || el == part || !IsObstacle(el)) continue;
+                if (el == null || el == this || el == part || !el.BlocksCutout) continue;
 
                 var verts = el.GetVertices();
                 if (verts.Length == 0) continue;

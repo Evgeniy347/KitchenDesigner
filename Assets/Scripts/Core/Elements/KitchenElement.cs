@@ -181,6 +181,13 @@ namespace KitchenDesigner.Core
 
         public virtual string DisplayTypeName => "Деталь";
 
+        public virtual CutoutNeighbourRole CutoutRole =>
+            GetComponent<BasePlate>() == null ? CutoutNeighbourRole.Carcass : CutoutNeighbourRole.None;
+
+        public bool BlocksCutout => (CutoutRole & CutoutNeighbourRole.BlocksCutout) != 0;
+
+        public bool AlignsCutout => (CutoutRole & CutoutNeighbourRole.AlignsCutout) != 0;
+
         public virtual KitchenElement InspectedElement => this;
 
         // ── Пазы ───────────────────────────────────────────────────────

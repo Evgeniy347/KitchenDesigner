@@ -18,6 +18,8 @@ namespace KitchenDesigner.Core
 
         public override string DisplayTypeName => "Дверь";
 
+        public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.AlignsCutout;
+
         public bool IsClosedPose => IsDoorClosed;
 
         public string OpenActionLabel => IsOpen ? OpenLabels.Close : OpenLabels.Open;

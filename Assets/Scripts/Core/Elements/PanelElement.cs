@@ -16,6 +16,8 @@ namespace KitchenDesigner.Core
     {
 
         public override string DisplayTypeName => "ДВП/ХДФ";
+
+        public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.AlignsCutout;
         /// <summary>Технологический зазор по умолчанию, мм.</summary>
         public const int DEFAULT_GAP_MM = 1;
 

@@ -38,6 +38,8 @@ namespace KitchenDesigner.Core
     {
 
         public override string DisplayTypeName => HasFixedSize ? Model : "Варочная";
+
+        public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
         // ── Габариты (мм) ───────────────────────────────────────────────
         public const int RIM_HEIGHT_MM = 5;          // толщина верхней плиты (над столешницей)
 
@@ -568,32 +570,11 @@ namespace KitchenDesigner.Core
                    $"blocker={FirstBlocker(part, cx, cy) ?? "-"}";
         }
 
-        /// <summary>Что коробу выреза действительно мешает — КОРПУСНЫЕ детали:
-        /// боковины, перегородки, стойки, полки. Всё, что висит на коробе снаружи
-        /// или выезжает из него (фасад, дверца, ящик, ДВП), помехой не считается —
-        /// но магнитом для выреза служит (см. <see cref="IsSnapTarget"/>).</summary>
-        private static bool IsObstacle(KitchenElement el)
-        {
-            if (el is FacadeElement || el is DoorElement || el is WindowElement) return false;
-            if (el is DrawerElement || el is PanelElement) return false;
-            if (el is SinkElement || el is CooktopElement || el is LightSourceElement || el is FloorElement) return false;
-            return el.GetComponent<BasePlate>() == null;
-        }
-
-        /// <summary>К чему вырез прилипает под столешницей: и к корпусным деталям,
-        /// и к фасадам с ящиками — по их плоскости выравнивают технику вручную.</summary>
-        private static bool IsSnapTarget(KitchenElement el)
-        {
-            if (el is SinkElement || el is CooktopElement || el is LightSourceElement
-                || el is FloorElement || el is WindowElement) return false;
-            return el.GetComponent<BasePlate>() == null;
-        }
-
         public string? FirstBlocker(KitchenElement part, int offX, int offY)
         {
             foreach (var el in PartRegistry.All)
             {
-                if (el == null || el == this || el == part || !IsObstacle(el)) continue;
+                if (el == null || el == this || el == part || !el.BlocksCutout) continue;
                 if (BodyOverlaps(part, offX, offY, el)) return el.PartName;
             }
             return null;
@@ -679,7 +660,7 @@ namespace KitchenDesigner.Core
 
             foreach (var el in PartRegistry.All)
             {
-                if (el == null || el == this || el == part || !IsSnapTarget(el)) continue;
+                if (el == null || el == this || el == part || !el.AlignsCutout) continue;
                 if (!LocalBounds(part, el, out var min, out var max)) continue;
 
                 // Деталь должна попадать в слой короба — иначе это сосед сверху

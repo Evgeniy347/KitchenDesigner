@@ -10,6 +10,8 @@ namespace KitchenDesigner.Core
     /// (face-контакт с полом заземляет их — пол якорь валидации).</summary>
     public class FloorElement : KitchenElement
     {
+        public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
+
         public const int DEFAULT_SIZE_MM = 3000;
         public const int DEFAULT_THICKNESS_MM = 100;
 

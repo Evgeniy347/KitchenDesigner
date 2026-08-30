@@ -701,6 +701,9 @@ public class ElementConverterTests
         // после загрузки SaveLoadManagerInstance зовёт OnAttachedFacadeChanged,
         // который и восстанавливает флаг.
         "IsPassenger",
+        // Роль соседа для врезной техники: чистая функция от типа
+        // (см. CutoutNeighbourRoleTests), после конвертации её даёт новый класс.
+        "CutoutRole", "BlocksCutout", "AlignsCutout",
         // AssembledFacadeElement
         "Fill", "GrooveCount",
         // RadialShelfElement

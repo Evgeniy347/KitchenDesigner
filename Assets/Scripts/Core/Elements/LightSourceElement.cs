@@ -31,6 +31,8 @@ namespace KitchenDesigner.Core
     {
 
         public override string DisplayTypeName => "Источник света";
+
+        public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
         public const int DEFAULT_SIZE_MM = 150;
 
         // Параметры лампы по умолчанию: тёплый LED ~ «60 Вт лампы накаливания».
