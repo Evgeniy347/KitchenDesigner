@@ -33,7 +33,12 @@ $ErrorActionPreference = 'Stop'
 
 # ── Готовим блок «Что нового» ───────────────────────────────────────────────
 $changes = $null
-if ($ChangelogFile -and (Test-Path -LiteralPath $ChangelogFile)) {
+if ($ChangelogFile) {
+    # Опечатка в пути раньше молча превращалась в заглушку: файла нет -> предупреждение
+    # уезжает в лог сборки, а релиз уходит с «Список изменений не заполнен».
+    if (-not (Test-Path -LiteralPath $ChangelogFile)) {
+        throw "Файл чанджлога не найден: $ChangelogFile"
+    }
     $changes = (Get-Content -LiteralPath $ChangelogFile -Raw -Encoding UTF8).Trim()
 }
 elseif ($Changelog) {
