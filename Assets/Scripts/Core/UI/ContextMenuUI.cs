@@ -15,17 +15,17 @@ namespace KitchenDesigner.Core.UI
         private KitchenElement? _target;
         private TMP_Text? _titleLabel;
 
-		private TMP_InputField? _name, _w, _h, _d, _radius,
-			_cutoutW, _cutoutD,
-			_gapLeft, _gapRight, _gapTop, _gapBottom, _gapFront, _gapBack,
-			_x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight,
-			_lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam,
-			_lightSoftness, _lightGlow, _lightShadowStrength, _lightDrop,
-			_lightUpCone, _lightUpRange, _lightRangeMin, _lightRangeMax,
-			_lightEfficacy, _lightLumens;
-		private TMP_Dropdown? _lightShapeDropdown, _lightShadowDropdown;
-		private TMP_Text? _lightAdvancedLabel;
-		private bool _lightAdvancedExpanded;  // раскрыта ли калибровка лампы
+        private TMP_InputField? _name, _w, _h, _d, _radius,
+            _cutoutW, _cutoutD,
+            _gapLeft, _gapRight, _gapTop, _gapBottom, _gapFront, _gapBack,
+            _x, _y, _z, _rx, _ry, _rz, _legInset, _midHeight,
+            _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam,
+            _lightSoftness, _lightGlow, _lightShadowStrength, _lightDrop,
+            _lightUpCone, _lightUpRange, _lightRangeMin, _lightRangeMax,
+            _lightEfficacy, _lightLumens;
+        private TMP_Dropdown? _lightShapeDropdown, _lightShadowDropdown;
+        private TMP_Text? _lightAdvancedLabel;
+        private bool _lightAdvancedExpanded;  // раскрыта ли калибровка лампы
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
@@ -98,6 +98,7 @@ namespace KitchenDesigner.Core.UI
         private readonly ContextMenuLayout _layout = new();
         private readonly ContextMenuTextureSection _textures;
         private readonly ContextMenuFieldTracker _fields;
+        private ContextMenuRowFactory _rows = null!;
 
         public ContextMenuUI()
         {
@@ -131,71 +132,85 @@ namespace KitchenDesigner.Core.UI
             _panelRt = panel.rectTransform;
             WindowDrag.Attach(panel.rectTransform, TopPad + TitleH + TitleGap);
             _layout.Clear();
+            _rows = new ContextMenuRowFactory(panel.transform, _layout);
 
-            // Заголовок — первая строка потока (стоит вплотную под верхом панели).
-            // Показывает «Тип — Имя», чтобы окна разных элементов были различимы.
-            _titleLabel = UIFactory.CreateLabel("CtxTitle", panel.transform, "Деталь", 20,
+            BuildTitleAndType(panel.transform);
+            BuildDimensions();
+            BuildGrooveSection(panel.transform);
+            BuildEdgeSection(panel.transform);
+            BuildGapSection(panel.transform);
+            BuildFacadeSection();
+            BuildDrawerSection();
+            BuildAttachmentSection();
+            BuildWindowSection();
+            BuildFurnitureSection();
+            BuildLightSection();
+            BuildPositionSection(panel.transform);
+            BuildMaterialSection(panel.transform);
+            BuildPropertySection();
+            BuildActions(panel.transform);
+            ConfigureFieldInput();
+
+            UIFactory.CreateCloseButton(panel.transform, Close);
+
+            ApplyLayout(ElementFacet.None);
+            _root!.SetActive(false);
+
+            if (SelectionManager.Instance != null)
+                SelectionManager.Instance.OnSelectionChanged += OnSelectionChanged;
+        }
+
+        private void BuildTitleAndType(Transform parent)
+        {
+            _titleLabel = UIFactory.CreateLabel("CtxTitle", parent, "Деталь", 20,
                 Vector2.zero, new Vector2(300, TitleH), TextAnchor.MiddleCenter);
             _titleLabel.overflowMode = TextOverflowModes.Ellipsis;
             _titleLabel.enableWordWrapping = false;
             _layout.Add(TitleH, TitleGap, _titleLabel.rectTransform);
 
-            // Тип: конвертация ТОЛЬКО внутри родственной группы (см. GroupOf):
-            //   • структурная  — Деталь ↔ Фасад ↔ Сборный фасад ↔ Радиусная полка
-            //     (пересоздаёт элемент через ElementConverter);
-            //   • ящик         — Ящик GTV ↔ Ящик Movento (смена системы выдвижения).
-            // Опции наполняются по элементу в Open(); у элементов без группы (окно,
-            // дверь, стол, опора, ДВП, свет, стена) строка скрыта через visibleWhen.
-            var typeOptions = new List<string>(); // реальный список ставит RefreshTypeDropdown
+            var typeOptions = new List<string>();
             foreach (var (_, label) in StructuralChoices) typeOptions.Add(label);
-            _typeDropdown = LabeledDropdownRow(panel.transform, "Тип", typeOptions, OnTypeSelected,
-                (h, g, rects) => _layout.AddWhen(() => _target != null && GroupOf(_target) != TypeGroup.None, h, g, rects),
+            _typeDropdown = _rows.Dropdown("Тип", typeOptions, OnTypeSelected,
+                RowVisibility.When(() => _target != null && GroupOf(_target) != TypeGroup.None),
                 "CtxType");
+        }
 
-            // Размеры.
-            _name = NameRow(panel.transform);
-            _layout.Add(18f, RowGap, UIFactory.CreateSectionHeader("CtxSecDims", panel.transform, "Размеры", 332f));
-            _w = Row(panel.transform, "Ширина");
-            _h = Row(panel.transform, "Высота");
-            _d = Row(panel.transform, "Глубина");
-            _radius = RadialRow(panel.transform, "Радиус угла");
-            // Вырез варочной: ширина/глубина/высота выше описывают верхнюю плиту,
-            // а эти две строки — короб, уходящий в столешницу.
-            _cutoutW = CooktopRow(panel.transform, "Ширина выреза");
-            _cutoutD = CooktopRow(panel.transform, "Глубина выреза");
+        private void BuildDimensions()
+        {
+            _name = _rows.NameField();
+            _rows.SectionHeader("CtxSecDims", "Размеры");
+            _w = _rows.NumberField("Ширина", RowVisibility.Always);
+            _h = _rows.NumberField("Высота", RowVisibility.Always);
+            _d = _rows.NumberField("Глубина", RowVisibility.Always);
+            _radius = _rows.NumberField("Радиус угла", RowVisibility.For(ElementFacet.Radial));
+            var cooktopOnly = RowVisibility.When(() => _target is CooktopElement);
+            _cutoutW = _rows.NumberField("Ширина выреза", cooktopOnly);
+            _cutoutD = _rows.NumberField("Глубина выреза", cooktopOnly);
+        }
 
-            // ── Пазы (только «деталь») ──────────────────────────────────
-            // Кнопка-раскрывашка «Пазы (N) ▼» на всю ширину. В раскрытом виде —
-            // строка-подсказка с размерами паза, строки текущих пазов (сторона и
-            // тип редактируются на месте, справа — удаление), в конце — выбор
-            // параметров нового паза и кнопка «Добавить».
-            var grooveBtn = UIFactory.CreateButton("CtxGrooves", panel.transform, "Пазы (0)",
-                new Vector2(0, 0), new Vector2(332, BtnH), ToggleGrooves);
-            _grooveCountLabel = grooveBtn.GetComponentInChildren<TMP_Text>();
-            _layout.AddFor(ElementFacet.Part, BtnH, RowGap, grooveBtn.GetComponent<RectTransform>());
+        private void BuildGrooveSection(Transform parent)
+        {
+            var partOnly = RowVisibility.For(ElementFacet.Part);
+            var expanded = RowVisibility.For(ElementFacet.Part, () => _groovesExpanded);
 
-            // Размеры паза фиксированы технологией — показываем их с единицами,
-            // а не шифром «16*4*7».
-            var grooveHint = UIFactory.CreateLabel("CtxGrooveHint", panel.transform,
+            _grooveCountLabel = _rows.WideButton("CtxGrooves", "Пазы (0)", ToggleGrooves, partOnly, RowGap);
+            _rows.Hint("CtxGrooveHint",
                 $"Паз: ширина {AppConstants.GROOVE_WIDTH_MM} мм, глубина {AppConstants.GROOVE_DEPTH_MM} мм, отступ от кромки {AppConstants.GROOVE_OFFSET_MM} мм",
-                12, new Vector2(0, 0), new Vector2(332, 16), TextAnchor.MiddleLeft);
-            grooveHint.color = UIStyle.TextSecondary;
-            _layout.AddFor(ElementFacet.Part, () => _groovesExpanded, 16f, 4f, grooveHint.rectTransform);
+                16f, 4f, expanded);
 
-            // Порядок пунктов совпадает с порядком значений GrooveSide/GrooveKind.
-            var grooveSideOptions = new List<string> { "Верх", "Низ", "Лево", "Право" };
-            var grooveKindOptions = new List<string> { "Сквозной", "Глухой" };
+            var sideOptions = new List<string> { "Верх", "Низ", "Лево", "Право" };
+            var kindOptions = new List<string> { "Сквозной", "Глухой" };
 
             for (int i = 0; i < AppConstants.GROOVE_MAX_PER_PART; i++)
             {
-                int index = i; // копия для замыкания: иначе все кнопки правили бы последний
-                var sideDd = UIFactory.CreateDropdown($"CtxGrooveSide{i}", panel.transform,
-                    new List<string>(grooveSideOptions), new Vector2(-114, 0), new Vector2(104, 28),
+                int index = i;
+                var sideDd = UIFactory.CreateDropdown($"CtxGrooveSide{i}", parent,
+                    new List<string>(sideOptions), new Vector2(-114, 0), new Vector2(104, 28),
                     _ => EditGroove(index));
-                var kindDd = UIFactory.CreateDropdown($"CtxGrooveKind{i}", panel.transform,
-                    new List<string>(grooveKindOptions), new Vector2(26, 0), new Vector2(168, 28),
+                var kindDd = UIFactory.CreateDropdown($"CtxGrooveKind{i}", parent,
+                    new List<string>(kindOptions), new Vector2(26, 0), new Vector2(168, 28),
                     _ => EditGroove(index));
-                var delBtn = UIFactory.CreateConfirmDeleteButton($"CtxGrooveDel{i}", panel.transform,
+                var delBtn = UIFactory.CreateConfirmDeleteButton($"CtxGrooveDel{i}", parent,
                     UIStyle.GlyphClose, new Vector2(148, 0), new Vector2(28, 28), () => RemoveGroove(index));
                 _grooveRowSide[i] = sideDd;
                 _grooveRowKind[i] = kindDd;
@@ -205,161 +220,115 @@ namespace KitchenDesigner.Core.UI
                     delBtn.GetComponent<RectTransform>());
             }
 
-            _grooveSideDropdown = UIFactory.CreateDropdown("CtxGrooveSide", panel.transform,
-                new List<string>(grooveSideOptions), new Vector2(-114, 0), new Vector2(104, 28), _ => { });
-            _grooveKindDropdown = UIFactory.CreateDropdown("CtxGrooveKind", panel.transform,
-                new List<string>(grooveKindOptions), new Vector2(0, 0), new Vector2(116, 28), _ => { });
-            var grooveAddBtn = UIFactory.CreateButton("CtxGrooveAdd", panel.transform, "Добавить",
+            _grooveSideDropdown = UIFactory.CreateDropdown("CtxGrooveSide", parent,
+                new List<string>(sideOptions), new Vector2(-114, 0), new Vector2(104, 28), _ => { });
+            _grooveKindDropdown = UIFactory.CreateDropdown("CtxGrooveKind", parent,
+                new List<string>(kindOptions), new Vector2(0, 0), new Vector2(116, 28), _ => { });
+            var addBtn = UIFactory.CreateButton("CtxGrooveAdd", parent, "Добавить",
                 new Vector2(116, 0), new Vector2(100, 28), AddGrooveFromUI);
             _layout.AddFor(ElementFacet.Part, () => _groovesExpanded, 28f, ActionGap,
                 _grooveSideDropdown.GetComponent<RectTransform>(),
                 _grooveKindDropdown.GetComponent<RectTransform>(),
-                grooveAddBtn.GetComponent<RectTransform>());
+                addBtn.GetComponent<RectTransform>());
+        }
 
-            // ── Кромки (деталь-лист: ровно одна сторона < 50 мм) ────────
-            // Наличие кромки не редактируется — оно вычисляется по геометрии
-            // (открытый торец = кромка). Здесь только выключатель, толщина
-            // ленты и отказ от валидации.
-            _edgeToggle = UIFactory.CreateToggle("CtxEdges", panel.transform, "Кромки", true,
-                new Vector2(0, 0), new Vector2(332, 26), OnEdgeBandingToggled);
-            _layout.AddFor(ElementFacet.Part, EdgesEligible, 26f, RowGap,
-                _edgeToggle.GetComponent<RectTransform>());
+        private void BuildEdgeSection(Transform parent)
+        {
+            var shown = RowVisibility.For(ElementFacet.Part, EdgesShown);
 
-            _edgeDiagram = BuildEdgeDiagram(panel.transform, out float edgeDiagramH);
+            _edgeToggle = _rows.Toggle("CtxEdges", "Кромки", true, OnEdgeBandingToggled,
+                RowVisibility.For(ElementFacet.Part, EdgesEligible), RowGap);
+
+            _edgeDiagram = BuildEdgeDiagram(parent, out float edgeDiagramH);
             _layout.AddFor(ElementFacet.Part, EdgesShown, edgeDiagramH, RowGap, _edgeDiagram);
 
-            var edgeThicknessLbl = UIFactory.CreateLabel("L_EdgeThickness", panel.transform,
-                "Толщина кромки", 15, new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-            _edgeThickness = UIFactory.CreateNumberField("F_EdgeThickness", panel.transform, "",
-                new Vector2(FieldX, 0), new Vector2(120, FieldH), "мм");
-            _layout.AddFor(ElementFacet.Part, EdgesShown, RowH, RowGap, edgeThicknessLbl.rectTransform,
-                _edgeThickness.GetComponent<RectTransform>());
+            _edgeThickness = _rows.NumberField("Толщина кромки", shown, "мм", "EdgeThickness");
+            _rows.Hint("CtxEdgeHint", "Клик по стороне — кромка вручную", 20f, ActionGap, shown,
+                TextAnchor.MiddleCenter);
+        }
 
-            // Общего выключателя валидации больше нет: кромка правится по
-            // сторонам — клик по полосе на схеме делает её ручной (см.
-            // OnEdgeStripClicked). Подсказка объясняет это на месте.
-            var edgeHint = UIFactory.CreateLabel("CtxEdgeHint", panel.transform,
-                "Клик по стороне — кромка вручную", 12,
-                new Vector2(0, 0), new Vector2(332, 20), TextAnchor.MiddleCenter);
-            edgeHint.color = UIStyle.TextSecondary;
-            edgeHint.raycastTarget = false;
-            _layout.AddFor(ElementFacet.Part, EdgesShown, 20f, ActionGap, edgeHint.rectTransform);
+        private void BuildGapSection(Transform parent)
+        {
+            _gapCountLabel = _rows.WideButton("CtxGaps", "Зазоры (0)", ToggleGaps,
+                RowVisibility.When(GapsEligible), RowGap);
 
-            // ── Зазоры ──────────────────────────────────────────────────
-            // Кнопка-раскрывашка «Зазоры (N) ▼» — как у пазов; N — сколько
-            // сторон получили ненулевой зазор. Внутри три строки по паре полей.
-            var gapBtn = UIFactory.CreateButton("CtxGaps", panel.transform, "Зазоры (0)",
-                new Vector2(0, 0), new Vector2(332, BtnH), ToggleGaps);
-            _gapCountLabel = gapBtn.GetComponentInChildren<TMP_Text>();
-            _layout.AddWhen(GapsEligible, BtnH, RowGap, gapBtn.GetComponent<RectTransform>());
-
-            CreateGapRow(panel.transform, "Слева / справа, мм", GapSide.Left, GapSide.Right,
+            CreateGapRow(parent, "Слева / справа, мм", GapSide.Left, GapSide.Right,
                 out _gapLeft, out _gapRight);
-            CreateGapRow(panel.transform, "Сверху / снизу, мм", GapSide.Top, GapSide.Bottom,
+            CreateGapRow(parent, "Сверху / снизу, мм", GapSide.Top, GapSide.Bottom,
                 out _gapTop, out _gapBottom);
-            CreateGapRow(panel.transform, "Спереди / сзади, мм", GapSide.Front, GapSide.Back,
+            CreateGapRow(parent, "Спереди / сзади, мм", GapSide.Front, GapSide.Back,
                 out _gapFront, out _gapBack);
+        }
 
-            // Открывание фасада (только фасад): выпадающий список режима (12 рёбер +
-            // 6 ящиков) и кнопка Открыть/Закрыть — отдельными строками.
+        private void BuildFacadeSection()
+        {
+            var facadeOnly = RowVisibility.For(ElementFacet.Facade);
+
             var modeOptions = new List<string>();
             for (int i = 0; i < FacadeDoor.Count; i++)
                 modeOptions.Add(FacadeDoor.Label((DoorMode)i));
-            _modeDropdown = LabeledDropdownRow(panel.transform, "Дверца", modeOptions,
-                OnModeSelected, (h, g, rects) => _layout.AddFor(ElementFacet.Facade, h, g, rects), "CtxMode");
+            _modeDropdown = _rows.Dropdown("Дверца", modeOptions, OnModeSelected, facadeOnly, "CtxMode");
 
-            var doorButton = UIFactory.CreateButton("CtxDoor", panel.transform, "Открыть",
-                new Vector2(0, 0), new Vector2(332, BtnH), ToggleDoor);
-            _doorButtonLabel = doorButton.GetComponentInChildren<TMP_Text>();
-            _layout.AddFor(ElementFacet.Facade, BtnH, ActionGap, doorButton.GetComponent<RectTransform>());
+            _doorButtonLabel = _rows.WideButton("CtxDoor", "Открыть", ToggleDoor, facadeOnly, ActionGap);
+            _ovenDoorLabel = _rows.WideButton("CtxOvenDoor", "Открыть дверцу", ToggleOvenDoor,
+                RowVisibility.When(() => _target is OvenElement), ActionGap);
+            _dishwasherDoorLabel = _rows.WideButton("CtxDishwasherDoor", "Открыть дверцу",
+                ToggleDishwasherDoor, RowVisibility.When(() => _target is DishwasherElement), ActionGap);
 
-            // Откидная дверца духовки — по образцу «Открыть ящик»: одна кнопка,
-            // подпись переключается по состоянию. Отдельного флага в LayoutRow
-            // не заводим — духовка одна, visibleWhen уже умеет ровно это.
-            var ovenDoorButton = UIFactory.CreateButton("CtxOvenDoor", panel.transform, "Открыть дверцу",
-                new Vector2(0, 0), new Vector2(332, BtnH), ToggleOvenDoor);
-            _ovenDoorLabel = ovenDoorButton.GetComponentInChildren<TMP_Text>();
-            _layout.AddWhen(() => _target is OvenElement, BtnH, ActionGap,
-                ovenDoorButton.GetComponent<RectTransform>());
-
-            // Откидная дверца посудомоечной машины — та же кнопка, что у
-            // духовки, но своя: подпись у машины упоминает фасад, который едет
-            // вместе с дверцей, и путать эти два прибора одной строкой нельзя.
-            var dwDoorButton = UIFactory.CreateButton("CtxDishwasherDoor", panel.transform, "Открыть дверцу",
-                new Vector2(0, 0), new Vector2(332, BtnH), ToggleDishwasherDoor);
-            _dishwasherDoorLabel = dwDoorButton.GetComponentInChildren<TMP_Text>();
-            _layout.AddWhen(() => _target is DishwasherElement, BtnH, ActionGap,
-                dwDoorButton.GetComponent<RectTransform>());
-
-            // Центр сборного фасада (только для сборного): Глухой / Витрина / Стекло.
             var fillOptions = new List<string> { "Глухой (панель)", "Витрина (пусто)", "Стекло" };
-            _fillDropdown = LabeledDropdownRow(panel.transform, "Заполнение", fillOptions,
-                OnFillSelected, (h, g, rects) => _layout.AddFor(ElementFacet.Assembled, h, g, rects), "CtxFill");
+            _fillDropdown = _rows.Dropdown("Заполнение", fillOptions, OnFillSelected,
+                RowVisibility.For(ElementFacet.Assembled), "CtxFill");
+        }
 
-            // Ящик GTV: тип, длина, цвет, ширина, двойной ящик, анимация.
-            var drawerTypeNames = new List<string> { "A — борт 86 мм", "B — борт 120 мм", "C — борт 168 мм", "D — борт 200 мм" };
-            _drawerTypeDropdown = LabeledDropdownRow(panel.transform, "Тип ящика", drawerTypeNames,
-                OnDrawerTypeChanged, (h, g, rects) => _layout.AddFor(ElementFacet.Drawer, h, g, rects), "CtxDrawerType");
+        private void BuildDrawerSection()
+        {
+            var drawerOnly = RowVisibility.For(ElementFacet.Drawer);
 
-            var drawerLenNames = new List<string>();
-            foreach (var l in DrawerConstants.ValidLengths) drawerLenNames.Add($"{l} мм");
-            _drawerLengthDropdown = LabeledDropdownRow(panel.transform, "Длина", drawerLenNames,
-                OnDrawerLengthChanged, (h, g, rects) => _layout.AddFor(ElementFacet.Drawer, h, g, rects), "CtxDrawerLen");
+            var typeNames = new List<string>
+                { "A — борт 86 мм", "B — борт 120 мм", "C — борт 168 мм", "D — борт 200 мм" };
+            _drawerTypeDropdown = _rows.Dropdown("Тип ящика", typeNames, OnDrawerTypeChanged,
+                drawerOnly, "CtxDrawerType");
 
-            var drawerColorNames = new List<string> { "Антрацит", "Белый", "Чёрный" };
-            _drawerColorDropdown = LabeledDropdownRow(panel.transform, "Цвет", drawerColorNames,
-                OnDrawerColorChanged, (h, g, rects) => _layout.AddFor(ElementFacet.Drawer, h, g, rects), "CtxDrawerColor");
+            var lengthNames = new List<string>();
+            foreach (var l in DrawerConstants.ValidLengths) lengthNames.Add($"{l} мм");
+            _drawerLengthDropdown = _rows.Dropdown("Длина", lengthNames, OnDrawerLengthChanged,
+                drawerOnly, "CtxDrawerLen");
 
-            _drawerWidth = DrawerFieldRow(panel.transform, "Ширина короба");
+            var colorNames = new List<string> { "Антрацит", "Белый", "Чёрный" };
+            _drawerColorDropdown = _rows.Dropdown("Цвет", colorNames, OnDrawerColorChanged,
+                drawerOnly, "CtxDrawerColor");
 
-            // «Двойной ящик» — только для одиночного нижнего, когда над контуром
-            // есть место под верхний внутренний ящик (мин. проём типа A).
-            var drawerDoubleBtn = UIFactory.CreateButton("CtxDrawerDouble", panel.transform, "Двойной ящик",
-                new Vector2(0, 0), new Vector2(332, BtnH), CreatePairedDrawer);
-            _layout.AddFor(ElementFacet.Drawer, CanCreateDoubleDrawer, BtnH, ActionGap,
-                drawerDoubleBtn.GetComponent<RectTransform>());
+            _drawerWidth = _rows.NumberField("Ширина короба", drawerOnly);
 
-            // Опции пары (виден только у двойного): длина верхнего ящика + удаление.
+            _rows.WideButton("CtxDrawerDouble", "Двойной ящик", CreatePairedDrawer,
+                RowVisibility.For(ElementFacet.Drawer, CanCreateDoubleDrawer), ActionGap);
+
             var upperLenNames = new List<string>();
             foreach (var l in DrawerConstants.ValidLengths) upperLenNames.Add($"{l} мм");
-            var upperLenLbl = UIFactory.CreateLabel("L_Верхний ящик", panel.transform, "Верхний ящик", 15,
-                new Vector2(-103, 0), new Vector2(126, LabelH));
-            _drawerUpperLenDropdown = UIFactory.CreateDropdown("CtxDrawerUpperLen", panel.transform, upperLenNames,
-                new Vector2(65, 0), new Vector2(202, 28), OnDrawerUpperLengthChanged);
-            _layout.AddFor(ElementFacet.Drawer, HasUpperDrawer, 28f, ActionGap,
-                upperLenLbl.rectTransform,
-                _drawerUpperLenDropdown.GetComponent<RectTransform>());
+            (_, _drawerUpperLenDropdown) = _rows.NamedDropdown("CtxDrawerUpperLen", "Верхний ящик",
+                upperLenNames, OnDrawerUpperLengthChanged,
+                RowVisibility.For(ElementFacet.Drawer, HasUpperDrawer));
 
-            var drawerRemoveUpperBtn = UIFactory.CreateButton("CtxDrawerRemoveUpper", panel.transform,
-                "Убрать верхний ящик", new Vector2(0, 0), new Vector2(332, BtnH), RemoveUpperDrawer);
-            _layout.AddFor(ElementFacet.Drawer, HasUpperDrawer, BtnH, ActionGap,
-                drawerRemoveUpperBtn.GetComponent<RectTransform>());
+            _rows.WideButton("CtxDrawerRemoveUpper", "Убрать верхний ящик", RemoveUpperDrawer,
+                RowVisibility.For(ElementFacet.Drawer, HasUpperDrawer), ActionGap);
 
-            var drawerAnimBtn = UIFactory.CreateButton("CtxDrawerAnim", panel.transform, "Открыть",
-                new Vector2(0, 0), new Vector2(332, BtnH), CycleDrawerAnimation);
-            _drawerAnimLabel = drawerAnimBtn.GetComponentInChildren<TMP_Text>();
-            _layout.AddFor(ElementFacet.Drawer, BtnH, ActionGap, drawerAnimBtn.GetComponent<RectTransform>());
+            _drawerAnimLabel = _rows.WideButton("CtxDrawerAnim", "Открыть", CycleDrawerAnimation,
+                drawerOnly, ActionGap);
+        }
 
-            // Пристёгнутый фасад: выбор из существующих (создание/настройка —
-            // через сам фасад). Строку делят ящик и посудомоечная машина — оба
-            // IFacadeHost; подпись меняется в Open() под конкретного хозяина,
-            // а порядок строк остаётся прежним (у ящика панель не сдвинулась).
-            _drawerFacadeLabel = UIFactory.CreateLabel("L_Фасад ящика", panel.transform, DrawerFacadeLabelText,
-                15, new Vector2(-103, 0), new Vector2(126, LabelH));
-            _drawerFacadeDropdown = UIFactory.CreateDropdown("CtxDrawerFacade", panel.transform,
-                new List<string> { "(нет фасада)" }, new Vector2(65, 0), new Vector2(202, 28),
-                OnDrawerFacadeSelected);
-            _layout.AddWhen(() => _target is IFacadeHost, 28f, RowGap, _drawerFacadeLabel.rectTransform,
-                _drawerFacadeDropdown.GetComponent<RectTransform>());
+        private void BuildAttachmentSection()
+        {
+            (_drawerFacadeLabel, _drawerFacadeDropdown) = _rows.NamedDropdown("CtxDrawerFacade",
+                DrawerFacadeLabelText, new List<string> { "(нет фасада)" }, OnDrawerFacadeSelected,
+                RowVisibility.When(() => _target is IFacadeHost));
             _drawerFacadeNormalColor = _drawerFacadeDropdown.captionText.color;
-            // Хук: при раскрытии дропдауна обновляем список фасадов.
-            var drawerFacadeHook = _drawerFacadeDropdown.template.gameObject.AddComponent<DropdownOpenHook>();
-            drawerFacadeHook.OnOpen = () =>
+            var facadeHook = _drawerFacadeDropdown.template.gameObject.AddComponent<DropdownOpenHook>();
+            facadeHook.OnOpen = () =>
             {
                 RebuildDrawerFacadeOptions();
                 SetDrawerFacadeValue(((_target as IFacadeHost)?.AttachedFacadeName) ?? "");
             };
-            drawerFacadeHook.OnAfterShow = () =>
+            facadeHook.OnAfterShow = () =>
             {
                 var dd = _drawerFacadeDropdown;
                 var host = _target as IFacadeHost;
@@ -370,21 +339,10 @@ namespace KitchenDesigner.Core.UI
                 ColorOrphanedDrawerFacadeItem(dd, attachedName, Color.red);
             };
 
-            // Прикрепление к другой детали или к фасаду: деталь едет за
-            // родителем и при перетаскивании, и при открывании (AttachLinks).
-            // Строка живёт у обычной «дощечки» — фасад, ящик и техника
-            // прикрепить нельзя.
-            _attachToLabel = UIFactory.CreateLabel("L_Прикрепить к", panel.transform, AttachToLabelText,
-                15, new Vector2(-103, 0), new Vector2(126, LabelH));
-            _attachToDropdown = UIFactory.CreateDropdown("CtxAttachTo", panel.transform,
-                new List<string> { AttachToNoneText }, new Vector2(65, 0), new Vector2(202, 28),
-                OnAttachToSelected);
-            _layout.AddWhen(() => AttachLinks.CanBeChild(_target), 28f, RowGap,
-                _attachToLabel.rectTransform,
-                _attachToDropdown.GetComponent<RectTransform>());
+            (_attachToLabel, _attachToDropdown) = _rows.NamedDropdown("CtxAttachTo", AttachToLabelText,
+                new List<string> { AttachToNoneText }, OnAttachToSelected,
+                RowVisibility.When(() => AttachLinks.CanBeChild(_target)));
             _attachToNormalColor = _attachToDropdown.captionText.color;
-            // Список кандидатов зависит от геометрии сцены — пересобираем на
-            // каждом раскрытии, как и у фасада ящика.
             var attachHook = _attachToDropdown.template.gameObject.AddComponent<DropdownOpenHook>();
             attachHook.OnOpen = () =>
             {
@@ -398,20 +356,19 @@ namespace KitchenDesigner.Core.UI
                 if (!AttachLinks.IsDetached(_target)) return;
                 ColorOrphanedDrawerFacadeItem(dd, _target.AttachedToName, Color.red);
             };
+        }
 
-            // Окно: тонировка стекла и выступ подоконника.
-            var tintOptions = new List<string> { "Прозрачное", "Тонированное" };
-            _tintDropdown = LabeledDropdownRow(panel.transform, "Стекло", tintOptions,
-                OnTintSelected, (h, g, rects) => _layout.AddFor(ElementFacet.Window, () => !_currentIsDoor, h, g, rects), "CtxTint");
+        private void BuildWindowSection()
+        {
+            var windowOnly = RowVisibility.For(ElementFacet.Window);
+            var notDoor = RowVisibility.For(ElementFacet.Window, () => !_currentIsDoor);
 
-            _sillProtrusion = WindowFieldRow(panel.transform, "Подоконник", () => !_currentIsDoor);
+            _tintDropdown = _rows.Dropdown("Стекло", new List<string> { "Прозрачное", "Тонированное" },
+                OnTintSelected, notDoor, "CtxTint");
+            _sillProtrusion = _rows.NumberField("Подоконник", notDoor);
+            _sashTypeDropdown = _rows.Dropdown("Створка", new List<string> { "Стекло", "Глухая" },
+                OnSashTypeSelected, RowVisibility.For(ElementFacet.Door), "CtxSashType");
 
-            // Дверь: тип створки (стекло/глухая).
-            var sashTypeOptions = new List<string> { "Стекло", "Глухая" };
-            _sashTypeDropdown = LabeledDropdownRow(panel.transform, "Створка", sashTypeOptions,
-                OnSashTypeSelected, (h, g, rects) => _layout.AddFor(ElementFacet.Door, h, g, rects), "CtxSashType");
-
-            // Режим открывания окна и кнопка Открыть/Закрыть (как фасад).
             var winModeOptions = new List<string>
             {
                 FacadeDoor.Label(DoorMode.HingeFrontLeft),
@@ -419,106 +376,77 @@ namespace KitchenDesigner.Core.UI
                 FacadeDoor.Label(DoorMode.HingeFrontTop),
                 FacadeDoor.Label(DoorMode.HingeFrontBottom),
             };
-            _winModeDropdown = LabeledDropdownRow(panel.transform, "Открывание", winModeOptions,
-                OnWindowModeSelected, (h, g, rects) => _layout.AddFor(ElementFacet.Window, h, g, rects), "CtxWinMode");
+            _winModeDropdown = _rows.Dropdown("Открывание", winModeOptions, OnWindowModeSelected,
+                windowOnly, "CtxWinMode");
+            _winDoorButtonLabel = _rows.WideButton("CtxWinDoor", "Открыть", ToggleWindowDoor,
+                windowOnly, ActionGap);
+        }
 
-            var winDoorBtn = UIFactory.CreateButton("CtxWinDoor", panel.transform, "Открыть",
-                new Vector2(0, 0), new Vector2(332, BtnH), ToggleWindowDoor);
-            _winDoorButtonLabel = winDoorBtn.GetComponentInChildren<TMP_Text>();
-            _layout.AddFor(ElementFacet.Window, BtnH, ActionGap, winDoorBtn.GetComponent<RectTransform>());
+        private void BuildFurnitureSection()
+        {
+            _legInset = _rows.NumberField("Сдвиг опор", RowVisibility.For(ElementFacet.Table));
+            _midHeight = _rows.NumberField("Средняя секция", RowVisibility.For(ElementFacet.Pillar));
+        }
 
-			// Сдвиг опор внутрь стола (только для столов).
-			_legInset = TableFieldRow(panel.transform, "Сдвиг опор");
+        private void BuildLightSection()
+        {
+            var lightOnly = RowVisibility.For(ElementFacet.Light);
+            var advanced = RowVisibility.For(ElementFacet.Light, () => _lightAdvancedExpanded);
 
-			// Высота средней секции опоры (только для опор).
-			_midHeight = PillarFieldRow(panel.transform, "Средняя секция");
+            _lightTemp = _rows.NumberField("Температура", lightOnly, "K");
+            _lightPower = _rows.NumberField("Мощность", lightOnly, "Вт");
+            _lightDiffusion = _rows.NumberField("Рассеивание", lightOnly, "%");
+            _lightBeam = _rows.NumberField("Угол пучка", lightOnly, "°");
+            _lightSoftness = _rows.NumberField("Мягкость края", lightOnly, "%");
+            _lightUp = _rows.NumberField("Свет вверх", lightOnly, "%");
 
-			// Параметры лампы (только для источников света). Порядок — от
-			// «крутят каждый день» к тонкой калибровке светотехники.
-			_lightTemp = LightFieldRow(panel.transform, "Температура", "K");
-			_lightPower = LightFieldRow(panel.transform, "Мощность", "Вт");
-			_lightDiffusion = LightFieldRow(panel.transform, "Рассеивание", "%");
-			_lightBeam = LightFieldRow(panel.transform, "Угол пучка", "°");
-			_lightSoftness = LightFieldRow(panel.transform, "Мягкость края", "%");
-			_lightUp = LightFieldRow(panel.transform, "Свет вверх", "%");
+            _lightShapeDropdown = _rows.Dropdown("Форма потока", new List<string> { "Плафон", "Шар" },
+                OnLightShapeSelected, lightOnly, "CtxLightShape");
+            _lightShadowDropdown = _rows.Dropdown("Тени лампы",
+                new List<string> { "Нет", "Жёсткие", "Мягкие" }, OnLightShadowSelected,
+                lightOnly, "CtxLightShadow");
+            _lightShadowStrength = _rows.NumberField("Сила тени", lightOnly, "%");
 
-			_lightShapeDropdown = LabeledDropdownRow(panel.transform, "Форма потока",
-				new List<string> { "Плафон", "Шар" }, OnLightShapeSelected, (h, g, rects) => _layout.AddFor(ElementFacet.Light, h, g, rects), "CtxLightShape");
-			_lightShadowDropdown = LabeledDropdownRow(panel.transform, "Тени лампы",
-				new List<string> { "Нет", "Жёсткие", "Мягкие" }, OnLightShadowSelected, (h, g, rects) => _layout.AddFor(ElementFacet.Light, h, g, rects), "CtxLightShadow");
-			_lightShadowStrength = LightFieldRow(panel.transform, "Сила тени", "%");
+            _lightAdvancedLabel = _rows.WideButton("CtxLightAdv",
+                $"Тонкая настройка  {UIStyle.GlyphCollapsed}", ToggleLightAdvanced, lightOnly, RowGap);
 
-			// Калибровка светотехники — под раскрывашкой: нужна редко, а места
-			// занимает больше, чем все остальные параметры лампы вместе.
-			var lightAdvBtn = UIFactory.CreateButton("CtxLightAdv", panel.transform,
-				$"Тонкая настройка  {UIStyle.GlyphCollapsed}",
-				new Vector2(0, 0), new Vector2(332, BtnH), ToggleLightAdvanced);
-			_lightAdvancedLabel = lightAdvBtn.GetComponentInChildren<TMP_Text>();
-			_layout.AddFor(ElementFacet.Light, BtnH, RowGap, lightAdvBtn.GetComponent<RectTransform>());
+            _lightGlow = _rows.NumberField("Свечение плафона", advanced, "%");
+            _lightDrop = _rows.NumberField("Отступ вниз", advanced, "мм");
+            _lightUpCone = _rows.NumberField("Верхний конус", advanced, "%");
+            _lightUpRange = _rows.NumberField("Верхний радиус", advanced, "%");
+            _lightRangeMin = _rows.NumberField("Радиус при 0 %", advanced, "мм");
+            _lightRangeMax = _rows.NumberField("Радиус при 100 %", advanced, "мм");
+            _lightEfficacy = _rows.NumberField("Светоотдача", advanced, "лм/Вт");
+            _lightLumens = _rows.NumberField("Калибровка", advanced, "лм/ед");
+        }
 
-			_lightGlow = LightAdvancedFieldRow(panel.transform, "Свечение плафона", "%");
-			_lightDrop = LightAdvancedFieldRow(panel.transform, "Отступ вниз", "мм");
-			_lightUpCone = LightAdvancedFieldRow(panel.transform, "Верхний конус", "%");
-			_lightUpRange = LightAdvancedFieldRow(panel.transform, "Верхний радиус", "%");
-			_lightRangeMin = LightAdvancedFieldRow(panel.transform, "Радиус при 0 %", "мм");
-			_lightRangeMax = LightAdvancedFieldRow(panel.transform, "Радиус при 100 %", "мм");
-			_lightEfficacy = LightAdvancedFieldRow(panel.transform, "Светоотдача", "лм/Вт");
-			_lightLumens = LightAdvancedFieldRow(panel.transform, "Калибровка", "лм/ед");
+        private void BuildPositionSection(Transform parent)
+        {
+            _rows.SectionHeader("CtxSecPos", "Положение");
 
-            // ── Положение ───────────────────────────────────────────────
-            _layout.Add(18f, RowGap, UIFactory.CreateSectionHeader("CtxSecPos", panel.transform, "Положение", 332f));
-
-            // Позиция и поворот — компактная раскладка 3 колонки. Всё в мм
-            // (правило 1 UI-GUIDELINES: никаких метров в UI).
-            _x = TriField(panel.transform, "X, мм", TriCol1);
-            _y = TriField(panel.transform, "Y, мм", TriCol2);
-            _z = TriField(panel.transform, "Z, мм", TriCol3);
+            _x = _rows.TriField("X, мм", TriCol1);
+            _y = _rows.TriField("Y, мм", TriCol2);
+            _z = _rows.TriField("Z, мм", TriCol3);
             _layout.EndTriRow(TriLabelH, 2f, FieldH, RowGap, ElementFacet.None);
 
-            // Поля поворота у окна скрыты: ориентацию диктует стена.
-            _rx = TriField(panel.transform, "X, °", TriCol1);
-            _ry = TriField(panel.transform, "Y, °", TriCol2);
-            _rz = TriField(panel.transform, "Z, °", TriCol3);
-            // Подписи и поля X/Z — их прячет техника (только поворот по Y).
-            _layout.AddRotationXZ(_layout.PendingTriLabels[0]); _layout.AddRotationXZ(_layout.PendingTriLabels[2]);
-            _layout.AddRotationXZ(_layout.PendingTriFields[0]); _layout.AddRotationXZ(_layout.PendingTriFields[2]);
+            _rx = _rows.TriField("X, °", TriCol1);
+            _ry = _rows.TriField("Y, °", TriCol2);
+            _rz = _rows.TriField("Z, °", TriCol3);
+            _layout.AddRotationXZ(_layout.PendingTriLabels[0]);
+            _layout.AddRotationXZ(_layout.PendingTriLabels[2]);
+            _layout.AddRotationXZ(_layout.PendingTriFields[0]);
+            _layout.AddRotationXZ(_layout.PendingTriFields[2]);
             _layout.EndTriRow(TriLabelH, 2f, FieldH, RowGap, ElementFacet.Window);
 
-			foreach (var f in new[] { _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam }) f!.contentType = TMP_InputField.ContentType.Custom;
-			foreach (var f in LightExtraFields()) f!.contentType = TMP_InputField.ContentType.Custom;
-            foreach (var f in GapFields()) f!.contentType = TMP_InputField.ContentType.Custom;
-            // Позиция — целые мм; углы — десятичные градусы.
-            foreach (var f in new[] { _x, _y, _z }) f!.contentType = TMP_InputField.ContentType.Custom;
-            foreach (var f in new[] { _rx, _ry, _rz }) f!.contentType = TMP_InputField.ContentType.Custom;
-
-            // Арифметика: разрешаем + - * / (пробелы допускаются, удаляются при вычислении).
-            foreach (var f in new[] { _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam, _x, _y, _z })
-                if (f != null) f.onValidateInput = (text, idx, ch) => ExpressionParser.IsValidDimensionChar(ch) ? ch : '\0';
-            foreach (var f in GapFields())
-                if (f != null) f.onValidateInput = (text, idx, ch) => ExpressionParser.IsValidDimensionChar(ch) ? ch : '\0';
-            foreach (var f in LightExtraFields())
-                if (f != null) f.onValidateInput = (text, idx, ch) => ExpressionParser.IsValidDimensionChar(ch) ? ch : '\0';
-            foreach (var f in new[] { _rx, _ry, _rz })
-                if (f != null) f.onValidateInput = (text, idx, ch) => ExpressionParser.IsValidDimensionChar(ch, allowDecimal: true) ? ch : '\0';
-
-            // Имя: недопустимые символы не даём набрать вовсе — иначе поле
-            // показывало бы одно, а применилось бы очищенное другое.
-            // Алфавит — ^[A-Za-z0-9_-]+$, см. ElementNaming.
-            _name!.onValidateInput = (text, charIndex, ch) => ElementNaming.IsValid(ch.ToString()) ? ch : '\0';
-
-            // Повороты на 90° вокруг каждой мировой оси. Отдельные X/Y/Z — чтобы
-            // ставить детали вертикально (поворот по X/Z), а не только крутить по Y.
-            // Для окна вся секция скрыта: окно стоит на стене, из поворотов
-            // осмыслен только разворот на 180° (подоконником в другую сторону).
-            var rotLbl = UIFactory.CreateLabel("CtxRotLbl", panel.transform, "Повернуть на 90°:", 15,
+            var rotLbl = UIFactory.CreateLabel("CtxRotLbl", parent, "Повернуть на 90°:", 15,
                 Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
             _layout.AddExcept(ElementFacet.Window, RotLblH, RotLblGap, rotLbl.rectTransform);
 
-            var rotX = UIFactory.CreateButton("CtxRotX", panel.transform, "X 90°",
+            var rotX = UIFactory.CreateButton("CtxRotX", parent, "X 90°",
                 new Vector2(-112, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.right));
-            var rotY = UIFactory.CreateButton("CtxRotY", panel.transform, "Y 90°",
+            var rotY = UIFactory.CreateButton("CtxRotY", parent, "Y 90°",
                 new Vector2(0, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.up));
-            var rotZ = UIFactory.CreateButton("CtxRotZ", panel.transform, "Z 90°",
+            var rotZ = UIFactory.CreateButton("CtxRotZ", parent, "Z 90°",
                 new Vector2(112, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.forward));
             _layout.AddExcept(ElementFacet.Window, BtnH, ActionGap,
                 rotX.GetComponent<RectTransform>(),
@@ -527,33 +455,23 @@ namespace KitchenDesigner.Core.UI
             _layout.AddRotationXZ(rotX.GetComponent<RectTransform>());
             _layout.AddRotationXZ(rotZ.GetComponent<RectTransform>());
 
-            var rotY180 = UIFactory.CreateButton("CtxRotY180", panel.transform, "Y 180°",
-                new Vector2(0, 0), new Vector2(332, BtnH), () => RotateAxis(Vector3.up, 180f));
+            var rotY180 = UIFactory.CreateButton("CtxRotY180", parent, "Y 180°",
+                new Vector2(0, 0), new Vector2(RowWidth, BtnH), () => RotateAxis(Vector3.up, 180f));
             _layout.AddFor(ElementFacet.Window, BtnH, ActionGap, rotY180.GetComponent<RectTransform>());
+        }
 
-            // ── Материал (после положения — порядок секций по правилу 6) ──
-            _layout.Add(18f, RowGap, UIFactory.CreateSectionHeader("CtxSecMat", panel.transform, "Материал", 332f));
+        private void BuildMaterialSection(Transform parent)
+        {
+            _rows.SectionHeader("CtxSecMat", "Материал");
 
-            var matOptions = new List<string>();
-            foreach (var m in MaterialCatalog.All) matOptions.Add(m.displayName);
-            // Строка нужна и стене с полом. Накладка со стороной «(все)» похожа на
-            // «декор на весь объект», но заменяет его только когда её ЯВНО добавили
-            // на все шесть граней: накладка — плёнка поверх грани, и вокруг неё (на
-            // прочих гранях, на не покрытой растяжением части, после удаления
-            // накладки) видно именно этот базовый декор. Пряталась — и у стен из
-            // старых проектов декор становился неуправляемым.
-            _materialDropdown = LabeledDropdownRow(panel.transform, "Текстура", matOptions,
-                OnMaterialSelected, (h, g, rects) => _layout.AddWhen(() => !_currentIsTable, h, g, rects),
-                "CtxMaterial");
+            var matOptions = MaterialOptions.DisplayNames();
+            _materialDropdown = _rows.Dropdown("Текстура", matOptions, OnMaterialSelected,
+                RowVisibility.When(() => !_currentIsTable), "CtxMaterial");
+            _tabletopMaterialDropdown = _rows.Dropdown("Столешница", new List<string>(matOptions),
+                OnMaterialSelected, RowVisibility.For(ElementFacet.Table), "CtxTableTop");
+            _legsMaterialDropdown = _rows.Dropdown("Ножки", new List<string>(matOptions),
+                OnLegsMaterialSelected, RowVisibility.For(ElementFacet.Table), "CtxTableLegs");
 
-            // Текстуры столешницы и опор (только для столов).
-            _tabletopMaterialDropdown = LabeledDropdownRow(panel.transform, "Столешница",
-                new List<string>(matOptions), OnMaterialSelected, (h, g, rects) => _layout.AddFor(ElementFacet.Table, h, g, rects), "CtxTableTop");
-            _legsMaterialDropdown = LabeledDropdownRow(panel.transform, "Ножки",
-                new List<string>(matOptions), OnLegsMaterialSelected, (h, g, rects) => _layout.AddFor(ElementFacet.Table, h, g, rects), "CtxTableLegs");
-
-            // Наведение на пункт показывает декор прямо на объекте (см. блок
-            // «Предпросмотр базового декора»).
             DropdownHover.Attach(_materialDropdown,
                 option => PreviewMaterial(legs: false, optionIndex: option), EndMaterialPreview);
             DropdownHover.Attach(_tabletopMaterialDropdown,
@@ -561,47 +479,68 @@ namespace KitchenDesigner.Core.UI
             DropdownHover.Attach(_legsMaterialDropdown,
                 option => PreviewMaterial(legs: true, optionIndex: option), EndMaterialPreview);
 
-            _textures.Build(panel.transform, matOptions);
+            _textures.Build(parent, matOptions);
+        }
 
-            // ── Свойства ────────────────────────────────────────────────
-            _transparentToggle = UIFactory.CreateToggle("CtxTransparent", panel.transform, "Прозрачный", false,
-                new Vector2(0, 0), new Vector2(332, 26), v =>
-                {
-                    if (_target == null) return;
-                    _target.Transparent = v;
-                    if (ElementHighlighter.Instance != null)
-                        ElementHighlighter.Instance.ApplyForElement(_target);
-                    if (SelectionManager.Instance != null)
-                        SelectionManager.Instance.RefreshHighlight(_target);
-                });
-            _layout.Add(26f, 7f, _transparentToggle.GetComponent<RectTransform>());
+        private void BuildPropertySection()
+        {
+            _transparentToggle = _rows.Toggle("CtxTransparent", "Прозрачный", false, v =>
+            {
+                if (_target == null) return;
+                _target.Transparent = v;
+                if (ElementHighlighter.Instance != null)
+                    ElementHighlighter.Instance.ApplyForElement(_target);
+                if (SelectionManager.Instance != null)
+                    SelectionManager.Instance.RefreshHighlight(_target);
+            }, RowVisibility.Always, 7f);
 
-            // «Закрепить», а не «Запретить перемещение»: позитивная формулировка
-            // без двойного отрицания (правило 5 UI-GUIDELINES).
-            _lockToggle = UIFactory.CreateToggle("CtxLock", panel.transform, "Закрепить", false,
-                new Vector2(0, 0), new Vector2(332, 26), v => { if (_target != null) _target.Movable = !v; });
-            _layout.Add(26f, UIStyle.GapSection, _lockToggle.GetComponent<RectTransform>());
+            _lockToggle = _rows.Toggle("CtxLock", "Закрепить", false,
+                v => { if (_target != null) _target.Movable = !v; },
+                RowVisibility.Always, UIStyle.GapSection);
+        }
 
-            // ── Действия ────────────────────────────────────────────────
-            // «Удалить» — danger: красная, не на всю ширину, отделена отступом
-            // (правило 3). Кнопки «Применить» нет: поля применяются по
-            // Enter/потере фокуса, единственная модель применения (правило 2).
-            var dup = UIFactory.CreateButton("CtxDup", panel.transform, "Дублировать",
+        private void BuildActions(Transform parent)
+        {
+            var dup = UIFactory.CreateButton("CtxDup", parent, "Дублировать",
                 new Vector2(-91, 0), new Vector2(150, 32), Duplicate);
-            var del = UIFactory.CreateDangerButton("CtxDel", panel.transform, "Удалить",
+            var del = UIFactory.CreateDangerButton("CtxDel", parent, "Удалить",
                 new Vector2(91, 0), new Vector2(150, 32), Delete);
             _layout.Add(32f, 0f,
                 dup.GetComponent<RectTransform>(),
                 del.GetComponent<RectTransform>());
+        }
 
-            // Кнопка закрытия живёт в углу панели, вне потока раскладки.
-            UIFactory.CreateCloseButton(panel.transform, Close);
+        private void ConfigureFieldInput()
+        {
+            foreach (var f in ArithmeticIntFields())
+            {
+                if (f == null) continue;
+                f.contentType = TMP_InputField.ContentType.Custom;
+                f.onValidateInput = (text, idx, ch) =>
+                    ExpressionParser.IsValidDimensionChar(ch) ? ch : '\0';
+            }
+            foreach (var f in new[] { _rx, _ry, _rz })
+            {
+                if (f == null) continue;
+                f.contentType = TMP_InputField.ContentType.Custom;
+                f.onValidateInput = (text, idx, ch) =>
+                    ExpressionParser.IsValidDimensionChar(ch, allowDecimal: true) ? ch : '\0';
+            }
+            _name!.onValidateInput = (text, charIndex, ch) =>
+                ElementNaming.IsValid(ch.ToString()) ? ch : '\0';
+        }
 
-            ApplyLayout(ElementFacet.None);
-            _root!.SetActive(false);
-
-            if (SelectionManager.Instance != null)
-                SelectionManager.Instance.OnSelectionChanged += OnSelectionChanged;
+        private TMP_InputField?[] ArithmeticIntFields()
+        {
+            var fields = new List<TMP_InputField?>
+            {
+                _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight,
+                _sillProtrusion, _lightTemp, _lightPower, _lightDiffusion, _lightUp, _lightBeam,
+                _x, _y, _z,
+            };
+            fields.AddRange(LightExtraFields());
+            fields.AddRange(GapFields());
+            return fields.ToArray();
         }
 
         private void OnDestroy()
@@ -639,73 +578,6 @@ namespace KitchenDesigner.Core.UI
                 _deferCloseFrame = -1;
                 Close();
             }
-        }
-
-        // ── Построение элементов ───────────────────────────────────────
-
-        private delegate void RowAdder(float height, float gapAfter, params RectTransform[] rects);
-
-        /// <summary>Строка «подпись + выпадающий список»: правило 5 UI-GUIDELINES —
-        /// дропдаун без подписи запрещён. Раскладку строки задаёт addRow
-        /// (обычная, фасадная, ящичная и т.д.).</summary>
-        private TMP_Dropdown LabeledDropdownRow(Transform parent, string label,
-            List<string> options, System.Action<int> onChanged, RowAdder addRow,
-            string? nodeName = null)
-        {
-            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-                new Vector2(-103, 0), new Vector2(126, LabelH));
-            var dd = UIFactory.CreateDropdown(nodeName ?? ("Dd_" + label), parent, options,
-                new Vector2(65, 0), new Vector2(202, 28), onChanged);
-            addRow(28f, RowGap, lbl.rectTransform, dd.GetComponent<RectTransform>());
-            return dd;
-        }
-
-        /// <summary>Строка «Название»: в отличие от Row подпись занимает не всю
-        /// колонку под самую длинную надпись («Ширина короба, мм»), а ровно свою
-        /// ширину — поле начинается сразу за ней и тянется до правого края панели.
-        /// Имена длинные (Fasad_600x400_1), и в общие 120px они не влезали.</summary>
-        private TMP_InputField NameRow(Transform parent)
-        {
-            var lbl = UIFactory.CreateLabel("L_Название", parent, "Название", 15,
-                new Vector2(NameLabelX, 0), new Vector2(NameLabelW, LabelH));
-            var field = UIFactory.CreateInputField("F_Название", parent, "",
-                new Vector2(NameFieldX, 0), new Vector2(NameFieldW, FieldH));
-            _layout.Add(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
-            return field;
-        }
-
-        // Единица измерения — серым суффиксом в поле («800 мм»), подпись без
-        // неё (правило 1 UI-GUIDELINES).
-        private TMP_InputField Row(Transform parent, string label, string unit = "мм")
-        {
-            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-                new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-            var field = UIFactory.CreateNumberField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
-            _layout.Add(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
-            return field;
-        }
-
-        private TMP_InputField RadialRow(Transform parent, string label, string unit = "мм")
-        {
-            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-                new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-            var field = UIFactory.CreateNumberField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
-            _layout.AddFor(ElementFacet.Radial, RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
-            return field;
-        }
-
-        /// <summary>Строка, видимая только у варочной поверхности.</summary>
-        private TMP_InputField CooktopRow(Transform parent, string label, string unit = "мм")
-        {
-            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-                new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-            var field = UIFactory.CreateNumberField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
-            _layout.AddWhen(() => _target is CooktopElement, RowH, RowGap,
-                lbl.rectTransform, field.GetComponent<RectTransform>());
-            return field;
         }
 
         /// <summary>Строка секции зазоров: подпись и пара полей — по одному на
@@ -747,140 +619,63 @@ namespace KitchenDesigner.Core.UI
             else SideHighlighter.Hide();
         }
 
-        // Строка «подпись + поле» только для ящика (обе части в одной drawer-строке —
-        // иначе подпись и поле раскладывались бы разными циклами и разъезжались).
-        private TMP_InputField DrawerFieldRow(Transform parent, string label)
+        private void ToggleLightAdvanced()
         {
-            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-                new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-            var field = UIFactory.CreateNumberField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(120, FieldH), "мм");
-            _layout.AddFor(ElementFacet.Drawer, RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
-            return field;
+            _lightAdvancedExpanded = !_lightAdvancedExpanded;
+            UpdateLightAdvancedLabel();
+            RelayoutForTarget();
         }
 
-		private TMP_InputField TableFieldRow(Transform parent, string label)
-		{
-			var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-				new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-			var field = UIFactory.CreateNumberField("F_" + label, parent, "",
-				new Vector2(FieldX, 0), new Vector2(120, FieldH), "мм");
-			_layout.AddFor(ElementFacet.Table, RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
-			return field;
-		}
-
-		private TMP_InputField PillarFieldRow(Transform parent, string label)
-		{
-			var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-				new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-			var field = UIFactory.CreateNumberField("F_" + label, parent, "",
-				new Vector2(FieldX, 0), new Vector2(120, FieldH), "мм");
-			_layout.AddFor(ElementFacet.Pillar, RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
-			return field;
-		}
-
-		private TMP_InputField LightAdvancedFieldRow(Transform parent, string label, string unit)
-		{
-			var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-				new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-			var field = UIFactory.CreateNumberField("F_" + label, parent, "",
-				new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
-			_layout.AddFor(ElementFacet.Light, () => _lightAdvancedExpanded, RowH, RowGap,
-				lbl.rectTransform, field.GetComponent<RectTransform>());
-			return field;
-		}
-
-		private void ToggleLightAdvanced()
-		{
-			_lightAdvancedExpanded = !_lightAdvancedExpanded;
-			UpdateLightAdvancedLabel();
-			RelayoutForTarget();
-		}
-
-		private void UpdateLightAdvancedLabel()
-		{
-			if (_lightAdvancedLabel != null)
-				_lightAdvancedLabel.text =
-					$"Тонкая настройка  {(_lightAdvancedExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
-		}
-
-		private TMP_InputField LightFieldRow(Transform parent, string label, string unit)
-		{
-			var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-				new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-			var field = UIFactory.CreateNumberField("F_" + label, parent, "",
-				new Vector2(FieldX, 0), new Vector2(120, FieldH), unit);
-			_layout.AddFor(ElementFacet.Light, RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
-			return field;
-		}
-
-		/// <summary>Тонкие параметры лампы: поле ↔ свойство ↔ значение «из
-		/// коробки». Их полтора десятка, и каждый нужен в четырёх местах
-		/// (Open, Apply, обновление извне, подсветка правок) — таблица держит
-		/// их синхронными вместо четырёх одинаковых простыней.</summary>
-		private (TMP_InputField? field, System.Func<LightSourceElement, int> get,
-			System.Action<LightSourceElement, int> set, int def)[] LightExtraBindings()
-		{
-			System.Func<LightSourceElement, int> G(System.Func<LightSourceElement, int> f) => f;
-			System.Action<LightSourceElement, int> S(System.Action<LightSourceElement, int> f) => f;
-			return new[]
-			{
-				(_lightSoftness, G(l => l.SoftnessPct), S((l, v) => l.SoftnessPct = v), LightSourceElement.DEFAULT_SOFTNESS_PCT),
-				(_lightShadowStrength, G(l => l.ShadowStrengthPct), S((l, v) => l.ShadowStrengthPct = v), LightSourceElement.DEFAULT_SHADOW_STRENGTH_PCT),
-				(_lightGlow, G(l => l.GlowPct), S((l, v) => l.GlowPct = v), LightSourceElement.DEFAULT_GLOW_PCT),
-				(_lightDrop, G(l => l.DropMM), S((l, v) => l.DropMM = v), LightSourceElement.DEFAULT_DROP_MM),
-				(_lightUpCone, G(l => l.UpConePct), S((l, v) => l.UpConePct = v), LightSourceElement.DEFAULT_UP_CONE_PCT),
-				(_lightUpRange, G(l => l.UpRangePct), S((l, v) => l.UpRangePct = v), LightSourceElement.DEFAULT_UP_RANGE_PCT),
-				(_lightRangeMin, G(l => l.RangeMinMM), S((l, v) => l.RangeMinMM = v), LightSourceElement.DEFAULT_RANGE_MIN_MM),
-				(_lightRangeMax, G(l => l.RangeMaxMM), S((l, v) => l.RangeMaxMM = v), LightSourceElement.DEFAULT_RANGE_MAX_MM),
-				(_lightEfficacy, G(l => l.EfficacyLmPerW), S((l, v) => l.EfficacyLmPerW = v), LightSourceElement.DEFAULT_EFFICACY_LM_PER_W),
-				(_lightLumens, G(l => l.LumensPerUnit), S((l, v) => l.LumensPerUnit = v), LightSourceElement.DEFAULT_LUMENS_PER_UNIT),
-			};
-		}
-
-		private TMP_InputField?[] LightExtraFields()
-		{
-			var bindings = LightExtraBindings();
-			var fields = new TMP_InputField?[bindings.Length];
-			for (int i = 0; i < bindings.Length; i++) fields[i] = bindings[i].field;
-			return fields;
-		}
-
-		private void OnLightShapeSelected(int index)
-		{
-			if (_target is LightSourceElement ls)
-				ls.Shape = index == 1 ? LampShape.Sphere : LampShape.Plafond;
-		}
-
-		private void OnLightShadowSelected(int index)
-		{
-			if (_target is LightSourceElement ls)
-				ls.Shadow = (LampShadow)Mathf.Clamp(index, 0, 2);
-		}
-
-		private TMP_InputField WindowFieldRow(Transform parent, string label, System.Func<bool>? visibleWhen = null)
+        private void UpdateLightAdvancedLabel()
         {
-            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 15,
-                new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
-            var field = UIFactory.CreateNumberField("F_" + label, parent, "",
-                new Vector2(FieldX, 0), new Vector2(120, FieldH), "мм");
-            if (visibleWhen != null)
-                _layout.AddFor(ElementFacet.Window, visibleWhen, RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
-            else
-                _layout.AddFor(ElementFacet.Window, RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
-            return field;
+            if (_lightAdvancedLabel != null)
+                _lightAdvancedLabel.text =
+                    $"Тонкая настройка  {(_lightAdvancedExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
         }
 
-        private TMP_InputField TriField(Transform parent, string label, float colX)
+        /// <summary>Тонкие параметры лампы: поле ↔ свойство ↔ значение «из
+        /// коробки». Их полтора десятка, и каждый нужен в четырёх местах
+        /// (Open, Apply, обновление извне, подсветка правок) — таблица держит
+        /// их синхронными вместо четырёх одинаковых простыней.</summary>
+        private (TMP_InputField? field, System.Func<LightSourceElement, int> get,
+            System.Action<LightSourceElement, int> set, int def)[] LightExtraBindings()
         {
-            var lbl = UIFactory.CreateLabel("L_" + label, parent, label, 12,
-                new Vector2(colX, 0), new Vector2(TriLabelW, TriLabelH), TextAnchor.MiddleCenter);
-            var field = UIFactory.CreateInputField("F_" + label, parent, "",
-                new Vector2(colX, 0), new Vector2(TriFieldW, FieldH));
-            _layout.AddTriColumn(lbl.rectTransform, field.GetComponent<RectTransform>());
-            return field;
+            System.Func<LightSourceElement, int> G(System.Func<LightSourceElement, int> f) => f;
+            System.Action<LightSourceElement, int> S(System.Action<LightSourceElement, int> f) => f;
+            return new[]
+            {
+                (_lightSoftness, G(l => l.SoftnessPct), S((l, v) => l.SoftnessPct = v), LightSourceElement.DEFAULT_SOFTNESS_PCT),
+                (_lightShadowStrength, G(l => l.ShadowStrengthPct), S((l, v) => l.ShadowStrengthPct = v), LightSourceElement.DEFAULT_SHADOW_STRENGTH_PCT),
+                (_lightGlow, G(l => l.GlowPct), S((l, v) => l.GlowPct = v), LightSourceElement.DEFAULT_GLOW_PCT),
+                (_lightDrop, G(l => l.DropMM), S((l, v) => l.DropMM = v), LightSourceElement.DEFAULT_DROP_MM),
+                (_lightUpCone, G(l => l.UpConePct), S((l, v) => l.UpConePct = v), LightSourceElement.DEFAULT_UP_CONE_PCT),
+                (_lightUpRange, G(l => l.UpRangePct), S((l, v) => l.UpRangePct = v), LightSourceElement.DEFAULT_UP_RANGE_PCT),
+                (_lightRangeMin, G(l => l.RangeMinMM), S((l, v) => l.RangeMinMM = v), LightSourceElement.DEFAULT_RANGE_MIN_MM),
+                (_lightRangeMax, G(l => l.RangeMaxMM), S((l, v) => l.RangeMaxMM = v), LightSourceElement.DEFAULT_RANGE_MAX_MM),
+                (_lightEfficacy, G(l => l.EfficacyLmPerW), S((l, v) => l.EfficacyLmPerW = v), LightSourceElement.DEFAULT_EFFICACY_LM_PER_W),
+                (_lightLumens, G(l => l.LumensPerUnit), S((l, v) => l.LumensPerUnit = v), LightSourceElement.DEFAULT_LUMENS_PER_UNIT),
+            };
         }
 
+        private TMP_InputField?[] LightExtraFields()
+        {
+            var bindings = LightExtraBindings();
+            var fields = new TMP_InputField?[bindings.Length];
+            for (int i = 0; i < bindings.Length; i++) fields[i] = bindings[i].field;
+            return fields;
+        }
+
+        private void OnLightShapeSelected(int index)
+        {
+            if (_target is LightSourceElement ls)
+                ls.Shape = index == 1 ? LampShape.Sphere : LampShape.Plafond;
+        }
+
+        private void OnLightShadowSelected(int index)
+        {
+            if (_target is LightSourceElement ls)
+                ls.Shadow = (LampShadow)Mathf.Clamp(index, 0, 2);
+        }
 
         private void Update()
         {
@@ -923,7 +718,7 @@ namespace KitchenDesigner.Core.UI
 
         private bool IsAnyFieldFocused()
         {
-			foreach (var f in new[] { _name, _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _edgeThickness, _x, _y, _z, _rx, _ry, _rz })
+            foreach (var f in new[] { _name, _w, _h, _d, _radius, _cutoutW, _cutoutD, _drawerWidth, _legInset, _midHeight, _sillProtrusion, _edgeThickness, _x, _y, _z, _rx, _ry, _rz })
                 if (f != null && f.isFocused) return true;
             foreach (var f in GapFields())
                 if (f != null && f.isFocused) return true;
@@ -985,29 +780,29 @@ namespace KitchenDesigner.Core.UI
             if (table != null && _legInset != null)
                 _fields.RefreshUnfocused(_legInset, table.LegInsetMM.ToString());
 
-			var radiusTable = _target as RadiusTableElement;
-			if (radiusTable != null && _legInset != null)
-				_fields.RefreshUnfocused(_legInset, radiusTable.LegInsetMM.ToString());
+            var radiusTable = _target as RadiusTableElement;
+            if (radiusTable != null && _legInset != null)
+                _fields.RefreshUnfocused(_legInset, radiusTable.LegInsetMM.ToString());
 
-			var pillar = _target as PillarElement;
-			if (pillar != null && _midHeight != null)
-				_fields.RefreshUnfocused(_midHeight, pillar.MidHeightMM.ToString());
+            var pillar = _target as PillarElement;
+            if (pillar != null && _midHeight != null)
+                _fields.RefreshUnfocused(_midHeight, pillar.MidHeightMM.ToString());
 
-			var lightRt = _target as LightSourceElement;
-			if (lightRt != null)
-			{
-				if (_lightTemp != null) _fields.RefreshUnfocused(_lightTemp, lightRt.TemperatureK.ToString());
-				if (_lightPower != null) _fields.RefreshUnfocused(_lightPower, lightRt.PowerW.ToString());
-				if (_lightDiffusion != null) _fields.RefreshUnfocused(_lightDiffusion, lightRt.DiffusionPct.ToString());
-				if (_lightBeam != null) _fields.RefreshUnfocused(_lightBeam, lightRt.BeamAngleDeg.ToString());
-				if (_lightUp != null) _fields.RefreshUnfocused(_lightUp, lightRt.UpLightPct.ToString());
-				foreach (var b in LightExtraBindings())
-					if (b.field != null) _fields.RefreshUnfocused(b.field, b.get(lightRt).ToString());
-				if (_lightShapeDropdown != null) _lightShapeDropdown.SetValueWithoutNotify((int)lightRt.Shape);
-				if (_lightShadowDropdown != null) _lightShadowDropdown.SetValueWithoutNotify((int)lightRt.Shadow);
-			}
+            var lightRt = _target as LightSourceElement;
+            if (lightRt != null)
+            {
+                if (_lightTemp != null) _fields.RefreshUnfocused(_lightTemp, lightRt.TemperatureK.ToString());
+                if (_lightPower != null) _fields.RefreshUnfocused(_lightPower, lightRt.PowerW.ToString());
+                if (_lightDiffusion != null) _fields.RefreshUnfocused(_lightDiffusion, lightRt.DiffusionPct.ToString());
+                if (_lightBeam != null) _fields.RefreshUnfocused(_lightBeam, lightRt.BeamAngleDeg.ToString());
+                if (_lightUp != null) _fields.RefreshUnfocused(_lightUp, lightRt.UpLightPct.ToString());
+                foreach (var b in LightExtraBindings())
+                    if (b.field != null) _fields.RefreshUnfocused(b.field, b.get(lightRt).ToString());
+                if (_lightShapeDropdown != null) _lightShapeDropdown.SetValueWithoutNotify((int)lightRt.Shape);
+                if (_lightShadowDropdown != null) _lightShadowDropdown.SetValueWithoutNotify((int)lightRt.Shadow);
+            }
 
-			var window = _target as WindowElement;
+            var window = _target as WindowElement;
             if (window != null && _sillProtrusion != null)
                 _fields.RefreshUnfocused(_sillProtrusion, window.SillProtrusionMM.ToString());
         }
@@ -1059,39 +854,39 @@ namespace KitchenDesigner.Core.UI
                 bool isFacade = element is FacadeElement;
                 bool isRadial = element is RadialShelfElement;
                 bool isDrawer = element is DrawerElement;
-				bool isTable = element is TableElement;
-				bool isRadiusTable = element is RadiusTableElement;
-				bool isPillar = element is PillarElement;
-				bool isWindow = element is WindowElement;
-				bool isDoor = element is DoorElement;
-			_currentIsTable = isTable || isRadiusTable;
-			_currentIsDoor = isDoor;
-				// Заголовок различает и подтипы («Сборный фасад» ≠ «Фасад») и
-				// конкретный элемент (имя после тире).
-				// У готовой модели в заголовке стоит она сама — «Варочная» ничего
-				// не сказало бы о том, что размеры залочены производителем.
-				_currentTypeName = element is CooktopElement fixedCooktop && fixedCooktop.HasFixedSize
-						? fixedCooktop.Model
-						: element is CooktopElement ? "Варочная"
-					// Духовка — всегда готовая модель, поэтому в заголовке она
-					// сама: «Духовка» умолчала бы о том, что размеры залочены.
-					: element is OvenElement ? OvenElement.MODEL
-					// Посудомойка — тоже всегда готовая модель.
-					: element is DishwasherElement ? DishwasherElement.MODEL
-					: element is SinkElement ? "Мойка"
-					: element is LightSourceElement ? "Источник света"
-					: isPillar ? "Опора"
-					: isRadiusTable ? "Радиусный стол"
-					: isTable ? "Стол"
-					: isDrawer ? DrawerConstants.GetDefaultName(((DrawerElement)element).System)
-					: isWindow ? "Окно"
-					: isDoor ? "Дверь"
-					: element is PanelElement ? "ДВП/ХДФ"
-					: isRadial ? "Радиусная полка"
-					: element is AssembledFacadeElement ? "Сборный фасад"
-					: isFacade ? "Фасад"
-					: "Деталь";
-				RefreshTitle();
+                bool isTable = element is TableElement;
+                bool isRadiusTable = element is RadiusTableElement;
+                bool isPillar = element is PillarElement;
+                bool isWindow = element is WindowElement;
+                bool isDoor = element is DoorElement;
+            _currentIsTable = isTable || isRadiusTable;
+            _currentIsDoor = isDoor;
+                // Заголовок различает и подтипы («Сборный фасад» ≠ «Фасад») и
+                // конкретный элемент (имя после тире).
+                // У готовой модели в заголовке стоит она сама — «Варочная» ничего
+                // не сказало бы о том, что размеры залочены производителем.
+                _currentTypeName = element is CooktopElement fixedCooktop && fixedCooktop.HasFixedSize
+                        ? fixedCooktop.Model
+                        : element is CooktopElement ? "Варочная"
+                    // Духовка — всегда готовая модель, поэтому в заголовке она
+                    // сама: «Духовка» умолчала бы о том, что размеры залочены.
+                    : element is OvenElement ? OvenElement.MODEL
+                    // Посудомойка — тоже всегда готовая модель.
+                    : element is DishwasherElement ? DishwasherElement.MODEL
+                    : element is SinkElement ? "Мойка"
+                    : element is LightSourceElement ? "Источник света"
+                    : isPillar ? "Опора"
+                    : isRadiusTable ? "Радиусный стол"
+                    : isTable ? "Стол"
+                    : isDrawer ? DrawerConstants.GetDefaultName(((DrawerElement)element).System)
+                    : isWindow ? "Окно"
+                    : isDoor ? "Дверь"
+                    : element is PanelElement ? "ДВП/ХДФ"
+                    : isRadial ? "Радиусная полка"
+                    : element is AssembledFacadeElement ? "Сборный фасад"
+                    : isFacade ? "Фасад"
+                    : "Деталь";
+                RefreshTitle();
                 RefreshTypeDropdown(element);
 
                 var dims = element.DimensionsMM;
@@ -1162,29 +957,29 @@ namespace KitchenDesigner.Core.UI
                 if (table != null && _legInset != null)
                     _legInset.text = table.LegInsetMM.ToString();
 
-				var radiusTable = element as RadiusTableElement;
-				if (radiusTable != null && _legInset != null)
-					_legInset.text = radiusTable.LegInsetMM.ToString();
+                var radiusTable = element as RadiusTableElement;
+                if (radiusTable != null && _legInset != null)
+                    _legInset.text = radiusTable.LegInsetMM.ToString();
 
-				var pillar = element as PillarElement;
-				if (pillar != null && _midHeight != null)
-					_midHeight.text = pillar.MidHeightMM.ToString();
+                var pillar = element as PillarElement;
+                if (pillar != null && _midHeight != null)
+                    _midHeight.text = pillar.MidHeightMM.ToString();
 
-				var lightEl = element as LightSourceElement;
-				if (lightEl != null)
-				{
-					if (_lightTemp != null) _lightTemp.text = lightEl.TemperatureK.ToString();
-					if (_lightPower != null) _lightPower.text = lightEl.PowerW.ToString();
-					if (_lightDiffusion != null) _lightDiffusion.text = lightEl.DiffusionPct.ToString();
-					if (_lightBeam != null) _lightBeam.text = lightEl.BeamAngleDeg.ToString();
-					if (_lightUp != null) _lightUp.text = lightEl.UpLightPct.ToString();
-					foreach (var b in LightExtraBindings())
-						if (b.field != null) b.field.text = b.get(lightEl).ToString();
-					if (_lightShapeDropdown != null) _lightShapeDropdown.SetValueWithoutNotify((int)lightEl.Shape);
-					if (_lightShadowDropdown != null) _lightShadowDropdown.SetValueWithoutNotify((int)lightEl.Shadow);
-				}
+                var lightEl = element as LightSourceElement;
+                if (lightEl != null)
+                {
+                    if (_lightTemp != null) _lightTemp.text = lightEl.TemperatureK.ToString();
+                    if (_lightPower != null) _lightPower.text = lightEl.PowerW.ToString();
+                    if (_lightDiffusion != null) _lightDiffusion.text = lightEl.DiffusionPct.ToString();
+                    if (_lightBeam != null) _lightBeam.text = lightEl.BeamAngleDeg.ToString();
+                    if (_lightUp != null) _lightUp.text = lightEl.UpLightPct.ToString();
+                    foreach (var b in LightExtraBindings())
+                        if (b.field != null) b.field.text = b.get(lightEl).ToString();
+                    if (_lightShapeDropdown != null) _lightShapeDropdown.SetValueWithoutNotify((int)lightEl.Shape);
+                    if (_lightShadowDropdown != null) _lightShadowDropdown.SetValueWithoutNotify((int)lightEl.Shadow);
+                }
 
-				var window = element as WindowElement;
+                var window = element as WindowElement;
                 if (window != null)
                 {
                     if (_tintDropdown != null)
@@ -1197,7 +992,7 @@ namespace KitchenDesigner.Core.UI
                         _winModeDropdown.SetValueWithoutNotify((int)window.Mode);
                 }
 
-				var door = element as DoorElement;
+                var door = element as DoorElement;
                 if (door != null)
                 {
                     if (_sashTypeDropdown != null)
@@ -1246,11 +1041,11 @@ namespace KitchenDesigner.Core.UI
 
                 // Пересчитываем раскладку под режим: секция зазоров показывается
                 // только для фасадов, радиус — только для радиусной полки, сдвиг опор — только для столов (включая радиусные), пазы — только для базовой детали, панель сама подгоняется по высоте.
-			RefreshGrooveUI();
-			RefreshEdgeUI();
-			if (element.SupportsTextureOverlays) _textures.RebuildMaterialOptions();
-			_textures.Refresh();
-			RelayoutForTarget();
+            RefreshGrooveUI();
+            RefreshEdgeUI();
+            if (element.SupportsTextureOverlays) _textures.RebuildMaterialOptions();
+            _textures.Refresh();
+            RelayoutForTarget();
 
                 RefreshTransformFields();
                 _transparentToggle!.SetIsOnWithoutNotify(element.Transparent);
@@ -1343,12 +1138,12 @@ namespace KitchenDesigner.Core.UI
             DrawerLinks.Rename(target, string.IsNullOrWhiteSpace(_name!.text) ? "Board" : _name!.text);
             target.gameObject.name = target.PartName;
 
-			var radial = target as RadialShelfElement;
-			var drawer = target as DrawerElement;
-			var pillar = target as PillarElement;
-			var table = target as TableElement;
-			var radiusTable = target as RadiusTableElement;
-			if (radial != null)
+            var radial = target as RadialShelfElement;
+            var drawer = target as DrawerElement;
+            var pillar = target as PillarElement;
+            var table = target as TableElement;
+            var radiusTable = target as RadiusTableElement;
+            if (radial != null)
             {
                 target.DimensionsMM = new Vector3Int(
                     _fields.ParseInt(_w, oldDims.x),
@@ -1412,48 +1207,48 @@ namespace KitchenDesigner.Core.UI
             if (table != null && _legInset != null)
                 table.LegInsetMM = _fields.ParseInt(_legInset, table.LegInsetMM);
 
-			if (radiusTable != null && _legInset != null)
-				radiusTable.LegInsetMM = _fields.ParseInt(_legInset, radiusTable.LegInsetMM);
+            if (radiusTable != null && _legInset != null)
+                radiusTable.LegInsetMM = _fields.ParseInt(_legInset, radiusTable.LegInsetMM);
 
-			var windowEl = target as WindowElement;
+            var windowEl = target as WindowElement;
             if (windowEl != null && _sillProtrusion != null)
                 windowEl.SillProtrusionMM = _fields.ParseInt(_sillProtrusion, windowEl.SillProtrusionMM);
 
-			var lightApp = target as LightSourceElement;
-			if (lightApp != null)
-			{
-				if (_lightTemp != null)
-				{
-					lightApp.TemperatureK = _fields.ParseInt(_lightTemp, lightApp.TemperatureK);
-					_lightTemp.text = lightApp.TemperatureK.ToString();
-				}
-				if (_lightPower != null)
-				{
-					lightApp.PowerW = _fields.ParseInt(_lightPower, lightApp.PowerW);
-					_lightPower.text = lightApp.PowerW.ToString();
-				}
-				if (_lightDiffusion != null)
-				{
-					lightApp.DiffusionPct = _fields.ParseInt(_lightDiffusion, lightApp.DiffusionPct);
-					_lightDiffusion.text = lightApp.DiffusionPct.ToString();
-				}
-				if (_lightBeam != null)
-				{
-					lightApp.BeamAngleDeg = _fields.ParseInt(_lightBeam, lightApp.BeamAngleDeg);
-					_lightBeam.text = lightApp.BeamAngleDeg.ToString();
-				}
-				if (_lightUp != null)
-				{
-					lightApp.UpLightPct = _fields.ParseInt(_lightUp, lightApp.UpLightPct);
-					_lightUp.text = lightApp.UpLightPct.ToString();
-				}
-				foreach (var b in LightExtraBindings())
-				{
-					if (b.field == null) continue;
-					b.set(lightApp, _fields.ParseInt(b.field, b.get(lightApp)));
-					b.field.text = b.get(lightApp).ToString();  // показать применённый clamp
-				}
-			}
+            var lightApp = target as LightSourceElement;
+            if (lightApp != null)
+            {
+                if (_lightTemp != null)
+                {
+                    lightApp.TemperatureK = _fields.ParseInt(_lightTemp, lightApp.TemperatureK);
+                    _lightTemp.text = lightApp.TemperatureK.ToString();
+                }
+                if (_lightPower != null)
+                {
+                    lightApp.PowerW = _fields.ParseInt(_lightPower, lightApp.PowerW);
+                    _lightPower.text = lightApp.PowerW.ToString();
+                }
+                if (_lightDiffusion != null)
+                {
+                    lightApp.DiffusionPct = _fields.ParseInt(_lightDiffusion, lightApp.DiffusionPct);
+                    _lightDiffusion.text = lightApp.DiffusionPct.ToString();
+                }
+                if (_lightBeam != null)
+                {
+                    lightApp.BeamAngleDeg = _fields.ParseInt(_lightBeam, lightApp.BeamAngleDeg);
+                    _lightBeam.text = lightApp.BeamAngleDeg.ToString();
+                }
+                if (_lightUp != null)
+                {
+                    lightApp.UpLightPct = _fields.ParseInt(_lightUp, lightApp.UpLightPct);
+                    _lightUp.text = lightApp.UpLightPct.ToString();
+                }
+                foreach (var b in LightExtraBindings())
+                {
+                    if (b.field == null) continue;
+                    b.set(lightApp, _fields.ParseInt(b.field, b.get(lightApp)));
+                    b.field.text = b.get(lightApp).ToString();  // показать применённый clamp
+                }
+            }
 
             // Сохраняем материал опор (материал столешницы применяется через дропдаун).
             if (_legsMaterialDropdown != null && _currentIsTable)
@@ -2733,22 +2528,22 @@ namespace KitchenDesigner.Core.UI
                     ? _target.GapOf(GapSides.All[i]).ToString() : "0");
             var drawerEl2 = _target as DrawerElement;
             _fields.Track(_drawerWidth, drawerEl2 != null ? drawerEl2.BoxWidth.ToString() : "400");
-			var windowEl2 = _target as WindowElement;
-			_fields.Track(_sillProtrusion, windowEl2 != null ? windowEl2.SillProtrusionMM.ToString() : "50");
-			var tableEl2 = _target as TableElement;
-			var radiusTableEl2 = _target as RadiusTableElement;
-			_fields.Track(_legInset, tableEl2 != null ? tableEl2.LegInsetMM.ToString() : (radiusTableEl2 != null ? radiusTableEl2.LegInsetMM.ToString() : "100"));
-			var pillarEl = _target as PillarElement;
-			_fields.Track(_midHeight, pillarEl != null ? pillarEl.MidHeightMM.ToString() : PillarElement.MidHeightMM_Default.ToString());
-			var lightTrack = _target as LightSourceElement;
-			_fields.Track(_lightTemp, lightTrack != null ? lightTrack.TemperatureK.ToString() : LightSourceElement.DEFAULT_TEMPERATURE_K.ToString());
-			_fields.Track(_lightPower, lightTrack != null ? lightTrack.PowerW.ToString() : LightSourceElement.DEFAULT_POWER_W.ToString());
-			_fields.Track(_lightDiffusion, lightTrack != null ? lightTrack.DiffusionPct.ToString() : LightSourceElement.DEFAULT_DIFFUSION_PCT.ToString());
-			_fields.Track(_lightBeam, lightTrack != null ? lightTrack.BeamAngleDeg.ToString() : LightSourceElement.DEFAULT_BEAM_DEG.ToString());
-			_fields.Track(_lightUp, lightTrack != null ? lightTrack.UpLightPct.ToString() : LightSourceElement.DEFAULT_UP_PCT.ToString());
-			foreach (var b in LightExtraBindings())
-				_fields.Track(b.field, lightTrack != null ? b.get(lightTrack).ToString() : b.def.ToString());
-			_fields.Track(_edgeThickness, EdgeBanding.FormatThickness(_target.EdgeThicknessMM));
+            var windowEl2 = _target as WindowElement;
+            _fields.Track(_sillProtrusion, windowEl2 != null ? windowEl2.SillProtrusionMM.ToString() : "50");
+            var tableEl2 = _target as TableElement;
+            var radiusTableEl2 = _target as RadiusTableElement;
+            _fields.Track(_legInset, tableEl2 != null ? tableEl2.LegInsetMM.ToString() : (radiusTableEl2 != null ? radiusTableEl2.LegInsetMM.ToString() : "100"));
+            var pillarEl = _target as PillarElement;
+            _fields.Track(_midHeight, pillarEl != null ? pillarEl.MidHeightMM.ToString() : PillarElement.MidHeightMM_Default.ToString());
+            var lightTrack = _target as LightSourceElement;
+            _fields.Track(_lightTemp, lightTrack != null ? lightTrack.TemperatureK.ToString() : LightSourceElement.DEFAULT_TEMPERATURE_K.ToString());
+            _fields.Track(_lightPower, lightTrack != null ? lightTrack.PowerW.ToString() : LightSourceElement.DEFAULT_POWER_W.ToString());
+            _fields.Track(_lightDiffusion, lightTrack != null ? lightTrack.DiffusionPct.ToString() : LightSourceElement.DEFAULT_DIFFUSION_PCT.ToString());
+            _fields.Track(_lightBeam, lightTrack != null ? lightTrack.BeamAngleDeg.ToString() : LightSourceElement.DEFAULT_BEAM_DEG.ToString());
+            _fields.Track(_lightUp, lightTrack != null ? lightTrack.UpLightPct.ToString() : LightSourceElement.DEFAULT_UP_PCT.ToString());
+            foreach (var b in LightExtraBindings())
+                _fields.Track(b.field, lightTrack != null ? b.get(lightTrack).ToString() : b.def.ToString());
+            _fields.Track(_edgeThickness, EdgeBanding.FormatThickness(_target.EdgeThicknessMM));
             var pos = _target.transform.position;
             _fields.Track(_x, ToMM(pos.x));
             _fields.Track(_y, ToMM(pos.y));
