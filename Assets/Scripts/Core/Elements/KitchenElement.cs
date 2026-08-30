@@ -188,6 +188,11 @@ namespace KitchenDesigner.Core
 
         public bool AlignsCutout => (CutoutRole & CutoutNeighbourRole.AlignsCutout) != 0;
 
+        public virtual ElementDisposal Disposal =>
+            GetType() == typeof(KitchenElement) ? ElementDisposal.PartPool : ElementDisposal.Destroy;
+
+        public virtual void PrepareForDestruction() { }
+
         public virtual KitchenElement InspectedElement => this;
 
         // ── Пазы ───────────────────────────────────────────────────────

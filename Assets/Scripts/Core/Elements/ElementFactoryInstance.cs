@@ -5,6 +5,16 @@ namespace KitchenDesigner.Core
 {
     public class ElementFactoryInstance : IElementFactory
     {
+        public const float DUPLICATE_OFFSET_UNITS = 0.1f;
+
+        private const int PartPoolCapacity = 20;
+        private const int PartPoolMaxSize = 100;
+        private const int FacadePoolCapacity = 10;
+        private const int FacadePoolMaxSize = 50;
+
+        private static readonly Vector3Int PooledPartDimensionsMM = new Vector3Int(800, 400, 18);
+        private const string PooledName = "(pooled)";
+
         private Material? _defaultMaterial;
         private readonly ObjectPool<GameObject> _partPool;
         private readonly ObjectPool<GameObject> _facadePool;
@@ -28,68 +38,40 @@ namespace KitchenDesigner.Core
 
         public ElementFactoryInstance()
         {
-            _partPool = new ObjectPool<GameObject>(
-                createFunc: () =>
-                {
-                    var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    go.AddComponent<KitchenElement>();
-                    var rb = go.AddComponent<Rigidbody>();
-                    rb.isKinematic = true;
-                    rb.useGravity = false;
-                    go.tag = "KitchenElement";
-                    go.SetActive(false);
-                    return go;
-                },
-                actionOnGet: (go) =>
-                {
-                    var renderer = go.GetComponent<MeshRenderer>();
-                    if (renderer != null) renderer.sharedMaterial = DefaultMaterial;
-                    var collider = go.GetComponent<BoxCollider>();
-                    if (collider != null) collider.enabled = true;
-                },
-                actionOnRelease: (go) =>
-                {
-                    go.SetActive(false);
-                    go.name = "(pooled)";
-                    RemoveCustomComponents(go);
-                    ResetComponent(go);
-                },
-                actionOnDestroy: (go) => Object.DestroyImmediate(go),
-                defaultCapacity: 20,
-                maxSize: 100
-            );
-
-            _facadePool = new ObjectPool<GameObject>(
-                createFunc: () =>
-                {
-                    var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    go.AddComponent<FacadeElement>();
-                    var rb = go.AddComponent<Rigidbody>();
-                    rb.isKinematic = true;
-                    rb.useGravity = false;
-                    go.tag = "KitchenElement";
-                    go.SetActive(false);
-                    return go;
-                },
-                actionOnGet: (go) =>
-                {
-                    var renderer = go.GetComponent<MeshRenderer>();
-                    if (renderer != null) renderer.sharedMaterial = DefaultMaterial;
-                    var collider = go.GetComponent<BoxCollider>();
-                    if (collider != null) collider.enabled = true;
-                },
-                actionOnRelease: (go) =>
-                {
-                    go.SetActive(false);
-                    go.name = "(pooled)";
-                    RemoveCustomComponents(go);
-                    ResetComponent(go);
-                },
-                actionOnDestroy: (go) => Object.DestroyImmediate(go),
-                defaultCapacity: 10,
-                maxSize: 50
-            );
+            _partPool = NewPool<KitchenElement>(PartPoolCapacity, PartPoolMaxSize);
+            _facadePool = NewPool<FacadeElement>(FacadePoolCapacity, FacadePoolMaxSize);
         }
+
+        private ObjectPool<GameObject> NewPool<T>(int capacity, int maxSize) where T : KitchenElement =>
+            new ObjectPool<GameObject>(
+                createFunc: () =>
+                {
+                    var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    go.AddComponent<T>();
+                    var rb = go.AddComponent<Rigidbody>();
+                    rb.isKinematic = true;
+                    rb.useGravity = false;
+                    go.tag = ElementRoot.ELEMENT_TAG;
+                    go.SetActive(false);
+                    return go;
+                },
+                actionOnGet: go =>
+                {
+                    var renderer = go.GetComponent<MeshRenderer>();
+                    if (renderer != null) renderer.sharedMaterial = DefaultMaterial;
+                    var collider = go.GetComponent<BoxCollider>();
+                    if (collider != null) collider.enabled = true;
+                },
+                actionOnRelease: go =>
+                {
+                    go.SetActive(false);
+                    go.name = PooledName;
+                    RemoveCustomComponents(go);
+                    ResetComponent(go);
+                },
+                actionOnDestroy: go => Object.DestroyImmediate(go),
+                defaultCapacity: capacity,
+                maxSize: maxSize);
 
         private void RemoveCustomComponents(GameObject go)
         {
@@ -105,12 +87,10 @@ namespace KitchenDesigner.Core
         {
             var el = go.GetComponent<KitchenElement>();
             if (el == null) return;
-            el.PartName = "(pooled)";
-            el.DimensionsMM = new Vector3Int(800, 400, 18);
+            el.PartName = PooledName;
+            el.DimensionsMM = PooledPartDimensionsMM;
             el.Movable = true;
             el.GroupId = 0;
-            // Вернуть встроенный куб и один материал: иначе следующая деталь из
-            // пула досталась бы с чужими пазами и проёмом под врезную технику.
             el.ClearCutouts();
             el.ClearGrooves();
             el.EdgeBandingEnabled = true;
@@ -131,12 +111,7 @@ namespace KitchenDesigner.Core
             element.Movable = true;
 
             go.SetActive(true);
-            PartRegistry.Register(element);
-
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
-
-            return go;
+            return ElementRoot.Publish(go, element);
         }
 
         public GameObject CreatePreset(int presetIndex, Vector3 position)
@@ -145,290 +120,56 @@ namespace KitchenDesigner.Core
                 presetIndex = 0;
 
             var dims = AppConstants.PRESET_DIMENSIONS_MM[presetIndex];
-            var name = $"Board {dims.x}x{dims.y}x{dims.z}";
-            return CreatePart(dims, name, position);
+            return CreatePart(dims, $"Board {dims.x}x{dims.y}x{dims.z}", position);
         }
 
-        public GameObject CreateRadialShelf(int widthMM, int depthMM, int thicknessMM, int cornerRadiusMM, string name, Vector3 position)
+        public GameObject CreateRadialShelf(int widthMM, int depthMM, int thicknessMM,
+            int cornerRadiusMM, string name, Vector3 position)
         {
             widthMM = Mathf.Max(1, widthMM);
             depthMM = Mathf.Max(1, depthMM);
             thicknessMM = Mathf.Max(1, thicknessMM);
 
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Радиусная полка" : name);
-            go.tag = "KitchenElement";
-            go.transform.position = position;
-
-            var rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
-
-            // Удаляем стандартный BoxCollider — заменим на MeshCollider в ApplyDimensions.
-            var boxCollider = go.GetComponent<BoxCollider>();
-            if (boxCollider != null) Object.DestroyImmediate(boxCollider);
+            var go = ElementRoot.NewCube(name, "Радиусная полка", position);
+            var box = go.GetComponent<BoxCollider>();
+            if (box != null) Object.DestroyImmediate(box);
 
             var shelf = go.AddComponent<RadialShelfElement>();
             shelf.PartName = go.name;
             shelf.DimensionsMM = new Vector3Int(widthMM, thicknessMM, depthMM);
-            shelf.CornerRadius = cornerRadiusMM; // клампится к 1..min(ширина, глубина)
+            shelf.CornerRadius = cornerRadiusMM;
 
             MaterialManager.ApplyById(shelf, MaterialCatalog.DefaultId);
-            PartRegistry.Register(shelf);
-
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
-
-            return go;
+            return ElementRoot.Publish(go, shelf);
         }
 
-        /// <summary>Дубль элемента. Имя копии — имя оригинала: занятость его
-        /// разрешит ElementNaming внутри фабрики, добавив суффикс «_1», «_2», …
-        /// Явный суффикс здесь не нужен и вреден — « (copy)» после чистки стал бы
-        /// «_copy», и копия копии росла бы в «X_copy_copy».</summary>
         public GameObject Duplicate(KitchenElement source)
         {
             if (source == null) return null!;
-
-            var dims = source.DimensionsMM;
-            var offset = source.transform.position + new Vector3(0.1f, 0, 0);
-
-            if (source is DrawerElement srcDrawer)
-            {
-                var go = CreateDrawer(srcDrawer.Type, srcDrawer.NominalLength, srcDrawer.Color, srcDrawer.InternalWidth, source.PartName, offset, srcDrawer.System);
-                go.transform.rotation = source.transform.rotation;
-                var copy = go.GetComponent<DrawerElement>();
-                if (copy != null)
-                {
-                    copy.IsDouble = srcDrawer.IsDouble;
-                    copy.IsUpperDrawer = srcDrawer.IsUpperDrawer;
-                    // Связи по именам НЕ копируем: копия «украла» бы пару/фасад
-                    // оригинала (цикл копии двигал бы чужой парный ящик).
-                }
-                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
-                return go;
-            }
-
-            if (source is AssembledFacadeElement assembled)
-            {
-                var go = CreateAssembledFacade(dims, source.PartName, offset, assembled.Fill);
-                go.transform.rotation = source.transform.rotation;
-                var copy = go.GetComponent<AssembledFacadeElement>();
-                if (copy != null)
-                {
-                    copy.Mode = assembled.Mode;
-                    copy.GrooveCount = assembled.GrooveCount;
-                    // Фабрика сборного фасада не принимает зазоры — копируем явно,
-                    // иначе дубль терял их (обычный фасад получает зазоры в CreateFacade).
-                    foreach (var side in GapSides.All)
-                        copy.SetGap(side, assembled.GapOf(side));
-                }
-                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
-                return go;
-            }
-
-            if (source is RadialShelfElement radial)
-            {
-                var go = CreateRadialShelf(dims.x, dims.z, dims.y, radial.CornerRadius, source.PartName, offset);
-                go.transform.rotation = source.transform.rotation;
-                var copyRadial = go.GetComponent<RadialShelfElement>();
-                if (copyRadial != null)
-                    foreach (var side in GapSides.All)
-                        copyRadial.SetGap(side, radial.GapOf(side));
-                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
-                return go;
-            }
-
-			if (source is FloorElement)
-			{
-				var go = CreateFloor(dims, source.PartName, offset);
-				go.transform.rotation = source.transform.rotation;
-				MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
-				return go;
-			}
-
-			if (source is LightSourceElement)
-			{
-				var go = CreateLightSource(source.PartName, offset);
-				go.transform.rotation = source.transform.rotation;
-				return go;
-			}
-
-			if (source is SinkElement)
-			{
-				// Привязку к детали копия найдёт сама (SnapToPart) — переносить
-				// имя хозяина нельзя: копия «украла» бы проём оригинала.
-				var go = CreateSink(source.PartName, offset);
-				go.transform.rotation = source.transform.rotation;
-				return go;
-			}
-
-			if (source is CooktopElement srcCooktop)
-			{
-				// Как и у мойки, привязку копия найдёт сама (SnapToPart) — имя
-				// хозяина не переносим. А вот габариты и вырез редактируемые,
-				// поэтому копия обязана унаследовать их, иначе «дублировать»
-				// молча возвращало бы дефолтную панель.
-				var go = CreateCooktop(source.PartName, offset, srcCooktop.Model);
-				go.transform.rotation = source.transform.rotation;
-				var copy = go.GetComponent<CooktopElement>();
-				copy.DimensionsMM = srcCooktop.DimensionsMM;
-				copy.CutoutWidthMM = srcCooktop.CutoutWidthMM;
-				copy.CutoutDepthMM = srcCooktop.CutoutDepthMM;
-				MaterialManager.ApplyById(copy, source.MaterialId);
-				return go;
-			}
-
-			// Духовка целиком описывается своей моделью — копии достаточно
-			// повторить тип: габариты, вырезы и цвета у неё производные.
-			if (source is OvenElement)
-			{
-				var go = CreateOven(source.PartName, offset);
-				go.transform.rotation = source.transform.rotation;
-				return go;
-			}
-
-			// Посудомойка — то же самое, но фасад копии НЕ достаётся: он
-			// пристёгнут к оригиналу и физически один. Скопировав имя, мы
-			// получили бы две машины, спорящие за одну дверцу (так же ведёт
-			// себя дубль ящика — см. DrawerFactoryTests).
-			if (source is DishwasherElement)
-			{
-				var go = CreateDishwasher(source.PartName, offset);
-				go.transform.rotation = source.transform.rotation;
-				return go;
-			}
-
-			if (source is PillarElement srcPillar)
-			{
-				var go = CreatePillar(srcPillar.MidHeightMM, source.PartName, offset);
-				go.transform.rotation = source.transform.rotation;
-				MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
-				return go;
-			}
-
-			if (source is TableElement tbl)
-			{
-				var go = CreateTable(dims, source.PartName, offset);
-				go.transform.rotation = source.transform.rotation;
-				MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
-				return go;
-			}
-
-			if (source is RadiusTableElement rtSrc)
-			{
-				var go = CreateRadiusTable(dims, source.PartName, offset);
-				go.transform.rotation = source.transform.rotation;
-				var copy = go.GetComponent<RadiusTableElement>();
-				if (copy != null)
-				{
-					copy.LegInsetMM = rtSrc.LegInsetMM;
-					copy.TabletopMaterialId = rtSrc.TabletopMaterialId;
-					copy.LegsMaterialId = rtSrc.LegsMaterialId;
-				}
-				MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
-				return go;
-			}
-
-			if (source is WindowElement srcWin)
-            {
-                var go = CreateWindow(dims, source.PartName, offset, srcWin.Tint, srcWin.SillProtrusionMM);
-                go.transform.rotation = source.transform.rotation;
-                var copy = go.GetComponent<WindowElement>();
-                if (copy != null) { copy.Mode = srcWin.Mode; }
-                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
-                return go;
-            }
-
-			if (source is DoorElement srcDoor)
-            {
-                var go = CreateDoor(dims, source.PartName, offset, srcDoor.SashType);
-                go.transform.rotation = source.transform.rotation;
-                var copy = go.GetComponent<DoorElement>();
-                if (copy != null) { copy.Mode = srcDoor.Mode; }
-                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
-                return go;
-            }
-
-            var facade = source as FacadeElement;
-            if (facade != null)
-            {
-                var go = CreateFacade(dims, source.PartName, offset,
-                    facade.GapLeft, facade.GapRight, facade.GapTop, facade.GapBottom,
-                    facade.GapFront, facade.GapBack);
-                go.transform.rotation = source.transform.rotation;
-                var copyFacade = go.GetComponent<FacadeElement>();
-                if (copyFacade != null)
-                    copyFacade.Mode = facade.Mode;
-                MaterialManager.ApplyById(go.GetComponent<KitchenElement>(), source.MaterialId);
-                return go;
-            }
-
-            var go2 = CreatePart(dims, source.PartName, offset);
-            go2.transform.rotation = source.transform.rotation;
-
-            if (source.GetComponent<Wall>() != null)
-            {
-                go2.AddComponent<Wall>();
-                var wallElement = go2.GetComponent<KitchenElement>();
-                if (wallElement != null)
-                    MaterialManager.ApplyById(wallElement, source.MaterialId);
-            }
-
-            var copyPart = go2.GetComponent<KitchenElement>();
-            if (copyPart != null)
-            {
-                MaterialManager.ApplyById(copyPart, source.MaterialId);
-                if (copyPart.SupportsGaps && source.SupportsGaps)
-                    foreach (var side in GapSides.All)
-                        copyPart.SetGap(side, source.GapOf(side));
-                if (copyPart.SupportsGrooves)
-                {
-                    copyPart.SetGrooves(source.Grooves);
-                    var edges = EdgeBandingState.Of(source);
-                    copyPart.EdgeBandingEnabled = edges.enabled;
-                    copyPart.EdgeThicknessMM = edges.thicknessMM;
-                    copyPart.EdgeManualMask = edges.manualMask;
-                }
-                // Накладки текстур принадлежат стене/полу, а не детали — свой
-                // флаг поддержки и своя ветка.
-                if (copyPart.SupportsTextureOverlays)
-                    copyPart.SetTextureOverlays(source.TextureOverlays);
-            }
-
-            return go2;
+            var offset = source.transform.position + new Vector3(DUPLICATE_OFFSET_UNITS, 0f, 0f);
+            return ElementDuplicators.Copy(this, source, offset);
         }
 
         public GameObject CreateWall(Vector3Int dimensionsMM, string name, Vector3 position)
         {
-            name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Wall" : name);
-            var go = new GameObject(name);
-            go.tag = "KitchenElement";
-            go.transform.position = position;
+            var go = ElementRoot.NewEmpty(name, "Wall", position);
 
             var mf = go.AddComponent<MeshFilter>();
-            var mr = go.AddComponent<MeshRenderer>();
-            mf.sharedMesh = WallMeshBuilder.Build(new System.Collections.Generic.List<WallMeshBuilder.WindowCutout>());
+            go.AddComponent<MeshRenderer>();
+            mf.sharedMesh = WallMeshBuilder.Build(
+                new System.Collections.Generic.List<WallMeshBuilder.WindowCutout>());
 
             var el = go.AddComponent<KitchenElement>();
-            el.PartName = name;
+            el.PartName = go.name;
             el.DimensionsMM = dimensionsMM;
             MaterialManager.ApplyById(el, MaterialCatalog.DefaultId);
-
-            var rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
 
             var collider = go.AddComponent<MeshCollider>();
             collider.sharedMesh = mf.sharedMesh;
             collider.convex = false;
 
             go.AddComponent<Wall>();
-
-            PartRegistry.Register(el);
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
-            return go;
+            return ElementRoot.Publish(go, el);
         }
 
         public GameObject CreateFacade(Vector3Int dimensionsMM, string name, Vector3 position,
@@ -447,36 +188,19 @@ namespace KitchenDesigner.Core
             facade.GapRight = gapRight;
             facade.GapTop = gapTop;
             facade.GapBottom = gapBottom;
-            // Фасад приходит из пула — зазоры по толщине выставляем явно, иначе
-            // дверца унаследовала бы их от прошлой жизни объекта.
             facade.GapFront = gapFront;
             facade.GapBack = gapBack;
 
             go.SetActive(true);
-            PartRegistry.Register(facade);
-
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
-
-            return go;
+            return ElementRoot.Publish(go, facade);
         }
 
-        /// <summary>ДВП/ХДФ — вкладная панель с технологическим зазором. Пул не
-        /// используем: панель отличается от доски компонентом, а пул деталей
-        /// раздаёт KitchenElement.</summary>
         public GameObject CreatePanel(Vector3Int dimensionsMM, string name, Vector3 position,
             int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
             int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM,
             int gapFront = PanelElement.DEFAULT_GAP_MM, int gapBack = PanelElement.DEFAULT_GAP_MM)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "ДВП/ХДФ" : name);
-            go.tag = "KitchenElement";
-            go.transform.position = position;
-
-            var rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
+            var go = ElementRoot.NewCube(name, "ДВП/ХДФ", position);
 
             var panel = go.AddComponent<PanelElement>();
             panel.PartName = go.name;
@@ -489,57 +213,30 @@ namespace KitchenDesigner.Core
             panel.GapBack = gapBack;
 
             MaterialManager.ApplyById(panel, MaterialCatalog.DefaultId);
-            PartRegistry.Register(panel);
-
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
-
-            return go;
+            return ElementRoot.Publish(go, panel);
         }
 
         public GameObject CreateAssembledFacade(Vector3Int dimensionsMM, string name, Vector3 position,
             AssembledFill fill = AssembledFill.Blind)
         {
-            // Сборный фасад НЕ пулим: процедурный меш + дочерние объекты не переживают
-            // сброс пула. Создаём свежий GameObject по образцу пула деталей.
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Сборный фасад" : name);
-            go.tag = "KitchenElement";
-            go.transform.position = position;
-
-            var rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
+            var go = ElementRoot.NewCube(name, "Сборный фасад", position);
 
             var facade = go.AddComponent<AssembledFacadeElement>();
             facade.PartName = go.name;
-            facade.DimensionsMM = dimensionsMM; // ApplyDimensions → RebuildMesh
+            facade.DimensionsMM = dimensionsMM;
             facade.Fill = fill;
-            MaterialManager.ApplyById(facade, facade.MaterialId); // декор в сабмеш 0
+            MaterialManager.ApplyById(facade, facade.MaterialId);
 
-            PartRegistry.Register(facade);
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
-
-            return go;
+            return ElementRoot.Publish(go, facade);
         }
 
-        public GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color, int internalWidth, string name, Vector3 position,
-            DrawerSystem system = DrawerSystem.Gtv)
+        public GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color,
+            int internalWidth, string name, Vector3 position, DrawerSystem system = DrawerSystem.Gtv)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? DrawerConstants.GetDefaultName(system) : name);
-            go.tag = "KitchenElement";
-            go.transform.position = position;
-
-            var rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
+            var go = ElementRoot.NewCube(name, DrawerConstants.GetDefaultName(system), position);
 
             var drawer = go.AddComponent<DrawerElement>();
             drawer.PartName = go.name;
-            // Систему ставим ДО Type: ApplyDimensions/RebuildMesh должны сразу
-            // собрать короб нужного раскроя (GTV или Movento).
             drawer.System = system;
             drawer.Type = type;
             drawer.NominalLength = nominalLength;
@@ -547,331 +244,167 @@ namespace KitchenDesigner.Core
             drawer.Color = color;
 
             MaterialManager.ApplyById(drawer, DrawerConstants.GetColorMaterialId(color));
-            PartRegistry.Register(drawer);
-
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
-
-            return go;
+            return ElementRoot.Publish(go, drawer);
         }
 
         public GameObject CreateTable(Vector3Int dimensionsMM, string name, Vector3 position)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Прямоугольный стол" : name);
-            go.tag = "KitchenElement";
-            go.transform.position = position;
-
-            var rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
-
-            var boxCollider = go.GetComponent<BoxCollider>();
-            if (boxCollider != null) Object.DestroyImmediate(boxCollider);
-
-            var meshCollider = go.AddComponent<MeshCollider>();
-            meshCollider.convex = false;
+            var go = ElementRoot.NewCube(name, "Прямоугольный стол", position);
+            ElementRoot.SwapBoxColliderForMeshCollider(go);
 
             var table = go.AddComponent<TableElement>();
             table.PartName = go.name;
             table.DimensionsMM = dimensionsMM;
 
-            if (DefaultMaterial != null)
-                table.SetMaterial(DefaultMaterial);
-
-            PartRegistry.Register(table);
-
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
-
-            return go;
+            if (DefaultMaterial != null) table.SetMaterial(DefaultMaterial);
+            return ElementRoot.Publish(go, table);
         }
 
-		public GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position)
-		{
-			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Радиусный стол" : name));
-			go.tag = "KitchenElement";
-			go.transform.position = position;
+        public GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Радиусный стол", position);
 
-			var rb = go.AddComponent<Rigidbody>();
-			rb.isKinematic = true;
-			rb.useGravity = false;
+            var radiusTable = go.AddComponent<RadiusTableElement>();
+            radiusTable.PartName = go.name;
+            radiusTable.DimensionsMM = dimensionsMM;
 
-			var radiusTable = go.AddComponent<RadiusTableElement>();
-			radiusTable.PartName = go.name;
-			radiusTable.DimensionsMM = dimensionsMM;
+            if (DefaultMaterial != null) radiusTable.SetMaterial(DefaultMaterial);
+            return ElementRoot.Publish(go, radiusTable);
+        }
 
-			if (DefaultMaterial != null)
-				radiusTable.SetMaterial(DefaultMaterial);
+        public GameObject CreatePillar(int midHeightMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewCube(name, "Опора", position);
+            ElementRoot.SwapBoxColliderForMeshCollider(go);
 
-			PartRegistry.Register(radiusTable);
+            var pillar = go.AddComponent<PillarElement>();
+            pillar.PartName = go.name;
+            pillar.MidHeightMM = midHeightMM;
+            pillar.DimensionsMM = new Vector3Int(
+                PillarElement.TopDiameterMM, pillar.TotalHeightMM, PillarElement.TopDiameterMM);
 
-			if (ElementHighlighter.Instance != null)
-				ElementHighlighter.Instance.RefreshHighlights();
+            if (DefaultMaterial != null) MaterialManager.ApplyById(pillar, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(go, pillar);
+        }
 
-			return go;
-		}
+        public GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewCube(name, "Пол", position);
 
-		public GameObject CreatePillar(int midHeightMM, string name, Vector3 position)
-		{
-			var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Опора" : name);
-			go.tag = "KitchenElement";
-			go.transform.position = position;
+            var floor = go.AddComponent<FloorElement>();
+            floor.PartName = go.name;
+            floor.DimensionsMM = dimensionsMM;
+            floor.Movable = true;
 
-			var rb = go.AddComponent<Rigidbody>();
-			rb.isKinematic = true;
-			rb.useGravity = false;
+            MaterialManager.ApplyById(floor, MaterialCatalog.DefaultId);
+            FloorElement.RefreshBasePlateVisibility();
 
-			var boxCollider = go.GetComponent<BoxCollider>();
-			if (boxCollider != null) Object.DestroyImmediate(boxCollider);
+            return ElementRoot.Publish(go, floor);
+        }
 
-			var meshCollider = go.AddComponent<MeshCollider>();
-			meshCollider.convex = false;
+        public GameObject CreateLightSource(string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Источник света", position);
 
-			var pillar = go.AddComponent<PillarElement>();
-			pillar.PartName = go.name;
-			pillar.MidHeightMM = midHeightMM;
-			pillar.DimensionsMM = new Vector3Int(PillarElement.TopDiameterMM, pillar.TotalHeightMM, PillarElement.TopDiameterMM);
+            var mf = go.AddComponent<MeshFilter>();
+            mf.sharedMesh = Resources.GetBuiltinResource<Mesh>("New-Sphere.fbx");
+            go.AddComponent<MeshRenderer>();
+            go.AddComponent<SphereCollider>();
 
-			if (DefaultMaterial != null)
-				MaterialManager.ApplyById(pillar, MaterialCatalog.DefaultId);
+            var lamp = go.AddComponent<LightSourceElement>();
+            lamp.PartName = go.name;
+            lamp.DimensionsMM = new Vector3Int(
+                LightSourceElement.DEFAULT_SIZE_MM,
+                LightSourceElement.DEFAULT_SIZE_MM,
+                LightSourceElement.DEFAULT_SIZE_MM);
+            lamp.Movable = true;
+            lamp.EnsureLight();
+            lamp.SyncLightState();
 
-			PartRegistry.Register(pillar);
+            return ElementRoot.Publish(go, lamp);
+        }
 
-			if (ElementHighlighter.Instance != null)
-				ElementHighlighter.Instance.RefreshHighlights();
+        public GameObject CreateSink(string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Мойка", position);
 
-			return go;
-		}
+            var sink = go.AddComponent<SinkElement>();
+            sink.PartName = go.name;
+            sink.DimensionsMM = new Vector3Int(
+                SinkElement.OUTER_WIDTH_MM, SinkElement.TotalHeightMM, SinkElement.OUTER_DEPTH_MM);
+            sink.Movable = true;
 
-		public GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position)
-		{
-			var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			go.name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Пол" : name);
-			go.tag = "KitchenElement";
-			go.transform.position = position;
+            return ElementRoot.Publish(go, sink);
+        }
 
-			var rb = go.AddComponent<Rigidbody>();
-			rb.isKinematic = true;
-			rb.useGravity = false;
+        public GameObject CreateCooktop(string name, Vector3 position, string model = "")
+        {
+            var go = ElementRoot.NewEmpty(name, "Варочная", position);
 
-			var floor = go.AddComponent<FloorElement>();
-			floor.PartName = go.name;
-			floor.DimensionsMM = dimensionsMM;
-			floor.Movable = true;
+            var cooktop = go.AddComponent<CooktopElement>();
+            cooktop.PartName = go.name;
+            cooktop.Model = model ?? "";
+            var modelDims = CooktopElement.ModelDimensionsMM(cooktop.Model);
+            cooktop.DimensionsMM = modelDims.x > 0
+                ? modelDims
+                : new Vector3Int(CooktopElement.DEFAULT_WIDTH_MM,
+                    CooktopElement.DEFAULT_HEIGHT_MM, CooktopElement.DEFAULT_DEPTH_MM);
+            cooktop.Movable = true;
 
-			MaterialManager.ApplyById(floor, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(go, cooktop);
+        }
 
-			FloorElement.RefreshBasePlateVisibility();
+        public GameObject CreateOven(string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Духовка", position);
 
-			PartRegistry.Register(floor);
+            var oven = go.AddComponent<OvenElement>();
+            oven.PartName = go.name;
+            oven.DimensionsMM = OvenElement.ModelDimensionsMM;
+            oven.Movable = true;
 
-			if (ElementHighlighter.Instance != null)
-				ElementHighlighter.Instance.RefreshHighlights();
+            return ElementRoot.Publish(go, oven);
+        }
 
-			return go;
-		}
+        public GameObject CreateDishwasher(string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Посудомойка", position);
 
-		public GameObject CreateLightSource(string name, Vector3 position)
-		{
-			// НЕ CreatePrimitive(Sphere): SphereCollider больше нигде не
-			// используется, и в WebGL-сборке линкер вырезает его стриппингом —
-			// CreatePrimitive падает («class 'SphereCollider' doesn't exist»).
-			// Собираем плафон вручную: явный AddComponent<SphereCollider>()
-			// заставляет линкер сохранить класс.
-			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Источник света" : name));
-			go.tag = "KitchenElement";
-			go.transform.position = position;
+            var dishwasher = go.AddComponent<DishwasherElement>();
+            dishwasher.PartName = go.name;
+            dishwasher.DimensionsMM = DishwasherElement.ModelDimensionsMM;
+            dishwasher.Movable = true;
 
-			var mf = go.AddComponent<MeshFilter>();
-			mf.sharedMesh = Resources.GetBuiltinResource<Mesh>("New-Sphere.fbx");
-			go.AddComponent<MeshRenderer>();
-			go.AddComponent<SphereCollider>();
+            return ElementRoot.Publish(go, dishwasher);
+        }
 
-			var rb = go.AddComponent<Rigidbody>();
-			rb.isKinematic = true;
-			rb.useGravity = false;
-
-			var lamp = go.AddComponent<LightSourceElement>();
-			lamp.PartName = go.name;
-			lamp.DimensionsMM = new Vector3Int(
-				LightSourceElement.DEFAULT_SIZE_MM,
-				LightSourceElement.DEFAULT_SIZE_MM,
-				LightSourceElement.DEFAULT_SIZE_MM);
-			lamp.Movable = true;
-			lamp.EnsureLight();   // создаёт свет и назначает собственный эмиссивный плафон
-			lamp.SyncLightState();
-
-			PartRegistry.Register(lamp);
-
-			if (ElementHighlighter.Instance != null)
-				ElementHighlighter.Instance.RefreshHighlights();
-
-			return go;
-		}
-
-		/// <summary>Врезная мойка: корень пустой (единичный масштаб), вся геометрия —
-		/// дочерние примитивы, как у окна. Материал свой (нержавейка), поэтому
-		/// MaterialManager к ней не применяется.</summary>
-		public GameObject CreateSink(string name, Vector3 position)
-		{
-			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Мойка" : name));
-			go.tag = "KitchenElement";
-			go.transform.position = position;
-
-			var rb = go.AddComponent<Rigidbody>();
-			rb.isKinematic = true;
-			rb.useGravity = false;
-
-			// Коллайдер (BoxCollider по габаритам чаши) создаёт сама мойка в
-			// ApplyDimensions — корневой масштаб единичный.
-			var sink = go.AddComponent<SinkElement>();
-			sink.PartName = go.name;
-			sink.DimensionsMM = new Vector3Int(
-				SinkElement.OUTER_WIDTH_MM, SinkElement.TotalHeightMM, SinkElement.OUTER_DEPTH_MM);
-			sink.Movable = true;
-
-			PartRegistry.Register(sink);
-
-			if (ElementHighlighter.Instance != null)
-				ElementHighlighter.Instance.RefreshHighlights();
-
-			return go;
-		}
-
-		public GameObject CreateCooktop(string name, Vector3 position, string model = "")
-		{
-			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Варочная" : name));
-			go.tag = "KitchenElement";
-			go.transform.position = position;
-
-			var rb = go.AddComponent<Rigidbody>();
-			rb.isKinematic = true;
-			rb.useGravity = false;
-
-			var cooktop = go.AddComponent<CooktopElement>();
-			cooktop.PartName = go.name;
-			// Модель ДО габаритов: у готовой модели размеры и вырез приходят из
-			// её таблицы, а присвоение DimensionsMM их только подтверждает.
-			cooktop.Model = model ?? "";
-			var modelDims = CooktopElement.ModelDimensionsMM(cooktop.Model);
-			cooktop.DimensionsMM = modelDims.x > 0
-				? modelDims
-				: new Vector3Int(
-					CooktopElement.DEFAULT_WIDTH_MM, CooktopElement.DEFAULT_HEIGHT_MM, CooktopElement.DEFAULT_DEPTH_MM);
-			cooktop.Movable = true;
-
-			PartRegistry.Register(cooktop);
-
-			if (ElementHighlighter.Instance != null)
-				ElementHighlighter.Instance.RefreshHighlights();
-
-			return go;
-		}
-
-		/// <summary>Духовой шкаф: корневой масштаб единичный, вся геометрия —
-		/// дочерние коробки, коллайдер по габариту ставит сам OvenElement в
-		/// ApplyDimensions. Размеры не параметр: их даёт модель.</summary>
-		public GameObject CreateOven(string name, Vector3 position)
-		{
-			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Духовка" : name));
-			go.tag = "KitchenElement";
-			go.transform.position = position;
-
-			var rb = go.AddComponent<Rigidbody>();
-			rb.isKinematic = true;
-			rb.useGravity = false;
-
-			var oven = go.AddComponent<OvenElement>();
-			oven.PartName = go.name;
-			oven.DimensionsMM = OvenElement.ModelDimensionsMM;
-			oven.Movable = true;
-
-			PartRegistry.Register(oven);
-
-			if (ElementHighlighter.Instance != null)
-				ElementHighlighter.Instance.RefreshHighlights();
-
-			return go;
-		}
-
-		/// <summary>Посудомоечная машина: корневой масштаб единичный, вся
-		/// геометрия — дочерние коробки, коллайдер по габариту ставит сам
-		/// DishwasherElement в ApplyDimensions. Фасад НЕ создаётся: он
-		/// пристёгивается отдельным элементом по имени.</summary>
-		public GameObject CreateDishwasher(string name, Vector3 position)
-		{
-			var go = new GameObject(ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Посудомойка" : name));
-			go.tag = "KitchenElement";
-			go.transform.position = position;
-
-			var rb = go.AddComponent<Rigidbody>();
-			rb.isKinematic = true;
-			rb.useGravity = false;
-
-			var dishwasher = go.AddComponent<DishwasherElement>();
-			dishwasher.PartName = go.name;
-			dishwasher.DimensionsMM = DishwasherElement.ModelDimensionsMM;
-			dishwasher.Movable = true;
-
-			PartRegistry.Register(dishwasher);
-
-			if (ElementHighlighter.Instance != null)
-				ElementHighlighter.Instance.RefreshHighlights();
-
-			return go;
-		}
-
-		public GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
+        public GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50)
         {
-            name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Window" : name);
-            var go = new GameObject(name);
-            go.tag = "KitchenElement";
-            go.transform.position = position;
+            var go = ElementRoot.NewEmpty(name, "Window", position);
 
-            var rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
-
-            // Коллайдер (BoxCollider по габаритам) создаёт сам WindowElement в
-            // ApplyDimensions — корневой масштаб окна единичный.
             var window = go.AddComponent<WindowElement>();
-            window.PartName = name;
+            window.PartName = go.name;
             window.DimensionsMM = dimensionsMM;
             window.Tint = tint;
             window.SillProtrusionMM = sillProtrusionMM;
             MaterialManager.ApplyById(window, MaterialCatalog.DefaultId);
 
-            PartRegistry.Register(window);
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
-            return go;
+            return ElementRoot.Publish(go, window);
         }
 
         public GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position,
             DoorSashType sashType = DoorSashType.Glass)
         {
-            name = ElementNaming.Normalize(string.IsNullOrEmpty(name) ? "Door" : name);
-            var go = new GameObject(name);
-            go.tag = "KitchenElement";
-            go.transform.position = position;
-
-            var rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
+            var go = ElementRoot.NewEmpty(name, "Door", position);
 
             var door = go.AddComponent<DoorElement>();
-            door.PartName = name;
+            door.PartName = go.name;
             door.DimensionsMM = dimensionsMM;
             door.SashType = sashType;
             MaterialManager.ApplyById(door, MaterialCatalog.DefaultId);
 
-            PartRegistry.Register(door);
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
-            return go;
+            return ElementRoot.Publish(go, door);
         }
 
         public void DestroyPart(GameObject go)
@@ -889,88 +422,28 @@ namespace KitchenDesigner.Core
         public void DestroyElement(GameObject go)
         {
             if (go == null) return;
-			var pillar = go.GetComponent<PillarElement>();
-			if (pillar != null)
-			{
-				PartRegistry.Unregister(pillar);
-				if (Application.isPlaying)
-					Object.Destroy(go);
-				else
-					Object.DestroyImmediate(go);
-				return;
-			}
-			var table = go.GetComponent<TableElement>();
-			if (table != null)
-			{
-				table.DestroyChildren();
-				PartRegistry.Unregister(table);
-				if (Application.isPlaying)
-					Object.Destroy(go);
-				else
-					Object.DestroyImmediate(go);
-				return;
-			}
-			var rTable = go.GetComponent<RadiusTableElement>();
-			if (rTable != null)
-			{
-				rTable.DestroyChildren();
-				PartRegistry.Unregister(rTable);
-				if (Application.isPlaying)
-					Object.Destroy(go);
-				else
-					Object.DestroyImmediate(go);
-				return;
-			}
-			var sink = go.GetComponent<SinkElement>();
-			if (sink != null)
-			{
-				// Проём в столешнице снимаем до уничтожения — иначе деталь
-				// осталась бы с дырой от несуществующей мойки.
-				sink.UnregisterFromPart();
-				sink.DestroyChildren();
-				PartRegistry.Unregister(sink);
-				if (Application.isPlaying)
-					Object.Destroy(go);
-				else
-					Object.DestroyImmediate(go);
-				return;
-			}
-			var window = go.GetComponent<WindowElement>();
-            if (window != null)
+
+            var element = go.GetComponent<KitchenElement>();
+            if (element == null)
             {
-                window.DestroyChildren();
-                PartRegistry.Unregister(window);
-                if (Application.isPlaying)
-                    Object.Destroy(go);
-                else
-                    Object.DestroyImmediate(go);
-                return;
-            }
-			var door = go.GetComponent<DoorElement>();
-            if (door != null)
-            {
-                door.DestroyChildren();
-                PartRegistry.Unregister(door);
-                if (Application.isPlaying)
-                    Object.Destroy(go);
-                else
-                    Object.DestroyImmediate(go);
-                return;
-            }
-            if (go.GetComponent<AssembledFacadeElement>() != null
-                || go.GetComponent<RadialShelfElement>() != null
-                || go.GetComponent<DrawerElement>() != null)
-            {
-                PartRegistry.Unregister(go.GetComponent<KitchenElement>());
-                if (Application.isPlaying)
-                    Object.Destroy(go);
-                else
-                    Object.DestroyImmediate(go);
-            }
-            else if (go.GetComponent<FacadeElement>() != null)
-                _facadePool.Release(go);
-            else
                 _partPool.Release(go);
+                return;
+            }
+
+            switch (element.Disposal)
+            {
+                case ElementDisposal.PartPool:
+                    _partPool.Release(go);
+                    return;
+                case ElementDisposal.FacadePool:
+                    _facadePool.Release(go);
+                    return;
+            }
+
+            element.PrepareForDestruction();
+            PartRegistry.Unregister(element);
+            if (Application.isPlaying) Object.Destroy(go);
+            else Object.DestroyImmediate(go);
         }
 
         public void ClearPools()

@@ -9,6 +9,9 @@ namespace KitchenDesigner.Core
 
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.AlignsCutout;
 
+        public override ElementDisposal Disposal =>
+            GetType() == typeof(FacadeElement) ? ElementDisposal.FacadePool : ElementDisposal.Destroy;
+
         public bool IsClosedPose => IsDoorClosed;
 
         public IOpenable OpenTarget()

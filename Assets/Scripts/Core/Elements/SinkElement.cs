@@ -285,6 +285,12 @@ namespace KitchenDesigner.Core
 
         public void DestroyChildren() => Mesh.Destroy();
 
+        public override void PrepareForDestruction()
+        {
+            UnregisterFromPart();
+            DestroyChildren();
+        }
+
         private void OnDestroy()
         {
             PartRegistry.Unregister(this);

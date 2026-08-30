@@ -701,6 +701,9 @@ public class ElementConverterTests
         // после загрузки SaveLoadManagerInstance зовёт OnAttachedFacadeChanged,
         // который и восстанавливает флаг.
         "IsPassenger",
+        // Способ уничтожения (пул детали / пул фасада / Destroy) и подготовка к нему:
+        // чистая функция от типа, см. ElementDisposalTests.
+        "Disposal",
         // Роль соседа для врезной техники: чистая функция от типа
         // (см. CutoutNeighbourRoleTests), после конвертации её даёт новый класс.
         "CutoutRole", "BlocksCutout", "AlignsCutout",

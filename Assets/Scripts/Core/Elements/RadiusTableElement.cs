@@ -253,6 +253,8 @@ namespace KitchenDesigner.Core
             return result;
         }
 
+        public override void PrepareForDestruction() => DestroyChildren();
+
         public void DestroyChildren()
         {
             foreach (var leg in _legs)
