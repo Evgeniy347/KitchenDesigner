@@ -4,6 +4,14 @@ namespace KitchenDesigner.Core
 {
     public class FacadeElement : KitchenElement, IOpenable
     {
+        public override bool CanFollowAnAttachParent => false;
+
+        public override bool CanCarryAttachedParts => true;
+
+        public override Vector3 AttachRestPosition => ClosedPosition;
+
+        public override Quaternion AttachRestRotation => ClosedRotation;
+
 
         public override string DisplayTypeName => "Фасад";
 

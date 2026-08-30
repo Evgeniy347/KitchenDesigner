@@ -73,8 +73,8 @@ namespace KitchenDesigner.Core
 
         public bool IsAttachRidden => _attachRidden;
 
-        public Vector3 AttachRestPosition => _attachRidden ? _attachRestPos : transform.position;
-        public Quaternion AttachRestRotation => _attachRidden ? _attachRestRot : transform.rotation;
+        public virtual Vector3 AttachRestPosition => _attachRidden ? _attachRestPos : transform.position;
+        public virtual Quaternion AttachRestRotation => _attachRidden ? _attachRestRot : transform.rotation;
 
         internal void BeginAttachRide(Vector3 restPos, Quaternion restRot)
         {
@@ -138,6 +138,10 @@ namespace KitchenDesigner.Core
             _data.SetGap(side, valueMM);
             ApplyDimensions();
         }
+
+        public virtual bool CanFollowAnAttachParent => true;
+
+        public virtual bool CanCarryAttachedParts => CanFollowAnAttachParent;
 
         public virtual bool SupportsGaps => SupportsGrooves;
 

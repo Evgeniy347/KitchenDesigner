@@ -5,6 +5,8 @@ namespace KitchenDesigner.Core
 {
     public class FloorElement : KitchenElement
     {
+        public override bool CanFollowAnAttachParent => false;
+
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
 
         public const int DEFAULT_SIZE_MM = 3000;

@@ -17,6 +17,8 @@ namespace KitchenDesigner.Core
 
     public class LightSourceElement : KitchenElement
     {
+        public override bool CanFollowAnAttachParent => false;
+
 
         public override string DisplayTypeName => "Источник света";
 

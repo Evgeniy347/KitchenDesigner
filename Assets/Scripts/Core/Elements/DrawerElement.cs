@@ -5,6 +5,12 @@ namespace KitchenDesigner.Core
 {
     public class DrawerElement : KitchenElement, IFacadeHost, IOpenable
     {
+        public override bool CanFollowAnAttachParent => false;
+
+        public override Vector3 AttachRestPosition => ClosedPosition;
+
+        public override Quaternion AttachRestRotation => ClosedRotation;
+
         public override string DisplayTypeName => DrawerConstants.GetDefaultName(System);
 
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.AlignsCutout;

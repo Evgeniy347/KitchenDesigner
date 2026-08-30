@@ -674,6 +674,10 @@ public class ElementConverterTests
         // Производные от состояния, а не хранимые: конвертация их не переносит —
         // после смены типа они пересчитаются сами.
         "PoseFollowsTransform", "Transformable",
+        // Может ли элемент ехать за родителем и везти детей: чистая функция от
+        // типа (см. AttachCapabilityTests) — после конвертации её даёт новый класс.
+        // Сама связь переносится отдельно, через AttachedToName выше.
+        "CanFollowAnAttachParent", "CanCarryAttachedParts",
         // Подпись типа в заголовке окна свойств: чистая функция от самого типа
         // (KitchenElement.DisplayTypeName), после конвертации её даёт новый класс.
         "DisplayTypeName",

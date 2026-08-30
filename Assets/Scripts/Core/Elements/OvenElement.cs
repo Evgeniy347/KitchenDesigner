@@ -4,6 +4,8 @@ namespace KitchenDesigner.Core
 {
     public class OvenElement : KitchenElement, IFixedSizeElement, IOpenable
     {
+        public override bool CanFollowAnAttachParent => false;
+
         public override string DisplayTypeName => MODEL;
 
         public bool IsClosedPose => !IsOpen && !IsAnimating;

@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
 
     public class DoorElement : KitchenElement, IOpenable, IWallMounted
     {
+        public override bool CanFollowAnAttachParent => false;
+
 
         public override string DisplayTypeName => "Дверь";
 

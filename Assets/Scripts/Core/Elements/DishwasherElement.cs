@@ -5,6 +5,8 @@ namespace KitchenDesigner.Core
 {
     public class DishwasherElement : KitchenElement, IFixedSizeElement, IFacadeHost, IOpenable
     {
+        public override bool CanFollowAnAttachParent => false;
+
         public override string DisplayTypeName => MODEL;
 
         public bool IsClosedPose => !IsOpen && !IsAnimating;

@@ -15,6 +15,8 @@ namespace KitchenDesigner.Core
     /// </summary>
     public class WindowElement : KitchenElement, IOpenable, IWallMounted
     {
+        public override bool CanFollowAnAttachParent => false;
+
 
         public override string DisplayTypeName => "Окно";
 
