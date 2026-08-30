@@ -103,6 +103,25 @@ public class UpdateDialogUiTests
     }
 
     [Test]
+    public void DownloadDialog_Message_DoesNotOverlapTitle()
+    {
+        var go = new GameObject("dl");
+        var dlg = go.AddComponent<DownloadProgressUI>();
+        dlg.Build(_canvas.transform);
+
+        // Сообщение должно начинаться ниже прямоугольника заголовка: раньше
+        // оно заезжало на заголовок (текст «Загружаем…» перекрывал «Установка
+        // обновления»). rect у каждого элемента локальный (свой пивот), поэтому
+        // углы переводим в мировые координаты и сравниваем уже их.
+        Assert.IsNotNull(dlg.TitleRect);
+        Assert.IsNotNull(dlg.MessageRect);
+        float titleBottom = dlg.TitleRect.TransformPoint(new Vector3(0f, dlg.TitleRect.rect.yMin, 0f)).y;
+        float messageTop = dlg.MessageRect.TransformPoint(new Vector3(0f, dlg.MessageRect.rect.yMax, 0f)).y;
+        Assert.LessOrEqual(messageTop, titleBottom);
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
     public void DownloadDialog_TitleMatchesUpdateStrings()
     {
         var go = new GameObject("dl");
