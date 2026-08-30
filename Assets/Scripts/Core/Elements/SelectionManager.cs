@@ -227,6 +227,33 @@ namespace KitchenDesigner.Core
             return null;
         }
 
+        public static bool IsGizmoCollider(Collider c) =>
+            c != null && (c.GetComponentInParent<ResizeHandle>() != null
+                || c.GetComponentInParent<TextureOverlayHandle>() != null);
+
+        public static KitchenElement? PickElementFromOrderedColliders(
+            IReadOnlyList<Collider> orderedColliders, bool shiftHeld)
+        {
+            foreach (var col in orderedColliders)
+            {
+                if (col == null || IsGizmoCollider(col)) continue;
+                var el = col.GetComponentInParent<KitchenElement>();
+                if (!shiftHeld) return el;
+                if (el == null || el.Transparent) continue;
+                return el;
+            }
+            return null;
+        }
+
+        public static KitchenElement? RaycastElementThroughGizmos(Ray ray, bool shiftHeld)
+        {
+            var allHits = Physics.RaycastAll(ray);
+            System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
+            var cols = new Collider[allHits.Length];
+            for (int i = 0; i < allHits.Length; i++) cols[i] = allHits[i].collider;
+            return PickElementFromOrderedColliders(cols, shiftHeld);
+        }
+
         public void Select(KitchenElement element)
         {
             if (_selected == element)

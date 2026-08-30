@@ -567,7 +567,11 @@ namespace KitchenDesigner.Core
             if (_cachedCamera == null) return;
             Ray ray = _cachedCamera.ScreenPointToRay(Input.mousePosition);
             bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            ResolveRmbClick(ray, shiftHeld);
+        }
 
+        public void ResolveRmbClick(Ray ray, bool shiftHeld)
+        {
             // ПКМ-клик в режиме пипетки — это забор декора, а не контекстное меню.
             // Обрабатываем здесь, а не в самом инструменте: отличить клик от
             // орбиты умеет только камера (см. _rmbMoved выше).
@@ -578,7 +582,7 @@ namespace KitchenDesigner.Core
             }
             if (Tools.ToolMode.MouseCaptured) return;
 
-            var e = KitchenDesigner.Core.SelectionManager.RaycastTransparentAware(ray, shiftHeld);
+            var e = SelectionManager.RaycastElementThroughGizmos(ray, shiftHeld);
             if (e == null || e.GetComponent<BasePlate>() != null) return;
             if (!EditModeManager.IsInteractable(e)) return; // режим редактора блокирует
             if (UI.UIManager.Instance == null) return;

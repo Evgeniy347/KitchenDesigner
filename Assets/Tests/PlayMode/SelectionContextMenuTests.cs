@@ -252,4 +252,40 @@ public class SelectionContextMenuTests
         Assert.IsFalse(IsContextMenuVisible(),
             "повторный Select не должен открывать меню");
     }
+
+    // ── ПКМ по ВЫДЕЛЕННОЙ детали: луч сквозь наконечник ручки ресайза ────
+    [UnityTest]
+    public IEnumerator RmbClick_OnSelectedElement_OpensContextMenuThroughHandleTips()
+    {
+        var pos = new Vector3(0f, 0.4f, 0f);
+        var go = ElementFactory.CreatePart(
+            AppConstants.PRESET_DIMENSIONS_MM[0], "RmbBoard", pos);
+        var board = go.GetComponent<KitchenElement>();
+        Assert.IsNotNull(board);
+        yield return null;
+
+        SelectionManager.Instance!.Select(board!);
+        yield return null;
+        yield return null;
+
+        Assert.Greater(Object.FindObjectsByType<ResizeHandle>().Length, 0,
+            "после выделения ручки ресайза обязаны построиться");
+
+        var faces = board!.GetFaces();
+        var face = faces[4];
+        var origin = face.center + face.normal * 1.2f;
+        var ray = new Ray(origin, -face.normal);
+
+        Assert.IsNull(SelectionManager.RaycastTransparentAware(ray, false),
+            "луч должен реально упираться в наконечник ручки — иначе тест ничего не проверяет");
+
+        CameraController.Instance!.ResolveRmbClick(ray, false);
+        yield return null;
+
+        Assert.IsTrue(IsContextMenuVisible(),
+            "ПКМ по уже выделенной детали открывает окно свойств: наконечник ручки — " +
+            "гизмо, а не блокировщик; до фикса выделенный объект нельзя было открыть " +
+            "вторым ПКМ, потому что луч первым попадал в его же ручку");
+        Assert.AreEqual(board, SelectionManager.Instance.Selected);
+    }
 }
