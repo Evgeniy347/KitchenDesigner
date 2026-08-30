@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
     /// <summary>Контекстное меню по клику ЛКМ на детали: размеры, позиция, поворот, действия.</summary>
-    public class ContextMenuUI : MonoBehaviour
+    public class ContextMenuUI : MonoBehaviour, IContextMenuHost
     {
         public static ContextMenuUI? Instance { get; private set; }
 
@@ -75,25 +76,6 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _gapCountLabel;
         private bool _gapsExpanded;
 
-        // ── Накладки текстур (стена, пол) ──────────────────────────────
-        // Устроены как пазы: раскрывашка со счётчиком, строки-слоты с правкой на
-        // месте и строка добавления в конце. Отличие одно — у каждой строки есть
-        // карандаш: он включает ручки области прямо на поверхности.
-        private TMP_Text? _textureCountLabel;
-        private TMP_Dropdown? _textureSideDropdown, _textureMaterialDropdown;
-        private readonly TMP_Dropdown?[] _texRowSide =
-            new TMP_Dropdown?[TextureOverlayGeometry.MAX_PER_ELEMENT];
-        private readonly TMP_Dropdown?[] _texRowMaterial =
-            new TMP_Dropdown?[TextureOverlayGeometry.MAX_PER_ELEMENT];
-        // Стрелки порядка наложения: на краях списка соответствующая гаснет —
-        // серая кнопка честнее, чем кликабельная, которая ничего не делает.
-        private readonly Button?[] _texRowUp =
-            new Button?[TextureOverlayGeometry.MAX_PER_ELEMENT];
-        private readonly Button?[] _texRowDown =
-            new Button?[TextureOverlayGeometry.MAX_PER_ELEMENT];
-        private bool _texturesExpanded;
-        private int _textureFingerprint;
-
         // ── Кромки ─────────────────────────────────────────────────────
         // Схема детали со сторонами L1/L2/W1/W2: зелёная сторона — кромка есть,
         // светло-серая — торец упирается в соседа. Размер схемы фиксирован и от
@@ -119,38 +101,21 @@ namespace KitchenDesigner.Core.UI
         private string _currentTypeName = "Деталь"; // для заголовка «Тип — Имя»
 
         private readonly ContextMenuLayout _layout = new();
+        private readonly ContextMenuTextureSection _textures;
 
-        // Геометрия
-        private const float LabelW = 140f;     // ширина колонки подписей (вмещает «Ширина короба, мм» почти без переноса)
-        private const float LabelX = -80f;     // центр подписи (панель 364px → края ±182)
-        private const float FieldX = 100f;     // центр поля ввода
-        // Строка «Название» — своя геометрия во всю ширину панели (364px → края
-        // ±182, поля по 10px → рабочая зона -172..172). Подпись занимает ровно
-        // свою ширину, поле начинается сразу за ней и идёт до правого края.
-        private const float NameLabelW = 76f;    // «Название» при 15px
-        private const float NameLabelX = -134f;  // -172 + 76/2
-        private const float NameFieldW = 264f;   // от -92 до 172
-        private const float NameFieldX = 40f;    // (-92 + 172) / 2
+        public ContextMenuUI() => _textures = new ContextMenuTextureSection(this);
 
-        private const float LabelH = 24f;
-        private const float FieldH = 24f;
-        private const float RowH = 24f;      // высота строки «подпись + поле»
-        private const float RowGap = 7f;     // отступ между строками (шаг ≈ 31)
-        private const float TitleH = 28f;
-        private const float TitleGap = 8f;
-        private const float RotLblH = 22f;
-        private const float RotLblGap = 4f;
-        private const float BtnH = 28f;
-        private const float ActionGap = 8f;
-        private const float TopPad = 12f;
-        private const float BottomPad = 12f;
+        KitchenElement? IContextMenuHost.Target => _target;
 
-        private const float TriCol1 = -110f;
-        private const float TriCol2 = 0f;
-        private const float TriCol3 = 110f;
-        private const float TriLabelW = 95f;
-        private const float TriFieldW = 70f;
-        private const float TriLabelH = 18f;
+        ContextMenuLayout IContextMenuHost.Layout => _layout;
+
+        void IContextMenuHost.Relayout() => RelayoutForTarget();
+
+        public bool TexturePreviewActive => _textures.PreviewActive;
+
+        public void ToggleTextures() => _textures.Toggle();
+
+        internal ContextMenuTextureSection Textures => _textures;
 
         private void Awake()
         {
@@ -596,7 +561,7 @@ namespace KitchenDesigner.Core.UI
             DropdownHover.Attach(_legsMaterialDropdown,
                 option => PreviewMaterial(legs: true, optionIndex: option), EndMaterialPreview);
 
-            BuildTextureOverlaySection(panel.transform, matOptions);
+            _textures.Build(panel.transform, matOptions);
 
             // ── Свойства ────────────────────────────────────────────────
             _transparentToggle = UIFactory.CreateToggle("CtxTransparent", panel.transform, "Прозрачный", false,
@@ -943,14 +908,9 @@ namespace KitchenDesigner.Core.UI
                 if (_target.SupportsEdges && --_edgeRefreshCountdown <= 0)
                     RefreshEdgeUI();
 
-                // Накладки правятся не только строками меню, но и ручками
-                // области, undo и MCP — счётчик и строки должны догонять.
-                // Во время предпросмотра набор заведомо «не настоящий»: сторож
-                // переписал бы дропдаун открытого списка показанным значением.
-                if (_target.SupportsTextureOverlays && !TexturePreviewActive
-                    && TextureFingerprint(_target.TextureOverlays) != _textureFingerprint)
+                if (!_textures.PreviewActive && _textures.ChangedOutsideTheMenu())
                 {
-                    RefreshTextureUI();
+                    _textures.Refresh();
                     RelayoutForTarget();
                 }
             }
@@ -1092,11 +1052,11 @@ namespace KitchenDesigner.Core.UI
             {
                 // Предпросмотр принадлежал прошлому элементу — снимаем ДО смены
                 // цели, иначе показанная накладка осталась бы на нём насовсем.
-                EndTexturePreview();
+                _textures.EndPreview();
                 EndMaterialPreview();
                 _target = element;
                 _groovesExpanded = false; // список пазов открывается свёрнутым
-                _texturesExpanded = false; // и список накладок тоже
+                _textures.Collapse();
                 _gapsExpanded = false;     // и зазоры
                 _lightAdvancedExpanded = false; // калибровка лампы — тоже
                 UpdateLightAdvancedLabel();
@@ -1272,7 +1232,7 @@ namespace KitchenDesigner.Core.UI
                 if (_materialDropdown != null)
                 {
                     RebuildMaterialOptions();
-                    _materialDropdown.SetValueWithoutNotify(MaterialIndex(element.MaterialId));
+                    _materialDropdown.SetValueWithoutNotify(MaterialOptions.IndexOf(element.MaterialId));
                     _materialDropdown.RefreshShownValue();
                 }
 
@@ -1282,14 +1242,14 @@ namespace KitchenDesigner.Core.UI
                 {
                     RebuildTabletopMaterialOptions();
                     var topId = tbl != null ? tbl.TabletopMaterialId : rTbl!.TabletopMaterialId;
-                    _tabletopMaterialDropdown.SetValueWithoutNotify(MaterialIndex(topId));
+                    _tabletopMaterialDropdown.SetValueWithoutNotify(MaterialOptions.IndexOf(topId));
                     _tabletopMaterialDropdown.RefreshShownValue();
                 }
                 if (_legsMaterialDropdown != null && (tbl != null || rTbl != null))
                 {
                     RebuildLegsMaterialOptions();
                     var legsId = tbl != null ? tbl.LegsMaterialId : rTbl!.LegsMaterialId;
-                    _legsMaterialDropdown.SetValueWithoutNotify(MaterialIndex(legsId));
+                    _legsMaterialDropdown.SetValueWithoutNotify(MaterialOptions.IndexOf(legsId));
                     _legsMaterialDropdown.RefreshShownValue();
                 }
 
@@ -1297,8 +1257,8 @@ namespace KitchenDesigner.Core.UI
                 // только для фасадов, радиус — только для радиусной полки, сдвиг опор — только для столов (включая радиусные), пазы — только для базовой детали, панель сама подгоняется по высоте.
 			RefreshGrooveUI();
 			RefreshEdgeUI();
-			if (element.SupportsTextureOverlays) RebuildTextureMaterialOptions();
-			RefreshTextureUI();
+			if (element.SupportsTextureOverlays) _textures.RebuildMaterialOptions();
+			_textures.Refresh();
 			RelayoutForTarget();
 
                 RefreshTransformFields();
@@ -1324,7 +1284,7 @@ namespace KitchenDesigner.Core.UI
             SideHighlighter.Hide();
             // Панель закрыли с раскрытым списком декора — показанная накладка не
             // должна пережить закрытие, как и подсветка стороны.
-            EndTexturePreview();
+            _textures.EndPreview();
             // …и показанный наведением декор тоже: список закрылся вместе с
             // панелью, onExit по нему уже не придёт.
             EndMaterialPreview();
@@ -1926,353 +1886,6 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        // ── Накладки текстур ──────────────────────────────────────────
-        // Локальный декор на куске грани стены или пола. Блок повторяет «Пазы»:
-        // раскрывашка со счётчиком → строки текущих накладок → строка добавления.
-        // Все правки идут через SetTextureOverlaysCommand (правило 2).
-
-        // Геометрия строки накладки: рабочая зона панели −166…164. Ширина списка
-        // сторон рассчитана на самый длинный пункт «(все)», а не на букву.
-        // Слева направо: сторона │ декор │ порядок │ карандаш │ удалить.
-        private const float TexSideX = -128f, TexSideW = 76f;
-        private const float TexMatX = -13f, TexMatW = 138f; // в строке накладки
-        private const float TexAddMatX = -13f, TexAddMatW = 138f; // в строке добавления
-        private const float TexOrderX = 78f;
-        private const float TexEditX = 114f, TexDelX = 150f, TexBtnW = 28f;
-        private const float TexRowH = 28f;
-
-        // Стрелки порядка занимают ОДНУ кнопочную клетку 28×28, поделённую на две
-        // половинки по высоте: колонка «вверх/вниз» ничего не добавляет к ширине
-        // строки, а из ряда одинаковых квадратов её выделяет форма, а не размер.
-        private const float TexOrderBtnH = 13f;
-        private const float TexOrderGap = 2f;
-
-        private bool TexturesEligible() => _target != null && _target.SupportsTextureOverlays;
-
-        private int TextureCount() => _target != null ? _target.TextureOverlays.Count : 0;
-
-        private void BuildTextureOverlaySection(Transform parent, List<string> matOptions)
-        {
-            var sideOptions = new List<string>();
-            for (int i = 0; i <= (int)OverlaySide.All; i++)
-                sideOptions.Add(TextureOverlaySpec.SideLabel((OverlaySide)i));
-
-            var headerBtn = UIFactory.CreateButton("CtxTextures", parent, "Текстуры (0)",
-                new Vector2(0, 0), new Vector2(332, BtnH), ToggleTextures);
-            _textureCountLabel = headerBtn.GetComponentInChildren<TMP_Text>();
-            _layout.AddWhen(TexturesEligible, BtnH, RowGap, headerBtn.GetComponent<RectTransform>());
-
-            for (int i = 0; i < TextureOverlayGeometry.MAX_PER_ELEMENT; i++)
-            {
-                int index = i; // копия для замыкания: иначе все кнопки правили бы последнюю
-                var sideDd = UIFactory.CreateDropdown($"CtxTexSide{i}", parent,
-                    new List<string>(sideOptions), new Vector2(TexSideX, 0),
-                    new Vector2(TexSideW, TexRowH), _ => { SideHighlighter.Hide(); EditTextureOverlay(index); });
-                var matDd = UIFactory.CreateDropdown($"CtxTexMat{i}", parent,
-                    new List<string>(matOptions), new Vector2(TexMatX, 0),
-                    new Vector2(TexMatW, TexRowH), _ => EditTextureOverlay(index));
-                DropdownHover.Attach(matDd,
-                    option => PreviewTextureMaterial(index, option), EndTexturePreview);
-                var orderCol = BuildTextureOrderColumn(parent, i, index);
-                var editBtn = UIFactory.CreateIconButton($"CtxTexEdit{i}", parent, IconFactory.Pencil,
-                    new Vector2(TexEditX, 0), new Vector2(TexBtnW, TexRowH),
-                    () => ToggleTextureOverlayEdit(index));
-                var delBtn = UIFactory.CreateConfirmDeleteButton($"CtxTexDel{i}", parent,
-                    UIStyle.GlyphClose, new Vector2(TexDelX, 0), new Vector2(TexBtnW, TexRowH),
-                    () => RemoveTextureOverlay(index));
-
-                AttachSideHover(sideDd);
-                _texRowSide[i] = sideDd;
-                _texRowMaterial[i] = matDd;
-
-                _layout.AddWhen(
-                    () => TexturesEligible() && _texturesExpanded && TextureCount() > index, TexRowH, 4f,
-                    sideDd.GetComponent<RectTransform>(), matDd.GetComponent<RectTransform>(),
-                    orderCol, editBtn.GetComponent<RectTransform>(), delBtn.GetComponent<RectTransform>());
-            }
-
-            _textureSideDropdown = UIFactory.CreateDropdown("CtxTexSide", parent,
-                new List<string>(sideOptions), new Vector2(TexSideX, 0),
-                new Vector2(TexSideW, TexRowH), _ => SideHighlighter.Hide());
-            _textureMaterialDropdown = UIFactory.CreateDropdown("CtxTexMat", parent,
-                new List<string>(matOptions), new Vector2(TexAddMatX, 0),
-                new Vector2(TexAddMatW, TexRowH), _ => { });
-            DropdownHover.Attach(_textureMaterialDropdown,
-                option => PreviewTextureMaterial(TexturePreviewNewRow, option), EndTexturePreview);
-            var addBtn = UIFactory.CreateButton("CtxTexAdd", parent, "Добавить",
-                new Vector2(114f, 0), new Vector2(100, TexRowH), AddTextureOverlayFromUI);
-            AttachSideHover(_textureSideDropdown);
-
-            _layout.AddWhen(() => TexturesEligible() && _texturesExpanded, TexRowH, ActionGap,
-                _textureSideDropdown.GetComponent<RectTransform>(),
-                _textureMaterialDropdown.GetComponent<RectTransform>(),
-                addBtn.GetComponent<RectTransform>());
-        }
-
-        /// <summary>Колонка «выше/ниже» в строке накладки: две половинки одной
-        /// кнопочной клетки. Обе кнопки — дети общего контейнера, потому что
-        /// раскладка панели ставит строке ОДНУ вертикальную координату на rect;
-        /// две самостоятельные кнопки она бы просто положила одну на другую.</summary>
-        private RectTransform BuildTextureOrderColumn(Transform parent, int slot, int index)
-        {
-            var column = UIFactory.CreateRect($"CtxTexOrder{slot}", parent);
-            column.sizeDelta = new Vector2(TexBtnW, TexRowH);
-            column.anchoredPosition = new Vector2(TexOrderX, 0);
-
-            float half = (TexOrderBtnH + TexOrderGap) * 0.5f;
-            var size = new Vector2(TexBtnW, TexOrderBtnH);
-            _texRowUp[slot] = UIFactory.CreateIconButton($"CtxTexUp{slot}", column,
-                IconFactory.CaretUp, new Vector2(0, half), size,
-                () => MoveTextureOverlay(index, -1), iconPad: 4f);
-            _texRowDown[slot] = UIFactory.CreateIconButton($"CtxTexDown{slot}", column,
-                IconFactory.CaretDown, new Vector2(0, -half), size,
-                () => MoveTextureOverlay(index, +1), iconPad: 4f);
-            return column;
-        }
-
-        /// <summary>Наведение на пункт списка сторон подсвечивает эту грань прямо
-        /// в сцене: буква «C» сама по себе не говорит, какая это сторона, и с
-        /// произвольного ракурса угадать её нельзя.</summary>
-        private void AttachSideHover(TMP_Dropdown dropdown) =>
-            DropdownHover.Attach(dropdown, OnTextureSideHover, SideHighlighter.Hide);
-
-        private void OnTextureSideHover(int optionIndex)
-        {
-            // «(все)» подсвечивать нечем — грань не одна; молча ничего не красим.
-            if (_target == null || optionIndex < 0 || optionIndex >= TextureOverlayGeometry.FACE_COUNT)
-            {
-                SideHighlighter.Hide();
-                return;
-            }
-            SideHighlighter.ShowFace(_target, optionIndex);
-        }
-
-        /// <summary>Раскрыть/свернуть список накладок — то же, что клик по
-        /// заголовку секции. Публичный, потому что снимок меню в PlayMode должен
-        /// показывать секцию раскрытой, а не одной строкой заголовка.</summary>
-        public void ToggleTextures()
-        {
-            _texturesExpanded = !_texturesExpanded;
-            RefreshTextureUI();
-            RelayoutForTarget();
-        }
-
-        private void AddTextureOverlayFromUI()
-        {
-            if (_target == null || _textureSideDropdown == null || _textureMaterialDropdown == null) return;
-            EndTexturePreview(); // добавляем к исходному набору, а не к показанному
-            var all = MaterialCatalog.All;
-            int matIndex = _textureMaterialDropdown.value;
-            if (matIndex < 0 || matIndex >= all.Count) return;
-
-            // По умолчанию накладка занимает сторону целиком (нулевой размер =
-            // «во всю грань», см. TextureOverlaySpec).
-            var spec = TextureOverlaySpec.FullFace(
-                (OverlaySide)_textureSideDropdown.value, all[matIndex].id);
-
-            // Совпадение с уже добавленной накладкой НЕ ошибка, в отличие от паза:
-            // накладки лежат слоями и различаются областью, а новая всегда
-            // приходит «во всю грань». Две одинаковые — это нормальное начало
-            // работы («положить два куска на одну стену и развести ручками»),
-            // и запрет на них не давал сделать ровно то, ради чего накладки и
-            // умеют прилипать друг к другу.
-            var after = new List<TextureOverlaySpec>(_target.TextureOverlays);
-            if (after.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT)
-            {
-                ToastNotification.ShowIfAvailable(
-                    $"Не больше {TextureOverlayGeometry.MAX_PER_ELEMENT} текстур на элемент");
-                return;
-            }
-            after.Add(spec);
-            ApplyTextureOverlays(after);
-            _texturesExpanded = true;
-            AfterTexturesChanged();
-        }
-
-        private void RemoveTextureOverlay(int index)
-        {
-            if (_target == null || index < 0 || index >= _target.TextureOverlays.Count) return;
-            // Ручки снимаем при любом удалении, а не только своей строки: ниже
-            // по списку все индексы сдвинутся, и ручки правили бы чужую накладку.
-            TextureOverlayHandles.End();
-            var after = new List<TextureOverlaySpec>(_target.TextureOverlays);
-            after.RemoveAt(index);
-            ApplyTextureOverlays(after);
-            AfterTexturesChanged();
-        }
-
-        /// <summary>Правка накладки на месте: сторона и декор берутся из дропдаунов
-        /// строки. Область при этом не трогаем — она правится ручками.</summary>
-        private void EditTextureOverlay(int index)
-        {
-            if (_target == null || index < 0 || index >= _target.TextureOverlays.Count) return;
-            var sideDd = _texRowSide[index];
-            var matDd = _texRowMaterial[index];
-            if (sideDd == null || matDd == null) return;
-            EndTexturePreview(); // «до» у команды — исходный набор, а не показанный
-
-            var all = MaterialCatalog.All;
-            if (matDd.value < 0 || matDd.value >= all.Count) return;
-
-            var spec = _target.TextureOverlays[index]
-                .WithSide((OverlaySide)sideDd.value)
-                .WithMaterial(all[matDd.value].id);
-
-            var after = new List<TextureOverlaySpec>(_target.TextureOverlays);
-            if (after[index].Equals(spec)) return;
-            after[index] = spec;
-            ApplyTextureOverlays(after);
-            AfterTexturesChanged();
-        }
-
-        // ── Предпросмотр декора наведением ────────────────────────────
-        // Название декора («Дуб сонома») не говорит, как он ляжет именно на эту
-        // стену, а выбирать вслепую и откатывать через Ctrl+Z — не выбор, а
-        // перебор. Пока курсор стоит на пункте списка, накладка показывается на
-        // объекте по-настоящему; ушли с пункта или закрыли список, ничего не
-        // выбрав, — набор возвращается ровно в то состояние, что было.
-        //
-        // Предпросмотр пишется в элемент НАПРЯМУЮ, минуя CommandStack: это показ,
-        // а не правка, и в undo-стеке ему делать нечего (правило 2 говорит про
-        // изменения, а предпросмотр по определению ничего не меняет).
-
-        /// <summary>«Строка» предпросмотра для строки ДОБАВЛЕНИЯ: там накладки
-        /// ещё нет, поэтому предпросмотр дорисовывает временную.</summary>
-        private const int TexturePreviewNewRow = -1;
-
-        private List<TextureOverlaySpec>? _texturePreviewBefore;
-        private KitchenElement? _texturePreviewTarget;
-
-        /// <summary>Идёт предпросмотр — набор накладок сейчас «не настоящий».</summary>
-        public bool TexturePreviewActive => _texturePreviewBefore != null;
-
-        private void PreviewTextureMaterial(int row, int optionIndex)
-        {
-            if (_target == null) return;
-            var all = MaterialCatalog.All;
-            if (optionIndex < 0 || optionIndex >= all.Count) return;
-
-            BeginTexturePreview();
-            var preview = new List<TextureOverlaySpec>(_texturePreviewBefore!);
-
-            if (row == TexturePreviewNewRow)
-            {
-                if (_textureSideDropdown == null
-                    || preview.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT) return;
-                preview.Add(TextureOverlaySpec.FullFace(
-                    (OverlaySide)_textureSideDropdown.value, all[optionIndex].id));
-            }
-            else
-            {
-                if (row < 0 || row >= preview.Count) return;
-                preview[row] = preview[row].WithMaterial(all[optionIndex].id);
-            }
-
-            _target.SetTextureOverlays(preview);
-        }
-
-        private void BeginTexturePreview()
-        {
-            if (_texturePreviewBefore != null && _texturePreviewTarget == _target) return;
-            EndTexturePreview();
-            _texturePreviewTarget = _target;
-            _texturePreviewBefore = new List<TextureOverlaySpec>(_target!.TextureOverlays);
-        }
-
-        /// <summary>Вернуть набор к состоянию до предпросмотра. Зовётся и с ухода
-        /// курсора, и при закрытии списка (DropdownHover шлёт onExit на оба), и
-        /// первым делом из настоящих правок — иначе «до» у команды оказалось бы
-        /// показанным, а не исходным, и Ctrl+Z возвращал бы предпросмотр.</summary>
-        private void EndTexturePreview()
-        {
-            var before = _texturePreviewBefore;
-            var target = _texturePreviewTarget;
-            _texturePreviewBefore = null;
-            _texturePreviewTarget = null;
-            if (before == null || target == null) return;
-            target.SetTextureOverlays(before);
-        }
-
-        /// <summary>Переставить накладку в списке на одну позицию. Порядок — это и
-        /// есть порядок наложения: следующая в списке лежит слоем выше (см.
-        /// TextureOverlayRenderer.LayerLiftMM), поэтому «вниз» = «поверх соседа».
-        ///
-        /// Ручки области переезжают вместе со своей накладкой: пользователь
-        /// меняет порядок ровно тогда, когда подгоняет перекрытие, и терять при
-        /// этом ручки — значит заставлять его каждый раз браться за карандаш
-        /// заново. Если правилась соседняя накладка, её индекс тоже сдвинулся.</summary>
-        private void MoveTextureOverlay(int index, int delta)
-        {
-            if (_target == null) return;
-            int other = index + delta;
-            var after = new List<TextureOverlaySpec>(_target.TextureOverlays);
-            if (index < 0 || index >= after.Count || other < 0 || other >= after.Count) return;
-
-            int edited = -1;
-            if (TextureOverlayHandles.IsEditing(_target, index)) edited = other;
-            else if (TextureOverlayHandles.IsEditing(_target, other)) edited = index;
-
-            (after[index], after[other]) = (after[other], after[index]);
-            ApplyTextureOverlays(after);
-
-            if (edited >= 0) TextureOverlayHandles.Begin(_target, edited);
-            AfterTexturesChanged();
-        }
-
-        /// <summary>Карандаш: включить/выключить ручки области этой накладки.</summary>
-        private void ToggleTextureOverlayEdit(int index)
-        {
-            if (_target == null || index < 0 || index >= _target.TextureOverlays.Count) return;
-            TextureOverlayHandles.Toggle(_target, index);
-        }
-
-        private void ApplyTextureOverlays(List<TextureOverlaySpec> after)
-        {
-            if (_target == null) return;
-            CommandStack.Execute(new SetTextureOverlaysCommand(_target, _target.TextureOverlays, after));
-        }
-
-        private void AfterTexturesChanged()
-        {
-            RefreshTextureUI();
-            RelayoutForTarget();
-        }
-
-        /// <summary>Обновить кнопку-раскрывашку и строки накладок.</summary>
-        private void RefreshTextureUI()
-        {
-            ConfirmDeleteButton.DisarmAll(); // см. RefreshGrooveUI
-            if (_textureCountLabel != null)
-                _textureCountLabel.text =
-                    $"Текстуры ({TextureCount()})  {(_texturesExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
-
-            IReadOnlyList<TextureOverlaySpec>? overlays =
-                _target != null ? _target.TextureOverlays : null;
-            _textureFingerprint = TextureFingerprint(overlays);
-            for (int i = 0; i < _texRowSide.Length; i++)
-            {
-                if (overlays == null || i >= overlays.Count) continue;
-                _texRowSide[i]?.SetValueWithoutNotify((int)overlays[i].side);
-                _texRowSide[i]?.RefreshShownValue();
-                _texRowMaterial[i]?.SetValueWithoutNotify(MaterialIndex(overlays[i].MaterialId));
-                _texRowMaterial[i]?.RefreshShownValue();
-                if (_texRowUp[i] != null) _texRowUp[i]!.interactable = i > 0;
-                if (_texRowDown[i] != null) _texRowDown[i]!.interactable = i < overlays.Count - 1;
-            }
-        }
-
-        /// <summary>Дешёвый отпечаток набора накладок: ловим изменения мимо меню
-        /// (undo/redo, MCP, ручки области).</summary>
-        private static int TextureFingerprint(IReadOnlyList<TextureOverlaySpec>? overlays)
-        {
-            if (overlays == null) return 0;
-            unchecked
-            {
-                int h = 17;
-                foreach (var o in overlays) h = h * 31 + o.GetHashCode();
-                return h;
-            }
-        }
 
         // ── Кромки детали ─────────────────────────────────────────────
         // Кромка на конкретном торце не хранится и не редактируется: она
@@ -2479,42 +2092,14 @@ namespace KitchenDesigner.Core.UI
 
         // ── Текстура/декор (детали и фасады) ────────────────────────────
 
-        private static int MaterialIndex(string materialId)
-        {
-            var all = MaterialCatalog.All;
-            for (int i = 0; i < all.Count; i++)
-                if (all[i].id == materialId) return i;
-            return 0; // неизвестный/дефолтный — первый пункт
-        }
 
-        /// <summary>Наполнить список декорами каталога. Пересобирать нужно на
-        /// каждое открытие меню: папку текстур можно перечитать в рантайме
-        /// (TextureLibrary.Reload), и набор декоров меняется по ходу работы.</summary>
-        private static void FillMaterialOptions(TMP_Dropdown? dropdown)
-        {
-            if (dropdown == null) return;
-            var opts = new List<TMP_Dropdown.OptionData>();
-            foreach (var m in MaterialCatalog.All)
-                opts.Add(new TMP_Dropdown.OptionData(m.displayName));
-            dropdown.options = opts;
-            // Названия декоров длинные и приходят в том числе из внешней папки:
-            // высоту пункта пересчитываем под НОВЫЙ набор, иначе перенос строк
-            // обрежется по старой высоте.
-            UIFactory.FitDropdownItems(dropdown);
-        }
+        private void RebuildMaterialOptions() => MaterialOptions.Fill(_materialDropdown);
 
-        private void RebuildMaterialOptions() => FillMaterialOptions(_materialDropdown);
+        private void RebuildTabletopMaterialOptions() => MaterialOptions.Fill(_tabletopMaterialDropdown);
 
-        private void RebuildTabletopMaterialOptions() => FillMaterialOptions(_tabletopMaterialDropdown);
-
-        private void RebuildLegsMaterialOptions() => FillMaterialOptions(_legsMaterialDropdown);
+        private void RebuildLegsMaterialOptions() => MaterialOptions.Fill(_legsMaterialDropdown);
 
         /// <summary>Списки декоров у всех строк накладок и у строки добавления.</summary>
-        private void RebuildTextureMaterialOptions()
-        {
-            FillMaterialOptions(_textureMaterialDropdown);
-            foreach (var dd in _texRowMaterial) FillMaterialOptions(dd);
-        }
 
         private void OnMaterialSelected(int index)
         {

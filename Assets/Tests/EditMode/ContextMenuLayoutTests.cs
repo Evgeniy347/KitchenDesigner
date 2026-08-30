@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
@@ -175,14 +174,6 @@ public class ContextMenuLayoutTests
     }
 
     // ── Предпросмотр декора наведением ────────────────────────────────
-
-    private static readonly MethodInfo _previewTexture =
-        typeof(ContextMenuUI).GetMethod("PreviewTextureMaterial",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-    private static readonly MethodInfo _endTexturePreview =
-        typeof(ContextMenuUI).GetMethod("EndTexturePreview",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-
     private static int MaterialIndexOf(string id)
     {
         var all = MaterialCatalog.All;
@@ -192,10 +183,9 @@ public class ContextMenuLayoutTests
         return -1;
     }
 
-    private void Preview(int row, int option) =>
-        _previewTexture!.Invoke(_menu, new object[] { row, option });
+    private void Preview(int row, int option) => _menu!.Textures.PreviewMaterial(row, option);
 
-    private void EndPreview() => _endTexturePreview!.Invoke(_menu, null);
+    private void EndPreview() => _menu!.Textures.EndPreview();
 
     [Test]
     public void Wall_TextureHover_ShowsDecorOnElement_AndRestoresOnExit()
