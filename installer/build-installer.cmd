@@ -36,7 +36,7 @@ if /i "%~1"=="-Sign"      set "SIGN=1"    & shift & goto :args
 if /i "%~1"=="-Version"   goto :take_version
 echo [FAIL] Unknown argument: %~1 & exit /b 1
 :take_version
-REM %~1 раскрывается ДО shift на той же строке, поэтому сдвиг и чтение - на разных.
+REM %~1 expands BEFORE the shift on the same line, so shift and read are on separate lines.
 shift
 set "VER_OVERRIDE=%~1"
 shift
