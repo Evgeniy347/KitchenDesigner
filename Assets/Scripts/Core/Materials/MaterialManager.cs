@@ -198,6 +198,12 @@ namespace KitchenDesigner.Core
             RefreshTiling(table, def);
         }
 
+        public static void ApplyTabletop(ITabletop tabletop, MaterialDef def)
+        {
+            if (tabletop is TableElement table) ApplyTabletop(table, def);
+            else if (tabletop is RadiusTableElement radiusTable) ApplyTabletop(radiusTable, def);
+        }
+
         public static void ApplyLegs(ITabletop tabletop, MaterialDef def)
         {
             if (tabletop is TableElement table) ApplyLegs(table, def);
