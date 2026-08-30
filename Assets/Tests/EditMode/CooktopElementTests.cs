@@ -266,6 +266,16 @@ public class CooktopElementTests
     }
 
     [Test]
+    public void StandardCutout_FitsThePlain600Module_OrTheEdgeMarginIsTooStrict()
+    {
+        var top = CreateCountertop(600, 600);
+        var cooktop = CreateCooktop(new Vector3(0f, TopSurfaceY(top) + 0.05f, 0f));
+        Assert.IsTrue(cooktop.IsSuitableHost(top),
+            "штатная ниша 560 в столешнице модуля 600 оставляет ровно 20 мм за вырезом: "
+            + "MIN_EDGE_MM строже 20 отказал бы самой типовой врезке");
+    }
+
+    [Test]
     public void MinPartSize_FollowsCutout()
     {
         var cooktop = CreateCooktop(Vector3.zero);
