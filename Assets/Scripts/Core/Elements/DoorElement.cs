@@ -17,6 +17,12 @@ namespace KitchenDesigner.Core
     {
 
         public override string DisplayTypeName => "Дверь";
+
+        public bool IsClosedPose => IsDoorClosed;
+
+        public string OpenActionLabel => IsOpen ? OpenLabels.Close : OpenLabels.Open;
+
+        public void CycleOpenState() => ToggleOpen();
         private const float OpenSeconds = 0.4f;
 
         [SerializeField] private DoorSashType _sashType = DoorSashType.Glass;

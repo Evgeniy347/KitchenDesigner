@@ -1763,4 +1763,52 @@ public class DishwasherElementTests
         _menu!.Open(boardGo.GetComponent<KitchenElement>());
         Assert.IsFalse(button.gameObject.activeSelf, "обычной детали дверца не положена");
     }
+
+    /// <summary>Кнопка «Открыть» у фасада-пассажира ведёт МАШИНУ: подпись
+    /// приходит от хоста (IOpenable.OpenActionLabel), а клик открывает его,
+    /// а не собственную петлю фасада. Раньше эти две ветки жили копиями в
+    /// ContextMenuUI и CameraController и умели разойтись.</summary>
+    [Test]
+    public void ContextMenu_FacadeOnDishwasher_OpenButtonDrivesTheDishwasher()
+    {
+        var panel = BuildMenu();
+        var dw = Make("DW-facade-btn");
+        var facade = MakeFacadeFor(dw, "DW_facade_btn_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+
+        _menu!.Open(facade);
+        var button = panel.Find("CtxDoor");
+        Assert.IsNotNull(button, "у фасада есть кнопка открывания");
+        var label = button!.GetComponentInChildren<TMPro.TMP_Text>(true);
+        Assert.AreEqual("Открыть дверцу", label.text,
+            "подпись берётся у ХОСТА: у машины это «дверца», а не «Открыть» фасада");
+
+        button.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+        Assert.IsTrue(dw.IsOpen, "клик открывает машину, а не фасад-пассажир");
+        Assert.AreEqual("Закрыть дверцу", label.text, "подпись переехала вслед за хостом");
+    }
+
+    /// <summary>Окно свойств фасада-пассажира остаётся ОТКРЫТЫМ и показывает
+    /// строку «Дверца». Прежний UpdateModeDropdownEnabled гасил
+    /// <c>_modeDropdown.transform.parent</c>, а родитель дропдауна — сама
+    /// панель: строка так никогда и не пряталась, зато метод мог погасить
+    /// всё окно. Тест краснеет, если кто-то снова начнёт гасить панель.</summary>
+    [Test]
+    public void ContextMenu_FacadeOnDishwasher_PanelAndHingeModeRowStayVisible()
+    {
+        var panel = BuildMenu();
+        var dw = Make("DW-mode-row");
+        var facade = MakeFacadeFor(dw, "DW_mode_row_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+
+        _menu!.Open(facade);
+
+        Assert.IsTrue(panel.gameObject.activeSelf, "окно свойств обязано остаться открытым");
+        var mode = panel.Find("CtxMode");
+        Assert.IsNotNull(mode, "строка «Дверца» существует");
+        Assert.IsTrue(mode!.gameObject.activeSelf,
+            "строка видна: у фасада есть фасет Facade, и решает видимость раскладка");
+    }
 }

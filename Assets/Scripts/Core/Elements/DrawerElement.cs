@@ -18,6 +18,18 @@ namespace KitchenDesigner.Core
     {
 
         public override string DisplayTypeName => DrawerConstants.GetDefaultName(System);
+
+        public bool IsClosedPose => !IsOpen && !IsAnimating;
+
+        public string OpenActionLabel => FindPaired() != null
+            ? DrawerConstants.GetCycleButtonLabel(DoubleState)
+            : (IsOpen ? OpenLabels.CloseDrawer : OpenLabels.OpenDrawer);
+
+        public void CycleOpenState()
+        {
+            if (FindPaired() != null) CycleDoubleState();
+            else ToggleOpen();
+        }
         private const float OpenSeconds = DrawerConstants.DRAWER_ANIM_DURATION;
         private const float DrawerSlideMeters = DrawerConstants.DRAWER_SLIDE_METERS;
 

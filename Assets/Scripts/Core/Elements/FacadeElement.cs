@@ -6,6 +6,36 @@ namespace KitchenDesigner.Core
     {
 
         public override string DisplayTypeName => "Фасад";
+
+        public bool IsClosedPose => IsDoorClosed;
+
+        public IOpenable OpenTarget()
+        {
+            if (string.IsNullOrEmpty(PartName)) return this;
+            foreach (var el in PartRegistry.All)
+                if (el is IFacadeHost host && el is IOpenable openable
+                    && host.AttachedFacadeName == PartName)
+                    return openable;
+            return this;
+        }
+
+        public string OpenActionLabel
+        {
+            get
+            {
+                var host = OpenTarget();
+                return ReferenceEquals(host, this)
+                    ? (IsOpen ? OpenLabels.Close : OpenLabels.Open)
+                    : host.OpenActionLabel;
+            }
+        }
+
+        public void CycleOpenState()
+        {
+            var host = OpenTarget();
+            if (ReferenceEquals(host, this)) ToggleOpen();
+            else host.CycleOpenState();
+        }
         // Фасад ни к чему не ПРИКРЕПЛЯЕТСЯ (AttachLinks.CanBeChild): он сам —
         // корень сборки, и своя кинематика открывания у него уже есть. Зато к
         // нему прикрепляют — ради этого механика и заведена.

@@ -18,15 +18,10 @@ namespace KitchenDesigner.Core.UI
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
-        private TMP_Text? _doorButtonLabel;
-        private TMP_Text? _winDoorButtonLabel;
-        private TMP_Text? _ovenDoorLabel;
-        private TMP_Text? _dishwasherDoorLabel;
         private TMP_Dropdown? _modeDropdown;
         private TMP_Dropdown? _fillDropdown;
         private TMP_Dropdown? _drawerTypeDropdown, _drawerLengthDropdown, _drawerColorDropdown;
         private TMP_Dropdown? _drawerUpperLenDropdown;
-        private TMP_Text? _drawerAnimLabel;
 
         private const string DrawerFacadeLabelText = "Фасад ящика";
         private const string HostFacadeLabelText = "Фасад";
@@ -60,6 +55,7 @@ namespace KitchenDesigner.Core.UI
         private readonly ElementFieldsEditor[] _editors;
         private readonly DimensionFields _size = new();
         private ContextMenuRowFactory _rows = null!;
+        private readonly List<OpenButtonBinder> _openButtons = new();
 
         public ContextMenuUI()
         {
@@ -191,11 +187,10 @@ namespace KitchenDesigner.Core.UI
                 modeOptions.Add(FacadeDoor.Label((DoorMode)i));
             _modeDropdown = _rows.Dropdown("Дверца", modeOptions, OnModeSelected, facadeOnly, "CtxMode");
 
-            _doorButtonLabel = _rows.WideButton("CtxDoor", "Открыть", ToggleDoor, facadeOnly, ActionGap);
-            _ovenDoorLabel = _rows.WideButton("CtxOvenDoor", "Открыть дверцу", ToggleOvenDoor,
-                RowVisibility.For(ElementFacet.Oven), ActionGap);
-            _dishwasherDoorLabel = _rows.WideButton("CtxDishwasherDoor", "Открыть дверцу",
-                ToggleDishwasherDoor, RowVisibility.For(ElementFacet.Dishwasher), ActionGap);
+            OpenButton("CtxDoor", OpenLabels.Open, facadeOnly);
+            OpenButton("CtxOvenDoor", OpenLabels.OpenDoor, RowVisibility.For(ElementFacet.Oven));
+            OpenButton("CtxDishwasherDoor", OpenLabels.OpenDoor,
+                RowVisibility.For(ElementFacet.Dishwasher));
 
             var fillOptions = new List<string> { "Глухой (панель)", "Витрина (пусто)", "Стекло" };
             _fillDropdown = _rows.Dropdown("Заполнение", fillOptions, OnFillSelected,
@@ -234,8 +229,7 @@ namespace KitchenDesigner.Core.UI
             _rows.WideButton("CtxDrawerRemoveUpper", "Убрать верхний ящик", RemoveUpperDrawer,
                 RowVisibility.For(ElementFacet.Drawer, HasUpperDrawer), ActionGap);
 
-            _drawerAnimLabel = _rows.WideButton("CtxDrawerAnim", "Открыть", CycleDrawerAnimation,
-                drawerOnly, ActionGap);
+            OpenButton("CtxDrawerAnim", OpenLabels.Open, drawerOnly);
         }
 
         private void BuildAttachmentSection()
@@ -338,8 +332,7 @@ namespace KitchenDesigner.Core.UI
             };
             _winModeDropdown = _rows.Dropdown("Открывание", winModeOptions, OnWindowModeSelected,
                 windowOnly, "CtxWinMode");
-            _winDoorButtonLabel = _rows.WideButton("CtxWinDoor", "Открыть", ToggleWindowDoor,
-                windowOnly, ActionGap);
+            OpenButton("CtxWinDoor", OpenLabels.Open, windowOnly);
         }
 
         private void BuildFurnitureSection()
@@ -520,9 +513,7 @@ namespace KitchenDesigner.Core.UI
         internal void RefreshTransformFields()
         {
             if (_target == null) return;
-            if (_target is FacadeElement f && !f.IsDoorClosed) return;
-            if (_target is WindowElement w && !w.IsDoorClosed) return;
-            if (_target is DoorElement d && !d.IsDoorClosed) return;
+            if (_target is IOpenable openable && !openable.IsClosedPose) return;
 
             var pos = _target.transform.position;
             _fields.RefreshUnfocused(_x, ToMM(pos.x));
@@ -595,9 +586,7 @@ namespace KitchenDesigner.Core.UI
 
                 var facade = element as FacadeElement;
                 _gaps.WriteFrom(element);
-                UpdateDoorButton(facade);
                 UpdateModeDropdown(facade);
-                UpdateModeDropdownEnabled(facade);
 
                 var assembled = element as AssembledFacadeElement;
                 if (assembled != null && _fillDropdown != null)
@@ -616,11 +605,9 @@ namespace KitchenDesigner.Core.UI
                     if (_drawerUpperLenDropdown != null && upperDrawer != null)
                         _drawerUpperLenDropdown.SetValueWithoutNotify(
                             System.Array.IndexOf(DrawerConstants.ValidLengths, upperDrawer.NominalLength));
-                    UpdateDrawerAnimButton(drawer);
                 }
 
-                if (element is OvenElement ovenEl) UpdateOvenDoorButton(ovenEl);
-                if (element is DishwasherElement dwEl) UpdateDishwasherDoorButton(dwEl);
+                RefreshOpenButtons();
 
                 if (AttachLinks.CanBeChild(element))
                 {
@@ -642,8 +629,6 @@ namespace KitchenDesigner.Core.UI
                 {
                     if (_tintDropdown != null)
                         _tintDropdown.SetValueWithoutNotify((int)window.Tint);
-                    if (_winDoorButtonLabel != null)
-                        _winDoorButtonLabel.text = window.IsOpen ? "Закрыть" : "Открыть";
                     if (_winModeDropdown != null)
                         _winModeDropdown.SetValueWithoutNotify((int)window.Mode);
                 }
@@ -653,8 +638,6 @@ namespace KitchenDesigner.Core.UI
                 {
                     if (_sashTypeDropdown != null)
                         _sashTypeDropdown.SetValueWithoutNotify((int)door.SashType);
-                    if (_winDoorButtonLabel != null)
-                        _winDoorButtonLabel.text = door.IsOpen ? "Закрыть" : "Открыть";
                     if (_winModeDropdown != null)
                         _winModeDropdown.SetValueWithoutNotify((int)door.Mode);
                 }
@@ -720,10 +703,8 @@ namespace KitchenDesigner.Core.UI
         private void ApplyFields(KitchenElement target)
         {
             _fields.ForgetRejections();
-            if (target is FacadeElement fac) { fac.ForceClose(); UpdateDoorButton(fac); }
-            if (target is DrawerElement dr) { dr.ForceClose(); UpdateDrawerAnimButton(dr); }
-            if (target is WindowElement win) { win.ForceClose(); if (_winDoorButtonLabel != null) _winDoorButtonLabel.text = "Открыть"; }
-            if (target is DoorElement doorElApp) { doorElApp.ForceClose(); if (_winDoorButtonLabel != null) _winDoorButtonLabel.text = "Открыть"; }
+            if (target is IOpenable openable) openable.ForceClose();
+            RefreshOpenButtons();
             AttachLinks.ForceRest(target);
 
             var oldDims = target.DimensionsMM;
@@ -832,42 +813,10 @@ namespace KitchenDesigner.Core.UI
             RefreshHighlights();
         }
 
-        private void ToggleDoor()
-        {
-            if (_target is FacadeElement f)
-            {
-                var drawer = FindDrawerForFacade(f);
-                if (drawer != null) CameraController.ToggleDrawerFor(drawer);
-                else
-                {
-                    var dw = FindDishwasherForFacade(f);
-                    if (dw != null) dw.ToggleOpen();
-                    else f.ToggleOpen();
-                }
-                UpdateDoorButton(f);
-            }
-        }
-
         private void OnModeSelected(int index)
         {
             if (_target is FacadeElement f)
                 f.Mode = (DoorMode)index;
-        }
-
-        private void ToggleWindowDoor()
-        {
-            if (_target is WindowElement w)
-            {
-                w.ToggleOpen();
-                if (_winDoorButtonLabel != null)
-                    _winDoorButtonLabel.text = w.IsOpen ? "Закрыть" : "Открыть";
-            }
-            else if (_target is DoorElement d)
-            {
-                d.ToggleOpen();
-                if (_winDoorButtonLabel != null)
-                    _winDoorButtonLabel.text = d.IsOpen ? "Закрыть" : "Открыть";
-            }
         }
 
         private void OnTintSelected(int index)
@@ -944,16 +893,6 @@ namespace KitchenDesigner.Core.UI
                 d.Color = (DrawerColor)index;
         }
 
-        private void CycleDrawerAnimation()
-        {
-            if (_target is DrawerElement d)
-            {
-                if (d.FindPaired() != null) d.CycleDoubleState();
-                else d.ToggleOpen();
-                UpdateDrawerAnimButton(d);
-            }
-        }
-
         private bool HasUpperDrawer() =>
             _target is DrawerElement d && !d.IsUpperDrawer && d.FindPaired() != null;
 
@@ -1020,105 +959,29 @@ namespace KitchenDesigner.Core.UI
             _size.SetEditable(_d, unlocked && (editor?.DepthEditable ?? true));
         }
 
-        private void ToggleOvenDoor()
-        {
-            if (_target is OvenElement oven)
-            {
-                oven.ToggleOpen();
-                UpdateOvenDoorButton(oven);
-            }
-        }
-
-        private void UpdateOvenDoorButton(OvenElement oven)
-        {
-            if (_ovenDoorLabel == null || oven == null) return;
-            _ovenDoorLabel.text = oven.IsOpen ? "Закрыть дверцу" : "Открыть дверцу";
-        }
-
-        private void ToggleDishwasherDoor()
-        {
-            if (_target is DishwasherElement dw)
-            {
-                dw.ToggleOpen();
-                UpdateDishwasherDoorButton(dw);
-            }
-        }
-
-        private void UpdateDishwasherDoorButton(DishwasherElement dw)
-        {
-            if (_dishwasherDoorLabel == null || dw == null) return;
-            _dishwasherDoorLabel.text = dw.IsOpen ? "Закрыть дверцу" : "Открыть дверцу";
-        }
-
-        private void UpdateDrawerAnimButton(DrawerElement d)
-        {
-            if (_drawerAnimLabel == null || d == null) return;
-            if (d.FindPaired() != null)
-                _drawerAnimLabel.text = DrawerConstants.GetCycleButtonLabel(d.DoubleState);
-            else
-                _drawerAnimLabel.text = d.IsOpen ? "Закрыть ящик" : "Открыть ящик";
-        }
-
         internal void SyncOpenLabels()
         {
             if (_root == null || !_root.activeSelf || _target == null) return;
-            if (_target is FacadeElement f) UpdateDoorButton(f);
-            else if (_target is DrawerElement d) UpdateDrawerAnimButton(d);
-            else if (_target is OvenElement o) UpdateOvenDoorButton(o);
-            else if (_target is DishwasherElement dw) UpdateDishwasherDoorButton(dw);
+            RefreshOpenButtons();
         }
 
-        private void UpdateDoorButton(FacadeElement? facade)
+        private void RefreshOpenButtons()
         {
-            if (_doorButtonLabel == null) return;
-            if (facade == null) { _doorButtonLabel.text = "Открыть"; return; }
-            var drawer = FindDrawerForFacade(facade);
-            if (drawer != null)
-            {
-                if (drawer.FindPaired() != null)
-                    _doorButtonLabel.text = DrawerConstants.GetCycleButtonLabel(drawer.DoubleState);
-                else
-                    _doorButtonLabel.text = drawer.IsOpen ? "Закрыть ящик" : "Открыть ящик";
-            }
-            else
-            {
-                var dw = FindDishwasherForFacade(facade);
-                if (dw != null)
-                {
-                    _doorButtonLabel.text = dw.IsOpen ? "Закрыть дверцу" : "Открыть дверцу";
-                }
-                else
-                {
-                    _doorButtonLabel.text = facade.IsOpen ? "Закрыть" : "Открыть";
-                }
-            }
+            foreach (var button in _openButtons) button.Refresh();
         }
 
-        private void UpdateModeDropdownEnabled(FacadeElement? facade)
+        private void OpenButton(string node, string caption, RowVisibility visibility)
         {
-            if (_modeDropdown == null) return;
-            var row = _modeDropdown.transform.parent;
-            if (row == null) return;
-            bool hostable = facade != null && (
-                FindDrawerForFacade(facade) != null || FindDishwasherForFacade(facade) == null);
-            row.gameObject.SetActive(hostable);
+            var binder = new OpenButtonBinder(() => _target as IOpenable);
+            binder.Bind(_rows.WideButton(node, caption, binder.Toggle, visibility, ActionGap));
+            _openButtons.Add(binder);
         }
 
-        internal static DrawerElement? FindDrawerForFacade(FacadeElement facade)
-        {
-            if (string.IsNullOrEmpty(facade.PartName)) return null;
-            foreach (var e in PartRegistry.GetAll())
-                if (e is DrawerElement d && d.AttachedFacadeName == facade.PartName) return d;
-            return null;
-        }
+        internal static DrawerElement? FindDrawerForFacade(FacadeElement facade) =>
+            FacadeHosts.FindDrawer(facade);
 
-        internal static DishwasherElement? FindDishwasherForFacade(FacadeElement facade)
-        {
-            if (string.IsNullOrEmpty(facade.PartName)) return null;
-            foreach (var e in PartRegistry.GetAll())
-                if (e is DishwasherElement dw && dw.AttachedFacadeName == facade.PartName) return dw;
-            return null;
-        }
+        internal static DishwasherElement? FindDishwasherForFacade(FacadeElement facade) =>
+            FacadeHosts.FindDishwasher(facade);
 
         private void UpdateModeDropdown(FacadeElement? facade)
         {

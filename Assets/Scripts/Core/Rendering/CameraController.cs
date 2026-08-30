@@ -285,42 +285,10 @@ namespace KitchenDesigner.Core
             var sel = SelectionManager.Instance;
             if (sel == null) return;
             foreach (var el in sel.SelectedElements)
-            {
-                if (el is FacadeElement f)
-                {
-                    // Фасад может быть пристёгнут к ящику или к посудомойке —
-                    // у каждого своя кнопка-«Открыть» (см. ContextMenuUI.ToggleDoor),
-                    // и здесь та же логика: открываем хост, а не сам фасад.
-                    var drawer = UI.ContextMenuUI.FindDrawerForFacade(f);
-                    if (drawer != null) ToggleDrawerFor(drawer);
-                    else
-                    {
-                        var dw = UI.ContextMenuUI.FindDishwasherForFacade(f);
-                        if (dw != null) dw.ToggleOpen();
-                        else f.ToggleOpen();
-                    }
-                }
-                else if (el is DrawerElement dr)
-                {
-                    ToggleDrawerFor(dr);
-                }
-                else if (el is IOpenable openable)
-                {
-                    openable.ToggleOpen();
-                }
-            }
+                if (el is IOpenable openable)
+                    openable.CycleOpenState();
 
             UI.ContextMenuUI.Instance?.SyncOpenLabels();
-        }
-
-        /// <summary>Поведение «открыть» для ящика: сдвоенный цикл, одиночный —
-        /// обычный <see cref="IOpenable.ToggleOpen"/>. Точка, в которой сходятся
-        /// «E» на выделенном ящике, «E» на фасаде с пристёгнутым ящиком и кнопка
-        /// «Открыть» в контекстном меню фасада.</summary>
-        internal static void ToggleDrawerFor(DrawerElement dr)
-        {
-            if (dr.FindPaired() != null) dr.CycleDoubleState();
-            else dr.ToggleOpen();
         }
 
         public void UpdateFloorVisibility()

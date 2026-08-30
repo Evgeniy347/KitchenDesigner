@@ -45,6 +45,12 @@ namespace KitchenDesigner.Core
     {
 
         public override string DisplayTypeName => MODEL;
+
+        public bool IsClosedPose => !IsOpen && !IsAnimating;
+
+        public string OpenActionLabel => IsOpen ? OpenLabels.CloseDoor : OpenLabels.OpenDoor;
+
+        public void CycleOpenState() => ToggleOpen();
         /// <summary>Единственная модель. Второй духовке хватило бы таблицы
         /// «модель → размеры», как у <see cref="CooktopElement.ModelDimensionsMM"/>;
         /// заводить её ради одной строки — лишний слой.</summary>

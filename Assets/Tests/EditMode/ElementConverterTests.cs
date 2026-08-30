@@ -691,6 +691,9 @@ public class ElementConverterTests
         // FacadeElement
         "Mode",
         "IsOpen", "DoorProgress", "IsDoorClosed", "ClosedPosition", "ClosedRotation",
+        // Контракт IOpenable: производные от состояния дверцы, а не хранимые
+        // поля — после конвертации их считает новый класс.
+        "IsClosedPose", "OpenActionLabel",
         // Пассажирский режим ставится хостом при пристёгивании, в сейв не пишется:
         // после загрузки SaveLoadManagerInstance зовёт OnAttachedFacadeChanged,
         // который и восстанавливает флаг.
