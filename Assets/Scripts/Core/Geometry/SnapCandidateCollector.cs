@@ -128,10 +128,12 @@ namespace KitchenDesigner.Core
             Tolerance.IntervalsOverlap(moved.Min.y + shift.y, moved.Max.y + shift.y, other.Min.y, other.Max.y) &&
             Tolerance.IntervalsOverlap(moved.Min.z + shift.z, moved.Max.z + shift.z, other.Min.z, other.Max.z);
 
-        private static bool CentreWouldLandInsideNeighbour(Vector3 snapPos, in ElementGeometry other) =>
-            snapPos.x > other.Min.x && snapPos.x < other.Max.x &&
-            snapPos.y > other.Min.y && snapPos.y < other.Max.y &&
-            snapPos.z > other.Min.z && snapPos.z < other.Max.z;
+        private static bool CentreWouldLandInsideNeighbour(Vector3 snapPos, in ElementGeometry other)
+        {
+            foreach (var f in other.Faces)
+                if (Vector3.Dot(snapPos - f.center, f.normal) >= 0f) return false;
+            return true;
+        }
 
         private static void AddFlushContact(in MovedPart part, in ElementGeometry other,
             Face[] wallFaces, in Face mf, in Face of, int i, int j, bool isGroove,
