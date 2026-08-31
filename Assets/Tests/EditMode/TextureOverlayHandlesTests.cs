@@ -214,8 +214,10 @@ public class TextureOverlayHandlesTests
         Assert.AreEqual(1f, cube.bounds.size.y, 1e-4f);
         Assert.AreEqual(1f, cube.bounds.size.z, 1e-4f);
         Assert.AreEqual(24, cube.vertexCount,
-            "куб собран вручную по четыре вершины на грань, а не взят у "
-            + "GameObject.CreatePrimitive");
+            "куб собран вручную по четыре вершины на грань: ручки накладки — "
+            + "голые меши без коллайдера, поэтому им нечего терять на "
+            + "WebGL-стриппинге (условие для примитивов держит "
+            + "WebGLPrimitiveStrippingTests)");
         Assert.AreSame(cube, TextureOverlayHandles.CubeMesh(), "меш строится один раз");
     }
 }

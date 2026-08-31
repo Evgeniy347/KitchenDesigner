@@ -473,8 +473,6 @@ namespace KitchenDesigner.Core
             return _cone;
         }
 
-        // Свой, а не CreatePrimitive: примитивы вырезаются из WebGL-сборки
-        // вместе с коллайдерами.
         private static Mesh? _cube;
         internal static Mesh CubeMesh()
         {

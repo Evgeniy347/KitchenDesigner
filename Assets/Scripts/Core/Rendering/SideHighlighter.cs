@@ -277,9 +277,8 @@ namespace KitchenDesigner.Core
 
         private static Mesh? _quad;
 
-        /// <summary>Единичный квад в плоскости XY. Свой, а не CreatePrimitive:
-        /// примитивы вырезаются из WebGL-сборки вместе с коллайдерами.
-        /// Цвет лежит в вершинах — его берёт Hidden/OverlayLine.</summary>
+        /// <summary>Единичный квад в плоскости XY. Цвет лежит в вершинах —
+        /// его берёт Hidden/OverlayLine.</summary>
         private static Mesh QuadMesh()
         {
             if (_quad != null) return _quad;

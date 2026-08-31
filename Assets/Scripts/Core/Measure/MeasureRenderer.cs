@@ -5,8 +5,7 @@ namespace KitchenDesigner.Core.Measure
 {
     /// <summary>Рисует разметку рулетки через GL поверх сцены: красный пунктир,
     /// точки-вершины и прозрачный жёлтый «цилиндр» вокруг выбранного отрезка.
-    /// Всё одним проходом, без GameObject'ов и CreatePrimitive — примитивы в
-    /// рантайме тянут за собой коллайдеры, которые вырезает WebGL-стриппинг.</summary>
+    /// Всё одним проходом, без GameObject-ов и мешей.</summary>
     public class MeasureRenderer : MonoBehaviour
     {
         /// <summary>Толщина линии замера, пиксели.</summary>
