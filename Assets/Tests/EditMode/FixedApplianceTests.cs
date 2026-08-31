@@ -274,7 +274,7 @@ public class FixedApplianceTests
     {
         var hob = Make(CooktopElement.MODEL_BOSCH_PUE611BB5E);
 
-        var data = ElementData.FromElement(hob);
+        var data = ElementCapture.FromElement(hob);
 
         Assert.IsTrue(data.isCooktop);
         Assert.AreEqual(CooktopElement.MODEL_BOSCH_PUE611BB5E, data.cooktopModel);

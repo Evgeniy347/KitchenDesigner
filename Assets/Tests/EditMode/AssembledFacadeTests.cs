@@ -292,7 +292,7 @@ public class AssembledFacadeElementTests
     public void Save_PersistsAssembledTypeAndFill()
     {
         var af = MakeAssembled(new Vector3Int(600, 716, 18));
-        var data = ElementData.FromElement(af);
+        var data = ElementCapture.FromElement(af);
 
         Assert.IsTrue(data.assembled, "флаг сборного сохранён");
         Assert.IsTrue(data.isFacade, "сборный — тоже фасад");

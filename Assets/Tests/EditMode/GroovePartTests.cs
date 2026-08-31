@@ -118,7 +118,7 @@ public class GroovePartTests
         part.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Top));
         part.AddGroove(new GrooveSpec(GrooveKind.Blind, GrooveSide.Left));
 
-        var data = ElementData.FromElement(part);
+        var data = ElementCapture.FromElement(part);
         var json = JsonUtility.ToJson(data);
         var restoredData = JsonUtility.FromJson<ElementData>(json);
         var specs = restoredData.GrooveSpecs();
@@ -145,7 +145,7 @@ public class GroovePartTests
         var facade = go.AddComponent<FacadeElement>();
         facade.DimensionsMM = new Vector3Int(600, 700, 18);
 
-        var data = ElementData.FromElement(facade);
+        var data = ElementCapture.FromElement(facade);
         Assert.AreEqual(0, data.grooves.Length);
     }
 

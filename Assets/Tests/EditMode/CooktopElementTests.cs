@@ -576,7 +576,7 @@ public class CooktopElementTests
         cooktop.CutoutWidthMM = 560;
         cooktop.CutoutDepthMM = 490;
 
-        var d = ElementData.FromElement(cooktop);
+        var d = ElementCapture.FromElement(cooktop);
 
         Assert.IsTrue(d.isCooktop);
         Assert.IsFalse(d.isSink);

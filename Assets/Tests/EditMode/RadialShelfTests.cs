@@ -220,7 +220,7 @@ public class RadialShelfTests
     public void ElementData_FromElement_PreservesCornerRadius()
     {
         var shelf = CreateShelf("R5", 600, 400, 25, 180, new Vector3(1f, 0.5f, -2f));
-        var ed = ElementData.FromElement(shelf);
+        var ed = ElementCapture.FromElement(shelf);
 
         Assert.IsTrue(ed.isRadialShelf);
         Assert.AreEqual(180, ed.cornerRadius);
@@ -235,7 +235,7 @@ public class RadialShelfTests
         shelf.GroupId = 7;
         shelf.MaterialId = "oak";
 
-        var ed = ElementData.FromElement(shelf);
+        var ed = ElementCapture.FromElement(shelf);
         var json = JsonUtility.ToJson(ed);
         var restored = JsonUtility.FromJson<ElementData>(json);
 

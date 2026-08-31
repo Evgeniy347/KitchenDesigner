@@ -496,7 +496,7 @@ public class FacadeDoorAnimationTests
         Assert.Greater(Vector3.Distance(closedPos, f.transform.position), 1e-3f,
             "предусловие: открытая дверца смещена");
 
-        var data = ElementData.FromElement(f);
+        var data = ElementCapture.FromElement(f);
 
         Assert.Less(Vector3.Distance(closedPos, data.Position), 1e-4f,
             "в сохранение попала закрытая позиция, а не смещённая");

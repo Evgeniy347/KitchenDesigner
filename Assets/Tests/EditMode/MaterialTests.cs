@@ -113,7 +113,7 @@ public class MaterialTests
     {
         var e = Make("Plain", new Vector3Int(800, 400, 18));
         Assert.AreEqual(MaterialCatalog.DefaultId, e.MaterialId);
-        Assert.AreEqual(MaterialCatalog.DefaultId, ElementData.FromElement(e).materialId);
+        Assert.AreEqual(MaterialCatalog.DefaultId, ElementCapture.FromElement(e).materialId);
     }
 
     // --- Спецификация группирует по материалу ---

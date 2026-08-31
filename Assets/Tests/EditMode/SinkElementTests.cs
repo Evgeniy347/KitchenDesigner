@@ -432,7 +432,7 @@ public class SinkElementTests
         var top = CreateCountertop();
         var sink = CreateSeatedSink(top, 0.2f);
 
-        var d = ElementData.FromElement(sink);
+        var d = ElementCapture.FromElement(sink);
 
         Assert.IsTrue(d.isSink);
         Assert.IsFalse(d.isPillar);

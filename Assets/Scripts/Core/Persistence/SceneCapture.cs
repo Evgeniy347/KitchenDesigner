@@ -16,10 +16,10 @@ namespace KitchenDesigner.Core
                 if (e == null) continue;
                 if (e.GetComponent<BasePlate>() != null)
                 {
-                    basePlateData ??= ElementData.FromElement(e);
+                    basePlateData ??= ElementCapture.FromElement(e);
                     continue;
                 }
-                items.Add(ElementData.FromElement(e));
+                items.Add(ElementCapture.FromElement(e));
                 ordered.Add(e);
             }
             basePlateData ??= BasePlateFromScene();
@@ -57,7 +57,7 @@ namespace KitchenDesigner.Core
             if (floorGo == null) return null;
             var bp = floorGo.GetComponent<BasePlate>();
             if (bp == null || bp.Element == null) return null;
-            return ElementData.FromElement(bp.Element);
+            return ElementCapture.FromElement(bp.Element);
         }
 
         private static GroupData[] CaptureGroups()

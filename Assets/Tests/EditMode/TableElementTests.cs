@@ -453,7 +453,7 @@ public class TableElementTests
         MaterialManager.ApplyTabletop(table, oak);
         MaterialManager.ApplyLegs(table, wenge);
 
-        var data = ElementData.FromElement(table);
+        var data = ElementCapture.FromElement(table);
         Assert.AreEqual("oak", data.tabletopMaterialId,
             "столешница обязана сохраняться в tabletopMaterialId");
         Assert.AreEqual("wenge", data.legsMaterialId);
@@ -487,7 +487,7 @@ public class TableElementTests
         MaterialManager.ApplyTabletop(table, oak);
         MaterialManager.ApplyLegs(table, wenge);
 
-        var data = ElementData.FromElement(table);
+        var data = ElementCapture.FromElement(table);
         Assert.AreEqual("oak", data.tabletopMaterialId,
             "столешница обязана сохраняться в tabletopMaterialId");
         Assert.AreEqual("wenge", data.legsMaterialId);

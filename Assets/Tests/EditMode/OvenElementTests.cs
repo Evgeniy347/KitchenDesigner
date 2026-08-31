@@ -602,7 +602,7 @@ public class OvenElementTests
     {
         var oven = Make();
 
-        var data = ElementData.FromElement(oven);
+        var data = ElementCapture.FromElement(oven);
 
         Assert.IsTrue(data.isOven);
         Assert.IsFalse(data.isCooktop);

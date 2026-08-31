@@ -288,7 +288,7 @@ public class AttachLinksTests
         var child = MakeBoard("Задняя", new Vector3(0f, 0.018f, 0f));
         child.AttachedToName = parent.PartName;
 
-        var data = ElementData.FromElement(child);
+        var data = ElementCapture.FromElement(child);
         Assert.AreEqual(parent.PartName, data.attachedToName);
     }
 

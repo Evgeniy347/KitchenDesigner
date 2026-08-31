@@ -515,7 +515,7 @@ public class DishwasherElementTests
     {
         var dw = Make();
 
-        var data = ElementData.FromElement(dw);
+        var data = ElementCapture.FromElement(dw);
 
         Assert.IsTrue(data.isDishwasher);
         Assert.IsFalse(data.isOven);

@@ -86,7 +86,7 @@ public class WallTests
         wall.SetLowered(true, 0.1f); // опущена: центр уехал вниз до y≈0.05
         Assert.AreEqual(0.05f, e.transform.position.y, 0.001f, "стена опущена");
 
-        var data = ElementData.FromElement(e);
+        var data = ElementCapture.FromElement(e);
 
         Assert.AreEqual(2500, data.Dimensions.y, "размеры пишутся полные");
         Assert.AreEqual(1.25f, data.Position.y, 0.001f, "позиция пишется в полной высоте, а не опущенной");

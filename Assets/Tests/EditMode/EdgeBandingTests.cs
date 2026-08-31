@@ -516,7 +516,7 @@ public class EdgeBandingTests
         part.SetEdgeManual(EdgeSide.L1, true);
         part.SetEdgeManual(EdgeSide.W2, true);
 
-        var json = JsonUtility.ToJson(ElementData.FromElement(part));
+        var json = JsonUtility.ToJson(ElementCapture.FromElement(part));
         var restored = JsonUtility.FromJson<ElementData>(json);
 
         Assert.IsFalse(restored.edgeBanding);

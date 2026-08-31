@@ -164,7 +164,7 @@ public class CommandHistoryTests
             Quaternion.identity, Quaternion.identity));
         Assert.IsTrue(CommandStack.CanUndo);
 
-        var data = new ProjectData(new[] { ElementData.FromElement(e) });
+        var data = new ProjectData(new[] { ElementCapture.FromElement(e) });
         PartRegistry.Unregister(e);
         Object.DestroyImmediate(e.gameObject);
         _spawned.Clear();

@@ -116,7 +116,7 @@ public class PanelElementTests
     {
         var panel = MakePanel(new Vector3Int(383, 376, 3), gap: 1);
 
-        var data = ElementData.FromElement(panel);
+        var data = ElementCapture.FromElement(panel);
         var restored = JsonUtility.FromJson<ElementData>(JsonUtility.ToJson(data));
 
         Assert.IsTrue(restored.isPanel);

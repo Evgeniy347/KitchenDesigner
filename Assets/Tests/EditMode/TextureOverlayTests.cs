@@ -733,7 +733,7 @@ public class TextureOverlayTests
             new TextureOverlaySpec(OverlaySide.F, "white", 100, 200, 800, 600),
         });
 
-        var json = JsonUtility.ToJson(ElementData.FromElement(wall));
+        var json = JsonUtility.ToJson(ElementCapture.FromElement(wall));
         var restored = JsonUtility.FromJson<ElementData>(json).TextureOverlaySpecs();
 
         Assert.AreEqual(2, restored.Count);

@@ -127,7 +127,7 @@ public class McpPlanGeometryTests
         var go = ElementFactory.CreateFloor(new Vector3Int(2000, 100, 1000), "Poly", Vector3.zero);
         var floor = go.GetComponent<FloorElement>();
         floor.SetPolygonLocalMm(new[] { new Vector2Int(-1000, -500), new Vector2Int(1000, -500), new Vector2Int(0, 500) });
-        var json = JsonUtility.ToJson(ElementData.FromElement(floor));
+        var json = JsonUtility.ToJson(ElementCapture.FromElement(floor));
         var restored = JsonUtility.FromJson<ElementData>(json);
         Assert.AreEqual(3, restored.FloorPolygon().Count);
         Assert.AreEqual(new Vector2Int(0, 500), restored.FloorPolygon()[2]);

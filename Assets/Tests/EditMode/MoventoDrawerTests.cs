@@ -202,8 +202,8 @@ public class MoventoDrawerTests
         var gtvGo = ElementFactory.CreateDrawer(DrawerType.A, 500, DrawerColor.Anthracite, 568, "G", Vector3.zero);
         _spawned.Add(gtvGo);
 
-        Assert.AreEqual(1, ElementData.FromElement(movento).drawerSystem, "Movento → 1");
-        Assert.AreEqual(0, ElementData.FromElement(gtvGo.GetComponent<DrawerElement>()).drawerSystem, "GTV → 0");
+        Assert.AreEqual(1, ElementCapture.FromElement(movento).drawerSystem, "Movento → 1");
+        Assert.AreEqual(0, ElementCapture.FromElement(gtvGo.GetComponent<DrawerElement>()).drawerSystem, "GTV → 0");
     }
 
     [Test]

@@ -118,7 +118,7 @@ public class TableDecorReproTests
         MaterialManager.ApplySlot(table, MaterialSlot.Tabletop, MaterialCatalog.Get("oak"));
         MaterialManager.ApplySlot(table, MaterialSlot.Legs, MaterialCatalog.Get("wenge"));
 
-        var data = ElementData.FromElement(table);
+        var data = ElementCapture.FromElement(table);
 
         Assert.AreEqual("oak", data.materialId,
             "в сейв уходил базовый MaterialId, у стола не менявшийся никогда: проект "

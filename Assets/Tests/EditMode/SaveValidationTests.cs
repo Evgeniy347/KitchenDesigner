@@ -268,7 +268,7 @@ public class SaveValidationTests
     // ── Тест 4: что меняет round-trip ───────────────────────────────────
 
     /// <summary>Диагностика, а не требование: сохранение пишет ЛОГИЧЕСКУЮ позу
-    /// (Wall.FullPosition, ClosedPosition двери/фасада/ящика — ElementData.FromElement),
+    /// (Wall.FullPosition, ClosedPosition двери/фасада/ящика — ElementCapture.FromElement),
     /// поэтому у этих типов перезагрузка стирает накопленный дрейф. Тест меряет,
     /// у каких именно деталей это происходит, и не валится.</summary>
     [Test]

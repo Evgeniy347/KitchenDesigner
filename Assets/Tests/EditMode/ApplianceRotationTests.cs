@@ -215,7 +215,7 @@ public class ApplianceRotationTests
         hob.RotateAroundAxis(Vector3.up, 90f);
         hob.SnapToPart();
 
-        var data = ElementData.FromElement(hob);
+        var data = ElementCapture.FromElement(hob);
 
         Assert.IsTrue(data.isCooktop);
         Assert.AreEqual(90f, data.cooktopYawDeg, 0.05f);
