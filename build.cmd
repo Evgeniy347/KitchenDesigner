@@ -2,14 +2,14 @@
 setlocal enabledelayedexpansion
 
 REM ---------------------------------------------------------------------------
-REM  Единая логика для всех скриптов проекта: любая команда к Unity уходит через
-REM  tools\unity.ps1, и каждая поднимает СВОЙ холодный Unity -batchMode. Фоновый
-REM  редактор между вызовами больше не живёт: он экономил старт, но постоянно
-REM  отваливался, и разбор его отказов стоил дороже сэкономленного.
+REM  One entry point for every Unity call in this project: everything goes through
+REM  tools\unity.ps1, and each call starts its OWN cold Unity -batchMode. The
+REM  background editor that used to live between calls is gone: it saved the start
+REM  cost but kept falling over, and diagnosing its failures cost more than it saved.
 REM
-REM  ВАЖНО: -RunTests и -RunPlayMode БОЛЬШЕ НЕ СОБИРАЮТ плеер. Раньше сборка шла
-REM  следом всегда и добавляла 7-8 минут к каждой проверке тестов. Нужен плеер —
-REM  зовите build.cmd без флагов (release) или -WinDebug / -WebGL / -WebGLDebug.
+REM  IMPORTANT: -RunTests and -RunPlayMode NO LONGER BUILD the player. The build used
+REM  to follow every test run and added 7-8 minutes to each check. Need a player -
+REM  call build.cmd with no flags (release) or -WinDebug / -WebGL / -WebGLDebug.
 REM ---------------------------------------------------------------------------
 
 set "FLAG_CLEAN="
@@ -30,8 +30,8 @@ if /i "%~1"=="-BuildOnly" set "FLAG_BUILD=1"
 if /i "%~1"=="-WebGL" set "FLAG_WEBGL=1"
 if /i "%~1"=="-WebGLDebug" set "FLAG_WEBGL_DEBUG=1"
 if /i "%~1"=="-WinDebug" set "FLAG_WIN_DEBUG=1"
-REM Через goto, а не через if-блок: в скобках %~1 раскрывается ДО shift,
-REM и значение фильтра теряется.
+REM Via goto, not an if-block: inside parentheses %~1 expands BEFORE the shift,
+REM and the filter value is lost.
 if /i "%~1"=="-Filter" goto :take_filter
 shift
 goto :parse_args
@@ -75,7 +75,7 @@ if defined FLAG_PLAY (
     if !errorlevel! neq 0 goto :tests_failed
 )
 
-REM Тесты запрошены явно и сборка не запрошена — на этом всё.
+REM Tests were asked for explicitly and no build was: that is all.
 if defined FLAG_TESTS goto :done_no_build
 if defined FLAG_PLAY goto :done_no_build
 
