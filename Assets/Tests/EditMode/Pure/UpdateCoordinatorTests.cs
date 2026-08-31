@@ -72,6 +72,7 @@ public class UpdateCoordinatorTests
     private FakeChecker _checker; private FakeDownloader _downloader; private FakeApplier _applier;
     private FakeStatus _status; private FakeUpdateDialog _udlg; private FakeDownloadDialog _ddlg;
     private UpdateCoordinator _c;
+    private List<string> _log;
 
     [SetUp]
     public void SetUp()
@@ -82,8 +83,9 @@ public class UpdateCoordinatorTests
         _status = new FakeStatus();
         _udlg = new FakeUpdateDialog();
         _ddlg = new FakeDownloadDialog();
+        _log = new List<string>();
         _c = new UpdateCoordinator(_checker, _downloader, _applier, _status, _udlg, _ddlg,
-            Current, () => TempDir);
+            Current, () => TempDir, _log.Add);
     }
 
     private static ReleaseManifest Newer() => new ReleaseManifest
@@ -236,5 +238,32 @@ public class UpdateCoordinatorTests
         _c.CheckForUpdates();
         _checker.Ok(new ReleaseManifest { Version = Current, FileName = "f", DownloadUrl = "u" });
         Assert.GreaterOrEqual(_status.Shown[0].secs, 3f);
+    }
+
+    [Test]
+    public void CheckFailure_PassesTheReasonToTheLog()
+    {
+        _c.CheckForUpdates();
+        _checker.Fail("HTTP 500");
+        CollectionAssert.IsNotEmpty(_log,
+            "причина отказа видна пользователю только в логе: статус-бар показывает общую фразу");
+        StringAssert.Contains("HTTP 500", _log[_log.Count - 1]);
+    }
+
+    [Test]
+    public void DownloadFailure_PassesTheReasonToTheLog_ButCancelIsNotAFailure()
+    {
+        _c.CheckForUpdates();
+        _checker.Ok(Newer());
+        _udlg.OnUpdate();
+        _downloader.Fail("disk full", false);
+        StringAssert.Contains("disk full", _log[_log.Count - 1]);
+
+        _log.Clear();
+        _c.CheckForUpdates();
+        _checker.Ok(Newer());
+        _udlg.OnUpdate();
+        _downloader.Fail("cancelled", true);
+        CollectionAssert.IsEmpty(_log, "отмена пользователем — не отказ, в лог она не пишется");
     }
 }

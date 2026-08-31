@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.Update
         private readonly IDownloadDialog _downloadDialog;
         private readonly string _currentVersion;
         private readonly Func<string> _tempDirProvider;
+        private readonly Action<string> _log;
 
         private ReleaseManifest? _pending;
         private string? _targetPath;
@@ -35,7 +36,8 @@ namespace KitchenDesigner.Core.Update
             IUpdateDialog updateDialog,
             IDownloadDialog downloadDialog,
             string currentVersion,
-            Func<string> tempDirProvider)
+            Func<string> tempDirProvider,
+            Action<string>? log = null)
         {
             _checker = checker ?? throw new ArgumentNullException(nameof(checker));
             _downloader = downloader ?? throw new ArgumentNullException(nameof(downloader));
@@ -45,6 +47,7 @@ namespace KitchenDesigner.Core.Update
             _downloadDialog = downloadDialog ?? throw new ArgumentNullException(nameof(downloadDialog));
             _currentVersion = currentVersion ?? string.Empty;
             _tempDirProvider = tempDirProvider ?? throw new ArgumentNullException(nameof(tempDirProvider));
+            _log = log ?? (_ => { });
         }
 
         /// <summary>Запускать после загрузки приложения. Повторный вызов во время
@@ -82,7 +85,7 @@ namespace KitchenDesigner.Core.Update
 
         private void OnCheckFailure(string reason)
         {
-            Debug.Log($"[Update] проверка не удалась: {reason}");
+            _log($"[Update] проверка не удалась: {reason}");
             FinishAsIdle();
             _status.Show(UpdateStrings.CheckError, StatusLevel.Error, UpdateStrings.TransientSeconds);
         }
@@ -136,7 +139,7 @@ namespace KitchenDesigner.Core.Update
                 _status.Show(UpdateStrings.DownloadCancelled, StatusLevel.Info, UpdateStrings.TransientSeconds);
             else
             {
-                Debug.Log($"[Update] загрузка не удалась: {reason}");
+                _log($"[Update] загрузка не удалась: {reason}");
                 _status.Show(UpdateStrings.DownloadError, StatusLevel.Error, UpdateStrings.TransientSeconds);
             }
         }

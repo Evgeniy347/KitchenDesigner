@@ -35,6 +35,7 @@ namespace KitchenDesigner.Tests.Geometry
             (@"Quaternion\s*\.\s*LookRotation","ECall"),
             (@"Quaternion\s*\.\s*Inverse",     "ECall"),
             (@"\bMatrix4x4\b",              "ECall"),
+            (@"\bJsonUtility\b",            "лежит в UnityEngine.JSONSerializeModule и вызывает ECall: под dotnet не собирается вовсе"),
         };
 
         /// <summary>Файлы, которым НАЗЫВАТЬ запрещённые символы можно, с причиной.
@@ -85,6 +86,12 @@ namespace KitchenDesigner.Tests.Geometry
 
         private static string GeometryTestSourceDir() =>
             RepoSubdir("Assets", "Tests", "EditMode", "Geometry");
+
+        private static string PureSourceDir() =>
+            RepoSubdir("Assets", "Scripts", "Core", "Pure");
+
+        private static string PureTestSourceDir() =>
+            RepoSubdir("Assets", "Tests", "EditMode", "Pure");
 
         private static string[] ScannedFiles(string dir) =>
             Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories);
@@ -147,6 +154,43 @@ namespace KitchenDesigner.Tests.Geometry
                 + "здесь ломает СБОРКУ второго прогона, и dotnet test со Stryker умирают на CS0246, "
                 + "оставаясь зелёными для Unity. Такому тесту место в Assets/Tests/EditMode. Найдено:\n"
                 + string.Join("\n", violations));
+        }
+
+        [Test]
+        public void PureSources_DoNotTouchTheEngine()
+        {
+            var dir = PureSourceDir();
+            var files = ScannedFiles(dir);
+            Assert.IsNotEmpty(files, "в " + dir + " нет исходников — тест бесполезен");
+
+            var violations = EngineReferences(files);
+            Assert.IsEmpty(violations,
+                "Assets/Scripts/Core/Pure собирается вторым проходом (geometry/pure/Pure.csproj) и "
+                + "обязан исполняться вне Unity. Классу, которому нужен движок, здесь не место — "
+                + "он живёт в своём слое Core. Найдено:\n" + string.Join("\n", violations));
+        }
+
+        [Test]
+        public void PureTestSources_DoNotTouchTheEngine()
+        {
+            var dir = PureTestSourceDir();
+            var files = ScannedFiles(dir);
+            Assert.IsNotEmpty(files, "в " + dir + " нет тестов — тест бесполезен");
+
+            var violations = EngineReferences(files);
+            Assert.IsEmpty(violations,
+                "geometry/pure-tests/Pure.Tests.csproj глобит этот каталог целиком: сценовый тест "
+                + "здесь ломает быструю сборку, оставаясь зелёным для Unity. Такому тесту место "
+                + "в Assets/Tests/EditMode. Найдено:\n" + string.Join("\n", violations));
+        }
+
+        [Test]
+        public void PureSources_AreActuallyScanned()
+        {
+            CollectionAssert.Contains(ScannedFileNames(PureSourceDir()), "ExpressionParser.cs",
+                "скан чистого слоя должен видеть его файлы — грепу по несуществующему пути "
+                + "нечего найти, и он зеленеет, ничего не проверив");
+            CollectionAssert.Contains(ScannedFileNames(PureTestSourceDir()), "ExpressionParserTests.cs");
         }
 
         [Test]

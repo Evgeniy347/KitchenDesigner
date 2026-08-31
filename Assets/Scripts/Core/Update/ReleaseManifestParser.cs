@@ -3,15 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.Update
 {
-    /// <summary>Разобранный «последний релиз» с GitHub, ровно то, что нужно для
-    /// решения и скачивания. Не трогает сеть и файловую систему.</summary>
-    public sealed class ReleaseManifest
-    {
-        public string Version = string.Empty;      // «0.700» (без ведущей «v»)
-        public string DownloadUrl = string.Empty;  // browser_download_url установщика
-        public string FileName = string.Empty;     // «KitchenDesigner-Setup-0.700-x64.exe»
-    }
-
     // ── DTO ответа GitHub Releases API (только нужные поля) ────────────────
     [Serializable] internal sealed class GhAsset
     {

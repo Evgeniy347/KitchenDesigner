@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>KitchenDesigner.Pure</AssemblyName>
+    <RootNamespace>KitchenDesigner.Core</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <AnalysisMode>None</AnalysisMode>
+    <NoWarn>CA1305;CS0618;CS8632</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UnityManagedDir)' == ''">
+    <UnityManagedDir>C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Managed\UnityEngine\</UnityManagedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Assets\Scripts\Core\Pure\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\core\Geometry.csproj" />
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(UnityManagedDir)UnityEngine.CoreModule.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

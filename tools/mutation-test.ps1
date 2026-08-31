@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Тесты и мутационное тестирование геометрического ядра (KitchenDesigner.Geometry).
 
@@ -38,6 +38,7 @@ $ErrorActionPreference = 'Stop'
 
 $repo = Split-Path -Parent $PSScriptRoot
 $testsDir = Join-Path $repo 'geometry\tests'
+$pureTestsDir = Join-Path $repo 'geometry\pure-tests'
 # --project у Stryker — ФИЛЬТР ПО ИМЕНИ проекта, а не путь к нему.
 $coreProj = 'Geometry.csproj'
 
@@ -57,6 +58,11 @@ try {
     Write-Host '=== Тесты ядра ===' -ForegroundColor Cyan
     dotnet test --nologo
     if ($LASTEXITCODE -ne 0) { throw "Тесты ядра упали (код $LASTEXITCODE)" }
+
+    Write-Host ''
+    Write-Host '=== Тесты чистого слоя (Assets/Scripts/Core/Pure) ===' -ForegroundColor Cyan
+    dotnet test $pureTestsDir --nologo
+    if ($LASTEXITCODE -ne 0) { throw "Тесты чистого слоя упали (код $LASTEXITCODE)" }
 
     if ($TestsOnly) { return }
 

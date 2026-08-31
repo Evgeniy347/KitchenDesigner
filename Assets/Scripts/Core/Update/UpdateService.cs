@@ -56,7 +56,8 @@ namespace KitchenDesigner.Core.Update
 
             _coordinator = new UpdateCoordinator(
                 checker, downloader, applier, status, updateDialog, downloadDialog,
-                BuildInfo.Version, () => Application.temporaryCachePath);
+                BuildInfo.Version, () => Application.temporaryCachePath,
+                message => Debug.Log(message));
 
             StartCoroutine(CheckAfterDelay());
         }

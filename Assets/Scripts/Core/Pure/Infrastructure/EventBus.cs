@@ -56,34 +56,4 @@ namespace KitchenDesigner.Core
         }
     }
 
-    public struct ElementCreatedEvent
-    {
-        public KitchenElement element;
-    }
-
-    public struct ElementMovedEvent
-    {
-        public KitchenElement element;
-        public Vector3Serializer previousPosition;
-    }
-
-    public struct ProjectLoadedEvent { }
-
-    public struct SelectionChangedEvent
-    {
-        public KitchenElement previous;
-        public KitchenElement current;
-    }
-
-    public struct PartRemovedEvent
-    {
-        public KitchenElement element;
-    }
-
-    public struct Vector3Serializer
-    {
-        public float x, y, z;
-        public Vector3Serializer(UnityEngine.Vector3 v) { x = v.x; y = v.y; z = v.z; }
-        public UnityEngine.Vector3 ToVector3() => new UnityEngine.Vector3(x, y, z);
-    }
 }
