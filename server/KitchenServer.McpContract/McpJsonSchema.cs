@@ -23,7 +23,7 @@ namespace KitchenServer.McpContract
             });
 
         /// <summary>JSON Schema for a tool's arguments. Empty object schema when no params.</summary>
-        public static JsonElement BuildInputSchema(Type paramsType)
+        public static JsonElement BuildInputSchema(Type? paramsType)
         {
             if (paramsType == null) return EmptyObjectSchema;
 
@@ -51,10 +51,10 @@ namespace KitchenServer.McpContract
         }
 
         /// <summary>agent-facing param name -> Unity wire field name (only where they differ). Null if none.</summary>
-        public static IReadOnlyDictionary<string, string> BuildRenameMap(Type paramsType)
+        public static IReadOnlyDictionary<string, string>? BuildRenameMap(Type? paramsType)
         {
             if (paramsType == null) return null;
-            Dictionary<string, string> map = null;
+            Dictionary<string, string>? map = null;
             foreach (var f in paramsType.GetFields(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (f.GetCustomAttribute<McpIgnoreAttribute>() != null) continue;

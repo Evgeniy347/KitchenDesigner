@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NoWarn>$(NoWarn);CA1051</NoWarn>
+    <!-- Shared with Unity: keep the surface plain (no UnityEngine/Newtonsoft). -->
+  </PropertyGroup>
+
+  <!--
+    SINGLE SOURCE OF TRUTH. These .cs files physically live under Assets/ and are
+    compiled by Unity (KitchenDesigner.Runtime asmdef). We link the SAME files here
+    so the server and the codegen tool see the exact same tool contract — no copy,
+    no drift.
+  -->
+  <ItemGroup>
+    <Compile Include="..\..\Assets\Scripts\Core\MCP\Contract\*.cs">
+      <Link>Contract\%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+</Project>

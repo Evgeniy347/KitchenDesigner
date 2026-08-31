@@ -1,0 +1,13 @@
+<Project>
+
+  <!--
+    Symmetry with Unity. Assets/Scripts/Core/csc.rsp compiles the runtime with
+    -nullable:enable -warnaserror, so the same defect must not be merely a
+    warning in the server projects next door. HARDENING-PLAN.md -> B3.
+  -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
