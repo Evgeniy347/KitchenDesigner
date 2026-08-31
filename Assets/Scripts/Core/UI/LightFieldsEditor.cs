@@ -54,17 +54,17 @@ namespace KitchenDesigner.Core.UI
             var advanced = RowVisibility.For(ElementFacet.Light, () => _advancedExpanded);
 
             Bind("Температура", "K", plain, l => l.TemperatureK, (l, v) => l.TemperatureK = v,
-                LightSourceElement.DEFAULT_TEMPERATURE_K);
+                LampSpec.DEFAULT_TEMPERATURE_K);
             Bind("Мощность", "Вт", plain, l => l.PowerW, (l, v) => l.PowerW = v,
-                LightSourceElement.DEFAULT_POWER_W);
+                LampSpec.DEFAULT_POWER_W);
             Bind("Рассеивание", "%", plain, l => l.DiffusionPct, (l, v) => l.DiffusionPct = v,
-                LightSourceElement.DEFAULT_DIFFUSION_PCT);
+                LampSpec.DEFAULT_DIFFUSION_PCT);
             Bind("Угол пучка", "°", plain, l => l.BeamAngleDeg, (l, v) => l.BeamAngleDeg = v,
-                LightSourceElement.DEFAULT_BEAM_DEG);
+                LampSpec.DEFAULT_BEAM_DEG);
             Bind("Мягкость края", "%", plain, l => l.SoftnessPct, (l, v) => l.SoftnessPct = v,
-                LightSourceElement.DEFAULT_SOFTNESS_PCT);
+                LampSpec.DEFAULT_SOFTNESS_PCT);
             Bind("Свет вверх", "%", plain, l => l.UpLightPct, (l, v) => l.UpLightPct = v,
-                LightSourceElement.DEFAULT_UP_PCT);
+                LampSpec.DEFAULT_UP_PCT);
 
             _shape = Rows.Dropdown("Форма потока", new List<string> { "Плафон", "Шар" },
                 OnShapeSelected, plain, "CtxLightShape");
@@ -72,27 +72,27 @@ namespace KitchenDesigner.Core.UI
                 OnShadowSelected, plain, "CtxLightShadow");
 
             Bind("Сила тени", "%", plain, l => l.ShadowStrengthPct, (l, v) => l.ShadowStrengthPct = v,
-                LightSourceElement.DEFAULT_SHADOW_STRENGTH_PCT);
+                LampSpec.DEFAULT_SHADOW_STRENGTH_PCT);
 
             _advancedLabel = Rows.WideButton("CtxLightAdv",
                 $"{AdvancedCaption}  {UIStyle.GlyphCollapsed}", ToggleAdvanced, plain, RowGap);
 
             Bind("Свечение плафона", "%", advanced, l => l.GlowPct, (l, v) => l.GlowPct = v,
-                LightSourceElement.DEFAULT_GLOW_PCT);
+                LampSpec.DEFAULT_GLOW_PCT);
             Bind("Отступ вниз", "мм", advanced, l => l.DropMM, (l, v) => l.DropMM = v,
-                LightSourceElement.DEFAULT_DROP_MM);
+                LampSpec.DEFAULT_DROP_MM);
             Bind("Верхний конус", "%", advanced, l => l.UpConePct, (l, v) => l.UpConePct = v,
-                LightSourceElement.DEFAULT_UP_CONE_PCT);
+                LampSpec.DEFAULT_UP_CONE_PCT);
             Bind("Верхний радиус", "%", advanced, l => l.UpRangePct, (l, v) => l.UpRangePct = v,
-                LightSourceElement.DEFAULT_UP_RANGE_PCT);
+                LampSpec.DEFAULT_UP_RANGE_PCT);
             Bind("Радиус при 0 %", "мм", advanced, l => l.RangeMinMM, (l, v) => l.RangeMinMM = v,
-                LightSourceElement.DEFAULT_RANGE_MIN_MM);
+                LampSpec.DEFAULT_RANGE_MIN_MM);
             Bind("Радиус при 100 %", "мм", advanced, l => l.RangeMaxMM, (l, v) => l.RangeMaxMM = v,
-                LightSourceElement.DEFAULT_RANGE_MAX_MM);
+                LampSpec.DEFAULT_RANGE_MAX_MM);
             Bind("Светоотдача", "лм/Вт", advanced, l => l.EfficacyLmPerW,
-                (l, v) => l.EfficacyLmPerW = v, LightSourceElement.DEFAULT_EFFICACY_LM_PER_W);
+                (l, v) => l.EfficacyLmPerW = v, LampSpec.DEFAULT_EFFICACY_LM_PER_W);
             Bind("Калибровка", "лм/ед", advanced, l => l.LumensPerUnit,
-                (l, v) => l.LumensPerUnit = v, LightSourceElement.DEFAULT_LUMENS_PER_UNIT);
+                (l, v) => l.LumensPerUnit = v, LampSpec.DEFAULT_LUMENS_PER_UNIT);
         }
 
         public override void Show(KitchenElement element)

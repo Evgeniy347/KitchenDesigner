@@ -271,7 +271,7 @@ public class PhotoModeTests
         Assert.Greater(ls.UpLight!.spotAngle, upNarrow, "верхний конус тоже расширился");
 
         ls.BeamAngleDeg = 9999;
-        Assert.AreEqual(LightSourceElement.MAX_BEAM_DEG, ls.BeamAngleDeg, "верхняя граница");
+        Assert.AreEqual(LampSpec.MAX_BEAM_DEG, ls.BeamAngleDeg, "верхняя граница");
 
         Object.DestroyImmediate(go);
     }
@@ -288,7 +288,7 @@ public class PhotoModeTests
         ls.UpLightPct = 30;
         Assert.Greater(ls.UpLight!.intensity, 0f, "больше % — заметнее подсветка вверх");
         ls.UpLightPct = 999;
-        Assert.AreEqual(LightSourceElement.MAX_UP_PCT, ls.UpLightPct, "верхняя граница");
+        Assert.AreEqual(LampSpec.MAX_UP_PCT, ls.UpLightPct, "верхняя граница");
 
         Object.DestroyImmediate(go);
     }
@@ -430,9 +430,9 @@ public class PhotoModeTests
         var go = new GameObject("Light");
         var ls = go.AddComponent<LightSourceElement>();
         ls.TemperatureK = 999999;
-        Assert.AreEqual(LightSourceElement.MAX_TEMPERATURE_K, ls.TemperatureK);
+        Assert.AreEqual(LampSpec.MAX_TEMPERATURE_K, ls.TemperatureK);
         ls.TemperatureK = 0;
-        Assert.AreEqual(LightSourceElement.MIN_TEMPERATURE_K, ls.TemperatureK);
+        Assert.AreEqual(LampSpec.MIN_TEMPERATURE_K, ls.TemperatureK);
         Object.DestroyImmediate(go);
     }
 

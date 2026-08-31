@@ -33,9 +33,9 @@ public class LightSourceLampTests
         var lamp = go.AddComponent<LightSourceElement>();
         lamp.PartName = "Lamp";
         lamp.DimensionsMM = new Vector3Int(
-            LightSourceElement.DEFAULT_SIZE_MM,
-            LightSourceElement.DEFAULT_SIZE_MM,
-            LightSourceElement.DEFAULT_SIZE_MM);
+            LampSpec.DEFAULT_SIZE_MM,
+            LampSpec.DEFAULT_SIZE_MM,
+            LampSpec.DEFAULT_SIZE_MM);
         PartRegistry.Register(lamp);
         lamp.EnsureLight();
         return lamp;
@@ -68,7 +68,7 @@ public class LightSourceLampTests
     {
         var lamp = Lamp();
         float single = Down(lamp).intensity;
-        lamp.PowerW = LightSourceElement.DEFAULT_POWER_W * 2;
+        lamp.PowerW = LampSpec.DEFAULT_POWER_W * 2;
         Assert.AreEqual(single * 2f, Down(lamp).intensity, 0.02f,
             "яркость — это мощность × светоотдача, а не отдельная ручка");
     }
@@ -79,7 +79,7 @@ public class LightSourceLampTests
     public void Emitter_HangsBelowThePlafondCentre_ByTheDropDistance()
     {
         var lamp = Lamp();
-        float expected = -LightSourceElement.DEFAULT_DROP_MM * AppConstants.MM_TO_UNITS;
+        float expected = -LampSpec.DEFAULT_DROP_MM * AppConstants.MM_TO_UNITS;
         float scaleY = lamp.transform.lossyScale.y;
 
         Assert.AreEqual(expected, Down(lamp).transform.localPosition.y * scaleY, 1e-4f,
@@ -97,7 +97,7 @@ public class LightSourceLampTests
         lamp.ApplyLightParams();
 
         float worldDrop = Down(lamp).transform.localPosition.y * lamp.transform.lossyScale.y;
-        Assert.AreEqual(-LightSourceElement.DEFAULT_DROP_MM * AppConstants.MM_TO_UNITS, worldDrop, 1e-4f,
+        Assert.AreEqual(-LampSpec.DEFAULT_DROP_MM * AppConstants.MM_TO_UNITS, worldDrop, 1e-4f,
             "растянули плафон — отступ источника в мире обязан остаться прежним");
     }
 
@@ -107,7 +107,7 @@ public class LightSourceLampTests
     public void UpLight_IsOnlyALeakFraction_OfTheDownwardFlux()
     {
         var lamp = Lamp();
-        float expected = Down(lamp).intensity * (LightSourceElement.DEFAULT_UP_PCT / 100f);
+        float expected = Down(lamp).intensity * (LampSpec.DEFAULT_UP_PCT / 100f);
         Assert.AreEqual(expected, Up(lamp).intensity, 1e-3f,
             "вверх уходит лишь утечка сквозь купол — основной поток отражается вниз");
 

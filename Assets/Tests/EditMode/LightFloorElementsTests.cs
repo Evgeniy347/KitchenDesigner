@@ -40,9 +40,9 @@ public class LightFloorElementsTests
         var lamp = go.AddComponent<LightSourceElement>();
         lamp.PartName = "Источник света";
         lamp.DimensionsMM = new Vector3Int(
-            LightSourceElement.DEFAULT_SIZE_MM,
-            LightSourceElement.DEFAULT_SIZE_MM,
-            LightSourceElement.DEFAULT_SIZE_MM);
+            LampSpec.DEFAULT_SIZE_MM,
+            LampSpec.DEFAULT_SIZE_MM,
+            LampSpec.DEFAULT_SIZE_MM);
         lamp.EnsureLight();
         lamp.SyncLightState();
         return lamp;
@@ -52,7 +52,7 @@ public class LightFloorElementsTests
     public void FromElement_Floor_SetsIsFloor()
     {
         var floor = CreateFloor();
-        var d = ElementData.FromElement(floor);
+        var d = ElementCapture.FromElement(floor);
 
         Assert.IsTrue(d.isFloor);
         Assert.IsFalse(d.isLightSource);
@@ -62,7 +62,7 @@ public class LightFloorElementsTests
     public void FromElement_LightSource_SetsIsLightSource()
     {
         var lamp = CreateLamp();
-        var d = ElementData.FromElement(lamp);
+        var d = ElementCapture.FromElement(lamp);
 
         Assert.IsTrue(d.isLightSource);
         Assert.IsFalse(d.isFloor);

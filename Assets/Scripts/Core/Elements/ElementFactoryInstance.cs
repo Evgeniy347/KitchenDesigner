@@ -314,9 +314,9 @@ namespace KitchenDesigner.Core
             var lamp = go.AddComponent<LightSourceElement>();
             lamp.PartName = go.name;
             lamp.DimensionsMM = new Vector3Int(
-                LightSourceElement.DEFAULT_SIZE_MM,
-                LightSourceElement.DEFAULT_SIZE_MM,
-                LightSourceElement.DEFAULT_SIZE_MM);
+                LampSpec.DEFAULT_SIZE_MM,
+                LampSpec.DEFAULT_SIZE_MM,
+                LampSpec.DEFAULT_SIZE_MM);
             lamp.Movable = true;
             lamp.EnsureLight();
             lamp.SyncLightState();

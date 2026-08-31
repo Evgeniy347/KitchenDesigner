@@ -244,9 +244,9 @@ namespace KitchenDesigner.Core.UI
         private static Item LightSourceItem(string name)
         {
             var item = new Item(name, new Vector3Int(
-                LightSourceElement.DEFAULT_SIZE_MM,
-                LightSourceElement.DEFAULT_SIZE_MM,
-                LightSourceElement.DEFAULT_SIZE_MM));
+                LampSpec.DEFAULT_SIZE_MM,
+                LampSpec.DEFAULT_SIZE_MM,
+                LampSpec.DEFAULT_SIZE_MM));
             item.isLightSource = true;
             return item;
         }

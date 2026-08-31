@@ -68,7 +68,7 @@ public class SaveRestoreContractTests
     {
         var el = ElementFactory.CreatePart(new Vector3Int(600, 18, 500), name, Vector3.zero)
             .GetComponent<KitchenElement>();
-        var data = ElementData.FromElement(el);
+        var data = ElementCapture.FromElement(el);
         UnityEngine.Object.DestroyImmediate(el.gameObject);
         return data;
     }
@@ -159,7 +159,7 @@ public class SaveRestoreContractTests
     {
         var dims = new Vector3Int(600, 18, 500);
         var el = Register(ElementFactory.CreatePart(dims, "OffGrid", new Vector3(0.0002f, 0.5f, 0f)));
-        var data = ElementData.FromElement(el);
+        var data = ElementCapture.FromElement(el);
         UnityEngine.Object.DestroyImmediate(el.gameObject);
         _spawned.Clear();
         PartRegistry.Clear();
@@ -212,7 +212,7 @@ public class SaveRestoreContractTests
         Assert.AreNotEqual(restPosition, board.transform.position,
             "деталь обязана уехать вместе с фасадом — иначе тесту нечего проверять");
 
-        var data = ElementData.FromElement(board);
+        var data = ElementCapture.FromElement(board);
 
         Assert.AreEqual(restPosition.x, data.Position.x, 1e-4f,
             "в файл идёт поза покоя: сохранив уехавший трансформ, проект открылся бы "
@@ -242,7 +242,7 @@ public class SaveRestoreContractTests
             "радиус скругления — из умолчания");
         Assert.IsEmpty(element.grooves, "пазов в старом файле нет — пустой список, не null");
         Assert.IsEmpty(element.textureOverlays, "накладок тоже нет");
-        Assert.AreEqual(LightSourceElement.DEFAULT_TEMPERATURE_K, element.lightTemperatureK,
+        Assert.AreEqual(LampSpec.DEFAULT_TEMPERATURE_K, element.lightTemperatureK,
             "параметры лампы берутся из её умолчаний");
         Assert.AreEqual("", element.cooktopModel, "варочная старого проекта — свободная");
         Assert.AreEqual(0f, element.cooktopYawDeg, 1e-4f, "своего разворота у неё тогда не было");
