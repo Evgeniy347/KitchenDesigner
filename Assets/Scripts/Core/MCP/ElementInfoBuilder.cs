@@ -115,6 +115,18 @@ namespace KitchenDesigner.Core.MCP
                 legsMaterialId = table.LegsMaterialId
             }),
 
+            For<StoolElement>((info, stool) =>
+            {
+                info.cornerRadius = stool.CornerRadiusMM;
+                info.stool = new StoolInfo
+                {
+                    cornerRadiusMM = stool.CornerRadiusMM,
+                    shape = stool.ShapeName,
+                    tabletopMaterialId = stool.TabletopMaterialId,
+                    legsMaterialId = stool.LegsMaterialId
+                };
+            }),
+
             For<PillarElement>((info, pillar) => info.pillar = new PillarInfo
             {
                 midHeightMM = pillar.MidHeightMM

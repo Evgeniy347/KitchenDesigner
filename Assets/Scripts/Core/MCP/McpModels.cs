@@ -78,7 +78,7 @@ namespace KitchenDesigner.Core.MCP
         public int worldDimX, worldDimY, worldDimZ;
         public int effectiveDimX, effectiveDimY, effectiveDimZ;
         public List<AxisGapInfo>? faceGaps; // зазоры/пересечения с ближайшим соседом «напротив» по осям (ось без соседа опускается)
-        public int cornerRadius; // радиус скругления угла радиусной полки, иначе 0
+        public int cornerRadius; // радиус скругления: угол радиусной полки или углы табуретки, иначе 0
         public string? grooves;  // пазы детали "through:top, blind:left"; null, если пазов нет
         // Накладки текстур стены/пола "a:oak; b:white@100,200+800x600"; null, если их нет
         public string? textureOverlays;
@@ -103,6 +103,7 @@ namespace KitchenDesigner.Core.MCP
         public DrawerInfo? drawer; // свойства ящика, только для DrawerElement
         public TableInfo? table; // свойства стола, только для TableElement
 		public RadiusTableInfo? radiusTable; // свойства радиусного стола, только для RadiusTableElement
+		public StoolInfo? stool;
 		public PillarInfo? pillar; // свойства опоры, только для PillarElement
 		public CooktopInfo? cooktop; // свойства варочной, только для CooktopElement
 		public OvenInfo? oven; // свойства духовки, только для OvenElement
@@ -303,6 +304,15 @@ namespace KitchenDesigner.Core.MCP
     {
         public int legInsetMM;
         public string shape = "capsule";
+        public string tabletopMaterialId = MaterialCatalog.DefaultId;
+        public string legsMaterialId = MaterialCatalog.DefaultId;
+    }
+
+    [Serializable]
+    public class StoolInfo
+    {
+        public int cornerRadiusMM;
+        public string shape = string.Empty;
         public string tabletopMaterialId = MaterialCatalog.DefaultId;
         public string legsMaterialId = MaterialCatalog.DefaultId;
     }

@@ -21,6 +21,7 @@ namespace KitchenDesigner.Core.MCP
         public const int TABLE_DEFAULT_WIDTH_MM = 2000;
         public const int TABLE_DEFAULT_HEIGHT_MM = 750;
         public const int TABLE_DEFAULT_DEPTH_MM = 1000;
+        public const int STOOL_DEFAULT_CORNER_RADIUS_MM = 0;
         public const int WINDOW_DEFAULT_WIDTH_MM = 900;
         public const int WINDOW_DEFAULT_HEIGHT_MM = 1200;
         public const int OPENING_DEFAULT_WALL_DEPTH_MM = 100;
@@ -68,6 +69,9 @@ namespace KitchenDesigner.Core.MCP
                 ["table"] = (item, pos) => ElementFactory.CreateTable(TableDims(item), item.name, pos),
 
                 ["radius_table"] = (item, pos) => ElementFactory.CreateRadiusTable(TableDims(item), item.name, pos),
+
+                ["stool"] = (item, pos) => ElementFactory.CreateStool(StoolDims(item),
+                    STOOL_DEFAULT_CORNER_RADIUS_MM, item.name, pos),
 
                 ["pillar"] = (item, pos) => ElementFactory.CreatePillar(
                     item.height ?? PillarElement.MidHeightMM_Default, item.name, pos),
@@ -121,6 +125,11 @@ namespace KitchenDesigner.Core.MCP
             "dishwasher" => model == DishwasherElement.MODEL,
             _ => false,
         };
+
+        private static Vector3Int StoolDims(CreateItem item) => new Vector3Int(
+            item.width ?? StoolElement.DefaultWidthMM,
+            item.height ?? StoolElement.DefaultHeightMM,
+            item.depth ?? StoolElement.DefaultDepthMM);
 
         private static Vector3Int TableDims(CreateItem item) => new Vector3Int(
             item.width ?? TABLE_DEFAULT_WIDTH_MM,

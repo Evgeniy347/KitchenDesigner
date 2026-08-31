@@ -563,6 +563,100 @@ public class McpCommandHandlerTests
     }
 
     [Test]
+    public void CreateStool_Defaults_ToTheAgreedSizeAndASquareSeat()
+    {
+        var resp = _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new[] { new { name = "ST1", x = 0f, y = 0f, z = 0f, type = "stool" } }
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual("StoolElement", EnvElement(resp).type,
+            "тип, которого нет в реестре спаунеров, уходит в SpawnPlainCube и молча "
+            + "возвращает обычную доску");
+
+        var stool = FindBoard("ST1")!.GetComponent<StoolElement>();
+        Assert.AreEqual(new Vector3Int(360, 450, 360), stool.DimensionsMM);
+        Assert.AreEqual(0, stool.CornerRadiusMM,
+            "по умолчанию табуретка квадратная; круглую агент получает через corner_radius");
+    }
+
+    [Test]
+    public void SetStoolCornerRadius_MakesItRound_AndReportsTheShape()
+    {
+        _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new[] { new { name = "ST2", x = 0f, y = 0f, z = 0f, type = "stool" } }
+        }));
+
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new[] { new { name = "ST2", corner_radius = 180 } }
+        }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(180, FindBoard("ST2")!.GetComponent<StoolElement>().CornerRadiusMM);
+
+        var info = EnvElement(_handler!.Handle(MakeReq("get_elements", new { names = new[] { "ST2" } })));
+        Assert.IsNotNull(info.stool,
+            "у табуретки обязан быть свой под-объект в ответе: без него агент не увидит "
+            + "ни формы, ни декоров сиденья");
+        Assert.AreEqual("round", info.stool!.shape,
+            "форма — производная от радиуса, и агент читает её из ответа, а не пересчитывает");
+        Assert.AreEqual(180, info.cornerRadius,
+            "общее поле cornerRadius обязано отвечать и за табуретку: агент правит её тем же "
+            + "полем corner_radius, что и радиусную полку");
+    }
+
+    [Test]
+    public void SetStoolCornerRadius_ToZero_IsAccepted_NotRejectedAsBelowTheMinimum()
+    {
+        _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new[] { new { name = "ST3", x = 0f, y = 0f, z = 0f, type = "stool" } }
+        }));
+        _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new[] { new { name = "ST3", corner_radius = 180 } }
+        }));
+
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new[] { new { name = "ST3", corner_radius = 0 } }
+        }));
+
+        Assert.AreEqual("result", resp.type,
+            "у радиусной полки нижняя граница corner_radius равна 1, у табуретки — 0: "
+            + "квадратная табуретка законна, и схема обязана её пропускать");
+        Assert.AreEqual(0, FindBoard("ST3")!.GetComponent<StoolElement>().CornerRadiusMM);
+    }
+
+    [Test]
+    public void SetStoolLegInset_IsRejected_WhileTheSeatAndLegsDecorsAreAccepted()
+    {
+        _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new[] { new { name = "ST4", x = 0f, y = 0f, z = 0f, type = "stool" } }
+        }));
+
+        var rejected = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new[] { new { name = "ST4", leg_inset_mm = 50 } }
+        }));
+        Assert.AreEqual("error", rejected.type,
+            "отступ ножек у табуретки — константа конструкции, а не параметр; принять его "
+            + "молча значило бы вернуть успех на то, что никуда не применилось");
+
+        var accepted = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "ST4", tabletop_material = MaterialCatalog.DefaultId } }
+        }));
+        Assert.AreEqual("result", accepted.type,
+            "декоры сиденья и ножек у табуретки есть — она носитель ITabletop, и правило "
+            + "для них разведено с правилом для leg_inset_mm");
+    }
+
+    [Test]
     public void SetRadialShelfProperties_Errors_WhenNotRadialShelf()
     {
         MakeElement("Board", new Vector3Int(800, 400, 18), Vector3.zero);

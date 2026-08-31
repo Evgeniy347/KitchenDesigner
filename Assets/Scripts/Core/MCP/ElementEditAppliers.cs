@@ -22,6 +22,10 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (op.corner_radius.HasValue) shelf.CornerRadius = op.corner_radius.Value;
             }),
+            For<StoolElement>((op, stool) =>
+            {
+                if (op.corner_radius.HasValue) stool.CornerRadiusMM = op.corner_radius.Value;
+            }),
             For<CooktopElement>((op, cooktop) =>
             {
                 if (op.cutout_width.HasValue) cooktop.CutoutWidthMM = op.cutout_width.Value;
@@ -50,14 +54,15 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (op.is_open.HasValue) dishwasher.SetOpen(op.is_open.Value);
             }),
-            For<TableElement>((op, table) => ApplyLegsAndTabletop(op,
-                inset => table.LegInsetMM = inset,
-                def => MaterialManager.ApplyTabletop(table, def),
-                def => MaterialManager.ApplyLegs(table, def))),
-            For<RadiusTableElement>((op, table) => ApplyLegsAndTabletop(op,
-                inset => table.LegInsetMM = inset,
-                def => MaterialManager.ApplyTabletop(table, def),
-                def => MaterialManager.ApplyLegs(table, def))),
+            For<ITabletop>(ApplyTabletopAndLegsMaterials),
+            For<TableElement>((op, table) =>
+            {
+                if (op.leg_inset_mm.HasValue) table.LegInsetMM = op.leg_inset_mm.Value;
+            }),
+            For<RadiusTableElement>((op, table) =>
+            {
+                if (op.leg_inset_mm.HasValue) table.LegInsetMM = op.leg_inset_mm.Value;
+            }),
             For<PillarElement>((op, pillar) =>
             {
                 if (op.mid_height_mm.HasValue) pillar.MidHeightMM = op.mid_height_mm.Value;
@@ -89,19 +94,17 @@ namespace KitchenDesigner.Core.MCP
         private static Applier For<T>(Action<EditOp, T> apply) where T : class
             => (op, el) => { if (el is T typed) apply(op, typed); };
 
-        private static void ApplyLegsAndTabletop(EditOp op, Action<int> setLegInset,
-            Action<MaterialDef> applyTabletop, Action<MaterialDef> applyLegs)
+        private static void ApplyTabletopAndLegsMaterials(EditOp op, ITabletop tabletop)
         {
-            if (op.leg_inset_mm.HasValue) setLegInset(op.leg_inset_mm.Value);
             if (op.tabletop_material != null)
             {
                 var def = MaterialCatalog.Find(op.tabletop_material);
-                if (def != null) applyTabletop(def);
+                if (def != null) MaterialManager.ApplyTabletop(tabletop, def);
             }
             if (op.legs_material != null)
             {
                 var def = MaterialCatalog.Find(op.legs_material);
-                if (def != null) applyLegs(def);
+                if (def != null) MaterialManager.ApplyLegs(tabletop, def);
             }
         }
     }

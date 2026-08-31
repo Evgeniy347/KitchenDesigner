@@ -152,7 +152,7 @@ SELECTOR (a string; space-separated clauses, ALL must match)
   B4_*                     name mask ('*' = glob; without '*' = substring)
   name:PATTERN             same, explicit
   type:board|wall|floor|window|door|drawer|facade|assembled_facade|
-       radial_shelf|panel|table|radius_table|pillar|light
+       radial_shelf|panel|table|radius_table|stool|pillar|light
   module:NAME / group:NAME by module name (mask allowed)
   thickness==18            compare a dimension in MM; also width/height/depth
                            with == != >= <= > <
@@ -214,6 +214,10 @@ DrawerElement         GTV drawer (sliding box). SIZE COMES FROM ITS PARAMETERS -
 TableElement          Table (tabletop + 4 legs), type:""table"". leg_inset_mm and
                       materials via edit_elements.
 RadiusTableElement    Capsule-shaped table (type:""radius_table"").
+StoolElement          Stool: seat + 4 legs (type:""stool"", 360x450x360 mm by
+                      default). ONE type for both shapes — corner_radius 0 is a
+                      square stool, min(width, depth)/2 a fully round one.
+                      Seat and legs decors via tabletop_material/legs_material.
 PillarElement         Pillar (type:""pillar"", mid_height_mm).
 SinkElement / CooktopElement
                       Recessed appliances (type:""sink"" / ""cooktop""). They sit
@@ -306,7 +310,8 @@ faceGaps              Per-axis nearest OPPOSITE neighbour: {axis, neighbor, gapM
 moduleId/moduleName   Group membership (0/absent = not grouped).
 materialId            Decor id (list_materials).
 facadeMode            Facade opening mode (""front_left"", ""drawer_out"", ...).
-drawer / table / radiusTable   Type-specific sub-objects, absent otherwise.
+drawer / table / radiusTable / stool   Type-specific sub-objects, absent
+                      otherwise.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
   {name, kind, anchor:[x,z] MM corner, size:[width,depth,height] MM, rotY,

@@ -13,8 +13,13 @@ namespace KitchenDesigner.Core.MCP
         internal static bool AcceptsHingeMode(KitchenElement el) =>
             el is FacadeElement || el is WindowElement || el is DoorElement;
 
-        internal static bool AcceptsLegsAndTabletop(KitchenElement el) =>
+        internal static bool AcceptsLegInset(KitchenElement el) =>
             el is TableElement || el is RadiusTableElement;
+
+        internal static bool AcceptsTabletopSlots(KitchenElement el) => el is ITabletop;
+
+        internal static bool AcceptsCornerRadius(KitchenElement el) =>
+            el is RadialShelfElement || el is StoolElement;
 
         internal readonly struct EditTarget
         {
@@ -44,7 +49,7 @@ namespace KitchenDesigner.Core.MCP
             Unsupported("fill", o => o.fill != null, el => el is FacadeElement),
             Unsupported("mode", o => o.mode != null, AcceptsHingeMode),
             Unsupported("is_open", o => o.is_open.HasValue, AcceptsOpenFlag),
-            Unsupported("corner_radius", o => o.corner_radius.HasValue, el => el is RadialShelfElement),
+            Unsupported("corner_radius", o => o.corner_radius.HasValue, AcceptsCornerRadius),
             Unsupported("cutout_width", o => o.cutout_width.HasValue, el => el is CooktopElement),
             Unsupported("cutout_depth", o => o.cutout_depth.HasValue, el => el is CooktopElement),
 
@@ -61,9 +66,9 @@ namespace KitchenDesigner.Core.MCP
 
             RejectBadAttachment,
 
-            Unsupported("leg_inset_mm", o => o.leg_inset_mm.HasValue, AcceptsLegsAndTabletop),
-            Unsupported("tabletop_material", o => o.tabletop_material != null, AcceptsLegsAndTabletop),
-            Unsupported("legs_material", o => o.legs_material != null, AcceptsLegsAndTabletop),
+            Unsupported("leg_inset_mm", o => o.leg_inset_mm.HasValue, AcceptsLegInset),
+            Unsupported("tabletop_material", o => o.tabletop_material != null, AcceptsTabletopSlots),
+            Unsupported("legs_material", o => o.legs_material != null, AcceptsTabletopSlots),
 
             Unsupported("mid_height_mm", o => o.mid_height_mm.HasValue, el => el is PillarElement),
             Unsupported("tint", o => o.tint != null, el => el is WindowElement),
