@@ -323,6 +323,21 @@ public class ElementPropertyDiagramTests
     }
 
     [UnityTest]
+    public IEnumerator ContextMenu_Stool_SavesPng()
+    {
+        var dims = new Vector3Int(StoolElement.DefaultWidthMM,
+            StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM);
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateStool(dims, StoolElement.MaxCornerRadiusMM(dims),
+            "Табуретка", pos);
+        var el = go.GetComponent<KitchenElement>();
+        Assert.IsNotNull(el);
+        yield return CapturePanel("ContextMenu", "contextmenu_stool.png",
+            () => { ContextMenuUI.Instance!.Open(el); },
+            () => { ContextMenuUI.Instance?.Close(); });
+    }
+
+    [UnityTest]
     public IEnumerator ContextMenu_Pillar_SavesPng()
     {
         int totalH = PillarElement.TopHeightMM + PillarElement.MidHeightMM_Default + PillarElement.BottomHeightMM;

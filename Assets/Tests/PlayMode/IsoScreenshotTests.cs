@@ -316,6 +316,53 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+    // ─ Stool isometric screenshots ───────────────────
+
+    [UnityTest]
+    public IEnumerator IsoStool_360x450x360_Square()
+    {
+        yield return RenderStool(new Vector3Int(StoolElement.DefaultWidthMM,
+            StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM), 0,
+            "IsoStoolSquare", "iso_stool_360x450x360_square.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoStool_360x450x360_Round()
+    {
+        var dims = new Vector3Int(StoolElement.DefaultWidthMM,
+            StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM);
+        yield return RenderStool(dims, StoolElement.MaxCornerRadiusMM(dims),
+            "IsoStoolRound", "iso_stool_360x450x360_round.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoStool_600x450x360_Capsule()
+    {
+        var dims = new Vector3Int(600, StoolElement.DefaultHeightMM, 360);
+        yield return RenderStool(dims, StoolElement.MaxCornerRadiusMM(dims),
+            "IsoStoolCapsule", "iso_stool_600x450x360_capsule.png");
+    }
+
+    private IEnumerator RenderStool(Vector3Int dims, int cornerRadiusMM, string name, string png)
+    {
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateStool(dims, cornerRadiusMM, name, pos);
+        _spawned.Add(go);
+        var stool = go.GetComponent<StoolElement>();
+        Assert.IsNotNull(stool);
+        Assert.AreEqual(cornerRadiusMM, stool!.CornerRadiusMM,
+            "снимок обязан показывать ту форму, которую заказали: радиус не должен "
+            + "молча схлопнуться при создании");
+
+        Vector3 size = MmToUnits(dims);
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, png);
+
+        Object.DestroyImmediate(camGo);
+    }
+
     // ─ Radial shelf isometric screenshot ───────────────────
 
     [UnityTest]
