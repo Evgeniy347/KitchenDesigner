@@ -58,7 +58,7 @@ Updated 2026-09-01. Keep this current: it is the only place that says where the 
 | | |
 |---|---|
 | Guards in `Assets/Tests/EditMode/Geometry/` | **12**: comment ratchet, engine boundary, colour literals, tolerance literals, decor UVs, `new` over base, Unity message shadowing, `ElementKind` single source, layer direction, new-element-type completeness, test-quality ratchet, mutation baseline |
-| Mutation gate — `geometry/mutation-baseline.txt` | `core` **72,42 %**, порог **72**; 1039 мутантов, 2 мин 44 с |
+| Mutation gate — `geometry/mutation-baseline.txt` | `core` **72,42 %** / порог 72 (1039 мутантов, 2 мин 44 с), `pure` **57,26 %** / порог 57 (463 мутанта, 1 мин 27 с) |
 | Inner loop (`dotnet`, core + pure) | **446 tests, 0,3 s** — was 226 |
 | EditMode / PlayMode | **2860 / 92**, both green |
 | Cold Unity: one class / full EditMode / PlayMode | **~11 s / ~73 s / ~91 s** — was 18,4 / 79 / 101 |
@@ -762,11 +762,16 @@ Stryker mutates has a line, that the threshold has not fallen more than 1 % behi
 measurement (a threshold that lags stops firing), and that the script still reads the file
 rather than carrying its own copy of the number.
 
-**Baseline, commit `469f2e0f`, Stryker 4.16.0:**
+**Baseline, Stryker 4.16.0, 2026-09-01:**
 
-| Project | Tests | Mutants tested | Score | Gate | Run |
-|---|---|---|---|---|---|
-| `geometry/core` | 284 | 1039 | **72,42 %** | 72 | 2 мин 44 с |
+| Project | Tests | Mutants tested | Score | Gate | Run | Commit |
+|---|---|---|---|---|---|---|
+| `geometry/core` | 284 | 1039 | **72,42 %** | 72 | 2 мин 44 с | `469f2e0f` |
+| `geometry/pure` | 150 | 463 | **57,26 %** | 57 | 1 мин 27 с | `4456d308` |
+
+The two rows were measured on different commits, and that is itself the argument: between
+them `ElementData` and `ProjectData` moved into `Core/Pure`. The composition of the pure layer
+changed WHILE the baseline was being taken.
 
 **Two thresholds, not one**, and this is the decision, not an omission:
 
@@ -781,6 +786,9 @@ rather than carrying its own copy of the number.
   the smaller layer. Masking is precisely what the ratchet is for.
 - Красное должно называть сборку. With one number the first step after a failure is finding
   out where the coverage went.
+
+And the numbers settle it: 72 against 57. One threshold would have been set by the weaker of
+the two builds and would have stopped constraining the stronger one entirely.
 
 #### What the survivors said — 299 of them, and they are not evenly spread
 
@@ -798,7 +806,9 @@ they are worth reading:
    the fast path mutates it; its tests (`GapSideTests`) build `GameObject`s and live on the
    Unity side, so the fast path never runs them. `NonZeroCount` drives the "Зазоры" section
    header and nothing on this path touches it. Not a hole in the code — a test in the wrong
-   build.
+   build. **Open debt:** the cure is splitting the scene-free half of `GapSideTests` into
+   `Assets/Tests/EditMode/Geometry/`; it was left alone deliberately, as it moves another
+   agent's tests between builds.
 3. **`EdgeDetents` — 58,1 %, the lowest score among covered files.** All five detent LABELS
    (`кромка-`, `кромка+`, `центр`, `паз-`, `паз+`) can be replaced by `""` and nothing goes
    red: the `out string label` is never asserted, only the delta. And `abs <= threshold` →
@@ -817,6 +827,13 @@ they are worth reading:
 
 `SnapCandidateCollector` is the "high coverage, low kill" class the brief asked about: 105
 covered mutants, 61,7 %, 34 survivors — including `moved.Min` ↔ `moved.Max` on line 127.
+
+**Two of these are already spent** (`4c3645b0`, `6e1449e3`): the recessed-body union now has
+its own test with an asymmetric body — a body that fits inside the part horizontally makes
+`Max(bounds, body.Max)` and `Max(bounds, body.Min)` return the same answer, which is why every
+existing fixture was green — and `EdgeDetents` got the suite it never had: five labels, the
+inclusive threshold AT the boundary, the tie-break, and the groove-coordinate dedupe. Neither
+turned out to be a live defect; both were missing checks over correct code.
 
 ### C2. Move every scene-free class and its tests onto the `dotnet` build
 
