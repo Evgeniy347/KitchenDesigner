@@ -272,6 +272,20 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, radiusTable);
         }
 
+        public GameObject CreateStool(Vector3Int dimensionsMM, int cornerRadiusMM, string name,
+            Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Табуретка", position);
+
+            var stool = go.AddComponent<StoolElement>();
+            stool.PartName = go.name;
+            stool.DimensionsMM = dimensionsMM;
+            stool.CornerRadiusMM = cornerRadiusMM;
+
+            if (DefaultMaterial != null) stool.SetMaterial(DefaultMaterial);
+            return ElementRoot.Publish(go, stool);
+        }
+
         public GameObject CreatePillar(int midHeightMM, string name, Vector3 position)
         {
             var go = ElementRoot.NewCube(name, "Опора", position);

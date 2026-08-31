@@ -51,6 +51,9 @@ namespace KitchenDesigner.Core
 		public static GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position) =>
 			Instance.CreateRadiusTable(dimensionsMM, name, position);
 
+		public static GameObject CreateStool(Vector3Int dimensionsMM, int cornerRadiusMM, string name, Vector3 position) =>
+			Instance.CreateStool(dimensionsMM, cornerRadiusMM, name, position);
+
 		public static GameObject CreatePillar(int midHeightMM, string name, Vector3 position) =>
 			Instance.CreatePillar(midHeightMM, name, position);
 
