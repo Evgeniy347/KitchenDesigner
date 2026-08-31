@@ -95,25 +95,26 @@ public class RadialShelfTests
     [Test]
     public void BuildMesh_VertexCount_MatchesExpectedTopology()
     {
-        // cap (x2): quad A 4 + quad B 4 + fan (1 center + 17 arc) = 26 → 52
-        // curved side: 17 * 2 = 34
-        // flat sides: 4 walls * 4 = 16
-        // total = 102
+        // Контур RoundedRectProfile: 3 острых угла + дуга из 17 точек = 20 точек.
+        // крышки (x2): 1 центр + 20 по контуру = 21 → 42
+        // боковины: 20 сегментов * 4 (свои вершины у каждого — так держатся
+        // жёсткие рёбра на прямых углах) = 80
+        // итого = 122
         var shelf = CreateShelf("R_VTX", 600, 400, 18, 200, Vector3.zero);
         var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
-        Assert.AreEqual(102, mesh.vertexCount);
+        Assert.AreEqual(122, mesh.vertexCount, "топология полки после перехода на общий "
+            + "экструдер: у каждого сегмента боковины свои вершины");
     }
 
     [Test]
     public void BuildMesh_TriangleCount_MatchesExpectedTopology()
     {
-        // cap (x2): 2 + 2 + 16 (fan) = 20 → 40
-        // curved side: 16 * 2 = 32
-        // flat sides: 4 walls * 2 = 8
-        // total = 80
+        // крышки (x2): веер из 20 треугольников = 40
+        // боковины: 20 сегментов * 2 = 40
+        // итого = 80
         var shelf = CreateShelf("R_TRIS", 600, 400, 18, 200, Vector3.zero);
         var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
-        Assert.AreEqual(80, mesh.triangles.Length / 3);
+        Assert.AreEqual(80, mesh.triangles.Length / 3, "число треугольников полки");
     }
 
     [Test]
@@ -133,30 +134,30 @@ public class RadialShelfTests
     public void BuildMesh_ArcIsAtRoundedCorner()
     {
         // Доска 600×400, R=200, меш центрирован: скруглён угол (+0.3, +0.2),
-        // дуга от (0.3, 0.0) до (0.1, 0.2) вокруг центра (0.1, 0.0).
+        // дуга от (0.3, 0.0) до (0.1, 0.2) вокруг центра (0.1, 0.0). Проверка
+        // идёт по КООРДИНАТАМ, а не по индексам вершин: раскладка меша — дело
+        // общего экструдера, и тест не вправе её замораживать.
         var shelf = CreateShelf("R_ARC", 600, 400, 18, 200, Vector3.zero);
         var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
         var verts = mesh.vertices;
+        var centre = new Vector2(0.1f, 0f);
 
-        // Верхняя крышка: [26..51]; веер — центр 34, дуга 35..51.
-        const int fanCenter = 26 + 8;
-        var c = verts[fanCenter];
-        Assert.AreEqual(0.1f, c.x, 1e-5f, "arc center X");
-        Assert.AreEqual(0.0f, c.z, 1e-5f, "arc center Z");
-
-        for (int i = fanCenter + 1; i <= fanCenter + 17; i++)
+        foreach (var v in verts)
         {
-            float dx = verts[i].x - c.x;
-            float dz = verts[i].z - c.z;
-            Assert.AreEqual(0.2f, Mathf.Sqrt(dx * dx + dz * dz), 1e-5f, $"arc vertex {i} distance from center");
+            if (v.x < centre.x || v.z < centre.y) continue;
+            float distance = new Vector2(v.x - centre.x, v.z - centre.y).magnitude;
+            Assert.LessOrEqual(distance, 0.2f + 1e-5f,
+                "ни одна вершина не вправе выйти за дугу радиуса R вокруг (W/2−R, D/2−R): "
+                + "именно это и значит «угол срезан»");
         }
 
-        var first = verts[fanCenter + 1];
-        var last = verts[fanCenter + 17];
-        Assert.AreEqual(0.3f, first.x, 1e-5f, "arc starts at (+W/2, D/2−R)");
-        Assert.AreEqual(0.0f, first.z, 1e-5f);
-        Assert.AreEqual(0.1f, last.x, 1e-5f, "arc ends at (W/2−R, +D/2)");
-        Assert.AreEqual(0.2f, last.z, 1e-5f);
+        Assert.IsTrue(HasVertexAtXZ(verts, 0.3f, 0f), "дуга начинается в (+W/2, D/2−R)");
+        Assert.IsTrue(HasVertexAtXZ(verts, 0.1f, 0.2f), "дуга кончается в (W/2−R, +D/2)");
+        Assert.IsTrue(HasVertexAtXZ(verts,
+                centre.x + 0.2f * Mathf.Cos(Mathf.PI * 0.25f),
+                centre.y + 0.2f * Mathf.Sin(Mathf.PI * 0.25f)),
+            "середина дуги (45°) лежит на радиусе R — без неё «срезан» мог бы означать "
+            + "просто хорду");
     }
 
     [Test]
@@ -178,23 +179,35 @@ public class RadialShelfTests
         var shelf = CreateShelf("R_NORM", 600, 400, 18, 200, Vector3.zero);
         var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
         var normals = mesh.normals;
+        var verts = mesh.vertices;
+        int caps = 0, sides = 0;
 
-        // Раскладка: bottom cap [0..25], top cap [26..51], curved [52..85], walls [86..101].
-        for (int i = 0; i < 26; i++)
-            Assert.AreEqual(-1f, normals[i].y, 1e-4f, $"bottom cap normal {i} should point down");
-
-        for (int i = 26; i < 52; i++)
-            Assert.AreEqual(1f, normals[i].y, 1e-4f, $"top cap normal {i} should point up");
-
-        for (int i = 52; i < 86; i++)
+        // Крышку от боковины отличаем по самой нормали, а не по индексу: раскладка
+        // вершин принадлежит общему экструдеру. Наружу боковина смотрит тогда,
+        // когда её нормаль лежит по ту же сторону, что и сама вершина от оси
+        // детали — контур выпуклый и охватывает начало координат.
+        for (int i = 0; i < normals.Length; i++)
         {
             var n = normals[i];
+            if (Mathf.Abs(n.y) > 0.5f)
+            {
+                caps++;
+                Assert.AreEqual(Mathf.Sign(verts[i].y), n.y, 1e-4f,
+                    "нормаль крышки смотрит от плоскости детали: верхняя вверх, нижняя вниз");
+                continue;
+            }
+
+            sides++;
             float lenXZ = Mathf.Sqrt(n.x * n.x + n.z * n.z);
-            Assert.Greater(lenXZ, 0.99f, $"curved side normal {i} should point outward in XZ");
-            Assert.GreaterOrEqual(n.x, -1e-4f, $"curved side normal {i}.x is non-negative");
-            Assert.GreaterOrEqual(n.z, -1e-4f, $"curved side normal {i}.z is non-negative");
-            Assert.AreEqual(0f, n.y, 1e-4f, "curved side normals must have zero Y component");
+            Assert.AreEqual(1f, lenXZ, 1e-4f, "нормаль боковины единичная и лежит в плоскости XZ");
+            Assert.AreEqual(0f, n.y, 1e-4f, "у нормали боковины нет вертикальной составляющей");
+            Assert.Greater(n.x * verts[i].x + n.z * verts[i].z, 0f,
+                "нормаль боковины смотрит НАРУЖУ: при обратном обходе контура вся "
+                + "боковая поверхность вывернулась бы внутрь, и деталь стала бы прозрачной");
         }
+
+        Assert.AreEqual(2 * 21, caps, "две крышки по 21 вершине (центр веера + контур)");
+        Assert.AreEqual(20 * 4, sides, "20 сегментов боковины по 4 вершины");
     }
 
     [Test]
@@ -207,10 +220,12 @@ public class RadialShelfTests
         shelf.CornerRadius = 100;
         var after = shelf.GetComponent<MeshFilter>().sharedMesh;
 
-        // Дуга сместилась к углу: центр веера теперь (W/2−R, D/2−R) = (0.2, 0.1).
-        const int fanCenter = 26 + 8;
-        Assert.AreEqual(0.2f, after.vertices[fanCenter].x, 1e-5f);
-        Assert.AreEqual(0.1f, after.vertices[fanCenter].z, 1e-5f);
+        // Дуга сместилась к углу: центр дуги теперь (W/2−R, D/2−R) = (0.2, 0.1),
+        // значит она начинается в (0.3, 0.1) и кончается в (0.2, 0.2).
+        Assert.IsTrue(HasVertexAtXZ(after.vertices, 0.3f, 0.1f), "новая дуга начинается ниже");
+        Assert.IsTrue(HasVertexAtXZ(after.vertices, 0.2f, 0.2f), "и кончается правее");
+        Assert.IsFalse(HasVertexAtXZ(after.vertices, 0.3f, 0f),
+            "начало прежней дуги (R=200) обязано исчезнуть — иначе меш не перестроился");
         Assert.AreEqual(Vector3.one.x, shelf.transform.localScale.x, 1e-6f);
         Assert.AreEqual(Vector3.one.y, shelf.transform.localScale.y, 1e-6f);
         Assert.AreEqual(Vector3.one.z, shelf.transform.localScale.z, 1e-6f);
@@ -330,15 +345,16 @@ public class RadialShelfTests
 
     // ── Физ. масштаб декора ────────────────────────────────────────────────
     //
-    // _BaseMap_ST у полки строится по (ширина, ТОЛЩИНА): DimensionsMM полки —
-    // это (Ш, толщина, Г), см. MaterialManager.ComputeTileST. Значит UV любого
-    // куска меша обязаны мериться этими же двумя размерами, иначе декор на нём
+    // _BaseMap_ST у полки строится по DecorSurfaceMM, а она у полки — (Ш, Г):
+    // полка лежит горизонтально, и вторая ось её развёртки — глубина, а не
+    // толщина (см. MaterialManager.ComputeTileST). Значит UV любого куска меша
+    // обязаны мериться этими же двумя размерами, иначе декор на нём
     // растягивается. Меряем так же, как у детали: протяжённость UV × ST × плитка
     // даёт физический размер куска декора, легшего на грань.
 
     private const int Tile = 800;
 
-    private static Vector2 DecorSpanMM(Mesh mesh, Vector3Int dims, System.Func<Vector3, bool> pick)
+    private static Vector2 DecorSpanMM(Mesh mesh, Vector2Int surface, System.Func<Vector3, bool> pick)
     {
         var normals = mesh.normals;
         var uv = mesh.uv;
@@ -354,7 +370,7 @@ public class RadialShelfTests
         }
         Assert.Greater(found, 0, "нужные вершины в меше не найдены");
 
-        var st = MaterialManager.ComputeTileST(dims, Tile, Tile);
+        var st = MaterialManager.ComputeTileST(surface, Tile, Tile);
         return new Vector2((maxU - minU) * st.x * Tile, (maxV - minV) * st.y * Tile);
     }
 
@@ -368,7 +384,7 @@ public class RadialShelfTests
         _go = shelf.gameObject;
 
         var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
-        var mm = DecorSpanMM(mesh, shelf.DimensionsMM, Facing(Vector3.up));
+        var mm = DecorSpanMM(mesh, shelf.DecorSurfaceMM, Facing(Vector3.up));
 
         Assert.AreEqual(600f, mm.x, 0.5f, "пласть: ширина");
         Assert.AreEqual(400f, mm.y, 0.5f, "пласть: глубина");
@@ -381,15 +397,15 @@ public class RadialShelfTests
         _go = shelf.gameObject;
 
         var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
-        var dims = shelf.DimensionsMM;
+        var surface = shelf.DecorSurfaceMM;
 
         // Торец x=0 идёт на всю глубину, торец z=0 — на всю ширину. Оба
         // получают ОДИН и тот же ST, значит длину обязаны нести UV.
-        var left = DecorSpanMM(mesh, dims, Facing(-Vector3.right));
+        var left = DecorSpanMM(mesh, surface, Facing(-Vector3.right));
         Assert.AreEqual(400f, left.x, 0.5f, "торец x=0: длина равна глубине");
         Assert.AreEqual(18f, left.y, 0.5f, "торец x=0: толщина");
 
-        var front = DecorSpanMM(mesh, dims, Facing(-Vector3.forward));
+        var front = DecorSpanMM(mesh, surface, Facing(-Vector3.forward));
         Assert.AreEqual(600f, front.x, 0.5f, "торец z=0: длина равна ширине");
     }
 
@@ -402,11 +418,14 @@ public class RadialShelfTests
         var mesh = shelf.GetComponent<MeshFilter>().sharedMesh;
         // Только внутренние вершины дуги: у плоских торцов нормаль строго по оси,
         // и на концах дуга с ними совпадает.
-        var mm = DecorSpanMM(mesh, shelf.DimensionsMM,
+        var mm = DecorSpanMM(mesh, shelf.DecorSurfaceMM,
             n => Mathf.Abs(n.y) < 0.01f && n.x > 0.01f && n.z > 0.01f);
 
-        int seg = RadialShelfMesh.Segments;
-        float arc = Mathf.PI * 0.5f * 200f * (seg - 2) / seg; // без крайних сегментов
+        // Общий экструдер сглаживает стык дуги с прямым торцом (угол между их
+        // нормалями 2,8° — меньше порога жёсткого ребра), поэтому крайние точки
+        // дуги тоже попадают в выборку, и меряется ВСЯ дуга. Раньше их нормали
+        // совпадали с осями, и тест не досчитывал двух сегментов из шестнадцати.
+        float arc = Mathf.PI * 0.5f * 200f;
         Assert.AreEqual(arc, mm.x, 1f, "дуга: декор ложится по её длине, а не по ширине полки");
         Assert.AreEqual(18f, mm.y, 0.5f, "дуга: толщина");
     }

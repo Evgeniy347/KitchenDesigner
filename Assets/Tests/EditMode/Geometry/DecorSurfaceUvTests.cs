@@ -21,8 +21,8 @@ namespace KitchenDesigner.Tests.Geometry
     ///
     /// Отсюда механическая проверка: класс, который строит СВОЙ меш, обязан сам
     /// объявить DecorSurfaceMM — иначе он молча наследует оси стоячей панели.
-    /// Исключения перечислены поимённо, у каждого причина; PillarElement и
-    /// RadialShelfElement — записанный долг (docs/HARDENING-PLAN.md, п. 10).</summary>
+    /// Исключения перечислены поимённо, у каждого причина; PillarElement —
+    /// записанный долг (docs/HARDENING-PLAN.md, п. 10).</summary>
     public class DecorSurfaceUvTests
     {
         private const string BuildsItsOwnMesh = @"\b\w+Mesh\s*\.\s*Build\s*\(";
@@ -45,9 +45,6 @@ namespace KitchenDesigner.Tests.Geometry
                 "ДОЛГ (HARDENING-PLAN, п. 10): у PillarMesh бок развёрнут как i/Segments по "
                 + "ОКРУЖНОСТИ, а торцы как cos*0.5+0.5 по диаметру — ни то ни другое не "
                 + "совпадает с (dims.x, dims.y), и декор на колонне растянут в pi раз"),
-            ("RadialShelfElement.cs",
-                "ДОЛГ (HARDENING-PLAN, п. 10): RadialShelfMesh делит UV торца на "
-                + "(width, thickness), тогда как вторая ось торца — глубина"),
         };
 
         /// <summary>Каждый меш-строитель, пишущий UV, обязан быть здесь: новый
@@ -57,8 +54,6 @@ namespace KitchenDesigner.Tests.Geometry
         private static readonly (string file, string uvSpace)[] UvBuilders =
         {
             ("AssembledFacadeMesh.cs", "0..1 по (ширина, высота) стоячего фасада"),
-            ("CapsuleTableMesh.cs", "0..1 по (ширина, ГЛУБИНА); RadiusTableElement для того "
-                + "и переопределяет DecorSurfaceMM в (x, z)"),
             ("DrawerMesh.cs", "0..1 по граням единичного короба; декора не носит"),
             ("FloorPolygonMesh.cs", "МИРОВЫЕ мм X/Z, делённые на габарит контура: пол лежит "
                 + "горизонтально, поэтому FloorElement объявляет DecorSurfaceMM = (x, z), а ноль "
@@ -68,7 +63,11 @@ namespace KitchenDesigner.Tests.Geometry
             ("PillarMesh.cs", "ДОЛГ: окружность и диаметр вместо осей DecorSurfaceMM"),
             ("PlaneWithHolesMesh.cs", "ФИЗИЧЕСКИЕ мм / TileMM: накладка рисуется собственным "
                 + "мешем и BaseMap_ST к ней не применяется, поэтому мостит сама"),
-            ("RadialShelfMesh.cs", "ДОЛГ: (width, thickness) вместо (width, depth) на торце"),
+            ("ProfileExtrusionMesh.cs", "ОДНА развёртка на весь меш по (ширина, ГЛУБИНА): "
+                + "крышки — след детали (x/Ш + 0,5; z/Г + 0,5), боковины — длина дуги вдоль "
+                + "контура/Ш по u и толщина/Г по v. Поэтому и радиусная полка, и радиусный "
+                + "стол объявляют DecorSurfaceMM в (x, z), и декор на них мостится "
+                + "физическими миллиметрами и на пласти, и на торце"),
         };
 
         private static string ElementsDir() => RepoPaths.Subdir("Assets", "Scripts", "Core", "Elements");
@@ -152,6 +151,10 @@ namespace KitchenDesigner.Tests.Geometry
             var exempt = AllowedWithoutDecorSurface.Select(a => a.file).ToArray();
             CollectionAssert.DoesNotContain(exempt, "RadiusTableElement.cs",
                 "белый список не вправе освобождать уже исправленный случай");
+            CollectionAssert.DoesNotContain(exempt, "RadialShelfElement.cs",
+                "третий исправленный случай: полка перешла на общую развёртку "
+                + "ProfileExtrusionMesh и объявила оси (x, z) — долг HARDENING-PLAN п. 10 "
+                + "по ней закрыт");
             CollectionAssert.DoesNotContain(exempt, "FloorElement.cs",
                 "пол исправлен: развёртка есть и оси объявлены — исключение для него было бы "
                 + "ослаблением правила");

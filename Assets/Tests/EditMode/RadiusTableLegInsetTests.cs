@@ -23,20 +23,30 @@ public class RadiusTableLegInsetTests
     public void CapsuleTableMesh_CapUv_SpansTheWholeFootprint()
     {
         var mesh = CapsuleTableMesh.Build(1f, 0.03f, 1f);
+        var uv = mesh.uv;
+        var normals = mesh.normals;
         float minU = float.MaxValue, maxU = float.MinValue;
         float minV = float.MaxValue, maxV = float.MinValue;
-        foreach (var p in mesh.uv)
+        int caps = 0;
+        for (int i = 0; i < uv.Length; i++)
         {
-            minU = Mathf.Min(minU, p.x); maxU = Mathf.Max(maxU, p.x);
-            minV = Mathf.Min(minV, p.y); maxV = Mathf.Max(maxV, p.y);
+            // Только крышки: у боковин своя развёртка — u идёт по ДЛИНЕ контура
+            // (периметр / ширина, то есть до π у круглой крышки), v — по толщине.
+            // Смешивать их с крышкой в одном min/max нельзя.
+            if (Mathf.Abs(normals[i].y) < 0.5f) continue;
+            caps++;
+            minU = Mathf.Min(minU, uv[i].x); maxU = Mathf.Max(maxU, uv[i].x);
+            minV = Mathf.Min(minV, uv[i].y); maxV = Mathf.Max(maxV, uv[i].y);
         }
+
+        Assert.Greater(caps, 0, "вершины крышек в меше не найдены");
 
         Assert.AreEqual(0f, minU, 1e-3f,
             "UV крышки занимали 0,25..0,75 — половину диапазона, и «вырез» по физическому "
             + "размеру плитки давал вдвое растянутый рисунок");
-        Assert.AreEqual(1f, maxU, 1e-3f);
-        Assert.AreEqual(0f, minV, 1e-3f);
-        Assert.AreEqual(1f, maxV, 1e-3f);
+        Assert.AreEqual(1f, maxU, 1e-3f, "развёртка крышки занимает весь диапазон по u");
+        Assert.AreEqual(0f, minV, 1e-3f, "и начинается с нуля по v");
+        Assert.AreEqual(1f, maxV, 1e-3f, "и занимает весь диапазон по v");
     }
 
     private static float MillimetresInsideTheEllipse(Vector2 pointMM, float aMM, float bMM)

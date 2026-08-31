@@ -14,6 +14,9 @@ namespace KitchenDesigner.Core
             DimensionsMM.y * AppConstants.MM_TO_UNITS,
             DimensionsMM.z * AppConstants.MM_TO_UNITS);
 
+        public override Vector2Int DecorSurfaceMM
+            => new Vector2Int(DimensionsMM.x, DimensionsMM.z);
+
         public override bool SupportsGaps => true;
 
         [Undoable]
