@@ -94,7 +94,7 @@ public class RadiusTableLegInsetTests
         table.LegInsetMM = 100;
 
         Assert.GreaterOrEqual(WorstLegClearanceMM(table),
-            CapsuleTableMesh.MinLegInsetFromContourMM - 1f,
+            RadiusTableLegs.MinLegInsetFromContourMM - 1f,
             "посадку ножек считали по «стадиону», построенному из габаритной рамки, а крышка "
             + "у овала — эллипс: на 2000×1000 углы ножек оказывались СНАРУЖИ столешницы");
     }
@@ -107,7 +107,7 @@ public class RadiusTableLegInsetTests
         table.LegInsetMM = 0;
 
         Assert.GreaterOrEqual(WorstLegClearanceMM(table),
-            CapsuleTableMesh.MinLegInsetFromContourMM - 1f,
+            RadiusTableLegs.MinLegInsetFromContourMM - 1f,
             "нулевая утопленность у овала запрещена: минимум держится независимо от поля");
     }
 
@@ -119,7 +119,7 @@ public class RadiusTableLegInsetTests
         table.LegInsetMM = 100;
 
         Assert.GreaterOrEqual(WorstLegClearanceMM(table),
-            CapsuleTableMesh.MinLegInsetFromContourMM - 1f,
+            RadiusTableLegs.MinLegInsetFromContourMM - 1f,
             "круглая крышка — та же формула при a == b, вырождаться она не имеет права");
     }
 
@@ -129,9 +129,9 @@ public class RadiusTableLegInsetTests
         var go = ElementFactory.CreateRadiusTable(new Vector3Int(2000, 750, 1000), "RT", Vector3.zero);
         var table = go.GetComponent<RadiusTableElement>()!;
 
-        table.LegInsetMM = CapsuleTableMesh.MinLegInsetFromContourMM;
+        table.LegInsetMM = RadiusTableLegs.MinLegInsetFromContourMM;
         float atMinimum = WorstLegClearanceMM(table);
-        table.LegInsetMM = CapsuleTableMesh.MinLegInsetFromContourMM + 200;
+        table.LegInsetMM = RadiusTableLegs.MinLegInsetFromContourMM + 200;
         float deeper = WorstLegClearanceMM(table);
 
         Assert.Greater(deeper, atMinimum + 100f,

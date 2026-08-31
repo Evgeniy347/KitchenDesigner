@@ -103,7 +103,7 @@ namespace KitchenDesigner.Core
 
             UpdateCollider(mesh);
 
-            var legPositions_world = CapsuleTableMesh.GetLegPositions(
+            var legPositions_world = RadiusTableLegs.GetLegPositions(
                 overallW, overallH, overallD, legCenterY_world, _legInsetMM);
 
             var legScale = new Vector3(legCross / psX, legH * toU / psY, legCross / psZ);
