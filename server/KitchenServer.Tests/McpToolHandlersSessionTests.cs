@@ -247,7 +247,7 @@ public class McpToolHandlersSessionTests
     }
 
     /// <summary>WebSocket fake that immediately resolves every sent request with an empty success reply.</summary>
-    private class RespondingWebSocket : WebSocket
+    private sealed class RespondingWebSocket : WebSocket
     {
         private readonly KitchenServer.Web.Services.McpSession _session;
 
@@ -281,7 +281,7 @@ public class McpToolHandlersSessionTests
 
     /// <summary>Minimal concrete <see cref="McpServer"/> for tests — only identity matters.</summary>
 #pragma warning disable MCPEXP002
-    private class FakeMcpServer : McpServer
+    private sealed class FakeMcpServer : McpServer
 #pragma warning restore MCPEXP002
     {
         public override ClientCapabilities ClientCapabilities => new();

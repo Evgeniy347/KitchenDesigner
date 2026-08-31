@@ -10,7 +10,7 @@ namespace KitchenServer.Web.Services;
 /// and the MCP agent sessions bound to them. The agent authenticates with a tab key
 /// (first tool call); after that its MCP session forwards commands to that tab.
 /// </summary>
-public class McpSessionManager : IHostedService
+public class McpSessionManager : IHostedService, IDisposable
 {
     private Timer? _cleanupTimer;
     private readonly ConcurrentDictionary<string, McpSession> _byKey = new();
@@ -198,6 +198,7 @@ public class McpSessionManager : IHostedService
         }
         session.BrowserWebSocket = null;
         SessionStateChanged?.Invoke(session);
+        session.Dispose();
         return true;
     }
 
@@ -242,9 +243,16 @@ public class McpSessionManager : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
+        Dispose();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Stops the cleanup timer and releases every live tab; idempotent, StopAsync routes here.</summary>
+    public void Dispose()
+    {
         _cleanupTimer?.Dispose();
         foreach (var key in _byKey.Keys.ToList())
             CloseSession(key);
-        return Task.CompletedTask;
+        GC.SuppressFinalize(this);
     }
 }

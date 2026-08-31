@@ -66,35 +66,151 @@ csharp_style_unused_value_expression_statement_preference = discard_variable:err
 
 dotnet_analyzer_diagnostic.severity = error
 
+# Отключённые диагностики. У КАЖДОГО исключения записана причина: через полгода
+# исключение без причины неотличимо от недосмотра. Ревизия HARDENING-PLAN.md -> B2:
+# из 29 заглушённых вернули 7, 22 остались с основанием.
+#
+# Где это вообще действует: анализаторы CA выполняются только в SDK-сборках
+# (server/**). Unity анализаторов не запускает, geometry/*.csproj выключают их
+# явно (EnableNETAnalyzers=false) — там строгость держит -warnaserror.
+
+# Поля, которые присваивает сериализатор Unity ([SerializeField]) и инспектор:
+# компилятор их инициализации не видит. Повторяет -nowarn из
+# Assets/Scripts/Core/csc.rsp, чтобы обе сборки молчали об одном и том же.
 dotnet_diagnostic.CS0169.severity = none
 dotnet_diagnostic.CS0414.severity = none
 dotnet_diagnostic.CS0649.severity = none
+
+# XML-документация ЗАПРЕЩЕНА проектом: CONVENTIONS.md -> "Comments live in tests".
+# Правило требует ровно того, что запрещено, — включить его нельзя в принципе.
 dotnet_diagnostic.CS1591.severity = none
 
-dotnet_diagnostic.CA1716.severity = none
-dotnet_diagnostic.CA1056.severity = none
-dotnet_diagnostic.CA1819.severity = none
-dotnet_diagnostic.CA2227.severity = none
+# Подчёркивания в идентификаторах. CONVENTIONS.md -> "Test naming conventions"
+# предписывает имена тестов {Class}_{Method}_{Scenario}, а в ядре живут константы
+# SCREAMING_CASE (MM_TO_UNITS). Замер: 234 срабатывания на исходниках ядра.
 dotnet_diagnostic.CA1707.severity = none
-dotnet_diagnostic.CA1008.severity = none
-dotnet_diagnostic.CA1028.severity = none
-dotnet_diagnostic.CA1711.severity = none
+
+# Форму DTO диктует сериализация: JsonUtility и System.Text.Json требуют именно
+# List<T>/массив с публичным сеттером и не понимают ReadOnlyCollection.
+# Замер: 56 (CA1002) + 4 (CA1819) срабатывания.
 dotnet_diagnostic.CA1002.severity = none
-dotnet_diagnostic.CA2007.severity = none
-dotnet_diagnostic.CA1031.severity = none
-dotnet_diagnostic.CA1720.severity = none
-dotnet_diagnostic.CA1054.severity = none
-dotnet_diagnostic.CA5350.severity = none
-dotnet_diagnostic.CA1849.severity = none
+dotnet_diagnostic.CA2227.severity = none
+dotnet_diagnostic.CA1819.severity = none
+
+# Проверку публичных аргументов на null уже делает компилятор: -nullable:enable
+# стоит и в csc.rsp, и в обоих Directory.Build.props. CA1062 требует сверх этого
+# рантайм-throw в каждом публичном методе. Замер: 56 срабатываний.
 dotnet_diagnostic.CA1062.severity = none
-dotnet_diagnostic.CA1822.severity = none
-dotnet_diagnostic.CA1812.severity = none
+
+# ConfigureAwait(false). В ASP.NET Core нет SynchronizationContext, поэтому
+# правило добавляет шум в каждый await и ничего не чинит.
+dotnet_diagnostic.CA2007.severity = none
+
+# Логирование через сгенерированные LoggerMessage-делегаты. Замер: 80 (CA1848)
+# и 24 (CA1873) срабатывания на серверном коде, которое не лежит на горячем пути;
+# цена — переписать всё логирование, выгода — ноль дефектов.
 dotnet_diagnostic.CA1848.severity = none
 dotnet_diagnostic.CA1873.severity = none
-dotnet_diagnostic.CA1001.severity = none
-dotnet_diagnostic.CA1852.severity = none
+
+# Правила дизайна ПУБЛИЧНОЙ БИБЛИОТЕКИ. Проект — приложение и его сервер, чужих
+# потребителей API у него нет. Все шесть запрещают доменные имена и не ловят ни
+# одного дефекта. Замер на ядре: CA1054 — 2, CA1008 — 4, остальные 0.
+dotnet_diagnostic.CA1716.severity = none
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.CA1720.severity = none
+dotnet_diagnostic.CA1028.severity = none
+dotnet_diagnostic.CA1008.severity = none
+# URL пересекает границу как строка (JSON, MCP-контракт, StreamingAssets);
+# System.Uri пришлось бы разворачивать обратно на каждой границе.
+dotnet_diagnostic.CA1056.severity = none
+dotnet_diagnostic.CA1054.severity = none
+
+# ВЕРНУТЫ в строй (строк здесь нет намеренно: dotnet_analyzer_diagnostic.severity
+# = error делает их ошибками, а перечисление ниже — журнал решения):
+#   CA1001 — тип владеет IDisposable-полем и сам не IDisposable. Дала два реальных
+#            дефекта: McpSession (SemaphoreSlim) и McpSessionManager (Timer).
+#   CA1031 — catch (Exception). HARDENING-PLAN.md -> B2 называет её прямо.
+#   CA1812 — internal-тип, который никто не создаёт (мёртвый код).
+#   CA1822 — метод можно сделать static: сигнал, что он не принадлежит классу.
+#   CA1849 — синхронный вызов внутри async-метода.
+#   CA1852 — internal-тип можно запечатать.
+#   CA5350 — слабый криптоалгоритм.
+
+# Длина строки. Замер по Assets/Scripts (48823 строки): медиана 39, p90 = 92,
+# p95 = 112. HARDENING-PLAN.md -> B4 предполагал ~100, но 100 нарушают 3495
+# существующих строк, а 120 — 1858 из 48823 (96,2 % кода уже укладывается).
+# Берём границу, которую код ДЕЙСТВИТЕЛЬНО держит, иначе это пожелание.
+max_line_length = 120
+
+# Именование (HARDENING-PLAN.md -> B1). Кодифицированы соглашения, которые код
+# уже соблюдает; замер по Assets/Scripts/Core: приватные поля _camelCase — 766 из
+# 784 плюс 142 [SerializeField], интерфейсы с I — все.
+#
+# Чего здесь СОЗНАТЕЛЬНО нет:
+#   const — в ядре 253 SCREAMING_CASE и 481 PascalCase, и обе формы законны
+#           (Tolerance.ContactMm против AppConstants.MM_TO_UNITS). Формат
+#           .editorconfig не умеет "или", а выбрать одну — это 253 или 481
+#           переименование, то есть отдельная задача, а не правило;
+#   публичные поля — 707 camelCase против 251 PascalCase, потому что у DTO имя
+#           поля И ЕСТЬ ключ JSON: переименование ломает сохранённые проекты.
+
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_style.camel_case.capitalization = camel_case
+dotnet_naming_style.i_pascal_case.capitalization = pascal_case
+dotnet_naming_style.i_pascal_case.required_prefix = I
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+dotnet_naming_rule.interfaces_are_i_pascal.symbols = interfaces
+dotnet_naming_rule.interfaces_are_i_pascal.style = i_pascal_case
+dotnet_naming_rule.interfaces_are_i_pascal.severity = error
+
+dotnet_naming_symbols.types.applicable_kinds = class, struct, enum, delegate
+dotnet_naming_symbols.types.applicable_accessibilities = *
+dotnet_naming_rule.types_are_pascal.symbols = types
+dotnet_naming_rule.types_are_pascal.style = pascal_case
+dotnet_naming_rule.types_are_pascal.severity = error
+
+dotnet_naming_symbols.members.applicable_kinds = method, property, event
+dotnet_naming_symbols.members.applicable_accessibilities = *
+dotnet_naming_rule.members_are_pascal.symbols = members
+dotnet_naming_rule.members_are_pascal.style = pascal_case
+dotnet_naming_rule.members_are_pascal.severity = error
+
+dotnet_naming_symbols.static_fields.applicable_kinds = field
+dotnet_naming_symbols.static_fields.applicable_accessibilities = *
+dotnet_naming_symbols.static_fields.required_modifiers = static
+dotnet_naming_rule.static_fields_are_free.symbols = static_fields
+dotnet_naming_rule.static_fields_are_free.style = pascal_case
+dotnet_naming_rule.static_fields_are_free.severity = none
+
+dotnet_naming_symbols.const_fields.applicable_kinds = field
+dotnet_naming_symbols.const_fields.applicable_accessibilities = *
+dotnet_naming_symbols.const_fields.required_modifiers = const
+dotnet_naming_rule.const_fields_are_free.symbols = const_fields
+dotnet_naming_rule.const_fields_are_free.style = pascal_case
+dotnet_naming_rule.const_fields_are_free.severity = none
+
+dotnet_naming_symbols.non_public_fields.applicable_kinds = field
+dotnet_naming_symbols.non_public_fields.applicable_accessibilities = private, protected, private_protected, protected_internal
+dotnet_naming_rule.non_public_fields_are_underscore_camel.symbols = non_public_fields
+dotnet_naming_rule.non_public_fields_are_underscore_camel.style = underscore_camel_case
+dotnet_naming_rule.non_public_fields_are_underscore_camel.severity = error
+
+dotnet_naming_symbols.parameters.applicable_kinds = parameter
+dotnet_naming_symbols.parameters.applicable_accessibilities = *
+dotnet_naming_rule.parameters_are_camel.symbols = parameters
+dotnet_naming_rule.parameters_are_camel.style = camel_case
+dotnet_naming_rule.parameters_are_camel.severity = error
 
 [**/Tests/**.cs]
+# Тесты сравнивают литеральные ASCII-имена: культура не участвует, а
+# StringComparison в каждом Contains делает Assert нечитаемым.
 dotnet_diagnostic.CA1307.severity = none
+# Тест намеренно держит объект живым до TearDown; "dispose before losing scope"
+# здесь всегда ложное срабатывание.
 dotnet_diagnostic.CA2000.severity = none
+# {Class}_{Method}_{Scenario} — обязательный формат имени теста, CONVENTIONS.md.
 dotnet_diagnostic.CA1707.severity = none

@@ -12,7 +12,7 @@ namespace KitchenServer.Web.Services;
 /// MCP layer forwards a command through <see cref="SendCommandAsync"/> and the
 /// browser's reply is matched back by request id via <see cref="ResolveResponse"/>.
 /// </summary>
-public class McpSession
+public sealed class McpSession : IDisposable
 {
     private readonly object _lock = new();
     private readonly SemaphoreSlim _sendLock = new(1, 1);
@@ -119,18 +119,31 @@ public class McpSession
         if (ws is null || ws.State != WebSocketState.Open) return false;
 
         var data = Encoding.UTF8.GetBytes(json);
-        await _sendLock.WaitAsync(ct);
+        var acquired = false;
         try
         {
+            await _sendLock.WaitAsync(ct);
+            acquired = true;
             if (ws.State != WebSocketState.Open) return false;
             await ws.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, ct);
             return true;
         }
+        catch (ObjectDisposedException)
+        {
+            return false;
+        }
         finally
         {
-            _sendLock.Release();
+            if (acquired)
+            {
+                try { _sendLock.Release(); }
+                catch (ObjectDisposedException) { }
+            }
         }
     }
+
+    /// <summary>Releases the send semaphore when the tab is closed; see McpSessionManager.CloseSession.</summary>
+    public void Dispose() => _sendLock.Dispose();
 }
 
 /// <summary>A forwarded MCP command failed at the bridge (not a Unity domain error).</summary>
