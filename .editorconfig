@@ -107,7 +107,7 @@ dotnet_diagnostic.CA1062.severity = none
 dotnet_diagnostic.CA2007.severity = none
 
 # Логирование через сгенерированные LoggerMessage-делегаты. Замер: 80 (CA1848)
-# и 24 (CA1873) срабатывания на серверном коде, которое не лежит на горячем пути;
+# и 24 (CA1873) срабатывания на серверном коде, который не лежит на горячем пути;
 # цена — переписать всё логирование, выгода — ноль дефектов.
 dotnet_diagnostic.CA1848.severity = none
 dotnet_diagnostic.CA1873.severity = none
