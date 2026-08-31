@@ -54,10 +54,17 @@ The `(?<!:)` keeps `http://` inside string literals out of the count.
 Updated 2026-08-31. Keep this current: it is the only place that says where the work stands.
 
 **Done from this plan:** A8 (generated-artefact parity guard), B3 (server projects as strict
-as Unity), and **the first two slices of C2** (`5b53ae45` and this commit).
-Both offenders that A3c would catch are fixed, but the guard itself is not written.
+as Unity), **the first two slices of C2** (`5b53ae45` and this commit), and **A3c, A5, A5b**
+— три сторожа на ловушки, каждая из которых уже стоила боевого бага:
+`NewOverBaseMemberTests` (никакого `new` над членом базы, стартовал с нуля нарушений),
+`UnityMessageShadowingTests` (сообщения Unity целиком, а не один `OnDestroy`; знает, что
+обязан повторить наследник, и запрещает пару, для которой это не записано) и
+`ElementKindSingleSourceTests` (роль элемента собирается только в `ValidationSnapshot`).
+Все три читают ИСХОДНИКИ и лежат в `Assets/Tests/EditMode/Geometry/`, поэтому идут и под
+`dotnet` — краснота каждого доказана временным нарушением.
 
-**Not started:** everything else — A1 through A7, B1/B2/B4, C1, C3, most of D, all of E.
+**Not started:** everything else — A1, A2, A3, A3b, A4, A6, A7, B1/B2/B4, C1, C3, most of D,
+all of E.
 
 **C2, first slice — the home exists and is guarded.** `Assets/Scripts/Core/Pure` +
 `Assets/Tests/EditMode/Pure`, globbed by `geometry/pure/Pure.csproj` and
