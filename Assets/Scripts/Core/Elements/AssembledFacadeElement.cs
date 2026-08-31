@@ -15,7 +15,6 @@ namespace KitchenDesigner.Core
 
         private MeshFilter? _filter;
         private MeshRenderer? _renderer;
-        private Mesh? _ownedMesh;
         private Transform? _glassInsert;
 
         [Undoable]
@@ -46,8 +45,7 @@ namespace KitchenDesigner.Core
 
             var mesh = AssembledFacadeMesh.Build(DimensionsMM, _fill, _grooveCount,
                 AppConstants.ASSEMBLED_FRAME_MM);
-            if (_ownedMesh != null) DestroyImmediate(_ownedMesh);
-            _ownedMesh = mesh;
+            AdoptOwnedMesh(mesh);
             _filter.sharedMesh = mesh;
 
             var mats = _renderer.sharedMaterials;
@@ -89,14 +87,8 @@ namespace KitchenDesigner.Core
             _glassInsert.localRotation = Quaternion.identity;
         }
 
-        private void OnDestroy()
+        protected override void OnElementDestroyed()
         {
-            PartRegistry.Unregister(this);
-            if (_ownedMesh != null)
-            {
-                DestroyImmediate(_ownedMesh);
-                _ownedMesh = null;
-            }
             if (_glassInsert != null)
             {
                 DestroyImmediate(_glassInsert.gameObject);

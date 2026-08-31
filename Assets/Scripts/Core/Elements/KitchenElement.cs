@@ -332,8 +332,7 @@ namespace KitchenDesigner.Core
 
             var mesh = GrooveMesh.Build(_data.DimensionsMM, _data.Grooves, holes,
                 CutoutHoleAxis, _bareFaceMask, out var layout);
-            DestroyOwnedMesh();
-            _ownedMesh = mesh;
+            AdoptOwnedMesh(mesh);
             _meshDims = _data.DimensionsMM;
             _meshBareFaceMask = _bareFaceMask;
             _meshLayout = layout;
@@ -368,6 +367,13 @@ namespace KitchenDesigner.Core
             if (mask == _bareFaceMask) return;
             _bareFaceMask = mask;
             if (!SuppressVisualRebuild) RebuildGrooveMesh();
+        }
+
+        protected void AdoptOwnedMesh(Mesh mesh)
+        {
+            if (ReferenceEquals(_ownedMesh, mesh)) return;
+            DestroyOwnedMesh();
+            _ownedMesh = mesh;
         }
 
         private void DestroyOwnedMesh()
@@ -471,7 +477,10 @@ namespace KitchenDesigner.Core
         {
             PartRegistry.Unregister(this);
             DestroyOwnedMesh();
+            OnElementDestroyed();
         }
+
+        protected virtual void OnElementDestroyed() { }
 
         protected virtual Vector3 EffectiveScale => transform.localScale;
 

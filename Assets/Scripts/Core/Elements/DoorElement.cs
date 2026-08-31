@@ -541,9 +541,8 @@ namespace KitchenDesigner.Core
             _sashLeft = _sashRight = _sashTop = _sashBottom = null;
         }
 
-        private void OnDestroy()
+        protected override void OnElementDestroyed()
         {
-            PartRegistry.Unregister(this);
             UnregisterFromWall();
             DestroyChildren();
             DestroyGroup(ref _staticGroup);

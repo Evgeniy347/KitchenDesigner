@@ -47,9 +47,6 @@ namespace KitchenDesigner.Tests.Geometry
         /// не даёт записи пережить тот метод, ради которого она написана.</summary>
         private static readonly (string baseClass, string message, string[] calls, string why)[] RequiredRepeats =
         {
-            ("KitchenElement", "OnDestroy", new[] { "PartRegistry.Unregister" },
-                "базовый OnDestroy снимает элемент с учёта; без повтора в реестре виснет "
-                + "уничтоженный элемент — так уже ломались LightSourceElement и DoorElement"),
             ("KitchenElement", "Awake", new[] { "PartRegistry.Register", "ApplyDimensions" },
                 "базовый Awake строит геометрию и ставит элемент на учёт: без повтора элемент "
                 + "родится без меша и невидимым для реестра"),
@@ -249,16 +246,65 @@ namespace KitchenDesigner.Tests.Geometry
                 "проверка должна доставать и НЕПРЯМЫХ предков");
         }
 
+        private static Dictionary<string, TypeInfo> SyntheticMap(string subclassBody)
+        {
+            var baseType = new TypeInfo { Name = "Base", File = "Base.cs" };
+            CollectMessages("class Base { private void OnDestroy() { Registry.Unregister(this); } }", baseType);
+
+            var sub = new TypeInfo { Name = "Sub", BaseName = "Base", File = "Sub.cs" };
+            CollectMessages("class Sub : Base { " + subclassBody + " }", sub);
+
+            return new Dictionary<string, TypeInfo>(StringComparer.Ordinal)
+            {
+                ["Base"] = baseType,
+                ["Sub"] = sub,
+            };
+        }
+
+        /// <summary>После перевода уборки элементов на хук
+        /// <c>KitchenElement.OnElementDestroyed</c> в дереве не осталось НИ ОДНОЙ
+        /// пары «наследник закрыл сообщение базового», и предыдущая версия этой
+        /// проверки — «в списке проверенных должны быть DoorElement и SinkElement» —
+        /// стала невыполнимой. Ловилка обязана остаться доказуемой: детектор
+        /// прогоняется на синтетической паре, которую он ОБЯЗАН найти.</summary>
         [Test]
-        public void TheScan_ActuallyExaminesTheSubclassesThatDeclareTheirOwn()
+        public void TheScan_ReportsASubclassThatShadowsAMessageNobodyAllowedIt()
+        {
+            var violations = Shadowings(SyntheticMap("private void OnDestroy() { }"), out var checkedPairs);
+
+            CollectionAssert.Contains(checkedPairs, "Sub.OnDestroy над Base",
+                "пара обязана попасть в проверенные, иначе сторож смотрит мимо");
+            Assert.IsNotEmpty(violations,
+                "пары (Base, OnDestroy) нет в RequiredRepeats — объявлять сообщение нельзя вовсе");
+        }
+
+        [Test]
+        public void TheScan_LetsAnUnrelatedMessageThrough()
+        {
+            var violations = Shadowings(SyntheticMap("private void Update() { }"), out _);
+
+            Assert.IsEmpty(violations,
+                "базовый Update не объявлен — наследник ничего не закрывает и вправе завести свой");
+        }
+
+        /// <summary>Хук вместо повтора: пока он есть, у наследника нет ни одной
+        /// причины объявлять свой OnDestroy, и запись-разрешение для этой пары
+        /// удалена из RequiredRepeats. Исчезнет хук — вернётся и ловушка.</summary>
+        [Test]
+        public void KitchenElement_GivesSubclassesAHook_InsteadOfLettingThemDeclareOnDestroy()
         {
             var map = TypeMap();
-            Shadowings(map, out var checkedPairs);
 
-            CollectionAssert.Contains(checkedPairs, "DoorElement.OnDestroy над KitchenElement",
-                "DoorElement объявляет свой OnDestroy — он обязан быть в проверенных");
-            CollectionAssert.Contains(checkedPairs, "SinkElement.OnDestroy над KitchenElement");
-            Assert.Greater(checkedPairs.Count, 5, "подопечных правила должно быть больше горстки");
+            Assert.IsFalse(Repeats("KitchenElement", "OnDestroy").known,
+                "разрешение шадоуить KitchenElement.OnDestroy снято: уборка идёт через хук");
+
+            var source = File.ReadAllText(Path.Combine(
+                RepoPaths.Subdir(new[] { "Assets", "Scripts", "Core", "Elements" }), "KitchenElement.cs"));
+
+            StringAssert.Contains("protected virtual void OnElementDestroyed()", source,
+                "хук — единственная замена запрещённому объявлению OnDestroy у наследника");
+            StringAssert.Contains("OnElementDestroyed();", map["KitchenElement"].Messages["OnDestroy"],
+                "базовый OnDestroy обязан звать хук, иначе уборка наследника не выполнится");
         }
 
         [Test]

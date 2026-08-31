@@ -324,9 +324,8 @@ namespace KitchenDesigner.Core
             if (mr.sharedMaterial != _plafondMat) mr.sharedMaterial = _plafondMat;
         }
 
-        private void OnDestroy()
+        protected override void OnElementDestroyed()
         {
-            PartRegistry.Unregister(this);
             if (_plafondMat != null)
             {
                 if (Application.isPlaying) Object.Destroy(_plafondMat);

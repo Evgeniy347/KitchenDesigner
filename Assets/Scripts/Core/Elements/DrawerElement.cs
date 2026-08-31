@@ -33,7 +33,6 @@ namespace KitchenDesigner.Core
         private const float DrawerSlideMeters = DrawerConstants.DRAWER_SLIDE_METERS;
 
         private MeshFilter? _filter;
-        private Mesh? _ownedMesh;
 
         [SerializeField] private DrawerSystem _system = DrawerSystem.Gtv;
         [SerializeField] private DrawerType _type = DrawerType.A;
@@ -260,8 +259,7 @@ namespace KitchenDesigner.Core
             var mesh = _system == DrawerSystem.Movento
                 ? MoventoDrawerMesh.Build(_internalWidth, _type, _nominalLength)
                 : DrawerMesh.Build(_internalWidth, _type, _nominalLength);
-            if (_ownedMesh != null) DestroyImmediate(_ownedMesh);
-            _ownedMesh = mesh;
+            AdoptOwnedMesh(mesh);
             _filter.sharedMesh = mesh;
         }
 
@@ -270,16 +268,6 @@ namespace KitchenDesigner.Core
             if (_system != DrawerSystem.Movento)
                 return new AssembledFacadeMesh.Part[0];
             return MoventoDrawerMesh.ComputeParts(_internalWidth, _type, _nominalLength);
-        }
-
-        private void OnDestroy()
-        {
-            PartRegistry.Unregister(this);
-            if (_ownedMesh != null)
-            {
-                DestroyImmediate(_ownedMesh);
-                _ownedMesh = null;
-            }
         }
 
         private void Update() => StepAnimation(Time.deltaTime);

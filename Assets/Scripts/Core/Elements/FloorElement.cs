@@ -19,6 +19,9 @@ namespace KitchenDesigner.Core
 
         public IReadOnlyList<Vector2Int> PolygonLocalMm => _polygonLocalMm;
 
+        public override Vector2Int DecorSurfaceMM
+            => new Vector2Int(DimensionsMM.x, DimensionsMM.z);
+
         public void SetPolygonLocalMm(IReadOnlyList<Vector2Int> points)
         {
             _polygonLocalMm = points != null ? new List<Vector2Int>(points) : new List<Vector2Int>();
@@ -33,7 +36,8 @@ namespace KitchenDesigner.Core
                     new Vector2Int(hx, hz), new Vector2Int(-hx, hz)
                 };
             }
-            var mesh = FloorPolygonMesh.Build(renderPoints, new Vector2Int(dims.x, dims.z));
+            var worldOriginMm = new Vector2(transform.position.x, transform.position.z) / AppConstants.MM_TO_UNITS;
+            var mesh = FloorPolygonMesh.Build(renderPoints, dims, worldOriginMm);
             var filter = GetComponent<MeshFilter>();
             if (filter != null) filter.sharedMesh = mesh;
             var box = GetComponent<BoxCollider>();
@@ -60,9 +64,8 @@ namespace KitchenDesigner.Core
             RefreshBasePlateVisibility(except: this);
         }
 
-        private void OnDestroy()
+        protected override void OnElementDestroyed()
         {
-            PartRegistry.Unregister(this);
             if (_polygonMesh == null) return;
             if (Application.isPlaying) Destroy(_polygonMesh); else DestroyImmediate(_polygonMesh);
             _polygonMesh = null;

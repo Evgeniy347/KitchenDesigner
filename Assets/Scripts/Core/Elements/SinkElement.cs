@@ -291,9 +291,8 @@ namespace KitchenDesigner.Core
             DestroyChildren();
         }
 
-        private void OnDestroy()
+        protected override void OnElementDestroyed()
         {
-            PartRegistry.Unregister(this);
             UnregisterFromPart();
             DestroyChildren();
         }

@@ -54,6 +54,7 @@ namespace KitchenDesigner.Core
 			if (meshFilter == null) meshFilter = gameObject.AddComponent<MeshFilter>();
 
 			var mesh = PillarMesh.Build(topR, midR, bottomR, topH, midH, bottomH);
+			AdoptOwnedMesh(mesh);
 			meshFilter.sharedMesh = mesh;
 
 			var meshRenderer = GetComponent<MeshRenderer>();
