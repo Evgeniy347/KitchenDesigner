@@ -134,40 +134,155 @@ fails the build.
 **Recommended next step: finish C2's next batch, then A1.** C2 is marked "first of all" for a
 reason — every hour spent on Part E without it pays the Unity tax on every iteration.
 
-### Blocked on an idle machine
+### Cold start — measured on an idle machine, 2026-09-01
 
-The performance work is prepared and needs a quiet window (~12 min, one command). Nothing here
-is guesswork; the bench is built and the candidates are chosen:
+The quiet window came and the whole prepared series ran. The bench (`F:\kd-bench\bench.ps1`,
+mirror project in `F:\kd-bench\mirror`) records for every run: wall time, the gateway's own
+time, `Foreign` (any `Unity.exe` whose `-projectPath` is not this project) and `Busy` (CPU
+average and maximum, sampled while the run is alive). Every claim below is an A/B/A series —
+the control has to come BACK to the starting value, or the number is thrown away.
 
-1. Verification run (`-Filter` + full EditMode + PlayMode) — contract intact, and direct
-   observation of the slashes `AssetImportWorker` receives when called with backslashes.
-2. `ai.assistant`: baseline → without the package → **back to baseline as a reproducibility
-   control**. Columns `Foreign` (Unity by `-projectPath`) and `Busy` (CPU) in every table —
-   an empty `Foreign` column alone does not prove a quiet window, as one ruined series showed.
-3. Whether killing at `Cleanup mono` leaves `Library` dirty — compare the NEXT run against a
-   normal one. `-DoneGraceSeconds` is committed but set to 0, i.e. off, until this says yes.
-4. Cost of Search indexing.
+**What was applied (three commits).**
+
+| Change | Targeted run (5 tests) | How it was proven |
+|---|---|---|
+| `com.unity.ai.assistant` out of `manifest.json` | 15.9 → 13.5 s (**−2.4 s**) | mirror A/B/A, control returned to 15.9 s |
+| Gateway polls the process every 250 ms, not 2 s | **−0…2 s**, ~1 s on average | values stopped being multiples of two seconds |
+| `-DoneGraceSeconds` on by default (20 s) | insurance, not speed | three kills at `Cleanup mono` → `Imports: total=0` |
+
+On the main project the targeted run went **18.4 s → 13.2 s**, the full EditMode suite
+**79.2 s → 73.1 s** (2847 tests, 0 failed), PlayMode **101 s → 91 s** (84 tests, 0 failed).
+
+**The stand had to be proven first, and it caught two errors before the numbers did.**
+
+- The gateway was called from `bash`, which ate the backslashes and turned
+  `F:\repos\...\kd-repose` into `F:\repos...kd-repose`. The run died on a path that does not
+  exist — the same class of defect as the mutex experiment in CONVENTIONS.md.
+- The first `mirror-base` series read 21.3 s and its control read 18.6 s. The difference was
+  NOT the package under test: the gateway polled the child process once every two seconds, so
+  a run that was already finished sat waiting up to two more. The Unity log proved it —
+  `[Project] Loading completed` differed by 0.17 s between a "21.3 s" run and an "18.6 s" one.
+  **The bimodality of 16.3/18.4 s was ours, not Unity's.**
+
+**AssetImportWorker gets forward slashes** — observed directly, not deduced. The gateway passes
+`-projectPath F:\kd-bench\mirror`; the child worker's command line reads
+`-projectPath "F:/kd-bench/mirror"`. `Get-UnityProcesses` already normalises for this, and the
+observation confirms the comment there: matching the raw string would make an orphaned importer
+invisible to `status` and to `stop`, while it holds `Library` just as hard as the main process.
+
+**Killing at `Cleanup mono` does NOT leave `Library` dirty.** Three trials: a watcher killed
+Unity the instant that line appeared, then a normal cold run followed. All three reported
+`Imports: total=0 (actual=0)`, `CompileScripts` 0.87–0.92 s and 15.9–16.5 s against the usual
+15.9 s. That is what unblocked `-DoneGraceSeconds`.
+
+### Measured and REFUTED — do not spend the machine on these again
+
+| Candidate | Expected | Measured | Verdict |
+|---|---|---|---|
+| `indexOnEditorStartup = false` in `UserSettings/Search.settings` | ~2 s | 18.6 s vs 18.6 s | **nothing.** Indexing starts AFTER the test run begins and finishes on a worker process; it never blocks the run. The only visible effect is that no `AssetImportWorker` spawns. The plan's promise to normalise this flag in the gateway is withdrawn |
+| `-nographics` | some | 15.7–16.2 vs 15.9 s | nothing |
+| `-disable-assembly-updater` | some | 16.4 vs 15.9 s | nothing |
+| `m_RefreshImportMode: 1` (`OutOfProcessPerQueue`) | parallel import | 12.7–13.2 vs 12.9–13.0 s | nothing — there is nothing to import (`actual=0`), and the 4 s goes on CHECKING |
+| removing `com.unity.testtools.codecoverage` | some | 13.5 → 13.0 s | **0.5 s**, and the package is used. Not worth it |
+
+### The two holes, decomposed
+
+Both holes were split into their parts with `-timestamps` (Unity writes a timestamp per line
+with that flag) and the `Domain Reload Profiling` tree. The empty project of the same Unity
+version was measured the same way, as the floor.
+
+**Hole 1 — domain reload #2. Belongs to the packages, not to us.**
+
+| Phase of reload #2 | with `ai.assistant` | after removal | Burst compilation off | empty project |
+|---|---|---|---|---|
+| `BeginReloadAssembly` | 0.39 s | 0.39 s | 0.37 s | — |
+| `LoadAllAssembliesAndSetupDomain` | 0.43 s | 0.43 s | 0.47 s | — |
+| ├ `LoadAssemblies` (ALL of them) | 0.35 s | 0.35 s | 0.37 s | — |
+| └ `TypeCache.Refresh` | 0.16 s | 0.16 s | 0.17 s | — |
+| **`ProcessInitializeOnLoadAttributes`** | **3.2 s** | **2.17 s** | **0.18 s** | — |
+| `ProcessInitializeOnLoadMethodAttributes` | 0.21 s | 0.21 s | 0.18 s | — |
+| **total** | **5.26 s** | **3.79 s** | **1.85 s** | **1.40 s** |
+
+So the whole hole is static constructors, and they are somebody else's: **Burst ≈ 2.0 s**
+(`UNITY_BURST_DISABLE_COMPILATION=1` removes it, A/B/A on the mirror: 12.9 / 16.5 / 12.9 s, and
+on the main project 10.8 / 13.2 / 10.8 s), **`ai.assistant` ≈ 1.0 s** (removed). Everything
+else, our single `[InitializeOnLoad]` included, fits inside 0.18 s. Loading all assemblies —
+the number the six `.asmdef` files could influence — is 0.35 s in total, so splitting or merging
+assemblies cannot buy anything here.
+
+With Burst compilation off, reload #2 is 1.85 s against an EMPTY project's 1.40 s. **There is
+0.45 s left in this hole, and none of it is ours.**
+
+**Hole 2 — "project loaded" to the first test. Half ours, and the half is small.**
+
+Timeline of a targeted run, from the timestamped log:
+
+```
++2.44 s  engine init and licensing        (before anything of the project)
++1.04 s  domain reload #1                 (1.05 s in the EMPTY project too — a constant)
++1.18 s  asset refresh up to reload #2
++5.26 s  domain reload #2                 (hole 1)
++0.80 s  refresh end, project loaded
++0.17 s  → "Running tests for ExecutionSettings"
++2.53 s  → "Executing IPrebuildSetup"     (hole 2)
++0.44 s  the 5 tests themselves (0.107 s of NUnit time) and the report
++0.85 s  → "Cleanup mono", then exit
+```
+
+The 2.53 s is test COLLECTION, and it was measured against a project with the same code but
+only one test class (228 test files moved into an ignored `Excluded~` folder): **2.53 s for
+2847 tests, 1.55 s for 5.** So ~1.0 s scales with our suite and ~1.55 s is the TestRunner
+starting up — `IPrebuildSetup` of `test-framework.performance` (unremovable, comes through URP),
+the test scene, the runner itself.
+
+Search indexing lands inside this window (`Start Indexing on Editor startup`, then an
+`AssetImportWorker` spawns) but costs nothing measurable — see the refuted table.
+
+**Both domain reloads happen in the EMPTY project too** (1.05 s + 1.40 s), so the second one is
+structural: reload #1 runs before the asset refresh with only precompiled engine assemblies,
+reload #2 loads `Library/ScriptAssemblies`. There is no supported way to skip it, and skipping
+it would mean not loading the project's code at all. The hole can only be made cheaper, and
+after the two package findings it is 0.45 s away from the floor.
+
+### What is left, and what it is worth
+
+- **`UNITY_BURST_DISABLE_COMPILATION=1` for test runs: −2.3 s on a targeted run, 0 on the full
+  EditMode suite** (79.9 s with, 79.8 s without, measured back to back under identical load).
+  Burst is not compiled at startup any more, but the work comes back during a long suite. Worth
+  it for the `-Filter` loop, worthless for the full run — not applied, awaiting a decision.
+- Windows Defender exclusions for the project directories and `Unity.exe` are the most
+  plausible remaining lever for the ~4 s of `ImportOutOfDateAssets` (which does zero imports and
+  spends its time on `stat`ting several thousand files). It is a MACHINE setting, not a project
+  one — it belongs in the user's hands, not in a commit.
+- The floor is real: an empty project of the same Unity version does the same 5 tests in 8.1 s,
+  and 2.44 s of that is licensing and engine init before the project is even touched. Our
+  targeted run is now 13.2 s (10.8 s with Burst off). What remains between us and the floor is
+  ~4 s of asset-database checking over 3914 assets (two thirds of which are package assets) and
+  ~1 s of collecting 2847 tests.
 
 ### Measured, load-independent facts
 
 - Cold first import of a fresh copy: **809 s**. That is deployment cost, not run cost.
-- Floor: an empty project of the same Unity version runs the same 5 tests in **8.1 s**; this
-  project needs **18.1 s**. The ~10 s difference is TWO roughly equal holes — domain reload #2
-  (+4.1 s) and the stretch from "project loaded" to the first test (+4.4 s).
-- Removing `com.unity.ai.assistant` drops exactly two packages of 38: itself (86 files with
-  `[InitializeOnLoad]`, against 17 for the next-largest) and its private `com.unity.2d.sprite`.
-  It is in `manifest.json` explicitly, nothing pulls it, and the repository has no reference to
-  it. Worth removing regardless of the seconds — it is a preview editor assistant.
+- Floor: an empty project of the same Unity version does the same work in **8.1 s**, of which
+  2.44 s is licensing and engine init and 1.05 s is domain reload #1 — both constants. This
+  project was 18.1 s and is now 13.2 s; the decomposition of the remaining difference is in
+  "The two holes, decomposed" above.
+- `com.unity.ai.assistant` is REMOVED (commit `df6b9f5e`). It dropped exactly two packages of
+  38: itself (86 files with `[InitializeOnLoad]`, against 17 for the next-largest) and its
+  private `com.unity.2d.sprite`. Nothing pulled it, nothing in the repository referenced it.
+  Measured worth: −2.4 s per cold run.
 - `com.unity.test-framework.performance` is UNTOUCHABLE: it arrives through
   URP → render-pipelines.core → collections. Its `IPrebuildSetup` runs on every test run and
-  cannot be removed without removing URP.
+  cannot be removed without removing URP. It sits inside the fixed 1.55 s of TestRunner startup.
 - `com.unity.testtools.codecoverage` is USED — manually, documented in
-  `GEOMETRY-EXTRACTION-PLAN.md`, and the baseline coverage numbers come from it. Not dead weight.
-- Search indexing is controlled by `UserSettings/Search.settings` → `indexOnEditorStartup`, and
-  it indexes all 3914 assets on every cold start for a search window that batch mode does not
-  have. **`UserSettings/` is gitignored**, so editing the file fixes one machine only. If the
-  measurement confirms ~2 s, the fix belongs in the gateway, which can normalise the flag before
-  a cold batch — and may only do so while no GUI editor is open, which it already checks.
+  `GEOMETRY-EXTRACTION-PLAN.md`, and the baseline coverage numbers come from it. It also costs
+  only 0.5 s (measured), so there is nothing to weigh against its usefulness.
+- `com.unity.burst` (1.8.29, arrives through URP → collections) spends **~2.0 s** of every cold
+  start inside `ProcessInitializeOnLoadAttributes`, starting its compiler service.
+  `UNITY_BURST_DISABLE_COMPILATION=1` removes that; see "What is left".
+- Search indexing (`UserSettings/Search.settings` → `indexOnEditorStartup`) costs NOTHING in
+  batch mode — measured, see the refuted table. The earlier plan to normalise that flag in the
+  gateway is withdrawn: `UserSettings/` is gitignored, and there is nothing to gain by touching it.
 
 ## Part A — Guards, so the rules stop depending on memory
 
@@ -480,15 +595,21 @@ commit.**
 
 ```powershell
 .\tools\mutation-test.ps1 -TestsOnly # 354 tests (core + pure), 0.25 s — the inner loop
-.\build.cmd -RunTests               # 2776 tests, 79 s — before committing
-.\build.cmd -RunTests -RunPlayMode  # + 83 tests, 101 s — before a release or any UI layout change
+.\build.cmd -RunTests               # 2847 tests, 73 s — before committing
+.\build.cmd -RunTests -RunPlayMode  # + 84 tests, 91 s — before a release or any UI layout change
 ```
 
-The numbers are why. A cold Unity batch costs **~30 seconds of fixed overhead before a single
-test runs** — asset pipeline refresh (~17.6 s), two domain reloads (~5.6 s), script compilation
-and scene import (~7 s) — and only then ~60 s of actual test execution. A targeted
-`-Filter` run does not avoid that: it still costs 26–36 s for eight tests. The `dotnet` path has
-none of it: 354 tests in 0.25 s, which is 0.7 ms per test against 23 ms under Unity.
+The numbers are why. A cold Unity batch costs **~13 seconds before a single test runs**, and the
+breakdown is now known to the phase — engine init and licensing 2.4 s, domain reload #1 1.0 s,
+asset refresh ~6 s (of which 4 s is CHECKING 3914 assets that need no import), domain reload #2
+~3.8 s, test collection ~2.5 s. A targeted `-Filter` run does not avoid any of it: it costs
+13.2 s for five tests. The `dotnet` path has none of it: 354 tests in 0.25 s, which is 0.7 ms
+per test against 23 ms under Unity.
+
+The old "26–36 s for eight tests" in this section was partly the gateway's own doing: it polled
+the child process once every two seconds and so sat waiting up to two seconds after Unity had
+already exited. That is fixed (`dc7540e3`), and the 16.3/18.4 s bimodality it produced was never
+a property of Unity — it was ours.
 
 Over one six-hour session with four agents, 58 full and 86 filtered Unity runs consumed **131
 minutes of gateway time, of which roughly 72 minutes was fixed overhead paid over and over.**
