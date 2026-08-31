@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "com.unity.ai.assistant": "2.10.0-pre.1",
     "com.unity.render-pipelines.universal": "17.4.0",
     "com.unity.test-framework": "1.6.0",
     "com.unity.testtools.codecoverage": "1.2.6",
