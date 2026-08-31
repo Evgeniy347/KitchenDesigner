@@ -53,10 +53,39 @@ The `(?<!:)` keeps `http://` inside string literals out of the count.
 
 Updated 2026-08-31. Keep this current: it is the only place that says where the work stands.
 
-**Done from this plan:** A8 (generated-artefact parity guard) and B3 (server projects as strict
-as Unity). Both offenders that A3c would catch are fixed, but the guard itself is not written.
+**Done from this plan:** A8 (generated-artefact parity guard), B3 (server projects as strict
+as Unity), and **the first slice of C2** (`5b53ae45`). Both offenders that A3c would catch are
+fixed, but the guard itself is not written.
 
-**Not started:** everything else — A1 through A7, B1/B2/B4, all of C, most of D, all of E.
+**Not started:** everything else — A1 through A7, B1/B2/B4, C1, C3, most of D, all of E.
+
+**C2, first slice — the home exists and is guarded.** `Assets/Scripts/Core/Pure` +
+`Assets/Tests/EditMode/Pure`, globbed by `geometry/pure/Pure.csproj` and
+`geometry/pure-tests/Pure.Tests.csproj`; `mutation-test.ps1 -TestsOnly` now runs **354 tests in
+0.25 s** (239 core + 115 pure). Moved: `ExpressionParser`, `VersionUtil`, `DragGesture`,
+`SceneSettleThrottle`, `WallCutaway`, `UpdateCoordinator` + `UpdateInterfaces` + `UpdateStrings`,
+`EventBus`. Guarded by `PureSources_DoNotTouchTheEngine` and its two siblings.
+**Still owed the Unity run** — the machine was busy; nothing in the slice touches scene code,
+but the folder `.meta` files Unity generates on import are not committed yet.
+
+The plan's estimate of 31 movable files was too optimistic, and the reason is worth keeping:
+it counted test files that name no scene type, but what decides is whether the PRODUCTION class
+loads under CoreCLR. Three walls, in order of how often they will come up again:
+
+- **`JsonUtility` does not compile at all** on the second path — it is in
+  `UnityEngine.JSONSerializeModule`, not `CoreModule`. That is what holds back `TextureIndex`
+  and `ReleaseManifestParser`. Splitting the DATA type out is the move that works
+  (`ReleaseManifest` did exactly that and let its coordinator through).
+- **`Debug.Log` is an ECall** and throws at runtime. `UpdateCoordinator` now takes an
+  `Action<string>`; the same fix applies wherever else a pure class logs.
+- **A pure class reaching into a `MonoBehaviour` for a constant or an event payload.**
+  `SidebarCatalog` needs `PillarElement.TopDiameterMM`; `EventBus`'s event structs carry
+  `KitchenElement` — that one split cleanly, the constant has not been dealt with.
+
+**Next batch, already trial-compiled clean:** `KitchenSettings` (with `ViewPreset`,
+`PhotoQualityPreset` and `KitchenSettingsData` from `Persistence/ProjectData.cs`) and
+`GridManager`, which depends on it. `GameContext` needs its `*Instance` construction inverted
+first — `InitializeWithDefaults` news up concrete Unity-side services.
 
 **A1 is the one that matters most and has not moved.** `Core` holds **3136** comments. The purge
 covered `Elements`, `Persistence`, `Infrastructure` and `Platform` before this plan was written,
@@ -65,8 +94,8 @@ which is why they already read zero above; nothing has changed since. Remaining:
 `Validation` 193 · `Measure` 125 · `Update` 114 · `Commands` 108 · `Analysis` 104 ·
 `Diagnostics` 74 · `Bulk` 51 · `Tools` 48 · `Interfaces` 8 · `Networking` 8.
 
-**Recommended next step: C2.** It is marked "first of all" for a reason — every hour spent on
-Part E without it pays the Unity tax on every iteration.
+**Recommended next step: finish C2's next batch, then A1.** C2 is marked "first of all" for a
+reason — every hour spent on Part E without it pays the Unity tax on every iteration.
 
 ### Blocked on an idle machine
 
@@ -413,7 +442,7 @@ Not refactoring decisions — these change behaviour and need a person.
 commit.**
 
 ```powershell
-.\tools\mutation-test.ps1 -TestsOnly   # 226 tests, 0.2 s — the inner loop
+.\tools\mutation-test.ps1 -TestsOnly # 354 tests (core + pure), 0.25 s — the inner loop
 .\build.cmd -RunTests               # 2776 tests, 79 s — before committing
 .\build.cmd -RunTests -RunPlayMode  # + 83 tests, 101 s — before a release or any UI layout change
 ```
@@ -422,7 +451,7 @@ The numbers are why. A cold Unity batch costs **~30 seconds of fixed overhead be
 test runs** — asset pipeline refresh (~17.6 s), two domain reloads (~5.6 s), script compilation
 and scene import (~7 s) — and only then ~60 s of actual test execution. A targeted
 `-Filter` run does not avoid that: it still costs 26–36 s for eight tests. The `dotnet` path has
-none of it: 226 tests in 0.2 s, which is 0.9 ms per test against 23 ms under Unity.
+none of it: 354 tests in 0.25 s, which is 0.7 ms per test against 23 ms under Unity.
 
 Over one six-hour session with four agents, 58 full and 86 filtered Unity runs consumed **131
 minutes of gateway time, of which roughly 72 minutes was fixed overhead paid over and over.**
