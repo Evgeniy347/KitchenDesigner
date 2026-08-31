@@ -27,7 +27,7 @@ namespace KitchenDesigner.Core
             int u0MM = 0, int v0MM = 0, int widthMM = 0, int heightMM = 0)
         {
             this.side = side;
-            this.materialId = string.IsNullOrEmpty(materialId) ? MaterialCatalog.DefaultId : materialId!;
+            this.materialId = string.IsNullOrEmpty(materialId) ? AppConstants.DEFAULT_MATERIAL_ID : materialId!;
             this.u0MM = u0MM;
             this.v0MM = v0MM;
             this.widthMM = widthMM;
@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core
         public bool IsFullFace => widthMM <= 0 || heightMM <= 0;
 
         public string MaterialId =>
-            string.IsNullOrEmpty(materialId) ? MaterialCatalog.DefaultId : materialId;
+            string.IsNullOrEmpty(materialId) ? AppConstants.DEFAULT_MATERIAL_ID : materialId;
 
         public RectInt Resolve(Vector2Int faceMM)
         {
