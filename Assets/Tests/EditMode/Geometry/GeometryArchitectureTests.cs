@@ -48,33 +48,7 @@ namespace KitchenDesigner.Tests.Geometry
             ("GeometryArchitectureTests.cs",
                 "сам сторож: запрещённые символы лежат в его таблице как строки-шаблоны"),
         };
-
-        private static string RepoSubdir(params string[] parts)
-        {
-            var roots = new[]
-            {
-                Path.GetDirectoryName(typeof(GeometryArchitectureTests).Assembly.Location),
-                AppContext.BaseDirectory,
-                Directory.GetCurrentDirectory(),
-            };
-
-            foreach (var root in roots)
-            {
-                if (string.IsNullOrEmpty(root)) continue;
-
-                var dir = new DirectoryInfo(root);
-                while (dir != null)
-                {
-                    var candidate = Path.Combine(new[] { dir.FullName }.Concat(parts).ToArray());
-                    if (Directory.Exists(candidate)) return candidate;
-                    dir = dir.Parent;
-                }
-            }
-
-            throw new DirectoryNotFoundException(
-                "Не найден " + string.Join("/", parts) + " ни от одной из точек: "
-                + string.Join(", ", roots));
-        }
+        private static string RepoSubdir(params string[] parts) => RepoPaths.Subdir(parts);
 
         /// <summary>Каталог исходников ядра. Ищем вверх от нескольких точек, потому
         /// что у двух раннеров они разные: под dotnet test AppContext.BaseDirectory
