@@ -51,7 +51,41 @@ The `(?<!:)` keeps `http://` inside string literals out of the count.
 
 ## Status — what is done, what is pending
 
-Updated 2026-08-31. Keep this current: it is the only place that says where the work stands.
+Updated 2026-09-01. Keep this current: it is the only place that says where the work stands.
+
+### Where the day left it
+
+| | |
+|---|---|
+| Guards in `Assets/Tests/EditMode/Geometry/` | **9**: comment ratchet, engine boundary, colour literals, tolerance literals, decor UVs, `new` over base, Unity message shadowing, `ElementKind` single source, layer direction |
+| Inner loop (`dotnet`, core + pure) | **380 tests, 0,3 s** — was 226 |
+| EditMode / PlayMode | **2860 / 92**, both green |
+| Cold Unity: one class / full EditMode / PlayMode | **~11 s / ~73 s / ~91 s** — was 18,4 / 79 / 101 |
+| Comments left in `Core` | **3131**, ceilinged per directory by `CommentRatchetTests.Budgets` |
+
+**Done from this plan:** A1, A2, A3, A3b, A3c, A5, A5b, A6, A8, B1, B2, B3, B4, C2.
+**Left: A4, A7, C1, C3, D, E** — see "What is actually left" at the end of this section.
+
+**Defects found and fixed today, none of them by reading code:**
+
+- Two LIVE mesh leaks (`PillarElement`, `RadiusTableElement` rebuilt a `Mesh` per
+  `ApplyDimensions` and destroyed neither the old one nor the last). The defect the task
+  described — grooves — was latent; these were not. `21570682`.
+- **Every floor in every project** tiled its decor 20× too dense: `DecorSurfaceMM` fell back to
+  `(dims.x, dims.y)`, and a floor's second axis is depth, not the 100 mm slab thickness.
+  `55c3d52e`.
+- Two leaks on the server side, both hidden behind a silenced `CA1001`: a `SemaphoreSlim` per
+  closed editor tab and the cleanup timer. `4fb68669`.
+- `UpdateScrollSmooth(dt)` ignored its own `dt`. `d32e6209`.
+
+**Two facts about TESTS that cost more than the fixes:**
+
+1. **EditMode does not run Unity lifecycle messages.** A mesh-lifetime test written there is
+   green forever — the registry still held all seven "destroyed" elements. Such tests live in
+   PlayMode; now written down in CONVENTIONS.md.
+2. **A test that reads a clock is not a test.** Three scroll tests passed alone and failed in the
+   full run, and two runs of the same code gave 0,2396 and 0,2785 for an expected 0,3. Drift
+   means the environment is an input; a broken behaviour gives a stable wrong answer.
 
 **Done from this plan:** A8 (generated-artefact parity guard), B3 (server projects as strict
 as Unity), **the first two slices of C2** (`5b53ae45` and this commit), and **A3c, A5, A5b**
@@ -131,8 +165,38 @@ which is why they already read zero above; nothing has changed since. Remaining:
 The live ceilings are in `CommentRatchetTests.Budgets`; that table, not this paragraph, is what
 fails the build.
 
-**Recommended next step: finish C2's next batch, then A1.** C2 is marked "first of all" for a
-reason — every hour spent on Part E without it pays the Unity tax on every iteration.
+### What is actually left
+
+In the order I would take it:
+
+1. **A1's second half — spend the ratchet.** The guard exists, the count does not move on its
+   own: 3131 comments, of which `UI` 641 · `Rendering` 479 · `Snap` 318 · `MCP` 309 ·
+   `Materials` 287 · `Geometry` 242. Purging is what Part E's refactoring produces as a side
+   effect, so pair them by directory rather than running a separate purge campaign. Every
+   deletion still owes case (a)/(b)/(c), and the ceiling drops in the same commit.
+2. **C2's third slice.** `ElementData` and `ProjectData` are blocked behind one thing:
+   `ElementData.FromElement(KitchenElement)` is 200 lines of scene reflection. Extract that
+   factory and the data half moves. `GameContext` needs `InitializeWithDefaults` inverted —
+   it news up concrete Unity-side services.
+3. **A7 — new-element-type completeness.** The only item of Part A not started. Adding a type
+   must touch registries and never a `switch`; the check needs the factory and MCP-contract
+   registries read together.
+4. **C1 — gate the mutation score**, now that the fast path carries 380 tests and Stryker runs
+   against it. Same ratchet shape as A1.
+5. **A4, C3 — test-quality guards.** Names that state nothing, `Assert` without a message in
+   the suites carrying migrated `why` knowledge.
+6. **Part E** — the refactoring still owed. Cheaper now: what it extracts is exactly what
+   belongs in `Core/Pure`, so the loop for it is 0,3 s rather than 73 s.
+
+**Known debts, recorded not blessed:** 30 layer→UI references under the A6 ratchet;
+`PillarElement`'s UVs (`u = i/Segments` around the circumference against an `ST` that scales by
+diameter — a factor of π, and `DecorSurfaceMM` alone does not cure it); `RadialShelfElement`'s
+(cured by `DecorSurfaceMM = (width, depth)`); a floor's UV origin not rebuilt when the slab is
+MOVED; `ContextMenuMaterialSection.ApplyLegsChoice` bypassing `CommandStack`;
+`Assets/Scripts/Tests` compiled by Unity without `-warnaserror`/`-nullable`; the ~40 style
+rules in `.editorconfig` declared `:error` and enforced nowhere (2864 violations if switched on
+— its own campaign); commit `21570682` does not build standalone, because two agents edited one
+file (history is fine at HEAD, `git bisect` is not).
 
 ### Cold start — measured on an idle machine, 2026-09-01
 
