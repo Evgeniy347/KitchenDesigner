@@ -455,7 +455,8 @@ namespace KitchenDesigner.Core
         public void UpdateScrollSmooth(float dt)
         {
             if (dt < 1e-6f) return;
-            float smooth = Mathf.SmoothDamp(_scrollCurrent, _scrollTarget, ref _scrollVelocity, ScrollSmoothTime);
+            float smooth = Mathf.SmoothDamp(_scrollCurrent, _scrollTarget, ref _scrollVelocity,
+                ScrollSmoothTime, Mathf.Infinity, dt);
             float delta = smooth - _scrollCurrent;
             _scrollCurrent = smooth;
 

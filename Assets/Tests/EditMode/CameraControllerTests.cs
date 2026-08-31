@@ -534,6 +534,31 @@ public class CameraControllerTests
     }
 
     [Test]
+    public void UpdateScrollSmooth_StepsByTheGivenDt_NotTheEditorFrame()
+    {
+        float Advance(float dt)
+        {
+            _controller!.SetState(new CameraState
+            {
+                valid = true,
+                targetX = 0f, targetY = 0f, targetZ = 0f,
+                angleX = 0f, angleY = 0f, distance = 5f
+            });
+            _controller!.ApplyScrollInput(0.3f);
+            _controller!.UpdateScrollSmooth(dt);
+            return GetTarget().z;
+        }
+
+        float small = Advance(0.01f);
+        float large = Advance(0.08f);
+
+        Assert.Greater(large, small * 2f,
+            "шаг обязан считаться по переданному dt: четырёхаргументный Mathf.SmoothDamp берёт "
+            + "Time.deltaTime редактора, и тогда результат зависит от загрузки машины — три "
+            + "теста прокрутки из-за этого краснели в полном прогоне и зеленели поодиночке");
+    }
+
+    [Test]
     public void UpdateScrollSmooth_ConvergesToTarget()
     {
         _controller!.SetState(new CameraState
