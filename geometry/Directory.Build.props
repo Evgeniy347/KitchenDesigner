@@ -1,0 +1,24 @@
+<Project>
+
+  <!--
+    Симметрия с Unity. Assets/Scripts/Core/csc.rsp компилирует ТЕ ЖЕ исходники с
+    -nullable:enable -warnaserror, поэтому вторая сборка (geometry/core, pure,
+    tests, pure-tests) обязана быть такой же строгой: иначе один и тот же дефект
+    рядом — ошибка в Unity и всего лишь предупреждение под dotnet.
+    CONVENTIONS.md -> "Build strictness is inherited, not optional";
+    docs/HARDENING-PLAN.md -> B3.
+
+    NoWarn повторяет -nowarn из csc.rsp, чтобы обе сборки молчали об одном и том же:
+      CS0169/CS0414/CS0649 — поля [SerializeField], которые присваивает Unity;
+      CS0618 — устаревшие API Unity, живущие в тех же исходниках.
+    CS8632 добавлен сверх csc.rsp: под Unity #nullable включён ключом компилятора,
+    а MSBuild-свойство Nullable=enable даёт тот же режим, так что аннотации законны.
+  -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <NoWarn>$(NoWarn);CS0169;CS0414;CS0649;CS0618;CS8632;CA1305</NoWarn>
+  </PropertyGroup>
+
+</Project>

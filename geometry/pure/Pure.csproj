@@ -2,14 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
     <AssemblyName>KitchenDesigner.Pure</AssemblyName>
     <RootNamespace>KitchenDesigner.Core</RootNamespace>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
     <AnalysisMode>None</AnalysisMode>
-    <NoWarn>CA1305;CS0618;CS8632</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UnityManagedDir)' == ''">

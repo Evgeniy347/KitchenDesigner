@@ -12,7 +12,7 @@ namespace KitchenDesigner.Core
             Type type = typeof(T);
             lock (_events)
             {
-                if (_events.TryGetValue(type, out Delegate del))
+                if (_events.TryGetValue(type, out Delegate? del))
                     _events[type] = Delegate.Combine(del, handler);
                 else
                     _events[type] = handler;
@@ -24,9 +24,9 @@ namespace KitchenDesigner.Core
             Type type = typeof(T);
             lock (_events)
             {
-                if (_events.TryGetValue(type, out Delegate del))
+                if (_events.TryGetValue(type, out Delegate? del))
                 {
-                    Delegate result = Delegate.Remove(del, handler);
+                    Delegate? result = Delegate.Remove(del, handler);
                     if (result == null)
                         _events.Remove(type);
                     else
@@ -38,7 +38,7 @@ namespace KitchenDesigner.Core
         public static void Publish<T>(T eventData) where T : struct
         {
             Type type = typeof(T);
-            Delegate del;
+            Delegate? del;
             lock (_events)
             {
                 if (!_events.TryGetValue(type, out del))

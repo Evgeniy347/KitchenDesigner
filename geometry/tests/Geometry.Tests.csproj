@@ -9,13 +9,10 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
     <AnalysisMode>None</AnalysisMode>
-    <NoWarn>CA1305;CS0618;CS8632</NoWarn>
     <UnityManagedDir Condition="'$(UnityManagedDir)' == ''">C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Managed\UnityEngine\</UnityManagedDir>
   </PropertyGroup>
 
