@@ -134,7 +134,7 @@ public class DrawerConstantsTests
     }
 
     [Test]
-    public void CycleCompletesInThreeSteps()
+    public void DrawerConstants_NextCycleState_ReturnsToClosedInThreeSteps()
     {
         var state = DoubleDrawerState.Closed;
         state = DrawerConstants.NextCycleState(state);

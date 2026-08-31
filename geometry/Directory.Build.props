@@ -13,12 +13,19 @@
       CS0618 — устаревшие API Unity, живущие в тех же исходниках.
     CS8632 добавлен сверх csc.rsp: под Unity #nullable включён ключом компилятора,
     а MSBuild-свойство Nullable=enable даёт тот же режим, так что аннотации законны.
+
+    SYSLIB1045 («используй GeneratedRegex») тоже сверх csc.rsp, и по той же причине,
+    но с обратным знаком: это анализатор .NET SDK, которого в Unity нет вовсе.
+    Source-generator GeneratedRegex требует partial-метода и компилятора .NET 7+;
+    те же файлы компилирует Unity, где такой код не соберётся. Требование, которое
+    невозможно выполнить в одной из двух сборок, — не строгость, а запрет на Regex
+    в сторожах, читающих исходники.
   -->
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <NoWarn>$(NoWarn);CS0169;CS0414;CS0649;CS0618;CS8632;CA1305</NoWarn>
+    <NoWarn>$(NoWarn);CS0169;CS0414;CS0649;CS0618;CS8632;CA1305;SYSLIB1045</NoWarn>
   </PropertyGroup>
 
 </Project>
