@@ -6,26 +6,36 @@ namespace KitchenDesigner.Core
 {
     public static class FloorPolygonMesh
     {
-        public static Mesh Build(IReadOnlyList<Vector2Int> localPointsMm, Vector2Int sizeMm)
+        public static Mesh Build(IReadOnlyList<Vector2Int> localPointsMm, Vector3Int sizeMm,
+            Vector2 worldOriginMm)
         {
             if (localPointsMm == null || localPointsMm.Count < 3)
                 throw new ArgumentException("Floor polygon requires at least 3 points");
-            if (sizeMm.x <= 0 || sizeMm.y <= 0)
+            if (sizeMm.x <= 0 || sizeMm.z <= 0)
                 throw new ArgumentException("Floor polygon bounds must be positive");
 
+            var surfaceMm = new Vector2Int(sizeMm.x, sizeMm.z);
+            var pointsMm = new List<Vector2>(localPointsMm.Count);
             var points = new List<Vector2>(localPointsMm.Count);
             foreach (var p in localPointsMm)
-                points.Add(new Vector2((float)p.x / sizeMm.x, (float)p.y / sizeMm.y));
-            if (SignedArea(points) < 0f) points.Reverse();
+            {
+                pointsMm.Add(new Vector2(p.x, p.y));
+                points.Add(new Vector2((float)p.x / sizeMm.x, (float)p.y / sizeMm.z));
+            }
+            if (SignedArea(points) < 0f) { points.Reverse(); pointsMm.Reverse(); }
 
             var face = Triangulate(points);
             var vertices = new List<Vector3>(points.Count * 2 + points.Count * 4);
+            var uvs = new List<Vector2>(points.Count * 2 + points.Count * 4);
             var triangles = new List<int>(face.Count * 2 + points.Count * 6);
 
             for (int i = 0; i < points.Count; i++)
             {
+                var uv = FloorDecorUv.TopFace(pointsMm[i], worldOriginMm, surfaceMm);
                 vertices.Add(new Vector3(points[i].x, 0.5f, points[i].y));
+                uvs.Add(uv);
                 vertices.Add(new Vector3(points[i].x, -0.5f, points[i].y));
+                uvs.Add(uv);
             }
             for (int i = 0; i < face.Count; i += 3)
             {
@@ -33,20 +43,28 @@ namespace KitchenDesigner.Core
                 triangles.Add(a * 2); triangles.Add(c * 2); triangles.Add(b * 2);
                 triangles.Add(a * 2 + 1); triangles.Add(b * 2 + 1); triangles.Add(c * 2 + 1);
             }
+            float alongPerimeterMm = 0f;
             for (int i = 0; i < points.Count; i++)
             {
                 int j = (i + 1) % points.Count;
                 int k = vertices.Count;
+                float edgeEndMm = alongPerimeterMm + Vector2.Distance(pointsMm[i], pointsMm[j]);
                 vertices.Add(new Vector3(points[i].x, -0.5f, points[i].y));
+                uvs.Add(FloorDecorUv.SideFace(alongPerimeterMm, 0f, surfaceMm));
                 vertices.Add(new Vector3(points[j].x, -0.5f, points[j].y));
+                uvs.Add(FloorDecorUv.SideFace(edgeEndMm, 0f, surfaceMm));
                 vertices.Add(new Vector3(points[j].x, 0.5f, points[j].y));
+                uvs.Add(FloorDecorUv.SideFace(edgeEndMm, sizeMm.y, surfaceMm));
                 vertices.Add(new Vector3(points[i].x, 0.5f, points[i].y));
+                uvs.Add(FloorDecorUv.SideFace(alongPerimeterMm, sizeMm.y, surfaceMm));
                 triangles.Add(k); triangles.Add(k + 2); triangles.Add(k + 1);
                 triangles.Add(k); triangles.Add(k + 3); triangles.Add(k + 2);
+                alongPerimeterMm = edgeEndMm;
             }
 
             var mesh = new Mesh { name = "FloorPolygon" };
             mesh.SetVertices(vertices);
+            mesh.SetUVs(0, uvs);
             mesh.SetTriangles(triangles, 0);
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();

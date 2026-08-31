@@ -164,7 +164,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var v in p.poly) local.Add(new Vector2Int(v.x - cx, v.z - cz));
             try
             {
-                var probe = FloorPolygonMesh.Build(local, new Vector2Int(maxX - minX, maxZ - minZ));
+                var probe = FloorPolygonMesh.Build(local, new Vector3Int(maxX - minX, thickness, maxZ - minZ), Vector2.zero);
                 if (Application.isPlaying) UnityEngine.Object.Destroy(probe); else UnityEngine.Object.DestroyImmediate(probe);
             }
             catch (ArgumentException ex) { return McpResponse.Error(req.id, -32602, ex.Message); }

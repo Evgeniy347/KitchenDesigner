@@ -41,9 +41,6 @@ namespace KitchenDesigner.Tests.Geometry
                 + "оси DecorSurfaceMM для него верны"),
             ("DrawerElement.cs",
                 "короб ящика скрыт за фасадом и декор не носит; фасад — отдельный элемент"),
-            ("FloorElement.cs",
-                "FloorPolygonMesh не пишет UV вовсе — у пола сейчас нет ни развёртки, ни "
-                + "мощения декора; отдельный долг, шире этого сторожа"),
             ("PillarElement.cs",
                 "ДОЛГ (HARDENING-PLAN, п. 10): у PillarMesh бок развёрнут как i/Segments по "
                 + "ОКРУЖНОСТИ, а торцы как cos*0.5+0.5 по диаметру — ни то ни другое не "
@@ -63,6 +60,10 @@ namespace KitchenDesigner.Tests.Geometry
             ("CapsuleTableMesh.cs", "0..1 по (ширина, ГЛУБИНА); RadiusTableElement для того "
                 + "и переопределяет DecorSurfaceMM в (x, z)"),
             ("DrawerMesh.cs", "0..1 по граням единичного короба; декора не носит"),
+            ("FloorPolygonMesh.cs", "МИРОВЫЕ мм X/Z, делённые на габарит контура: пол лежит "
+                + "горизонтально, поэтому FloorElement объявляет DecorSurfaceMM = (x, z), а ноль "
+                + "развёртки взят в начале мира — точка привязки пола ездит при правке контура "
+                + "(FloorDecorUvTests)"),
             ("GrooveMesh.cs", "0..1 по граням единичного щита — базовый случай"),
             ("PillarMesh.cs", "ДОЛГ: окружность и диаметр вместо осей DecorSurfaceMM"),
             ("PlaneWithHolesMesh.cs", "ФИЗИЧЕСКИЕ мм / TileMM: накладка рисуется собственным "
@@ -143,11 +144,17 @@ namespace KitchenDesigner.Tests.Geometry
             CollectionAssert.Contains(built, "RadialShelfElement.cs");
             CollectionAssert.Contains(built, "RadiusTableElement.cs",
                 "исправленный случай (растянутая столешница) обязан оставаться в скане: он "
-                + "здесь единственный положительный контроль");
+                + "здесь положительный контроль");
+            CollectionAssert.Contains(built, "FloorElement.cs",
+                "второй исправленный случай: у пола не было UV вовсе, и он молча наследовал "
+                + "оси стоячей панели — то есть делил развёртку на толщину плиты");
 
-            CollectionAssert.DoesNotContain(
-                AllowedWithoutDecorSurface.Select(a => a.file).ToArray(), "RadiusTableElement.cs",
+            var exempt = AllowedWithoutDecorSurface.Select(a => a.file).ToArray();
+            CollectionAssert.DoesNotContain(exempt, "RadiusTableElement.cs",
                 "белый список не вправе освобождать уже исправленный случай");
+            CollectionAssert.DoesNotContain(exempt, "FloorElement.cs",
+                "пол исправлен: развёртка есть и оси объявлены — исключение для него было бы "
+                + "ослаблением правила");
         }
 
         [Test]
