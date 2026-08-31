@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core.UI
             public bool isRadialShelf;
             public bool isFurniture;
             public bool isRadiusTable;
+            public bool isStool;
             public bool isWindow;
             public bool isDoor;
             public bool isPillar;
@@ -50,7 +51,7 @@ namespace KitchenDesigner.Core.UI
                 this.isFacade = isFacade; this.isAssembled = isAssembled;
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
-                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isWindow = false; isDoor = false;
+                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isStool = false; isWindow = false; isDoor = false;
                 isPillar = false; isFloor = false; isLightSource = false; isSink = false; isCooktop = false;
                 isOven = false; isDishwasher = false;
                 isPanel = false; applianceModel = ""; pillarMidHeightMM = 75;
@@ -150,9 +151,12 @@ namespace KitchenDesigner.Core.UI
             table.isFurniture = true;
             var radiusTable = new Item("Радиусный стол", new Vector3Int(2000, 750, 1000));
             radiusTable.isRadiusTable = true;
+            var stool = new Item("Табуретка", new Vector3Int(StoolElement.DefaultWidthMM,
+                StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM));
+            stool.isStool = true;
             var pillar = PillarItem("Ножка", PillarElement.MidHeightMM_Default);
             var sink = SinkItem("Мойка");
-            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, pillar, sink } };
+            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, stool, pillar, sink } };
         }
 
         /// <summary>Встраиваемая техника — готовые модели производителя. Габариты

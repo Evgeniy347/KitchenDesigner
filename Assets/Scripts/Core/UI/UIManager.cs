@@ -152,6 +152,8 @@ namespace KitchenDesigner.Core.UI
 
         public void SpawnRadiusTable(Vector3Int dims, string name) => Spawner.SpawnRadiusTable(dims, name);
 
+        public void SpawnStool(Vector3Int dims, string name) => Spawner.SpawnStool(dims, name);
+
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
             int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM) =>

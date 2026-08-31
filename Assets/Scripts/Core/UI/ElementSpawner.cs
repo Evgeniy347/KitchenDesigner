@@ -64,6 +64,9 @@ namespace KitchenDesigner.Core.UI
         public void SpawnRadiusTable(Vector3Int dims, string name) =>
             PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateRadiusTable(dims, name, pos));
 
+        public void SpawnStool(Vector3Int dims, string name) =>
+            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateStool(dims, 0, name, pos));
+
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom) =>
             PlaceCenteredOnGround(dims.y, pos =>

@@ -44,6 +44,7 @@ namespace KitchenDesigner.Core.UI
         private readonly DrawerBoxFieldsEditor _drawerFields;
         private readonly PillarFieldsEditor _pillarFields;
         private readonly TableLegFieldsEditor _tableFields;
+        private readonly StoolFieldsEditor _stoolFields;
         private readonly WallOpeningFieldsEditor _openingFields;
         private readonly FacadeFieldsEditor _facadeFields;
         private readonly AssembledFacadeFieldsEditor _assembledFields;
@@ -67,13 +68,14 @@ namespace KitchenDesigner.Core.UI
             _drawerFields = new DrawerBoxFieldsEditor(this, Open);
             _pillarFields = new PillarFieldsEditor(this);
             _tableFields = new TableLegFieldsEditor(this);
+            _stoolFields = new StoolFieldsEditor(this);
             _openingFields = new WallOpeningFieldsEditor(this);
             _facadeFields = new FacadeFieldsEditor(this);
             _assembledFields = new AssembledFacadeFieldsEditor(this);
             _editors = new ElementFieldsEditor[]
             {
                 _radialFields, _cooktopFields, _drawerFields, _pillarFields,
-                _tableFields, _openingFields, _lights,
+                _tableFields, _stoolFields, _openingFields, _lights,
                 _assembledFields, _facadeFields,
             };
         }
@@ -282,6 +284,7 @@ namespace KitchenDesigner.Core.UI
         private void BuildFurnitureSection()
         {
             _tableFields.Build();
+            _stoolFields.Build();
             _pillarFields.Build();
         }
 

@@ -109,7 +109,7 @@ public class SidebarCatalogTests
     public void FurnitureGroup_HasTable()
     {
         var groups = SidebarCatalog.Build();
-        Assert.AreEqual(4, groups[3].items.Count);
+        Assert.AreEqual(5, groups[3].items.Count);
         var it = groups[3].items.Find(i => i.name == "Прямоугольный стол");
         Assert.IsNotNull(it);
         Assert.IsTrue(it.isFurniture);
@@ -132,6 +132,19 @@ public class SidebarCatalogTests
         Assert.IsNotNull(it);
         Assert.IsTrue(it.isRadiusTable);
         Assert.AreEqual(new Vector3Int(2000, 750, 1000), it.dims);
+    }
+
+    [Test]
+    public void FurnitureGroup_HasStool()
+    {
+        var groups = SidebarCatalog.Build();
+        var it = groups[3].items.Find(i => i.name == "Табуретка");
+        Assert.IsNotNull(it);
+        Assert.IsTrue(it.isStool);
+        Assert.AreEqual(new Vector3Int(StoolElement.DefaultWidthMM,
+            StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM), it.dims,
+            "габариты табуретки в каталоге обязаны совпадать с её собственными "
+            + "значениями по умолчанию, иначе сайдбар и MCP заводят разные табуретки");
     }
 
     [Test]

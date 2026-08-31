@@ -13,17 +13,7 @@
     },
     {
       "type": "Button",
-      "text": "IsoDoor",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "IsoDoorFloor",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "IsoDoorWall",
+      "text": "IsoRadiusTableZeroInset",
       "position": [20, 0]
     },
     {

@@ -33,6 +33,7 @@ public class UiElementTypeLadderTests
         ("DrawerBoxFieldsEditor.cs", "реестр редакторов"),
         ("PillarFieldsEditor.cs", "реестр редакторов"),
         ("TableLegFieldsEditor.cs", "реестр редакторов"),
+        ("StoolFieldsEditor.cs", "реестр редакторов"),
         ("WallOpeningFieldsEditor.cs", "реестр редакторов"),
         ("LightFieldsEditor.cs", "реестр редакторов"),
         ("FacadeFieldsEditor.cs", "реестр редакторов"),

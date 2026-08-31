@@ -70,6 +70,11 @@ public class ElementFieldsEditorTests
         Spawn<DrawerElement>(ElementFactory.CreateDrawer(
             DrawerType.A, 350, DrawerColor.Anthracite, 400, "Ящик", Vector3.zero));
 
+    private StoolElement Stool() =>
+        Spawn<StoolElement>(ElementFactory.CreateStool(
+            new Vector3Int(StoolElement.DefaultWidthMM, StoolElement.DefaultHeightMM,
+                StoolElement.DefaultDepthMM), 0, "Табуретка", Vector3.zero));
+
     private TableElement Table() =>
         Spawn<TableElement>(ElementFactory.CreateTable(
             new Vector3Int(1200, 750, 700), "Стол", Vector3.zero));
@@ -98,6 +103,69 @@ public class ElementFieldsEditorTests
         Assert.AreEqual(AppConstants.RADIAL_CORNER_RADIUS_DEFAULT.ToString(),
             Text(Field("Радиус угла")),
             "у детали без радиуса поле показывает значение по умолчанию, а не чужое");
+    }
+
+    /// <summary>Регрессия, найденную снимком контекстного меню: редактор
+    /// табуретки лежал в реестре _editors — Show/Apply/Refresh по нему ходили, —
+    /// но его Build() никто не позвал, и строки в панели просто НЕ БЫЛО. Реестр
+    /// из двух половин (список редакторов и список вызовов Build) молчит об этом
+    /// так же, как молчит пропуск типа в реестре элементов.</summary>
+    [Test]
+    public void Stool_CornerRadiusRow_IsBuilt_AndAppliesAndIsUndoable()
+    {
+        var stool = Stool();
+        _menu!.Open(stool);
+        Assert.IsNotNull(Panel().Find("F_Скругление"),
+            "строка «Скругление» обязана быть ПОСТРОЕНА: занести редактор в реестр _editors "
+            + "и забыть позвать его Build() — значит получить свойство, которое нечем "
+            + "править, и молча");
+        Assume.That(Text(Field("Скругление")), Is.EqualTo("0"),
+            "поле обязано открыться значением элемента");
+
+        Type("Скругление", "150");
+
+        Assert.AreEqual(150, stool.CornerRadiusMM, "скругление применяется вместе с размерами");
+        CommandStack.Undo();
+        Assert.AreEqual(0, stool.CornerRadiusMM, "одна правка — один шаг отмены (правило 2)");
+    }
+
+    [Test]
+    public void Stool_CornerRadiusRow_ShowsTheClampedValueBack_NotWhatWasTyped()
+    {
+        var stool = Stool();
+        _menu!.Open(stool);
+
+        Type("Скругление", "1000");
+
+        Assert.AreEqual(180, stool.CornerRadiusMM,
+            "элемент зажал радиус половиной меньшей стороны: 360/2 = 180");
+        Assert.AreEqual("180", Text(Field("Скругление")),
+            "в поле обязан вернуться ПРИНЯТЫЙ элементом радиус, а не то, что напечатал "
+            + "человек (CONVENTIONS.md → «Read a value back only AFTER EndCapture»)");
+    }
+
+    [Test]
+    public void Stool_TabletopAndLegsMaterialRows_AreShown_InsteadOfThePlainTextureRow()
+    {
+        _menu!.Open(Stool());
+
+        Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
+            "у табуретки два декора — сиденье и ножки: она носитель ITabletop");
+        Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy);
+        Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
+            "общая строка «Текстура» у носителя столешницы скрыта — иначе один декор "
+            + "спорит с двумя");
+    }
+
+    [Test]
+    public void Stool_HasNoLegInsetRow()
+    {
+        _menu!.Open(Stool());
+
+        var legInset = Panel().Find("F_Сдвиг опор");
+        Assert.IsTrue(legInset == null || !legInset.gameObject.activeInHierarchy,
+            "отступ ножек у табуретки — константа конструкции: показать поле, которое "
+            + "редактор табуретки не обрабатывает, значит показать мёртвую строку");
     }
 
     [Test]
