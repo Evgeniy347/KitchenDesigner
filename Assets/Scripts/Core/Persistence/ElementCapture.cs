@@ -13,6 +13,7 @@ namespace KitchenDesigner.Core
 			var facade = element as FacadeElement;
 			var radialShelf = element as RadialShelfElement;
 			var radiusTable = element as RadiusTableElement;
+			var stool = element as StoolElement;
 			var tableEl2 = element as TableElement;
 			var windowEl = element as WindowElement;
 			var doorEl = element as DoorElement;
@@ -46,16 +47,17 @@ namespace KitchenDesigner.Core
             d.isFacade = facade != null;
             d.isRadialShelf = radialShelf != null;
             d.isRadiusTable = radiusTable != null;
+            d.isStool = stool != null;
             d.isTable = tableEl2 != null;
             if (tableEl2 != null)
                 d.legInsetMM = tableEl2.LegInsetMM;
             else if (radiusTable != null)
                 d.legInsetMM = radiusTable.LegInsetMM;
-            d.legsMaterialId = tableEl2 != null ? tableEl2.LegsMaterialId
-                : radiusTable != null ? radiusTable.LegsMaterialId : MaterialCatalog.DefaultId;
-            d.tabletopMaterialId = tableEl2 != null ? tableEl2.TabletopMaterialId
-                : radiusTable != null ? radiusTable.TabletopMaterialId : MaterialCatalog.DefaultId;
-            d.cornerRadius = radialShelf != null ? radialShelf.CornerRadius : 0;
+            var tabletop = element as ITabletop;
+            d.legsMaterialId = tabletop != null ? tabletop.LegsMaterialId : MaterialCatalog.DefaultId;
+            d.tabletopMaterialId = tabletop != null ? tabletop.TabletopMaterialId : MaterialCatalog.DefaultId;
+            d.cornerRadius = radialShelf != null ? radialShelf.CornerRadius
+                : stool != null ? stool.CornerRadiusMM : 0;
 
             d.gapLeft = element.SupportsGaps ? element.GapLeft : 0;
             d.gapRight = element.SupportsGaps ? element.GapRight : 0;

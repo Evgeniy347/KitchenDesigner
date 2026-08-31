@@ -61,6 +61,7 @@ namespace KitchenDesigner.Core
         public bool isRadialShelf = false;
         public bool isTable = false;
         public bool isRadiusTable = false;
+        public bool isStool = false;
         public int legInsetMM = 100;
         public int gapLeft = 2;
         public int gapRight = 2;

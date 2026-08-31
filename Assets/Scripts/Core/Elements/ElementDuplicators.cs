@@ -119,6 +119,21 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is StoolElement,
+             (factory, source, pos) => factory.CreateStool(source.DimensionsMM,
+                 ((StoolElement)source).CornerRadiusMM, source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (StoolElement)source;
+                 var made = copy.GetComponent<StoolElement>();
+                 if (made != null)
+                 {
+                     made.TabletopMaterialId = src.TabletopMaterialId;
+                     made.LegsMaterialId = src.LegsMaterialId;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is WindowElement,
              (factory, source, pos) =>
              {

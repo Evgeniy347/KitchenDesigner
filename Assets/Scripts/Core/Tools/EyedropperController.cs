@@ -96,13 +96,11 @@ namespace KitchenDesigner.Core.Tools
             return element;
         }
 
-        /// <summary>У стола свойство «Текстура» скрыто, а видимая поверхность —
-        /// столешница; её декор пипетка и берёт (так же решает окно свойств,
-        /// см. ContextMenuUI.SlotFor).</summary>
+        /// <summary>У носителя столешницы (ITabletop) свойство «Текстура» скрыто,
+        /// а видимая поверхность — столешница или сиденье; её декор пипетка и
+        /// берёт (так же решает ContextMenuMaterialSection.SlotFor).</summary>
         private static MaterialSlot SlotOf(KitchenElement element)
-            => element is TableElement || element is RadiusTableElement
-                ? MaterialSlot.Tabletop
-                : MaterialSlot.Base;
+            => element is ITabletop ? MaterialSlot.Tabletop : MaterialSlot.Base;
 
         private static bool ShiftHeld() =>
             Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);

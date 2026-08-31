@@ -50,7 +50,8 @@ namespace KitchenDesigner.Core.UI
         {
             if (element == null) return Group.None;
             if (element is DrawerElement) return Group.Drawer;
-            if (element is TableElement || element is RadiusTableElement || element is PillarElement
+            if (element is TableElement || element is RadiusTableElement || element is StoolElement
+                || element is PillarElement
                 || element is WindowElement || element is DoorElement || element is PanelElement
                 || element is LightSourceElement || element is FloorElement
                 || element is SinkElement || element is CooktopElement || element is OvenElement

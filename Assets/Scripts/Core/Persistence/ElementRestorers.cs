@@ -137,6 +137,13 @@ namespace KitchenDesigner.Core
                  table.LegInsetMM = d.legInsetMM;
              }),
 
+            (d => d.isStool,
+             (factory, d) => factory.CreateStool(d.Dimensions, d.cornerRadius, d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is StoolElement stool) ApplyTabletopMaterials(d, stool);
+             }),
+
             (d => d.isRadialShelf,
              (factory, d) => factory.CreateRadialShelf(d.Dimensions.x, d.Dimensions.z,
                  d.Dimensions.y, d.cornerRadius, d.name, d.Position),
