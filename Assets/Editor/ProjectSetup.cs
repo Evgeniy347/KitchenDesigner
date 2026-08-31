@@ -1,30 +1,12 @@
 using UnityEditor;
 using UnityEngine;
-using KitchenDesigner.Core;
 
 [InitializeOnLoad]
 public static class ProjectSetup
 {
     static ProjectSetup()
     {
-        EnsureKitchenSettings();
         EnsureTags();
-    }
-
-    private static void EnsureKitchenSettings()
-    {
-        if (KitchenSettings.Instance != null)
-            return;
-
-        var settings = ScriptableObject.CreateInstance<KitchenSettings>();
-        var path = "Assets/Resources/KitchenSettings.asset";
-        var dir = "Assets/Resources";
-        if (!AssetDatabase.IsValidFolder(dir))
-            AssetDatabase.CreateFolder("Assets", "Resources");
-
-        AssetDatabase.CreateAsset(settings, path);
-        AssetDatabase.SaveAssets();
-        Debug.Log("[ProjectSetup] Created KitchenSettings.asset");
     }
 
     private static void EnsureTags()

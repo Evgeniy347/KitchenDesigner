@@ -12,39 +12,6 @@ namespace KitchenDesigner.Core
         CommandRecord? ToRecord(Func<KitchenElement, int> indexOf);
     }
 
-    /// <summary>Сериализуемая запись одной команды undo/redo. Плоская структура с
-    /// тегом <see cref="type"/> вместо наследников — JsonUtility не умеет
-    /// полиморфные массивы. elementIndex ссылается на объект по позиции в
-    /// ProjectData.elements (стабильна в пределах одного сохранения).</summary>
-    [Serializable]
-    public class CommandRecord
-    {
-        // composite-записи всегда сериализуются ПЛОСКО (один уровень children,
-        // см. CompositeCommand.ToRecord), поэтому глубина JSON ограничена
-        // константой и жёсткий лимит JsonUtility (10) не достигается.
-        public string type = string.Empty;          // move | resize | composite
-        public string description = string.Empty;
-        public int elementIndex = -1;
-        public float[] posBefore = new float[0];
-        public float[] posAfter = new float[0];
-        public float[] rotBefore = new float[0];
-        public float[] rotAfter = new float[0];
-        public int[] dimsBefore = new int[0];
-        public int[] dimsAfter = new int[0];
-        public CommandRecord[]? children;
-
-        public static float[] V3(Vector3 v) => new[] { v.x, v.y, v.z };
-        public static float[] V4(Quaternion q) => new[] { q.x, q.y, q.z, q.w };
-        public static int[] VI(Vector3Int v) => new[] { v.x, v.y, v.z };
-
-        public static Vector3 ToV3(float[] a) =>
-            a != null && a.Length >= 3 ? new Vector3(a[0], a[1], a[2]) : Vector3.zero;
-        public static Quaternion ToQuat(float[] a) =>
-            a != null && a.Length >= 4 ? new Quaternion(a[0], a[1], a[2], a[3]) : Quaternion.identity;
-        public static Vector3Int ToVI(int[] a) =>
-            a != null && a.Length >= 3 ? new Vector3Int(a[0], a[1], a[2]) : Vector3Int.one;
-    }
-
     /// <summary>Восстановление команд из записей при загрузке проекта. resolve
     /// отдаёт объект по индексу (или null — тогда команда пропускается).</summary>
     public static class CommandSerialization

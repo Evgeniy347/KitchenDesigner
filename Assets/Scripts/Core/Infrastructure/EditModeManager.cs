@@ -3,13 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public enum EditMode
-    {
-        Normal,
-        Room,
-        Photo,
-    }
-
     public static class EditModeManager
     {
         public static EditMode Mode { get; private set; } = EditMode.Normal;

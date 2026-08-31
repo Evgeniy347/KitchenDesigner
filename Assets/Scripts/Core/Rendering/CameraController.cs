@@ -107,16 +107,11 @@ namespace KitchenDesigner.Core
             }
         }
 
-        // Множители из настроек «Управление». Без ассета настроек (юнит-тесты,
-        // ранний старт) работаем как раньше — с коэффициентом 1.
-        private static float MouseSensitivity => KitchenSettings.Instance != null
-            ? KitchenSettings.Instance.MouseSensitivity : 1f;
+        private static float MouseSensitivity => KitchenSettings.Instance.MouseSensitivity;
 
-        private static float WasdSpeed => KitchenSettings.Instance != null
-            ? KitchenSettings.Instance.WasdSpeed : 1f;
+        private static float WasdSpeed => KitchenSettings.Instance.WasdSpeed;
 
-        private static float ArrowSpeed => KitchenSettings.Instance != null
-            ? KitchenSettings.Instance.ArrowSpeed : 1f;
+        private static float ArrowSpeed => KitchenSettings.Instance.ArrowSpeed;
 
         private void Awake()
         {

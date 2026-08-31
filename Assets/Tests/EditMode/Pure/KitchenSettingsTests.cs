@@ -1,6 +1,5 @@
 using System.Reflection;
 using NUnit.Framework;
-using UnityEngine;
 using KitchenDesigner.Core;
 
 public class KitchenSettingsTests
@@ -211,20 +210,16 @@ public class KitchenSettingsTests
     }
 
     [Test]
-    public void BasePlate_CreatesWithCorrectSize()
+    public void Instance_ExistsWithoutAnAsset_AndInputSpeedsStartAtOne()
     {
-        var plate = BasePlate.Create();
-        Assert.NotNull(plate);
-        Assert.NotNull(plate.Element);
+        var s = KitchenSettings.Instance;
 
-        var element = plate.Element;
-        Assert.AreEqual(new Vector3Int(3000, 18, 3000), element.DimensionsMM);
-
-        var scale = plate.transform.localScale;
-        Assert.AreEqual(3f, scale.x, 0.001f);
-        Assert.AreEqual(0.018f, scale.y, 0.001f);
-        Assert.AreEqual(3f, scale.z, 0.001f);
-
-        Object.DestroyImmediate(plate.gameObject);
+        Assert.NotNull(s, "настройки больше не ассет из Resources: Instance строит объект сам, "
+            + "поэтому вызывающему некуда падать и запасная ветка «нет ассета» не нужна");
+        Assert.AreEqual(1f, s.MouseSensitivity, 0.001f,
+            "CameraController умножал ввод на 1, когда ассета настроек не было; "
+            + "то же значение теперь обязан давать сам инициализатор поля");
+        Assert.AreEqual(1f, s.WasdSpeed, 0.001f);
+        Assert.AreEqual(1f, s.ArrowSpeed, 0.001f);
     }
 }

@@ -13,7 +13,7 @@ using KitchenDesigner.Core;
 /// расходятся молча, и каждое направление — свой дефект: поле, попавшее в ToData
 /// и забытое в ApplyFrom, сохраняется и не восстанавливается (потеря настройки
 /// пользователя); поле, забытое в ResetToDefaults, протекает из теста в тест
-/// через глобальный ScriptableObject.
+/// через глобальный синглтон KitchenSettings.Instance.
 ///
 /// Здесь эти списки сверяются между собой рефлексией по полям самого класса.
 /// Рефлексия тут — не обход приватного API, а предмет проверки: соответствие
@@ -37,22 +37,7 @@ public class KitchenSettingsContractTests
         "hideOpeningsOnLoweredWalls", "objectsVisible", "hideLightSources",
     };
 
-    private readonly List<KitchenSettings> _made = new List<KitchenSettings>();
-
-    [TearDown]
-    public void Teardown()
-    {
-        foreach (var s in _made)
-            if (s != null) UnityEngine.Object.DestroyImmediate(s);
-        _made.Clear();
-    }
-
-    private KitchenSettings NewSettings()
-    {
-        var s = ScriptableObject.CreateInstance<KitchenSettings>();
-        _made.Add(s);
-        return s;
-    }
+    private static KitchenSettings NewSettings() => new KitchenSettings();
 
     private static FieldInfo[] SerializedFields() =>
         typeof(KitchenSettings)
@@ -190,8 +175,8 @@ public class KitchenSettingsContractTests
 
         var leftBehind = Differences(expected, Values(settings));
         Assert.IsEmpty(leftBehind,
-            "инициализаторы полей срабатывают только при СОЗДАНИИ ассета, а Instance "
-            + "грузится из Resources с уже сохранённым состоянием — забытое в "
+            "инициализаторы полей срабатывают только при СОЗДАНИИ объекта, а Instance "
+            + "живёт один на весь процесс с уже изменённым состоянием — забытое в "
             + "ResetToDefaults поле протекает из теста в тест: "
             + string.Join(" | ", leftBehind));
     }

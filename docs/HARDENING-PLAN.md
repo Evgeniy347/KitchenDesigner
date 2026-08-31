@@ -54,8 +54,8 @@ The `(?<!:)` keeps `http://` inside string literals out of the count.
 Updated 2026-08-31. Keep this current: it is the only place that says where the work stands.
 
 **Done from this plan:** A8 (generated-artefact parity guard), B3 (server projects as strict
-as Unity), and **the first slice of C2** (`5b53ae45`). Both offenders that A3c would catch are
-fixed, but the guard itself is not written.
+as Unity), and **the first two slices of C2** (`5b53ae45` and this commit).
+Both offenders that A3c would catch are fixed, but the guard itself is not written.
 
 **Not started:** everything else — A1 through A7, B1/B2/B4, C1, C3, most of D, all of E.
 
@@ -82,17 +82,38 @@ loads under CoreCLR. Three walls, in order of how often they will come up again:
   `SidebarCatalog` needs `PillarElement.TopDiameterMM`; `EventBus`'s event structs carry
   `KitchenElement` — that one split cleanly, the constant has not been dealt with.
 
-**Next batch, already trial-compiled clean:** `KitchenSettings` (with `ViewPreset`,
-`PhotoQualityPreset` and `KitchenSettingsData` from `Persistence/ProjectData.cs`) and
-`GridManager`, which depends on it. `GameContext` needs its `*Instance` construction inverted
-first — `InitializeWithDefaults` news up concrete Unity-side services.
+**C2, second slice — the settings and the grid.** `KitchenSettings`, `ViewPreset`, `ViewField`,
+`PhotoQualityPreset`, `WorldBounds`, `KitchenSettingsData`, `CommandRecord`, the `EditMode` enum
+and `GridManager` are on the fast path; the loop runs **380 tests** (239 core + 141 pure).
 
-**A1 is the one that matters most and has not moved.** `Core` holds **3136** comments. The purge
+The wall here was not compilation — it was CoreCLR. `KitchenSettings` was a `ScriptableObject`,
+and under `dotnet` even `new KitchenSettings()` throws `SecurityException`: the base constructor
+calls `Internal_CreateScriptableObject`, and `Resources.Load` and `ScriptableObject.CreateInstance`
+are ECall too. So a `ScriptableObject` COMPILES on the second path and cannot be INSTANTIATED
+there — add that to the list of three walls above, it is the fourth and the least obvious.
+
+It was resolved by dropping the `ScriptableObject`, because the asset carried nothing:
+`Assets/Resources/KitchenSettings.asset` held the field initializers value for value, plus three
+keys (`_edgeOutline`, `_wallsEnabled`, `_lowerNearWalls`) whose fields had been gone for a while.
+Settings persist through `ProjectData.settings`, not through the asset. `KitchenSettings.Instance`
+now news up a plain singleton, the asset and `ProjectSetup.EnsureKitchenSettings` are deleted, and
+`CameraController`s three "no asset — use a factor of 1" fallbacks became unreachable and went.
+
+**Still blocked: `ElementData` and `ProjectData`.** `ElementData.FromElement(KitchenElement)` is
+200 lines of scene reflection over every element type; the DATA half moves only after that factory
+is extracted into its own class. `ProjectData` follows `ElementData`, not the other way round.
+
+`GameContext` still needs its `*Instance` construction inverted — `InitializeWithDefaults` news up
+concrete Unity-side services.
+
+**A1 is the one that matters most and has not moved.** `Core` holds **3131** comments. The purge
 covered `Elements`, `Persistence`, `Infrastructure` and `Platform` before this plan was written,
 which is why they already read zero above; nothing has changed since. Remaining:
-`UI` 655 · `Rendering` 492 · `Snap` 318 · `MCP` 309 · `Materials` 287 · `Geometry` 242 ·
-`Validation` 193 · `Measure` 125 · `Update` 114 · `Commands` 108 · `Analysis` 104 ·
-`Diagnostics` 74 · `Bulk` 51 · `Tools` 48 · `Interfaces` 8 · `Networking` 8.
+`UI` 641 · `Rendering` 479 · `Snap` 318 · `MCP` 309 · `Materials` 287 · `Geometry` 242 ·
+`Validation` 193 · `Measure` 125 · `Pure` 89 · `Commands` 100 · `Analysis` 104 ·
+`Diagnostics` 74 · `Update` 53 · `Bulk` 51 · `Tools` 48 · `Interfaces` 8 · `Networking` 8.
+The live ceilings are in `CommentRatchetTests.Budgets`; that table, not this paragraph, is what
+fails the build.
 
 **Recommended next step: finish C2's next batch, then A1.** C2 is marked "first of all" for a
 reason — every hour spent on Part E without it pays the Unity tax on every iteration.

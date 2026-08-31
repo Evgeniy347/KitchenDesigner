@@ -2,19 +2,10 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    [CreateAssetMenu(fileName = "KitchenSettings", menuName = "KitchenDesigner/KitchenSettings")]
-    public class KitchenSettings : ScriptableObject
+    public class KitchenSettings
     {
         private static KitchenSettings? _instance;
-        public static KitchenSettings Instance
-        {
-            get
-            {
-                if (_instance == null)
-                    _instance = Resources.Load<KitchenSettings>("KitchenSettings");
-                return _instance!;
-            }
-        }
+        public static KitchenSettings Instance => _instance ??= new KitchenSettings();
 
         [SerializeField] private int _gridStep = 18;
         [SerializeField] private bool _gridEnabled = true;
