@@ -16,7 +16,8 @@
     медленнее, но воспроизводим: одно состояние вместо трёх, и никакого
     «почему-то в этот раз не так».
 
-    ОДИН клиент за раз: команды берут файловый замок
+    ОДИН клиент за раз НА ВСЮ МАШИНУ: команды ждут именованный мьютекс
+    `Local\kd-unity-gateway`, а потом берут файловый замок
     `Library\kd-unity-gateway.lock`. Проект Unity держит эксклюзивно, поэтому
     второй batch поверх первого просто не стартует — очередь честнее гонки.
 
@@ -55,7 +56,20 @@ param(
 
     # Общий потолок на прогон. Полный холодный EditMode — единицы минут,
     # PlayMode — минуты; полчаса это уже авария, а не «долго».
-    [int]$TimeoutMinutes = 30
+    [int]$TimeoutMinutes = 30,
+
+    # Сколько ждать честного выхода ПОСЛЕ того, как Unity написал в лог
+    # «Cleanup mono». К этому моменту работа сделана и отчёт лежит на диске;
+    # процесс, не ушедший за это время, висит впустую. Замерено: из 24
+    # прогонов 23 выходят за 0,6–1,7 с, а один простоял 2675 с.
+    #
+    # ПО УМОЛЧАНИЮ ВЫКЛЮЧЕНО (0). Снятие живого Unity опирается на догадку,
+    # что после «Cleanup mono» Library уже согласована, а это ещё не
+    # доказано: если снятый процесс оставляет её грязной, следующий прогон
+    # платит переимпортом. Включать числом секунд (например 20) — и только
+    # после того, как замер «прогон после снятия против обычного» покажет,
+    # что переимпорта нет.
+    [int]$DoneGraceSeconds = 0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -85,6 +99,32 @@ if (-not (Test-Path $unity)) { throw "Unity не найден: $unity" }
 #>
 $lockPath = Join-Path $repo 'Library\kd-unity-gateway.lock'
 $script:lockHandle = $null
+$script:machineGate = $null
+
+<#
+    Очередь МАШИННАЯ, а не проектная.
+
+    Файловый замок лежит внутри `Library` конкретного проекта, поэтому два
+    Unity из РАЗНЫХ проектов замков друг друга не видят — и дерутся за то,
+    что на машине одно. Клиент лицензирования (`Unity.Licensing.Client`,
+    канал `LicenseClient-<user>`) один на пользователя: проигравший уходит в
+    вечный цикл «connection lost → Timed-out after 60.01s» и не выходит сам.
+    Процессор и диск тоже общие: прогон, попавший на соседний Unity, показал
+    `CompileScripts: 93798 ms` вместо обычной секунды.
+
+    Поэтому ждём именованный мьютекс, общий для всей машины, и только потом
+    берём файловый замок. Порядок «сначала машинный, потом проектный» —
+    единственный, при котором два клиента на разных проектах не могут
+    заблокировать друг друга насмерть.
+
+    Роли разные, поэтому нужны оба: мьютекс решает, КТО едет, файл отвечает
+    на вопрос, КТО ДЕРЖИТ (мьютекс имени держателя не хранит).
+
+    `Local\` вместо `Global\`: глобальное пространство имён нужно только для
+    разных сеансов и служб и требует прав, а у нас несколько процессов одного
+    пользователя.
+#>
+$machineGateName = 'Local\kd-unity-gateway'
 
 function Read-GateHolder {
     try {
@@ -95,6 +135,32 @@ function Read-GateHolder {
 }
 
 function Enter-Gate {
+    param([int]$WaitMinutes = 60)
+
+    $script:machineGate = New-Object Threading.Mutex($false, $machineGateName)
+    $got = $false
+    try {
+        $got = $script:machineGate.WaitOne([TimeSpan]::FromMinutes($WaitMinutes))
+    }
+    catch [Threading.AbandonedMutexException] {
+        # Владелец умер, не отпустив очередь. Исключение при этом ОТДАЁТ
+        # владение — работаем дальше как при обычном захвате.
+        #
+        # Сообщения отсюда не ждать. Замерено: убитый `Stop-Process -Force`
+        # держатель в 4 прогонах из 4 не породил этого исключения вовсе —
+        # следующий `WaitOne` просто вернул True. Ветка остаётся страховкой
+        # на случай смерти ПОТОКА при живом процессе; расхождение с
+        # документированным WAIT_ABANDONED не разобрано.
+        $got = $true
+    }
+    if (-not $got) {
+        throw "Не дождался очереди за $WaitMinutes мин: Unity занят другим прогоном на этой машине. Кто на этом проекте: $(Read-GateHolder)"
+    }
+
+    Enter-ProjectLock -WaitMinutes $WaitMinutes
+}
+
+function Enter-ProjectLock {
     param([int]$WaitMinutes = 60)
 
     $deadline = (Get-Date).AddMinutes($WaitMinutes)
@@ -126,6 +192,15 @@ function Enter-Gate {
 
 function Exit-Gate {
     if ($script:lockHandle) { $script:lockHandle.Dispose(); $script:lockHandle = $null }
+    if ($script:machineGate) {
+        # Мьютекс принадлежит ЗАХВАТИВШЕМУ ПОТОКУ, освобождать его можно
+        # только оттуда же. Проверено: в этом скрипте `try` и `finally` идут
+        # на одном потоке. А если процесс умрёт, не дойдя сюда, мьютекс
+        # отпустит ОС — тоже проверено.
+        try { $script:machineGate.ReleaseMutex() } catch { }
+        $script:machineGate.Dispose()
+        $script:machineGate = $null
+    }
 }
 
 # ── Свободен ли проект ──────────────────────────────────────────────────
@@ -139,20 +214,54 @@ function Exit-Gate {
     batch (остался от убитого скрипта) не отпустит Library сам и превращает
     каждую следующую команду в многоминутное ожидание — такой снимаем.
 #>
+<#
+    Отбор идёт по НОРМАЛИЗОВАННОМУ пути, и это не косметика.
+
+    Unity приводит путь проекта к прямым слэшам у себя внутри и в таком виде
+    передаёт его дочерним процессам: `AssetImportWorker` получает
+    `-projectPath F:/repos/.../kd-repose`, тогда как $repo здесь —
+    `F:\repos\...\kd-repose`. Сравнение как есть не совпадает никогда,
+    поэтому воркер для шлюза НЕВИДИМ: осиротевший импортёр не будет ни снят,
+    ни показан в `status`, а `Library` он держит наравне с главным
+    процессом — ровно тот случай многоминутных ожиданий, ради которого
+    Stop-StrayUnity и написан.
+
+    Воркер выделен отдельным Kind: снимать его вместе с сиротами правильно,
+    но в `status` он должен называться своим именем, иначе «два batch на
+    проекте» выглядит загадкой.
+#>
 function Get-UnityProcesses {
+    $repoNorm = $repo -replace '\\', '/'
     $found = @()
     foreach ($p in (Get-Process Unity -ErrorAction SilentlyContinue)) {
         try {
             $cmdline = (Get-CimInstance Win32_Process -Filter "ProcessId = $($p.Id)").CommandLine
             if (-not $cmdline) { continue }
-            if ($cmdline -notmatch [regex]::Escape($repo)) { continue }
-            $found += [pscustomobject]@{
-                Id   = $p.Id
-                Kind = $(if ($cmdline -match '-batchMode') { 'batch' } else { 'gui' })
-            }
+            $norm = $cmdline -replace '\\', '/'
+            if ($norm -notmatch [regex]::Escape($repoNorm)) { continue }
+            $kind = if ($cmdline -match '-name\s+AssetImportWorker') { 'worker' }
+                    elseif ($cmdline -match '-batchMode') { 'batch' }
+                    else { 'gui' }
+            $found += [pscustomobject]@{ Id = $p.Id; Kind = $kind }
         } catch { }
     }
     return $found
+}
+
+<#
+    Открытый редактор из Hub — приговор прогону, и узнать об этом надо ДО
+    очереди, а не после. Отстоять двадцать минут в очереди, чтобы услышать
+    «закройте редактор», — худший из возможных порядков.
+
+    Убивать здесь ничего нельзя: замок ещё не взят, и живой batch на этом
+    проекте может быть ЧУЖИМ ИДУЩИМ прогоном, а не сиротой. Поэтому до
+    очереди — только диагноз по GUI, а уборка сирот остаётся в
+    Stop-StrayUnity, под замком, где чужих прогонов уже не бывает.
+#>
+function Assert-NoEditorGui {
+    if (@(Get-UnityProcesses | Where-Object { $_.Kind -eq 'gui' }).Count -gt 0) {
+        throw 'Открыт редактор Unity из Hub, а холодному прогону нужен эксклюзивный проект. Закройте его вручную'
+    }
 }
 
 function Stop-StrayUnity {
@@ -190,8 +299,54 @@ function Stop-StrayUnity {
     Процесс снимается в finally: убитый скрипт не должен оставлять
     осиротевший Unity, держащий Library.
 #>
+<#
+    Пульс лога: что в нём изменилось ОСМЫСЛЕННОГО.
+
+    Размер файла как признак прогресса врёт. Потеряв клиент лицензирования,
+    Unity пишет раз в минуту новую порцию ошибок — файл растёт, работа стоит,
+    сторож по размеру считает это прогрессом и досиживает до общего тайм-аута.
+    Так ушло больше 35 минут в одном замере.
+
+    Поэтому смотрим на хвост (последние 32 КБ, а не файл целиком: он бывает
+    мегабайтным, а опрос идёт раз в две секунды) и выбрасываем строки, которые
+    Unity печатает не работая.
+
+    `Beat` = число осмысленных строк в окне + последняя из них. Ловит молчание
+    и повтор одной строки: окно фиксированное, поэтому счётчик упирается в
+    потолок и замирает. НЕ ловит цикл из нескольких РАЗНЫХ строк — для лога он
+    неотличим от работы. Против такого есть только -TimeoutMinutes, и это
+    честный ответ: «зациклился» и «делает много мелкого» неразличимы в
+    принципе.
+#>
+$script:LogNoise = '\[Licensing::|GetVirtualKey:'
+
+function Get-LogPulse {
+    param([string]$Path)
+
+    try {
+        $fs = [IO.File]::Open($Path, 'Open', 'Read', 'ReadWrite')
+        try {
+            if ($fs.Length -le 0) { return $null }
+            $take = [int][Math]::Min($fs.Length, 32768)
+            $fs.Seek(-$take, 'End') | Out-Null
+            $buf = New-Object byte[] $take
+            $null = $fs.Read($buf, 0, $take)
+            $tail = [Text.Encoding]::UTF8.GetString($buf)
+        }
+        finally { $fs.Dispose() }
+    }
+    catch { return $null }
+
+    $lines = @($tail -split "`n" | Where-Object { $_ -notmatch $script:LogNoise })
+    [pscustomobject]@{
+        Beat    = "$($lines.Count):$($lines[-1])"
+        Done    = ($tail -match 'Cleanup mono')
+        License = ($tail -match 'waiting for channel')
+    }
+}
+
 function Invoke-Unity {
-    param([string[]]$UnityArgs, [string]$LogPath)
+    param([string[]]$UnityArgs, [string]$LogPath, [switch]$KillAfterDone)
 
     # Лог Unity открывает на ПЕРЕзапись, поэтому стартовое «молчание» надо
     # мерить от несуществующего файла, а не от старого.
@@ -203,17 +358,39 @@ function Invoke-Unity {
 
         $deadline = (Get-Date).AddMinutes($TimeoutMinutes)
         $lastProgress = Get-Date
-        $lastSize = -1L
+        $lastBeat = ''
+        $doneSince = $null
+        $saidLicense = $false
         while (-not $proc.HasExited) {
             Start-Sleep -Seconds 2
             if ($proc.HasExited) { break }
 
-            $item = Get-Item $LogPath -ErrorAction SilentlyContinue
-            if ($item -and $item.Length -ne $lastSize) {
-                $lastSize = $item.Length
-                $lastProgress = Get-Date
+            $pulse = Get-LogPulse -Path $LogPath
+            if ($pulse) {
+                if ($pulse.Beat -ne $lastBeat) {
+                    $lastBeat = $pulse.Beat
+                    $lastProgress = Get-Date
+                }
+
+                if ($pulse.License -and -not $saidLicense) {
+                    $saidLicense = $true
+                    Write-Host '  Unity потерял клиент лицензирования — на машине запущен второй Unity' -ForegroundColor Yellow
+                    Write-Host '  что делать: закройте редактор Unity из Hub — либо ничего, прогон встанет в очередь сам' -ForegroundColor Yellow
+                    Write-Host '  посмотреть, кто держит проект: .\tools\unity.ps1 status' -ForegroundColor Yellow
+                }
+
+                # «Cleanup mono» — работа кончилась: отчёт записан, Library
+                # сброшена. Дальше процесс либо честно выйдет за секунду, либо
+                # не выйдет вообще (замерено: 2675 с простоя на пустом
+                # проекте). Ждать столько незачем.
+                if ($KillAfterDone -and $DoneGraceSeconds -gt 0 -and -not $doneSince -and $pulse.Done) { $doneSince = Get-Date }
             }
 
+            if ($doneSince -and ((Get-Date) - $doneSince).TotalSeconds -gt $DoneGraceSeconds) {
+                Write-Host "  работа закончена, но процесс не вышел за $DoneGraceSeconds с — снимаю" -ForegroundColor DarkYellow
+                Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+                return 0
+            }
             if (((Get-Date) - $lastProgress).TotalMinutes -gt $SilenceMinutes) {
                 Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
                 throw "Лог не растёт $SilenceMinutes мин — Unity завис (снят). Лог: $LogPath"
@@ -329,7 +506,7 @@ function Invoke-TestsCore {
     if ($effectiveFilter) { $unityArgs += @('-testFilter', $effectiveFilter) }
 
     Write-Host "=== $Platform (холодный batch) ===" -ForegroundColor Cyan
-    Invoke-Unity -UnityArgs $unityArgs -LogPath $log | Out-Null
+    Invoke-Unity -UnityArgs $unityArgs -LogPath $log -KillAfterDone | Out-Null
 
     if (-not (Test-Path $ResultPath)) { throw "Нет отчёта: $ResultPath (лог: $log)" }
 
@@ -434,6 +611,7 @@ function Invoke-Method {
 # `status` намеренно БЕЗ замка: спросить «занят ли проект» должно быть можно и
 # посреди чужого прогона — иначе диагностика встаёт в ту же очередь, которую и
 # пришла разглядывать.
+if ($Command -in @('tests', 'method')) { Assert-NoEditorGui }
 if ($Command -ne 'status') { Enter-Gate }
 
 try {
@@ -460,6 +638,7 @@ switch ($Command) {
             }
             Write-Host '  gui   — открытый редактор из Hub, закройте его вручную перед прогоном'
             Write-Host '  batch — идёт прогон, либо сирота от убитого скрипта: .\tools\unity.ps1 stop'
+            Write-Host '  worker — AssetImportWorker, дочерний импортёр Unity; свой уходит сам, осиротевший держит Library'
         }
 
         # Кто сейчас в очереди за проектом. Без этой строки чужой прогон
