@@ -65,7 +65,7 @@ namespace KitchenDesigner.Core
     /// находится здесь по id.</summary>
     public static class MaterialCatalog
     {
-        public const string DefaultId = "default";
+        public const string DefaultId = AppConstants.DEFAULT_MATERIAL_ID;
 
         /// <summary>Единственный код-определённый декор: им отвечает <see cref="Get"/>
         /// на неизвестный id и он же остаётся всем каталогом, если индекс не прочитался.

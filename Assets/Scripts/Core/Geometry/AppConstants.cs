@@ -4,6 +4,7 @@ namespace KitchenDesigner.Core
 {
     public static class AppConstants
     {
+        public const string DEFAULT_MATERIAL_ID = "default";
         public const int SAVE_FORMAT_VERSION = 1;
         public const int DEFAULT_GRID_STEP = 1;
         public const float SNAP_THRESHOLD = 50f;
