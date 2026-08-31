@@ -57,14 +57,15 @@ Updated 2026-09-01. Keep this current: it is the only place that says where the 
 
 | | |
 |---|---|
-| Guards in `Assets/Tests/EditMode/Geometry/` | **9**: comment ratchet, engine boundary, colour literals, tolerance literals, decor UVs, `new` over base, Unity message shadowing, `ElementKind` single source, layer direction |
-| Inner loop (`dotnet`, core + pure) | **380 tests, 0,3 s** — was 226 |
+| Guards in `Assets/Tests/EditMode/Geometry/` | **12**: comment ratchet, engine boundary, colour literals, tolerance literals, decor UVs, `new` over base, Unity message shadowing, `ElementKind` single source, layer direction, new-element-type completeness, test-quality ratchet, mutation baseline |
+| Mutation gate — `geometry/mutation-baseline.txt` | `core` **72,42 %**, порог **72**; 1039 мутантов, 2 мин 44 с |
+| Inner loop (`dotnet`, core + pure) | **446 tests, 0,3 s** — was 226 |
 | EditMode / PlayMode | **2860 / 92**, both green |
 | Cold Unity: one class / full EditMode / PlayMode | **~11 s / ~73 s / ~91 s** — was 18,4 / 79 / 101 |
 | Comments left in `Core` | **3131**, ceilinged per directory by `CommentRatchetTests.Budgets` |
 
-**Done from this plan:** A1, A2, A3, A3b, A3c, A5, A5b, A6, A8, B1, B2, B3, B4, C2.
-**Left: A4, A7, C1, C3, D, E** — see "What is actually left" at the end of this section.
+**Done from this plan:** A1, A2, A3, A3b, A3c, A5, A5b, A6, A8, B1, B2, B3, B4, C1, C2, C3.
+**Left: A4, D, E** — see "What is actually left" at the end of this section.
 
 **Defects found and fixed today, none of them by reading code:**
 
@@ -106,7 +107,7 @@ Update 4, Elements 2, Infrastructure 2, Measure 2, Commands 1, остальны�
 а не строки таблицы, поэтому новый слой попадает под правило сам, с нулём. Про MCP не знает
 никто, кроме `Bootstrap`.
 
-**Not started:** everything else — A1, A2, A3, A3b, A4, A7, B1/B2/B4, C1, C3, most of D,
+**Not started:** everything else — A1, A2, A3, A3b, A4, B1/B2/B4, C1, C3, most of D,
 all of E.
 
 **C2, first slice — the home exists and is guarded.** `Assets/Scripts/Core/Pure` +
@@ -149,9 +150,31 @@ Settings persist through `ProjectData.settings`, not through the asset. `Kitchen
 now news up a plain singleton, the asset and `ProjectSetup.EnsureKitchenSettings` are deleted, and
 `CameraController`s three "no asset — use a factor of 1" fallbacks became unreachable and went.
 
-**Still blocked: `ElementData` and `ProjectData`.** `ElementData.FromElement(KitchenElement)` is
-200 lines of scene reflection over every element type; the DATA half moves only after that factory
-is extracted into its own class. `ProjectData` follows `ElementData`, not the other way round.
+**C2, third slice — the save format is on the fast path.** `ElementData` and `ProjectData` (with
+`GrooveEntry`, `TextureOverlayEntry`, `GroupData`, `RoomData`, `FloorplanScopeData`,
+`WindowStateData`, `CameraState`) now live in `Assets/Scripts/Core/Pure/Persistence`; the loop runs
+**150 pure tests** (was 141) and **434 in total**. Not one field name changed — a field name is a
+JSON key, and the whole point of the move was that the format stays byte-identical.
+
+What actually held them was the scene reflection plus three types the second build could not see:
+
+- `ElementData.FromElement(KitchenElement)` — 205 lines of `is XxxElement` / `GetComponent` — is now
+  `ElementCapture.FromElement` in `Core/Persistence`. Data and the assembly of data from a scene are
+  two responsibilities; only the first one can leave Unity.
+- `TextureOverlaySpec` (a serialized field type of `ElementData`) moved to `Core/Pure/Elements` with
+  it — plain arithmetic over `RectInt`, nothing scene-side.
+- `LampShape`, `LampShadow` and the light constants left `LightSourceElement` for `LampSpec` in
+  `Core/Pure/Elements`. That is the "a pure class reaching into a `MonoBehaviour` for a constant"
+  wall from the first slice, cured rather than routed around.
+- `MaterialCatalog.DefaultId` is now `AppConstants.DEFAULT_MATERIAL_ID` and the catalog reads it from
+  there. The catalog binds `Texture2D` and stays in Unity; the default id is data.
+
+`SaveFormatDefaultsTests` (pure) guards the format the way "Snapshot tests" asks: every reference
+field of every save-format type must carry an initializer, every list-shaped array must start
+empty, the coordinate tuples keep their length, and the numeric defaults are compared against the
+same constants the elements use. Redness proven three ways — `grooves = null!`, a light default
+changed by hand, `rotation` shortened to three floats. Two exception lists, each entry with a
+reason and a test that the named fields still exist.
 
 `GameContext` still needs its `*Instance` construction inverted — `InitializeWithDefaults` news up
 concrete Unity-side services.
@@ -174,21 +197,36 @@ In the order I would take it:
    `Materials` 287 · `Geometry` 242. Purging is what Part E's refactoring produces as a side
    effect, so pair them by directory rather than running a separate purge campaign. Every
    deletion still owes case (a)/(b)/(c), and the ceiling drops in the same commit.
-2. **C2's third slice.** `ElementData` and `ProjectData` are blocked behind one thing:
-   `ElementData.FromElement(KitchenElement)` is 200 lines of scene reflection. Extract that
-   factory and the data half moves. `GameContext` needs `InitializeWithDefaults` inverted —
-   it news up concrete Unity-side services.
-3. **A7 — new-element-type completeness.** The only item of Part A not started. Adding a type
-   must touch registries and never a `switch`; the check needs the factory and MCP-contract
-   registries read together.
-4. **C1 — gate the mutation score**, now that the fast path carries 380 tests and Stryker runs
-   against it. Same ratchet shape as A1.
-5. **A4, C3 — test-quality guards.** Names that state nothing, `Assert` without a message in
-   the suites carrying migrated `why` knowledge.
+2. **C2's fourth slice.** `ElementData` and `ProjectData` are done (third slice above).
+   `GameContext` is what is left: `InitializeWithDefaults` news up concrete Unity-side services
+   (`PartRegistryInstance` and the other `*Instance` types), so the class does not load under
+   CoreCLR. It needs the construction inverted, not the class moved.
+3. ~~**A7 — new-element-type completeness.**~~ **Done** — `ElementTypeCompletenessTests`.
+   The type list is DERIVED from the sources (every class whose inheritance chain reaches
+   `KitchenElement`), so a new type falls under the rule without editing the test. Six
+   mandatory places, each with a key read out of the code rather than out of the checklist:
+   the factory (`CreateXxx`), the duplicate registry, scene restore, `ElementSelector.TypeOf`,
+   the MCP layer, the isometric screenshot test. It found eight real gaps on the first run —
+   six types with no isometric screenshot and two the MCP layer cannot create — held by a
+   ratchet in which a new gap and a stale debt entry fail equally. Two checklist items turned
+   out NOT to be completeness requirements and are documented as such instead of enforced:
+   `ElementKind` (no role is a legitimate answer) and `ElementTypeConverter` (a forgotten type
+   defaults to «not convertible», the safe direction).
+4. **Spend the mutation ratchet — C1 gates it, nothing raises it.** The gate is in
+   (`geometry/mutation-baseline.txt`, `core` 72 %); what the survivors named is in
+   "What the survivors said" under C1. In order: the recessed-body union in
+   `ValidationBroadPhase` (a real hole, not a missing assertion), `BoxGaps` (its tests are in
+   the wrong build), the detent LABELS in `EdgeDetents`, and a boundary case per threshold —
+   97 of the 299 survivors are `<` ↔ `<=`.
+5. **A4 — test-quality guards.** C3 is done (`TestQualityRatchetTests`); A4 — no reflection
+   into private members from tests — is not.
 6. **Part E** — the refactoring still owed. Cheaper now: what it extracts is exactly what
    belongs in `Core/Pure`, so the loop for it is 0,3 s rather than 73 s.
 
-**Known debts, recorded not blessed:** 30 layer→UI references under the A6 ratchet;
+**Known debts, recorded not blessed:** ``ElementData.midHeightMM`` defaults to the literal ``75``, a
+copy of ``PillarElement.MidHeightMM_Default`` that the pure build cannot reference (the constant sits
+on a ``MonoBehaviour``, next to the pillar geometry ``SidebarCatalog`` also needs). It predates the
+move and nothing pins the two together; the cure is a pure ``PillarSpec`` beside ``LampSpec``. 30 layer→UI references under the A6 ratchet;
 `PillarElement`'s UVs (`u = i/Segments` around the circumference against an `ST` that scales by
 diameter — a factor of π, and `DecorSurfaceMM` alone does not cure it); `RadialShelfElement`'s
 (cured by `DecorSurfaceMM = (width, depth)`); a floor's UV origin not rebuilt when the slab is
@@ -239,6 +277,137 @@ Unity the instant that line appeared, then a normal cold run followed. All three
 `Imports: total=0 (actual=0)`, `CompileScripts` 0.87–0.92 s and 15.9–16.5 s against the usual
 15.9 s. That is what unblocked `-DoneGraceSeconds`.
 
+### Вторая серия того же дня — исключения Defender, стенд, лицензия
+
+Серия снималась после того, как пользователь добавил в Windows Defender исключения на
+`F:\repos\KitchenDesigner2`, `Library`, `Temp` и `Unity.exe`, а второй сканер (Kaspersky) был
+выключен более суток. Стенд — `F:\kd-bench\bench2.ps1`, зеркало и основной проект.
+
+**Исключения Defender не дали НИЧЕГО ни на одном из трёх видов прогона.**
+
+| Прогон | До серии | После исключений | Разница |
+|---|---|---|---|
+| прицельный (`-Filter`, 5 тестов) | ~11 с (13,2 с по стенду) | **12,4 / 12,4 / 12,4 с** по стенду, **10,9 с** прямым вызовом Unity | 0 |
+| полный EditMode | 73,1 с (82,3 с по стенду) | **74,1 / 79,5 с**, 2909 тестов | 0 |
+| PlayMode | 91 с | **94,8 / 90,5 с**, 92 теста, 0 упавших | 0 |
+
+Гипотеза «~4 с в `ImportOutOfDateAssets` — это антивирус» **ОПРОВЕРГНУТА в обеих формах**:
+исключения дали ноль, а второй сканер и так был выключен. Фаза при этом воспроизводится:
+4407 мс при `Asset File Changes: new=0, changed=0, deleted=0` и `Imports: 0`. Значит это
+собственный обход дерева ассетов Unity, а не проверка файлов кем-то снаружи.
+
+**`ImportOutOfDateAssets` — НЕ константа, и вчерашняя оценка «4 с ждут ускорения» завышена.**
+На одном и том же неизменном зеркале: 1745 мс вчера, 4407 мс сегодня. На основном проекте в один
+день: 806 мс на прицельном прогоне и 2908 мс на полном, при одинаковом числе ассетов. Разброс
+0,8–4,4 с без единого импорта. Планировать экономию на верхней точке разброса нельзя.
+Побочно: у основного проекта теперь 2542 ассета против 3914 у зеркала — удаление
+`com.unity.ai.assistant` срезало треть дерева, и часть его −2,4 с идёт именно отсюда.
+
+**Стенд был неправ, и это главный вывод серии про методику.** Старый `bench.ps1` считал
+`Win32_Processor.LoadPercentage`, усреднённый по всем 6 ядрам. Одноядерный пожиратель поднимает
+это среднее всего на ~17 пунктов и тонет в собственном шуме Unity — измерено прямо: один занятый
+поток даёт `TotalAvg=12` при `CoreMax=50`. А стоит такой сосед дорого: контрольный прогон со
+специально запущенным одноядерным спиннером дал **44,3 с против 13–16 с**, то есть ВТРОЕ.
+`bench2.ps1` добавляет две колонки: `CoreMax` (максимум по ОДНОМУ ядру) и `Hogs` — список
+процессов с дельтой CPU-времени за интервал прогона. Он немедленно поймал и спиннер
+(`powershell=40,9s`), и настоящих чужаков (`Everything=19,6s` в прогоне, выбившемся до 45,3 с).
+
+Отсюда правило, которое шире стенда: **параллельная работа других агентов делает ЛЮБОЙ замер
+времени Unity недействительным.** Это ограничение рабочего процесса, а не разовая помеха. Числа
+первой серии (−2,4 с на `ai.assistant`, ~1 с на шаге опроса, 2,3 с на Burst) снимались старым
+стендом, который одноядерного соседа не видел; они не опровергнуты, но их доверительный интервал
+шире записанного. Все три подтверждались A/B/A с возвратом контроля, поэтому переснимать их
+незачем — но новые числа снимаются только `bench2.ps1`.
+
+`Hogs` требует одной оговорки, иначе даёт ложные тревоги: Unity 6 гоняет Roslyn через `dotnet`,
+а ещё порождает `VBCSCompiler`, `bee_backend`, `Unity.ILPP.Runner` и `UnityShaderCompiler`. Все
+они появляются в колонке как «пожиратели» и являются СВОИМИ. Отличать по родителю процесса;
+чужое — это `dotnet-stryker`, `testhost`, `Everything`, `com.docker.backend` и чужой `Unity.exe`
+(он же ловится колонкой `Foreign` по `-projectPath`).
+
+**Чистота окна теперь доказывается поимённо.** `ts-run.ps1` снимает по каждому процессу дельту
+CPU-времени и дискового обмена за интервал прогона. Эталонная строка тихого окна (прицельный
+прогон, 10,9 с):
+
+```
+Unity.exe                  10,0 с CPU   443,5 МБ ввода-вывода
+Unity.Licensing.Client.exe  1,5 с         0,3 МБ
+UnityPackageManager.exe     1,0 с         8,1 МБ
+MsMpEng.exe                 0,8 с         0,0 МБ
+pwsh.exe (сам сборщик)      1,5 с         0,0 МБ
+```
+
+Процессов `avp` в списке нет вообще — Kaspersky действительно спит. `MsMpEng` (Defender) тратит
+0,8 с CPU и это всё, что от него осталось после исключений.
+
+### Разложение холодного старта по фазам — актуальное, `-timestamps`
+
+Прежнее разложение («две ямы») снималось на зеркале с `ai.assistant` и до выключения Burst и
+**устарело**. На основном проекте сегодня, прицельный прогон, 10,9 с прямым вызовом Unity:
+
+| Фаза | Время |
+|---|---|
+| **лицензирование** (до старта движка) | **2,24 с** |
+| старт движка | 0,23 с |
+| domain reload #1 | 1,03 с |
+| asset refresh целиком | 2,95 с |
+| ├ domain reload #2 | 1,72 с |
+| ├ `CompileScripts` | 0,81 с |
+| ├ `ImportOutOfDateAssets` (0 импортов) | 0,81 с |
+| └ `Untracked` | 1,09 с |
+| refresh end → «project loaded» | 0,48 с |
+| старт TestRunner и сбор 2909 тестов | 1,60 с |
+| 5 тестов, отчёт, выход | 0,90 с |
+
+`ImportOutOfDateAssets` здесь 0,81 с, а не 4 с. **Крупнейшая одиночная яма теперь —
+лицензирование**, и её никто до сих пор не разбирал.
+
+**Лицензирование: 2,2 с на КАЖДОМ холодном прогоне, любого вида.** Воспроизводимость идеальная:
+2,21 / 2,27 / 2,39 / 2,22 с в четырёх прогонах подряд (три EditMode и один PlayMode). В каждом
+логе первая строка — `Channel LicenseClient-<user> doesn't exist`: клиент лицензирования
+стартует заново каждый раз.
+
+```
++0,000  Trying to connect to existing licensing client channel... / doesn't exist
++0,007  Successfully launched the LicensingClient
++0,380  IPC-канал подключён (connect: 0,37 с)
++2,219  Handshaking with LicensingClient — handshake: 1,79 с, total connection time: 2,21 с
++2,470  Initialize engine version 6000.4.3f1        ← движок начинает работу только здесь
+```
+
+Из чего состоят эти 1,79 с — по собственному логу клиента
+(`%LOCALAPPDATA%\Unity\Unity.Licensing.Client.log`):
+
+```
++0,32  PackageEnforcer: Trying to update PACL
++0,32  GET https://license.unity3d.com/licenses/v1/packages/acl        ← ходит в СЕТЬ
++0,65  ответ 304 Not Modified, «Next update in 24.00 hours»
++0,65  Loading remote PACL, revision 52
++1,87  Received handshake from UnityEditor/6000.4.3f1                  ← редактор ждал всё это
+```
+
+То есть 0,33 с сетевого похода на `license.unity3d.com` плюс ~1,2 с локальной обработки PACL, и
+только потом клиент отвечает редактору. «Next update in 24 hours» не спасает: процесс каждый раз
+новый. Сети он не дожидается — `Error: Access token is unavailable; failed to update` и
+`[Code: 401] Token not found in cache` проходят мгновенно, лицензия Unity Personal резолвится
+локально. И тот же лог показывает, что клиент не переживает прогон:
+`Releasing mutex Unity-LicenseClient-<user>` за 1,8 с до старта следующего.
+
+Отсюда два непроверенных кандидата, оба ждут окна:
+
+- **Живой клиент лицензирования между прогонами.** Запустить
+  `…\Editor\Data\Resources\Licensing\Client\Unity.Licensing.Client.exe --namedPipe Unity-LicenseClient-<user>`
+  заранее; если редактор найдёт живой канал, 2,2 с должны схлопнуться. Это −2 с на ВСЕХ трёх
+  видах прогона, включая полный EditMode и PlayMode, где ни `ai.assistant`, ни Burst не помогают.
+  Оговорка честности: это висящий фоновый процесс, а фоновый демон отвергнут. Но это не редактор
+  Unity, не сокет-мост, он не держит состояние проекта и не блокирует `Library`; Unity сама
+  запускает его при каждом открытии Хаба. Решение за пользователем.
+- **Исключения Defender не покрывают лицензирование.** Клиент лежит в
+  `C:\Program Files\Unity\Hub\Editor\…\Licensing\Client`, его лицензии и логи — в
+  `%LOCALAPPDATA%\Unity`; ни один из этих путей в исключения не попал. В чужих логах то же
+  рукопожатие занимает 0,0–0,66 с против наших 1,79 с. Проверяется тремя прогонами после
+  добавления двух путей (нужны права администратора — это к пользователю).
+
 ### Measured and REFUTED — do not spend the machine on these again
 
 | Candidate | Expected | Measured | Verdict |
@@ -248,6 +417,8 @@ Unity the instant that line appeared, then a normal cold run followed. All three
 | `-disable-assembly-updater` | some | 16.4 vs 15.9 s | nothing |
 | `m_RefreshImportMode: 1` (`OutOfProcessPerQueue`) | parallel import | 12.7–13.2 vs 12.9–13.0 s | nothing — there is nothing to import (`actual=0`), and the 4 s goes on CHECKING |
 | removing `com.unity.testtools.codecoverage` | some | 13.5 → 13.0 s | **0.5 s**, and the package is used. Not worth it |
+| исключения Windows Defender на проект, `Library`, `Temp`, `Unity.exe` | ~4 с (`ImportOutOfDateAssets`) | 12,4 / 74–80 / 90–95 с — ровно как было | **ноль на всех трёх видах прогона.** Второй сканер (Kaspersky) был выключен ещё до серии, так что гипотеза про антивирус закрыта в обеих формах |
+| `-noUpm` (Package Manager 2,06 с внутри `Project init`) | ~2 с | прогон падает: нет `TestResults.xml`, один domain reload вместо двух | **ломает прогон.** Классический «стал быстрее, но это другой прогон» |
 
 ### The two holes, decomposed
 
@@ -439,6 +610,15 @@ serialize, restore, MCP contract, validation — and fails naming the registries
 from. Parity tests of exactly this shape already found three latent defects in one go
 (`6b819773`) and two contract defects in MCP.
 
+**Done — `ElementTypeCompletenessTests`.** Two of the registries named above turned out not to
+be completeness requirements once read in the code, and the guard says so rather than enforcing
+a rule that is not true: `destroy` is no longer a registry at all (since `6b819773` the element
+declares its own `KitchenElement.Disposal`, so there is nothing per-type to forget), and
+`validation` has no per-type entry either — `ElementKind` is a set of ROLES, and having none is
+the correct answer for a plain part. What replaced them came out of the code: the duplicate
+registry and `ElementSelector.TypeOf`, both of which fail SILENTLY by treating the forgotten
+type as an ordinary board.
+
 ### A8. Generated artefacts match their source
 
 `mcp-server/src/tools.generated.ts` was three commits stale and nothing noticed. Run the
@@ -489,10 +669,72 @@ noticed. It is fixed and guarded (`5917ac94`), and the core cycle is back to **2
 0.2 seconds** against 90 seconds for a cold Unity batch. A 450× faster feedback loop changes what
 is worth automating.
 
-### C1. Gate the geometry mutation score
+### C1. Gate the geometry mutation score — **DONE**
 
-Record the current score and fail the build when it drops. Same ratchet as A1: a new test that
-does not kill any mutant will not raise it, and code that loses coverage cannot land quietly.
+The number lives in `geometry/mutation-baseline.txt`, one line per mutated project:
+`<проект> <замер> <порог>`. `tools/mutation-test.ps1` reads it and hands each threshold to
+Stryker as `--break-at`; below it the run exits non-zero and the script says which project
+fell, from what to what, how long it took and where the survivors report is.
+`MutationBaselineTests` (fast path, milliseconds) guards the file itself — that every project
+Stryker mutates has a line, that the threshold has not fallen more than 1 % behind its
+measurement (a threshold that lags stops firing), and that the script still reads the file
+rather than carrying its own copy of the number.
+
+**Baseline, commit `469f2e0f`, Stryker 4.16.0:**
+
+| Project | Tests | Mutants tested | Score | Gate | Run |
+|---|---|---|---|---|---|
+| `geometry/core` | 284 | 1039 | **72,42 %** | 72 | 2 мин 44 с |
+
+**Two thresholds, not one**, and this is the decision, not an omission:
+
+- Stryker mutates ONE project per run (`--project`) against its own test project. A single
+  blended number would have to be computed by hand from two reports, and nothing would verify
+  the arithmetic — the failure mode this plan exists to prevent.
+- The composition of the pure layer is changing right now (the `ElementData` migration moves
+  classes into `Core/Pure`). A blended score would move with every FILE MOVE while saying
+  nothing about test quality: the gate would be falsely red after a clean refactor, and the
+  cure would be lowering it — which is how a ratchet dies.
+- A blended number hides a regression: a loss in the 1039-mutant core is covered by a rise in
+  the smaller layer. Masking is precisely what the ratchet is for.
+- Красное должно называть сборку. With one number the first step after a failure is finding
+  out where the coverage went.
+
+#### What the survivors said — 299 of them, and they are not evenly spread
+
+A surviving mutant is a place where the test exists and the CHECK does not. Sorted by what
+they are worth reading:
+
+1. **`ValidationBroadPhase.SolidBoundsIncludingRecessedBody` — the union with the recessed
+   body is never asserted.** Both `Vector3.Max(max, e.RecessedBody.Max)` → `Vector3.Min` and
+   → `e.RecessedBody.Min` survive. `ValidationRecessedBodyTests` exists and runs over this
+   line; no case there has a recessed body that actually EXTENDS the solid bounds, so the
+   union can be replaced by an intersection and every test stays green. That is the whole
+   point of the recessed body (a cooktop's box, a sink's body): it must widen the bounds
+   overlap validation sees. This one deserves a test today.
+2. **`BoxGaps` — 19 mutants, all `NoCoverage`, 0 %.** The class sits in `Core/Geometry`, so
+   the fast path mutates it; its tests (`GapSideTests`) build `GameObject`s and live on the
+   Unity side, so the fast path never runs them. `NonZeroCount` drives the "Зазоры" section
+   header and nothing on this path touches it. Not a hole in the code — a test in the wrong
+   build.
+3. **`EdgeDetents` — 58,1 %, the lowest score among covered files.** All five detent LABELS
+   (`кромка-`, `кромка+`, `центр`, `паз-`, `паз+`) can be replaced by `""` and nothing goes
+   red: the `out string label` is never asserted, only the delta. And `abs <= threshold` →
+   `abs < threshold` survives (nothing is tested AT the threshold), as does
+   `abs < bestAbs` → `<=` (the tie-break between two equidistant detents is undefined by the
+   suite).
+4. **`SnapCore` — 60,5 %.** `pass < FillInPasses` → `pass <= FillInPasses` survives: no test
+   in the fast suite needs more than one fill-in pass, so the multi-pass loop is effectively
+   untested there. Every `logSink != null` guard survives too — the diagnostic log is
+   produced and never asserted.
+5. **The dominant kind, across all files: 97 of the 299 are `Equality` mutations** —
+   `<` ↔ `<=`, `>` ↔ `>=`. That is CONVENTIONS.md → "Test a rule with a value that is NOT
+   already at the boundary" read from the other side: the suite tests comfortably inside and
+   comfortably outside, and almost never AT the tolerance. The cheapest way to move the score
+   is a boundary case per threshold, not more scenarios.
+
+`SnapCandidateCollector` is the "high coverage, low kill" class the brief asked about: 105
+covered mutants, 61,7 %, 34 survivors — including `moved.Min` ↔ `moved.Max` on line 127.
 
 ### C2. Move every scene-free class and its tests onto the `dotnet` build
 
@@ -549,10 +791,29 @@ run rarely rots quietly.
 
 Two loops, not a replacement.
 
-### C3. Cheap test-quality guards meanwhile
+### C3. Cheap test-quality guards meanwhile — **DONE**
 
-- Fail on test names that state nothing: `Test1`, `Foo_Works`, anything without `_`.
-- Require a message on `Assert` in the suites that carry migrated `why` knowledge.
+`TestQualityRatchetTests`, same shape as the comment ratchet: ceilings, red in BOTH
+directions, tests for its own scanner.
+
+- **Names.** A test name must be a sentence about behaviour. Offenders: no `_` at all, or a
+  vacuous tail (`_Works`, `_Valid`, `_Basic`, …). Debt taken at `469f2e0f`: `EditMode` 14,
+  `EditMode/Pure` 1, `PlayMode` 4, `EditMode/Geometry` **0** — the one offender there
+  (`CycleCompletesInThreeSteps`) was renamed in the same commit, so the fast path is now at
+  zero and any new name is red immediately. The 19 remaining live in other agents'
+  directories; the ceiling holds them and drops when they are renamed.
+- **`Assert` without a message.** Per-FILE ceilings over `Assets/Tests/EditMode/Geometry`
+  (a per-directory total would let a silent assert into one file be paid for by cleaning
+  another). 246 today across 20 files, the biggest being `ValidationCoreTests` 51,
+  `DrawerConstantsTests` 48, `ToleranceTests` 32. **`Assets/Tests/EditMode/Pure` is
+  deliberately not in the table yet** — another agent is filling that directory right now
+  (the `ElementData` migration), and per-file ceilings there would break their run on every
+  added test. It joins when that move settles; ~202 silent asserts are waiting there.
+
+Two traps the scanners hit, both now pinned by their own tests: a naive line scan attributes
+the attribute of `[Test] public void X() => Helper(a, b);` to `Helper`, and a scan that does
+not mask string literals reports its own examples as violations — this one counted 7
+offenders inside itself.
 
 ---
 
