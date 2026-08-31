@@ -296,6 +296,26 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+    [UnityTest]
+    public IEnumerator IsoRadiusTable_2000x750x1000_ZeroLegInset()
+    {
+        var dims = new Vector3Int(2000, 750, 1000);
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateRadiusTable(dims, "IsoRadiusTableZeroInset", pos);
+        _spawned.Add(go);
+        var radiusTable = go.GetComponent<RadiusTableElement>();
+        Assert.IsNotNull(radiusTable);
+        radiusTable.LegInsetMM = 0;
+
+        Vector3 size = MmToUnits(dims);
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_radius_table_2000x750x1000_zero_inset.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
     // ─ Radial shelf isometric screenshot ───────────────────
 
     [UnityTest]
