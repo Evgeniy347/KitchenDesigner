@@ -3,10 +3,14 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Маркер ручки области накладки: к какому краю относится.
-    /// 0 = −U (лево), 1 = +U (право), 2 = −V (низ), 3 = +V (верх).</summary>
     public class TextureOverlayHandle : MonoBehaviour
     {
+        public const int EdgeMinU = 0;
+        public const int EdgeMaxU = 1;
+        public const int EdgeMinV = 2;
+        public const int EdgeMaxV = 3;
+        public const int EdgeCount = 4;
+
         public int edge;
 
         /// <summary>Мировая точка, по которой ручку ловит курсор (её обновляет
@@ -14,31 +18,14 @@ namespace KitchenDesigner.Core
         public Vector3 grabPoint;
     }
 
-    /// <summary>Ручки области накладки текстуры прямо на поверхности.
-    ///
-    /// Включаются карандашом в строке накладки и работают в плоскости грани:
-    /// • «Ручки: растяжение» — четыре ручки на серединах сторон области, тяга
-    ///   двигает одну границу;
-    /// • «Ручки: перенос» — те же четыре точки, но тяга везёт область целиком
-    ///   вдоль соответствующей оси.
-    /// Режим берётся из общего <see cref="ResizeHandleManager.Mode"/> — той самой
-    /// кнопки тулбара; своего переключателя тут нет, чтобы у пользователя не было
-    /// двух разных «режимов ручек» одновременно.
-    ///
-    /// Растяжение меняет ОБЛАСТЬ ПОКАЗА, а не картинку: UV накладки привязаны к
-    /// началу грани (см. PlaneWithHolesMesh), поэтому рисунок стоит на месте, а
-    /// область ползает по нему как окно.
-    ///
-    /// Итог перетаскивания — ОДНА команда на весь drag: промежуточные кадры в
-    /// undo-стеке не нужны (правило 2 UI-GUIDELINES).</summary>
+    /// <summary>Итог перетаскивания — ОДНА команда на весь drag: промежуточные
+    /// кадры в undo-стеке не нужны (правило 2 UI-GUIDELINES).</summary>
     [DefaultExecutionOrder(100)]
     public class TextureOverlayHandles : MonoBehaviour
     {
-        /// <summary>Зазор ручки над поверхностью, юниты.</summary>
-        private const float Lift = 0.012f;
+        private const float LiftAboveSurfaceUnits = 0.012f;
 
-        /// <summary>Кубик растяжения: ребро.</summary>
-        private const float CubeSize = 0.05f;
+        private const float CubeEdgeUnits = 0.05f;
 
         // Стрелка переноса: тонкий стержень + конус на конце (как у ручек
         // перемещения объекта — ResizeHandleManager, чтобы жест читался одинаково).
@@ -48,8 +35,7 @@ namespace KitchenDesigner.Core
         private const float TipSize = 0.04f;
         private const float ArrowLen = ShaftLen + TipLen;
 
-        /// <summary>Радиус захвата ручки в ПИКСЕЛЯХ экрана.</summary>
-        private const float GrabPixels = 26f;
+        private const float GrabRadiusPixels = 26f;
 
         private static KitchenElement? _element;
         private static int _index = -1;
@@ -59,8 +45,6 @@ namespace KitchenDesigner.Core
         public static bool IsEditing(KitchenElement element, int index) =>
             Active && _element == element && _index == index;
 
-        /// <summary>Включить/выключить ручки для этой накладки. Повторный клик по
-        /// карандашу той же строки — выключение.</summary>
         public static void Toggle(KitchenElement element, int index)
         {
             if (IsEditing(element, index)) { End(); return; }
@@ -72,8 +56,6 @@ namespace KitchenDesigner.Core
             End();
             if (element == null || index < 0 || index >= element.TextureOverlays.Count) return;
 
-            // «(все)» — это шесть граней сразу, и общей плоскости у них нет:
-            // тянуть область не за что. Сторону надо сперва выбрать конкретную.
             if (element.TextureOverlays[index].side == OverlaySide.All)
             {
                 UI.ToastNotification.ShowIfAvailable("Область правится только у одной стороны");
@@ -91,8 +73,6 @@ namespace KitchenDesigner.Core
             _instance?.ClearHandles();
         }
 
-        /// <summary>Курсор над ручкой области — выделение, перетаскивание объекта
-        /// и панорама камеры должны молчать, как и над ручками ресайза.</summary>
         public static bool PointerOverHandle() => PickHandle() != null;
 
         /// <summary>Ручка под курсором, или null.
@@ -112,12 +92,13 @@ namespace KitchenDesigner.Core
 
             Vector2 mouse = Input.mousePosition;
             TextureOverlayHandle? best = null;
-            float bestDist = GrabPixels;
+            float bestDist = GrabRadiusPixels;
             foreach (var h in _instance._handles)
             {
                 if (h == null) continue;
                 var sp = cam.WorldToScreenPoint(h.grabPoint);
-                if (sp.z <= 0f) continue; // ручка за камерой
+                bool behindCamera = sp.z <= 0f;
+                if (behindCamera) continue;
                 float d = Vector2.Distance(mouse, new Vector2(sp.x, sp.y));
                 if (d > bestDist) continue;
                 best = h;
@@ -125,8 +106,6 @@ namespace KitchenDesigner.Core
             }
             return best;
         }
-
-        // ── Экземпляр ───────────────────────────────────────────────────
 
         private static TextureOverlayHandles? _instance;
 
@@ -138,15 +117,12 @@ namespace KitchenDesigner.Core
         private int _dragEdge;
         private RectInt _rectBefore;
         private List<TextureOverlaySpec> _before = new List<TextureOverlaySpec>();
-        private float _grabU, _grabV;         // точка захвата в координатах грани, мм
+        private float _grabUMM, _grabVMM;
         private Face _face;
         private int _faceIndex;
         private Vector2Int _faceMM;
 
-        /// <summary>Рёбра соседних накладок вдоль оси перетаскивания, мм. Набор
-        /// снимается ОДИН раз в начале драга: соседи за время тяги не меняются, а
-        /// пересчёт на каждый кадр заодно ловил бы саму двигаемую область.</summary>
-        private List<int> _snapEdges = new List<int>();
+        private List<int> _neighbourEdgesMM = new List<int>();
 
         private void Awake() => _instance = this;
 
@@ -203,53 +179,49 @@ namespace KitchenDesigner.Core
             UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
 
-        // ── Перетаскивание ──────────────────────────────────────────────
-
         private void BeginDrag(int edge)
         {
             var el = _element;
             if (el == null || !StillValid()) return;
 
             CaptureFace(el);
-            if (!PointOnFace(out float u, out float v)) return;
+            if (!TryPointOnFace(out float uMM, out float vMM)) return;
 
             _dragEdge = edge;
-            _grabU = u;
-            _grabV = v;
-            // Область фиксируем в явных миллиметрах: накладка «во всю грань»
-            // при первом же перетаскивании превращается в конкретный прямоугольник.
+            _grabUMM = uMM;
+            _grabVMM = vMM;
             _rectBefore = el.TextureOverlays[_index].Resolve(_faceMM);
             _before = new List<TextureOverlaySpec>(el.TextureOverlays);
-            _snapEdges = TextureOverlaySnap.NeighbourEdges(
-                el.TextureOverlays, _index, _faceIndex, _faceMM, edge <= 1);
+            _neighbourEdgesMM = TextureOverlaySnap.NeighbourEdges(
+                el.TextureOverlays, _index, _faceIndex, _faceMM, IsAlongU(edge));
             _dragging = true;
         }
+
+        private static bool IsAlongU(int edge) => edge <= TextureOverlayHandle.EdgeMaxU;
 
         private void UpdateDrag()
         {
             var el = _element;
             if (el == null || !StillValid()) { FinishDrag(); return; }
-            if (!PointOnFace(out float u, out float v)) return;
+            if (!TryPointOnFace(out float uMM, out float vMM)) return;
 
-            bool alongU = _dragEdge <= 1;
+            bool alongU = IsAlongU(_dragEdge);
             float threshold = TextureOverlaySnap.ThresholdMM();
             RectInt rect;
 
             if (ResizeHandleManager.Mode == ResizeHandleManager.HandleMode.Move)
             {
-                rect = MoveRect(_rectBefore, _dragEdge, u - _grabU, v - _grabV, _faceMM);
-                rect = TextureOverlaySnap.SnapMoved(rect, alongU, _snapEdges, threshold, _faceMM);
+                rect = MoveRect(_rectBefore, _dragEdge, uMM - _grabUMM, vMM - _grabVMM, _faceMM);
+                rect = TextureOverlaySnap.SnapMoved(rect, alongU, _neighbourEdgesMM, threshold, _faceMM);
             }
             else
             {
-                // Прилипает ТОЧКА ТЯГИ, а не готовый прямоугольник: края грани и
-                // минимальный размер всё равно наложит StretchRect, и порядок
-                // «сначала снэп, потом ограничения» не даёт снэпу их обойти.
-                if (TextureOverlaySnap.Nearest(_snapEdges, alongU ? u : v, threshold, out int snapped))
+                if (TextureOverlaySnap.Nearest(_neighbourEdgesMM, alongU ? uMM : vMM, threshold,
+                        out int snappedMM))
                 {
-                    if (alongU) u = snapped; else v = snapped;
+                    if (alongU) uMM = snappedMM; else vMM = snappedMM;
                 }
-                rect = StretchRect(_rectBefore, _dragEdge, u, v, _faceMM);
+                rect = StretchRect(_rectBefore, _dragEdge, uMM, vMM, _faceMM);
             }
 
             ApplyRect(el, rect);
@@ -289,39 +261,35 @@ namespace KitchenDesigner.Core
             PositionHandles();
         }
 
-        /// <summary>Тяга одной границы. Противоположная стоит на месте, минимальный
-        /// размер и границы грани держатся жёстко — область не может вывернуться
-        /// наизнанку или уехать со стены.</summary>
-        public static RectInt StretchRect(RectInt rect, int edge, float u, float v, Vector2Int faceMM)
+        public static RectInt StretchRect(RectInt rect, int edge, float uMM, float vMM, Vector2Int faceMM)
         {
             int x0 = rect.xMin, x1 = rect.xMax, y0 = rect.yMin, y1 = rect.yMax;
             int min = TextureOverlaySpec.MIN_SIZE_MM;
             switch (edge)
             {
-                case 0: x0 = Mathf.Clamp(Round(u), 0, x1 - min); break;
-                case 1: x1 = Mathf.Clamp(Round(u), x0 + min, faceMM.x); break;
-                case 2: y0 = Mathf.Clamp(Round(v), 0, y1 - min); break;
-                default: y1 = Mathf.Clamp(Round(v), y0 + min, faceMM.y); break;
+                case TextureOverlayHandle.EdgeMinU:
+                    x0 = Mathf.Clamp(Round(uMM), 0, x1 - min); break;
+                case TextureOverlayHandle.EdgeMaxU:
+                    x1 = Mathf.Clamp(Round(uMM), x0 + min, faceMM.x); break;
+                case TextureOverlayHandle.EdgeMinV:
+                    y0 = Mathf.Clamp(Round(vMM), 0, y1 - min); break;
+                default:
+                    y1 = Mathf.Clamp(Round(vMM), y0 + min, faceMM.y); break;
             }
             return new RectInt(x0, y0, x1 - x0, y1 - y0);
         }
 
-        /// <summary>Перенос области вдоль ОДНОЙ оси (какой — задаёт схваченная
-        /// ручка), с упором в края грани. Размер при этом не меняется: область,
-        /// упёршаяся в край, просто останавливается.</summary>
-        public static RectInt MoveRect(RectInt rect, int edge, float du, float dv, Vector2Int faceMM)
+        public static RectInt MoveRect(RectInt rect, int edge, float duMM, float dvMM, Vector2Int faceMM)
         {
-            bool alongU = edge <= 1;
-            int dx = alongU ? Round(du) : 0;
-            int dy = alongU ? 0 : Round(dv);
+            bool alongU = IsAlongU(edge);
+            int dx = alongU ? Round(duMM) : 0;
+            int dy = alongU ? 0 : Round(dvMM);
             int x0 = Mathf.Clamp(rect.xMin + dx, 0, Mathf.Max(0, faceMM.x - rect.width));
             int y0 = Mathf.Clamp(rect.yMin + dy, 0, Mathf.Max(0, faceMM.y - rect.height));
             return new RectInt(x0, y0, rect.width, rect.height);
         }
 
         private static int Round(float mm) => Mathf.RoundToInt(mm);
-
-        // ── Геометрия грани ─────────────────────────────────────────────
 
         private void CaptureFace(KitchenElement el)
         {
@@ -331,11 +299,9 @@ namespace KitchenDesigner.Core
             _faceMM = TextureOverlayGeometry.FaceSizeMM(el.DimensionsMM, _faceIndex);
         }
 
-        /// <summary>Точка под курсором в координатах грани (мм от её левого нижнего
-        /// угла). false — луч мыши идёт вдоль плоскости и точки пересечения нет.</summary>
-        private bool PointOnFace(out float u, out float v)
+        private bool TryPointOnFace(out float uMM, out float vMM)
         {
-            u = v = 0f;
+            uMM = vMM = 0f;
             var cam = Camera.main;
             if (cam == null) return false;
 
@@ -344,32 +310,29 @@ namespace KitchenDesigner.Core
             if (!plane.Raycast(ray, out float dist)) return false;
 
             var delta = ray.GetPoint(dist) - _face.center;
-            u = Vector3.Dot(delta, _face.rightAxis) / AppConstants.MM_TO_UNITS + _faceMM.x * 0.5f;
-            v = Vector3.Dot(delta, _face.upAxis) / AppConstants.MM_TO_UNITS + _faceMM.y * 0.5f;
+            uMM = Vector3.Dot(delta, _face.rightAxis) / AppConstants.MM_TO_UNITS + _faceMM.x * 0.5f;
+            vMM = Vector3.Dot(delta, _face.upAxis) / AppConstants.MM_TO_UNITS + _faceMM.y * 0.5f;
             return true;
         }
 
-        /// <summary>Мировая точка середины стороны области.</summary>
-        private Vector3 EdgeCenter(RectInt rect, int edge)
+        private Vector3 EdgeCenterWorld(RectInt rect, int edge)
         {
-            float u = edge switch
+            float uMM = edge switch
             {
-                0 => rect.xMin,
-                1 => rect.xMax,
+                TextureOverlayHandle.EdgeMinU => rect.xMin,
+                TextureOverlayHandle.EdgeMaxU => rect.xMax,
                 _ => (rect.xMin + rect.xMax) * 0.5f,
             };
-            float v = edge switch
+            float vMM = edge switch
             {
-                2 => rect.yMin,
-                3 => rect.yMax,
+                TextureOverlayHandle.EdgeMinV => rect.yMin,
+                TextureOverlayHandle.EdgeMaxV => rect.yMax,
                 _ => (rect.yMin + rect.yMax) * 0.5f,
             };
             return _face.center
-                + _face.rightAxis * ((u - _faceMM.x * 0.5f) * AppConstants.MM_TO_UNITS)
-                + _face.upAxis * ((v - _faceMM.y * 0.5f) * AppConstants.MM_TO_UNITS);
+                + _face.rightAxis * ((uMM - _faceMM.x * 0.5f) * AppConstants.MM_TO_UNITS)
+                + _face.upAxis * ((vMM - _faceMM.y * 0.5f) * AppConstants.MM_TO_UNITS);
         }
-
-        // ── Ручки ───────────────────────────────────────────────────────
 
         /// <summary>Форма ручки говорит, что она делает, — как и у ручек объекта:
         /// «Ручки: растяжение» → кубик на границе области, «Ручки: перенос» →
@@ -379,13 +342,13 @@ namespace KitchenDesigner.Core
             _builtMode = ResizeHandleManager.Mode;
             bool move = _builtMode == ResizeHandleManager.HandleMode.Move;
 
-            for (int edge = 0; edge < 4; edge++)
+            for (int edge = 0; edge < TextureOverlayHandle.EdgeCount; edge++)
             {
                 var go = new GameObject($"TextureOverlayHandle_{edge}") { hideFlags = HideFlags.DontSave };
                 var marker = go.AddComponent<TextureOverlayHandle>();
                 marker.edge = edge;
 
-                if (move) BuildArrow(go.transform);
+                if (move) BuildArrowAlongLocalZ(go.transform);
                 else BuildCube(go.transform);
 
                 _handles.Add(marker);
@@ -396,13 +359,12 @@ namespace KitchenDesigner.Core
         {
             var cube = new GameObject("Cube");
             cube.transform.SetParent(parent, false);
-            cube.transform.localScale = Vector3.one * CubeSize;
+            cube.transform.localScale = Vector3.one * CubeEdgeUnits;
             cube.AddComponent<MeshFilter>().sharedMesh = CubeMesh();
             cube.AddComponent<MeshRenderer>().sharedMaterial = HandleMaterial();
         }
 
-        // Локальный +Z — направление оси переноса.
-        private void BuildArrow(Transform parent)
+        private void BuildArrowAlongLocalZ(Transform parent)
         {
             var mat = HandleMaterial();
 
@@ -438,13 +400,11 @@ namespace KitchenDesigner.Core
             foreach (var h in _handles)
             {
                 if (h == null) continue;
-                Vector3 basePoint = EdgeCenter(rect, h.edge) + n * Lift;
+                Vector3 basePoint = EdgeCenterWorld(rect, h.edge) + n * LiftAboveSurfaceUnits;
 
                 if (move)
                 {
-                    // Стрелка смотрит НАРУЖУ области вдоль своей оси — туда же,
-                    // куда область поедет за эту ручку.
-                    Vector3 dir = AxisOf(h.edge);
+                    Vector3 dir = OutwardAxisOf(h.edge);
                     h.transform.SetPositionAndRotation(basePoint, Quaternion.LookRotation(dir, n));
                     h.grabPoint = basePoint + dir * (ArrowLen * 0.6f);
                 }
@@ -456,12 +416,11 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Направление стороны области наружу, в плоскости грани.</summary>
-        private Vector3 AxisOf(int edge) => edge switch
+        private Vector3 OutwardAxisOf(int edge) => edge switch
         {
-            0 => -_face.rightAxis,
-            1 => _face.rightAxis,
-            2 => -_face.upAxis,
+            TextureOverlayHandle.EdgeMinU => -_face.rightAxis,
+            TextureOverlayHandle.EdgeMaxU => _face.rightAxis,
+            TextureOverlayHandle.EdgeMinV => -_face.upAxis,
             _ => _face.upAxis,
         };
 
@@ -488,10 +447,8 @@ namespace KitchenDesigner.Core
             return _material;
         }
 
-        // Единичный конус вдоль +Z: основание (r = 0.5) при z = −0.5, вершина при
-        // z = +0.5. Как у стрелок перемещения объекта.
         private static Mesh? _cone;
-        private static Mesh ConeMesh()
+        internal static Mesh ConeMesh()
         {
             if (_cone != null) return _cone;
             const int seg = 16;
@@ -516,10 +473,10 @@ namespace KitchenDesigner.Core
             return _cone;
         }
 
-        // Единичный куб. Свой, а не CreatePrimitive: примитивы вырезаются из
-        // WebGL-сборки вместе с коллайдерами.
+        // Свой, а не CreatePrimitive: примитивы вырезаются из WebGL-сборки
+        // вместе с коллайдерами.
         private static Mesh? _cube;
-        private static Mesh CubeMesh()
+        internal static Mesh CubeMesh()
         {
             if (_cube != null) return _cube;
             var verts = new List<Vector3>();

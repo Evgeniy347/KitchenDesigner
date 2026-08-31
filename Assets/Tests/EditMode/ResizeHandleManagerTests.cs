@@ -25,6 +25,190 @@ public class ResizeHandleManagerTests
         _spawned.Clear();
     }
 
+    [Test]
+    public void SupportsHandleResize_RefusesTheBuiltInAppliances()
+    {
+        var sinkGo = new GameObject("Мойка");
+        _spawned.Add(sinkGo);
+        var sink = sinkGo.AddComponent<SinkElement>();
+
+        var hobGo = new GameObject("Варочная");
+        _spawned.Add(hobGo);
+        var hob = hobGo.AddComponent<CooktopElement>();
+
+        Assert.IsFalse(ResizeHandleManager.SupportsHandleResize(sink),
+            "мойка покупная, её габарит фиксирован моделью — размеры правятся "
+            + "только в окне свойств");
+        Assert.IsFalse(ResizeHandleManager.SupportsHandleResize(hob),
+            "у варочной габаритная коробка — только плита 5 мм, а «высота» в "
+            + "свойствах ОБЩАЯ (плита плюс короб выреза): грань за ручку сдвинулась "
+            + "бы не туда, куда метил снэп");
+        Assert.IsTrue(ResizeHandleManager.SupportsHandleResize(
+            Make(Vector3.zero, new Vector3Int(600, 400, 18))),
+            "обычная деталь за грань тянется — иначе тест ничего не различает");
+    }
+
+    [Test]
+    public void HandlesAvailableFor_AreOffInEveryModeThatOwnsTheMouse()
+    {
+        var board = Make(Vector3.zero, new Vector3Int(600, 400, 18));
+        Assume.That(ResizeHandleManager.HandlesAvailableFor(board), Is.True);
+
+        KitchenDesigner.Core.Measure.MeasureMode.SetActive(true);
+        try
+        {
+            Assert.IsFalse(ResizeHandleManager.HandlesAvailableFor(board),
+                "в режиме инструмента ручек нет: они перехватывали бы клики по "
+                + "вершинам (рулетка) и по поверхности детали (пипетка)");
+        }
+        finally { KitchenDesigner.Core.Measure.MeasureMode.Reset(); }
+
+        KitchenDesigner.Core.Tools.EyedropperMode.SetActive(true);
+        try
+        {
+            Assert.IsFalse(ResizeHandleManager.HandlesAvailableFor(board),
+                "пипетка забирает мышь так же, как рулетка");
+        }
+        finally { KitchenDesigner.Core.Tools.EyedropperMode.Reset(); }
+
+        Assert.IsTrue(ResizeHandleManager.HandlesAvailableFor(board),
+            "после выхода из инструмента ручки возвращаются");
+    }
+
+    [Test]
+    public void HandlesAvailableFor_AnImmovableElement_IsFalse()
+    {
+        var board = Make(Vector3.zero, new Vector3Int(600, 400, 18));
+        board.Movable = false;
+
+        Assert.IsFalse(ResizeHandleManager.HandlesAvailableFor(board),
+            "запрет перемещения запрещает и ресайз: ручки доступны только "
+            + "подвижному объекту, и чекбокс в свойствах переключает это на лету");
+
+        board.Movable = true;
+        Assert.IsTrue(ResizeHandleManager.HandlesAvailableFor(board));
+    }
+
+    [Test]
+    public void HandlesAvailableFor_Null_IsFalse()
+    {
+        Assert.IsFalse(ResizeHandleManager.HandlesAvailableFor(null));
+    }
+
+    [Test]
+    public void ArrowPullBackApplies_IsOffForWindowsAndDoors()
+    {
+        var windowGo = new GameObject("Окно");
+        _spawned.Add(windowGo);
+        var window = windowGo.AddComponent<WindowElement>();
+
+        var doorGo = new GameObject("Дверь");
+        _spawned.Add(doorGo);
+        var door = doorGo.AddComponent<DoorElement>();
+
+        Assert.IsFalse(ResizeHandleManager.ArrowPullBackApplies(window),
+            "окно сидит в проёме, и «соседом» для него всегда будет своя же стена: "
+            + "откат стрелки только сдвигал бы ручки вдоль проёма");
+        Assert.IsFalse(ResizeHandleManager.ArrowPullBackApplies(door));
+        Assert.IsTrue(ResizeHandleManager.ArrowPullBackApplies(
+            Make(Vector3.zero, new Vector3Int(600, 18, 300))),
+            "полке откат нужен — её торец уходит в боковину");
+    }
+
+    [Test]
+    public void GrabBox_CoversOnlyTheProtrudingTip_NotTheFaceItself()
+    {
+        float nearEdge = ResizeHandleManager.GrabBoxCenterZ - ResizeHandleManager.GrabBoxDepth * 0.5f;
+
+        Assert.Greater(nearEdge, 0f,
+            "грабельная зона не достаёт до самой грани: иначе клик по телу объекта "
+            + "(особенно по центру грани, обращённой к камере) случайно цеплял ручку "
+            + "и растягивал вместо move");
+        Assert.GreaterOrEqual(nearEdge, ResizeHandleManager.Gap,
+            "она начинается за зазором у грани");
+        Assert.Greater(ResizeHandleManager.GrabBoxCenterZ + ResizeHandleManager.GrabBoxDepth * 0.5f,
+            ResizeHandleManager.ArrowLen - 1e-4f,
+            "и покрывает наконечник целиком, вплоть до кончика стрелки");
+    }
+
+    [Test]
+    public void ConeMesh_IsAUnitConeAlongPlusZ()
+    {
+        var cone = ResizeHandleManager.ConeMesh();
+
+        Assert.AreEqual(1f, cone.bounds.size.z, 1e-4f,
+            "конус единичного масштаба: длину наконечника задаёт localScale ручки");
+        Assert.AreEqual(0.5f, cone.bounds.max.z, 1e-4f, "вершина при z = +0.5");
+        Assert.AreEqual(-0.5f, cone.bounds.min.z, 1e-4f, "основание при z = −0.5");
+        Assert.AreEqual(0.5f, cone.bounds.max.x, 1e-4f, "радиус основания 0.5");
+    }
+
+    [Test]
+    public void Drawer_KeepsOnlyItsWidth_SoTheOtherAxesHaveNoHandles()
+    {
+        var go = new GameObject("Ящик");
+        _spawned.Add(go);
+        var drawer = go.AddComponent<DrawerElement>();
+        drawer.Type = DrawerType.A;
+        drawer.NominalLength = 450;
+        drawer.InternalWidth = 500;
+        var before = drawer.DimensionsMM;
+
+        drawer.DimensionsMM = new Vector3Int(600, before.y + 200, before.z + 200);
+
+        Assert.AreEqual(600, drawer.DimensionsMM.x, "ширина ящика тянется");
+        Assert.AreEqual(before.y, drawer.DimensionsMM.y,
+            "высота ящика GTV фиксирована типом: ручки оси Y ничего не меняли бы");
+        Assert.AreEqual(before.z, drawer.DimensionsMM.z,
+            "глубина фиксирована номинальной длиной");
+    }
+
+    [Test]
+    public void Pillar_KeepsOnlyItsHeight_SoTheCrossSectionHasNoHandles()
+    {
+        var go = ElementFactory.CreatePillar(70, "Опора", Vector3.zero);
+        _spawned.Add(go);
+        var pillar = go.GetComponent<PillarElement>();
+        int heightBefore = pillar.DimensionsMM.y;
+
+        pillar.DimensionsMM = new Vector3Int(300, heightBefore + 10, 300);
+
+        Assert.AreEqual(PillarElement.TopDiameterMM, pillar.DimensionsMM.x,
+            "сечение опоры фиксировано 50×50: ручки X/Z ничего не меняли — "
+            + "DimensionsMM возвращал прежний размер, и деталь просто не "
+            + "реагировала на драг");
+        Assert.AreEqual(PillarElement.TopDiameterMM, pillar.DimensionsMM.z);
+        Assert.AreEqual(heightBefore + 10, pillar.DimensionsMM.y, "а высота тянется");
+    }
+
+    [Test]
+    public void LoweredWall_MixesALoweredCentreWithFullHeightFaces_UntilRestoreFull()
+    {
+        var go = new GameObject("Стена");
+        _spawned.Add(go);
+        var element = go.AddComponent<KitchenElement>();
+        element.DimensionsMM = new Vector3Int(4000, 2700, 100);
+        go.transform.position = new Vector3(0f, 1.35f, 0f);
+        var wall = go.AddComponent<Wall>();
+
+        wall.SetLowered(true, 0.9f);
+
+        var faces = element.GetFaces();
+        float centreFromFaces = (faces[2].center.y + faces[3].center.y) * 0.5f;
+        Assert.AreEqual(1.35f, centreFromFaces, 1e-4f, "грани отдают ПОЛНУЮ высоту");
+        Assert.AreEqual(0.45f, go.transform.position.y, 1e-4f, "а трансформ уже опущен");
+        Assert.AreNotEqual(centreFromFaces, go.transform.position.y,
+            "стартовые размер и центр, снятые в опущенном состоянии, разъезжаются "
+            + "с геометрией грани — отсюда прыжок объекта на первом кадре тяги; "
+            + "поэтому стену поднимают ДО того, как берут грань");
+
+        wall.RestoreFull();
+
+        Assert.AreEqual(1.35f, go.transform.position.y, 1e-4f,
+            "RestoreFull ДО снятия геометрии грани убирает рассогласование");
+        Assert.AreEqual(2.7f, go.transform.localScale.y, 1e-4f);
+    }
+
     private static void Resize(KitchenElement target, int faceIndex, float rawDelta,
         IList<KitchenElement> others, float threshold,
         out Vector3Int newDims, out Vector3 newCenter, out bool snapped)
