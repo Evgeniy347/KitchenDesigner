@@ -3,32 +3,14 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Геометрия размещения ручек ресайза/перемещения на ПЛОСКОЙ детали
-    /// (стена, полка, боковина, фасад, столешница).
-    ///
-    /// У плиты центры боковых граней лежат в её толще: ручка тонет в геометрии,
-    /// а стрелка уходит по оси плиты и попадает внутрь соседней детали — торец
-    /// стены приходится в толщу примыкающей, конец полки упирается в боковину.
-    /// Здесь считается сдвиг ручек из плоскости детали к камере и, когда стрелке
-    /// некуда выйти, откат её назад на саму деталь.
-    ///
-    /// Чистая геометрия, без Camera.main и синглтонов — покрыта EditMode-тестами.</summary>
     public static class HandlePlacement
     {
-        /// <summary>Во сколько раз тонкая ось должна быть меньше остальных, чтобы
-        /// деталь считалась плитой. 3 — столешница 38 мм при глубине 600 ещё плита,
-        /// а опора 50×50×100 и корпус ящика уже нет: у них ручки и так снаружи.</summary>
-        private const float PlateRatio = 3f;
+        public const float MinPlateAspectRatio = 3f;
 
-        /// <summary>Ориентированный габаритный ящик детали в мировых осях.
-        /// Собирается из её граней, поэтому учитывает и переопределённый габарит
-        /// составных элементов, и полную высоту опущенной стены.</summary>
         public readonly struct Box
         {
             public readonly Vector3 Center;
-            /// <summary>Единичные оси X/Y/Z детали в мире.</summary>
             public readonly Vector3 AxisX, AxisY, AxisZ;
-            /// <summary>Полуразмеры по этим осям (юниты).</summary>
             public readonly Vector3 Half;
 
             public Box(Vector3 center, Vector3 axisX, Vector3 axisY, Vector3 axisZ, Vector3 half)
@@ -38,8 +20,6 @@ namespace KitchenDesigner.Core
 
             public Vector3 Axis(int index) => index == 0 ? AxisX : (index == 1 ? AxisY : AxisZ);
 
-            /// <summary>Расстояние от точки до ящика (0 — точка внутри).
-            /// Для дешёвого отсева соседей, до которых стрелка заведомо не достаёт.</summary>
             public float DistanceTo(Vector3 world)
             {
                 Vector3 d = world - Center;
@@ -52,11 +32,6 @@ namespace KitchenDesigner.Core
                 return Mathf.Sqrt(sqr);
             }
 
-            /// <summary>Отрезок [origin, origin + dir*length] заходит внутрь ящика?
-            /// Метод плит (slab): точный, в отличие от выборки точек вдоль отрезка —
-            /// та проскакивала мимо 18-мм боковины между пробами. Касание грани
-            /// (нулевая длина пересечения) не считается: стрелка, упирающаяся
-            /// кончиком в соседа, стоит правильно.</summary>
             public bool IntersectsSegment(Vector3 origin, Vector3 dir, float length)
             {
                 Vector3 d = origin - Center;
@@ -67,9 +42,11 @@ namespace KitchenDesigner.Core
                     float o = Vector3.Dot(d, axis);
                     float slope = Vector3.Dot(dir, axis);
                     float h = Half[a];
-                    if (Mathf.Abs(slope) < Tolerance.EpsilonUnits)
+                    bool parallelToThisSlab = Mathf.Abs(slope) < Tolerance.EpsilonUnits;
+                    if (parallelToThisSlab)
                     {
-                        if (Mathf.Abs(o) > h) return false; // идёт вдоль плиты и мимо неё
+                        bool offsetPastTheSlab = Mathf.Abs(o) > h;
+                        if (offsetPastTheSlab) return false;
                         continue;
                     }
                     float t1 = (-h - o) / slope, t2 = (h - o) / slope;
@@ -78,12 +55,11 @@ namespace KitchenDesigner.Core
                     tMax = Mathf.Min(tMax, t2);
                     if (tMin > tMax) return false;
                 }
-                return tMax - tMin > Tolerance.EpsilonUnits;
+                float insideLength = tMax - tMin;
+                return insideLength > Tolerance.EpsilonUnits;
             }
         }
 
-        /// <summary>Собирает ящик из граней. Опирается на контракт порядка граней:
-        /// index/2 = ось (0=X, 1=Y, 2=Z), чётный индекс — положительное направление.</summary>
         public static Box BoxOf(Face[] faces)
         {
             Vector3 ax = Normal(faces, 0, Vector3.right);
@@ -102,8 +78,6 @@ namespace KitchenDesigner.Core
                 ? faces[index].normal.normalized
                 : fallback;
 
-        /// <summary>Ось наименьшего габарита, если деталь плоская; -1 — деталь
-        /// объёмная, выносить ручки не нужно.</summary>
         public static int ThinAxis(in Box box)
         {
             Vector3 h = box.Half;
@@ -111,11 +85,10 @@ namespace KitchenDesigner.Core
             if (h.y < h[thin]) thin = 1;
             if (h.z < h[thin]) thin = 2;
             float other = Mathf.Min(h[(thin + 1) % 3], h[(thin + 2) % 3]);
-            return h[thin] * PlateRatio <= other ? thin : -1;
+            bool isPlate = h[thin] * MinPlateAspectRatio <= other;
+            return isPlate ? thin : -1;
         }
 
-        /// <summary>Сдвиг ручек из толщи детали к камере: за плоскость плюс зазор.
-        /// Сторона выбирается по камере, поэтому ручки видны с любого ракурса.</summary>
         public static Vector3 CameraOffset(in Box box, int thinAxis, Vector3 camPos, float gap)
         {
             Vector3 n = box.Axis(thinAxis);
@@ -123,8 +96,6 @@ namespace KitchenDesigner.Core
             return n * (side * (box.Half[thinAxis] + gap));
         }
 
-        /// <summary>Стрелка длиной <paramref name="arrowLen"/>, выпущенная из
-        /// <paramref name="origin"/> вдоль <paramref name="normal"/>, задевает соседа?</summary>
         public static bool Blocked(
             Vector3 origin, Vector3 normal, float arrowLen, IReadOnlyList<Box>? neighbours)
         {
@@ -134,10 +105,6 @@ namespace KitchenDesigner.Core
             return false;
         }
 
-        /// <summary>Насколько отвести ручку НАЗАД, на саму деталь, чтобы стрелка не
-        /// сидела внутри соседа. 0 — путь свободен, отводить не нужно. Дальше
-        /// <paramref name="maxShift"/> (полугабарита детали) не отходим — ручка
-        /// должна остаться у своей грани.</summary>
         public static float PullBack(
             Vector3 origin, Vector3 normal, float arrowLen, float maxShift,
             IReadOnlyList<Box>? neighbours)
@@ -146,9 +113,6 @@ namespace KitchenDesigner.Core
             float step = arrowLen * 0.5f;
             for (float d = arrowLen; d <= maxShift; d += step)
                 if (!Blocked(origin - normal * d, normal, arrowLen, neighbours)) return d;
-            // Чистого места нет (короткая деталь, зажатая с двух сторон) — всё равно
-            // убираем стрелку с продолжения оси: над своей деталью она хотя бы
-            // не прячется внутри соседней.
             return arrowLen;
         }
     }

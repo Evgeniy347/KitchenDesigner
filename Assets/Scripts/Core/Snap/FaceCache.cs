@@ -2,10 +2,6 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Прозрачный кэш граней для чистых функций прилипания.
-    /// Позволяет длительным тестам (1 мм sweep) не пересчитывать грани
-    /// неподвижных соседей тысячи раз. Включается/выключается явно из теста;
-    /// в рантайме выключен, чтобы не хранить устаревшее состояние.</summary>
     public static class FaceCache
     {
         private static Dictionary<KitchenElement, Face[]>? _cache;

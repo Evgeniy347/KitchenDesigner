@@ -82,6 +82,88 @@ public class HandlePlacementTests
     }
 
     [Test]
+    public void BoxOf_Axes_AreUnitVectors()
+    {
+        var box = BoxOf(MakeWall(new Vector3(2f, 1.35f, 2f), new Vector3Int(4000, 2700, 100), 90f));
+
+        Assert.AreEqual(1f, box.AxisX.magnitude, 1e-4f,
+            "оси ящика единичные: полуразмеры и DistanceTo считаются проекцией на них, "
+            + "и неединичная ось молча растянула бы обе величины");
+        Assert.AreEqual(1f, box.AxisY.magnitude, 1e-4f);
+        Assert.AreEqual(1f, box.AxisZ.magnitude, 1e-4f);
+    }
+
+    [Test]
+    public void BoxOf_LoweredWall_KeepsTheFullHeight()
+    {
+        var wall = MakeWall(new Vector3(0f, 1.35f, 0f), new Vector3Int(4000, 2700, 100));
+        float fullHalfHeight = BoxOf(wall).Half.y;
+        Assume.That(fullHalfHeight, Is.EqualTo(1.35f).Within(1e-4f));
+
+        wall.GetComponent<Wall>()!.SetLowered(true, 0.9f);
+
+        Assert.AreEqual(1.35f, BoxOf(wall).Half.y, 1e-4f,
+            "ящик собирается из граней, а грани опущенной стены отдают ПОЛНУЮ высоту: "
+            + "иначе ручки на срезанной стене уехали бы к полу");
+        Assert.AreEqual(1.35f, BoxOf(wall).Center.y, 1e-4f);
+    }
+
+    [Test]
+    public void ThinAxis_EitherSideOfTheAspectRatio_FlipsTheVerdict()
+    {
+        Assume.That(HandlePlacement.MinPlateAspectRatio, Is.EqualTo(3f),
+            "пробы построены под это отношение: порог между 290 и 310 мм");
+
+        // 100×2000×310: тонкая ось 100, ближайшая другая 310 > 100 × 3.
+        Assert.AreEqual(0, HandlePlacement.ThinAxis(
+            BoxOf(Make(Vector3.zero, new Vector3Int(100, 2000, 310)))),
+            "во столько раз тонкая ось меньше остальных — деталь плита, "
+            + "её ручки тонут в толще и их надо вынести");
+
+        // 290 < 300: чуть-чуть не дотянула.
+        Assert.AreEqual(-1, HandlePlacement.ThinAxis(
+            BoxOf(Make(Vector3.zero, new Vector3Int(100, 2000, 290)))),
+            "чуть ниже отношения — уже объём, выносить ручки не нужно");
+    }
+
+    [Test]
+    public void ThinAxis_Tabletop_IsAPlate_ButAPillarIsNot()
+    {
+        Assert.AreEqual(1, HandlePlacement.ThinAxis(
+            BoxOf(Make(Vector3.zero, new Vector3Int(1200, 38, 600)))),
+            "столешница 38 мм при глубине 600 — плита: её ручки тонут в толще");
+        Assert.AreEqual(-1, HandlePlacement.ThinAxis(
+            BoxOf(Make(Vector3.zero, new Vector3Int(50, 100, 50)))),
+            "опора 50×50×100 — не плита, у неё ручки и так снаружи");
+    }
+
+    [Test]
+    public void IntersectsSegment_ArrowTipTouchingTheFace_IsNotBlocked()
+    {
+        // Плита 100 мм по X с гранями на 0.5 и 0.6.
+        var slab = BoxOf(Make(new Vector3(0.55f, 0f, 0f), new Vector3Int(100, 2000, 2000)));
+
+        Assert.IsFalse(slab.IntersectsSegment(Vector3.zero, Vector3.right, 0.5f),
+            "стрелка, упирающаяся кончиком в грань соседа, стоит правильно: "
+            + "нулевая длина пересечения — это касание, а не заход внутрь");
+        Assert.IsTrue(slab.IntersectsSegment(Vector3.zero, Vector3.right, 0.51f),
+            "зашла на 10 мм внутрь — уже мешает");
+    }
+
+    [Test]
+    public void IntersectsSegment_ParallelToTheSlab_AndOffsetPastIt_Misses()
+    {
+        // Та же плита: по Y она от -1 до 1.
+        var slab = BoxOf(Make(new Vector3(0.55f, 0f, 0f), new Vector3Int(100, 2000, 2000)));
+
+        Assert.IsFalse(slab.IntersectsSegment(new Vector3(0f, 5f, 0f), Vector3.right, 1f),
+            "стрелка идёт вдоль плиты и мимо неё: без отдельной проверки нулевого "
+            + "наклона эта ось просто пропускается и промах читается как попадание");
+        Assert.IsTrue(slab.IntersectsSegment(new Vector3(0f, 0.5f, 0f), Vector3.right, 1f),
+            "та же стрелка в пределах плиты по Y — попадание");
+    }
+
+    [Test]
     public void ThinAxis_BulkyElement_IsNotAPlate()
     {
         // Корпус ящика и опора 50×100×50 — ручки и так снаружи, выносить нечего.

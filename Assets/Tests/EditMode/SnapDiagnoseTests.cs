@@ -129,6 +129,88 @@ public class SnapDiagnoseTests : SnapTestBase
     }
 
     [Test]
+    public void Diagnosis_PicksTheSnappablePair_NotTheNearestOne()
+    {
+        // Стойка 18×18×800 и планка 10×18×800, поднятая по Y на 45 мм.
+        // По X пара граней ближе всего (14 мм), но грани разъехались по Y и не
+        // перекрываются вовсе; прилипание идёт по паре Y (27 мм, перекрытие 100%).
+        var post = Make("Стойка", new Vector3Int(18, 18, 800), Vector3.zero);
+        var rail = Make("Планка", new Vector3Int(10, 18, 800), new Vector3(0f, 0.045f, 0f));
+
+        var real = SnapSystem.TrySnap(rail, new List<KitchenElement> { post }, rail.transform.position);
+        Assume.That(real.snapped, Is.True, "проба должна быть прилипающей, иначе тест пуст");
+
+        var n = Diagnose(rail, post, rail.transform.position).neighbors[0];
+
+        Assert.AreEqual(1, n.movedFaceIndex / 2,
+            "выбрана пара по оси Y (индекс/2 = 1), а не более близкая пара по X: "
+            + "ранг важнее зазора. Отбор по одному зазору выдавал вердикт по "
+            + "случайной ближней негодной паре — Diagnose говорил «не прилипнет» "
+            + "там, где TrySnap прилипал по другой паре того же соседа");
+        Assert.AreEqual(27f, n.gapMM, 0.5f, "зазор именно у пары Y");
+        Assert.IsTrue(n.wouldSnap, n.verdict);
+        Assert.AreEqual(real.snapped, n.wouldSnap, "диагноз обязан совпасть с TrySnap");
+    }
+
+    [Test]
+    public void Diagnosis_NeighbourWithoutFacingFaces_IsRankedByCentreDistance()
+    {
+        var moved = MakeStd("M", new Vector3(0f, 0.2f, 0f));
+        // У повёрнутой детали встречных граней нет, поэтому зазора (gapMM = -1)
+        // для неё не существует; стоит она вчетверо дальше встречной.
+        var turned = MakeStd("Повёрнутая", new Vector3(0f, 0.2f, 0.5f), Quaternion.Euler(45f, 45f, 0f));
+        var facing = MakeStd("Встречная", new Vector3(0f, 0.2f, 0.05f));
+
+        var d = SnapSystem.Diagnose(moved, new List<KitchenElement> { turned, facing },
+            moved.transform.position);
+
+        Assert.AreEqual(2, d.neighbors.Count);
+        Assert.AreEqual("Встречная", d.neighbors[0].name,
+            "у детали без встречных граней gapMM = -1, и сортировка прямо по нему "
+            + "вынесла бы её в начало списка как «самую близкую»; такие соседи "
+            + "ранжируются по расстоянию между центрами");
+        Assert.Less(d.neighbors[1].gapMM, 0f, "у повёрнутой зазора нет");
+        Assert.Greater(d.neighbors[1].centerDistanceMM, d.neighbors[0].gapMM,
+            "повёрнутая и правда дальше — иначе порядок ничего не доказывает");
+    }
+
+    [Test]
+    public void Diagnosis_WithAKnownSnapResult_MatchesTheRecomputedOne()
+    {
+        var a = MakeStd("A", new Vector3(0f, 0.2f, 0f));
+        var b = MakeStd("B", new Vector3(0f, 0.2f, 0.028f));
+        var pos = b.transform.position;
+        var known = SnapSystem.TrySnap(b, new List<KitchenElement> { a }, pos);
+
+        var recomputed = SnapSystem.Diagnose(b, new List<KitchenElement> { a }, pos);
+        var reused = SnapSystem.Diagnose(b, new List<KitchenElement> { a }, pos, known);
+
+        Assert.AreEqual(recomputed.wouldSnap, reused.wouldSnap,
+            "прилипание — чистая функция от (moved, others, testPosition): передать "
+            + "готовый результат и посчитать заново обязано быть одним и тем же, "
+            + "иначе свип экономит второй проход ценой другого диагноза");
+        Assert.AreEqual(recomputed.snapTarget, reused.snapTarget);
+        Assert.AreEqual(recomputed.neighbors[0].verdict, reused.neighbors[0].verdict);
+    }
+
+    [Test]
+    public void Diagnosis_FacingBoards_ReportBestDotAndTheFacePairAndTheOverlap()
+    {
+        var a = MakeStd("A", new Vector3(0f, 0.2f, 0f));
+        var b = MakeStd("B", new Vector3(0f, 0.2f, 0.028f));
+
+        var n = Diagnose(b, a, b.transform.position).neighbors[0];
+
+        Assert.AreEqual(-1f, n.bestDot, 1e-3f,
+            "bestDot — самый встречный dot нормалей: -1 у строго встречных граней");
+        Assert.AreEqual(2, n.movedFaceIndex / 2, "пара найдена по оси Z (индекс/2 = 2)");
+        Assert.AreEqual(2, n.otherFaceIndex / 2);
+        Assert.AreEqual(1f, n.overlapRatio, 1e-3f, "грани совпадают — перекрытие 100%");
+        Assert.AreEqual(28f, n.centerDistanceMM, 0.5f,
+            "centerDistanceMM меряется от примеряемой позиции до центра соседа");
+    }
+
+    [Test]
     public void Diagnosis_AgreesWithTrySnap_OnScatteredPositions()
     {
         // Инвариант: neighbors[0].wouldSnap == реальный TrySnap для пары деталей.

@@ -3,27 +3,24 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Диагностика прилипания к одному соседу: какая пара граней ближайшая
-    /// и по какой причине снэп прошёл/не прошёл. Все расстояния — в мм.</summary>
     [System.Serializable]
     public class SnapNeighborReport
     {
         public string name = string.Empty;
-        public float centerDistanceMM;      // расстояние между центрами деталей
-        public bool intersects;             // AABB-пересечение — снэп с этой деталью невозможен
-        public bool hasFacingFaces;         // есть ли встречные параллельные грани (dot≈-1)
-        public float bestDot;               // самый «встречный» dot нормалей (-1 = идеально)
-        public int movedFaceIndex = -1;     // лучшая пара граней (движимая/цель)
+        public float centerDistanceMM;
+        public bool intersects;
+        public bool hasFacingFaces;
+        public float bestDot;
+        public int movedFaceIndex = -1;
         public int otherFaceIndex = -1;
-        public float gapMM = -1f;           // зазор по нормали у лучшей пары
-        public float overlapRatio = -1f;    // перекрытие граней у лучшей пары (0..1+)
+        public float gapMM = -1f;
+        public float overlapRatio = -1f;
         public bool withinThreshold;
         public bool overlapEnough;
-        public bool wouldSnap;              // все условия для ЭТОЙ детали выполнены
-        public string verdict = string.Empty;              // человекочитаемая причина
+        public bool wouldSnap;
+        public string verdict = string.Empty;
     }
 
-    /// <summary>Итог диагностики: общие настройки, результат TrySnap и разбор по соседям.</summary>
     [System.Serializable]
     public class SnapDiagnosis
     {
@@ -34,29 +31,19 @@ namespace KitchenDesigner.Core
         public List<SnapNeighborReport> neighbors = new List<SnapNeighborReport>();
     }
 
-    /// <summary>Прилипание со стороны СЦЕНЫ: собирает снимки геометрии и отдаёт
-    /// расчёт в <see cref="SnapCore"/>, а сам знает про KitchenElement, настройки
-    /// и логи. Сама математика живёт в KitchenDesigner.Geometry и исполняется
-    /// без Unity — см. docs/GEOMETRY-EXTRACTION-PLAN.md.</summary>
     public static class SnapSystem
     {
         private const float ThresholdEpsilon = Tolerance.SnapEpsilon;
 
-        /// <summary>Логировать выбор снэпа (для отладки прилипания). По умолчанию выкл.</summary>
         public static bool VerboseLog = false;
 
-        /// <summary>Деталь как источник геометрии для произвольной позиции.
-        /// Класс, а не структура: ядро держит его по интерфейсу, и упаковка
-        /// структуры всё равно случилась бы — только на каждом вызове.</summary>
-        private sealed class PosedElement : IPosedGeometry
+        internal sealed class PosedElement : IPosedGeometry
         {
             private readonly KitchenElement _element;
             public PosedElement(KitchenElement element) => _element = element;
             public ElementGeometry At(Vector3 position) => _element.ToGeometryAt(position);
         }
 
-        /// <summary>Прилипание детали, примеряемой в testPosition. Сцену не меняет:
-        /// геометрия для примерки считается аналитически.</summary>
         public static SnapResult TrySnap(KitchenElement moved, List<KitchenElement> others, Vector3 testPosition)
         {
             if (moved == null || others == null) return default;
@@ -66,9 +53,6 @@ namespace KitchenDesigner.Core
             return TrySnap(moved, others.ToGeometry(), testPosition);
         }
 
-        /// <summary>То же, но по ГОТОВЫМ снимкам соседей. Для горячих путей, где
-        /// соседи между вызовами не двигаются: пересборка снимков на каждый вызов
-        /// стоит дороже самого расчёта прилипания.</summary>
         public static SnapResult TrySnap(KitchenElement moved, IReadOnlyList<ElementGeometry> others,
             Vector3 testPosition)
         {
@@ -82,23 +66,10 @@ namespace KitchenDesigner.Core
                 threshold, VerboseLog ? Debug.Log : (System.Action<string>?)null);
         }
 
-
-        /// <summary>
-        /// Диагностика: почему деталь прилипает/не прилипает из позиции testPosition.
-        /// Прогоняет ту же геометрию, что и <see cref="TrySnap"/>, но вместо раннего
-        /// отсева собирает по каждому соседу лучшую пару граней и причину отказа:
-        /// пересечение AABB, нет встречных граней, зазор больше порога, перекрытие &lt;30%.
-        /// Сцену не меняет (позиция восстанавливается). Соседи отсортированы по зазору.
-        /// </summary>
         public static SnapDiagnosis Diagnose(KitchenElement moved, List<KitchenElement> others,
             Vector3 testPosition, int maxNeighbors = 5)
             => Diagnose(moved, others, testPosition, null, maxNeighbors);
 
-        /// <summary>То же, но с УЖЕ вычисленным результатом <see cref="TrySnap"/>
-        /// для той же тройки (moved, others, testPosition). Прилипание — чистая
-        /// функция от неё, поэтому передать готовый результат и посчитать заново —
-        /// одно и то же; свип, которому разбор нужен лишь на сработавших шагах,
-        /// экономит на этом второй полный проход снэпа.</summary>
         public static SnapDiagnosis Diagnose(KitchenElement moved, List<KitchenElement> others,
             Vector3 testPosition, SnapResult? knownSnap, int maxNeighbors = 5)
         {
@@ -116,8 +87,6 @@ namespace KitchenDesigner.Core
 
             float maxDist = report.thresholdMM * AppConstants.MM_TO_UNITS + ThresholdEpsilon;
 
-            // Геометрия примеряемой позиции считается аналитически — сцена не
-            // трогается (см. Collect).
             Face[] movedFaces = moved.GetFacesAt(testPosition);
             Vector3[] movedVerts = moved.GetVerticesAt(testPosition);
 
@@ -136,9 +105,6 @@ namespace KitchenDesigner.Core
 
                 Face[] otherFaces = FaceCache.GetFaces(other);
 
-                // Те же грани, что видит TrySnap: шесть габаритных плюс дно каждого
-                // паза (только для вкладной панели). Без дна паза диагностика
-                // сообщала «не прилипнет» там, где TrySnap сажает панель в паз.
                 Face[] seatFaces = moved is PanelElement
                     ? other.GetGrooveSeatFaces()
                     : System.Array.Empty<Face>();
@@ -158,7 +124,6 @@ namespace KitchenDesigner.Core
                         if (!Tolerance.IsParallel(dot) || dot > 0) continue;
 
                         var mf = movedFaces[i];
-                        // Над пазом материала нет — как и в Collect.
                         if (!isGroove && GrooveSeating.SeatSupersedesFace(mf, of, seatFaces)) continue;
                         n.hasFacingFaces = true;
 
@@ -167,13 +132,9 @@ namespace KitchenDesigner.Core
                         bool within = gap <= maxDist;
                         bool enough = hasOverlap && ratio >= Tolerance.MinSupportOverlap;
 
-                        // Ранг важнее зазора: пара, по которой снэп РЕАЛЬНО возможен,
-                        // всегда лучше более близкой, но негодной. Раньше отбор шёл по
-                        // одному зазору, и вердикт писался по случайной ближней паре с
-                        // перекрытием 10% — Diagnose говорил «не прилипнет», а TrySnap
-                        // прилипал по другой, полноценной паре того же соседа.
                         int rank = (within && enough) ? 0 : (hasOverlap ? 1 : 2);
-                        if (rank < bestRank || (rank == bestRank && gap < bestGap))
+                        bool betterPair = rank < bestRank || (rank == bestRank && gap < bestGap);
+                        if (betterPair)
                         {
                             bestRank = rank;
                             bestGap = gap;
@@ -198,23 +159,19 @@ namespace KitchenDesigner.Core
                 report.neighbors.Add(n);
             }
 
-            // Ближние — первыми; у деталей без встречных граней зазора нет,
-            // ранжируем их по расстоянию между центрами.
-            report.neighbors.Sort((a, b) =>
-                (a.gapMM >= 0 ? a.gapMM : a.centerDistanceMM)
-                .CompareTo(b.gapMM >= 0 ? b.gapMM : b.centerDistanceMM));
+            report.neighbors.Sort((a, b) => SortKeyMM(a).CompareTo(SortKeyMM(b)));
             if (report.neighbors.Count > maxNeighbors)
                 report.neighbors.RemoveRange(maxNeighbors, report.neighbors.Count - maxNeighbors);
 
             return report;
         }
 
+        private static float SortKeyMM(SnapNeighborReport n)
+            => n.gapMM >= 0 ? n.gapMM : n.centerDistanceMM;
+
         public static bool ElementsIntersect(KitchenElement a, KitchenElement b)
             => ElementsIntersectAt(a, a.GetVertices(), b);
 
-        /// <summary>То же, но габарит A берётся по ГОТОВЫМ вершинам — например,
-        /// посчитанным для примеряемой позиции. Раньше для этого деталь двигали
-        /// записью в transform.position.</summary>
         public static bool ElementsIntersectAt(KitchenElement a, Vector3[] va, KitchenElement b)
         {
             Vector3[] vb = b.GetVertices();

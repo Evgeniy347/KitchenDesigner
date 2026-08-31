@@ -133,6 +133,32 @@ public class GrooveSnapTests
     }
 
     [Test]
+    public void Diagnose_PanelNearGroove_ReportsTheSeatFace_NotTheOuterFace()
+    {
+        var board = MakeBoard("box");
+        board.transform.position = Vector3.zero;
+        board.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Right));
+        var seat = board.GetGrooveSeatFaces()[0];
+        var panel = MakeSeatedPanel(seat, shortfallM: 0.004f, gap: PanelElement.DEFAULT_GAP_MM);
+        var testPos = panel.transform.position;
+        var others = new List<KitchenElement> { board };
+
+        var real = SnapSystem.TrySnap(panel, others, testPos);
+        Assume.That(real.snapped, Is.True, "проба должна прилипать, иначе тест пуст");
+
+        var n = SnapSystem.Diagnose(panel, others, testPos).neighbors[0];
+
+        Assert.IsTrue(n.wouldSnap,
+            "диагностика видит те же грани, что и TrySnap: шесть габаритных плюс дно "
+            + "каждого паза (только для вкладной панели). Без дна паза она сообщала "
+            + "«не прилипнет» там, где TrySnap сажает панель в паз: " + n.verdict);
+        Assert.GreaterOrEqual(n.otherFaceIndex, 6,
+            "выбрано ДНО ПАЗА, а не пласть детали: над пазом материала нет, и пласть "
+            + "вытесняется дном — как и в Collect. Иначе ближайшей оказалась бы пласть, "
+            + "и вердикт описывал бы грань, к которой панель не прилипает");
+    }
+
+    [Test]
     public void PlainBoard_IsNotOfferedGrooveSeats()
     {
         // Толстая деталь в паз не садится — посадочные грани ей не предлагаются.

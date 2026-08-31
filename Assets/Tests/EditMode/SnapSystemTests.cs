@@ -131,6 +131,100 @@ public class SnapSystemTests
         Object.DestroyImmediate(b.gameObject);
     }
 
+    [Test]
+    public void VerboseLog_Off_KeepsTheSnapSilent_On_ExplainsTheChoice()
+    {
+        _elementA!.transform.position = Vector3.zero;
+        var others = new List<KitchenElement> { _elementA };
+        var pos = new Vector3(0.83f, 0f, 0f);
+
+        bool savedVerbose = SnapSystem.VerboseLog;
+        int logs = 0;
+        Application.LogCallback counter = (condition, stackTrace, type) => { if (type == LogType.Log) logs++; };
+        Application.logMessageReceived += counter;
+        try
+        {
+            SnapSystem.VerboseLog = false;
+            var quiet = SnapSystem.TrySnap(_elementB!, others, pos);
+            Assume.That(quiet.snapped, Is.True, "проба должна прилипать, иначе логировать нечего");
+            Assert.AreEqual(0, logs,
+                "разбор выбора снэпа — отладочный инструмент, и по умолчанию он молчит: "
+                + "снэп зовётся на каждый кадр перетаскивания и залил бы консоль");
+
+            SnapSystem.VerboseLog = true;
+            SnapSystem.TrySnap(_elementB!, others, pos);
+            Assert.Greater(logs, 0, "включённый флаг обязан объяснить выбор");
+        }
+        finally
+        {
+            Application.logMessageReceived -= counter;
+            SnapSystem.VerboseLog = savedVerbose;
+        }
+    }
+
+    [Test]
+    public void PosedElement_IsAReferenceType_SoTheCoreDoesNotBoxItOnEveryCall()
+    {
+        Assert.IsFalse(typeof(SnapSystem.PosedElement).IsValueType,
+            "ядро держит источник геометрии по интерфейсу IPosedGeometry: структура "
+            + "упаковывалась бы при каждой передаче, то есть на каждый вызов снэпа, "
+            + "а класс упаковывается ровно ноль раз");
+        Assert.IsTrue(typeof(IPosedGeometry).IsAssignableFrom(typeof(SnapSystem.PosedElement)));
+    }
+
+    [Test]
+    public void TrySnap_DoesNotMoveAnythingInTheScene()
+    {
+        _elementA!.transform.position = Vector3.zero;
+        _elementB!.transform.position = new Vector3(0.83f, 0f, 0f);
+        var beforeA = _elementA!.transform.position;
+        var beforeB = _elementB!.transform.position;
+
+        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA },
+            new Vector3(2f, 2f, 2f));
+
+        Assert.IsFalse(result.snapped, "проба взята заведомо далеко");
+        Assert.AreEqual(beforeB, _elementB!.transform.position,
+            "геометрия примеряемой позиции считается аналитически: раньше деталь для "
+            + "примерки двигали записью в transform.position, и прерванный расчёт "
+            + "оставлял её в чужом месте");
+        Assert.AreEqual(beforeA, _elementA!.transform.position);
+    }
+
+    [Test]
+    public void TrySnap_OverPrebuiltSnapshots_AgreesWithTheElementList()
+    {
+        _elementA!.transform.position = Vector3.zero;
+        var others = new List<KitchenElement> { _elementA };
+        var snapshots = others.ToGeometry();
+
+        foreach (var x in new[] { 0.83f, 0.86f, 0.805f })
+        {
+            var pos = new Vector3(x, 0f, 0f);
+            var byElements = SnapSystem.TrySnap(_elementB!, others, pos);
+            var bySnapshots = SnapSystem.TrySnap(_elementB!, snapshots, pos);
+
+            Assert.AreEqual(byElements.snapped, bySnapshots.snapped,
+                $"x={x}: горячий путь по готовым снимкам обязан давать тот же ответ, "
+                + "что и пересборка снимков на каждый вызов");
+            Assert.AreEqual(byElements.position, bySnapshots.position, $"x={x}");
+        }
+    }
+
+    [Test]
+    public void TrySnap_InactiveElement_DoesNotSnap()
+    {
+        _elementA!.transform.position = Vector3.zero;
+        _elementB!.gameObject.SetActive(false);
+
+        var result = SnapSystem.TrySnap(_elementB, new List<KitchenElement> { _elementA },
+            new Vector3(0.83f, 0f, 0f));
+
+        Assert.IsFalse(result.snapped,
+            "выключенная деталь не участвует в сцене — прилипать ей некуда");
+        _elementB!.gameObject.SetActive(true);
+    }
+
     private static KitchenElement CreateElement(string name, Vector3Int dims, Vector3 position)
     {
         var go = new GameObject(name);
