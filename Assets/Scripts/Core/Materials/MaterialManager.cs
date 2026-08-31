@@ -34,10 +34,13 @@ namespace KitchenDesigner.Core
         /// <summary>Как выше, но с раздельными физ. размерами плитки по X и Y
         /// (декор может быть неквадратным — грейн/направленная текстура).</summary>
         public static Vector4 ComputeTileST(Vector3Int dimsMM, int tileWidthMM, int tileHeightMM)
+            => ComputeTileST(new Vector2Int(dimsMM.x, dimsMM.y), tileWidthMM, tileHeightMM);
+
+        public static Vector4 ComputeTileST(Vector2Int surfaceMM, int tileWidthMM, int tileHeightMM)
         {
             float tw = Mathf.Max(1, tileWidthMM);
             float th = Mathf.Max(1, tileHeightMM);
-            return new Vector4(dimsMM.x / tw, dimsMM.y / th, 0f, 0f);
+            return new Vector4(surfaceMM.x / tw, surfaceMM.y / th, 0f, 0f);
         }
 
         /// <summary>Физ. высота плитки по её ширине и пропорциям картинки. Нужна,
@@ -156,12 +159,10 @@ namespace KitchenDesigner.Core
             switch (slot)
             {
                 case MaterialSlot.Tabletop:
-                    if (element is TableElement topTable) ApplyTabletop(topTable, def);
-                    else if (element is RadiusTableElement topRadius) ApplyTabletop(topRadius, def);
+                    if (element is ITabletop top) ApplyTabletop(top, def);
                     break;
                 case MaterialSlot.Legs:
-                    if (element is TableElement legsTable) ApplyLegs(legsTable, def);
-                    else if (element is RadiusTableElement legsRadius) ApplyLegs(legsRadius, def);
+                    if (element is ITabletop legs) ApplyLegs(legs, def);
                     break;
                 default:
                     Apply(element, def);
@@ -177,62 +178,29 @@ namespace KitchenDesigner.Core
             switch (slot)
             {
                 case MaterialSlot.Tabletop:
-                    if (element is TableElement topTable) return topTable.TabletopMaterialId;
-                    if (element is RadiusTableElement topRadius) return topRadius.TabletopMaterialId;
-                    return element.MaterialId;
+                    return element is ITabletop top ? top.TabletopMaterialId : element.MaterialId;
                 case MaterialSlot.Legs:
-                    if (element is TableElement legsTable) return legsTable.LegsMaterialId;
-                    if (element is RadiusTableElement legsRadius) return legsRadius.LegsMaterialId;
-                    return element.MaterialId;
+                    return element is ITabletop legs ? legs.LegsMaterialId : element.MaterialId;
                 default:
                     return element.MaterialId;
             }
         }
 
-        public static void ApplyTabletop(TableElement table, MaterialDef def)
-        {
-            if (table == null || def == null) return;
-            table.TabletopMaterialId = def.id;
-            var mat = GetSharedMaterial(def);
-            if (mat != null) table.SetTabletopMaterial(mat);
-            RefreshTiling(table, def);
-        }
-
         public static void ApplyTabletop(ITabletop tabletop, MaterialDef def)
         {
-            if (tabletop is TableElement table) ApplyTabletop(table, def);
-            else if (tabletop is RadiusTableElement radiusTable) ApplyTabletop(radiusTable, def);
+            if (tabletop == null || def == null) return;
+            tabletop.TabletopMaterialId = def.id;
+            var mat = GetSharedMaterial(def);
+            if (mat != null) tabletop.SetTabletopMaterial(mat);
+            if (tabletop is KitchenElement element) RefreshTiling(element, def);
         }
 
         public static void ApplyLegs(ITabletop tabletop, MaterialDef def)
         {
-            if (tabletop is TableElement table) ApplyLegs(table, def);
-            else if (tabletop is RadiusTableElement radiusTable) ApplyLegs(radiusTable, def);
-        }
-
-        public static void ApplyLegs(TableElement table, MaterialDef def)
-        {
-            if (table == null || def == null) return;
-            table.LegsMaterialId = def.id;
+            if (tabletop == null || def == null) return;
+            tabletop.LegsMaterialId = def.id;
             var mat = GetSharedMaterial(def);
-            if (mat != null) table.SetLegsMaterial(mat);
-        }
-
-        public static void ApplyTabletop(RadiusTableElement table, MaterialDef def)
-        {
-            if (table == null || def == null) return;
-            table.TabletopMaterialId = def.id;
-            var mat = GetSharedMaterial(def);
-            if (mat != null) table.SetTabletopMaterial(mat);
-            RefreshTiling(table, def);
-        }
-
-        public static void ApplyLegs(RadiusTableElement table, MaterialDef def)
-        {
-            if (table == null || def == null) return;
-            table.LegsMaterialId = def.id;
-            var mat = GetSharedMaterial(def);
-            if (mat != null) table.SetLegsMaterial(mat);
+            if (mat != null) tabletop.SetLegsMaterial(mat);
         }
 
         /// <summary>У элемента назначен НЕстандартный декор (не дефолтный серый) —
@@ -256,18 +224,9 @@ namespace KitchenDesigner.Core
             var mat = GetSharedMaterial(def);
             if (mat == null) return;
 
-            if (element is TableElement table)
+            if (element is ITabletop tabletop)
             {
-                table.TabletopMaterialId = def.id;
-                table.SetTabletopMaterial(mat);
-                RefreshTiling(element, def);
-                return;
-            }
-
-            if (element is RadiusTableElement radiusTable)
-            {
-                radiusTable.TabletopMaterialId = def.id;
-                radiusTable.SetTabletopMaterial(mat);
+                tabletop.SetTabletopMaterial(mat);
                 RefreshTiling(element, def);
                 return;
             }
@@ -314,7 +273,7 @@ namespace KitchenDesigner.Core
             if (element == null || def == null) return;
 
             var tile = TileMM(def);
-            var st = ComputeTileST(element.DimensionsMM, tile.x, tile.y);
+            var st = ComputeTileST(element.DecorSurfaceMM, tile.x, tile.y);
 
             // У варочной две коробки, и «вырез» декора нужен обеим: на одной
             // плите он оставил бы короб выреза с нерастянутой плиткой.
@@ -330,7 +289,7 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            var r = element.GetComponentInChildren<MeshRenderer>();
+            var r = element.DecorRenderer;
             if (r == null) return;
 
             r.GetPropertyBlock(_mpb);

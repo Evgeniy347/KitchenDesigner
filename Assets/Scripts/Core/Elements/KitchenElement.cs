@@ -47,11 +47,16 @@ namespace KitchenDesigner.Core
         }
 
         [NotUndoable("декор ставится через SetMaterialCommand — одной записи в поле мало, нужен MaterialManager")]
-        public string MaterialId
+        public virtual string MaterialId
         {
             get => _data.MaterialId;
             set => _data.MaterialId = value;
         }
+
+        public virtual MeshRenderer? DecorRenderer => GetComponentInChildren<MeshRenderer>();
+
+        public virtual Vector2Int DecorSurfaceMM
+            => new Vector2Int(_data.DimensionsMM.x, _data.DimensionsMM.y);
 
         [Undoable]
         public bool Transparent

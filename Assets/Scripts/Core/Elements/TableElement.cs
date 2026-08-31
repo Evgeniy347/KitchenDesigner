@@ -40,11 +40,17 @@ namespace KitchenDesigner.Core
         }
 
         [NotUndoable("псевдоним TabletopMaterialId — см. его причину")]
-        public new string MaterialId
+        public override string MaterialId
         {
             get => TabletopMaterialId;
             set => TabletopMaterialId = value;
         }
+
+        public override MeshRenderer? DecorRenderer
+            => _children.Count > 4 ? _children[4].GetComponent<MeshRenderer>() : null;
+
+        public override Vector2Int DecorSurfaceMM
+            => new Vector2Int(DimensionsMM.x, DimensionsMM.z);
 
         private void ApplyMaterial()
         {
