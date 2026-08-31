@@ -33912,15 +33912,15 @@
             "edgeManualMask": 0
         },
         {
-            "name": "A4_plint_drawer_L_inner_1",
+            "name": "A4_plint_drawer_L_side_1",
             "dimensionsMM": [
-                482,
-                80,
+                432,
+                92,
                 16
             ],
             "position": [
-                1.343999981880188,
-                0.06000000238418579,
+                1.319000005722046,
+                0.05000000074505806,
                 -1.9310002326965333
             ],
             "rotation": [
@@ -33940,8 +33940,232 @@
             "legInsetMM": 100,
             "gapLeft": 0,
             "gapRight": 0,
+            "gapTop": 4,
+            "gapBottom": 4,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "dub_gladstoun_pesochnyy_h3309",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
+        },
+        {
+            "name": "A4_plint_drawer_bottom_1",
+            "dimensionsMM": [
+                416,
+                423,
+                16
+            ],
+            "position": [
+                1.311000108718872,
+                0.012000034563243389,
+                -2.1505002975463869
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
             "gapTop": 0,
             "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "dub_gladstoun_pesochnyy_h3309",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0
+        },
+        {
+            "name": "A4_plint_drawer_R_side_1",
+            "dimensionsMM": [
+                432,
+                92,
+                16
+            ],
+            "position": [
+                1.319000005722046,
+                0.05000000074505806,
+                -2.4070005416870119
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 4,
+            "gapBottom": 4,
             "gapFront": 0,
             "gapBack": 0,
             "groupId": 0,
@@ -34111,11 +34335,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 0.6567220091819763,
-        "targetY": 0.45685550570487978,
-        "targetZ": -2.087963819503784,
-        "angleX": -29.144386291503908,
-        "angleY": -817.222900390625,
+        "targetX": 0.912195086479187,
+        "targetY": 0.8268779516220093,
+        "targetZ": -1.8688862323760987,
+        "angleX": -56.99840545654297,
+        "angleY": -809.3737182617188,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": 2.193511486053467,
@@ -65811,77 +66035,197 @@
         },
         {
             "type": "move",
-            "description": "Move A4_plint_drawer_L_inner_1",
+            "description": "Move A4_plint_drawer_L_side_1",
             "elementIndex": 300,
             "posBefore": [
-                1.4440001249313355,
-                0.06000000238418579,
-                -1.8350000381469727
+                1.4190001487731934,
+                0.05000000074505806,
+                -1.8060001134872437
             ],
             "posAfter": [
-                1.4440001249313355,
-                0.06000000238418579,
-                -1.9230002164840699
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_plint_drawer_L_inner_1",
-            "elementIndex": 300,
-            "posBefore": [
-                1.4440001249313355,
-                0.06000000238418579,
-                -1.9230002164840699
-            ],
-            "posAfter": [
-                1.343999981880188,
-                0.06000000238418579,
-                -1.9230002164840699
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move A4_plint_drawer_L_inner_1",
-            "elementIndex": 300,
-            "posBefore": [
-                1.343999981880188,
-                0.06000000238418579,
-                -1.9230002164840699
-            ],
-            "posAfter": [
-                1.343999981880188,
-                0.06000000238418579,
+                1.4190001487731934,
+                0.05000000074505806,
                 -1.9310002326965333
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_plint_drawer_L_side_1",
+            "elementIndex": 300,
+            "posBefore": [
+                1.4190001487731934,
+                0.05000000074505806,
+                -1.9310002326965333
+            ],
+            "posAfter": [
+                1.319000005722046,
+                0.05000000074505806,
+                -1.9310002326965333
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_plint_drawer_bottom_1",
+            "elementIndex": 301,
+            "posBefore": [
+                1.4110000133514405,
+                0.011999967508018017,
+                -1.5865001678466797
+            ],
+            "posAfter": [
+                1.311000108718872,
+                0.011999967508018017,
+                -1.5865001678466797
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_plint_drawer_bottom_1",
+            "elementIndex": 301,
+            "posBefore": [
+                1.311000108718872,
+                0.011999967508018017,
+                -1.5865001678466797
+            ],
+            "posAfter": [
+                1.311000108718872,
+                0.012000034563243389,
+                -2.1505002975463869
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_plint_drawer_R_side_1",
+            "elementIndex": 302,
+            "posBefore": [
+                1.4190000295639039,
+                0.05000000074505806,
+                -1.3670001029968262
+            ],
+            "posAfter": [
+                1.319000005722046,
+                0.05000000074505806,
+                -1.3670001029968262
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_plint_drawer_R_side_1",
+            "elementIndex": 302,
+            "posBefore": [
+                1.319000005722046,
+                0.05000000074505806,
+                -1.3670001029968262
+            ],
+            "posAfter": [
+                1.319000005722046,
+                0.05000000074505806,
+                -2.370000123977661
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_plint_drawer_R_side_1",
+            "elementIndex": 302,
+            "posBefore": [
+                1.319000005722046,
+                0.05000000074505806,
+                -2.370000123977661
+            ],
+            "posAfter": [
+                1.319000005722046,
+                0.05000000074505806,
+                -2.4070005416870119
             ],
             "rotBefore": [
                 0.0,
@@ -65964,7 +66308,7 @@
         "photoShadowDistanceM": 10,
         "photoLampShadows": true
     },
-    "tintEnabled": false,
+    "tintEnabled": true,
     "lightsOn": false,
     "windows": [
         {
