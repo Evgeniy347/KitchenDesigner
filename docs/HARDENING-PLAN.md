@@ -49,6 +49,60 @@ The `(?<!:)` keeps `http://` inside string literals out of the count.
 
 ---
 
+## Status — what is done, what is pending
+
+Updated 2026-08-31. Keep this current: it is the only place that says where the work stands.
+
+**Done from this plan:** A8 (generated-artefact parity guard) and B3 (server projects as strict
+as Unity). Both offenders that A3c would catch are fixed, but the guard itself is not written.
+
+**Not started:** everything else — A1 through A7, B1/B2/B4, all of C, most of D, all of E.
+
+**A1 is the one that matters most and has not moved.** `Core` holds **3136** comments. The purge
+covered `Elements`, `Persistence`, `Infrastructure` and `Platform` before this plan was written,
+which is why they already read zero above; nothing has changed since. Remaining:
+`UI` 655 · `Rendering` 492 · `Snap` 318 · `MCP` 309 · `Materials` 287 · `Geometry` 242 ·
+`Validation` 193 · `Measure` 125 · `Update` 114 · `Commands` 108 · `Analysis` 104 ·
+`Diagnostics` 74 · `Bulk` 51 · `Tools` 48 · `Interfaces` 8 · `Networking` 8.
+
+**Recommended next step: C2.** It is marked "first of all" for a reason — every hour spent on
+Part E without it pays the Unity tax on every iteration.
+
+### Blocked on an idle machine
+
+The performance work is prepared and needs a quiet window (~12 min, one command). Nothing here
+is guesswork; the bench is built and the candidates are chosen:
+
+1. Verification run (`-Filter` + full EditMode + PlayMode) — contract intact, and direct
+   observation of the slashes `AssetImportWorker` receives when called with backslashes.
+2. `ai.assistant`: baseline → without the package → **back to baseline as a reproducibility
+   control**. Columns `Foreign` (Unity by `-projectPath`) and `Busy` (CPU) in every table —
+   an empty `Foreign` column alone does not prove a quiet window, as one ruined series showed.
+3. Whether killing at `Cleanup mono` leaves `Library` dirty — compare the NEXT run against a
+   normal one. `-DoneGraceSeconds` is committed but set to 0, i.e. off, until this says yes.
+4. Cost of Search indexing.
+
+### Measured, load-independent facts
+
+- Cold first import of a fresh copy: **809 s**. That is deployment cost, not run cost.
+- Floor: an empty project of the same Unity version runs the same 5 tests in **8.1 s**; this
+  project needs **18.1 s**. The ~10 s difference is TWO roughly equal holes — domain reload #2
+  (+4.1 s) and the stretch from "project loaded" to the first test (+4.4 s).
+- Removing `com.unity.ai.assistant` drops exactly two packages of 38: itself (86 files with
+  `[InitializeOnLoad]`, against 17 for the next-largest) and its private `com.unity.2d.sprite`.
+  It is in `manifest.json` explicitly, nothing pulls it, and the repository has no reference to
+  it. Worth removing regardless of the seconds — it is a preview editor assistant.
+- `com.unity.test-framework.performance` is UNTOUCHABLE: it arrives through
+  URP → render-pipelines.core → collections. Its `IPrebuildSetup` runs on every test run and
+  cannot be removed without removing URP.
+- `com.unity.testtools.codecoverage` is USED — manually, documented in
+  `GEOMETRY-EXTRACTION-PLAN.md`, and the baseline coverage numbers come from it. Not dead weight.
+- Search indexing is controlled by `UserSettings/Search.settings` → `indexOnEditorStartup`, and
+  it indexes all 3914 assets on every cold start for a search window that batch mode does not
+  have. **`UserSettings/` is gitignored**, so editing the file fixes one machine only. If the
+  measurement confirms ~2 s, the fix belongs in the gateway, which can normalise the flag before
+  a cold batch — and may only do so while no GUI editor is open, which it already checks.
+
 ## Part A — Guards, so the rules stop depending on memory
 
 Highest value in the whole plan. Each item is one architecture test, written the way
