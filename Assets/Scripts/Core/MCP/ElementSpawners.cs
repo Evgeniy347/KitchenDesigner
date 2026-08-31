@@ -72,6 +72,8 @@ namespace KitchenDesigner.Core.MCP
                 ["pillar"] = (item, pos) => ElementFactory.CreatePillar(
                     item.height ?? PillarElement.MidHeightMM_Default, item.name, pos),
 
+                ["sink"] = (item, pos) => ElementFactory.CreateSink(item.name, pos),
+
                 ["cooktop"] = (item, pos) => ElementFactory.CreateCooktop(item.name, pos, item.model ?? ""),
 
                 ["oven"] = (item, pos) => ElementFactory.CreateOven(item.name, pos),

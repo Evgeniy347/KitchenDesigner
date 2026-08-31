@@ -31,10 +31,6 @@ namespace KitchenDesigner.Tests.Geometry
     /// вторым проходом под dotnet: быстрый цикл видит пропуск за 0,3 с.</summary>
     public class ElementTypeCompletenessTests
     {
-        private const string BaseType = "KitchenElement";
-
-        private const string Suffix = "Element";
-
         /// <summary>Чем именно место регистрирует тип.</summary>
         private enum Key
         {
@@ -112,61 +108,14 @@ namespace KitchenDesigner.Tests.Geometry
             ("изометрический скриншот-тест", "PanelElement",
              "ХДФ-задник: снимка нет"),
 
-            ("слой MCP", "SinkElement",
-             "мойку агент создать не может, хотя текст подсказки McpGuideTexts обещает её "
-             + "среди врезной техники — расхождение контракта, а не отсутствие фичи"),
             ("слой MCP", "LightSourceElement",
              "светильник заводится только из сайдбара; заводить ли его через MCP — решение о "
              + "продукте, а не пропущенная строка"),
         };
 
-        private static string ShortNameOf(string type) =>
-            type.EndsWith(Suffix, StringComparison.Ordinal)
-                ? type.Substring(0, type.Length - Suffix.Length)
-                : type;
+        private static string ShortNameOf(string type) => ElementTypeCatalog.ShortNameOf(type);
 
-        private static readonly Regex ClassDeclaration =
-            new Regex(@"\bclass\s+(\w+)\s*:\s*([A-Za-z_]\w*)", RegexOptions.Compiled);
-
-        private static string[] ProductionSources() =>
-            Directory.GetFiles(RepoPaths.Subdir("Assets", "Scripts"), "*.cs", SearchOption.AllDirectories);
-
-        /// <summary>Типы элементов выводятся из исходников: класс входит в
-        /// список, если цепочка его базовых классов доходит до KitchenElement.
-        /// Сама база в список не входит — «доска» это она и есть.</summary>
-        private static List<string> ElementTypes()
-        {
-            var baseOf = new Dictionary<string, string>(StringComparer.Ordinal);
-
-            foreach (var file in ProductionSources())
-                foreach (var line in SourceLines.CodeOnly(File.ReadAllLines(file)))
-                {
-                    var m = ClassDeclaration.Match(line);
-                    if (m.Success) baseOf[m.Groups[1].Value] = m.Groups[2].Value;
-                }
-
-            var types = new List<string>();
-            foreach (var name in baseOf.Keys)
-                if (DescendsFromBase(name, baseOf)) types.Add(name);
-
-            types.Sort(StringComparer.Ordinal);
-            return types;
-        }
-
-        private static bool DescendsFromBase(string name, Dictionary<string, string> baseOf)
-        {
-            var seen = new HashSet<string>(StringComparer.Ordinal) { name };
-            var current = name;
-
-            while (baseOf.TryGetValue(current, out var parent))
-            {
-                if (string.Equals(parent, BaseType, StringComparison.Ordinal)) return true;
-                if (!seen.Add(parent)) return false;
-                current = parent;
-            }
-
-            return false;
-        }
+        private static List<string> ElementTypes() => ElementTypeCatalog.FromSources();
 
         private static string[] FilesOf(string[] root)
         {
@@ -260,7 +209,7 @@ namespace KitchenDesigner.Tests.Geometry
             CollectionAssert.Contains(types, "AssembledFacadeElement",
                 "наследник через промежуточный класс обязан попасть в список: сборный фасад "
                 + "наследует FacadeElement, а не базу напрямую");
-            CollectionAssert.DoesNotContain(types, BaseType,
+            CollectionAssert.DoesNotContain(types, ElementTypeCatalog.BaseType,
                 "база — это и есть «доска», отдельным типом она не считается");
             CollectionAssert.DoesNotContain(types, "Wall",
                 "стена не наследник базы: это отдельный компонент на том же объекте");
@@ -274,8 +223,8 @@ namespace KitchenDesigner.Tests.Geometry
 
         /// <summary>Положительный контроль: сопоставитель обязан УМЕТЬ находить
         /// регистрацию, иначе «дыр нет» означало бы «я ничего не вижу». Обратную
-        /// сторону — что он не находит её всегда — держит сам храповик: восемь
-        /// записей KnownGaps обязаны воспроизводиться.</summary>
+        /// сторону — что он не находит её всегда — держит сам храповик: каждая
+        /// запись KnownGaps обязана воспроизводиться.</summary>
         [Test]
         public void TheMatcher_FindsATypeThatIsRegisteredEverywhere()
         {
