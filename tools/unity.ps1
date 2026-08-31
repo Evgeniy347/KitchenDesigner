@@ -351,11 +351,21 @@ function Get-LogPulse {
 }
 
 function Invoke-Unity {
-    param([string[]]$UnityArgs, [string]$LogPath, [switch]$KillAfterDone)
+    param([string[]]$UnityArgs, [string]$LogPath, [switch]$KillAfterDone, [switch]$DisableBurst)
 
     # Лог Unity открывает на ПЕРЕзапись, поэтому стартовое «молчание» надо
     # мерить от несуществующего файла, а не от старого.
     Remove-Item $LogPath -Force -ErrorAction SilentlyContinue
+
+    <#
+        Burst компилируется на втором domain reload: 2,0 с из 3,2 с в
+        ProcessInitializeOnLoadAttributes. Выключение снимает их с ПРИЦЕЛЬНОГО
+        прогона (A/B/A на основном проекте: 13,2 / 10,8 / 13,2 с) и не даёт
+        РОВНО НИЧЕГО на полном (79,9 против 79,8 спина в спину) — там работа
+        возвращается внутри набора. Поэтому флаг живёт только на быстром пути.
+    #>
+    $burstWas = $env:UNITY_BURST_DISABLE_COMPILATION
+    if ($DisableBurst) { $env:UNITY_BURST_DISABLE_COMPILATION = '1' }
 
     $proc = $null
     try {
@@ -423,6 +433,10 @@ function Invoke-Unity {
     finally {
         if ($proc -and -not $proc.HasExited) {
             Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+        }
+        if ($DisableBurst) {
+            if ($null -eq $burstWas) { Remove-Item Env:UNITY_BURST_DISABLE_COMPILATION -ErrorAction SilentlyContinue }
+            else { $env:UNITY_BURST_DISABLE_COMPILATION = $burstWas }
         }
     }
 }
@@ -524,7 +538,8 @@ function Invoke-TestsCore {
     if ($effectiveFilter) { $unityArgs += @('-testFilter', $effectiveFilter) }
 
     Write-Host "=== $Platform (холодный batch) ===" -ForegroundColor Cyan
-    Invoke-Unity -UnityArgs $unityArgs -LogPath $log -KillAfterDone | Out-Null
+    Invoke-Unity -UnityArgs $unityArgs -LogPath $log -KillAfterDone `
+        -DisableBurst:([bool]$effectiveFilter) | Out-Null
 
     if (-not (Test-Path $ResultPath)) { throw "Нет отчёта: $ResultPath (лог: $log)" }
 
