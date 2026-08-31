@@ -179,6 +179,54 @@ public class ValidationBroadPhaseTests
                 + " — порядок утёк из раскладки сетки по ячейкам");
     }
 
+    /// <summary>Найдено мутационным прогоном: обе половины объединения с коробом
+    /// переживали замену Max на Min. Тесты на короб были, строку исполняли — а
+    /// РЕЗУЛЬТАТ не проверял никто, и объединение можно было подменить
+    /// пересечением, не покраснев ни разу.
+    ///
+    /// Короб берётся заведомо НЕСИММЕТРИЧНЫМ и вылезающим за габарит на разные
+    /// стороны. Короб, целиком помещающийся внутри детали по горизонтали, прячет
+    /// ровно этот класс дефекта: Vector3.Max(габарит, короб.Max) и
+    /// Vector3.Max(габарит, короб.Min) дают на нём один и тот же ответ. Метод
+    /// общий и про размеры короба ничего не обещает.</summary>
+    [Test]
+    public void SolidBounds_WithARecessedBody_IsTheUnion_NotTheIntersection()
+    {
+        var hob = Recessed("Hob", new Vector3(0, 900, 0), new Vector3(400, 20, 400),
+            new Vector3(50, 750, 0), new Vector3(600, 300, 500), -1);
+
+        ValidationBroadPhase.SolidBoundsIncludingRecessedBody(hob, out var min, out var max);
+
+        Assert.AreEqual(-250f * MM, min.x, 1e-5f,
+            "короб шире детали слева — габарит обязан расшириться до него");
+        Assert.AreEqual(600f * MM, min.y, 1e-5f,
+            "низ габарита задаёт короб: он и есть тело, уходящее в столешницу");
+        Assert.AreEqual(-250f * MM, min.z, 1e-5f, "то же по глубине");
+
+        Assert.AreEqual(350f * MM, max.x, 1e-5f,
+            "короб вылезает справа — Vector3.Max, не Vector3.Min: пересечение "
+            + "СУЗИЛО бы габарит до детали, и наезд короба перестал бы находиться");
+        Assert.AreEqual(910f * MM, max.y, 1e-5f,
+            "верх задаёт сама деталь: объединение берёт максимум из двух, "
+            + "а не подменяет габарит коробом");
+        Assert.AreEqual(250f * MM, max.z, 1e-5f, "то же по глубине");
+    }
+
+    [Test]
+    public void SolidBounds_WithoutARecessedBody_IsTheGeometryItself()
+    {
+        var board = Part("B", new Vector3(0, 900, 0), new Vector3(400, 20, 400));
+
+        ValidationBroadPhase.SolidBoundsIncludingRecessedBody(board, out var min, out var max);
+
+        Assert.AreEqual(-200f * MM, min.x, 1e-5f,
+            "у детали без короба габарит равен её собственному: пустой RecessedBody "
+            + "лежит в нуле и, попав в объединение, растянул бы габарит до начала координат");
+        Assert.AreEqual(890f * MM, min.y, 1e-5f, "то же по высоте");
+        Assert.AreEqual(200f * MM, max.x, 1e-5f, "то же с другой стороны");
+        Assert.AreEqual(910f * MM, max.y, 1e-5f, "то же по высоте");
+    }
+
     [Test]
     public void FarApartElements_ProduceNoCandidatePair()
     {
