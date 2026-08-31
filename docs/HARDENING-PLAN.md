@@ -63,7 +63,16 @@ as Unity), **the first two slices of C2** (`5b53ae45` and this commit), and **A3
 Все три читают ИСХОДНИКИ и лежат в `Assets/Tests/EditMode/Geometry/`, поэтому идут и под
 `dotnet` — краснота каждого доказана временным нарушением.
 
-**Not started:** everything else — A1, A2, A3, A3b, A4, A6, A7, B1/B2/B4, C1, C3, most of D,
+**A6 — храповик, а не запрет с нуля.** `LayerDependencyDirectionTests` считает ссылки каждого
+слоя ядра на слой UI (`using KitchenDesigner.Core.UI` или квалификатор `UI.` — UI и MCP живут
+в своих пространствах имён, поэтому ребро видно точно) и на слой MCP. Сегодня таких ссылок
+**30**, потолки записаны по слоям с причиной у каждого долга: Rendering 9, Snap 6, Persistence 4,
+Update 4, Elements 2, Infrastructure 2, Measure 2, Commands 1, остальные 0. Превысил — красное с
+именами строк; стало меньше, а потолок не опущен — тоже красное. Проверяются ВСЕ каталоги слоёв,
+а не строки таблицы, поэтому новый слой попадает под правило сам, с нулём. Про MCP не знает
+никто, кроме `Bootstrap`.
+
+**Not started:** everything else — A1, A2, A3, A3b, A4, A7, B1/B2/B4, C1, C3, most of D,
 all of E.
 
 **C2, first slice — the home exists and is guarded.** `Assets/Scripts/Core/Pure` +
