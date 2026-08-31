@@ -90,6 +90,13 @@ the mesh builders for UVs derived from part size rather than from `MaterialManag
 pair the guard with a per-builder test asserting the UV span for a part whose size differs from
 the tile.
 
+### A3c. No `new` over a base member
+
+`public new` on a member the base actually uses gives the object two independent values for one
+concept — see CONVENTIONS.md. Grep for `\b(public|protected|internal)\s+new\s+`, the same shape
+as `ElementOnDestroyTests`. The two offenders that existed are fixed, so this guard can start at
+zero.
+
 ### A4. No reflection into private members from tests
 
 `GetField` / `GetMethod` / `BindingFlags.NonPublic` under `Assets/Tests/**`. This one can start
@@ -290,7 +297,17 @@ In rough value order. Each is one agent, one directory, the shape the campaign h
    the documentation of a duplication. After the split, `SnapCore` is 75 lines over
    `SnapCandidateCollector` / `SnapCandidatePicker` / `EdgeDetents`; `ResizeSnap` shares none of
    them and still carries 41 comments.
-9. **`SnapSystem.Diagnose` holds a THIRD copy of the candidate loop** — alongside
+9. **`ContextMenuMaterialSection.ApplyLegsChoice` bypasses `CommandStack`** — it runs from
+   `ApplyFields` on every Enter and every lost focus, applying the legs dropdown outside a
+   command, against UI-GUIDELINES rule 2. It is also a duplicate: the choice already goes
+   through `Choose(MaterialSlot.Legs, …)` as a command. And it carries a latent path — when the
+   legs decor id is missing from the catalogue, `MaterialOptions.IndexOf` returns 0, so the next
+   edit of any field silently repaints the legs with the first decor in the catalogue.
+10. **Normalized UVs still in two mesh builders** — `PillarMesh` (caps `cos*0.5+0.5`, sides
+    `i/Segments`) and `RadialShelfMesh` (cap normalized by `width, thickness` while the cap's
+    second axis is depth). Both fall under "a decor tiles, it never stretches"; guard A3b covers
+    finding the rest.
+11. **`SnapSystem.Diagnose` holds a THIRD copy of the candidate loop** — alongside
    `SnapCandidateCollector` and `ResizeSnap`. The failure mode is "Diagnose says one thing,
    TrySnap does another", and one such case is already described in its comments.
 
@@ -342,7 +359,7 @@ Not refactoring decisions — these change behaviour and need a person.
 commit.**
 
 ```powershell
-.\mutation-test.ps1 -TestsOnly      # 226 tests, 0.2 s — the inner loop
+.\tools\mutation-test.ps1 -TestsOnly   # 226 tests, 0.2 s — the inner loop
 .\build.cmd -RunTests               # 2776 tests, 79 s — before committing
 .\build.cmd -RunTests -RunPlayMode  # + 83 tests, 101 s — before a release or any UI layout change
 ```
