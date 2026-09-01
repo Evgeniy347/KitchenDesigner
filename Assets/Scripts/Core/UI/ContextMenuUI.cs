@@ -137,9 +137,9 @@ namespace KitchenDesigner.Core.UI
             _gaps.Build(panel.transform);
             BuildFacadeSection();
             BuildDrawerSection();
-            BuildAttachmentSection();
             BuildWindowSection();
             BuildFurnitureSection();
+            BuildAttachmentSection();
             _lights.Build();
             BuildPositionSection(panel.transform);
             _textures.Build(panel.transform, _materials.Build());

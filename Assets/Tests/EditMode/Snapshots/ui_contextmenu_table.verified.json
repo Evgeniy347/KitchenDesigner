@@ -36,7 +36,7 @@
       "label": "Название",
       "value": "Stol_2000x750x1000",
       "interactable": true,
-      "position": [40, -48]
+      "position": [38, -48]
     },
     {
       "type": "Label",
@@ -76,26 +76,26 @@
     },
     {
       "type": "Label",
-      "text": "Прикрепить к",
-      "position": [-103, -197]
-    },
-    {
-      "type": "Dropdown",
-      "options": ["(не прикреплено)"],
-      "selected": 0,
-      "position": [65, -197]
-    },
-    {
-      "type": "Label",
       "text": "Сдвиг опор",
-      "position": [-80, -232]
+      "position": [-80, -197]
     },
     {
       "type": "InputField",
       "label": "Сдвиг опор",
       "value": "100",
       "interactable": true,
-      "position": [100, -232]
+      "position": [100, -197]
+    },
+    {
+      "type": "Label",
+      "text": "Прикрепить к",
+      "position": [-103, -228]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["(не прикреплено)"],
+      "selected": 0,
+      "position": [65, -228]
     },
     {
       "type": "Label",

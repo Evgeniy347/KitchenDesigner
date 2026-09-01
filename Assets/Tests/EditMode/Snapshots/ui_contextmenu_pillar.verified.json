@@ -52,38 +52,38 @@
     },
     {
       "type": "Label",
-      "text": "Прикрепить к",
-      "position": [-103, -135]
-    },
-    {
-      "type": "Dropdown",
-      "options": ["(не прикреплено)"],
-      "selected": 0,
-      "position": [65, -135]
-    },
-    {
-      "type": "Label",
       "text": "Диаметр",
-      "position": [-80, -170]
+      "position": [-80, -135]
     },
     {
       "type": "InputField",
       "label": "Диаметр",
       "value": "50",
       "interactable": true,
-      "position": [100, -170]
+      "position": [100, -135]
     },
     {
       "type": "Label",
       "text": "Средняя секция",
-      "position": [-80, -201]
+      "position": [-80, -166]
     },
     {
       "type": "InputField",
       "label": "Средняя секция",
       "value": "75",
       "interactable": true,
-      "position": [100, -201]
+      "position": [100, -166]
+    },
+    {
+      "type": "Label",
+      "text": "Прикрепить к",
+      "position": [-103, -197]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["(не прикреплено)"],
+      "selected": 0,
+      "position": [65, -197]
     },
     {
       "type": "Label",
