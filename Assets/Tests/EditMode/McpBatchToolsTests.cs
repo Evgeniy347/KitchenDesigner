@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -166,6 +167,25 @@ public class McpBatchToolsTests
         var d = Data(resp);
         Assert.AreEqual(1, d["count"]!.Value<int>());
         Assert.AreEqual("A", d["violations"]![0]!["name"]!.Value<string>());
+    }
+
+    [Test]
+    public void GetViolations_AlsoCarriesWarnings_WhichTheSceneNeverHighlights()
+    {
+        MakeElement("A", new Vector3Int(600, 400, 18), Vector3.zero);
+        MakeElement("B", new Vector3Int(600, 400, 18), new Vector3(0.601f, 0f, 0f));
+
+        var resp = _handler!.Handle(MakeReq("get_violations", new { }));
+
+        var issues = (JArray)Data(resp)["issues"]!;
+        var warnings = issues.Where(i => i["level"]!.Value<string>() == "warning").ToList();
+        CollectionAssert.IsNotEmpty(warnings,
+            "зазор 1 мм — это GAP-01, предупреждение уровня warning. На сцене такие "
+            + "НЕ подсвечиваются: агент видит их только здесь, и если ответ несёт одни "
+            + "коллизии, половина окна «Ошибки» для него не существует");
+        Assert.AreEqual("GAP-01", warnings[0]!["code"]!.Value<string>(),
+            "предупреждение приходит с тем же стабильным кодом, что и в окне «Ошибки» — "
+            + "тот же источник SceneAnalyzer, а не отдельный разбор для MCP");
     }
 
     // ── edit_elements ────────────────────────────────────────────────────

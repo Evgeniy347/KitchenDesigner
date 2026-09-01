@@ -59,9 +59,6 @@ namespace KitchenDesigner.Core.MCP
                 autoSaveIntervalSec = s.AutoSaveInterval,
                 snapVerboseLog = SnapSystem.VerboseLog,
                 cameraPanFree = s.CameraPanFree,
-                // Настройки вида (стены, объекты, контуры, свет) через MCP не
-                // отдаются и не меняются: они привязаны к режиму работы и
-                // существуют только для человека за панелью настроек.
                 edgePartialThresholdPct = s.EdgePartialThresholdPct,
                 mouseSensitivity = s.MouseSensitivity,
                 wasdSpeed = s.WasdSpeed,
@@ -161,7 +158,6 @@ namespace KitchenDesigner.Core.MCP
             var list = new List<object>();
             foreach (var m in MaterialCatalog.All)
             {
-                // Высота может выводиться из пропорций картинки — берём разрешённую.
                 var tile = MaterialManager.TileMM(m);
                 list.Add(new
                 {
@@ -169,8 +165,6 @@ namespace KitchenDesigner.Core.MCP
                     name = m.displayName,
                     kind = m.kind,
                     hasTexture = m.HasTextureFile,
-                    // Картинки грузятся лениво: декор может быть в каталоге, а его
-                    // файл ещё не прочитан — это НЕ ошибка.
                     textureLoaded = m.texture != null,
                     tileWidthMM = tile.x,
                     tileHeightMM = tile.y
@@ -181,8 +175,6 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleReloadTextures(McpRequest req)
         {
-            // Reload сам пере-надевает декоры на сцену: старые картинки уничтожены,
-            // и рендереры остались бы с материалами, ссылающимися в пустоту.
             int n = TextureLibrary.Reload();
             RefreshElementHighlights();
 

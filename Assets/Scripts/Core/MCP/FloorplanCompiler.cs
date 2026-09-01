@@ -25,7 +25,6 @@ namespace KitchenDesigner.Core.MCP
     {
         public string id = "", from = "", to = "", kind = "";
         public int height;
-        /// <summary>Per-wall thickness override; null = take it from the project instructions.</summary>
         public int? thickness;
     }
 

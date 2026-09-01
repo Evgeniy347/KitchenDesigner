@@ -13,30 +13,8 @@ using UnityEditor;
 
 namespace KitchenDesigner.Core.MCP
 {
-    /// <summary>
-    /// Диспетчер MCP-команд. Каждый метод обрабатывается в отдельном partial-файле.
-    ///
-    /// Карта файлов (редактируй сразу нужный, не читай этот целиком):
-    /// — McpCommandHandler.Scene.cs               → ping, status, hierarchy, raw-transform
-    /// — McpCommandHandler.Elements.Query.cs      → get_* elements, violations, floor, gaps, snap
-    /// — McpCommandHandler.Elements.Mutation.cs   → edit/clone/align/distribute/create/convert/delete/select/resize
-    /// — McpCommandHandler.Modules.cs             → module create/dissolve/add/remove/edit
-    /// — McpCommandHandler.Info.cs                → settings, spec, export, screenshot, drawers, materials
-    /// — McpCommandHandler.Helpers.cs             → Find*, Compute*, BuildElementInfo, валидация
-    ///
-    /// Протокольные соглашения:
-    /// - ВСЕ адресные операции — батчи (names[]/ops[]/items[]); одноэлементных нет.
-    /// - Батчи атомарны: любая невалидная операция отклоняет весь батч.
-    /// - edit_elements — единственный редактор свойств; dry_run:true — симуляция.
-    /// - После каждой мутации смотри violations/sceneViolationCount в ответе.
-    /// - dimZ всегда толщина детали (Board convention в AGENTS.md).
-    /// </summary>
     public partial class McpCommandHandler
     {
-        /// <summary>
-        /// Диспетчер MCP-команд. Каждый метод обрабатывается в отдельном handler'е.
-        /// Карта файлов — в xml-doc класса выше.
-        /// </summary>
         public McpResponse Handle(McpRequest request)
         {
             FrameRateManager.KeepAwake(1f);
@@ -44,11 +22,9 @@ namespace KitchenDesigner.Core.MCP
             {
                 switch (request.method)
                 {
-                    // ── Meta (→ McpCommandHandler.Scene.cs) ────────────
                     case "ping": return HandlePing(request);
                     case "get_status": return HandleGetStatus(request);
 
-                    // ── Advanced: raw objects (→ .Scene.cs) ─────────────
                     case "get_scene_hierarchy": return HandleGetSceneHierarchy(request);
                     case "find_objects": return HandleFindObjects(request);
                     case "get_object_info": return HandleGetObjectInfo(request);
@@ -61,7 +37,6 @@ namespace KitchenDesigner.Core.MCP
                     case "enter_play_mode": return HandleEnterPlayMode(request);
                     case "exit_play_mode": return HandleExitPlayMode(request);
 
-                    // ── Elements: query (→ .Elements.Query.cs) ─────────
                     case "get_all_elements": return HandleGetAllElements(request);
                     case "get_elements": return HandleGetElements(request);
                     case "get_element_debug": return HandleGetElementDebug(request);
@@ -71,7 +46,6 @@ namespace KitchenDesigner.Core.MCP
                     case "snap_diagnose": return HandleSnapDiagnose(request);
                     case "get_free_space": return HandleGetFreeSpace(request);
 
-                    // ── Elements: mutation (→ .Elements.Mutation.cs) ───
                     case "edit_elements": return HandleEditElements(request);
                     case "clone_elements": return HandleCloneElements(request);
                     case "align_elements": return HandleAlignElements(request);
@@ -82,7 +56,6 @@ namespace KitchenDesigner.Core.MCP
                     case "select_elements": return HandleSelectElements(request);
                     case "resize_floor": return HandleResizeFloor(request);
 
-                    // ── Modules (→ .Modules.cs) ─────────────────────────
                     case "get_modules": return HandleGetModules(request);
                     case "module_info": return HandleModuleInfo(request);
                     case "create_module": return HandleCreateModule(request);
@@ -92,7 +65,6 @@ namespace KitchenDesigner.Core.MCP
                     case "enter_module_edit": return HandleEnterModuleEdit(request);
                     case "exit_module_edit": return HandleExitModuleEdit(request);
 
-                    // ── Diagnostics / settings (→ .Info.cs) ─────────────
                     case "get_specification": return HandleGetSpecification(request);
                     case "export_specification_csv": return HandleExportCsv(request);
                     case "get_console_logs": return HandleConsoleLogs(request);
@@ -100,7 +72,6 @@ namespace KitchenDesigner.Core.MCP
                     case "get_project_instructions": return HandleGetProjectInstructions(request);
                     case "set_project_instructions": return HandleSetProjectInstructions(request);
 
-                    // ── v2: массовые/реляционные операции (→ .Bulk.cs) ──
                     case "get_scene_tree": return HandleGetSceneTree(request);
                     case "get": return HandleGetCompact(request);
                     case "preview_floorplan": return HandlePreviewFloorplan(request);

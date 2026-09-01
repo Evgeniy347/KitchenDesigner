@@ -34,7 +34,6 @@ namespace KitchenDesigner.Core.MCP
             return result;
         }
 
-        /// <summary>Батч-чтение: несколько элементов по именам и/или фильтру одним вызовом.</summary>
         private McpResponse HandleGetElements(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsGetElements>() ?? new ParamsGetElements();
@@ -213,9 +212,6 @@ namespace KitchenDesigner.Core.MCP
                 });
             }
 
-            // Полный анализ сцены (коллизии + предупреждения) с кодами — тот же
-            // источник, что и окно «Ошибки». Warnings НЕ подсвечиваются на сцене,
-            // но должны быть видны агенту через MCP.
             var issues = new List<object>();
             foreach (var iss in KitchenDesigner.Core.Analysis.SceneAnalyzer.Analyze())
             {
@@ -261,7 +257,6 @@ namespace KitchenDesigner.Core.MCP
             });
         }
 
-        /// <summary>Batch snap diagnose: for EACH given board explain why it does or does not snap.</summary>
         private McpResponse HandleSnapDiagnose(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsSnapDiagnose>();
@@ -284,7 +279,6 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { results, missing = missing.Count > 0 ? missing : null });
         }
 
-        /// <summary>Свободный параллелепипед между двумя деталями + кто в него уже влез.</summary>
         private McpResponse HandleGetFreeSpace(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsGetFreeSpace>();

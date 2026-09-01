@@ -177,9 +177,6 @@ namespace KitchenDesigner.Core.MCP
                 if (string.IsNullOrEmpty(op.object_path)) { errors.Add("op missing object_path"); continue; }
                 var go = FindGameObject(op.object_path);
                 if (go == null) { errors.Add($"Object not found: {op.object_path}"); continue; }
-                // Встраиваемая техника крутится только вокруг вертикали (см.
-                // FixedSize.IsYawOnly). Отказываем, а не молча правим ось: то же
-                // правило и та же формулировка, что в edit_elements.
                 if (FixedSize.IsYawOnly(go.GetComponent<KitchenElement>())
                     && (op.x.HasValue || op.z.HasValue))
                 {

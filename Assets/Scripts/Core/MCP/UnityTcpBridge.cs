@@ -28,20 +28,11 @@ namespace KitchenDesigner.Core.MCP
         private readonly object _clientsLock = new object();
         private McpCommandHandler? _handler;
 
-        /// <summary>
-        /// Static override used by tests to force a non-default port.
-        /// Takes precedence over environment variables and command-line args.
-        /// </summary>
         public static int? TestPort { get; set; }
 
         public int Port => _port;
         public bool IsRunning => _running;
 
-        /// <summary>
-        /// Resolves the effective MCP port from (highest to lowest priority):
-        /// <see cref="TestPort"/>, UNITY_MCP_PORT environment variable,
-        /// -mcpPort command-line argument, or <paramref name="fallbackPort"/>.
-        /// </summary>
         public static int ResolvePort(int fallbackPort = DefaultPort)
         {
             if (TestPort.HasValue)
@@ -247,4 +238,4 @@ namespace KitchenDesigner.Core.MCP
     }
 }
 
-#endif // !UNITY_WEBGL
+#endif

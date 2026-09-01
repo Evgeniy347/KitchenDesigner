@@ -94,6 +94,25 @@ public class McpBulkOpsTests
     }
 
     [Test]
+    public void Move_CarriesAnAttachedPartAlong_TheSameWayEditElementsDoes()
+    {
+        Make("Host", Vector3.zero, new Vector3Int(600, 400, 18));
+        var child = Make("Child", new Vector3(0f, 0.3f, 0f), new Vector3Int(100, 100, 18));
+
+        _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "Child", attached_to_name = "Host" } }
+        }));
+        var resp = _handler.Handle(MakeReq("move", new { selector = "Host", dx = 100f }));
+
+        Assert.AreEqual("result", resp.type);
+        Assert.AreEqual(0.1f, child.transform.position.x, 0.001f,
+            "массовый move обязан тащить прикреплённые детали так же, как edit_elements: "
+            + "иначе один и тот же перенос через два инструмента даёт разную сцену, "
+            + "и сборка разъезжается именно на батчевом пути");
+    }
+
+    [Test]
     public void ResizeModule_WidensGroup_ServerComputesBoards()
     {
         var sideL = Make("side_L", new Vector3(0f, 0.36f, 0f), new Vector3Int(18, 720, 540));

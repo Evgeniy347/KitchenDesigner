@@ -5,14 +5,8 @@ using KitchenDesigner.Core.MCP.Contract;
 
 namespace KitchenDesigner.Core.MCP
 {
-    /// <summary>
-    /// MCP v2 — массовые/реляционные операции. Агент задаёт НАМЕРЕНИЕ над
-    /// выборкой (селектор), а сервер сам подбирает элементы и пересчитывает
-    /// геометрию. Ответы терсовые: matched/updated/sceneViolationCount.
-    /// </summary>
     public partial class McpCommandHandler
     {
-        // ── set_attr: массовое изменение атрибутов по селектору ────────────
         private McpResponse HandleSetAttr(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsSetAttr>();
@@ -55,7 +49,6 @@ namespace KitchenDesigner.Core.MCP
             return TerseResult(req, matched.Count, updated);
         }
 
-        // ── move: сдвиг выборки на дельту (мм) ─────────────────────────────
         private McpResponse HandleMove(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsMove>();
@@ -72,7 +65,6 @@ namespace KitchenDesigner.Core.MCP
                 var before = e.transform.position;
                 var rot = e.transform.rotation;
                 commands.Add(new MoveCommand(e, before, before + delta, rot, rot));
-                // Прикреплённые детали едут за родителем (AttachLinks).
                 AttachMove.AppendFollowers(commands, e, before, rot, before + delta, rot, matched);
             }
 
@@ -82,7 +74,6 @@ namespace KitchenDesigner.Core.MCP
             return TerseResult(req, matched.Count, commands.Count);
         }
 
-        // ── resize_module: «расширь модуль на N мм» ────────────────────────
         private McpResponse HandleResizeModule(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsResizeModule>();
@@ -212,7 +203,6 @@ namespace KitchenDesigner.Core.MCP
             "top" => "bottom", "back" => "front", "front" => "back", _ => ""
         };
 
-        // ── get_scene_tree: терсовая иерархия (модули → элементы) ──────────
         private McpResponse HandleGetSceneTree(McpRequest req)
         {
             var all = PartRegistry.GetAll() ?? new List<KitchenElement>();
@@ -251,9 +241,6 @@ namespace KitchenDesigner.Core.MCP
             int elementCount = 0;
             foreach (var e in all)
             {
-                // Deletion deactivates rather than destroys (undo keeps the object
-                // around), so an inactive element is a DELETED one — it must not
-                // show up in the overview. ElementSelector filters the same way.
                 if (e == null || !e.gameObject.activeInHierarchy) continue;
                 if (e.GetComponent<BasePlate>() != null) continue;
                 elementCount++;
@@ -333,11 +320,6 @@ namespace KitchenDesigner.Core.MCP
                 if (e == null) { missing.Add(name); continue; }
                 var row = new Dictionary<string, object?>();
                 var wall = e.GetComponent<Wall>();
-                // The anchor is the MINIMUM world corner, so it must come from the
-                // world AABB. Rotating the element's own -half corner instead lands
-                // on whichever corner the rotation happens to send there: at rotY=90
-                // that is the element's MAXIMUM Z, which read as a 900 mm error on a
-                // window and broke corner-anchored reasoning.
                 var aabb = McpAabb.Of(e.GetVertices());
                 Vector3 anchor = new Vector3(aabb.minX, aabb.minY, aabb.minZ);
                 if (fields.Contains("name")) row["name"] = e.PartName;
@@ -384,7 +366,6 @@ namespace KitchenDesigner.Core.MCP
         private static int[] V3Mm(Vector3 v) => new[]
             { Mathf.RoundToInt(v.x / AppConstants.MM_TO_UNITS), Mathf.RoundToInt(v.y / AppConstants.MM_TO_UNITS), Mathf.RoundToInt(v.z / AppConstants.MM_TO_UNITS) };
 
-        // ── helpers ────────────────────────────────────────────────────────
         private static LinkGroup? ResolveGroup(string groupName)
         {
             foreach (var g in GroupManager.AllGroups())

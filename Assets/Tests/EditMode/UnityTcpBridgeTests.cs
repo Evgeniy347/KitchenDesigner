@@ -47,6 +47,44 @@ public class UnityTcpBridgeTests
     {
         Assert.AreEqual(5555, UnityTcpBridge.ResolvePort(5555));
     }
+
+    [Test]
+    public void ResolvePort_ReadsTheEnvironmentVariable_WhenNoTestOverride()
+    {
+        var previous = Environment.GetEnvironmentVariable(PortVariable);
+        try
+        {
+            Environment.SetEnvironmentVariable(PortVariable, "18081");
+            Assert.AreEqual(18081, UnityTcpBridge.ResolvePort(5555),
+                "UNITY_MCP_PORT перебивает значение по умолчанию: этим переменным "
+                + "окружения мост запускают рядом с уже занятым портом");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(PortVariable, previous);
+        }
+    }
+
+    [Test]
+    public void ResolvePort_TestOverrideBeatsTheEnvironmentVariable()
+    {
+        var previous = Environment.GetEnvironmentVariable(PortVariable);
+        try
+        {
+            Environment.SetEnvironmentVariable(PortVariable, "18081");
+            UnityTcpBridge.TestPort = 17000;
+
+            Assert.AreEqual(17000, UnityTcpBridge.ResolvePort(5555),
+                "приоритет: TestPort выше UNITY_MCP_PORT. Иначе переменная окружения "
+                + "машины, на которой идёт прогон, молча уводит тест на чужой порт");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(PortVariable, previous);
+        }
+    }
+
+    private const string PortVariable = "UNITY_MCP_PORT";
 }
 
 #endif // !UNITY_WEBGL

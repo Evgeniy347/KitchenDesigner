@@ -1369,4 +1369,40 @@ public class McpCommandHandlerTests
         Assert.AreEqual("result", resp.type);
         Assert.AreEqual(before, hl.RefreshCount, "get_elements is read-only — should not refresh highlights");
     }
+
+    [Test]
+    public void GetSettings_CarriesTheProjectSettings_ButNoViewOrPhotoSettings()
+    {
+        Assume.That(KitchenSettings.Instance, Is.Not.Null, "нужен Resources/KitchenSettings");
+
+        var resp = _handler!.Handle(MakeReq("get_settings", new { }));
+
+        Assert.AreEqual("result", resp.type);
+        var d = Newtonsoft.Json.Linq.JObject.FromObject(resp.data!);
+        Assert.IsNotNull(d["snapEnabled"],
+            "положительный контроль: ответ вообще что-то несёт, иначе проверка ниже зеленеет на пустом объекте");
+
+        var viewKeys = new List<string>();
+        foreach (var prop in d.Properties())
+        {
+            var n = prop.Name.ToLowerInvariant();
+            if (n.StartsWith("photo") || n.Contains("visible") || n == "windowedmode" || n == "spatialgrid")
+                viewKeys.Add(prop.Name);
+        }
+
+        CollectionAssert.IsEmpty(viewKeys,
+            "настройки ВИДА (стены, объекты, контуры, свет, фоторежим) привязаны к режиму работы человека за панелью и не меняют геометрию. Отдать их агенту значит пригласить его их крутить: " + string.Join(", ", viewKeys));
+    }
+
+    [Test]
+    public void SetSetting_RefusesASettingItDoesNotAdvertise()
+    {
+        Assume.That(KitchenSettings.Instance, Is.Not.Null, "нужен Resources/KitchenSettings");
+
+        var resp = _handler!.Handle(MakeReq("set_setting", new { name = "photo_shadows", value = true }));
+
+        Assert.AreEqual("error", resp.type,
+            "set_setting знает три ключа и отказывает остальным вслух: молчаливое ok на неизвестную настройку — это успех без действия");
+        StringAssert.Contains("Unknown setting", Newtonsoft.Json.Linq.JObject.FromObject(resp.data!)["message"]!.Value<string>()!);
+    }
 }
