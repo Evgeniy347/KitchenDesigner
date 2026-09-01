@@ -707,9 +707,7 @@ public class CameraControllerTests
         if (_sel != null) return _sel;
         _selGo = new GameObject("SelectionManager");
         _sel = _selGo.AddComponent<SelectionManager>();
-        var awake = typeof(SelectionManager).GetMethod("Awake",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        awake?.Invoke(_sel, null);
+        SelectionManager.Instance = _sel;
         PartRegistry.Clear();
         return _sel;
     }

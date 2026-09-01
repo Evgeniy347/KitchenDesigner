@@ -4,7 +4,7 @@ namespace KitchenDesigner.Core
 {
     public class ElementHighlighter : MonoBehaviour
     {
-        public static ElementHighlighter? Instance { get; private set; }
+        public static ElementHighlighter? Instance { get; internal set; }
 
         public int RefreshCount { get; set; }
 
@@ -27,6 +27,8 @@ namespace KitchenDesigner.Core
         private Material? _invalidTransparentMaterial;
         private Material? _dimmedMaterial;
         private bool _materialsInitialized;
+
+        internal bool MaterialsReady => _materialsInitialized;
 
         private void Awake()
         {

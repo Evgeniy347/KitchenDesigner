@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Reflection;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
@@ -432,10 +431,7 @@ public class MaterialPreviewTests
 
     private static void SetSelectionInstance(SelectionManager? sm)
     {
-        var prop = typeof(SelectionManager).GetProperty("Instance",
-            BindingFlags.Public | BindingFlags.Static);
-        Assert.IsNotNull(prop, "SelectionManager.Instance должен существовать");
-        prop!.GetSetMethod(nonPublic: true)!.Invoke(null, new object?[] { sm });
+        SelectionManager.Instance = sm;
     }
 
     private KitchenElement CreateBoard(string name, Vector3Int dims, Vector3 pos)

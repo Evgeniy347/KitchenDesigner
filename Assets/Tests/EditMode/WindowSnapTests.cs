@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -23,10 +22,7 @@ public class WindowSnapTests : SnapTestBase
         PartRegistry.Register(window);
         Assert.IsNotNull(window);
 
-        var method = typeof(WindowElement).GetMethod("RegisterWithNearestWall",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(method, "RegisterWithNearestWall must exist");
-        method.Invoke(window, null);
+        window.SnapToWall();
 
         Assert.IsNotEmpty(window.AttachedWallName, "Window should attach to nearest wall");
         Assert.AreEqual("Wall_Test", window.AttachedWallName);

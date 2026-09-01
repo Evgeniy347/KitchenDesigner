@@ -250,9 +250,7 @@ public class ElementFactoryTests
         var hl = hlGo.AddComponent<ElementHighlighter>();
         hlGo.transform.SetParent(_extraObjects!.transform);
 
-        var instanceProp = typeof(ElementHighlighter).GetProperty("Instance",
-            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-        instanceProp?.SetValue(null, hl);
+        ElementHighlighter.Instance = hl;
 
         var wallGo = ElementFactory.CreateWall(
             new Vector3Int(2000, 2700, 100), "SourceWall", new Vector3(0f, 1.35f, 0f));

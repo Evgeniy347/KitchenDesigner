@@ -1,4 +1,3 @@
-using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -27,9 +26,7 @@ public class TableElementTests
 
     private static void SetSelectionInstance(SelectionManager? sm)
     {
-        var prop = typeof(SelectionManager).GetProperty("Instance",
-            BindingFlags.Public | BindingFlags.Static);
-        prop!.GetSetMethod(nonPublic: true)!.Invoke(null, new object?[] { sm });
+        SelectionManager.Instance = sm;
     }
     private static Vector3 AabbExtent(KitchenElement e)
     {

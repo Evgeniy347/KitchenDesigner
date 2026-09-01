@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -350,15 +349,10 @@ public class SelectionManagerTests
 
     private static void InitHighlighterMaterials(ElementHighlighter hl)
     {
-        var shader = Shader.Find("Universal Render Pipeline/Lit");
-        if (shader == null) shader = Shader.Find("Standard");
-        const BindingFlags f = BindingFlags.NonPublic | BindingFlags.Instance;
-        typeof(ElementHighlighter).GetField("_validMaterial", f)!.SetValue(hl, new Material(shader));
-        typeof(ElementHighlighter).GetField("_invalidMaterial", f)!.SetValue(hl, new Material(shader));
-        typeof(ElementHighlighter).GetField("_dimmedMaterial", f)!.SetValue(hl, new Material(shader));
-        typeof(ElementHighlighter).GetField("_validTransparentMaterial", f)!.SetValue(hl, new Material(shader));
-        typeof(ElementHighlighter).GetField("_invalidTransparentMaterial", f)!.SetValue(hl, new Material(shader));
-        typeof(ElementHighlighter).GetField("_materialsInitialized", f)!.SetValue(hl, true);
+        hl.CreateMaterials();
+        Assert.IsTrue(hl.MaterialsReady,
+            "подсветка строит свои пять материалов сама — CreateMaterials молча выходит, "
+            + "если шейдер URP не найден, и тогда весь тест ниже проверял бы пустоту");
     }
 
     /// <summary>

@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public class SelectionManager : MonoBehaviour
     {
-        public static SelectionManager? Instance { get; private set; }
+        public static SelectionManager? Instance { get; internal set; }
 
         private KitchenElement? _selected;
         private readonly List<KitchenElement> _selectedElements = new List<KitchenElement>();
