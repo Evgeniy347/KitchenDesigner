@@ -2,15 +2,23 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Рисует сетку на полу (y=0) через GL, если включено в настройках.</summary>
     [RequireComponent(typeof(Transform))]
     public class SpatialGridRenderer : MonoBehaviour
     {
         private Material? _lineMaterial;
 
-        private const float Extent = 3f;     // ±3 м (размер базовой плиты)
-        private const float Step = 0.1f;      // 100 мм
-        private const float MajorStep = 1f;   // 1 м — крупные линии
+        public const float HalfExtentUnits = 3f;
+        public const float StepMM = 100f;
+        public const float MajorStepMM = 1000f;
+
+        private const float StepUnits = StepMM * AppConstants.MM_TO_UNITS;
+        private const float MajorStepUnits = MajorStepMM * AppConstants.MM_TO_UNITS;
+        private const float LastLineInclusionUnits = 1e-3f;
+
+        private static readonly Color MajorLineColor = new Color(0.6f, 0.8f, 1f, 0.5f);
+        private static readonly Color MinorLineColor = new Color(1f, 1f, 1f, 0.18f);
+
+        private const float FloorY = 0f;
 
         private void Awake()
         {
@@ -31,28 +39,28 @@ namespace KitchenDesigner.Core
             GL.MultMatrix(Matrix4x4.identity);
             GL.Begin(GL.LINES);
 
-            for (float x = -Extent; x <= Extent + 1e-3f; x += Step)
+            for (float x = -HalfExtentUnits; x <= HalfExtentUnits + LastLineInclusionUnits; x += StepUnits)
             {
                 SetColor(x);
-                GL.Vertex3(x, 0f, -Extent);
-                GL.Vertex3(x, 0f, Extent);
+                GL.Vertex3(x, FloorY, -HalfExtentUnits);
+                GL.Vertex3(x, FloorY, HalfExtentUnits);
             }
-            for (float z = -Extent; z <= Extent + 1e-3f; z += Step)
+            for (float z = -HalfExtentUnits; z <= HalfExtentUnits + LastLineInclusionUnits; z += StepUnits)
             {
                 SetColor(z);
-                GL.Vertex3(-Extent, 0f, z);
-                GL.Vertex3(Extent, 0f, z);
+                GL.Vertex3(-HalfExtentUnits, FloorY, z);
+                GL.Vertex3(HalfExtentUnits, FloorY, z);
             }
 
             GL.End();
             GL.PopMatrix();
         }
 
-        private static void SetColor(float coord)
-        {
-            bool major = Mathf.Abs(coord - Mathf.Round(coord / MajorStep) * MajorStep) < 1e-3f;
-            GL.Color(major ? new Color(0.6f, 0.8f, 1f, 0.5f) : new Color(1f, 1f, 1f, 0.18f));
-        }
+        public static bool IsMajorLine(float coordUnits) =>
+            Mathf.Abs(coordUnits - Mathf.Round(coordUnits / MajorStepUnits) * MajorStepUnits) < 1e-3f;
+
+        private static void SetColor(float coord) =>
+            GL.Color(IsMajorLine(coord) ? MajorLineColor : MinorLineColor);
 
         private void OnDestroy()
         {

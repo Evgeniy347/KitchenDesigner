@@ -67,3 +67,103 @@ public class BoxWireframeTests
         Assert.Less(Vector3.Distance((min + max) * 0.5f, pos), 1e-4f);
     }
 }
+
+public class ElementOutlineTests
+{
+    private readonly System.Collections.Generic.List<GameObject> _spawned =
+        new System.Collections.Generic.List<GameObject>();
+
+    [TearDown]
+    public void TearDown()
+    {
+        foreach (var go in _spawned)
+            if (go != null) Object.DestroyImmediate(go);
+        _spawned.Clear();
+        foreach (var stray in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
+            if (stray != null && stray.name == ElementOutline.OutlineRootName)
+                Object.DestroyImmediate(stray.gameObject);
+        PartRegistry.Clear();
+    }
+
+    private ElementOutline ShownOutlineOnARectangularPart(out Transform part)
+    {
+        var go = ElementFactory.CreatePart(
+            new Vector3Int(600, 360, 18), "OutlinePart", new Vector3(1f, 0.5f, -2f));
+        _spawned.Add(go);
+        go.transform.rotation = Quaternion.Euler(0f, 30f, 0f);
+        part = go.transform;
+
+        var outline = ElementOutline.Ensure(go.GetComponent<KitchenElement>()!);
+        Assert.IsNotNull(outline);
+        outline!.Show(false);
+        return outline;
+    }
+
+    [Test]
+    public void EdgeBars_KeepTheirThickness_UnderANonUniformlyScaledPart()
+    {
+        var outline = ShownOutlineOnARectangularPart(out var part);
+
+        Assert.IsNotNull(outline.Root);
+        Assert.IsNull(outline.Root!.parent,
+            "короб контура живёт в мировых координатах: став ребёнком детали, он унаследовал бы её масштаб");
+        Assert.AreNotEqual(part.lossyScale.x, part.lossyScale.z,
+            "деталь взята неравномерная — иначе наследование масштаба было бы незаметно");
+
+        foreach (Transform seg in outline.Root!)
+        {
+            Assert.AreEqual(ElementOutline.EdgeThicknessMeters, seg.lossyScale.x, 1e-6f,
+                "ребро одинаково толстое по любой оси — иначе контур на тонкой детали пропадает");
+            Assert.AreEqual(ElementOutline.EdgeThicknessMeters, seg.lossyScale.y, 1e-6f);
+        }
+    }
+
+    [Test]
+    public void EdgeBars_SpanEveryEdgeOfThePartBox_AlongTheirLocalZ()
+    {
+        var outline = ShownOutlineOnARectangularPart(out var part);
+        var expected = new[] { part.lossyScale.x, part.lossyScale.y, part.lossyScale.z };
+
+        int[] found = { 0, 0, 0 };
+        foreach (Transform seg in outline.Root!)
+        {
+            int match = -1;
+            for (int i = 0; i < expected.Length; i++)
+                if (Mathf.Abs(seg.localScale.z - expected[i]) < 1e-4f) match = i;
+
+            Assert.GreaterOrEqual(match, 0,
+                "длина бруска обязана совпасть с одним из трёх габаритов детали, а не с чем-то своим: "
+                + seg.localScale.z);
+            found[match]++;
+        }
+
+        foreach (int count in found)
+            Assert.AreEqual(4, count, "у бокса по четыре ребра каждого габарита");
+    }
+
+    [Test]
+    public void EdgeBars_CarryNoCollider_SoAClickStillHitsThePart()
+    {
+        var outline = ShownOutlineOnARectangularPart(out _);
+
+        foreach (Transform seg in outline.Root!)
+            Assert.IsNull(seg.GetComponent<Collider>(),
+                "примитив-куб приносит BoxCollider: оставленный, он перехватывал бы клики вместо детали");
+    }
+
+    [Test]
+    public void UnlitChain_FallsBackToAShaderThePartsThemselvesUse()
+    {
+        var chain = ElementOutline.UnlitShaderChain;
+
+        Assert.AreEqual("Universal Render Pipeline/Unlit", chain[0],
+            "контур не должен зависеть от освещения — предпочтителен Unlit");
+        CollectionAssert.Contains(chain, "Universal Render Pipeline/Lit",
+            "URP/Unlit вырезается из сборки, если им не пользуется ни один материал, и Shader.Find там вернёт null; "
+            + "запасным обязан быть шейдер самих деталей, который вырезать нельзя");
+        Assert.IsNotNull(Shader.Find("Universal Render Pipeline/Lit"),
+            "запасной шейдер обязан существовать в проекте, иначе запас фиктивный");
+        Assert.IsNotNull(ElementOutline.MakeUnlit(Color.black),
+            "контур не имеет права исчезнуть из-за отсутствующего шейдера");
+    }
+}

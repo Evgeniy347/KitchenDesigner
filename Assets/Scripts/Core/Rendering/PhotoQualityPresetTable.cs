@@ -1,8 +1,5 @@
 namespace KitchenDesigner.Core
 {
-    /// <summary>Набор тумблеров качества, задаваемый одним пресетом фоторежима.
-    /// Пресет ничего не «прячет» — он просто выставляет эти же переключатели,
-    /// которые пользователь видит и может крутить вручную.</summary>
     public readonly struct PhotoQualityToggles
     {
         public readonly bool Shadows;
@@ -24,20 +21,29 @@ namespace KitchenDesigner.Core
             Bloom = bloom;
             Vignette = vignette;
         }
+
+        public int EnabledCount =>
+            (Shadows ? 1 : 0) + (SoftShadows ? 1 : 0) + (AntiAliasing ? 1 : 0)
+            + (Supersampling ? 1 : 0) + (AmbientOcclusion ? 1 : 0) + (Bloom ? 1 : 0)
+            + (Vignette ? 1 : 0);
     }
 
-    /// <summary>Пресеты фоторежима как комбинации тумблеров + определение
-    /// «Свои настройки». Чистые функции, покрываются юнит-тестами.</summary>
     public static class PhotoQualityPresetTable
     {
-        /// <summary>Тумблеры именованного пресета. Для Custom возвращает High
-        /// (как база), но применять Custom не следует — это состояние-метка.</summary>
+        public const PhotoQualityPreset CustomFallsBackTo = PhotoQualityPreset.High;
+
+        public static readonly PhotoQualityPreset[] NamedPresets =
+        {
+            PhotoQualityPreset.Low,
+            PhotoQualityPreset.Medium,
+            PhotoQualityPreset.High,
+        };
+
         public static PhotoQualityToggles Resolve(PhotoQualityPreset preset)
         {
             switch (preset)
             {
                 case PhotoQualityPreset.Low:
-                    // Слабое железо / WebGL: жёсткие тени, без супер-сэмплинга и эффектов.
                     return new PhotoQualityToggles(
                         shadows: true, softShadows: false, antiAliasing: true,
                         supersampling: false, ambientOcclusion: false, bloom: false, vignette: false);
@@ -48,15 +54,12 @@ namespace KitchenDesigner.Core
                 case PhotoQualityPreset.High:
                 case PhotoQualityPreset.Custom:
                 default:
-                    // GTX 1060: всё включено + супер-сэмплинг.
                     return new PhotoQualityToggles(
                         shadows: true, softShadows: true, antiAliasing: true,
                         supersampling: true, ambientOcclusion: true, bloom: true, vignette: true);
             }
         }
 
-        /// <summary>Записать тумблеры пресета в настройки. Для Custom — no-op
-        /// (оставляем то, что накрутил пользователь).</summary>
         public static void Apply(PhotoQualityPreset preset, KitchenSettings s)
         {
             if (s == null || preset == PhotoQualityPreset.Custom) return;
@@ -71,8 +74,6 @@ namespace KitchenDesigner.Core
             s.PhotoQuality = preset;
         }
 
-        /// <summary>Какому пресету соответствует текущая комбинация тумблеров.
-        /// Если ни одному — Custom.</summary>
         public static PhotoQualityPreset Detect(KitchenSettings s)
         {
             if (s == null) return PhotoQualityPreset.Custom;
@@ -80,7 +81,7 @@ namespace KitchenDesigner.Core
                 s.PhotoShadows, s.PhotoSoftShadows, s.PhotoAntiAliasing,
                 s.PhotoSupersampling, s.PhotoAmbientOcclusion, s.PhotoBloom, s.PhotoVignette);
 
-            foreach (var p in new[] { PhotoQualityPreset.Low, PhotoQualityPreset.Medium, PhotoQualityPreset.High })
+            foreach (var p in NamedPresets)
                 if (Equal(cur, Resolve(p))) return p;
             return PhotoQualityPreset.Custom;
         }
@@ -94,8 +95,6 @@ namespace KitchenDesigner.Core
             a.Bloom == b.Bloom &&
             a.Vignette == b.Vignette;
 
-        /// <summary>Следующий именованный пресет по кругу (Low→Medium→High→Low).
-        /// Из Custom переходим к Low.</summary>
         public static PhotoQualityPreset Next(PhotoQualityPreset current) => current switch
         {
             PhotoQualityPreset.Low => PhotoQualityPreset.Medium,

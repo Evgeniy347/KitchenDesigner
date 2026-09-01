@@ -3,26 +3,11 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Рисует накладки текстур поверх граней стен и полов.
-    ///
-    /// Каждая накладка — отдельный плоский меш (см. <see cref="PlaneWithHolesMesh"/>)
-    /// с материалом декора из каталога. Меши НЕ парентятся к элементу: у
-    /// KitchenElement в transform.localScale лежит физический габарит
-    /// (см. ApplyDimensions), и накладка-ребёнок домножилась бы на него — по
-    /// толщине стены в 0.1 раза, да ещё с перекосом от неравномерного масштаба.
-    /// Держим их под собственным корнем в мировых координатах, как ElementOutline
-    /// и SideHighlighter.
-    ///
-    /// Компонент нужен только ради LateUpdate: он догоняет накладками элемент,
-    /// который подвинули, повернули, растянули или которому добавили проём.
-    /// Сама пересборка статическая и работает без сцены — из тестов и загрузки
-    /// проекта её зовут напрямую через <see cref="Refresh"/>.</summary>
     public class TextureOverlayRenderer : MonoBehaviour
     {
-        /// <summary>Зазор над гранью на каждый слой накладок, мм. Накладки на
-        /// одной стороне идут стопкой в порядке списка — без разноса по высоте
-        /// они дрались бы за z-буфер и мерцали.</summary>
-        private const float LayerLiftMM = 0.2f;
+        public const float LayerLiftMM = 0.2f;
+
+        internal const string RootName = "__TextureOverlays";
 
         private class Entry
         {
@@ -48,7 +33,6 @@ namespace KitchenDesigner.Core
 
         private void OnDestroy() => ClearAll();
 
-        /// <summary>Сколько накладочных мешей сейчас в сцене (для тестов).</summary>
         public static int QuadCount
         {
             get
@@ -59,14 +43,10 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Накладки конкретного элемента (тестам нужен их МИРОВОЙ размер:
-        /// на этом горит любая накладка, унаследовавшая масштаб элемента).</summary>
         public static IReadOnlyList<GameObject> QuadsOf(KitchenElement element) =>
             element != null && Entries.TryGetValue(element, out var e)
                 ? e.quads : (IReadOnlyList<GameObject>)System.Array.Empty<GameObject>();
 
-        /// <summary>Пересобрать накладки элемента. Зовётся из
-        /// KitchenElement.SetTextureOverlays — единственной точки мутации списка.</summary>
         public static void Refresh(KitchenElement? element)
         {
             if (element == null) return;
@@ -78,8 +58,6 @@ namespace KitchenDesigner.Core
             Rebuild(entry);
         }
 
-        /// <summary>Догнать накладками элементы: снести осиротевшие, пересобрать
-        /// те, что сдвинули/повернули/растянули или у кого поменялись проёмы.</summary>
         public static void SyncAll()
         {
             List<KitchenElement>? dead = null;
@@ -100,7 +78,6 @@ namespace KitchenDesigner.Core
                 foreach (var key in dead) Entries.Remove(key);
         }
 
-        /// <summary>Снять все накладки (смена проекта, выгрузка сцены, тесты).</summary>
         public static void ClearAll()
         {
             foreach (var entry in Entries.Values) ClearQuads(entry);
@@ -118,17 +95,7 @@ namespace KitchenDesigner.Core
                 || Hidden(el) != entry.hidden;
         }
 
-        /// <summary>Накладки не показываем, когда сам элемент не виден, когда он
-        /// объявлен прозрачным и когда стена опущена режимом обзора.
-        ///
-        /// Прозрачность здесь принципиальна: накладка — отдельный непрозрачный
-        /// меш поверх грани, и сквозная стена с ней выглядела бы сплошной —
-        /// выключатель «Прозрачный» просто переставал работать. «Прозрачный»
-        /// значит «хочу видеть сквозь», поэтому накладки гаснут вместе с гранью.
-        ///
-        /// Опущенная стена — временный обрубок, накладка по ПОЛНОЙ грани висела
-        /// бы в воздухе.</summary>
-        private static bool Hidden(KitchenElement el)
+        internal static bool Hidden(KitchenElement el)
         {
             if (!el.gameObject.activeInHierarchy) return true;
             if (!SceneVisibility.AnyRendererEnabled(el)) return true;
@@ -160,9 +127,9 @@ namespace KitchenDesigner.Core
                 var spec = overlays[i];
                 var def = MaterialCatalog.Get(spec.MaterialId);
                 var material = MaterialManager.GetSharedMaterial(def);
-                if (material == null) continue; // нет шейдера — лучше ничего, чем розовое
+                if (material == null) continue;
                 var tile = MaterialManager.TileMM(def);
-                float lift = LayerLiftMM * (i + 1) * AppConstants.MM_TO_UNITS;
+                float lift = LiftOfLayer(i);
 
                 foreach (int faceIndex in TextureOverlayGeometry.FaceIndices(spec.side))
                 {
@@ -177,42 +144,36 @@ namespace KitchenDesigner.Core
             }
         }
 
+        public static float LiftOfLayer(int layerIndex) =>
+            LayerLiftMM * (layerIndex + 1) * AppConstants.MM_TO_UNITS;
+
+        public static Vector2 OffsetFromFaceCentreMM(RectInt rect, Vector2Int faceMM) => new Vector2(
+            (rect.xMin + rect.xMax) * 0.5f - faceMM.x * 0.5f,
+            (rect.yMin + rect.yMax) * 0.5f - faceMM.y * 0.5f);
+
         private static GameObject MakeQuad(in Face face, Vector2Int faceMM,
             RectInt rect, Mesh mesh, Material material, float lift)
         {
             var go = new GameObject("TextureOverlay") { hideFlags = HideFlags.DontSave };
-            // Корень стоит в позе identity, поэтому локальный трансформ квада и
-            // есть мировой: масштаб элемента в накладку не просачивается.
             go.transform.SetParent(Root(), worldPositionStays: false);
 
-            // Меш центрирован на середине области, а её центр смещён от центра
-            // грани на столько миллиметров, на сколько область уехала от центра.
-            float du = (rect.xMin + rect.xMax) * 0.5f - faceMM.x * 0.5f;
-            float dv = (rect.yMin + rect.yMax) * 0.5f - faceMM.y * 0.5f;
+            Vector2 offsetMM = OffsetFromFaceCentreMM(rect, faceMM);
 
             go.transform.position = face.center
-                + face.rightAxis * (du * AppConstants.MM_TO_UNITS)
-                + face.upAxis * (dv * AppConstants.MM_TO_UNITS)
+                + face.rightAxis * (offsetMM.x * AppConstants.MM_TO_UNITS)
+                + face.upAxis * (offsetMM.y * AppConstants.MM_TO_UNITS)
                 + face.normal * lift;
-            // Именно LookRotation(normal, upAxis), а не (-normal, ...): нужен
-            // локальный +X вдоль face.rightAxis, иначе накладка зеркалится и
-            // направленный рисунок (грейн, плитка со швом) ложится наизнанку.
             go.transform.rotation = Quaternion.LookRotation(face.normal, face.upAxis);
             go.transform.localScale = Vector3.one;
 
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             var renderer = go.AddComponent<MeshRenderer>();
             renderer.sharedMaterial = material;
-            // Накладка — плёнка на самой поверхности: собственная тень от неё
-            // легла бы на стену, которую она и покрывает.
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             renderer.receiveShadows = true;
             return go;
         }
 
-        /// <summary>Проёмы окон и дверей в координатах грани (мм). Режем только
-        /// две широкие грани стены — ровно те, сквозь которые Wall.RebuildMesh
-        /// прогоняет вырез. На торцах и на полу проёмов нет.</summary>
         private static List<RectInt>? OpeningHolesMM(KitchenElement el, int faceIndex)
         {
             var wall = el.GetComponent<Wall>();
@@ -220,9 +181,7 @@ namespace KitchenDesigner.Core
             if (wall.AttachedWindows.Count == 0 && wall.AttachedDoors.Count == 0) return null;
 
             var dims = el.DimensionsMM;
-            bool thickAlongX = dims.x <= dims.z;
-            int wideA = thickAlongX ? 0 : 4;
-            if (faceIndex != wideA && faceIndex != wideA + 1) return null;
+            if (!IsWideWallFace(dims, faceIndex)) return null;
 
             var face = el.GetFaces()[faceIndex];
             var faceMM = TextureOverlayGeometry.FaceSizeMM(dims, faceIndex);
@@ -231,6 +190,13 @@ namespace KitchenDesigner.Core
             foreach (var w in wall.AttachedWindows) AddHole(holes, w, face, faceMM);
             foreach (var d in wall.AttachedDoors) AddHole(holes, d, face, faceMM);
             return holes.Count > 0 ? holes : null;
+        }
+
+        public static bool IsWideWallFace(Vector3Int dims, int faceIndex)
+        {
+            bool thickAlongX = dims.x <= dims.z;
+            int firstWideFace = thickAlongX ? 0 : 4;
+            return faceIndex == firstWideFace || faceIndex == firstWideFace + 1;
         }
 
         private static void AddHole(List<RectInt> holes, KitchenElement? opening,
@@ -242,18 +208,15 @@ namespace KitchenDesigner.Core
             float uMM = Vector3.Dot(delta, face.rightAxis) / AppConstants.MM_TO_UNITS + faceMM.x * 0.5f;
             float vMM = Vector3.Dot(delta, face.upAxis) / AppConstants.MM_TO_UNITS + faceMM.y * 0.5f;
 
-            // Габарит проёма на осях грани: проём повёрнут вместе со стеной, но
-            // считать это через проекцию собственных осей надёжнее, чем угадывать
-            // соответствие «ширина проёма ↔ ось грани».
-            float halfU = HalfExtent(opening, face.rightAxis);
-            float halfV = HalfExtent(opening, face.upAxis);
+            float halfU = HalfExtentAlong(opening, face.rightAxis);
+            float halfV = HalfExtentAlong(opening, face.upAxis);
 
             holes.Add(new RectInt(
                 Mathf.RoundToInt(uMM - halfU), Mathf.RoundToInt(vMM - halfV),
                 Mathf.RoundToInt(halfU * 2f), Mathf.RoundToInt(halfV * 2f)));
         }
 
-        private static float HalfExtent(KitchenElement opening, Vector3 axis)
+        public static float HalfExtentAlong(KitchenElement opening, Vector3 axis)
         {
             var rot = opening.transform.rotation;
             var dims = opening.DimensionsMM;
@@ -269,8 +232,6 @@ namespace KitchenDesigner.Core
             return wall == null ? 0 : wall.AttachedWindows.Count + wall.AttachedDoors.Count;
         }
 
-        /// <summary>Дешёвый отпечаток набора накладок: ловим правки мимо рендера
-        /// (undo/redo, MCP, загрузка проекта).</summary>
         private static int Fingerprint(IReadOnlyList<TextureOverlaySpec> overlays)
         {
             unchecked
@@ -281,11 +242,11 @@ namespace KitchenDesigner.Core
             }
         }
 
-        private static Transform Root()
+        internal static Transform Root()
         {
             if (_root == null)
             {
-                _root = new GameObject("__TextureOverlays") { hideFlags = HideFlags.DontSave };
+                _root = new GameObject(RootName) { hideFlags = HideFlags.DontSave };
                 _root.transform.SetParent(null, worldPositionStays: false);
             }
             return _root.transform;
@@ -303,9 +264,6 @@ namespace KitchenDesigner.Core
             entry.quads.Clear();
         }
 
-        /// <summary>В рантайме Destroy: DestroyImmediate из колбэка UI-события
-        /// Unity запрещает. В EditMode-тестах Destroy не отрабатывает вовсе,
-        /// поэтому там — DestroyImmediate.</summary>
         private static void DestroyNow(Object obj)
         {
             if (Application.isPlaying) Destroy(obj);

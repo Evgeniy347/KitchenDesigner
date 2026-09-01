@@ -6,12 +6,14 @@ using UnityEngine.Rendering.RenderGraphModule.Util;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>URP-фича экранного непрямого освещения (SSGI). Один fullscreen-проход
-    /// перед пост-обработкой: собирает свет с соседних поверхностей и добавляет к
-    /// цвету. Подключается к рендереру, включается только в фоторежиме
-    /// (PhotoQualityController дергает SetActive). RenderGraph-совместима.</summary>
     public class ScreenSpaceGIFeature : ScriptableRendererFeature
     {
+        public const int GatherPassIndex = 0;
+        public const int DenoisePassIndex = 1;
+
+        internal const RenderPassEvent InjectBeforePostProcessing =
+            RenderPassEvent.BeforeRenderingPostProcessing;
+
         [SerializeField] private Material? _material;
         [SerializeField, Range(0f, 3f)] private float _strength = 0.7f;
         [SerializeField, Range(0.1f, 3f)] private float _radius = 0.8f;
@@ -19,11 +21,13 @@ namespace KitchenDesigner.Core
 
         private SsgiPass? _pass;
 
+        internal ScriptableRenderPass? Pass => _pass;
+
         public override void Create()
         {
             _pass = new SsgiPass
             {
-                renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing
+                renderPassEvent = InjectBeforePostProcessing
             };
         }
 
@@ -75,18 +79,17 @@ namespace KitchenDesigner.Core
                 desc.depthBufferBits = 0;
                 TextureHandle gathered = renderGraph.CreateTexture(desc);
                 desc.name = "SSGI_Blurred";
-                TextureHandle dest = renderGraph.CreateTexture(desc);
+                TextureHandle denoised = renderGraph.CreateTexture(desc);
 
-                // Проход 0: сбор непрямого света + композит (шумный результат).
-                var gather = new RenderGraphUtils.BlitMaterialParameters(source, gathered, _mat, 0);
+                var gather = new RenderGraphUtils.BlitMaterialParameters(
+                    source, gathered, _mat, GatherPassIndex);
                 renderGraph.AddBlitPass(gather, "ScreenSpaceGI Gather");
 
-                // Проход 1: билатеральный денойз по глубине.
-                var blur = new RenderGraphUtils.BlitMaterialParameters(gathered, dest, _mat, 1);
-                renderGraph.AddBlitPass(blur, "ScreenSpaceGI Blur");
+                var denoise = new RenderGraphUtils.BlitMaterialParameters(
+                    gathered, denoised, _mat, DenoisePassIndex);
+                renderGraph.AddBlitPass(denoise, "ScreenSpaceGI Blur");
 
-                // Дальнейшие проходы (пост-обработка) работают уже по результату SSGI.
-                resourceData.cameraColor = dest;
+                resourceData.cameraColor = denoised;
             }
         }
     }

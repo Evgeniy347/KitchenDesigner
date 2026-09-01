@@ -4,6 +4,7 @@
 	"references": [
 		"KitchenDesigner.Geometry",
 		"KitchenDesigner.Runtime",
+		"Unity.RenderPipelines.Universal.Runtime",
 		"KitchenDesigner.Editor",
 		"Unity.TextMeshPro",
 		"KitchenDesigner.Tests.Shared"

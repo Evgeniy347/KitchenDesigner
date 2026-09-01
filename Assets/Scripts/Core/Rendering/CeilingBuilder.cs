@@ -3,50 +3,30 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Строит и убирает временную плиту потолка в фоторежиме. Потолок —
-    /// чистая декорация: не регистрируется в PartRegistry и без коллайдера (не ловит
-    /// клики/рейкасты). Отбрасывает тень — перекрывает солнце сверху, поэтому комната
-    /// освещается только через окна, открытые двери и собственные светильники.</summary>
     public static class CeilingBuilder
     {
         private const string CeilingName = "PhotoCeiling";
+        private static readonly Color CeilingColor = new Color(0.93f, 0.93f, 0.95f);
         private static GameObject? _ceiling;
 
         public static bool Exists => _ceiling != null;
 
-        /// <summary>Пересобрать потолок по текущим стенам. Если стен нет —
-        /// потолок убирается.</summary>
+        internal static GameObject? Slab => _ceiling;
+
         public static void Rebuild()
         {
             Clear();
 
-            var bounds = CollectWallBounds();
-            if (!CeilingGeometry.TryCompute(bounds, out var ceil))
+            if (!CeilingGeometry.TryCompute(CollectWallBoundsAtFullHeight(), out var ceil))
                 return;
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = CeilingName;
-
-            var col = go.GetComponent<Collider>();
-            if (col != null)
-            {
-                if (Application.isPlaying) Object.Destroy(col);
-                else Object.DestroyImmediate(col);
-            }
+            DropColliderSoClicksPassThrough(go);
 
             go.transform.position = ceil.center;
             go.transform.localScale = ceil.size;
-
-            var renderer = go.GetComponent<MeshRenderer>();
-            var shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader != null)
-            {
-                var mat = new Material(shader);
-                mat.SetColor("_BaseColor", new Color(0.93f, 0.93f, 0.95f));
-                renderer.sharedMaterial = mat;
-            }
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-            renderer.receiveShadows = true;
+            PaintAsShadowCastingSlab(go.GetComponent<MeshRenderer>());
 
             _ceiling = go;
         }
@@ -54,14 +34,36 @@ namespace KitchenDesigner.Core
         public static void Clear()
         {
             if (_ceiling == null) return;
-            if (Application.isPlaying) Object.Destroy(_ceiling);
-            else Object.DestroyImmediate(_ceiling);
+            DestroyNow(_ceiling);
             _ceiling = null;
         }
 
-        /// <summary>Мировые AABB всех стен на полной высоте. Опущенные стены
-        /// временно восстанавливаются, чтобы контур считался по реальному верху.</summary>
-        private static List<Bounds> CollectWallBounds()
+        private static void DropColliderSoClicksPassThrough(GameObject go)
+        {
+            var col = go.GetComponent<Collider>();
+            if (col != null) DestroyNow(col);
+        }
+
+        private static void PaintAsShadowCastingSlab(MeshRenderer renderer)
+        {
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader != null)
+            {
+                var mat = new Material(shader);
+                mat.SetColor("_BaseColor", CeilingColor);
+                renderer.sharedMaterial = mat;
+            }
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            renderer.receiveShadows = true;
+        }
+
+        private static void DestroyNow(Object target)
+        {
+            if (Application.isPlaying) Object.Destroy(target);
+            else Object.DestroyImmediate(target);
+        }
+
+        private static List<Bounds> CollectWallBoundsAtFullHeight()
         {
             var result = new List<Bounds>();
             foreach (var e in PartRegistry.GetAll())

@@ -49,8 +49,8 @@ public class PhotoModeTests
         // Толщина плиты.
         Assert.AreEqual(CeilingGeometry.ThicknessUnits, ceil.size.y, 1e-4f);
         // XZ-контур с запасом.
-        Assert.AreEqual(2f + CeilingGeometry.MarginUnits * 2f, ceil.size.x, 1e-4f);
-        Assert.AreEqual(0.1f + CeilingGeometry.MarginUnits * 2f, ceil.size.z, 1e-4f);
+        Assert.AreEqual(2f + CeilingGeometry.OverhangBeyondWallsUnits * 2f, ceil.size.x, 1e-4f);
+        Assert.AreEqual(0.1f + CeilingGeometry.OverhangBeyondWallsUnits * 2f, ceil.size.z, 1e-4f);
         Assert.AreEqual(0f, ceil.center.x, 1e-4f);
         Assert.AreEqual(0f, ceil.center.z, 1e-4f);
     }
@@ -64,9 +64,36 @@ public class PhotoModeTests
         Assert.IsTrue(CeilingGeometry.TryCompute(new List<Bounds> { w1, w2 }, out var ceil));
 
         // Контур охватывает обе стены по X (от -1.55 до 1.55) + запас.
-        Assert.AreEqual(3.1f + CeilingGeometry.MarginUnits * 2f, ceil.size.x, 1e-4f);
-        Assert.AreEqual(2f + CeilingGeometry.MarginUnits * 2f, ceil.size.z, 1e-4f);
+        Assert.AreEqual(3.1f + CeilingGeometry.OverhangBeyondWallsUnits * 2f, ceil.size.x, 1e-4f);
+        Assert.AreEqual(2f + CeilingGeometry.OverhangBeyondWallsUnits * 2f, ceil.size.z, 1e-4f);
         Assert.AreEqual(2.5f, ceil.min.y, 1e-4f);
+    }
+
+    [Test]
+    public void Ceiling_DegenerateWall_DoesNotStretchTheContour()
+    {
+        var real = new Bounds(new Vector3(0f, 1.25f, 0f), new Vector3(2f, 2.5f, 0.1f));
+        var zeroSized = new Bounds(new Vector3(50f, 0f, 50f), Vector3.zero);
+
+        Assert.IsTrue(CeilingGeometry.TryCompute(new List<Bounds> { real, zeroSized }, out var ceil));
+        Assert.AreEqual(2f + CeilingGeometry.OverhangBeyondWallsUnits * 2f, ceil.size.x, 1e-4f,
+            "вырожденная (нулевая) стена не задаёт контур: иначе потолок растянулся бы до неё");
+        Assert.AreEqual(0f, ceil.center.x, 1e-4f);
+    }
+
+    [Test]
+    public void Ceiling_OverhangsBothOuterFaces_LeavingNoGapAtTheWallThickness()
+    {
+        var wall = new Bounds(new Vector3(0f, 1.25f, 0f), new Vector3(2f, 2.5f, 0.1f));
+        Assert.IsTrue(CeilingGeometry.TryCompute(new List<Bounds> { wall }, out var ceil));
+
+        Assert.Less(ceil.min.x, wall.min.x,
+            "плита обязана выходить за наружную грань стены, иначе на стыке остаётся щель");
+        Assert.Greater(ceil.max.x, wall.max.x, "с противоположной стороны — тоже");
+        Assert.Less(ceil.min.z, wall.min.z, "по толщине стены запас особенно важен");
+        Assert.Greater(ceil.max.z, wall.max.z);
+        Assert.Greater(CeilingGeometry.OverhangBeyondWallsUnits, 0f,
+            "нулевой запас вернул бы щель по периметру");
     }
 
     // ── PhotoQualityPresetTable (пресет = набор тумблеров) ───
@@ -138,6 +165,38 @@ public class PhotoModeTests
         Assert.AreEqual(PhotoQualityPreset.High, PhotoQualityPresetTable.Next(PhotoQualityPreset.Medium));
         Assert.AreEqual(PhotoQualityPreset.Low, PhotoQualityPresetTable.Next(PhotoQualityPreset.High));
         Assert.AreEqual(PhotoQualityPreset.Low, PhotoQualityPresetTable.Next(PhotoQualityPreset.Custom));
+    }
+
+    [Test]
+    public void Preset_Custom_ResolvesToHigh_ButApplyLeavesSettingsAlone()
+    {
+        var custom = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.Custom);
+        var high = PhotoQualityPresetTable.Resolve(PhotoQualityPresetTable.CustomFallsBackTo);
+        Assert.AreEqual(high.EnabledCount, custom.EnabledCount,
+            "Custom — состояние-метка, а не набор: как база он отдаёт High");
+        Assert.AreEqual(PhotoQualityPreset.High, PhotoQualityPresetTable.CustomFallsBackTo);
+    }
+
+    [Test]
+    public void Presets_GetHeavier_FromLowToHigh()
+    {
+        int low = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.Low).EnabledCount;
+        int medium = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.Medium).EnabledCount;
+        int high = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.High).EnabledCount;
+
+        Assert.Less(low, medium, "Low рассчитан на слабое железо и WebGL: он обязан быть легче Medium");
+        Assert.Less(medium, high, "High включает всё, включая супер-сэмплинг");
+    }
+
+    [Test]
+    public void NamedPresets_AreEveryPresetExceptCustom()
+    {
+        CollectionAssert.DoesNotContain(PhotoQualityPresetTable.NamedPresets, PhotoQualityPreset.Custom,
+            "Custom не именованный пресет: попав в список, Detect всегда возвращал бы его");
+        Assert.AreEqual(3, PhotoQualityPresetTable.NamedPresets.Length);
+        foreach (var p in PhotoQualityPresetTable.NamedPresets)
+            Assert.AreEqual(p, PhotoQualityPresetTable.Next(PhotoQualityPresetTable.Next(
+                PhotoQualityPresetTable.Next(p))), "обход по кругу возвращает в ту же точку");
     }
 
     // ── KitchenSettings: photo fields persistence ───────────
@@ -469,5 +528,93 @@ public class PhotoModeTests
         Assert.AreEqual(KitchenSettings.PHOTO_BLOOM_DEFAULT_PCT, legacy.photoBloomPct);
         Assert.AreEqual(KitchenSettings.PHOTO_SHADOW_DISTANCE_DEFAULT_M, legacy.photoShadowDistanceM);
         Assert.IsTrue(legacy.photoLampShadows);
+    }
+}
+
+public class PhotoModeLifecycleTests
+{
+    [SetUp]
+    public void SetUp() => EditModeManager.SetMode(EditMode.Normal);
+
+    [TearDown]
+    public void TearDown() => EditModeManager.SetMode(EditMode.Normal);
+
+    [Test]
+    public void Active_IsDerivedFromTheEditorMode_NotFromASecondFlag()
+    {
+        PhotoMode.SetActive(true);
+        Assert.IsTrue(PhotoMode.Active);
+        Assert.AreEqual(EditMode.Photo, EditModeManager.Mode);
+
+        EditModeManager.Reset();
+
+        Assert.IsFalse(PhotoMode.Active,
+            "отдельного флага нет намеренно: пока их было два, Reset в обход SetActive оставлял фоторежим включённым при Mode = Normal");
+        Assert.AreEqual(EditMode.Normal, EditModeManager.Mode);
+    }
+
+    [Test]
+    public void Changed_FiresOnEnterAndOnExit_ButNotOnANoOp()
+    {
+        int fired = 0;
+        System.Action handler = () => fired++;
+        PhotoMode.Changed += handler;
+        try
+        {
+            PhotoMode.SetActive(true);
+            Assert.AreEqual(1, fired, "вход в режим — смена состояния");
+
+            PhotoMode.SetActive(false);
+            Assert.AreEqual(2, fired, "выход тоже: иначе подписчики UI остаются в фото-состоянии");
+
+            PhotoMode.SetActive(false);
+            Assert.AreEqual(2, fired, "повторный выход ничего не меняет и сигналить не должен");
+        }
+        finally
+        {
+            PhotoMode.Changed -= handler;
+        }
+    }
+
+    [Test]
+    public void Exit_RollsBackEveryHeavyEffectItTurnedOn()
+    {
+        var s = KitchenSettings.Instance;
+        var before = s.ToData();
+        bool tintBefore = ElementHighlighter.TintEnabled;
+        try
+        {
+            s.PhotoCeiling = true;
+            ElementHighlighter.TintEnabled = true;
+
+            PhotoMode.SetActive(true);
+            Assert.IsTrue(PhotoQualityController.IsApplied, "вход поднимает качество картинки");
+            Assert.IsFalse(ElementHighlighter.TintEnabled, "валидационный тон в кадре не нужен");
+
+            PhotoMode.SetActive(false);
+
+            Assert.IsFalse(PhotoQualityController.IsApplied,
+                "рабочий режим лёгкий: всё тяжёлое обязано откатиться полностью, а не остаться висеть");
+            Assert.IsFalse(CeilingBuilder.Exists, "временный потолок уходит вместе с режимом");
+            Assert.IsTrue(ElementHighlighter.TintEnabled, "прежнее состояние тона возвращается");
+        }
+        finally
+        {
+            EditModeManager.SetMode(EditMode.Normal);
+            ElementHighlighter.TintEnabled = tintBefore;
+            s.ApplyFrom(before);
+        }
+    }
+
+    [Test]
+    public void RefreshIfActive_IsSilentWhilePhotoModeIsOff()
+    {
+        Assume.That(PhotoMode.Active, Is.False, "тест начинается в обычном режиме, иначе он ничего не проверяет");
+
+        PhotoMode.RefreshIfActive();
+
+        Assert.IsFalse(PhotoQualityController.IsApplied,
+            "смена пресета вне фоторежима не имеет права включить тяжёлые эффекты сама");
+        Assert.IsFalse(CeilingBuilder.Exists);
     }
 }

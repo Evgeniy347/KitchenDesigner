@@ -2,61 +2,61 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Чистая геометрия «проволочного» короба: 8 углов ±0.5 и 12 рёбер.
-    /// Вынесена отдельно, чтобы её можно было проверить тестом без сцены.</summary>
     public static class BoxWireframe
     {
-        // 8 углов единичного куба (совпадает с примитивом Cube: центр в 0, ±0.5).
         public static readonly Vector3[] Corners =
         {
-            new Vector3(-0.5f, -0.5f, -0.5f), // 0
-            new Vector3( 0.5f, -0.5f, -0.5f), // 1
-            new Vector3( 0.5f, -0.5f,  0.5f), // 2
-            new Vector3(-0.5f, -0.5f,  0.5f), // 3
-            new Vector3(-0.5f,  0.5f, -0.5f), // 4
-            new Vector3( 0.5f,  0.5f, -0.5f), // 5
-            new Vector3( 0.5f,  0.5f,  0.5f), // 6
-            new Vector3(-0.5f,  0.5f,  0.5f), // 7
+            new Vector3(-0.5f, -0.5f, -0.5f),
+            new Vector3( 0.5f, -0.5f, -0.5f),
+            new Vector3( 0.5f, -0.5f,  0.5f),
+            new Vector3(-0.5f, -0.5f,  0.5f),
+            new Vector3(-0.5f,  0.5f, -0.5f),
+            new Vector3( 0.5f,  0.5f, -0.5f),
+            new Vector3( 0.5f,  0.5f,  0.5f),
+            new Vector3(-0.5f,  0.5f,  0.5f),
         };
 
-        // 12 рёбер как пары индексов углов (низ, верх, вертикали).
         public static readonly int[] EdgeIndices =
         {
-            0,1, 1,2, 2,3, 3,0, // нижняя грань
-            4,5, 5,6, 6,7, 7,4, // верхняя грань
-            0,4, 1,5, 2,6, 3,7, // вертикальные рёбра
+            0,1, 1,2, 2,3, 3,0,
+            4,5, 5,6, 6,7, 7,4,
+            0,4, 1,5, 2,6, 3,7,
         };
 
         public const int EdgeCount = 12;
 
-        /// <summary>8 углов короба в МИРОВЫХ координатах через матрицу детали
-        /// (localToWorld). Учитывает позицию, поворот и масштаб — поэтому рёбра
-        /// ложатся точно на грани при любой ориентации детали. Чистая функция.</summary>
         public static void WorldCorners(Matrix4x4 localToWorld, Vector3[] into)
         {
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < Corners.Length; i++)
                 into[i] = localToWorld.MultiplyPoint3x4(Corners[i]);
         }
     }
 
-    /// <summary>Чёрный контур короба для «прозрачного» режима: грани детали
-    /// делаются сквозными, а форма читается по 12 рёбрам. Каждое ребро — тонкий
-    /// брусок в МИРОВЫХ координатах (не дочерний масштаб!), поэтому контур не
-    /// «плывёт» при повороте/неравномерном масштабе детали и всегда заметной
-    /// толщины. Коллайдеров у брусков нет — клик по-прежнему ловит саму деталь.</summary>
     [DisallowMultipleComponent]
     public class ElementOutline : MonoBehaviour
     {
-        /// <summary>Толщина ребра в метрах.</summary>
-        private const float ThicknessMeters = 0.004f;
+        public const float EdgeThicknessMeters = 0.004f;
+
+        internal const string OutlineRootName = "__Outline";
+
+        internal static readonly string[] UnlitShaderChain =
+        {
+            "Universal Render Pipeline/Unlit",
+            "Universal Render Pipeline/Lit",
+            "Sprites/Default",
+        };
+
+        private static readonly Color SelectedColor = new Color(1f, 0.85f, 0.1f, 1f);
 
         private static Material? _blackMat;
         private static Material? _selectedMat;
 
         private Transform? _root;
         private readonly Transform[] _edges = new Transform[BoxWireframe.EdgeCount];
-        private readonly Vector3[] _corners = new Vector3[8];
+        private readonly Vector3[] _corners = new Vector3[BoxWireframe.Corners.Length];
         private bool _visible;
+
+        internal Transform? Root => _root;
 
         public static ElementOutline? For(KitchenElement element)
             => element != null ? element.GetComponent<ElementOutline>() : null;
@@ -74,18 +74,15 @@ namespace KitchenDesigner.Core
         {
             if (_root != null) return;
 
-            var rootGo = new GameObject("__Outline");
+            var rootGo = new GameObject(OutlineRootName);
             _root = rootGo.transform;
-            _root.SetParent(null, false); // мировые координаты, без наследования масштаба
+            _root.SetParent(null, false);
 
             for (int i = 0; i < BoxWireframe.EdgeCount; i++)
             {
                 var seg = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 seg.name = "Edge" + i;
-                // Примитив-куб приносит BoxCollider — снимаем, чтобы контур не
-                // перехватывал клики мыши (клик должен попадать в саму деталь).
-                var col = seg.GetComponent<Collider>();
-                if (col != null) Destroy(col);
+                DropColliderSoClicksReachThePart(seg);
 
                 var mr = seg.GetComponent<MeshRenderer>();
                 mr.sharedMaterial = BlackMaterial();
@@ -97,6 +94,18 @@ namespace KitchenDesigner.Core
             }
 
             _root.gameObject.SetActive(false);
+        }
+
+        private static void DestroyNow(Object target)
+        {
+            if (Application.isPlaying) Object.Destroy(target);
+            else Object.DestroyImmediate(target);
+        }
+
+        private static void DropColliderSoClicksReachThePart(GameObject seg)
+        {
+            var col = seg.GetComponent<Collider>();
+            if (col != null) DestroyNow(col);
         }
 
         public void Show(bool selected)
@@ -125,10 +134,9 @@ namespace KitchenDesigner.Core
 
         private void OnDestroy()
         {
-            if (_root != null) Destroy(_root.gameObject);
+            if (_root != null) DestroyNow(_root.gameObject);
         }
 
-        /// <summary>Разложить 12 брусков по рёбрам мирового короба детали.</summary>
         private void UpdateEdges()
         {
             if (_root == null) return;
@@ -141,26 +149,27 @@ namespace KitchenDesigner.Core
                 if (seg == null) continue;
                 Vector3 a = _corners[idx[e * 2]];
                 Vector3 b = _corners[idx[e * 2 + 1]];
-                Vector3 dir = b - a;
-                float len = dir.magnitude;
+                Vector3 alongEdge = b - a;
+                float edgeLength = alongEdge.magnitude;
 
                 seg.position = (a + b) * 0.5f;
-                seg.rotation = len > 1e-6f
-                    ? Quaternion.LookRotation(dir / len) // локальный +Z вдоль ребра
+                seg.rotation = edgeLength > 1e-6f
+                    ? Quaternion.LookRotation(alongEdge / edgeLength)
                     : Quaternion.identity;
-                seg.localScale = new Vector3(ThicknessMeters, ThicknessMeters, len);
+                seg.localScale = new Vector3(EdgeThicknessMeters, EdgeThicknessMeters, edgeLength);
             }
         }
 
-        private static Material? MakeUnlit(Color color)
+        internal static Material? MakeUnlit(Color color)
         {
-            // ВАЖНО: URP/Unlit вырезается из сборки, если им не пользуется ни один
-            // материал (Shader.Find → null в билде → краш). Падаем на гарантированно
-            // включённый URP/Lit (его используют все детали), затем на любой доступный.
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Sprites/Default");
-            if (shader == null) return null; // никогда не роняем игру
+            Shader? shader = null;
+            foreach (var name in UnlitShaderChain)
+            {
+                shader = Shader.Find(name);
+                if (shader != null) break;
+            }
+            if (shader == null) return null;
+
             var m = new Material(shader);
             m.SetColor("_BaseColor", color);
             m.color = color;
@@ -175,7 +184,7 @@ namespace KitchenDesigner.Core
 
         private static Material? SelectedMaterial()
         {
-            if (_selectedMat == null) _selectedMat = MakeUnlit(new Color(1f, 0.85f, 0.1f, 1f));
+            if (_selectedMat == null) _selectedMat = MakeUnlit(SelectedColor);
             return _selectedMat;
         }
     }

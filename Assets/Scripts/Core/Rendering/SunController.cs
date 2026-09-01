@@ -2,48 +2,55 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Глобальное освещение «солнце»: время суток двигает directional
-    /// light по небосводу (восход 6:00 → зенит 12:00 → закат 18:00), ночью
-    /// сцена подсвечивается тусклой холодной «луной». Панель UI (DayNightPanelUI)
-    /// крутит время, азимут и яркость. Чистая статика — покрывается тестами.</summary>
     public static class SunController
     {
         public const float DEFAULT_TIME = 12f;
         public const float DEFAULT_AZIMUTH = 135f;
         public const float DEFAULT_INTENSITY = 1f;
         public const float MAX_ELEVATION_DEG = 65f;
+        public const float SUNRISE_HOUR = 6f;
+        public const float SUNSET_HOUR = 18f;
+        public const float MOON_ELEVATION_DEG = 45f;
+        public const float MOON_AZIMUTH_OFFSET_DEG = 180f;
 
-        private const float NightIntensity = 0.08f;
+        private const float MoonIntensityFactor = 0.08f;
+        private const float HorizonIntensityFactor = 0.25f;
+        private const float ZenithIntensityFactor = 1.15f;
+        private const float NightAmbientIntensity = 0.25f;
+        private const float DayAmbientIntensity = 1f;
+
         private static readonly Color DayColor = Color.white;
-        private static readonly Color DawnColor = new Color(1f, 0.62f, 0.36f);   // рассвет/закат
-        private static readonly Color NightColor = new Color(0.55f, 0.65f, 0.95f); // «луна»
+        private static readonly Color SunriseSunsetColor = new Color(1f, 0.62f, 0.36f);
+        private static readonly Color MoonlightColor = new Color(0.55f, 0.65f, 0.95f);
+        private static readonly Color NightAmbientColor = new Color(0.10f, 0.12f, 0.18f);
+        private static readonly Color DayAmbientColor = new Color(0.54f, 0.56f, 0.60f);
 
-        private static Light? _sun;
+        private static Light? _cachedSun;
 
         public static float TimeOfDay { get; private set; } = DEFAULT_TIME;
         public static float Azimuth { get; private set; } = DEFAULT_AZIMUTH;
         public static float Intensity { get; private set; } = DEFAULT_INTENSITY;
 
-        /// <summary>Высота солнца над горизонтом, градусы. Отрицательная — ночь.</summary>
         public static float ElevationDeg =>
-            Mathf.Sin((TimeOfDay - 6f) / 12f * Mathf.PI) * MAX_ELEVATION_DEG;
+            Mathf.Sin((TimeOfDay - SUNRISE_HOUR) / (SUNSET_HOUR - SUNRISE_HOUR) * Mathf.PI)
+            * MAX_ELEVATION_DEG;
 
         public static bool IsNight => ElevationDeg <= 0f;
+
+        public static float HorizonToZenith01 => Mathf.Clamp01(ElevationDeg / MAX_ELEVATION_DEG);
 
         public static Light? Sun
         {
             get
             {
-                // RenderSettings.sun приоритетен и не кэшируется: сцена или
-                // тесты могут подменить солнце в любой момент.
-                var explicitSun = RenderSettings.sun;
-                if (explicitSun != null) return explicitSun;
-                if (_sun == null) _sun = FindSun();
-                return _sun;
+                var sceneAssignedSun = RenderSettings.sun;
+                if (sceneAssignedSun != null) return sceneAssignedSun;
+                if (_cachedSun == null) _cachedSun = FindFirstDirectionalLight();
+                return _cachedSun;
             }
         }
 
-        private static Light? FindSun()
+        private static Light? FindFirstDirectionalLight()
         {
             foreach (var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
                 if (l != null && l.type == LightType.Directional) return l;
@@ -76,33 +83,39 @@ namespace KitchenDesigner.Core
             Apply();
         }
 
-        /// <summary>Применить текущие время/азимут/яркость к солнцу сцены.</summary>
         public static void Apply()
         {
             var sun = Sun;
             if (sun == null) return;
 
-            float elev = ElevationDeg;
-            // 0 у горизонта → 1 в зените; ночью 0.
-            float dayFactor = Mathf.Clamp01(elev / MAX_ELEVATION_DEG);
+            if (IsNight) ApplyMoonlight(sun);
+            else ApplyDaylight(sun);
 
-            if (elev > 0f)
-            {
-                sun.transform.rotation = Quaternion.Euler(elev, Azimuth, 0f);
-                sun.color = Color.Lerp(DawnColor, DayColor, dayFactor);
-                sun.intensity = Intensity * Mathf.Lerp(0.25f, 1.15f, Mathf.Sqrt(dayFactor));
-            }
-            else
-            {
-                // Ночь: тусклая «луна» с противоположной стороны неба.
-                sun.transform.rotation = Quaternion.Euler(45f, Azimuth + 180f, 0f);
-                sun.color = NightColor;
-                sun.intensity = Intensity * NightIntensity;
-            }
+            ApplyAmbient();
+        }
 
-            RenderSettings.ambientIntensity = Mathf.Lerp(0.25f, 1f, dayFactor);
-            RenderSettings.ambientLight = Color.Lerp(
-                new Color(0.10f, 0.12f, 0.18f), new Color(0.54f, 0.56f, 0.60f), dayFactor);
+        private static void ApplyDaylight(Light sun)
+        {
+            float t = HorizonToZenith01;
+            sun.transform.rotation = Quaternion.Euler(ElevationDeg, Azimuth, 0f);
+            sun.color = Color.Lerp(SunriseSunsetColor, DayColor, t);
+            sun.intensity = Intensity
+                * Mathf.Lerp(HorizonIntensityFactor, ZenithIntensityFactor, Mathf.Sqrt(t));
+        }
+
+        private static void ApplyMoonlight(Light sun)
+        {
+            sun.transform.rotation = Quaternion.Euler(
+                MOON_ELEVATION_DEG, Azimuth + MOON_AZIMUTH_OFFSET_DEG, 0f);
+            sun.color = MoonlightColor;
+            sun.intensity = Intensity * MoonIntensityFactor;
+        }
+
+        private static void ApplyAmbient()
+        {
+            float t = HorizonToZenith01;
+            RenderSettings.ambientIntensity = Mathf.Lerp(NightAmbientIntensity, DayAmbientIntensity, t);
+            RenderSettings.ambientLight = Color.Lerp(NightAmbientColor, DayAmbientColor, t);
         }
     }
 }
