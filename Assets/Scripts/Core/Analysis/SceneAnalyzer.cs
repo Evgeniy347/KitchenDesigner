@@ -2,34 +2,14 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core.Analysis
 {
-    /// <summary>
-    /// Сборщик проблем сцены для окна анализа ошибок и MCP. Errors — коллизии
-    /// (<see cref="ConstraintValidator"/>) и неверная геометрия установки
-    /// (DWH-05: посудомойке не на чем стоять). Warnings — потенциальные дефекты
-    /// сборки: почти-касания (недожатый снэп), зазоры фасада, ящик без фасада.
-    /// Новый источник = новый Collect-метод + коды в <see cref="IssueCatalog"/>.
-    /// Предупреждения НЕ подсвечиваются на сцене — только этот список.
-    /// </summary>
     public static class SceneAnalyzer
     {
-        /// <summary>Минимум «общего зазора по оси» (мм): сумма зазоров по
-        /// встречным граням меньше этого — GAP-01 «требуется ≥2мм». Пара
-        /// «прибор ↔ фасад» для посудомойки проверяется своим правилом, см.
-        /// <see cref="DishwasherBackGapMinMm"/>.</summary>
         public const float NearContactMinGapMm = 2f;
 
-        /// <summary>Максимум «общего зазора по оси» (мм): сумма зазоров по
-        /// встречным граням больше этого — GAP-02 «слишком большой». 4мм
-        /// совпадает с верхней границей монтажного зазора обычных навесок
-        /// (ящик, фасад); свыше — снап не дотянул.</summary>
         public const float NearContactMaxGapMm = 4f;
 
-        /// <summary>Минимальный монтажный зазор сзади между корпусом посудомойки
-        /// и пристёгнутым к ней фасадом, мм. Соответствует
-        /// <see cref="DishwasherElement.FACADE_MOUNT_GAP_MM"/>.</summary>
         public const float DishwasherBackGapMinMm = 5f;
 
-        /// <summary>Минимальный технологический зазор фасада с каждой стороны, мм.</summary>
         public const int FacadeMinGapMm = 1;
 
         public static List<AnalysisIssue> Analyze()
@@ -51,7 +31,6 @@ namespace KitchenDesigner.Core.Analysis
             return issues;
         }
 
-        // ── Errors: коллизии ─────────────────────────────────────────────
         private static void CollectCollisions(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             var result = ConstraintValidator.Validate(all);
@@ -60,53 +39,45 @@ namespace KitchenDesigner.Core.Analysis
                 issues.Add(IssueCatalog.FromViolation(diag));
         }
 
-        // ── Error: торец под кромку перекрыт частично ────────────────────
-        // Кромку клеят на весь торец: если сосед закрывает его наполовину,
-        // деталь либо не встанет на место (кромка мешает), либо кромка
-        // оборвётся посередине. Полностью закрытый торец — норма (кромки нет),
-        // полностью открытый — норма (кромка есть); ошибка ровно посередине.
+        private static float MinReportedCoverageRatio()
+        {
+            var settings = KitchenSettings.Instance;
+            return (settings != null ? settings.EdgePartialThresholdPct : 0) / 100f;
+        }
+
         private static void CollectEdgeCover(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
-            // Планка или царга задевает торец на пару процентов — это нормальная
-            // конструкция, а не наезд на кромку. Порог настраивается («Нижний
-            // порог кромки»), 0 — сообщать о любом перекрытии.
-            var settings = KitchenSettings.Instance;
-            float minRatio = (settings != null ? settings.EdgePartialThresholdPct : 0) / 100f;
+            float minReportedCoverageRatio = MinReportedCoverageRatio();
 
             foreach (var e in all)
             {
                 if (e == null || !e.EdgeBandingEnabled) continue;
 
                 var coverage = EdgeBanding.Coverage(e, all);
-                var sides = new List<string>();
+                var partiallyCoveredSides = new List<string>();
 
-                // Виновник — сосед, накрывший торец больше всех. Торцов может быть
-                // испорчено несколько, а вторая деталь в отчёте одна: берём того,
-                // у кого площадь перекрытия максимальна по всем сторонам.
-                KitchenElement? culprit = null;
-                float culpritArea = 0f;
+                KitchenElement? dominantCoverer = null;
+                float dominantCoveredArea = 0f;
 
                 foreach (EdgeSide side in System.Enum.GetValues(typeof(EdgeSide)))
                 {
-                    // Ручную сторону пользователь взял на себя: геометрия про неё
-                    // больше не спорит.
                     if (e.IsEdgeManual(side)) continue;
                     if (!coverage.IsPartial(side)) continue;
-                    if (coverage.Ratio(side) < minRatio) continue;
-                    sides.Add($"{side} {coverage.Ratio(side) * 100f:F0}%");
+                    if (coverage.Ratio(side) < minReportedCoverageRatio) continue;
+                    partiallyCoveredSides.Add($"{side} {coverage.Ratio(side) * 100f:F0}%");
 
                     var coverer = EdgeBanding.DominantCoverer(e, all, side, out float area);
-                    if (coverer == null || area <= culpritArea) continue;
-                    culprit = coverer;
-                    culpritArea = area;
+                    if (coverer == null || area <= dominantCoveredArea) continue;
+                    dominantCoverer = coverer;
+                    dominantCoveredArea = area;
                 }
 
-                if (sides.Count > 0)
-                    issues.Add(IssueCatalog.EdgePartialCover(e, string.Join(", ", sides), culprit));
+                if (partiallyCoveredSides.Count > 0)
+                    issues.Add(IssueCatalog.EdgePartialCover(e,
+                        string.Join(", ", partiallyCoveredSides), dominantCoverer));
             }
         }
 
-        // ── Warning: почти касание (общий зазор по оси вне [2..4]) ───────
         private static void CollectNearContacts(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             foreach (var nc in ConstraintValidator.FindNearContacts(all, NearContactMinGapMm, NearContactMaxGapMm))
@@ -118,22 +89,12 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
-        // ── Warning: задний зазор фасада посудомойки меньше 5мм ─────────
-        // Пара «посудомойка ↔ ЕЁ фасад» из общего правила GAP-01/02
-        // исключена (FindNearContacts пропускает её), а здесь проверяется
-        // отдельно: монтажный минимум 5мм обязателен, иначе кронштейны
-        // схемы прибора не работают (дверца не откинется).
         private static void CollectDishwasherFacadeBackGaps(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             foreach (var d in ConstraintValidator.FindDishwasherFacadeBackGaps(all))
                 issues.Add(IssueCatalog.DishwasherFacadeBackGap(d.dishwasher, d.facade, d.gapMm));
         }
 
-        // ── Error: посудомойке не на чем стоять ─────────────────────────
-        // Прибор обязан опираться подошвой на пол, цоколь или любую деталь.
-        // Общий COL-02 «висит в воздухе» его не ловит: объём валидации машины
-        // начинается выше подошвы (цокольная полоса отдана мебели), поэтому и
-        // «висит», и «провалилась в пол» проходили молча.
         private static void CollectDishwasherSupport(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             foreach (var s in ConstraintValidator.FindDishwasherSupportIssues(all))
@@ -142,30 +103,30 @@ namespace KitchenDesigner.Core.Analysis
                     : IssueCatalog.DishwasherNoSupport(s.dishwasher));
         }
 
-        // ── Warning: вкладная панель (ДВП) не дошла до дна паза ──────────
         private static void CollectPanelSeating(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             foreach (var u in ConstraintValidator.FindUnseatedPanels(all))
                 issues.Add(IssueCatalog.PanelNotSeated(u.panel, u.board, u.insertionMm, u.depthMm));
         }
 
-        // ── Warning: зазоры фасада < минимума ────────────────────────────
         private static void CollectFacadeGaps(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             foreach (var e in all)
             {
                 if (!(e is FacadeElement f)) continue;
-                var bad = new List<string>();
-                if (f.GapLeft < FacadeMinGapMm) bad.Add($"слева {f.GapLeft}");
-                if (f.GapRight < FacadeMinGapMm) bad.Add($"справа {f.GapRight}");
-                if (f.GapTop < FacadeMinGapMm) bad.Add($"сверху {f.GapTop}");
-                if (f.GapBottom < FacadeMinGapMm) bad.Add($"снизу {f.GapBottom}");
-                if (bad.Count > 0)
-                    issues.Add(IssueCatalog.FacadeGap(f, string.Join(", ", bad)));
+                var tooSmallGaps = new List<string>();
+                if (f.GapLeft < FacadeMinGapMm) tooSmallGaps.Add($"слева {f.GapLeft}");
+                if (f.GapRight < FacadeMinGapMm) tooSmallGaps.Add($"справа {f.GapRight}");
+                if (f.GapTop < FacadeMinGapMm) tooSmallGaps.Add($"сверху {f.GapTop}");
+                if (f.GapBottom < FacadeMinGapMm) tooSmallGaps.Add($"снизу {f.GapBottom}");
+                if (tooSmallGaps.Count > 0)
+                    issues.Add(IssueCatalog.FacadeGap(f, string.Join(", ", tooSmallGaps)));
             }
         }
 
-        // ── Warning: ящик без ссылки на фасад или фасад оторвался ─────────
+        private static bool FacadeBelongsToTheLowerHalfOfTheDoublePair(DrawerElement d) =>
+            d.IsUpperDrawer && d.IsDouble;
+
         private static void CollectDrawerFacadeLinks(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             foreach (var e in all)
@@ -173,24 +134,17 @@ namespace KitchenDesigner.Core.Analysis
                 if (!(e is DrawerElement d)) continue;
                 if (string.IsNullOrEmpty(d.AttachedFacadeName))
                 {
-                    // Верхний ящик двойной пары штатно без своего фасада — фасад у нижнего.
-                    if (d.IsUpperDrawer && d.IsDouble) continue;
+                    if (FacadeBelongsToTheLowerHalfOfTheDoublePair(d)) continue;
                     issues.Add(IssueCatalog.DrawerNoFacade(d));
                     continue;
                 }
-                // Фасад указан, но физического контакта нет — ящик или фасад сдвинули.
+
                 var facade = FindFacade(all, d.AttachedFacadeName);
                 if (facade != null && !DrawerLinks.IsFacadeInContact(d, facade))
                     issues.Add(IssueCatalog.DrawerFacadeOrphaned(d, facade));
             }
         }
 
-        // ── Warning: фасад посудомоечной машины ──────────────────────────
-        // Машина полновстраиваемая: без пристёгнутого фасада на кухне зияет
-        // дыра, а фасад не той высоты не сходится с цоколем. Всё это
-        // ПРЕДУПРЕЖДЕНИЯ, а не запреты: пользователь вправе собирать кухню в
-        // любом порядке и доводить размеры потом — отказ на полпути сборки
-        // только мешал бы (так же ведут себя зазоры фасада, FAC-01).
         private static void CollectDishwasherFacadeLinks(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             foreach (var e in all)
@@ -205,10 +159,6 @@ namespace KitchenDesigner.Core.Analysis
                 var facade = FindFacade(all, dw.AttachedFacadeName);
                 if (facade == null)
                 {
-                    // Фасад удалили, а имя осталось. У ящика этот случай
-                    // молчал (DRW-02 требует найденный фасад) — здесь он
-                    // сообщается: у машины фасад один и он обязателен, так что
-                    // «ссылка есть, фасада нет» это уже дефект сборки.
                     issues.Add(IssueCatalog.DishwasherFacadeMissing(dw, dw.AttachedFacadeName));
                     continue;
                 }
@@ -222,15 +172,6 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
-        // ── Error: прикреплённая деталь отошла от родителя ───────────────
-        // Прикрепление означает «стоят вплотную»: дно прикручено к фасаду,
-        // задняя стенка — ко дну. Появился зазор — сборка разъехалась, и
-        // анимация открывания растащит её ещё дальше. Это ОШИБКА, а не
-        // предупреждение: связь объявил сам пользователь, и геометрия ей
-        // противоречит.
-        //
-        // Пропавший родитель ошибкой НЕ считается: удаление родителя отцепляет
-        // детей (см. AttachLinks.Parent), и жаловаться там не на что.
         private static void CollectAttachLinks(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             foreach (var e in all)
@@ -252,18 +193,13 @@ namespace KitchenDesigner.Core.Analysis
         }
     }
 
-    /// <summary>Каталог кодов: единственный источник «причина → код + уровень +
-    /// текст». Коды стабильны (на них завязан фильтр по кодам) — только добавляются.
-    /// Errors: COL-xx (коллизии). Warnings: GAP-xx (зазор), FAC-xx (фасад),
-    /// DRW-xx (ящик), DWH-xx (посудомоечная машина).</summary>
     public static class IssueCatalog
     {
-        // Коллизии геометрии (ConstraintValidator).
         public const string CodeOverlap = "COL-01";
         public const string CodeUnsupported = "COL-02";
         public const string CodeOutOfWallBounds = "COL-03";
+        public const string CodeUnknownViolation = "COL-00";
         public const string CodeEdgePartialCover = "EDG-01";
-        // Предупреждения.
         public const string CodeNearContact = "GAP-01";
         public const string CodeNearContactFar = "GAP-02";
         public const string CodePanelNotSeated = "SEAT-01";
@@ -274,14 +210,8 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeDishwasherFacadeOrphaned = "DWH-02";
         public const string CodeDishwasherFacadeHeight = "DWH-03";
         public const string CodeDishwasherBackGap = "DWH-04";
-        /// <summary>Единственный DWH с уровнем Error: «не на чем стоять» — это
-        /// не недоделанная сборка, а неверная геометрия.</summary>
         public const string CodeDishwasherNoSupport = "DWH-05";
-
-        /// <summary>Прикреплённая деталь отошла от родителя (см.
-        /// <see cref="AttachLinks"/>).</summary>
         public const string CodeAttachDetached = "ATT-01";
-
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {
@@ -303,21 +233,17 @@ namespace KitchenDesigner.Core.Analysis
                         v.element);
 
                 default:
-                    return new AnalysisIssue(IssueLevel.Error, "COL-00",
+                    return new AnalysisIssue(IssueLevel.Error, CodeUnknownViolation,
                         Name(v.element), "Нарушение геометрии", v.element);
             }
         }
 
-        /// <summary>culprit — сосед, накрывший торец больше всех; может быть null,
-        /// если перекрытие дают только якоря вроде пола или стены.</summary>
         public static AnalysisIssue EdgePartialCover(KitchenElement element, string sides,
-            KitchenElement? culprit = null) =>
-            culprit != null
-                // Пара в колонке «Деталь» — как у GAP-01/COL-01: по клику
-                // ErrorPanelUI выделяет обе детали, и виновник виден в сцене.
+            KitchenElement? dominantCoverer = null) =>
+            dominantCoverer != null
                 ? new AnalysisIssue(IssueLevel.Error, CodeEdgePartialCover,
-                    PairDetail(element, culprit),
-                    $"Торец под кромку перекрыт частично: {sides}", element, culprit)
+                    PairDetail(element, dominantCoverer),
+                    $"Торец под кромку перекрыт частично: {sides}", element, dominantCoverer)
                 : new AnalysisIssue(IssueLevel.Error, CodeEdgePartialCover,
                     Name(element), $"Торец под кромку перекрыт частично: {sides}", element);
 
@@ -333,9 +259,6 @@ namespace KitchenDesigner.Core.Analysis
                 $"Зазор по оси {gapMm:F1} мм — слишком большой (допустимо ≤{SceneAnalyzer.NearContactMaxGapMm:F0} мм)",
                 a, b);
 
-        /// <summary>Задний зазор между фасадом и корпусом посудомойки меньше
-        /// монтажного минимума: фасад прижат к прибору, а должен висеть на
-        /// кронштейнах. Свой код DWH-04, GAP-01/02 к этой паре не относится.</summary>
         public static AnalysisIssue DishwasherFacadeBackGap(KitchenElement dishwasher, KitchenElement facade,
             float gapMm) =>
             new AnalysisIssue(IssueLevel.Warning, CodeDishwasherBackGap,
@@ -370,8 +293,6 @@ namespace KitchenDesigner.Core.Analysis
                 Name(dishwasher), "Посудомойка без фасада — прибор полновстраиваемый, лица у него нет",
                 dishwasher);
 
-        /// <summary>Имя фасада есть, а самого фасада в сцене нет — его удалили.
-        /// Пара для отчёта здесь одна: показывать нечего, кроме машины.</summary>
         public static AnalysisIssue DishwasherFacadeMissing(KitchenElement dishwasher, string facadeName) =>
             new AnalysisIssue(IssueLevel.Warning, CodeDishwasherFacadeOrphaned,
                 Name(dishwasher), $"Фасад «{facadeName}» удалён — посудомойка осталась без лица",
@@ -383,15 +304,12 @@ namespace KitchenDesigner.Core.Analysis
                 $"Фасад посудомойки не на месте — {Name(dishwasher)} и {Name(facade)} не в контакте",
                 dishwasher, facade);
 
-        /// <summary>Под подошвой прибора пусто — машина стоит в воздухе.</summary>
         public static AnalysisIssue DishwasherNoSupport(KitchenElement dishwasher) =>
             new AnalysisIssue(IssueLevel.Error, CodeDishwasherNoSupport,
                 Name(dishwasher),
                 "Посудомойке не на чем стоять — под низом нужен пол, цоколь или опорная деталь",
                 dishwasher);
 
-        /// <summary>Подошва прибора ушла ВНУТРЬ опоры — машина провалилась в
-        /// пол (или в ту деталь, на которой должна стоять).</summary>
         public static AnalysisIssue DishwasherSunk(KitchenElement dishwasher, KitchenElement? blocker,
             float sinkMm) =>
             new AnalysisIssue(IssueLevel.Error, CodeDishwasherNoSupport,
@@ -409,7 +327,6 @@ namespace KitchenDesigner.Core.Analysis
                 + $"(допустимо {DishwasherElement.PLINTH_MIN_MM}–{DishwasherElement.PLINTH_MAX_MM})",
                 dishwasher, facade);
 
-        /// <summary>Связь есть, контакта нет — деталь и её родитель разъехались.</summary>
         public static AnalysisIssue AttachDetached(KitchenElement child, KitchenElement parent) =>
             new AnalysisIssue(IssueLevel.Error, CodeAttachDetached,
                 PairDetail(child, parent),
