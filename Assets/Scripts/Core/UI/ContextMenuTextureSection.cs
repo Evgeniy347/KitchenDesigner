@@ -123,10 +123,10 @@ namespace KitchenDesigner.Core.UI
             var size = new Vector2(TexBtnW, TexOrderBtnH);
             _rowUp[slot] = UIFactory.CreateIconButton($"CtxTexUp{slot}", column,
                 IconFactory.CaretUp, new Vector2(0, half), size,
-                () => Move(index, -1), iconPad: 4f);
+                () => Move(index, -1), iconPaddingBothEdges: 4f);
             _rowDown[slot] = UIFactory.CreateIconButton($"CtxTexDown{slot}", column,
                 IconFactory.CaretDown, new Vector2(0, -half), size,
-                () => Move(index, +1), iconPad: 4f);
+                () => Move(index, +1), iconPaddingBothEdges: 4f);
             return column;
         }
 

@@ -5,10 +5,6 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>
-    /// Помощники для процедурной сборки uGUI на TextMeshPro (SDF-шрифты —
-    /// чёткий текст на любом разрешении, включая WebGL).
-    /// </summary>
     public static class UIFactory
     {
         private static TMP_FontAsset? _fontAsset;
@@ -20,16 +16,7 @@ namespace KitchenDesigner.Core.UI
                 {
                     _fontAsset = Resources.Load<TMP_FontAsset>("Fonts/LiberationSans SDF");
                     if (_fontAsset == null)
-                    {
-                        // Runtime-генерация раньше TMP-дефолта: дефолтный статический
-                        // атлас LiberationSans SDF не содержит кириллицы.
-                        var unityFont = Resources.Load<Font>("Fonts/LiberationSans");
-                        if (unityFont != null)
-                        {
-                            _fontAsset = TMP_FontAsset.CreateFontAsset(unityFont);
-                            Debug.LogWarning("[UIFactory] TMPro font created at runtime — run Tools/Kitchen/Create TMP Font From LiberationSans in Editor for better quality and no first-frame hitch.");
-                        }
-                    }
+                        _fontAsset = BuildCyrillicCapableFontAtRuntime();
                     if (_fontAsset == null)
                         _fontAsset = TMP_Settings.defaultFontAsset;
                     if (_fontAsset == null)
@@ -39,7 +26,15 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        // Сохраняем обратную совместимость: вызовы с TextAnchor не требуют правок.
+        private static TMP_FontAsset? BuildCyrillicCapableFontAtRuntime()
+        {
+            var unityFont = Resources.Load<Font>("Fonts/LiberationSans");
+            if (unityFont == null) return null;
+
+            Debug.LogWarning("[UIFactory] TMPro font created at runtime — run Tools/Kitchen/Create TMP Font From LiberationSans in Editor for better quality and no first-frame hitch.");
+            return TMP_FontAsset.CreateFontAsset(unityFont);
+        }
+
         private static TextAlignmentOptions MapAlignment(TextAnchor anchor) => anchor switch
         {
             TextAnchor.UpperLeft => TextAlignmentOptions.TopLeft,
@@ -54,16 +49,13 @@ namespace KitchenDesigner.Core.UI
             _ => TextAlignmentOptions.Left
         };
 
-        // Алиасы токенов UIStyle: существующие вызовы не требуют правок.
         public static Color PanelColor => UIStyle.Panel;
         public static Color ButtonColor => UIStyle.Surface;
         public static Color FieldColor => UIStyle.Field;
         public static Color HighlightColor => UIStyle.HighlightChanged;
         public static Color TextColor => UIStyle.Text;
 
-        /// <summary>Единые состояния кнопок/тогглов: заметный hover, вдавленный
-        /// pressed, затемнённый disabled (правило 9 UI-GUIDELINES).</summary>
-        private static ColorBlock InteractiveColors()
+        internal static ColorBlock InteractiveColors()
         {
             var c = ColorBlock.defaultColorBlock;
             c.normalColor = Color.white;
@@ -185,8 +177,6 @@ namespace KitchenDesigner.Core.UI
             return button;
         }
 
-        /// <summary>Кнопка деструктивного действия: красная (UIStyle.Danger),
-        /// по правилу 3 — не на всю ширину и отделена от прочих контролов.</summary>
         public static Button CreateDangerButton(string name, Transform parent, string text, Vector2 anchoredPos, Vector2 size, System.Action? onClick)
         {
             var button = CreateButton(name, parent, text, anchoredPos, size, onClick);
@@ -194,10 +184,6 @@ namespace KitchenDesigner.Core.UI
             return button;
         }
 
-        /// <summary>Красная кнопка удаления с подтверждением в два клика
-        /// (правило 3): первый клик меняет глиф на «?!», второй удаляет. Любой
-        /// клик мимо возвращает кнопку в исходный вид — см.
-        /// <see cref="ConfirmDeleteButton"/>.</summary>
         public static Button CreateConfirmDeleteButton(string name, Transform parent, string text,
             Vector2 anchoredPos, Vector2 size, System.Action onConfirm)
         {
@@ -206,8 +192,6 @@ namespace KitchenDesigner.Core.UI
             return button;
         }
 
-        /// <summary>Стандартная кнопка закрытия окна: «×» 32×32 в правом верхнем
-        /// углу с отступом 8 px (правило 7 UI-GUIDELINES).</summary>
         public static Button CreateCloseButton(Transform windowPanel, System.Action onClose)
         {
             var btn = CreateButton("CloseBtn", windowPanel, UIStyle.GlyphClose,
@@ -221,8 +205,6 @@ namespace KitchenDesigner.Core.UI
             return btn;
         }
 
-        /// <summary>Заголовок секции формы: подпись вторичным цветом + тонкая
-        /// линия до правого края (правило 6 UI-GUIDELINES).</summary>
         public static RectTransform CreateSectionHeader(string name, Transform parent, string title, float width)
         {
             var rect = CreateRect(name, parent);
@@ -250,11 +232,9 @@ namespace KitchenDesigner.Core.UI
             return rect;
         }
 
-        /// <summary>Кнопка с иконкой-спрайтом по центру вместо текста.
-        /// <paramref name="iconPad"/> — суммарный отступ иконки от краёв: у низких
-        /// кнопок (стрелки порядка в строке списка) стандартные 12 px не оставили
-        /// бы от иконки ничего.</summary>
-        public static Button CreateIconButton(string name, Transform parent, Sprite icon, Vector2 anchoredPos, Vector2 size, System.Action onClick, float iconPad = 12f)
+        public const float MinIconSize = 4f;
+
+        public static Button CreateIconButton(string name, Transform parent, Sprite icon, Vector2 anchoredPos, Vector2 size, System.Action onClick, float iconPaddingBothEdges = 12f)
         {
             var rect = CreateRect(name, parent);
             rect.sizeDelta = size;
@@ -270,7 +250,7 @@ namespace KitchenDesigner.Core.UI
 
             var iconRect = CreateRect(name + "_Icon", rect);
             iconRect.anchorMin = iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-            float s = Mathf.Max(4f, Mathf.Min(size.x, size.y) - iconPad);
+            float s = Mathf.Max(MinIconSize, Mathf.Min(size.x, size.y) - iconPaddingBothEdges);
             iconRect.sizeDelta = new Vector2(s, s);
             iconRect.anchoredPosition = Vector2.zero;
 
@@ -317,8 +297,6 @@ namespace KitchenDesigner.Core.UI
             return input;
         }
 
-        /// <summary>Числовое поле с единицей измерения серым суффиксом внутри
-        /// поля («800 мм») — правило 1 UI-GUIDELINES: единица в поле, не в подписи.</summary>
         public static TMP_InputField CreateNumberField(string name, Transform parent, string initial,
             Vector2 anchoredPos, Vector2 size, string unit)
         {
@@ -333,15 +311,21 @@ namespace KitchenDesigner.Core.UI
             uRt.anchorMin = uRt.anchorMax = uRt.pivot = new Vector2(1, 0.5f);
             uRt.anchoredPosition = new Vector2(-6, 0);
 
-            // Текст не должен заезжать под суффикс.
-            var viewport = input.textViewport;
-            if (viewport != null)
-                viewport.offsetMax = new Vector2(-(10f + unitLbl.GetPreferredValues(unit).x), viewport.offsetMax.y);
-
+            KeepTypedTextClearOfTheUnitSuffix(input, unitLbl, unit);
             return input;
         }
 
-        /// <summary>Подсветить/снять подсветку изменённого поля (жёлтая рамка).</summary>
+        private static void KeepTypedTextClearOfTheUnitSuffix(TMP_InputField input, TMP_Text unitLbl,
+            string unit)
+        {
+            const float gapBeforeTheSuffix = 10f;
+            var viewport = input.textViewport;
+            if (viewport == null) return;
+
+            float suffixWidth = unitLbl.GetPreferredValues(unit).x;
+            viewport.offsetMax = new Vector2(-(gapBeforeTheSuffix + suffixWidth), viewport.offsetMax.y);
+        }
+
         public static void SetHighlight(TMP_InputField field, bool highlight)
         {
             if (field == null) return;
@@ -351,8 +335,6 @@ namespace KitchenDesigner.Core.UI
             outline.enabled = highlight;
         }
 
-        /// <summary>Красная рамка «значение не принято» (правило 2: невалидный
-        /// ввод не откатывается молча). Снимается любым следующим SetHighlight.</summary>
         public static void SetErrorHighlight(TMP_InputField field)
         {
             if (field == null) return;
@@ -362,8 +344,6 @@ namespace KitchenDesigner.Core.UI
             outline.enabled = true;
         }
 
-        /// <summary>Горизонтальный слайдер, собранный из кода: фон, заполнение
-        /// и ручка в стиле остальных контролов.</summary>
         public static Slider CreateSlider(string name, Transform parent, float min, float max,
             float value, Vector2 anchoredPos, Vector2 size, System.Action<float> onChanged)
         {
@@ -440,9 +420,6 @@ namespace KitchenDesigner.Core.UI
             return toggle;
         }
 
-        /// <summary>Галочка чекбокса: акцентный квадрат-заливка внутри бокса.
-        /// Image, а не текстовый глиф — ✓ отсутствует в атласе LiberationSans,
-        /// а буква «X» читается как «закрыть/удалить» (правило 4).</summary>
         public static Image CreateCheckmark(string name, Transform box)
         {
             var rt = CreateRect(name, box);
@@ -455,22 +432,14 @@ namespace KitchenDesigner.Core.UI
             return img;
         }
 
-        // Геометрия пункта списка: подпись отступает от левого края на ширину
-        // галочки, справа — обычное поле. Обе величины нужны и снаружи —
-        // FitDropdownItems считает по ним ширину текста.
         public const float DropdownItemLabelLeft = 26f;
         public const float DropdownItemLabelRight = 8f;
         public const int DropdownItemFontSize = 14;
 
-        // Раскрытый список: сколько пунктов видно без прокрутки и докуда он
-        // вправе разрастись. Ширина больше панели свойств — это нормально,
-        // список всё равно попап, а TMP_Dropdown вжимает его в экран сам.
         private const int DropdownVisibleItems = 7;
         private const float DropdownListMaxH = 320f;
         private const float DropdownListMaxW = 420f;
 
-        /// <summary>Выпадающий список (TMPro Dropdown), собранный из кода —
-        /// с прокручиваемым шаблоном списка. Возвращает TMP_Dropdown.</summary>
         public static TMP_Dropdown CreateDropdown(string name, Transform parent,
             System.Collections.Generic.List<string> options,
             Vector2 anchoredPos, Vector2 size, System.Action<int> onChanged)
@@ -489,10 +458,7 @@ namespace KitchenDesigner.Core.UI
             var capRt = caption.rectTransform;
             capRt.anchorMin = Vector2.zero; capRt.anchorMax = Vector2.one;
             capRt.offsetMin = new Vector2(8, 2); capRt.offsetMax = new Vector2(-18, -2);
-            // Свёрнутый список — одна строка фиксированной высоты: длинное имя
-            // здесь обрезается многоточием, а целиком его показывает сам список.
-            caption.enableWordWrapping = false;
-            caption.overflowMode = TextOverflowModes.Ellipsis;
+            ClipTheClosedCaptionToOneLine(caption);
 
             var arrow = CreateLabel(name + "_Arrow", rect, UIStyle.GlyphDropdown, 10, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
             arrow.color = UIStyle.TextSecondary;
@@ -545,10 +511,7 @@ namespace KitchenDesigner.Core.UI
             ilRt.anchorMin = Vector2.zero; ilRt.anchorMax = Vector2.one;
             ilRt.offsetMin = new Vector2(DropdownItemLabelLeft, 1);
             ilRt.offsetMax = new Vector2(-DropdownItemLabelRight, -1);
-            // Пункт — единственное место, где название видно целиком, поэтому
-            // здесь перенос по словам, а не обрезка (высоту даёт FitDropdownItems).
-            itemLabel.enableWordWrapping = true;
-            itemLabel.overflowMode = TextOverflowModes.Truncate;
+            WrapTheOpenListItemOverSeveralLines(itemLabel);
 
             itemToggle.targetGraphic = itemBgImg;
             itemToggle.graphic = itemCheckImg;
@@ -579,19 +542,6 @@ namespace KitchenDesigner.Core.UI
             return dropdown;
         }
 
-        /// <summary>Подогнать раскрытый список под самое длинное название:
-        /// СНАЧАЛА расширить сам список, и только если и на предельной ширине
-        /// название не влезает — сделать пункт многострочным.
-        ///
-        /// Порядок именно такой, потому что высота у пункта одна на весь
-        /// список: подняв её ради одного длинного названия, мы делаем
-        /// двухстрочными и «Венге», и «Белый», а в окно списка перестаёт
-        /// помещаться половина декоров. Список же — попап, ширина свёрнутого
-        /// контрола ему не указ.
-        ///
-        /// Звать после КАЖДОЙ смены options: набор декоров меняется в рантайме
-        /// (внешняя папка текстур), и раскладка, посчитанная при сборке меню, к
-        /// новому набору отношения не имеет.</summary>
         public static void FitDropdownItems(TMP_Dropdown? dropdown)
         {
             if (dropdown == null) return;
@@ -605,7 +555,6 @@ namespace KitchenDesigner.Core.UI
             var texts = new System.Collections.Generic.List<string>(dropdown.options.Count);
             foreach (var o in dropdown.options) texts.Add(o.text);
 
-            // Список растянут по ширине дропдауна, sizeDelta.x — добавка к ней.
             var ddRt = dropdown.GetComponent<RectTransform>();
             float ddWidth = ddRt.rect.width > 1f ? ddRt.rect.width : ddRt.sizeDelta.x;
             const float pad = DropdownItemLabelLeft + DropdownItemLabelRight;
@@ -613,16 +562,26 @@ namespace KitchenDesigner.Core.UI
             float listWidth = Mathf.Clamp(
                 DropdownItemFit.WidthFor(texts, DropdownItemFontSize) + pad,
                 ddWidth, DropdownListMaxW);
-            template.sizeDelta = new Vector2(listWidth - ddWidth, template.sizeDelta.y);
+            float listWidthOverTheClosedControl = listWidth - ddWidth;
+            template.sizeDelta = new Vector2(listWidthOverTheClosedControl, template.sizeDelta.y);
 
             float itemH = DropdownItemFit.HeightFor(texts, listWidth - pad, DropdownItemFontSize);
             item.sizeDelta = new Vector2(item.sizeDelta.x, itemH);
             content.sizeDelta = new Vector2(content.sizeDelta.x, itemH + 2f);
-            // Сколько пунктов видно без прокрутки — величина постоянная, а не
-            // «сколько влезет в 170 px»: от неё зависит, выглядит ли список
-            // полным. При высоком пункте окно списка растёт вместе с ним.
             template.sizeDelta = new Vector2(template.sizeDelta.x,
                 Mathf.Min(itemH * DropdownVisibleItems, DropdownListMaxH));
+        }
+
+        private static void ClipTheClosedCaptionToOneLine(TMP_Text caption)
+        {
+            caption.enableWordWrapping = false;
+            caption.overflowMode = TextOverflowModes.Ellipsis;
+        }
+
+        private static void WrapTheOpenListItemOverSeveralLines(TMP_Text itemLabel)
+        {
+            itemLabel.enableWordWrapping = true;
+            itemLabel.overflowMode = TextOverflowModes.Truncate;
         }
     }
 }
