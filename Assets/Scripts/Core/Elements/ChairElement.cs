@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core
         private LegSet? _legSet;
         private ChairBackrest? _backrest;
         private TabletopSurface? _seat;
-        private bool _applying;
+        private readonly RebuildGuard _rebuild = new RebuildGuard();
 
         [SerializeField] private int _cornerRadiusMM;
         [SerializeField] private int _seatHeightMM = AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT;
@@ -36,13 +36,9 @@ namespace KitchenDesigner.Core
         public static int MinSeatHeightMM(int overallHeightMM)
             => Mathf.Min(SeatThicknessMM + MinLegHeightMM, MaxSeatHeightMM(overallHeightMM));
 
-        protected override Vector3 EffectiveScale => new Vector3(
-            DimensionsMM.x * AppConstants.MM_TO_UNITS,
-            DimensionsMM.y * AppConstants.MM_TO_UNITS,
-            DimensionsMM.z * AppConstants.MM_TO_UNITS);
+        protected override Vector3 EffectiveScale => FurnitureLayout.PhysicalScale(DimensionsMM);
 
-        public override Vector2Int DecorSurfaceMM
-            => new Vector2Int(DimensionsMM.x, DimensionsMM.z);
+        public override Vector2Int DecorSurfaceMM => FurnitureLayout.TopSurfaceMM(DimensionsMM);
 
         public override MeshRenderer? DecorRenderer => GetComponent<MeshRenderer>();
 
@@ -72,21 +68,21 @@ namespace KitchenDesigner.Core
             }
         }
 
-        [NotUndoable("декор ставится через SetMaterialCommand (MaterialSlot.Tabletop)")]
+        [NotUndoable(TabletopDecor.TabletopSlotReason)]
         public string TabletopMaterialId
         {
             get => _seatMaterialId;
-            set { _seatMaterialId = value ?? MaterialCatalog.DefaultId; ApplyMaterial(); }
+            set { _seatMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
-        [NotUndoable("декор ставится через SetMaterialCommand (MaterialSlot.Legs)")]
+        [NotUndoable(TabletopDecor.LegsSlotReason)]
         public string LegsMaterialId
         {
             get => _legsMaterialId;
-            set { _legsMaterialId = value ?? MaterialCatalog.DefaultId; ApplyMaterial(); }
+            set { _legsMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
-        [NotUndoable("псевдоним TabletopMaterialId — см. его причину")]
+        [NotUndoable(TabletopDecor.MaterialIdAliasReason)]
         public override string MaterialId
         {
             get => TabletopMaterialId;
@@ -109,24 +105,17 @@ namespace KitchenDesigner.Core
         private void ApplyMaterial()
             => TabletopDecor.ApplyBothSlots(this, _seatMaterialId, _legsMaterialId);
 
-        public override void ApplyDimensions()
+        public override void ApplyDimensions() => _rebuild.Run(Rebuild);
+
+        private void Rebuild()
         {
-            if (_applying) return;
-            _applying = true;
-            try
-            {
-                _cornerRadiusMM = ClampCornerRadius(_cornerRadiusMM);
-                _seatHeightMM = ClampSeatHeight(_seatHeightMM);
-                transform.localScale = Vector3.one;
-                RebuildSeat();
-                PlaceLegs();
-                PlaceBackrest();
-                MaterialManager.RefreshTiling(this);
-            }
-            finally
-            {
-                _applying = false;
-            }
+            _cornerRadiusMM = ClampCornerRadius(_cornerRadiusMM);
+            _seatHeightMM = ClampSeatHeight(_seatHeightMM);
+            transform.localScale = Vector3.one;
+            RebuildSeat();
+            PlaceLegs();
+            PlaceBackrest();
+            MaterialManager.RefreshTiling(this);
         }
 
         private void RebuildSeat()

@@ -24,21 +24,21 @@ namespace KitchenDesigner.Core
             set { _legInsetMM = Mathf.Max(0, value); ApplyDimensions(); }
         }
 
-        [NotUndoable("декор ставится через SetMaterialCommand (MaterialSlot.Tabletop)")]
+        [NotUndoable(TabletopDecor.TabletopSlotReason)]
         public string TabletopMaterialId
         {
             get => _tabletopMaterialId;
-            set { _tabletopMaterialId = value ?? MaterialCatalog.DefaultId; ApplyMaterial(); }
+            set { _tabletopMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
-        [NotUndoable("декор ставится через SetMaterialCommand (MaterialSlot.Legs)")]
+        [NotUndoable(TabletopDecor.LegsSlotReason)]
         public string LegsMaterialId
         {
             get => _legsMaterialId;
-            set { _legsMaterialId = value ?? MaterialCatalog.DefaultId; ApplyMaterial(); }
+            set { _legsMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
-        [NotUndoable("псевдоним TabletopMaterialId — см. его причину")]
+        [NotUndoable(TabletopDecor.MaterialIdAliasReason)]
         public override string MaterialId
         {
             get => TabletopMaterialId;
@@ -48,8 +48,7 @@ namespace KitchenDesigner.Core
         public override MeshRenderer? DecorRenderer
             => _tabletop != null ? _tabletop.GetComponent<MeshRenderer>() : null;
 
-        public override Vector2Int DecorSurfaceMM
-            => new Vector2Int(DimensionsMM.x, DimensionsMM.z);
+        public override Vector2Int DecorSurfaceMM => FurnitureLayout.TopSurfaceMM(DimensionsMM);
 
         private LegSet Legs => _legSet ??= new LegSet(transform, "Leg");
 
@@ -141,88 +140,13 @@ namespace KitchenDesigner.Core
 
         public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
 
-        public override Face[] GetFaces() => GetFacesAt(transform.position);
-
         public override Face[] GetFacesAt(Vector3 position)
-        {
-            var size = new Vector3(
-                DimensionsMM.x * AppConstants.MM_TO_UNITS,
-                DimensionsMM.y * AppConstants.MM_TO_UNITS,
-                DimensionsMM.z * AppConstants.MM_TO_UNITS);
-            var pos = position;
-            var rot = ValidationRotation;
-            var half = size * 0.5f;
-
-            var axes = new Vector3[] { rot * Vector3.right, rot * Vector3.up, rot * Vector3.forward };
-
-            var faceDims = new Vector2[]
-            {
-                new Vector2(size.y, size.z),
-                new Vector2(size.x, size.z),
-                new Vector2(size.x, size.y),
-            };
-
-            var offsets = new Vector3[]
-            {
-                 axes[0] * half.x, -axes[0] * half.x,
-                 axes[1] * half.y, -axes[1] * half.y,
-                 axes[2] * half.z, -axes[2] * half.z,
-            };
-
-            var normals = new Vector3[]
-            {
-                 axes[0], -axes[0],
-                 axes[1], -axes[1],
-                 axes[2], -axes[2],
-            };
-
-            var rightAxis = new Vector3[] { axes[1], axes[1], axes[0], axes[0], axes[0], axes[0] };
-            var upAxis = new Vector3[] { axes[2], axes[2], axes[2], axes[2], axes[1], axes[1] };
-
-            var faces = new Face[6];
-            for (int i = 0; i < 6; i++)
-            {
-                int dimIdx = i / 2;
-                faces[i] = new Face(
-                    pos + offsets[i],
-                    normals[i],
-                    faceDims[dimIdx],
-                    rightAxis[i],
-                    upAxis[i]
-                );
-            }
-            return faces;
-        }
-
-        public override Vector3[] GetVertices() => GetVerticesAt(transform.position);
+            => GappedBox.Faces(FurnitureLayout.PhysicalScale(DimensionsMM), BoxGaps.None,
+                position, ValidationRotation);
 
         public override Vector3[] GetVerticesAt(Vector3 position)
-        {
-            var size = new Vector3(
-                DimensionsMM.x * AppConstants.MM_TO_UNITS,
-                DimensionsMM.y * AppConstants.MM_TO_UNITS,
-                DimensionsMM.z * AppConstants.MM_TO_UNITS);
-            var half = size * 0.5f;
-            var pos = position;
-            var rot = transform.rotation;
-
-            var localCorners = new Vector3[]
-            {
-                new Vector3(-half.x, -half.y, -half.z),
-                new Vector3( half.x, -half.y, -half.z),
-                new Vector3( half.x, -half.y,  half.z),
-                new Vector3(-half.x, -half.y,  half.z),
-                new Vector3(-half.x,  half.y, -half.z),
-                new Vector3( half.x,  half.y, -half.z),
-                new Vector3( half.x,  half.y,  half.z),
-                new Vector3(-half.x,  half.y,  half.z),
-            };
-
-            var result = new Vector3[8];
-            for (int i = 0; i < 8; i++)
-                result[i] = pos + rot * localCorners[i];
-            return result;
-        }
+            => GappedBox.Vertices(FurnitureLayout.PhysicalScale(DimensionsMM), BoxGaps.None,
+                position, transform.rotation);
 
         public override void PrepareForDestruction() => DestroyChildren();
 
