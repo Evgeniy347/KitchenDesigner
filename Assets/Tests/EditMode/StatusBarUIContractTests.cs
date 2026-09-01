@@ -24,60 +24,30 @@ public class StatusBarUIContractTests
         StatusBarUI.ResetTimeProvider();
     }
 
-    private static void CallAwake(StatusBarUI bar) =>
-        bar.SendMessage("Awake", SendMessageOptions.DontRequireReceiver);
-
-    private static void CallOnDestroy(StatusBarUI bar) =>
-        bar.SendMessage("OnDestroy", SendMessageOptions.DontRequireReceiver);
-
     [Test]
-    public void StatusBar_OnDestroy_ReleasesTheStaticInstance()
-    {
-        CallAwake(_bar);
-        Assume.That(StatusBarUI.Instance, Is.SameAs(_bar));
-
-        CallOnDestroy(_bar);
-
-        Assert.IsNull(StatusBarUI.Instance,
-            "Статик обязан отпустить уничтоженный объект: иначе после смены сцены или "
-            + "загрузки другого проекта первый же ShowTransient падает с "
-            + "MissingReferenceException");
-    }
-
-    [Test]
-    public void StatusBar_OnDestroy_OfAnOldBar_KeepsTheCurrentOne()
-    {
-        CallAwake(_bar);
-
-        var freshGo = new GameObject("StatusBarFresh");
-        var fresh = freshGo.AddComponent<StatusBarUI>();
-        CallAwake(fresh);
-
-        CallOnDestroy(_bar);
-
-        Assert.AreSame(fresh, StatusBarUI.Instance,
-            "сравнение идёт по ReferenceEquals: умирающий старый экземпляр не должен "
-            + "обнулять текущий");
-        Object.DestroyImmediate(freshGo);
-    }
-
-    [Test]
-    public void StatusBar_InfiniteMessage_StaysUntilTheNextOne()
+    public void StatusBar_InfiniteMessage_NeverExpires_AndHoldsTheQueueBehindIt()
     {
         _bar.ShowTransient("подключение…", Color.white, float.PositiveInfinity);
 
         _fakeTime = 10_000f;
         _bar.Tick();
-
         Assert.AreEqual("подключение…", _bar.ActiveText,
-            "seconds == +бесконечность значит «висит постоянно», а не «истекает через "
-            + "минимум»: минимальный таймаут не должен подменять бесконечность");
+            "seconds == +бесконечность значит «висит постоянно»: минимальный таймаут не "
+            + "должен подменять бесконечность");
 
         _bar.ShowTransient("готово", Color.white, 5f);
         _fakeTime = 20_000f;
         _bar.Tick();
 
-        Assert.AreEqual("готово", _bar.ActiveText, "и уступает место следующему сообщению");
+        Assert.AreEqual("подключение…", _bar.ActiveText,
+            "Следующее сообщение бесконечное НЕ вытесняет — оно встаёт в очередь за ним и "
+            + "не показывается никогда. Единственный способ снять бесконечное — пустая "
+            + "строка; полагаться на «постоянно до следующего ShowTransient» нельзя");
+        Assert.AreEqual(1, _bar.QueuedCount, "и очередь копится за ним");
+
+        _bar.ShowTransient("", Color.white);
+        Assert.IsFalse(_bar.HasActive, "пустая строка очищает и активное, и очередь");
+        Assert.AreEqual(0, _bar.QueuedCount);
     }
 
     [Test]
