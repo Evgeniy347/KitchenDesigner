@@ -116,7 +116,7 @@ namespace KitchenDesigner.Core
              }),
 
             (d => d.isPillar,
-             (factory, d) => factory.CreatePillar(d.midHeightMM, d.name, d.Position),
+             (factory, d) => factory.CreatePillar(d.midHeightMM, d.name, d.Position, d.Dimensions.x),
              null),
 
             (d => d.isTable,

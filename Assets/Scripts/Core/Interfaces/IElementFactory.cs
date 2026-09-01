@@ -23,7 +23,8 @@ namespace KitchenDesigner.Core
         GameObject CreateTable(Vector3Int dimensionsMM, string name, Vector3 position);
 		GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position);
 		GameObject CreateStool(Vector3Int dimensionsMM, int cornerRadiusMM, string name, Vector3 position);
-		GameObject CreatePillar(int midHeightMM, string name, Vector3 position);
+		GameObject CreatePillar(int midHeightMM, string name, Vector3 position,
+			int diameterMM = PillarElement.DiameterMM_Default);
 		GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position);
 		GameObject CreateLightSource(string name, Vector3 position);
 		GameObject CreateSink(string name, Vector3 position);

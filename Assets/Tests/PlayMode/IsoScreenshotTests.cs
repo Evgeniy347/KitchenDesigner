@@ -600,7 +600,7 @@ public class IsoScreenshotTests
         var pillar = go.GetComponent<PillarElement>();
         Assert.IsNotNull(pillar);
 
-        Vector3 size = MmToUnits(new Vector3Int(PillarElement.TopDiameterMM, totalH, PillarElement.TopDiameterMM));
+        Vector3 size = MmToUnits(new Vector3Int(PillarElement.DiameterMM_Default, totalH, PillarElement.DiameterMM_Default));
         var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
         _spawned.Add(camGo);
 

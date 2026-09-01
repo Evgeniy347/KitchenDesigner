@@ -71,6 +71,7 @@ namespace KitchenDesigner.Core.MCP
             Unsupported("legs_material", o => o.legs_material != null, AcceptsTabletopSlots),
 
             Unsupported("mid_height_mm", o => o.mid_height_mm.HasValue, el => el is PillarElement),
+            Unsupported("diameter_mm", o => o.diameter_mm.HasValue, el => el is PillarElement),
             Unsupported("tint", o => o.tint != null, el => el is WindowElement),
             Unsupported("sill_protrusion_mm", o => o.sill_protrusion_mm.HasValue, el => el is WindowElement),
             Unsupported("sash_type", o => o.sash_type != null, el => el is DoorElement),

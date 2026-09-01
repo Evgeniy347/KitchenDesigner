@@ -232,7 +232,7 @@ namespace KitchenDesigner.Core.UI
         private static Item PillarItem(string name, int midHeightMM)
         {
             int totalH = PillarElement.TopHeightMM + midHeightMM + PillarElement.BottomHeightMM;
-            var item = new Item(name, new Vector3Int(PillarElement.TopDiameterMM, totalH, PillarElement.TopDiameterMM));
+            var item = new Item(name, new Vector3Int(PillarElement.DiameterMM_Default, totalH, PillarElement.DiameterMM_Default));
             item.isPillar = true;
             item.pillarMidHeightMM = midHeightMM;
             return item;

@@ -174,4 +174,19 @@ public class McpEditFieldRulesTests
         StringAssert.Contains("NOTHING was applied", message,
             "батч атомарен: одна негодная операция отклоняет весь батч");
     }
+
+    [Test]
+    public void EditElements_PillarDiameter_OnAnythingElse_IsRejected()
+    {
+        MakeBoard("Shelf", new Vector3Int(800, 18, 400));
+
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "Shelf", diameter_mm = 120 } }
+        }));
+
+        Assert.AreEqual("error", resp.type);
+        StringAssert.Contains("diameter_mm", ErrorMessage(resp),
+            "диаметр есть только у опоры: у доски ширина и глубина независимы");
+    }
 }

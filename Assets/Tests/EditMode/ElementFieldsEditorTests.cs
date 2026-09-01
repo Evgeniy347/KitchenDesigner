@@ -233,12 +233,40 @@ public class ElementFieldsEditorTests
     }
 
     [Test]
-    public void Pillar_WidthAndDepthAreReadOnly()
+    public void Pillar_WidthAndDepthRows_AreHidden()
     {
         _menu!.Open(Pillar());
-        Assert.IsFalse(Field("Ширина").interactable, "ширина опоры фиксирована");
-        Assert.IsFalse(Field("Глубина").interactable, "глубина опоры фиксирована");
+        Assert.IsFalse(Field("Ширина").gameObject.activeInHierarchy,
+            "у опоры сечение задаётся диаметром: строке ширины в панели делать нечего");
+        Assert.IsFalse(Field("Глубина").gameObject.activeInHierarchy, "и глубине тоже");
         Assert.IsTrue(Field("Высота").interactable, "высоту опоры править можно");
+        Assert.IsTrue(Field("Диаметр").gameObject.activeInHierarchy, "а диаметр — вот он");
+    }
+
+    [Test]
+    public void Pillar_DiameterRow_SetsWidthAndDepth()
+    {
+        var pillar = Pillar();
+        _menu!.Open(pillar);
+
+        Type("Диаметр", "120");
+
+        Assert.AreEqual(120, pillar.DiameterMM);
+        Assert.AreEqual(120, pillar.DimensionsMM.x, "ширина = диаметр");
+        Assert.AreEqual(120, pillar.DimensionsMM.z, "глубина = диаметр");
+    }
+
+    [Test]
+    public void Pillar_DiameterRow_ShowsTheClampedValue_NotTheTypedOne()
+    {
+        var pillar = Pillar();
+        _menu!.Open(pillar);
+
+        Type("Диаметр", "5");
+
+        Assert.AreEqual(PillarElement.DiameterMM_Min, pillar.DiameterMM);
+        Assert.AreEqual(PillarElement.DiameterMM_Min.ToString(), Text(Field("Диаметр")),
+            "поле обязано показать принятое значение, а не набранное");
     }
 
     [Test]

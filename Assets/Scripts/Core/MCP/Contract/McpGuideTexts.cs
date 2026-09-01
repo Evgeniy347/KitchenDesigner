@@ -218,7 +218,7 @@ StoolElement          Stool: seat + 4 legs (type:""stool"", 360x450x360 mm by
                       default). ONE type for both shapes — corner_radius 0 is a
                       square stool, min(width, depth)/2 a fully round one.
                       Seat and legs decors via tabletop_material/legs_material.
-PillarElement         Pillar (type:""pillar"", mid_height_mm).
+PillarElement         Pillar (type:""pillar"", mid_height_mm, diameter_mm).
 SinkElement / CooktopElement
                       Recessed appliances (type:""sink"" / ""cooktop""). They sit
                       on a plain board with a horizontal face (the countertop),

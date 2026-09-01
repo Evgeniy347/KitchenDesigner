@@ -286,7 +286,8 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, stool);
         }
 
-        public GameObject CreatePillar(int midHeightMM, string name, Vector3 position)
+        public GameObject CreatePillar(int midHeightMM, string name, Vector3 position,
+            int diameterMM = PillarElement.DiameterMM_Default)
         {
             var go = ElementRoot.NewCube(name, "Опора", position);
             ElementRoot.SwapBoxColliderForMeshCollider(go);
@@ -295,7 +296,7 @@ namespace KitchenDesigner.Core
             pillar.PartName = go.name;
             pillar.MidHeightMM = midHeightMM;
             pillar.DimensionsMM = new Vector3Int(
-                PillarElement.TopDiameterMM, pillar.TotalHeightMM, PillarElement.TopDiameterMM);
+                diameterMM, pillar.TotalHeightMM, diameterMM);
 
             if (DefaultMaterial != null) MaterialManager.ApplyById(pillar, MaterialCatalog.DefaultId);
             return ElementRoot.Publish(go, pillar);

@@ -129,7 +129,8 @@ namespace KitchenDesigner.Core.MCP
 
             For<PillarElement>((info, pillar) => info.pillar = new PillarInfo
             {
-                midHeightMM = pillar.MidHeightMM
+                midHeightMM = pillar.MidHeightMM,
+                diameterMM = pillar.DiameterMM
             }),
 
             For<CooktopElement>((info, cooktop) => info.cooktop = new CooktopInfo

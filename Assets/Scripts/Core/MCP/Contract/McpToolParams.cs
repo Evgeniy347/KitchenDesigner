@@ -233,6 +233,8 @@ namespace KitchenDesigner.Core.MCP.Contract
         // Pillar.
         [McpParam("Pillar only: middle cylinder height in MM (clamped 50..100). Omit to keep.", Min = 50, Max = 100)]
         public int? mid_height_mm;
+        [McpParam("Pillar only: outer diameter in MM (clamped 20..200) — width and depth are always equal. Omit to keep.", Min = 20, Max = 200)]
+        public int? diameter_mm;
 
         // Window.
         [McpParam("Window only: glass tint — clear (transparent) or tinted (slightly darkened). Omit to keep.",

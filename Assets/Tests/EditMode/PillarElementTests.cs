@@ -64,9 +64,9 @@ public class PillarElementTests
 		float toU = AppConstants.MM_TO_UNITS;
 
 		var extent = AabbExtent(pillar);
-		Assert.AreEqual(PillarElement.TopDiameterMM * toU, extent.x, 0.001f, "ширина 50мм");
+		Assert.AreEqual(PillarElement.DiameterMM_Default * toU, extent.x, 0.001f, "ширина 50мм");
 		Assert.AreEqual(expectedH * toU, extent.y, 0.001f, "высота TotalHeightMM");
-		Assert.AreEqual(PillarElement.TopDiameterMM * toU, extent.z, 0.001f, "глубина 50мм");
+		Assert.AreEqual(PillarElement.DiameterMM_Default * toU, extent.z, 0.001f, "глубина 50мм");
 
 		Object.DestroyImmediate(go);
 	}
@@ -669,6 +669,79 @@ public class PillarElementTests
 		Assert.AreEqual(130, pillar.DimensionsMM.y, "высота зажата максимумом");
 		float bottomAfter = AabbCenter(pillar).y - AabbExtent(pillar).y * 0.5f;
 		Assert.AreEqual(0f, bottomAfter, Tol, "низ ноги остался на полу после зажатого ресайза");
+	}
+
+	/// <summary>Сечение опоры круглое: у неё нет ручек X/Z, диаметр правится
+	/// полем «Диаметр». Ширина и глубина обязаны идти вместе — иначе в спецификацию
+	/// уедет овал, которого в мебели не бывает.</summary>
+	[Test]
+	public void Pillar_Diameter_SetsWidthAndDepthTogether()
+	{
+		var go = MakePillar(PillarElement.MidHeightMM_Default, Vector3.zero);
+		var pillar = go.GetComponent<PillarElement>();
+		Assert.AreEqual(PillarElement.DiameterMM_Default, pillar.DiameterMM, "по умолчанию 50");
+
+		pillar.DiameterMM = 120;
+
+		Assert.AreEqual(120, pillar.DimensionsMM.x, "ширина = диаметр");
+		Assert.AreEqual(120, pillar.DimensionsMM.z, "глубина = диаметр");
+		Assert.AreEqual(120f * AppConstants.MM_TO_UNITS, AabbExtent(pillar).x, 0.001f,
+			"габарит по X пересчитан, а не остался от прежнего меша");
+	}
+
+	[Test]
+	public void Pillar_Diameter_ClampedToRange()
+	{
+		var go = MakePillar(PillarElement.MidHeightMM_Default, Vector3.zero);
+		var pillar = go.GetComponent<PillarElement>();
+
+		pillar.DiameterMM = 5;
+		Assert.AreEqual(PillarElement.DiameterMM_Min, pillar.DiameterMM, "clamp к минимуму 20");
+
+		pillar.DiameterMM = 999;
+		Assert.AreEqual(PillarElement.DiameterMM_Max, pillar.DiameterMM, "clamp к максимуму 200");
+	}
+
+	[Test]
+	public void Pillar_DimensionsMM_WidthDrivesDiameter_DepthFollows()
+	{
+		var go = MakePillar(PillarElement.MidHeightMM_Default, Vector3.zero);
+		var pillar = go.GetComponent<PillarElement>();
+
+		pillar.DimensionsMM = new Vector3Int(120, 105, 60);
+
+		Assert.AreEqual(120, pillar.DiameterMM, "диаметр берётся из ширины");
+		Assert.AreEqual(120, pillar.DimensionsMM.z, "глубина подтянулась к ширине, а не осталась 60");
+	}
+
+	/// <summary>Тонкая шейка масштабируется вместе с габаритом (40 % — то самое
+	/// 20/50 исходной детали), иначе на большом диаметре выходит катушка.</summary>
+	[Test]
+	public void Pillar_MidSection_ScalesWithDiameter()
+	{
+		var go = MakePillar(PillarElement.MidHeightMM_Default, Vector3.zero);
+		var pillar = go.GetComponent<PillarElement>();
+		Assert.AreEqual(20, pillar.MidDiameterMM, "при габарите 50 шейка прежние 20 мм");
+
+		pillar.DiameterMM = 200;
+		Assert.AreEqual(80, pillar.MidDiameterMM, "40 % от 200");
+	}
+
+	[Test]
+	public void Pillar_ResizeCommand_UndoRestoresDiameter()
+	{
+		var go = MakePillar(PillarElement.MidHeightMM_Default, Vector3.zero);
+		var pillar = go.GetComponent<PillarElement>();
+		var oldDims = pillar.DimensionsMM;
+		var pos = pillar.transform.position;
+
+		var cmd = new ResizeCommand(pillar, oldDims, new Vector3Int(150, oldDims.y, 150),
+			pos, pos, Quaternion.identity, Quaternion.identity);
+		cmd.Execute();
+		Assert.AreEqual(150, pillar.DiameterMM, "диаметр после execute");
+
+		cmd.Undo();
+		Assert.AreEqual(PillarElement.DiameterMM_Default, pillar.DiameterMM, "диаметр после undo");
 	}
 
 	private const float Tol = 0.001f;

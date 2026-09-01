@@ -179,4 +179,16 @@ public class ElementDuplicatorTests
         Assert.IsNotNull(el, "фабрика обязана вернуть объект с KitchenElement");
         return el!;
     }
+
+    [Test]
+    public void Duplicate_Pillar_KeepsItsDiameter()
+    {
+        var source = Made(ElementFactory.CreatePillar(700, "Pillar", Vector3.zero));
+        ((PillarElement)source).DiameterMM = 150;
+
+        var copy = ElementFactory.Duplicate(source).GetComponent<PillarElement>();
+
+        Assert.AreEqual(150, copy.DiameterMM,
+            "копия опоры обязана сохранить сечение: фабрика по умолчанию ставит 50");
+    }
 }

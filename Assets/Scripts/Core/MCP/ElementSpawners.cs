@@ -74,7 +74,8 @@ namespace KitchenDesigner.Core.MCP
                     STOOL_DEFAULT_CORNER_RADIUS_MM, item.name, pos),
 
                 ["pillar"] = (item, pos) => ElementFactory.CreatePillar(
-                    item.height ?? PillarElement.MidHeightMM_Default, item.name, pos),
+                    item.height ?? PillarElement.MidHeightMM_Default, item.name, pos,
+                    item.width ?? PillarElement.DiameterMM_Default),
 
                 ["sink"] = (item, pos) => ElementFactory.CreateSink(item.name, pos),
 

@@ -175,4 +175,16 @@ public class McpEditApplyTests
             "зазоры есть не только у фасада — они правятся по SupportsGaps, а не по типу элемента");
         Assert.AreEqual(2, shelf.GapTop);
     }
+
+    [Test]
+    public void EditElements_PillarDiameter_SetsBothWidthAndDepth()
+    {
+        var pillar = Make<PillarElement>("Опора", new Vector3Int(50, 105, 50));
+
+        Edit(new { name = "Опора", diameter_mm = 140 });
+
+        Assert.AreEqual(140, pillar.DiameterMM);
+        Assert.AreEqual(140, pillar.DimensionsMM.x, "ширина = диаметр");
+        Assert.AreEqual(140, pillar.DimensionsMM.z, "глубина = диаметр");
+    }
 }

@@ -125,20 +125,20 @@ public class ResizeHandleManagerTests
     }
 
     [Test]
-    public void Pillar_KeepsOnlyItsHeight_SoTheCrossSectionHasNoHandles()
+    public void Pillar_CrossSectionStaysSquare_AndHasNoHandles()
     {
         var go = ElementFactory.CreatePillar(70, "Опора", Vector3.zero);
         _spawned.Add(go);
         var pillar = go.GetComponent<PillarElement>();
         int heightBefore = pillar.DimensionsMM.y;
 
-        pillar.DimensionsMM = new Vector3Int(300, heightBefore + 10, 300);
+        pillar.DimensionsMM = new Vector3Int(300, heightBefore + 10, 120);
 
-        Assert.AreEqual(PillarElement.TopDiameterMM, pillar.DimensionsMM.x,
-            "сечение опоры фиксировано 50×50: ручки X/Z ничего не меняли — "
-            + "DimensionsMM возвращал прежний размер, и деталь просто не "
-            + "реагировала на драг");
-        Assert.AreEqual(PillarElement.TopDiameterMM, pillar.DimensionsMM.z);
+        Assert.AreEqual(PillarElement.DiameterMM_Max, pillar.DimensionsMM.x,
+            "диаметр опоры зажат максимумом: ручек X/Z у неё нет, сечение "
+            + "правится полем «Диаметр» в свойствах");
+        Assert.AreEqual(pillar.DimensionsMM.x, pillar.DimensionsMM.z,
+            "сечение круглое: глубина всегда равна ширине, что бы ни просили");
         Assert.AreEqual(heightBefore + 10, pillar.DimensionsMM.y, "а высота тянется");
     }
 

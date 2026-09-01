@@ -66,6 +66,7 @@ namespace KitchenDesigner.Core.MCP
             For<PillarElement>((op, pillar) =>
             {
                 if (op.mid_height_mm.HasValue) pillar.MidHeightMM = op.mid_height_mm.Value;
+                if (op.diameter_mm.HasValue) pillar.DiameterMM = op.diameter_mm.Value;
             }),
             For<WindowElement>((op, window) =>
             {

@@ -124,6 +124,25 @@ public class SaveRestoreContractTests
         Assert.AreEqual(before, after, "набор типов после загрузки обязан совпасть поэлементно");
     }
 
+    /// <summary>Диаметр опоры едет в файле как ширина/глубина габарита — отдельного
+    /// поля у него нет. Восстановление через фабрику легко теряет такие значения:
+    /// раньше сечение было константой, и вызов CreatePillar просто ставил 50.</summary>
+    [Test]
+    public void Pillar_Diameter_SurvivesSaveAndLoad()
+    {
+        var pillar = (PillarElement)Register(
+            ElementFactory.CreatePillar(75, "PillarD", new Vector3(10f, 1.2f, 0f)));
+        pillar.DiameterMM = 120;
+
+        var restored = ReloadThroughFile(new[] { (KitchenElement)pillar })
+            .Select(go => go.GetComponent<PillarElement>())
+            .First(p => p != null);
+
+        Assert.AreEqual(120, restored.DiameterMM, "диаметр после загрузки");
+        Assert.AreEqual(120, restored.DimensionsMM.x, "ширина после загрузки");
+        Assert.AreEqual(120, restored.DimensionsMM.z, "глубина после загрузки");
+    }
+
     [Test]
     public void Restore_OldSaveWithEdgeSkipValidation_MarksAllFourSidesManual()
     {

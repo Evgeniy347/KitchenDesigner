@@ -97,7 +97,8 @@ namespace KitchenDesigner.Core
 
             (el => el is PillarElement,
              (factory, source, pos) =>
-                 factory.CreatePillar(((PillarElement)source).MidHeightMM, source.PartName, pos),
+                 factory.CreatePillar(((PillarElement)source).MidHeightMM, source.PartName, pos,
+                     ((PillarElement)source).DiameterMM),
              CopyMaterial),
 
             (el => el is TableElement,

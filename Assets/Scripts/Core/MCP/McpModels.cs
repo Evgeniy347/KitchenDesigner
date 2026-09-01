@@ -321,6 +321,7 @@ namespace KitchenDesigner.Core.MCP
 	public class PillarInfo
 	{
 		public int midHeightMM;
+		public int diameterMM;
 	}
 
 	/// <summary>Варочная поверхность. dimX/dimY/dimZ — верхняя плита (dimY —
