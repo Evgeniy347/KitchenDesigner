@@ -10,7 +10,7 @@ namespace KitchenDesigner.Core
         {
             Application.runInBackground = true;
             KeepStackTracesOutOfInfoLogs();
-            GameContext.InitializeWithDefaults();
+            DefaultGameServices.Install();
             DisplaySettings.ApplyWindowMode();
         }
 

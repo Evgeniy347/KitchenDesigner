@@ -13,13 +13,13 @@ namespace KitchenDesigner.Core
             ICommandStack commandStack,
             IElementFactory elementFactory,
             ISaveLoadManager saveLoadManager,
-            IGroupService? groupService = null)
+            IGroupService groupService)
         {
             PartRegistry = partRegistry;
             CommandStack = commandStack;
             ElementFactory = elementFactory;
             SaveLoadManager = saveLoadManager;
-            GroupService = groupService ?? new GroupServiceInstance();
+            GroupService = groupService;
         }
     }
 
@@ -30,17 +30,6 @@ namespace KitchenDesigner.Core
         public static void Initialize(GameServices services)
         {
             Services = services;
-        }
-
-        public static void InitializeWithDefaults()
-        {
-            Initialize(new GameServices(
-                new PartRegistryInstance(),
-                new CommandStackInstance(),
-                new ElementFactoryInstance(),
-                new SaveLoadManagerInstance(),
-                new GroupServiceInstance()
-            ));
         }
 
         public static void Clear()

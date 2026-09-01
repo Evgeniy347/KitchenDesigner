@@ -22,20 +22,23 @@ public class GameContextTests
     }
 
     [Test]
-    public void InitializeWithDefaults_CreatesAllServices()
+    public void DefaultGameServices_Install_CreatesEveryService()
     {
-        GameContext.InitializeWithDefaults();
+        DefaultGameServices.Install();
         Assert.IsNotNull(GameContext.Services);
         Assert.IsNotNull(GameContext.Services!.PartRegistry);
         Assert.IsNotNull(GameContext.Services!.CommandStack);
         Assert.IsNotNull(GameContext.Services!.ElementFactory);
         Assert.IsNotNull(GameContext.Services!.SaveLoadManager);
+        Assert.IsNotNull(GameContext.Services!.GroupService,
+            "услугу групп теперь подаёт композиционный корень: раньше GameServices "
+            + "подставлял её сам, и «кто её создаёт» было спрятано в конструкторе");
     }
 
     [Test]
-    public void InitializeWithDefaults_ServicesAreCorrectTypes()
+    public void DefaultGameServices_Install_PicksTheUnitySideImplementations()
     {
-        GameContext.InitializeWithDefaults();
+        DefaultGameServices.Install();
         Assert.IsInstanceOf<PartRegistryInstance>(GameContext.Services!.PartRegistry);
         Assert.IsInstanceOf<CommandStackInstance>(GameContext.Services!.CommandStack);
         Assert.IsInstanceOf<ElementFactoryInstance>(GameContext.Services!.ElementFactory);
@@ -49,20 +52,24 @@ public class GameContextTests
         var cmdStack = new CommandStackInstance();
         var factory = new ElementFactoryInstance();
         var saveLoad = new SaveLoadManagerInstance();
+        var groups = new GroupServiceInstance();
 
-        var services = new GameServices(boardReg, cmdStack, factory, saveLoad);
+        var services = new GameServices(boardReg, cmdStack, factory, saveLoad, groups);
         GameContext.Initialize(services);
 
         Assert.AreSame(boardReg, GameContext.Services!.PartRegistry);
         Assert.AreSame(cmdStack, GameContext.Services!.CommandStack);
         Assert.AreSame(factory, GameContext.Services!.ElementFactory);
         Assert.AreSame(saveLoad, GameContext.Services!.SaveLoadManager);
+        Assert.AreSame(groups, GameContext.Services!.GroupService,
+            "подменённая услуга групп обязана доезжать до потребителя: пока у неё было "
+            + "значение по умолчанию внутри GameServices, подменить её было нечем");
     }
 
     [Test]
     public void StaticFacades_UseContextServices_WhenInitialized()
     {
-        GameContext.InitializeWithDefaults();
+        DefaultGameServices.Install();
         var boardReg = (PartRegistryInstance)GameContext.Services!.PartRegistry;
         var cmdStack = (CommandStackInstance)GameContext.Services!.CommandStack;
 
@@ -73,7 +80,7 @@ public class GameContextTests
     [Test]
     public void Clear_ResetsToDefaultFallback()
     {
-        GameContext.InitializeWithDefaults();
+        DefaultGameServices.Install();
         Assert.IsNotNull(GameContext.Services!);
         GameContext.Clear();
         Assert.IsNull(GameContext.Services!);
@@ -82,10 +89,10 @@ public class GameContextTests
     [Test]
     public void MultipleInitializations_ReplacesServices()
     {
-        GameContext.InitializeWithDefaults();
+        DefaultGameServices.Install();
         var first = GameContext.Services!;
 
-        GameContext.InitializeWithDefaults();
+        DefaultGameServices.Install();
         var second = GameContext.Services!;
 
         Assert.AreNotSame(first, second);
@@ -94,7 +101,7 @@ public class GameContextTests
     [Test]
     public void PartRegistry_StaticFacade_UsesContextWhenAvailable()
     {
-        GameContext.InitializeWithDefaults();
+        DefaultGameServices.Install();
         var instance = (PartRegistryInstance)GameContext.Services!.PartRegistry;
 
         Assert.AreEqual(0, instance.GetAll().Count);
