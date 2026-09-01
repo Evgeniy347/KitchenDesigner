@@ -38,7 +38,6 @@ namespace KitchenDesigner.Core.Networking
     {
         public static ProjectApiClient? Instance { get; private set; }
 
-        /// <summary>Set to true after FetchConfig confirms the server has save enabled.</summary>
         public static bool Enabled { get; private set; }
 
         private const string BasePath = "/api/projects";
@@ -97,8 +96,7 @@ namespace KitchenDesigner.Core.Networking
 
                 if (req.result == UnityWebRequest.Result.Success)
                 {
-                    var cfg = JsonUtility.FromJson<ServerConfigResponse>(req.downloadHandler.text);
-                    Enabled = cfg != null && cfg.serverSaveEnabled;
+                    Enabled = ServerSaveEnabledFrom(req.downloadHandler.text);
                 }
                 else
                 {
@@ -106,6 +104,12 @@ namespace KitchenDesigner.Core.Networking
                 }
                 onComplete?.Invoke(Enabled);
             }
+        }
+
+        internal static bool ServerSaveEnabledFrom(string configJson)
+        {
+            var cfg = JsonUtility.FromJson<ServerConfigResponse>(configJson);
+            return cfg != null && cfg.serverSaveEnabled;
         }
 
         public void FetchList(Action<List<ServerProjectInfo>> onSuccess, Action<string> onError)
@@ -227,10 +231,9 @@ namespace KitchenDesigner.Core.Networking
                 CurrentProjectName = created.name;
             }
 
-            // Save the full data to the newly created project
-            var body = new UpdateRequestBody { jsonData = jsonData };
-            var bodyJson = JsonUtility.ToJson(body);
-            using (var req = UnityWebRequest.Put(BasePath + "/" + CurrentProjectId, bodyJson))
+            var updateBody = new UpdateRequestBody { jsonData = jsonData };
+            var updateJson = JsonUtility.ToJson(updateBody);
+            using (var req = UnityWebRequest.Put(BasePath + "/" + CurrentProjectId, updateJson))
             {
                 req.SetRequestHeader("Content-Type", "application/json");
                 yield return req.SendWebRequest();

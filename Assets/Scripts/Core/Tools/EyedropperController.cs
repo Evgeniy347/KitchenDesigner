@@ -3,17 +3,11 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.Tools
 {
-    /// <summary>Ввод режима «Пипетка»: ЛКМ красит подобранным декором, Esc
-    /// выходит из режима. ПКМ (забор декора) приходит сюда из
-    /// <see cref="CameraController"/> через <see cref="PickAt"/> — только он
-    /// отличает клик правой кнопкой от орбиты.
-    ///
-    /// DefaultExecutionOrder=-50 — как у MeasureController: раньше
-    /// SelectionManager/ElementMover, чтобы состояние текущего кадра было готово
-    /// до их проверок режима.</summary>
-    [DefaultExecutionOrder(-50)]
+    [DefaultExecutionOrder(RunsBeforeSelectionAndMove)]
     public class EyedropperController : MonoBehaviour
     {
+        public const int RunsBeforeSelectionAndMove = -50;
+
         public static EyedropperController? Instance { get; private set; }
 
         private void Awake() => Instance = this;
@@ -41,33 +35,36 @@ namespace KitchenDesigner.Core.Tools
                 ApplyAt(cam.ScreenPointToRay(Input.mousePosition), ShiftHeld());
         }
 
-        /// <summary>Взять декор с объекта под лучом. Накладка текстуры под
-        /// курсором приоритетнее базового свойства «Текстура»: человек целится в
-        /// то, что видит.</summary>
         public static void PickAt(Ray ray, bool shiftHeld)
         {
-            var element = Target(ray, shiftHeld, out RaycastHit hit);
+            var element = PickableUnderRay(ray, shiftHeld, out RaycastHit hit);
             if (element == null) return;
-
-            EyedropperMode.Pick(
-                TextureOverlayPicker.TryPick(element, hit.point, hit.normal, out _, out string overlayId)
-                    ? overlayId
-                    : MaterialManager.MaterialIdOf(element, SlotOf(element)));
+            PickFrom(element, hit.point, hit.normal);
         }
 
-        /// <summary>Надеть подобранный декор на объект под лучом. Попали в
-        /// накладку — красится именно она (иначе накладка сверху закрыла бы
-        /// результат, и правка выглядела бы несработавшей), мимо — базовое
-        /// свойство «Текстура».</summary>
+        internal static void PickFrom(KitchenElement element, Vector3 point, Vector3 normal)
+        {
+            EyedropperMode.Pick(
+                TextureOverlayPicker.TryPick(element, point, normal, out _, out string overlayId)
+                    ? overlayId
+                    : MaterialManager.MaterialIdOf(element, VisibleDecorSlotOf(element)));
+        }
+
         public static void ApplyAt(Ray ray, bool shiftHeld)
+        {
+            if (string.IsNullOrEmpty(EyedropperMode.PickedMaterialId)) return;
+
+            var element = PickableUnderRay(ray, shiftHeld, out RaycastHit hit);
+            if (element == null) return;
+            ApplyTo(element, hit.point, hit.normal);
+        }
+
+        internal static void ApplyTo(KitchenElement element, Vector3 point, Vector3 normal)
         {
             string? picked = EyedropperMode.PickedMaterialId;
             if (string.IsNullOrEmpty(picked)) return;
 
-            var element = Target(ray, shiftHeld, out RaycastHit hit);
-            if (element == null) return;
-
-            if (TextureOverlayPicker.TryPick(element, hit.point, hit.normal, out int index, out _))
+            if (TextureOverlayPicker.TryPick(element, point, normal, out int index, out _))
             {
                 var after = new List<TextureOverlaySpec>(element.TextureOverlays);
                 if (after[index].MaterialId == picked) return;
@@ -76,7 +73,7 @@ namespace KitchenDesigner.Core.Tools
             }
             else
             {
-                var slot = SlotOf(element);
+                var slot = VisibleDecorSlotOf(element);
                 if (MaterialManager.MaterialIdOf(element, slot) == picked) return;
                 CommandStack.Execute(new SetMaterialCommand(element, slot, picked!));
             }
@@ -84,9 +81,7 @@ namespace KitchenDesigner.Core.Tools
             if (SelectionManager.Instance != null) SelectionManager.Instance.RefreshHighlight(element);
         }
 
-        /// <summary>Что под лучом: опорная плита и заблокированное режимом
-        /// редактора пипеткой не берутся и не красятся.</summary>
-        private static KitchenElement? Target(Ray ray, bool shiftHeld, out RaycastHit hit)
+        private static KitchenElement? PickableUnderRay(Ray ray, bool shiftHeld, out RaycastHit hit)
         {
             var element = SelectionManager.RaycastTransparentAware(ray, shiftHeld, out hit);
             if (element == null) return null;
@@ -96,10 +91,7 @@ namespace KitchenDesigner.Core.Tools
             return element;
         }
 
-        /// <summary>У носителя столешницы (ITabletop) свойство «Текстура» скрыто,
-        /// а видимая поверхность — столешница или сиденье; её декор пипетка и
-        /// берёт (так же решает ContextMenuMaterialSection.SlotFor).</summary>
-        private static MaterialSlot SlotOf(KitchenElement element)
+        internal static MaterialSlot VisibleDecorSlotOf(KitchenElement element)
             => element is ITabletop ? MaterialSlot.Tabletop : MaterialSlot.Base;
 
         private static bool ShiftHeld() =>

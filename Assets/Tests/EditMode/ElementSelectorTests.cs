@@ -129,4 +129,125 @@ public class ElementSelectorTests
         Assert.AreEqual(1, r.Count);
         Assert.AreEqual("B4_side_L", r[0].PartName);
     }
+
+    private T MakeTyped<T>(string name) where T : KitchenElement
+    {
+        var go = new GameObject(name);
+        go.AddComponent<MeshFilter>();
+        go.AddComponent<MeshRenderer>();
+        var e = go.AddComponent<T>();
+        e.PartName = name;
+        _spawned.Add(go);
+        return e;
+    }
+
+    [Test]
+    public void EmptySelector_MatchesEverything()
+    {
+        Make("a", new Vector3Int(600, 400, 18));
+        Make("b", new Vector3Int(600, 400, 16));
+
+        Assert.AreEqual(2, ElementSelector.Match(null).Count, "ни одной клаузы — ни одного ограничения");
+        Assert.AreEqual(2, ElementSelector.Match("").Count);
+        Assert.AreEqual(2, ElementSelector.Match("   ").Count);
+    }
+
+    [Test]
+    public void Star_All_AndAllElements_AreOneAndTheSameUnrestrictedSelector()
+    {
+        Make("a", new Vector3Int(600, 400, 18));
+        Make("b", new Vector3Int(600, 400, 16));
+
+        Assert.AreEqual(2, ElementSelector.Match("*").Count);
+        Assert.AreEqual(2, ElementSelector.Match("all").Count);
+        Assert.AreEqual(2, ElementSelector.Match("ALL_ELEMENTS").Count, "токены разбираются регистронезависимо");
+    }
+
+    [Test]
+    public void AllBoards_TakesOnlyPlainBoards()
+    {
+        Make("board1", new Vector3Int(600, 400, 18));
+        MakeTypedAndRegister<FloorElement>("floor1");
+
+        var boards = ElementSelector.Match("all_boards");
+        Assert.AreEqual(1, boards.Count, "all_boards — синоним type:board, пол в него не входит");
+        Assert.AreEqual("board1", boards[0].PartName);
+    }
+
+    [Test]
+    public void Group_IsAnAliasOfModule()
+    {
+        var a = Make("B4_side_L", new Vector3Int(540, 720, 18));
+        Make("A2_door", new Vector3Int(600, 700, 18));
+        GroupManager.AddTo(GroupManager.Create("B4"), a);
+
+        Assert.AreEqual(1, ElementSelector.Match("group:B4").Count,
+            "group: и module: — одна и та же клауза; агенты пишут и так, и так");
+        Assert.AreEqual(1, ElementSelector.Match("module:B4").Count);
+    }
+
+    [Test]
+    public void BareToken_AndNamePrefix_MeanTheSameThing()
+    {
+        Make("B4_side_L", new Vector3Int(540, 720, 18));
+        Make("A2_door", new Vector3Int(600, 700, 18));
+
+        Assert.AreEqual(1, ElementSelector.Match("B4_*").Count, "голый токен — это имя");
+        Assert.AreEqual(1, ElementSelector.Match("name:B4_*").Count);
+    }
+
+    [Test]
+    public void EveryComparisonOperator_IsUnderstood()
+    {
+        Make("a", new Vector3Int(500, 400, 18));
+        Make("b", new Vector3Int(600, 400, 18));
+        Make("c", new Vector3Int(700, 400, 18));
+
+        Assert.AreEqual(1, ElementSelector.Match("width==600").Count);
+        Assert.AreEqual(1, ElementSelector.Match("width=600").Count, "одиночное = читается как ==");
+        Assert.AreEqual(2, ElementSelector.Match("width!=600").Count);
+        Assert.AreEqual(2, ElementSelector.Match("width>=600").Count);
+        Assert.AreEqual(2, ElementSelector.Match("width<=600").Count);
+        Assert.AreEqual(1, ElementSelector.Match("width>600").Count);
+        Assert.AreEqual(1, ElementSelector.Match("width<600").Count);
+        Assert.AreEqual(3, ElementSelector.Match("height==400").Count);
+    }
+
+    [Test]
+    public void ThicknessAndDepth_AreTheSameDimension()
+    {
+        Make("a", new Vector3Int(600, 400, 18));
+        Make("b", new Vector3Int(600, 400, 16));
+
+        Assert.AreEqual(ElementSelector.Match("depth==18").Count,
+            ElementSelector.Match("thickness==18").Count,
+            "толщина детали — это dimZ: селектор обязан отвечать на оба слова одинаково");
+    }
+
+    [Test]
+    public void InactiveElement_IsNotSelected()
+    {
+        var a = Make("a", new Vector3Int(600, 400, 18));
+        Make("b", new Vector3Int(600, 400, 18));
+        a.gameObject.SetActive(false);
+
+        var r = ElementSelector.Match("*");
+        Assert.AreEqual(1, r.Count, "выключенный объект — не содержимое сцены, массовая правка его не трогает");
+        Assert.AreEqual("b", r[0].PartName);
+    }
+
+    [Test]
+    public void TypeOf_SubclassAnswersBeforeItsBase()
+    {
+        Assert.AreEqual("assembled_facade", ElementSelector.TypeOf(MakeTyped<AssembledFacadeElement>("af")),
+            "сборный фасад — наследник FacadeElement: проверь базу раньше, и он станет обычным facade");
+        Assert.AreEqual("facade", ElementSelector.TypeOf(MakeTyped<FacadeElement>("f")));
+    }
+
+    private T MakeTypedAndRegister<T>(string name) where T : KitchenElement
+    {
+        var e = MakeTyped<T>(name);
+        PartRegistry.Register(e);
+        return e;
+    }
 }

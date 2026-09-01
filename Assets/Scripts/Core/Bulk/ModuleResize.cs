@@ -3,21 +3,10 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.Bulk
 {
-    /// <summary>
-    /// Эвристика «расширь модуль на N мм» (MCP v2). Агент задаёт (модуль, ось,
-    /// дельта), а сервер САМ решает, какие доски растянуть, какие сдвинуть — LLM не
-    /// пересчитывает координаты каждой детали.
-    ///
-    /// Правило (ближняя сторона фиксирована, модуль растёт в сторону +ось):
-    ///   • «пролётные» доски (габарит вдоль оси ≥ spanFraction ширины модуля):
-    ///     растягиваются на дельту, центр смещается на дельту/2;
-    ///   • «крайние» доски в дальней половине: сдвигаются на дельту;
-    ///   • доски в ближней половине: остаются на месте.
-    /// Работает в мировых осях; мировая ось маппится на локальный габарит через
-    /// поворот (устойчиво к rotY 0/90/180/270 — типичный случай кухни).
-    /// </summary>
     public static class ModuleResize
     {
+        public const float DefaultSpanFraction = 0.6f;
+
         public struct Change
         {
             public KitchenElement element;
@@ -26,66 +15,70 @@ namespace KitchenDesigner.Core.Bulk
         }
 
         public static List<Change> Plan(IList<KitchenElement> members, char worldAxis,
-            float deltaMM, float spanFraction = 0.6f)
+            float deltaMM, float spanFraction = DefaultSpanFraction)
         {
             var changes = new List<Change>();
             if (members == null || members.Count == 0) return changes;
 
             Vector3 axis = AxisVector(worldAxis);
 
-            // Дельту округляем ОДИН раз и от неё считаем и размер, и позицию.
-            // Раньше размер брал Mathf.RoundToInt(deltaMM), а позиция — исходную
-            // дробную дельту: при нечётной или дробной дельте они расходились, и
-            // грани модуля уезжали с миллиметровой сетки.
             int deltaRoundedMM = Mathf.RoundToInt(deltaMM);
             float deltaU = deltaRoundedMM * AppConstants.MM_TO_UNITS;
 
-            // Границы модуля вдоль оси.
-            float mmin = float.MaxValue, mmax = float.MinValue;
-            foreach (var e in members)
-            {
-                if (e == null) continue;
-                Span(e, axis, out float emin, out float emax, out _);
-                if (emin < mmin) mmin = emin;
-                if (emax > mmax) mmax = emax;
-            }
-            if (mmax <= mmin) return changes;
-            float mwidth = mmax - mmin;
-            float mmid = (mmin + mmax) * 0.5f;
+            if (!ModuleSpanAlongWorldAxis(members, axis, out float moduleMin, out float moduleMax))
+                return changes;
+
+            float moduleWidth = moduleMax - moduleMin;
+            float moduleMiddle = (moduleMin + moduleMax) * 0.5f;
 
             foreach (var e in members)
             {
                 if (e == null) continue;
-                Span(e, axis, out float emin, out float emax, out int localAxis);
-                float esize = emax - emin;
-                float ecenter = (emin + emax) * 0.5f;
+                SpanAlongWorldAxis(e, axis, out float emin, out float emax, out int localAxis);
 
-                bool span = esize >= spanFraction * mwidth;
-                if (span)
-                {
-                    // Растягиваем: ближний край на месте, дальний +дельта.
-                    var dims = e.DimensionsMM;
-                    dims[localAxis] = Mathf.Max(1, dims[localAxis] + deltaRoundedMM);
-                    changes.Add(new Change
-                    {
-                        element = e,
-                        newPosition = e.transform.position + axis * (deltaU * 0.5f),
-                        newDimensions = dims,
-                    });
-                }
-                else if (ecenter > mmid)
-                {
-                    // Крайняя доска дальней половины — сдвигаем целиком.
-                    changes.Add(new Change
-                    {
-                        element = e,
-                        newPosition = e.transform.position + axis * deltaU,
-                        newDimensions = e.DimensionsMM,
-                    });
-                }
-                // Ближняя половина (не пролётная) — без изменений.
+                bool spansTheModule = emax - emin >= spanFraction * moduleWidth;
+                float elementMiddle = (emin + emax) * 0.5f;
+                if (spansTheModule)
+                    changes.Add(StretchedKeepingItsNearEdge(e, axis, localAxis, deltaRoundedMM, deltaU));
+                else if (elementMiddle > moduleMiddle)
+                    changes.Add(ShiftedWhole(e, axis, deltaU));
             }
             return changes;
+        }
+
+        private static Change StretchedKeepingItsNearEdge(KitchenElement e, Vector3 axis, int localAxis,
+            int deltaRoundedMM, float deltaU)
+        {
+            var dims = e.DimensionsMM;
+            dims[localAxis] = Mathf.Max(1, dims[localAxis] + deltaRoundedMM);
+            return new Change
+            {
+                element = e,
+                newPosition = e.transform.position + axis * (deltaU * 0.5f),
+                newDimensions = dims,
+            };
+        }
+
+        private static Change ShiftedWhole(KitchenElement e, Vector3 axis, float deltaU) => new Change
+        {
+            element = e,
+            newPosition = e.transform.position + axis * deltaU,
+            newDimensions = e.DimensionsMM,
+        };
+
+        private static bool ModuleSpanAlongWorldAxis(IList<KitchenElement> members, Vector3 axis,
+            out float min, out float max)
+        {
+            min = float.MaxValue;
+            max = float.MinValue;
+            foreach (var e in members)
+            {
+                if (e == null) continue;
+                SpanAlongWorldAxis(e, axis, out float emin, out float emax, out _);
+                if (emin < min) min = emin;
+                if (emax > max) max = emax;
+            }
+            return max > min;
         }
 
         private static Vector3 AxisVector(char worldAxis) => char.ToLowerInvariant(worldAxis) switch
@@ -95,20 +88,25 @@ namespace KitchenDesigner.Core.Bulk
             _ => Vector3.forward,
         };
 
-        /// <summary>Протяжённость элемента вдоль мировой оси: центр по оси и
-        /// локальный габарит, чей локальный орт лучше всего совпал с осью.</summary>
-        private static void Span(KitchenElement e, Vector3 axis, out float min, out float max, out int localAxis)
+        private static void SpanAlongWorldAxis(KitchenElement e, Vector3 axis,
+            out float min, out float max, out int localAxis)
         {
             var t = e.transform;
-            float dr = Mathf.Abs(Vector3.Dot(axis, t.right));
-            float du = Mathf.Abs(Vector3.Dot(axis, t.up));
-            float df = Mathf.Abs(Vector3.Dot(axis, t.forward));
-            localAxis = (dr >= du && dr >= df) ? 0 : (du >= df ? 1 : 2);
+            localAxis = LocalAxisClosestTo(t, axis);
 
             float sizeU = e.DimensionsMM[localAxis] * AppConstants.MM_TO_UNITS;
             float center = Vector3.Dot(t.position, axis);
             min = center - sizeU * 0.5f;
             max = center + sizeU * 0.5f;
+        }
+
+        private static int LocalAxisClosestTo(Transform t, Vector3 axis)
+        {
+            float alongRight = Mathf.Abs(Vector3.Dot(axis, t.right));
+            float alongUp = Mathf.Abs(Vector3.Dot(axis, t.up));
+            float alongForward = Mathf.Abs(Vector3.Dot(axis, t.forward));
+            return (alongRight >= alongUp && alongRight >= alongForward) ? 0
+                : (alongUp >= alongForward ? 1 : 2);
         }
     }
 }

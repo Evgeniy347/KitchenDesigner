@@ -24,8 +24,6 @@ namespace KitchenDesigner.Core.MCP
         private volatile bool _running;
 
 #if UNITY_WEBGL
-        private string _gameObjectName = string.Empty;
-
         [DllImport("__Internal")]
         private static extern void WebSocketConnect(string url, string gameObjectName);
         [DllImport("__Internal")]
@@ -50,9 +48,6 @@ namespace KitchenDesigner.Core.MCP
 
         private void Start()
         {
-#if UNITY_WEBGL
-            _gameObjectName = gameObject.name;
-#endif
             if (_autoConnect)
                 Connect(_serverUrl, "");
         }
@@ -88,12 +83,8 @@ namespace KitchenDesigner.Core.MCP
                 fullUrl += (fullUrl.Contains('?') ? "&" : "?") + "key=" + Uri.EscapeDataString(accessKey);
 
 #if UNITY_WEBGL
-            // Connect может прийти раньше нашего Start (Bootstrap подключает бридж
-            // сразу после AddComponent) — имя объекта берём на месте, иначе
-            // JS-коллбеки уйдут на null и соединение молча повиснет.
-            _gameObjectName = gameObject.name;
             Debug.Log($"[MCP-WS] Connecting to {fullUrl}");
-            WebSocketConnect(fullUrl, _gameObjectName);
+            WebSocketConnect(fullUrl, gameObject.name);
 #else
             _cts = new CancellationTokenSource();
             _receiveThread = new Thread(() => ReceiveLoop(fullUrl, _cts.Token))
@@ -149,18 +140,25 @@ namespace KitchenDesigner.Core.MCP
             ProcessMessage(json);
         }
 
+        internal const string LockTakenPush = "\"lock_taken\"";
+
+        internal static bool IsServerPushedNotification(string json) => json.Contains(LockTakenPush);
+
+        private void AnnounceProjectLockTakenByAnotherTab()
+        {
+            Debug.LogWarning("[MCP-WS] Project opened in another tab — shutting down.");
+#if UNITY_WEBGL
+            ShowLockTakenAlert();
+#else
+            UnityEngine.Debug.LogError("[MCP-WS] Project lock lost — opened in another tab.");
+#endif
+        }
+
         private void ProcessMessage(string json)
         {
-            // Handle server-pushed notifications (not MCP requests).
-            if (json.Contains("\"lock_taken\""))
+            if (IsServerPushedNotification(json))
             {
-                Debug.LogWarning("[MCP-WS] Project opened in another tab — shutting down.");
-#if UNITY_WEBGL
-                ShowLockTakenAlert();
-#else
-                // In the editor, just log the event.
-                UnityEngine.Debug.LogError("[MCP-WS] Project lock lost — opened in another tab.");
-#endif
+                AnnounceProjectLockTakenByAnotherTab();
                 return;
             }
 

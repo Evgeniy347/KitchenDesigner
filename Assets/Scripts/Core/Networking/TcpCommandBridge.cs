@@ -60,4 +60,4 @@ namespace KitchenDesigner.Core
     }
 }
 
-#endif // !UNITY_WEBGL
+#endif

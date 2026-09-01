@@ -1,29 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace KitchenDesigner.Core.Bulk
 {
-    /// <summary>
-    /// Разбор строки-селектора и подбор элементов (MCP v2, массовые операции).
-    /// Идея: агент задаёт НАМЕРЕНИЕ над выборкой, а арифметику/подбор делает
-    /// сервер — LLM не перечисляет детали по одной.
-    ///
-    /// Грамматика (клаузы через пробел, элемент проходит если совпал со ВСЕМИ):
-    ///   *, all, all_elements   — без ограничения (все пользовательские элементы)
-    ///   all_boards             — только базовые «доски»
-    ///   all_modules            — элементы, состоящие в какой-либо группе/модуле
-    ///   type:T                 — по типу: board|wall|floor|window|door|drawer|
-    ///                            facade|assembled_facade|radial_shelf|panel|table|
-    ///                            radius_table|stool|chair|pillar|light
-    ///   module:NAME|group:NAME — по имени группы (маска '*' или подстрока)
-    ///   name:PATTERN           — по имени элемента (маска '*' или подстрока)
-    ///   width|height|depth|thickness OP N — сравнение габарита в мм
-    ///                            (OP: == = != >= &lt;= > &lt;), напр. thickness==18
-    ///   bare-токен             — трактуется как имя (маска/подстрока), напр. B4_*
-    /// BasePlate (якорь) в выборку НЕ попадает.
-    /// </summary>
     public static class ElementSelector
     {
         public static List<KitchenElement> Match(string? selector)
@@ -35,8 +15,7 @@ namespace KitchenDesigner.Core.Bulk
             var result = new List<KitchenElement>();
             foreach (var e in pool)
             {
-                if (e == null || !e.gameObject.activeInHierarchy) continue;
-                if (e.GetComponent<BasePlate>() != null) continue; // якорь — не контент
+                if (!IsSelectableContent(e)) continue;
                 bool ok = true;
                 foreach (var c in clauses) { if (!c(e)) { ok = false; break; } }
                 if (ok) result.Add(e);
@@ -44,43 +23,50 @@ namespace KitchenDesigner.Core.Bulk
             return result;
         }
 
-        // ── Разбор ────────────────────────────────────────────────────────
+        private static bool IsSelectableContent(KitchenElement e) =>
+            e != null
+            && e.gameObject.activeInHierarchy
+            && e.GetComponent<BasePlate>() == null;
 
         private static readonly string[] CmpOps = { ">=", "<=", "==", "!=", "=", ">", "<" };
 
+        private static bool IsUnrestrictedToken(string lower) =>
+            lower == "*" || lower == "all" || lower == "all_elements";
+
         private static List<Func<KitchenElement, bool>> ParseClauses(string? selector)
         {
-            var list = new List<Func<KitchenElement, bool>>();
-            if (string.IsNullOrWhiteSpace(selector)) return list; // пусто → все
+            var clauses = new List<Func<KitchenElement, bool>>();
+            if (string.IsNullOrWhiteSpace(selector)) return clauses;
 
             foreach (var raw in selector.Split(new[] { ' ', '\t', '\n' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 var token = raw.Trim();
                 var lower = token.ToLowerInvariant();
 
-                if (lower == "*" || lower == "all" || lower == "all_elements")
-                    continue; // без ограничения
-                if (lower == "all_boards") { list.Add(e => TypeOf(e) == "board"); continue; }
-                if (lower == "all_modules") { list.Add(e => GroupManager.GroupOf(e) != null); continue; }
+                if (IsUnrestrictedToken(lower))
+                    continue;
+                if (lower == "all_boards") { clauses.Add(e => TypeOf(e) == "board"); continue; }
+                if (lower == "all_modules") { clauses.Add(e => GroupManager.GroupOf(e) != null); continue; }
 
                 if (TrySplit(token, "type:", out var t))
-                { var tl = t.ToLowerInvariant(); list.Add(e => TypeOf(e) == tl); continue; }
+                { var tl = t.ToLowerInvariant(); clauses.Add(e => TypeOf(e) == tl); continue; }
 
                 if (TrySplit(token, "module:", out var m) || TrySplit(token, "group:", out m))
-                { var pat = m; list.Add(e => { var g = GroupManager.GroupOf(e); return g != null && Glob(g.name, pat); }); continue; }
+                { var pat = m; clauses.Add(e => { var g = GroupManager.GroupOf(e); return g != null && Glob(g.name, pat); }); continue; }
 
                 if (TrySplit(token, "name:", out var n))
-                { var pat = n; list.Add(e => Glob(e.PartName, pat)); continue; }
+                { clauses.Add(MatchesName(n)); continue; }
 
                 if (TryParseCompare(token, out var dim, out var op, out var val))
-                { list.Add(e => Compare(DimOf(e, dim), op, val)); continue; }
+                { clauses.Add(e => Compare(DimOf(e, dim), op, val)); continue; }
 
-                // Голый токен — как имя (маска/подстрока).
-                var namePat = token;
-                list.Add(e => Glob(e.PartName, namePat));
+                clauses.Add(MatchesName(token));
             }
-            return list;
+            return clauses;
         }
+
+        private static Func<KitchenElement, bool> MatchesName(string pattern)
+            => e => Glob(e.PartName, pattern);
 
         private static bool TrySplit(string token, string prefix, out string rest)
         {
@@ -107,8 +93,6 @@ namespace KitchenDesigner.Core.Bulk
             return false;
         }
 
-        // ── Предикаты ─────────────────────────────────────────────────────
-
         private static int DimOf(KitchenElement e, string dim)
         {
             var d = e.DimensionsMM;
@@ -117,7 +101,7 @@ namespace KitchenDesigner.Core.Bulk
                 "width" => d.x,
                 "height" => d.y,
                 "depth" => d.z,
-                "thickness" => d.z, // толщина детали = dimZ (Board convention)
+                "thickness" => d.z,
                 _ => 0,
             };
         }
@@ -133,7 +117,6 @@ namespace KitchenDesigner.Core.Bulk
             _ => false,
         };
 
-        /// <summary>Тип элемента для селектора (подклассы — раньше базы).</summary>
         public static string TypeOf(KitchenElement e)
         {
             if (e is WindowElement) return "window";
@@ -158,7 +141,6 @@ namespace KitchenDesigner.Core.Bulk
             return "board";
         }
 
-        /// <summary>Маска '*' (glob, регистронезависимо) или подстрока, если '*' нет.</summary>
         private static bool Glob(string value, string pattern)
         {
             if (string.IsNullOrEmpty(pattern)) return true;

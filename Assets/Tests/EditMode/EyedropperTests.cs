@@ -248,6 +248,35 @@ public class EyedropperTests
     }
 
     [Test]
+    public void MouseCaptured_IsAlsoTrueForTheRuler()
+    {
+        KitchenDesigner.Core.Measure.MeasureMode.SetActive(true);
+        Assert.IsTrue(ToolMode.MouseCaptured,
+            "запрет один на все режимы-захватчики: рулетка обязана считаться так же, как пипетка");
+        KitchenDesigner.Core.Measure.MeasureMode.SetActive(false);
+        Assert.IsFalse(ToolMode.MouseCaptured);
+    }
+
+    [Test]
+    public void EnteringTheMode_AfterTheSelectionManagerWasDestroyed_DoesNotThrow()
+    {
+        var go = new GameObject("SelectionManager");
+        var manager = go.AddComponent<SelectionManager>();
+        SelectionManager.Instance = manager;
+        Object.DestroyImmediate(go);
+
+        try
+        {
+            Assert.DoesNotThrow(() => EyedropperMode.SetActive(true),
+                "Instance ставится в Awake и в OnDestroy не гасится, поэтому после выгрузки "
+                + "сцены здесь лежит уничтоженный объект: сравнивать его можно только "
+                + "Unity-оператором !=. `?.` видит живую C#-ссылку, лезет внутрь и роняет "
+                + "вход в режим MissingReferenceException");
+        }
+        finally { SelectionManager.Instance = null; }
+    }
+
+    [Test]
     public void PickedDecor_SurvivesLeavingTheMode()
     {
         EyedropperMode.SetActive(true);
@@ -256,5 +285,149 @@ public class EyedropperTests
 
         Assert.AreEqual("oak", EyedropperMode.PickedMaterialId,
             "вышли из режима подправить камеру — декор должен остаться в пипетке");
+    }
+
+    // ── Событие Changed ────────────────────────────────────────────────
+
+    [Test]
+    public void Changed_FiresOnEnteringTheMode_AndOnEveryNewPick()
+    {
+        int fired = 0;
+        void Handler() => fired++;
+
+        EyedropperMode.Changed += Handler;
+        try
+        {
+            EyedropperMode.SetActive(true);
+            Assert.AreEqual(1, fired, "кнопка тулбара обязана перерисоваться на входе в режим");
+
+            EyedropperMode.Pick("oak");
+            Assert.AreEqual(2, fired, "кнопка показывает образец подобранного — забор декора тоже событие");
+
+            EyedropperMode.Pick("concrete");
+            Assert.AreEqual(3, fired);
+        }
+        finally { EyedropperMode.Changed -= Handler; }
+    }
+
+    [Test]
+    public void Changed_StaysSilent_WhenPickRepeatsTheSameDecor()
+    {
+        EyedropperMode.Pick("oak");
+
+        int fired = 0;
+        void Handler() => fired++;
+
+        EyedropperMode.Changed += Handler;
+        try
+        {
+            EyedropperMode.Pick("oak");
+            Assert.AreEqual(0, fired, "повторный забор того же декора состояния не меняет");
+
+            EyedropperMode.SetActive(false);
+            Assert.AreEqual(0, fired, "режим и так выключен — переключения не было");
+        }
+        finally { EyedropperMode.Changed -= Handler; }
+    }
+
+    // ── Накладка против базового декора ────────────────────────────────
+
+    [Test]
+    public void ApplyTo_EmptyEyedropper_ChangesNothing()
+    {
+        var wall = CreateWall();
+        wall.SetTextureOverlays(new[] { new TextureOverlaySpec(OverlaySide.E, "oak", 400, 300, 400, 400) });
+
+        Assert.IsNull(EyedropperMode.PickedMaterialId, "предусловие: в пипетке пусто");
+        EyedropperController.ApplyTo(wall, PointOnWall(500, 400), NormalZPlus);
+
+        Assert.AreEqual("oak", wall.TextureOverlays[0].MaterialId,
+            "пока ничего не подобрали, ЛКМ обязана не делать ничего");
+        Assert.AreEqual(0, CommandStack.UndoCount, "пустой клик не имеет права попасть в отмену");
+    }
+
+    [Test]
+    public void ApplyTo_HitInsideAnOverlay_RepaintsTheOverlay_NotTheBaseDecor()
+    {
+        var wall = CreateWall();
+        MaterialManager.ApplyById(wall, "concrete");
+        wall.SetTextureOverlays(new[] { new TextureOverlaySpec(OverlaySide.E, "oak", 400, 300, 400, 400) });
+        EyedropperMode.Pick("wenge");
+
+        EyedropperController.ApplyTo(wall, PointOnWall(500, 400), NormalZPlus);
+
+        Assert.AreEqual("wenge", wall.TextureOverlays[0].MaterialId,
+            "попали в накладку — красится она: иначе накладка осталась бы сверху и "
+            + "закрыла бы результат, и правка выглядела бы несработавшей");
+        Assert.AreEqual("concrete", MaterialManager.MaterialIdOf(wall, MaterialSlot.Base),
+            "базовый декор под накладкой трогать не за что");
+    }
+
+    [Test]
+    public void ApplyTo_HitOutsideEveryOverlay_RepaintsTheBaseDecor()
+    {
+        var wall = CreateWall();
+        MaterialManager.ApplyById(wall, "concrete");
+        wall.SetTextureOverlays(new[] { new TextureOverlaySpec(OverlaySide.E, "oak", 400, 300, 400, 400) });
+        EyedropperMode.Pick("wenge");
+
+        EyedropperController.ApplyTo(wall, PointOnWall(2000, 2000), NormalZPlus);
+
+        Assert.AreEqual("wenge", MaterialManager.MaterialIdOf(wall, MaterialSlot.Base),
+            "мимо всех накладок — красится свойство «Текстура»");
+        Assert.AreEqual("oak", wall.TextureOverlays[0].MaterialId, "накладка осталась своей");
+    }
+
+    [Test]
+    public void PickFrom_HitInsideAnOverlay_TakesTheOverlayDecor()
+    {
+        var wall = CreateWall();
+        MaterialManager.ApplyById(wall, "concrete");
+        wall.SetTextureOverlays(new[] { new TextureOverlaySpec(OverlaySide.E, "oak", 400, 300, 400, 400) });
+
+        EyedropperController.PickFrom(wall, PointOnWall(500, 400), NormalZPlus);
+
+        Assert.AreEqual("oak", EyedropperMode.PickedMaterialId,
+            "накладка под курсором приоритетнее базовой «Текстуры»: человек целится в то, что видит");
+    }
+
+    [Test]
+    public void PickFrom_HitOutsideEveryOverlay_TakesTheBaseDecor()
+    {
+        var wall = CreateWall();
+        MaterialManager.ApplyById(wall, "concrete");
+        wall.SetTextureOverlays(new[] { new TextureOverlaySpec(OverlaySide.E, "oak", 400, 300, 400, 400) });
+
+        EyedropperController.PickFrom(wall, PointOnWall(2000, 2000), NormalZPlus);
+
+        Assert.AreEqual("concrete", EyedropperMode.PickedMaterialId);
+    }
+
+    // ── Какой слот декора видит человек ────────────────────────────────
+
+    private class TabletopStub : KitchenElement, ITabletop
+    {
+        public string TabletopMaterialId { get; set; } = string.Empty;
+        public string LegsMaterialId { get; set; } = string.Empty;
+        public void SetTabletopMaterial(Material material) { }
+        public void SetLegsMaterial(Material material) { }
+    }
+
+    [Test]
+    public void VisibleDecorSlotOf_TabletopCarrier_IsTheTabletopSlot()
+    {
+        var go = new GameObject("Стол");
+        _spawned.Add(go);
+        var table = go.AddComponent<TabletopStub>();
+
+        Assert.AreEqual(MaterialSlot.Tabletop, EyedropperController.VisibleDecorSlotOf(table),
+            "у носителя столешницы свойство «Текстура» в меню скрыто, а видимая "
+            + "поверхность — крышка: пипетка обязана брать и класть её декор");
+    }
+
+    [Test]
+    public void VisibleDecorSlotOf_PlainBoard_IsTheBaseSlot()
+    {
+        Assert.AreEqual(MaterialSlot.Base, EyedropperController.VisibleDecorSlotOf(CreateBoard()));
     }
 }
