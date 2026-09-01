@@ -44,9 +44,7 @@ namespace KitchenDesigner.Tests.Geometry
                 + "геометрия детали, но пороги всё равно безымянные"),
             ("CeilingGeometry.cs", 5,
                 "1e-4f — ровно Tolerance.EpsilonUnits, зашитый копией: прямой долг"),
-            ("ConstraintValidator.cs", 2,
-                "0.01f как запас к сравнению зазора в мм — просится в Tolerance"),
-            ("DoorElement.cs", 3,
+                        ("DoorElement.cs", 3,
                 "1e-12f/1e-8f перед normalize и 0.05° «поворот уже доехал»: "
                 + "Tolerance.EpsilonSqr рядом, но не та величина"),
             ("ElementMover.cs", 2,
@@ -59,7 +57,6 @@ namespace KitchenDesigner.Tests.Geometry
             ("MmGrid.cs", 1,
                 "0.9999f — «дробная часть не дотянула до целого мм»; порог округления, не длина"),
             ("SpatialGridRenderer.cs", 1, "1e-3f при выборе крупной линии сетки"),
-            ("StatusBarUI.cs", 1, "0.5f — порог «ширина плашки изменилась заметно», пиксели UI"),
             ("ToastNotification.cs", 2, "0.15f и 0.3f — длительности анимации в секундах"),
             ("Wall.cs", 2,
                 "0.01° поворота и 0.001f высоты стены; второй — сравнение с нулём в юнитах"),
