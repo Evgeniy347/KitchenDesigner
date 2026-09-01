@@ -25,7 +25,10 @@ namespace KitchenDesigner.Tests.Geometry
     ///
     /// Рефлексия по ПУБЛИЧНЫМ членам нарушением не является и в счёт не идёт —
     /// на ней держатся сами сторожа (обход всех типов элементов, поиск атрибута).
-    /// Поэтому файл попадает в счёт только при ненулевом ЗАХОДЕ ВНУТРЬ.
+    /// Поэтому файл попадает в счёт только при ненулевом ЗАХОДЕ ВНУТРЬ. Контроль на
+    /// это стоит ДВАЖДЫ: на живом файле и на синтетической строке. Одного файла мало —
+    /// второй такой файл сосед вычистил через час после того, как контроль на него
+    /// сослался, и проверка молча перестала бы что-либо доказывать.
     ///
     /// Счёт ТЕКСТОВЫЙ и по файлу: сканер не связывает конкретный Get* с
     /// конкретными флагами. Где это даёт слепое пятно, сказано в причине записи.
@@ -84,7 +87,6 @@ namespace KitchenDesigner.Tests.Geometry
         private static readonly string[] PublicReflectionFiles =
         {
             "EditMode/FacadeDoorWireNameTests.cs",
-            "EditMode/MeasurePlaneHitTests.cs",
         };
 
         public static int CountReachIns(IEnumerable<string> lines) =>
@@ -186,13 +188,23 @@ namespace KitchenDesigner.Tests.Geometry
         public void ReflectionOverPublicMembers_IsNotCountedAtAll()
         {
             var scan = Scan();
+            var root = TestsDir();
 
             foreach (var file in PublicReflectionFiles)
+            {
+                var lines = File.ReadAllLines(Path.Combine(root, file));
+
+                Assert.Greater(CountNamedLookups(lines), 0,
+                    "контроль обязан ДЕРЖАТЬ свой предмет: файл, переставший ходить "
+                    + "рефлексией вовсе, проходит проверку ниже даром, и она молча "
+                    + "перестаёт что-либо доказывать. Потерял предмет: " + file);
+
                 CollectionAssert.DoesNotContain(scan.Keys, file,
                     "рефлексия по ПУБЛИЧНОМУ члену — не заход внутрь: так устроены и сами "
                     + "сторожа (обход типов элементов, поиск атрибута). Запретив её, сторож "
                     + "запретил бы приём, на котором стоит половина набора. Попал в счёт: "
                     + file);
+            }
         }
 
         [Test]
@@ -251,6 +263,16 @@ namespace KitchenDesigner.Tests.Geometry
             Assert.AreEqual(0, CountNamedLookups(
                 new[] { "typeof(T).GetFields(f)" }),
                 "перечисление без имени имя не замораживает");
+
+            Assert.AreEqual(0, CountReachIns(
+                new[] { "typeof(T).GetField(\"mode\", BindingFlags.Public | BindingFlags.Instance)" }),
+                "публичная привязка — не заход внутрь, и это НЕ зависит от того, остался ли "
+                + "в дереве файл, который так делает: контроль на файле рассыхается, если "
+                + "сосед его вычистит, а этот — нет");
+            Assert.AreEqual(1, CountNamedLookups(
+                new[] { "typeof(T).GetField(\"mode\", BindingFlags.Public | BindingFlags.Instance)" }),
+                "но имя она всё равно морозит: два признака независимы, и путать их значит "
+                + "либо запретить приём сторожей, либо проглядеть заморозку имени");
             Assert.AreEqual(0, CountNamedLookups(
                 new[] { "typeof(T).GetMethod(name, f)" }),
                 "имя из переменной сканер не видит — это его слепое пятно, и оно названо "
