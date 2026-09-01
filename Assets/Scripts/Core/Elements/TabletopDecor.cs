@@ -4,6 +4,18 @@ namespace KitchenDesigner.Core
 {
     internal static class TabletopDecor
     {
+        public const string TabletopSlotReason =
+            "декор ставится через SetMaterialCommand (MaterialSlot.Tabletop)";
+
+        public const string LegsSlotReason =
+            "декор ставится через SetMaterialCommand (MaterialSlot.Legs)";
+
+        public const string MaterialIdAliasReason =
+            "псевдоним TabletopMaterialId — см. его причину";
+
+        public static string SlotIdOrDefault(string? materialId)
+            => materialId ?? MaterialCatalog.DefaultId;
+
         public static void ApplyBothSlots(ITabletop target, string tabletopMaterialId,
             string legsMaterialId)
         {
