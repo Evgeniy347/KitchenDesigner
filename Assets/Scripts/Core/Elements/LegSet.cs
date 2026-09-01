@@ -16,8 +16,6 @@ namespace KitchenDesigner.Core
             _namePrefix = namePrefix;
         }
 
-        public int Count => _legs.Count;
-
         public void Place(Vector2[] footprint, float centreY, Vector3 legScale)
         {
             Ensure(footprint.Length);
