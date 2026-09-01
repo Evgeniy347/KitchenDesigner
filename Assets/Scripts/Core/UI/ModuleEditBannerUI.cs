@@ -4,11 +4,12 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Баннер режима редактирования модуля: показывает имя модуля и
-    /// кнопку «Готово». Виден только пока режим активен (ModuleEditMode).</summary>
     public class ModuleEditBannerUI : MonoBehaviour
     {
         public static ModuleEditBannerUI? Instance { get; private set; }
+
+        internal const float TuckedUnderTheTopToolbarY = -46f;
+        internal const float BannerHeight = 40f;
 
         private GameObject? _root;
         private TMP_Text? _label;
@@ -17,12 +18,13 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("ModuleEditBanner", canvas, Vector2.zero, new Vector2(420, 40));
+            var panel = UIFactory.CreatePanel("ModuleEditBanner", canvas, Vector2.zero,
+                new Vector2(420, BannerHeight));
             var rt = panel.rectTransform;
             rt.anchorMin = new Vector2(0.5f, 1f);
             rt.anchorMax = new Vector2(0.5f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
-            rt.anchoredPosition = new Vector2(0, -46); // под верхним тулбаром
+            rt.anchoredPosition = new Vector2(0, TuckedUnderTheTopToolbarY);
             panel.color = new Color(0.15f, 0.35f, 0.6f, 0.92f);
             _root = panel.gameObject;
 

@@ -6,14 +6,11 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>
-    /// Оверлей-консоль логов по клавише `~`. Полупрозрачный фон, показывает хвост
-    /// последних сообщений (автоскролл в конец).
-    /// </summary>
     public class ConsoleOverlay : MonoBehaviour
     {
-        private const int MaxLines = 300;   // храним
-        private const int VisibleLines = 32; // показываем хвост
+        private const int KeptLines = 300;
+        private const int TailLinesShown = 32;
+        internal const int AboveEveryOtherCanvas = 200;
 
         private GameObject? _root;
         private TMP_Text? _text;
@@ -23,7 +20,7 @@ namespace KitchenDesigner.Core.UI
         private void Start()
         {
             var canvas = UIFactory.CreateCanvas("ConsoleCanvas");
-            canvas.sortingOrder = 200; // поверх остального UI
+            canvas.sortingOrder = AboveEveryOtherCanvas;
 
             var rect = UIFactory.CreateRect("ConsolePanel", canvas.transform);
             rect.anchorMin = new Vector2(0, 0);
@@ -64,7 +61,7 @@ namespace KitchenDesigner.Core.UI
                 _ => ""
             };
             _lines.Enqueue(prefix + condition);
-            while (_lines.Count > MaxLines) _lines.Dequeue();
+            while (_lines.Count > KeptLines) _lines.Dequeue();
             _dirty = true;
         }
 
@@ -86,7 +83,7 @@ namespace KitchenDesigner.Core.UI
         private string BuildTail()
         {
             var arr = _lines.ToArray();
-            int start = Mathf.Max(0, arr.Length - VisibleLines);
+            int start = Mathf.Max(0, arr.Length - TailLinesShown);
             var sb = new StringBuilder();
             for (int i = start; i < arr.Length; i++)
                 sb.AppendLine(arr[i]);

@@ -105,6 +105,8 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
+        public const int MainUiSortingOrder = 100;
+
         public static Canvas CreateCanvas(string name)
         {
             EnsureEventSystem();
@@ -112,7 +114,7 @@ namespace KitchenDesigner.Core.UI
             var go = new GameObject(name);
             var canvas = go.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 100;
+            canvas.sortingOrder = MainUiSortingOrder;
 
             var scaler = go.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;

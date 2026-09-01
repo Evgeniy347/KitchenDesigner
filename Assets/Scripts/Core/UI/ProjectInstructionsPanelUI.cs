@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Editor for the project-owned conventions shared by the user and MCP.</summary>
     public class ProjectInstructionsPanelUI : MonoBehaviour, IProjectWindow
     {
         private GameObject? _root;

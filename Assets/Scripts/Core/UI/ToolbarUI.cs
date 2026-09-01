@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core.UI
 {
     public sealed class ToolbarUI
     {
-        private const float BarHeight = 52f;
+        internal const float BarHeight = 52f;
         private const float ButtonY = -6f;
         private const float ButtonH = 40f;
         private const float ButtonGap = 6f;

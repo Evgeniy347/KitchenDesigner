@@ -8,8 +8,6 @@ namespace KitchenDesigner.Core.UI
     public class SpecificationPanelUI : MonoBehaviour, IProjectWindow
     {
         private const float ColName = 40f;
-        // Ш/В/Г — отдельные колонки: цифры выравниваются друг под другом,
-        // а не сливаются в строку «600×720×18».
         private const float ColW = 250f;
         private const float ColH = 305f;
         private const float ColD = 360f;
@@ -19,6 +17,7 @@ namespace KitchenDesigner.Core.UI
         private const float ViewportHeight = 480f;
         private const float ViewportCenterY = -30f;
         private const int MaxNameChars = 22;
+        internal const float ScrollbarWidth = 8f;
 
         private GameObject? _root;
         private TMP_Text? _content;
@@ -52,8 +51,6 @@ namespace KitchenDesigner.Core.UI
             var headerText = headerRect.gameObject.AddComponent<TextMeshProUGUI>();
             headerText.font = UIFactory.FontAsset;
             headerText.fontSize = 16;
-            // Вторичный цвет текста, а не жёлтый: жёлтая рамка в проекте значит
-            // «значение изменено» (правило 10 — один цвет, один смысл).
             headerText.color = UIStyle.TextSecondary;
             headerText.alignment = TextAlignmentOptions.TopLeft;
             headerText.enableWordWrapping = false;
@@ -105,17 +102,15 @@ namespace KitchenDesigner.Core.UI
             _scrollRect.vertical = true;
             _scrollRect.movementType = ScrollRect.MovementType.Clamped;
 
-            // Узкий (8px) тёмный скроллбар; прячется, когда список помещается
-            // (та же схема, что в HierarchyPanelUI).
             var scrollbarRect = UIFactory.CreateRect("SpecScrollbar", parent);
-            scrollbarRect.sizeDelta = new Vector2(8, ViewportHeight);
+            scrollbarRect.sizeDelta = new Vector2(ScrollbarWidth, ViewportHeight);
             scrollbarRect.anchoredPosition = new Vector2(282, ViewportCenterY);
             var scrollbarImage = scrollbarRect.gameObject.AddComponent<Image>();
             scrollbarImage.color = new Color(0.10f, 0.10f, 0.13f, 0.6f);
             var scrollbar = scrollbarRect.gameObject.AddComponent<Scrollbar>();
             scrollbar.direction = Scrollbar.Direction.BottomToTop;
             var handleRect = UIFactory.CreateRect("Handle", scrollbarRect.transform);
-            handleRect.sizeDelta = new Vector2(8, 100);
+            handleRect.sizeDelta = new Vector2(ScrollbarWidth, 100);
             handleRect.anchoredPosition = Vector2.zero;
             var handleImage = handleRect.gameObject.AddComponent<Image>();
             handleImage.color = new Color(0.38f, 0.40f, 0.46f, 1f);
@@ -135,7 +130,6 @@ namespace KitchenDesigner.Core.UI
             float closeX = totalW * 0.5f - closeW * 0.5f;
             const float btnY = -296f;
 
-            // Главное действие окна — экспорт: выделено акцентным цветом.
             var export = UIFactory.CreateButton("SpecExport", parent, "Экспорт CSV",
                 new Vector2(exportX, btnY), new Vector2(exportW, 40), ExportCsv);
             export.GetComponent<Image>().color = UIStyle.Accent;
@@ -205,10 +199,11 @@ namespace KitchenDesigner.Core.UI
             string defaultName = $"KitchenSpec_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv";
             string? path = NativeFileDialog.SaveCSVDialog("Экспорт спецификации", defaultName,
                 Application.persistentDataPath);
-            if (string.IsNullOrEmpty(path))
-                return; // пользователь отменил диалог
+            bool userCancelledTheDialog = string.IsNullOrEmpty(path);
+            if (userCancelledTheDialog)
+                return;
 
-            if (SpecificationExport.SaveToFile(result, path))
+            if (SpecificationExport.SaveToFile(result, path!))
             {
                 ToastNotification.ShowIfAvailable("CSV сохранён", 2f);
             }

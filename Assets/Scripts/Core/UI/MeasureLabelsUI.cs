@@ -5,16 +5,10 @@ using KitchenDesigner.Core.Measure;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Подписи замеров: обычный экранный текст постоянного размера в
-    /// середине отрезка. Не world-space — иначе при отдалении и повороте камеры
-    /// надпись меняла бы размер и разворачивалась ребром к зрителю.</summary>
     public class MeasureLabelsUI : MonoBehaviour
     {
-        /// <summary>Запас, на который отрезок должен быть длиннее надписи, чтобы
-        /// та не выходила за его концы.</summary>
-        private const float FitMarginPx = 8f;
-        /// <summary>Подпись приподнята над отрезком, чтобы не лежать на пунктире.</summary>
-        private const float VerticalOffsetPx = 14f;
+        internal const float MarginBySegmentMustExceedTextPx = 8f;
+        internal const float LiftAboveTheDottedLinePx = 14f;
 
         private Transform? _root;
         private Canvas? _canvas;
@@ -34,7 +28,7 @@ namespace KitchenDesigner.Core.UI
         private void LateUpdate()
         {
             using var _ = PerfMarkers.MeasureLabelsLateUpdate.Auto();
-            _used = 0;
+            ReuseThePoolFromTheStart();
             var cam = Camera.main;
             if (_root != null && MeasureMode.Active && cam != null)
             {
@@ -50,9 +44,9 @@ namespace KitchenDesigner.Core.UI
                 _pool[i].gameObject.SetActive(false);
         }
 
-        // Надпись прячется, когда экранная проекция отрезка короче самого текста:
-        // иначе число вылезает за концы и читается как чужое.
-        private void Place(Camera cam, Vector3 a, Vector3 b)
+        internal void ReuseThePoolFromTheStart() => _used = 0;
+
+        internal void Place(Camera cam, Vector3 a, Vector3 b)
         {
             Vector3 sa = cam.WorldToScreenPoint(a);
             Vector3 sb = cam.WorldToScreenPoint(b);
@@ -62,18 +56,18 @@ namespace KitchenDesigner.Core.UI
             label.text = MeasureGeometry.FormatMm((b - a).magnitude,
                 MeasureGeometry.AxisOf(a, b) >= 0);
 
-            // Ширина текста — в единицах канвы, длина отрезка — в пикселях
-            // экрана; приводим к пикселям через scaleFactor CanvasScaler.
-            float scale = _canvas != null ? _canvas.scaleFactor : 1f;
-            float screenLength = (new Vector2(sb.x, sb.y) - new Vector2(sa.x, sa.y)).magnitude;
-            if (screenLength < label.preferredWidth * scale + FitMarginPx)
+            float canvasUnitsToScreenPx = _canvas != null ? _canvas.scaleFactor : 1f;
+            float textWidthPx = label.preferredWidth * canvasUnitsToScreenPx;
+            float segmentLengthPx = (new Vector2(sb.x, sb.y) - new Vector2(sa.x, sa.y)).magnitude;
+            if (segmentLengthPx < textWidthPx + MarginBySegmentMustExceedTextPx)
             {
                 label.gameObject.SetActive(false);
                 return;
             }
 
             var mid = (sa + sb) * 0.5f;
-            label.rectTransform.position = new Vector3(mid.x, mid.y + VerticalOffsetPx, 0f);
+            label.rectTransform.position =
+                new Vector3(mid.x, mid.y + LiftAboveTheDottedLinePx, 0f);
         }
 
         private TextMeshProUGUI Take()

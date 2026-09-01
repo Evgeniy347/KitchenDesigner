@@ -4,9 +4,6 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Панель «День/Ночь»: глобальное управление солнцем — время суток
-    /// (солнце едет по небосводу), направление (азимут) и яркость. Открывается
-    /// кнопкой «Солнце» в тулбаре.</summary>
     public class DayNightPanelUI : MonoBehaviour, IProjectWindow
     {
         public static DayNightPanelUI? Instance { get; private set; }
@@ -28,11 +25,12 @@ namespace KitchenDesigner.Core.UI
             Instance = this;
         }
 
+        internal const float PanelHeight = 272f;
+
         public void Build(Transform canvas)
         {
-            // Высота с запасом: кнопка «Сброс» не должна прилипать к нижнему
-            // краю (правило 7 — паддинг контента со всех сторон).
-            var panel = UIFactory.CreatePanel("DayNightPanel", canvas, Vector2.zero, new Vector2(300, 272));
+            var panel = UIFactory.CreatePanel("DayNightPanel", canvas, Vector2.zero,
+                new Vector2(300, PanelHeight));
             UIFactory.AnchorTopRight(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(-10, -60);
             _root = panel.gameObject;
