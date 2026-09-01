@@ -931,4 +931,36 @@ public class TextureOverlayTests
             Object.DestroyImmediate(root);
         }
     }
+    [Test]
+    public void DropdownHover_InactiveTemplateItem_DoesNotShiftIndices()
+    {
+        var root = new GameObject("TestRoot");
+        try
+        {
+            var dd = UIFactory.CreateDropdown("TestDD", root.transform,
+                new List<string> { "A", "B" }, Vector2.zero, new Vector2(200, 28), _ => { });
+            int entered = -1;
+            DropdownHover.Attach(dd, i => entered = i, () => { });
+
+            var listGo = new GameObject("Dropdown List");
+            listGo.transform.SetParent(dd.transform, worldPositionStays: false);
+            var template = MakeItem(listGo.transform, "Item");
+            template.SetActive(false);
+            MakeItem(listGo.transform, "Item 0");
+            var second = MakeItem(listGo.transform, "Item 1");
+            _dropdownHoverUpdate!.Invoke(dd.GetComponent<DropdownHover>(), null);
+
+            var evt = new UnityEngine.EventSystems.PointerEventData(null);
+            foreach (var h in second.GetComponents<UnityEngine.EventSystems.IPointerEnterHandler>())
+                h.OnPointerEnter(evt);
+
+            Assert.AreEqual(1, entered,
+                "шаблонный пункт списка выключен и в нумерацию опций не входит — "
+                + "иначе наведение показывает предпросмотр соседнего декора");
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
 }

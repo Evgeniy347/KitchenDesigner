@@ -489,4 +489,43 @@ public class MaterialPreviewTests
         Assert.IsNotNull(rt, "шаблон списка должен содержать контент");
         return rt!;
     }
+
+    [Test]
+    public void LinesFor_WordLongerThanLine_BreaksByCharacters()
+    {
+        const int fontSize = 14;
+        float widthOfTenGlyphs = 10 * fontSize * DropdownItemFit.GlyphWidthFactor;
+        int lines = DropdownItemFit.LinesFor(new string('я', 25), widthOfTenGlyphs, fontSize,
+            maxLines: 10);
+
+        Assert.AreEqual(3, lines,
+            "слово длиннее строки TMP рвёт по символам, а не выносит целиком — "
+            + "оценка высоты обязана делать то же, иначе хвост названия обрезается");
+    }
+
+    [Test]
+    public void LinesFor_DoubleSpace_CountsAsOneMoreGlyph_NotAsNewLine()
+    {
+        const int fontSize = 14;
+        float widthOfTenGlyphs = 10 * fontSize * DropdownItemFit.GlyphWidthFactor;
+
+        Assert.AreEqual(1, DropdownItemFit.LinesFor("аб  вг", widthOfTenGlyphs, fontSize),
+            "двойной пробел — это пустое слово между разделителями; "
+            + "оно занимает место в строке, но само переноса не вызывает");
+    }
+
+    [Test]
+    public void WidthFor_LeavesRoomForGlyphsWiderThanAverage()
+    {
+        const int fontSize = 14;
+        const string name = "Шкаф Жёлудь";
+        float width = DropdownItemFit.WidthFor(new List<string> { name }, fontSize);
+        float exactAverage = name.Length * fontSize * DropdownItemFit.GlyphWidthFactor;
+
+        Assert.GreaterOrEqual(width - exactAverage,
+            DropdownItemFit.WideGlyphReserve * fontSize * DropdownItemFit.GlyphWidthFactor,
+            "ширина считается по СРЕДНЕЙ букве: у названия из широких «Ш», «Ж» реальная "
+            + "строка длиннее оценки, и без запаса она переносится, а вторая строка "
+            + "в однострочном пункте просто обрезается");
+    }
 }
