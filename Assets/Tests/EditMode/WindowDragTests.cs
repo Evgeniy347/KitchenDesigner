@@ -248,4 +248,81 @@ public class WindowDragTests
         Assert.AreEqual(maxH, panel.sizeDelta.y, 0.5f,
             "низ окна не должен уходить за нижний край экрана");
     }
+
+    private static UnityEngine.EventSystems.RaycastResult Hit(GameObject go) =>
+        new UnityEngine.EventSystems.RaycastResult { gameObject = go };
+
+    [Test]
+    public void TopHitInsideWindow_RaisesIt_EvenWhenAControlSwallowedTheClick()
+    {
+        var parent = MakeRect("Parent", null, new Vector2(1920, 1080));
+        var window = MakeRect("Win", parent, new Vector2(300, 200));
+        var button = MakeRect("Button", window, new Vector2(80, 24));
+        var other = MakeRect("Other", parent, new Vector2(300, 200));
+
+        var hits = new List<UnityEngine.EventSystems.RaycastResult> { Hit(button.gameObject) };
+
+        Assert.IsTrue(WindowDragHandle.TopHitBelongsTo(hits, window),
+            "клик по кнопке ВНУТРИ окна обязан поднимать окно: PointerDown до панели "
+            + "не всплывает, если его обработал дочерний контрол, поэтому решение "
+            + "принимается по верхнему хиту raycast");
+        Assert.IsFalse(WindowDragHandle.TopHitBelongsTo(
+            new List<UnityEngine.EventSystems.RaycastResult> { Hit(other.gameObject) }, window),
+            "клик по соседнему окну своё окно поднимать не должен");
+        Assert.IsFalse(WindowDragHandle.TopHitBelongsTo(
+            new List<UnityEngine.EventSystems.RaycastResult>(), window),
+            "клик по пустому месту не поднимает ничего");
+    }
+
+    [Test]
+    public void PressOnInteractiveControl_DoesNotDragTheWindow()
+    {
+        var parent = MakeRect("Parent", null, new Vector2(1920, 1080));
+        var window = MakeRect("Win", parent, new Vector2(300, 200));
+        var button = MakeRect("Button", window, new Vector2(80, 24));
+        button.gameObject.AddComponent<UnityEngine.UI.Button>();
+        var caption = MakeRect("Caption", window, new Vector2(200, 24));
+
+        Assert.IsTrue(WindowDragHandle.PressedOnInteractiveControl(button.gameObject),
+            "нажатие на кнопке, дропдауне, поле или слайдере окно не тянет — иначе "
+            + "любая правка в окне уезжала бы вместе с ним");
+        Assert.IsFalse(WindowDragHandle.PressedOnInteractiveControl(caption.gameObject),
+            "за немой лейбл заголовка окно тянуть можно");
+        Assert.IsFalse(WindowDragHandle.PressedOnInteractiveControl(null));
+    }
+
+    [Test]
+    public void OnlyTheTitleBarStripDragsTheWindow()
+    {
+        const float top = 100f;
+        const float handleHeight = 30f;
+
+        Assert.IsTrue(WindowDragHandle.InsideTitleBar(top - 1f, top, handleHeight));
+        Assert.IsTrue(WindowDragHandle.InsideTitleBar(top - handleHeight, top, handleHeight),
+            "нижняя граница полосы заголовка входит в неё");
+        Assert.IsFalse(WindowDragHandle.InsideTitleBar(top - handleHeight - 1f, top, handleHeight),
+            "ниже полосы заголовка окно не тянется: там живёт содержимое, и "
+            + "протяжка по нему должна доставаться списку, а не окну");
+    }
+
+    [Test]
+    public void ResizeHandle_IsInvisible_ButCatchesTheRaycast()
+    {
+        var parent = MakeRect("Parent", null, new Vector2(1920, 1080));
+        var window = MakeRect("Win", parent, new Vector2(300, 200));
+
+        WindowDrag.AttachResizeBottom(window, 160f);
+
+        var handle = window.Find("ResizeHandle");
+        var image = handle.GetComponent<UnityEngine.UI.Image>();
+        Assert.AreEqual(0f, image.color.a, 0.001f, "полоса ресайза не должна быть видна");
+        Assert.IsTrue(image.raycastTarget,
+            "без картинки-приёмника нижний край окна не ловил бы протяжку вовсе");
+
+        var grip = handle.Find("Grip");
+        Assert.IsNotNull(grip, "видимый грип — единственная подсказка, что за край можно тянуть");
+        Assert.IsFalse(grip.GetComponent<UnityEngine.UI.Image>().raycastTarget,
+            "грип нарисован поверх полосы: ловил бы клики он — тянулась бы только "
+            + "его узкая середина");
+    }
 }
