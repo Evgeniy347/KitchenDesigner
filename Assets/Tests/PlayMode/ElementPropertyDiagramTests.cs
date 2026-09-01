@@ -353,6 +353,21 @@ public class ElementPropertyDiagramTests
     }
 
     [UnityTest]
+    public IEnumerator ContextMenu_Sofa_SavesPng()
+    {
+        var dims = new Vector3Int(SofaElement.DefaultWidthMM,
+            SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM);
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateSofa(dims, SofaElement.DefaultCornerRadiusMM,
+            SofaElement.DefaultSeatHeightMM, "Диван", pos);
+        var el = go.GetComponent<KitchenElement>();
+        Assert.IsNotNull(el);
+        yield return CapturePanel("ContextMenu", "contextmenu_sofa.png",
+            () => { ContextMenuUI.Instance!.Open(el); },
+            () => { ContextMenuUI.Instance?.Close(); });
+    }
+
+    [UnityTest]
     public IEnumerator ContextMenu_Pillar_SavesPng()
     {
         int totalH = PillarElement.TopHeightMM + PillarElement.MidHeightMM_Default + PillarElement.BottomHeightMM;

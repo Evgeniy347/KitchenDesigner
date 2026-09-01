@@ -341,6 +341,26 @@ public class SnapshotTests
         Snapshot.Match(json, "chair_custom");
     }
 
+    // ── SofaElement snapshot ─────────────────────────────────────────────
+
+    /// <summary>Диван несёт те же ДВЕ величины формы, что и стул, но в ЧУЖИХ
+    /// полях: <c>cornerRadius</c> стартует с 200 (радиусная полка), а
+    /// <c>seatHeightMM</c> — с 450 (стул). Умолчания дивана другие (120 и 400),
+    /// поэтому снимок берётся с НЕумолчальными значениями обеих: иначе забытая
+    /// запись поля неотличима от записанной.</summary>
+    [Test]
+    public void Snapshot_Sofa_Custom()
+    {
+        var go = ElementFactory.CreateSofa(new Vector3Int(1800, 820, 950), 143, 371,
+            "BigSofa", new Vector3(0.5f, 0.41f, -1.0f));
+        var sofa = go.GetComponent<SofaElement>();
+        sofa.MaterialId = "oak";
+        Add(go);
+
+        var json = CaptureJson(new[] { go.GetComponent<KitchenElement>() });
+        Snapshot.Match(json, "sofa_custom");
+    }
+
     // ── Full scene snapshot ──────────────────────────────────────────────
 
     [Test]

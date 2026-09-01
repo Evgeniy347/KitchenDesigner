@@ -413,6 +413,57 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+    // ─ Sofa isometric screenshots ───────────────────
+
+    [UnityTest]
+    public IEnumerator IsoSofa_2000x800x900_Default()
+    {
+        yield return RenderSofa(new Vector3Int(SofaElement.DefaultWidthMM,
+            SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM),
+            SofaElement.DefaultCornerRadiusMM, SofaElement.DefaultSeatHeightMM,
+            "IsoSofaDefault", "iso_sofa_2000x800x900_default.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoSofa_1400x800x900_SquareBase_LowSeat()
+    {
+        yield return RenderSofa(new Vector3Int(1400, SofaElement.DefaultHeightMM,
+            SofaElement.DefaultDepthMM), 0, 300,
+            "IsoSofaSquare", "iso_sofa_1400x800x900_square.png");
+    }
+
+    private IEnumerator RenderSofa(Vector3Int dims, int cornerRadiusMM, int seatHeightMM,
+        string name, string png)
+    {
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateSofa(dims, cornerRadiusMM, seatHeightMM, name, pos);
+        _spawned.Add(go);
+        var sofa = go.GetComponent<SofaElement>();
+        Assert.IsNotNull(sofa);
+        Assert.AreEqual(cornerRadiusMM, sofa!.CornerRadiusMM,
+            "снимок обязан показывать ту форму, которую заказали: радиус основания не "
+            + "должен молча схлопнуться при создании");
+        Assert.AreEqual(seatHeightMM, sofa.SeatHeightMM,
+            "и ту высоту основания, которую заказали");
+        foreach (var child in new[]
+                 {
+                     SofaLayout.BackRailName, SofaLayout.ArmCushionLeftName,
+                     SofaLayout.ArmCushionRightName, SofaLayout.BackCushionLeftName,
+                     SofaLayout.BackCushionRightName,
+                 })
+            Assert.IsNotNull(go.transform.Find(child),
+                "у дивана нет подлокотников — вместо них подушки; снимок без ребёнка «"
+                + child + "» показывал бы не тот предмет");
+
+        Vector3 size = MmToUnits(dims);
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, png);
+
+        Object.DestroyImmediate(camGo);
+    }
+
     // ─ Radial shelf isometric screenshot ───────────────────
 
     [UnityTest]
