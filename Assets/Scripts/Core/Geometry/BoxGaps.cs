@@ -1,13 +1,5 @@
 namespace KitchenDesigner.Core
 {
-    /// <summary>Зазоры проёмного бокса в миллиметрах. Ровно то, что нужно
-    /// <see cref="GappedBox"/> от детали: раньше он принимал целиком PartData,
-    /// а тот через MaterialCatalog тянет загрузку текстур — в ядро такое не
-    /// проходит. Зазоры асимметричны, поэтому бокс может быть не центрирован
-    /// относительно трансформа.
-    ///
-    /// Сторон шесть, по одной на грань: Front — это +Z, Back — −Z. Соответствие
-    /// индексам граней держит <see cref="GapSides"/>.</summary>
     public readonly struct BoxGaps
     {
         public readonly int Left;
@@ -17,7 +9,6 @@ namespace KitchenDesigner.Core
         public readonly int Front;
         public readonly int Back;
 
-        /// <summary>Четыре боковых зазора, по толщине — ноль.</summary>
         public BoxGaps(int left, int right, int top, int bottom)
             : this(left, right, top, bottom, 0, 0)
         {
@@ -35,7 +26,6 @@ namespace KitchenDesigner.Core
 
         public static BoxGaps None => new BoxGaps(0, 0, 0, 0, 0, 0);
 
-        /// <summary>Зазор одной стороны.</summary>
         public int Of(GapSide side)
         {
             switch (side)
@@ -49,8 +39,6 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Сколько сторон получили ненулевой зазор — это число стоит в
-        /// заголовке секции «Зазоры».</summary>
         public int NonZeroCount
         {
             get
