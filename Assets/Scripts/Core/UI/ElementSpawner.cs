@@ -71,6 +71,11 @@ namespace KitchenDesigner.Core.UI
             PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateChair(dims, 0,
                 AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT, name, pos));
 
+        public void SpawnSofa(Vector3Int dims, string name) =>
+            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateSofa(dims,
+                SofaElement.DefaultCornerRadiusMM, SofaElement.DefaultSeatHeightMM,
+                name, pos));
+
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom) =>
             PlaceCenteredOnGround(dims.y, pos =>

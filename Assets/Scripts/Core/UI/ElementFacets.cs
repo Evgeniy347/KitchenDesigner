@@ -12,6 +12,7 @@ namespace KitchenDesigner.Core.UI
             if (element is TableElement || element is RadiusTableElement) facets |= ElementFacet.Table;
             if (element is StoolElement) facets |= ElementFacet.Stool;
             if (element is ChairElement) facets |= ElementFacet.Chair;
+            if (element is SofaElement) facets |= ElementFacet.Sofa;
             if (element is PillarElement) facets |= ElementFacet.Pillar;
             if (element is WindowElement || element is DoorElement) facets |= ElementFacet.Window;
             if (element is DoorElement) facets |= ElementFacet.Door;

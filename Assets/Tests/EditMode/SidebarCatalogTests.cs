@@ -109,7 +109,7 @@ public class SidebarCatalogTests
     public void FurnitureGroup_HasTable()
     {
         var groups = SidebarCatalog.Build();
-        Assert.AreEqual(6, groups[3].items.Count);
+        Assert.AreEqual(7, groups[3].items.Count);
         var it = groups[3].items.Find(i => i.name == "Прямоугольный стол");
         Assert.IsNotNull(it);
         Assert.IsTrue(it.isFurniture);
@@ -130,6 +130,22 @@ public class SidebarCatalogTests
             ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM), it.dims,
             "габариты стула в каталоге обязаны совпадать с его собственными значениями "
             + "по умолчанию, иначе сайдбар и MCP заводят разные стулья");
+    }
+
+    [Test]
+    public void FurnitureGroup_HasSofa()
+    {
+        var groups = SidebarCatalog.Build();
+        var it = groups[3].items.Find(i => i.name == "Диван");
+        Assert.IsNotNull(it, "диван обязан быть в сайдбаре: иначе завести его можно только "
+            + "через MCP");
+        Assert.IsTrue(it.isSofa,
+            "и именно флагом дивана: SidebarUI ветвится по этим флагам, и диван с флагом "
+            + "стула завёлся бы стулом — без подушек и без основания");
+        Assert.AreEqual(new Vector3Int(SofaElement.DefaultWidthMM,
+            SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM), it.dims,
+            "габариты дивана в каталоге обязаны совпадать с его собственными значениями "
+            + "по умолчанию, иначе сайдбар и MCP заводят разные диваны");
     }
 
     [Test]

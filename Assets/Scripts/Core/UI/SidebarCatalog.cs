@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core.UI
             public bool isRadiusTable;
             public bool isStool;
             public bool isChair;
+            public bool isSofa;
             public bool isWindow;
             public bool isDoor;
             public bool isPillar;
@@ -47,7 +48,7 @@ namespace KitchenDesigner.Core.UI
                 this.isFacade = isFacade; this.isAssembled = isAssembled;
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
-                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isStool = false; isChair = false; isWindow = false; isDoor = false;
+                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isStool = false; isChair = false; isSofa = false; isWindow = false; isDoor = false;
                 isPillar = false; isFloor = false; isLightSource = false; isSink = false; isCooktop = false;
                 isOven = false; isDishwasher = false;
                 isPanel = false; applianceModel = ""; pillarMidHeightMM = 75;
@@ -151,9 +152,12 @@ namespace KitchenDesigner.Core.UI
             var chair = new Item("Стул", new Vector3Int(ChairElement.DefaultWidthMM,
                 ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM));
             chair.isChair = true;
+            var sofa = new Item("Диван", new Vector3Int(SofaElement.DefaultWidthMM,
+                SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM));
+            sofa.isSofa = true;
             var pillar = PillarItem("Ножка", PillarElement.MidHeightMM_Default);
             var sink = SinkItem("Мойка");
-            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, stool, chair, pillar, sink } };
+            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, stool, chair, sofa, pillar, sink } };
         }
 
         private static Group ApplianceGroup()
