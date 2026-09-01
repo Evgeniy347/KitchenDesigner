@@ -2,10 +2,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>
-    /// Процедурные иконки для тулбара (без графических ассетов): рисуются в
-    /// Texture2D и оборачиваются в Sprite. Кэшируются — создаются один раз.
-    /// </summary>
     public static class IconFactory
     {
         private const int S = 64;
@@ -22,8 +18,8 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
         public static Sprite FloppyPlus => _floppyPlus ??= BuildFloppy(true);
         public static Sprite Folder => _folder ??= BuildFolder();
-        public static Sprite Undo => _undo ??= BuildArrow(false);
-        public static Sprite Redo => _redo ??= BuildArrow(true);
+        public static Sprite Undo => _undo ??= BuildCircularArrow(redo: false);
+        public static Sprite Redo => _redo ??= BuildCircularArrow(redo: true);
         public static Sprite Pin => _pin ??= BuildPin();
         public static Sprite Warning => _warning ??= BuildWarning();
         public static Sprite Pencil => _pencil ??= BuildPencil();
@@ -34,13 +30,18 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Sun => _sun ??= BuildSun();
         public static Sprite Eyedropper => _eyedropper ??= BuildEyedropper();
 
-        // --- Иконки ---
-
         private static Sprite BuildGear()
         {
             var px = NewCanvas();
             int c = S / 2;
             Disc(px, c, c, 22, Ink);
+            DrawGearTeeth(px, c);
+            DrawGearBore(px, c);
+            return Finish(px);
+        }
+
+        private static void DrawGearTeeth(Color32[] px, int c)
+        {
             for (int k = 0; k < 8; k++)
             {
                 float a = k * Mathf.PI / 4f;
@@ -48,132 +49,181 @@ namespace KitchenDesigner.Core.UI
                 int ty = c + Mathf.RoundToInt(Mathf.Sin(a) * 24);
                 Rect(px, tx - 7, ty - 7, tx + 7, ty + 7, Ink);
             }
-            Disc(px, c, c, 9, Clear); // отверстие в центре
+        }
+
+        private static void DrawGearBore(Color32[] px, int c) => Disc(px, c, c, 9, Clear);
+
+        private static Sprite BuildFloppy(bool saveAs)
+        {
+            var px = NewCanvas();
+            DrawFloppyCase(px);
+            DrawFloppyShutter(px);
+            DrawFloppyLabel(px);
+            if (saveAs) DrawSaveAsBadge(px);
             return Finish(px);
         }
 
-        private static Sprite BuildFloppy(bool plus)
+        private static void DrawFloppyCase(Color32[] px) => Rect(px, 10, 8, 54, 56, Ink2);
+
+        private static void DrawFloppyShutter(Color32[] px)
         {
-            var px = NewCanvas();
-            Rect(px, 10, 8, 54, 56, Ink2);          // корпус
-            Rect(px, 16, 30, 48, 52, Ink);          // верхняя «шторка»
-            Rect(px, 30, 34, 44, 50, Ink2);         // вырез шторки
-            Rect(px, 16, 10, 48, 26, Ink);          // нижняя этикетка
-            Rect(px, 20, 13, 44, 23, Ink2);         // полоски этикетки
-            if (plus)
-            {
-                // зелёный бейдж «+» в углу — «сохранить как»
-                Disc(px, 50, 50, 11, Accent);
-                Rect(px, 48, 44, 52, 56, Ink);
-                Rect(px, 44, 48, 56, 52, Ink);
-            }
-            return Finish(px);
+            Rect(px, 16, 30, 48, 52, Ink);
+            Rect(px, 30, 34, 44, 50, Ink2);
+        }
+
+        private static void DrawFloppyLabel(Color32[] px)
+        {
+            Rect(px, 16, 10, 48, 26, Ink);
+            Rect(px, 20, 13, 44, 23, Ink2);
+        }
+
+        private static void DrawSaveAsBadge(Color32[] px)
+        {
+            Disc(px, 50, 50, 11, Accent);
+            Rect(px, 48, 44, 52, 56, Ink);
+            Rect(px, 44, 48, 56, 52, Ink);
         }
 
         private static Sprite BuildFolder()
         {
             var px = NewCanvas();
-            Rect(px, 8, 40, 30, 50, Ink2);   // язычок
-            Rect(px, 7, 12, 57, 44, Ink);    // корпус папки
-            Rect(px, 7, 40, 57, 43, Ink2);   // линия сгиба
+            DrawFolderTab(px);
+            DrawFolderBody(px);
+            DrawFolderFoldLine(px);
             return Finish(px);
         }
 
-        // Круговая стрелка: дуга-«радуга» сверху и наконечник, свисающий с одного
-        // конца. Слева (redo=false) — отмена, справа (redo=true) — повтор.
-        private static Sprite BuildArrow(bool redo)
+        private static void DrawFolderTab(Color32[] px) => Rect(px, 8, 40, 30, 50, Ink2);
+
+        private static void DrawFolderBody(Color32[] px) => Rect(px, 7, 12, 57, 44, Ink);
+
+        private static void DrawFolderFoldLine(Color32[] px) => Rect(px, 7, 40, 57, 43, Ink2);
+
+        private static Sprite BuildCircularArrow(bool redo)
         {
+            const int arrowheadOnTheLeft = 17, arrowheadOnTheRight = 47;
             var px = NewCanvas();
             Arc(px, 32, 28, 15, 10f, 170f, 3, Ink);
-            ArrowDown(px, redo ? 47 : 17, 32, 11, Ink);
+            ArrowDown(px, redo ? arrowheadOnTheRight : arrowheadOnTheLeft, 32, 11, Ink);
             return Finish(px);
         }
 
-        // Канцелярская булавка: круглая головка + игла вниз.
         private static Sprite BuildPin()
         {
             var px = NewCanvas();
-            Disc(px, 32, 44, 12, Ink);    // головка
-            Disc(px, 32, 46, 5, Ink2);    // блик на головке
-            Rect(px, 30, 12, 35, 44, Ink); // игла
+            DrawPinHead(px);
+            DrawPinNeedle(px);
             return Finish(px);
         }
 
-        // Предупреждающий треугольник с «!». Рисуется БЕЛЫМ (в отличие от прочих
-        // иконок): цвет задаёт вызывающий через Image.color — красный при ошибках,
-        // оранжевый при предупреждениях, серый когда кнопка неактивна.
+        private static void DrawPinHead(Color32[] px)
+        {
+            Disc(px, 32, 44, 12, Ink);
+            Disc(px, 32, 46, 5, Ink2);
+        }
+
+        private static void DrawPinNeedle(Color32[] px) => Rect(px, 30, 12, 35, 44, Ink);
+
         private static Sprite BuildWarning()
         {
+            var tintedByTheCallerThroughImageColor = Color.white;
             var px = NewCanvas();
-            TriangleUp(px, 32, 8, 48, 27, Color.white);
-            Rect(px, 30, 24, 35, 40, Clear);   // палочка «!»
-            Disc(px, 32, 19, 3, Clear);        // точка «!»
+            TriangleUp(px, 32, 8, 48, 27, tintedByTheCallerThroughImageColor);
+            PunchExclamationMark(px);
             return Finish(px);
         }
 
-        // Карандаш «править» по диагонали: корпус, светлая обойма у обуха и
-        // тёмный грифель у острия. Глифа-карандаша в рантайм-атласе TMP нет
-        // (атлас собирается из LiberationSans, только WGL4 — см. UIStyle),
-        // поэтому иконка рисуется, а не пишется символом.
+        private static void PunchExclamationMark(Color32[] px)
+        {
+            Rect(px, 30, 24, 35, 40, Clear);
+            Disc(px, 32, 19, 3, Clear);
+        }
+
         private static Sprite BuildPencil()
         {
             var px = NewCanvas();
-            Line(px, 20, 20, 46, 46, 5, Ink);   // корпус
-            Line(px, 41, 41, 47, 47, 5, Ink2);  // обойма у обуха
-            Line(px, 15, 15, 19, 19, 3, Ink2);  // острие
-            Disc(px, 14, 14, 3, Ink);           // грифель
+            DrawPencilBodyAlongTheDiagonal(px);
+            DrawPencilFerrule(px);
+            DrawPencilTip(px);
             return Finish(px);
         }
 
-        // Сплошной треугольник вершиной вверх/вниз — «поднять/опустить в списке».
-        // Именно спрайт, а не глифы «↑»/«↓»: рантайм-атлас TMP собирается из
-        // LiberationSans по WGL4, и в узкой кнопке высотой 13 px стрелка-символ
-        // ещё и упиралась бы в базовую линию (см. BuildPencil).
+        private static void DrawPencilBodyAlongTheDiagonal(Color32[] px) =>
+            Line(px, 20, 20, 46, 46, 5, Ink);
+
+        private static void DrawPencilFerrule(Color32[] px) => Line(px, 41, 41, 47, 47, 5, Ink2);
+
+        private static void DrawPencilTip(Color32[] px)
+        {
+            Line(px, 15, 15, 19, 19, 3, Ink2);
+            Disc(px, 14, 14, 3, Ink);
+        }
+
         private static Sprite BuildCaret(bool up)
         {
-            var px = NewCanvas();
             const int halfW = 26;
-            int baseY = up ? 12 : 52;
+            const int height = 40;
+            const int marginFromTheShortEdge = 12;
+            var px = NewCanvas();
+            int baseY = up ? marginFromTheShortEdge : S - marginFromTheShortEdge;
             int step = up ? 1 : -1;
-            int h = 40;
-            for (int i = 0; i <= h; i++)
+            for (int i = 0; i <= height; i++)
             {
                 int y = baseY + i * step;
-                int half = Mathf.RoundToInt(halfW * (1f - i / (float)h));
+                int half = Mathf.RoundToInt(halfW * (1f - i / (float)height));
                 Rect(px, 32 - half, y, 32 + half + 1, y + 1, Ink);
             }
             return Finish(px);
         }
 
-        // Линейка «Рулетка»: светлый корпус с тёмными насечками по верхнему краю.
-        // Именно линейка, а не круглый корпус рулетки с лентой: в 28 px кнопки от
-        // корпуса осталось бы неразличимое кольцо, а насечки читаются как «мерить».
         private static Sprite BuildRuler()
         {
             var px = NewCanvas();
-            Rect(px, 6, 23, 58, 41, Ink);
-            for (int x = 13; x <= 51; x += 8)
-                Rect(px, x, 33, x + 3, 41, Ink2);
+            DrawRulerBody(px);
+            DrawRulerNotches(px);
             return Finish(px);
         }
 
-        // Лампочка «Свет»: колба, шейка и тёмный цоколь с двумя витками.
+        private static void DrawRulerBody(Color32[] px) => Rect(px, 6, 23, 58, 41, Ink);
+
+        private static void DrawRulerNotches(Color32[] px)
+        {
+            for (int x = 13; x <= 51; x += 8)
+                Rect(px, x, 33, x + 3, 41, Ink2);
+        }
+
         private static Sprite BuildBulb()
         {
             var px = NewCanvas();
-            Disc(px, 32, 41, 15, Ink);      // колба
-            Rect(px, 25, 26, 40, 42, Ink);  // шейка
-            Rect(px, 24, 13, 41, 26, Ink2); // цоколь
-            Rect(px, 24, 22, 41, 24, Ink);  // витки цоколя
-            Rect(px, 24, 17, 41, 19, Ink);
+            DrawBulbGlass(px);
+            DrawBulbNeck(px);
+            DrawBulbSocket(px);
             return Finish(px);
         }
 
-        // Солнце «День/Ночь»: диск и восемь лучей.
+        private static void DrawBulbGlass(Color32[] px) => Disc(px, 32, 41, 15, Ink);
+
+        private static void DrawBulbNeck(Color32[] px) => Rect(px, 25, 26, 40, 42, Ink);
+
+        private static void DrawBulbSocket(Color32[] px)
+        {
+            Rect(px, 24, 13, 41, 26, Ink2);
+            Rect(px, 24, 22, 41, 24, Ink);
+            Rect(px, 24, 17, 41, 19, Ink);
+        }
+
         private static Sprite BuildSun()
         {
             var px = NewCanvas();
-            Disc(px, 32, 32, 13, Ink);
+            DrawSunDisc(px);
+            DrawSunRays(px);
+            return Finish(px);
+        }
+
+        private static void DrawSunDisc(Color32[] px) => Disc(px, 32, 32, 13, Ink);
+
+        private static void DrawSunRays(Color32[] px)
+        {
             for (int k = 0; k < 8; k++)
             {
                 float a = k * Mathf.PI / 4f;
@@ -183,25 +233,27 @@ namespace KitchenDesigner.Core.UI
                     32 + Mathf.RoundToInt(cos * 27), 32 + Mathf.RoundToInt(sin * 27),
                     2, Ink);
             }
-            return Finish(px);
         }
 
-        // Пипетка: тёмный баллон сверху, светлый корпус, сужающееся острие внизу.
-        // Вертикальная, а не диагональная (как BuildPencil), — иначе в тулбаре
-        // рядом её было бы не отличить от карандаша.
         private static Sprite BuildEyedropper()
         {
             var px = NewCanvas();
-            Disc(px, 32, 49, 12, Ink2);     // баллон
-            Rect(px, 26, 20, 39, 48, Ink);  // корпус
-            Rect(px, 23, 36, 42, 40, Ink2); // обойма
-            ArrowDown(px, 32, 21, 13, Ink); // острие
+            DrawEyedropperBulb(px);
+            DrawEyedropperUprightBarrel(px);
+            DrawEyedropperCollar(px);
+            DrawEyedropperTip(px);
             return Finish(px);
         }
 
-        // --- Примитивы рисования ---
+        private static void DrawEyedropperBulb(Color32[] px) => Disc(px, 32, 49, 12, Ink2);
 
-        // Толстый отрезок: диски по ходу линии — тот же приём, что в Arc.
+        private static void DrawEyedropperUprightBarrel(Color32[] px) =>
+            Rect(px, 26, 20, 39, 48, Ink);
+
+        private static void DrawEyedropperCollar(Color32[] px) => Rect(px, 23, 36, 42, 40, Ink2);
+
+        private static void DrawEyedropperTip(Color32[] px) => ArrowDown(px, 32, 21, 13, Ink);
+
         private static void Line(Color32[] px, int x0, int y0, int x1, int y1, int thick, Color col)
         {
             int steps = Mathf.Max(Mathf.Abs(x1 - x0), Mathf.Abs(y1 - y0));
@@ -212,7 +264,6 @@ namespace KitchenDesigner.Core.UI
                     Mathf.RoundToInt(Mathf.Lerp(y0, y1, t)), thick, col);
             }
         }
-
 
         private static void Arc(Color32[] px, int cx, int cy, int r, float fromDeg, float toDeg, int thick, Color col)
         {
@@ -225,7 +276,6 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        // Треугольный наконечник, указывающий вниз: основание у baseY, вершина ниже на h.
         private static void ArrowDown(Color32[] px, int tx, int baseY, int h, Color col)
         {
             for (int i = 0; i <= h; i++)
@@ -236,8 +286,6 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        // Заполненный треугольник вершиной вверх: основание шириной 2*halfW у baseY,
-        // вершина в (cx, apexY).
         private static void TriangleUp(Color32[] px, int cx, int baseY, int apexY, int halfW, Color col)
         {
             int h = apexY - baseY;
