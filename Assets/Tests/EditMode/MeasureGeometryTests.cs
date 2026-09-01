@@ -392,4 +392,60 @@ public class MeasureGeometryTests
         }
         finally { MeasureMode.Changed -= Handler; }
     }
+
+    // ── Разметка рулетки ────────────────────────────────────────────────
+
+    [Test]
+    public void MeasureRenderer_WithoutTheOverlayLineShader_WarnsInsteadOfDisappearingSilently()
+    {
+        string? said = null;
+        var material = MeasureRenderer.BuildLineMaterialOrWarn(null, m => said = m);
+
+        Assert.IsNull(material, "без шейдера материала нет");
+        Assert.IsNotNull(said,
+            "молча пропасть нельзя: без материала рулетка продолжает рисовать ПОДПИСИ, "
+            + "но не линии — со стороны это выглядит как «текст в воздухе», и никто не "
+            + "догадается искать пропавший шейдер");
+        StringAssert.Contains("OverlayLine", said!, "в предупреждении обязано быть имя шейдера");
+    }
+
+    [Test]
+    public void MeasureRenderer_WithTheShader_BuildsAMaterialThatNeverReachesTheScene()
+    {
+        var shader = Shader.Find("Unlit/Color");
+        if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
+        Assume.That(shader != null, "предусловие: хоть какой-то шейдер в проекте есть");
+
+        string? said = null;
+        var material = MeasureRenderer.BuildLineMaterialOrWarn(shader, m => said = m);
+        try
+        {
+            Assert.IsNotNull(material, "положительный контроль: с шейдером материал строится");
+            Assert.IsNull(said, "шейдер нашёлся — предупреждать не о чем");
+            Assert.AreEqual(HideFlags.HideAndDontSave, material!.hideFlags,
+                "материал служебный и создаётся в рантайме: без HideAndDontSave он попал "
+                + "бы в сцену и в сохранение проекта");
+        }
+        finally { if (material != null) Object.DestroyImmediate(material); }
+    }
+
+    [Test]
+    public void MeasureRenderer_TheSelectionTube_IsDrawnBeforeTheDashesAndThePoints()
+    {
+        CollectionAssert.AreEqual(
+            new[] { MeasureRenderer.DrawPass.SelectionTube, MeasureRenderer.DrawPass.DashedLines,
+                    MeasureRenderer.DrawPass.Points },
+            MeasureRenderer.DrawOrder,
+            "полупрозрачная жёлтая обойма выделения идёт ПЕРВОЙ: рисуй её после пунктира — "
+            + "заливка затёрла бы красные штрихи внутри себя, и выбранный замер выглядел бы "
+            + "стёртым ровно в тот момент, когда его выбрали");
+    }
+
+    [Test]
+    public void MeasureRenderer_TheLine_IsThickerThanASinglePixel()
+    {
+        Assert.Greater(MeasureRenderer.LineThicknessPx, 1f,
+            "отрезок рисуется обращённой к камере полосой, а не GL.LINES: GL.LINES даёт "
+            + "ровно один пиксель и на фоне деталей почти не читается");
+    }
 }

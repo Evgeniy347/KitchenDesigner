@@ -1,24 +1,20 @@
+using System;
 using UnityEngine;
 using KitchenDesigner.Core.UI;
 
 namespace KitchenDesigner.Core.Measure
 {
-    /// <summary>Рисует разметку рулетки через GL поверх сцены: красный пунктир,
-    /// точки-вершины и прозрачный жёлтый «цилиндр» вокруг выбранного отрезка.
-    /// Всё одним проходом, без GameObject-ов и мешей.</summary>
     public class MeasureRenderer : MonoBehaviour
     {
-        /// <summary>Толщина линии замера, пиксели.</summary>
-        private const float LineThicknessPx = 2.5f;
-        /// <summary>Штрих и пробел пунктира, пиксели (постоянны при любом зуме).</summary>
-        private const float DashPx = 9f;
-        private const float GapPx = 6f;
-        /// <summary>Радиус точки-вершины, пиксели.</summary>
+        internal const float LineThicknessPx = 2.5f;
+        private const float DashLengthPx = 9f;
+        private const float DashGapPx = 6f;
         private const float PointRadiusPx = 5f;
-        /// <summary>Радиус жёлтого цилиндра вокруг выбранного отрезка, пиксели.</summary>
         private const float TubeRadiusPx = 10f;
-        /// <summary>Граней у цилиндра выделения.</summary>
-        private const int TubeSides = 12;
+        private const int TubeSideCount = 12;
+
+        internal const string OverlayLineShaderMissing =
+            "[Measure] Шейдер Hidden/OverlayLine не найден — разметка рулетки не будет видна.";
 
         private Material? _lineMaterial;
 
@@ -26,20 +22,19 @@ namespace KitchenDesigner.Core.Measure
         {
             var shader = Shader.Find("Hidden/OverlayLine");
             if (shader == null) shader = Resources.Load<Shader>("Shaders/OverlayLine");
-            if (shader == null)
-            {
-                // Молча пропасть нельзя: без материала рулетка рисует подписи,
-                // но не линии — со стороны это выглядит как «текст в воздухе».
-                Debug.LogWarning("[Measure] Шейдер Hidden/OverlayLine не найден — разметка рулетки не будет видна.");
-                return;
-            }
-            _lineMaterial = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
+            _lineMaterial = BuildLineMaterialOrWarn(shader, message => Debug.LogWarning(message));
         }
 
-        /// <summary>Камера кадра. В URP <see cref="Camera.current"/> внутри
-        /// OnRenderObject не гарантирована (бывает null), а от камеры зависит
-        /// вся геометрия разметки — разворот точек к зрителю и перевод пикселей
-        /// в мир. Поэтому падаем на Camera.main, как остальной код проекта.</summary>
+        internal static Material? BuildLineMaterialOrWarn(Shader? shader, Action<string> warn)
+        {
+            if (shader == null)
+            {
+                warn(OverlayLineShaderMissing);
+                return null;
+            }
+            return new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
+        }
+
         public static Camera? ResolveCamera(Camera? current, Camera? main) =>
             current != null ? current : main;
 
@@ -58,16 +53,36 @@ namespace KitchenDesigner.Core.Measure
             GL.PushMatrix();
             GL.MultMatrix(Matrix4x4.identity);
 
-            DrawTubes(cam);
-            DrawLines(cam);
-            DrawPoints(cam);
+            foreach (var pass in DrawOrder) Draw(pass, cam);
 
             GL.PopMatrix();
         }
 
-        // Жёлтый цилиндр рисуется первым: полупрозрачная заливка не должна
-        // затирать красный пунктир внутри себя.
-        private void DrawTubes(Camera cam)
+        internal enum DrawPass
+        {
+            SelectionTube,
+            DashedLines,
+            Points,
+        }
+
+        internal static readonly DrawPass[] DrawOrder =
+        {
+            DrawPass.SelectionTube,
+            DrawPass.DashedLines,
+            DrawPass.Points,
+        };
+
+        private void Draw(DrawPass pass, Camera cam)
+        {
+            switch (pass)
+            {
+                case DrawPass.SelectionTube: DrawSelectionTube(cam); break;
+                case DrawPass.DashedLines: DrawLines(cam); break;
+                case DrawPass.Points: DrawPoints(cam); break;
+            }
+        }
+
+        private void DrawSelectionTube(Camera cam)
         {
             var selected = MeasureStore.Selected;
             if (selected == null) return;
@@ -106,8 +121,8 @@ namespace KitchenDesigner.Core.Measure
             foreach (var seg in MeasureStore.Segments)
             {
                 GL.Color(UIStyle.MeasureLine);
-                DrawPoint(cam, seg.A);
-                DrawPoint(cam, seg.B);
+                DrawCameraFacingPoint(cam, seg.A);
+                DrawCameraFacingPoint(cam, seg.B);
             }
 
             if (ctrl != null)
@@ -115,32 +130,20 @@ namespace KitchenDesigner.Core.Measure
                 if (ctrl.Anchor.HasValue)
                 {
                     GL.Color(UIStyle.MeasureLine);
-                    DrawPoint(cam, ctrl.Anchor.Value);
+                    DrawCameraFacingPoint(cam, ctrl.Anchor.Value);
                 }
-                if (ctrl.Hint.HasValue)
-                {
-                    // Предложенная вершина розовая и когда она станет вторым
-                    // концом — пользователь видит, куда попадёт клик.
-                    GL.Color(UIStyle.MeasureHint);
-                    DrawPoint(cam, ctrl.Hint.Value);
-                }
-                if (ctrl.PlaneHint.HasValue)
-                {
-                    // Точка хита луча в деталь/стену/пол — того же цвета, что и
-                    // вершинная подсказка: оба типа привязки равноправны и
-                    // пользователь не должен различать их по цвету.
-                    GL.Color(UIStyle.MeasureHint);
-                    DrawPoint(cam, ctrl.PlaneHint.Value);
-                }
+                if (ctrl.Hint.HasValue) DrawInterchangeableHintPoint(cam, ctrl.Hint.Value);
+                if (ctrl.PlaneHint.HasValue) DrawInterchangeableHintPoint(cam, ctrl.PlaneHint.Value);
             }
             GL.End();
         }
 
-        // --- Примитивы ---
+        private static void DrawInterchangeableHintPoint(Camera cam, Vector3 point)
+        {
+            GL.Color(UIStyle.MeasureHint);
+            DrawCameraFacingPoint(cam, point);
+        }
 
-        // Пунктир: длины штриха и пробела заданы в пикселях и переводятся в мир
-        // по расстоянию до середины отрезка, поэтому шаг не «сжимается» при
-        // отдалении камеры.
         private static void DrawDashed(Camera cam, Vector3 a, Vector3 b)
         {
             Vector3 delta = b - a;
@@ -148,22 +151,20 @@ namespace KitchenDesigner.Core.Measure
             if (length < Tolerance.EpsilonUnits) return;
             Vector3 dir = delta / length;
 
-            float scale = MeasureGeometry.WorldSizeForPixels(cam, (a + b) * 0.5f, 1f);
-            float dash = DashPx * scale;
-            float step = (DashPx + GapPx) * scale;
+            float worldPerPixel = MeasureGeometry.WorldSizeForPixels(cam, (a + b) * 0.5f, 1f);
+            float dash = DashLengthPx * worldPerPixel;
+            float step = (DashLengthPx + DashGapPx) * worldPerPixel;
             if (step < Tolerance.EpsilonUnits) return;
 
             for (float t = 0f; t < length; t += step)
             {
                 Vector3 p0 = a + dir * t;
                 Vector3 p1 = a + dir * Mathf.Min(t + dash, length);
-                DrawThickSegment(cam, p0, p1, LineThicknessPx);
+                DrawCameraFacingStrip(cam, p0, p1, LineThicknessPx);
             }
         }
 
-        // Отрезок как обращённая к камере полоса: GL.LINES даёт 1 пиксель и на
-        // фоне деталей почти не читается.
-        private static void DrawThickSegment(Camera cam, Vector3 a, Vector3 b, float thicknessPx)
+        private static void DrawCameraFacingStrip(Camera cam, Vector3 a, Vector3 b, float thicknessPx)
         {
             Vector3 axis = b - a;
             if (axis.sqrMagnitude < Tolerance.EpsilonSqr) return;
@@ -181,9 +182,7 @@ namespace KitchenDesigner.Core.Measure
             GL.Vertex(b - side * hb);
         }
 
-        // Точка — квад, всегда развёрнутый к камере и постоянного размера на
-        // экране: попасть в вершину сложно, значит она должна быть заметна.
-        private static void DrawPoint(Camera cam, Vector3 p)
+        private static void DrawCameraFacingPoint(Camera cam, Vector3 p)
         {
             float r = MeasureGeometry.WorldSizeForPixels(cam, p, PointRadiusPx);
             Vector3 right = cam.transform.right * r;
@@ -195,9 +194,6 @@ namespace KitchenDesigner.Core.Measure
             GL.Vertex(p + right - up);
         }
 
-        // «Цилиндр» выделения: боковая поверхность из TubeSides четырёхугольников,
-        // разложенных на треугольники. Радиус задан в пикселях, поэтому обойма
-        // одинаково толстая на любом расстоянии.
         private static void DrawTube(Camera cam, Vector3 a, Vector3 b)
         {
             Vector3 axis = b - a;
@@ -212,10 +208,10 @@ namespace KitchenDesigner.Core.Measure
             float ra = MeasureGeometry.WorldSizeForPixels(cam, a, TubeRadiusPx);
             float rb = MeasureGeometry.WorldSizeForPixels(cam, b, TubeRadiusPx);
 
-            for (int i = 0; i < TubeSides; i++)
+            for (int i = 0; i < TubeSideCount; i++)
             {
-                float a0 = (float)i / TubeSides * Mathf.PI * 2f;
-                float a1 = (float)(i + 1) / TubeSides * Mathf.PI * 2f;
+                float a0 = (float)i / TubeSideCount * Mathf.PI * 2f;
+                float a1 = (float)(i + 1) / TubeSideCount * Mathf.PI * 2f;
                 Vector3 d0 = u * Mathf.Cos(a0) + v * Mathf.Sin(a0);
                 Vector3 d1 = u * Mathf.Cos(a1) + v * Mathf.Sin(a1);
 
