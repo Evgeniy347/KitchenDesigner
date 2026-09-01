@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -10,9 +9,9 @@ namespace KitchenDesigner.Core
         public const int LegCrossSectionMM = 50;
         public const int TabletopThicknessMM = 30;
 
-        private readonly List<GameObject> _children = new List<GameObject>();
+        private LegSet? _legSet;
+        private GameObject? _tabletop;
         private Material? _tabletopMaterial;
-        private Material? _legsMaterial;
 
         [SerializeField] private int _legInsetMM = 100;
         [SerializeField] private string _tabletopMaterialId = MaterialCatalog.DefaultId;
@@ -47,10 +46,12 @@ namespace KitchenDesigner.Core
         }
 
         public override MeshRenderer? DecorRenderer
-            => _children.Count > 4 ? _children[4].GetComponent<MeshRenderer>() : null;
+            => _tabletop != null ? _tabletop.GetComponent<MeshRenderer>() : null;
 
         public override Vector2Int DecorSurfaceMM
             => new Vector2Int(DimensionsMM.x, DimensionsMM.z);
+
+        private LegSet Legs => _legSet ??= new LegSet(transform, "Leg");
 
         private void ApplyMaterial()
         {
@@ -105,74 +106,51 @@ namespace KitchenDesigner.Core
             float frontZ_norm  = (-halfD_world + legInset_world + insetOffset_world) / psZ;
             float backZ_norm   = ( halfD_world - legInset_world - insetOffset_world) / psZ;
 
-            var legPositions = new Vector3[]
+            var footprint = new Vector2[]
             {
-                new Vector3(leftX_norm,  legCenterY_world / psY, frontZ_norm),
-                new Vector3(rightX_norm, legCenterY_world / psY, frontZ_norm),
-                new Vector3(leftX_norm,  legCenterY_world / psY, backZ_norm),
-                new Vector3(rightX_norm, legCenterY_world / psY, backZ_norm),
+                new Vector2(leftX_norm,  frontZ_norm),
+                new Vector2(rightX_norm, frontZ_norm),
+                new Vector2(leftX_norm,  backZ_norm),
+                new Vector2(rightX_norm, backZ_norm),
             };
 
             var legScale = new Vector3(legCross / psX, legH * toU / psY, legCross / psZ);
-            var topScale = new Vector3(1f, topThicknessU / psY, 1f);
-            var topPos = new Vector3(0f, topCenterY_world / psY, 0f);
 
-            EnsureChildren(5);
+            Legs.Place(footprint, legCenterY_world / psY, legScale);
 
-            for (int i = 0; i < 4; i++)
-            {
-                _children[i].transform.localPosition = legPositions[i];
-                _children[i].transform.localScale = legScale;
-                _children[i].transform.localRotation = Quaternion.identity;
-            }
-
-            _children[4].transform.localPosition = topPos;
-            _children[4].transform.localScale = topScale;
-            _children[4].transform.localRotation = Quaternion.identity;
+            var tabletop = EnsureTabletop();
+            tabletop.transform.localPosition = new Vector3(0f, topCenterY_world / psY, 0f);
+            tabletop.transform.localScale = new Vector3(1f, topThicknessU / psY, 1f);
+            tabletop.transform.localRotation = Quaternion.identity;
         }
 
-        private void EnsureChildren(int count)
+        private GameObject EnsureTabletop()
         {
-            while (_children.Count < count)
-            {
-                var child = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                bool isLeg = _children.Count < 4;
-                child.name = isLeg ? $"Leg{_children.Count + 1}" : "Tabletop";
-                child.transform.SetParent(transform, false);
+            if (_tabletop != null) return _tabletop;
 
-                var childCollider = child.GetComponent<BoxCollider>();
-                if (childCollider != null) Object.DestroyImmediate(childCollider);
+            var top = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            top.name = "Tabletop";
+            top.transform.SetParent(transform, false);
 
-                var renderer = child.GetComponent<MeshRenderer>();
-                if (renderer != null)
-                {
-                    var mat = isLeg ? _legsMaterial : _tabletopMaterial;
-                    if (mat != null) renderer.sharedMaterial = mat;
-                }
+            var topCollider = top.GetComponent<BoxCollider>();
+            if (topCollider != null) Object.DestroyImmediate(topCollider);
 
-                _children.Add(child);
-            }
+            var renderer = top.GetComponent<MeshRenderer>();
+            if (renderer != null && _tabletopMaterial != null)
+                renderer.sharedMaterial = _tabletopMaterial;
+
+            _tabletop = top;
+            return top;
         }
 
         public void SetTabletopMaterial(Material material)
         {
             _tabletopMaterial = material;
-            if (_children.Count > 4)
-            {
-                var renderer = _children[4].GetComponent<MeshRenderer>();
-                if (renderer != null) renderer.sharedMaterial = _tabletopMaterial;
-            }
+            var renderer = DecorRenderer;
+            if (renderer != null) renderer.sharedMaterial = _tabletopMaterial;
         }
 
-        public void SetLegsMaterial(Material material)
-        {
-            _legsMaterial = material;
-            for (int i = 0; i < _children.Count && i < 4; i++)
-            {
-                var renderer = _children[i].GetComponent<MeshRenderer>();
-                if (renderer != null) renderer.sharedMaterial = _legsMaterial;
-            }
-        }
+        public void SetLegsMaterial(Material material) => Legs.SetMaterial(material);
 
         public void SetMaterial(Material material)
         {
@@ -267,15 +245,13 @@ namespace KitchenDesigner.Core
 
         public void DestroyChildren()
         {
-            foreach (var child in _children)
-                if (child != null)
-                {
-                    if (Application.isPlaying)
-                        Object.Destroy(child);
-                    else
-                        Object.DestroyImmediate(child);
-                }
-            _children.Clear();
+            _legSet?.Destroy();
+            if (_tabletop == null) return;
+            if (Application.isPlaying)
+                Object.Destroy(_tabletop);
+            else
+                Object.DestroyImmediate(_tabletop);
+            _tabletop = null;
         }
     }
 }

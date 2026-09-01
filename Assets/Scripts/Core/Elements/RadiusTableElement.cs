@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -11,9 +10,8 @@ namespace KitchenDesigner.Core
         public const int TabletopThicknessMM = 30;
         public const int MinLegInsetFromContourMM = 50;
 
-        private readonly List<GameObject> _legs = new List<GameObject>();
+        private LegSet? _legSet;
         private Material? _tabletopMaterial;
-        private Material? _legsMaterial;
         private bool _applying;
 
         [SerializeField] private int _legInsetMM = 100;
@@ -57,6 +55,8 @@ namespace KitchenDesigner.Core
 
         public override Vector2Int DecorSurfaceMM
             => new Vector2Int(DimensionsMM.x, DimensionsMM.z);
+
+        private LegSet Legs => _legSet ??= new LegSet(transform, "Leg");
 
         private void ApplyMaterial()
         {
@@ -134,15 +134,7 @@ namespace KitchenDesigner.Core
             var legScale = new Vector3(LegCrossSectionMM * toU, legHeightMM * toU,
                 LegCrossSectionMM * toU);
 
-            EnsureLegs(footprint.Length);
-
-            for (int i = 0; i < footprint.Length; i++)
-            {
-                _legs[i].transform.localPosition =
-                    new Vector3(footprint[i].x, legCentreYU, footprint[i].y);
-                _legs[i].transform.localScale = legScale;
-                _legs[i].transform.localRotation = Quaternion.identity;
-            }
+            Legs.Place(footprint, legCentreYU, legScale);
         }
 
         private void UpdateCollider(Mesh mesh)
@@ -158,25 +150,6 @@ namespace KitchenDesigner.Core
             meshCollider.sharedMesh = mesh;
         }
 
-        private void EnsureLegs(int count)
-        {
-            while (_legs.Count < count)
-            {
-                var leg = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                leg.name = $"Leg{_legs.Count + 1}";
-                leg.transform.SetParent(transform, false);
-
-                var collider = leg.GetComponent<BoxCollider>();
-                if (collider != null) Object.DestroyImmediate(collider);
-
-                var renderer = leg.GetComponent<MeshRenderer>();
-                if (renderer != null && _legsMaterial != null)
-                    renderer.sharedMaterial = _legsMaterial;
-
-                _legs.Add(leg);
-            }
-        }
-
         public void SetTabletopMaterial(Material material)
         {
             _tabletopMaterial = material;
@@ -185,16 +158,7 @@ namespace KitchenDesigner.Core
                 rootRenderer.sharedMaterial = _tabletopMaterial;
         }
 
-        public void SetLegsMaterial(Material material)
-        {
-            _legsMaterial = material;
-            foreach (var leg in _legs)
-            {
-                var renderer = leg.GetComponent<MeshRenderer>();
-                if (renderer != null)
-                    renderer.sharedMaterial = _legsMaterial;
-            }
-        }
+        public void SetLegsMaterial(Material material) => Legs.SetMaterial(material);
 
         public void SetMaterial(Material material)
         {
@@ -287,17 +251,6 @@ namespace KitchenDesigner.Core
 
         public override void PrepareForDestruction() => DestroyChildren();
 
-        public void DestroyChildren()
-        {
-            foreach (var leg in _legs)
-                if (leg != null)
-                {
-                    if (Application.isPlaying)
-                        Object.Destroy(leg);
-                    else
-                        Object.DestroyImmediate(leg);
-                }
-            _legs.Clear();
-        }
+        public void DestroyChildren() => _legSet?.Destroy();
     }
 }
