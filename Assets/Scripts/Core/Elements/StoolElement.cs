@@ -83,20 +83,7 @@ namespace KitchenDesigner.Core
             => Mathf.Clamp(value, 0, MaxCornerRadiusMM(DimensionsMM));
 
         private void ApplyMaterial()
-        {
-            var seatDef = MaterialCatalog.Get(_seatMaterialId);
-            var legsDef = MaterialCatalog.Get(_legsMaterialId);
-            if (seatDef != null)
-            {
-                var mat = MaterialManager.GetSharedMaterial(seatDef);
-                if (mat != null) SetTabletopMaterial(mat);
-            }
-            if (legsDef != null)
-            {
-                var mat = MaterialManager.GetSharedMaterial(legsDef);
-                if (mat != null) SetLegsMaterial(mat);
-            }
-        }
+            => TabletopDecor.ApplyBothSlots(this, _seatMaterialId, _legsMaterialId);
 
         public override void ApplyDimensions()
         {
@@ -178,11 +165,7 @@ namespace KitchenDesigner.Core
 
         public void SetLegsMaterial(Material material) => Legs.SetMaterial(material);
 
-        public void SetMaterial(Material material)
-        {
-            SetTabletopMaterial(material);
-            SetLegsMaterial(material);
-        }
+        public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
 
         public override void PrepareForDestruction() => DestroyChildren();
 

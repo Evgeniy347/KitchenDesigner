@@ -54,20 +54,7 @@ namespace KitchenDesigner.Core
         private LegSet Legs => _legSet ??= new LegSet(transform, "Leg");
 
         private void ApplyMaterial()
-        {
-            var topDef = MaterialCatalog.Get(_tabletopMaterialId);
-            var legsDef = MaterialCatalog.Get(_legsMaterialId);
-            if (topDef != null)
-            {
-                var mat = MaterialManager.GetSharedMaterial(topDef);
-                if (mat != null) SetTabletopMaterial(mat);
-            }
-            if (legsDef != null)
-            {
-                var mat = MaterialManager.GetSharedMaterial(legsDef);
-                if (mat != null) SetLegsMaterial(mat);
-            }
-        }
+            => TabletopDecor.ApplyBothSlots(this, _tabletopMaterialId, _legsMaterialId);
 
         public override void ApplyDimensions()
         {
@@ -152,11 +139,7 @@ namespace KitchenDesigner.Core
 
         public void SetLegsMaterial(Material material) => Legs.SetMaterial(material);
 
-        public void SetMaterial(Material material)
-        {
-            SetTabletopMaterial(material);
-            SetLegsMaterial(material);
-        }
+        public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
 
         public override Face[] GetFaces() => GetFacesAt(transform.position);
 
