@@ -175,4 +175,83 @@ public class TableDecorReproTests
         Assert.AreEqual(dims.z / (float)tile.y, st.y, 1e-3f,
             "по глубине — dims.z / tileHeight; раньше сюда шла ВЫСОТА стола");
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  Слот пишет в СВОЙ рендерер — проверка материалом, а не строкой
+    // ═══════════════════════════════════════════════════════════════
+
+    private static readonly string[] KnownDecorIds = { "oak", "wenge", MaterialCatalog.DefaultId };
+
+    /// <summary>Материал на рендерере, названный по декору, из которого он получен.
+    ///
+    /// Сравнивать сами Material нельзя: они создаются как new Material(shader) и
+    /// имени им никто не даёт, поэтому ToString() у всех печатает имя ШЕЙДЕРА, и
+    /// упавший тест сообщает «Expected: Universal Render Pipeline/Lit, But was:
+    /// Universal Render Pipeline/Lit». Читатель такого сообщения решит, что сломан
+    /// тест, а не код. Отображение обратно в идентификатор идёт ПО ССЫЛКЕ на
+    /// фактический материал рендерера — поля слота здесь не участвуют, иначе
+    /// проверка вернулась бы к той самой дыре, ради которой она написана.</summary>
+    private static string DecorOn(MeshRenderer renderer)
+    {
+        var mat = renderer.sharedMaterial;
+        if (mat == null) return "<материала нет>";
+        foreach (var id in KnownDecorIds)
+            if (ReferenceEquals(mat, MaterialManager.GetSharedMaterial(MaterialCatalog.Get(id))))
+                return id;
+        return "<декор вне списка теста>";
+    }
+
+    private static (MeshRenderer top, MeshRenderer leg) DecorAndLegRenderers(KitchenElement element)
+    {
+        var top = element.DecorRenderer;
+        Assert.IsNotNull(top, "у стола обязана быть поверхность под декор");
+        var legTransform = element.transform.Find("Leg1");
+        Assert.IsNotNull(legTransform,
+            "LegSet называет ножки Leg1..LegN; без ножки на сцене проверять нечего");
+        var leg = legTransform!.GetComponent<MeshRenderer>();
+        Assert.IsNotNull(leg, "ножка обязана быть видимой, иначе декор на ней не проверить");
+        return (top!, leg!);
+    }
+
+    private static void AssertLegsSlotLeavesTheTabletopAlone(KitchenElement table, string what)
+    {
+        var oak = MaterialCatalog.Get("oak");
+        var wenge = MaterialCatalog.Get("wenge");
+        Assume.That(MaterialManager.GetSharedMaterial(oak),
+            Is.Not.EqualTo(MaterialManager.GetSharedMaterial(wenge)),
+            "два декора обязаны давать РАЗНЫЕ материалы, иначе тест зелен на любом коде");
+
+        MaterialManager.ApplySlot(table, MaterialSlot.Tabletop, oak);
+        MaterialManager.ApplySlot(table, MaterialSlot.Legs, wenge);
+
+        var (top, leg) = DecorAndLegRenderers(table);
+
+        Assert.AreEqual("wenge", DecorOn(leg),
+            "положительный контроль (" + what + "): ножки обязаны носить выбранный "
+            + "для них декор. Без него проверка крышки ничего не стоит — она была бы "
+            + "зелёной и на коде, который ножки не красит вообще");
+        Assert.AreEqual("oak", DecorOn(top),
+            "правка ТОЛЬКО ножек не имеет права перекрасить крышку (" + what + "). "
+            + "Соседние тесты этого не ловят: они сравнивают ИДЕНТИФИКАТОРЫ слотов, а "
+            + "те при такой поломке остаются верными — _tabletopMaterialId по-прежнему "
+            + "«oak», тогда как на рендерере крышки уже лежит материал ножек. Видно "
+            + "это только по фактическому материалу");
+    }
+
+    [Test]
+    public void Table_LegsSlotChange_PaintsTheLegs_AndLeavesTheTabletopRendererAlone()
+    {
+        var go = ElementFactory.CreateTable(new Vector3Int(1200, 750, 700), "T", Vector3.zero);
+        AssertLegsSlotLeavesTheTabletopAlone(go.GetComponent<TableElement>()!,
+            "крышка — ребёнок Tabletop");
+    }
+
+    [Test]
+    public void RadiusTable_LegsSlotChange_PaintsTheLegs_AndLeavesTheTabletopRendererAlone()
+    {
+        var go = ElementFactory.CreateRadiusTable(new Vector3Int(1200, 750, 700), "RT", Vector3.zero);
+        AssertLegsSlotLeavesTheTabletopAlone(go.GetComponent<RadiusTableElement>()!,
+            "крышка — рендерер КОРНЯ, а не ребёнок, поэтому перепутанные слоты "
+            + "выглядят иначе, чем у прямоугольного стола");
+    }
 }
