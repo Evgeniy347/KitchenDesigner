@@ -447,7 +447,7 @@ namespace KitchenDesigner.Tests
             if (!File.Exists(verifiedPath))
             {
                 WriteGolden(candidatePath, actualJson);
-                Debug.LogWarning(
+                Debug.LogError(
                     $"[UISNAPSHOT] No verified golden for '{testName}'.\n" +
                     $"  Candidate: {candidatePath}\n" +
                     $"  Rename to accept: ui_{cleanName}.verified.json");
