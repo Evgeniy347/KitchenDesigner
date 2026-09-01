@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core
         public const int LegInsetMM = 30;
 
         private LegSet? _legSet;
-        private Material? _seatMaterial;
+        private TabletopSurface? _seat;
         private bool _applying;
 
         [SerializeField] private int _cornerRadiusMM;
@@ -79,6 +79,8 @@ namespace KitchenDesigner.Core
 
         private LegSet Legs => _legSet ??= new LegSet(transform, "Leg");
 
+        private TabletopSurface Seat => _seat ??= new TabletopSurface(gameObject, AdoptOwnedMesh);
+
         private int ClampCornerRadius(int value)
             => Mathf.Clamp(value, 0, MaxCornerRadiusMM(DimensionsMM));
 
@@ -107,38 +109,8 @@ namespace KitchenDesigner.Core
         {
             float toU = AppConstants.MM_TO_UNITS;
             var dims = DimensionsMM;
-            float widthU = dims.x * toU;
-            float depthU = dims.z * toU;
-            float thicknessU = SeatThicknessMM * toU;
-            float centreYU = FurnitureLayout.TopCentreY(dims.y, SeatThicknessMM);
-
-            var profile = RoundedRectProfile.Uniform(widthU, depthU, _cornerRadiusMM * toU,
-                RoundedRectProfile.DefaultSegments);
-            var mesh = ProfileExtrusionMesh.Build(profile, widthU, depthU, thicknessU, centreYU);
-            AdoptOwnedMesh(mesh);
-
-            var meshFilter = GetComponent<MeshFilter>();
-            if (meshFilter == null) meshFilter = gameObject.AddComponent<MeshFilter>();
-            meshFilter.sharedMesh = mesh;
-
-            var meshRenderer = GetComponent<MeshRenderer>();
-            if (meshRenderer == null) meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            if (_seatMaterial != null) meshRenderer.sharedMaterial = _seatMaterial;
-
-            UpdateCollider(mesh);
-        }
-
-        private void UpdateCollider(Mesh mesh)
-        {
-            var existing = GetComponent<Collider>();
-            if (existing != null && !(existing is MeshCollider))
-                Object.DestroyImmediate(existing);
-
-            var meshCollider = GetComponent<MeshCollider>();
-            if (meshCollider == null)
-                meshCollider = gameObject.AddComponent<MeshCollider>();
-            meshCollider.convex = true;
-            meshCollider.sharedMesh = mesh;
+            Seat.Rebuild(dims.x * toU, dims.z * toU, _cornerRadiusMM * toU,
+                SeatThicknessMM * toU, FurnitureLayout.TopCentreY(dims.y, SeatThicknessMM));
         }
 
         private void PlaceLegs()
@@ -156,12 +128,7 @@ namespace KitchenDesigner.Core
             Legs.Place(footprint, legCentreYU, legScale);
         }
 
-        public void SetTabletopMaterial(Material material)
-        {
-            _seatMaterial = material;
-            var seatRenderer = GetComponent<MeshRenderer>();
-            if (seatRenderer != null) seatRenderer.sharedMaterial = _seatMaterial;
-        }
+        public void SetTabletopMaterial(Material material) => Seat.SetMaterial(material);
 
         public void SetLegsMaterial(Material material) => Legs.SetMaterial(material);
 

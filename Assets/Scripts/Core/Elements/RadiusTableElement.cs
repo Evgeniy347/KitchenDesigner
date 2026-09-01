@@ -11,7 +11,7 @@ namespace KitchenDesigner.Core
         public const int MinLegInsetFromContourMM = 50;
 
         private LegSet? _legSet;
-        private Material? _tabletopMaterial;
+        private TabletopSurface? _tabletop;
         private bool _applying;
 
         [SerializeField] private int _legInsetMM = 100;
@@ -58,6 +58,9 @@ namespace KitchenDesigner.Core
 
         private LegSet Legs => _legSet ??= new LegSet(transform, "Leg");
 
+        private TabletopSurface Tabletop
+            => _tabletop ??= new TabletopSurface(gameObject, AdoptOwnedMesh);
+
         private void ApplyMaterial()
             => TabletopDecor.ApplyBothSlots(this, _tabletopMaterialId, _legsMaterialId);
 
@@ -88,23 +91,9 @@ namespace KitchenDesigner.Core
 
         private void RebuildTabletop(Vector3Int dims, float widthU, float depthU, float radiusU)
         {
-            float thicknessU = TabletopThicknessMM * AppConstants.MM_TO_UNITS;
-            float centreYU = FurnitureLayout.TopCentreY(dims.y, TabletopThicknessMM);
-
-            var profile = RoundedRectProfile.Uniform(widthU, depthU, radiusU,
-                RoundedRectProfile.DefaultSegments);
-            var mesh = ProfileExtrusionMesh.Build(profile, widthU, depthU, thicknessU, centreYU);
-            AdoptOwnedMesh(mesh);
-
-            var meshFilter = GetComponent<MeshFilter>();
-            if (meshFilter == null) meshFilter = gameObject.AddComponent<MeshFilter>();
-            meshFilter.sharedMesh = mesh;
-
-            var meshRenderer = GetComponent<MeshRenderer>();
-            if (meshRenderer == null) meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            if (_tabletopMaterial != null) meshRenderer.sharedMaterial = _tabletopMaterial;
-
-            UpdateCollider(mesh);
+            Tabletop.Rebuild(widthU, depthU, radiusU,
+                TabletopThicknessMM * AppConstants.MM_TO_UNITS,
+                FurnitureLayout.TopCentreY(dims.y, TabletopThicknessMM));
         }
 
         private void PlaceLegs(Vector3Int dims, float widthU, float depthU, float radiusU)
@@ -124,26 +113,7 @@ namespace KitchenDesigner.Core
             Legs.Place(footprint, legCentreYU, legScale);
         }
 
-        private void UpdateCollider(Mesh mesh)
-        {
-            var existing = GetComponent<Collider>();
-            if (existing != null && !(existing is MeshCollider))
-                Object.DestroyImmediate(existing);
-
-            var meshCollider = GetComponent<MeshCollider>();
-            if (meshCollider == null)
-                meshCollider = gameObject.AddComponent<MeshCollider>();
-            meshCollider.convex = true;
-            meshCollider.sharedMesh = mesh;
-        }
-
-        public void SetTabletopMaterial(Material material)
-        {
-            _tabletopMaterial = material;
-            var rootRenderer = GetComponent<MeshRenderer>();
-            if (rootRenderer != null)
-                rootRenderer.sharedMaterial = _tabletopMaterial;
-        }
+        public void SetTabletopMaterial(Material material) => Tabletop.SetMaterial(material);
 
         public void SetLegsMaterial(Material material) => Legs.SetMaterial(material);
 

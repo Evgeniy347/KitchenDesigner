@@ -25,7 +25,18 @@ namespace KitchenDesigner.Tests.Geometry
     /// записанный долг (docs/HARDENING-PLAN.md, п. 10).</summary>
     public class DecorSurfaceUvTests
     {
-        private const string BuildsItsOwnMesh = @"\b\w+Mesh\s*\.\s*Build\s*\(";
+        /// <summary>Класс строит свой меш либо напрямую (<c>XxxMesh.Build</c>), либо
+        /// поручая это общему помощнику. Второй случай приписан сюда намеренно: когда
+        /// конвейер «профиль → меш → коллайдер» уехал из табуретки и радиусного стола в
+        /// <c>TabletopSurface</c>, оба разом выпали из скана, и правило перестало их
+        /// видеть, не сказав ни слова. Владелец помощника отвечает за оси развёртки
+        /// ровно так же, как если бы строил меш сам.</summary>
+        private const string BuildsItsOwnMesh =
+            @"\b\w+Mesh\s*\.\s*Build\s*\(|\bnew\s+TabletopSurface\s*\(";
+
+        /// <summary>Помощники, строящие меш ДЛЯ элемента. Они не элементы и своей
+        /// поверхности декора не имеют — её называет владелец, и скан ищет владельца.</summary>
+        private static readonly string[] MeshBuildingHelpers = { "TabletopSurface.cs" };
 
         private const string DeclaresDecorSurface = @"\bVector2Int\s+DecorSurfaceMM\b";
 
@@ -81,6 +92,8 @@ namespace KitchenDesigner.Tests.Geometry
         public static string[] MeshBuildingElements() =>
             ElementSources()
                 .Where(f => !(Path.GetFileName(f) ?? string.Empty).EndsWith("Mesh.cs", StringComparison.Ordinal))
+                .Where(f => !MeshBuildingHelpers.Contains(Path.GetFileName(f) ?? string.Empty,
+                    StringComparer.Ordinal))
                 .Where(f => Matches(f, BuildsItsOwnMesh))
                 .Select(f => Path.GetFileName(f) ?? string.Empty)
                 .OrderBy(f => f, StringComparer.Ordinal)
@@ -144,6 +157,10 @@ namespace KitchenDesigner.Tests.Geometry
             CollectionAssert.Contains(built, "RadiusTableElement.cs",
                 "исправленный случай (растянутая столешница) обязан оставаться в скане: он "
                 + "здесь положительный контроль");
+            CollectionAssert.Contains(built, "StoolElement.cs",
+                "мебель с профильной крышкой строит меш через TabletopSurface — если скан "
+                + "видит только прямой вызов XxxMesh.Build, вся эта семья выпадает из "
+                + "правила молча");
             CollectionAssert.Contains(built, "FloorElement.cs",
                 "второй исправленный случай: у пола не было UV вовсе, и он молча наследовал "
                 + "оси стоячей панели — то есть делил развёртку на толщину плиты");
