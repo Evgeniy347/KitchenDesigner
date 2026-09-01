@@ -12,34 +12,22 @@ namespace KitchenDesigner.Core
         public const int BASE_PLATE_SIZE = 3000;
         public const float MM_TO_UNITS = 0.001f;
 
-        // Радиусная полка: радиус скругления угла по умолчанию.
         public const int RADIAL_CORNER_RADIUS_DEFAULT = 200;
 
         public const int CHAIR_SEAT_HEIGHT_DEFAULT = 450;
 
-        // Сборный (рамочный) фасад, см. каталог Союз-Фасад стр. 43.
-        public const int ASSEMBLED_FRAME_MM = 100;        // ширина рамки A
-        public const int ASSEMBLED_GLASS_DEDUCT_MM = 180; // вычет под вкладное стекло (L-180, H-180)
+        public const int ASSEMBLED_FRAME_MM = 100;
+        public const int ASSEMBLED_GLASS_DEDUCT_MM = 180;
         public const int ASSEMBLED_GLASS_THICKNESS_MM = 4;
-        public const int ASSEMBLED_DEFAULT_GROOVES = 1;   // >0 = рисовать выемки (2 сверху, 2 снизу)
-        public const int ASSEMBLED_GROOVE_MM = 5;         // выемка на перекладине: 5×5 мм
+        public const int ASSEMBLED_DEFAULT_GROOVES = 1;
+        public const int ASSEMBLED_GROOVE_MM = 5;
 
-        // Пазы детали в пласти, обозначение Bazis «Паз (16*4*7)»: смещение от
-        // кромки × ширина прорези × глубина. Сквозной идёт во всю длину стороны;
-        // глухой не доходит до торцов на GROOVE_BLIND_END_MM с каждой стороны
-        // (длина = сторона − 2×7 мм).
         public const int GROOVE_OFFSET_MM = 16;
         public const int GROOVE_WIDTH_MM = 4;
         public const int GROOVE_DEPTH_MM = 7;
         public const int GROOVE_BLIND_END_MM = 7;
-        // 4 стороны × 2 типа: дубли (сторона+тип) не имеют смысла, смещение фиксировано.
         public const int GROOVE_MAX_PER_PART = 8;
 
-        // Кромкование торцов. Кромка клеится только на ТОРЕЦ — узкую грань
-        // листовой детали, поэтому «деталь под кромку» — та, у которой ровно
-        // одна сторона тоньше порога (это и есть толщина плиты). Если тонких
-        // сторон две и больше, деталь — брусок, а не лист: где у неё торец,
-        // геометрически не определено, и свойство не показывается.
         public const int EDGE_MAX_SIDE_MM = 50;
         public const float EDGE_THICKNESS_DEFAULT_MM = 1.0f;
         public const float EDGE_THICKNESS_MIN_MM = 0.1f;
@@ -49,10 +37,10 @@ namespace KitchenDesigner.Core
         public const int WINDOW_SLOPE_MM = 18;
         public const int WINDOW_DRIP_DEFAULT_MM = 30;
         public const int WINDOW_SILL_DEFAULT_MM = 50;
-        public const int WINDOW_SILL_THICKNESS_MM = 40;   // толщина плиты подоконника (не зависит от вылета)
+        public const int WINDOW_SILL_THICKNESS_MM = 40;
         public const int WINDOW_GLASS_THICKNESS_MM = 4;
-        public const int WINDOW_SASH_MM = 50;             // ширина обвязки открывающейся створки
-        public const int WINDOW_SASH_DEPTH_MM = 40;       // глубина створки (вдоль толщины стены)
+        public const int WINDOW_SASH_MM = 50;
+        public const int WINDOW_SASH_DEPTH_MM = 40;
 
         public static readonly Vector3Int[] PRESET_DIMENSIONS_MM = new Vector3Int[]
         {
