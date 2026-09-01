@@ -14,6 +14,7 @@ namespace KitchenDesigner.Core
 			var radialShelf = element as RadialShelfElement;
 			var radiusTable = element as RadiusTableElement;
 			var stool = element as StoolElement;
+			var chair = element as ChairElement;
 			var tableEl2 = element as TableElement;
 			var windowEl = element as WindowElement;
 			var doorEl = element as DoorElement;
@@ -48,6 +49,10 @@ namespace KitchenDesigner.Core
             d.isRadialShelf = radialShelf != null;
             d.isRadiusTable = radiusTable != null;
             d.isStool = stool != null;
+            d.isChair = chair != null;
+            d.seatHeightMM = chair != null
+                ? chair.SeatHeightMM
+                : AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT;
             d.isTable = tableEl2 != null;
             if (tableEl2 != null)
                 d.legInsetMM = tableEl2.LegInsetMM;
@@ -57,7 +62,8 @@ namespace KitchenDesigner.Core
             d.legsMaterialId = tabletop != null ? tabletop.LegsMaterialId : MaterialCatalog.DefaultId;
             d.tabletopMaterialId = tabletop != null ? tabletop.TabletopMaterialId : MaterialCatalog.DefaultId;
             d.cornerRadius = radialShelf != null ? radialShelf.CornerRadius
-                : stool != null ? stool.CornerRadiusMM : 0;
+                : stool != null ? stool.CornerRadiusMM
+                : chair != null ? chair.CornerRadiusMM : 0;
 
             d.gapLeft = element.SupportsGaps ? element.GapLeft : 0;
             d.gapRight = element.SupportsGaps ? element.GapRight : 0;

@@ -104,6 +104,7 @@ namespace KitchenDesigner.Core.MCP
         public TableInfo? table; // свойства стола, только для TableElement
 		public RadiusTableInfo? radiusTable; // свойства радиусного стола, только для RadiusTableElement
 		public StoolInfo? stool;
+		public ChairInfo? chair;
 		public PillarInfo? pillar; // свойства опоры, только для PillarElement
 		public CooktopInfo? cooktop; // свойства варочной, только для CooktopElement
 		public OvenInfo? oven; // свойства духовки, только для OvenElement
@@ -313,6 +314,16 @@ namespace KitchenDesigner.Core.MCP
     {
         public int cornerRadiusMM;
         public string shape = string.Empty;
+        public string tabletopMaterialId = MaterialCatalog.DefaultId;
+        public string legsMaterialId = MaterialCatalog.DefaultId;
+    }
+
+    [Serializable]
+    public class ChairInfo
+    {
+        public int cornerRadiusMM;
+        public int seatHeightMM;
+        public int backrestThicknessMM;
         public string tabletopMaterialId = MaterialCatalog.DefaultId;
         public string legsMaterialId = MaterialCatalog.DefaultId;
     }

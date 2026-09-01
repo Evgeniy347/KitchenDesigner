@@ -16,7 +16,7 @@ namespace KitchenDesigner.Core.Bulk
     ///   all_modules            — элементы, состоящие в какой-либо группе/модуле
     ///   type:T                 — по типу: board|wall|floor|window|door|drawer|
     ///                            facade|assembled_facade|radial_shelf|panel|table|
-    ///                            radius_table|stool|pillar|light
+    ///                            radius_table|stool|chair|pillar|light
     ///   module:NAME|group:NAME — по имени группы (маска '*' или подстрока)
     ///   name:PATTERN           — по имени элемента (маска '*' или подстрока)
     ///   width|height|depth|thickness OP N — сравнение габарита в мм
@@ -146,6 +146,7 @@ namespace KitchenDesigner.Core.Bulk
             if (e is RadiusTableElement) return "radius_table";
             if (e is TableElement) return "table";
             if (e is StoolElement) return "stool";
+            if (e is ChairElement) return "chair";
             if (e is PillarElement) return "pillar";
             if (e is LightSourceElement) return "light";
             if (e is SinkElement) return "sink";

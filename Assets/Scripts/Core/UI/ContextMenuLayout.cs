@@ -21,6 +21,7 @@ namespace KitchenDesigner.Core.UI
         Oven = 1 << 10,
         Dishwasher = 1 << 11,
         Stool = 1 << 12,
+        Chair = 1 << 13,
     }
 
     internal sealed class ContextMenuLayout

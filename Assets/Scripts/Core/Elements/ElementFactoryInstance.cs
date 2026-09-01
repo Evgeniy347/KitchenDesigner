@@ -286,6 +286,21 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, stool);
         }
 
+        public GameObject CreateChair(Vector3Int dimensionsMM, int cornerRadiusMM,
+            int seatHeightMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Стул", position);
+
+            var chair = go.AddComponent<ChairElement>();
+            chair.PartName = go.name;
+            chair.DimensionsMM = dimensionsMM;
+            chair.SeatHeightMM = seatHeightMM;
+            chair.CornerRadiusMM = cornerRadiusMM;
+
+            if (DefaultMaterial != null) chair.SetMaterial(DefaultMaterial);
+            return ElementRoot.Publish(go, chair);
+        }
+
         public GameObject CreatePillar(int midHeightMM, string name, Vector3 position,
             int diameterMM = PillarElement.DiameterMM_Default)
         {

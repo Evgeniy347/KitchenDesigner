@@ -363,6 +363,52 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+    // ─ Chair isometric screenshots ───────────────────
+
+    [UnityTest]
+    public IEnumerator IsoChair_400x900x400_Square()
+    {
+        yield return RenderChair(new Vector3Int(ChairElement.DefaultWidthMM,
+            ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM), 0,
+            AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT,
+            "IsoChairSquare", "iso_chair_400x900x400_square.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoChair_400x900x400_RoundSeat_LowSeat()
+    {
+        var dims = new Vector3Int(ChairElement.DefaultWidthMM,
+            ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM);
+        yield return RenderChair(dims, ChairElement.MaxCornerRadiusMM(dims), 350,
+            "IsoChairRound", "iso_chair_400x900x400_round.png");
+    }
+
+    private IEnumerator RenderChair(Vector3Int dims, int cornerRadiusMM, int seatHeightMM,
+        string name, string png)
+    {
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateChair(dims, cornerRadiusMM, seatHeightMM, name, pos);
+        _spawned.Add(go);
+        var chair = go.GetComponent<ChairElement>();
+        Assert.IsNotNull(chair);
+        Assert.AreEqual(cornerRadiusMM, chair!.CornerRadiusMM,
+            "снимок обязан показывать ту форму, которую заказали: радиус не должен "
+            + "молча схлопнуться при создании");
+        Assert.AreEqual(seatHeightMM, chair.SeatHeightMM,
+            "и ту высоту сиденья, которую заказали");
+        Assert.IsNotNull(go.transform.Find(ChairElement.BackrestChildName),
+            "спинка — отдельный ребёнок с именем: снимок стула без спинки был бы "
+            + "снимком табуретки");
+
+        Vector3 size = MmToUnits(dims);
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, png);
+
+        Object.DestroyImmediate(camGo);
+    }
+
     // ─ Radial shelf isometric screenshot ───────────────────
 
     [UnityTest]

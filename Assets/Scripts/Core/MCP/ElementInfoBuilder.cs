@@ -127,6 +127,19 @@ namespace KitchenDesigner.Core.MCP
                 };
             }),
 
+            For<ChairElement>((info, chair) =>
+            {
+                info.cornerRadius = chair.CornerRadiusMM;
+                info.chair = new ChairInfo
+                {
+                    cornerRadiusMM = chair.CornerRadiusMM,
+                    seatHeightMM = chair.SeatHeightMM,
+                    backrestThicknessMM = ChairElement.BackrestThicknessMM,
+                    tabletopMaterialId = chair.TabletopMaterialId,
+                    legsMaterialId = chair.LegsMaterialId
+                };
+            }),
+
             For<PillarElement>((info, pillar) => info.pillar = new PillarInfo
             {
                 midHeightMM = pillar.MidHeightMM,

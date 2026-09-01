@@ -62,6 +62,8 @@ namespace KitchenDesigner.Core
         public bool isTable = false;
         public bool isRadiusTable = false;
         public bool isStool = false;
+        public bool isChair = false;
+        public int seatHeightMM = AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT;
         public int legInsetMM = 100;
         public int gapLeft = 2;
         public int gapRight = 2;

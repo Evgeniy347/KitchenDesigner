@@ -168,6 +168,116 @@ public class ElementFieldsEditorTests
             + "редактор табуретки не обрабатывает, значит показать мёртвую строку");
     }
 
+    private ChairElement Chair() =>
+        Spawn<ChairElement>(ElementFactory.CreateChair(
+            new Vector3Int(ChairElement.DefaultWidthMM, ChairElement.DefaultHeightMM,
+                ChairElement.DefaultDepthMM), 0, AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT,
+            "Стул", Vector3.zero));
+
+    /// <summary>Тот же сторож двух половин, что и у табуретки: строки стула
+    /// заведены под СВОИМИ узлами (F_СкруглениеСтула, F_ВысотаСиденья), потому
+    /// что подпись «Скругление» у них общая, а Find по имени вернул бы чужую
+    /// строку табуретки — и тест зеленел бы, ничего не построив.</summary>
+    [Test]
+    public void Chair_BothRows_AreBuilt_AndOpenWithTheElementsValues()
+    {
+        _menu!.Open(Chair());
+
+        Assert.IsNotNull(Panel().Find("F_" + ChairFieldsEditor.CornerRadiusNode),
+            "строка «Скругление» стула обязана быть ПОСТРОЕНА: занести редактор в реестр "
+            + "_editors и забыть позвать его Build() — значит получить свойство, которое "
+            + "нечем править, и молча");
+        Assert.IsNotNull(Panel().Find("F_" + ChairFieldsEditor.SeatHeightNode),
+            "и строка «Высота сиденья» тоже");
+        Assert.AreEqual("0", Text(Field(ChairFieldsEditor.CornerRadiusNode)));
+        Assert.AreEqual("450", Text(Field(ChairFieldsEditor.SeatHeightNode)));
+    }
+
+    /// <summary>Одна правка на тест: <c>ApplyOncePerFrame</c> пропускает только
+    /// один Apply за кадр, а в EditMode кадр не сменяется — вторая правка в том
+    /// же тесте молча ничего не делает.</summary>
+    [Test]
+    public void Chair_CornerRadiusRow_Applies_AndIsUndoable()
+    {
+        var chair = Chair();
+        _menu!.Open(chair);
+
+        Type(ChairFieldsEditor.CornerRadiusNode, "150");
+
+        Assert.AreEqual(150, chair.CornerRadiusMM, "скругление применяется вместе с размерами");
+        CommandStack.Undo();
+        Assert.AreEqual(0, chair.CornerRadiusMM, "одна правка — один шаг отмены (правило 2)");
+    }
+
+    [Test]
+    public void Chair_SeatHeightRow_Applies_AndIsUndoable()
+    {
+        var chair = Chair();
+        _menu!.Open(chair);
+
+        Type(ChairFieldsEditor.SeatHeightNode, "500");
+
+        Assert.AreEqual(500, chair.SeatHeightMM, "высота сиденья применяется");
+        CommandStack.Undo();
+        Assert.AreEqual(450, chair.SeatHeightMM, "и откатывается одним шагом");
+    }
+
+    [Test]
+    public void Chair_CornerRadiusRow_ShowsTheClampedValueBack_NotWhatWasTyped()
+    {
+        var chair = Chair();
+        _menu!.Open(chair);
+
+        Type(ChairFieldsEditor.CornerRadiusNode, "1000");
+
+        Assert.AreEqual(200, chair.CornerRadiusMM, "радиус зажат половиной меньшей стороны");
+        Assert.AreEqual("200", Text(Field(ChairFieldsEditor.CornerRadiusNode)),
+            "в поле обязан вернуться ПРИНЯТЫЙ элементом радиус, а не то, что напечатал "
+            + "человек (CONVENTIONS.md → «Read a value back only AFTER EndCapture»)");
+    }
+
+    [Test]
+    public void Chair_SeatHeightRow_ShowsTheClampedValueBack_NotWhatWasTyped()
+    {
+        var chair = Chair();
+        _menu!.Open(chair);
+
+        Type(ChairFieldsEditor.SeatHeightNode, "5000");
+
+        int expected = 900 - ChairElement.MinBackrestHeightMM;
+        Assert.AreEqual(expected, chair.SeatHeightMM,
+            "высота сиденья зажата так, чтобы спинке осталось место");
+        Assert.AreEqual(expected.ToString(), Text(Field(ChairFieldsEditor.SeatHeightNode)),
+            "и она тоже обязана вернуться принятой, а не напечатанной");
+    }
+
+    [Test]
+    public void Chair_TabletopAndLegsMaterialRows_AreShown_InsteadOfThePlainTextureRow()
+    {
+        _menu!.Open(Chair());
+
+        Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
+            "у стула два декора — сиденье со спинкой и ножки: он носитель ITabletop");
+        Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy);
+        Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
+            "общая строка «Текстура» у носителя столешницы скрыта");
+    }
+
+    [Test]
+    public void Chair_DoesNotShowTheStoolRow_AndTheStoolDoesNotShowTheChairRows()
+    {
+        _menu!.Open(Chair());
+        var stoolRow = Panel().Find("F_Скругление");
+        Assert.IsTrue(stoolRow == null || !stoolRow.gameObject.activeInHierarchy,
+            "строка табуретки у стула — мёртвая: её Apply не трогает стул, и человек "
+            + "правил бы поле, которое ничего не делает");
+
+        _menu!.Open(Stool());
+        var chairSeat = Panel().Find("F_" + ChairFieldsEditor.SeatHeightNode);
+        Assert.IsTrue(chairSeat == null || !chairSeat.gameObject.activeInHierarchy,
+            "и наоборот: у табуретки высоты сиденья нет — это её общая высота");
+    }
+
     [Test]
     public void Drawer_DimensionFieldsAreReadOnly()
     {

@@ -152,7 +152,7 @@ SELECTOR (a string; space-separated clauses, ALL must match)
   B4_*                     name mask ('*' = glob; without '*' = substring)
   name:PATTERN             same, explicit
   type:board|wall|floor|window|door|drawer|facade|assembled_facade|
-       radial_shelf|panel|table|radius_table|stool|pillar|light
+       radial_shelf|panel|table|radius_table|stool|chair|pillar|light
   module:NAME / group:NAME by module name (mask allowed)
   thickness==18            compare a dimension in MM; also width/height/depth
                            with == != >= <= > <
@@ -217,6 +217,12 @@ RadiusTableElement    Capsule-shaped table (type:""radius_table"").
 StoolElement          Stool: seat + 4 legs (type:""stool"", 360x450x360 mm by
                       default). ONE type for both shapes — corner_radius 0 is a
                       square stool, min(width, depth)/2 a fully round one.
+                      Seat and legs decors via tabletop_material/legs_material.
+ChairElement          Chair: a stool with a backrest (type:""chair"",
+                      400x900x400 mm by default). corner_radius rounds the SEAT
+                      exactly like a stool; seat_height is the seat TOP above the
+                      floor (450 mm by default). The backrest is a 20 mm panel at
+                      the BACK (-Z), from the seat top to the overall height.
                       Seat and legs decors via tabletop_material/legs_material.
 PillarElement         Pillar (type:""pillar"", mid_height_mm, diameter_mm).
 SinkElement / CooktopElement
@@ -310,7 +316,7 @@ faceGaps              Per-axis nearest OPPOSITE neighbour: {axis, neighbor, gapM
 moduleId/moduleName   Group membership (0/absent = not grouped).
 materialId            Decor id (list_materials).
 facadeMode            Facade opening mode (""front_left"", ""drawer_out"", ...).
-drawer / table / radiusTable / stool   Type-specific sub-objects, absent
+drawer / table / radiusTable / stool / chair   Type-specific sub-objects, absent
                       otherwise.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:

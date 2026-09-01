@@ -15,6 +15,8 @@ namespace KitchenDesigner.Core
         // Радиусная полка: радиус скругления угла по умолчанию.
         public const int RADIAL_CORNER_RADIUS_DEFAULT = 200;
 
+        public const int CHAIR_SEAT_HEIGHT_DEFAULT = 450;
+
         // Сборный (рамочный) фасад, см. каталог Союз-Фасад стр. 43.
         public const int ASSEMBLED_FRAME_MM = 100;        // ширина рамки A
         public const int ASSEMBLED_GLASS_DEDUCT_MM = 180; // вычет под вкладное стекло (L-180, H-180)

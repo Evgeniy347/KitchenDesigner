@@ -320,6 +320,27 @@ public class SnapshotTests
         Snapshot.Match(json, "wall_custom");
     }
 
+    // ── ChairElement snapshot ────────────────────────────────────────────
+
+    /// <summary>Стул несёт ДВЕ величины формы разом — радиус сиденья и высоту
+    /// сиденья, — и обе живут в полях, у которых есть чужая история:
+    /// <c>cornerRadius</c> общий с радиусной полкой и стартует с 200, а
+    /// <c>seatHeightMM</c> просто новый. Снимок берётся с НЕумолчальными
+    /// значениями обеих: на умолчаниях забытая запись поля неотличима от
+    /// записанной.</summary>
+    [Test]
+    public void Snapshot_Chair_Custom()
+    {
+        var go = ElementFactory.CreateChair(new Vector3Int(600, 900, 400), 137, 512,
+            "BigChair", new Vector3(0.5f, 0.45f, -1.0f));
+        var chair = go.GetComponent<ChairElement>();
+        chair.MaterialId = "oak";
+        Add(go);
+
+        var json = CaptureJson(new[] { go.GetComponent<KitchenElement>() });
+        Snapshot.Match(json, "chair_custom");
+    }
+
     // ── Full scene snapshot ──────────────────────────────────────────────
 
     [Test]
@@ -478,6 +499,7 @@ public class SnapshotTests
             "facade_default", "facade_custom", "facade_all_18_modes",
             "assembled_blind", "assembled_glass", "assembled_open",
             "radial_default", "radial_custom",
+            "chair_custom",
             "wall_default", "wall_custom",
             "window_default", "window_tinted",
             "fullscene_all_types",

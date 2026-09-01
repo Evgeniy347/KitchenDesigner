@@ -152,11 +152,17 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Facade/window/door/oven/dishwasher: true = open, false = close (the oven and dishwasher doors drop DOWN around their bottom edge; the dishwasher takes its attached furniture facade with it). Omit to keep. For drawers use cycle_drawer_animation.")]
         public bool? is_open;
 
-        // Radial shelf and stool.
+        // Radial shelf, stool and chair.
         [McpParam("Corner rounding radius in MM. Radial shelf: clamped to 1..min(width, depth). " +
-                  "Stool: clamped to 0..min(width, depth)/2 — 0 is a square stool, the maximum is a " +
-                  "fully round one (a circle when width == depth, a capsule otherwise). Omit to keep.", Min = 0)]
+                  "Stool and chair (the seat): clamped to 0..min(width, depth)/2 — 0 is a square seat, " +
+                  "the maximum is a fully round one (a circle when width == depth, a capsule otherwise). " +
+                  "Omit to keep.", Min = 0)]
         public int? corner_radius;
+
+        [McpParam("Chair only: height of the seat TOP above the floor in MM. Clamped to " +
+                  "80..height-50 — the legs and the backrest each keep at least 50 mm. Omit to keep.",
+            Min = 0)]
+        public int? seat_height;
 
         // Cooktop.
         [McpParam("Cooktop only: cutout width in MM — the box that goes INTO the countertop " +
@@ -273,7 +279,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "pillar", "window", "door", "sink", "cooktop", "oven", "dishwasher" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "pillar", "window", "door", "sink", "cooktop", "oven", "dishwasher" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;

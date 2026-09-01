@@ -135,6 +135,22 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is ChairElement,
+             (factory, source, pos) => factory.CreateChair(source.DimensionsMM,
+                 ((ChairElement)source).CornerRadiusMM, ((ChairElement)source).SeatHeightMM,
+                 source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (ChairElement)source;
+                 var made = copy.GetComponent<ChairElement>();
+                 if (made != null)
+                 {
+                     made.TabletopMaterialId = src.TabletopMaterialId;
+                     made.LegsMaterialId = src.LegsMaterialId;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is WindowElement,
              (factory, source, pos) =>
              {

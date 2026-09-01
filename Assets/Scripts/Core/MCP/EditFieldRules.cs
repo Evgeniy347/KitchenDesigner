@@ -19,7 +19,9 @@ namespace KitchenDesigner.Core.MCP
         internal static bool AcceptsTabletopSlots(KitchenElement el) => el is ITabletop;
 
         internal static bool AcceptsCornerRadius(KitchenElement el) =>
-            el is RadialShelfElement || el is StoolElement;
+            el is RadialShelfElement || el is StoolElement || el is ChairElement;
+
+        internal static bool AcceptsSeatHeight(KitchenElement el) => el is ChairElement;
 
         internal readonly struct EditTarget
         {
@@ -50,6 +52,7 @@ namespace KitchenDesigner.Core.MCP
             Unsupported("mode", o => o.mode != null, AcceptsHingeMode),
             Unsupported("is_open", o => o.is_open.HasValue, AcceptsOpenFlag),
             Unsupported("corner_radius", o => o.corner_radius.HasValue, AcceptsCornerRadius),
+            Unsupported("seat_height", o => o.seat_height.HasValue, AcceptsSeatHeight),
             Unsupported("cutout_width", o => o.cutout_width.HasValue, el => el is CooktopElement),
             Unsupported("cutout_depth", o => o.cutout_depth.HasValue, el => el is CooktopElement),
 

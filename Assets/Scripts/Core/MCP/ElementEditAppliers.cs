@@ -26,6 +26,11 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (op.corner_radius.HasValue) stool.CornerRadiusMM = op.corner_radius.Value;
             }),
+            For<ChairElement>((op, chair) =>
+            {
+                if (op.corner_radius.HasValue) chair.CornerRadiusMM = op.corner_radius.Value;
+                if (op.seat_height.HasValue) chair.SeatHeightMM = op.seat_height.Value;
+            }),
             For<CooktopElement>((op, cooktop) =>
             {
                 if (op.cutout_width.HasValue) cooktop.CutoutWidthMM = op.cutout_width.Value;
