@@ -5,6 +5,7 @@ using KitchenDesigner.Core.UI;
 public class GroupMenuLayoutTests
 {
     private GameObject? _canvasGo;
+    private GameObject? _host;
 
     [SetUp]
     public void Setup()
@@ -12,9 +13,9 @@ public class GroupMenuLayoutTests
         _canvasGo = new GameObject("Canvas");
         _canvasGo!.AddComponent<Canvas>();
 
-        var host = new GameObject("GroupMenu");
-        host.transform.SetParent(_canvasGo!.transform);
-        host.AddComponent<GroupMenuUI>().Build(_canvasGo!.transform);
+        _host = new GameObject("GroupMenuHost");
+        _host!.transform.SetParent(_canvasGo!.transform);
+        _host!.AddComponent<GroupMenuUI>().Build(_canvasGo!.transform);
     }
 
     [TearDown]
@@ -23,12 +24,21 @@ public class GroupMenuLayoutTests
         if (_canvasGo != null) Object.DestroyImmediate(_canvasGo);
     }
 
+    private Transform Panel()
+    {
+        var panel = _canvasGo!.transform.Find("GroupMenu");
+        Assert.IsNotNull(panel, "панель меню группы не построена — тест бы зеленел впустую");
+        return panel!;
+    }
+
     [Test]
     public void GroupMenu_CloseButton_IsBuiltLast_SoItSitsOverTheDragStrip()
     {
-        var panel = _canvasGo!.transform.Find("GroupMenu")!;
+        var panel = Panel();
+        var close = panel.Find("CloseBtn");
 
-        Assert.AreEqual("CloseBtn", panel.GetChild(panel.childCount - 1).name,
+        Assert.IsNotNull(close, "у окна обязана быть кнопка закрытия");
+        Assert.AreEqual(panel.childCount - 1, close!.GetSiblingIndex(),
             "Полоса перетаскивания накрывает весь заголовок окна, а перекрывают её только "
             + "контролы, созданные ПОЗЖЕ — поэтому крестик строится последним, иначе по нему "
             + "нельзя было бы кликнуть, окно просто поехало бы за курсором");
