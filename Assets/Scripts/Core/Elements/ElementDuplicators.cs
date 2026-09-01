@@ -151,6 +151,22 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is SofaElement,
+             (factory, source, pos) => factory.CreateSofa(source.DimensionsMM,
+                 ((SofaElement)source).CornerRadiusMM, ((SofaElement)source).SeatHeightMM,
+                 source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (SofaElement)source;
+                 var made = copy.GetComponent<SofaElement>();
+                 if (made != null)
+                 {
+                     made.TabletopMaterialId = src.TabletopMaterialId;
+                     made.LegsMaterialId = src.LegsMaterialId;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is WindowElement,
              (factory, source, pos) =>
              {
