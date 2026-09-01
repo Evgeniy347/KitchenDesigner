@@ -5,29 +5,20 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Левый сайдбар добавления объектов: сворачивается в узкую полосу
-    /// кнопкой-переключателем, закрепляется булавкой (откреплён — авто-сворачивание
-    /// по клику вне панели). Группы-аккордеоны берутся из SidebarCatalog.</summary>
     public class SidebarUI : MonoBehaviour
     {
         private const float ExpandedW = 220f;
         private const float CollapsedW = 52f;
-        private const float TopOffset = 52f; // под верхним тулбаром
+        private const float TopOffsetUnderToolbar = 52f;
 
         private const float Pad = 8f;
         private const float HeaderH = 30f;
-        /// <summary>Ширина пункта: панель минус паддинги и отступ вложенности.</summary>
         public const float ItemW = ExpandedW - 2f * Pad - 14f;
-        /// <summary>Однострочный пункт — высота как была до переноса.</summary>
-        private const float ItemH = 26f;
-        private const float ItemPadH = 8f; // поля текста слева/справа
+        private const float SingleLineItemH = 26f;
+        private const float ItemPadH = 8f;
         private const float ItemPadV = 8f;
         private const int ItemMaxLines = 2;
         public const int ItemFont = UIStyle.FontSmall;
-        /// <summary>Запас в два глифа при оценке ширины: она считается по средней
-        /// букве, а у названия из широких («Ш», «Ж») реальная строка длиннее.
-        /// Без запаса пограничное имя («Духовка Bosch HBA514BB3») считается
-        /// однострочным, а TMP переносит его — и вторая строка обрезается.</summary>
         private const float ItemGlyphReserve = 2f;
 
         private RectTransform? _panel;
@@ -49,22 +40,21 @@ namespace KitchenDesigner.Core.UI
         }
         private readonly List<GroupUI> _groups = new List<GroupUI>();
 
-        // Пункты, которые режим редактора делает серыми и некликабельными.
-        private class ItemStyle
+        private class ModeStyledItem
         {
             public Button button = null!;
             public TMP_Text? label;
             public Color baseColor;
             public EditModeManager.Category cat;
         }
-        private readonly List<ItemStyle> _itemStyles = new List<ItemStyle>();
+        private readonly List<ModeStyledItem> _modeStyledItems = new List<ModeStyledItem>();
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("Sidebar", canvas, new Vector2(0, -TopOffset),
+            var panel = UIFactory.CreatePanel("Sidebar", canvas, new Vector2(0, -TopOffsetUnderToolbar),
                 new Vector2(ExpandedW, 1000f));
             UIFactory.AnchorTopLeft(panel.rectTransform);
-            panel.rectTransform.anchoredPosition = new Vector2(0, -TopOffset);
+            panel.rectTransform.anchoredPosition = new Vector2(0, -TopOffsetUnderToolbar);
             _panel = panel.rectTransform;
 
             var collapseBtn = UIFactory.CreateButton("SbCollapse", _panel, "«",
@@ -105,18 +95,12 @@ namespace KitchenDesigner.Core.UI
             return rt.gameObject;
         }
 
-        /// <summary>Высота пункта палитры: длинное название переносится по словам
-        /// (до двух строк), и кнопка растёт под него. Раньше высота была жёстко
-        /// 26 px, а перенос TMP включён по умолчанию — вторая строка рисовалась
-        /// ЗА кнопкой и налезала на соседний пункт («Варочная Bosch PUE611BB5E»).
-        /// Чистая функция: считается без метрик шрифта, см. DropdownItemFit.</summary>
         public static float ItemHeight(string name)
         {
             int lines = ItemLines(name);
-            return Mathf.Max(ItemH, Mathf.Ceil(lines * ItemFont * DropdownItemFit.LineHeightFactor + ItemPadV));
+            return Mathf.Max(SingleLineItemH, Mathf.Ceil(lines * ItemFont * DropdownItemFit.LineHeightFactor + ItemPadV));
         }
 
-        /// <summary>Сколько строк займёт название в пункте палитры (не больше двух).</summary>
         public static int ItemLines(string name)
         {
             float textW = ItemW - 2f * ItemPadH - ItemGlyphReserve * ItemFont * DropdownItemFit.GlyphWidthFactor;
@@ -146,37 +130,30 @@ namespace KitchenDesigner.Core.UI
 
                 foreach (var it in g.items)
                 {
-                    var item = it; // фиксируем для замыкания
                     var btn = UIFactory.CreateButton("SbItem_" + g.title + "_" + it.name, _fullRoot.transform,
-                        it.name, Vector2.zero, new Vector2(ItemW, ItemHeight(it.name)), () => Spawn(item));
+                        it.name, Vector2.zero, new Vector2(ItemW, ItemHeight(it.name)), () => Spawn(it));
                     UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
                     gu.items.Add(btn.GetComponent<RectTransform>());
 
-                    var style = new ItemStyle { button = btn, cat = ItemCategory(item) };
+                    var style = new ModeStyledItem { button = btn, cat = ItemCategory(it) };
                     style.label = btn.GetComponentInChildren<TMP_Text>();
                     if (style.label != null)
                     {
                         style.label.fontSize = ItemFont;
                         style.label.alignment = TextAlignmentOptions.Left;
                         style.label.enableWordWrapping = true;
-                        // Страховка: оценка ширины приблизительная, и если TMP
-                        // возьмёт строку сверх расчёта — она обрежется внутри
-                        // кнопки, а не наедет на соседа.
                         style.label.overflowMode = TextOverflowModes.Truncate;
                         style.label.margin = new Vector4(ItemPadH, 2f, ItemPadH, 2f);
                         style.baseColor = style.label.color;
                     }
                     TooltipUI.Attach(btn.gameObject, it.name);
-                    _itemStyles.Add(style);
+                    _modeStyledItems.Add(style);
                 }
                 _groups.Add(gu);
             }
             RelayoutFull();
         }
 
-        /// <summary>Текст заголовка группы: глиф раскрытия + два пробела + название.
-        /// Глиф слева, чтобы визуально отделить «это раскрывашка» от самого
-        /// названия, а заголовок и пункты сайдбара имели единый левый край.</summary>
         private static void SetGroupHeaderText(GroupUI gu, string title)
         {
             if (gu.headerLabel == null) return;
@@ -184,9 +161,7 @@ namespace KitchenDesigner.Core.UI
             gu.headerLabel.text = $"{glyph}  {title}";
         }
 
-        /// <summary>Категория пункта каталога для режима редактора: стена/пол —
-        /// «помещение»; короб/окно/дверь — всегда доступны; остальное — обычные.</summary>
-        private static EditModeManager.Category ItemCategory(SidebarCatalog.Item it)
+        internal static EditModeManager.Category ItemCategory(SidebarCatalog.Item it)
         {
             if (it.isWindow || it.isDoor) return EditModeManager.Category.Always;
             if (it.name == EditModeManager.KorobName) return EditModeManager.Category.Always;
@@ -194,10 +169,9 @@ namespace KitchenDesigner.Core.UI
             return EditModeManager.Category.Regular;
         }
 
-        // Серые + некликабельные пункты для объектов, недоступных в текущем режиме.
         private void ApplyModeStyling()
         {
-            foreach (var s in _itemStyles)
+            foreach (var s in _modeStyledItems)
             {
                 bool active = EditModeManager.IsCategoryActive(s.cat);
                 s.button.interactable = active;
@@ -219,7 +193,6 @@ namespace KitchenDesigner.Core.UI
                     if (gu.open)
                     {
                         item.anchoredPosition = new Vector2(Pad + 14f, y);
-                        // Шаг — по фактической высоте: у двухстрочного пункта она больше.
                         y -= item.sizeDelta.y + 3f;
                     }
                 }
@@ -350,21 +323,23 @@ namespace KitchenDesigner.Core.UI
             if (_collapseLabel != null) _collapseLabel.text = _expanded ? "«" : "»";
             if (_pinBg != null)
             {
-                _pinBg.gameObject.SetActive(_expanded); // булавка видна только в развёрнутом
+                _pinBg.gameObject.SetActive(_expanded);
                 _pinBg.color = _pinned ? new Color(0.30f, 0.55f, 0.34f, 1f) : UIFactory.ButtonColor;
             }
         }
 
-        // Откреплённый сайдбар сворачивается при клике вне его области.
         private void Update()
         {
             using var _ = PerfMarkers.SidebarUpdate.Auto();
+            CollapseIfClickedOutsideWhileUnpinned();
+        }
+
+        private void CollapseIfClickedOutsideWhileUnpinned()
+        {
             if (_pinned || !_expanded) return;
             if (Input.GetMouseButtonDown(0) &&
                 !RectTransformUtility.RectangleContainsScreenPoint(_panel!, Input.mousePosition, null))
-            {
                 SetExpanded(false);
-            }
         }
     }
 }
