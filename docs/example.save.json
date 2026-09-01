@@ -33405,7 +33405,7 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "attachedToName": "",
+            "attachedToName": "A3_bottom",
             "doubleDrawerState": 0,
             "isWindow": false,
             "windowTint": 0,
@@ -33578,14 +33578,14 @@
         {
             "name": "A4_plint_drawer_back_1",
             "dimensionsMM": [
-                423,
+                461,
                 92,
                 16
             ],
             "position": [
                 1.527000069618225,
                 0.05000000074505806,
-                -2.1505002975463869
+                -2.1685001850128176
             ],
             "rotation": [
                 0.0,
@@ -33629,7 +33629,7 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "attachedToName": "",
+            "attachedToName": "A4_plint_drawer_L_side_1",
             "doubleDrawerState": 0,
             "isWindow": false,
             "windowTint": 0,
@@ -33921,7 +33921,7 @@
             "position": [
                 1.319000005722046,
                 0.05000000074505806,
-                -1.9310002326965333
+                -1.9300000667572022
             ],
             "rotation": [
                 0.0,
@@ -33965,7 +33965,7 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "attachedToName": "",
+            "attachedToName": "A3_plint_facade",
             "doubleDrawerState": 0,
             "isWindow": false,
             "windowTint": 0,
@@ -34027,13 +34027,13 @@
             "name": "A4_plint_drawer_bottom_1",
             "dimensionsMM": [
                 416,
-                423,
+                461,
                 16
             ],
             "position": [
                 1.311000108718872,
-                0.012000034563243389,
-                -2.1505002975463869
+                0.012000036425888539,
+                -2.1685001850128176
             ],
             "rotation": [
                 0.7071068286895752,
@@ -34077,7 +34077,7 @@
             "drawerIsUpper": false,
             "drawerPairedName": "",
             "drawerAttachedFacadeName": "",
-            "attachedToName": "",
+            "attachedToName": "A3_plint_facade",
             "doubleDrawerState": 0,
             "isWindow": false,
             "windowTint": 0,
@@ -34335,11 +34335,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 0.912195086479187,
-        "targetY": 0.8268779516220093,
-        "targetZ": -1.8688862323760987,
-        "angleX": -56.99840545654297,
-        "angleY": -809.3737182617188,
+        "targetX": 2.2782483100891115,
+        "targetY": 0.21312427520751954,
+        "targetZ": -1.8737436532974244,
+        "angleX": -17.147335052490236,
+        "angleY": -630.2450561523438,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": 2.193511486053467,
@@ -34348,7 +34348,7 @@
         "photoAngleX": 28.921581268310548,
         "photoAngleY": 940.9794311523438
     },
-    "handleMode": "Move",
+    "handleMode": "Resize",
     "projectInstructions": "Планировка квартиры 85,8 м2 (2-комнатная), панельный дом.\n\nОси: X — восток(+), Z — север(+), Y — вверх. Все размеры в мм.\nНачало отсчёта плана (origin) — внутренний юго-западный угол комнаты 22,9 м2:\nмировые координаты (-1585, -3620). Комната 22,9 в чистоте 3170 x 7240.\nКухонные модули (ряды A и B) стоят вплотную к граням z=0 и x=3170 —\nэти грани двигать НЕЛЬЗЯ.\n\nbearing_wall_thickness_mm: 250\npartition_wall_thickness_mm: 125\nfloor_thickness_mm: 100\n\nСтена состоит из ОТДЕЛЬНЫХ БЛОКОВ: несущие пилоны 250 мм (шаг 1200) чередуются\nс перегородками 125 мм по одной линии. Фасады 150 мм — задаются через\nthickness_mm на стене, а не типом. Тёмно-серый на чертеже = несущая,\nсветло-серый = перегородка.\nВысота стен 2700, низ стен и верх пола на Y=0.\n",
     "basePlateValid": true,
     "basePlate": {
@@ -66242,6 +66242,304 @@
             "dimsBefore": [],
             "dimsAfter": [],
             "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_plint_drawer_bottom_1",
+            "elementIndex": 301,
+            "posBefore": [
+                1.311000108718872,
+                0.012000034563243389,
+                -2.1505002975463869
+            ],
+            "posAfter": [
+                1.311000108718872,
+                0.012000046670436859,
+                -2.250500440597534
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_plint_drawer_L_side_1",
+            "elementIndex": 300,
+            "posBefore": [
+                1.319000005722046,
+                0.05000000074505806,
+                -1.9310002326965333
+            ],
+            "posAfter": [
+                1.319000005722046,
+                0.05000000074505806,
+                -1.9300000667572022
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_plint_drawer_bottom_1",
+            "elementIndex": 301,
+            "posBefore": [
+                1.311000108718872,
+                0.012000046670436859,
+                -2.250500440597534
+            ],
+            "posAfter": [
+                1.311000108718872,
+                0.012000034563243389,
+                -2.1495001316070558
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move A4_plint_drawer_back_1",
+            "elementIndex": 297,
+            "posBefore": [
+                1.527000069618225,
+                0.05000000074505806,
+                -2.1505002975463869
+            ],
+            "posAfter": [
+                1.527000069618225,
+                0.05000000074505806,
+                -2.1495001316070558
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A4_plint_drawer_back_1",
+            "elementIndex": 297,
+            "posBefore": [
+                1.527000069618225,
+                0.05000000074505806,
+                -2.1495001316070558
+            ],
+            "posAfter": [
+                1.527000069618225,
+                0.05000000074505806,
+                -2.1685001850128176
+            ],
+            "rotBefore": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.7071068286895752,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                423,
+                92,
+                16
+            ],
+            "dimsAfter": [
+                461,
+                92,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize A4_plint_drawer_bottom_1",
+            "elementIndex": 301,
+            "posBefore": [
+                1.311000108718872,
+                0.012000034563243389,
+                -2.1495001316070558
+            ],
+            "posAfter": [
+                1.311000108718872,
+                0.012000036425888539,
+                -2.1685001850128176
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "dimsBefore": [
+                416,
+                423,
+                16
+            ],
+            "dimsAfter": [
+                416,
+                461,
+                16
+            ],
+            "children": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Leg_A3_A4",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Leg_A3_A4",
+                    "elementIndex": 51,
+                    "posBefore": [
+                        1.315000057220459,
+                        0.05000000074505806,
+                        -1.8680000305175782
+                    ],
+                    "posAfter": [
+                        1.315000057220459,
+                        0.05000000074505806,
+                        -1.8680000305175782
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        50,
+                        100,
+                        50
+                    ],
+                    "dimsAfter": [
+                        50,
+                        105,
+                        50
+                    ],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Leg_A3_A4",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Leg_A3_A4",
+                    "elementIndex": 51,
+                    "posBefore": [
+                        1.315000057220459,
+                        0.05000000074505806,
+                        -1.8680000305175782
+                    ],
+                    "posAfter": [
+                        1.315000057220459,
+                        0.05000000074505806,
+                        -1.8680000305175782
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        50,
+                        105,
+                        50
+                    ],
+                    "dimsAfter": [
+                        50,
+                        100,
+                        50
+                    ],
+                    "children": []
+                }
+            ]
         }
     ],
     "redoHistory": [],
