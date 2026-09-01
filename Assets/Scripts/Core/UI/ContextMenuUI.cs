@@ -29,6 +29,7 @@ namespace KitchenDesigner.Core.UI
         private NameDropdownBinder _attachedTo = null!;
         private bool _openInProgress;
         private ElementFacet _facets;
+        private readonly RotationDisplayState _rotationDisplay = new RotationDisplayState();
 
         private readonly ContextMenuLayout _layout = new();
         private readonly ContextMenuTextureSection _textures;
@@ -316,11 +317,11 @@ namespace KitchenDesigner.Core.UI
             _layout.AddExcept(ElementFacet.Window, RotLblH, RotLblGap, rotLbl.rectTransform);
 
             var rotX = UIFactory.CreateButton("CtxRotX", parent, "X 90°",
-                new Vector2(-112, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.right));
+                new Vector2(-112, 0), new Vector2(112, BtnH), () => RotateAxis(RotationAxis.X));
             var rotY = UIFactory.CreateButton("CtxRotY", parent, "Y 90°",
-                new Vector2(0, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.up));
+                new Vector2(0, 0), new Vector2(112, BtnH), () => RotateAxis(RotationAxis.Y));
             var rotZ = UIFactory.CreateButton("CtxRotZ", parent, "Z 90°",
-                new Vector2(112, 0), new Vector2(112, BtnH), () => RotateAxis(Vector3.forward));
+                new Vector2(112, 0), new Vector2(112, BtnH), () => RotateAxis(RotationAxis.Z));
             _layout.AddExcept(ElementFacet.Window, BtnH, ActionGap,
                 rotX.GetComponent<RectTransform>(),
                 rotY.GetComponent<RectTransform>(),
@@ -329,7 +330,7 @@ namespace KitchenDesigner.Core.UI
             _layout.AddRotationXZ(rotZ.GetComponent<RectTransform>());
 
             var rotY180 = UIFactory.CreateButton("CtxRotY180", parent, "Y 180°",
-                new Vector2(0, 0), new Vector2(RowWidth, BtnH), () => RotateAxis(Vector3.up, 180f));
+                new Vector2(0, 0), new Vector2(RowWidth, BtnH), () => RotateAxis(RotationAxis.Y, 180f));
             _layout.AddFor(ElementFacet.Window, BtnH, ActionGap, rotY180.GetComponent<RectTransform>());
         }
 
@@ -474,7 +475,7 @@ namespace KitchenDesigner.Core.UI
 
             if (AttachLinks.CanBeChild(_target)) _attachedTo.UpdateCaptionColor();
 
-            var eu = _target.transform.eulerAngles;
+            var eu = _rotationDisplay.For(_target.transform.rotation);
             _fields.RefreshUnfocused(_rx, eu.x.ToString("F1"));
             _fields.RefreshUnfocused(_ry, eu.y.ToString("F1"));
             _fields.RefreshUnfocused(_rz, eu.z.ToString("F1"));
@@ -512,6 +513,7 @@ namespace KitchenDesigner.Core.UI
                 _textures.EndPreview();
                 _materials.EndPreview();
                 _target = element;
+                _rotationDisplay.Forget();
                 _grooves.Collapse();
                 _textures.Collapse();
                 _gaps.Collapse();
@@ -618,6 +620,7 @@ namespace KitchenDesigner.Core.UI
             var oldDims = target.DimensionsMM;
             var oldPos = target.transform.position;
             var oldRot = target.transform.rotation;
+            var shownRotation = _rotationDisplay.For(oldRot);
 
             DrawerLinks.Rename(target, string.IsNullOrWhiteSpace(_name!.text) ? "Board" : _name!.text);
             target.gameObject.name = target.PartName;
@@ -639,11 +642,12 @@ namespace KitchenDesigner.Core.UI
             if (!(target is IWallMounted))
             {
                 bool yawOnly = FixedSize.IsYawOnly(target);
-                var euler = oldRot.eulerAngles;
-                target.transform.rotation = Quaternion.Euler(
-                    yawOnly ? euler.x : _fields.ParseAngle(_rx, euler.x),
-                    _fields.ParseAngle(_ry, euler.y),
-                    yawOnly ? euler.z : _fields.ParseAngle(_rz, euler.z));
+                var typed = RotationSteps.Normalize(new Vector3(
+                    yawOnly ? shownRotation.x : _fields.ParseAngle(_rx, shownRotation.x),
+                    _fields.ParseAngle(_ry, shownRotation.y),
+                    yawOnly ? shownRotation.z : _fields.ParseAngle(_rz, shownRotation.z)));
+                target.transform.rotation = Quaternion.Euler(typed);
+                _rotationDisplay.Remember(typed);
             }
 
             if (target is IWallMounted wallMounted) wallMounted.SnapToWall();
@@ -653,6 +657,7 @@ namespace KitchenDesigner.Core.UI
                 target.DimensionsMM = oldDims;
                 target.transform.position = oldPos;
                 target.transform.rotation = oldRot;
+                _rotationDisplay.Remember(shownRotation);
             }
             else
             {
@@ -696,13 +701,14 @@ namespace KitchenDesigner.Core.UI
             return result.violations.Contains(_target);
         }
 
-        private void RotateAxis(Vector3 axis, float angle = 90f)
+        private void RotateAxis(RotationAxis axis, float angle = 90f)
         {
             if (_target == null) return;
-            if (FixedSize.IsYawOnly(_target) && Mathf.Abs(Vector3.Dot(axis.normalized, Vector3.up)) < 0.99f)
-                return;
+            if (FixedSize.IsYawOnly(_target) && axis != RotationAxis.Y) return;
             var oldRot = _target.transform.rotation;
-            _target.RotateAroundAxis(axis, angle);
+            var stepped = RotationSteps.Step(_rotationDisplay.For(oldRot), axis, angle);
+            _target.transform.rotation = Quaternion.Euler(stepped);
+            _rotationDisplay.Remember(stepped);
             if (_target is IWallMounted wallMounted) wallMounted.SnapToWall();
             var rotCmds = new List<IUndoCommand>
             {
@@ -845,7 +851,7 @@ namespace KitchenDesigner.Core.UI
             _fields.Track(_x, ToMM(pos.x));
             _fields.Track(_y, ToMM(pos.y));
             _fields.Track(_z, ToMM(pos.z));
-            var e = _target.transform.eulerAngles;
+            var e = _rotationDisplay.For(_target.transform.rotation);
             _fields.Track(_rx, e.x.ToString("F1"));
             _fields.Track(_ry, e.y.ToString("F1"));
             _fields.Track(_rz, e.z.ToString("F1"));

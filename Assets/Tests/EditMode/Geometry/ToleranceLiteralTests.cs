@@ -46,8 +46,6 @@ namespace KitchenDesigner.Tests.Geometry
                 "1e-4f — ровно Tolerance.EpsilonUnits, зашитый копией: прямой долг"),
             ("ConstraintValidator.cs", 2,
                 "0.01f как запас к сравнению зазора в мм — просится в Tolerance"),
-            ("ContextMenuUI.cs", 1,
-                "0.99f — ровно Tolerance.UpDotThreshold, зашитый копией: прямой долг"),
             ("DoorElement.cs", 3,
                 "1e-12f/1e-8f перед normalize и 0.05° «поворот уже доехал»: "
                 + "Tolerance.EpsilonSqr рядом, но не та величина"),
