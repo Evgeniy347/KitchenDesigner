@@ -5,9 +5,9 @@ namespace KitchenDesigner.Core
     public static class RoundedRectSeating
     {
         public static Vector2[] LegCentres(float width, float depth, float radius,
-            float inset, float legCrossSection)
+            float inset, float legSpan)
         {
-            float pull = inset + legCrossSection * 0.5f;
+            float pull = inset + legSpan * 0.5f;
             float innerWidth = Mathf.Max(0f, width - pull * 2f);
             float innerDepth = Mathf.Max(0f, depth - pull * 2f);
             float innerRadius = RoundedRectProfile

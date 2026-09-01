@@ -9,10 +9,12 @@ namespace KitchenDesigner.Core
         public override string DisplayTypeName => "Радиусный стол";
         public const int LegCrossSectionMM = 50;
         public const int TabletopThicknessMM = 30;
+        public const int MinLegInsetFromContourMM = 50;
 
         private readonly List<GameObject> _legs = new List<GameObject>();
         private Material? _tabletopMaterial;
         private Material? _legsMaterial;
+        private bool _applying;
 
         [SerializeField] private int _legInsetMM = 100;
         [SerializeField] private string _tabletopMaterialId = MaterialCatalog.DefaultId;
@@ -46,6 +48,11 @@ namespace KitchenDesigner.Core
             set => TabletopMaterialId = value;
         }
 
+        protected override Vector3 EffectiveScale => new Vector3(
+            DimensionsMM.x * AppConstants.MM_TO_UNITS,
+            DimensionsMM.y * AppConstants.MM_TO_UNITS,
+            DimensionsMM.z * AppConstants.MM_TO_UNITS);
+
         public override MeshRenderer? DecorRenderer => GetComponent<MeshRenderer>();
 
         public override Vector2Int DecorSurfaceMM
@@ -69,51 +76,70 @@ namespace KitchenDesigner.Core
 
         public override void ApplyDimensions()
         {
-            base.ApplyDimensions();
+            if (_applying) return;
+            _applying = true;
+            try
+            {
+                transform.localScale = Vector3.one;
 
-            var dims = DimensionsMM;
-            int overallW = dims.x;
-            int overallH = dims.y;
-            int overallD = dims.z;
+                float toU = AppConstants.MM_TO_UNITS;
+                var dims = DimensionsMM;
+                float widthU = dims.x * toU;
+                float depthU = dims.z * toU;
+                float radiusU = Mathf.Min(widthU, depthU) * 0.5f;
 
-            int legH = Mathf.Max(1, overallH - TabletopThicknessMM);
+                RebuildTabletop(dims, widthU, depthU, radiusU);
+                PlaceLegs(dims, widthU, depthU, radiusU);
 
-            float toU = AppConstants.MM_TO_UNITS;
-            float legCross = LegCrossSectionMM * toU;
-            float topThicknessU = TabletopThicknessMM * toU;
+                MaterialManager.RefreshTiling(this);
+            }
+            finally
+            {
+                _applying = false;
+            }
+        }
 
-            float psX = overallW * toU;
-            float psY = overallH * toU;
-            float psZ = overallD * toU;
+        private void RebuildTabletop(Vector3Int dims, float widthU, float depthU, float radiusU)
+        {
+            float thicknessU = TabletopThicknessMM * AppConstants.MM_TO_UNITS;
+            float centreYU = FurnitureLayout.TopCentreY(dims.y, TabletopThicknessMM);
 
-            float legCenterY_world = (legH * 0.5f - overallH * 0.5f) * toU;
-            float topCenterY_world = (overallH * 0.5f - TabletopThicknessMM * 0.5f) * toU;
+            var profile = RoundedRectProfile.Uniform(widthU, depthU, radiusU,
+                RoundedRectProfile.DefaultSegments);
+            var mesh = ProfileExtrusionMesh.Build(profile, widthU, depthU, thicknessU, centreYU);
+            AdoptOwnedMesh(mesh);
 
             var meshFilter = GetComponent<MeshFilter>();
             if (meshFilter == null) meshFilter = gameObject.AddComponent<MeshFilter>();
-
-            var mesh = CapsuleTableMesh.Build(1f, topThicknessU / psY, 1f, topCenterY_world / psY);
-            AdoptOwnedMesh(mesh);
             meshFilter.sharedMesh = mesh;
 
             var meshRenderer = GetComponent<MeshRenderer>();
             if (meshRenderer == null) meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            if (_tabletopMaterial != null)
-                meshRenderer.sharedMaterial = _tabletopMaterial;
+            if (_tabletopMaterial != null) meshRenderer.sharedMaterial = _tabletopMaterial;
 
             UpdateCollider(mesh);
+        }
 
-            var legPositions_world = RadiusTableLegs.GetLegPositions(
-                overallW, overallH, overallD, legCenterY_world, _legInsetMM);
+        private void PlaceLegs(Vector3Int dims, float widthU, float depthU, float radiusU)
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            int legHeightMM = FurnitureLayout.LegHeightMM(dims.y, TabletopThicknessMM);
+            float legCentreYU = FurnitureLayout.LegCentreY(dims.y, TabletopThicknessMM);
 
-            var legScale = new Vector3(legCross / psX, legH * toU / psY, legCross / psZ);
+            float insetU = Mathf.Max(_legInsetMM, MinLegInsetFromContourMM) * toU;
+            float legDiagonalU = LegCrossSectionMM * toU * Mathf.Sqrt(2f);
 
-            EnsureLegs(4);
+            var footprint = RoundedRectSeating.LegCentres(widthU, depthU, radiusU, insetU,
+                legDiagonalU);
+            var legScale = new Vector3(LegCrossSectionMM * toU, legHeightMM * toU,
+                LegCrossSectionMM * toU);
 
-            for (int i = 0; i < 4; i++)
+            EnsureLegs(footprint.Length);
+
+            for (int i = 0; i < footprint.Length; i++)
             {
-                var wp = legPositions_world[i];
-                _legs[i].transform.localPosition = new Vector3(wp.x / psX, wp.y / psY, wp.z / psZ);
+                _legs[i].transform.localPosition =
+                    new Vector3(footprint[i].x, legCentreYU, footprint[i].y);
                 _legs[i].transform.localScale = legScale;
                 _legs[i].transform.localRotation = Quaternion.identity;
             }

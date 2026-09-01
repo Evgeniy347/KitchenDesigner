@@ -3,10 +3,15 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 
-/// <summary>Крышка овального стола — эллипс, а не «стадион» из габаритной рамки.
-/// Отсюда и посадка ножек, и раскладка UV на ней.</summary>
+/// <summary>Крышка радиусного стола — «стадион»: две полуокружности радиусом
+/// min(Ш, Г)/2 и прямая вставка между ними. Она строится в ФИЗИЧЕСКИХ
+/// миллиметрах, потому что круглый контур, построенный в единичном пространстве
+/// и растянутый корнем неравномерно, превращается в эллипс — стол был эллипсом
+/// на любом размере. Отсюда же и посадка ножек, и раскладка UV.</summary>
 public class RadiusTableLegInsetTests
 {
+    private const float ToleranceMM = 0.1f;
+
     [SetUp]
     public void SetUp() => LogAssert.ignoreFailingMessages = true;
 
@@ -19,20 +24,111 @@ public class RadiusTableLegInsetTests
         LogAssert.ignoreFailingMessages = false;
     }
 
-    [Test]
-    public void CapsuleTableMesh_CapUv_SpansTheWholeFootprint()
+    private static RadiusTableElement Table(Vector3Int dimsMM, int legInsetMM)
     {
-        var mesh = CapsuleTableMesh.Build(1f, 0.03f, 1f);
+        var go = ElementFactory.CreateRadiusTable(dimsMM, "RT", Vector3.zero);
+        var table = go.GetComponent<RadiusTableElement>()!;
+        table.LegInsetMM = legInsetMM;
+        return table;
+    }
+
+    private static float TabletopRadiusMM(Vector3Int dims)
+        => Mathf.Min(dims.x, dims.z) * 0.5f;
+
+    private static Vector2 FootprintMM(RadiusTableElement table, Vector3 worldPoint)
+    {
+        var offset = worldPoint - table.transform.position;
+        return new Vector2(offset.x / AppConstants.MM_TO_UNITS,
+            offset.z / AppConstants.MM_TO_UNITS);
+    }
+
+    private static float WorstLegClearanceMM(RadiusTableElement table)
+    {
+        var dims = table.DimensionsMM;
+        float half = RadiusTableElement.LegCrossSectionMM * 0.5f;
+        float worst = float.MaxValue;
+
+        for (int i = 1; i <= 4; i++)
+        {
+            var leg = table.transform.Find("Leg" + i);
+            Assert.IsNotNull(leg, "ножка Leg" + i + " должна существовать");
+            var centre = FootprintMM(table, leg!.position);
+
+            for (int sx = -1; sx <= 1; sx += 2)
+                for (int sz = -1; sz <= 1; sz += 2)
+                {
+                    var corner = new Vector2(centre.x + sx * half, centre.y + sz * half);
+                    float distance = RoundedRectProfile.SignedDistance(
+                        corner, dims.x, dims.z, TabletopRadiusMM(dims));
+                    worst = Mathf.Min(worst, -distance);
+                }
+        }
+
+        return worst;
+    }
+
+    [Test]
+    public void RadiusTable_Tabletop_EndCapsAreCircularArcs_OnANonSquareTable()
+    {
+        var dims = new Vector3Int(2000, 750, 1000);
+        var table = Table(dims, 100);
+        var mesh = table.GetComponent<MeshFilter>().sharedMesh;
+
+        float radius = TabletopRadiusMM(dims);
+        float arcCentreX = dims.x * 0.5f - radius;
+        int onArc = 0;
+
+        foreach (var vertex in mesh.vertices)
+        {
+            var p = FootprintMM(table, table.transform.TransformPoint(vertex));
+            if (p.x < arcCentreX + ToleranceMM) continue;
+            onArc++;
+            Assert.AreEqual(radius, (p - new Vector2(arcCentreX, 0f)).magnitude, ToleranceMM,
+                "торец крышки обязан быть ДУГОЙ ОКРУЖНОСТИ радиуса min(Ш, Г)/2. Круг, "
+                + "построенный в единичном пространстве и растянутый корнем в 2:1, даёт "
+                + "эллипс — на 2000×1000 точка под 60° уезжает на 433 мм вместо 500");
+        }
+
+        Assert.Greater(onArc, 4, "вершины торцевой дуги не найдены — сторож ослеп");
+    }
+
+    [Test]
+    public void RadiusTable_Tabletop_ArcsMeetTheStraightRun_OnANonSquareTable()
+    {
+        var dims = new Vector3Int(2000, 750, 1000);
+        var table = Table(dims, 100);
+        var mesh = table.GetComponent<MeshFilter>().sharedMesh;
+
+        float halfDepth = dims.z * 0.5f;
+        float arcCentreX = dims.x * 0.5f - TabletopRadiusMM(dims);
+        var tangent = new Vector2(arcCentreX, halfDepth);
+        float best = float.MaxValue;
+
+        foreach (var vertex in mesh.vertices)
+        {
+            var p = FootprintMM(table, table.transform.TransformPoint(vertex));
+            best = Mathf.Min(best, (p - tangent).magnitude);
+        }
+
+        Assert.AreEqual(0f, best, ToleranceMM,
+            "у стадиона дуга переходит в ПРЯМУЮ вставку в точке касания (500, 500) — "
+            + "стол 2000×1000 обязан иметь там вершину. У эллипса такой точки нет: "
+            + "глубины 500 он достигает только в x = 0");
+    }
+
+    [Test]
+    public void RadiusTable_CapUv_SpansTheWholeFootprint_OnANonSquareTable()
+    {
+        var table = Table(new Vector3Int(2000, 750, 1000), 100);
+        var mesh = table.GetComponent<MeshFilter>().sharedMesh;
         var uv = mesh.uv;
         var normals = mesh.normals;
         float minU = float.MaxValue, maxU = float.MinValue;
         float minV = float.MaxValue, maxV = float.MinValue;
         int caps = 0;
+
         for (int i = 0; i < uv.Length; i++)
         {
-            // Только крышки: у боковин своя развёртка — u идёт по ДЛИНЕ контура
-            // (периметр / ширина, то есть до π у круглой крышки), v — по толщине.
-            // Смешивать их с крышкой в одном min/max нельзя.
             if (Mathf.Abs(normals[i].y) < 0.5f) continue;
             caps++;
             minU = Mathf.Min(minU, uv[i].x); maxU = Mathf.Max(maxU, uv[i].x);
@@ -49,89 +145,62 @@ public class RadiusTableLegInsetTests
         Assert.AreEqual(1f, maxV, 1e-3f, "и занимает весь диапазон по v");
     }
 
-    private static float MillimetresInsideTheEllipse(Vector2 pointMM, float aMM, float bMM)
+    [Test]
+    public void RadiusTable_Root_KeepsUnitScale_SoChildrenAreNotScaledTwice()
     {
-        const int samples = 4096;
-        float best = float.MaxValue;
-        for (int i = 0; i < samples; i++)
-        {
-            float t = 2f * Mathf.PI * i / samples;
-            var onContour = new Vector2(aMM * Mathf.Cos(t), bMM * Mathf.Sin(t));
-            best = Mathf.Min(best, (onContour - pointMM).magnitude);
-        }
-        float nx = pointMM.x / aMM, ny = pointMM.y / bMM;
-        return nx * nx + ny * ny <= 1f ? best : -best;
-    }
+        var table = Table(new Vector3Int(2000, 750, 1000), 100);
 
-    private static float WorstLegClearanceMM(RadiusTableElement table)
-    {
-        var dims = table.DimensionsMM;
-        float a = dims.x * 0.5f, b = dims.z * 0.5f;
-        float half = RadiusTableElement.LegCrossSectionMM * 0.5f;
-        float worst = float.MaxValue;
+        Assert.AreEqual(Vector3.one, table.transform.localScale,
+            "крышка и ножки строятся в физических миллиметрах, поэтому корень обязан "
+            + "остаться единичным: масштаб на корне растянул бы круглый торец в эллипс, "
+            + "а детей — вдвое");
 
-        for (int i = 1; i <= 4; i++)
-        {
-            var leg = table.transform.Find("Leg" + i);
-            Assert.IsNotNull(leg, "ножка Leg" + i + " должна существовать");
-            var w = leg!.position - table.transform.position;
-            float cx = w.x / AppConstants.MM_TO_UNITS;
-            float cz = w.z / AppConstants.MM_TO_UNITS;
-
-            for (int sx = -1; sx <= 1; sx += 2)
-                for (int sz = -1; sz <= 1; sz += 2)
-                    worst = Mathf.Min(worst, MillimetresInsideTheEllipse(
-                        new Vector2(cx + sx * half, cz + sz * half), a, b));
-        }
-        return worst;
+        var leg = table.transform.Find("Leg1")!;
+        Assert.AreEqual(RadiusTableElement.LegCrossSectionMM * AppConstants.MM_TO_UNITS,
+            leg.lossyScale.x, 1e-5f,
+            "сечение ножки в мире равно её физическому сечению, а не произведению "
+            + "масштабов корня и ребёнка");
     }
 
     [Test]
-    public void RadiusTable_Legs_StayAtLeastMinimumInsetInside_OnAnElongatedTable()
+    public void RadiusTable_Legs_SitExactlyAtTheInsetFromTheTabletopEdge_OnAnElongatedTable()
     {
-        var go = ElementFactory.CreateRadiusTable(new Vector3Int(2000, 750, 1000), "RT", Vector3.zero);
-        var table = go.GetComponent<RadiusTableElement>()!;
-        table.LegInsetMM = 100;
+        var table = Table(new Vector3Int(2000, 750, 1000), 100);
 
-        Assert.GreaterOrEqual(WorstLegClearanceMM(table),
-            RadiusTableLegs.MinLegInsetFromContourMM - 1f,
-            "посадку ножек считали по «стадиону», построенному из габаритной рамки, а крышка "
-            + "у овала — эллипс: на 2000×1000 углы ножек оказывались СНАРУЖИ столешницы");
+        Assert.AreEqual(100f, WorstLegClearanceMM(table), ToleranceMM,
+            "отступ ножки считается ОТ КРАЯ СТОЛЕШНИЦЫ: дальний угол ножки отстоит от "
+            + "контура ровно на LegInsetMM. Посадку считали параметрически по эллипсу, "
+            + "и на 2000×1000 углы ножек оказывались СНАРУЖИ настоящего контура");
     }
 
     [Test]
     public void RadiusTable_Legs_StayInside_WhenTheUserAsksForZeroInset()
     {
-        var go = ElementFactory.CreateRadiusTable(new Vector3Int(2000, 750, 1000), "RT", Vector3.zero);
-        var table = go.GetComponent<RadiusTableElement>()!;
-        table.LegInsetMM = 0;
+        var table = Table(new Vector3Int(2000, 750, 1000), 0);
 
-        Assert.GreaterOrEqual(WorstLegClearanceMM(table),
-            RadiusTableLegs.MinLegInsetFromContourMM - 1f,
-            "нулевая утопленность у овала запрещена: минимум держится независимо от поля");
+        Assert.AreEqual((float)RadiusTableElement.MinLegInsetFromContourMM,
+            WorstLegClearanceMM(table), ToleranceMM,
+            "нулевая утопленность у радиусного стола запрещена: минимум держится "
+            + "независимо от поля");
     }
 
     [Test]
     public void RadiusTable_Legs_StayInside_OnASquareTable()
     {
-        var go = ElementFactory.CreateRadiusTable(new Vector3Int(900, 750, 900), "RT", Vector3.zero);
-        var table = go.GetComponent<RadiusTableElement>()!;
-        table.LegInsetMM = 100;
+        var table = Table(new Vector3Int(900, 750, 900), 100);
 
-        Assert.GreaterOrEqual(WorstLegClearanceMM(table),
-            RadiusTableLegs.MinLegInsetFromContourMM - 1f,
-            "круглая крышка — та же формула при a == b, вырождаться она не имеет права");
+        Assert.AreEqual(100f, WorstLegClearanceMM(table), ToleranceMM,
+            "круглая крышка — тот же стадион при Ш == Г, вырождаться он не имеет права");
     }
 
     [Test]
     public void RadiusTable_Legs_GoDeeper_WhenTheUserAsksForALargerInset()
     {
-        var go = ElementFactory.CreateRadiusTable(new Vector3Int(2000, 750, 1000), "RT", Vector3.zero);
-        var table = go.GetComponent<RadiusTableElement>()!;
-
-        table.LegInsetMM = RadiusTableLegs.MinLegInsetFromContourMM;
+        var table = Table(new Vector3Int(2000, 750, 1000),
+            RadiusTableElement.MinLegInsetFromContourMM);
         float atMinimum = WorstLegClearanceMM(table);
-        table.LegInsetMM = RadiusTableLegs.MinLegInsetFromContourMM + 200;
+
+        table.LegInsetMM = RadiusTableElement.MinLegInsetFromContourMM + 200;
         float deeper = WorstLegClearanceMM(table);
 
         Assert.Greater(deeper, atMinimum + 100f,

@@ -249,7 +249,7 @@ public class TableElementTests
     }
 
     [Test]
-    public void RadiusTable_LocalScale_MatchesDimensions()
+    public void RadiusTable_Resize_KeepsUnitScale_AndMovesTheBoundingBox()
     {
         var dims = new Vector3Int(2000, 750, 1000);
         var go = ElementFactory.CreateRadiusTable(dims, "RadiusScl", Vector3.zero);
@@ -257,14 +257,19 @@ public class TableElementTests
         Assert.IsNotNull(table);
 
         float toU = AppConstants.MM_TO_UNITS;
-        var expectedScale = new Vector3(dims.x * toU, dims.y * toU, dims.z * toU);
-        Assert.AreEqual(expectedScale, table.transform.localScale,
-            "BUG: localScale не совпадает с размерами");
+        Assert.AreEqual(Vector3.one, table!.transform.localScale,
+            "радиусный стол строится в физических миллиметрах: масштаб на корне растянул "
+            + "бы круглые торцы столешницы в эллипс");
 
         table.DimensionsMM = new Vector3Int(1500, 800, 600);
-        var expectedScale2 = new Vector3(1500f * toU, 800f * toU, 600f * toU);
-        Assert.AreEqual(expectedScale2, table.transform.localScale,
-            "BUG: после ресайза localScale не совпадает с размерами");
+        var extent = AabbExtent(table);
+
+        Assert.AreEqual(Vector3.one, table.transform.localScale,
+            "и после ресайза корень остаётся единичным");
+        Assert.AreEqual(1500f * toU, extent.x, 0.001f,
+            "BUG: после ресайза габарит не совпадает с размерами");
+        Assert.AreEqual(800f * toU, extent.y, 0.001f);
+        Assert.AreEqual(600f * toU, extent.z, 0.001f);
 
         Object.DestroyImmediate(go);
     }
