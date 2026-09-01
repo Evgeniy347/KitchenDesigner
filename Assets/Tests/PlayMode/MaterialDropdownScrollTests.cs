@@ -113,7 +113,7 @@ public class MaterialDropdownScrollTests
         float itemH = scroll!.content.GetComponentInChildren<Toggle>()
             .GetComponent<RectTransform>().rect.height;
 
-        Assert.AreEqual(UIStyle.DropdownItemH, itemH, 0.5f,
+        Assert.AreEqual(UIStyle.DropdownItemMinH, itemH, 0.5f,
             "пункт каталога декоров должен быть однострочным");
         Assert.AreEqual(7, Mathf.RoundToInt(scroll!.viewport.rect.height / itemH),
             "без прокрутки видно семь декоров");

@@ -111,7 +111,7 @@ public class MaterialPreviewTests
         float tall = DropdownItemFit.HeightFor(options, 168f, 14);
         float shortOnly = DropdownItemFit.HeightFor(new List<string> { "Венге" }, 168f, 14);
 
-        Assert.AreEqual(UIStyle.DropdownItemH, shortOnly,
+        Assert.AreEqual(UIStyle.DropdownItemMinH, shortOnly,
             "короткие названия не должны раздувать список");
         Assert.Greater(tall, shortOnly,
             "высота пункта считается по САМОМУ длинному названию");
@@ -127,7 +127,7 @@ public class MaterialPreviewTests
                 new List<string> { "А", "Б" }, Vector2.zero, new Vector2(202, 28), _ => { });
             var item = ItemRect(dd);
             float narrow = ListWidth(dd);
-            Assert.AreEqual(UIStyle.DropdownItemH, item.sizeDelta.y,
+            Assert.AreEqual(UIStyle.DropdownItemMinH, item.sizeDelta.y,
                 "короткий список — пункт в одну строку");
             Assert.AreEqual(202f, narrow, "короткому списку расширяться незачем");
 
@@ -139,7 +139,7 @@ public class MaterialPreviewTests
 
             Assert.Greater(ListWidth(dd), narrow,
                 "BUG: список не расширился — длинное название пришлось переносить");
-            Assert.AreEqual(UIStyle.DropdownItemH, item.sizeDelta.y,
+            Assert.AreEqual(UIStyle.DropdownItemMinH, item.sizeDelta.y,
                 "BUG: пункт стал многострочным там, где хватило расширить список");
             Assert.AreEqual(item.sizeDelta.y + 2f, ContentRect(dd).sizeDelta.y,
                 "контент списка должен идти за высотой пункта");
@@ -160,7 +160,7 @@ public class MaterialPreviewTests
                 new List<string> { new string('я', 200) }, Vector2.zero,
                 new Vector2(202, 28), _ => { });
 
-            Assert.Greater(ItemRect(dd).sizeDelta.y, UIStyle.DropdownItemH,
+            Assert.Greater(ItemRect(dd).sizeDelta.y, UIStyle.DropdownItemMinH,
                 "BUG: название, не влезающее и в предельно широкий список, обрезано");
         }
         finally
@@ -176,7 +176,7 @@ public class MaterialPreviewTests
 
         Assert.IsTrue(dd.itemText.enableWordWrapping,
             "BUG: в пункте выключен перенос — совсем длинное название обрежется");
-        Assert.AreEqual(UIStyle.DropdownItemH, ItemRect(dd).sizeDelta.y,
+        Assert.AreEqual(UIStyle.DropdownItemMinH, ItemRect(dd).sizeDelta.y,
             "BUG: все декоры стали двухстрочными из-за одного длинного названия");
         Assert.Greater(ListWidth(dd), dd.GetComponent<RectTransform>().rect.width,
             "BUG: список не расширен под названия декоров");

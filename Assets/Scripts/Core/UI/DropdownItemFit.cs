@@ -24,7 +24,7 @@ namespace KitchenDesigner.Core.UI
         public const float LineHeightFactor = 1.2f;
 
         /// <summary>Вертикальные поля пункта (сверху + снизу). Подобраны так,
-        /// чтобы однострочный пункт остался ровно <see cref="UIStyle.DropdownItemH"/>:
+        /// чтобы однострочный пункт остался ровно <see cref="UIStyle.DropdownItemMinH"/>:
         /// список коротких названий выглядит как раньше.</summary>
         public const float PadV = 6f;
 
@@ -101,7 +101,7 @@ namespace KitchenDesigner.Core.UI
                     lines = Mathf.Max(lines, LinesFor(o, textWidth, fontSize, maxLines));
 
             float h = lines * fontSize * LineHeightFactor + PadV;
-            return Mathf.Max(UIStyle.DropdownItemH, Mathf.Ceil(h));
+            return Mathf.Max(UIStyle.DropdownItemMinH, Mathf.Ceil(h));
         }
     }
 }
