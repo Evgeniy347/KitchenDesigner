@@ -64,8 +64,8 @@ Updated 2026-09-01. Keep this current: it is the only place that says where the 
 | Cold Unity: one class / full EditMode / PlayMode | **~11 s / ~73 s / ~91 s** — was 18,4 / 79 / 101 |
 | Comments left in `Core` | **3131**, ceilinged per directory by `CommentRatchetTests.Budgets` |
 
-**Done from this plan:** A1, A2, A3, A3b, A3c, A5, A5b, A6, A8, B1, B2, B3, B4, C1, C2, C3.
-**Left: A4, D, E** — see "What is actually left" at the end of this section.
+**Done from this plan:** A1, A2, A3, A3b, A3c, A4, A5, A5b, A6, A8, B1, B2, B3, B4, C1, C2, C3.
+**Left: D, E** — see "What is actually left" at the end of this section.
 
 **Defects found and fixed today, none of them by reading code:**
 
@@ -218,8 +218,10 @@ In the order I would take it:
    `ValidationBroadPhase` (a real hole, not a missing assertion), `BoxGaps` (its tests are in
    the wrong build), the detent LABELS in `EdgeDetents`, and a boundary case per threshold —
    97 of the 299 survivors are `<` ↔ `<=`.
-5. **A4 — test-quality guards.** C3 is done (`TestQualityRatchetTests`); A4 — no reflection
-   into private members from tests — is not.
+5. ~~**A4 — test-quality guards.**~~ **Done** — C3 is `TestQualityRatchetTests`, A4 is
+   `PrivateReflectionRatchetTests`. It did not start at zero: twelve files reached into
+   private members, seven were fixed for real and five are ceilinged with a reason (four of
+   them behind other agents' territory). See A4 above for the forms a text scan cannot see.
 6. **Part E** — the refactoring still owed. Cheaper now: what it extracts is exactly what
    belongs in `Core/Pure`, so the loop for it is 0,3 s rather than 73 s.
 
@@ -651,8 +653,22 @@ zero.
 
 ### A4. No reflection into private members from tests
 
-`GetField` / `GetMethod` / `BindingFlags.NonPublic` under `Assets/Tests/**`. This one can start
-at zero — the campaign already removed the three offenders.
+**Done — `PrivateReflectionRatchetTests`.** It could NOT start at zero: `Assets/Tests/**` held
+twelve files reaching into private members, not three. Seven were fixed for real (`SnapToWall`
+instead of a private `RegisterWithNearestWall`; an `internal` setter on `SelectionManager.Instance`
+and `ElementHighlighter.Instance`; the already-public `CreateMaterials` plus an `internal
+MaterialsReady` instead of five private material fields), five are ceilinged with a reason —
+four of them because they live in `Core/UI` and `Core/Pure`, which other agents were cleaning —
+and one, `KitchenSettingsContractTests`, is not a debt at all.
+
+Three forms of the offence carry no `BindingFlags` in the text and were invisible to the first
+draft of the scan: `GetSetMethod(nonPublic: true)` (used in four files), `Type.InvokeMember`, and
+`SendMessage` as a way to call a private `Awake`. A fourth is invisible to any text scan —
+`PropertyInfo.SetValue` reaches a private setter through a property bound as `Public` — which is
+why the two `Instance` setters were made `internal` rather than ceilinged. The guard counts
+reach-ins separately from named lookups (`Get*("name")`), because only the latter freezes a name;
+reflection over PUBLIC members is not counted at all, and a test pins that on two real files —
+the guards themselves are built on it.
 
 ### A5. Unity message shadowing
 
