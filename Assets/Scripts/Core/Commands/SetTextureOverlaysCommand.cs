@@ -2,10 +2,6 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Замена набора накладок текстур целиком. Через неё идёт КАЖДАЯ
-    /// правка — добавление, удаление, смена стороны/декора и завершённое
-    /// перетаскивание ручки (одна команда на drag, а не на кадр), — иначе
-    /// Ctrl+Z вернул бы половину состояния (правило 2 UI-GUIDELINES).</summary>
     public class SetTextureOverlaysCommand : IUndoCommand
     {
         private readonly KitchenElement? _element;

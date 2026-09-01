@@ -2,12 +2,6 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>
-    /// Универсальная правка свойств элемента: хранит значения помеченных
-    /// <see cref="UndoableAttribute"/> свойств до и после и умеет вернуть любое
-    /// из них. Одна команда покрывает ВСЕ свойства сразу — новое свойство
-    /// попадает в откат само, достаточно атрибута.
-    /// </summary>
     public sealed class SetPropertiesCommand : IUndoCommand
     {
         private readonly KitchenElement _element;
@@ -17,7 +11,6 @@ namespace KitchenDesigner.Core
 
         public string Description => $"Set properties {_element.PartName}";
 
-        /// <summary>Имена изменённых свойств — для диагностики и тестов.</summary>
         public IEnumerable<string> ChangedNames
         {
             get { foreach (int i in _changed) yield return _after.PropertyAt(i).Name; }
@@ -32,7 +25,6 @@ namespace KitchenDesigner.Core
             _changed = changed;
         }
 
-        /// <summary>Команда на разницу двух снимков; null, если ничего не изменилось.</summary>
         public static SetPropertiesCommand? TryCreate(KitchenElement element,
             ElementPropertyBag before, ElementPropertyBag after)
         {

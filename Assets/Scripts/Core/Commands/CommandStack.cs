@@ -35,9 +35,6 @@ namespace KitchenDesigner.Core
 
         public static void Execute(IUndoCommand command)
         {
-            // Через стек команд проходит каждое пользовательское изменение (правило
-            // «undo на всё»), поэтому здесь ловятся и правки свойств, которые не
-            // трогают ни трансформ, ни реестр — например, включение кромки.
             SceneRevision.Bump();
             if (_capture == null) { Instance.Execute(command); return; }
             command.Execute();
@@ -179,9 +176,6 @@ namespace KitchenDesigner.Core
         public void Execute()
         {
             if (_deleted == null) return;
-            // Окно прибито к стене списком _attachedWindows; если просто
-            // деактивировать — вырез в меше стены останется (OnDestroy не
-            // вызывается). Дерегистрируем явно до SetActive.
             if (_element is WindowElement win)
                 win.UnregisterFromWall();
             if (_element is DoorElement door)
@@ -277,12 +271,6 @@ namespace KitchenDesigner.Core
 
         public CommandRecord? ToRecord(Func<KitchenElement, int> indexOf)
         {
-            // Плоская сериализация: рекурсивно собираем ВСЕ листовые команды
-            // поддерева в один уровень children. Глубина JSON становится
-            // константой (~6) при любой вложенности composite — иначе JsonUtility
-            // на WebGL/IL2CPP жёстко падает при глубине сериализации >10.
-            // Семантика undo не теряется: composite и так отменяет все свои
-            // листовые команды атомарно, вложенность на это не влияет.
             var kids = new List<CommandRecord>();
             CollectLeafRecords(_commands, indexOf, kids);
             if (kids.Count == 0) return null;

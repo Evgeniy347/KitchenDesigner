@@ -2,13 +2,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Правка выреза варочной поверхности (ширина и глубина короба,
-    /// уходящего в столешницу). Обе величины в одной команде: правятся из
-    /// одного блока меню, и раздельный откат смотрелся бы как «Ctrl+Z вернул
-    /// половину».
-    ///
-    /// Габариты самой плиты в команду не входят — их несёт общий
-    /// <see cref="ResizeCommand"/>, как у любой другой детали.</summary>
     public class SetCooktopCutoutCommand : IUndoCommand
     {
         private readonly CooktopElement? _element;
@@ -24,7 +17,6 @@ namespace KitchenDesigner.Core
             _after = after;
         }
 
-        /// <summary>Снимок выреза: x — ширина, y — глубина.</summary>
         public static Vector2Int Snapshot(CooktopElement element) =>
             element == null ? Vector2Int.zero
                 : new Vector2Int(element.CutoutWidthMM, element.CutoutDepthMM);

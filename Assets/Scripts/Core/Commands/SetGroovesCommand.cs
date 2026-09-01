@@ -2,9 +2,6 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Замена набора пазов детали (добавление/правка/удаление одной
-    /// командой): снимок «до» и «после», обе стороны проходят через SetGrooves,
-    /// который сам дедуплицирует и пересобирает меш.</summary>
     public class SetGroovesCommand : IUndoCommand
     {
         private readonly KitchenElement? _element;

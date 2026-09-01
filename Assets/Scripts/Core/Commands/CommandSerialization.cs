@@ -4,16 +4,11 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Команда, которую можно сохранить в историю проекта. indexOf отдаёт
-    /// индекс целевого объекта в ProjectData.elements (или -1, если объект не
-    /// попадает в сохранение — тогда команда в историю не пишется).</summary>
     public interface ISerializableCommand
     {
         CommandRecord? ToRecord(Func<KitchenElement, int> indexOf);
     }
 
-    /// <summary>Восстановление команд из записей при загрузке проекта. resolve
-    /// отдаёт объект по индексу (или null — тогда команда пропускается).</summary>
     public static class CommandSerialization
     {
         public static IUndoCommand? FromRecord(CommandRecord r, Func<int, KitchenElement> resolve)

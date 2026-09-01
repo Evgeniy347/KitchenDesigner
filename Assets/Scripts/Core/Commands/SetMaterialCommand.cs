@@ -1,42 +1,31 @@
 namespace KitchenDesigner.Core
 {
-    /// <summary>Смена декора у одного слота элемента.
-    ///
-    /// До неё выбор в списке «Текстура» шёл прямо в MaterialManager и в стек
-    /// отмены не попадал вовсе — Ctrl+Z его не возвращал (нарушение правила 2
-    /// UI-GUIDELINES). Через эту команду теперь идут оба пути: и список в окне
-    /// свойств, и покраска пипеткой.
-    ///
-    /// Хранятся id, а не MaterialDef: каталог декоров перечитывается в рантайме
-    /// (TextureLibrary.Reload), и держать ссылку на объект определения незачем —
-    /// по id он всегда находится заново.</summary>
     public class SetMaterialCommand : IUndoCommand
     {
         private readonly KitchenElement? _element;
         private readonly MaterialSlot _slot;
-        private readonly string _before;
-        private readonly string _after;
+        private readonly string _beforeMaterialId;
+        private readonly string _afterMaterialId;
 
         public string Description => $"Material {_element?.PartName}";
 
         public SetMaterialCommand(KitchenElement element, MaterialSlot slot,
-            string before, string after)
+            string beforeMaterialId, string afterMaterialId)
         {
             _element = element;
             _slot = slot;
-            _before = before;
-            _after = after;
+            _beforeMaterialId = beforeMaterialId;
+            _afterMaterialId = afterMaterialId;
         }
 
-        /// <summary>Команда с «до», прочитанным из самого элемента, — обычный случай.</summary>
-        public SetMaterialCommand(KitchenElement element, MaterialSlot slot, string after)
-            : this(element, slot, MaterialManager.MaterialIdOf(element, slot), after)
+        public SetMaterialCommand(KitchenElement element, MaterialSlot slot, string afterMaterialId)
+            : this(element, slot, MaterialManager.MaterialIdOf(element, slot), afterMaterialId)
         {
         }
 
-        public void Execute() => Apply(_after);
+        public void Execute() => Apply(_afterMaterialId);
 
-        public void Undo() => Apply(_before);
+        public void Undo() => Apply(_beforeMaterialId);
 
         private void Apply(string materialId)
         {

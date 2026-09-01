@@ -4,7 +4,6 @@ using System.Reflection;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Снимок значений помеченных свойств одного элемента.</summary>
     public sealed class ElementPropertyBag
     {
         private readonly PropertyInfo[] _props;
@@ -20,7 +19,6 @@ namespace KitchenDesigner.Core
         public PropertyInfo PropertyAt(int i) => _props[i];
         public object? ValueAt(int i) => _values[i];
 
-        /// <summary>Значение по имени свойства; null-флаг, если такого нет.</summary>
         public bool TryGet(string name, out object? value)
         {
             for (int i = 0; i < _props.Length; i++)
@@ -30,17 +28,11 @@ namespace KitchenDesigner.Core
         }
     }
 
-    /// <summary>
-    /// Реестр свойств, помеченных <see cref="UndoableAttribute"/>: снимает и
-    /// возвращает их значения по типу элемента. Отражение считается один раз на
-    /// тип и кэшируется — в кадре работает уже готовый массив аксессоров.
-    /// </summary>
     public static class UndoableProperties
     {
         private static readonly Dictionary<Type, PropertyInfo[]> _cache =
             new Dictionary<Type, PropertyInfo[]>();
 
-        /// <summary>Помеченные свойства типа, в порядке применения.</summary>
         public static PropertyInfo[] For(Type type)
         {
             if (_cache.TryGetValue(type, out var cached)) return cached;
@@ -54,8 +46,6 @@ namespace KitchenDesigner.Core
                 list.Add(p);
             }
 
-            // Сначала порядок из атрибута, потом имя — чтобы снимок был
-            // детерминированным и сравнимым между двумя вызовами.
             list.Sort((a, b) =>
             {
                 int oa = a.GetCustomAttribute<UndoableAttribute>()!.Order;
@@ -77,7 +67,6 @@ namespace KitchenDesigner.Core
             return new ElementPropertyBag(props, values);
         }
 
-        /// <summary>Индексы свойств, значение которых изменилось.</summary>
         public static List<int> Changed(ElementPropertyBag before, ElementPropertyBag after)
         {
             var changed = new List<int>();
@@ -90,9 +79,6 @@ namespace KitchenDesigner.Core
             return changed;
         }
 
-        /// <summary>Записать значения снимка обратно в элемент. Пишутся только
-        /// свойства из <paramref name="indices"/> и только когда значение реально
-        /// отличается: лишний вызов сеттера тянет за собой пересборку меша.</summary>
         public static void Restore(KitchenElement element, ElementPropertyBag bag, List<int> indices)
         {
             foreach (int i in indices)
