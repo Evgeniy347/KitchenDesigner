@@ -212,6 +212,8 @@ In the order I would take it:
    out NOT to be completeness requirements and are documented as such instead of enforced:
    `ElementKind` (no role is a legitimate answer) and `ElementTypeConverter` (a forgotten type
    defaults to «not convertible», the safe direction).
+   The six screenshot gaps are now closed; the panel among them could not have had a
+   screenshot at all, because `ElementFactory.CreatePanel` did not exist — see A7 below.
 4. **Spend the mutation ratchet — C1 gates it, nothing raises it.** The gate is in
    (`geometry/mutation-baseline.txt`, `core` 72 %); what the survivors named is in
    "What the survivors said" under C1. In order: the recessed-body union in
@@ -716,6 +718,35 @@ declares its own `KitchenElement.Disposal`, so there is nothing per-type to forg
 the correct answer for a plain part. What replaced them came out of the code: the duplicate
 registry and `ElementSelector.TypeOf`, both of which fail SILENTLY by treating the forgotten
 type as an ordinary board.
+
+**The last debt on this guard is closed, and closing it turned one entry into a finding.** The
+six types with no isometric screenshot — assembled facade, cooktop, dishwasher, lamp, oven,
+panel — now have one, and the `KnownGaps` rows went in the same commit (`1cdcf352`). Two things
+came out of it that the ratchet entry did not say:
+
+- **`PanelElement` had no screenshot because it COULD NOT have one.** `ElementFactory.CreatePanel`
+  did not exist: `CreatePanel` was the only method of `IElementFactory` with no wrapper on the
+  public facade, and `ElementFactory.Instance` is `internal` with `InternalsVisibleTo` granted to
+  the EditMode assembly only. So the PlayMode suite — the one place isometric screenshots live —
+  was physically unable to create a panel. The debt read like laziness and was a symptom: a
+  missing test whose cause was a missing entry point. The wrapper is added, and
+  `ElementFactoryFacadeTests` now compares the two lists and fails in BOTH directions (a method
+  with no wrapper hides a working capability; a wrapper with no method is dead code the compiler
+  cannot find, because the facade delegates by name).
+- **The screenshot template in `CONVENTIONS.md` was wrong for composite elements**, and half of
+  the six are composite. It took `GetComponent` on the ROOT and sized the frame from the root's
+  `dims`. `Cooktop`, `Oven` and `Dishwasher` are built by `ElementRoot.NewEmpty`, so the root
+  carries no renderer at all; their child boxes are not centred on the pivot (the cooktop hangs
+  entirely below it); and the oven's handle protrudes past the declared `DEPTH_MM`. The shared
+  helper now frames from the world AABB of every renderer and **asserts that all eight corners of
+  that box land inside the frame** — a screenshot test that only writes a PNG cannot fail at all.
+  `IsoAppliances_KeepTheirGeometryInChildren_NotOnTheRoot` pins the three facts so the shortcut
+  cannot come back quietly, and the template in `CONVENTIONS.md` was rewritten to match.
+
+The lesson generalises past this guard: **a ratchet entry records that something is missing, not
+why.** Read as a to-do list it invites the cheapest possible closure; read as a symptom list it
+occasionally names a hole somewhere else entirely. Six entries here, one of which was an
+inaccessible API.
 
 ### A8. Generated artefacts match their source
 
