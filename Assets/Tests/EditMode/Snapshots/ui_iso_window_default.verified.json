@@ -221,73 +221,78 @@
     },
     {
       "type": "Button",
-      "text": "Ножка",
+      "text": "Стул",
       "position": [22, -434]
     },
     {
       "type": "Button",
-      "text": "Мойка",
+      "text": "Ножка",
       "position": [22, -463]
     },
     {
       "type": "Button",
+      "text": "Мойка",
+      "position": [22, -492]
+    },
+    {
+      "type": "Button",
       "text": "▼  Техника",
-      "position": [8, -492]
+      "position": [8, -521]
     },
     {
       "type": "Button",
       "text": "Варочная поверхность",
-      "position": [22, -526]
-    },
-    {
-      "type": "Button",
-      "text": "Варочная Bosch PUE611BB5E",
       "position": [22, -555]
     },
     {
       "type": "Button",
+      "text": "Варочная Bosch PUE611BB5E",
+      "position": [22, -584]
+    },
+    {
+      "type": "Button",
       "text": "Духовка Bosch HBA514BB3",
-      "position": [22, -600]
+      "position": [22, -629]
     },
     {
       "type": "Button",
       "text": "Посудомойка Bosch SMV25EX02E",
-      "position": [22, -645]
+      "position": [22, -674]
     },
     {
       "type": "Button",
       "text": "▼  Помещение",
-      "position": [8, -690]
+      "position": [8, -719]
     },
     {
       "type": "Button",
       "text": "Короб",
-      "position": [22, -724]
-    },
-    {
-      "type": "Button",
-      "text": "Стена",
       "position": [22, -753]
     },
     {
       "type": "Button",
-      "text": "Окно",
+      "text": "Стена",
       "position": [22, -782]
     },
     {
       "type": "Button",
-      "text": "Дверь",
+      "text": "Окно",
       "position": [22, -811]
     },
     {
       "type": "Button",
-      "text": "Пол",
+      "text": "Дверь",
       "position": [22, -840]
     },
     {
       "type": "Button",
-      "text": "Источник света",
+      "text": "Пол",
       "position": [22, -869]
+    },
+    {
+      "type": "Button",
+      "text": "Источник света",
+      "position": [22, -898]
     }
   ]
 }
