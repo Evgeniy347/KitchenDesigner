@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.Handles;
 
 namespace KitchenDesigner.Core
 {
@@ -27,15 +28,7 @@ namespace KitchenDesigner.Core
 
         private const float CubeEdgeUnits = 0.05f;
 
-        // Стрелка переноса: тонкий стержень + конус на конце (как у ручек
-        // перемещения объекта — ResizeHandleManager, чтобы жест читался одинаково).
-        private const float ShaftLen = 0.09f;
-        private const float ShaftRad = 0.012f;
-        private const float TipLen = 0.05f;
-        private const float TipSize = 0.04f;
-        private const float ArrowLen = ShaftLen + TipLen;
-
-        private const float GrabRadiusPixels = 26f;
+        private static readonly HandleMetrics Metrics = HandleMetrics.Overlay;
 
         private static KitchenElement? _element;
         private static int _index = -1;
@@ -75,36 +68,11 @@ namespace KitchenDesigner.Core
 
         public static bool PointerOverHandle() => PickHandle() != null;
 
-        /// <summary>Ручка под курсором, или null.
-        ///
-        /// Попадание считается НА ЭКРАНЕ, а не лучом по коллайдеру. Физика тут
-        /// подводит трижды: ручка стоит вплотную к поверхности и луч возвращает
-        /// стену; ручка на дальней грани оказывается за геометрией; а перемещённый
-        /// в LateUpdate коллайдер до следующего FixedUpdate вообще стоит на старом
-        /// месте (Physics.autoSyncTransforms по умолчанию выключен). Расстояние в
-        /// пикселях от курсора до ручки ничем из этого не портится и заодно даёт
-        /// одинаковый размер зоны захвата на любом зуме.</summary>
         private static TextureOverlayHandle? PickHandle()
         {
             if (!Active || _instance == null) return null;
-            var cam = Camera.main;
-            if (cam == null) return null;
-
-            Vector2 mouse = Input.mousePosition;
-            TextureOverlayHandle? best = null;
-            float bestDist = GrabRadiusPixels;
-            foreach (var h in _instance._handles)
-            {
-                if (h == null) continue;
-                var sp = cam.WorldToScreenPoint(h.grabPoint);
-                bool behindCamera = sp.z <= 0f;
-                if (behindCamera) continue;
-                float d = Vector2.Distance(mouse, new Vector2(sp.x, sp.y));
-                if (d > bestDist) continue;
-                best = h;
-                bestDist = d;
-            }
-            return best;
+            return HandleScreenPick.Nearest(
+                HandleInput.MouseScreenPoint, Camera.main, _instance._handles, h => h.grabPoint);
         }
 
         private static TextureOverlayHandles? _instance;
@@ -170,14 +138,10 @@ namespace KitchenDesigner.Core
             }
 
             if (!Input.GetMouseButtonDown(0)) return;
-            if (PointerOverUI()) return;
+            if (HandleInput.PointerOverUI()) return;
             var handle = PickHandle();
             if (handle != null) BeginDrag(handle.edge);
         }
-
-        private static bool PointerOverUI() =>
-            UnityEngine.EventSystems.EventSystem.current != null &&
-            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
 
         private void BeginDrag(int edge)
         {
@@ -355,33 +319,12 @@ namespace KitchenDesigner.Core
             }
         }
 
-        private void BuildCube(Transform parent)
-        {
-            var cube = new GameObject("Cube");
-            cube.transform.SetParent(parent, false);
-            cube.transform.localScale = Vector3.one * CubeEdgeUnits;
-            cube.AddComponent<MeshFilter>().sharedMesh = CubeMesh();
-            cube.AddComponent<MeshRenderer>().sharedMaterial = HandleMaterial();
-        }
+        private void BuildCube(Transform parent) =>
+            HandleVisual.BuildCube(parent, HandleMaterial(), CubeEdgeUnits);
 
-        private void BuildArrowAlongLocalZ(Transform parent)
-        {
-            var mat = HandleMaterial();
-
-            var shaft = new GameObject("Shaft");
-            shaft.transform.SetParent(parent, false);
-            shaft.transform.localPosition = new Vector3(0, 0, ShaftLen * 0.5f);
-            shaft.transform.localScale = new Vector3(ShaftRad * 2f, ShaftRad * 2f, ShaftLen);
-            shaft.AddComponent<MeshFilter>().sharedMesh = CubeMesh();
-            shaft.AddComponent<MeshRenderer>().sharedMaterial = mat;
-
-            var tip = new GameObject("Tip");
-            tip.transform.SetParent(parent, false);
-            tip.transform.localPosition = new Vector3(0, 0, ShaftLen + TipLen * 0.5f);
-            tip.transform.localScale = new Vector3(TipSize * 1.4f, TipSize * 1.4f, TipLen);
-            tip.AddComponent<MeshFilter>().sharedMesh = ConeMesh();
-            tip.AddComponent<MeshRenderer>().sharedMaterial = mat;
-        }
+        private void BuildArrowAlongLocalZ(Transform parent) =>
+            HandleVisual.BuildArrow(parent, HandleMaterial(), Metrics,
+                HandleShaft.Box, HandleTip.Cone);
 
         private void PositionHandles()
         {
@@ -406,7 +349,7 @@ namespace KitchenDesigner.Core
                 {
                     Vector3 dir = OutwardAxisOf(h.edge);
                     h.transform.SetPositionAndRotation(basePoint, Quaternion.LookRotation(dir, n));
-                    h.grabPoint = basePoint + dir * (ArrowLen * 0.6f);
+                    h.grabPoint = basePoint + dir * (Metrics.ArrowLen * 0.6f);
                 }
                 else
                 {
@@ -435,70 +378,7 @@ namespace KitchenDesigner.Core
             _handles.Clear();
         }
 
-        private Material? HandleMaterial()
-        {
-            if (_material != null) return _material;
-            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Sprites/Default");
-            if (shader == null) return null;
-            _material = new Material(shader) { hideFlags = HideFlags.DontSave };
-            _material.color = UI.UIStyle.HighlightChanged;
-            if (_material.HasProperty("_BaseColor"))
-                _material.SetColor("_BaseColor", UI.UIStyle.HighlightChanged);
-            return _material;
-        }
-
-        private static Mesh? _cone;
-        internal static Mesh ConeMesh()
-        {
-            if (_cone != null) return _cone;
-            const int seg = 16;
-            var verts = new List<Vector3> { new Vector3(0, 0, 0.5f), new Vector3(0, 0, -0.5f) };
-            int apex = 0, baseCenter = 1, ring = verts.Count;
-            for (int i = 0; i < seg; i++)
-            {
-                float a = (float)i / seg * Mathf.PI * 2f;
-                verts.Add(new Vector3(Mathf.Cos(a) * 0.5f, Mathf.Sin(a) * 0.5f, -0.5f));
-            }
-            var tris = new List<int>();
-            for (int i = 0; i < seg; i++)
-            {
-                int cur = ring + i, next = ring + (i + 1) % seg;
-                tris.Add(apex); tris.Add(next); tris.Add(cur);
-                tris.Add(baseCenter); tris.Add(cur); tris.Add(next);
-            }
-            _cone = new Mesh { name = "TextureOverlayHandleCone", hideFlags = HideFlags.DontSave };
-            _cone.SetVertices(verts);
-            _cone.SetTriangles(tris, 0);
-            _cone.RecalculateNormals();
-            return _cone;
-        }
-
-        private static Mesh? _cube;
-        internal static Mesh CubeMesh()
-        {
-            if (_cube != null) return _cube;
-            var verts = new List<Vector3>();
-            var tris = new List<int>();
-            void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
-            {
-                int i = verts.Count;
-                verts.Add(a); verts.Add(b); verts.Add(c); verts.Add(d);
-                tris.Add(i); tris.Add(i + 1); tris.Add(i + 2);
-                tris.Add(i); tris.Add(i + 2); tris.Add(i + 3);
-            }
-            const float h = 0.5f;
-            Quad(new Vector3(-h, -h, h), new Vector3(h, -h, h), new Vector3(h, h, h), new Vector3(-h, h, h));
-            Quad(new Vector3(h, -h, -h), new Vector3(-h, -h, -h), new Vector3(-h, h, -h), new Vector3(h, h, -h));
-            Quad(new Vector3(h, -h, h), new Vector3(h, -h, -h), new Vector3(h, h, -h), new Vector3(h, h, h));
-            Quad(new Vector3(-h, -h, -h), new Vector3(-h, -h, h), new Vector3(-h, h, h), new Vector3(-h, h, -h));
-            Quad(new Vector3(-h, h, h), new Vector3(h, h, h), new Vector3(h, h, -h), new Vector3(-h, h, -h));
-            Quad(new Vector3(-h, -h, -h), new Vector3(h, -h, -h), new Vector3(h, -h, h), new Vector3(-h, -h, h));
-
-            _cube = new Mesh { name = "TextureOverlayHandleCube", hideFlags = HideFlags.DontSave };
-            _cube.SetVertices(verts);
-            _cube.SetTriangles(tris, 0);
-            _cube.RecalculateNormals();
-            return _cube;
-        }
+        private Material? HandleMaterial() =>
+            _material != null ? _material : (_material = HandleMaterials.For(UI.UIStyle.HighlightChanged));
     }
 }

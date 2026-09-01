@@ -3,12 +3,11 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
-/// <summary>Размещение ручек ресайза/перемещения на плоской детали: вынос к камере
-/// и откат стрелки, начинающейся внутри соседа (HandlePlacement).</summary>
+/// <summary>Размещение ручек ресайза/перемещения: габаритный ящик детали и вынос
+/// ручек плиты на ту сторону, где стоит камера (HandlePlacement). Перекрытием
+/// размещение не занимается — ручки рисуются поверх всего и ловятся по экрану.</summary>
 public class HandlePlacementTests
 {
-    // Геометрия стрелки из ResizeHandleManager: зазор + стержень + наконечник.
-    private const float ArrowLen = 0.02f + 0.10f + 0.05f;
     private const float Gap = 0.02f;
 
     private readonly List<GameObject> _spawned = new List<GameObject>();
@@ -29,21 +28,6 @@ public class HandlePlacementTests
 
     private static HandlePlacement.Box BoxOf(KitchenElement e) =>
         HandlePlacement.BoxOf(e.GetFaces());
-
-    private static List<HandlePlacement.Box> Boxes(params KitchenElement[] elements)
-    {
-        var list = new List<HandlePlacement.Box>();
-        foreach (var e in elements) list.Add(BoxOf(e));
-        return list;
-    }
-
-    // Г-образный угол: стена A вдоль X от -2 до 2, стена B вдоль Z от 0 до 4.
-    // Стены стыкуются по осевым линиям — торец A приходится в толщу B.
-    private KitchenElement MakeCornerA() =>
-        MakeWall(new Vector3(0f, 1.35f, 0f), new Vector3Int(4000, 2700, 100));
-
-    private KitchenElement MakeCornerB() =>
-        MakeWall(new Vector3(2f, 1.35f, 2f), new Vector3Int(4000, 2700, 100), 90f);
 
     [TearDown]
     public void Teardown()
@@ -138,32 +122,6 @@ public class HandlePlacementTests
     }
 
     [Test]
-    public void IntersectsSegment_ArrowTipTouchingTheFace_IsNotBlocked()
-    {
-        // Плита 100 мм по X с гранями на 0.5 и 0.6.
-        var slab = BoxOf(Make(new Vector3(0.55f, 0f, 0f), new Vector3Int(100, 2000, 2000)));
-
-        Assert.IsFalse(slab.IntersectsSegment(Vector3.zero, Vector3.right, 0.5f),
-            "стрелка, упирающаяся кончиком в грань соседа, стоит правильно: "
-            + "нулевая длина пересечения — это касание, а не заход внутрь");
-        Assert.IsTrue(slab.IntersectsSegment(Vector3.zero, Vector3.right, 0.51f),
-            "зашла на 10 мм внутрь — уже мешает");
-    }
-
-    [Test]
-    public void IntersectsSegment_ParallelToTheSlab_AndOffsetPastIt_Misses()
-    {
-        // Та же плита: по Y она от -1 до 1.
-        var slab = BoxOf(Make(new Vector3(0.55f, 0f, 0f), new Vector3Int(100, 2000, 2000)));
-
-        Assert.IsFalse(slab.IntersectsSegment(new Vector3(0f, 5f, 0f), Vector3.right, 1f),
-            "стрелка идёт вдоль плиты и мимо неё: без отдельной проверки нулевого "
-            + "наклона эта ось просто пропускается и промах читается как попадание");
-        Assert.IsTrue(slab.IntersectsSegment(new Vector3(0f, 0.5f, 0f), Vector3.right, 1f),
-            "та же стрелка в пределах плиты по Y — попадание");
-    }
-
-    [Test]
     public void ThinAxis_BulkyElement_IsNotAPlate()
     {
         // Корпус ящика и опора 50×100×50 — ручки и так снаружи, выносить нечего.
@@ -219,84 +177,5 @@ public class HandlePlacementTests
         Assert.AreEqual(0.029f, above.y, 1e-4f);  // полтолщины 0.009 + зазор 0.02
         Assert.AreEqual(-0.029f, below.y, 1e-4f);
         Assert.AreEqual(0f, above.x, 1e-4f);
-    }
-
-    [Test]
-    public void Blocked_FreeEnd_False()
-    {
-        MakeCornerA();
-        var walls = Boxes(MakeCornerB());
-        // Свободный торец A (x = -2) с уже применённым выносом к камере.
-        var origin = new Vector3(-2f, 1.35f, 0.07f);
-
-        Assert.IsFalse(HandlePlacement.Blocked(origin, Vector3.left, ArrowLen, walls));
-        Assert.AreEqual(0f, HandlePlacement.PullBack(origin, Vector3.left, ArrowLen, 2f, walls), 1e-4f);
-    }
-
-    [Test]
-    public void Blocked_Corner_ArrowStartsInsideTheNeighbourWall()
-    {
-        MakeCornerA();
-        var walls = Boxes(MakeCornerB());
-        var origin = new Vector3(2f, 1.35f, 0.07f); // торец A в углу, вынос к камере
-
-        Assert.IsTrue(HandlePlacement.Blocked(origin, Vector3.right, ArrowLen, walls));
-    }
-
-    [Test]
-    public void PullBack_Corner_PutsTheWholeArrowOnTheWall()
-    {
-        MakeCornerA();
-        var walls = Boxes(MakeCornerB());
-        var origin = new Vector3(2f, 1.35f, 0.07f);
-
-        float d = HandlePlacement.PullBack(origin, Vector3.right, ArrowLen, 2f, walls);
-
-        Assert.Greater(d, 0f);
-        Assert.LessOrEqual(d, 2f);
-        // Отведённая стрелка целиком свободна и не выходит за торец стены.
-        var moved = origin - Vector3.right * d;
-        Assert.IsFalse(HandlePlacement.Blocked(moved, Vector3.right, ArrowLen, walls));
-        Assert.LessOrEqual(moved.x + ArrowLen, 2f + 1e-4f);
-    }
-
-    [Test]
-    public void PullBack_NoFreeSpot_StillLeavesTheAxisContinuation()
-    {
-        MakeCornerA();
-        var walls = Boxes(MakeCornerB());
-        var origin = new Vector3(2f, 1.35f, 0.07f);
-
-        // maxShift меньше длины стрелки — отойти некуда, но на продолжении оси
-        // ручку не оставляем.
-        float d = HandlePlacement.PullBack(origin, Vector3.right, ArrowLen, 0.05f, walls);
-
-        Assert.AreEqual(ArrowLen, d, 1e-4f);
-    }
-
-    [Test]
-    public void PullBack_ShelfBetweenSidePanels_PutsTheArrowOnTheShelf()
-    {
-        // Полка 600 мм между боковинами 18 мм: торцевая стрелка уходит в боковину,
-        // а та выше полки — одного выноса к камере не хватает.
-        var shelf = Make(new Vector3(0f, 0.5f, 0f), new Vector3Int(600, 18, 300));
-        var left = Make(new Vector3(-0.309f, 0.5f, 0f), new Vector3Int(18, 720, 300));
-        var right = Make(new Vector3(0.309f, 0.5f, 0f), new Vector3Int(18, 720, 300));
-        var box = BoxOf(shelf);
-        var neighbours = Boxes(left, right);
-
-        var origin = new Vector3(0.3f, 0.5f, 0f)
-                     + HandlePlacement.CameraOffset(box, 1, new Vector3(0f, 3f, 2f), Gap);
-
-        Assert.IsTrue(HandlePlacement.Blocked(origin, Vector3.right, ArrowLen, neighbours));
-
-        float d = HandlePlacement.PullBack(origin, Vector3.right, ArrowLen, box.Half.x, neighbours);
-
-        Assert.Greater(d, 0f);
-        var moved = origin - Vector3.right * d;
-        Assert.IsFalse(HandlePlacement.Blocked(moved, Vector3.right, ArrowLen, neighbours));
-        // Стрелка осталась над полкой, а не улетела за её середину.
-        Assert.Greater(moved.x, 0f);
-        Assert.AreEqual(0.529f, moved.y, 1e-4f);
     }
 }

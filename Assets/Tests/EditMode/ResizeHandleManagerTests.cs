@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Handles;
 
 public class ResizeHandleManagerTests
 {
@@ -18,9 +19,17 @@ public class ResizeHandleManagerTests
         return e;
     }
 
+    private ResizeHandleManager.HandleMode _modeBefore;
+
+    [SetUp]
+    public void Setup() => _modeBefore = ResizeHandleManager.Mode;
+
     [TearDown]
     public void Teardown()
     {
+        // Mode статический и попадает в снапшоты сериализации: не вернув его как было,
+        // набор ломает соседние, и одиночный прогон расходится с полным.
+        ResizeHandleManager.SetMode(_modeBefore);
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
     }
@@ -93,54 +102,6 @@ public class ResizeHandleManagerTests
     public void HandlesAvailableFor_Null_IsFalse()
     {
         Assert.IsFalse(ResizeHandleManager.HandlesAvailableFor(null));
-    }
-
-    [Test]
-    public void ArrowPullBackApplies_IsOffForWindowsAndDoors()
-    {
-        var windowGo = new GameObject("Окно");
-        _spawned.Add(windowGo);
-        var window = windowGo.AddComponent<WindowElement>();
-
-        var doorGo = new GameObject("Дверь");
-        _spawned.Add(doorGo);
-        var door = doorGo.AddComponent<DoorElement>();
-
-        Assert.IsFalse(ResizeHandleManager.ArrowPullBackApplies(window),
-            "окно сидит в проёме, и «соседом» для него всегда будет своя же стена: "
-            + "откат стрелки только сдвигал бы ручки вдоль проёма");
-        Assert.IsFalse(ResizeHandleManager.ArrowPullBackApplies(door));
-        Assert.IsTrue(ResizeHandleManager.ArrowPullBackApplies(
-            Make(Vector3.zero, new Vector3Int(600, 18, 300))),
-            "полке откат нужен — её торец уходит в боковину");
-    }
-
-    [Test]
-    public void GrabBox_CoversOnlyTheProtrudingTip_NotTheFaceItself()
-    {
-        float nearEdge = ResizeHandleManager.GrabBoxCenterZ - ResizeHandleManager.GrabBoxDepth * 0.5f;
-
-        Assert.Greater(nearEdge, 0f,
-            "грабельная зона не достаёт до самой грани: иначе клик по телу объекта "
-            + "(особенно по центру грани, обращённой к камере) случайно цеплял ручку "
-            + "и растягивал вместо move");
-        Assert.GreaterOrEqual(nearEdge, ResizeHandleManager.Gap,
-            "она начинается за зазором у грани");
-        Assert.Greater(ResizeHandleManager.GrabBoxCenterZ + ResizeHandleManager.GrabBoxDepth * 0.5f,
-            ResizeHandleManager.ArrowLen - 1e-4f,
-            "и покрывает наконечник целиком, вплоть до кончика стрелки");
-    }
-
-    [Test]
-    public void ConeMesh_IsAUnitConeAlongPlusZ()
-    {
-        var cone = ResizeHandleManager.ConeMesh();
-
-        Assert.AreEqual(1f, cone.bounds.size.z, 1e-4f,
-            "конус единичного масштаба: длину наконечника задаёт localScale ручки");
-        Assert.AreEqual(0.5f, cone.bounds.max.z, 1e-4f, "вершина при z = +0.5");
-        Assert.AreEqual(-0.5f, cone.bounds.min.z, 1e-4f, "основание при z = −0.5");
-        Assert.AreEqual(0.5f, cone.bounds.max.x, 1e-4f, "радиус основания 0.5");
     }
 
     [Test]
@@ -277,112 +238,6 @@ public class ResizeHandleManagerTests
         h.faceIndex = faceIndex;
         return h;
     }
-
-    /* [Test] — disabled: RaycastHit.collider is read-only in Unity 6
-    public void PickHandleFromHits_SingleHandle_ReturnsIt()
-    {
-        var element = Make(Vector3.zero, new Vector3Int(800, 400, 18));
-        var handle = MakeHandle(0, element);
-
-        var go = new GameObject("Col");
-        go.transform.SetParent(handle.transform, false);
-        var col = go.AddComponent<BoxCollider>();
-        var hits = new RaycastHit[] { new RaycastHit { collider = col } };
-
-        var result = ResizeHandleManager.PickHandleFromHits(hits, shiftHeld: false);
-        Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.faceIndex);
-    }
-    */
-
-    /* [Test] — disabled: RaycastHit.collider is read-only in Unity 6
-    public void PickHandleFromHits_NoHandleInHits_ReturnsNull()
-    {
-        var go = new GameObject("Go");
-        var col = go.AddComponent<BoxCollider>();
-        _spawned.Add(go);
-
-        var hits = new RaycastHit[] { new RaycastHit { collider = col } };
-        var result = ResizeHandleManager.PickHandleFromHits(hits, shiftHeld: false);
-        Assert.IsNull(result);
-    }
-    */
-
-    [Test]
-    public void PickHandleFromHits_EmptyArray_ReturnsNull()
-    {
-        var result = ResizeHandleManager.PickHandleFromHits(
-            System.Array.Empty<RaycastHit>(), shiftHeld: false);
-        Assert.IsNull(result);
-    }
-
-    /* [Test] — disabled: RaycastHit.collider is read-only in Unity 6
-    public void PickHandleFromHits_ShiftSkipsTransparentElement()
-    {
-        var transparent = Make(Vector3.zero, new Vector3Int(800, 400, 18), transparent: true);
-        var solid = Make(Vector3.zero, new Vector3Int(800, 400, 18), transparent: false);
-
-        var tHandle = MakeHandle(0, transparent);
-        var sHandle = MakeHandle(1, solid);
-
-        var tGo = new GameObject("ColT");
-        tGo.transform.SetParent(tHandle.transform, false);
-        var tCol = tGo.AddComponent<BoxCollider>();
-
-        var sGo = new GameObject("ColS");
-        sGo.transform.SetParent(sHandle.transform, false);
-        var sCol = sGo.AddComponent<BoxCollider>();
-
-        var hits = new RaycastHit[]
-        {
-            new RaycastHit { collider = tCol },
-            new RaycastHit { collider = sCol },
-        };
-
-        var normal = ResizeHandleManager.PickHandleFromHits(hits, shiftHeld: false);
-        Assert.IsNotNull(normal);
-        Assert.AreEqual(0, normal.faceIndex);
-
-        var shifted = ResizeHandleManager.PickHandleFromHits(hits, shiftHeld: true);
-        Assert.IsNotNull(shifted);
-        Assert.AreEqual(1, shifted.faceIndex);
-
-        Object.DestroyImmediate(tGo);
-        Object.DestroyImmediate(sGo);
-    }
-    */
-
-    /* [Test] — disabled: RaycastHit.collider is read-only in Unity 6
-    public void PickHandleFromHits_ShiftWithoutTransparent_ReturnsFirst()
-    {
-        var a = Make(Vector3.zero, new Vector3Int(800, 400, 18));
-        var b = Make(Vector3.zero, new Vector3Int(800, 400, 18));
-
-        var ha = MakeHandle(0, a);
-        var hb = MakeHandle(1, b);
-
-        var ga = new GameObject("ColA");
-        ga.transform.SetParent(ha.transform, false);
-        var ca = ga.AddComponent<BoxCollider>();
-
-        var gb = new GameObject("ColB");
-        gb.transform.SetParent(hb.transform, false);
-        var cb = gb.AddComponent<BoxCollider>();
-
-        var hits = new RaycastHit[]
-        {
-            new RaycastHit { collider = ca },
-            new RaycastHit { collider = cb },
-        };
-
-        var result = ResizeHandleManager.PickHandleFromHits(hits, shiftHeld: true);
-        Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.faceIndex);
-
-        Object.DestroyImmediate(ga);
-        Object.DestroyImmediate(gb);
-    }
-    */
 
     [Test]
     public void FreeResize_NegativeDelta_ShrinksElement()
@@ -573,6 +428,77 @@ public class ResizeHandleManagerTests
 
         Assert.AreEqual(3, handle.faceIndex);
         Object.DestroyImmediate(go);
+    }
+
+
+    private Camera MakeCamera()
+    {
+        var go = new GameObject("Камера");
+        _spawned.Add(go);
+        go.transform.SetPositionAndRotation(new Vector3(0f, 0f, -5f), Quaternion.identity);
+        return go.AddComponent<Camera>();
+    }
+
+    private ResizeHandle MakeHandleAt(int faceIndex, Vector3 grabPoint)
+    {
+        var h = MakeHandle(faceIndex);
+        _spawned.Add(h.gameObject);
+        h.grabPoint = grabPoint;
+        return h;
+    }
+
+    [Test]
+    public void PickHandle_TakesTheNearestOnScreen()
+    {
+        var cam = MakeCamera();
+        var left = MakeHandleAt(0, new Vector3(-1f, 0f, 0f));
+        var right = MakeHandleAt(1, new Vector3(1f, 0f, 0f));
+        var handles = new List<ResizeHandle> { left, right };
+
+        Vector2 overRight = cam.WorldToScreenPoint(right.grabPoint);
+
+        Assert.AreSame(right, ResizeHandleManager.PickHandle(overRight, cam, handles),
+            "ручку выбирает экранное расстояние до её наконечника, а не луч по коллайдеру: "
+            + "стрелку внутри корпуса геометрия перекрывает, и физика её не отдавала вовсе");
+    }
+
+    [Test]
+    public void PickHandle_FarFromEveryHandle_IsNull()
+    {
+        var cam = MakeCamera();
+        var handles = new List<ResizeHandle> { MakeHandleAt(0, Vector3.zero) };
+
+        Vector2 onHandle = cam.WorldToScreenPoint(Vector3.zero);
+        var far = onHandle + new Vector2(HandleScreenPick.DefaultRadiusPixels + 5f, 0f);
+
+        Assert.IsNotNull(ResizeHandleManager.PickHandle(onHandle, cam, handles));
+        Assert.IsNull(ResizeHandleManager.PickHandle(far, cam, handles),
+            "за радиусом захвата ручка не берётся — иначе клик по пустому месту "
+            + "начинал бы ресайз");
+    }
+
+    [Test]
+    public void PickHandle_HandleBehindTheCamera_IsIgnored()
+    {
+        var cam = MakeCamera();
+        var behind = MakeHandleAt(0, new Vector3(0f, 0f, -20f));
+        var handles = new List<ResizeHandle> { behind };
+
+        var projected = cam.WorldToScreenPoint(behind.grabPoint);
+        Assume.That(projected.z, Is.LessThanOrEqualTo(0f));
+
+        Assert.IsNull(ResizeHandleManager.PickHandle(
+            new Vector2(projected.x, projected.y), cam, handles),
+            "WorldToScreenPoint зеркалит точки за спиной камеры в правдоподобные "
+            + "пиксели: без отсева по z ручка со спины ловилась бы курсором");
+    }
+
+    [Test]
+    public void PickHandle_NoCamera_IsNull()
+    {
+        var handles = new List<ResizeHandle> { MakeHandleAt(0, Vector3.zero) };
+
+        Assert.IsNull(ResizeHandleManager.PickHandle(Vector2.zero, null, handles));
     }
 
 }

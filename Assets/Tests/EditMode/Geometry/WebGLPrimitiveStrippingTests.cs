@@ -12,7 +12,8 @@ namespace KitchenDesigner.Tests.Geometry
     /// падает уже в плеере: «class 'SphereCollider' doesn't exist». Ровно это
     /// наблюдалось на плафоне лампы (760fbeaa) и ровно ради стержня стрелки
     /// ресайза в Assets/link.xml лежит CapsuleCollider (b8d650e5, на следующий
-    /// день после «feat: resize handles»).
+    /// день после «feat: resize handles»). Сама стрелка с примитивов с тех пор
+    /// ушла на HandleMeshes, но строку держат конфорки варочной.
     ///
     /// Вырезаются НЕ примитивы: CreatePrimitive(Cube) строит каждую деталь сцены
     /// и в собранном плеере работает — BoxCollider назван в полутора десятках
@@ -112,7 +113,7 @@ namespace KitchenDesigner.Tests.Geometry
                 "Примитив строится классом коллайдера, которого в WebGL-сборке не останется: "
                 + "стриппинг вырезает коллайдер без управляемых ссылок, и CreatePrimitive падает "
                 + "в плеере (class ... doesn't exist). Удержи класс явным AddComponent или "
-                + "строкой в Assets/link.xml — либо собирай меш вручную, как TextureOverlayHandles:\n"
+                + "строкой в Assets/link.xml — либо собирай меш вручную, как HandleMeshes:\n"
                 + string.Join("\n", unheld));
         }
 
@@ -142,15 +143,16 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void TheScan_SeesTheCylinderOfTheResizeArrow_AndTheCubeOfEveryPart()
+        public void TheScan_SeesTheCylinderOfTheBurners_AndTheCubeOfEveryPart()
         {
             var usages = Usages();
 
             Assert.IsNotEmpty(usages, "скан не нашёл ни одного PrimitiveType — он смотрит не туда");
-            Assert.IsTrue(usages.Any(u => u.file == "ResizeHandleManager.cs" && u.primitive == "Cylinder"),
-                "стержень стрелки ресайза — тот самый случай, ради которого написан этот тест: "
-                + "Cylinder тянет CapsuleCollider, на который в исходниках ссылок НЕТ, "
-                + "и держит его только строка в Assets/link.xml");
+            Assert.IsTrue(usages.Any(u => u.file == "CooktopMesh.cs" && u.primitive == "Cylinder"),
+                "конфорки варочной — последний живой Cylinder: он тянет CapsuleCollider, "
+                + "на который в исходниках ссылок НЕТ, и держит его только строка в "
+                + "Assets/link.xml. Стержень стрелки ресайза, ради которого эта строка "
+                + "появилась, ушёл с примитивов на собранный вручную HandleMeshes.Cylinder");
             Assert.IsTrue(usages.Any(u => u.primitive == "Cube"),
                 "Cube строит каждую деталь сцены — если он пропал из скана, сломан скан");
         }

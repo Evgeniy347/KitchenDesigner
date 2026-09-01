@@ -276,8 +276,9 @@ public class SelectionContextMenuTests
         var origin = face.center + face.normal * 1.2f;
         var ray = new Ray(origin, -face.normal);
 
-        Assert.IsNull(SelectionManager.RaycastTransparentAware(ray, false),
-            "луч должен реально упираться в наконечник ручки — иначе тест ничего не проверяет");
+        Assert.AreEqual(board, SelectionManager.RaycastTransparentAware(ray, false),
+            "у ручек больше нет коллайдеров — их ловит HandleScreenPick по экрану, — "
+            + "поэтому наконечник физически не перекрывает деталь и луч доходит до неё сам");
 
         CameraController.Instance!.ResolveRmbClick(ray, false);
         yield return null;

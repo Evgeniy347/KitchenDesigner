@@ -191,33 +191,4 @@ public class TextureOverlayHandlesTests
             "пока карандаш не нажат, ручек нет — выделение, перетаскивание объекта "
             + "и панорама камеры не должны глохнуть на пустом месте");
     }
-
-    [Test]
-    public void ConeMesh_IsAUnitConeAlongPlusZ()
-    {
-        var cone = TextureOverlayHandles.ConeMesh();
-
-        Assert.AreEqual(1f, cone.bounds.size.z, 1e-4f,
-            "конус единичного масштаба: длину наконечника задаёт localScale ручки");
-        Assert.AreEqual(0.5f, cone.bounds.max.z, 1e-4f, "вершина при z = +0.5");
-        Assert.AreEqual(-0.5f, cone.bounds.min.z, 1e-4f, "основание при z = −0.5");
-        Assert.AreEqual(0.5f, cone.bounds.max.x, 1e-4f, "радиус основания 0.5");
-        Assert.AreEqual(1f, cone.bounds.size.y, 1e-4f);
-    }
-
-    [Test]
-    public void CubeMesh_IsAUnitCubeBuiltByHand()
-    {
-        var cube = TextureOverlayHandles.CubeMesh();
-
-        Assert.AreEqual(1f, cube.bounds.size.x, 1e-4f, "единичный куб");
-        Assert.AreEqual(1f, cube.bounds.size.y, 1e-4f);
-        Assert.AreEqual(1f, cube.bounds.size.z, 1e-4f);
-        Assert.AreEqual(24, cube.vertexCount,
-            "куб собран вручную по четыре вершины на грань: ручки накладки — "
-            + "голые меши без коллайдера, поэтому им нечего терять на "
-            + "WebGL-стриппинге (условие для примитивов держит "
-            + "WebGLPrimitiveStrippingTests)");
-        Assert.AreSame(cube, TextureOverlayHandles.CubeMesh(), "меш строится один раз");
-    }
 }

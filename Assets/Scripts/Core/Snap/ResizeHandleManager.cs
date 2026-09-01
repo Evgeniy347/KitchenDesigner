@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.Handles;
 using KitchenDesigner.Core.UI;
 
 namespace KitchenDesigner.Core
@@ -7,6 +8,8 @@ namespace KitchenDesigner.Core
     public class ResizeHandle : MonoBehaviour
     {
         public int faceIndex;
+
+        public Vector3 grabPoint;
     }
 
     /// <summary>DefaultExecutionOrder=100 — ввод обрабатываем ПОСЛЕ
@@ -35,19 +38,11 @@ namespace KitchenDesigner.Core
         internal const int AxisY = 1;
         internal const int AxisZ = 2;
 
-        internal const float Gap = 0.02f;
-        internal const float ShaftLen = 0.10f;
-        private const float ShaftRad = 0.012f;
-        internal const float TipLen = 0.05f;
-        internal const float TipSize = 0.038f;
-        internal const float ArrowLen = Gap + ShaftLen + TipLen;
-
-        internal const float GrabBoxCenterZ = Gap + ShaftLen + TipLen * 0.5f;
-        internal const float GrabBoxDepth = TipLen + 0.04f;
+        internal static readonly HandleMetrics Metrics = HandleMetrics.Resize;
 
         private KitchenElement? _target;
         private readonly List<ResizeHandle> _handles = new List<ResizeHandle>();
-        private readonly Material[] _axisMats = new Material[3];
+        private readonly Material?[] _axisMats = new Material?[3];
 
         private int _faceIndex, _axisIndex;
         private Vector3 _normal, _faceCenter0, _uAxis, _vAxis, _centerStart;
@@ -64,9 +59,8 @@ namespace KitchenDesigner.Core
 
         private void Start()
         {
-            _axisMats[AxisX] = MakeMat(new Color(0.90f, 0.25f, 0.25f));
-            _axisMats[AxisY] = MakeMat(new Color(0.35f, 0.85f, 0.35f));
-            _axisMats[AxisZ] = MakeMat(new Color(0.35f, 0.55f, 0.95f));
+            for (int axis = 0; axis < _axisMats.Length; axis++)
+                _axisMats[axis] = HandleMaterials.For(HandleMaterials.ForAxis(axis));
 
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.OnSelectionChanged += OnSelectionChanged;
@@ -145,70 +139,24 @@ namespace KitchenDesigner.Core
             }
 
             if (!Input.GetMouseButtonDown(0)) return;
-            if (AltHeld || PointerOverUI()) return;
+            if (HandleInput.AltHeld || HandleInput.PointerOverUI()) return;
 
-            if (RaycastHandle(out var handle))
-                BeginDrag(handle!.faceIndex);
+            var handle = PickHandleUnderCursor();
+            if (handle != null) BeginDrag(handle.faceIndex);
         }
 
-        private static bool AltHeld => Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
+        private static bool CtrlHeld => HandleInput.CtrlHeld;
 
-        private static bool ShiftHeld => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-
-        private static bool CtrlHeld => Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-
-        private static bool PointerOverUI() =>
-            UnityEngine.EventSystems.EventSystem.current != null &&
-            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
-
-        public static ResizeHandle? PickHandleFromHits(RaycastHit[] orderedHits, bool shiftHeld)
-        {
-            foreach (var h in orderedHits)
-            {
-                var handle = h.collider.GetComponentInParent<ResizeHandle>();
-                if (handle == null)
-                    continue;
-                if (!shiftHeld)
-                    return handle;
-                var el = h.collider.GetComponentInParent<KitchenElement>();
-                if (el == null || !el.Transparent)
-                    return handle;
-            }
-            return null;
-        }
-
-        private static ResizeHandle? RaycastHandleTransparentAware(Ray ray, bool shiftHeld)
-        {
-            if (!shiftHeld)
-            {
-                if (Physics.Raycast(ray, out RaycastHit hit))
-                    return hit.collider.GetComponentInParent<ResizeHandle>();
-                return null;
-            }
-
-            var allHits = Physics.RaycastAll(ray);
-            System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
-            return PickHandleFromHits(allHits, shiftHeld: true);
-        }
+        public static ResizeHandle? PickHandle(Vector2 screenPoint, Camera? camera,
+            IReadOnlyList<ResizeHandle> handles) =>
+            HandleScreenPick.Nearest(screenPoint, camera, handles, h => h.grabPoint);
 
         /// <summary>Курсор над ручкой ресайза? (для подавления выделения/панорамы камеры).</summary>
-        public static bool PointerOverHandle()
-        {
-            var cam = Camera.main;
-            if (cam == null) return false;
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            return RaycastHandleTransparentAware(ray, ShiftHeld) != null;
-        }
+        public static bool PointerOverHandle() =>
+            Instance != null && Instance.PickHandleUnderCursor() != null;
 
-        private bool RaycastHandle(out ResizeHandle? handle)
-        {
-            handle = null;
-            var cam = Camera.main;
-            if (cam == null) return false;
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            handle = RaycastHandleTransparentAware(ray, ShiftHeld);
-            return handle != null;
-        }
+        private ResizeHandle? PickHandleUnderCursor() =>
+            PickHandle(HandleInput.MouseScreenPoint, Camera.main, _handles);
 
         private void BeginDrag(int faceIndex)
         {
@@ -398,89 +346,12 @@ namespace KitchenDesigner.Core
                 var marker = go.AddComponent<ResizeHandle>();
                 marker.faceIndex = i;
 
-                var col = go.AddComponent<BoxCollider>();
-                col.center = new Vector3(0, 0, GrabBoxCenterZ);
-                col.size = new Vector3(TipSize * 1.7f, TipSize * 1.7f, GrabBoxDepth);
-
-                BuildArrowVisual(go.transform, _axisMats[i / 2]);
+                HandleVisual.BuildArrow(go.transform, _axisMats[i / 2], Metrics,
+                    HandleShaft.Cylinder,
+                    Mode == HandleMode.Move ? HandleTip.Cone : HandleTip.Box);
                 _handles.Add(marker);
             }
             PositionHandles();
-        }
-
-        // Resize-режим: наконечник-кубик; Move-режим: наконечник-конус (стрелка).
-        private void BuildArrowVisual(Transform parent, Material mat)
-        {
-            // Стержень (Cylinder высотой 2 по Y → ориентируем по +Z).
-            var shaft = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            StripCollider(shaft);
-            shaft.transform.SetParent(parent, false);
-            shaft.transform.localRotation = Quaternion.Euler(90f, 0, 0);
-            shaft.transform.localPosition = new Vector3(0, 0, Gap + ShaftLen * 0.5f);
-            shaft.transform.localScale = new Vector3(ShaftRad * 2f, ShaftLen * 0.5f, ShaftRad * 2f);
-            shaft.GetComponent<MeshRenderer>().sharedMaterial = mat;
-
-            GameObject tip;
-            if (Mode == HandleMode.Move)
-            {
-                // Конус-стрелка (локальный +Z = направление оси).
-                tip = new GameObject("Tip");
-                tip.AddComponent<MeshFilter>().sharedMesh = ConeMesh();
-                tip.AddComponent<MeshRenderer>().sharedMaterial = mat;
-                tip.transform.SetParent(parent, false);
-                tip.transform.localScale = new Vector3(TipSize * 1.4f, TipSize * 1.4f, TipLen * 1.3f);
-            }
-            else
-            {
-                tip = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                StripCollider(tip);
-                tip.transform.SetParent(parent, false);
-                tip.transform.localScale = new Vector3(TipSize, TipSize, TipLen);
-                tip.GetComponent<MeshRenderer>().sharedMaterial = mat;
-            }
-            tip.transform.localPosition = new Vector3(0, 0, Gap + ShaftLen + TipLen * 0.5f);
-        }
-
-        private static Mesh? _coneMesh;
-        internal static Mesh ConeMesh()
-        {
-            if (_coneMesh != null) return _coneMesh;
-            const int seg = 16;
-            var verts = new List<Vector3> { new Vector3(0, 0, 0.5f), new Vector3(0, 0, -0.5f) };
-            int apex = 0, baseC = 1, ring = verts.Count;
-            for (int i = 0; i < seg; i++)
-            {
-                float a = (float)i / seg * Mathf.PI * 2f;
-                verts.Add(new Vector3(Mathf.Cos(a) * 0.5f, Mathf.Sin(a) * 0.5f, -0.5f));
-            }
-            var tris = new List<int>();
-            for (int i = 0; i < seg; i++)
-            {
-                int cur = ring + i, next = ring + (i + 1) % seg;
-                AddSideTriangle(tris, apex, next, cur);
-                AddBaseTriangle(tris, baseC, cur, next);
-            }
-            _coneMesh = new Mesh();
-            _coneMesh.SetVertices(verts);
-            _coneMesh.SetTriangles(tris, 0);
-            _coneMesh.RecalculateNormals();
-            return _coneMesh;
-        }
-
-        private static void AddSideTriangle(List<int> tris, int a, int b, int c)
-        {
-            tris.Add(a); tris.Add(b); tris.Add(c);
-        }
-
-        private static void AddBaseTriangle(List<int> tris, int a, int b, int c)
-        {
-            tris.Add(a); tris.Add(b); tris.Add(c);
-        }
-
-        private static void StripCollider(GameObject go)
-        {
-            var c = go.GetComponent<Collider>();
-            if (c != null) Destroy(c);
         }
 
         private void PositionHandles()
@@ -492,11 +363,8 @@ namespace KitchenDesigner.Core
             var box = HandlePlacement.BoxOf(faces);
             int thinAxis = cam != null ? HandlePlacement.ThinAxis(box) : -1;
             Vector3 outOfPlate = thinAxis >= 0
-                ? HandlePlacement.CameraOffset(box, thinAxis, cam!.transform.position, Gap)
+                ? HandlePlacement.CameraOffset(box, thinAxis, cam!.transform.position, Metrics.Gap)
                 : Vector3.zero;
-
-            bool pullBack = thinAxis >= 0 && ArrowPullBackApplies(_target);
-            if (pullBack) CollectNeighbours(box);
 
             foreach (var h in _handles)
             {
@@ -506,44 +374,11 @@ namespace KitchenDesigner.Core
                 Vector3 up = Mathf.Abs(Vector3.Dot(n, Vector3.up)) > Tolerance.UpDotThreshold ? Vector3.forward : Vector3.up;
                 Vector3 pos = f.center;
 
-                int axis = h.faceIndex / 2;
-                bool alreadyOutsideThePlate = axis == thinAxis;
-                if (thinAxis >= 0 && !alreadyOutsideThePlate)
-                {
-                    pos += outOfPlate;
-                    if (pullBack)
-                        pos -= n * HandlePlacement.PullBack(pos, n, ArrowLen, box.Half[axis], _neighbours);
-                }
+                bool alreadyOutsideThePlate = h.faceIndex / 2 == thinAxis;
+                if (thinAxis >= 0 && !alreadyOutsideThePlate) pos += outOfPlate;
 
                 h.transform.SetPositionAndRotation(pos, Quaternion.LookRotation(n, up));
-            }
-        }
-
-        internal static bool ArrowPullBackApplies(KitchenElement? target) =>
-            !(target is WindowElement || target is DoorElement);
-
-        // Соседи для проверки «стрелка внутри чужой геометрии». Список переиспользуем:
-        // PositionHandles вызывается каждый кадр, а PartRegistry содержит всю сцену.
-        private readonly List<HandlePlacement.Box> _neighbours = new List<HandlePlacement.Box>();
-
-        // Стрелка торчит от грани всего на ArrowLen, поэтому помешать может только
-        // сосед вплотную к детали. Сперва дешёвый отсев по расстоянию до габарита
-        // (без GetFaces, который каждый раз аллоцирует массивы) — иначе на стене,
-        // где габарит с полкомнаты, ящики строились бы для всей сцены каждый кадр.
-        private void CollectNeighbours(in HandlePlacement.Box box)
-        {
-            _neighbours.Clear();
-            var all = PartRegistry.All;
-            for (int i = 0; i < all.Count; i++)
-            {
-                var e = all[i];
-                if (e == null || e == _target) continue;
-                if (!e.gameObject.activeInHierarchy) continue;
-                bool isTheSceneWideFloor = e.GetComponent<BasePlate>() != null;
-                if (isTheSceneWideFloor) continue;
-                Vector3 half = (Vector3)e.DimensionsMM * (AppConstants.MM_TO_UNITS * 0.5f);
-                if (box.DistanceTo(e.transform.position) > ArrowLen + half.magnitude) continue;
-                _neighbours.Add(HandlePlacement.BoxOf(e.GetFaces()));
+                h.grabPoint = pos + n * Metrics.TipCenterZ;
             }
         }
 
@@ -552,20 +387,6 @@ namespace KitchenDesigner.Core
             foreach (var h in _handles)
                 if (h != null) Destroy(h.gameObject);
             _handles.Clear();
-        }
-
-        private static Material MakeMat(Color c)
-        {
-            var sh = Shader.Find("Universal Render Pipeline/Lit");
-            var m = new Material(sh);
-            m.SetColor("_BaseColor", c);
-            m.color = c;
-            m.EnableKeyword("_EMISSION");
-            m.SetColor("_EmissionColor", c * 0.6f);
-            m.SetFloat("_Metallic", 0f);
-            m.SetFloat("_Smoothness", 0.2f);
-            m.SetFloat("_Cull", 0f); // двусторонний — конус виден независимо от winding
-            return m;
         }
     }
 }

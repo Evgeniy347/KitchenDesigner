@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
+    /// <summary>Геометрия размещения ручек (см. HandlePlacementTests).</summary>
     public static class HandlePlacement
     {
         public const float MinPlateAspectRatio = 3f;
@@ -30,33 +30,6 @@ namespace KitchenDesigner.Core
                     if (outside > 0f) sqr += outside * outside;
                 }
                 return Mathf.Sqrt(sqr);
-            }
-
-            public bool IntersectsSegment(Vector3 origin, Vector3 dir, float length)
-            {
-                Vector3 d = origin - Center;
-                float tMin = 0f, tMax = length;
-                for (int a = 0; a < 3; a++)
-                {
-                    Vector3 axis = Axis(a);
-                    float o = Vector3.Dot(d, axis);
-                    float slope = Vector3.Dot(dir, axis);
-                    float h = Half[a];
-                    bool parallelToThisSlab = Mathf.Abs(slope) < Tolerance.EpsilonUnits;
-                    if (parallelToThisSlab)
-                    {
-                        bool offsetPastTheSlab = Mathf.Abs(o) > h;
-                        if (offsetPastTheSlab) return false;
-                        continue;
-                    }
-                    float t1 = (-h - o) / slope, t2 = (h - o) / slope;
-                    if (t1 > t2) (t1, t2) = (t2, t1);
-                    tMin = Mathf.Max(tMin, t1);
-                    tMax = Mathf.Min(tMax, t2);
-                    if (tMin > tMax) return false;
-                }
-                float insideLength = tMax - tMin;
-                return insideLength > Tolerance.EpsilonUnits;
             }
         }
 
@@ -94,26 +67,6 @@ namespace KitchenDesigner.Core
             Vector3 n = box.Axis(thinAxis);
             float side = Vector3.Dot(camPos - box.Center, n) < 0f ? -1f : 1f;
             return n * (side * (box.Half[thinAxis] + gap));
-        }
-
-        public static bool Blocked(
-            Vector3 origin, Vector3 normal, float arrowLen, IReadOnlyList<Box>? neighbours)
-        {
-            if (neighbours == null || neighbours.Count == 0) return false;
-            for (int i = 0; i < neighbours.Count; i++)
-                if (neighbours[i].IntersectsSegment(origin, normal, arrowLen)) return true;
-            return false;
-        }
-
-        public static float PullBack(
-            Vector3 origin, Vector3 normal, float arrowLen, float maxShift,
-            IReadOnlyList<Box>? neighbours)
-        {
-            if (!Blocked(origin, normal, arrowLen, neighbours)) return 0f;
-            float step = arrowLen * 0.5f;
-            for (float d = arrowLen; d <= maxShift; d += step)
-                if (!Blocked(origin - normal * d, normal, arrowLen, neighbours)) return d;
-            return arrowLen;
         }
     }
 }
