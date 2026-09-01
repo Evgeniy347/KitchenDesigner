@@ -292,7 +292,7 @@ public class WindowDragTests
     }
 
     [Test]
-    public void OnlyTheTitleBarStripDragsTheWindow()
+    public void WindowDragHandle_PressBelowTheTitleBar_DoesNotStartADrag()
     {
         const float top = 100f;
         const float handleHeight = 30f;
