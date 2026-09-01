@@ -113,7 +113,7 @@ public class HierarchyPanelTests
         _panel.SetVisible(true);
         yield return null;
 
-        ClickRow("Полка");
+        ClickRow(shelf.PartName);
 
         Assert.IsTrue(_selection.IsSelected(shelf),
             "строка дерева — это способ выделить деталь, которую в сцене не видно "
@@ -194,25 +194,26 @@ public class HierarchyPanelTests
     {
         var shelf = MakeElement("Полка верхняя");
         var side = MakeElement("Боковина");
+        string needle = shelf.PartName.Substring(0, 4).ToLowerInvariant();
         var group = GroupManager.Link(new List<KitchenElement> { shelf, side })!;
         GroupManager.Rename(group, "Модуль");
         yield return null;
 
         Row("Модуль (2)").Find("Fold").GetComponent<Button>().onClick.Invoke();
         yield return null;
-        Assume.That(RowLabels(), Has.No.Member("Полка верхняя"), "группа свёрнута");
+        Assume.That(RowLabels(), Has.No.Member(shelf.PartName), "группа свёрнута");
 
-        Search.text = "полка";
+        Search.text = needle;
         yield return null;
 
         var labels = RowLabels();
-        Assert.Contains("Полка верхняя", labels,
+        Assert.Contains(shelf.PartName, labels,
             "совпадение внутри свёрнутой группы обязано быть видно: иначе поиск "
             + "молча ничего не находит");
         Assert.Contains("Модуль (2)", labels,
             "группа остаётся в списке, если совпал кто-то из её членов — без неё "
             + "непонятно, где найденная деталь лежит");
-        Assert.That(labels, Has.No.Member("Боковина"));
+        Assert.That(labels, Has.No.Member(side.PartName));
         Assert.IsFalse(Panel.Find("HierSearch/HierSearchHint").gameObject.activeSelf,
             "подсказка «Поиск…» прячется, как только в поле что-то есть");
     }
@@ -243,8 +244,9 @@ public class HierarchyPanelTests
     public IEnumerator MoveToDropdown_UngroupedEntry_TakesTheElementOutOfItsGroup()
     {
         var a = MakeElement("A");
-        var group = GroupManager.Link(new List<KitchenElement> { a })!;
-        Assume.That(a.GroupId, Is.EqualTo(group.id));
+        var b = MakeElement("B");
+        var group = GroupManager.Link(new List<KitchenElement> { a, b })!;
+        Assume.That(a.GroupId, Is.EqualTo(group.id), "Link требует минимум двух участников");
         yield return null;
 
         _selection.Select(a);
@@ -277,12 +279,12 @@ public class HierarchyPanelTests
     {
         var a = MakeElement("Полка");
         yield return new WaitForSecondsRealtime(0.7f);
-        Assume.That(RowLabels(), Has.Member("Полка"), "созданная деталь попадает в дерево");
+        Assume.That(RowLabels(), Has.Member(a.PartName), "созданная деталь попадает в дерево");
 
-        a.PartName = "Боковина";
+        a.PartName = "Bokovina";
         yield return new WaitForSecondsRealtime(0.7f);
 
-        Assert.Contains("Боковина", RowLabels(),
+        Assert.Contains("Bokovina", RowLabels(),
             "переименование из MCP, undo или загрузки проекта не поднимает событий: "
             + "панель ловит его дешёвым поллингом отпечатка сцены, иначе дерево "
             + "показывает старые имена, пока по нему не щёлкнут");
