@@ -189,4 +189,20 @@ public class SceneTreeTests
         Assert.AreEqual("А_полка", nodes[2].element!.PartName);
         Assert.AreEqual("Б_полка", nodes[3].element!.PartName);
     }
+
+    [Test]
+    public void Build_Groups_OrderedByCreationId_NotByNameOrArgumentOrder()
+    {
+        var first = _svc.Create("Я");
+        var second = _svc.Create("А");
+
+        var nodes = SceneTree.Build(PartRegistry.GetAll(),
+            new List<LinkGroup> { second, first });
+
+        Assert.AreSame(first, nodes[1].group,
+            "порядок групп в дереве — порядок их создания (id): он стабилен между "
+            + "перестроениями панели, а порядок аргументов и алфавит по имени — нет, "
+            + "и строки прыгали бы при каждом переименовании");
+        Assert.AreSame(second, nodes[2].group);
+    }
 }

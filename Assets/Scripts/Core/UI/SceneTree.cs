@@ -3,64 +3,37 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>
-    /// Чистая модель дерева иерархии сцены для панели HierarchyPanelUI:
-    ///   Кухня (корень)
-    ///   ├─ Группа/модуль
-    ///   │   ├─ элемент
-    ///   │   │   └─ прикреплённый фасад (у ящика)
-    ///   └─ элементы вне групп
-    /// Никакого UI — только упорядоченный плоский список узлов с глубиной,
-    /// поэтому логика полностью покрывается EditMode-тестами.
-    /// </summary>
     public static class SceneTree
     {
         public class Node
         {
-            public LinkGroup? group;        // не null — строка-группа
-            public KitchenElement? element; // не null — строка-элемент
-            public int depth;               // 0 — корень, 1 — группа/внегрупповой элемент…
-            public bool isRoot;             // строка «Кухня»
-            public bool hasChildren;        // есть что сворачивать (для стрелки)
-            public bool collapsed;          // группа свёрнута (дети не выводятся)
+            public LinkGroup? group;
+            public KitchenElement? element;
+            public int depth;
+            public bool isRoot;
+            public bool hasChildren;
+            public bool collapsed;
         }
 
-        /// <summary>Построить плоский список строк дерева в порядке отрисовки.</summary>
-        /// <param name="all">Все элементы сцены (PartRegistry.GetAll()).</param>
-        /// <param name="groups">Все группы (GroupManager.AllGroups()).</param>
-        /// <param name="collapsedGroupIds">Свёрнутые группы (их члены не выводятся).</param>
         public static List<Node> Build(
-            IReadOnlyList<KitchenElement> all,
+            IReadOnlyList<KitchenElement> allElements,
             IEnumerable<LinkGroup> groups,
             ISet<int>? collapsedGroupIds = null)
         {
             var nodes = new List<Node>();
             var collapsed = collapsedGroupIds ?? new HashSet<int>();
+            var facadeToHost = MapAttachedFacadesToHosts(allElements);
 
-            // Пристёгнутые фасады показываются ПОД своим хозяином (ящиком или
-            // посудомойкой), а не на своём обычном месте.
-            var attachedFacades = new Dictionary<KitchenElement, KitchenElement>(); // facade -> host
-            foreach (var e in all)
+            nodes.Add(new Node { isRoot = true, depth = 0, hasChildren = allElements.Count > 0 });
+
+            var groupsByCreationId = new List<LinkGroup>(groups);
+            groupsByCreationId.Sort((a, b) => a.id.CompareTo(b.id));
+
+            var existingGroupIds = new HashSet<int>();
+            foreach (var g in groupsByCreationId)
             {
-                if (e is IFacadeHost host && !string.IsNullOrEmpty(host.AttachedFacadeName))
-                {
-                    var facade = FindByName(all, host.AttachedFacadeName);
-                    if (facade != null && ElementFacets.Of(facade).Has(ElementFacet.Facade))
-                        attachedFacades[facade] = e;
-                }
-            }
-
-            nodes.Add(new Node { isRoot = true, depth = 0, hasChildren = all.Count > 0 });
-
-            // Группы — по id (порядок создания стабилен).
-            var sortedGroups = new List<LinkGroup>(groups);
-            sortedGroups.Sort((a, b) => a.id.CompareTo(b.id));
-
-            var groupIds = new HashSet<int>();
-            foreach (var g in sortedGroups)
-            {
-                groupIds.Add(g.id);
-                var members = CollectMembers(all, g.id, attachedFacades);
+                existingGroupIds.Add(g.id);
+                var members = CollectMembers(allElements, g.id, facadeToHost);
                 bool isCollapsed = collapsed.Contains(g.id);
                 nodes.Add(new Node
                 {
@@ -71,45 +44,61 @@ namespace KitchenDesigner.Core.UI
                 });
                 if (!isCollapsed)
                     foreach (var m in members)
-                        AddElementRows(nodes, all, m, 2, attachedFacades);
+                        AddElementRows(nodes, allElements, m, 2);
             }
 
-            // Вне групп (включая элементы с «мёртвым» GroupId, чья группа не существует).
             var ungrouped = new List<KitchenElement>();
-            foreach (var e in all)
+            foreach (var e in allElements)
             {
-                if (e == null || attachedFacades.ContainsKey(e)) continue;
-                if (e.GroupId == 0 || !groupIds.Contains(e.GroupId))
+                if (e == null || facadeToHost.ContainsKey(e)) continue;
+                if (e.GroupId == 0 || !existingGroupIds.Contains(e.GroupId))
                     ungrouped.Add(e);
             }
             SortByName(ungrouped);
             foreach (var e in ungrouped)
-                AddElementRows(nodes, all, e, 1, attachedFacades);
+                AddElementRows(nodes, allElements, e, 1);
 
             return nodes;
         }
 
-        private static void AddElementRows(List<Node> nodes, IReadOnlyList<KitchenElement> all,
-            KitchenElement e, int depth, Dictionary<KitchenElement, KitchenElement> attachedFacades)
+        private static Dictionary<KitchenElement, KitchenElement> MapAttachedFacadesToHosts(
+            IReadOnlyList<KitchenElement> allElements)
         {
-            KitchenElement? child = null;
-            if (e is IFacadeHost host && !string.IsNullOrEmpty(host.AttachedFacadeName))
+            var facadeToHost = new Dictionary<KitchenElement, KitchenElement>();
+            foreach (var e in allElements)
             {
-                var facade = FindByName(all, host.AttachedFacadeName);
-                if (facade != null && ElementFacets.Of(facade).Has(ElementFacet.Facade)) child = facade;
+                var facade = AttachedFacadeOf(allElements, e);
+                if (facade != null) facadeToHost[facade] = e;
             }
+            return facadeToHost;
+        }
+
+        private static KitchenElement? AttachedFacadeOf(IReadOnlyList<KitchenElement> allElements,
+            KitchenElement? owner)
+        {
+            if (owner is not IFacadeHost host || string.IsNullOrEmpty(host.AttachedFacadeName))
+                return null;
+
+            var facade = FindByName(allElements, host.AttachedFacadeName);
+            return facade != null && ElementFacets.Of(facade).Has(ElementFacet.Facade) ? facade : null;
+        }
+
+        private static void AddElementRows(List<Node> nodes, IReadOnlyList<KitchenElement> allElements,
+            KitchenElement e, int depth)
+        {
+            var child = AttachedFacadeOf(allElements, e);
 
             nodes.Add(new Node { element = e, depth = depth, hasChildren = child != null });
             if (child != null)
                 nodes.Add(new Node { element = child, depth = depth + 1 });
         }
 
-        private static List<KitchenElement> CollectMembers(IReadOnlyList<KitchenElement> all,
-            int groupId, Dictionary<KitchenElement, KitchenElement> attachedFacades)
+        private static List<KitchenElement> CollectMembers(IReadOnlyList<KitchenElement> allElements,
+            int groupId, Dictionary<KitchenElement, KitchenElement> facadeToHost)
         {
             var members = new List<KitchenElement>();
-            foreach (var e in all)
-                if (e != null && e.GroupId == groupId && !attachedFacades.ContainsKey(e))
+            foreach (var e in allElements)
+                if (e != null && e.GroupId == groupId && !facadeToHost.ContainsKey(e))
                     members.Add(e);
             SortByName(members);
             return members;
@@ -118,9 +107,9 @@ namespace KitchenDesigner.Core.UI
         private static void SortByName(List<KitchenElement> list) =>
             list.Sort((a, b) => string.Compare(a.PartName, b.PartName, StringComparison.OrdinalIgnoreCase));
 
-        private static KitchenElement? FindByName(IReadOnlyList<KitchenElement> all, string name)
+        private static KitchenElement? FindByName(IReadOnlyList<KitchenElement> allElements, string name)
         {
-            foreach (var e in all)
+            foreach (var e in allElements)
                 if (e != null && e.PartName == name) return e;
             return null;
         }

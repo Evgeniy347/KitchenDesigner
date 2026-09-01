@@ -61,8 +61,9 @@ public class ProjectWindowsTests
 
         var states = ProjectWindows.Capture();
 
-        // Порядок — по id, а не по порядку построения UI.
-        Assert.AreEqual(new[] { "a_closed", "b_open" }, System.Array.ConvertAll(states, s => s.id));
+        Assert.AreEqual(new[] { "a_closed", "b_open" }, System.Array.ConvertAll(states, s => s.id),
+            "порядок записей — по id: иначе JSON проекта зависел бы от порядка "
+            + "построения UI и файл менялся бы сам по себе");
         Assert.IsFalse(states[0].visible);
         Assert.IsTrue(states[1].visible);
         Assert.AreEqual(-120f, states[1].x, 0.001f);
@@ -178,5 +179,87 @@ public class ProjectWindowsTests
 
         SaveLoadManager.RestoreScene(restored);
         Assert.AreEqual(new Vector2(3, 4), window.WindowRect!.anchoredPosition);
+    }
+
+    private class UnbuiltWindow : MonoBehaviour, IProjectWindow
+    {
+        public string WindowId => "unbuilt";
+        public RectTransform? WindowRect => null;
+        public bool HeightAdjustable => false;
+        public bool IsVisible => false;
+        public void SetVisible(bool visible) { }
+    }
+
+    private class PositionWatchingWindow : MonoBehaviour, IProjectWindow
+    {
+        public Vector2 PositionWhenShown;
+
+        public string WindowId => "watch";
+        public RectTransform? WindowRect => (RectTransform)transform;
+        public bool HeightAdjustable => false;
+        public bool IsVisible => gameObject.activeSelf;
+
+        public void SetVisible(bool visible)
+        {
+            PositionWhenShown = ((RectTransform)transform).anchoredPosition;
+            gameObject.SetActive(visible);
+        }
+    }
+
+    [Test]
+    public void Capture_SkipsWindowThatIsNotBuiltYet()
+    {
+        var go = new GameObject("unbuilt", typeof(RectTransform));
+        _spawned.Add(go);
+        ProjectWindows.Register(go.AddComponent<UnbuiltWindow>());
+
+        Assert.AreEqual(0, ProjectWindows.Capture().Length,
+            "у непостроенного окна нет ни координат, ни размера — сохранять нечего, "
+            + "а запись с нулями перекинула бы окно в угол при следующей загрузке");
+    }
+
+    [Test]
+    public void Apply_RestoresPosition_BeforeShowingWindow()
+    {
+        var go = new GameObject("watch", typeof(RectTransform));
+        _spawned.Add(go);
+        var window = go.AddComponent<PositionWatchingWindow>();
+        ((RectTransform)go.transform).anchoredPosition = new Vector2(999, 999);
+        window.gameObject.SetActive(false);
+        ProjectWindows.Register(window);
+
+        ProjectWindows.Apply(new[]
+        {
+            new WindowStateData { id = "watch", visible = true, x = -10f, y = -60f },
+        });
+
+        Assert.AreEqual(new Vector2(-10f, -60f), window.PositionWhenShown,
+            "координаты ставятся ДО показа: WindowScreenGuard клампит окно в "
+            + "LateUpdate сразу после OnEnable, и по старым координатам он прижал бы "
+            + "его к краю экрана");
+    }
+
+    [Test]
+    public void WindowIds_AreStableSaveKeys()
+    {
+        var dir = KitchenDesigner.Tests.Geometry.RepoPaths.Subdir(
+            "Assets", "Scripts", "Core", "UI");
+        var files = System.IO.Directory.GetFiles(dir, "*.cs", System.IO.SearchOption.AllDirectories);
+        Assert.Greater(files.Length, 10, "скан не нашёл исходников панелей — проверять было бы нечего");
+
+        var ids = new List<string>();
+        foreach (var file in files)
+            foreach (System.Text.RegularExpressions.Match m in
+                System.Text.RegularExpressions.Regex.Matches(
+                    System.IO.File.ReadAllText(file), "WindowId\s*=>\s*\"([^\"]+)\""))
+                ids.Add(m.Groups[1].Value);
+        ids.Sort(System.StringComparer.Ordinal);
+
+        Assert.AreEqual(
+            new[] { "dayNight", "errors", "hierarchy", "projectInstructions", "settings", "specification" },
+            ids.ToArray(),
+            "WindowId — ключ в файле проекта: переименование обесценивает уже "
+            + "сохранённые проекты (окно молча вернётся к дефолту), а новое окно "
+            + "попадает в этот список осознанно");
     }
 }
