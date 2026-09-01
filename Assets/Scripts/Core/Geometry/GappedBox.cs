@@ -2,18 +2,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Габарит детали С УЧЁТОМ зазоров — «проёмный» бокс, по которому
-    /// работают прилипание, валидация и ручки. Физический меш меньше на зазоры.
-    ///
-    /// Так устроен фасад (зазор от проёма) и так же — ДВП/ХДФ (технологический
-    /// зазор в пазу): прилипает номинал, а зазор остаётся внутри детали. Зазоры
-    /// есть у любой детали (см. KitchenElement.SupportsGaps), у обычной они
-    /// нулевые и бокс совпадает с физическим габаритом. Чистые функции: ядро
-    /// геометрии исполняется без Unity.</summary>
     public static class GappedBox
     {
-        /// <summary>Границы проёмного бокса в локальных единицах. Зазоры
-        /// асимметричны, поэтому бокс может быть НЕ центрирован вокруг transform.</summary>
         public static void CornerUnits(Vector3 physical, BoxGaps gaps,
             out float minX, out float maxX, out float minY, out float maxY,
             out float minZ, out float maxZ)
@@ -32,8 +22,6 @@ namespace KitchenDesigner.Core
             maxZ = physical.z * 0.5f + gf;
         }
 
-        /// <summary>Размер проёмного бокса: каждая ось растёт на сумму зазоров
-        /// своих двух сторон, толщина в том числе (Front + Back).</summary>
         public static Vector3 EffectiveScale(Vector3 physical, BoxGaps gaps)
         {
             float gapX = (gaps.Left + gaps.Right) * AppConstants.MM_TO_UNITS;
@@ -68,7 +56,6 @@ namespace KitchenDesigner.Core
             var axes = new[] { rot * Vector3.right, rot * Vector3.up, rot * Vector3.forward };
             float w = maxX - minX, h = maxY - minY, d = maxZ - minZ;
 
-            // Из-за асимметричных зазоров центр бокса смещён относительно transform.
             var localCenter = new Vector3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, (minZ + maxZ) * 0.5f);
             var centerShift = rot * localCenter;
 

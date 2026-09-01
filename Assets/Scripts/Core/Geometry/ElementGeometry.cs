@@ -2,48 +2,21 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Снимок геометрии детали — всё, что нужно прилипанию, ресайзу и
-    /// валидации, и ничего больше. Заменяет собой ссылку на KitchenElement в
-    /// чистых функциях ядра.
-    ///
-    /// Зачем: KitchenElement — это MonoBehaviour, и чтобы ПРОЧИТАТЬ его грани в
-    /// гипотетической позиции, приходилось ПИСАТЬ в transform.position и потом
-    /// возвращать всё назад. Снимок строится сразу для нужной позиции, поэтому
-    /// сцена не трогается вовсе, а само ядро исполняется без Unity — под
-    /// dotnet test и мутационным тестированием.
-    ///
-    /// Снимок неизменяем и живёт ровно столько, сколько длится расчёт: деталь
-    /// после него может двигаться, снимок об этом не узнает и не должен.</summary>
     public readonly struct ElementGeometry
     {
-        /// <summary>Устойчивый идентификатор детали. Ядру он нужен ровно для
-        /// одного: не считать деталь соседом самой себе.</summary>
         public readonly int Id;
 
-        /// <summary>Имя детали. Снэп возвращает его в результате — по нему
-        /// вызывающий код находит цель у себя.</summary>
         public readonly string Name;
 
-        /// <summary>Шесть габаритных граней. Порядок — контракт: index/2 = ось
-        /// (0=X, 1=Y, 2=Z), чётный индекс = положительное направление.</summary>
         public readonly Face[] Faces;
 
-        /// <summary>Дно каждого паза как обычная грань: вкладная панель садится
-        /// на него номиналом.</summary>
         public readonly Face[] GrooveSeatFaces;
 
-        /// <summary>Стенки пазов — разметочные плоскости для выравнивания кромки
-        /// любой детали, а не поверхности контакта.</summary>
         public readonly Face[] GrooveWallFaces;
 
-        /// <summary>Мировой AABB. У повёрнутой детали он ШИРЕ тела, поэтому
-        /// годится только для консервативных отсечек, не для проверки контакта.</summary>
         public readonly Vector3 Min;
         public readonly Vector3 Max;
 
-        /// <summary>Деталь — вкладная панель. Только ей предлагается дно паза:
-        /// толстая деталь в паз не садится, и дно давало бы ложное притяжение
-        /// внутрь короба.</summary>
         public readonly bool IsPanel;
 
         public ElementGeometry(int id, string name, Face[] faces, Face[] grooveSeatFaces,
@@ -59,11 +32,8 @@ namespace KitchenDesigner.Core
             IsPanel = isPanel;
         }
 
-        /// <summary>Снимок пуст (не заполнен) — так выглядит default(ElementGeometry).</summary>
         public bool IsEmpty => Faces == null || Faces.Length == 0;
 
-        /// <summary>AABB по набору вершин — ровно то, что раньше считали
-        /// вызывающие вручную после GetVertices.</summary>
         public static void BoundsOf(Vector3[] vertices, out Vector3 min, out Vector3 max)
         {
             min = vertices[0];
@@ -75,16 +45,10 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Осевая коробка из позы и габаритов. Нужна и ядру (тесты
-        /// строят сцену без Unity), и как эталон порядка граней.</summary>
         public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
             bool isPanel = false)
             => Box(name, center, sizeUnits, Quaternion.identity, isPanel);
 
-        /// <summary>Коробка с поворотом. Кватернион принимается ГОТОВЫМ, а не
-        /// строится из углов: `Quaternion.Euler`/`AngleAxis` — вызовы в нативный
-        /// движок и под CoreCLR падают, а ядро обязано исполняться без Unity.
-        /// Умножение кватерниона на вектор при этом чисто управляемое.</summary>
         public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
             Quaternion rotation, bool isPanel = false)
         {
@@ -116,8 +80,6 @@ namespace KitchenDesigner.Core
                 faces[i] = new Face(center + offsets[i], normals[i], faceDims[i / 2],
                     rightAxis[i], upAxis[i]);
 
-            // AABB — по восьми повёрнутым углам, а не по half: у повёрнутой
-            // детали габарит шире тела, и снэп на это рассчитывает.
             var corners = new Vector3[8];
             int c = 0;
             for (int sx = -1; sx <= 1; sx += 2)
