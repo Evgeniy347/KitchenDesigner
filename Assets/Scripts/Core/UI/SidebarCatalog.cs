@@ -3,8 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Каталог объектов для сайдбара: группы и их элементы (имя + размеры).
-    /// Отделён от UI, чтобы покрываться юнит-тестами.</summary>
     public static class SidebarCatalog
     {
         public struct Item
@@ -25,21 +23,18 @@ namespace KitchenDesigner.Core.UI
             public bool isPillar;
             public bool isFloor;
             public bool isLightSource;
-            public bool isSink;           // врезная мойка (садится на деталь-столешницу)
-            public bool isCooktop;        // варочная поверхность (садится на деталь-столешницу без выреза)
-            public bool isOven;           // духовой шкаф (отдельно стоящий, встраивается в колонну)
-            public bool isDishwasher;     // посудомоечная машина (фасад пристёгивается отдельно)
-            public bool isPanel;          // ДВП/ХДФ — вкладная панель с зазорами
-            /// <summary>Готовая модель встраиваемой техники (группа «Техника»):
-            /// габариты берутся у производителя и не редактируются. Пусто —
-            /// свободный элемент.</summary>
+            public bool isSink;
+            public bool isCooktop;
+            public bool isOven;
+            public bool isDishwasher;
+            public bool isPanel;
             public string applianceModel;
             public int pillarMidHeightMM;
             public string drawerType;
             public int drawerLength;
             public string drawerColor;
             public int drawerWidth;
-            public string drawerSystem;   // "gtv" | "movento"
+            public string drawerSystem;
             public int gapLeft;
             public int gapRight;
             public int gapTop;
@@ -64,7 +59,7 @@ namespace KitchenDesigner.Core.UI
         public struct Group
         {
             public string title;
-            public string shortLabel; // подпись в свёрнутом режиме
+            public string shortLabel;
             public List<Item> items;
         }
 
@@ -102,8 +97,6 @@ namespace KitchenDesigner.Core.UI
             var regular = new Item("Полка", new Vector3Int(600, 400, 16));
             var radial = new Item("Радиусная полка", new Vector3Int(600, 400, 16));
             radial.isRadialShelf = true;
-            // ДВП/ХДФ — вкладная панель: зазоры входят в габарит, поэтому в паз
-            // заходит номинал, а 1 мм остаётся технологическим зазором.
             var panel = new Item("ДВП/ХДФ", new Vector3Int(600, 400, 3),
                 gapLeft: PanelElement.DEFAULT_GAP_MM, gapRight: PanelElement.DEFAULT_GAP_MM,
                 gapTop: PanelElement.DEFAULT_GAP_MM, gapBottom: PanelElement.DEFAULT_GAP_MM);
@@ -163,15 +156,6 @@ namespace KitchenDesigner.Core.UI
             return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, stool, chair, pillar, sink } };
         }
 
-        /// <summary>Встраиваемая техника — готовые модели производителя. Габариты
-        /// у пунктов этой группы фиксированы (<see cref="IFixedSizeElement"/>):
-        /// поля Ш/В/Г в окне свойств серые, ручек ресайза нет.
-        ///
-        /// Как добавить прибор: положить сюда ещё один Item со своим флагом типа
-        /// (по образцу <see cref="CooktopModelItem"/> или <see cref="OvenItem"/>),
-        /// развести его в SidebarUI.Spawn и дописать модель в
-        /// <see cref="ApplianceModels.All"/>. Порядок пунктов — варочная
-        /// свободного размера, варочная модельная, духовка, посудомойка.</summary>
         private static Group ApplianceGroup()
         {
             var genericCooktop = CooktopItem("Варочная поверхность");
@@ -186,9 +170,6 @@ namespace KitchenDesigner.Core.UI
             };
         }
 
-        /// <summary>Посудомоечная машина: размеры берутся из DishwasherElement.
-        /// Фасад в каталоге не заводится — его пользователь ставит сам и
-        /// пристёгивает к машине в окне свойств.</summary>
         private static Item DishwasherItem(string name)
         {
             var item = new Item(name, DishwasherElement.ModelDimensionsMM);
@@ -197,8 +178,6 @@ namespace KitchenDesigner.Core.UI
             return item;
         }
 
-        /// <summary>Духовой шкаф: размеры берутся из OvenElement, а не из
-        /// каталога, — модель у него одна и правке не подлежит.</summary>
         private static Item OvenItem(string name)
         {
             var item = new Item(name, OvenElement.ModelDimensionsMM);
@@ -207,8 +186,6 @@ namespace KitchenDesigner.Core.UI
             return item;
         }
 
-        /// <summary>Варочная поверхность готовой модели: размеры берутся из её
-        /// таблицы в CooktopElement, а не из каталога.</summary>
         private static Item CooktopModelItem(string name, string model)
         {
             var item = new Item(name, CooktopElement.ModelDimensionsMM(model));

@@ -281,4 +281,57 @@ public class SidebarCatalogTests
         Assert.AreEqual(1, SidebarUI.ItemLines("Полка"));
         Assert.AreEqual(26f, SidebarUI.ItemHeight("Полка"), "короткое имя не делает список выше");
     }
+
+    [Test]
+    public void ApplianceGroup_ItemsInOrder_GenericCooktop_Model_Oven_Dishwasher()
+    {
+        var items = SidebarCatalog.Build()[4].items;
+
+        Assert.AreEqual(4, items.Count);
+        Assert.IsTrue(items[0].isCooktop);
+        Assert.AreEqual("", items[0].applianceModel,
+            "варочная свободного размера идёт первой и модели не имеет: её габариты "
+            + "пользователь правит сам");
+        Assert.AreEqual(CooktopElement.MODEL_BOSCH_PUE611BB5E, items[1].applianceModel);
+        Assert.AreEqual(OvenElement.MODEL, items[2].applianceModel);
+        Assert.AreEqual(DishwasherElement.MODEL, items[3].applianceModel);
+    }
+
+    [Test]
+    public void ApplianceGroup_ModelSizes_ComeFromTheElement_NotFromTheCatalog()
+    {
+        var items = SidebarCatalog.Build()[4].items;
+
+        Assert.AreEqual(CooktopElement.ModelDimensionsMM(CooktopElement.MODEL_BOSCH_PUE611BB5E),
+            items[1].dims);
+        Assert.AreEqual(OvenElement.ModelDimensionsMM, items[2].dims);
+        Assert.AreEqual(DishwasherElement.ModelDimensionsMM, items[3].dims,
+            "габариты готовой модели берутся у производителя (IFixedSizeElement): "
+            + "своя копия чисел в каталоге разошлась бы с элементом, а поля Ш/В/Г "
+            + "в окне свойств у такого прибора серые и исправить расхождение нечем");
+    }
+
+    [Test]
+    public void ApplianceModels_AndCatalogItems_ListTheSameModels()
+    {
+        var inCatalog = new System.Collections.Generic.List<string>();
+        foreach (var g in SidebarCatalog.Build())
+            foreach (var it in g.items)
+                if (!string.IsNullOrEmpty(it.applianceModel)) inCatalog.Add(it.applianceModel);
+
+        var missingInCatalog = new System.Collections.Generic.List<string>();
+        foreach (var model in ApplianceModels.All)
+            if (!inCatalog.Contains(model)) missingInCatalog.Add(model);
+
+        var unknownModels = new System.Collections.Generic.List<string>();
+        foreach (var model in inCatalog)
+            if (!ApplianceModels.IsKnown(model)) unknownModels.Add(model);
+
+        Assert.IsEmpty(missingInCatalog,
+            "модель есть в ApplianceModels.All, но её не добавить из сайдбара — "
+            + "прибор существует и не заказывается: " + string.Join(", ", missingInCatalog));
+        Assert.IsEmpty(unknownModels,
+            "пункт каталога ссылается на модель, которой нет в ApplianceModels.All — "
+            + "фиксированный размер для неё не сработает: " + string.Join(", ", unknownModels));
+    }
 }
