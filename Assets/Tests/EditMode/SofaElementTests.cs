@@ -3,6 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Bulk;
 
 /// <summary>Диван собран по фотографии пользователя: у него НЕТ подлокотников,
 /// вместо них подушки, и подушек ровно четыре — две стоят на спинке, две лежат

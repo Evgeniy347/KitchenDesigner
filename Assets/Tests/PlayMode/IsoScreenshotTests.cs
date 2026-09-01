@@ -415,6 +415,16 @@ public class IsoScreenshotTests
 
     // ─ Sofa isometric screenshots ───────────────────
 
+    /// <summary>Камера проекта стоит на -Z (IsoDir), а спинка мебели по
+    /// соглашению смотрит в -Z: у стула это дало снимок СЗАДИ, где вся
+    /// геометрия сиденья спрятана за щитом спинки. У дивана то же соглашение
+    /// прячет за полкой спинки все четыре подушки — то есть ровно то, что
+    /// снимок обязан показывать. Поэтому диван развёрнут на 180 градусов:
+    /// разворот не трогает габаритную коробку, поэтому проверка «влез в кадр»
+    /// остаётся честной, а IsoDir общий для всех типов и его правка
+    /// пересняла бы каждый чужой эталон.</summary>
+    private const float FrontTowardsCameraDeg = 180f;
+
     [UnityTest]
     public IEnumerator IsoSofa_2000x800x900_Default()
     {
@@ -438,6 +448,8 @@ public class IsoScreenshotTests
         Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
         var go = ElementFactory.CreateSofa(dims, cornerRadiusMM, seatHeightMM, name, pos);
         _spawned.Add(go);
+
+        go.transform.rotation = Quaternion.Euler(0f, FrontTowardsCameraDeg, 0f);
         var sofa = go.GetComponent<SofaElement>();
         Assert.IsNotNull(sofa);
         Assert.AreEqual(cornerRadiusMM, sofa!.CornerRadiusMM,
