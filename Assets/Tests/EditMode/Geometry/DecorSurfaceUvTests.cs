@@ -22,7 +22,7 @@ namespace KitchenDesigner.Tests.Geometry
     /// Отсюда механическая проверка: класс, который строит СВОЙ меш, обязан сам
     /// объявить DecorSurfaceMM — иначе он молча наследует оси стоячей панели.
     /// Исключения перечислены поимённо, у каждого причина; PillarElement —
-    /// записанный долг (docs/HARDENING-PLAN.md, п. 10).</summary>
+    /// записанный долг (CONVENTIONS.md → «Known debts»).</summary>
     public class DecorSurfaceUvTests
     {
         /// <summary>Класс строит свой меш либо напрямую (<c>XxxMesh.Build</c>), либо
@@ -53,7 +53,7 @@ namespace KitchenDesigner.Tests.Geometry
             ("DrawerElement.cs",
                 "короб ящика скрыт за фасадом и декор не носит; фасад — отдельный элемент"),
             ("PillarElement.cs",
-                "ДОЛГ (HARDENING-PLAN, п. 10): у PillarMesh бок развёрнут как i/Segments по "
+                "ДОЛГ (CONVENTIONS.md → «Known debts»): у PillarMesh бок развёрнут как i/Segments по "
                 + "ОКРУЖНОСТИ, а торцы как cos*0.5+0.5 по диаметру — ни то ни другое не "
                 + "совпадает с (dims.x, dims.y), и декор на колонне растянут в pi раз"),
         };
@@ -170,7 +170,7 @@ namespace KitchenDesigner.Tests.Geometry
                 "белый список не вправе освобождать уже исправленный случай");
             CollectionAssert.DoesNotContain(exempt, "RadialShelfElement.cs",
                 "третий исправленный случай: полка перешла на общую развёртку "
-                + "ProfileExtrusionMesh и объявила оси (x, z) — долг HARDENING-PLAN п. 10 "
+                + "ProfileExtrusionMesh и объявила оси (x, z) — долг CONVENTIONS.md → «Known debts» "
                 + "по ней закрыт");
             CollectionAssert.DoesNotContain(exempt, "FloorElement.cs",
                 "пол исправлен: развёртка есть и оси объявлены — исключение для него было бы "

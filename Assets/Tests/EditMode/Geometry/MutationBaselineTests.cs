@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace KitchenDesigner.Tests.Geometry
 {
-    /// <summary>Сторож за самими воротами по mutation score (docs/HARDENING-PLAN.md → C1).
+    /// <summary>Сторож за самими воротами по mutation score (geometry/mutation-baseline.txt).
     ///
     /// Мутационный прогон долгий, поэтому ворота стоят не здесь: порог передаётся
     /// Стрейкеру ключом --break-at, и роняет прогон он. Этот класс — за секунды —

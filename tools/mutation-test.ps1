@@ -23,7 +23,7 @@
 
     Подняли счёт — поднимите порог тем же коммитом, иначе храповик отдаст назад.
 
-    Обоснование и план: docs/GEOMETRY-EXTRACTION-PLAN.md, docs/HARDENING-PLAN.md → C1.
+    Обоснование и план: docs/GEOMETRY-EXTRACTION-PLAN.md.
 
 .PARAMETER TestsOnly
     Только dotnet test, без мутационного прогона (быстрая проверка на каждый push).

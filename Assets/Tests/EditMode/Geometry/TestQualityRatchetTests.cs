@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace KitchenDesigner.Tests.Geometry
 {
     /// <summary>Два дешёвых сторожа за качеством самих тестов
-    /// (docs/HARDENING-PLAN.md → C3), устроенные как храповик комментариев:
+    /// , устроенные как храповик комментариев:
     /// потолок на группу, падение в ОБЕ стороны, тесты на собственный сканер.
     ///
     /// 1. Имя теста — это предложение о поведении (CONVENTIONS.md → «Test naming
@@ -40,7 +40,7 @@ namespace KitchenDesigner.Tests.Geometry
         /// Каталог один — Geometry: Assets/Tests/EditMode/Pure сейчас наполняет
         /// другой агент (перенос ElementData), и потолки на его файлы ломали бы
         /// ему прогон каждым добавленным тестом. Pure входит сюда, когда перенос
-        /// сядет; запись об этом — в docs/HARDENING-PLAN.md → C3.</summary>
+        /// сядет; запись об этом — в потолках ниже.</summary>
         private static readonly (string file, int ceiling)[] SilentAssertBudgets =
         {
             ("CommentRatchetTests.cs", 2),

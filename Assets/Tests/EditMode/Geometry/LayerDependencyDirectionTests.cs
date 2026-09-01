@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace KitchenDesigner.Tests.Geometry
 {
     /// <summary>Сторож направления зависимостей между слоями
-    /// (docs/HARDENING-PLAN.md → A6). Объявленный граф прост: UI знает про всех,
+    /// (CONVENTIONS.md → «Known debts»). Объявленный граф прост: UI знает про всех,
     /// про UI не знает никто. Одного ребра «Persistence → UI» хватает, чтобы ядро
     /// снова перестало собираться без Unity, а `dotnet test` со Stryker — работать;
     /// этот путь уже был молча сломан и чинился отдельным коммитом (5917ac94).

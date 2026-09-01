@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace KitchenDesigner.Tests.Geometry
 {
     /// <summary>Сторож полноты при добавлении нового типа элемента —
-    /// CONVENTIONS.md → «Adding a new element type», HARDENING-PLAN.md → A7.
+    /// CONVENTIONS.md → «Adding a new element type».
     ///
     /// Правило Open/Closed здесь звучит так: новый тип обязан трогать ТОЛЬКО
     /// реестры и никогда лестницу if. Чеклист из восьми пунктов записан в
