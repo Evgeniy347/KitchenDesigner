@@ -176,26 +176,29 @@ public class SofaElementTests
     {
         var sofa = Sofa(2000, 800, 900, 120, 400);
 
-        var mesh = Child(sofa, SofaLayout.BackCushionRightName)
-            .GetComponent<MeshFilter>()!.sharedMesh;
+        var cushion = Child(sofa, SofaLayout.BackCushionRightName);
+        var mesh = cushion.GetComponent<MeshFilter>()!.sharedMesh;
         Assert.IsNotNull(mesh, "у спинной подушки обязан быть свой меш");
 
         float toU = AppConstants.MM_TO_UNITS;
         float width = SofaLayout.BackCushionWidthFor(2000) * toU;
         float height = SofaLayout.BackrestHeightMM(800, 400) * toU;
         float radius = SofaLayout.CushionRadiusMM * toU;
-        var centre = new Vector2(-width * 0.5f + radius, -height * 0.5f + radius);
+        var centreLocal = new Vector3(-width * 0.5f + radius, 0f, -height * 0.5f + radius);
+        var centreWorld = cushion.TransformPoint(centreLocal);
 
         int checkedPoints = 0;
         foreach (var local in mesh!.vertices)
         {
-            var p = new Vector2(local.x, local.z);
-            if (p.x > centre.x + 1e-4f || p.y > centre.y + 1e-4f) continue;
+            if (local.x > centreLocal.x + 1e-4f || local.z > centreLocal.z + 1e-4f) continue;
             checkedPoints++;
-            Assert.AreEqual(radius, (p - centre).magnitude, 1e-4f,
+            var world = cushion.TransformPoint(new Vector3(local.x, 0f, local.z));
+            Assert.AreEqual(radius, (world - centreWorld).magnitude, 1e-4f,
                 "подушка — тот же скруглённый контур, и она тоже строится в физических "
-                + "миллиметрах: масштабировать её родителем значит получить эллипс на "
-                + "любой ширине, кроме одной");
+                + "миллиметрах. Мерим в МИРОВЫХ координатах, а не в локальных вершинах "
+                + "меша: локально дуга остаётся окружностью даже тогда, когда корень "
+                + "растягивает всю мебель, и тест был бы слеп ровно к тому дефекту, "
+                + "ради которого написан");
         }
 
         Assert.GreaterOrEqual(checkedPoints, RoundedRectProfile.DefaultSegments,
