@@ -211,7 +211,7 @@ public class PillarElementTests
 	}
 
 	[Test]
-	public void Pillar_ResizeCommand_UndoRedo_Works()
+	public void Pillar_ResizeCommand_UndoRedoKeepsMidHeightInStepWithDimensions()
 	{
 		var go = MakePillar(PillarElement.MidHeightMM_Default, Vector3.zero);
 		var pillar = go.GetComponent<PillarElement>();
