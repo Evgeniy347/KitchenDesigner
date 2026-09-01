@@ -3,44 +3,28 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.Measure
 {
-    /// <summary>Ввод режима «Рулетка»: подсветка ближайшей вершины, фиксация
-    /// концов замера, предпросмотр отрезка и выбор уже поставленных замеров.
-    /// Рисованием занимается <see cref="MeasureRenderer"/>, подписями —
-    /// MeasureLabelsUI; здесь только состояние и мышь.
-    /// DefaultExecutionOrder=-50 — раньше SelectionManager/ElementMover, чтобы
-    /// состояние текущего кадра было готово до их проверок режима.</summary>
-    [DefaultExecutionOrder(-50)]
+    [DefaultExecutionOrder(RunsBeforeSelectionAndMove)]
     public class MeasureController : MonoBehaviour
     {
+        public const int RunsBeforeSelectionAndMove = -50;
+
         public static MeasureController? Instance { get; private set; }
 
-        /// <summary>Радиус «помощи попадания» по вершине, пиксели.</summary>
         public const float VertexPickRadiusPx = 18f;
-        /// <summary>Радиус «помощи попадания» по отрезку, пиксели.</summary>
         public const float SegmentPickRadiusPx = 10f;
 
-        /// <summary>Вершина под курсором (розовая точка) — null, если далеко.</summary>
-        public Vector3? Hint { get; private set; }
-        /// <summary>Точка, в которую луч упёрся в деталь/стену/пол (без
-        /// привязки к вершине). Розовая подсказка того же цвета, что и Hint;
-        /// на ЛКМ первый клик ставит сюда якорь, второй — фиксирует как
-        /// второй конец (через осевую проекцию от якоря).</summary>
+        public Vector3? Hint { get; internal set; }
         public Vector3? PlaneHint { get; internal set; }
-        /// <summary>Зафиксированный первый конец замера (красная точка).</summary>
         public Vector3? Anchor { get; internal set; }
-        /// <summary>Второй конец предпросмотра: либо предложенная вершина, либо
-        /// проекция хита луча на одну ось, либо проекция курсора на одну ось.</summary>
         public Vector3? PreviewEnd { get; internal set; }
-        /// <summary>Отрезок под курсором (светло-жёлтая подсветка).</summary>
         public MeasureSegment? Hovered { get; private set; }
 
-        /// <summary>Идёт предпросмотр (есть якорь и второй конец).</summary>
         public bool HasPreview => Anchor.HasValue && PreviewEnd.HasValue;
 
-        // Кандидаты пересобираются каждый кадр; списки переиспользуем, иначе на
-        // сцене в сотни деталей это 8 Vector3 на элемент в мусор каждый кадр.
         private readonly List<Vector3> _worldVerts = new List<Vector3>();
         private readonly List<Vector2> _screenVerts = new List<Vector2>();
+
+        internal IReadOnlyList<Vector3> CandidateVerticesWorld => _worldVerts;
 
         private void Awake() => Instance = this;
 
@@ -60,7 +44,7 @@ namespace KitchenDesigner.Core.Measure
             var cam = Camera.main;
             if (cam == null) return;
 
-            HandleEscape();
+            if (Input.GetKeyDown(KeyCode.Escape)) CancelOneStep();
 
             Vector2 mouse = Input.mousePosition;
             CollectVertices(cam);
@@ -73,20 +57,14 @@ namespace KitchenDesigner.Core.Measure
                 HandleClick();
         }
 
-        // Esc отменяет ровно одно: сперва незавершённый замер, затем выбор
-        // отрезка (закрывает окно свойств), и только потом — весь режим.
-        private void HandleEscape()
+        internal void CancelOneStep()
         {
-            if (!Input.GetKeyDown(KeyCode.Escape)) return;
             if (Anchor.HasValue) Anchor = null;
             else if (MeasureStore.Selected != null) MeasureStore.Select(null);
             else MeasureMode.SetActive(false);
         }
 
-        // Вершины всех видимых деталей и стен. Источник — GetVertices(): он уже
-        // учитывает поворот, габарит составных элементов и полную высоту
-        // опущенной стены. Опорная плита исключена — это техническая подложка.
-        private void CollectVertices(Camera cam)
+        internal void CollectVertices(Camera cam)
         {
             _worldVerts.Clear();
             _screenVerts.Clear();
@@ -95,37 +73,38 @@ namespace KitchenDesigner.Core.Measure
             for (int i = 0; i < all.Count; i++)
             {
                 var e = all[i];
-                if (e == null || !e.gameObject.activeInHierarchy) continue;
-                if (e.GetComponent<BasePlate>() != null) continue;
-                if (!SceneVisibility.AnyRendererEnabled(e)) continue;
+                if (!MeasurableContent(e)) continue;
 
                 var verts = e.GetVertices();
                 for (int v = 0; v < verts.Length; v++)
                 {
                     Vector3 screen = cam.WorldToScreenPoint(verts[v]);
-                    if (screen.z <= 0f) continue; // за камерой
+                    bool behindTheCamera = screen.z <= 0f;
+                    if (behindTheCamera) continue;
                     _worldVerts.Add(verts[v]);
                     _screenVerts.Add(new Vector2(screen.x, screen.y));
                 }
             }
         }
 
-        private void UpdateHint(Vector2 mouse)
+        private static bool MeasurableContent(KitchenElement e) =>
+            e != null
+            && e.gameObject.activeInHierarchy
+            && e.GetComponent<BasePlate>() == null
+            && SceneVisibility.AnyRendererEnabled(e);
+
+        internal void UpdateHint(Vector2 mouse)
         {
             int idx = MeasureGeometry.NearestIndex(_screenVerts, mouse, VertexPickRadiusPx);
             Hint = idx >= 0 ? _worldVerts[idx] : (Vector3?)null;
 
-            // Собственный якорь предлагать вторым концом бессмысленно.
-            if (Hint.HasValue && Anchor.HasValue &&
-                (Hint.Value - Anchor.Value).sqrMagnitude < Tolerance.EpsilonSqr)
-                Hint = null;
+            if (SuggestsTheAnchorItself(Hint)) Hint = null;
         }
 
-        // Есть предложенная вершина — отрезок идёт к ней НАПРЯМУЮ (в том числе
-        // по диагонали). Курсор увели — предложение пропадает, и отрезок снова
-        // строится строго по одной оси. Если вершины рядом нет, но луч попал в
-        // деталь/стену/пол — берём осевую проекцию точки хита, чтобы пунктир
-        // остался строго по одной оси (замер не «диагональный»).
+        private bool SuggestsTheAnchorItself(Vector3? hint) =>
+            hint.HasValue && Anchor.HasValue
+            && (hint.Value - Anchor.Value).sqrMagnitude < Tolerance.EpsilonSqr;
+
         internal void UpdatePreview(Camera cam, Vector2 mouse)
         {
             if (!Anchor.HasValue)
@@ -142,21 +121,13 @@ namespace KitchenDesigner.Core.Measure
 
             if (PlaneHint.HasValue)
             {
-                // Точка хита на стене — пользователь видит, куда упёрся луч
-                // (маркер PlaneHint на самой поверхности), а пунктир идёт к её
-                // проекции на доминирующую ось от якоря: так подпись остаётся
-                // «N мм» без глифа ∠.
                 PreviewEnd = MeasureGeometry.ProjectOnDominantAxis(Anchor.Value, PlaneHint.Value);
                 return;
             }
 
-            PreviewEnd = FreeEnd(cam, mouse, Anchor.Value);
+            PreviewEnd = FreeEndInMidAirOnTheCameraPlane(cam, mouse, Anchor.Value);
         }
 
-        // Луч из мыши в сцену. Хиты по деталям/стенам/полам становятся PlaneHint
-        // и равноправны с вершинной подсказкой: первый ЛКМ ставит туда якорь,
-        // второй — фиксирует осевую проекцию от якоря. Опорная плита
-        // исключается — это техническая подложка без собственной геометрии.
         internal void UpdatePlaneHit(Camera cam, Vector2 mouse)
         {
             PlaneHint = null;
@@ -166,10 +137,7 @@ namespace KitchenDesigner.Core.Measure
             PlaneHint = hit.point;
         }
 
-        // Свободный конец: курсор проецируется на плоскость через якорь,
-        // перпендикулярную взгляду камеры (замер должен работать и в воздухе,
-        // а не только там, где есть коллайдер), затем прижимается к одной оси.
-        private static Vector3? FreeEnd(Camera cam, Vector2 mouse, Vector3 anchor)
+        private static Vector3? FreeEndInMidAirOnTheCameraPlane(Camera cam, Vector2 mouse, Vector3 anchor)
         {
             var plane = new Plane(cam.transform.forward, anchor);
             Ray ray = cam.ScreenPointToRay(mouse);
@@ -177,14 +145,10 @@ namespace KitchenDesigner.Core.Measure
             return MeasureGeometry.ProjectOnDominantAxis(anchor, ray.GetPoint(enter));
         }
 
-        // Пока курсор у вершины или луч упёрся в плоскость — выбор отрезка не
-        // предлагаем: постановка точки важнее, иначе замер вдоль детали
-        // невозможно было бы начать (и при равноправии PlaneHint с Hint —
-        // кликом в стену должен ставиться якорь, а не выбираться чужой отрезок).
-        private void UpdateHover(Camera cam, Vector2 mouse)
+        internal void UpdateHover(Camera cam, Vector2 mouse)
         {
             Hovered = null;
-            if (Hint.HasValue || PlaneHint.HasValue || Anchor.HasValue) return;
+            if (PlacingAPointTakesPriority) return;
 
             float best = SegmentPickRadiusPx;
             foreach (var seg in MeasureStore.Segments)
@@ -203,39 +167,46 @@ namespace KitchenDesigner.Core.Measure
             }
         }
 
+        private bool PlacingAPointTakesPriority =>
+            Hint.HasValue || PlaneHint.HasValue || Anchor.HasValue;
+
         internal void HandleClick()
         {
             if (Anchor.HasValue)
             {
-                // Второй конец: вершина → к ней; хит в плоскость → к осевой
-                // проекции хита (PreviewEnd уже посчитан в UpdatePreview);
-                // клик мимо — отмена.
-                if (Hint.HasValue)
-                    MeasureStore.Add(new MeasureSegment(Anchor.Value, Hint.Value));
-                else if (PlaneHint.HasValue && PreviewEnd.HasValue)
-                    MeasureStore.Add(new MeasureSegment(Anchor.Value, PreviewEnd.Value));
-                Anchor = null;
-                PreviewEnd = null;
+                CommitSecondEnd();
                 return;
             }
 
             if (Hint.HasValue)
             {
-                Anchor = Hint;
-                MeasureStore.Select(null);
+                DropAnchorAt(Hint.Value);
                 return;
             }
 
-            // Луч упёрся в деталь/стену/пол без близкой вершины — якорь
-            // ставится в саму точку хита (куда ткнул, туда и закрепилось).
             if (PlaneHint.HasValue)
             {
-                Anchor = PlaneHint;
-                MeasureStore.Select(null);
+                DropAnchorAt(PlaneHint.Value);
                 return;
             }
 
-            MeasureStore.Select(Hovered); // null — клик в пустоту снимает выбор
+            MeasureStore.Select(Hovered);
+        }
+
+        private void CommitSecondEnd()
+        {
+            if (Hint.HasValue)
+                MeasureStore.Add(new MeasureSegment(Anchor.Value, Hint.Value));
+            else if (PlaneHint.HasValue && PreviewEnd.HasValue)
+                MeasureStore.Add(new MeasureSegment(Anchor.Value, PreviewEnd.Value));
+            Anchor = null;
+            PreviewEnd = null;
+        }
+
+        private void DropAnchorAt(Vector3 point)
+        {
+            Anchor = point;
+            MeasureStore.Select(null);
         }
 
         private void ResetState()
