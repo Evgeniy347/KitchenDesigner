@@ -8,7 +8,11 @@ namespace KitchenDesigner.Core.UI
     {
         private readonly IContextMenuHost _host;
 
+        public const string TabletopLabelNode = "L_CtxTableTop";
+        public const string LegsLabelNode = "L_CtxTableLegs";
+
         private TMP_Dropdown? _base, _tabletop, _legs;
+        private TMP_Text? _tabletopLabel, _legsLabel;
         private KitchenElement? _previewTarget;
         private string? _previewBefore;
         private MaterialSlot _previewSlot;
@@ -29,12 +33,14 @@ namespace KitchenDesigner.Core.UI
             var options = MaterialOptions.DisplayNames();
             _base = _host.Rows.Dropdown("Текстура", options, index => Choose(MaterialSlot.Base, index),
                 RowVisibility.When(() => !_host.TargetFacets.Has(TabletopSlots)), "CtxMaterial");
-            _tabletop = _host.Rows.Dropdown("Столешница", new List<string>(options),
+            (_tabletopLabel, _tabletop) = _host.Rows.NamedDropdown("CtxTableTop",
+                TabletopDecor.TabletopLabel, new List<string>(options),
                 index => Choose(MaterialSlot.Base, index),
-                RowVisibility.For(TabletopSlots), "CtxTableTop");
-            _legs = _host.Rows.Dropdown("Ножки", new List<string>(options),
+                RowVisibility.For(TabletopSlots), TabletopLabelNode);
+            (_legsLabel, _legs) = _host.Rows.NamedDropdown("CtxTableLegs",
+                TabletopDecor.LegsLabel, new List<string>(options),
                 index => Choose(MaterialSlot.Legs, index),
-                RowVisibility.For(TabletopSlots), "CtxTableLegs");
+                RowVisibility.For(TabletopSlots), LegsLabelNode);
 
             DropdownHover.Attach(_base, option => Preview(MaterialSlot.Base, option), EndPreview);
             DropdownHover.Attach(_tabletop, option => Preview(MaterialSlot.Base, option), EndPreview);
@@ -51,6 +57,13 @@ namespace KitchenDesigner.Core.UI
 
             Show(_tabletop, tabletop.TabletopMaterialId);
             Show(_legs, tabletop.LegsMaterialId);
+            Label(_tabletopLabel, tabletop.TabletopSlotLabel);
+            Label(_legsLabel, tabletop.LegsSlotLabel);
+        }
+
+        private static void Label(TMP_Text? label, string text)
+        {
+            if (label != null) label.text = text;
         }
 
         public void ApplyLegsChoice(KitchenElement target)

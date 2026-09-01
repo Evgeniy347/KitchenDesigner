@@ -130,6 +130,10 @@ namespace KitchenDesigner.Core
 
         public void SetLegsMaterial(Material material) => Cushions.SetMaterial(material);
 
+        public string TabletopSlotLabel => TabletopDecor.UpholsteryLabel;
+
+        public string LegsSlotLabel => TabletopDecor.CushionsLabel;
+
         public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
 
         public override void PrepareForDestruction() => DestroyChildren();

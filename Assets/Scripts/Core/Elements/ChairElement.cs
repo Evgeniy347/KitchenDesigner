@@ -164,6 +164,10 @@ namespace KitchenDesigner.Core
 
         public void SetLegsMaterial(Material material) => Legs.SetMaterial(material);
 
+        public string TabletopSlotLabel => TabletopDecor.SeatLabel;
+
+        public string LegsSlotLabel => TabletopDecor.LegsLabel;
+
         public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
 
         public override void PrepareForDestruction() => DestroyChildren();

@@ -105,9 +105,10 @@ namespace KitchenDesigner.Core.UI
         }
 
         public (TMP_Text label, TMP_Dropdown dropdown) NamedDropdown(string nodeName, string label,
-            List<string> options, Action<int> onChanged, RowVisibility visibility)
+            List<string> options, Action<int> onChanged, RowVisibility visibility,
+            string? labelNodeName = null)
         {
-            var lbl = UIFactory.CreateLabel("L_" + label, _parent, label, 15,
+            var lbl = UIFactory.CreateLabel(labelNodeName ?? ("L_" + label), _parent, label, 15,
                 new Vector2(DropdownLabelX, 0), new Vector2(DropdownLabelW, LabelH));
             var dd = UIFactory.CreateDropdown(nodeName, _parent, options,
                 new Vector2(DropdownX, 0), new Vector2(DropdownW, DropdownH), onChanged);

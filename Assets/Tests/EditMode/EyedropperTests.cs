@@ -411,6 +411,8 @@ public class EyedropperTests
         public string LegsMaterialId { get; set; } = string.Empty;
         public void SetTabletopMaterial(Material material) { }
         public void SetLegsMaterial(Material material) { }
+        public string TabletopSlotLabel => "Столешница";
+        public string LegsSlotLabel => "Ножки";
     }
 
     [Test]

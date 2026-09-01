@@ -8,6 +8,10 @@ namespace KitchenDesigner.Core
 
         string LegsMaterialId { get; set; }
 
+        string TabletopSlotLabel { get; }
+
+        string LegsSlotLabel { get; }
+
         void SetTabletopMaterial(Material material);
 
         void SetLegsMaterial(Material material);
