@@ -8,68 +8,25 @@ using KitchenDesigner.Core;
 using SimpleGif;
 using SimpleGif.Enums;
 
-/// <summary>PlayMode-тест: загружает example.save.json, находит двойной ящик
+/// <summary>Генератор docs/drawer_animation.gif: загружает example.save.json, находит двойной ящик
 /// A3_gtv_double_lower_A и записывает GIF-анимацию цикла: открыть оба → закрыть
 /// верхний → закрыть все. Сохраняет в docs/drawer_animation.gif.</summary>
-[Explicit("генератор docs/drawer_animation.gif: 730 кадров по 100 мс — см. tools\\artifacts.ps1")]
-public class DrawerAnimationGifTests
+[Explicit("генератор docs/drawer_animation.gif: 37 кадров по 100 мс — см. tools\\artifacts.ps1")]
+public class DrawerAnimationGifTests : DocsArtifactFixture
 {
-    private const int RenderW = 480;
-    private const int RenderH = 360;
+    // Размер кадра упирается не в читаемость, а в вес файла: 37 кадров с
+    // индивидуальной палитрой на 256 цветов дают 3,3 МБ при 480×360 и 11,8 МБ
+    // при 720×540 — такую анимацию README грузить не должен. Кодировщик пишет
+    // КАЖДЫЙ кадр целиком, без межкадровой разницы, поэтому вес растёт быстрее
+    // площади: шум текстуры дерева ломает сжатие по строкам.
+    private const int GifW = 480;
+    private const int GifH = 360;
     private const int FrameDelayMs = 100; // 10 fps
 
-    private GameObject? _bootstrap;
-    private GameObject? _testCamera;
-    private GameObject? _sunGo;
+    private const string DoubleDrawerName = "A3_gtv_double_lower_A";
 
-    [UnitySetUp]
-    public IEnumerator SetUp()
-    {
-        PlayModeTestConfig.ConfigureForTests();
-
-        _testCamera = new GameObject("Main Camera");
-        _testCamera!.tag = "MainCamera";
-        _testCamera!.AddComponent<Camera>();
-        _testCamera!.transform.position = Vector3.zero;
-        _testCamera!.transform.rotation = Quaternion.identity;
-
-        _sunGo = new GameObject("Directional Light");
-        var light = _sunGo.AddComponent<Light>();
-        light.type = LightType.Directional;
-        light.color = Color.white;
-        light.intensity = 1f;
-        RenderSettings.sun = light;
-        SunController.Reset();
-
-        SaveLoadManager.LastPath = "";
-        var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
-        if (File.Exists(autoPath)) File.Delete(autoPath);
-
-        _bootstrap = new GameObject("Bootstrap");
-        _bootstrap.AddComponent<Bootstrap>();
-
-        yield return null;
-        yield return null;
-    }
-
-    [UnityTearDown]
-    public IEnumerator TearDown()
-    {
-        Time.captureFramerate = 0;
-        // example.save.json несёт handleMode="Move" → RestoreScene выставил
-        // глобальный статик. Возвращаем дефолт, иначе тулбар «Ручки: перенос»
-        // течёт в снапшоты последующих фикстур (Iso*, тулбар).
-        ResizeHandleManager.SetMode(ResizeHandleManager.HandleMode.Resize);
-        foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
-            if (e != null) Object.Destroy(e.gameObject);
-        foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
-            if (c != null) Object.Destroy(c.gameObject);
-        if (_bootstrap != null) Object.Destroy(_bootstrap);
-        if (_testCamera != null) Object.Destroy(_testCamera);
-        if (_sunGo != null) Object.Destroy(_sunGo);
-        yield return null;
-    }
-
+    /// <summary>Орбита из example.save.json на момент записи анимации.
+    /// Зашита жёстко, чтобы кадр не ехал вслед за сейвом.</summary>
     private static readonly CameraState SavedCamera = new CameraState
     {
         valid = true,
@@ -81,59 +38,29 @@ public class DrawerAnimationGifTests
         distance = 1.2f
     };
 
-    [UnityTest]
-    public IEnumerator RecordDrawerAnimation()
+    [UnityTearDown]
+    public IEnumerator GifTearDown()
     {
-        // ── 1. Загрузить сцену ────────────────────────────────────────────
-        string savePath = Path.Combine(Application.dataPath, "..", "docs", "example.save.json");
-        Assert.IsTrue(File.Exists(savePath), $"Save file not found: {savePath}");
-
-        var data = SaveLoadManager.LoadFromFile(savePath);
-        Assert.IsNotNull(data, "Failed to deserialize save file");
-
-        SaveLoadManager.ClearBoards(PartRegistry.GetAll());
-        var created = SaveLoadManager.RestoreScene(data!);
-        Assert.IsTrue(created.Count > 0, "No elements created from save");
-
-        // Состав окон задаёт тест, а не сейв (см. ProjectWindowsTestState).
-        ProjectWindowsTestState.ShowOnly(null);
-
+        Time.captureFramerate = 0;
         yield return null;
-        yield return null;
-        yield return null;
+    }
 
-        // ── 2. Камера ─────────────────────────────────────────────────────
-        if (CameraController.Instance != null)
-            CameraController.Instance.SetState(SavedCamera);
+    [UnityTest]
+    public IEnumerator DrawerAnimation_DoubleDrawer_OpensThenClosesBothTiers()
+    {
+        yield return LoadExampleProject();
 
-        yield return null;
-
-        // ── 3. Найти двойной ящик ─────────────────────────────────────────
-        DrawerElement? lower = null;
-        foreach (var el in PartRegistry.GetAll())
-        {
-            if (el is DrawerElement d && d.PartName == "A3_gtv_double_lower_A")
-            {
-                lower = d;
-                break;
-            }
-        }
-        Assert.IsNotNull(lower, "Drawer A3_gtv_double_lower_A not found");
+        // ── Найти двойной ящик ────────────────────────────────────────────
+        var lower = FindPart(DoubleDrawerName) as DrawerElement;
+        Assert.IsNotNull(lower, $"{DoubleDrawerName} is not a {nameof(DrawerElement)}");
 
         lower!.ForceClose();
         yield return null;
 
-        // ── 4. Камера на ящик ─────────────────────────────────────────────
-        var cam = _testCamera!.GetComponent<Camera>();
-        cam.clearFlags = CameraClearFlags.SolidColor;
-        cam.backgroundColor = new Color(0.85f, 0.87f, 0.9f, 1f);
+        // ── Камера на ящик ────────────────────────────────────────────────
+        var cam = Cam;
         cam.fieldOfView = 40f;
-        cam.nearClipPlane = 0.05f;
-        cam.farClipPlane = 50f;
-        cam.transform.position = lower.transform.position + new Vector3(-0.8f, 0.3f, -0.6f);
-        cam.transform.LookAt(lower.transform.position + Vector3.up * 0.05f);
-
-        yield return null;
+        yield return ApplyCameraState(SavedCamera);
 
         // ── 5. Запись кадров ──────────────────────────────────────────────
         // Зафиксировать fps, чтобы Time.deltaTime был предсказуемым в batch-mode
@@ -196,13 +123,13 @@ public class DrawerAnimationGifTests
 
     private Texture2D CaptureFrame(Camera cam)
     {
-        var rt = new RenderTexture(RenderW, RenderH, 16, RenderTextureFormat.ARGB32);
+        var rt = new RenderTexture(GifW, GifH, 16, RenderTextureFormat.ARGB32);
         cam.targetTexture = rt;
         cam.Render();
 
-        var tex = new Texture2D(RenderW, RenderH, TextureFormat.RGBA32, false);
+        var tex = new Texture2D(GifW, GifH, TextureFormat.RGBA32, false);
         RenderTexture.active = rt;
-        tex.ReadPixels(new Rect(0, 0, RenderW, RenderH), 0, 0);
+        tex.ReadPixels(new Rect(0, 0, GifW, GifH), 0, 0);
         tex.Apply();
 
         RenderTexture.active = null;

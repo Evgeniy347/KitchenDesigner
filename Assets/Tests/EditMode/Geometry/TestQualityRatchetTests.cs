@@ -29,7 +29,9 @@ namespace KitchenDesigner.Tests.Geometry
             ("EditMode", 14),
             ("EditMode/Geometry", 0),
             ("EditMode/Pure", 1),
-            ("PlayMode", 4),
+            // Было 4: имена генераторов картинок для docs/ выправлены вместе с
+            // переводом их на DocsArtifactFixture. Остался CapturePhotoMode.
+            ("PlayMode", 1),
         };
 
         /// <summary>Долг по молчащим ассертам, снятый на 469f2e0f, по файлу.

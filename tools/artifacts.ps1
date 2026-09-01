@@ -13,7 +13,7 @@
     даже когда ничего не менялось. Отсюда вечно грязный git status на
     docs/*.png и docs/*.gif, к которому все привыкли и перестали смотреть.
 
-    Цена: 4 класса, 5 «тестов» — 160 секунд из 228 у всего набора PlayMode.
+    Цена: 6 классов, 8 «тестов» — около 285 секунд, из них 145 на один GIF.
     Две трети времени цикла «правка → проверка» уходили на рисование картинок,
     которые никто в этот момент не смотрит.
 
@@ -23,11 +23,12 @@
 .EXAMPLE
     .\tools\artifacts.ps1                 # все генераторы
     .\tools\artifacts.ps1 -Only gif       # только GIF анимации ящика
+    .\tools\artifacts.ps1 -Only photo     # только заглавный кадр в фоторежиме
     .\tools\artifacts.ps1 -Only perf      # только профиль камеры
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('all', 'gif', 'overview', 'gaps', 'perf')]
+    [ValidateSet('all', 'gif', 'overview', 'photo', 'gaps', 'spec', 'perf')]
     [string]$Only = 'all',
 
     [int]$TimeoutMinutes = 20
@@ -41,10 +42,12 @@ $gateway = Join-Path $PSScriptRoot 'unity.ps1'
 # Имя класса → что он рисует. Список ОДИН и здесь, и в unity.ps1 ($GeneratorSuites);
 # разъедутся — генератор снова поедет в обычном прогоне и вернёт те же 160 секунд.
 $suites = [ordered]@{
-    gif      = @{ Class = 'DrawerAnimationGifTests';  Makes = 'docs/drawer_animation.gif' }
-    overview = @{ Class = 'OverviewScreenshotTests';  Makes = 'docs/overview.png' }
-    gaps     = @{ Class = 'GapsScreenshotTests';      Makes = 'docs/gaps_overview.png' }
-    perf     = @{ Class = 'PerfProfileTests';         Makes = 'test-results/perf/*.csv' }
+    gif      = @{ Class = 'DrawerAnimationGifTests';    Makes = 'docs/drawer_animation.gif' }
+    overview = @{ Class = 'OverviewScreenshotTests';    Makes = 'docs/overview.png' }
+    photo    = @{ Class = 'PhotoScreenshotTests';       Makes = 'docs/photo.png' }
+    gaps     = @{ Class = 'GapsScreenshotTests';        Makes = 'docs/gaps_overview.png + docs/facade-gaps.png' }
+    spec     = @{ Class = 'SpecificationScreenshotTests'; Makes = 'docs/specification.png' }
+    perf     = @{ Class = 'PerfProfileTests';           Makes = 'test-results/perf/*.csv' }
 }
 
 $chosen = if ($Only -eq 'all') { $suites.Keys } else { @($Only) }

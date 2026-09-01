@@ -469,7 +469,9 @@ $script:GeneratorSuites = @(
     'PerfProfileTests',
     'DrawerAnimationGifTests',
     'OverviewScreenshotTests',
-    'GapsScreenshotTests'
+    'PhotoScreenshotTests',
+    'GapsScreenshotTests',
+    'SpecificationScreenshotTests'
 )
 
 function Get-DefaultFilter {
