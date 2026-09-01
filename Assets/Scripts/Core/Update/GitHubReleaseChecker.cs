@@ -5,9 +5,6 @@ using UnityEngine.Networking;
 
 namespace KitchenDesigner.Core.Update
 {
-    /// <summary>Реальный запрос к GitHub Releases API. WebGL-сборка не содержит
-    /// этого класса (#if), а в редакторе/тестах его не создаёт UpdateService —
-    /// сеть дёргается только в собранном десктопе.</summary>
     public sealed class GitHubReleaseChecker : MonoBehaviour, IUpdateChecker
     {
         public const string ApiUrl =

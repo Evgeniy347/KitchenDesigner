@@ -622,4 +622,35 @@ public class CooktopElementTests
         Assert.AreEqual("decor-from-save", cooktop.MaterialId,
             "id из сейва нельзя терять: иначе перезапуск стирает текстуру");
     }
+
+    [Test]
+    public void Decor_Tiling_ReachesBothBoxes_NotJustTheHotplate()
+    {
+        // У варочной ДВЕ коробки: плита 5 мм сверху и короб выреза внутрь
+        // столешницы. «Вырез» декора нужен обеим — на одной плите короб остался
+        // бы с нерастянутой плиткой, и стык двух масштабов виден на глаз.
+        // GetComponentInChildren нашёл бы только первую из них.
+        var cooktop = CreateCooktop(Vector3.zero);
+        var def = new MaterialDef("cooktop_decor", "Камень", "ЛДСП", Color.white, null, 300)
+        {
+            tileHeightMM = 300,
+        };
+        MaterialCatalog.Register(def);
+
+        MaterialManager.Apply(cooktop, def);
+
+        var expected = MaterialManager.ComputeTileST(cooktop.DecorSurfaceMM, 300, 300);
+        var renderers = cooktop.GetComponentsInChildren<MeshRenderer>();
+        Assert.Greater(renderers.Length, 1,
+            "у варочной больше одной коробки — иначе проверять нечего");
+
+        var block = new MaterialPropertyBlock();
+        int id = Shader.PropertyToID("_BaseMap_ST");
+        foreach (var r in renderers)
+        {
+            r.GetPropertyBlock(block);
+            Assert.AreEqual(expected, block.GetVector(id),
+                $"коробка «{r.name}» осталась без «выреза» декора");
+        }
+    }
 }

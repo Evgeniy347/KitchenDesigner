@@ -6,26 +6,20 @@ using KitchenDesigner.Core.UI;
 
 namespace KitchenDesigner.Core.Update
 {
-    /// <summary>
-    /// Модальная карточка «Доступно обновление», собранная кодом через
-    /// <see cref="UIFactory"/>. Затемняет экран (перехват кликов, чтобы нельзя было
-    /// работать за диалогом) и даёт две кнопки. Никаких корутин/анимаций —Show/Hide
-    /// просто переключают активность, за счёт чего компонент тестируется в EditMode.
-    /// </summary>
     public sealed class UpdateDialogUI : MonoBehaviour, IUpdateDialog
     {
         private RectTransform? _root;
         private TMP_Text? _title;
         private TMP_Text? _message;
-        internal Button? UpdateButton;   // internal — видно EditMode-тестам
+        internal Button? UpdateButton;
         internal Button? CancelButton;
 
         private Action? _onUpdate;
         private Action? _onCancel;
 
-        // Внутренние геттеры для EditMode-тестов (internalsVisibleTo).
         internal bool IsVisible => _root != null && _root.gameObject.activeSelf;
         internal string? MessageText => _message != null ? _message.text : null;
+        internal RectTransform? BackdropRect => _root;
 
 
         private const float W = 460f;

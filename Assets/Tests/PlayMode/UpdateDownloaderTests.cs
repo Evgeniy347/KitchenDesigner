@@ -96,4 +96,67 @@ public class UpdateDownloaderTests
             try { if (File.Exists(dst)) File.Delete(dst); } catch (IOException) { }
         }
     }
+
+    [UnityTest]
+    public IEnumerator Downloader_Cancelled_ReportsCancellation_AndLeavesNoPartialFile()
+    {
+        var src = TempPath("kd-update-src-");
+        var dst = TempPath("kd-update-dst-");
+        File.WriteAllBytes(src, new byte[4 * 1024 * 1024]);
+
+        var go = new GameObject("downloader");
+        try
+        {
+            var downloader = go.AddComponent<UnityWebRequestDownloader>();
+
+            bool done = false, failed = false, cancelled = false;
+            string reason = null;
+            downloader.Start(new Uri(src).AbsoluteUri, dst,
+                _ => { }, () => done = true, (m, c) => { failed = true; reason = m; cancelled = c; });
+            downloader.Cancel();
+
+            float elapsed = 0f;
+            while (!done && !failed && elapsed < TimeoutSeconds)
+            {
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            Assert.IsTrue(failed, $"отмена не дошла до колбэка за {TimeoutSeconds} с");
+            Assert.IsTrue(cancelled,
+                "Abort() отдаёт обычный ConnectionError — по результату запроса отмену от "
+                + "сетевого сбоя не отличить. Решает наш собственный флаг, и решает ПЕРВЫМ: "
+                + "иначе пользователь, нажавший «Отмена», получает окно с ошибкой сети. "
+                + "Причина: " + reason);
+            Assert.IsFalse(done);
+            Assert.IsFalse(File.Exists(dst),
+                "недокачанный файл после отмены остаётся мусором в temp и, что хуже, "
+                + "выглядит как готовый установщик");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(go);
+            try { File.Delete(src); } catch (IOException) { }
+            try { if (File.Exists(dst)) File.Delete(dst); } catch (IOException) { }
+        }
+    }
+
+    [Test]
+    public void Cancel_BeforeAnythingStarted_DoesNotThrow()
+    {
+        var go = new GameObject("downloader");
+        try
+        {
+            var downloader = go.AddComponent<UnityWebRequestDownloader>();
+            Assert.DoesNotThrow(() => downloader.Cancel(),
+                "Отмена приходит из UI и может опередить запрос или прийти дважды — "
+                + "Abort() по уже завершённому или ещё не созданному запросу не должен "
+                + "выносить обработчик кнопки");
+            Assert.DoesNotThrow(() => downloader.Cancel());
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(go);
+        }
+    }
 }

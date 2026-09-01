@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.Update
 {
-    // ── DTO ответа GitHub Releases API (только нужные поля) ────────────────
     [Serializable] internal sealed class GhAsset
     {
         public string name = string.Empty;
@@ -16,11 +15,6 @@ namespace KitchenDesigner.Core.Update
         public GhAsset[] assets = Array.Empty<GhAsset>();
     }
 
-    /// <summary>
-    /// Разбирает JSON эндпоинта «/releases/latest» в ReleaseManifest. Чистая функция
-    /// над строкой — тестируется фикстурами без сети. Возвращает false + человекочитаемую
-    /// причину ошибки, если JSON битый, нет тега или нет подходящего x64-установщика.
-    /// </summary>
     public static class ReleaseManifestParser
     {
         public static bool TryParse(string json, out ReleaseManifest? manifest, out string error)

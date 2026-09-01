@@ -582,4 +582,23 @@ public class MaterialTests
         Assert.AreEqual(500f, DecorSpanMM(mesh, dims, Vector3.up).y, 0.5f, "пласть ±Y: глубина");
         Assert.AreEqual(500f, DecorSpanMM(mesh, dims, Vector3.right).x, 0.5f, "торец ±X: глубина");
     }
+
+    // --- Каталог читает индекс ровно один раз ---
+
+    [Test]
+    public void Catalog_AfterLoad_DoesNotRereadTheIndexOverIt()
+    {
+        // Флаг «индекс уже пытались прочитать» ставится и здесь тоже. Без него
+        // первое же обращение к каталогу после Load перечитало бы файл и стёрло
+        // всё, что положили: именно так каталог приезжает в WebGL — корутиной,
+        // где синхронного пути нет вообще.
+        MaterialCatalog.Load(new[]
+        {
+            new MaterialDef("only_one", "Единственный", "ЛДСП", Color.gray),
+        });
+
+        Assert.AreEqual(1, MaterialCatalog.All.Count,
+            "каталог, собранный вручную, не должен подменяться чтением index.json");
+        Assert.AreEqual("only_one", MaterialCatalog.All[0].id);
+    }
 }

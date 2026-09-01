@@ -5,16 +5,8 @@ using KitchenDesigner.Core.UI;
 
 namespace KitchenDesigner.Core.Update
 {
-    /// <summary>
-    /// Точка входа автообновления: собирает координатор из реальных адаптеров и
-    /// запускает проверку через пару секунд после старта, чтобы не конкурировать
-    /// с загрузкой сцены/текстур. Создаётся <see cref="Bootstrap"/> только в
-    /// собранном Windows-плеере; <see cref="StartupCheckEnabled"/> выключают тесты.
-    /// </summary>
     public sealed class UpdateService : MonoBehaviour
     {
-        /// <summary>Тесты/PlayModeTestConfig ставят false, чтобы даже случайно
-        /// созданный сервис не полез в сеть.</summary>
         public static bool StartupCheckEnabled = true;
 
         [SerializeField] private float _startupDelaySeconds = 2f;

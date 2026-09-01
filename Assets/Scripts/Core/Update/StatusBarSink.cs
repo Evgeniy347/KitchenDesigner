@@ -3,9 +3,6 @@ using KitchenDesigner.Core.UI;
 
 namespace KitchenDesigner.Core.Update
 {
-    /// <summary>Приспособление <see cref="IStatusSink"/> к реальной статус-полосе.
-    /// Если <see cref="StatusBarUI"/> ещё не создан (узкие места старта) — тихо
-    /// пропускаем: это одноразовая подсказка, а не критичное событие.</summary>
     public sealed class StatusBarSink : IStatusSink
     {
         public void Show(string message, StatusLevel level, float seconds)

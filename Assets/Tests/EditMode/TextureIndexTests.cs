@@ -32,7 +32,7 @@ public class TextureIndexTests
         Assert.AreEqual("Дуб", d.displayName);
         Assert.AreEqual("ЛДСП", d.kind);
         Assert.AreEqual("oak.jpg", d.fileName);
-        Assert.AreEqual(800, d.tileSizeMM);
+        Assert.AreEqual(800, d.tileWidthMM);
         Assert.AreEqual(400, d.tileHeightMM);
         Assert.AreEqual(new Color32(0xC7, 0xA8, 0x73, 0xFF), (Color32)d.baseColor);
         Assert.IsTrue(d.HasTextureFile);

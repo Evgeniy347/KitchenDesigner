@@ -137,4 +137,58 @@ public class UpdateDialogUiTests
         Assert.That(dlg.MessageText, Does.Contain(restartSentence));
         Object.DestroyImmediate(go);
     }
+
+    [Test]
+    public void DownloadDialog_ProgressBar_CannotBeDraggedByTheUser()
+    {
+        var go = new GameObject("dl");
+        var dlg = go.AddComponent<DownloadProgressUI>();
+        dlg.Build(_canvas.transform);
+        dlg.ShowDownloading("1.2.3", () => { });
+        dlg.SetProgress(0.25f);
+
+        Assert.IsFalse(dlg.ProgressBarIsInteractive,
+            "полоса только ПОКАЗЫВАЕТ ход загрузки. Интерактивный Slider ловит "
+            + "перетаскивание и переписывает value: пользователь двигает ползунок, "
+            + "прогресс перестаёт отражать закачку, а следующий SetProgress дёргает "
+            + "его назад");
+        Assert.AreEqual(0.25f, dlg.Progress, 0.001f);
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void BothDialogs_Backdrop_CoversTheScreenAndSwallowsClicks()
+    {
+        var updateGo = new GameObject("d");
+        var update = updateGo.AddComponent<UpdateDialogUI>();
+        update.Build(_canvas.transform);
+
+        var downloadGo = new GameObject("dl");
+        var download = downloadGo.AddComponent<DownloadProgressUI>();
+        download.Build(_canvas.transform);
+
+        AssertModalBackdrop(update.BackdropRect, "UpdateDialogUI");
+        AssertModalBackdrop(download.BackdropRect, "DownloadProgressUI");
+
+        Object.DestroyImmediate(updateGo);
+        Object.DestroyImmediate(downloadGo);
+    }
+
+    private static void AssertModalBackdrop(RectTransform backdrop, string owner)
+    {
+        Assert.IsNotNull(backdrop, owner + ": подложки нет вовсе");
+        Assert.AreEqual(Vector2.zero, backdrop.anchorMin, owner + ": подложка не от угла");
+        Assert.AreEqual(Vector2.one, backdrop.anchorMax, owner + ": подложка не до угла");
+        Assert.AreEqual(Vector2.zero, backdrop.offsetMin, owner + ": подложка не во весь экран");
+        Assert.AreEqual(Vector2.zero, backdrop.offsetMax, owner + ": подложка не во весь экран");
+
+        var image = backdrop.GetComponent<UnityEngine.UI.Image>();
+        Assert.IsNotNull(image, owner + ": подложке нужен Graphic, иначе она не ловит лучи");
+        Assert.IsTrue(image.raycastTarget,
+            owner + ": окно модальное. Подложка без raycastTarget пропускает клики "
+            + "насквозь, и пользователь двигает мебель, пока диалог висит поверх — "
+            + "а сцена под ним уже уезжает в обновление");
+        Assert.Greater(image.color.a, 0f,
+            owner + ": затемнение — единственный видимый признак, что окно модальное");
+    }
 }

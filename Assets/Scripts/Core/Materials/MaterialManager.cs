@@ -3,9 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Применение декоров к деталям. Материал шарится по декору (один
-    /// Material на id — для батчинга), а индивидуальный «вырез» текстуры под
-    /// размер щита задаётся через MaterialPropertyBlock (_BaseMap_ST).</summary>
     public static class MaterialManager
     {
         private static readonly int BaseMapST = Shader.PropertyToID("_BaseMap_ST");
@@ -16,23 +13,13 @@ namespace KitchenDesigner.Core
 
         private static readonly Dictionary<string, Material> _cache = new Dictionary<string, Material>();
 
-        // Разрешённый физ. размер плитки (мм) по id декора: высота может браться
-        // из пропорций картинки, а это требует её загрузки — кэшируем, чтобы
-        // тянущийся ресайз не дёргал Resources.Load каждый кадр.
-        private static readonly Dictionary<string, Vector2Int> _tileMM = new Dictionary<string, Vector2Int>();
+        private static readonly Dictionary<string, Vector2Int> _resolvedTileMM = new Dictionary<string, Vector2Int>();
 
-        // Один переиспользуемый блок: RefreshTiling зовётся на каждый кадр
-        // ресайза, аллокация MaterialPropertyBlock там ни к чему.
-        private static readonly MaterialPropertyBlock _mpb = new MaterialPropertyBlock();
+        private static readonly MaterialPropertyBlock _reusedPropertyBlock = new MaterialPropertyBlock();
 
-        /// <summary>UV-масштаб «вырез под размер щита»: фиксированный физический
-        /// масштаб декора, картинка обрезается/повторяется, а не вписывается.
-        /// scale = размер_щита_мм / размер_декора_мм. Чистая функция.</summary>
-        public static Vector4 ComputeTileST(Vector3Int dimsMM, int tileSizeMM)
-            => ComputeTileST(dimsMM, tileSizeMM, tileSizeMM);
+        public static Vector4 ComputeTileST(Vector3Int dimsMM, int squareTileMM)
+            => ComputeTileST(dimsMM, squareTileMM, squareTileMM);
 
-        /// <summary>Как выше, но с раздельными физ. размерами плитки по X и Y
-        /// (декор может быть неквадратным — грейн/направленная текстура).</summary>
         public static Vector4 ComputeTileST(Vector3Int dimsMM, int tileWidthMM, int tileHeightMM)
             => ComputeTileST(new Vector2Int(dimsMM.x, dimsMM.y), tileWidthMM, tileHeightMM);
 
@@ -43,26 +30,20 @@ namespace KitchenDesigner.Core
             return new Vector4(surfaceMM.x / tw, surfaceMM.y / th, 0f, 0f);
         }
 
-        /// <summary>Физ. высота плитки по её ширине и пропорциям картинки. Нужна,
-        /// когда декор задан только шириной: подставлять квадрат для картинки
-        /// 1920×853 значит сплющить её по вертикали в 2,25 раза. Чистая функция.</summary>
         public static int TileHeightFromAspect(int tileWidthMM, int texWidthPx, int texHeightPx)
         {
             if (texWidthPx <= 0 || texHeightPx <= 0) return Mathf.Max(1, tileWidthMM);
             return Mathf.Max(1, Mathf.RoundToInt(tileWidthMM * (float)texHeightPx / texWidthPx));
         }
 
-        /// <summary>Физ. размер плитки декора (мм). Ширина — из декора; высота
-        /// либо задана явно, либо выводится из пропорций текстуры (а без
-        /// текстуры плитка квадратная).</summary>
         public static Vector2Int TileMM(MaterialDef def)
         {
             if (def == null) return new Vector2Int(1, 1);
 
-            int w = Mathf.Max(1, def.tileSizeMM);
+            int w = Mathf.Max(1, def.tileWidthMM);
             if (def.tileHeightMM > 0) return new Vector2Int(w, def.tileHeightMM);
 
-            if (!string.IsNullOrEmpty(def.id) && _tileMM.TryGetValue(def.id, out var cached))
+            if (!string.IsNullOrEmpty(def.id) && _resolvedTileMM.TryGetValue(def.id, out var cached))
                 return cached;
 
             var tex = ResolveTexture(def);
@@ -70,18 +51,12 @@ namespace KitchenDesigner.Core
                 ? TileHeightFromAspect(w, tex.width, tex.height)
                 : w);
 
-            // Пока картинка декора не приехала, квадрат — ВРЕМЕННЫЙ ответ.
-            // Закэшировать его значило бы оставить сплющенный декор до конца
-            // сессии: OnTextureArrived сбросит запись, но только если она есть.
-            if (!string.IsNullOrEmpty(def.id) && (tex != null || !def.HasTextureFile))
-                _tileMM[def.id] = size;
+            bool sizeIsFinalNotAPlaceholder = tex != null || !def.HasTextureFile;
+            if (!string.IsNullOrEmpty(def.id) && sizeIsFinalNotAPlaceholder)
+                _resolvedTileMM[def.id] = size;
             return size;
         }
 
-        /// <summary>Картинка декора. null — либо декор чисто цветовой (тогда
-        /// показывать надо <see cref="MaterialDef.baseColor"/>, как делает образец
-        /// пипетки), либо картинка ещё не загружена: обращение к ней и есть повод
-        /// её затребовать.</summary>
         public static Texture2D? ResolveTexture(MaterialDef def)
         {
             if (def == null) return null;
@@ -90,13 +65,6 @@ namespace KitchenDesigner.Core
             return def.texture;
         }
 
-        /// <summary>Картинка декора доехала. Материал шарится по id, поэтому
-        /// достаточно положить текстуру в него — она появится сразу на всех
-        /// деталях с этим декором, без обхода сцены.
-        ///
-        /// Если высота плитки выводилась из пропорций картинки, до её прихода она
-        /// была квадратной — пересчитываем «вырез» у элементов с этим декором и
-        /// перестраиваем накладки: их МЕШ строится по TileMM.</summary>
         public static void OnTextureArrived(MaterialDef def)
         {
             if (def == null || def.texture == null) return;
@@ -105,14 +73,12 @@ namespace KitchenDesigner.Core
             {
                 mat.SetTexture(BaseMap, def.texture);
                 mat.mainTexture = def.texture;
-                // Заглушка отработала: дальше цвет обязан быть белым, иначе он
-                // домножится на приехавшую картинку и перекрасит её.
                 ApplyAlbedo(mat, def);
             }
 
-            if (def.tileHeightMM > 0) return; // размер плитки от картинки не зависел
+            if (def.tileHeightMM > 0) return;
 
-            _tileMM.Remove(def.id);
+            _resolvedTileMM.Remove(def.id);
             var all = PartRegistry.GetAll();
             if (all == null) return;
 
@@ -124,8 +90,6 @@ namespace KitchenDesigner.Core
                     || MaterialIdOf(el, MaterialSlot.Tabletop) == def.id)
                     RefreshTiling(el, def);
 
-                // SyncAll здесь не поможет: он пересобирает только сдвинутые и
-                // растянутые элементы, а тут поменялся размер плитки декора.
                 if (UsesInOverlay(el, def.id)) TextureOverlayRenderer.Refresh(el);
             }
         }
@@ -137,11 +101,6 @@ namespace KitchenDesigner.Core
             return false;
         }
 
-        /// <summary>Надеть декор по id из сейва. Если такого декора в каталоге
-        /// пока нет (индекс текстур ещё не приехал — WebGL; папку временно
-        /// подменили), показываем дефолтный серый, но ЗАПОМНЕННЫЙ id не теряем:
-        /// иначе перезапуск молча стирал бы выбранную текстуру, а следующее
-        /// сохранение записывало бы вместо неё «default».</summary>
         public static void ApplyById(KitchenElement element, string materialId)
         {
             if (element == null) return;
@@ -151,8 +110,6 @@ namespace KitchenDesigner.Core
                 element.MaterialId = materialId;
         }
 
-        /// <summary>Надеть декор на конкретный слот элемента. У обычной детали
-        /// слот один («Текстура»), у стола их три — щит, столешница и ножки.</summary>
         public static void ApplySlot(KitchenElement element, MaterialSlot slot, MaterialDef def)
         {
             if (element == null || def == null) return;
@@ -170,8 +127,6 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Декор, который сейчас в слоте. У элемента без столешницы и
-        /// ножек любой слот отвечает базовым декором.</summary>
         public static string MaterialIdOf(KitchenElement element, MaterialSlot slot)
         {
             if (element == null) return MaterialCatalog.DefaultId;
@@ -203,16 +158,11 @@ namespace KitchenDesigner.Core
             if (mat != null) tabletop.SetLegsMaterial(mat);
         }
 
-        /// <summary>У элемента назначен НЕстандартный декор (не дефолтный серый) —
-        /// т.е. пользователь выбрал текстуру и её надо показывать вместо
-        /// валидационного тона подсветки.</summary>
         public static bool HasCustomDecor(KitchenElement element)
             => element != null
                && !string.IsNullOrEmpty(element.MaterialId)
                && element.MaterialId != MaterialCatalog.DefaultId;
 
-        /// <summary>Повесить на элемент его СОБСТВЕННЫЙ декор (по текущему MaterialId).
-        /// Используется подсветкой, чтобы показать текстуру объекта.</summary>
         public static void ApplyOwnDecor(KitchenElement element)
             => Apply(element, MaterialCatalog.Get(element != null ? element.MaterialId : null));
 
@@ -231,10 +181,6 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            // У варочной две коробки (плита и короб выреза) — красить надо обе,
-            // а GetComponentInChildren нашёл бы только первую. Материал она
-            // выводит из своего же MaterialId, поэтому декор переживает и
-            // пересборку геометрии.
             if (element is CooktopElement cooktop)
             {
                 cooktop.ApplyMaterials();
@@ -245,15 +191,11 @@ namespace KitchenDesigner.Core
             var r = element.GetComponentInChildren<MeshRenderer>();
             if (r == null) return;
 
-            // У сборного фасада 2 сабмеша (декор + фрезеровки) — меняем только
-            // декор (индекс 0), сохраняя остальные материалы.
             var mats = r.sharedMaterials;
             if (mats.Length > 1)
             {
                 mats[0] = mat;
                 r.sharedMaterials = mats;
-                // Служебные сабмеши детали (паз, некромкованный торец) могли быть
-                // затёрты тонировкой — декор возвращается вместе с ними.
                 element.RefreshSubmeshMaterials();
             }
             else
@@ -263,8 +205,6 @@ namespace KitchenDesigner.Core
             RefreshTiling(element, def);
         }
 
-        /// <summary>Пересчитать «вырез» текстуры под текущий размер щита (звать
-        /// после ресайза, чтобы декор не растягивался).</summary>
         public static void RefreshTiling(KitchenElement element)
             => RefreshTiling(element, MaterialCatalog.Get(element != null ? element.MaterialId : null));
 
@@ -275,16 +215,14 @@ namespace KitchenDesigner.Core
             var tile = TileMM(def);
             var st = ComputeTileST(element.DecorSurfaceMM, tile.x, tile.y);
 
-            // У варочной две коробки, и «вырез» декора нужен обеим: на одной
-            // плите он оставил бы короб выреза с нерастянутой плиткой.
             if (element is CooktopElement)
             {
                 foreach (var cr in element.GetComponentsInChildren<MeshRenderer>())
                 {
                     if (cr == null) continue;
-                    cr.GetPropertyBlock(_mpb);
-                    _mpb.SetVector(BaseMapST, st);
-                    cr.SetPropertyBlock(_mpb);
+                    cr.GetPropertyBlock(_reusedPropertyBlock);
+                    _reusedPropertyBlock.SetVector(BaseMapST, st);
+                    cr.SetPropertyBlock(_reusedPropertyBlock);
                 }
                 return;
             }
@@ -292,9 +230,9 @@ namespace KitchenDesigner.Core
             var r = element.DecorRenderer;
             if (r == null) return;
 
-            r.GetPropertyBlock(_mpb);
-            _mpb.SetVector(BaseMapST, st);
-            r.SetPropertyBlock(_mpb);
+            r.GetPropertyBlock(_reusedPropertyBlock);
+            _reusedPropertyBlock.SetVector(BaseMapST, st);
+            r.SetPropertyBlock(_reusedPropertyBlock);
         }
 
         public static Material? GetSharedMaterial(MaterialDef def)
@@ -310,8 +248,6 @@ namespace KitchenDesigner.Core
             mat.SetFloat(Metallic, def.metallic);
             mat.SetFloat(Smoothness, def.smoothness);
 
-            // Картинку достаём ДО цвета: от того, приехала ли она, зависит, что
-            // класть в _BaseColor (см. ApplyAlbedo).
             var tex = ResolveTexture(def);
             if (tex != null)
             {
@@ -325,28 +261,13 @@ namespace KitchenDesigner.Core
             return mat;
         }
 
-        /// <summary>Положить в <c>_BaseColor</c> то, что должно быть видно.
-        ///
-        /// У декора с ЗАГРУЖЕННОЙ картинкой цвет обязан быть белым: URP Lit
-        /// умножает <c>_BaseColor</c> на <c>_BaseMap</c>, и любой другой цвет
-        /// перекрашивает текстуру. Средний цвет самой картинки тут особенно
-        /// коварен — декор темнеет примерно вдвое, а по каналам ещё и насыщается.
-        ///
-        /// <c>MaterialDef.baseColor</c> у такого декора — ЗАГЛУШКА: она видна,
-        /// пока картинка не приехала (иначе деталь секунду светится белым), и
-        /// гасится в <see cref="OnTextureArrived"/>. У декора БЕЗ картинки цвет —
-        /// это и есть весь декор.</summary>
         private static void ApplyAlbedo(Material mat, MaterialDef def)
         {
             var color = def.texture != null ? Color.white : def.baseColor;
             mat.SetColor(BaseColor, color);
-            mat.color = color; // совместимость со стандартным доступом
+            mat.color = color;
         }
 
-        /// <summary>Режимы фильтрации декора. Repeat — щит крупнее плитки просто
-        /// повторяет её (текстуры бесшовные). Трилинейная фильтрация + анизотропия
-        /// нужны из-за косых углов: столешница и пол уходят от камеры почти в
-        /// плоскость, и на bilinear+aniso 1 дальняя часть смазывается в кашу.</summary>
         public static void ConfigureTexture(Texture2D tex)
         {
             if (tex == null) return;
@@ -355,11 +276,10 @@ namespace KitchenDesigner.Core
             tex.anisoLevel = 8;
         }
 
-        /// <summary>Сброс кэша материалов (для тестов).</summary>
         public static void ClearCache()
         {
             _cache.Clear();
-            _tileMM.Clear();
+            _resolvedTileMM.Clear();
         }
     }
 }

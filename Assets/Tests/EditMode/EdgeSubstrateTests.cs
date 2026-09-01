@@ -351,6 +351,182 @@ public class EdgeSubstrateTests
         }
     }
 
+    // --- Подложка и спецификация отвечают ОДНО И ТО ЖЕ ---
+
+    [Test]
+    public void Substrate_AndTheSpecificationColumns_AgreeOnEverySide()
+    {
+        // Подложка рисуется ровно там, где в CSV пустая колонка кромки. Это не
+        // совпадение и не удобство: расходимся с раскроем — расходимся с
+        // реальностью, потому что по этому же CSV деталь и кромкуют на
+        // производстве. Два вызывающих (спецификация и подложка) обязаны
+        // спрашивать EdgeBanding.Coverage и получать один ответ.
+        var shelf = MakePart(new Vector3Int(600, 18, 500));
+        float toU = AppConstants.MM_TO_UNITS;
+        var side = MakePart(new Vector3Int(18, 700, 500));
+        side.transform.position = new Vector3((600 + 18) * 0.5f * toU, 0f, 0f);
+
+        var all = PartRegistry.GetAll();
+        var layout = EdgeBanding.LayoutOf(shelf.DimensionsMM);
+        int mask = EdgeSubstrate.BareFaceMask(shelf, all);
+        var columns = EdgeColumns.For(shelf, all);
+
+        var pairs = new (EdgeSide side, string column)[]
+        {
+            (EdgeSide.L1, columns.l1), (EdgeSide.L2, columns.l2),
+            (EdgeSide.W1, columns.w1), (EdgeSide.W2, columns.w2),
+        };
+
+        bool sawBoth = false;
+        foreach (var (edge, column) in pairs)
+        {
+            bool bare = (mask & (1 << layout.FaceIndex(edge))) != 0;
+            Assert.AreEqual(string.IsNullOrEmpty(column), bare,
+                $"{edge}: в спецификации кромка «{column}», а подложка говорит "
+                + (bare ? "«кромки нет»" : "«кромка есть»")
+                + ". Экран и раскрой обязаны сходиться до торца");
+            sawBoth |= bare;
+        }
+
+        Assert.IsTrue(sawBoth,
+            "сцена вырождена: ни один торец не оказался закрытым, и проверка "
+            + "сравнивала бы только пустые случаи");
+    }
+
+    [Test]
+    public void Mask_EdgeBandingOff_NeedsNoNeighbours()
+    {
+        // Выключатель снят — кромки нет ни на одном торце, и спрашивать соседей
+        // не о чем. Это самый частый случай на загрузке проекта: если бы ответ
+        // требовал слепка сцены, каждая деталь платила бы за расчёт перекрытий
+        // там, где он ничего не решает.
+        var e = MakePart(new Vector3Int(600, 18, 500));
+        e.EdgeBandingEnabled = false;
+
+        Assert.AreEqual(0b110011, EdgeSubstrate.BareFaceMask(e, (SceneFaces?)null),
+            "без сцены ответ обязан остаться тем же: все четыре торца голые");
+    }
+
+    [Test]
+    public void SyncScene_RepeatedOnTheSameScene_DoesNotRebuildTheMesh()
+    {
+        // Слепок граней снимается ДО пересборки мешей и переживает её: пересборка
+        // меняет сабмеши, а не габаритные грани, по которым считаются перекрытия.
+        // Меш пересобирается только там, где маска реально изменилась, — иначе
+        // проход по устоявшейся сцене перестраивал бы всю геометрию каждый раз.
+        var shelf = MakePart(new Vector3Int(600, 18, 500));
+        float toU = AppConstants.MM_TO_UNITS;
+        var side = MakePart(new Vector3Int(18, 700, 500));
+        side.transform.position = new Vector3((600 + 18) * 0.5f * toU, 0f, 0f);
+
+        var all = PartRegistry.GetAll();
+        EdgeSubstrate.SyncScene(all);
+        int maskAfterFirst = EdgeSubstrate.BareFaceMask(shelf, all);
+        int meshAfterFirst = shelf.GetComponent<MeshFilter>().sharedMesh.GetInstanceID();
+
+        EdgeSubstrate.SyncScene(all);
+
+        Assert.AreEqual(maskAfterFirst, EdgeSubstrate.BareFaceMask(shelf, all),
+            "второй проход по той же сцене обязан дать ту же маску");
+        Assert.AreEqual(meshAfterFirst,
+            shelf.GetComponent<MeshFilter>().sharedMesh.GetInstanceID(),
+            "маска не изменилась — меш пересобирать нечего. Пересборка на каждом "
+            + "проходе стоила бы полной перестройки геометрии сцены на каждую "
+            + "перекраску валидации");
+    }
+
+    [Test]
+    public void SyncScene_AfterTheNeighbourIsGone_UncoversTheEnd()
+    {
+        // Перекрытие торца зависит от СОСЕДЕЙ: сама деталь не узнаёт, что сосед
+        // уехал или удалён. Поэтому подложку пересчитывает проход по всей сцене
+        // — оттуда же, откуда перекрашивается валидация.
+        var shelf = MakePart(new Vector3Int(600, 18, 500));
+        float toU = AppConstants.MM_TO_UNITS;
+        var side = MakePart(new Vector3Int(18, 700, 500));
+        side.transform.position = new Vector3((600 + 18) * 0.5f * toU, 0f, 0f);
+
+        EdgeSubstrate.SyncScene(PartRegistry.GetAll());
+        var layout = EdgeBanding.LayoutOf(shelf.DimensionsMM);
+        int covered = EdgeSubstrate.BareFaceMask(shelf, PartRegistry.GetAll());
+        Assert.AreNotEqual(0, covered, "торец в боковину кромки не получает");
+
+        side.transform.position = new Vector3(3f, 0f, 0f);
+        EdgeSubstrate.SyncScene(PartRegistry.GetAll());
+
+        Assert.AreEqual(0, EdgeSubstrate.BareFaceMask(shelf, PartRegistry.GetAll()),
+            "сосед уехал — торец открылся и снова кромкуется, а голая плита "
+            + "должна исчезнуть. Деталь об отъезде соседа не узнаёт сама");
+        Assert.AreEqual(1, shelf.GetComponent<MeshRenderer>().sharedMaterials.Length,
+            "сабмеш торцов ушёл вместе с маской");
+    }
+
+    [Test]
+    public void Substrate_DecorName_IsMatchedByDisplayName_NotById()
+    {
+        // Декор-подложку заводит ЧЕЛОВЕК записью в index.json, и видит он там
+        // имя, а не id. Имя набирают руками, поэтому регистр и краевые пробелы
+        // значения не имеют — а вот id с таким текстом подложкой не делает.
+        var byId = new MaterialDef(EdgeSubstrate.DecorName, "Совсем другой декор",
+            "МДФ", Color.red);
+        var byName = new MaterialDef("substrate_by_name", "  подложка ТОРЦА ",
+            "МДФ", new Color(0.8f, 0.7f, 0.6f));
+        MaterialCatalog.Load(new[]
+        {
+            new MaterialDef(MaterialCatalog.DefaultId, "Серый", "ЛДСП", Color.gray),
+            byId, byName,
+        });
+
+        Assert.AreEqual(byName, EdgeSubstrate.Decor(),
+            "совпадение по displayName без учёта регистра и краевых пробелов");
+        Assert.AreNotEqual(byId, EdgeSubstrate.Decor(),
+            "id с тем же текстом подложкой не делает: точка стыка с человеком — "
+            + "то, что он видит в списке декоров");
+    }
+
+    [Test]
+    public void Substrate_White_IsOneMatteMaterialForTheWholeScene()
+    {
+        Assume.That(EdgeSubstrate.Decor(), Is.Null, "подложка сейчас белая");
+
+        var first = EdgeSubstrate.Material();
+        var second = EdgeSubstrate.Material();
+
+        Assert.IsNotNull(first);
+        Assert.AreSame(first, second,
+            "белая подложка — один материал на всю сцену. Свой на деталь означал "
+            + "бы лишний батч у каждой некромкованной детали");
+        Assert.Less(first!.GetFloat("_Smoothness"), 0.2f,
+            "голая плита матовая: глянцевый торец на матовом щите читается как "
+            + "накладка, а не как срез плиты");
+    }
+
+    [Test]
+    public void Apply_OnAPartWithASubstrate_ChangesOnlyTheDecorSubmesh()
+    {
+        // У детали с голыми торцами два сабмеша: декор и подложка. Декор — это
+        // сабмеш 0, и назначение нового декора обязано оставить всё остальное
+        // на месте: паз, некромкованный торец, фрезеровки сборного фасада.
+        var e = MakePart(new Vector3Int(600, 18, 500));
+        e.EdgeBandingEnabled = false;
+        var renderer = e.GetComponent<MeshRenderer>();
+        Assume.That(renderer.sharedMaterials.Length, Is.EqualTo(2));
+
+        var def = new MaterialDef("apply_over_substrate", "Дуб", "ЛДСП", Color.white, null, 800)
+        {
+            tileHeightMM = 800,
+        };
+        MaterialCatalog.Register(def);
+        MaterialManager.Apply(e, def);
+
+        var mats = renderer.sharedMaterials;
+        Assert.AreEqual(2, mats.Length, "сабмеш торцов не должен исчезнуть под декором");
+        Assert.AreEqual(MaterialManager.GetSharedMaterial(def), mats[0], "декор — сабмеш 0");
+        Assert.AreEqual(EdgeSubstrate.Material(), mats[1],
+            "служебные сабмеши детали живут своей жизнью: назначить декор — "
+            + "не значит перекрасить ими торец и паз");
+    }
+
     private KitchenElement MakePart(Vector3Int dims)
     {
         var go = ElementFactory.CreatePart(dims, $"Part{_spawned.Count}", Vector3.zero);

@@ -7,47 +7,20 @@ using UnityEngine.Networking;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Папка декоров и ленивая загрузка их картинок.
-    ///
-    /// Источник — <c>StreamingAssets/Textures</c>: Unity кладёт эту папку в ЛЮБУЮ
-    /// сборку как есть (Windows → <c>&lt;exe&gt;/&lt;Product&gt;_Data/StreamingAssets</c>,
-    /// WebGL → корень сборки), поэтому один и тот же набор файлов работает и на
-    /// десктопе, и в браузере, и в редакторе. Картинки НЕ проходят импорт Unity —
-    /// это обычные файлы, которые можно подменить в установленной сборке и
-    /// перечитать через MCP <c>reload_textures</c>.
-    ///
-    /// Метаданные (<c>index.json</c>) читаются целиком и заранее — до восстановления
-    /// сцены, иначе сохранённые materialId не нашли бы свой декор. Сами картинки
-    /// грузятся ЛЕНИВО, по первому обращению к декору: полный прогон всех файлов
-    /// стоит десятки миллисекунд на картинку, а сцена использует единицы декоров.
-    ///
-    /// Загрузка синхронная там, где папка доступна как файловая (Standalone,
-    /// редактор) — это делает поведение детерминированным для тестов и скриншотов.
-    /// В WebGL файловой системы нет, поэтому индекс и картинки тянутся
-    /// UnityWebRequest'ом, по одной картинке за кадр.</summary>
     public static class TextureLibrary
     {
         public const string FolderName = "Textures";
         public const string IndexFileName = "index.json";
 
-        // Картинки, созданные библиотекой: их надо уничтожить при Reload, иначе
-        // каждая перезагрузка папки оставляла бы прежний набор в VRAM.
         private static readonly List<Texture2D> _owned = new List<Texture2D>();
 
-        // Очередь для WebGL: там синхронного пути нет, а разбирать её надо по одной
-        // картинке за кадр — декод идёт на главном потоке.
         private static readonly Queue<MaterialDef> _pending = new Queue<MaterialDef>();
         private static bool _pumping;
 
-        /// <summary>Папка декоров. На Standalone и в редакторе — обычный путь на
-        /// диске, в WebGL — URL.</summary>
         public static string DirectoryPath => Application.streamingAssetsPath + "/" + FolderName;
 
-        /// <summary>Индекс лежит рядом с картинками.</summary>
         public static string IndexPath => DirectoryPath + "/" + IndexFileName;
 
-        /// <summary>Папка доступна как файловая — можно читать синхронно. Ложь в
-        /// WebGL (там StreamingAssets — это адрес на сервере).</summary>
         public static bool HasFileAccess
         {
             get
@@ -61,12 +34,6 @@ namespace KitchenDesigner.Core
             }
         }
 
-        // ── Индекс ────────────────────────────────────────────────────
-
-        /// <summary>Прочитать индекс синхронно. Возвращает false, если файловой
-        /// системы нет (WebGL) — тогда индекс надо тянуть <see cref="LoadIndexAsync"/>.
-        /// Никогда не бросает: на любой сбой логирует и оставляет каталог с одним
-        /// дефолтным декором.</summary>
         public static bool TryLoadIndexSync()
         {
             if (!HasFileAccess) return false;
@@ -77,7 +44,7 @@ namespace KitchenDesigner.Core
                 if (!System.IO.File.Exists(IndexPath))
                 {
                     Debug.LogWarning($"[Textures] Индекс не найден: {IndexPath}");
-                    return true; // файловая система есть, читать нечего — повторять нечем
+                    return true;
                 }
                 json = System.IO.File.ReadAllText(IndexPath);
             }
@@ -91,8 +58,6 @@ namespace KitchenDesigner.Core
             return true;
         }
 
-        /// <summary>Прочитать индекс запросом — путь WebGL. Ждать эту корутину надо
-        /// ДО загрузки сцены.</summary>
         public static IEnumerator LoadIndexAsync()
         {
             using var req = UnityWebRequest.Get(IndexPath);
@@ -116,11 +81,6 @@ namespace KitchenDesigner.Core
             Debug.Log($"[Textures] Декоров в каталоге: {defs.Count} (из {IndexPath})");
         }
 
-        // ── Картинки ──────────────────────────────────────────────────
-
-        /// <summary>Затребовать картинку декора. Возврат мгновенный: там, где есть
-        /// файловая система, картинка читается тут же, иначе встаёт в очередь и
-        /// приезжает через несколько кадров. Повторные вызовы бесплатны.</summary>
         public static void Request(MaterialDef? def)
         {
             if (def == null || !def.HasTextureFile) return;
@@ -138,9 +98,6 @@ namespace KitchenDesigner.Core
             EnsurePumping();
         }
 
-        /// <summary>Затребовать картинки декоров, которые уже стоят в сцене. Зовётся
-        /// после восстановления проекта: в WebGL это убирает «вспышку» базового
-        /// цвета на первых кадрах.</summary>
         public static void PrefetchScene()
         {
             var all = PartRegistry.GetAll();
@@ -157,12 +114,6 @@ namespace KitchenDesigner.Core
             }
         }
 
-        /// <summary>Перечитать папку целиком: забыть картинки и каталог, прочитать
-        /// индекс заново, пере-надеть декоры на сцену. Возвращает число декоров
-        /// в новом каталоге.
-        ///
-        /// Пере-надеть обязательно: старые картинки уничтожены, и рендереры
-        /// остались бы с материалами, ссылающимися в пустоту.</summary>
         public static int Reload()
         {
             _pending.Clear();
@@ -238,18 +189,6 @@ namespace KitchenDesigner.Core
             Debug.LogWarning($"[Textures] {message}");
         }
 
-        /// <summary>Байты → готовая к показу текстура.
-        ///
-        /// Мипмапы обязательны (без них мелкий рисунок на дальних деталях кипит),
-        /// поэтому картинка собирается через <c>LoadImage</c>, а не через
-        /// <c>UnityWebRequestTexture</c> — тот мип-цепочку не строит.
-        ///
-        /// Сжатие в рантайме экономит ×8 VRAM (RGBA32 1080×1080 с мипами — 6,2 МБ,
-        /// DXT — 0,8 МБ). Требует сторон, кратных 4, и не поддерживается в WebGL;
-        /// в обоих случаях картинка просто остаётся несжатой.
-        ///
-        /// <c>makeNoLongerReadable</c> освобождает копию пикселей в системной
-        /// памяти — она нужна была только для сжатия.</summary>
         private static Texture2D? Decode(byte[] bytes, string name)
         {
             var tex = new Texture2D(2, 2, TextureFormat.RGBA32, mipChain: true);
@@ -276,11 +215,6 @@ namespace KitchenDesigner.Core
             else UnityEngine.Object.DestroyImmediate(tex);
         }
 
-        // ── Очередь (только там, где нет файловой системы) ─────────────
-
-        /// <summary>Поднять разбор очереди, если он ещё не идёт. Флаг ставится
-        /// СИНХРОННО: корутина начнёт выполняться только на следующем кадре, а
-        /// запросы за это время придут ещё — второй разборщик тут не нужен.</summary>
         private static void EnsurePumping()
         {
             if (_pumping) return;
@@ -288,8 +222,6 @@ namespace KitchenDesigner.Core
             if (!TextureLibraryHost.Run(PumpQueue())) _pumping = false;
         }
 
-        /// <summary>Разбирает очередь по ОДНОЙ картинке за кадр: декод идёт на
-        /// главном потоке, и пачка сразу дала бы видимый рывок.</summary>
         private static IEnumerator PumpQueue()
         {
             while (_pending.Count > 0)
@@ -301,17 +233,13 @@ namespace KitchenDesigner.Core
         }
     }
 
-    /// <summary>Хозяин корутин библиотеки: статике нужен MonoBehaviour, чтобы
-    /// что-то ждать. Создаётся сам при первой нужде и живёт между сценами.</summary>
     internal class TextureLibraryHost : MonoBehaviour
     {
         private static TextureLibraryHost? _instance;
 
-        /// <summary>Запустить корутину. Ложь — запускать негде (EditMode), звавший
-        /// должен откатить своё состояние.</summary>
         internal static bool Run(IEnumerator routine)
         {
-            if (!Application.isPlaying) return false; // в EditMode корутин нет
+            if (!Application.isPlaying) return false;
 
             if (_instance == null)
             {

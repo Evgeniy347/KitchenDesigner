@@ -4,26 +4,11 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Разбор <c>index.json</c> — единственного описания декоров. Чистая
-    /// функция: файловой системы не касается, поэтому тестируется строкой.
-    ///
-    /// Формат (см. docs/TEXTURES.md):
-    /// <code>
-    /// { "version": 1, "textures": [
-    ///     { "id": "oak", "name": "Дуб сонома", "kind": "ЛДСП", "file": "oak.jpg",
-    ///       "tileWidthMM": 800, "tileHeightMM": 800, "color": "#C7A873",
-    ///       "metallic": 0.0, "smoothness": 0.2 } ] }
-    /// </code>
-    /// Обязательны только <c>id</c> и <c>tileWidthMM</c>; запись без <c>file</c> —
-    /// чисто цветовой декор.</summary>
     public static class TextureIndex
     {
         private const int DefaultTileMM = 800;
         private const string DefaultKind = "ЛДСП";
 
-        // Цвет по умолчанию. У декора С картинкой он белый: URP Lit умножает
-        // _BaseColor на текстуру, и цветной base color её перекрасил бы. У декора
-        // БЕЗ картинки цвет — это и есть весь декор, серый нейтрален.
         private static readonly Color TexturedDefaultColor = Color.white;
         private static readonly Color PlainDefaultColor = new Color(0.80f, 0.80f, 0.80f);
 
@@ -48,14 +33,6 @@ namespace KitchenDesigner.Core
             public List<Entry> textures = new List<Entry>();
         }
 
-        /// <summary>Разобрать индекс. Никогда не бросает: непригодная запись
-        /// пропускается с сообщением в <paramref name="errors"/>, остальные грузятся —
-        /// одна опечатка не должна ронять весь каталог.
-        ///
-        /// Пропускается только то, без чего декор бессмыслен: пустой или
-        /// повторяющийся id (он ключ сейвов) и неположительная ширина плитки.
-        /// Неразборчивый цвет декор НЕ выкидывает — потерять декор у сохранённого
-        /// проекта хуже, чем показать его неверным тоном.</summary>
         public static List<MaterialDef> Parse(string? json, out List<string> errors)
         {
             errors = new List<string>();
@@ -70,8 +47,6 @@ namespace KitchenDesigner.Core
             IndexFile? file;
             try
             {
-                // BOM в начале ответа UnityWebRequest сорвал бы разбор: JsonUtility
-                // ждёт '{' первым символом.
                 file = JsonUtility.FromJson<IndexFile>(json.TrimStart('﻿', ' ', '\t', '\r', '\n'));
             }
             catch (Exception e)

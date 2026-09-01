@@ -6,12 +6,6 @@ using KitchenDesigner.Core.UI;
 
 namespace KitchenDesigner.Core.Update
 {
-    /// <summary>
-    /// Окно процесса загрузки установщика: заголовок, текст (с обещанием
-    /// авто-перезапуска), полоса прогресса и кнопка «Отмена». Как и диалог
-    /// обновления — без корутин, <see cref="SetProgress"/>/Show/Hide обращаются
-    /// к состоянию напрямую, поэтому тестируется в EditMode.
-    /// </summary>
     public sealed class DownloadProgressUI : MonoBehaviour, IDownloadDialog
     {
         private RectTransform? _root;
@@ -22,10 +16,11 @@ namespace KitchenDesigner.Core.Update
 
         private Action? _onCancel;
 
-        // Внутренние геттеры для EditMode-тестов (internalsVisibleTo).
         internal bool IsVisible => _root != null && _root.gameObject.activeSelf;
         internal string? MessageText => _message != null ? _message.text : null;
         internal float Progress => _progress != null ? _progress.value : -1f;
+        internal bool ProgressBarIsInteractive => _progress != null && _progress.interactable;
+        internal RectTransform? BackdropRect => _root;
         internal RectTransform? TitleRect => _title != null ? _title.rectTransform : null;
         internal RectTransform? MessageRect => _message != null ? _message.rectTransform : null;
 
@@ -59,7 +54,7 @@ namespace KitchenDesigner.Core.Update
 
             _progress = UIFactory.CreateSlider("DownloadProgressBar", pr, 0f, 1f, 0f,
                 new Vector2(0, -30f), new Vector2(W - 40f, 24f), null!);
-            _progress.interactable = false;   // только показывает ход
+            _progress.interactable = false;
             _progress.fillRect.GetComponent<Image>().color = UIStyle.Accent;
 
             CancelButton = UIFactory.CreateButton("DownloadCancel", pr,

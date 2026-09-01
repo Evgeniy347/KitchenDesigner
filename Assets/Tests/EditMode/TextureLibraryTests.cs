@@ -163,4 +163,22 @@ public class TextureLibraryTests
         Assert.AreEqual(TextureState.NotRequested, MaterialCatalog.Get(DecorId).textureState,
             "каталог собран заново, картинки грузятся по новой");
     }
+
+    [Test]
+    public void Host_OutsidePlayMode_RefusesToStartACoroutine()
+    {
+        // Статике нужен MonoBehaviour, чтобы чего-то ждать, а в EditMode корутин
+        // нет вовсе. Отказ обязан быть ЯВНЫМ: звавший по нему откатывает своё
+        // состояние (снимает флаг «разбор очереди идёт»), иначе очередь картинок
+        // встаёт навсегда и декоры так и остаются на цвете-заглушке.
+        Assert.IsFalse(Application.isPlaying, "проверяем именно EditMode");
+        Assert.IsFalse(TextureLibraryHost.Run(NothingToWaitFor()),
+            "в EditMode корутину запускать негде — Run обязан вернуть ложь, "
+            + "а не молча проглотить запуск");
+    }
+
+    private static System.Collections.IEnumerator NothingToWaitFor()
+    {
+        yield break;
+    }
 }

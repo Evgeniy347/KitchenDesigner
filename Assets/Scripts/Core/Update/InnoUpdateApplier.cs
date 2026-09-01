@@ -5,43 +5,51 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.Update
 {
-    /// <summary>
-    /// Применяет скачанный установщик: сохраняет сцену (как при обычном выходе),
-    /// запускает Inno Setup в тихом режиме и завершает текущий процесс. Inno сам
-    /// дождётся закрытия приложения (<c>CloseApplications=yes</c>) и — по флагу
-    /// <c>/RELAUNCH</c> (<see cref="KitchenDesigner.iss"/>) — запустит новую версию.
-    /// Компилируется только в собранном Windows-плеере, поэтому в редакторе/тестах
-    /// не может ничего запустить на ПК.
-    /// </summary>
     public sealed class InnoUpdateApplier : IUpdateApplier
     {
+        public const string SilentRelaunchArguments =
+            "/SILENT /SUPPRESSMSGBOXES /NORESTART /RELAUNCH";
+
         public void ApplyAndRelaunch(string installerPath)
         {
             if (string.IsNullOrEmpty(installerPath)) return;
 
-            try { AutoSaveManager.SaveOnQuit(); }
-            catch (Exception e) { UnityEngine.Debug.Log("[Update] не удалось сохранить перед обновлением: " + e.Message); }
+            SaveProjectTheSameWayQuittingDoes();
+            if (!TryStartInstaller(installerPath)) return;
+            QuitSoInnoCanReplaceOurFiles();
+        }
 
+        private static void SaveProjectTheSameWayQuittingDoes()
+        {
+            try { AutoSaveManager.SaveOnQuit(); }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.Log(
+                    "[Update] не удалось сохранить перед обновлением: " + e.Message);
+            }
+        }
+
+        private static bool TryStartInstaller(string installerPath)
+        {
             try
             {
-                var psi = new ProcessStartInfo
+                Process.Start(new ProcessStartInfo
                 {
                     FileName = installerPath,
-                    Arguments = "/SILENT /SUPPRESSMSGBOXES /NORESTART /RELAUNCH",
+                    Arguments = SilentRelaunchArguments,
                     UseShellExecute = false,
-                };
-                Process.Start(psi);
+                });
+                return true;
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogError("[Update] не удалось запустить установщик: " + e.Message);
-                return; // остаёмся живы — юзер ничего не потерял
+                UnityEngine.Debug.LogError(
+                    "[Update] не удалось запустить установщик: " + e.Message);
+                return false;
             }
-
-            // Устанавливаемая папка не залочена нашим процессом к моменту,
-            // когда Inno дойдёт до замены файлов; сам Inno подстрахуется CloseApplications.
-            Application.Quit();
         }
+
+        private static void QuitSoInnoCanReplaceOurFiles() => Application.Quit();
     }
 }
 #endif

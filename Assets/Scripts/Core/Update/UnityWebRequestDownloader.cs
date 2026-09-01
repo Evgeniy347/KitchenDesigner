@@ -6,10 +6,6 @@ using UnityEngine.Networking;
 
 namespace KitchenDesigner.Core.Update
 {
-    /// <summary>Скачивание установщика в целевой файл с помощью
-    /// <see cref="DownloadHandlerFile"/> (не держим ~40 МБ в памяти). Прогресс —
-    /// из <c>downloadProgress</c>. <see cref="Cancel"/> прерывает запрос; на
-    /// прерывании недокачанный файл удаляется.</summary>
     public sealed class UnityWebRequestDownloader : MonoBehaviour, IInstallerDownloader
     {
         [SerializeField] private int _timeoutSeconds = 300;
@@ -27,7 +23,13 @@ namespace KitchenDesigner.Core.Update
         public void Cancel()
         {
             _cancelRequested = true;
-            try { _active?.Abort(); } catch { /* уже завершён */ }
+            AbortEvenIfTheRequestAlreadyFinished();
+        }
+
+        private void AbortEvenIfTheRequestAlreadyFinished()
+        {
+            try { _active?.Abort(); }
+            catch (Exception) { }
         }
 
         private System.Collections.IEnumerator Run(string url, string targetPath,
@@ -56,7 +58,7 @@ namespace KitchenDesigner.Core.Update
             UnityWebRequest.Result result;
             string err;
             long code;
-            bool cancelled;
+            bool cancelledByUser;
 
             while (!req.isDone)
             {
@@ -67,12 +69,11 @@ namespace KitchenDesigner.Core.Update
             result = req.result;
             err = req.error;
             code = req.responseCode;
-            // Abort() приводит к ConnectionError; настоящее решение — по нашему флагу.
-            cancelled = _cancelRequested;
+            cancelledByUser = _cancelRequested;
             _active = null;
             req.Dispose();
 
-            if (cancelled)
+            if (cancelledByUser)
             {
                 TryDelete(targetPath);
                 onFailure?.Invoke("Загрузка отменена", true);
