@@ -5,17 +5,13 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Меню группы (ПКМ-клик по объекту): для несвязанного мультивыделения —
-    /// кнопка «Связать»; для связанного объекта — настройки группы (имя, запрет
-    /// перемещения, разорвать связь). Замок закрыт = связано, открыт = разорвать.</summary>
     public class GroupMenuUI : MonoBehaviour
     {
         public static GroupMenuUI? Instance { get; private set; }
 
-        // Окно «Связать выделенные?» компактнее окна настроек группы —
-        // в нём всего заголовок и одна кнопка.
-        private static readonly Vector2 GroupSize = new Vector2(280, 240);
-        private static readonly Vector2 LinkSize = new Vector2(240, 132);
+        internal static readonly Vector2 GroupSettingsSize = new Vector2(280, 240);
+        internal static readonly Vector2 CompactLinkPromptSize = new Vector2(240, 132);
+        internal const float DragStripDownToTheTitleBottom = 96f;
 
         private GameObject? _root;
         private RectTransform? _panelRect;
@@ -29,14 +25,12 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("GroupMenu", canvas, Vector2.zero, GroupSize);
+            var panel = UIFactory.CreatePanel("GroupMenu", canvas, Vector2.zero, GroupSettingsSize);
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(0, 40);
             _root = panel.gameObject;
             _panelRect = panel.rectTransform;
-            // Полоса до низа заголовка «Группа»/«Связать выделенные?»; контролы,
-            // созданные позже, перекрывают её в raycast и остаются кликабельными.
-            WindowDrag.Attach(panel.rectTransform, 96f);
+            WindowDrag.Attach(panel.rectTransform, DragStripDownToTheTitleBottom);
 
             _linkRoot = NewRoot(panel.transform);
             UIFactory.CreateLabel("GmLinkTitle", _linkRoot.transform, "Связать выделенные?", 18,
@@ -59,25 +53,26 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreateButton("GmUnlink", _groupRoot.transform, "Разорвать связь",
                 new Vector2(0, -82), new Vector2(200, 36), DoUnlink);
 
-            // Крестик создаём последним: он должен перекрывать полосу перетаскивания.
-            UIFactory.CreateCloseButton(panel.transform, Close);
+            CreateCloseButtonOverTheDragStrip(panel.transform);
 
             _root!.SetActive(false);
 
             if (SelectionManager.Instance != null)
-                SelectionManager.Instance.OnSelectionChanged += OnSelectionChanged;
+                SelectionManager.Instance.OnSelectionChanged += CloseWhenSelectionLeavesTheGroup;
         }
+
+        private void CreateCloseButtonOverTheDragStrip(Transform panel) =>
+            UIFactory.CreateCloseButton(panel, Close);
 
         private GameObject NewRoot(Transform parent)
         {
             var rt = UIFactory.CreateRect("Root", parent);
             UIFactory.AnchorCenter(rt);
             rt.anchoredPosition = Vector2.zero;
-            rt.sizeDelta = GroupSize;
+            rt.sizeDelta = GroupSettingsSize;
             return rt.gameObject;
         }
 
-        // Размер окна зависит от режима: «Связать выделенные?» заметно компактнее.
         private void SetPanelSize(Vector2 size)
         {
             if (_panelRect != null) _panelRect.sizeDelta = size;
@@ -90,18 +85,28 @@ namespace KitchenDesigner.Core.UI
 
             if (_group != null)
             {
-                SetPanelSize(GroupSize);
-                _linkRoot!.SetActive(false);
-                _groupRoot!.SetActive(true);
-                _nameField!.SetTextWithoutNotify(_group.name);
-                _lockMove!.SetIsOnWithoutNotify(!_group.movable);
-                _root!.SetActive(true);
+                ShowGroupSettings(_group);
                 return;
             }
 
             var sel = SelectionManager.Instance;
             if (sel == null || sel.SelectedElements.Count < 2) { Close(); return; }
-            SetPanelSize(LinkSize);
+            ShowCompactLinkPrompt();
+        }
+
+        private void ShowGroupSettings(LinkGroup group)
+        {
+            SetPanelSize(GroupSettingsSize);
+            _linkRoot!.SetActive(false);
+            _groupRoot!.SetActive(true);
+            _nameField!.SetTextWithoutNotify(group.name);
+            _lockMove!.SetIsOnWithoutNotify(!group.movable);
+            _root!.SetActive(true);
+        }
+
+        private void ShowCompactLinkPrompt()
+        {
+            SetPanelSize(CompactLinkPromptSize);
             _linkRoot!.SetActive(true);
             _groupRoot!.SetActive(false);
             _root!.SetActive(true);
@@ -122,9 +127,11 @@ namespace KitchenDesigner.Core.UI
             if (g != null)
             {
                 sel.SelectOnly(GroupManager.MembersOf(g));
-                Open(members[0]); // переключиться в настройки группы
+                ReopenAsGroupSettings(members[0]);
             }
         }
+
+        private void ReopenAsGroupSettings(KitchenElement member) => Open(member);
 
         private void DoUnlink()
         {
@@ -133,8 +140,6 @@ namespace KitchenDesigner.Core.UI
             Close();
         }
 
-        // Вход в режим редактирования модуля: детали редактируются поштучно,
-        // остальная сцена блокируется (ModuleEditMode).
         private void DoEditModule()
         {
             if (_group == null) return;
@@ -151,8 +156,7 @@ namespace KitchenDesigner.Core.UI
                 Close();
         }
 
-        // Закрываем меню, если выделение ушло с нашей группы.
-        private void OnSelectionChanged(KitchenElement? element)
+        private void CloseWhenSelectionLeavesTheGroup(KitchenElement? element)
         {
             if (_root == null || !_root.activeSelf || _group == null) return;
             if (element == null || GroupManager.GroupOf(element) != _group)
@@ -162,7 +166,7 @@ namespace KitchenDesigner.Core.UI
         private void OnDestroy()
         {
             if (SelectionManager.Instance != null)
-                SelectionManager.Instance.OnSelectionChanged -= OnSelectionChanged;
+                SelectionManager.Instance.OnSelectionChanged -= CloseWhenSelectionLeavesTheGroup;
         }
     }
 }

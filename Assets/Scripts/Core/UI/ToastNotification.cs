@@ -9,6 +9,8 @@ namespace KitchenDesigner.Core.UI
     {
         public static ToastNotification? Instance { get; private set; }
 
+        internal const float LabelWidthGivenUpToTheActionButton = 120f;
+
         private CanvasGroup? _group;
         private TMP_Text? _label;
         private Button? _actionButton;
@@ -23,23 +25,14 @@ namespace KitchenDesigner.Core.UI
 
         private void OnDestroy()
         {
-            // Без этого статик навсегда держит ссылку на уничтоженный объект —
-            // после смены сцены или загрузки другого проекта первый же тост
-            // падает с MissingReferenceException. ReferenceEquals, а не ==:
-            // новый экземпляр не должен обнулять себя, когда умирает старый.
             if (ReferenceEquals(Instance, this)) Instance = null;
         }
 
-        /// <summary>Единственный безопасный способ показать тост из чужого кода.
-        /// Писать `Instance?.Show(...)` нельзя: Unity перегружает `==` так, что
-        /// уничтоженный объект равен null, но `?.` эту перегрузку обходит и
-        /// проверяет настоящую C#-ссылку — она не нулевая, и вызов летит на
-        /// мёртвый объект.</summary>
         public static void ShowIfAvailable(string message, float duration = 2f,
             string? actionLabel = null, System.Action? action = null)
         {
             var toast = Instance;
-            if (toast == null) return; // перегруженный Unity `==` ловит и уничтоженный объект
+            if (toast == null) return;
             toast.Show(message, duration, actionLabel, action);
         }
 
@@ -60,8 +53,6 @@ namespace KitchenDesigner.Core.UI
             _label.rectTransform.offsetMin = Vector2.zero;
             _label.rectTransform.offsetMax = Vector2.zero;
 
-            // Кнопка действия («Отменить» после удаления): прижата к правому
-            // краю, видна только когда у тоста есть действие.
             _actionButton = UIFactory.CreateButton("ToastAction", panel.transform, "",
                 Vector2.zero, new Vector2(110, 36), () =>
                 {
@@ -69,13 +60,17 @@ namespace KitchenDesigner.Core.UI
                     Hide();
                     a?.Invoke();
                 });
-            var abRt = _actionButton.GetComponent<RectTransform>();
-            abRt.anchorMin = abRt.anchorMax = abRt.pivot = new Vector2(1, 0.5f);
-            abRt.anchoredPosition = new Vector2(-6, 0);
+            PinTheActionButtonToTheRightEdge(_actionButton.GetComponent<RectTransform>());
             _actionLabel = _actionButton.GetComponentInChildren<TMP_Text>();
             _actionButton.gameObject.SetActive(false);
 
             panel.gameObject.SetActive(false);
+        }
+
+        private static void PinTheActionButtonToTheRightEdge(RectTransform button)
+        {
+            button.anchorMin = button.anchorMax = button.pivot = new Vector2(1, 0.5f);
+            button.anchoredPosition = new Vector2(-6, 0);
         }
 
         public void Show(string message, float duration = 2f,
@@ -88,15 +83,19 @@ namespace KitchenDesigner.Core.UI
             bool hasAction = action != null && !string.IsNullOrEmpty(actionLabel);
             if (_actionButton != null) _actionButton.gameObject.SetActive(hasAction);
             if (_actionLabel != null) _actionLabel.text = actionLabel ?? "";
-            if (_label != null)
-            {
-                // С кнопкой текст уступает ей правую часть панели.
-                _label.rectTransform.offsetMax = new Vector2(hasAction ? -120f : 0f, 0f);
-                _label.alignment = hasAction ? TextAlignmentOptions.Left : TextAlignmentOptions.Center;
-                _label.margin = hasAction ? new Vector4(12, 0, 0, 0) : Vector4.zero;
-            }
+            LayOutLabelBesideTheActionButton(hasAction);
 
             _activeRoutine = StartCoroutine(ShowRoutine(message, duration));
+        }
+
+        internal void LayOutLabelBesideTheActionButton(bool hasAction)
+        {
+            if (_label == null) return;
+
+            _label.rectTransform.offsetMax =
+                new Vector2(hasAction ? -LabelWidthGivenUpToTheActionButton : 0f, 0f);
+            _label.alignment = hasAction ? TextAlignmentOptions.Left : TextAlignmentOptions.Center;
+            _label.margin = hasAction ? new Vector4(12, 0, 0, 0) : Vector4.zero;
         }
 
         private void Hide()
