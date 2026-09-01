@@ -7,31 +7,19 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Трассировка кадра в dev-сборках: время маркеров из <see cref="PerfMarkers"/>,
-    /// счётчики движка (GC, рендер), гистограмма dt и разбор худшего кадра окна.
-    ///
-    /// Выключен по умолчанию (иначе дампы засоряют лог PlayMode-тестов, которые тоже
-    /// поднимают Bootstrap). F9 — включить замер и экранный HUD, Shift+F9 — запись CSV
-    /// в <c>test-results/perf/</c>.
-    ///
-    /// Значения маркеров и счётчиков относятся к ПРЕДЫДУЩЕМУ кадру: профилировщик
-    /// закрывает кадр раньше, чем начинается наш Update. Для поиска тормозов это неважно,
-    /// но при сопоставлении с dt в CSV смещение на кадр надо держать в уме.</summary>
     public class PerfMonitor : MonoBehaviour
     {
-        /// <summary>Длина окна: за столько кадров копится статистика, затем дамп в лог.</summary>
         private const int DumpEveryFrames = 120;
-
-        /// <summary>Сколько кадров пытаться подключиться к маркеру, прежде чем сдаться.</summary>
         private const int AttachAttemptFrames = 600;
 
-        /// <summary>Ёмкость CSV-буфера, кадров (~минута при 60 fps).</summary>
-        private const int CsvCapacityFrames = 3600;
-
-        /// <summary>Маркеры дешевле этого порога в дамп не попадают — только шум.</summary>
-        private const float DumpThresholdMs = 0.05f;
-
-        private const int TopMarkersInDump = 14;
+        internal const int CsvCapacityFrames = 3600;
+        internal const float DumpThresholdMs = 0.05f;
+        internal const int TopMarkersInDump = 14;
+        internal const int DumpNameColumnWidth = 42;
+        internal const int HudNameColumnWidth = 40;
+        internal const int MillisecondsColumnWidth = 6;
+        internal const float HudRefreshSeconds = 0.25f;
+        internal const string MarkerNeverAttachedText = "нет данных (маркер не подключён)";
 
         private static readonly float[] HistogramEdgesMs = { 8f, 16f, 33f, 50f };
         private static readonly string[] HistogramLabels = { "<8", "8-16", "16-33", "33-50", ">50" };
@@ -39,22 +27,30 @@ namespace KitchenDesigner.Core
         public static PerfMonitor? Instance { get; private set; }
         public static bool Enabled { get; set; }
 
-        /// <summary>Готовая строка для HUD, перестраивается 4 раза в секунду.</summary>
         public string HudText { get; private set; } = "";
 
-        private struct MarkerSlot
+        internal struct MarkerSlot
         {
             public string Name;
             public ProfilerRecorder Recorder;
-            public float LastMs;
+            public float PreviousFrameMs;
             public float SumMs;
             public float MaxMs;
-            public int Samples;
+            public int FramesMeasured;
+
+            internal void RecordFrame(float ms)
+            {
+                PreviousFrameMs = ms;
+                SumMs += ms;
+                if (ms > MaxMs) MaxMs = ms;
+                FramesMeasured++;
+            }
+
+            internal float AverageMsPerFrame => FramesMeasured > 0 ? SumMs / FramesMeasured : 0f;
         }
 
         private MarkerSlot[]? _slots;
 
-        // Счётчики движка
         private ProfilerRecorder _gcFrame;
         private ProfilerRecorder _gcUsed;
         private ProfilerRecorder _mainThread;
@@ -62,7 +58,6 @@ namespace KitchenDesigner.Core
         private ProfilerRecorder _batches;
         private ProfilerRecorder _setPass;
 
-        // Окно
         private int _windowFrames;
         private float _dtSumMs, _dtMaxMs;
         private readonly int[] _histogram = new int[HistogramLabels.Length];
@@ -70,17 +65,14 @@ namespace KitchenDesigner.Core
         private float _gcMaxBytes;
         private int _getAllSum;
 
-        // Худший кадр окна
         private int _worstFrame;
         private float _worstDtMs;
         private float _worstGcBytes;
         private float[]? _worstMarkersMs;
 
-        // Подключение маркеров
         private int _attachFrames;
         private bool _attachReported;
 
-        // CSV и HUD
         private PerfCsvLog? _csv;
         private float[]? _row;
         private float _nextHudTime;
@@ -91,9 +83,7 @@ namespace KitchenDesigner.Core
         {
             Instance = this;
 
-            // Обращение к Names прогревает PerfMarkers целиком: все маркеры создаются
-            // до StartNew, поэтому рекордеры валидны сразу, а не «когда-нибудь потом».
-            var names = PerfMarkers.Names;
+            var names = PerfMarkers.NamesInDeclarationOrder;
 
             _slots = new MarkerSlot[names.Count];
             for (int i = 0; i < names.Count; i++)
@@ -156,9 +146,6 @@ namespace KitchenDesigner.Core
 
         private void ToggleCsv() => SetCsvRecording(_csv == null || !_csv.Recording);
 
-        /// <summary>Включает или выключает запись CSV. При выключении возвращает путь
-        /// сохранённого файла (null, если писать было нечего). Публичный метод нужен
-        /// профилировочным PlayMode-прогонам, которые крутят сцену без участия человека.</summary>
         public string? SetCsvRecording(bool on)
         {
             if (_csv == null) return null;
@@ -176,7 +163,6 @@ namespace KitchenDesigner.Core
 
             if (_csv.Recording) return null;
 
-            // Запись без замера бессмысленна — включаем заодно.
             if (!Enabled)
             {
                 Enabled = true;
@@ -187,8 +173,6 @@ namespace KitchenDesigner.Core
             return null;
         }
 
-        // ── Сбор ────────────────────────────────────────────────────────────
-
         private void Sample()
         {
             if (_slots == null) return;
@@ -196,27 +180,19 @@ namespace KitchenDesigner.Core
             bool attaching = _attachFrames < AttachAttemptFrames;
             if (attaching) _attachFrames++;
 
-            float maxMs = 0f;
             for (int i = 0; i < _slots.Length; i++)
             {
                 ref var s = ref _slots[i];
                 if (!s.Recorder.Valid)
                 {
                     if (attaching) TryAttach(ref s);
-                    if (!s.Recorder.Valid) { s.LastMs = 0f; continue; }
+                    if (!s.Recorder.Valid) { s.PreviousFrameMs = 0f; continue; }
                 }
 
-                // Ноль — законный семпл: маркер, который срабатывает не каждый кадр,
-                // должен давать честное среднее ПО КАДРАМ, а не по срабатываниям.
-                float ms = s.Recorder.LastValue * 1e-6f;
-                s.LastMs = ms;
-                s.SumMs += ms;
-                if (ms > s.MaxMs) s.MaxMs = ms;
-                s.Samples++;
-                if (ms > maxMs) maxMs = ms;
+                s.RecordFrame(s.Recorder.LastValue * 1e-6f);
             }
 
-            if (!attaching) ReportUnattachedOnce();
+            if (!attaching) WarnOnceAboutMarkersThatNeverAttached();
 
             float dtMs = Time.unscaledDeltaTime * 1000f;
             float gcBytes = _gcFrame.Valid ? _gcFrame.LastValue : 0f;
@@ -236,14 +212,14 @@ namespace KitchenDesigner.Core
                 _worstFrame = Time.frameCount;
                 _worstGcBytes = gcBytes;
                 if (_worstMarkersMs != null)
-                    for (int i = 0; i < _slots.Length; i++) _worstMarkersMs[i] = _slots[i].LastMs;
+                    for (int i = 0; i < _slots.Length; i++) _worstMarkersMs[i] = _slots[i].PreviousFrameMs;
             }
 
             WriteCsvRow(dtMs, gcBytes, getAll);
 
             if (Time.unscaledTime >= _nextHudTime)
             {
-                _nextHudTime = Time.unscaledTime + 0.25f;
+                _nextHudTime = Time.unscaledTime + HudRefreshSeconds;
                 HudText = BuildHudText(dtMs, gcBytes);
             }
         }
@@ -261,7 +237,7 @@ namespace KitchenDesigner.Core
             _row[6] = _batches.Valid ? _batches.LastValue : 0f;
             _row[7] = _setPass.Valid ? _setPass.LastValue : 0f;
             _row[8] = getAllCalls;
-            for (int i = 0; i < _slots.Length; i++) _row[CsvFixedColumns + i] = _slots[i].LastMs;
+            for (int i = 0; i < _slots.Length; i++) _row[CsvFixedColumns + i] = _slots[i].PreviousFrameMs;
 
             _csv.Append(_row);
             if (!_csv.Recording)
@@ -275,15 +251,11 @@ namespace KitchenDesigner.Core
             return HistogramEdgesMs.Length;
         }
 
-        // ── Вывод ───────────────────────────────────────────────────────────
-
         private void Dump()
         {
             if (_slots == null || _windowFrames == 0) return;
 
             var sb = new StringBuilder();
-            // Псевдографика U+2500 в литералах запрещена: её нет в атласе LiberationSans
-            // (см. DebugLogSymbolTests), а лог показывается ещё и в ConsoleOverlay.
             sb.AppendLine($"[Perf] == кадр {Time.frameCount}, окно {_windowFrames} кадров ==");
             sb.Append($"  dt avg={_dtSumMs / _windowFrames:F1}ms  max={_dtMaxMs:F1}ms   ");
             for (int i = 0; i < _histogram.Length; i++)
@@ -297,61 +269,64 @@ namespace KitchenDesigner.Core
                           $"  setpass={(_setPass.Valid ? _setPass.LastValue : 0)}" +
                           $"   GetAll/кадр={(float)_getAllSum / _windowFrames:F1}");
 
-            AppendWorstFrame(sb);
-            AppendWindowTop(sb);
+            AppendWorstFrameOfTheWindow(sb);
+            AppendWindowTop(sb, _slots);
 
             Debug.Log(sb.ToString());
             StartWindow();
         }
 
-        /// <summary>Разбор самого долгого кадра окна — среднее спайк размывает, а рывок
-        /// делает именно он.</summary>
-        private void AppendWorstFrame(StringBuilder sb)
+        private void AppendWorstFrameOfTheWindow(StringBuilder sb)
         {
             if (_slots == null || _worstMarkersMs == null || _worstFrame == 0) return;
 
             sb.AppendLine($"  худший кадр #{_worstFrame}: dt={_worstDtMs:F1}ms  gc={_worstGcBytes / 1024f:F1}КБ");
-            var order = SortedByValue(_worstMarkersMs);
+            var order = IndicesByDescendingValue(_worstMarkersMs);
             int shown = 0;
             for (int k = 0; k < order.Length && shown < TopMarkersInDump; k++)
             {
                 int i = order[k];
-                if (_worstMarkersMs[i] < DumpThresholdMs) break;
-                sb.AppendLine($"     {_slots[i].Name,-42} {_worstMarkersMs[i],6:F2}ms");
+                if (!WorthShowing(_worstMarkersMs[i])) break;
+                sb.AppendLine("     " + MarkerLine(_slots[i].Name, _worstMarkersMs[i], DumpNameColumnWidth));
                 shown++;
             }
             if (shown == 0) sb.AppendLine($"     все маркеры дешевле {DumpThresholdMs:F2}ms — время уходит мимо них");
         }
 
-        private void AppendWindowTop(StringBuilder sb)
+        internal static void AppendWindowTop(StringBuilder sb, MarkerSlot[] slots)
         {
-            if (_slots == null) return;
-
-            var avg = new float[_slots.Length];
-            for (int i = 0; i < _slots.Length; i++)
-                avg[i] = _slots[i].Samples > 0 ? _slots[i].SumMs / _slots[i].Samples : 0f;
+            var avgPerFrameMs = new float[slots.Length];
+            for (int i = 0; i < slots.Length; i++) avgPerFrameMs[i] = slots[i].AverageMsPerFrame;
 
             sb.AppendLine("  за окно (avg / max):");
-            var order = SortedByValue(avg);
+            var order = IndicesByDescendingValue(avgPerFrameMs);
             int shown = 0;
             for (int k = 0; k < order.Length && shown < TopMarkersInDump; k++)
             {
                 int i = order[k];
-                if (_slots[i].Samples == 0)
+                if (slots[i].FramesMeasured == 0)
                 {
-                    sb.AppendLine($"     {_slots[i].Name,-42} нет данных (маркер не подключён)");
+                    sb.AppendLine("     " + slots[i].Name.PadRight(DumpNameColumnWidth)
+                                  + " " + MarkerNeverAttachedText);
                     shown++;
                     continue;
                 }
-                if (avg[i] < DumpThresholdMs && _slots[i].MaxMs < DumpThresholdMs) continue;
-                sb.AppendLine($"     {_slots[i].Name,-42} {avg[i],6:F2}ms / {_slots[i].MaxMs,6:F2}ms");
+                if (!WorthShowing(avgPerFrameMs[i]) && !WorthShowing(slots[i].MaxMs)) continue;
+                sb.AppendLine("     " + MarkerLine(slots[i].Name, avgPerFrameMs[i], DumpNameColumnWidth)
+                              + " / " + Milliseconds(slots[i].MaxMs) + "ms");
                 shown++;
             }
         }
 
-        /// <summary>Индексы по убыванию значения. Вызывается раз в окно, поэтому
-        /// вставками — короче и без аллокаций компаратора.</summary>
-        private static int[] SortedByValue(float[] values)
+        internal static bool WorthShowing(float ms) => ms >= DumpThresholdMs;
+
+        internal static string MarkerLine(string name, float ms, int nameWidth) =>
+            name.PadRight(nameWidth) + " " + Milliseconds(ms) + "ms";
+
+        private static string Milliseconds(float ms) =>
+            ms.ToString("F2").PadLeft(MillisecondsColumnWidth);
+
+        internal static int[] IndicesByDescendingValue(float[] values)
         {
             var idx = new int[values.Length];
             for (int i = 0; i < idx.Length; i++) idx[i] = i;
@@ -374,27 +349,24 @@ namespace KitchenDesigner.Core
             sb.AppendLine($"GC {gcBytes / 1024f,7:F1}КБ/кадр   draw {(_drawCalls.Valid ? _drawCalls.LastValue : 0)}" +
                           $"   GetAll {(_windowFrames > 0 ? (float)_getAllSum / _windowFrames : 0f):F1}/кадр");
 
-            var last = new float[_slots.Length];
-            for (int i = 0; i < _slots.Length; i++) last[i] = _slots[i].LastMs;
-            var order = SortedByValue(last);
+            var previousFrameMs = new float[_slots.Length];
+            for (int i = 0; i < _slots.Length; i++) previousFrameMs[i] = _slots[i].PreviousFrameMs;
+            var order = IndicesByDescendingValue(previousFrameMs);
             for (int k = 0; k < 3 && k < order.Length; k++)
             {
                 int i = order[k];
-                if (last[i] < DumpThresholdMs) break;
-                sb.AppendLine($"{_slots[i].Name,-40} {last[i],6:F2}ms");
+                if (!WorthShowing(previousFrameMs[i])) break;
+                sb.AppendLine(MarkerLine(_slots[i].Name, previousFrameMs[i], HudNameColumnWidth));
             }
 
             if (_csv != null && _csv.Recording) sb.AppendLine($"● запись CSV: {_csv.Rows} кадров");
             return sb.ToString();
         }
 
-        /// <summary>Печатает накопленное окно немедленно, не дожидаясь <see cref="DumpEveryFrames"/>.</summary>
         public static void DumpNow()
         {
             if (Instance != null) Instance.Dump();
         }
-
-        // ── Служебное ───────────────────────────────────────────────────────
 
         private void StartWindow()
         {
@@ -414,7 +386,7 @@ namespace KitchenDesigner.Core
             {
                 _slots[i].SumMs = 0f;
                 _slots[i].MaxMs = 0f;
-                _slots[i].Samples = 0;
+                _slots[i].FramesMeasured = 0;
             }
         }
 
@@ -425,9 +397,7 @@ namespace KitchenDesigner.Core
             else r.Dispose();
         }
 
-        /// <summary>Маркер, к которому так и не удалось подключиться, иначе выглядел бы
-        /// как «этот метод ничего не стоит». Сообщаем один раз.</summary>
-        private void ReportUnattachedOnce()
+        private void WarnOnceAboutMarkersThatNeverAttached()
         {
             if (_attachReported || _slots == null) return;
             _attachReported = true;

@@ -8,14 +8,16 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Покадровый буфер метрик с выгрузкой в CSV. Буфер преаллоцирован, а запись
-    /// на диск происходит один раз при остановке — иначе файловый I/O попал бы в те самые
-    /// кадры, которые мы измеряем.</summary>
     public sealed class PerfCsvLog
     {
+        public const char ColumnSeparator = ';';
+        public const string ValueFormat = "0.####";
+
+        private const int MaxDirectoriesUpToRepoRoot = 6;
+
         private readonly string[] _header;
         private readonly int _columns;
-        private readonly float[] _data;
+        private readonly float[] _preallocatedData;
         private readonly int _capacity;
         private int _rows;
 
@@ -28,7 +30,7 @@ namespace KitchenDesigner.Core
             _header = header;
             _columns = header.Length;
             _capacity = Mathf.Max(1, capacityFrames);
-            _data = new float[_capacity * _columns];
+            _preallocatedData = new float[_capacity * _columns];
         }
 
         public void Start()
@@ -37,9 +39,6 @@ namespace KitchenDesigner.Core
             Recording = true;
         }
 
-        /// <summary>Добавляет строку. Значений должно быть ровно столько же, сколько колонок
-        /// в заголовке. Переполнение буфера останавливает запись, а не затирает начало:
-        /// интересен обычно первый прогон целиком.</summary>
         public void Append(float[] values)
         {
             if (!Recording || values.Length != _columns) return;
@@ -49,25 +48,29 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            Array.Copy(values, 0, _data, _rows * _columns, _columns);
+            Array.Copy(values, 0, _preallocatedData, _rows * _columns, _columns);
             _rows++;
         }
 
-        /// <summary>Останавливает запись и сохраняет файл. Возвращает путь либо null,
-        /// если писать было нечего.</summary>
         public string? Stop()
         {
             Recording = false;
             if (_rows == 0) return null;
 
-            var dir = Path.Combine(RepoRoot(), "test-results", "perf");
+            var dir = Path.Combine(RepoRootFoundByWalkingUpToBuildCmd(), "test-results", "perf");
             Directory.CreateDirectory(dir);
             var path = Path.Combine(dir, $"perf_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
 
+            File.WriteAllText(path, BuildCsv(), Encoding.UTF8);
+            return path;
+        }
+
+        internal string BuildCsv()
+        {
             var sb = new StringBuilder(_rows * _columns * 8);
             for (int c = 0; c < _columns; c++)
             {
-                if (c > 0) sb.Append(';');
+                if (c > 0) sb.Append(ColumnSeparator);
                 sb.Append(_header[c]);
             }
             sb.Append('\n');
@@ -77,25 +80,22 @@ namespace KitchenDesigner.Core
                 int off = r * _columns;
                 for (int c = 0; c < _columns; c++)
                 {
-                    if (c > 0) sb.Append(';');
-                    // Инвариантная культура: под русской локалью иначе получится запятая
-                    // и в разделителе, и в дробной части.
-                    sb.Append(_data[off + c].ToString("0.####", CultureInfo.InvariantCulture));
+                    if (c > 0) sb.Append(ColumnSeparator);
+                    sb.Append(FormatCellInvariantly(_preallocatedData[off + c]));
                 }
                 sb.Append('\n');
             }
 
-            File.WriteAllText(path, sb.ToString(), Encoding.UTF8);
-            return path;
+            return sb.ToString();
         }
 
-        /// <summary>Корень репозитория (kd-repose) — ищем вверх по дереву папку с build.cmd.
-        /// В редакторе dataPath это Assets/, в сборке — KitchenDesigner_Data/, поэтому
-        /// фиксированное число «..» не годится.</summary>
-        private static string RepoRoot()
+        internal static string FormatCellInvariantly(float value) =>
+            value.ToString(ValueFormat, CultureInfo.InvariantCulture);
+
+        private static string RepoRootFoundByWalkingUpToBuildCmd()
         {
             var dir = new DirectoryInfo(Application.dataPath);
-            for (int i = 0; i < 6 && dir != null; i++)
+            for (int i = 0; i < MaxDirectoriesUpToRepoRoot && dir != null; i++)
             {
                 if (File.Exists(Path.Combine(dir.FullName, "build.cmd"))) return dir.FullName;
                 dir = dir.Parent;
