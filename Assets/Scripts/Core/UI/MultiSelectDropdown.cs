@@ -5,24 +5,12 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>
-    /// Выпадающий список с множественным выбором (галочки). В проекте штатный
-    /// <see cref="TMP_Dropdown"/> — одиночный, поэтому фильтры окна ошибок
-    /// используют этот виджет.
-    ///
-    /// Семантика фильтра: пустой набор = «нет ограничения» (проходит всё). Как
-    /// только отмечен хотя бы один пункт — проходят только отмеченные. Это
-    /// устойчиво к пересборке списка опций (новые коды не отсеиваются молча).
-    ///
-    /// Раскрытие: клик по полю открывает поповер под ним; клик мимо (полупрозрачный
-    /// «ловец» на весь холст) — закрывает. Изменение отметок применяется сразу
-    /// (onChanged), окно не имеет кнопки «Применить».
-    /// </summary>
     public class MultiSelectDropdown : MonoBehaviour
     {
         private const float RowH = 26f;
         private const float PopupPad = 6f;
         private const float PopupMaxH = 240f;
+        private const float RowSideInset = 16f;
 
         private RectTransform _fieldRect = null!;
         private TMP_Text _caption = null!;
@@ -32,10 +20,8 @@ namespace KitchenDesigner.Core.UI
         private readonly List<string> _options = new List<string>();
         private readonly HashSet<string> _selected = new HashSet<string>();
 
-        private GameObject? _overlay; // ловец + поповер, живут только пока открыто
+        private GameObject? _popupOverlay;
 
-        /// <summary>Создать поле мультиселекта. Описательная подпись над полем —
-        /// ответственность вызывающего (правило 5 UI-GUIDELINES).</summary>
         public static MultiSelectDropdown Create(string name, Transform parent, string placeholder,
             Vector2 anchoredPos, Vector2 size, System.Action? onChanged)
         {
@@ -54,7 +40,6 @@ namespace KitchenDesigner.Core.UI
             caption.fontSize = 15;
             self._caption = caption;
 
-            // Стрелка ▼ справа — как у одиночного дропдауна.
             var arrow = UIFactory.CreateLabel(name + "_Arrow", btn.transform, UIStyle.GlyphDropdown, 10,
                 Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
             arrow.color = UIStyle.TextSecondary;
@@ -68,8 +53,6 @@ namespace KitchenDesigner.Core.UI
             return self;
         }
 
-        /// <summary>Задать список опций, сохранив пересечение с текущим выбором
-        /// (пункты, которых больше нет, из выбора убираются).</summary>
         public void SetOptions(IEnumerable<string> options)
         {
             _options.Clear();
@@ -77,11 +60,10 @@ namespace KitchenDesigner.Core.UI
                 if (!_options.Contains(o)) _options.Add(o);
 
             _selected.RemoveWhere(s => !_options.Contains(s));
-            if (_overlay != null) ClosePopup(); // список изменился — старый поповер невалиден
+            if (_popupOverlay != null) ClosePopup();
             UpdateCaption();
         }
 
-        /// <summary>Проходит ли значение фильтр. Пустой выбор = проходит всё.</summary>
         public bool IsAllowed(string value) => _selected.Count == 0 || _selected.Contains(value);
 
         private void UpdateCaption()
@@ -94,7 +76,7 @@ namespace KitchenDesigner.Core.UI
 
         private void TogglePopup()
         {
-            if (_overlay != null) ClosePopup();
+            if (_popupOverlay != null) ClosePopup();
             else OpenPopup();
         }
 
@@ -104,41 +86,48 @@ namespace KitchenDesigner.Core.UI
             var canvas = _fieldRect.GetComponentInParent<Canvas>();
             if (canvas == null) return;
 
-            // Оверлей на весь холст: ловец кликов мимо + сам поповер сверху.
-            _overlay = new GameObject("MultiSelectOverlay", typeof(RectTransform));
-            var oRt = (RectTransform)_overlay.transform;
+            _popupOverlay = new GameObject("MultiSelectOverlay", typeof(RectTransform));
+            var oRt = (RectTransform)_popupOverlay.transform;
             oRt.SetParent(canvas.transform, false);
             oRt.anchorMin = Vector2.zero;
             oRt.anchorMax = Vector2.one;
             oRt.offsetMin = oRt.offsetMax = Vector2.zero;
             oRt.SetAsLastSibling();
 
-            var catcher = UIFactory.CreateRect("Catcher", oRt);
-            catcher.anchorMin = Vector2.zero;
-            catcher.anchorMax = Vector2.one;
-            catcher.offsetMin = catcher.offsetMax = Vector2.zero;
-            var catcherImg = catcher.gameObject.AddComponent<Image>();
-            catcherImg.color = new Color(0, 0, 0, 0.01f); // невидим, но ловит клик
-            var catcherBtn = catcher.gameObject.AddComponent<Button>();
-            catcherBtn.transition = Selectable.Transition.None;
-            catcherBtn.onClick.AddListener(ClosePopup);
+            AddClickOutsideCatcher(oRt);
 
             float popupH = Mathf.Min(_options.Count * RowH + PopupPad * 2f, PopupMaxH);
             var popup = UIFactory.CreatePanel("Popup", oRt, Vector2.zero,
                 new Vector2(_fieldRect.rect.width, popupH));
             var pRt = popup.rectTransform;
-            pRt.pivot = new Vector2(0, 1); // верхний левый угол поповера
-            // Ставим поповер ровно под полем: нижний-левый угол поля = верхний-левый поповера.
-            var corners = new Vector3[4];
-            _fieldRect.GetWorldCorners(corners);
-            pRt.position = corners[0];
+            pRt.pivot = new Vector2(0, 1);
+            pRt.position = BottomLeftCornerOfField();
 
             BuildRows(pRt, popupH);
         }
 
+        private void AddClickOutsideCatcher(RectTransform overlay)
+        {
+            var catcher = UIFactory.CreateRect("Catcher", overlay);
+            catcher.anchorMin = Vector2.zero;
+            catcher.anchorMax = Vector2.one;
+            catcher.offsetMin = catcher.offsetMax = Vector2.zero;
+            var catcherImg = catcher.gameObject.AddComponent<Image>();
+            catcherImg.color = new Color(0, 0, 0, 0.01f);
+            var catcherBtn = catcher.gameObject.AddComponent<Button>();
+            catcherBtn.transition = Selectable.Transition.None;
+            catcherBtn.onClick.AddListener(ClosePopup);
+        }
+
+        private Vector3 BottomLeftCornerOfField()
+        {
+            var corners = new Vector3[4];
+            _fieldRect.GetWorldCorners(corners);
+            return corners[0];
+        }
+
         private void BuildRows(RectTransform popup, float popupH)
         {
-            // Прокрутка на случай длинного списка; для 3–6 пунктов не мешает.
             var viewport = UIFactory.CreateRect("Viewport", popup);
             viewport.anchorMin = Vector2.zero;
             viewport.anchorMax = Vector2.one;
@@ -164,9 +153,7 @@ namespace KitchenDesigner.Core.UI
             scroll.movementType = ScrollRect.MovementType.Clamped;
             scroll.scrollSensitivity = 18f;
 
-            // CreateToggle позиционирует бокс/подпись из переданного size.x —
-            // ширина строки фиксированная (по ширине поля), не stretch.
-            float rowW = _fieldRect.rect.width - 16f;
+            float rowW = _fieldRect.rect.width - RowSideInset;
             float y = -PopupPad;
             foreach (var opt in _options)
             {
@@ -191,10 +178,10 @@ namespace KitchenDesigner.Core.UI
 
         private void ClosePopup()
         {
-            if (_overlay != null)
+            if (_popupOverlay != null)
             {
-                Destroy(_overlay);
-                _overlay = null;
+                Destroy(_popupOverlay);
+                _popupOverlay = null;
             }
         }
 
