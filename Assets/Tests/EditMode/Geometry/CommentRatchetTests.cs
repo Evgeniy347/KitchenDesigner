@@ -20,10 +20,10 @@ namespace KitchenDesigner.Tests.Geometry
         private static readonly (string dir, int ceiling)[] Budgets =
         {
             (".", 0),
-            ("Analysis", 104),
+            ("Analysis", 0),
             ("Bulk", 0),
             ("Commands", 0),
-            ("Diagnostics", 74),
+            ("Diagnostics", 0),
             ("Elements", 0),
             ("Geometry", 0),
             ("Infrastructure", 0),
@@ -34,7 +34,7 @@ namespace KitchenDesigner.Tests.Geometry
             ("Networking", 0),
             ("Persistence", 0),
             ("Platform", 0),
-            ("Pure", 89),
+            ("Pure", 0),
             ("Rendering", 0),
             ("Snap", 45),
             ("Tools", 0),
