@@ -3,28 +3,14 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Мост между сценой и <see cref="ValidationCore"/>: превращает
-    /// детали в снимки <see cref="ValidationElement"/>.
-    ///
-    /// Здесь и только здесь живёт ответ на вопрос «кто это»: пол, стена, проём,
-    /// ящик, светильник, врезная техника, фасад с зазором. Ядро получает готовые
-    /// флаги <see cref="ElementKind"/> и ни одного GetComponent.</summary>
     public static class ValidationSnapshot
     {
-        /// <summary>Снимки набора деталей. Порядок сохраняется: индексы в
-        /// результате валидации — это индексы в <paramref name="elements"/>.
-        /// Список обязан быть без null.</summary>
         public static void Build(List<KitchenElement> elements, List<ValidationElement> into)
         {
             into.Clear();
             if (elements == null || elements.Count == 0) return;
 
-            // Стена ищется по имени GameObject — так на неё ссылаются окна и
-            // двери (AttachedWallName). Ядру имена не нужны: оно получает уже
-            // разрешённый индекс.
             Dictionary<string, int>? wallIndexByName = null;
-            // Хозяин врезной техники ищется по PartName (так на него ссылается
-            // сама техника). Словарь строим только когда врезка в сцене есть.
             Dictionary<string, int>? partIndexByName = null;
             bool hasRecessed = false;
             for (int i = 0; i < elements.Count; i++)
@@ -53,8 +39,6 @@ namespace KitchenDesigner.Core
             var wall = e.GetComponent<Wall>();
             var kind = KindOf(e, wall);
 
-            // Высота стены меряется от ЛОГИЧЕСКОЙ позы: визуально стена бывает
-            // подрезана (WallCutaway), а проём обязан помещаться в настоящую.
             float centerY = wall != null ? wall.FullPosition.y : e.transform.position.y;
             var heightSpan = Span.FromCenter(centerY, e.DimensionsMM.y * AppConstants.MM_TO_UNITS);
 
@@ -66,9 +50,6 @@ namespace KitchenDesigner.Core
                 && wallIndexByName.TryGetValue(attachedWallName!, out int found))
                 wallIndex = found;
 
-            // Короб выреза варочной: он уходит В столешницу и в габарит бортика
-            // не входит, поэтому едет в снимок отдельной коробкой. Пока варочная
-            // не врезана, короба нет — «вглубь детали» ещё ничего не значит.
             var recessedBody = default(ElementGeometry);
             bool hasRecessedBody = false;
             int hostIndex = -1;
@@ -104,8 +85,6 @@ namespace KitchenDesigner.Core
 
             if (isFloor) kind |= ElementKind.FloorAnchor;
             if (isOpening) kind |= ElementKind.Opening;
-            // Якорь графа связности — пол, стена и проём в ней: к ним заземляется
-            // всё остальное, сами они опоры не требуют.
             if (isFloor || isOpening || wall != null) kind |= ElementKind.Anchor;
 
             if (e is DrawerElement) kind |= ElementKind.Drawer;
