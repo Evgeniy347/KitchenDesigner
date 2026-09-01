@@ -42,23 +42,34 @@ namespace KitchenDesigner.Core
 
         private void Rebuild(int index, SofaPartBox box)
         {
-            float toU = AppConstants.MM_TO_UNITS;
-            float width = box.ProfileWidthMM * toU;
-            float depth = box.ProfileDepthMM * toU;
-
-            var profile = RoundedRectProfile.Uniform(width, depth, box.RadiusMM * toU,
-                RoundedRectProfile.DefaultSegments);
-            var mesh = ProfileExtrusionMesh.Build(profile, width, depth, box.ThicknessMM * toU);
+            var mesh = box.Shape == SofaPartShape.Cushion ? Cushion(box) : Extrusion(box);
 
             DestroyObject(_meshes[index]);
             _meshes[index] = mesh;
 
             var part = _parts[index];
             part.name = box.Name;
-            part.transform.localPosition = box.CentreMM * toU;
+            part.transform.localPosition = box.CentreMM * AppConstants.MM_TO_UNITS;
             part.transform.localRotation = Quaternion.Euler(SofaLayout.EulerAnglesFor(box.Orientation));
             part.transform.localScale = Vector3.one;
             part.GetComponent<MeshFilter>().sharedMesh = mesh;
+        }
+
+        private static Mesh Cushion(SofaPartBox box)
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            return CushionMesh.Build(box.LocalSizeMM * toU, box.RadiusMM * toU);
+        }
+
+        private static Mesh Extrusion(SofaPartBox box)
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            float width = box.ProfileWidthMM * toU;
+            float depth = box.ProfileDepthMM * toU;
+
+            var profile = RoundedRectProfile.Uniform(width, depth, box.RadiusMM * toU,
+                RoundedRectProfile.DefaultSegments);
+            return ProfileExtrusionMesh.Build(profile, width, depth, box.ThicknessMM * toU);
         }
 
         private void Ensure(int count)

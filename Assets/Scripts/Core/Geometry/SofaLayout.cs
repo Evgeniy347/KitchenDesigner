@@ -94,35 +94,42 @@ namespace KitchenDesigner.Core
             float armCentreX = dimensionsMM.x * 0.5f - armWidth * 0.5f;
             float armCentreY = floorY + seatHeightMM + armHeight * 0.5f;
             float armCentreZ = backZ + backDepth + CushionGapMM + armLength * 0.5f;
-            float armRadius = FittedRadius(CushionRadiusMM, armLength, armHeight);
+            float armRadius = FittedCushionRadius(CushionRadiusMM, armLength, armHeight, armWidth);
 
             float cushionWidth = BackCushionWidthFor(dimensionsMM.x);
             float cushionThickness = BackCushionThicknessFor(dimensionsMM.z);
             float cushionCentreX = CushionGapMM * 0.5f + cushionWidth * 0.5f;
             float cushionCentreY = floorY + seatHeightMM + backrestHeight * 0.5f;
             float cushionCentreZ = backZ + backDepth + cushionThickness * 0.5f;
-            float cushionRadius = FittedRadius(CushionRadiusMM, cushionWidth, backrestHeight);
+            float cushionRadius = FittedCushionRadius(CushionRadiusMM, cushionWidth,
+                backrestHeight, cushionThickness);
 
             return new[]
             {
                 new SofaPartBox(ArmCushionLeftName,
                     new Vector3(-armCentreX, armCentreY, armCentreZ),
-                    armLength, armHeight, armWidth, armRadius, SofaPartOrientation.Side),
+                    armLength, armHeight, armWidth, armRadius,
+                    SofaPartOrientation.Side, SofaPartShape.Cushion),
                 new SofaPartBox(ArmCushionRightName,
                     new Vector3(armCentreX, armCentreY, armCentreZ),
-                    armLength, armHeight, armWidth, armRadius, SofaPartOrientation.Side),
+                    armLength, armHeight, armWidth, armRadius,
+                    SofaPartOrientation.Side, SofaPartShape.Cushion),
                 new SofaPartBox(BackCushionLeftName,
                     new Vector3(-cushionCentreX, cushionCentreY, cushionCentreZ),
                     cushionWidth, backrestHeight, cushionThickness, cushionRadius,
-                    SofaPartOrientation.Frontal),
+                    SofaPartOrientation.Frontal, SofaPartShape.Cushion),
                 new SofaPartBox(BackCushionRightName,
                     new Vector3(cushionCentreX, cushionCentreY, cushionCentreZ),
                     cushionWidth, backrestHeight, cushionThickness, cushionRadius,
-                    SofaPartOrientation.Frontal),
+                    SofaPartOrientation.Frontal, SofaPartShape.Cushion),
             };
         }
 
         private static float FittedRadius(float asked, float profileWidth, float profileDepth)
             => Mathf.Max(0f, Mathf.Min(asked, Mathf.Min(profileWidth, profileDepth) * 0.5f));
+
+        private static float FittedCushionRadius(float asked, float profileWidth,
+            float profileDepth, float thickness)
+            => FittedRadius(FittedRadius(asked, thickness, thickness), profileWidth, profileDepth);
     }
 }

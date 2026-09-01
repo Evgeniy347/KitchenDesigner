@@ -172,7 +172,7 @@ public class SofaElementTests
     }
 
     [Test]
-    public void SofaCushion_OnANonSquareSofa_KeepsItsOwnCornerArcCircular()
+    public void SofaCushion_OnANonSquareSofa_KeepsItsCornerFilletAtItsPhysicalRadius()
     {
         var sofa = Sofa(2000, 800, 900, 120, 400);
 
@@ -180,29 +180,38 @@ public class SofaElementTests
         var mesh = cushion.GetComponent<MeshFilter>()!.sharedMesh;
         Assert.IsNotNull(mesh, "у спинной подушки обязан быть свой меш");
 
-        float toU = AppConstants.MM_TO_UNITS;
-        float width = SofaLayout.BackCushionWidthFor(2000) * toU;
-        float height = SofaLayout.BackrestHeightMM(800, 400) * toU;
-        float radius = SofaLayout.CushionRadiusMM * toU;
-        var centreLocal = new Vector3(-width * 0.5f + radius, 0f, -height * 0.5f + radius);
-        var centreWorld = cushion.TransformPoint(centreLocal);
+        var box = CushionBox(SofaLayout.BackCushionRightName);
+        var surface = new CushionSurface(box.LocalSizeMM * AppConstants.MM_TO_UNITS,
+            box.RadiusMM * AppConstants.MM_TO_UNITS);
 
         int checkedPoints = 0;
         foreach (var local in mesh!.vertices)
         {
-            if (local.x > centreLocal.x + 1e-4f || local.z > centreLocal.z + 1e-4f) continue;
+            var innerLocal = surface.ClampToInnerBox(local);
+            if (Mathf.Abs((local - innerLocal).magnitude - surface.Radius) > 1e-5f) continue;
+
             checkedPoints++;
-            var world = cushion.TransformPoint(new Vector3(local.x, 0f, local.z));
-            Assert.AreEqual(radius, (world - centreWorld).magnitude, 1e-4f,
-                "подушка — тот же скруглённый контур, и она тоже строится в физических "
-                + "миллиметрах. Мерим в МИРОВЫХ координатах, а не в локальных вершинах "
-                + "меша: локально дуга остаётся окружностью даже тогда, когда корень "
-                + "растягивает всю мебель, и тест был бы слеп ровно к тому дефекту, "
+            var world = cushion.TransformPoint(local);
+            var innerWorld = cushion.TransformPoint(innerLocal);
+            Assert.AreEqual(surface.Radius, (world - innerWorld).magnitude, 1e-4f,
+                "подушка теперь скруглена по ВСЕМ трём осям, и её скругление задано в "
+                + "физических миллиметрах: на шве каждая точка стоит ровно на радиусе от "
+                + "внутренней коробки. Мерим в МИРОВЫХ координатах, а не в локальных "
+                + "вершинах меша: локально расстояние останется прежним и тогда, когда "
+                + "корень растянет всю мебель, и тест был бы слеп ровно к тому дефекту, "
                 + "ради которого написан");
         }
 
-        Assert.GreaterOrEqual(checkedPoints, RoundedRectProfile.DefaultSegments,
-            "вершин скругления подушки не нашлось — тест позеленел бы, ничего не проверив");
+        Assert.GreaterOrEqual(checkedPoints, CushionSurface.DefaultArcSegments * 4,
+            "вершин на шве скругления не нашлось — тест позеленел бы, ничего не проверив");
+    }
+
+    private static SofaPartBox CushionBox(string name)
+    {
+        foreach (var box in SofaLayout.Cushions(new Vector3Int(2000, 800, 900), 400))
+            if (box.Name == name) return box;
+        Assert.Fail("в раскладке нет подушки " + name);
+        return default;
     }
 
     [Test]
