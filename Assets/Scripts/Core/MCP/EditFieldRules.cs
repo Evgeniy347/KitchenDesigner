@@ -19,9 +19,11 @@ namespace KitchenDesigner.Core.MCP
         internal static bool AcceptsTabletopSlots(KitchenElement el) => el is ITabletop;
 
         internal static bool AcceptsCornerRadius(KitchenElement el) =>
-            el is RadialShelfElement || el is StoolElement || el is ChairElement;
+            el is RadialShelfElement || el is StoolElement || el is ChairElement
+            || el is SofaElement;
 
-        internal static bool AcceptsSeatHeight(KitchenElement el) => el is ChairElement;
+        internal static bool AcceptsSeatHeight(KitchenElement el) =>
+            el is ChairElement || el is SofaElement;
 
         internal readonly struct EditTarget
         {

@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.MCP
         public const int TABLE_DEFAULT_DEPTH_MM = 1000;
         public const int STOOL_DEFAULT_CORNER_RADIUS_MM = 0;
         public const int CHAIR_DEFAULT_CORNER_RADIUS_MM = 0;
+        public const int SOFA_DEFAULT_CORNER_RADIUS_MM = SofaElement.DefaultCornerRadiusMM;
         public const int WINDOW_DEFAULT_WIDTH_MM = 900;
         public const int WINDOW_DEFAULT_HEIGHT_MM = 1200;
         public const int OPENING_DEFAULT_WALL_DEPTH_MM = 100;
@@ -76,6 +77,10 @@ namespace KitchenDesigner.Core.MCP
 
                 ["chair"] = (item, pos) => ElementFactory.CreateChair(ChairDims(item),
                     CHAIR_DEFAULT_CORNER_RADIUS_MM, AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT,
+                    item.name, pos),
+
+                ["sofa"] = (item, pos) => ElementFactory.CreateSofa(SofaDims(item),
+                    SOFA_DEFAULT_CORNER_RADIUS_MM, SofaElement.DefaultSeatHeightMM,
                     item.name, pos),
 
                 ["pillar"] = (item, pos) => ElementFactory.CreatePillar(
@@ -141,6 +146,11 @@ namespace KitchenDesigner.Core.MCP
             item.width ?? ChairElement.DefaultWidthMM,
             item.height ?? ChairElement.DefaultHeightMM,
             item.depth ?? ChairElement.DefaultDepthMM);
+
+        private static Vector3Int SofaDims(CreateItem item) => new Vector3Int(
+            item.width ?? SofaElement.DefaultWidthMM,
+            item.height ?? SofaElement.DefaultHeightMM,
+            item.depth ?? SofaElement.DefaultDepthMM);
 
         private static Vector3Int TableDims(CreateItem item) => new Vector3Int(
             item.width ?? TABLE_DEFAULT_WIDTH_MM,

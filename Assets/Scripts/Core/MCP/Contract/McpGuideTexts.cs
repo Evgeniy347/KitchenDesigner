@@ -142,7 +142,7 @@ SELECTOR (a string; space-separated clauses, ALL must match)
   B4_*                     name mask ('*' = glob; without '*' = substring)
   name:PATTERN             same, explicit
   type:board|wall|floor|window|door|drawer|facade|assembled_facade|
-       radial_shelf|panel|table|radius_table|stool|chair|pillar|light
+       radial_shelf|panel|table|radius_table|stool|chair|sofa|pillar|light
   module:NAME / group:NAME by module name (mask allowed)
   thickness==18            compare a dimension in MM; also width/height/depth
                            with == != >= <= > <
@@ -214,6 +214,13 @@ ChairElement          Chair: a stool with a backrest (type:""chair"",
                       floor (450 mm by default). The backrest is a 20 mm panel at
                       the BACK (-Z), from the seat top to the overall height.
                       Seat and legs decors via tabletop_material/legs_material.
+SofaElement           Sofa (type:""sofa"", 2000x800x900 mm by default). NO armrests:
+                      four cushions instead — two upright on the back, two lying
+                      flat along the sides where armrests would be. corner_radius
+                      rounds the solid base BLOCK (120 mm by default); seat_height
+                      is that block's top above the floor (400 mm by default), and
+                      what is left up to height becomes the back. Body and cushion
+                      decors via tabletop_material/legs_material.
 PillarElement         Pillar (type:""pillar"", mid_height_mm, diameter_mm).
 SinkElement / CooktopElement
                       Recessed appliances (type:""sink"" / ""cooktop""). They sit
@@ -306,7 +313,7 @@ faceGaps              Per-axis nearest OPPOSITE neighbour: {axis, neighbor, gapM
 moduleId/moduleName   Group membership (0/absent = not grouped).
 materialId            Decor id (list_materials).
 facadeMode            Facade opening mode (""front_left"", ""drawer_out"", ...).
-drawer / table / radiusTable / stool / chair   Type-specific sub-objects, absent
+drawer / table / radiusTable / stool / chair / sofa   Type-specific sub-objects, absent
                       otherwise.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:

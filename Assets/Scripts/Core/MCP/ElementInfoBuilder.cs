@@ -140,6 +140,20 @@ namespace KitchenDesigner.Core.MCP
                 };
             }),
 
+            For<SofaElement>((info, sofa) =>
+            {
+                info.cornerRadius = sofa.CornerRadiusMM;
+                info.sofa = new SofaInfo
+                {
+                    cornerRadiusMM = sofa.CornerRadiusMM,
+                    seatHeightMM = sofa.SeatHeightMM,
+                    backDepthMM = SofaLayout.BackDepthMM,
+                    cushionCount = SofaLayout.CushionCount,
+                    tabletopMaterialId = sofa.TabletopMaterialId,
+                    legsMaterialId = sofa.LegsMaterialId
+                };
+            }),
+
             For<PillarElement>((info, pillar) => info.pillar = new PillarInfo
             {
                 midHeightMM = pillar.MidHeightMM,

@@ -82,6 +82,7 @@ namespace KitchenDesigner.Core.MCP
 		public RadiusTableInfo? radiusTable;
 		public StoolInfo? stool;
 		public ChairInfo? chair;
+		public SofaInfo? sofa;
 		public PillarInfo? pillar;
 		public CooktopInfo? cooktop;
 		public OvenInfo? oven;
@@ -300,6 +301,17 @@ namespace KitchenDesigner.Core.MCP
         public string tabletopMaterialId = MaterialCatalog.DefaultId;
         public string legsMaterialId = MaterialCatalog.DefaultId;
     }
+
+	[Serializable]
+	public class SofaInfo
+	{
+		public int cornerRadiusMM;
+		public int seatHeightMM;
+		public int backDepthMM;
+		public int cushionCount;
+		public string tabletopMaterialId = MaterialCatalog.DefaultId;
+		public string legsMaterialId = MaterialCatalog.DefaultId;
+	}
 
 	[Serializable]
 	public class PillarInfo

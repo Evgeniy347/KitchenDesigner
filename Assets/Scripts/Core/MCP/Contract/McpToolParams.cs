@@ -121,13 +121,15 @@ namespace KitchenDesigner.Core.MCP.Contract
         public bool? is_open;
 
         [McpParam("Corner rounding radius in MM. Radial shelf: clamped to 1..min(width, depth). " +
-                  "Stool and chair (the seat): clamped to 0..min(width, depth)/2 — 0 is a square seat, " +
+                  "Stool, chair and sofa (the seat body): clamped to 0..min(width, depth)/2 — 0 is a square seat, " +
                   "the maximum is a fully round one (a circle when width == depth, a capsule otherwise). " +
                   "Omit to keep.", Min = 0)]
         public int? corner_radius;
 
-        [McpParam("Chair only: height of the seat TOP above the floor in MM. Clamped to " +
-                  "80..height-50 — the legs and the backrest each keep at least 50 mm. Omit to keep.",
+        [McpParam("Chair and sofa only: height of the seat TOP above the floor in MM. Chair: " +
+                  "clamped to 80..height-50 — the legs and the backrest each keep at least 50 mm. " +
+                  "Sofa: it is the height of the solid base block, clamped to 150..height-200. " +
+                  "Omit to keep.",
             Min = 0)]
         public int? seat_height;
 
@@ -233,7 +235,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "pillar", "window", "door", "sink", "cooktop", "oven", "dishwasher" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pillar", "window", "door", "sink", "cooktop", "oven", "dishwasher" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;
