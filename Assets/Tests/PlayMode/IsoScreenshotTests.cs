@@ -115,7 +115,15 @@ public class IsoScreenshotTests
     private static Vector3 MmToUnits(Vector3Int mm) =>
         new Vector3(mm.x, mm.y, mm.z) * AppConstants.MM_TO_UNITS;
 
-    private IEnumerator RenderToPng(Camera cam, string fileName)
+    private IEnumerator RenderToPng(Camera cam, string fileName) =>
+        RenderToPng(cam, fileName, Path.GetFileNameWithoutExtension(fileName) + ".json");
+
+    /// <summary>panelSnapshotFile == null — снять только 3D-кадр, без эталона
+    /// панели. Нужно там, где один тест рисует НЕСКОЛЬКО кадров одной и той же
+    /// сцены: панель от кадра к кадру не меняется, и каждый лишний эталон —
+    /// это ещё один файл, который придётся принимать вручную после любой
+    /// правки сайдбара.</summary>
+    private IEnumerator RenderToPng(Camera cam, string fileName, string? panelSnapshotFile)
     {
         // Окно «Сцена» наполняется не по событию создания элемента, а дешёвым
         // поллингом раз в 0.5 с (HierarchyPanelUI.Update). В батч-прогоне кадры
@@ -149,10 +157,9 @@ public class IsoScreenshotTests
         Assert.IsTrue(new FileInfo(path).Length > 0, "PNG file is empty");
         Debug.Log($"[ISO] Saved: {path}");
 
-        var jsonPath = Path.ChangeExtension(path, ".json");
         var canvas = UIManager.Instance?.Canvas;
-        if (canvas != null)
-            UiSnapshotEngine.CaptureVerified(canvas.gameObject, jsonPath);
+        if (canvas != null && panelSnapshotFile != null)
+            UiSnapshotEngine.CaptureVerified(canvas.gameObject, Path.Combine(dir, panelSnapshotFile));
 
         RenderTexture.active = null;
         cam.targetTexture = null;
@@ -213,8 +220,14 @@ public class IsoScreenshotTests
             fe.StepDoor(1f); // dt=1 > OpenSeconds(0.4) → прогресс доходит до 1
             yield return null;
 
-            string fileName = $"iso_facade_{i:D2}.png";
-            yield return RenderToPng(cam, fileName);
+            // Режим дверцы меняет 3D-модель, а не панель: все восемнадцать
+            // эталонов UI были байт-в-байт одним файлом (один md5 на
+            // ui_iso_facade_00..17). Снимаем панель ОДИН раз — иначе принятие
+            // одной кнопки сайдбара стоит восемнадцати прогонов PlayMode,
+            // потому что залогированная ошибка обрывает корутину и за прогон
+            // рождается ровно один кандидат.
+            yield return RenderToPng(cam, $"iso_facade_{i:D2}.png",
+                i == 0 ? "iso_facade_panel.json" : (string?)null);
         }
 
         Object.DestroyImmediate(camGo);
