@@ -80,4 +80,24 @@ public class VersionUtilTests
         // Обе нераспознаны -> сводятся к 0.0.0 -> 0 (никакого ложного «есть обновление»).
         Assert.AreEqual(0, VersionUtil.Compare("abc", "xyz"));
     }
+
+    [Test]
+    public void Parse_NonNumericFirstPart_Fails_SoJunkIsNeverReadAsAVersion()
+    {
+        Assert.IsFalse(VersionUtil.TryParse("release.5", out _, out _, out _),
+            "первая же нечисловая часть — это не версия: иначе «release.5» стало бы "
+            + "0.5.0 и сравнение начало бы отвечать всерьёз на мусор");
+    }
+
+    [Test]
+    public void Compare_UnreadableManifestAgainstReal_IsNeverNewer_SoNoFalseUpdateIsOffered()
+    {
+        Assert.AreEqual(-1, VersionUtil.Compare("сломанный ответ сервера", "0.662"),
+            "нераспознанная строка сводится к 0.0.0 и потому НЕ старше установленной "
+            + "версии: битый ответ GitHub не имеет права предложить «обновление» "
+            + "на пустое место");
+        Assert.AreEqual(1, VersionUtil.Compare("0.662", "сломанный ответ сервера"),
+            "равными нераспознанные строки считаются только между собой; "
+            + "против настоящего номера они просто нули");
+    }
 }

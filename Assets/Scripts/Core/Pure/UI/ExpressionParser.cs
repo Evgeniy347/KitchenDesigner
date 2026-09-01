@@ -1,16 +1,10 @@
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>
-    /// Парсер простых арифметических выражений (+ - * /) в числовых полях UI.
-    /// Поддерживает: 1234+56 → 1290, 800-100 → 700, 10*5 → 50, 20/4 → 5,
-    /// -50+100 → 50, 10+20-5+3 → 28. Пробелы удаляются. При ошибке возвращает null.
-    /// Деление на ноль → 0 (особый случай).
-    /// </summary>
     public static class ExpressionParser
     {
-        /// <summary>Допустимый ли символ для ввода в размерное поле (цифра, +, -, *, /, пробел, опционально точка).</summary>
         public static bool IsValidDimensionChar(char ch, bool allowDecimal = false)
         {
             return char.IsDigit(ch) || ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == ' '
@@ -27,22 +21,21 @@ namespace KitchenDesigner.Core.UI
             for (int i = 0; i < tokens.Count; i++)
             {
                 var tok = tokens[i];
-                if (tok.isOp)
-                {
-                    if (i + 1 >= tokens.Count) return null;
-                    var next = tokens[i + 1];
-                    if (next.isOp) return null;
-                    if (tok.ch == '+') result += next.value;
-                    else if (tok.ch == '-') result -= next.value;
-                    else if (tok.ch == '*') result *= next.value;
-                    else if (next.value == 0) return 0; // деление на ноль
-                    else result /= next.value;
-                    i++;
-                }
-                else
+                if (!tok.isOp)
                 {
                     result = tok.value;
+                    continue;
                 }
+
+                if (i + 1 >= tokens.Count) return null;
+                var next = tokens[i + 1];
+                if (next.isOp) return null;
+                if (tok.ch == '+') result += next.value;
+                else if (tok.ch == '-') result -= next.value;
+                else if (tok.ch == '*') result *= next.value;
+                else if (next.value == 0) return DivisionByZeroResultInt;
+                else result /= next.value;
+                i++;
             }
             return result;
         }
@@ -57,25 +50,27 @@ namespace KitchenDesigner.Core.UI
             for (int i = 0; i < tokens.Count; i++)
             {
                 var tok = tokens[i];
-                if (tok.isOp)
-                {
-                    if (i + 1 >= tokens.Count) return null;
-                    var next = tokens[i + 1];
-                    if (next.isOp) return null;
-                    if (tok.ch == '+') result += next.value;
-                    else if (tok.ch == '-') result -= next.value;
-                    else if (tok.ch == '*') result *= next.value;
-                    else if (next.value == 0f) return 0f; // деление на ноль
-                    else result /= next.value;
-                    i++;
-                }
-                else
+                if (!tok.isOp)
                 {
                     result = tok.value;
+                    continue;
                 }
+
+                if (i + 1 >= tokens.Count) return null;
+                var next = tokens[i + 1];
+                if (next.isOp) return null;
+                if (tok.ch == '+') result += next.value;
+                else if (tok.ch == '-') result -= next.value;
+                else if (tok.ch == '*') result *= next.value;
+                else if (next.value == 0f) return DivisionByZeroResultFloat;
+                else result /= next.value;
+                i++;
             }
             return result;
         }
+
+        public const int DivisionByZeroResultInt = 0;
+        public const float DivisionByZeroResultFloat = 0f;
 
         private struct IntToken
         {
@@ -91,7 +86,9 @@ namespace KitchenDesigner.Core.UI
             public float value;
         }
 
-        /// <summary>Разбить строку на токены: числа и операторы +,-,*,/.</summary>
+        private static bool SignBelongsToTheNextNumber(int tokensSoFar, bool previousWasOperator) =>
+            tokensSoFar == 0 || previousWasOperator;
+
         private static List<IntToken>? Tokenize(string text)
         {
             if (string.IsNullOrEmpty(text)) return null;
@@ -106,14 +103,12 @@ namespace KitchenDesigner.Core.UI
 
                 if (ch == '+' || ch == '-')
                 {
-                    // Leading operator или после другого оператора — унарный
-                    if (tokens.Count == 0 || tokens[^1].isOp)
+                    if (SignBelongsToTheNextNumber(tokens.Count, tokens.Count > 0 && tokens[^1].isOp))
                     {
-                        // Считаем частью следующего числа
                         int start = i;
                         i++;
                         while (i < cleaned.Length && char.IsDigit(cleaned[i])) i++;
-                        if (i == start + 1) return null; // оператор без числа
+                        if (i == start + 1) return null;
                         var numStr = cleaned.Substring(start, i - start);
                         if (!int.TryParse(numStr, out int v)) return null;
                         tokens.Add(new IntToken { value = v });
@@ -139,7 +134,7 @@ namespace KitchenDesigner.Core.UI
                 }
                 else
                 {
-                    return null; // недопустимый символ
+                    return null;
                 }
             }
 
@@ -160,17 +155,14 @@ namespace KitchenDesigner.Core.UI
 
                 if (ch == '+' || ch == '-')
                 {
-                    if (tokens.Count == 0 || tokens[^1].isOp)
+                    if (SignBelongsToTheNextNumber(tokens.Count, tokens.Count > 0 && tokens[^1].isOp))
                     {
                         int start = i;
                         i++;
-                        while (i < cleaned.Length && (char.IsDigit(cleaned[i]) || cleaned[i] == '.')) i++;
+                        while (i < cleaned.Length && IsDigitOrDot(cleaned[i])) i++;
                         if (i == start + 1) return null;
                         var numStr = cleaned.Substring(start, i - start);
-                        if (!float.TryParse(numStr,
-                            System.Globalization.NumberStyles.Float,
-                            System.Globalization.CultureInfo.InvariantCulture,
-                            out float v)) return null;
+                        if (!TryParseInvariant(numStr, out float v)) return null;
                         tokens.Add(new FloatToken { value = v });
                     }
                     else
@@ -185,14 +177,11 @@ namespace KitchenDesigner.Core.UI
                     tokens.Add(new FloatToken { isOp = true, ch = ch });
                     i++;
                 }
-                else if (char.IsDigit(ch) || ch == '.')
+                else if (IsDigitOrDot(ch))
                 {
                     int start = i;
-                    while (i < cleaned.Length && (char.IsDigit(cleaned[i]) || cleaned[i] == '.')) i++;
-                    if (!float.TryParse(cleaned.Substring(start, i - start),
-                        System.Globalization.NumberStyles.Float,
-                        System.Globalization.CultureInfo.InvariantCulture,
-                        out float v)) return null;
+                    while (i < cleaned.Length && IsDigitOrDot(cleaned[i])) i++;
+                    if (!TryParseInvariant(cleaned.Substring(start, i - start), out float v)) return null;
                     tokens.Add(new FloatToken { value = v });
                 }
                 else
@@ -203,5 +192,10 @@ namespace KitchenDesigner.Core.UI
 
             return tokens;
         }
+
+        private static bool IsDigitOrDot(char ch) => char.IsDigit(ch) || ch == '.';
+
+        private static bool TryParseInvariant(string s, out float value) =>
+            float.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
     }
 }

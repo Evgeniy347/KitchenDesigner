@@ -3,20 +3,8 @@ using System.Globalization;
 
 namespace KitchenDesigner.Core.Update
 {
-    /// <summary>
-    /// Разбор и сравнение версий вида «0.N» / «v0.N». Версии приложения
-    /// (BuildInfo.Version) и GitHub-теги релизов (v0.N) приводятся к одному виду,
-    /// чтобы десктоп мог честно решить, есть ли обновление. Никакого I/O — чистые функции,
-    /// целиком покрыты тестами.
-    /// </summary>
     public static class VersionUtil
     {
-        /// <summary>
-        /// Разбирает «MAJOR.MINOR.BUILD» (ведущий «v»/«V» и обрамляющие пробелы
-        /// игнорируются; недостающие части = 0; нецифровые хвосты обрезаются).
-        /// Возвращает false, если в строке нет ни одной цифры (например, пустая или
-        /// мусор) — вызывающий трактует это как ошибку ответа сервера.
-        /// </summary>
         public static bool TryParse(string raw, out int major, out int minor, out int build)
         {
             major = minor = build = 0;
@@ -37,7 +25,6 @@ namespace KitchenDesigner.Core.Update
                 }
                 else if (parts[i].Length > 0)
                 {
-                    // Первая же нечисловая часть — не версия.
                     if (!anyDigit) return false;
                     break;
                 }
@@ -48,8 +35,6 @@ namespace KitchenDesigner.Core.Update
             return true;
         }
 
-        /// <summary>-1 если a &lt; b, 0 если равны, 1 если a &gt; b. Нераспознанные
-        /// строки считаются равными (0), чтобы не показывать ложное «есть обновление».</summary>
         public static int Compare(string a, string b)
         {
             TryParse(a, out int am, out int an, out int ab);

@@ -3,12 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.Update
 {
-    /// <summary>
-    /// Конечный автомат автообновления — вся ветка решения «проверка → диалог →
-    /// загрузка → установка» и все пользовательские сообщения. Класс сознательно
-    /// НЕ трогает сеть, диск и процессы: всё внешнее приходит через интерфейсы,
-    /// поэтому поведение полностью покрывается EditMode-тестами на фейках.
-    /// </summary>
     public sealed class UpdateCoordinator
     {
         public enum State { Idle, Checking, UpdateAvailable, Downloading }
@@ -50,8 +44,6 @@ namespace KitchenDesigner.Core.Update
             _log = log ?? (_ => { });
         }
 
-        /// <summary>Запускать после загрузки приложения. Повторный вызов во время
-        /// активной проверки/загрузки игнорируется (не плодим параллельные потоки).</summary>
         public void CheckForUpdates()
         {
             if (CurrentState != State.Idle) return;
@@ -61,7 +53,6 @@ namespace KitchenDesigner.Core.Update
 
         private void OnCheckSuccess(ReleaseManifest manifest)
         {
-            // Пока пришёл ответ, мы ещё «Checking»; переходим дальше.
             if (manifest == null)
             {
                 FinishAsIdle();
@@ -92,7 +83,6 @@ namespace KitchenDesigner.Core.Update
 
         private void OnUserDismissed()
         {
-            // «Отмена»: просто закрываем диалог, юзер продолжает работать.
             _updateDialog.Hide();
             _pending = null;
             CurrentState = State.Idle;
@@ -121,13 +111,12 @@ namespace KitchenDesigner.Core.Update
             _downloadDialog.Hide();
             CurrentState = State.Idle;
             _pending = null;
-            // Закрытие процесса и перезапуск — внутри адаптера; здесь всё заканчивается.
             _applier.ApplyAndRelaunch(_targetPath!);
         }
 
         private void OnDownloadCancelRequested()
         {
-            _downloader.Cancel(); // приведёт к OnDownloadFailure(_, cancelled: true)
+            _downloader.Cancel();
         }
 
         private void OnDownloadFailure(string reason, bool cancelled)

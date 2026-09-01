@@ -1,3 +1,4 @@
+using System.Globalization;
 using NUnit.Framework;
 using KitchenDesigner.Core.UI;
 
@@ -296,7 +297,9 @@ public class ExpressionParserTests
     [Test]
     public void EvaluateInt_DivideByZero_ReturnsZero()
     {
-        Assert.AreEqual(0, ExpressionParser.EvaluateInt("10/0"));
+        Assert.AreEqual(ExpressionParser.DivisionByZeroResultInt, ExpressionParser.EvaluateInt("10/0"),
+            "поле размера не имеет права выбросить DivideByZeroException в лицо пользователю: "
+            + "деление на ноль даёт оговорённый результат, а не отказ");
     }
 
     [Test]
@@ -346,7 +349,9 @@ public class ExpressionParserTests
     [Test]
     public void EvaluateFloat_DivideByZero_ReturnsZero()
     {
-        Assert.AreEqual(0f, ExpressionParser.EvaluateFloat("10.0/0"), 0.001f);
+        Assert.AreEqual(ExpressionParser.DivisionByZeroResultFloat,
+            ExpressionParser.EvaluateFloat("10.0/0"), 0.001f,
+            "дробная ветка обязана вести себя так же, как целая: тот же оговорённый результат");
     }
 
     [Test]
@@ -422,5 +427,22 @@ public class ExpressionParserTests
     {
         Assert.IsFalse(ExpressionParser.IsValidDimensionChar('a'));
         Assert.IsFalse(ExpressionParser.IsValidDimensionChar('Z'));
+    }
+
+    [Test]
+    public void EvaluateFloat_UnderARussianLocale_StillReadsTheDotAsADecimalSeparator()
+    {
+        var before = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("ru-RU");
+            Assert.AreEqual(2.5f, ExpressionParser.EvaluateFloat("2.5"), 0.001f,
+                "поле UI принимает точку на любой машине: если разбор пойдёт по текущей "
+                + "культуре, под русской локалью 2.5 прочитается как 25");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = before;
+        }
     }
 }

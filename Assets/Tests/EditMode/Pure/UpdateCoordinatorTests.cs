@@ -266,4 +266,41 @@ public class UpdateCoordinatorTests
         _downloader.Fail("cancelled", true);
         CollectionAssert.IsEmpty(_log, "отмена пользователем — не отказ, в лог она не пишется");
     }
+
+    [Test]
+    public void CancelClick_OnlyAsksTheDownloader_AndWaitsForItToReportBack()
+    {
+        _c.CheckForUpdates();
+        _checker.Ok(Newer());
+        _udlg.OnUpdate();
+        int hidesBeforeCancel = _ddlg.HideCalls;
+
+        _ddlg.OnCancel();
+
+        Assert.AreEqual(1, _downloader.CancelCalls);
+        Assert.AreEqual(hidesBeforeCancel, _ddlg.HideCalls,
+            "окно загрузки закрывает ТОЛЬКО ответ загрузчика: Cancel() обязан прийти "
+            + "обратно как onFailure(_, cancelled: true), и если закрыть окно раньше, "
+            + "пришедший следом ответ закроет уже чужое окно");
+        CollectionAssert.IsEmpty(_status.Shown,
+            "до ответа загрузчика сказать пользователю нечего: неизвестно, успела "
+            + "загрузка завершиться или нет");
+
+        _downloader.Fail("cancelled", true);
+        Assert.AreEqual(UpdateStrings.DownloadCancelled, _status.Last.Item1);
+        Assert.AreEqual(hidesBeforeCancel + 1, _ddlg.HideCalls);
+    }
+
+    [Test]
+    public void Check_ManifestWithUnreadableVersion_OffersNothing()
+    {
+        _c.CheckForUpdates();
+        _checker.Ok(new ReleaseManifest
+        { Version = "сломанный ответ", FileName = "f", DownloadUrl = "u" });
+
+        Assert.AreEqual(0, _udlg.ShowCalls,
+            "версию не удалось прочитать — предлагать обновление не на чем; "
+            + "ложное «доступно обновление» ведёт пользователя ставить неизвестно что");
+        Assert.AreEqual(UpdateStrings.UpToDate, _status.Last.Item1);
+    }
 }

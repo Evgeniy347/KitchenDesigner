@@ -3,17 +3,10 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    /// <summary>Сериализуемая запись одной команды undo/redo. Плоская структура с
-    /// тегом <see cref="type"/> вместо наследников — JsonUtility не умеет
-    /// полиморфные массивы. elementIndex ссылается на объект по позиции в
-    /// ProjectData.elements (стабильна в пределах одного сохранения).</summary>
     [Serializable]
     public class CommandRecord
     {
-        // composite-записи всегда сериализуются ПЛОСКО (один уровень children,
-        // см. CompositeCommand.ToRecord), поэтому глубина JSON ограничена
-        // константой и жёсткий лимит JsonUtility (10) не достигается.
-        public string type = string.Empty;          // move | resize | composite
+        public string type = string.Empty;
         public string description = string.Empty;
         public int elementIndex = -1;
         public float[] posBefore = new float[0];
