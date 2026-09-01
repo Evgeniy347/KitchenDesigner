@@ -1,6 +1,21 @@
 ﻿{
-  "root": "Sidebar",
+  "root": "UICanvas",
   "children": [
+    {
+      "type": "Button",
+      "text": "Кухня",
+      "position": [4, 0]
+    },
+    {
+      "type": "Button",
+      "text": "BasePlate",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "IsoSofaSquare",
+      "position": [20, 0]
+    },
     {
       "type": "Button",
       "text": "«",
@@ -13,13 +28,131 @@
     },
     {
       "type": "Button",
+      "text": "+ Группа",
+      "position": [-64, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Спецификация",
+      "position": [8, -6]
+    },
+    {
+      "type": "Label",
+      "text": "Сцена",
+      "position": [14, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Сцена",
+      "position": [164, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Ошибки",
+      "position": [260, -6]
+    },
+    {
+      "type": "Button",
+      "text": "GotoIssue",
+      "position": [376, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Инструкции",
+      "position": [422, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Settings",
+      "position": [564, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Save",
+      "position": [610, -6]
+    },
+    {
+      "type": "Button",
+      "text": "SaveAs",
+      "position": [656, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Load",
+      "position": [702, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Undo",
+      "position": [764, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Redo",
+      "position": [810, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Ручки: растяжение",
+      "position": [872, -6]
+    },
+    {
+      "type": "Button",
+      "text": "MeasureToggle",
+      "position": [1054, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Eyedropper",
+      "position": [1100, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Тонировка",
+      "position": [1162, -6]
+    },
+    {
+      "type": "Button",
+      "text": "LightsToggle",
+      "position": [1278, -6]
+    },
+    {
+      "type": "Button",
+      "text": "DayNight",
+      "position": [1324, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Режим: обычный",
+      "position": [1386, -6]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Button",
       "text": "▼  детали",
       "position": [8, -8]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Переместить в…", "— вне групп —", "+ Новая группа"],
+      "selected": 0,
+      "position": [0, -38]
     },
     {
       "type": "Button",
       "text": "Полка",
       "position": [22, -42]
+    },
+    {
+      "type": "InputField",
+      "label": "HierSearch",
+      "value": "",
+      "interactable": true,
+      "position": [0, -68]
     },
     {
       "type": "Button",

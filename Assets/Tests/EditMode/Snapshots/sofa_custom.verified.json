@@ -2,16 +2,16 @@
     "version": 1,
     "elements": [
         {
-            "name": "DefaultWall",
+            "name": "BigSofa",
             "dimensionsMM": [
-                100,
-                2700,
-                3000
+                1800,
+                820,
+                950
             ],
             "position": [
-                -1.600000023841858,
-                1.350000023841858,
-                0.0
+                0.5,
+                0.4099999964237213,
+                -1.0
             ],
             "rotation": [
                 0.0,
@@ -20,22 +20,17 @@
                 1.0
             ],
             "movable": true,
-            "isWall": true,
+            "isWall": false,
             "wallKind": "",
-            "wallEndShape": [
-                -0.5,
-                -0.5,
-                0.5,
-                0.5
-            ],
+            "wallEndShape": [],
             "isFacade": false,
             "isRadialShelf": false,
             "isTable": false,
             "isRadiusTable": false,
             "isStool": false,
             "isChair": false,
-            "isSofa": false,
-            "seatHeightMM": 450,
+            "isSofa": true,
+            "seatHeightMM": 371,
             "legInsetMM": 100,
             "gapLeft": 0,
             "gapRight": 0,
@@ -44,16 +39,16 @@
             "gapFront": 0,
             "gapBack": 0,
             "groupId": 0,
-            "materialId": "default",
+            "materialId": "oak",
             "legsMaterialId": "default",
-            "tabletopMaterialId": "default",
+            "tabletopMaterialId": "oak",
             "transparent": false,
             "doorMode": 0,
             "doorOpen": false,
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "cornerRadius": 0,
+            "cornerRadius": 143,
             "isDrawer": false,
             "drawerSystem": 0,
             "drawerType": 0,
