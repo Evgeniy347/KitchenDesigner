@@ -218,7 +218,7 @@ SofaElement           Sofa (type:""sofa"", 2000x800x900 mm by default). NO armre
                       four cushions instead — two upright on the back, two lying
                       flat along the sides where armrests would be. corner_radius
                       rounds the solid base BLOCK (120 mm by default); seat_height
-                      is that block's top above the floor (400 mm by default), and
+                      is that block's top above the floor (360 mm by default), and
                       what is left up to height becomes the back. Body and cushion
                       decors via tabletop_material/legs_material.
 PillarElement         Pillar (type:""pillar"", mid_height_mm, diameter_mm).

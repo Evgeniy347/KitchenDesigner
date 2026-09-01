@@ -127,6 +127,45 @@ namespace KitchenDesigner.Tests.Geometry
                 + "ними. Иначе подушки съедут с центра и симметрия дивана сломается");
         }
 
+        /// <summary>Пропорции сняты с фотографии, а не выбраны на глаз, и потому
+        /// закреплены здесь: без этого теста числа 360, 240 и 320 неотличимы от
+        /// произвольных, и следующий, кому «покажется мелко», подвинет их обратно.
+        ///
+        /// Мерено по правому краю снимка — он почти в профиль, и перспектива
+        /// там врёт меньше всего. Два отношения, которые перспектива искажает
+        /// слабее прочего, потому что оба берутся внутри одной вертикали на
+        /// одной глубине.
+        ///
+        /// Первая версия промахнулась по обоим сразу и в одну сторону: подушки
+        /// вышли мельче натуры, боковые читались бугорками у передних углов, а
+        /// спинные сливались в низкую гряду вместо двух отдельных подушек.
+        /// Допуск 10 процентов — это точность промера по фотографии, а не
+        /// требование к мебели.</summary>
+        [Test]
+        public void TheProportions_MatchTheReferencePhotograph_WithinMeasurementError()
+        {
+            const float photoBaseToArm = 1.6f;
+            const float photoBackCushionAspect = 1.38f;
+            const float tolerance = 0.1f;
+
+            var dims = Default();
+            float armHeight = Mathf.Min(SofaLayout.ArmCushionHeightMM,
+                SofaLayout.BackrestHeightMM(dims.y, Seat));
+
+            Assert.AreEqual(photoBaseToArm, Seat / armHeight, photoBaseToArm * tolerance,
+                "цоколь к боковой подушке: на снимке 160 к 100 пикселей у правого края. "
+                + "Вдвое более тонкая подушка перестаёт работать вместо подлокотника — "
+                + "а подлокотников у этого дивана нет, и заменяют их именно они");
+
+            float cushionWidth = SofaLayout.BackCushionWidthFor(dims.x);
+            float cushionHeight = SofaLayout.BackrestHeightMM(dims.y, Seat);
+
+            Assert.AreEqual(photoBackCushionAspect, cushionWidth / cushionHeight,
+                photoBackCushionAspect * tolerance,
+                "спинная подушка почти квадратная: на снимке 400 к 290 пикселей. Растянутая "
+                + "вдвое подушка читается полкой во всю длину, и стык между двумя пропадает");
+        }
+
         [Test]
         public void ANarrowSofa_ShrinksTheArms_InsteadOfOverlappingTheCushions()
         {

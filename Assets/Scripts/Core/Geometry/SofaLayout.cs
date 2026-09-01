@@ -7,7 +7,7 @@ namespace KitchenDesigner.Core
         public const int DefaultWidthMM = 2000;
         public const int DefaultHeightMM = 800;
         public const int DefaultDepthMM = 900;
-        public const int DefaultSeatHeightMM = 400;
+        public const int DefaultSeatHeightMM = 360;
         public const int DefaultCornerRadiusMM = 120;
 
         public const int MinBaseHeightMM = 150;
@@ -17,8 +17,8 @@ namespace KitchenDesigner.Core
         public const int BackRailDropMM = 40;
         public const int BackRailRadiusMM = 60;
         public const int BackCushionThicknessMM = 200;
-        public const int ArmCushionWidthMM = 280;
-        public const int ArmCushionHeightMM = 180;
+        public const int ArmCushionWidthMM = 320;
+        public const int ArmCushionHeightMM = 240;
         public const int CushionGapMM = 20;
         public const int CushionRadiusMM = 90;
         public const int MinPartMM = 100;
