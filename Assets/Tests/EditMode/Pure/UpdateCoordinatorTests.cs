@@ -292,15 +292,69 @@ public class UpdateCoordinatorTests
     }
 
     [Test]
-    public void Check_ManifestWithUnreadableVersion_OffersNothing()
+    public void Check_ManifestWithUnreadableVersion_ReportsAFailure_NotASilentUpToDate()
     {
         _c.CheckForUpdates();
         _checker.Ok(new ReleaseManifest
         { Version = "сломанный ответ", FileName = "f", DownloadUrl = "u" });
 
         Assert.AreEqual(0, _udlg.ShowCalls,
-            "версию не удалось прочитать — предлагать обновление не на чем; "
-            + "ложное «доступно обновление» ведёт пользователя ставить неизвестно что");
-        Assert.AreEqual(UpdateStrings.UpToDate, _status.Last.Item1);
+            "версию не удалось прочитать — предлагать обновление не на чем");
+        Assert.AreEqual(UpdateStrings.CheckError, _status.Last.Item1,
+            "отказ, замаскированный под успех, хуже отказа: увидев зелёное "
+            + "«обновлений нет», пользователь сделает единственный разумный вывод — "
+            + "что версия свежая. Он не перепроверит, не заглянет в лог и не напишет "
+            + "нам, и сигнал о сломанном канале обновлений пропадёт молча и навсегда");
+        Assert.AreEqual(StatusLevel.Error, _status.Last.Item2);
+        Assert.AreEqual(UpdateCoordinator.State.Idle, _c.CurrentState);
+    }
+
+    [Test]
+    public void Check_ManifestWithoutADownloadUrl_ReportsAFailure()
+    {
+        _c.CheckForUpdates();
+        _checker.Ok(new ReleaseManifest { Version = "0.700", FileName = "setup.exe", DownloadUrl = "" });
+
+        Assert.AreEqual(UpdateStrings.CheckError, _status.Last.Item1,
+            "релиз без ссылки скачать нельзя: диалог «доступно обновление» привёл бы "
+            + "к загрузке с пустого адреса, то есть к отказу уже ПОСЛЕ согласия "
+            + "пользователя обновиться");
+        Assert.AreEqual(0, _udlg.ShowCalls);
+    }
+
+    [Test]
+    public void Check_ManifestWithoutAFileName_ReportsAFailure()
+    {
+        _c.CheckForUpdates();
+        _checker.Ok(new ReleaseManifest { Version = "0.700", FileName = "   ", DownloadUrl = "https://gh/i.exe" });
+
+        Assert.AreEqual(UpdateStrings.CheckError, _status.Last.Item1,
+            "имя файла уходит в Path.Combine как имя установщика: без него путь "
+            + "указывает на саму временную ПАПКУ, и установщик «скачивается» поверх неё");
+        Assert.AreEqual(0, _udlg.ShowCalls);
+    }
+
+    [Test]
+    public void Check_ManifestThatIsMissingAltogether_ReportsAFailure_AndSaysWhyInTheLog()
+    {
+        _c.CheckForUpdates();
+        _checker.Ok(null!);
+
+        Assert.AreEqual(UpdateStrings.CheckError, _status.Last.Item1);
+        CollectionAssert.IsNotEmpty(_log,
+            "статус-бар показывает общую фразу, поэтому единственное место, где "
+            + "видно ПРИЧИНУ, — лог: без записи отказ невозможно разобрать по факту");
+    }
+
+    [Test]
+    public void Check_BrokenManifest_NamesTheOffendingFieldsInTheLog()
+    {
+        _c.CheckForUpdates();
+        _checker.Ok(new ReleaseManifest
+        { Version = "сломанный ответ", FileName = "f", DownloadUrl = "u" });
+
+        StringAssert.Contains("сломанный ответ", _log[_log.Count - 1],
+            "в лог уходит то, что реально пришло от сервера: иначе разбор отказа "
+            + "начинается с догадок о том, что было в ответе");
     }
 }

@@ -55,8 +55,14 @@ namespace KitchenDesigner.Core.Update
         {
             if (manifest == null)
             {
-                FinishAsIdle();
-                _status.Show(UpdateStrings.CheckError, StatusLevel.Error, UpdateStrings.TransientSeconds);
+                RejectTheCheck("сервер не вернул манифест");
+                return;
+            }
+
+            if (!DescribesAnInstallableRelease(manifest))
+            {
+                RejectTheCheck($"манифест не описывает устанавливаемый релиз: "
+                    + $"version='{manifest.Version}' file='{manifest.FileName}' url='{manifest.DownloadUrl}'");
                 return;
             }
 
@@ -74,7 +80,14 @@ namespace KitchenDesigner.Core.Update
             }
         }
 
-        private void OnCheckFailure(string reason)
+        internal static bool DescribesAnInstallableRelease(ReleaseManifest manifest) =>
+            VersionUtil.TryParse(manifest.Version, out _, out _, out _)
+            && !string.IsNullOrWhiteSpace(manifest.FileName)
+            && !string.IsNullOrWhiteSpace(manifest.DownloadUrl);
+
+        private void OnCheckFailure(string reason) => RejectTheCheck(reason);
+
+        private void RejectTheCheck(string reason)
         {
             _log($"[Update] проверка не удалась: {reason}");
             FinishAsIdle();
