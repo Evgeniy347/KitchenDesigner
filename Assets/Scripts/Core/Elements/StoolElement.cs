@@ -123,7 +123,7 @@ namespace KitchenDesigner.Core
             float widthU = dims.x * toU;
             float depthU = dims.z * toU;
             float thicknessU = SeatThicknessMM * toU;
-            float centreYU = (dims.y * 0.5f - SeatThicknessMM * 0.5f) * toU;
+            float centreYU = FurnitureLayout.TopCentreY(dims.y, SeatThicknessMM);
 
             var profile = RoundedRectProfile.Uniform(widthU, depthU, _cornerRadiusMM * toU,
                 RoundedRectProfile.DefaultSegments);
@@ -158,10 +158,10 @@ namespace KitchenDesigner.Core
         {
             float toU = AppConstants.MM_TO_UNITS;
             var dims = DimensionsMM;
-            int legHeightMM = Mathf.Max(1, dims.y - SeatThicknessMM);
-            float legCentreYU = (legHeightMM * 0.5f - dims.y * 0.5f) * toU;
+            int legHeightMM = FurnitureLayout.LegHeightMM(dims.y, SeatThicknessMM);
+            float legCentreYU = FurnitureLayout.LegCentreY(dims.y, SeatThicknessMM);
 
-            var footprint = StoolLegs.Footprint(dims.x * toU, dims.z * toU,
+            var footprint = RoundedRectSeating.LegCentres(dims.x * toU, dims.z * toU,
                 _cornerRadiusMM * toU, LegInsetMM * toU, LegCrossSectionMM * toU);
             var legScale = new Vector3(LegCrossSectionMM * toU, legHeightMM * toU,
                 LegCrossSectionMM * toU);

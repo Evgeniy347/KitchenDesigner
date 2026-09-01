@@ -2,16 +2,19 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public static class StoolLegs
+    public static class RoundedRectSeating
     {
-        public static Vector2[] Footprint(float width, float depth, float radius,
+        public static Vector2[] LegCentres(float width, float depth, float radius,
             float inset, float legCrossSection)
         {
             float pull = inset + legCrossSection * 0.5f;
-            float halfW = Mathf.Max(0f, width * 0.5f - pull);
-            float halfD = Mathf.Max(0f, depth * 0.5f - pull);
-            float innerRadius = Mathf.Clamp(radius - pull, 0f, Mathf.Min(halfW, halfD));
+            float innerWidth = Mathf.Max(0f, width - pull * 2f);
+            float innerDepth = Mathf.Max(0f, depth - pull * 2f);
+            float innerRadius = RoundedRectProfile
+                .Fit(innerWidth, innerDepth, CornerRadii.Uniform(radius - pull)).PlusXPlusZ;
 
+            float halfW = innerWidth * 0.5f;
+            float halfD = innerDepth * 0.5f;
             float diagonal = innerRadius * Mathf.Sqrt(0.5f);
             float x = halfW - innerRadius + diagonal;
             float z = halfD - innerRadius + diagonal;

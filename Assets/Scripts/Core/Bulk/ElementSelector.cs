@@ -146,7 +146,6 @@ namespace KitchenDesigner.Core.Bulk
             if (e is RadiusTableElement) return "radius_table";
             if (e is TableElement) return "table";
             if (e is StoolElement) return "stool";
-            if (e is StoolElement) return "stool";
             if (e is PillarElement) return "pillar";
             if (e is LightSourceElement) return "light";
             if (e is SinkElement) return "sink";

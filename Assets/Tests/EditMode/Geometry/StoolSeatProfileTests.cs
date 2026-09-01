@@ -104,14 +104,14 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void Footprint_SquareSeat_PutsLegsAtTheInsetFromEachEdge()
+        public void LegCentres_SquareSeat_PutsLegsAtTheInsetFromEachEdge()
         {
             const float width = 0.36f;
             const float depth = 0.36f;
             const float inset = 0.03f;
             const float leg = 0.04f;
 
-            var legs = StoolLegs.Footprint(width, depth, 0f, inset, leg);
+            var legs = RoundedRectSeating.LegCentres(width, depth, 0f, inset, leg);
 
             float expected = width * 0.5f - inset - leg * 0.5f;
             Assert.AreEqual(4, legs.Length, "у табуретки четыре ножки");
@@ -126,7 +126,7 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void Footprint_RoundSeat_KeepsEveryLegCornerUnderTheSeat()
+        public void LegCentres_RoundSeat_KeepsEveryLegCornerUnderTheSeat()
         {
             const float width = 0.36f;
             const float depth = 0.36f;
@@ -134,7 +134,7 @@ namespace KitchenDesigner.Tests.Geometry
             const float inset = 0.03f;
             const float leg = 0.04f;
 
-            var legs = StoolLegs.Footprint(width, depth, radius, inset, leg);
+            var legs = RoundedRectSeating.LegCentres(width, depth, radius, inset, leg);
 
             foreach (var centre in legs)
             {
@@ -151,7 +151,7 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void Footprint_RoundSeatOnANonSquareFootprint_KeepsEveryLegCornerUnderTheSeat()
+        public void LegCentres_RoundSeatOnANonSquareFootprint_KeepsEveryLegCornerUnderTheSeat()
         {
             const float width = 0.6f;
             const float depth = 0.36f;
@@ -159,7 +159,7 @@ namespace KitchenDesigner.Tests.Geometry
             const float inset = 0.03f;
             const float leg = 0.04f;
 
-            var legs = StoolLegs.Footprint(width, depth, radius, inset, leg);
+            var legs = RoundedRectSeating.LegCentres(width, depth, radius, inset, leg);
 
             foreach (var centre in legs)
             {
@@ -173,6 +173,45 @@ namespace KitchenDesigner.Tests.Geometry
                     + "выносил ножки наружу столешницы (CONVENTIONS.md → «A mesh and its "
                     + "metadata must describe the SAME shape»)");
             }
+        }
+
+        [Test]
+        public void LegCentres_FullyRoundSeat_PutsEveryLegOnTheInnerCircleAtFortyFiveDegrees()
+        {
+            const float side = 0.36f;
+            const float inset = 0.03f;
+            const float leg = 0.04f;
+            float innerRadius = side * 0.5f - inset - leg * 0.5f;
+
+            var legs = RoundedRectSeating.LegCentres(side, side, side * 0.5f, inset, leg);
+
+            foreach (var centre in legs)
+            {
+                Assert.AreEqual(innerRadius, centre.magnitude, Tol,
+                    "у круглого сиденья ножку некуда поставить, кроме как на окружность, "
+                    + "отодвинутую от края на отступ и половину сечения");
+                Assert.AreEqual(innerRadius * Mathf.Sqrt(0.5f), Mathf.Abs(centre.x), Tol,
+                    "и ровно на 45°: по диагонали, а не по осям — иначе четыре ножки "
+                    + "сошлись бы в две пары");
+            }
+        }
+
+        [Test]
+        public void LegCentres_RadiusBeyondWhatTheSeatAllows_IsFittedTheSameWayTheProfileFitsIt()
+        {
+            const float width = 0.6f;
+            const float depth = 0.36f;
+            const float inset = 0.03f;
+            const float leg = 0.04f;
+
+            var asked = RoundedRectSeating.LegCentres(width, depth, 10f, inset, leg);
+            var capped = RoundedRectSeating.LegCentres(width, depth, depth * 0.5f, inset, leg);
+
+            for (int i = 0; i < asked.Length; i++)
+                Assert.AreEqual(capped[i], asked[i],
+                    "посадка ножек обязана подрезать радиус ТЕМ ЖЕ правилом, что и контур "
+                    + "сиденья (RoundedRectProfile.Fit), а не своей копией: своя копия "
+                    + "разойдётся с крышкой в первый же день, когда правило поменяется");
         }
     }
 }

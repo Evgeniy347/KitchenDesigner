@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core
             int overallH = dims.y;
             int overallD = dims.z;
 
-            int legH = Mathf.Max(1, overallH - TabletopThicknessMM);
+            int legH = FurnitureLayout.LegHeightMM(overallH, TabletopThicknessMM);
 
             float toU = AppConstants.MM_TO_UNITS;
             float legCross = LegCrossSectionMM * toU;
@@ -92,8 +92,8 @@ namespace KitchenDesigner.Core
             float psY = overallH * toU;
             float psZ = overallD * toU;
 
-            float legCenterY_world = (legH * 0.5f - overallH * 0.5f) * toU;
-            float topCenterY_world = (overallH * 0.5f - TabletopThicknessMM * 0.5f) * toU;
+            float legCenterY_world = FurnitureLayout.LegCentreY(overallH, TabletopThicknessMM);
+            float topCenterY_world = FurnitureLayout.TopCentreY(overallH, TabletopThicknessMM);
 
             float halfW_world = overallW * 0.5f * toU;
             float halfD_world = overallD * 0.5f * toU;

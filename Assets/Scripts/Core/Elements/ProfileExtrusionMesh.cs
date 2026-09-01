@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core
         public const float HardEdgeAngleDeg = 45f;
 
         public static Mesh Build(Vector2[] profile, float width, float depth, float thickness,
-            float yOffset = 0f)
+            float centreY = 0f)
         {
             var mesh = new Mesh();
             if (profile == null || profile.Length < 3) return mesh;
@@ -27,8 +27,8 @@ namespace KitchenDesigner.Core
             var uvs = new List<Vector2>();
             var triangles = new List<int>();
 
-            AddCap(vertices, normals, uvs, triangles, profile, half + yOffset, true, uvWidth, uvDepth);
-            AddCap(vertices, normals, uvs, triangles, profile, -half + yOffset, false, uvWidth, uvDepth);
+            AddCap(vertices, normals, uvs, triangles, profile, half + centreY, true, uvWidth, uvDepth);
+            AddCap(vertices, normals, uvs, triangles, profile, -half + centreY, false, uvWidth, uvDepth);
 
             float topV = thickness / uvDepth;
             for (int i = 0; i < count; i++)
@@ -37,7 +37,7 @@ namespace KitchenDesigner.Core
                 AddWall(vertices, normals, uvs, triangles,
                     profile[i], profile[next], outgoing[i], incoming[next],
                     arcLengths[i] / uvWidth, arcLengths[i + 1] / uvWidth,
-                    -half + yOffset, half + yOffset, topV);
+                    -half + centreY, half + centreY, topV);
             }
 
             mesh.vertices = vertices.ToArray();
